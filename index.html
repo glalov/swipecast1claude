@@ -1926,11 +1926,14 @@ function AdminPage({session,onNavigate}){
   const [reports,setReports]=useState([]);
   const [loading,setLoading]=useState(true);
   const [q,setQ]=useState("");
+  const [cq,setCq]=useState(""); // casting search
+  const [viewCasting,setViewCasting]=useState(null);   // casting currently viewed in modal
+  const [editCasting,setEditCasting]=useState(null);   // casting currently being edited
   const reload=useCallback(async()=>{
     setLoading(true);
     const [u,c,r]=await Promise.all([
       window.sb.from("profiles").select("*").order("created_at",{ascending:false}).limit(500),
-      window.sb.from("castings").select("*,profiles:cd_id(display_name,email,company_name)").order("created_at",{ascending:false}).limit(200),
+      window.sb.from("castings").select("*,profiles:cd_id(display_name,email,company_name),roles(id,name,description,gender,age_range,ethnicity)").order("created_at",{ascending:false}).limit(500),
       window.sb.from("reports").select("*").order("created_at",{ascending:false}).limit(100)
     ]);
     const allUsers=u.data||[];
@@ -1953,7 +1956,21 @@ function AdminPage({session,onNavigate}){
   const toggleSuspend=async(u)=>{await window.sb.from("profiles").update({suspended:!u.suspended}).eq("id",u.id);reload();};
   const deleteUser=async(u)=>{if(!confirm(`Delete profile for ${u.display_name||u.email}? This removes their data.`))return;await window.sb.from("profiles").delete().eq("id",u.id);reload();};
   const resolveReport=async(r,status)=>{await window.sb.from("reports").update({status}).eq("id",r.id);reload();};
+  // ─── casting moderation actions
+  const deleteCasting=async(c)=>{
+    if(!confirm(`DELETE casting "${c.title}"?\n\nThis permanently removes the casting, all its roles, and all submissions. Cannot be undone.`))return;
+    const {error}=await window.sb.from("castings").delete().eq("id",c.id);
+    if(error){alert("Delete failed: "+error.message);return;}
+    reload();
+  };
+  const toggleCastingStatus=async(c)=>{
+    const newStatus=c.status==="open"?"closed":"open";
+    const {error}=await window.sb.from("castings").update({status:newStatus,published:newStatus==="open"}).eq("id",c.id);
+    if(error){alert("Update failed: "+error.message);return;}
+    reload();
+  };
   const fu=users.filter(u=>!q||[u.display_name,u.email,u.location,u.company_name].some(x=>x&&x.toLowerCase().includes(q.toLowerCase())));
+  const fc=castings.filter(c=>!cq||[c.title,c.prod,c.location,c.tagline,c.synopsis,c.profiles?.email,c.profiles?.display_name].some(x=>x&&x.toLowerCase().includes(cq.toLowerCase())));
 
   return(<div className="page page-wide">
     <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}>
@@ -2003,14 +2020,24 @@ function AdminPage({session,onNavigate}){
         </div>
       </>}
 
-      {tab==="castings"&&<div className="card" style={{padding:0,overflow:"hidden"}}>
-        {castings.map(c=><div key={c.id} style={{padding:"14px 20px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto auto",gap:12,alignItems:"center"}}>
-          <div><div style={{fontWeight:600,fontSize:14}}>{c.title}</div><div style={{fontSize:12,color:"var(--t3)"}}>{c.prod} · {c.location} · by {c.profiles?.display_name||c.profiles?.email||"—"} · {new Date(c.created_at).toLocaleDateString()}</div></div>
-          <span className="badge tag-acc" style={{fontSize:10}}>{c.type||"—"}</span>
-          <span className="tag" style={{fontSize:10,background:c.status==="open"?"rgba(46,204,113,0.15)":"var(--s2)",color:c.status==="open"?"#1d7b44":"var(--t2)"}}>{c.status.toUpperCase()}</span>
-        </div>)}
-        {castings.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No castings yet.</div>}
-      </div>}
+      {tab==="castings"&&<>
+        <input className="input" placeholder="Search castings by title, company, location, CD email…" value={cq} onChange={e=>setCq(e.target.value)} style={{marginBottom:16}}/>
+        <p style={{color:"var(--t3)",fontSize:12,marginBottom:12}}>{fc.length} casting{fc.length===1?"":"s"} · click View to see the full listing · Close hides it from Browse · Delete permanently removes it</p>
+        <div className="card" style={{padding:0,overflow:"hidden"}}>
+          {fc.map(c=><div key={c.id} style={{padding:"14px 20px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto auto auto auto auto",gap:8,alignItems:"center",opacity:c.status==="closed"?0.55:1}}>
+            <div>
+              <div style={{fontWeight:600,fontSize:14}}>{c.title} {c.status!=="open"&&<span style={{color:"#c0392b",fontSize:10,fontWeight:700,marginLeft:6}}>{c.status.toUpperCase()}</span>}</div>
+              <div style={{fontSize:12,color:"var(--t3)"}}>{c.prod||"—"} · {c.location||"—"} · {c.roles?.length||0} role{c.roles?.length===1?"":"s"} · by <strong>{c.profiles?.display_name||c.profiles?.email||"—"}</strong> · {new Date(c.created_at).toLocaleDateString()}</div>
+            </div>
+            <span className="badge tag-acc" style={{fontSize:10}}>{c.type||"—"}</span>
+            <button className="btn-s btn-sm" onClick={()=>setViewCasting(c)}>View</button>
+            <button className="btn-s btn-sm" onClick={()=>setEditCasting(c)}>Edit</button>
+            <button className="btn-s btn-sm" onClick={()=>toggleCastingStatus(c)}>{c.status==="open"?"Close":"Reopen"}</button>
+            <button className="btn-s btn-sm" onClick={()=>deleteCasting(c)} style={{color:"#c0392b",borderColor:"#e8c6c6"}}>Delete</button>
+          </div>)}
+          {fc.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No castings match.</div>}
+        </div>
+      </>}
 
       {tab==="reports"&&<div className="card" style={{padding:0,overflow:"hidden"}}>
         {reports.map(r=><div key={r.id} style={{padding:"14px 20px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto auto",gap:12,alignItems:"center"}}>
@@ -2021,7 +2048,130 @@ function AdminPage({session,onNavigate}){
         {reports.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No reports. Clean house ✨</div>}
       </div>}
     </>}
+
+    {viewCasting&&<div className="modal-overlay" onClick={()=>setViewCasting(null)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"90vh",overflowY:"auto"}}>
+      <div className="flex-between" style={{marginBottom:16}}>
+        <h2 style={{marginBottom:0}}>{viewCasting.title}</h2>
+        <span className="tag" style={{fontSize:10,background:viewCasting.status==="open"?"rgba(46,204,113,0.15)":"var(--s2)",color:viewCasting.status==="open"?"#1d7b44":"var(--t2)"}}>{viewCasting.status.toUpperCase()}</span>
+      </div>
+      <div style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:16,fontSize:12,color:"var(--t2)",lineHeight:1.6}}>
+        <div><strong style={{color:"var(--t1)"}}>Posted by:</strong> {viewCasting.profiles?.display_name||"—"} ({viewCasting.profiles?.email||"—"}) {viewCasting.profiles?.company_name?`· ${viewCasting.profiles.company_name}`:""}</div>
+        <div><strong style={{color:"var(--t1)"}}>Created:</strong> {new Date(viewCasting.created_at).toLocaleString()}</div>
+        <div><strong style={{color:"var(--t1)"}}>ID:</strong> <code style={{fontSize:11}}>{viewCasting.id}</code></div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"10px 20px",fontSize:13,marginBottom:16}}>
+        <div><strong>Type:</strong> {viewCasting.type||"—"}</div>
+        <div><strong>Production:</strong> {viewCasting.prod||"—"}</div>
+        <div><strong>Location:</strong> {viewCasting.location||"—"}</div>
+        <div><strong>Pay:</strong> {viewCasting.pay||"—"}</div>
+        <div><strong>Union:</strong> {viewCasting.union_status||"—"}</div>
+        <div><strong>Deadline:</strong> {viewCasting.deadline||"—"}</div>
+      </div>
+      {viewCasting.tagline&&<div style={{marginBottom:12}}><div className="label">Tagline</div><p style={{fontSize:14}}>{viewCasting.tagline}</p></div>}
+      {viewCasting.synopsis&&<div style={{marginBottom:16}}><div className="label">Synopsis</div><p style={{fontSize:14,lineHeight:1.6,color:"var(--t2)",whiteSpace:"pre-wrap"}}>{viewCasting.synopsis}</p></div>}
+      <div style={{marginBottom:16}}>
+        <div className="label">Roles ({viewCasting.roles?.length||0})</div>
+        {(viewCasting.roles||[]).map((r,i)=><div key={i} style={{background:"var(--s2)",borderRadius:8,padding:12,marginTop:8,fontSize:13}}>
+          <strong>{r.name}</strong> — <span style={{color:"var(--t3)"}}>{[r.gender,r.age_range,r.ethnicity].filter(Boolean).join(" · ")}</span>
+          {r.description&&<p style={{marginTop:4,color:"var(--t2)",fontSize:12,lineHeight:1.55}}>{r.description}</p>}
+        </div>)}
+      </div>
+      <div style={{display:"flex",gap:10,marginTop:20,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
+        <button className="btn-s" onClick={()=>{setEditCasting(viewCasting);setViewCasting(null);}}>Edit</button>
+        <button className="btn-s" onClick={()=>{toggleCastingStatus(viewCasting);setViewCasting(null);}}>{viewCasting.status==="open"?"Close Listing":"Reopen Listing"}</button>
+        <button className="btn-s" onClick={()=>{deleteCasting(viewCasting);setViewCasting(null);}} style={{color:"#c0392b",borderColor:"#e8c6c6"}}>Delete</button>
+        <button className="btn-p" style={{marginLeft:"auto"}} onClick={()=>setViewCasting(null)}>Close</button>
+      </div>
+    </div></div>}
+
+    {editCasting&&<EditCastingModal casting={editCasting} onClose={()=>setEditCasting(null)} onSaved={()=>{setEditCasting(null);reload();}}/>}
+
     <Footer onNavigate={onNavigate}/></div>);
+}
+
+// ─── Admin edit-casting modal (fixes spelling, tweaks fields, edits roles)
+function EditCastingModal({casting,onClose,onSaved}){
+  const [err,setErr]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [f,setF]=useState({
+    title:casting.title||"",prod:casting.prod||"",type:casting.type||"Film",
+    location:casting.location||"",pay:casting.pay||"",union_status:casting.union_status||"Non-Union",
+    deadline:casting.deadline||"",tagline:casting.tagline||"",synopsis:casting.synopsis||""
+  });
+  const [roles,setRoles]=useState(()=>(casting.roles||[]).map(r=>({id:r.id,name:r.name||"",description:r.description||"",gender:r.gender||"Any",age_range:r.age_range||"",ethnicity:r.ethnicity||"Any"})));
+  const setField=(k,v)=>setF(p=>({...p,[k]:v}));
+  const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
+  const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any"}]);
+  const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
+  const save=async()=>{
+    setErr("");
+    if(!f.title.trim()){setErr("Title is required.");return;}
+    setBusy(true);
+    try{
+      const patch={title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,pay:f.pay||null,union_status:f.union_status||null,deadline:f.deadline||null,tagline:f.tagline||null,synopsis:f.synopsis||null};
+      const {error:cErr}=await window.sb.from("castings").update(patch).eq("id",casting.id);
+      if(cErr)throw cErr;
+      // Diff roles: update existing, insert new, delete removed
+      const originalRoleIds=new Set((casting.roles||[]).map(r=>r.id));
+      const keptRoleIds=new Set(roles.filter(r=>r.id).map(r=>r.id));
+      const toDelete=[...originalRoleIds].filter(id=>!keptRoleIds.has(id));
+      if(toDelete.length){
+        const {error:dErr}=await window.sb.from("roles").delete().in("id",toDelete);
+        if(dErr)throw dErr;
+      }
+      for(const r of roles){
+        if(!r.name.trim())continue;
+        const rp={name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:r.age_range||null,ethnicity:r.ethnicity||null};
+        if(r.id){
+          const {error:uErr}=await window.sb.from("roles").update(rp).eq("id",r.id);
+          if(uErr)throw uErr;
+        }else{
+          const {error:iErr}=await window.sb.from("roles").insert({...rp,casting_id:casting.id});
+          if(iErr)throw iErr;
+        }
+      }
+      onSaved();
+    }catch(e){setErr(e.message||"Save failed.");}finally{setBusy(false);}
+  };
+  return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"90vh",overflowY:"auto"}}>
+    <h2>Edit Casting (admin)</h2>
+    <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:20}}>Fix typos, update details, add/remove roles. The CD will see your changes next time they visit.</p>
+    {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
+    <div className="form-group"><label className="label">Project Title *</label><input className="input" value={f.title} onChange={e=>setField("title",e.target.value)}/></div>
+    <div className="form-row">
+      <div><label className="label">Production Company</label><input className="input" value={f.prod} onChange={e=>setField("prod",e.target.value)}/></div>
+      <div><label className="label">Project Type</label><select className="select" style={{width:"100%"}} value={f.type} onChange={e=>setField("type",e.target.value)}><option>Film</option><option>TV</option><option>Theater</option><option>Commercial</option><option>Modeling</option></select></div>
+    </div>
+    <div className="form-row">
+      <div><label className="label">Location</label><input className="input" value={f.location} onChange={e=>setField("location",e.target.value)}/></div>
+      <div><label className="label">Pay / Rate</label><input className="input" value={f.pay} onChange={e=>setField("pay",e.target.value)}/></div>
+    </div>
+    <div className="form-row">
+      <div><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union_status} onChange={e=>setField("union_status",e.target.value)}><option>SAG-AFTRA</option><option>AEA</option><option>Non-Union</option><option>SAG-AFTRA / Non-Union</option></select></div>
+      <div><label className="label">Deadline</label><input className="input" type="date" value={f.deadline||""} onChange={e=>setField("deadline",e.target.value)}/></div>
+    </div>
+    <div className="form-group"><label className="label">Tagline</label><input className="input" value={f.tagline} onChange={e=>setField("tagline",e.target.value)}/></div>
+    <div className="form-group"><label className="label">Synopsis</label><textarea className="textarea" value={f.synopsis} onChange={e=>setField("synopsis",e.target.value)}></textarea></div>
+
+    <div style={{borderTop:"1px solid var(--bdr)",paddingTop:20,marginTop:12}}>
+      <div className="flex-between" style={{marginBottom:12}}><h3 style={{fontSize:16,fontWeight:700}}>Roles</h3><button className="btn-s btn-sm" onClick={addRole} type="button">+ Add Role</button></div>
+      {roles.map((r,i)=><div key={r.id||`new-${i}`} style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:12}}>
+        <div className="flex-between" style={{marginBottom:10}}><strong style={{fontSize:13}}>Role {i+1} {r.id?"":<span style={{color:"var(--acc)",fontSize:11}}>(new)</span>}</strong><button onClick={()=>removeRole(i)} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12}}>✕ Remove</button></div>
+        <div className="form-group" style={{marginBottom:10}}><label className="label">Role Name *</label><input className="input" value={r.name} onChange={e=>setRole(i,"name",e.target.value)}/></div>
+        <div className="form-row">
+          <div><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={r.gender} onChange={e=>setRole(i,"gender",e.target.value)}><option>Any</option><option>Male</option><option>Female</option><option>Non-Binary</option></select></div>
+          <div><label className="label">Age Range</label><input className="input" value={r.age_range} onChange={e=>setRole(i,"age_range",e.target.value)}/></div>
+        </div>
+        <div className="form-group" style={{marginTop:10,marginBottom:0}}><label className="label">Ethnicity</label><input className="input" value={r.ethnicity} onChange={e=>setRole(i,"ethnicity",e.target.value)}/></div>
+        <div className="form-group" style={{marginTop:10,marginBottom:0}}><label className="label">Role Description</label><textarea className="textarea" value={r.description} onChange={e=>setRole(i,"description",e.target.value)}/></div>
+      </div>)}
+    </div>
+
+    <div style={{display:"flex",gap:12,marginTop:24,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
+      <button className="btn-p" style={{flex:1}} onClick={save} disabled={busy}>{busy?"Saving…":"Save Changes"}</button>
+      <button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
+    </div>
+  </div></div>);
 }
 
 // ═══════════════════════════════════════════
