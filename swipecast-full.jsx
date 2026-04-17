@@ -331,6 +331,10 @@ function Footer({onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE: REGISTER TALENT (3-step form)
 // ═══════════════════════════════════════════
+// Stripe Payment Links — replace these with your real Stripe links once your account is set up
+const STRIPE_ACTOR_LINK = null;  // e.g. "https://buy.stripe.com/your_actor_link"
+const STRIPE_CD_LINK    = null;  // e.g. "https://buy.stripe.com/your_cd_link"
+
 function RegisterTalent({onNavigate}){
   const [step,setStep]=useState(1);
   const [done,setDone]=useState(false);
@@ -340,79 +344,81 @@ function RegisterTalent({onNavigate}){
   const up=(k,v)=>setF(x=>({...x,[k]:v}));
   const toggleType=t=>setF(x=>({...x,types:x.types.includes(t)?x.types.filter(y=>y!==t):[...x.types,t]}));
   const validStep1=()=>{if(!f.first||!f.last){setErr("Please enter your first and last name.");return false;}if(!f.email||!f.email.includes("@")){setErr("Please enter a valid email address.");return false;}if(!f.password||f.password.length<8){setErr("Password must be at least 8 characters.");return false;}if(!f.location){setErr("Please enter your location.");return false;}setErr("");return true;};
-  const submit=async()=>{
+  const createAccount=async()=>{
     if(!f.agree){setErr("Please agree to the Terms of Service and Privacy Policy.");return;}
     setErr("");setLoading(true);
     try{
       const display_name=(f.first+" "+f.last).trim();
       const {data,error}=await window.sb.auth.signUp({
-        email:f.email.trim().toLowerCase(),
-        password:f.password,
-        options:{
-          emailRedirectTo:window.location.origin,
-          data:{user_type:"talent",display_name}
-        }
+        email:f.email.trim().toLowerCase(),password:f.password,
+        options:{emailRedirectTo:window.location.origin,data:{user_type:"talent",display_name}}
       });
       if(error)throw error;
-      // Update the auto-created profile row with the rest
       if(data.user){
-        const patch={
-          display_name,
-          user_type:"talent",
-          location:f.location,
-          gender:f.gender||null,
-          age:f.age?parseInt(f.age):null,
-          height:f.height||null,
-          weight:f.weight||null,
-          hair:f.hair||null,
-          eyes:f.eyes||null,
-          ethnicity:f.ethnicity||null,
-          union_status:f.union_status,
-          bio:f.bio||null,
-          training:f.training||null,
+        await window.sb.from("profiles").update({
+          display_name,user_type:"talent",location:f.location,gender:f.gender||null,
+          age:f.age?parseInt(f.age):null,height:f.height||null,weight:f.weight||null,
+          hair:f.hair||null,eyes:f.eyes||null,ethnicity:f.ethnicity||null,
+          union_status:f.union_status,bio:f.bio||null,training:f.training||null,
           skills:f.skills?f.skills.split(",").map(s=>s.trim()).filter(Boolean):[],
-          agent:f.agent||null,
-          onboarded:true
-        };
-        await window.sb.from("profiles").update(patch).eq("id",data.user.id);
+          agent:f.agent||null,onboarded:true
+        }).eq("id",data.user.id);
       }
-      setDone(true);
-    }catch(e){
-      setErr(e.message||"Something went wrong. Please try again.");
-    }finally{setLoading(false);}
+      setStep(4); // go to payment step
+    }catch(e){setErr(e.message||"Something went wrong. Please try again.");}
+    finally{setLoading(false);}
   };
-  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We just sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:24,color:"var(--t2)",fontSize:14}}>Click the link in that email to activate your account. Then you can log in and start submitting to castings.</p><div style={{display:"flex",gap:12,justifyContent:"center"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
+  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:24,color:"var(--t2)",fontSize:14}}>Click the link in that email, then log in and start submitting to castings.</p><div style={{display:"flex",gap:12,justifyContent:"center"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
   return(
     <div className="page"><div style={{maxWidth:640,margin:"0 auto"}}>
       <div className="section-label">Join SwipeCast</div>
       <h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:8}}>Create Your Talent Profile</h1>
-      <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>100% free. No credit card. No hidden fees. Ever. Already have an account? <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>Log in</span></p>
-      <div style={{display:"flex",gap:8,marginBottom:32}}>{[1,2,3].map(s=><div key={s} style={{flex:1,height:4,borderRadius:2,background:s<=step?"var(--acc)":"var(--s3)",transition:"background .3s"}}/>)}</div>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>$9.99/month after your free 7-day trial. Cancel anytime. Already have an account? <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>Log in</span></p>
+      <div style={{display:"flex",gap:8,marginBottom:32}}>{[1,2,3,4].map(s=><div key={s} style={{flex:1,height:4,borderRadius:2,background:s<=step?"var(--acc)":"var(--s3)",transition:"background .3s"}}/>)}</div>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
 
-      {step===1&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>Step 1: Account Info</h3>
+      {step===1&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>Step 1 of 4 — Account</h3>
         <div className="form-row"><div className="form-group"><label className="label">First Name</label><input className="input" placeholder="First name" value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">Last Name</label><input className="input" placeholder="Last name" value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
         <div className="form-group"><label className="label">Email Address</label><input className="input" type="email" placeholder="you@email.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
         <div className="form-group"><label className="label">Password</label><input className="input" type="password" placeholder="Create a password (8+ characters)" value={f.password} onChange={e=>up("password",e.target.value)}/></div>
         <div className="form-group"><label className="label">Location</label><input className="input" placeholder="City, State (e.g. New York, NY)" value={f.location} onChange={e=>up("location",e.target.value)}/></div>
         <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={()=>{if(validStep1())setStep(2);}}>Continue →</button></>}
 
-      {step===2&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>Step 2: Physical Stats & Details</h3>
+      {step===2&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>Step 2 of 4 — Physical Stats</h3>
         <div className="form-row"><div className="form-group"><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={f.gender} onChange={e=>up("gender",e.target.value)}><option value="">Select</option><option>Female</option><option>Male</option><option>Non-Binary</option><option>Other</option></select></div><div className="form-group"><label className="label">Age</label><input className="input" type="number" placeholder="Age" value={f.age} onChange={e=>up("age",e.target.value)}/></div></div>
-        <div className="form-row"><div className="form-group"><label className="label">Height</label><input className="input" placeholder={'e.g. 5\'8"'} value={f.height} onChange={e=>up("height",e.target.value)}/></div><div className="form-group"><label className="label">Weight</label><input className="input" placeholder="e.g. 150 lbs" value={f.weight} onChange={e=>up("weight",e.target.value)}/></div></div>
+        <div className="form-row"><div className="form-group"><label className="label">Height</label><input className="input" placeholder={'5\'8"'} value={f.height} onChange={e=>up("height",e.target.value)}/></div><div className="form-group"><label className="label">Weight</label><input className="input" placeholder="150 lbs" value={f.weight} onChange={e=>up("weight",e.target.value)}/></div></div>
         <div className="form-row"><div className="form-group"><label className="label">Hair Color</label><input className="input" placeholder="e.g. Dark Brown" value={f.hair} onChange={e=>up("hair",e.target.value)}/></div><div className="form-group"><label className="label">Eye Color</label><input className="input" placeholder="e.g. Brown" value={f.eyes} onChange={e=>up("eyes",e.target.value)}/></div></div>
         <div className="form-row"><div className="form-group"><label className="label">Ethnicity</label><input className="input" placeholder="e.g. Latina, Black, Asian" value={f.ethnicity} onChange={e=>up("ethnicity",e.target.value)}/></div><div className="form-group"><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union_status} onChange={e=>up("union_status",e.target.value)}><option>Non-Union</option><option>SAG-AFTRA</option><option>AEA</option><option>SAG-AFTRA / AEA</option><option>ACTRA</option></select></div></div>
         <div className="form-group"><label className="label">Talent Type (select all that apply)</label><div style={{display:"flex",gap:16,flexWrap:"wrap",marginTop:6}}>{["Film","TV","Theater","Commercial","Modeling","Voiceover"].map(t=><label key={t} className="checkbox-row"><input type="checkbox" checked={f.types.includes(t)} onChange={()=>toggleType(t)}/>{t}</label>)}</div></div>
         <div style={{display:"flex",gap:12,marginTop:8}}><button className="btn-s" onClick={()=>setStep(1)}>← Back</button><button className="btn-p" style={{flex:1}} onClick={()=>setStep(3)}>Continue →</button></div></>}
 
-      {step===3&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>Step 3: Your Craft</h3>
-        <div className="form-group"><label className="label">Bio / About</label><textarea className="textarea" placeholder="Tell casting directors about yourself..." style={{minHeight:120}} value={f.bio} onChange={e=>up("bio",e.target.value)}></textarea></div>
-        <div className="form-group"><label className="label">Training</label><input className="input" placeholder="e.g. BFA Acting, NYU Tisch" value={f.training} onChange={e=>up("training",e.target.value)}/></div>
-        <div className="form-group"><label className="label">Special Skills</label><input className="input" placeholder="e.g. Stage Combat, Fluent Spanish (comma separated)" value={f.skills} onChange={e=>up("skills",e.target.value)}/></div>
-        <div className="form-group"><label className="label">Agent / Manager (optional)</label><input className="input" placeholder="Representation or 'Unrepresented'" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
-        <div style={{background:"var(--s2)",borderRadius:10,padding:14,fontSize:12,color:"var(--t2)",marginTop:4}}>📸 You'll be able to upload your headshot and demo reel on your profile page after you verify your email.</div>
+      {step===3&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>Step 3 of 4 — Your Craft</h3>
+        <div className="form-group"><label className="label">Bio / About</label><textarea className="textarea" placeholder="Tell casting directors about yourself, your experience, and what makes you unique..." style={{minHeight:120}} value={f.bio} onChange={e=>up("bio",e.target.value)}></textarea></div>
+        <div className="form-group"><label className="label">Training</label><input className="input" placeholder="e.g. BFA Acting, NYU Tisch · Meisner Technique" value={f.training} onChange={e=>up("training",e.target.value)}/></div>
+        <div className="form-group"><label className="label">Special Skills (comma separated)</label><input className="input" placeholder="e.g. Stage Combat, Fluent Spanish, Horseback Riding" value={f.skills} onChange={e=>up("skills",e.target.value)}/></div>
+        <div className="form-group"><label className="label">Agent / Manager (optional)</label><input className="input" placeholder="Agency name, or 'Seeking Representation'" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
         <label className="checkbox-row" style={{marginTop:12}}><input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)}/> I agree to SwipeCast's Terms of Service and Privacy Policy</label>
-        <div style={{display:"flex",gap:12,marginTop:8}}><button className="btn-s" onClick={()=>setStep(2)} disabled={loading}>← Back</button><button className="btn-p" style={{flex:1}} onClick={submit} disabled={loading}>{loading?"Creating your profile…":"Create My Profile — Free"}</button></div></>}
+        <div style={{display:"flex",gap:12,marginTop:12}}><button className="btn-s" onClick={()=>setStep(2)} disabled={loading}>← Back</button><button className="btn-p" style={{flex:1}} onClick={createAccount} disabled={loading}>{loading?"Creating profile…":"Continue to Payment →"}</button></div></>}
+
+      {step===4&&<>
+        <h3 style={{fontSize:18,fontWeight:700,marginBottom:6}}>Step 4 of 4 — Subscribe</h3>
+        <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Your profile has been created. Complete your subscription to unlock submissions and casting access.</p>
+        <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:12,padding:24,marginBottom:20}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+            <div><div style={{fontWeight:700,fontSize:16}}>SwipeCast Talent Membership</div><div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>Monthly subscription · Cancel anytime</div></div>
+            <div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:32,color:"var(--acc)"}}>$9.99<span style={{fontSize:14,color:"var(--t2)",fontWeight:400}}>/mo</span></div>
+          </div>
+          {["Submit to unlimited castings","Every submission reviewed by CD","Upload headshots, reel, photos, video links","Direct messages from casting directors","Priority placement in talent search","Cancel anytime, no penalties"].map(f=><div key={f} style={{display:"flex",gap:8,alignItems:"center",padding:"6px 0",fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}</div>)}
+        </div>
+        {STRIPE_ACTOR_LINK
+          ?<a href={`${STRIPE_ACTOR_LINK}?prefilled_email=${encodeURIComponent(f.email)}&client_reference_id=${f.email}`} style={{display:"block",width:"100%",textAlign:"center",padding:"16px",background:"var(--acc)",color:"#fff",borderRadius:10,fontWeight:700,fontSize:15,textDecoration:"none"}}>Pay $9.99/month with Stripe →</a>
+          :<div style={{background:"rgba(26,26,46,0.04)",border:"1px dashed var(--bdr)",borderRadius:10,padding:20,textAlign:"center"}}>
+            <div style={{fontWeight:700,marginBottom:8}}>Payment coming very soon</div>
+            <p style={{fontSize:13,color:"var(--t2)",marginBottom:16}}>Your profile is created and reserved. We're finalising our Stripe integration — you'll receive an email with the payment link within 24 hours.</p>
+            <button className="btn-p" onClick={()=>setDone(true)}>Go to Login →</button>
+          </div>}
+        <p style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginTop:12}}>Secure payment via Stripe. Your card details are never stored by SwipeCast.</p>
+      </>}
     </div><Footer onNavigate={onNavigate}/></div>
   );
 }
@@ -977,17 +983,27 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth})
   const [submitting,setSubmitting]=useState(false);
   const [applyErr,setApplyErr]=useState("");
   const [realRoleIds,setRealRoleIds]=useState({}); // maps role index -> real DB role id (for DB-backed castings)
+  const [myPhotos,setMyPhotos]=useState([]);   // list of actor's photo URLs (headshot first, then gallery)
+  const [selectedPhoto,setSelectedPhoto]=useState("");
   const c=casting;
   const isDbCasting=!!(c&&c.id&&typeof c.id==="string"&&c.id.length>20); // UUID check
-  const handleApply=(r,i)=>{if(isLoggedIn){setApplyRole({...r,idx:i});setCoverNote("");setApplyErr("");}else{onRequireAuth&&onRequireAuth(c,{...r,idx:i});}};
+  const handleApply=(r,i)=>{if(isLoggedIn){setApplyRole({...r,idx:i});setCoverNote("");setApplyErr("");setSelectedPhoto(myPhotos[0]||"");}else{onRequireAuth&&onRequireAuth(c,{...r,idx:i});}};
   useEffect(()=>{(async()=>{
     if(!isLoggedIn||!c)return;
+    // load the actor's photos for the picker
+    const {data:{session:s}}=await window.sb.auth.getSession();
+    if(s?.user){
+      const {data:prof}=await window.sb.from("profiles").select("headshot_url,additional_photos").eq("id",s.user.id).maybeSingle();
+      const list=[];
+      if(prof?.headshot_url)list.push(prof.headshot_url);
+      (prof?.additional_photos||[]).forEach(u=>{if(u&&!list.includes(u))list.push(u);});
+      setMyPhotos(list);
+    }
     // if casting is DB-backed, fetch real role ids & already-applied
     if(isDbCasting){
       const {data:roles}=await window.sb.from("roles").select("id,name").eq("casting_id",c.id);
       const map={};(roles||[]).forEach((r,idx)=>{map[idx]=r.id;});
       setRealRoleIds(map);
-      const {data:{session:s}}=await window.sb.auth.getSession();
       if(s?.user){
         const {data:apps}=await window.sb.from("applications").select("role_id").eq("talent_id",s.user.id).eq("casting_id",c.id);
         const appliedIdx=new Set();
@@ -1008,7 +1024,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth})
       }
       const roleId=realRoleIds[applyRole.idx];
       if(!roleId)throw new Error("Role not found.");
-      const {error}=await window.sb.from("applications").insert({role_id:roleId,casting_id:c.id,talent_id:s.user.id,cover_note:coverNote||null});
+      const {error}=await window.sb.from("applications").insert({role_id:roleId,casting_id:c.id,talent_id:s.user.id,cover_note:coverNote||null,selected_photo_url:selectedPhoto||null});
       if(error)throw error;
       setApplied(p=>new Set([...p,applyRole.idx]));
       setApplyRole(null);
@@ -1082,15 +1098,27 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth})
       <button className="btn-s btn-sm" onClick={onBack}>← Back to All Castings</button>
     </section>
 
-    {applyRole&&<div className="modal-overlay" onClick={()=>!submitting&&setApplyRole(null)}><div className="modal" onClick={e=>e.stopPropagation()}>
+    {applyRole&&<div className="modal-overlay" onClick={()=>!submitting&&setApplyRole(null)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:560}}>
       <h2>Submit for Role</h2>
       <div style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:20}}>
         <h4 style={{fontSize:14,fontWeight:700}}>{applyRole.name}</h4>
         <p style={{color:"var(--t2)",fontSize:12,marginTop:2}}>{c.title} · {c.prod}</p>
       </div>
       {applyErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{applyErr}</div>}
+      <div className="form-group">
+        <label className="label">Choose the photo to submit</label>
+        {myPhotos.length===0?
+          <div style={{background:"var(--s2)",border:"1px dashed var(--bdr)",borderRadius:10,padding:18,fontSize:13,color:"var(--t3)",textAlign:"center"}}>No photos yet. Upload a headshot from your profile first — it'll go to the casting director with your submission.</div>:
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(88px,1fr))",gap:8}}>
+            {myPhotos.map((u,i)=>
+              <div key={i} onClick={()=>setSelectedPhoto(u)} style={{cursor:"pointer",position:"relative",aspectRatio:"4/5",borderRadius:8,overflow:"hidden",border:selectedPhoto===u?"3px solid var(--acc)":"3px solid transparent",transition:"all .15s"}}>
+                <img src={u} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                {selectedPhoto===u&&<div style={{position:"absolute",top:4,right:4,background:"var(--acc)",color:"#fff",width:20,height:20,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800}}>✓</div>}
+              </div>)}
+          </div>}
+      </div>
       <div className="form-group"><label className="label">Cover Note (Optional)</label><textarea className="textarea" placeholder="Tell the casting director why you're right for this role..." value={coverNote} onChange={e=>setCoverNote(e.target.value)}></textarea></div>
-      <p style={{fontSize:12,color:"var(--t3)",marginTop:-4,marginBottom:16}}>The casting director will see your full profile — headshot, reel, bio, and credits — along with this note.</p>
+      <p style={{fontSize:12,color:"var(--t3)",marginTop:-4,marginBottom:16}}>The casting director will see the photo you picked plus your full profile — reel, bio, credits — with this note.</p>
       <div style={{display:"flex",gap:12,marginTop:24}}><button className="btn-p" style={{flex:1}} onClick={submitApp} disabled={submitting}>{submitting?"Submitting…":"Submit Application"}</button><button className="btn-s" onClick={()=>setApplyRole(null)} disabled={submitting}>Cancel</button></div>
     </div></div>}
 
@@ -1369,7 +1397,9 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
 // ═══════════════════════════════════════════
 function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
   const [active,setActive]=useState(null);        // casting currently being reviewed
-  const [submissions,setSubmissions]=useState([]);// applications for `active` casting
+  const [activeRole,setActiveRole]=useState(null);// role within the casting we're swiping
+  const [roleCounts,setRoleCounts]=useState({}); // role_id -> count
+  const [submissions,setSubmissions]=useState([]);// applications for `activeRole`
   const [si,setSi]=useState(0);
   const [tab,setTab]=useState("castings");
   const [showNew,setShowNew]=useState(false);
@@ -1378,6 +1408,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
   const [stats,setStats]=useState({totalSubs:0,callbacks:0,reviewed:0});
   const [reloadTick,setReloadTick]=useState(0);
   const [allCallbacks,setAllCallbacks]=useState([]);
+  const [msgApp,setMsgApp]=useState(null);        // application we're messaging about
 
   const uid=session?.user?.id;
   // ─── Load this CD's castings + aggregate stats
@@ -1389,7 +1420,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
     const ids=castings.map(c=>c.id);
     let counts={};let totalSubs=0;let callbacks=0;let reviewed=0;let allCb=[];
     if(ids.length){
-      const {data:apps}=await window.sb.from("applications").select("id,casting_id,status,talent_id,profiles!inner(id,display_name,headshot_url,age,gender,location,skills,union_status)").in("casting_id",ids);
+      const {data:apps}=await window.sb.from("applications").select("id,casting_id,role_id,status,talent_id,cover_note,selected_photo_url,profiles!inner(id,display_name,headshot_url,age,gender,location,skills,union_status),roles(id,name)").in("casting_id",ids);
       (apps||[]).forEach(a=>{
         counts[a.casting_id]=(counts[a.casting_id]||0)+1;
         totalSubs++;
@@ -1403,10 +1434,19 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
     setLoading(false);
   })();},[uid,reloadTick]);
 
-  // ─── Load submissions for one casting (for review-swipe)
+  // ─── Open a casting for review — load per-role submission counts
   const openReview=async(casting)=>{
-    setActive(casting);setSi(0);
-    const {data}=await window.sb.from("applications").select("*,profiles!inner(id,display_name,headshot_url,age,gender,location,ethnicity,skills,union_status,bio,height,reel_url),roles(id,name)").eq("casting_id",casting.id).order("created_at",{ascending:false});
+    setActive(casting);setActiveRole(null);setSi(0);
+    const roleIds=(casting.roles||[]).map(r=>r.id);
+    if(!roleIds.length){setRoleCounts({});return;}
+    const {data}=await window.sb.from("applications").select("role_id").eq("casting_id",casting.id);
+    const counts={};(data||[]).forEach(a=>{counts[a.role_id]=(counts[a.role_id]||0)+1;});
+    setRoleCounts(counts);
+  };
+  // ─── Open a specific role → tinder swipe only this role's submissions
+  const openRole=async(role)=>{
+    setActiveRole(role);setSi(0);
+    const {data}=await window.sb.from("applications").select("*,profiles!inner(id,display_name,headshot_url,age,gender,location,ethnicity,skills,union_status,bio,height,reel_url,additional_photos),roles(id,name)").eq("role_id",role.id).order("created_at",{ascending:false});
     setSubmissions(data||[]);
   };
 
@@ -1428,9 +1468,9 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
     const app=submissions[si];const nextApp=submissions[(si+1)%Math.max(submissions.length,1)];
     if(!app)return null;
     const t=app.profiles;const nt=nextApp?.profiles||t;const ac=dx>60?"yes":dx<-60?"pass":null;
-    const img=t.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=No+Headshot";
-    const nimg=nt.headshot_url||img;
-    return(<><div className="sw-counter">{si+1} of {submissions.length} submissions · Role: {app.roles?.name||"—"}</div>
+    const img=app.selected_photo_url||t.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=No+Headshot";
+    const nimg=nextApp?.selected_photo_url||nt.headshot_url||img;
+    return(<><div className="sw-counter">{si+1} of {submissions.length} · Role: {app.roles?.name||activeRole?.name||"—"}</div>
       <div className="swipe-card-wrap">
         <div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.4,zIndex:1}}><img src={nimg} alt=""/><div className="s-card-info"><h3>{nt.display_name}</h3></div></div>
         <div className="s-card" style={{transform:`translateX(${dx}px) rotate(${dx*.04}deg)`,transition:dr?"none":"transform .4s cubic-bezier(.34,1.56,.64,1)",zIndex:2,cursor:dr?"grabbing":"grab"}} onPointerDown={e=>{setDr(true);sx.current=e.clientX;}} onPointerMove={e=>{if(dr)setDx(e.clientX-sx.current);}} onPointerUp={()=>{setDr(false);if(dx>100)doSwipe("yes");else if(dx<-100)doSwipe("pass");else setDx(0);}}>
@@ -1450,6 +1490,8 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
   if(!uid)return(<div className="page page-wide"><p>Not logged in.</p></div>);
   if(loading)return(<div className="page page-wide"><p style={{color:"var(--t2)"}}>Loading your dashboard…</p></div>);
 
+  const callbackSubs=submissions.filter(s=>s.status==="callback");
+
   return(<div className="page page-wide">
     <div className="flex-between mb-20">
       <div>
@@ -1465,26 +1507,49 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
       <div className="dash-stat"><div className="dash-stat-num">{stats.reviewed}</div><div className="dash-stat-label">Reviewed</div></div>
     </div>
 
-    {active?<>
-      <button className="btn-s btn-sm mb-20" onClick={()=>{setActive(null);setSi(0);setReloadTick(t=>t+1);}}>← Back to Castings</button>
-      <div style={{marginBottom:16}}><h3 style={{fontSize:20,fontWeight:800}}>Reviewing: {active.title}</h3><p style={{color:"var(--t2)",fontSize:13}}>{submissions.length} {submissions.length===1?"submission":"submissions"} · swipe to callback or pass</p></div>
-      {submissions.length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No submissions yet. Share your casting link to get actors applying.</p></div>:
-      si>=submissions.length?<div className="success-msg"><div className="check">✓</div><h3>All Submissions Reviewed</h3><p>{submissions.filter(s=>s.status==="callback").length} callbacks out of {submissions.length}.</p><button className="btn-s mt-20" onClick={()=>{setActive(null);setReloadTick(t=>t+1);}}>Back to Castings</button></div>:
+    {active&&activeRole?<>
+      {/* ─── Per-role tinder swipe ─── */}
+      <button className="btn-s btn-sm mb-20" onClick={()=>{setActiveRole(null);setSi(0);setReloadTick(t=>t+1);openReview(active);}}>← Back to Roles</button>
+      <div style={{marginBottom:16}}><h3 style={{fontSize:20,fontWeight:800}}>{active.title} · {activeRole.name}</h3><p style={{color:"var(--t2)",fontSize:13}}>{submissions.length} {submissions.length===1?"submission":"submissions"} for this role · swipe to callback or pass</p></div>
+      {submissions.length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No submissions for this role yet.</p></div>:
+      si>=submissions.length?<div className="success-msg"><div className="check">✓</div><h3>All Submissions Reviewed</h3><p>{callbackSubs.length} callbacks out of {submissions.length}.</p><button className="btn-s mt-20" onClick={()=>{setActiveRole(null);openReview(active);}}>Back to Roles</button></div>:
       <div className="swipe-layout">
         <div className="swipe-area">
           <SwipeUI key={si}/>
           <div className="swipe-btns">
             <button className="sw-btn pass" onClick={()=>doSwipe("pass")}>✕</button>
-            <button className="sw-btn save" onClick={()=>submissions[si]&&onViewProfile({name:submissions[si].profiles.display_name,img:submissions[si].profiles.headshot_url,age:submissions[si].profiles.age||"",gender:submissions[si].profiles.gender||"",location:submissions[si].profiles.location||"",skills:submissions[si].profiles.skills||[],bio:submissions[si].profiles.bio||"",credits:[],union:submissions[si].profiles.union_status||"",height:submissions[si].profiles.height||"",training:"",ethnicity:submissions[si].profiles.ethnicity||""})}>👤</button>
+            <button className="sw-btn save" onClick={()=>submissions[si]&&onViewProfile({name:submissions[si].profiles.display_name,img:submissions[si].selected_photo_url||submissions[si].profiles.headshot_url,age:submissions[si].profiles.age||"",gender:submissions[si].profiles.gender||"",location:submissions[si].profiles.location||"",skills:submissions[si].profiles.skills||[],bio:submissions[si].profiles.bio||"",credits:[],union:submissions[si].profiles.union_status||"",height:submissions[si].profiles.height||"",training:"",ethnicity:submissions[si].profiles.ethnicity||""})}>👤</button>
             <button className="sw-btn yes" onClick={()=>doSwipe("yes")}>✓</button>
           </div>
         </div>
         <div className="cb-sidebar">
-          <h3>Callbacks <span className="tag tag-grn">{submissions.filter(s=>s.status==="callback").length}</span></h3>
-          {submissions.filter(s=>s.status==="callback").length===0?<div className="cb-empty">Swipe right on talent to add them to your callback list</div>:
-          submissions.filter(s=>s.status==="callback").map((a,i)=><div key={i} className="cb-item" onClick={()=>onViewProfile({name:a.profiles.display_name,img:a.profiles.headshot_url||"",age:a.profiles.age||"",gender:a.profiles.gender||"",location:a.profiles.location||"",skills:a.profiles.skills||[],bio:a.profiles.bio||"",credits:[],union:a.profiles.union_status||"",height:a.profiles.height||"",training:"",ethnicity:a.profiles.ethnicity||""})}><img src={a.profiles.headshot_url||"https://placehold.co/80x100/e5e5e5/999?text=?"} alt={a.profiles.display_name}/><div className="cb-item-info"><h4>{a.profiles.display_name}</h4><p>{[a.profiles.age,a.profiles.gender,a.profiles.location].filter(Boolean).join(" · ")}</p></div></div>)}
+          <h3>Callbacks <span className="tag tag-grn">{callbackSubs.length}</span></h3>
+          {callbackSubs.length===0?<div className="cb-empty">Swipe right on talent to add them to your callback list</div>:
+          callbackSubs.map((a,i)=>
+            <div key={i} className="cb-item" style={{flexDirection:"column",alignItems:"stretch"}}>
+              <div style={{display:"flex",gap:10,alignItems:"center",cursor:"pointer"}} onClick={()=>onViewProfile({name:a.profiles.display_name,img:a.selected_photo_url||a.profiles.headshot_url||"",age:a.profiles.age||"",gender:a.profiles.gender||"",location:a.profiles.location||"",skills:a.profiles.skills||[],bio:a.profiles.bio||"",credits:[],union:a.profiles.union_status||"",height:a.profiles.height||"",training:"",ethnicity:a.profiles.ethnicity||""})}>
+                <img src={a.selected_photo_url||a.profiles.headshot_url||"https://placehold.co/80x100/e5e5e5/999?text=?"} alt={a.profiles.display_name} style={{width:52,height:66,objectFit:"cover",borderRadius:6}}/>
+                <div className="cb-item-info" style={{flex:1}}><h4>{a.profiles.display_name}</h4><p>{[a.profiles.age,a.profiles.gender,a.profiles.location].filter(Boolean).join(" · ")}</p></div>
+              </div>
+              <div style={{display:"flex",gap:6,marginTop:8}}>
+                <button className="btn-p btn-sm" style={{flex:1,fontSize:11,padding:"6px 10px"}} onClick={()=>setMsgApp(a)}>💬 Message</button>
+              </div>
+            </div>)}
         </div>
       </div>}
+    </>:active?<>
+      {/* ─── Casting → roles list ─── */}
+      <button className="btn-s btn-sm mb-20" onClick={()=>{setActive(null);setReloadTick(t=>t+1);}}>← Back to Castings</button>
+      <div style={{marginBottom:16}}><h3 style={{fontSize:22,fontWeight:800}}>{active.title}</h3><p style={{color:"var(--t2)",fontSize:13}}>{active.prod||"—"} · {active.location||"—"} · Pick a role to review its submissions</p></div>
+      {(active.roles||[]).length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No roles in this casting.</p></div>:
+      <div className="card-flat">{active.roles.map(r=>
+        <div key={r.id} className="casting-row" onClick={()=>openRole(r)}>
+          <div className="casting-row-left"><h4>{r.name}</h4><p>Role in {active.title}</p></div>
+          <div className="casting-row-right">
+            <div style={{textAlign:"right"}}><div className="sub-count">{roleCounts[r.id]||0}</div><div style={{fontSize:10,color:"var(--t3)"}}>submissions</div></div>
+            <span style={{color:"var(--acc)",fontSize:18}}>→</span>
+          </div>
+        </div>)}</div>}
     </>:<>
       <div className="tabs">
         <button className={`tab ${tab==="castings"?"active":""}`} onClick={()=>setTab("castings")}>My Castings</button>
@@ -1497,7 +1562,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
         </div>:
         <div className="card-flat">{myCastings.map(c=>
           <div key={c.id} className="casting-row" onClick={()=>openReview(c)}>
-            <div className="casting-row-left"><h4>{c.title}</h4><p>{c.prod||"—"} · {c.location||"—"} · Deadline {c.deadline||"—"}</p></div>
+            <div className="casting-row-left"><h4>{c.title}</h4><p>{c.prod||"—"} · {c.location||"—"} · {(c.roles||[]).length} role{(c.roles||[]).length===1?"":"s"} · Deadline {c.deadline||"—"}</p></div>
             <div className="casting-row-right">
               <span className="badge tag-acc">{c.type||"Film"}</span>
               <div style={{textAlign:"right"}}><div className="sub-count">{c._count}</div><div style={{fontSize:10,color:"var(--t3)"}}>submissions</div></div>
@@ -1505,12 +1570,65 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
             </div>
           </div>)}</div>:
         allCallbacks.length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No callbacks yet. Review submissions to build your list.</p></div>:
-        <div className="results-grid">{allCallbacks.map((t,i)=><div key={i} className="talent-thumb" onClick={()=>onViewProfile({name:t.display_name,img:t.headshot_url||"",age:t.age||"",gender:t.gender||"",location:t.location||"",skills:t.skills||[],bio:"",credits:[],union:t.union_status||"",height:"",training:"",ethnicity:""})}><img src={t.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?"} alt={t.display_name}/><div className="talent-thumb-info"><h4>{t.display_name}</h4><p>{[t.age,t.location].filter(Boolean).join(" · ")}</p></div></div>)}</div>}
+        <div className="results-grid">{allCallbacks.map((t,i)=><div key={i} className="talent-thumb" onClick={()=>onViewProfile({name:t.display_name,img:t._app.selected_photo_url||t.headshot_url||"",age:t.age||"",gender:t.gender||"",location:t.location||"",skills:t.skills||[],bio:"",credits:[],union:t.union_status||"",height:"",training:"",ethnicity:""})}><img src={t._app.selected_photo_url||t.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?"} alt={t.display_name}/><div className="talent-thumb-info"><h4>{t.display_name}</h4><p>{[t.age,t.location].filter(Boolean).join(" · ")}</p></div></div>)}</div>}
     </>}
 
     {showNew&&<NewCastingModal onClose={()=>setShowNew(false)} onPosted={()=>{setShowNew(false);setReloadTick(t=>t+1);}} uid={uid}/>}
+    {msgApp&&<MessageModal app={msgApp} fromId={uid} castingTitle={active?.title||""} onClose={()=>setMsgApp(null)} onSent={()=>setMsgApp(null)}/>}
 
     <Footer onNavigate={onNavigate}/></div>);
+}
+
+// ─── Message + Audition modal (CD → actor)
+function MessageModal({app,fromId,castingTitle,onClose,onSent}){
+  const [body,setBody]=useState("");
+  const [auditionAt,setAuditionAt]=useState(""); // datetime-local
+  const [auditionNote,setAuditionNote]=useState("");
+  const [err,setErr]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [sent,setSent]=useState(false);
+  const t=app.profiles;
+  const send=async()=>{
+    setErr("");
+    if(!body.trim()&&!auditionAt){setErr("Write a message or schedule an audition.");return;}
+    setBusy(true);
+    try{
+      // compose full message body — include audition info inline if scheduled
+      let full=body.trim();
+      if(auditionAt){
+        const d=new Date(auditionAt);
+        full=(full?full+"\n\n":"")+"📅 Audition scheduled: "+d.toLocaleString()+(auditionNote?"\n"+auditionNote:"");
+      }
+      if(full){
+        const {error}=await window.sb.from("messages").insert({from_id:fromId,to_id:app.talent_id,application_id:app.id,body:full});
+        if(error)throw error;
+      }
+      if(auditionAt){
+        const {error:e2}=await window.sb.from("applications").update({audition_at:new Date(auditionAt).toISOString(),audition_note:auditionNote||null}).eq("id",app.id);
+        if(e2)throw e2;
+      }
+      setSent(true);
+      setTimeout(()=>onSent&&onSent(),900);
+    }catch(e){setErr(e.message||"Could not send.");}
+    finally{setBusy(false);}
+  };
+  return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:540}}>
+    {sent?<div className="success-msg"><div className="check">✓</div><h3>Message Sent</h3><p>{t.display_name} will see it in their inbox.</p></div>:<>
+      <h2>Message {t.display_name}</h2>
+      <div style={{background:"var(--s2)",borderRadius:10,padding:14,marginBottom:16,display:"flex",gap:10,alignItems:"center"}}>
+        <img src={app.selected_photo_url||t.headshot_url||"https://placehold.co/60x75/e5e5e5/999?text=?"} style={{width:44,height:55,objectFit:"cover",borderRadius:6}}/>
+        <div><h4 style={{fontSize:14,fontWeight:700}}>{t.display_name}</h4><p style={{color:"var(--t2)",fontSize:12}}>Re: {castingTitle} · {app.roles?.name||"—"}</p></div>
+      </div>
+      {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{err}</div>}
+      <div className="form-group"><label className="label">Message</label><textarea className="textarea" rows="4" placeholder="Hi! Loved your submission — would love to bring you in for a callback…" value={body} onChange={e=>setBody(e.target.value)}></textarea></div>
+      <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:10,padding:16,marginBottom:16}}>
+        <div style={{fontSize:12,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,fontWeight:700,marginBottom:10}}>📅 Schedule Audition (Optional)</div>
+        <div className="form-group" style={{marginBottom:10}}><label className="label">Date & Time</label><input className="input" type="datetime-local" value={auditionAt} onChange={e=>setAuditionAt(e.target.value)}/></div>
+        <div className="form-group" style={{marginBottom:0}}><label className="label">Location / Details</label><input className="input" placeholder="e.g. 1420 Broadway, Studio 7 · bring sides" value={auditionNote} onChange={e=>setAuditionNote(e.target.value)}/></div>
+      </div>
+      <div style={{display:"flex",gap:12}}><button className="btn-p" style={{flex:1}} onClick={send} disabled={busy}>{busy?"Sending…":"Send Message"}</button><button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button></div>
+    </>}
+  </div></div>);
 }
 
 // ─── New Casting creation modal — writes to castings + roles tables
@@ -1752,15 +1870,30 @@ function Landing({onNavigate}){
   </>);
 }
 
+// ─── Helpers for video embeds
+const getVideoEmbed=(url)=>{
+  if(!url||!url.trim())return null;
+  const yt=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
+  if(yt)return`https://www.youtube.com/embed/${yt[1]}`;
+  const vm=url.match(/vimeo\.com\/(\d+)/);
+  if(vm)return`https://player.vimeo.com/video/${vm[1]}`;
+  return null;
+};
+
 // ═══════════════════════════════════════════
-// PAGE: MY PROFILE (talent edits their own profile, uploads headshot/reel)
+// PAGE: MY PROFILE — Backstage-style with gallery + videos
 // ═══════════════════════════════════════════
 function MyProfilePage({session,profile,onReload,onNavigate}){
+  const [tab,setTab]=useState("profile");
   const [saving,setSaving]=useState(false);
   const [msg,setMsg]=useState("");
   const [err,setErr]=useState("");
   const [uploading,setUploading]=useState(false);
   const [myApps,setMyApps]=useState([]);
+  const [inbox,setInbox]=useState([]);       // received messages
+  const [photos,setPhotos]=useState([]);     // additional_photos array
+  const [videos,setVideos]=useState(["","","","",""]);  // 5 video link slots
+  const [msgModal,setMsgModal]=useState(null); // {from_id,body,created_at}
   const [f,setF]=useState(()=>({
     display_name:profile?.display_name||"",bio:profile?.bio||"",location:profile?.location||"",
     age:profile?.age||"",gender:profile?.gender||"",ethnicity:profile?.ethnicity||"",
@@ -1770,21 +1903,38 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     company_name:profile?.company_name||"",company_role:profile?.company_role||"",website:profile?.website||"",
     credits:profile?.credits||""
   }));
-  useEffect(()=>{if(profile)setF(x=>({
-    ...x,
-    display_name:profile.display_name||"",bio:profile.bio||"",location:profile.location||"",
-    age:profile.age||"",gender:profile.gender||"",ethnicity:profile.ethnicity||"",
-    height:profile.height||"",weight:profile.weight||"",hair:profile.hair||"",eyes:profile.eyes||"",
-    union_status:profile.union_status||"Non-Union",agent:profile.agent||"",training:profile.training||"",
-    skills:(profile.skills||[]).join(", "),instagram:profile.instagram||"",phone:profile.phone||"",
-    company_name:profile.company_name||"",company_role:profile.company_role||"",website:profile.website||"",
-    credits:profile.credits||""
-  }));},[profile]);
-  useEffect(()=>{(async()=>{if(session?.user&&profile?.user_type==="talent"){const {data}=await window.sb.from("applications").select("id,status,created_at,cover_note,casting_id,castings(title,prod,type,location)").eq("talent_id",session.user.id).order("created_at",{ascending:false});setMyApps(data||[]);}})();},[session,profile]);
+  useEffect(()=>{if(profile){
+    setF(x=>({...x,display_name:profile.display_name||"",bio:profile.bio||"",location:profile.location||"",
+      age:profile.age||"",gender:profile.gender||"",ethnicity:profile.ethnicity||"",
+      height:profile.height||"",weight:profile.weight||"",hair:profile.hair||"",eyes:profile.eyes||"",
+      union_status:profile.union_status||"Non-Union",agent:profile.agent||"",training:profile.training||"",
+      skills:(profile.skills||[]).join(", "),instagram:profile.instagram||"",phone:profile.phone||"",
+      company_name:profile.company_name||"",company_role:profile.company_role||"",website:profile.website||"",
+      credits:profile.credits||""
+    }));
+    const ap=profile.additional_photos||[];setPhotos(ap);
+    const vl=profile.video_links||[];
+    const slots=["","","","",""];vl.forEach((v,i)=>{if(i<5)slots[i]=v;});setVideos(slots);
+  }},[profile]);
+  useEffect(()=>{(async()=>{
+    if(!session?.user)return;
+    if(profile?.user_type==="talent"){
+      const {data}=await window.sb.from("applications").select("id,status,created_at,cover_note,selected_photo_url,audition_at,audition_note,casting_id,role_id,castings(title,prod,type,location),roles(name)").eq("talent_id",session.user.id).order("created_at",{ascending:false});
+      setMyApps(data||[]);
+    }
+    // inbox — messages received (for both talent + CD)
+    const {data:mdata}=await window.sb.from("messages").select("id,from_id,body,created_at,read_at,application_id,profiles:from_id(display_name,headshot_url,company_name,user_type)").eq("to_id",session.user.id).order("created_at",{ascending:false}).limit(100);
+    setInbox(mdata||[]);
+  })();},[session,profile]);
+  const markRead=async(id)=>{
+    await window.sb.from("messages").update({read_at:new Date().toISOString()}).eq("id",id);
+    setInbox(p=>p.map(m=>m.id===id?{...m,read_at:new Date().toISOString()}:m));
+  };
   const up=(k,v)=>setF(x=>({...x,[k]:v}));
   const save=async()=>{
     setErr("");setMsg("");setSaving(true);
     try{
+      const vl=videos.filter(v=>v.trim());
       const patch={
         display_name:f.display_name.trim()||null,bio:f.bio||null,location:f.location||null,
         age:f.age?parseInt(f.age):null,gender:f.gender||null,ethnicity:f.ethnicity||null,
@@ -1793,18 +1943,15 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
         skills:f.skills?f.skills.split(",").map(s=>s.trim()).filter(Boolean):[],
         instagram:f.instagram||null,phone:f.phone||null,
         company_name:f.company_name||null,company_role:f.company_role||null,website:f.website||null,
-        credits:f.credits||null
+        credits:f.credits||null,video_links:vl
       };
       const {error}=await window.sb.from("profiles").update(patch).eq("id",session.user.id);
       if(error)throw error;
-      setMsg("Profile saved.");
-      onReload&&onReload();
-      setTimeout(()=>setMsg(""),3000);
+      setMsg("Profile saved.");onReload&&onReload();setTimeout(()=>setMsg(""),3000);
     }catch(e){setErr(e.message||"Could not save.");}finally{setSaving(false);}
   };
   const uploadFile=async(file,bucket,field)=>{
-    if(!file)return;
-    setUploading(true);setErr("");
+    if(!file)return;setUploading(true);setErr("");
     try{
       const ext=(file.name.split(".").pop()||"jpg").toLowerCase();
       const path=`${session.user.id}/${Date.now()}.${ext}`;
@@ -1812,81 +1959,181 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
       if(upErr)throw upErr;
       const {data:pub}=window.sb.storage.from(bucket).getPublicUrl(path);
       const patch={};patch[field]=pub.publicUrl;
-      const {error:uErr}=await window.sb.from("profiles").update(patch).eq("id",session.user.id);
-      if(uErr)throw uErr;
-      onReload&&onReload();
-      setMsg(field==="headshot_url"?"Headshot uploaded.":"Reel uploaded.");
-      setTimeout(()=>setMsg(""),3000);
-    }catch(e){setErr(e.message||"Upload failed. Make sure the storage bucket exists and is set to public.");}
-    finally{setUploading(false);}
+      await window.sb.from("profiles").update(patch).eq("id",session.user.id);
+      onReload&&onReload();setMsg(field==="headshot_url"?"Headshot uploaded.":"Photo uploaded.");setTimeout(()=>setMsg(""),3000);
+    }catch(e){setErr(e.message||"Upload failed. Make sure storage buckets are set up.");}finally{setUploading(false);}
   };
-  if(!profile)return(<div className="page"><div className="section-label">My Profile</div><p style={{color:"var(--t2)"}}>Loading your profile…</p><Footer onNavigate={onNavigate}/></div>);
+  const uploadAdditionalPhoto=async(file)=>{
+    if(!file)return;
+    if(photos.length>=10){setErr("Maximum 10 photos allowed.");return;}
+    setUploading(true);setErr("");
+    try{
+      const ext=(file.name.split(".").pop()||"jpg").toLowerCase();
+      const path=`${session.user.id}/gallery_${Date.now()}.${ext}`;
+      const {error:upErr}=await window.sb.storage.from("headshots").upload(path,file,{cacheControl:"3600",upsert:false});
+      if(upErr)throw upErr;
+      const {data:pub}=window.sb.storage.from("headshots").getPublicUrl(path);
+      const newPhotos=[...photos,pub.publicUrl];
+      await window.sb.from("profiles").update({additional_photos:newPhotos}).eq("id",session.user.id);
+      setPhotos(newPhotos);onReload&&onReload();
+      setMsg("Photo added.");setTimeout(()=>setMsg(""),3000);
+    }catch(e){setErr(e.message||"Upload failed.");}finally{setUploading(false);}
+  };
+  const removePhoto=async(url)=>{
+    const newPhotos=photos.filter(p=>p!==url);
+    await window.sb.from("profiles").update({additional_photos:newPhotos}).eq("id",session.user.id);
+    setPhotos(newPhotos);onReload&&onReload();
+  };
+  if(!profile)return(<div className="page"><p style={{color:"var(--t2)"}}>Loading…</p><Footer onNavigate={onNavigate}/></div>);
   const isCD=profile.user_type==="cd";
+  const allPhotos=[profile.headshot_url,...photos].filter(Boolean);
   return(<div className="page page-wide">
-    <div className="section-label">My Profile</div>
-    <h1 style={{fontWeight:800,fontSize:32,letterSpacing:-1,marginBottom:24}}>{isCD?"Casting Director":"Actor"} Profile</h1>
     {msg&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.3)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{msg}</div>}
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
 
-    <div style={{display:"grid",gridTemplateColumns:"320px 1fr",gap:30,alignItems:"start"}}>
-      <div className="card" style={{padding:20,position:"sticky",top:20}}>
-        {!isCD&&<>
-          <div style={{textAlign:"center"}}>
-            {profile.headshot_url?<img src={profile.headshot_url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:10,marginBottom:12}}/>:<div style={{width:"100%",aspectRatio:"3/4",background:"var(--s2)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t3)",fontSize:13,marginBottom:12}}>No headshot yet</div>}
-          </div>
-          <label className="btn-s" style={{width:"100%",display:"block",textAlign:"center",cursor:"pointer"}}>{uploading?"Uploading…":profile.headshot_url?"Change Headshot":"Upload Headshot"}<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>uploadFile(e.target.files?.[0],"headshots","headshot_url")}/></label>
-          <label className="btn-s" style={{width:"100%",display:"block",textAlign:"center",cursor:"pointer",marginTop:8}}>{profile.reel_url?"Change Demo Reel":"Upload Demo Reel"}<input type="file" accept="video/*" style={{display:"none"}} onChange={e=>uploadFile(e.target.files?.[0],"reels","reel_url")}/></label>
-          {profile.reel_url&&<video src={profile.reel_url} controls style={{width:"100%",marginTop:12,borderRadius:8,background:"#000"}}/>}
-        </>}
-        <div style={{marginTop:12,padding:12,background:"var(--s2)",borderRadius:8,fontSize:12}}>
-          <div style={{color:"var(--t3)",fontSize:11,textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>Account</div>
-          <div style={{fontWeight:600}}>{session?.user?.email}</div>
-          <div style={{color:"var(--t3)",fontSize:11,marginTop:4}}>Member since {new Date(profile.created_at).toLocaleDateString()}</div>
-        </div>
-      </div>
-
+    {/* ── HERO (Backstage style) ── */}
+    <div style={{display:"grid",gridTemplateColumns:"200px 1fr",gap:28,alignItems:"flex-start",marginBottom:28,padding:"28px",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16}}>
       <div>
-        <div className="card" style={{padding:24,marginBottom:20}}>
-          <h3 style={{fontSize:16,fontWeight:700,marginBottom:16}}>Basic info</h3>
-          <div className="form-group"><label className="label">Display name</label><input className="input" value={f.display_name} onChange={e=>up("display_name",e.target.value)}/></div>
-          <div className="form-row"><div className="form-group"><label className="label">Location</label><input className="input" placeholder="City, State" value={f.location} onChange={e=>up("location",e.target.value)}/></div><div className="form-group"><label className="label">Instagram</label><input className="input" placeholder="@handle" value={f.instagram} onChange={e=>up("instagram",e.target.value)}/></div></div>
-          <div className="form-group"><label className="label">Bio</label><textarea className="textarea" style={{minHeight:110}} value={f.bio} onChange={e=>up("bio",e.target.value)} placeholder={isCD?"About you and your casting work…":"Who you are, what you do, what you're looking for…"}></textarea></div>
+        {profile.headshot_url
+          ?<img src={profile.headshot_url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:10}}/>
+          :<div style={{width:"100%",aspectRatio:"3/4",background:"var(--s2)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t3)",fontSize:12,textAlign:"center",padding:12}}>No headshot yet</div>}
+        <label className="btn-s" style={{width:"100%",display:"block",textAlign:"center",cursor:"pointer",marginTop:8,fontSize:11}}>{uploading?"Uploading…":"Change Headshot"}<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>uploadFile(e.target.files?.[0],"headshots","headshot_url")}/></label>
+      </div>
+      <div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
+          <span className="badge tag-acc">{profile.union_status||"Non-Union"}</span>
+          {isCD&&<span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{profile.company_role||"Casting Director"}</span>}
         </div>
-
-        {!isCD?<>
-          <div className="card" style={{padding:24,marginBottom:20}}>
-            <h3 style={{fontSize:16,fontWeight:700,marginBottom:16}}>Physical & Union</h3>
-            <div className="form-row"><div className="form-group"><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={f.gender} onChange={e=>up("gender",e.target.value)}><option value="">—</option><option>Female</option><option>Male</option><option>Non-Binary</option><option>Other</option></select></div><div className="form-group"><label className="label">Age</label><input className="input" type="number" value={f.age} onChange={e=>up("age",e.target.value)}/></div></div>
-            <div className="form-row"><div className="form-group"><label className="label">Height</label><input className="input" value={f.height} onChange={e=>up("height",e.target.value)}/></div><div className="form-group"><label className="label">Weight</label><input className="input" value={f.weight} onChange={e=>up("weight",e.target.value)}/></div></div>
-            <div className="form-row"><div className="form-group"><label className="label">Hair</label><input className="input" value={f.hair} onChange={e=>up("hair",e.target.value)}/></div><div className="form-group"><label className="label">Eyes</label><input className="input" value={f.eyes} onChange={e=>up("eyes",e.target.value)}/></div></div>
-            <div className="form-row"><div className="form-group"><label className="label">Ethnicity</label><input className="input" value={f.ethnicity} onChange={e=>up("ethnicity",e.target.value)}/></div><div className="form-group"><label className="label">Union</label><select className="select" style={{width:"100%"}} value={f.union_status} onChange={e=>up("union_status",e.target.value)}><option>Non-Union</option><option>SAG-AFTRA</option><option>AEA</option><option>SAG-AFTRA / AEA</option><option>ACTRA</option></select></div></div>
-          </div>
-          <div className="card" style={{padding:24,marginBottom:20}}>
-            <h3 style={{fontSize:16,fontWeight:700,marginBottom:16}}>Craft</h3>
-            <div className="form-group"><label className="label">Training</label><input className="input" value={f.training} onChange={e=>up("training",e.target.value)}/></div>
-            <div className="form-group"><label className="label">Special skills (comma separated)</label><input className="input" value={f.skills} onChange={e=>up("skills",e.target.value)}/></div>
-            <div className="form-group"><label className="label">Representation</label><input className="input" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
-          </div>
-        </>:<>
-          <div className="card" style={{padding:24,marginBottom:20}}>
-            <h3 style={{fontSize:16,fontWeight:700,marginBottom:16}}>Company</h3>
-            <div className="form-row"><div className="form-group"><label className="label">Company / Production</label><input className="input" value={f.company_name} onChange={e=>up("company_name",e.target.value)}/></div><div className="form-group"><label className="label">Title</label><input className="input" value={f.company_role} onChange={e=>up("company_role",e.target.value)}/></div></div>
-            <div className="form-group"><label className="label">Website / IMDb</label><input className="input" value={f.website} onChange={e=>up("website",e.target.value)}/></div>
-            <div className="form-group"><label className="label">Recent credits (one per line)</label><textarea className="textarea" style={{minHeight:100}} value={f.credits} onChange={e=>up("credits",e.target.value)}/></div>
-          </div>
-        </>}
-
-        <button className="btn-p" onClick={save} disabled={saving} style={{padding:"14px 32px"}}>{saving?"Saving…":"Save Profile"}</button>
-
-        {!isCD&&myApps.length>0&&<div className="card" style={{padding:24,marginTop:24}}>
-          <h3 style={{fontSize:16,fontWeight:700,marginBottom:16}}>My Applications ({myApps.length})</h3>
-          {myApps.map(a=><div key={a.id} style={{padding:"12px 0",borderBottom:"1px solid var(--bdr)",display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
-            <div><div style={{fontWeight:600,fontSize:14}}>{a.castings?.title||"—"}</div><div style={{fontSize:12,color:"var(--t3)"}}>{a.castings?.prod} · {a.castings?.location} · {new Date(a.created_at).toLocaleDateString()}</div></div>
-            <span className="tag" style={{background:a.status==="callback"?"rgba(46,204,113,0.15)":a.status==="passed"?"rgba(255,100,100,0.1)":"var(--s2)",color:a.status==="callback"?"#1d7b44":a.status==="passed"?"#c0392b":"var(--t2)",fontSize:11,fontWeight:700}}>{a.status.toUpperCase()}</span>
-          </div>)}
+        <h1 style={{fontWeight:800,fontSize:32,letterSpacing:-1,marginBottom:4}}>{profile.display_name||"Your Name"}</h1>
+        <p style={{color:"var(--t2)",fontSize:14,marginBottom:12}}>{profile.location||"Location not set"}{profile.agent?` · Rep: ${profile.agent}`:""}</p>
+        {!isCD&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"8px 20px",marginBottom:16}}>
+          {[["Gender",profile.gender],["Age",profile.age],["Height",profile.height],["Weight",profile.weight],["Hair",profile.hair],["Eyes",profile.eyes],["Ethnicity",profile.ethnicity]].filter(([,v])=>v).map(([k,v])=>
+            <div key={k}><div style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1}}>{k}</div><div style={{fontSize:13,fontWeight:600,color:"var(--t1)"}}>{v}</div></div>
+          )}
         </div>}
+        {isCD&&<div style={{marginBottom:12}}>
+          <div style={{fontSize:13,color:"var(--t2)"}}>{profile.company_name||""}{profile.website?<> · <a href={profile.website} target="_blank" rel="noreferrer" style={{color:"var(--acc)"}}>{profile.website}</a></>:""}</div>
+        </div>}
+        <div style={{fontSize:11,color:"var(--t3)"}}>Member since {new Date(profile.created_at).toLocaleDateString()} · {session?.user?.email}</div>
       </div>
     </div>
+
+    {/* ── TABS ── */}
+    <div className="tabs" style={{marginBottom:24}}>
+      <button className={`tab ${tab==="profile"?"active":""}`} onClick={()=>setTab("profile")}>Edit Profile</button>
+      {!isCD&&<button className={`tab ${tab==="photos"?"active":""}`} onClick={()=>setTab("photos")}>Photos ({allPhotos.length}/10)</button>}
+      {!isCD&&<button className={`tab ${tab==="videos"?"active":""}`} onClick={()=>setTab("videos")}>Video Links ({(profile.video_links||[]).filter(v=>v).length}/5)</button>}
+      {!isCD&&<button className={`tab ${tab==="applications"?"active":""}`} onClick={()=>setTab("applications")}>My Applications ({myApps.length})</button>}
+      <button className={`tab ${tab==="messages"?"active":""}`} onClick={()=>setTab("messages")}>Messages {inbox.filter(m=>!m.read_at).length>0?<span className="tag tag-acc" style={{marginLeft:6,fontSize:10}}>{inbox.filter(m=>!m.read_at).length}</span>:null}</button>
+    </div>
+
+    {/* ── PROFILE TAB ── */}
+    {tab==="profile"&&<>
+      <div className="card" style={{padding:24,marginBottom:16}}>
+        <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Basic Info</h3>
+        <div className="form-group"><label className="label">Display Name</label><input className="input" value={f.display_name} onChange={e=>up("display_name",e.target.value)}/></div>
+        <div className="form-row"><div className="form-group"><label className="label">Location</label><input className="input" placeholder="City, State" value={f.location} onChange={e=>up("location",e.target.value)}/></div><div className="form-group"><label className="label">Instagram</label><input className="input" placeholder="@handle" value={f.instagram} onChange={e=>up("instagram",e.target.value)}/></div></div>
+        <div className="form-row"><div className="form-group"><label className="label">Phone (private)</label><input className="input" placeholder="Optional" value={f.phone} onChange={e=>up("phone",e.target.value)}/></div></div>
+        <div className="form-group"><label className="label">Bio / Overview</label><textarea className="textarea" style={{minHeight:130}} value={f.bio} onChange={e=>up("bio",e.target.value)} placeholder={isCD?"About you and your casting work…":"Your experience, strengths, what makes you unique…"}></textarea></div>
+      </div>
+      {!isCD&&<>
+        <div className="card" style={{padding:24,marginBottom:16}}>
+          <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Physical Stats</h3>
+          <div className="form-row"><div className="form-group"><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={f.gender} onChange={e=>up("gender",e.target.value)}><option value="">—</option><option>Female</option><option>Male</option><option>Non-Binary</option><option>Other</option></select></div><div className="form-group"><label className="label">Age</label><input className="input" type="number" value={f.age} onChange={e=>up("age",e.target.value)}/></div></div>
+          <div className="form-row"><div className="form-group"><label className="label">Height</label><input className="input" placeholder={'5\'8"'} value={f.height} onChange={e=>up("height",e.target.value)}/></div><div className="form-group"><label className="label">Weight</label><input className="input" placeholder="150 lbs" value={f.weight} onChange={e=>up("weight",e.target.value)}/></div></div>
+          <div className="form-row"><div className="form-group"><label className="label">Hair Color</label><input className="input" value={f.hair} onChange={e=>up("hair",e.target.value)}/></div><div className="form-group"><label className="label">Eye Color</label><input className="input" value={f.eyes} onChange={e=>up("eyes",e.target.value)}/></div></div>
+          <div className="form-row"><div className="form-group"><label className="label">Ethnicity</label><input className="input" value={f.ethnicity} onChange={e=>up("ethnicity",e.target.value)}/></div><div className="form-group"><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union_status} onChange={e=>up("union_status",e.target.value)}><option>Non-Union</option><option>SAG-AFTRA</option><option>AEA</option><option>SAG-AFTRA / AEA</option><option>ACTRA</option></select></div></div>
+        </div>
+        <div className="card" style={{padding:24,marginBottom:16}}>
+          <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Training & Skills</h3>
+          <div className="form-group"><label className="label">Training / Education</label><input className="input" placeholder="e.g. BFA Acting, NYU Tisch · Meisner Technique" value={f.training} onChange={e=>up("training",e.target.value)}/></div>
+          <div className="form-group"><label className="label">Special Skills (comma separated)</label><input className="input" placeholder="Stage Combat, Fluent Spanish, Horseback Riding, Guitar…" value={f.skills} onChange={e=>up("skills",e.target.value)}/></div>
+          <div className="form-group"><label className="label">Representation</label><input className="input" placeholder="Agency, manager, or 'Seeking Representation'" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
+        </div>
+        <div className="card" style={{padding:24,marginBottom:16}}>
+          <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Credits (one per line: Role · Project · Year)</h3>
+          <textarea className="textarea" style={{minHeight:160,fontFamily:"monospace",fontSize:13}} value={f.credits} onChange={e=>up("credits",e.target.value)} placeholder={"Elena · Burning Season (Feature) · 2025\nLady Macbeth · Macbeth (Off-Broadway) · 2024\nDetective Ross · Crime Scene (TV) · 2023"}/>
+        </div>
+      </>}
+      {isCD&&<>
+        <div className="card" style={{padding:24,marginBottom:16}}>
+          <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Company Details</h3>
+          <div className="form-row"><div className="form-group"><label className="label">Company / Production</label><input className="input" value={f.company_name} onChange={e=>up("company_name",e.target.value)}/></div><div className="form-group"><label className="label">Title</label><input className="input" value={f.company_role} onChange={e=>up("company_role",e.target.value)}/></div></div>
+          <div className="form-group"><label className="label">Website / IMDb</label><input className="input" placeholder="https://" value={f.website} onChange={e=>up("website",e.target.value)}/></div>
+          <div className="form-group"><label className="label">Credits / Notable Projects (one per line)</label><textarea className="textarea" style={{minHeight:100}} value={f.credits} onChange={e=>up("credits",e.target.value)}/></div>
+        </div>
+      </>}
+      <button className="btn-p" onClick={save} disabled={saving} style={{padding:"14px 32px"}}>{saving?"Saving…":"Save Profile"}</button>
+    </>}
+
+    {/* ── PHOTOS TAB ── */}
+    {tab==="photos"&&!isCD&&<>
+      <div className="card" style={{padding:24,marginBottom:16}}>
+        <div className="flex-between" style={{marginBottom:16}}>
+          <div><h3 style={{fontSize:15,fontWeight:700,marginBottom:2}}>Photo Gallery</h3><p style={{fontSize:12,color:"var(--t3)"}}>{allPhotos.length} of 10 photos · Your headshot is always first</p></div>
+          {allPhotos.length<10&&<label className="btn-p btn-sm" style={{cursor:"pointer"}}>{uploading?"Uploading…":"+ Add Photo"}<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>uploadAdditionalPhoto(e.target.files?.[0])}/></label>}
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:12}}>
+          {profile.headshot_url&&<div style={{position:"relative",borderRadius:8,overflow:"hidden",border:"2px solid var(--acc)"}}>
+            <img src={profile.headshot_url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",display:"block"}}/>
+            <div style={{position:"absolute",bottom:0,left:0,right:0,background:"rgba(0,0,0,0.6)",color:"#fff",fontSize:10,fontWeight:700,padding:"4px 8px",textAlign:"center",letterSpacing:1}}>MAIN</div>
+          </div>}
+          {photos.map((url,i)=><div key={i} style={{position:"relative",borderRadius:8,overflow:"hidden",border:"1px solid var(--bdr)"}}>
+            <img src={url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",display:"block"}}/>
+            <button onClick={()=>removePhoto(url)} style={{position:"absolute",top:4,right:4,background:"rgba(0,0,0,0.6)",border:"none",color:"#fff",borderRadius:"50%",width:22,height:22,cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+          </div>)}
+          {allPhotos.length<10&&Array.from({length:Math.min(2,10-allPhotos.length)}).map((_,i)=><label key={`empty-${i}`} style={{aspectRatio:"3/4",background:"var(--s2)",borderRadius:8,border:"1px dashed var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexDirection:"column",gap:6,color:"var(--t3)",fontSize:12}}>+ Add<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>uploadAdditionalPhoto(e.target.files?.[0])}/></label>)}
+        </div>
+      </div>
+      <p style={{fontSize:12,color:"var(--t3)"}}>These photos are visible to casting directors. When you apply to a role, you choose which photo to submit.</p>
+    </>}
+
+    {/* ── VIDEOS TAB ── */}
+    {tab==="videos"&&!isCD&&<div className="card" style={{padding:24}}>
+      <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Video Reel Links</h3>
+      <p style={{fontSize:12,color:"var(--t3)",marginBottom:20}}>Paste up to 5 YouTube or Vimeo links. They'll appear as embedded players on your profile.</p>
+      {videos.map((v,i)=><div key={i} style={{marginBottom:16}}>
+        <label className="label">Link {i+1}</label>
+        <input className="input" placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..." value={v} onChange={e=>setVideos(p=>{const n=[...p];n[i]=e.target.value;return n;})}/>
+        {getVideoEmbed(v)&&<iframe src={getVideoEmbed(v)} style={{width:"100%",height:220,borderRadius:8,border:"none",marginTop:8}} allowFullScreen/>}
+      </div>)}
+      <button className="btn-p" onClick={save} disabled={saving}>{saving?"Saving…":"Save Video Links"}</button>
+    </div>}
+
+    {/* ── APPLICATIONS TAB ── */}
+    {tab==="applications"&&!isCD&&<div className="card" style={{padding:24}}>
+      <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>My Applications ({myApps.length})</h3>
+      {myApps.length===0?<p style={{color:"var(--t3)",fontSize:14}}>Nothing yet. Browse castings and apply — your submissions show up here.</p>:
+      myApps.map(a=><div key={a.id} style={{padding:"14px 0",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:12,alignItems:"center"}}>
+        {a.selected_photo_url&&<img src={a.selected_photo_url} style={{width:44,height:56,objectFit:"cover",borderRadius:6}}/>}
+        <div>
+          <div style={{fontWeight:600,fontSize:14}}>{a.castings?.title||"—"}</div>
+          <div style={{fontSize:12,color:"var(--t3)"}}>
+            {a.roles?.name?`Role: ${a.roles.name} · `:""}
+            {a.castings?.prod} · {a.castings?.location} · {new Date(a.created_at).toLocaleDateString()}
+          </div>
+          {a.cover_note&&<div style={{fontSize:12,color:"var(--t2)",marginTop:2,fontStyle:"italic"}}>"{a.cover_note.slice(0,80)}{a.cover_note.length>80?"…":""}"</div>}
+          {a.audition_at&&<div style={{fontSize:12,color:"#1d7b44",marginTop:4,fontWeight:600}}>📅 Audition: {new Date(a.audition_at).toLocaleString()}{a.audition_note?` · ${a.audition_note}`:""}</div>}
+        </div>
+        <span className="tag" style={{background:a.status==="callback"?"rgba(46,204,113,0.15)":a.status==="passed"?"rgba(255,100,100,0.1)":a.status==="booked"?"rgba(26,26,200,0.1)":"var(--s2)",color:a.status==="callback"?"#1d7b44":a.status==="passed"?"#c0392b":a.status==="booked"?"#1a1ac8":"var(--t2)",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{a.status.toUpperCase()}</span>
+      </div>)}
+    </div>}
+
+    {/* ── MESSAGES TAB ── */}
+    {tab==="messages"&&<div className="card" style={{padding:24}}>
+      <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Inbox ({inbox.length})</h3>
+      <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>Messages and audition invites from casting directors.</p>
+      {inbox.length===0?<p style={{color:"var(--t3)",fontSize:14}}>No messages yet.</p>:
+      inbox.map(m=><div key={m.id} onClick={()=>!m.read_at&&markRead(m.id)} style={{padding:"14px 0",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:12,alignItems:"flex-start",cursor:m.read_at?"default":"pointer",opacity:m.read_at?0.75:1}}>
+        <img src={m.profiles?.headshot_url||"https://placehold.co/44x44/e5e5e5/999?text=?"} style={{width:44,height:44,objectFit:"cover",borderRadius:"50%"}}/>
+        <div>
+          <div style={{fontWeight:700,fontSize:14}}>{m.profiles?.display_name||m.profiles?.company_name||"Casting Director"}{!m.read_at&&<span className="tag tag-acc" style={{marginLeft:8,fontSize:9}}>NEW</span>}</div>
+          <div style={{fontSize:13,color:"var(--t1)",whiteSpace:"pre-wrap",marginTop:4,lineHeight:1.5}}>{m.body}</div>
+        </div>
+        <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap"}}>{new Date(m.created_at).toLocaleDateString()}</span>
+      </div>)}
+    </div>}
+
     <Footer onNavigate={onNavigate}/></div>);
 }
 
@@ -1901,11 +2148,14 @@ function AdminPage({session,onNavigate}){
   const [reports,setReports]=useState([]);
   const [loading,setLoading]=useState(true);
   const [q,setQ]=useState("");
+  const [cq,setCq]=useState(""); // casting search
+  const [viewCasting,setViewCasting]=useState(null);   // casting currently viewed in modal
+  const [editCasting,setEditCasting]=useState(null);   // casting currently being edited
   const reload=useCallback(async()=>{
     setLoading(true);
     const [u,c,r]=await Promise.all([
       window.sb.from("profiles").select("*").order("created_at",{ascending:false}).limit(500),
-      window.sb.from("castings").select("*,profiles:cd_id(display_name,email,company_name)").order("created_at",{ascending:false}).limit(200),
+      window.sb.from("castings").select("*,profiles:cd_id(display_name,email,company_name),roles(id,name,description,gender,age_range,ethnicity)").order("created_at",{ascending:false}).limit(500),
       window.sb.from("reports").select("*").order("created_at",{ascending:false}).limit(100)
     ]);
     const allUsers=u.data||[];
@@ -1928,7 +2178,21 @@ function AdminPage({session,onNavigate}){
   const toggleSuspend=async(u)=>{await window.sb.from("profiles").update({suspended:!u.suspended}).eq("id",u.id);reload();};
   const deleteUser=async(u)=>{if(!confirm(`Delete profile for ${u.display_name||u.email}? This removes their data.`))return;await window.sb.from("profiles").delete().eq("id",u.id);reload();};
   const resolveReport=async(r,status)=>{await window.sb.from("reports").update({status}).eq("id",r.id);reload();};
+  // ─── casting moderation actions
+  const deleteCasting=async(c)=>{
+    if(!confirm(`DELETE casting "${c.title}"?\n\nThis permanently removes the casting, all its roles, and all submissions. Cannot be undone.`))return;
+    const {error}=await window.sb.from("castings").delete().eq("id",c.id);
+    if(error){alert("Delete failed: "+error.message);return;}
+    reload();
+  };
+  const toggleCastingStatus=async(c)=>{
+    const newStatus=c.status==="open"?"closed":"open";
+    const {error}=await window.sb.from("castings").update({status:newStatus,published:newStatus==="open"}).eq("id",c.id);
+    if(error){alert("Update failed: "+error.message);return;}
+    reload();
+  };
   const fu=users.filter(u=>!q||[u.display_name,u.email,u.location,u.company_name].some(x=>x&&x.toLowerCase().includes(q.toLowerCase())));
+  const fc=castings.filter(c=>!cq||[c.title,c.prod,c.location,c.tagline,c.synopsis,c.profiles?.email,c.profiles?.display_name].some(x=>x&&x.toLowerCase().includes(cq.toLowerCase())));
 
   return(<div className="page page-wide">
     <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}>
@@ -1978,14 +2242,24 @@ function AdminPage({session,onNavigate}){
         </div>
       </>}
 
-      {tab==="castings"&&<div className="card" style={{padding:0,overflow:"hidden"}}>
-        {castings.map(c=><div key={c.id} style={{padding:"14px 20px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto auto",gap:12,alignItems:"center"}}>
-          <div><div style={{fontWeight:600,fontSize:14}}>{c.title}</div><div style={{fontSize:12,color:"var(--t3)"}}>{c.prod} · {c.location} · by {c.profiles?.display_name||c.profiles?.email||"—"} · {new Date(c.created_at).toLocaleDateString()}</div></div>
-          <span className="badge tag-acc" style={{fontSize:10}}>{c.type||"—"}</span>
-          <span className="tag" style={{fontSize:10,background:c.status==="open"?"rgba(46,204,113,0.15)":"var(--s2)",color:c.status==="open"?"#1d7b44":"var(--t2)"}}>{c.status.toUpperCase()}</span>
-        </div>)}
-        {castings.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No castings yet.</div>}
-      </div>}
+      {tab==="castings"&&<>
+        <input className="input" placeholder="Search castings by title, company, location, CD email…" value={cq} onChange={e=>setCq(e.target.value)} style={{marginBottom:16}}/>
+        <p style={{color:"var(--t3)",fontSize:12,marginBottom:12}}>{fc.length} casting{fc.length===1?"":"s"} · click View to see the full listing · Close hides it from Browse · Delete permanently removes it</p>
+        <div className="card" style={{padding:0,overflow:"hidden"}}>
+          {fc.map(c=><div key={c.id} style={{padding:"14px 20px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto auto auto auto auto",gap:8,alignItems:"center",opacity:c.status==="closed"?0.55:1}}>
+            <div>
+              <div style={{fontWeight:600,fontSize:14}}>{c.title} {c.status!=="open"&&<span style={{color:"#c0392b",fontSize:10,fontWeight:700,marginLeft:6}}>{c.status.toUpperCase()}</span>}</div>
+              <div style={{fontSize:12,color:"var(--t3)"}}>{c.prod||"—"} · {c.location||"—"} · {c.roles?.length||0} role{c.roles?.length===1?"":"s"} · by <strong>{c.profiles?.display_name||c.profiles?.email||"—"}</strong> · {new Date(c.created_at).toLocaleDateString()}</div>
+            </div>
+            <span className="badge tag-acc" style={{fontSize:10}}>{c.type||"—"}</span>
+            <button className="btn-s btn-sm" onClick={()=>setViewCasting(c)}>View</button>
+            <button className="btn-s btn-sm" onClick={()=>setEditCasting(c)}>Edit</button>
+            <button className="btn-s btn-sm" onClick={()=>toggleCastingStatus(c)}>{c.status==="open"?"Close":"Reopen"}</button>
+            <button className="btn-s btn-sm" onClick={()=>deleteCasting(c)} style={{color:"#c0392b",borderColor:"#e8c6c6"}}>Delete</button>
+          </div>)}
+          {fc.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No castings match.</div>}
+        </div>
+      </>}
 
       {tab==="reports"&&<div className="card" style={{padding:0,overflow:"hidden"}}>
         {reports.map(r=><div key={r.id} style={{padding:"14px 20px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto auto",gap:12,alignItems:"center"}}>
@@ -1996,7 +2270,130 @@ function AdminPage({session,onNavigate}){
         {reports.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No reports. Clean house ✨</div>}
       </div>}
     </>}
+
+    {viewCasting&&<div className="modal-overlay" onClick={()=>setViewCasting(null)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"90vh",overflowY:"auto"}}>
+      <div className="flex-between" style={{marginBottom:16}}>
+        <h2 style={{marginBottom:0}}>{viewCasting.title}</h2>
+        <span className="tag" style={{fontSize:10,background:viewCasting.status==="open"?"rgba(46,204,113,0.15)":"var(--s2)",color:viewCasting.status==="open"?"#1d7b44":"var(--t2)"}}>{viewCasting.status.toUpperCase()}</span>
+      </div>
+      <div style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:16,fontSize:12,color:"var(--t2)",lineHeight:1.6}}>
+        <div><strong style={{color:"var(--t1)"}}>Posted by:</strong> {viewCasting.profiles?.display_name||"—"} ({viewCasting.profiles?.email||"—"}) {viewCasting.profiles?.company_name?`· ${viewCasting.profiles.company_name}`:""}</div>
+        <div><strong style={{color:"var(--t1)"}}>Created:</strong> {new Date(viewCasting.created_at).toLocaleString()}</div>
+        <div><strong style={{color:"var(--t1)"}}>ID:</strong> <code style={{fontSize:11}}>{viewCasting.id}</code></div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"10px 20px",fontSize:13,marginBottom:16}}>
+        <div><strong>Type:</strong> {viewCasting.type||"—"}</div>
+        <div><strong>Production:</strong> {viewCasting.prod||"—"}</div>
+        <div><strong>Location:</strong> {viewCasting.location||"—"}</div>
+        <div><strong>Pay:</strong> {viewCasting.pay||"—"}</div>
+        <div><strong>Union:</strong> {viewCasting.union_status||"—"}</div>
+        <div><strong>Deadline:</strong> {viewCasting.deadline||"—"}</div>
+      </div>
+      {viewCasting.tagline&&<div style={{marginBottom:12}}><div className="label">Tagline</div><p style={{fontSize:14}}>{viewCasting.tagline}</p></div>}
+      {viewCasting.synopsis&&<div style={{marginBottom:16}}><div className="label">Synopsis</div><p style={{fontSize:14,lineHeight:1.6,color:"var(--t2)",whiteSpace:"pre-wrap"}}>{viewCasting.synopsis}</p></div>}
+      <div style={{marginBottom:16}}>
+        <div className="label">Roles ({viewCasting.roles?.length||0})</div>
+        {(viewCasting.roles||[]).map((r,i)=><div key={i} style={{background:"var(--s2)",borderRadius:8,padding:12,marginTop:8,fontSize:13}}>
+          <strong>{r.name}</strong> — <span style={{color:"var(--t3)"}}>{[r.gender,r.age_range,r.ethnicity].filter(Boolean).join(" · ")}</span>
+          {r.description&&<p style={{marginTop:4,color:"var(--t2)",fontSize:12,lineHeight:1.55}}>{r.description}</p>}
+        </div>)}
+      </div>
+      <div style={{display:"flex",gap:10,marginTop:20,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
+        <button className="btn-s" onClick={()=>{setEditCasting(viewCasting);setViewCasting(null);}}>Edit</button>
+        <button className="btn-s" onClick={()=>{toggleCastingStatus(viewCasting);setViewCasting(null);}}>{viewCasting.status==="open"?"Close Listing":"Reopen Listing"}</button>
+        <button className="btn-s" onClick={()=>{deleteCasting(viewCasting);setViewCasting(null);}} style={{color:"#c0392b",borderColor:"#e8c6c6"}}>Delete</button>
+        <button className="btn-p" style={{marginLeft:"auto"}} onClick={()=>setViewCasting(null)}>Close</button>
+      </div>
+    </div></div>}
+
+    {editCasting&&<EditCastingModal casting={editCasting} onClose={()=>setEditCasting(null)} onSaved={()=>{setEditCasting(null);reload();}}/>}
+
     <Footer onNavigate={onNavigate}/></div>);
+}
+
+// ─── Admin edit-casting modal (fixes spelling, tweaks fields, edits roles)
+function EditCastingModal({casting,onClose,onSaved}){
+  const [err,setErr]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [f,setF]=useState({
+    title:casting.title||"",prod:casting.prod||"",type:casting.type||"Film",
+    location:casting.location||"",pay:casting.pay||"",union_status:casting.union_status||"Non-Union",
+    deadline:casting.deadline||"",tagline:casting.tagline||"",synopsis:casting.synopsis||""
+  });
+  const [roles,setRoles]=useState(()=>(casting.roles||[]).map(r=>({id:r.id,name:r.name||"",description:r.description||"",gender:r.gender||"Any",age_range:r.age_range||"",ethnicity:r.ethnicity||"Any"})));
+  const setField=(k,v)=>setF(p=>({...p,[k]:v}));
+  const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
+  const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any"}]);
+  const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
+  const save=async()=>{
+    setErr("");
+    if(!f.title.trim()){setErr("Title is required.");return;}
+    setBusy(true);
+    try{
+      const patch={title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,pay:f.pay||null,union_status:f.union_status||null,deadline:f.deadline||null,tagline:f.tagline||null,synopsis:f.synopsis||null};
+      const {error:cErr}=await window.sb.from("castings").update(patch).eq("id",casting.id);
+      if(cErr)throw cErr;
+      // Diff roles: update existing, insert new, delete removed
+      const originalRoleIds=new Set((casting.roles||[]).map(r=>r.id));
+      const keptRoleIds=new Set(roles.filter(r=>r.id).map(r=>r.id));
+      const toDelete=[...originalRoleIds].filter(id=>!keptRoleIds.has(id));
+      if(toDelete.length){
+        const {error:dErr}=await window.sb.from("roles").delete().in("id",toDelete);
+        if(dErr)throw dErr;
+      }
+      for(const r of roles){
+        if(!r.name.trim())continue;
+        const rp={name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:r.age_range||null,ethnicity:r.ethnicity||null};
+        if(r.id){
+          const {error:uErr}=await window.sb.from("roles").update(rp).eq("id",r.id);
+          if(uErr)throw uErr;
+        }else{
+          const {error:iErr}=await window.sb.from("roles").insert({...rp,casting_id:casting.id});
+          if(iErr)throw iErr;
+        }
+      }
+      onSaved();
+    }catch(e){setErr(e.message||"Save failed.");}finally{setBusy(false);}
+  };
+  return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"90vh",overflowY:"auto"}}>
+    <h2>Edit Casting (admin)</h2>
+    <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:20}}>Fix typos, update details, add/remove roles. The CD will see your changes next time they visit.</p>
+    {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
+    <div className="form-group"><label className="label">Project Title *</label><input className="input" value={f.title} onChange={e=>setField("title",e.target.value)}/></div>
+    <div className="form-row">
+      <div><label className="label">Production Company</label><input className="input" value={f.prod} onChange={e=>setField("prod",e.target.value)}/></div>
+      <div><label className="label">Project Type</label><select className="select" style={{width:"100%"}} value={f.type} onChange={e=>setField("type",e.target.value)}><option>Film</option><option>TV</option><option>Theater</option><option>Commercial</option><option>Modeling</option></select></div>
+    </div>
+    <div className="form-row">
+      <div><label className="label">Location</label><input className="input" value={f.location} onChange={e=>setField("location",e.target.value)}/></div>
+      <div><label className="label">Pay / Rate</label><input className="input" value={f.pay} onChange={e=>setField("pay",e.target.value)}/></div>
+    </div>
+    <div className="form-row">
+      <div><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union_status} onChange={e=>setField("union_status",e.target.value)}><option>SAG-AFTRA</option><option>AEA</option><option>Non-Union</option><option>SAG-AFTRA / Non-Union</option></select></div>
+      <div><label className="label">Deadline</label><input className="input" type="date" value={f.deadline||""} onChange={e=>setField("deadline",e.target.value)}/></div>
+    </div>
+    <div className="form-group"><label className="label">Tagline</label><input className="input" value={f.tagline} onChange={e=>setField("tagline",e.target.value)}/></div>
+    <div className="form-group"><label className="label">Synopsis</label><textarea className="textarea" value={f.synopsis} onChange={e=>setField("synopsis",e.target.value)}></textarea></div>
+
+    <div style={{borderTop:"1px solid var(--bdr)",paddingTop:20,marginTop:12}}>
+      <div className="flex-between" style={{marginBottom:12}}><h3 style={{fontSize:16,fontWeight:700}}>Roles</h3><button className="btn-s btn-sm" onClick={addRole} type="button">+ Add Role</button></div>
+      {roles.map((r,i)=><div key={r.id||`new-${i}`} style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:12}}>
+        <div className="flex-between" style={{marginBottom:10}}><strong style={{fontSize:13}}>Role {i+1} {r.id?"":<span style={{color:"var(--acc)",fontSize:11}}>(new)</span>}</strong><button onClick={()=>removeRole(i)} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12}}>✕ Remove</button></div>
+        <div className="form-group" style={{marginBottom:10}}><label className="label">Role Name *</label><input className="input" value={r.name} onChange={e=>setRole(i,"name",e.target.value)}/></div>
+        <div className="form-row">
+          <div><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={r.gender} onChange={e=>setRole(i,"gender",e.target.value)}><option>Any</option><option>Male</option><option>Female</option><option>Non-Binary</option></select></div>
+          <div><label className="label">Age Range</label><input className="input" value={r.age_range} onChange={e=>setRole(i,"age_range",e.target.value)}/></div>
+        </div>
+        <div className="form-group" style={{marginTop:10,marginBottom:0}}><label className="label">Ethnicity</label><input className="input" value={r.ethnicity} onChange={e=>setRole(i,"ethnicity",e.target.value)}/></div>
+        <div className="form-group" style={{marginTop:10,marginBottom:0}}><label className="label">Role Description</label><textarea className="textarea" value={r.description} onChange={e=>setRole(i,"description",e.target.value)}/></div>
+      </div>)}
+    </div>
+
+    <div style={{display:"flex",gap:12,marginTop:24,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
+      <button className="btn-p" style={{flex:1}} onClick={save} disabled={busy}>{busy?"Saving…":"Save Changes"}</button>
+      <button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
+    </div>
+  </div></div>);
 }
 
 // ═══════════════════════════════════════════
