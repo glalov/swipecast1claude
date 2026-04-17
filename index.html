@@ -374,11 +374,24 @@ function RegisterTalent({onNavigate}){
     setErr("");setLoading(true);
     try{
       const display_name=(f.first+" "+f.last).trim();
+      const email=f.email.trim().toLowerCase();
       const {data,error}=await window.sb.auth.signUp({
-        email:f.email.trim().toLowerCase(),password:f.password,
+        email,password:f.password,
         options:{emailRedirectTo:window.location.origin,data:{user_type:"talent",display_name}}
       });
-      if(error)throw error;
+      if(error){
+        const em=(error.message||"").toLowerCase();
+        if(em.includes("already")||em.includes("exist")||em.includes("registered")){
+          setErr("An account with this email already exists. Please log in or reset your password instead.");
+          setLoading(false);return;
+        }
+        throw error;
+      }
+      // Supabase quirk: if the email exists but is unconfirmed, signUp returns data with an identities array of length 0
+      if(data?.user&&Array.isArray(data.user.identities)&&data.user.identities.length===0){
+        setErr("An account with this email already exists. Please log in or reset your password instead.");
+        setLoading(false);return;
+      }
       if(data.user){
         await window.sb.from("profiles").update({
           display_name,user_type:"talent",location:f.location,gender:f.gender||null,
@@ -472,7 +485,18 @@ function RegisterCD({onNavigate}){
         password:f.password,
         options:{emailRedirectTo:window.location.origin,data:{user_type:"cd",display_name}}
       });
-      if(error)throw error;
+      if(error){
+        const em=(error.message||"").toLowerCase();
+        if(em.includes("already")||em.includes("exist")||em.includes("registered")){
+          setErr("An account with this email already exists. Please log in or reset your password instead.");
+          setLoading(false);return;
+        }
+        throw error;
+      }
+      if(data?.user&&Array.isArray(data.user.identities)&&data.user.identities.length===0){
+        setErr("An account with this email already exists. Please log in or reset your password instead.");
+        setLoading(false);return;
+      }
       if(data.user){
         await window.sb.from("profiles").update({
           display_name,user_type:"cd",
@@ -554,12 +578,51 @@ function LoginPage({onNavigate,onLoggedIn}){
       {forgot&&<button type="button" className="btn-s" style={{width:"100%",marginTop:8}} onClick={()=>{setForgot(false);setErr("");}}>← Back to login</button>}
       <div style={{textAlign:"center",marginTop:24,fontSize:13,color:"var(--t2)"}}>
         Don't have an account?<br/>
-        <span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("register-talent")}>Join as Talent (Free)</span>
+        <span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("register-talent")}>Join as Talent</span>
         {" · "}
         <span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("register-cd")}>Join as Casting Director</span>
       </div>
     </form><Footer onNavigate={onNavigate}/></div>
   );
+}
+
+// ═══════════════════════════════════════════
+// PAGE: RESET PASSWORD (after recovery email link)
+// ═══════════════════════════════════════════
+function ResetPasswordPage({onNavigate,session}){
+  const [password,setPassword]=useState("");
+  const [confirm,setConfirm]=useState("");
+  const [loading,setLoading]=useState(false);
+  const [err,setErr]=useState("");
+  const [done,setDone]=useState(false);
+  const submit=async(e)=>{
+    if(e&&e.preventDefault)e.preventDefault();
+    setErr("");
+    if(!password||password.length<8){setErr("Password must be at least 8 characters.");return;}
+    if(password!==confirm){setErr("Passwords don't match.");return;}
+    setLoading(true);
+    try{
+      const {error}=await window.sb.auth.updateUser({password});
+      if(error)throw error;
+      setDone(true);
+      // clean the recovery hash from the URL so refresh doesn't bounce back here
+      if(window.history?.replaceState){window.history.replaceState(null,"",window.location.pathname);}
+    }catch(e){setErr(e.message||"Could not update password.");}
+    finally{setLoading(false);}
+  };
+  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check">✓</div><h3>Password Updated</h3><p style={{marginBottom:24}}>You're all set — your new password is active.</p><button className="btn-p" onClick={()=>onNavigate(session?.user?.email?.toLowerCase()===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase()?"admin":"my-profile")}>Continue →</button></div><Footer onNavigate={onNavigate}/></div>);
+  return(<div className="page"><form onSubmit={submit} style={{maxWidth:440,margin:"60px auto 0"}}>
+    <div style={{textAlign:"center",marginBottom:32}}>
+      <div className="logo" style={{justifyContent:"center",fontSize:24,marginBottom:12}}><div className="logo-i" style={{width:36,height:36,fontSize:20}}>↔</div>SwipeCast</div>
+      <h2 style={{fontSize:28,fontWeight:800,marginBottom:8}}>Set a New Password</h2>
+      <p style={{color:"var(--t2)",fontSize:14}}>Choose a new password for {session?.user?.email||"your account"}.</p>
+    </div>
+    {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
+    <div className="form-group"><label className="label">New Password</label><input className="input" type="password" placeholder="At least 8 characters" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="new-password"/></div>
+    <div className="form-group"><label className="label">Confirm Password</label><input className="input" type="password" placeholder="Re-enter password" value={confirm} onChange={e=>setConfirm(e.target.value)} autoComplete="new-password"/></div>
+    <button type="submit" className="btn-p" style={{width:"100%"}} disabled={loading}>{loading?"Updating…":"Update Password"}</button>
+    <p style={{textAlign:"center",fontSize:12,color:"var(--t3)",marginTop:16}}>Tip: pick something you'll remember — at least 8 characters.</p>
+  </form><Footer onNavigate={onNavigate}/></div>);
 }
 
 // ═══════════════════════════════════════════
@@ -660,18 +723,18 @@ function SuccessStoriesPage({onNavigate}){
 // ═══════════════════════════════════════════
 function PricingPage({onNavigate}){
   const plans=[
-    {name:"Talent",who:"Actors · Models · Performers",price:"FREE",period:"forever — no catch",features:["Unlimited profile & headshots","Unlimited submissions","Guaranteed views on every submission","Direct messages from casting","Audition scheduling"],featured:false,cta:"Create Free Profile",action:"register-talent"},
+    {name:"Talent",who:"Actors · Models · Performers",price:"$9.99",period:"per month · 7-day free trial",features:["Unlimited profile, photos & video","Unlimited submissions","Guaranteed views on every submission","Direct messages from casting","Audition scheduling","Cancel anytime"],featured:false,cta:"Start 7-Day Free Trial",action:"register-talent"},
     {name:"Casting Director",who:"Casting Directors · Producers",price:"$20",period:"per casting post",features:["Free account creation","Swipe-based review system","Advanced talent search & filters","Callback management tools","Pay only when you post"],featured:true,cta:"Start Casting",action:"register-cd"},
     {name:"Studio",who:"Studios · Networks · Agencies",price:"Custom",period:"enterprise pricing",features:["Everything in Casting Director","Multi-user team access (up to 10)","Custom branding on postings","Full API access","Dedicated account manager"],featured:false,cta:"Contact Sales",action:"contact"},
   ];
   return(<div className="page">
-    <div className="info-hero"><div className="section-label">Pricing</div><h1>Free for Talent.<br/>Always.</h1><p>Talent never pays. Casting directors pay just $20 per casting post — no subscriptions, no hidden fees.</p></div>
+    <div className="info-hero"><div className="section-label">Pricing</div><h1>Simple pricing.<br/>No surprises.</h1><p>Talent: $9.99/month with a 7-day free trial. Casting directors pay just $20 per casting post — no subscriptions.</p></div>
     <div className="grid-3" style={{maxWidth:1000,margin:"0 auto"}}>{plans.map(p=>
       <div key={p.name} className="card" style={p.featured?{borderColor:"var(--acc)",background:"linear-gradient(165deg,var(--s1),rgba(26,26,46,.02))",position:"relative"}:{}}>
         {p.featured&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"var(--acc)",color:"var(--bg)",fontSize:10,fontWeight:800,fontFamily:"'Syne',sans-serif",padding:"4px 14px",borderRadius:100,letterSpacing:1}}>MOST POPULAR</div>}
         <h3 style={{fontSize:18,fontWeight:700,marginBottom:4,textAlign:"center"}}>{p.name}</h3>
         <p style={{color:"var(--t2)",fontSize:12,marginBottom:20,textAlign:"center"}}>{p.who}</p>
-        <div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:44,color:p.price==="FREE"?"var(--grn)":"var(--t1)",textAlign:"center"}}>{p.price}</div>
+        <div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:44,color:"var(--t1)",textAlign:"center"}}>{p.price}</div>
         <p style={{color:"var(--t2)",fontSize:12,marginBottom:24,textAlign:"center"}}>{p.period}</p>
         {p.features.map(f=><div key={f} style={{display:"flex",gap:8,alignItems:"center",padding:"7px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}</div>)}
         <button className={p.featured?"btn-p":"btn-s"} style={{width:"100%",marginTop:24}} onClick={()=>onNavigate(p.action)}>{p.cta}</button>
@@ -1294,7 +1357,9 @@ function TalentProfile({talent,onBack,onNavigate}){
         <div className="mt-20"><div className="label">Special Skills</div><div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:4}}>{talent.skills.map((s,i)=><span className="tag" key={i}>{s}</span>)}</div></div>
       </div>
     </div>
-    <div className="card mt-20"><h3 style={{fontSize:18,fontWeight:700,marginBottom:16}}>Credits</h3>
+    <div className="card mt-20"><div className="flex-between" style={{marginBottom:12,alignItems:"center"}}><h3 style={{fontSize:18,fontWeight:700}}>Credits</h3>
+      {talent.resume_url&&<a href={talent.resume_url} target="_blank" rel="noreferrer" className="btn-p btn-sm" style={{textDecoration:"none"}}>📄 Download Resume</a>}
+      </div>
       <table className="credits-table"><thead><tr><th>Role</th><th>Project</th><th>Type</th><th>Year</th></tr></thead>
       <tbody>{talent.credits.map((c,i)=><tr key={i}><td style={{fontWeight:600}}>{c.role}</td><td>{c.project}</td><td style={{color:"var(--t2)"}}>{c.type}</td><td style={{color:"var(--t2)"}}>{c.year}</td></tr>)}</tbody></table>
     </div>
@@ -1471,7 +1536,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
   // ─── Open a specific role → tinder swipe only this role's submissions
   const openRole=async(role)=>{
     setActiveRole(role);setSi(0);
-    const {data}=await window.sb.from("applications").select("*,profiles!inner(id,display_name,headshot_url,age,gender,location,ethnicity,skills,union_status,bio,height,reel_url,additional_photos),roles(id,name)").eq("role_id",role.id).order("created_at",{ascending:false});
+    const {data}=await window.sb.from("applications").select("*,profiles!inner(id,display_name,headshot_url,age,gender,location,ethnicity,skills,union_status,bio,height,reel_url,additional_photos,resume_url),roles(id,name)").eq("role_id",role.id).order("created_at",{ascending:false});
     setSubmissions(data||[]);
   };
 
@@ -1543,7 +1608,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
           <SwipeUI key={si}/>
           <div className="swipe-btns">
             <button className="sw-btn pass" onClick={()=>doSwipe("pass")}>✕</button>
-            <button className="sw-btn save" onClick={()=>submissions[si]&&onViewProfile({name:submissions[si].profiles.display_name,img:submissions[si].selected_photo_url||submissions[si].profiles.headshot_url,age:submissions[si].profiles.age||"",gender:submissions[si].profiles.gender||"",location:submissions[si].profiles.location||"",skills:submissions[si].profiles.skills||[],bio:submissions[si].profiles.bio||"",credits:[],union:submissions[si].profiles.union_status||"",height:submissions[si].profiles.height||"",training:"",ethnicity:submissions[si].profiles.ethnicity||""})}>👤</button>
+            <button className="sw-btn save" onClick={()=>submissions[si]&&onViewProfile({name:submissions[si].profiles.display_name,img:submissions[si].selected_photo_url||submissions[si].profiles.headshot_url,age:submissions[si].profiles.age||"",gender:submissions[si].profiles.gender||"",location:submissions[si].profiles.location||"",skills:submissions[si].profiles.skills||[],bio:submissions[si].profiles.bio||"",credits:[],union:submissions[si].profiles.union_status||"",height:submissions[si].profiles.height||"",training:"",ethnicity:submissions[si].profiles.ethnicity||"",resume_url:submissions[si].profiles.resume_url||""})}>👤</button>
             <button className="sw-btn yes" onClick={()=>doSwipe("yes")}>✓</button>
           </div>
         </div>
@@ -1552,7 +1617,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
           {callbackSubs.length===0?<div className="cb-empty">Swipe right on talent to add them to your callback list</div>:
           callbackSubs.map((a,i)=>
             <div key={i} className="cb-item" style={{flexDirection:"column",alignItems:"stretch"}}>
-              <div style={{display:"flex",gap:10,alignItems:"center",cursor:"pointer"}} onClick={()=>onViewProfile({name:a.profiles.display_name,img:a.selected_photo_url||a.profiles.headshot_url||"",age:a.profiles.age||"",gender:a.profiles.gender||"",location:a.profiles.location||"",skills:a.profiles.skills||[],bio:a.profiles.bio||"",credits:[],union:a.profiles.union_status||"",height:a.profiles.height||"",training:"",ethnicity:a.profiles.ethnicity||""})}>
+              <div style={{display:"flex",gap:10,alignItems:"center",cursor:"pointer"}} onClick={()=>onViewProfile({name:a.profiles.display_name,img:a.selected_photo_url||a.profiles.headshot_url||"",age:a.profiles.age||"",gender:a.profiles.gender||"",location:a.profiles.location||"",skills:a.profiles.skills||[],bio:a.profiles.bio||"",credits:[],union:a.profiles.union_status||"",height:a.profiles.height||"",training:"",ethnicity:a.profiles.ethnicity||"",resume_url:a.profiles.resume_url||""})}>
                 <img src={a.selected_photo_url||a.profiles.headshot_url||"https://placehold.co/80x100/e5e5e5/999?text=?"} alt={a.profiles.display_name} style={{width:52,height:66,objectFit:"cover",borderRadius:6}}/>
                 <div className="cb-item-info" style={{flex:1}}><h4>{a.profiles.display_name}</h4><p>{[a.profiles.age,a.profiles.gender,a.profiles.location].filter(Boolean).join(" · ")}</p></div>
               </div>
@@ -1768,9 +1833,9 @@ function Landing({onNavigate}){
     <section style={{padding:"72px 40px 40px",maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1.1fr 1fr",gap:60,alignItems:"center"}}><div>
       <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--bdr)",padding:"6px 14px",borderRadius:100,fontSize:12,color:"var(--acc)",fontWeight:700,letterSpacing:0.5,textTransform:"uppercase",marginBottom:20}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--grn)",boxShadow:"0 0 8px var(--grn)"}}/>Now in early access · Join 2,400+ on the waitlist</div>
       <h1 style={{fontWeight:800,fontSize:56,lineHeight:1.02,letterSpacing:-2.2,marginBottom:20}}>Casting, finally built for <span style={{color:"var(--acc)"}}>actors.</span></h1>
-      <p style={{color:"var(--t2)",fontSize:18,lineHeight:1.55,marginBottom:28,maxWidth:500}}>Every submission reviewed. No lost headshots. No fees, ever. SwipeCast forces casting directors to see every actor — one at a time. Pass or callback. That's it.</p>
-      <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Create Free Actor Profile →</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate("register-cd")}>I'm a Casting Director</button></div>
-      <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> Free forever for talent</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> No credit card</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> 60-second signup</span></div>
+      <p style={{color:"var(--t2)",fontSize:18,lineHeight:1.55,marginBottom:28,maxWidth:500}}>Every submission reviewed. No lost headshots. Just $9.99 a month. SwipeCast forces casting directors to see every actor — one at a time. Pass or callback. That's it.</p>
+      <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Start My 7-Day Free Trial →</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate("register-cd")}>I'm a Casting Director</button></div>
+      <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> $9.99/mo for talent · 7-day free trial</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> Cancel anytime</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> 60-second signup</span></div>
     </div><div style={{display:"flex",justifyContent:"center"}}><LandingSwipe/></div></section>
 
     {/* ───────── LOGO STRIP ───────── */}
@@ -1818,17 +1883,17 @@ function Landing({onNavigate}){
     <section style={{padding:"80px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">How It Works</div>
       <div className="tabs"><button className={`tab ${hTab==="talent"?"active":""}`} onClick={()=>setHTab("talent")}>For Talent</button><button className={`tab ${hTab==="caster"?"active":""}`} onClick={()=>setHTab("caster")}>For Casting Directors</button></div>
       <div className="section-title" style={{marginTop:8}}>{hTab==="talent"?"Your talent deserves to be seen.":"Cast smarter. See everyone."}</div>
-      <div className="grid-3">{(hTab==="talent"?[["01","Create Your Free Profile","Upload headshots, reel, resume, and stats. No fees. No credit card. Ever."],["02","Submit to Castings","Browse open casting calls for film, TV, theater, commercials, and modeling. One-tap apply."],["03","Get Seen. Guaranteed.","Every casting director swipes through your headshot individually. No grid views. No skipping."]]:
+      <div className="grid-3">{(hTab==="talent"?[["01","Create Your Profile","Upload headshots, reel, resume, and stats. 7 days free, then $9.99/mo. Cancel anytime."],["02","Submit to Castings","Browse open casting calls for film, TV, theater, commercials, and modeling. One-tap apply."],["03","Get Seen. Guaranteed.","Every casting director swipes through your headshot individually. No grid views. No skipping."]]:
         [["01","Post Your Breakdown","Describe the role, specs, and pay. Your casting goes live instantly."],["02","Swipe Through Talent","Review every submission one by one. Right to callback, left to pass."],["03","Manage & Schedule","Organize callbacks, send sides, schedule auditions — all from your dashboard."]]).map(([n,t,d])=>
         <div key={n} className="card"><div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:44,color:"var(--acc)",opacity:.3,marginBottom:12}}>{n}</div><h3 style={{fontSize:17,fontWeight:700,marginBottom:10}}>{t}</h3><p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6}}>{d}</p></div>)}</div>
     </section>
 
-    <section style={{padding:"80px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">Pricing</div><div className="section-title">Free for talent. Always.</div>
-      <div className="grid-3">{[{name:"Talent",who:"Actors · Models · Performers",price:"FREE",period:"forever — no catch",features:["Unlimited profile & headshots","Unlimited submissions","Guaranteed views","Direct messages from casting","Audition scheduling"],featured:false,cta:"Create Free Profile",action:"register-talent"},{name:"Casting Director",who:"Casting Directors · Producers",price:"$20",period:"per casting post",features:["Free account creation","Swipe-based review","Advanced talent filters","Callback management","Pay only when you post"],featured:true,cta:"Start Casting",action:"register-cd"},{name:"Studio",who:"Studios · Networks · Agencies",price:"Custom",period:"enterprise pricing",features:["Everything in Casting Director","Multi-user team access","Custom branding","API access","Dedicated account manager"],featured:false,cta:"Contact Sales",action:"contact"}].map(p=>
+    <section style={{padding:"80px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">Pricing</div><div className="section-title">Simple pricing. No surprises.</div>
+      <div className="grid-3">{[{name:"Talent",who:"Actors · Models · Performers",price:"$9.99",period:"per month · 7-day free trial",features:["Unlimited profile, photos & video","Unlimited submissions","Guaranteed views","Direct messages from casting","Audition scheduling","Cancel anytime"],featured:false,cta:"Start 7-Day Free Trial",action:"register-talent"},{name:"Casting Director",who:"Casting Directors · Producers",price:"$20",period:"per casting post",features:["Free account creation","Swipe-based review","Advanced talent filters","Callback management","Pay only when you post"],featured:true,cta:"Start Casting",action:"register-cd"},{name:"Studio",who:"Studios · Networks · Agencies",price:"Custom",period:"enterprise pricing",features:["Everything in Casting Director","Multi-user team access","Custom branding","API access","Dedicated account manager"],featured:false,cta:"Contact Sales",action:"contact"}].map(p=>
         <div key={p.name} className="card" style={p.featured?{borderColor:"var(--acc)",background:"linear-gradient(165deg,var(--s1),rgba(26,26,46,.02))",position:"relative"}:{}}>
           {p.featured&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"var(--acc)",color:"var(--bg)",fontSize:10,fontWeight:800,fontFamily:"'Syne',sans-serif",padding:"4px 14px",borderRadius:100,letterSpacing:1}}>MOST POPULAR</div>}
           <h3 style={{fontSize:18,fontWeight:700,marginBottom:4,textAlign:"center"}}>{p.name}</h3><p style={{color:"var(--t2)",fontSize:12,marginBottom:20,textAlign:"center"}}>{p.who}</p>
-          <div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:44,color:p.price==="FREE"?"var(--grn)":"var(--t1)",textAlign:"center"}}>{p.price}</div><p style={{color:"var(--t2)",fontSize:12,marginBottom:24,textAlign:"center"}}>{p.period}</p>
+          <div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:44,color:"var(--t1)",textAlign:"center"}}>{p.price}</div><p style={{color:"var(--t2)",fontSize:12,marginBottom:24,textAlign:"center"}}>{p.period}</p>
           {p.features.map(f=><div key={f} style={{display:"flex",gap:8,alignItems:"center",padding:"7px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}</div>)}
           <button className={p.featured?"btn-p":"btn-s"} style={{width:"100%",marginTop:24}} onClick={()=>onNavigate(p.action)}>{p.cta}</button></div>)}</div>
     </section>
@@ -2009,6 +2074,25 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     await window.sb.from("profiles").update({additional_photos:newPhotos}).eq("id",session.user.id);
     setPhotos(newPhotos);onReload&&onReload();
   };
+  const uploadResume=async(file)=>{
+    if(!file)return;
+    const ext=(file.name.split(".").pop()||"pdf").toLowerCase();
+    if(!["pdf","doc","docx"].includes(ext)){setErr("Resume must be a PDF, DOC, or DOCX file.");return;}
+    if(file.size>10*1024*1024){setErr("Resume must be under 10 MB.");return;}
+    setUploading(true);setErr("");
+    try{
+      const path=`${session.user.id}/resume_${Date.now()}.${ext}`;
+      const {error:upErr}=await window.sb.storage.from("reels").upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type||"application/pdf"});
+      if(upErr)throw upErr;
+      const {data:pub}=window.sb.storage.from("reels").getPublicUrl(path);
+      await window.sb.from("profiles").update({resume_url:pub.publicUrl}).eq("id",session.user.id);
+      onReload&&onReload();setMsg("Resume uploaded.");setTimeout(()=>setMsg(""),3000);
+    }catch(e){setErr(e.message||"Upload failed. Make sure you've added the resume_url column — see the SQL in DEPLOY-NOW.");}finally{setUploading(false);}
+  };
+  const removeResume=async()=>{
+    await window.sb.from("profiles").update({resume_url:null}).eq("id",session.user.id);
+    onReload&&onReload();setMsg("Resume removed.");setTimeout(()=>setMsg(""),3000);
+  };
   if(!profile)return(<div className="page"><p style={{color:"var(--t2)"}}>Loading…</p><Footer onNavigate={onNavigate}/></div>);
   const isCD=profile.user_type==="cd";
   const allPhotos=[profile.headshot_url,...photos].filter(Boolean);
@@ -2078,6 +2162,19 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
         <div className="card" style={{padding:24,marginBottom:16}}>
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Credits (one per line: Role · Project · Year)</h3>
           <textarea className="textarea" style={{minHeight:160,fontFamily:"monospace",fontSize:13}} value={f.credits} onChange={e=>up("credits",e.target.value)} placeholder={"Elena · Burning Season (Feature) · 2025\nLady Macbeth · Macbeth (Off-Broadway) · 2024\nDetective Ross · Crime Scene (TV) · 2023"}/>
+          <div style={{marginTop:20,paddingTop:20,borderTop:"1px solid var(--bdr)"}}>
+            <label className="label">Resume / CV (PDF, DOC, or DOCX — max 10 MB)</label>
+            <p style={{fontSize:12,color:"var(--t3)",marginTop:-4,marginBottom:10}}>Casting directors can download this directly from your profile and from every submission you send.</p>
+            {profile.resume_url?(
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+                <a href={profile.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none"}}>📄 View current resume</a>
+                <label className="btn-s btn-sm" style={{cursor:"pointer"}}>{uploading?"Uploading…":"Replace"}<input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style={{display:"none"}} onChange={e=>uploadResume(e.target.files?.[0])}/></label>
+                <button className="btn-s btn-sm" onClick={removeResume}>Remove</button>
+              </div>
+            ):(
+              <label className="btn-p btn-sm" style={{cursor:"pointer",display:"inline-block"}}>{uploading?"Uploading…":"📄 Upload Resume"}<input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style={{display:"none"}} onChange={e=>uploadResume(e.target.files?.[0])}/></label>
+            )}
+          </div>
         </div>
       </>}
       {isCD&&<>
@@ -2444,13 +2541,23 @@ function App(){
   },[]);
 
   useEffect(()=>{
+    // URL-fragment detection for password-recovery link (before Supabase consumes it)
+    const hash=window.location.hash||"";
+    const qs=window.location.search||"";
+    if(hash.includes("type=recovery")||qs.includes("type=recovery")){
+      setPage("reset-password");
+    }
     (async()=>{
       const {data:{session:s}}=await window.sb.auth.getSession();
       setSession(s||null);
       if(s?.user)await loadProfile(s.user.id);
       setAuthReady(true);
     })();
-    const {data:sub}=window.sb.auth.onAuthStateChange(async(_e,s)=>{setSession(s||null);if(s?.user)await loadProfile(s.user.id);else setMyProfile(null);});
+    const {data:sub}=window.sb.auth.onAuthStateChange(async(e,s)=>{
+      setSession(s||null);
+      if(s?.user)await loadProfile(s.user.id);else setMyProfile(null);
+      if(e==="PASSWORD_RECOVERY"){window.scrollTo(0,0);setPage("reset-password");}
+    });
     return()=>{sub?.subscription?.unsubscribe?.();};
   },[loadProfile]);
 
@@ -2503,6 +2610,7 @@ function App(){
       {page==="register-talent"&&<RegisterTalent onNavigate={navigate}/>}
       {page==="register-cd"&&<RegisterCD onNavigate={navigate}/>}
       {page==="login"&&<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn}/>}
+      {page==="reset-password"&&<ResetPasswordPage onNavigate={navigate} session={session}/>}
       {page==="about"&&<AboutPage onNavigate={navigate}/>}
       {page==="blog"&&<BlogPage onNavigate={navigate}/>}
       {page==="contact"&&<ContactPage onNavigate={navigate}/>}
