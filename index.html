@@ -1445,7 +1445,15 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const [pg,setPg]=useState(1);
   const [dbCastings,setDbCastings]=useState([]);
   const [dbTalent,setDbTalent]=useState([]);
+  const [refreshTick,setRefreshTick]=useState(0);
   useEffect(()=>{setPg(1);},[q,f.type,f.location,f.union,f.gender,f.ethnicity,mode]);
+  // Refetch when tab becomes visible again — keeps castings list in sync after CD posts
+  useEffect(()=>{
+    const onFocus=()=>setRefreshTick(t=>t+1);
+    window.addEventListener("focus",onFocus);
+    document.addEventListener("visibilitychange",onFocus);
+    return()=>{window.removeEventListener("focus",onFocus);document.removeEventListener("visibilitychange",onFocus);};
+  },[]);
   useEffect(()=>{(async()=>{
     try{
       const {data:cs}=await window.sb.from("castings").select("*,roles(id,name,description,gender,age_range,ethnicity,pay)").eq("status","open").eq("published",true).order("created_at",{ascending:false});
@@ -1495,7 +1503,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       }));
       setDbTalent(mapped);
     }catch(e){/* silent */}
-  })();},[]);
+  })();},[refreshTick]);
   // Merge: real DB castings first (newest), then demo. Real talent first, then demo.
   const allCastings=[...dbCastings,...CASTINGS];
   const allTalent=[...dbTalent,...TALENT];
@@ -2125,6 +2133,9 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     setInbox(p=>p.map(m=>m.id===id?{...m,read_at:new Date().toISOString()}:m));
   };
   const up=(k,v)=>setF(x=>({...x,[k]:v}));
+  // 30-second hard timeout so UI never stays "Saving…" forever if network hangs
+  const withTimeout=(promise,ms=30000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Check your connection and try again.`)),ms))]);
+  const showErr=(m)=>{setErr(m);window.scrollTo({top:0,behavior:"smooth"});};
   const save=async()=>{
     setErr("");setMsg("");setSaving(true);
     try{
@@ -2139,23 +2150,23 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
         company_name:f.company_name||null,company_role:f.company_role||null,website:f.website||null,
         credits:f.credits||null,video_links:vl
       };
-      const {error}=await window.sb.from("profiles").update(patch).eq("id",session.user.id);
+      const {error}=await withTimeout(window.sb.from("profiles").update(patch).eq("id",session.user.id),30000,"Save");
       if(error)throw error;
-      setMsg("Profile saved.");onReload&&onReload();setTimeout(()=>setMsg(""),3000);
-    }catch(e){setErr(e.message||"Could not save.");}finally{setSaving(false);}
+      setMsg("Profile saved.");window.scrollTo({top:0,behavior:"smooth"});onReload&&onReload();setTimeout(()=>setMsg(""),3000);
+    }catch(e){showErr(e.message||"Could not save.");}finally{setSaving(false);}
   };
   const uploadFile=async(file,bucket,field)=>{
     if(!file)return;setUploading(true);setErr("");
     try{
       const ext=(file.name.split(".").pop()||"jpg").toLowerCase();
       const path=`${session.user.id}/${Date.now()}.${ext}`;
-      const {error:upErr}=await window.sb.storage.from(bucket).upload(path,file,{cacheControl:"3600",upsert:false});
+      const {error:upErr}=await withTimeout(window.sb.storage.from(bucket).upload(path,file,{cacheControl:"3600",upsert:false}),60000,"Upload");
       if(upErr)throw upErr;
       const {data:pub}=window.sb.storage.from(bucket).getPublicUrl(path);
       const patch={};patch[field]=pub.publicUrl;
-      await window.sb.from("profiles").update(patch).eq("id",session.user.id);
+      await withTimeout(window.sb.from("profiles").update(patch).eq("id",session.user.id),30000,"Save");
       onReload&&onReload();setMsg(field==="headshot_url"?"Headshot uploaded.":"Photo uploaded.");setTimeout(()=>setMsg(""),3000);
-    }catch(e){setErr(e.message||"Upload failed. Make sure storage buckets are set up.");}finally{setUploading(false);}
+    }catch(e){showErr(e.message||"Upload failed. Make sure storage buckets are set up.");}finally{setUploading(false);}
   };
   const uploadAdditionalPhoto=async(file)=>{
     if(!file)return;
@@ -2181,17 +2192,18 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
   const uploadResume=async(file)=>{
     if(!file)return;
     const ext=(file.name.split(".").pop()||"pdf").toLowerCase();
-    if(!["pdf","doc","docx"].includes(ext)){setErr("Resume must be a PDF, DOC, or DOCX file.");return;}
-    if(file.size>10*1024*1024){setErr("Resume must be under 10 MB.");return;}
+    if(!["pdf","doc","docx"].includes(ext)){showErr("Resume must be a PDF, DOC, or DOCX file.");return;}
+    if(file.size>10*1024*1024){showErr("Resume must be under 10 MB.");return;}
     setUploading(true);setErr("");
     try{
       const path=`${session.user.id}/resume_${Date.now()}.${ext}`;
-      const {error:upErr}=await window.sb.storage.from("reels").upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type||"application/pdf"});
+      const {error:upErr}=await withTimeout(window.sb.storage.from("reels").upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type||"application/pdf"}),60000,"Resume upload");
       if(upErr)throw upErr;
       const {data:pub}=window.sb.storage.from("reels").getPublicUrl(path);
-      await window.sb.from("profiles").update({resume_url:pub.publicUrl}).eq("id",session.user.id);
-      onReload&&onReload();setMsg("Resume uploaded.");setTimeout(()=>setMsg(""),3000);
-    }catch(e){setErr(e.message||"Upload failed. Make sure you've added the resume_url column — see the SQL in DEPLOY-NOW.");}finally{setUploading(false);}
+      const {error:dbErr}=await withTimeout(window.sb.from("profiles").update({resume_url:pub.publicUrl}).eq("id",session.user.id),30000,"Save");
+      if(dbErr)throw dbErr;
+      onReload&&onReload();setMsg("Resume uploaded.");window.scrollTo({top:0,behavior:"smooth"});setTimeout(()=>setMsg(""),3000);
+    }catch(e){showErr(e.message||"Upload failed.");}finally{setUploading(false);}
   };
   const removeResume=async()=>{
     await window.sb.from("profiles").update({resume_url:null}).eq("id",session.user.id);
@@ -2651,6 +2663,25 @@ function App(){
     if(hash.includes("type=recovery")||qs.includes("type=recovery")){
       setPage("reset-password");
     }
+    // Seed browser history with the current page so back-button works
+    try{
+      if(!window.history.state||!window.history.state.swipecast){
+        window.history.replaceState({swipecast:true,page:"home"},"","");
+      }
+    }catch(e){}
+    // Back-button handler — pop to previous swipecast page, or home
+    const onPop=(e)=>{
+      const st=e.state;
+      window.scrollTo(0,0);
+      if(st&&st.swipecast){
+        setPage(st.page||"home");
+        if(st.page!=="profile")setViewingProfile(null);
+        if(st.page!=="casting-detail")setViewingCasting(null);
+      }else{
+        setPage("home");setViewingProfile(null);setViewingCasting(null);
+      }
+    };
+    window.addEventListener("popstate",onPop);
     (async()=>{
       const {data:{session:s}}=await window.sb.auth.getSession();
       setSession(s||null);
@@ -2659,16 +2690,33 @@ function App(){
     })();
     const {data:sub}=window.sb.auth.onAuthStateChange(async(e,s)=>{
       setSession(s||null);
-      if(s?.user)await loadProfile(s.user.id);else setMyProfile(null);
+      // Only reload profile on meaningful auth transitions — skip TOKEN_REFRESHED so nav buttons/profile don't blink on every hourly refresh
+      if(e==="SIGNED_IN"||e==="INITIAL_SESSION"||e==="USER_UPDATED"){
+        if(s?.user)await loadProfile(s.user.id);
+      }else if(e==="SIGNED_OUT"){
+        setMyProfile(null);
+      }
       if(e==="PASSWORD_RECOVERY"){window.scrollTo(0,0);setPage("reset-password");}
     });
-    return()=>{sub?.subscription?.unsubscribe?.();};
+    return()=>{window.removeEventListener("popstate",onPop);sub?.subscription?.unsubscribe?.();};
   },[loadProfile]);
 
-  const navigate=useCallback((p)=>{window.scrollTo(0,0);if(p==="search-talent"){setUserType("talent");setPage("search");}else if(p==="search-cd"){setUserType("cd");setPage("search");}else if(p==="search"){setPage("search");}else if(p==="dashboard"){setUserType("cd");setPage("dashboard");}else setPage(p);},[]);
-  const viewProfile=(t)=>{setPrevPage(page);setViewingProfile(t);setPage("profile");};
-  const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");};
-  const completeAuth=()=>{if(pendingApply){const c=pendingApply.casting;setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");}else{setPage("home");}};
+  const pushHist=(p)=>{try{window.history.pushState({swipecast:true,page:p},"","");}catch(e){}};
+  const navigate=useCallback((p)=>{
+    window.scrollTo(0,0);
+    let target=p;
+    if(p==="search-talent"){setUserType("talent");setPage("search");target="search";}
+    else if(p==="search-cd"){setUserType("cd");setPage("search");target="search";}
+    else if(p==="search"){setUserType("talent");setPage("search");}
+    else if(p==="dashboard"){setUserType("cd");setPage("dashboard");}
+    else setPage(p);
+    // Clear detail state on any nav that isn't a drilldown
+    if(p!=="profile"&&p!=="casting-detail"&&p!=="auth-gate"){setViewingProfile(null);setViewingCasting(null);}
+    pushHist(target);
+  },[]);
+  const viewProfile=(t)=>{setPrevPage(page);setViewingProfile(t);setPage("profile");pushHist("profile");};
+  const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");pushHist("auth-gate");};
+  const completeAuth=()=>{if(pendingApply){const c=pendingApply.casting;setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail");}else{setPage("home");pushHist("home");}};
   const onLoggedIn=async(user)=>{
     await loadProfile(user.id);
     const {data}=await window.sb.from("profiles").select("user_type,email").eq("id",user.id).maybeSingle();
@@ -2678,7 +2726,13 @@ function App(){
     else if(pendingApply){completeAuth();}
     else{navigate("my-profile");}
   };
-  const signOut=async()=>{await window.sb.auth.signOut();setMyProfile(null);navigate("home");};
+  const signOut=async()=>{
+    // Optimistic local sign-out so UI unfreezes instantly even if network is slow
+    setMyProfile(null);
+    setSession(null);
+    navigate("home");
+    try{await window.sb.auth.signOut();}catch(e){/* already logged out locally */}
+  };
 
   return(
     <div className="app"><style>{css}</style>
