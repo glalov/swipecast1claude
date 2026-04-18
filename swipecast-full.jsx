@@ -348,32 +348,50 @@ function RegisterTalent({onNavigate}){
   const [done,setDone]=useState(false);
   const [loading,setLoading]=useState(false);
   const [err,setErr]=useState("");
+  const [dupEmail,setDupEmail]=useState(false); // true when the email is already registered → show Resend / Login
+  const [resentOk,setResentOk]=useState(false);
+  const submittingRef=useRef(false); // blocks double-click races that fire two signUp calls
   const [f,setF]=useState({first:"",last:"",email:"",password:"",location:"",gender:"",age:"",height:"",weight:"",hair:"",eyes:"",ethnicity:"",union_status:"Non-Union",types:[],bio:"",training:"",skills:"",agent:"",agree:false});
   const up=(k,v)=>setF(x=>({...x,[k]:v}));
   const toggleType=t=>setF(x=>({...x,types:x.types.includes(t)?x.types.filter(y=>y!==t):[...x.types,t]}));
   const validStep1=()=>{if(!f.first||!f.last){setErr("Please enter your first and last name.");return false;}if(!f.email||!f.email.includes("@")){setErr("Please enter a valid email address.");return false;}if(!f.password||f.password.length<8){setErr("Password must be at least 8 characters.");return false;}if(!f.location){setErr("Please enter your location.");return false;}setErr("");return true;};
   const withTimeout=(promise,ms=30000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Check your connection and try again.`)),ms))]);
+  const resendConfirmation=async()=>{
+    setResentOk(false);
+    try{
+      const email=f.email.trim().toLowerCase();
+      const {error}=await window.sb.auth.resend({type:"signup",email,options:{emailRedirectTo:window.location.origin}});
+      if(error)throw error;
+      setResentOk(true);
+    }catch(e){console.warn("[auth] resend failed:",e?.message||e);setErr("Could not resend the verification email. Try logging in instead.");}
+  };
   const createAccount=async()=>{
+    if(submittingRef.current)return; // prevent double-click race
     if(!f.agree){setErr("Please agree to the Terms of Service and Privacy Policy.");window.scrollTo(0,0);return;}
-    setErr("");setLoading(true);
+    submittingRef.current=true;
+    setErr("");setDupEmail(false);setResentOk(false);setLoading(true);
     try{
       const display_name=(f.first+" "+f.last).trim();
       const email=f.email.trim().toLowerCase();
+      console.log("[auth] signUp attempt:",email);
       const {data,error}=await withTimeout(window.sb.auth.signUp({
         email,password:f.password,
         options:{emailRedirectTo:window.location.origin,data:{user_type:"talent",display_name}}
       }),30000,"Sign up");
       if(error){
         const em=(error.message||"").toLowerCase();
+        console.warn("[auth] signUp error:",error.message);
         if(em.includes("already")||em.includes("exist")||em.includes("registered")){
-          setErr("An account with this email already exists. Please log in or reset your password instead.");
-          window.scrollTo(0,0);setLoading(false);return;
+          setDupEmail(true);
+          setErr("An account with this email already exists. If you never received the verification email, resend it below — otherwise log in.");
+          window.scrollTo(0,0);setLoading(false);submittingRef.current=false;return;
         }
         throw error;
       }
       if(data?.user&&Array.isArray(data.user.identities)&&data.user.identities.length===0){
-        setErr("An account with this email already exists. Please log in or reset your password instead.");
-        window.scrollTo(0,0);setLoading(false);return;
+        setDupEmail(true);
+        setErr("An account with this email already exists. If you never received the verification email, resend it below — otherwise log in.");
+        window.scrollTo(0,0);setLoading(false);submittingRef.current=false;return;
       }
       if(data.user){
         // Fire-and-forget the profile update so a slow DB write can't freeze the payment step.
@@ -388,8 +406,8 @@ function RegisterTalent({onNavigate}){
         }).eq("id",data.user.id),15000,"Profile save").catch(e=>console.warn("Profile update failed (non-blocking):",e));
       }
       setStep(4); // go to payment step
-    }catch(e){setErr(e.message||"Something went wrong. Please try again.");window.scrollTo(0,0);}
-    finally{setLoading(false);}
+    }catch(e){console.warn("[auth] createAccount caught:",e?.message||e);setErr(e.message||"Something went wrong. Please try again.");window.scrollTo(0,0);}
+    finally{setLoading(false);submittingRef.current=false;}
   };
   if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:24,color:"var(--t2)",fontSize:14}}>Click the link in that email, then log in and start submitting to castings.</p><div style={{display:"flex",gap:12,justifyContent:"center"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
   return(
@@ -398,7 +416,7 @@ function RegisterTalent({onNavigate}){
       <h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:8}}>Create Your Talent Profile</h1>
       <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>$9.99/month after your free 7-day trial. Cancel anytime. Already have an account? <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>Log in</span></p>
       <div style={{display:"flex",gap:8,marginBottom:32}}>{[1,2,3,4].map(s=><div key={s} style={{flex:1,height:4,borderRadius:2,background:s<=step?"var(--acc)":"var(--s3)",transition:"background .3s"}}/>)}</div>
-      {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
+      {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}>✓ Verification email re-sent — check your inbox.</div>}</div>}
 
       {step===1&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>Step 1 of 4 — Account</h3>
         <div className="form-row"><div className="form-group"><label className="label">First Name</label><input className="input" placeholder="First name" value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">Last Name</label><input className="input" placeholder="Last name" value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
@@ -453,46 +471,64 @@ function RegisterCD({onNavigate}){
   const [done,setDone]=useState(false);
   const [loading,setLoading]=useState(false);
   const [err,setErr]=useState("");
+  const [dupEmail,setDupEmail]=useState(false);
+  const [resentOk,setResentOk]=useState(false);
+  const submittingRef=useRef(false);
   const [f,setF]=useState({first:"",last:"",email:"",password:"",company_name:"",company_role:"Casting Director",location:"",website:"",agree:false});
   const up=(k,v)=>setF(x=>({...x,[k]:v}));
+  const withTimeout=(promise,ms=30000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Check your connection and try again.`)),ms))]);
+  const resendConfirmation=async()=>{
+    setResentOk(false);
+    try{
+      const {error}=await window.sb.auth.resend({type:"signup",email:f.email.trim().toLowerCase(),options:{emailRedirectTo:window.location.origin}});
+      if(error)throw error;
+      setResentOk(true);
+    }catch(e){console.warn("[auth] CD resend failed:",e?.message||e);setErr("Could not resend the verification email. Try logging in instead.");}
+  };
   const submit=async()=>{
-    setErr("");
+    if(submittingRef.current)return;
+    setErr("");setDupEmail(false);setResentOk(false);
     if(!f.first||!f.last){setErr("Please enter your first and last name.");return;}
     if(!f.email||!f.email.includes("@")){setErr("Please enter a valid email.");return;}
     if(!f.password||f.password.length<8){setErr("Password must be at least 8 characters.");return;}
     if(!f.company_name){setErr("Please enter your company or production.");return;}
     if(!f.agree){setErr("Please agree to the Terms of Service and Privacy Policy.");return;}
-    setLoading(true);
+    submittingRef.current=true;setLoading(true);
     try{
       const display_name=(f.first+" "+f.last).trim();
-      const {data,error}=await window.sb.auth.signUp({
-        email:f.email.trim().toLowerCase(),
-        password:f.password,
+      const email=f.email.trim().toLowerCase();
+      console.log("[auth] CD signUp attempt:",email);
+      const {data,error}=await withTimeout(window.sb.auth.signUp({
+        email,password:f.password,
         options:{emailRedirectTo:window.location.origin,data:{user_type:"cd",display_name}}
-      });
+      }),30000,"Sign up");
       if(error){
         const em=(error.message||"").toLowerCase();
+        console.warn("[auth] CD signUp error:",error.message);
         if(em.includes("already")||em.includes("exist")||em.includes("registered")){
-          setErr("An account with this email already exists. Please log in or reset your password instead.");
-          setLoading(false);return;
+          setDupEmail(true);
+          setErr("An account with this email already exists. If you never received the verification email, resend it below — otherwise log in.");
+          setLoading(false);submittingRef.current=false;return;
         }
         throw error;
       }
       if(data?.user&&Array.isArray(data.user.identities)&&data.user.identities.length===0){
-        setErr("An account with this email already exists. Please log in or reset your password instead.");
-        setLoading(false);return;
+        setDupEmail(true);
+        setErr("An account with this email already exists. If you never received the verification email, resend it below — otherwise log in.");
+        setLoading(false);submittingRef.current=false;return;
       }
       if(data.user){
-        await window.sb.from("profiles").update({
+        // Fire-and-forget — don't block the success screen on a slow profile write
+        withTimeout(window.sb.from("profiles").update({
           display_name,user_type:"cd",
           company_name:f.company_name,company_role:f.company_role,
           location:f.location||null,website:f.website||null,
           onboarded:true
-        }).eq("id",data.user.id);
+        }).eq("id",data.user.id),15000,"Profile save").catch(e=>console.warn("[auth] CD profile update failed (non-blocking):",e?.message||e));
       }
       setDone(true);
-    }catch(e){setErr(e.message||"Something went wrong. Please try again.");}
-    finally{setLoading(false);}
+    }catch(e){console.warn("[auth] CD submit caught:",e?.message||e);setErr(e.message||"Something went wrong. Please try again.");}
+    finally{setLoading(false);submittingRef.current=false;}
   };
   if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:24,color:"var(--t2)",fontSize:14}}>Click the link to activate your account. Then log in to post your first casting.</p><div style={{display:"flex",gap:12,justifyContent:"center"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
   return(
@@ -500,7 +536,7 @@ function RegisterCD({onNavigate}){
       <div className="section-label">For Industry Professionals</div>
       <h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:8}}>Create a Casting Director Account</h1>
       <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>Create your free account and start discovering talent. You only pay $20 when you post a casting. Already have an account? <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>Log in</span></p>
-      {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
+      {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}>✓ Verification email re-sent — check your inbox.</div>}</div>}
       <div className="form-row"><div className="form-group"><label className="label">First Name</label><input className="input" placeholder="First name" value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">Last Name</label><input className="input" placeholder="Last name" value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
       <div className="form-group"><label className="label">Email Address</label><input className="input" type="email" placeholder="you@company.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
       <div className="form-group"><label className="label">Password</label><input className="input" type="password" placeholder="Create a password (8+ characters)" value={f.password} onChange={e=>up("password",e.target.value)}/></div>
@@ -524,28 +560,43 @@ function LoginPage({onNavigate,onLoggedIn}){
   const [err,setErr]=useState("");
   const [forgot,setForgot]=useState(false);
   const [sentReset,setSentReset]=useState(false);
+  const submittingRef=useRef(false);
+  const withTimeout=(promise,ms=20000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Check your connection and try again.`)),ms))]);
   const submit=async(e)=>{
     if(e&&e.preventDefault)e.preventDefault();
+    if(submittingRef.current)return; // no double-submit
     setErr("");
     if(!email||!email.includes("@")){setErr("Please enter a valid email.");return;}
     if(!forgot&&!password){setErr("Please enter your password.");return;}
-    setLoading(true);
+    submittingRef.current=true;setLoading(true);
     try{
+      const cleanEmail=email.trim().toLowerCase();
       if(forgot){
-        const {error}=await window.sb.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:window.location.origin});
+        console.log("[auth] resetPasswordForEmail:",cleanEmail);
+        const {error}=await withTimeout(
+          window.sb.auth.resetPasswordForEmail(cleanEmail,{redirectTo:window.location.origin}),
+          20000,"Password reset"
+        );
         if(error)throw error;
         setSentReset(true);
       }else{
-        const {data,error}=await window.sb.auth.signInWithPassword({email:email.trim().toLowerCase(),password});
+        console.log("[auth] signInWithPassword:",cleanEmail);
+        const {data,error}=await withTimeout(
+          window.sb.auth.signInWithPassword({email:cleanEmail,password}),
+          20000,"Login"
+        );
         if(error)throw error;
         if(onLoggedIn&&data.user)await onLoggedIn(data.user);
       }
     }catch(e){
-      let msg=e.message||"Login failed. Please try again.";
-      if(msg.toLowerCase().includes("email not confirmed"))msg="Please verify your email first. Check your inbox for the confirmation link.";
-      if(msg.toLowerCase().includes("invalid login credentials"))msg="Email or password incorrect.";
+      console.warn("[auth] login submit error:",e?.message||e);
+      let msg=e?.message||"Login failed. Please try again.";
+      const ml=msg.toLowerCase();
+      if(ml.includes("email not confirmed"))msg="Please verify your email first. Check your inbox for the confirmation link.";
+      else if(ml.includes("invalid login credentials"))msg="Email or password incorrect.";
+      else if(ml.includes("lock")&&ml.includes("stole"))msg="Something interrupted the login — please try again.";
       setErr(msg);
-    }finally{setLoading(false);}
+    }finally{setLoading(false);submittingRef.current=false;}
   };
   if(sentReset)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email</h3><p>We sent a password reset link to <strong>{email}</strong>.</p><button className="btn-s" style={{marginTop:24}} onClick={()=>{setForgot(false);setSentReset(false);}}>Back to login</button></div><Footer onNavigate={onNavigate}/></div>);
   return(
@@ -580,20 +631,46 @@ function ResetPasswordPage({onNavigate,session}){
   const [loading,setLoading]=useState(false);
   const [err,setErr]=useState("");
   const [done,setDone]=useState(false);
+  const submittingRef=useRef(false);
+  const withTimeout=(promise,ms=20000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Try again.`)),ms))]);
+  const tryUpdate=async()=>{
+    // One automatic retry if the lock was "stolen" by a background refresh — the
+    // second attempt almost always succeeds because no other auth call is in flight.
+    try{
+      return await withTimeout(window.sb.auth.updateUser({password}),20000,"Password update");
+    }catch(e){
+      const m=(e?.message||"").toLowerCase();
+      if(m.includes("lock")&&m.includes("stole")){
+        console.warn("[auth] updateUser lock stolen — retrying once");
+        await new Promise(r=>setTimeout(r,400));
+        return await withTimeout(window.sb.auth.updateUser({password}),20000,"Password update");
+      }
+      throw e;
+    }
+  };
   const submit=async(e)=>{
     if(e&&e.preventDefault)e.preventDefault();
+    if(submittingRef.current)return;
     setErr("");
     if(!password||password.length<8){setErr("Password must be at least 8 characters.");return;}
     if(password!==confirm){setErr("Passwords don't match.");return;}
-    setLoading(true);
+    if(!session?.user){setErr("Your reset link has expired. Please request a new one from the login page.");return;}
+    submittingRef.current=true;setLoading(true);
     try{
-      const {error}=await window.sb.auth.updateUser({password});
+      console.log("[auth] updateUser password for",session?.user?.email);
+      const {error}=await tryUpdate();
       if(error)throw error;
-      setDone(true);
       // clean the recovery hash from the URL so refresh doesn't bounce back here
       if(window.history?.replaceState){window.history.replaceState(null,"",window.location.pathname);}
-    }catch(e){setErr(e.message||"Could not update password.");}
-    finally{setLoading(false);}
+      setDone(true);
+    }catch(e){
+      console.warn("[auth] updateUser failed:",e?.message||e);
+      let msg=e?.message||"Could not update password.";
+      const ml=msg.toLowerCase();
+      if(ml.includes("lock")&&ml.includes("stole"))msg="Something interrupted the update. Please click Update Password again.";
+      else if(ml.includes("same"))msg="New password must be different from your current one.";
+      setErr(msg);
+    }finally{setLoading(false);submittingRef.current=false;}
   };
   if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check">✓</div><h3>Password Updated</h3><p style={{marginBottom:24}}>You're all set — your new password is active.</p><button className="btn-p" onClick={()=>onNavigate(session?.user?.email?.toLowerCase()===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase()?"admin":"my-profile")}>Continue →</button></div><Footer onNavigate={onNavigate}/></div>);
   return(<div className="page"><form onSubmit={submit} style={{maxWidth:440,margin:"60px auto 0"}}>
@@ -2632,12 +2709,18 @@ export default function App(){
   const [authReady,setAuthReady]=useState(false);
   const [pendingApply,setPendingApply]=useState(null);
   const isLoggedIn=!!session;
-  const isAdmin=!!(myProfile&&myProfile.email&&myProfile.email.toLowerCase()===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase());
+  // Admin derived from the SESSION email — known the instant auth completes,
+  // before the profiles row has loaded. Prevents the blank-admin-page freeze.
+  const adminEmail=(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase();
+  const isAdmin=!!(session?.user?.email&&session.user.email.toLowerCase()===adminEmail);
 
   const loadProfile=useCallback(async(uid)=>{
-    if(!uid){setMyProfile(null);return;}
-    const {data}=await window.sb.from("profiles").select("*").eq("id",uid).maybeSingle();
-    setMyProfile(data||null);
+    if(!uid){setMyProfile(null);return null;}
+    try{
+      const {data,error}=await window.sb.from("profiles").select("*").eq("id",uid).maybeSingle();
+      if(error){console.warn("[auth] loadProfile error:",error.message);setMyProfile(null);return null;}
+      setMyProfile(data||null);return data||null;
+    }catch(e){console.warn("[auth] loadProfile threw:",e?.message||e);setMyProfile(null);return null;}
   },[]);
 
   useEffect(()=>{
@@ -2666,21 +2749,26 @@ export default function App(){
       }
     };
     window.addEventListener("popstate",onPop);
-    (async()=>{
-      const {data:{session:s}}=await window.sb.auth.getSession();
-      setSession(s||null);
-      if(s?.user)await loadProfile(s.user.id);
-      setAuthReady(true);
-    })();
+    // SINGLE source of truth for session state: onAuthStateChange.
+    // Supabase fires INITIAL_SESSION immediately with the persisted session, so we do
+    // NOT call getSession() separately — that created a lock race with the listener
+    // (manifested as "Lock 'sb-...-auth-token' was released because another request stole it").
     const {data:sub}=window.sb.auth.onAuthStateChange(async(e,s)=>{
+      console.log("[auth] event:",e,s?.user?.email||"(no session)");
       setSession(s||null);
-      // Only reload profile on meaningful auth transitions — skip TOKEN_REFRESHED so nav buttons/profile don't blink on every hourly refresh
+      if(e==="PASSWORD_RECOVERY"){
+        // Don't run loadProfile here — the recovery session is in-flight and any
+        // concurrent DB call races Supabase's own lock. Just route to the reset page.
+        window.scrollTo(0,0);setPage("reset-password");setAuthReady(true);return;
+      }
       if(e==="SIGNED_IN"||e==="INITIAL_SESSION"||e==="USER_UPDATED"){
-        if(s?.user)await loadProfile(s.user.id);
+        if(s?.user){await loadProfile(s.user.id);}
+        else{setMyProfile(null);}
       }else if(e==="SIGNED_OUT"){
         setMyProfile(null);
       }
-      if(e==="PASSWORD_RECOVERY"){window.scrollTo(0,0);setPage("reset-password");}
+      // TOKEN_REFRESHED intentionally ignored — no profile re-fetch on hourly refresh.
+      setAuthReady(true);
     });
     return()=>{window.removeEventListener("popstate",onPop);sub?.subscription?.unsubscribe?.();};
   },[loadProfile]);
@@ -2702,20 +2790,34 @@ export default function App(){
   const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");pushHist("auth-gate");};
   const completeAuth=()=>{if(pendingApply){const c=pendingApply.casting;setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail");}else{setPage("home");pushHist("home");}};
   const onLoggedIn=async(user)=>{
-    await loadProfile(user.id);
-    const {data}=await window.sb.from("profiles").select("user_type,email").eq("id",user.id).maybeSingle();
-    const isAd=data?.email&&data.email.toLowerCase()===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase();
-    if(isAd){navigate("admin");}
-    else if(data?.user_type==="cd"){navigate("dashboard");}
-    else if(pendingApply){completeAuth();}
-    else{navigate("my-profile");}
+    // onAuthStateChange SIGNED_IN will populate myProfile in parallel — do NOT call
+    // loadProfile here too (that created a double-fetch race). Fetch a minimal row
+    // just to decide routing.
+    try{
+      const {data,error}=await window.sb.from("profiles").select("user_type,email").eq("id",user.id).maybeSingle();
+      if(error)console.warn("[auth] route fetch error:",error.message);
+      const email=(data?.email||user.email||"").toLowerCase();
+      const isAd=email&&email===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase();
+      if(isAd)navigate("admin");
+      else if(data?.user_type==="cd")navigate("dashboard");
+      else if(pendingApply)completeAuth();
+      else navigate("my-profile");
+    }catch(e){
+      console.warn("[auth] route decision failed, defaulting to my-profile:",e?.message||e);
+      navigate("my-profile");
+    }
   };
   const signOut=async()=>{
-    // Optimistic local sign-out so UI unfreezes instantly even if network is slow
+    // Optimistic local sign-out so UI unfreezes instantly even if network is slow.
     setMyProfile(null);
     setSession(null);
     navigate("home");
-    try{await window.sb.auth.signOut();}catch(e){/* already logged out locally */}
+    try{
+      await Promise.race([
+        window.sb.auth.signOut(),
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error("signOut timeout")),6000))
+      ]);
+    }catch(e){console.warn("[auth] signOut:",e?.message||e); /* state already cleared above */}
   };
 
   return(
