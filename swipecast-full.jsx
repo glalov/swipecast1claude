@@ -1672,31 +1672,42 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
 // ═══════════════════════════════════════════
 // PAGE: CD DASHBOARD — real data
 // ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// CD REVIEW WORKFLOW — status-as-folder
+// Statuses: pending | hold | selected | rejected
+// Pending queue = swipe deck (left=reject, up=hold, right=select)
+// Hold / Selected / Rejected = filtered list views with search + sort
+// Undo reverts the most recent decision.
+// ═══════════════════════════════════════════════════════════════════
 function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
-  const [active,setActive]=useState(null);        // casting currently being reviewed
-  const [activeRole,setActiveRole]=useState(null);// role within the casting we're swiping
-  const [roleCounts,setRoleCounts]=useState({}); // role_id -> count
-  const [submissions,setSubmissions]=useState([]);// applications for `activeRole`
-  const [si,setSi]=useState(0);
-  const [tab,setTab]=useState("castings");
+  const [active,setActive]=useState(null);         // casting currently being reviewed
+  const [activeRole,setActiveRole]=useState(null); // role within the casting
+  const [roleCounts,setRoleCounts]=useState({});   // role_id -> total count
+  const [rolePending,setRolePending]=useState({}); // role_id -> pending count
+  const [submissions,setSubmissions]=useState([]); // all applications for activeRole (any status)
+  const [si,setSi]=useState(0);                    // index inside pending list
+  const [tab,setTab]=useState("castings");         // top-level: "castings" | "allSelected"
+  const [folder,setFolder]=useState("pending");    // per-role: pending | hold | selected | rejected
   const [showNew,setShowNew]=useState(false);
   const [myCastings,setMyCastings]=useState([]);
   const [loading,setLoading]=useState(true);
-  const [stats,setStats]=useState({totalSubs:0,callbacks:0,reviewed:0});
+  const [stats,setStats]=useState({total:0,pending:0,selected:0,hold:0});
+  const [allSelected,setAllSelected]=useState([]); // cross-casting "everyone I selected"
   const [reloadTick,setReloadTick]=useState(0);
-  const [allCallbacks,setAllCallbacks]=useState([]);
-  const [msgApp,setMsgApp]=useState(null);        // application we're messaging about
+  const [msgApp,setMsgApp]=useState(null);
+  const [search,setSearch]=useState("");
+  const [sortBy,setSortBy]=useState("newest");     // newest | oldest | name
+  const [lastUndo,setLastUndo]=useState(null);     // {appId, prevStatus, newStatus, name}
+  const [savingErr,setSavingErr]=useState("");
+  const decidingRef=useRef(false);
 
   const uid=session?.user?.id;
 
   // Builds the rich-profile object TalentProfile expects, from a DB `applications` row.
-  // Prefers the selected_photo_url the applicant chose for this submission, pulls
-  // the full profile (photos, videos, resume, bio, stats) and surfaces the cover note.
   const buildTalentView=(a)=>{
     const p=a?.profiles||{};
     const additional=Array.isArray(p.additional_photos)?p.additional_photos:[];
     const mainPhoto=a?.selected_photo_url||p.headshot_url||"";
-    // Order: the photo chosen for this submission first, then the headshot, then the rest.
     const seen=new Set();const allPhotos=[];
     [mainPhoto,p.headshot_url,...additional].forEach(u=>{if(u&&!seen.has(u)){seen.add(u);allPhotos.push(u);}});
     return {
@@ -1710,7 +1721,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
       skills:Array.isArray(p.skills)?p.skills:[],
       additional_photos:additional,
       video_links:Array.isArray(p.video_links)?p.video_links:[],
-      credits:p.credits||"",                // text — TalentProfile will parse
+      credits:p.credits||"",
       _allPhotos:allPhotos,
       _selectedPhoto:a?.selected_photo_url||null,
       _coverNote:a?.cover_note||"",
@@ -1718,93 +1729,225 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
     };
   };
 
-  // ─── Load this CD's castings + aggregate stats
+  // ─── Load castings + aggregate stats (and cross-casting Selected list)
   useEffect(()=>{if(!uid){setLoading(false);return;}(async()=>{
     setLoading(true);
-    const {data:cs}=await window.sb.from("castings").select("*,roles(id,name)").eq("cd_id",uid).order("created_at",{ascending:false});
+    const {data:cs,error:csErr}=await window.sb.from("castings").select("*,roles(id,name)").eq("cd_id",uid).order("created_at",{ascending:false});
+    if(csErr)console.warn("[cd] castings load error:",csErr.message);
     const castings=cs||[];
-    // for each casting, count applications
     const ids=castings.map(c=>c.id);
-    let counts={};let totalSubs=0;let callbacks=0;let reviewed=0;let allCb=[];
+    let counts={};let total=0;let pending=0;let selected=0;let hold=0;let sel=[];
     if(ids.length){
-      // profiles(*) + left-join so the CD always sees their submissions even if
-      // the applicant's profile has visible=false or isn't fully onboarded.
-      const {data:apps}=await window.sb.from("applications").select("id,casting_id,role_id,status,talent_id,cover_note,selected_photo_url,profiles(*),roles(id,name)").in("casting_id",ids);
+      const {data:apps,error:appErr}=await window.sb.from("applications")
+        .select("id,casting_id,role_id,status,talent_id,cover_note,selected_photo_url,created_at,reviewed_at,profiles(*),roles(id,name)")
+        .in("casting_id",ids);
+      if(appErr)console.warn("[cd] apps load error:",appErr.message);
       (apps||[]).forEach(a=>{
         counts[a.casting_id]=(counts[a.casting_id]||0)+1;
-        totalSubs++;
-        if(a.status&&a.status!=="submitted"&&a.status!=="viewed")reviewed++;
-        if(a.status==="callback"){callbacks++;allCb.push({...a.profiles,_app:a});}
+        total++;
+        if(a.status==='pending')pending++;
+        else if(a.status==='hold')hold++;
+        else if(a.status==='selected'){selected++;sel.push(a);}
       });
     }
     setMyCastings(castings.map(c=>({...c,_count:counts[c.id]||0})));
-    setStats({totalSubs,callbacks,reviewed});
-    setAllCallbacks(allCb);
+    setStats({total,pending,selected,hold});
+    setAllSelected(sel);
     setLoading(false);
   })();},[uid,reloadTick]);
 
-  // ─── Open a casting for review — load per-role submission counts
+  // ─── Open a casting — load per-role counts (total + pending)
   const openReview=async(casting)=>{
     setActive(casting);setActiveRole(null);setSi(0);
     const roleIds=(casting.roles||[]).map(r=>r.id);
-    if(!roleIds.length){setRoleCounts({});return;}
-    const {data}=await window.sb.from("applications").select("role_id").eq("casting_id",casting.id);
-    const counts={};(data||[]).forEach(a=>{counts[a.role_id]=(counts[a.role_id]||0)+1;});
-    setRoleCounts(counts);
+    if(!roleIds.length){setRoleCounts({});setRolePending({});return;}
+    const {data,error}=await window.sb.from("applications").select("role_id,status").eq("casting_id",casting.id);
+    if(error)console.warn("[cd] openReview error:",error.message);
+    const c={};const p={};
+    (data||[]).forEach(a=>{
+      c[a.role_id]=(c[a.role_id]||0)+1;
+      if(a.status==='pending')p[a.role_id]=(p[a.role_id]||0)+1;
+    });
+    setRoleCounts(c);setRolePending(p);
   };
-  // ─── Open a specific role → tinder swipe only this role's submissions
+
+  // ─── Open a role — load all submissions, reset review state
   const openRole=async(role)=>{
-    setActiveRole(role);setSi(0);
-    // Left join (no !inner) + profiles(*) so the CD sees every submission even if
-    // the talent has visible=false or their profile is still being onboarded.
-    const {data,error}=await window.sb.from("applications").select("*,profiles(*),roles(id,name)").eq("role_id",role.id).order("created_at",{ascending:false});
-    if(error){console.error("openRole",error);}
+    setActiveRole(role);setSi(0);setFolder("pending");setSearch("");setSortBy("newest");setLastUndo(null);setSavingErr("");
+    const {data,error}=await window.sb.from("applications")
+      .select("*,profiles(*),roles(id,name)").eq("role_id",role.id).order("created_at",{ascending:false});
+    if(error)console.warn("[review] openRole error:",error.message);
     // Safety: if a profile row wasn't returned (RLS), leave a stub so the card still renders.
     const subs=(data||[]).map(a=>a.profiles?a:{...a,profiles:{id:a.talent_id,display_name:"Anonymous Applicant",headshot_url:null,skills:[],additional_photos:[],video_links:[]}});
     setSubmissions(subs);
   };
 
-  const updateAppStatus=async(appId,status)=>{
-    await window.sb.from("applications").update({status}).eq("id",appId);
-    setSubmissions(p=>p.map(a=>a.id===appId?{...a,status}:a));
+  // ─── Decide: reject / hold / select (optimistic with rollback)
+  //     target is optional — defaults to the current pending card
+  const decide=async(action,target)=>{
+    if(decidingRef.current)return;
+    const nextStatus=action==='reject'?'rejected':action==='hold'?'hold':action==='select'?'selected':null;
+    if(!nextStatus)return;
+    const app=target||pendingList[si];
+    if(!app)return;
+    const prevStatus=app.status;
+    if(prevStatus===nextStatus)return;
+
+    decidingRef.current=true;
+    setSavingErr("");
+    const ts=new Date().toISOString();
+    // Optimistic local update
+    setSubmissions(p=>p.map(a=>a.id===app.id?{...a,status:nextStatus,reviewed_at:ts}:a));
+    setLastUndo({appId:app.id,prevStatus,newStatus:nextStatus,name:app.profiles?.display_name||"applicant"});
+    console.log("[review] decide:",app.id,prevStatus,"→",nextStatus);
+
+    const {error}=await window.sb.from("applications").update({status:nextStatus,reviewed_at:ts}).eq("id",app.id);
+    decidingRef.current=false;
+
+    if(error){
+      console.warn("[review] update error:",error.message);
+      // Rollback
+      setSubmissions(p=>p.map(a=>a.id===app.id?{...a,status:prevStatus}:a));
+      setLastUndo(null);
+      setSavingErr("Could not save that decision. Please try again.");
+      return;
+    }
+    setReloadTick(t=>t+1); // refresh stats
+  };
+
+  const undo=async()=>{
+    const u=lastUndo;if(!u)return;
+    setLastUndo(null);setSavingErr("");
+    // Optimistic revert
+    setSubmissions(p=>p.map(a=>a.id===u.appId?{...a,status:u.prevStatus}:a));
+    console.log("[review] undo:",u.appId,u.newStatus,"→",u.prevStatus);
+    const {error}=await window.sb.from("applications").update({status:u.prevStatus,reviewed_at:u.prevStatus==='pending'?null:new Date().toISOString()}).eq("id",u.appId);
+    if(error){
+      console.warn("[review] undo error:",error.message);
+      setSubmissions(p=>p.map(a=>a.id===u.appId?{...a,status:u.newStatus}:a));
+      setSavingErr("Undo failed. Please refresh and try again.");
+      return;
+    }
     setReloadTick(t=>t+1);
   };
 
-  const doSwipe=async(action)=>{
-    const app=submissions[si];if(!app)return;
-    const status=action==="yes"?"callback":"passed";
-    await updateAppStatus(app.id,status);
-    if(si<submissions.length-1)setSi(i=>i+1);
+  // Move a specific application between folders (e.g. from Hold → Selected)
+  const moveTo=(appId,action)=>{
+    const app=submissions.find(a=>a.id===appId);
+    if(!app)return;
+    decide(action,app);
   };
 
-  const SwipeUI=()=>{
-    const [dx,setDx]=useState(0);const [dr,setDr]=useState(false);const sx=useRef(0);
-    const app=submissions[si];const nextApp=submissions[(si+1)%Math.max(submissions.length,1)];
+  // ─── Filter helpers (pending = swipe deck; others = list view)
+  const pendingList=submissions.filter(s=>s.status==='pending');
+  const byFolder=submissions.filter(s=>s.status===folder);
+  const counts={
+    pending:submissions.filter(s=>s.status==='pending').length,
+    hold:submissions.filter(s=>s.status==='hold').length,
+    selected:submissions.filter(s=>s.status==='selected').length,
+    rejected:submissions.filter(s=>s.status==='rejected').length,
+  };
+  const searchFilter=(arr)=>{
+    const q=search.trim().toLowerCase();
+    if(!q)return arr;
+    return arr.filter(a=>(a.profiles?.display_name||'').toLowerCase().includes(q)||(a.cover_note||'').toLowerCase().includes(q));
+  };
+  const sortApps=(arr)=>{
+    const copy=[...arr];
+    const d=x=>new Date(x.reviewed_at||x.created_at||0).getTime();
+    if(sortBy==='newest')copy.sort((a,b)=>d(b)-d(a));
+    else if(sortBy==='oldest')copy.sort((a,b)=>d(a)-d(b));
+    else if(sortBy==='name')copy.sort((a,b)=>(a.profiles?.display_name||'').localeCompare(b.profiles?.display_name||''));
+    return copy;
+  };
+  const folderList=sortApps(searchFilter(byFolder));
+
+  // Clamp si if the pending list shrinks underneath us
+  useEffect(()=>{if(si>0&&si>=pendingList.length&&pendingList.length>0)setSi(pendingList.length-1);},[pendingList.length,si]);
+
+  // ─── Review card (swipe deck, pending only)
+  const ReviewCard=()=>{
+    const [dx,setDx]=useState(0);const [dy,setDy]=useState(0);const [dr,setDr]=useState(false);
+    const sx=useRef(0);const sy=useRef(0);
+    const app=pendingList[si];const nextApp=pendingList[si+1];
     if(!app)return null;
-    const t=app.profiles;const nt=nextApp?.profiles||t;const ac=dx>60?"yes":dx<-60?"pass":null;
+    const t=app.profiles||{};
+    const nt=nextApp?.profiles||t;
     const img=app.selected_photo_url||t.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=No+Headshot";
     const nimg=nextApp?.selected_photo_url||nt.headshot_url||img;
-    return(<><div className="sw-counter">{si+1} of {submissions.length} · Role: {app.roles?.name||activeRole?.name||"—"}</div>
+    const horizDom=Math.abs(dx)>Math.abs(dy);
+    const ac = horizDom ? (dx>60?"select":dx<-60?"reject":null) : (dy<-60?"hold":null);
+    const end=()=>{
+      setDr(false);
+      if(Math.abs(dx)>100 && Math.abs(dx)>Math.abs(dy)){
+        if(dx>0)decide('select');else decide('reject');
+      } else if(dy<-90){
+        decide('hold');
+      } else {
+        setDx(0);setDy(0);
+      }
+    };
+    const credits=String(t.credits||"");
+    const reelUrl=Array.isArray(t.video_links)?t.video_links.find(u=>u):null;
+    return(<>
+      <div className="sw-counter">{counts.pending} pending · reviewing {Math.min(si+1,pendingList.length)} of {pendingList.length} · Role: {app.roles?.name||activeRole?.name||"—"}</div>
       <div className="swipe-card-wrap">
-        <div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.4,zIndex:1}}><img src={nimg} alt=""/><div className="s-card-info"><h3>{nt.display_name}</h3></div></div>
-        <div className="s-card" style={{transform:`translateX(${dx}px) rotate(${dx*.04}deg)`,transition:dr?"none":"transform .4s cubic-bezier(.34,1.56,.64,1)",zIndex:2,cursor:dr?"grabbing":"grab"}} onPointerDown={e=>{setDr(true);sx.current=e.clientX;}} onPointerMove={e=>{if(dr)setDx(e.clientX-sx.current);}} onPointerUp={()=>{setDr(false);if(dx>100)doSwipe("yes");else if(dx<-100)doSwipe("pass");else setDx(0);}}>
-          <div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="pass"?1:0}}>PASS</div>
-          <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="yes"?1:0}}>CALLBACK ✓</div>
+        {nextApp&&<div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.4,zIndex:1}}>
+          <img src={nimg} alt=""/><div className="s-card-info"><h3>{nt.display_name||"Applicant"}</h3></div>
+        </div>}
+        <div className="s-card"
+          style={{transform:`translate(${dx}px, ${Math.min(dy,0)}px) rotate(${dx*.035}deg)`,transition:dr?"none":"transform .35s cubic-bezier(.34,1.56,.64,1)",zIndex:2,cursor:dr?"grabbing":"grab"}}
+          onPointerDown={e=>{setDr(true);sx.current=e.clientX;sy.current=e.clientY;}}
+          onPointerMove={e=>{if(dr){setDx(e.clientX-sx.current);setDy(e.clientY-sy.current);}}}
+          onPointerUp={end} onPointerCancel={end}>
+          <div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="reject"?1:0}}>REJECT</div>
+          <div className="sw-overlay" style={{color:"#c88900",opacity:ac==="hold"?1:0}}>HOLD</div>
+          <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="select"?1:0}}>SELECT ✓</div>
           <img src={img} alt={t.display_name} draggable="false"/>
           <div className="s-card-info">
-            <h3>{t.display_name}</h3>
-            <div className="s-card-meta">{[t.age,t.gender,t.height,t.location].filter(Boolean).join(" · ")}</div>
-            <div className="s-card-tags">{(t.skills||[]).slice(0,3).map((s,i)=><span key={i}>{s}</span>)}{t.union_status&&<span style={{background:"rgba(26,26,46,.08)",color:"var(--acc)"}}>{t.union_status}</span>}</div>
-            {app.cover_note&&<p style={{marginTop:8,fontSize:12,color:"var(--t2)",fontStyle:"italic"}}>"{app.cover_note.slice(0,140)}"</p>}
+            <h3>{t.display_name||"Applicant"}</h3>
+            <div className="s-card-meta">{[t.age,t.gender,t.height,t.location].filter(Boolean).join(" · ")||"—"}</div>
+            <div className="s-card-tags">
+              {(t.skills||[]).slice(0,3).map((s,i)=><span key={i}>{s}</span>)}
+              {t.union_status&&<span style={{background:"rgba(26,26,46,.08)",color:"var(--acc)"}}>{t.union_status}</span>}
+            </div>
+            {credits&&<p style={{marginTop:8,fontSize:12,color:"var(--t2)"}}>{credits.slice(0,140)}{credits.length>140?"…":""}</p>}
+            {reelUrl&&<p style={{marginTop:6,fontSize:12}}><a href={reelUrl} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} style={{color:"var(--blu)",textDecoration:"underline"}}>🎬 Watch reel</a></p>}
+            {app.cover_note&&<p style={{marginTop:8,fontSize:12,color:"var(--t2)",fontStyle:"italic"}}>"{String(app.cover_note).slice(0,160)}{String(app.cover_note).length>160?"…":""}"</p>}
           </div>
         </div>
-      </div></>);
+      </div>
+    </>);
+  };
+
+  // ─── Folder card (non-pending list item w/ move-between-folder buttons)
+  const FolderCard=({a})=>{
+    const t=a.profiles||{};
+    const img=a.selected_photo_url||t.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?";
+    const statusTag=a.status==='selected'?'tag-grn':a.status==='hold'?'tag-acc':a.status==='rejected'?'tag-red':'';
+    return(<div className="card" style={{padding:14,display:"flex",gap:12,alignItems:"stretch"}}>
+      <img src={img} alt="" style={{width:80,height:100,objectFit:"cover",borderRadius:8,cursor:"pointer",flexShrink:0}} onClick={()=>onViewProfile(buildTalentView(a))}/>
+      <div style={{flex:1,display:"flex",flexDirection:"column",gap:4,minWidth:0}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
+          <div style={{minWidth:0,flex:1}}>
+            <h4 style={{fontSize:15,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}} onClick={()=>onViewProfile(buildTalentView(a))}>{t.display_name||"Applicant"}</h4>
+            <p style={{fontSize:12,color:"var(--t2)"}}>{[t.age,t.gender,t.location,t.union_status].filter(Boolean).join(" · ")||"—"}</p>
+          </div>
+          <span className={"badge "+statusTag} style={{fontSize:10,textTransform:"uppercase",flexShrink:0}}>{a.status}</span>
+        </div>
+        {a.cover_note&&<p style={{fontSize:12,color:"var(--t3)",fontStyle:"italic",marginTop:2}}>"{String(a.cover_note).slice(0,120)}{String(a.cover_note).length>120?"…":""}"</p>}
+        <div style={{display:"flex",gap:6,marginTop:"auto",flexWrap:"wrap"}}>
+          {a.status!=='selected'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"6px 10px"}} onClick={()=>moveTo(a.id,'select')}>→ Select</button>}
+          {a.status!=='hold'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"6px 10px"}} onClick={()=>moveTo(a.id,'hold')}>→ Hold</button>}
+          {a.status!=='rejected'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"6px 10px"}} onClick={()=>moveTo(a.id,'reject')}>→ Reject</button>}
+          {a.status==='selected'&&<button className="btn-p btn-sm" style={{fontSize:11,padding:"6px 10px",marginLeft:"auto"}} onClick={()=>setMsgApp(a)}>💬 Message</button>}
+        </div>
+      </div>
+    </div>);
   };
 
   if(!uid)return(<div className="page page-wide"><p>Not logged in.</p></div>);
   if(loading)return(<div className="page page-wide"><p style={{color:"var(--t2)"}}>Loading your dashboard…</p></div>);
-
-  const callbackSubs=submissions.filter(s=>s.status==="callback");
 
   return(<div className="page page-wide">
     <div className="flex-between mb-20">
@@ -1816,41 +1959,82 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
     </div>
     <div className="dash-stats">
       <div className="dash-stat"><div className="dash-stat-num">{myCastings.length}</div><div className="dash-stat-label">Active Castings</div></div>
-      <div className="dash-stat"><div className="dash-stat-num">{stats.totalSubs}</div><div className="dash-stat-label">Total Submissions</div></div>
-      <div className="dash-stat"><div className="dash-stat-num">{stats.callbacks}</div><div className="dash-stat-label">Callbacks</div></div>
-      <div className="dash-stat"><div className="dash-stat-num">{stats.reviewed}</div><div className="dash-stat-label">Reviewed</div></div>
+      <div className="dash-stat"><div className="dash-stat-num">{stats.total}</div><div className="dash-stat-label">Total Submissions</div></div>
+      <div className="dash-stat"><div className="dash-stat-num" style={{color:stats.pending>0?"var(--acc)":undefined}}>{stats.pending}</div><div className="dash-stat-label">Pending Review</div></div>
+      <div className="dash-stat"><div className="dash-stat-num">{stats.selected}</div><div className="dash-stat-label">Selected</div></div>
     </div>
 
     {active&&activeRole?<>
-      {/* ─── Per-role tinder swipe ─── */}
+      {/* ─── Per-role review: folder tabs + swipe deck (pending) or list (hold/selected/rejected) ─── */}
       <button className="btn-s btn-sm mb-20" onClick={()=>{setActiveRole(null);setSi(0);setReloadTick(t=>t+1);openReview(active);}}>← Back to Roles</button>
-      <div style={{marginBottom:16}}><h3 style={{fontSize:20,fontWeight:800}}>{active.title} · {activeRole.name}</h3><p style={{color:"var(--t2)",fontSize:13}}>{submissions.length} {submissions.length===1?"submission":"submissions"} for this role · swipe to callback or pass</p></div>
-      {submissions.length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No submissions for this role yet.</p></div>:
-      si>=submissions.length?<div className="success-msg"><div className="check">✓</div><h3>All Submissions Reviewed</h3><p>{callbackSubs.length} callbacks out of {submissions.length}.</p><button className="btn-s mt-20" onClick={()=>{setActiveRole(null);openReview(active);}}>Back to Roles</button></div>:
-      <div className="swipe-layout">
-        <div className="swipe-area">
-          <SwipeUI key={si}/>
-          <div className="swipe-btns">
-            <button className="sw-btn pass" onClick={()=>doSwipe("pass")}>✕</button>
-            <button className="sw-btn save" onClick={()=>submissions[si]&&onViewProfile(buildTalentView(submissions[si]))}>👤</button>
-            <button className="sw-btn yes" onClick={()=>doSwipe("yes")}>✓</button>
-          </div>
-        </div>
-        <div className="cb-sidebar">
-          <h3>Callbacks <span className="tag tag-grn">{callbackSubs.length}</span></h3>
-          {callbackSubs.length===0?<div className="cb-empty">Swipe right on talent to add them to your callback list</div>:
-          callbackSubs.map((a,i)=>
-            <div key={i} className="cb-item" style={{flexDirection:"column",alignItems:"stretch"}}>
-              <div style={{display:"flex",gap:10,alignItems:"center",cursor:"pointer"}} onClick={()=>onViewProfile(buildTalentView(a))}>
-                <img src={a.selected_photo_url||a.profiles.headshot_url||"https://placehold.co/80x100/e5e5e5/999?text=?"} alt={a.profiles.display_name} style={{width:52,height:66,objectFit:"cover",borderRadius:6}}/>
-                <div className="cb-item-info" style={{flex:1}}><h4>{a.profiles.display_name}</h4><p>{[a.profiles.age,a.profiles.gender,a.profiles.location].filter(Boolean).join(" · ")}</p></div>
+      <div style={{marginBottom:14}}>
+        <h3 style={{fontSize:20,fontWeight:800}}>{active.title} · {activeRole.name}</h3>
+        <p style={{color:"var(--t2)",fontSize:13}}>{submissions.length} total · {counts.pending} pending · {counts.selected} selected · {counts.hold} hold · {counts.rejected} rejected</p>
+      </div>
+
+      {/* Folder tabs */}
+      <div className="tabs" style={{marginBottom:16}}>
+        <button className={`tab ${folder==="pending"?"active":""}`} onClick={()=>setFolder("pending")}>Pending <span style={{opacity:.6}}>({counts.pending})</span></button>
+        <button className={`tab ${folder==="hold"?"active":""}`} onClick={()=>setFolder("hold")}>Hold <span style={{opacity:.6}}>({counts.hold})</span></button>
+        <button className={`tab ${folder==="selected"?"active":""}`} onClick={()=>setFolder("selected")}>Selected <span style={{opacity:.6}}>({counts.selected})</span></button>
+        <button className={`tab ${folder==="rejected"?"active":""}`} onClick={()=>setFolder("rejected")}>Rejected <span style={{opacity:.6}}>({counts.rejected})</span></button>
+      </div>
+
+      {savingErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{savingErr}</div>}
+
+      {folder==='pending'?<>
+        {submissions.length===0?
+          <div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No submissions for this role yet.</p></div>:
+         counts.pending===0?
+          <div className="success-msg"><div className="check">✓</div><h3>All Caught Up</h3><p>No pending submissions for this role. Check Selected, Hold, or Rejected to see your decisions.</p></div>:
+          <div className="swipe-layout">
+            <div className="swipe-area">
+              <ReviewCard key={pendingList[si]?.id||si}/>
+              <div className="swipe-btns">
+                <button className="sw-btn pass" onClick={()=>decide('reject')} title="Reject (swipe left)">✕</button>
+                <button className="sw-btn save" style={{background:"rgba(200,137,0,0.15)",color:"#c88900"}} onClick={()=>decide('hold')} title="Hold (swipe up)">⏸</button>
+                <button className="sw-btn yes" onClick={()=>decide('select')} title="Select (swipe right)">✓</button>
               </div>
-              <div style={{display:"flex",gap:6,marginTop:8}}>
-                <button className="btn-p btn-sm" style={{flex:1,fontSize:11,padding:"6px 10px"}} onClick={()=>setMsgApp(a)}>💬 Message</button>
+              <div style={{textAlign:"center",marginTop:12,display:"flex",gap:10,justifyContent:"center",alignItems:"center",flexWrap:"wrap"}}>
+                <button className="btn-s btn-sm" onClick={()=>pendingList[si]&&onViewProfile(buildTalentView(pendingList[si]))}>View full profile</button>
+                {lastUndo&&<button className="btn-s btn-sm" onClick={undo}>↩ Undo — {lastUndo.name} ({lastUndo.newStatus})</button>}
               </div>
-            </div>)}
+              <p style={{textAlign:"center",fontSize:11,color:"var(--t3)",marginTop:8}}>Swipe left = reject · swipe up = hold · swipe right = select</p>
+            </div>
+            <div className="cb-sidebar">
+              <h3>Selected <span className="tag tag-grn">{counts.selected}</span></h3>
+              {counts.selected===0?<div className="cb-empty">Swipe right or press ✓ to shortlist.</div>:
+              submissions.filter(s=>s.status==='selected').slice(0,10).map((a,i)=>
+                <div key={a.id||i} className="cb-item" style={{flexDirection:"column",alignItems:"stretch"}}>
+                  <div style={{display:"flex",gap:10,alignItems:"center",cursor:"pointer"}} onClick={()=>onViewProfile(buildTalentView(a))}>
+                    <img src={a.selected_photo_url||a.profiles?.headshot_url||"https://placehold.co/80x100/e5e5e5/999?text=?"} alt={a.profiles?.display_name||""} style={{width:52,height:66,objectFit:"cover",borderRadius:6}}/>
+                    <div className="cb-item-info" style={{flex:1}}><h4>{a.profiles?.display_name||"Applicant"}</h4><p>{[a.profiles?.age,a.profiles?.gender,a.profiles?.location].filter(Boolean).join(" · ")}</p></div>
+                  </div>
+                  <div style={{display:"flex",gap:6,marginTop:8}}>
+                    <button className="btn-p btn-sm" style={{flex:1,fontSize:11,padding:"6px 10px"}} onClick={()=>setMsgApp(a)}>💬 Message</button>
+                  </div>
+                </div>)}
+            </div>
+          </div>}
+      </>:<>
+        {/* Search + sort for non-pending folders */}
+        <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
+          <input className="input" style={{flex:1,minWidth:220,maxWidth:380}} placeholder={`Search in ${folder}…`} value={search} onChange={e=>setSearch(e.target.value)}/>
+          <select className="input" style={{maxWidth:180}} value={sortBy} onChange={e=>setSortBy(e.target.value)}>
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="name">Name (A–Z)</option>
+          </select>
+          {lastUndo&&<button className="btn-s btn-sm" onClick={undo}>↩ Undo — {lastUndo.name}</button>}
         </div>
-      </div>}
+        {folderList.length===0?
+          <div className="card" style={{textAlign:"center",padding:48}}>
+            <p style={{color:"var(--t3)"}}>No submissions in {folder}{search?" matching that search":""}.</p>
+          </div>:
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(340px,1fr))",gap:12}}>
+            {folderList.map(a=><FolderCard key={a.id} a={a}/>)}
+          </div>}
+      </>}
     </>:active?<>
       {/* ─── Casting → roles list ─── */}
       <button className="btn-s btn-sm mb-20" onClick={()=>{setActive(null);setReloadTick(t=>t+1);}}>← Back to Castings</button>
@@ -1858,7 +2042,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
       {(active.roles||[]).length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No roles in this casting.</p></div>:
       <div className="card-flat">{active.roles.map(r=>
         <div key={r.id} className="casting-row" onClick={()=>openRole(r)}>
-          <div className="casting-row-left"><h4>{r.name}</h4><p>Role in {active.title}</p></div>
+          <div className="casting-row-left"><h4>{r.name}</h4><p>Role in {active.title} · <span style={{color:rolePending[r.id]?"var(--acc)":"var(--t3)",fontWeight:700}}>{rolePending[r.id]||0} pending review</span></p></div>
           <div className="casting-row-right">
             <div style={{textAlign:"right"}}><div className="sub-count">{roleCounts[r.id]||0}</div><div style={{fontSize:10,color:"var(--t3)"}}>submissions</div></div>
             <span style={{color:"var(--acc)",fontSize:18}}>→</span>
@@ -1867,7 +2051,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
     </>:<>
       <div className="tabs">
         <button className={`tab ${tab==="castings"?"active":""}`} onClick={()=>setTab("castings")}>My Castings</button>
-        <button className={`tab ${tab==="callbacks"?"active":""}`} onClick={()=>setTab("callbacks")}>All Callbacks</button>
+        <button className={`tab ${tab==="allSelected"?"active":""}`} onClick={()=>setTab("allSelected")}>All Selected <span style={{opacity:.6}}>({allSelected.length})</span></button>
       </div>
       {tab==="castings"?
         myCastings.length===0?<div className="card" style={{textAlign:"center",padding:48}}>
@@ -1883,8 +2067,8 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
               <span style={{color:"var(--acc)",fontSize:18}}>→</span>
             </div>
           </div>)}</div>:
-        allCallbacks.length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No callbacks yet. Review submissions to build your list.</p></div>:
-        <div className="results-grid">{allCallbacks.map((t,i)=><div key={i} className="talent-thumb" onClick={()=>onViewProfile(buildTalentView({...t._app,profiles:t}))}><img src={t._app.selected_photo_url||t.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?"} alt={t.display_name}/><div className="talent-thumb-info"><h4>{t.display_name}</h4><p>{[t.age,t.location].filter(Boolean).join(" · ")}</p></div></div>)}</div>}
+        allSelected.length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No selected talent yet. Review your pending submissions to build your shortlist.</p></div>:
+        <div className="results-grid">{allSelected.map((a,i)=>{const p=a.profiles||{};return(<div key={a.id||i} className="talent-thumb" onClick={()=>onViewProfile(buildTalentView(a))}><img src={a.selected_photo_url||p.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?"} alt={p.display_name||""}/><div className="talent-thumb-info"><h4>{p.display_name||"Applicant"}</h4><p>{[p.age,p.location].filter(Boolean).join(" · ")}</p></div></div>);})}</div>}
     </>}
 
     {showNew&&<NewCastingModal onClose={()=>setShowNew(false)} onPosted={()=>{setShowNew(false);setReloadTick(t=>t+1);}} uid={uid}/>}
@@ -2464,7 +2648,7 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
           {a.cover_note&&<div style={{fontSize:12,color:"var(--t2)",marginTop:2,fontStyle:"italic"}}>"{a.cover_note.slice(0,80)}{a.cover_note.length>80?"…":""}"</div>}
           {a.audition_at&&<div style={{fontSize:12,color:"#1d7b44",marginTop:4,fontWeight:600}}>📅 Audition: {new Date(a.audition_at).toLocaleString()}{a.audition_note?` · ${a.audition_note}`:""}</div>}
         </div>
-        <span className="tag" style={{background:a.status==="callback"?"rgba(46,204,113,0.15)":a.status==="passed"?"rgba(255,100,100,0.1)":a.status==="booked"?"rgba(26,26,200,0.1)":"var(--s2)",color:a.status==="callback"?"#1d7b44":a.status==="passed"?"#c0392b":a.status==="booked"?"#1a1ac8":"var(--t2)",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{a.status.toUpperCase()}</span>
+        <span className="tag" style={{background:a.status==="selected"?"rgba(46,204,113,0.15)":a.status==="rejected"?"rgba(255,100,100,0.1)":a.status==="hold"?"rgba(200,137,0,0.15)":"var(--s2)",color:a.status==="selected"?"#1d7b44":a.status==="rejected"?"#c0392b":a.status==="hold"?"#c88900":"var(--t2)",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{a.status==="pending"?"UNDER REVIEW":a.status==="selected"?"SHORTLISTED":a.status==="hold"?"ON HOLD":a.status==="rejected"?"NOT SELECTED":String(a.status||"").toUpperCase()}</span>
       </div>)}
     </div>}
 

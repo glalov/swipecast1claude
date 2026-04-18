@@ -142,15 +142,20 @@ create table if not exists public.applications (
   casting_id uuid not null references public.castings(id) on delete cascade,
   talent_id uuid not null references public.profiles(id) on delete cascade,
   cover_note text,
-  status text not null default 'submitted' check (status in ('submitted','viewed','passed','callback','booked','rejected')),
+  -- Review workflow: pending (unreviewed) → hold | selected | rejected.
+  -- Folders in the CD dashboard are just filtered views on this column.
+  status text not null default 'pending' check (status in ('pending','hold','selected','rejected')),
+  reviewed_at timestamptz,          -- set when CD moves out of 'pending'
   cd_note text,
   created_at timestamptz default now(),
   updated_at timestamptz default now(),
-  unique (role_id, talent_id)
+  unique (role_id, talent_id)       -- prevents an actor from applying twice to the same role
 );
 create index if not exists applications_casting_id_idx on public.applications(casting_id);
 create index if not exists applications_talent_id_idx on public.applications(talent_id);
 create index if not exists applications_status_idx on public.applications(status);
+create index if not exists applications_casting_status_idx on public.applications(casting_id, status);
+create index if not exists applications_role_status_idx on public.applications(role_id, status);
 
 -- ═══════════════════════════════
 -- MESSAGES (CD <-> talent)
