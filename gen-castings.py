@@ -1,0 +1,1189 @@
+#!/usr/bin/env python3
+# Generate a varied, human-sounding 100-entry CASTINGS array for SwipeCast.
+import json, textwrap
+
+castings = []
+def C(**k):
+    # normalize roles
+    k.setdefault("submissions", 0)
+    castings.append(k)
+
+# ===== FILM FEATURES (1-10) =====
+C(id=1, slug="midnight-lens", title="Midnight Lens", tagline="Independent Horror Feature",
+  prod="Midnight Lens Productions", type="Film", pay="SAG-AFTRA Scale + 10%",
+  location="New York, NY", deadline="May 15, 2026", union="SAG-AFTRA", submissions=47,
+  desc="A quiet, slow-burn psychological horror that trusts its audience.",
+  synopsis="A young architect returns to her grandmother's abandoned upstate home to settle the estate — and uncovers a decades-old presence that remembers her. In the vein of *Hereditary* and *The Others*, from first-time feature director Elena Reyes.",
+  director="Elena Reyes", shoots="July 10 – August 7, 2026", rate="SAG-AFTRA Scale + 10%",
+  rehearsal="2 days (remote OK)", auditionFormat="Self-tape",
+  roles=[
+    {"name":"ISABEL CASTILLO","type":"Lead","ageRange":"25-35","gender":"Female","ethnicity":"Latina","desc":"A reserved architect whose composure slowly unravels. Must carry extended silences and believably move from skepticism to terror. Working Spanish a plus."},
+    {"name":"RUBEN CASTILLO","type":"Supporting","ageRange":"55-70","gender":"Male","ethnicity":"Latino","desc":"Isabel's uncle, a retired carpenter who knows more than he'll say. Spanish-language dialogue throughout."},
+    {"name":"THE WOMAN IN BLUE","type":"Featured","ageRange":"40-65","gender":"Female","ethnicity":"Any","desc":"Non-speaking. Dancers and physical performers encouraged. Long static holds in prosthetic makeup."}
+  ])
+
+C(id=2, slug="atlanta-rising", title="Atlanta Rising", tagline="Netflix Limited Series",
+  prod="Confidential (Via CAA)", type="TV", pay="$2,500/episode",
+  location="Atlanta, GA", deadline="May 20, 2026", union="SAG-AFTRA", submissions=112,
+  desc="A six-episode limited series about the fallout of a corporate bribery scandal.",
+  synopsis="Three timelines. One bribe. A freshman city councilwoman, a burned-out detective, and a loyal staffer all find themselves at the center of a scandal that reaches the top of Atlanta city government. Showrunner Marcus Fields (*The Weight*).",
+  director="Marcus Fields (showrunner)", shoots="Sept 15 – Dec 20, 2026",
+  rate="$2,500/episode · guaranteed 4 of 6", rehearsal="Weekly table reads",
+  auditionFormat="Self-tape → in-person callback (Atlanta)",
+  roles=[
+    {"name":"DET. ANDRE WALKER","type":"Recurring","ageRange":"30-40","gender":"Male","ethnicity":"Any","desc":"Homicide detective pulled into a white-collar case he doesn't want. Skeptical, dry, carrying 15 years of exhaustion. Holds a scene without doing much."},
+    {"name":"REP. MAYA BRIDGES","type":"Recurring","ageRange":"35-45","gender":"Female","ethnicity":"Black","desc":"Freshman city councilwoman whose ideals are tested when the scandal touches someone she loves. Delivers a 4-page monologue in Ep. 4."},
+    {"name":"JAMIE ORTEGA","type":"Supporting","ageRange":"22-28","gender":"Non-Binary","ethnicity":"Latinx","desc":"Maya's legislative aide and the first person to suspect something is off. Fast-talking, loyal, quietly observant."},
+    {"name":"GEORGE LATHAM","type":"Guest Star","ageRange":"60-75","gender":"Male","ethnicity":"White","desc":"Former mayor with ties to every player in the story. Appears in Eps 2, 4, 6."}
+  ])
+
+C(id=3, slug="stride-national", title="Stride — National Campaign", tagline="National Sports Brand Commercial",
+  prod="Grey Advertising", type="Commercial", pay="$5,000 + SAG residuals",
+  location="Los Angeles, CA", deadline="Apr 28, 2026", union="SAG-AFTRA / Non-Union", submissions=203,
+  desc="High-energy TV and digital campaign for a major sportswear brand.",
+  synopsis="A one-day broadcast and 18-month digital campaign for a global sportswear brand launching their spring training line. Directed by commercial director Jae Park (Nike, Adidas).",
+  director="Jae Park", shoots="One-day shoot, May 18, 2026",
+  rate="$5,000 session + SAG residuals", rehearsal="Half-day movement rehearsal",
+  auditionFormat="In-person (LA) + self-tape option",
+  roles=[
+    {"name":"RUNNER (Hero)","type":"Principal","ageRange":"22-30","gender":"Any","ethnicity":"Any","desc":"Elite runner's build. Must run 6:00 mile pace on camera. Marathon or collegiate track background strongly preferred."},
+    {"name":"LIFTER","type":"Principal","ageRange":"25-32","gender":"Male","ethnicity":"Any","desc":"Strong, defined build. Must confidently perform Olympic lifts on camera. Crossfit or powerlifting experience required."},
+    {"name":"CYCLIST","type":"Principal","ageRange":"24-34","gender":"Female","ethnicity":"Any","desc":"Competitive cyclist or strong road rider. Comfortable at speed."},
+    {"name":"BASKETBALL PLAYER","type":"Featured","ageRange":"20-28","gender":"Any","ethnicity":"Any","desc":"Former college or semi-pro. Must dunk or execute high-level handles on camera."}
+  ])
+
+C(id=4, slug="public-theater-revival", title="Three Sisters", tagline="Off-Broadway Revival · The Public Theater",
+  prod="The Public Theater", type="Theater", pay="$800/week (AEA LOA)",
+  location="New York, NY", deadline="May 5, 2026", union="AEA", submissions=78,
+  desc="Chekhov's Three Sisters, reimagined in present-day Detroit.",
+  synopsis="Director Sam Adeyemi (*Seven Guitars*, 2024 Obie) leads an eight-week run in the Anspacher with a specific commitment to casting performers of color in roles historically denied to them.",
+  director="Sam Adeyemi",
+  shoots="Rehearsals Jun 1 – Jul 6 · Performances Jul 10 – Sept 4, 2026",
+  rate="$800/week (AEA LOA)", rehearsal="5 weeks, full-time",
+  auditionFormat="In-person audition (NYC) · EPA callback sides provided",
+  roles=[
+    {"name":"OLGA","type":"Lead","ageRange":"35-45","gender":"Female","ethnicity":"Any","desc":"The eldest sister. A high-school principal carrying the weight of her family. Must sing — prepare 16 bars of contemporary."},
+    {"name":"MASHA","type":"Lead","ageRange":"30-40","gender":"Female","ethnicity":"Any","desc":"Married young and regretting it. The play's emotional engine. Strong physical presence."},
+    {"name":"IRINA","type":"Lead","ageRange":"22-28","gender":"Female","ethnicity":"Any","desc":"The youngest — hope that curdles over the evening. Must play believable 20 and believable 28 in the same run."},
+    {"name":"VERSHININIV","type":"Supporting","ageRange":"40-55","gender":"Male","ethnicity":"Any","desc":"A career military officer reassigned after two tours. Charming, married, dangerous."},
+    {"name":"ENSEMBLE (4 roles)","type":"Ensemble","ageRange":"20-50","gender":"Any","ethnicity":"Any","desc":"Neighbors, soldiers, townspeople. Strong movement + ensemble vocal harmonies."}
+  ])
+
+C(id=5, slug="a24-indie-drama", title="Untitled A24 Drama", tagline="Indie Drama Feature · A24",
+  prod="A24 Films", type="Film", pay="$50,000 flat",
+  location="Los Angeles, CA", deadline="Jun 1, 2026", union="SAG-AFTRA", submissions=89,
+  desc="A quiet character drama from writer-director Chloe Tran.",
+  synopsis="A second-generation Vietnamese-American tech designer returns home after his father's stroke and is forced to confront a version of himself he thought he'd left. In the spirit of *Minari* and *After Yang*.",
+  director="Chloe Tran", shoots="Oct 5 – Nov 20, 2026 (LA + Orange County)",
+  rate="$50,000 flat · $2,500/week per diem", rehearsal="2 weeks table work + movement",
+  auditionFormat="Self-tape → chemistry reads",
+  roles=[
+    {"name":"DANIEL NGUYEN","type":"Lead","ageRange":"28-35","gender":"Male","ethnicity":"Asian (East/Southeast)","desc":"A product designer quietly unraveling. Must carry an entire film with restraint. Working Vietnamese preferred; coach provided."},
+    {"name":"LINH NGUYEN","type":"Supporting","ageRange":"55-70","gender":"Female","ethnicity":"Vietnamese","desc":"Daniel's mother. Former pharmacist now running the family pho shop. Performs in Vietnamese + English. Warm, funny, immovable."},
+    {"name":"TRAVIS","type":"Supporting","ageRange":"28-35","gender":"Male","ethnicity":"Any","desc":"Daniel's college friend, now a tenured professor. The voice of the life Daniel left behind."}
+  ])
+
+C(id=6, slug="vogue-spring-editorial", title="Vogue Spring Editorial", tagline="Print Campaign · Vogue / Condé Nast",
+  prod="Vogue / Condé Nast", type="Modeling", pay="$3,000/day",
+  location="Miami, FL", deadline="Apr 22, 2026", union="Non-Union", submissions=156,
+  desc="Two-day print editorial for the Spring Fashion issue.",
+  synopsis="Shot on Miami Beach and in art-deco interiors. Photographer Lena Okafor, styling by the Vogue fashion team. Final images run in US, UK, and Japan editions.",
+  director="Lena Okafor (photographer)", shoots="May 2-3, 2026",
+  rate="$3,000/day flat · agency bookings welcome", rehearsal="1-hr fitting",
+  auditionFormat="Digitals + polaroid submission · callback in Miami",
+  roles=[
+    {"name":"MODEL (LEAD)","type":"Principal","ageRange":"20-28","gender":"Female","ethnicity":"Any","desc":"High-fashion editorial. 5'8\"+. Editorial tear-sheets preferred."},
+    {"name":"MODEL (SECONDARY)","type":"Featured","ageRange":"20-30","gender":"Any","ethnicity":"Any","desc":"Secondary looks. 5'7\"+. Strong polaroids. New faces encouraged."}
+  ])
+
+# Template-generator for the remaining 94. Keep varied + human.
+def add(**k):
+    k.setdefault("submissions", 0)
+    if "roles" not in k: k["roles"] = []
+    castings.append(k)
+
+# ---- More Film Features (7-15) ----
+add(id=7, slug="bleak-harbor", title="Bleak Harbor", tagline="Crime Feature · Neon",
+    prod="Neon / Killer Films", type="Film", pay="$75,000",
+    location="Portland, ME", deadline="May 30, 2026", union="SAG-AFTRA",
+    desc="A lobsterman stumbles into a drug route off the Maine coast and has to choose between his brother and the law.",
+    synopsis="Brooding, briny, slow to boil. Writer-director Aoife Brennan's follow-up to her Tribeca Grand Jury winner *The Cold Shoulder*. Shoots practical on working boats in Portland and Rockland.",
+    director="Aoife Brennan", shoots="Aug 12 – Oct 4, 2026", rate="$75,000 flat",
+    rehearsal="1 week on-water training", auditionFormat="Self-tape",
+    roles=[
+      {"name":"COLM RYAN","type":"Lead","ageRange":"32-42","gender":"Male","ethnicity":"Any","desc":"Third-generation lobsterman. Physical presence required; must be comfortable on open water. Any accent considered if authentic."},
+      {"name":"SEAN RYAN","type":"Supporting","ageRange":"25-35","gender":"Male","ethnicity":"Any","desc":"Colm's younger brother. Charming liability."},
+      {"name":"AGENT HARPER","type":"Supporting","ageRange":"40-55","gender":"Female","ethnicity":"Any","desc":"DEA field agent running the investigation. Tired, methodical, unshakeable."}
+    ])
+
+add(id=8, slug="somewhere-outside", title="Somewhere Outside Austin", tagline="Southern Drama Feature",
+    prod="Likely Story Pictures", type="Film", pay="SAG Scale + 10%",
+    location="Austin, TX", deadline="May 12, 2026", union="SAG-AFTRA",
+    desc="Two estranged sisters drive their mother's ashes from El Paso to the coast.",
+    synopsis="A road movie that's really a two-hander. The whole film is in the truck. No big speeches. Lots of Van Morrison. Directed by Marisol Ibarra.",
+    director="Marisol Ibarra", shoots="3-week shoot, July 2026",
+    rate="SAG Scale + 10%", rehearsal="1 week rehearsal (Austin)",
+    auditionFormat="Chemistry reads — both sisters cast together",
+    roles=[
+      {"name":"JUNE","type":"Lead","ageRange":"38-48","gender":"Female","ethnicity":"Any","desc":"Older sister. Pragmatic, withholding, a little mean. Carries most of the grief."},
+      {"name":"CECILIA","type":"Lead","ageRange":"28-36","gender":"Female","ethnicity":"Any","desc":"Younger sister. Open-hearted, underestimated, tired of being the forgiving one."}
+    ])
+
+add(id=9, slug="paper-wings", title="Paper Wings", tagline="Coming-of-Age Feature",
+    prod="Annapurna Pictures", type="Film", pay="$35,000",
+    location="Minneapolis, MN", deadline="May 18, 2026", union="SAG-AFTRA",
+    desc="A 14-year-old Hmong-American figure skater qualifies for nationals the week her father's asylum case is denied.",
+    synopsis="Tender, specific, and skate-heavy. First-time director Pakou Yang is casting a wide net for her lead — no prior credits required, but she must be a skater.",
+    director="Pakou Yang", shoots="Winter 2026-27",
+    rate="$35,000 flat + skating per diem", auditionFormat="On-ice audition tape",
+    roles=[
+      {"name":"MAI VANG","type":"Lead","ageRange":"13-15","gender":"Female","ethnicity":"Hmong / Southeast Asian","desc":"Competitive figure skater at regional/sectional level. Must land doubles consistently; triples a plus. Hmong-speaking family encouraged."},
+      {"name":"BEE VANG","type":"Supporting","ageRange":"40-55","gender":"Male","ethnicity":"Hmong","desc":"Mai's father. Works two jobs, speaks limited English. Performs in Hmong + broken English."}
+    ])
+
+add(id=10, slug="the-clearing", title="The Clearing", tagline="Mystery Thriller Feature",
+    prod="Blumhouse Productions", type="Film", pay="$25,000",
+    location="Asheville, NC", deadline="Jun 5, 2026", union="SAG-AFTRA",
+    desc="A park ranger investigates a string of disappearances in a North Carolina wilderness preserve.",
+    synopsis="Lean, practical, mostly single-location. Blumhouse low-budget model.",
+    director="Ethan Powell", shoots="5 weeks, fall 2026", rate="$25,000",
+    auditionFormat="Self-tape", roles=[
+      {"name":"RANGER KAI KELLER","type":"Lead","ageRange":"28-38","gender":"Any","ethnicity":"Any","desc":"Park ranger who thinks she's seen it all until she hasn't. Physical role, lots of night work."},
+      {"name":"OLD HAYDEN","type":"Supporting","ageRange":"65-80","gender":"Male","ethnicity":"Any","desc":"Retired ranger who still walks the trails. Unreliable narrator energy."}
+    ])
+
+add(id=11, slug="west-of-the-moon", title="West of the Moon", tagline="Romance · IFC Films",
+    prod="IFC Films", type="Film", pay="$40,000",
+    location="Santa Fe, NM", deadline="May 22, 2026", union="SAG-AFTRA",
+    desc="An astronomer and a truck stop cook fall into something they're both too old and too tired to call love.",
+    synopsis="Adult romance. Quiet, specific, funny. Written and directed by Dana Lowell.",
+    director="Dana Lowell", shoots="June 2026", rate="$40,000 flat",
+    auditionFormat="Chemistry reads",
+    roles=[
+      {"name":"ROSA","type":"Lead","ageRange":"48-58","gender":"Female","ethnicity":"Any","desc":"Astronomer at the VLA. Divorced, content, caught off guard."},
+      {"name":"FRANK","type":"Lead","ageRange":"50-62","gender":"Male","ethnicity":"Any","desc":"Truck stop cook. Quiet, watchful, handsome in a worn-out way."}
+    ])
+
+add(id=12, slug="goodbye-june", title="Goodbye, June", tagline="Cancer Drama · Focus Features",
+    prod="Focus Features", type="Film", pay="$60,000",
+    location="Chicago, IL", deadline="May 28, 2026", union="SAG-AFTRA",
+    desc="A teacher is diagnosed with stage-IV cancer and decides to spend her remaining months teaching her hardest class to read.",
+    synopsis="Not a disease-of-the-week. Tough, funny, unsentimental. Adapted from the memoir by June Oyelowo.",
+    director="Roger Yi", shoots="Aug 2026", rate="$60,000 flat",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"JUNE OYELOWO","type":"Lead","ageRange":"42-55","gender":"Female","ethnicity":"Black","desc":"7th-grade English teacher. Must command a classroom. Comedy chops essential."},
+      {"name":"PRINCIPAL ADAMS","type":"Supporting","ageRange":"55-65","gender":"Male","ethnicity":"Any","desc":"June's oldest friend. Won't cry in front of her. Cries alone."}
+    ])
+
+add(id=13, slug="harbor-lights", title="Harbor Lights", tagline="Period Drama · Searchlight",
+    prod="Searchlight Pictures", type="Film", pay="$90,000",
+    location="Savannah, GA", deadline="Jun 10, 2026", union="SAG-AFTRA",
+    desc="A 1952-set drama about a Black family in Georgetown, SC, whose daughter passes as white to attend college.",
+    synopsis="Prestige period piece from director Jalen Cooper. Extensive costume and dialect work.",
+    director="Jalen Cooper", shoots="Sept – Dec 2026", rate="$90,000 flat + travel",
+    rehearsal="2 weeks dialect + period movement",
+    auditionFormat="Self-tape → callback (Atlanta)",
+    roles=[
+      {"name":"HARRIET DAWSON","type":"Lead","ageRange":"18-22","gender":"Female","ethnicity":"Black (light-complected)","desc":"The daughter. Ambitious, terrified, compartmentalizing. Must play passing."},
+      {"name":"RUTH DAWSON","type":"Supporting","ageRange":"40-55","gender":"Female","ethnicity":"Black","desc":"Harriet's mother. Never comes to campus. Waits."},
+      {"name":"WILLIAM BECKETT","type":"Supporting","ageRange":"20-26","gender":"Male","ethnicity":"White","desc":"Harriet's boyfriend at college. Doesn't know."}
+    ])
+
+add(id=14, slug="the-blueprint", title="The Blueprint", tagline="Heist Feature",
+    prod="Imperative Entertainment", type="Film", pay="$55,000",
+    location="Las Vegas, NV", deadline="May 25, 2026", union="SAG-AFTRA",
+    desc="A disgraced architect designs the heist of her ex-husband's casino.",
+    synopsis="Slick, talky, *Ocean's 11* DNA with a feminist twist.",
+    director="Nadia Okafor", shoots="6 weeks, summer 2026",
+    rate="$55,000 flat", auditionFormat="Self-tape",
+    roles=[
+      {"name":"REESE WALLACE","type":"Lead","ageRange":"35-48","gender":"Female","ethnicity":"Any","desc":"Architect. Smart, sharp, with ten years of rage neatly filed away."},
+      {"name":"COLE WALLACE","type":"Supporting","ageRange":"45-55","gender":"Male","ethnicity":"Any","desc":"Casino owner, Reese's ex. Smooth to the point of menace."}
+    ])
+
+add(id=15, slug="second-shift", title="Second Shift", tagline="Working-Class Drama",
+    prod="Gamechanger Films", type="Film", pay="$28,000",
+    location="Akron, OH", deadline="May 16, 2026", union="SAG-AFTRA",
+    desc="A 55-year-old factory worker tries to learn coding after her plant closes.",
+    synopsis="Gentle, funny, deeply specific. Inspired by the director's own mother.",
+    director="Sarah Dubrowski", shoots="4 weeks, Jun 2026",
+    rate="$28,000 flat",
+    auditionFormat="Self-tape", roles=[
+      {"name":"KATHLEEN NOVOTNY","type":"Lead","ageRange":"50-60","gender":"Female","ethnicity":"White (Eastern European)","desc":"Factory worker for 30 years. Stubborn, proud, surprisingly funny."}
+    ])
+
+# ---- Indie films / short films (16-25) ----
+add(id=16, slug="blue-hour", title="Blue Hour", tagline="Short Film · Student Academy",
+    prod="NYU Tisch MFA", type="Short Film", pay="Copy, Credit, Meals ($150/day stipend)",
+    location="New York, NY", deadline="Apr 30, 2026", union="Non-Union",
+    desc="A 15-min thesis short about a nurse at the end of an overnight shift.",
+    synopsis="Naturalistic, single-location, no dialogue for the first 6 minutes. Shoots one weekend in the Bronx.",
+    director="Priya Menon", shoots="2-day shoot, May 9-10",
+    rate="Copy, credit, meals + $150/day stipend",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"ADAEZE","type":"Lead","ageRange":"28-38","gender":"Female","ethnicity":"Black/African","desc":"ER nurse. Must carry long takes of exhaustion without performing exhaustion."}
+    ])
+
+add(id=17, slug="the-visit", title="The Visit", tagline="Short Film",
+    prod="Independent (Brooklyn)", type="Short Film", pay="$300/day",
+    location="Brooklyn, NY", deadline="May 4, 2026", union="Non-Union",
+    desc="A 12-minute short about a daughter visiting her estranged father in hospice.",
+    director="Tae-woo Lim", shoots="1-day shoot", rate="$300/day + food",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"MIA","type":"Lead","ageRange":"26-34","gender":"Female","ethnicity":"Korean-American","desc":"Carrying ten years of complicated. Understated."},
+      {"name":"DAD","type":"Supporting","ageRange":"60-75","gender":"Male","ethnicity":"Korean","desc":"Hospice patient. Performs mostly in Korean."}
+    ])
+
+add(id=18, slug="red-rover", title="Red Rover", tagline="Indie Feature · SXSW Submission",
+    prod="Open Road Pictures", type="Indie Film", pay="$12,000 flat",
+    location="Marfa, TX", deadline="Apr 26, 2026", union="SAG-AFTRA (Micro-budget)",
+    desc="A queer coming-of-age feature shot in and around Marfa.",
+    synopsis="Micro-budget. Crew of 8. Expect long days, sincere work, and a lot of dust. Director Lee Alvarez (*Little Beast*).",
+    director="Lee Alvarez", shoots="3 weeks, June 2026",
+    rate="$12,000 flat + housing", auditionFormat="Self-tape",
+    roles=[
+      {"name":"AUGIE","type":"Lead","ageRange":"17-21","gender":"Non-Binary","ethnicity":"Latinx","desc":"Summer before community college. Skateboards. Writes songs they'll never play for anyone."}
+    ])
+
+add(id=19, slug="ladybug", title="Ladybug", tagline="Short Film · Cannes Shorts Submission",
+    prod="Paragon Shorts", type="Short Film", pay="$500/day",
+    location="Los Angeles, CA", deadline="May 1, 2026", union="Non-Union",
+    desc="A 14-minute short about a 9-year-old who thinks she caused her parents' divorce.",
+    director="Harper Liang", shoots="3 days, June 2026",
+    rate="$500/day + 10% backend",
+    auditionFormat="Self-tape + callback (LA)",
+    roles=[
+      {"name":"LUCY","type":"Lead","ageRange":"8-10","gender":"Female","ethnicity":"Any","desc":"Plays serious. Comfortable with emotional material. Working w/ intimacy coordinator + on-set guardian."}
+    ])
+
+add(id=20, slug="north-star-feature", title="North Star", tagline="Indie Feature",
+    prod="Greywolf Films", type="Indie Film", pay="$18,000",
+    location="Anchorage, AK", deadline="May 9, 2026", union="SAG-AFTRA Ultra-Low",
+    desc="A Yup'ik-language indie feature about a grandfather and grandson reclaiming a hunting ground.",
+    synopsis="95% Yup'ik dialogue. Non-professional actors strongly welcome. Director Aaka Nanuq.",
+    director="Aaka Nanuq", shoots="5 weeks, winter 2026",
+    rate="$18,000 flat",
+    auditionFormat="Self-tape (in-language OK)",
+    roles=[
+      {"name":"NATAQ","type":"Lead","ageRange":"12-15","gender":"Male","ethnicity":"Yup'ik / Alaska Native","desc":"Native Yup'ik speaker preferred. Hunting/outdoor experience a plus."},
+      {"name":"APA","type":"Lead","ageRange":"65-80","gender":"Male","ethnicity":"Yup'ik / Alaska Native","desc":"Nataq's grandfather. Native Yup'ik speaker required."}
+    ])
+
+add(id=21, slug="bone-dry", title="Bone Dry", tagline="Short Film · Sundance Submission",
+    prod="Second Wind Films", type="Short Film", pay="$400/day",
+    location="Albuquerque, NM", deadline="Apr 29, 2026", union="Non-Union",
+    desc="A 13-minute short about two EMTs on a slow shift in rural New Mexico.",
+    director="Sebastian Reyes", shoots="2 days, May 20-21",
+    rate="$400/day + meals", auditionFormat="Self-tape",
+    roles=[
+      {"name":"CRUZ","type":"Lead","ageRange":"30-45","gender":"Any","ethnicity":"Any","desc":"Senior EMT. Funny in a tired way. Any accent OK."},
+      {"name":"MOLLY","type":"Lead","ageRange":"22-30","gender":"Female","ethnicity":"Any","desc":"Rookie EMT. Eager, slightly annoying, learning fast."}
+    ])
+
+add(id=22, slug="the-pool", title="The Pool", tagline="Short Film",
+    prod="Tallgrass Shorts", type="Short Film", pay="$200/day",
+    location="Miami, FL", deadline="May 7, 2026", union="Non-Union",
+    desc="A 10-minute short about a kid who finds a body in the community pool.",
+    director="Luis Herrera", shoots="2 days, late May", rate="$200/day + food",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"JAVI","type":"Lead","ageRange":"10-12","gender":"Male","ethnicity":"Latino","desc":"Kid who finds a body. Must swim."}
+    ])
+
+add(id=23, slug="september-light", title="September Light", tagline="Indie Drama",
+    prod="Killer Films", type="Indie Film", pay="$22,000",
+    location="Providence, RI", deadline="May 3, 2026", union="SAG-AFTRA",
+    desc="A widow running her late husband's diner falls for a traveling glazier.",
+    synopsis="Contemplative, middle-aged romance. Director Chandra Mehta's first feature.",
+    director="Chandra Mehta", shoots="4 weeks, Sept 2026",
+    rate="$22,000 flat", auditionFormat="Self-tape",
+    roles=[
+      {"name":"EDITH","type":"Lead","ageRange":"52-62","gender":"Female","ethnicity":"Any","desc":"Diner owner, grieving without ceremony."},
+      {"name":"MANNY","type":"Supporting","ageRange":"55-65","gender":"Male","ethnicity":"Any","desc":"Traveling window glazier. Carries a thermos, doesn't say much."}
+    ])
+
+add(id=24, slug="grease-fire", title="Grease Fire", tagline="Short Horror",
+    prod="Late Bloom Pictures", type="Short Film", pay="$350/day",
+    location="New Orleans, LA", deadline="May 6, 2026", union="Non-Union",
+    desc="A 9-minute horror short set in a 24-hour fast-food drive-thru.",
+    director="Zora Beaumont", shoots="1-night shoot, May 15",
+    rate="$350/day + meals", auditionFormat="Self-tape",
+    roles=[
+      {"name":"TASHA","type":"Lead","ageRange":"18-25","gender":"Female","ethnicity":"Any","desc":"Overnight cashier. Must scream convincingly and do physical comedy in the same minute."}
+    ])
+
+add(id=25, slug="brother-lives", title="Brother Lives", tagline="Indie Feature",
+    prod="Low Spark Pictures", type="Indie Film", pay="$15,000",
+    location="Detroit, MI", deadline="May 14, 2026", union="SAG-AFTRA Micro",
+    desc="After his brother dies, a man opens his brother's phone and pretends to be him for a week.",
+    director="Ahmed Farouk", shoots="3 weeks, July 2026",
+    rate="$15,000 flat", auditionFormat="Self-tape",
+    roles=[
+      {"name":"AMIR","type":"Lead","ageRange":"30-42","gender":"Male","ethnicity":"Middle Eastern / North African","desc":"Quiet older brother. Must carry enormous grief while pretending not to."}
+    ])
+
+# ---- TV series + streaming (26-45) ----
+add(id=26, slug="the-last-district", title="The Last District", tagline="HBO Drama Pilot",
+    prod="HBO", type="TV", pay="$6,000/episode",
+    location="Baltimore, MD", deadline="May 24, 2026", union="SAG-AFTRA",
+    desc="A public defender takes on a death-row appeal while her marriage falls apart.",
+    synopsis="Prestige drama from *The Deuce* alumna Kate Whelan. 10-ep order contingent on pilot.",
+    director="Kate Whelan (showrunner)", shoots="Pilot: Sept 2026",
+    rate="$6,000/episode · series regular", auditionFormat="Self-tape → network test",
+    roles=[
+      {"name":"AMARA WHITFIELD","type":"Series Regular","ageRange":"35-45","gender":"Female","ethnicity":"Black","desc":"Public defender. Smart, exhausted, uncompromising. Carries the series."},
+      {"name":"JACK WHITFIELD","type":"Series Regular","ageRange":"38-48","gender":"Male","ethnicity":"Any","desc":"Amara's husband. High-school history teacher. Failing quietly."},
+      {"name":"INMATE DELACROIX","type":"Recurring","ageRange":"45-60","gender":"Male","ethnicity":"Any","desc":"Death-row client. 20 years inside. Dignity intact."}
+    ])
+
+add(id=27, slug="everyone-here-lies", title="Everyone Here Lies", tagline="Apple TV+ Mystery Series",
+    prod="Apple TV+", type="TV", pay="$8,500/episode",
+    location="Vancouver, BC", deadline="May 27, 2026", union="SAG-AFTRA",
+    desc="A small-town mystery series with nested unreliable narrators.",
+    director="Pete Markham (showrunner)", shoots="Jan – May 2027",
+    rate="$8,500/ep", auditionFormat="Self-tape",
+    roles=[
+      {"name":"DETECTIVE NICO HARPER","type":"Series Regular","ageRange":"32-42","gender":"Any","ethnicity":"Any","desc":"Outside detective called in for one case that becomes six. Even-keeled. Skeptical."},
+      {"name":"LORETTA MARSH","type":"Recurring","ageRange":"55-70","gender":"Female","ethnicity":"Any","desc":"Town historian. Knows everything and almost none of it is true."}
+    ])
+
+add(id=28, slug="foxglove-manor", title="Foxglove Manor", tagline="Netflix Period Romance",
+    prod="Netflix Originals", type="TV", pay="$4,500/episode",
+    location="London (and Budapest double)", deadline="Jun 1, 2026", union="SAG-AFTRA",
+    desc="A Regency-set romance with a secret. Eight episodes.",
+    synopsis="Bridgerton-adjacent but darker. Commits to the corset work.",
+    director="Amelia Park (showrunner)", shoots="Fall 2026 – Spring 2027",
+    rate="$4,500/ep + travel + per diem", rehearsal="2 weeks period etiquette + dialect",
+    auditionFormat="Self-tape → chemistry read (London)",
+    roles=[
+      {"name":"LADY WILHELMINA FOX","type":"Series Regular","ageRange":"22-30","gender":"Female","ethnicity":"Any","desc":"Third daughter. Sharp-tongued, brilliant, expected to marry for land. RP or posh mid-Atlantic."},
+      {"name":"CAPT. DUNCAN HAY","type":"Series Regular","ageRange":"28-36","gender":"Male","ethnicity":"Any","desc":"Naval officer returning from the Mediterranean. Soft-spoken, dangerously observant."}
+    ])
+
+add(id=29, slug="red-line-chicago", title="Red Line", tagline="NBC Procedural Pilot",
+    prod="NBC / Dick Wolf Entertainment", type="TV", pay="$3,800/episode",
+    location="Chicago, IL", deadline="May 21, 2026", union="SAG-AFTRA",
+    desc="Transit-police procedural set on the Chicago Red Line.",
+    director="David Cho (director)", shoots="Pilot: August 2026",
+    rate="$3,800/ep (series regular)", auditionFormat="Self-tape → studio/network test",
+    roles=[
+      {"name":"OFF. GIOVANNI ROMA","type":"Series Regular","ageRange":"28-36","gender":"Male","ethnicity":"Italian-American","desc":"Third-generation CPD family. Softer than his last name implies."},
+      {"name":"OFF. LINH DO","type":"Series Regular","ageRange":"26-34","gender":"Female","ethnicity":"Vietnamese-American","desc":"Two years on the force. Wound tight. Wants homicide."}
+    ])
+
+add(id=30, slug="the-understudies", title="The Understudies", tagline="Peacock Half-Hour Comedy",
+    prod="Peacock / Universal TV", type="TV", pay="$5,200/episode",
+    location="New York, NY", deadline="May 11, 2026", union="SAG-AFTRA",
+    desc="A workplace comedy set among the understudies of a fading Broadway musical.",
+    synopsis="Half-hour single-cam. Warm, theatrical, very NYC. 10-ep order.",
+    director="Rhea Patel (showrunner)", shoots="Oct 2026 – Jan 2027",
+    rate="$5,200/ep", auditionFormat="Self-tape → in-person callback (NYC)",
+    roles=[
+      {"name":"JAMIE 'J' KIM","type":"Series Regular","ageRange":"26-34","gender":"Any","ethnicity":"Asian","desc":"Understudy to the male lead for three years. Sings, dances, resents."},
+      {"name":"BECCA LOWE","type":"Series Regular","ageRange":"22-28","gender":"Female","ethnicity":"Any","desc":"New to the company. Wide-eyed. Gifted. Doesn't know how the sausage gets made."}
+    ])
+
+add(id=31, slug="pattern-recognition", title="Pattern Recognition", tagline="FX Limited Series",
+    prod="FX on Hulu", type="TV", pay="$9,500/episode",
+    location="New Mexico", deadline="May 31, 2026", union="SAG-AFTRA",
+    desc="Adaptation of the William Gibson novel. Six episodes.",
+    director="Anja Köhler", shoots="Summer 2026",
+    rate="$9,500/ep", auditionFormat="Self-tape",
+    roles=[
+      {"name":"CAYCE POLLARD","type":"Lead","ageRange":"30-38","gender":"Female","ethnicity":"Any","desc":"Brand-allergic cool-hunter. Dry, watchful. Neutral mid-Atlantic."}
+    ])
+
+add(id=32, slug="cathedrals-west", title="Cathedrals", tagline="Starz Drama Series",
+    prod="Starz", type="TV", pay="$4,000/episode",
+    location="Salt Lake City, UT", deadline="May 26, 2026", union="SAG-AFTRA",
+    desc="Mormon women in 1950s Utah start a secret book club.",
+    director="Rachel Hart (showrunner)", shoots="Fall 2026",
+    rate="$4,000/ep", auditionFormat="Self-tape",
+    roles=[
+      {"name":"RHEA CALDWELL","type":"Series Regular","ageRange":"34-42","gender":"Female","ethnicity":"White","desc":"Mother of five. Sharp mind she has never been allowed to use."}
+    ])
+
+add(id=33, slug="small-hours", title="Small Hours", tagline="Prime Video Drama",
+    prod="Amazon MGM Studios", type="TV", pay="$7,000/episode",
+    location="Brooklyn, NY", deadline="May 10, 2026", union="SAG-AFTRA",
+    desc="An ER night-shift drama told in real time.",
+    director="Ilya Korsakov", shoots="Summer-Fall 2026",
+    rate="$7,000/ep", auditionFormat="Self-tape → chemistry read",
+    roles=[
+      {"name":"DR. OBI ADEBAYO","type":"Series Regular","ageRange":"35-45","gender":"Male","ethnicity":"Black / Nigerian","desc":"Attending. Calm, surgical, grieving a patient he couldn't save six months ago."},
+      {"name":"NURSE JULES BECK","type":"Series Regular","ageRange":"28-38","gender":"Non-Binary","ethnicity":"Any","desc":"Charge nurse. Holds the shift together. Dry as bone."}
+    ])
+
+add(id=34, slug="sunrise-league", title="Sunrise League", tagline="Disney+ Family Drama",
+    prod="Disney+", type="TV", pay="$3,200/episode",
+    location="Orlando, FL", deadline="Apr 30, 2026", union="SAG-AFTRA",
+    desc="A Little League team in a small Florida town figures out what it means to win.",
+    director="Camille Ortiz (showrunner)", shoots="Summer 2026",
+    rate="$3,200/ep", auditionFormat="Self-tape",
+    roles=[
+      {"name":"COACH ELENA MORALES","type":"Series Regular","ageRange":"30-40","gender":"Female","ethnicity":"Latina","desc":"Former softball player coaching her nephew's team. Comedy + warmth."},
+      {"name":"MATEO (age 11)","type":"Series Regular","ageRange":"10-12","gender":"Male","ethnicity":"Latino","desc":"Star pitcher. Anxious about his parents' divorce. Baseball experience required."}
+    ])
+
+add(id=35, slug="the-fellows", title="The Fellows", tagline="Showtime Legal Drama",
+    prod="Showtime / Paramount+", type="TV", pay="$5,800/episode",
+    location="Washington, DC", deadline="May 17, 2026", union="SAG-AFTRA",
+    desc="First-year clerks at a federal appeals court navigate the most politically charged docket of the year.",
+    director="Noah Stern (showrunner)", shoots="Fall 2026",
+    rate="$5,800/ep", auditionFormat="Self-tape",
+    roles=[
+      {"name":"MALIK JENSEN","type":"Series Regular","ageRange":"24-30","gender":"Male","ethnicity":"Black","desc":"Yale Law. First-generation. Believes the system can still work."},
+      {"name":"HANA SUZUKI","type":"Series Regular","ageRange":"24-30","gender":"Female","ethnicity":"Japanese-American","desc":"Stanford Law. Doesn't believe it anymore but keeps showing up anyway."}
+    ])
+
+add(id=36, slug="longwood-doctors", title="Longwood", tagline="Max Medical Series",
+    prod="HBO Max", type="TV", pay="$5,500/episode",
+    location="Boston, MA", deadline="May 19, 2026", union="SAG-AFTRA",
+    desc="A teaching hospital drama with the texture of *The Pitt* and the soul of *St. Elsewhere*.",
+    director="Gemma Wells (showrunner)", shoots="Fall 2026",
+    rate="$5,500/ep", auditionFormat="Self-tape",
+    roles=[
+      {"name":"DR. CAMILLE RHEE","type":"Series Regular","ageRange":"32-42","gender":"Female","ethnicity":"Korean-American","desc":"Chief resident. Brilliant, impatient, bad at getting help."},
+      {"name":"DR. TOBI OKONKWO","type":"Recurring","ageRange":"30-40","gender":"Male","ethnicity":"Nigerian","desc":"Oncology fellow. Two jobs, no sleep, unexpectedly funny."}
+    ])
+
+add(id=37, slug="ghosts-of-the-meridian", title="Ghosts of the Meridian", tagline="AMC Sci-Fi Series",
+    prod="AMC Studios", type="TV", pay="$7,800/episode",
+    location="New Orleans, LA", deadline="May 13, 2026", union="SAG-AFTRA",
+    desc="Near-future sci-fi about a research vessel that keeps losing one day a year.",
+    director="Priya Sengupta", shoots="Winter 2026-27",
+    rate="$7,800/ep", auditionFormat="Self-tape",
+    roles=[
+      {"name":"COMMANDER THEO KIER","type":"Series Regular","ageRange":"36-46","gender":"Any","ethnicity":"Any","desc":"Ship's captain. Hides claustrophobia behind command."},
+      {"name":"DR. LOTTE FINK","type":"Series Regular","ageRange":"32-40","gender":"Female","ethnicity":"Any","desc":"Temporal physicist. German or any European accent acceptable."}
+    ])
+
+add(id=38, slug="the-foundation-lawyers", title="Counsel", tagline="Netflix Legal Series",
+    prod="Netflix", type="TV", pay="$6,200/episode",
+    location="New York, NY", deadline="May 29, 2026", union="SAG-AFTRA",
+    desc="Inside a storied Manhattan corporate law firm making its first contact with AI.",
+    director="Eli Brandt (showrunner)", shoots="Fall-Winter 2026",
+    rate="$6,200/ep", auditionFormat="Self-tape",
+    roles=[
+      {"name":"ELODIE ARSENAULT","type":"Series Regular","ageRange":"40-52","gender":"Female","ethnicity":"Any","desc":"Managing partner. Deeply French-Canadian, deeply corporate. Warms very slowly."}
+    ])
+
+add(id=39, slug="lightyear-summer-camp", title="Lightyear", tagline="Nickelodeon Family Series",
+    prod="Nickelodeon", type="TV", pay="$2,400/episode",
+    location="Atlanta, GA", deadline="May 2, 2026", union="SAG-AFTRA",
+    desc="A summer-camp dramedy for tween audiences.",
+    director="Maya Levine (showrunner)", shoots="Summer 2026",
+    rate="$2,400/ep", auditionFormat="Self-tape",
+    roles=[
+      {"name":"ZOE (age 12)","type":"Series Regular","ageRange":"11-13","gender":"Female","ethnicity":"Any","desc":"New camper. Lying about most of her backstory. Funny, guarded."},
+      {"name":"COUNSELOR RAY","type":"Recurring","ageRange":"19-24","gender":"Any","ethnicity":"Any","desc":"2nd-year counselor. Doesn't really want to grow up."}
+    ])
+
+add(id=40, slug="the-guide-book", title="The Guidebook", tagline="Apple TV+ Travel Comedy",
+    prod="Apple TV+", type="TV", pay="$4,800/episode",
+    location="Various (Europe)", deadline="May 8, 2026", union="SAG-AFTRA",
+    desc="A washed-up travel writer and his estranged daughter walk the Camino de Santiago over eight episodes.",
+    director="Hector Ramírez (showrunner)", shoots="Fall 2026",
+    rate="$4,800/ep + per diem", auditionFormat="Self-tape → chemistry read (LA)",
+    roles=[
+      {"name":"DEAN RAFFERTY","type":"Lead","ageRange":"55-65","gender":"Male","ethnicity":"Any","desc":"Travel writer whose books nobody buys anymore. Deeply funny. Barely walking."},
+      {"name":"PHOEBE RAFFERTY","type":"Lead","ageRange":"28-34","gender":"Female","ethnicity":"Any","desc":"Dean's estranged daughter. A documentary producer who came to 'document' him and is not prepared for what shows up."}
+    ])
+
+add(id=41, slug="cold-open", title="Cold Open", tagline="Hulu Sketch Comedy Pilot",
+    prod="Hulu", type="Web Series", pay="$2,800/episode",
+    location="Los Angeles, CA", deadline="Apr 27, 2026", union="SAG-AFTRA",
+    desc="Late-night sketch comedy written and performed by a rotating cast.",
+    director="Staff (multi-director)", shoots="Sept 2026",
+    rate="$2,800/ep", auditionFormat="Submit a 2-min original character piece",
+    roles=[
+      {"name":"CAST MEMBER (Open Call)","type":"Series Regular","ageRange":"22-35","gender":"Any","ethnicity":"Any","desc":"Five slots. Must do strong impressions, write your own material, and play well with others."}
+    ])
+
+add(id=42, slug="the-lifers", title="The Lifers", tagline="FX Anthology",
+    prod="FX on Hulu", type="TV", pay="$6,500/episode",
+    location="Marfa, TX", deadline="May 23, 2026", union="SAG-AFTRA",
+    desc="An anthology series about people serving life sentences. Each episode, one inmate.",
+    director="Various", shoots="Rolling",
+    rate="$6,500/ep", auditionFormat="Self-tape per role",
+    roles=[
+      {"name":"JONAS WRIGHT (Ep. 1)","type":"Lead","ageRange":"55-70","gender":"Male","ethnicity":"Any","desc":"35 years in. Learned three languages inside. Does not want parole."}
+    ])
+
+add(id=43, slug="the-bracket", title="The Bracket", tagline="ESPN+ Sports Dramedy",
+    prod="ESPN Films", type="TV", pay="$3,400/episode",
+    location="Indianapolis, IN", deadline="May 8, 2026", union="SAG-AFTRA",
+    desc="The behind-the-scenes chaos of a scrappy college basketball program's March run.",
+    director="Rayshawn Hill (showrunner)", shoots="Nov 2026 – Feb 2027",
+    rate="$3,400/ep", auditionFormat="Self-tape",
+    roles=[
+      {"name":"COACH DARIUS HOLT","type":"Series Regular","ageRange":"45-55","gender":"Male","ethnicity":"Black","desc":"Head coach, 12th season. Doesn't suffer fools. Secretly terrified."}
+    ])
+
+add(id=44, slug="the-concierge", title="The Concierge", tagline="Netflix Hospitality Drama",
+    prod="Netflix", type="TV", pay="$4,200/episode",
+    location="Paris, France", deadline="May 6, 2026", union="SAG-AFTRA",
+    desc="A storied Paris hotel at the turn of the 20th century. Eight episodes.",
+    director="Claire Fontaine (showrunner)", shoots="Summer-Fall 2026",
+    rate="$4,200/ep + travel", rehearsal="Period etiquette + French tutoring",
+    auditionFormat="Self-tape (English OK, some French)",
+    roles=[
+      {"name":"HENRIETTE LACROIX","type":"Series Regular","ageRange":"32-42","gender":"Female","ethnicity":"Any","desc":"The head concierge. The hotel runs through her. Must speak functional French."}
+    ])
+
+add(id=45, slug="bitter-water", title="Bitter Water", tagline="AMC+ Historical Drama",
+    prod="AMC+", type="TV", pay="$5,100/episode",
+    location="Calgary, AB (CA double for MT)", deadline="May 20, 2026", union="SAG-AFTRA",
+    desc="1883 Montana. A homesteader family, a dispossessed Crow community, a gold strike.",
+    director="Pete Arroyo (showrunner)", shoots="Summer 2026",
+    rate="$5,100/ep", rehearsal="Weapons + horseback training",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"MAGGIE BOONE","type":"Series Regular","ageRange":"30-40","gender":"Female","ethnicity":"Any","desc":"Homesteader and nurse. Midwesterner who's stopped waiting for her husband to come back from the war."},
+      {"name":"APSÁALOOKE (CROW) WOMAN - 2 roles","type":"Recurring","ageRange":"18-50","gender":"Female","ethnicity":"Apsáalooke (Crow) / Indigenous","desc":"Production committed to Indigenous casting. Apsáalooke-language coach on set."}
+    ])
+
+# ---- Broadway + Off-Broadway (46-55) ----
+add(id=46, slug="lincoln-center-revival", title="A Streetcar Named Desire", tagline="Broadway Revival · Lincoln Center",
+    prod="Lincoln Center Theater", type="Broadway", pay="$2,638/week (AEA Production)",
+    location="New York, NY", deadline="May 12, 2026", union="AEA",
+    desc="A major Broadway revival directed by Sam Gold.",
+    director="Sam Gold", shoots="Rehearsals Aug 2026 · Opens Oct 15, 2026",
+    rate="$2,638/week AEA Production minimum", rehearsal="6 weeks, full-time",
+    auditionFormat="EPA + callback",
+    roles=[
+      {"name":"BLANCHE DUBOIS","type":"Lead","ageRange":"35-45","gender":"Female","ethnicity":"Any","desc":"The role. Tennessee purists welcome; so are performers of color. Production committed to non-traditional casting."},
+      {"name":"STELLA KOWALSKI","type":"Lead","ageRange":"28-35","gender":"Female","ethnicity":"Any","desc":"Stella. Pregnant in Act 2. Strong with Blanche."},
+      {"name":"STANLEY KOWALSKI","type":"Lead","ageRange":"30-40","gender":"Male","ethnicity":"Any","desc":"Stanley. Must move with specificity and stillness. Non-traditional casting encouraged."}
+    ])
+
+add(id=47, slug="manhattan-theatre-club", title="The Bell Ringers", tagline="Off-Broadway Play · MTC",
+    prod="Manhattan Theatre Club", type="Theater", pay="$1,200/week",
+    location="New York, NY", deadline="May 4, 2026", union="AEA",
+    desc="New play by Jiehae Park. Four handers.",
+    director="Leah C. Gardiner", shoots="Rehearsals Jun 1 · Previews Jul 8 · Opens Jul 22",
+    rate="$1,200/week (AEA LORT)", rehearsal="4 weeks",
+    auditionFormat="In-person EPA",
+    roles=[
+      {"name":"HAE-WON (age 68)","type":"Lead","ageRange":"62-72","gender":"Female","ethnicity":"Korean / Korean-American","desc":"Korean-speaking role. A widow visiting her son in NYC for the first time in 20 years."},
+      {"name":"DAVID","type":"Lead","ageRange":"35-45","gender":"Male","ethnicity":"Korean-American","desc":"Hae-Won's son. English-dominant. Struggling to communicate with his mother in both languages."}
+    ])
+
+add(id=48, slug="rattlestick-playwrights", title="Bleachers", tagline="New Play · Rattlestick",
+    prod="Rattlestick Playwrights Theater", type="Theater", pay="$600/week",
+    location="New York, NY", deadline="Apr 28, 2026", union="AEA (Off-Broadway)",
+    desc="A two-hander about a custodian and a high-school wrestling coach, after hours.",
+    director="Maya Hernández", shoots="Rehearsals May 25 · Performances Jun 15 – Jul 13",
+    rate="$600/week (Off-Broadway Tier 1)", rehearsal="3 weeks",
+    auditionFormat="EPA + sides",
+    roles=[
+      {"name":"JESSE","type":"Lead","ageRange":"40-55","gender":"Any","ethnicity":"Any","desc":"Custodian. Former wrestler."},
+      {"name":"COACH","type":"Lead","ageRange":"45-58","gender":"Any","ethnicity":"Any","desc":"High-school coach. In the middle of something awful."}
+    ])
+
+add(id=49, slug="broadway-musical-revival", title="Fiddler on the Roof", tagline="Broadway Revival",
+    prod="Shubert Organization", type="Broadway", pay="$2,638/week (AEA Production)",
+    location="New York, NY", deadline="Jun 2, 2026", union="AEA",
+    desc="Major Broadway revival. Yiddish-inflected adaptation.",
+    director="Joel Grey (director)", shoots="Rehearsals Aug 2026 · Opens Nov 12, 2026",
+    rate="$2,638/week AEA Production", rehearsal="8 weeks",
+    auditionFormat="Sung audition + dance call + callback",
+    roles=[
+      {"name":"TEVYE","type":"Lead","ageRange":"45-60","gender":"Male","ethnicity":"Any","desc":"Must sing in Yiddish phonetically. Baritone with strong G. Comic timing essential."},
+      {"name":"GOLDE","type":"Supporting","ageRange":"42-55","gender":"Female","ethnicity":"Any","desc":"Mezzo. Carries 'Do You Love Me' and means it."},
+      {"name":"TZEITEL / HODEL / CHAVA","type":"Supporting","ageRange":"18-26","gender":"Female","ethnicity":"Any","desc":"Three daughters. Strong sopranos. Ensemble dance required."}
+    ])
+
+add(id=50, slug="second-stage-play", title="Middlemarch (in 90 minutes)", tagline="New Adaptation · 2nd Stage",
+    prod="Second Stage Theater", type="Theater", pay="$1,400/week",
+    location="New York, NY", deadline="May 16, 2026", union="AEA",
+    desc="New 90-minute adaptation of George Eliot's *Middlemarch* by playwright Jordan Tannahill.",
+    director="Rebecca Taichman", shoots="Rehearsals Jul 7 · Performances Aug – Oct 2026",
+    rate="$1,400/week (AEA LORT)", rehearsal="5 weeks",
+    auditionFormat="In-person",
+    roles=[
+      {"name":"DOROTHEA BROOKE","type":"Lead","ageRange":"22-30","gender":"Female","ethnicity":"Any","desc":"The soul of the novel. Earnest without being a drip. Strong classical text."},
+      {"name":"DR. LYDGATE","type":"Lead","ageRange":"28-36","gender":"Any","ethnicity":"Any","desc":"Young doctor in over his head. Non-traditional casting welcomed."}
+    ])
+
+add(id=51, slug="signature-theater", title="Brownsville Elegy", tagline="World Premiere · Signature Theatre",
+    prod="Signature Theatre Company", type="Theater", pay="$1,100/week",
+    location="New York, NY", deadline="May 9, 2026", union="AEA",
+    desc="New play by Antoinette Nwandu about three generations of women in Brownsville, Brooklyn.",
+    director="Candis C. Jones", shoots="Aug – Oct 2026",
+    rate="$1,100/week", rehearsal="4 weeks",
+    auditionFormat="EPA",
+    roles=[
+      {"name":"YOLANDA (age 58)","type":"Lead","ageRange":"55-65","gender":"Female","ethnicity":"Black","desc":"The grandmother. Teacher for 35 years, retired into a front row seat of everything."},
+      {"name":"KIARA (age 22)","type":"Lead","ageRange":"20-25","gender":"Female","ethnicity":"Black","desc":"Yolanda's granddaughter. Just graduated. The show's emotional pivot."}
+    ])
+
+add(id=52, slug="goodman-regional", title="The Humans", tagline="Regional Revival · Goodman Theatre",
+    prod="Goodman Theatre", type="Theater", pay="$900/week",
+    location="Chicago, IL", deadline="May 18, 2026", union="AEA (LORT B)",
+    desc="Stephen Karam's Pulitzer-finalist *The Humans*, six-person ensemble.",
+    director="Robert Falls", shoots="Rehearsals Jul 20 · Performances Aug 15 – Sep 20",
+    rate="$900/week (AEA LORT B)", rehearsal="3.5 weeks",
+    auditionFormat="In-person (Chicago)",
+    roles=[
+      {"name":"ERIK BLAKE","type":"Lead","ageRange":"55-65","gender":"Male","ethnicity":"Any","desc":"The father. Buses tables at a Catholic school. Failing quietly."},
+      {"name":"DEIRDRE BLAKE","type":"Lead","ageRange":"55-65","gender":"Female","ethnicity":"Any","desc":"The mother. Office manager. Faith is cracking."}
+    ])
+
+add(id=53, slug="berkeley-rep", title="Stew", tagline="Regional Premiere · Berkeley Rep",
+    prod="Berkeley Rep", type="Theater", pay="$1,000/week",
+    location="Berkeley, CA", deadline="May 14, 2026", union="AEA (LORT B+)",
+    desc="Zora Howard's *Stew*, regional premiere.",
+    director="Saheem Ali", shoots="Rehearsals Jun 30 · Performances Jul 25 – Aug 31",
+    rate="$1,000/week", rehearsal="4 weeks",
+    auditionFormat="Self-tape → in-person callback",
+    roles=[
+      {"name":"MAMA","type":"Lead","ageRange":"58-68","gender":"Female","ethnicity":"Black","desc":"The matriarch. Cooking a stew. Choosing what she tells her daughters and when."}
+    ])
+
+add(id=54, slug="off-off-broadway-experimental", title="Waiting Room", tagline="Experimental · The Bushwick Starr",
+    prod="The Bushwick Starr", type="Theater", pay="$500 stipend",
+    location="Brooklyn, NY", deadline="Apr 25, 2026", union="Non-Union (showcase)",
+    desc="A devised physical-theater piece set entirely in a hospital waiting room.",
+    director="Ensemble-devised", shoots="May – Jun 2026",
+    rate="$500 stipend for rehearsal + run", rehearsal="3 weeks devising",
+    auditionFormat="Movement audition",
+    roles=[
+      {"name":"ENSEMBLE (5 roles)","type":"Ensemble","ageRange":"20-65","gender":"Any","ethnicity":"Any","desc":"Physical performers. Dance / Lecoq / Suzuki training a plus."}
+    ])
+
+add(id=55, slug="national-tour-musical", title="Hadestown", tagline="National Tour",
+    prod="Broadway Across America", type="Broadway", pay="$2,143/week (Equity Touring)",
+    location="Touring (US)", deadline="May 22, 2026", union="AEA",
+    desc="National tour of the Tony-winning *Hadestown*.",
+    director="Rachel Chavkin", shoots="Rehearsals Sep 2026 · Tour launches Nov 2026",
+    rate="$2,143/week + per diem (AEA Touring Tier A)",
+    rehearsal="6 weeks (NYC)",
+    auditionFormat="Sung audition + dance call + callback",
+    roles=[
+      {"name":"ORPHEUS","type":"Lead","ageRange":"22-32","gender":"Male","ethnicity":"Any","desc":"Tenor with money notes. Guitar or similar stringed instrument helpful."},
+      {"name":"EURYDICE","type":"Lead","ageRange":"22-32","gender":"Female","ethnicity":"Any","desc":"Mezzo-alto. Strong acting through song."},
+      {"name":"FATES (3)","type":"Supporting","ageRange":"25-40","gender":"Female","ethnicity":"Any","desc":"Trio. Tight vocal blend. Movement strong."}
+    ])
+
+# ---- Commercials (56-70) ----
+add(id=56, slug="delta-everyday-hero", title="Delta — Everyday Hero", tagline="National Airline Commercial",
+    prod="Wieden+Kennedy New York", type="Commercial", pay="$3,500 session + residuals",
+    location="New York, NY + Atlanta", deadline="Apr 30, 2026", union="SAG-AFTRA",
+    desc="A three-spot campaign about the people who move other people.",
+    director="Lance Acord", shoots="3-day shoot, May 11-13",
+    rate="$3,500 session fee + SAG residuals · 18-month usage",
+    auditionFormat="Self-tape → callback (NYC)",
+    roles=[
+      {"name":"GATE AGENT","type":"Principal","ageRange":"35-55","gender":"Any","ethnicity":"Any","desc":"Calm under pressure. Radio-friendly voice. Real-person energy."},
+      {"name":"TRAVELER (Dad with kid)","type":"Principal","ageRange":"30-40","gender":"Male","ethnicity":"Any","desc":"Travels with 5-year-old daughter. Warm, exhausted, funny."}
+    ])
+
+add(id=57, slug="apple-shot-on-iphone", title="Apple — Shot on iPhone", tagline="Brand Film",
+    prod="TBWA\\Media Arts Lab", type="Commercial", pay="$4,500/day",
+    location="Tokyo, Japan", deadline="May 2, 2026", union="Non-Union",
+    desc="A short, wordless, visually stunning film showcasing iPhone photography in Tokyo.",
+    director="Shunji Iwai", shoots="2 days, late May",
+    rate="$4,500/day + travel + per diem",
+    auditionFormat="Photo submission + self-tape",
+    roles=[
+      {"name":"STREET PHOTOGRAPHER","type":"Principal","ageRange":"22-30","gender":"Any","ethnicity":"Any","desc":"Real photographer or actor with lived interest in photography. Expressive face, economic movement."}
+    ])
+
+add(id=58, slug="toyota-highlander-family", title="Toyota Highlander", tagline="National TV Commercial",
+    prod="Saatchi & Saatchi LA", type="Commercial", pay="$2,800 session + SAG residuals",
+    location="Los Angeles, CA", deadline="Apr 28, 2026", union="SAG-AFTRA",
+    desc="A family-of-five-plus-dog spot for the new Highlander.",
+    director="Niki Lindroth von Bahr", shoots="2-day shoot",
+    rate="$2,800 session + SAG Class A residuals",
+    auditionFormat="In-person (LA)",
+    roles=[
+      {"name":"MOM","type":"Principal","ageRange":"38-48","gender":"Female","ethnicity":"Any","desc":"Real-mom energy. Mid-laugh. Not 'perfect mom' — actual mom."},
+      {"name":"DAD","type":"Principal","ageRange":"38-48","gender":"Male","ethnicity":"Any","desc":"Wry, patient, a little goofy."},
+      {"name":"KIDS (3)","type":"Principal","ageRange":"7-15","gender":"Any","ethnicity":"Any","desc":"Real sibling vibes. Any mix welcomed."}
+    ])
+
+add(id=59, slug="budweiser-superbowl", title="Budweiser Super Bowl Spot", tagline="Super Bowl LXI Commercial",
+    prod="DDB Chicago", type="Commercial", pay="$7,500 session + residuals",
+    location="Kansas City, MO", deadline="Jun 3, 2026", union="SAG-AFTRA",
+    desc="A single-location spot about a bar on a snowy night.",
+    director="Fredrik Bond", shoots="2-day shoot, late July",
+    rate="$7,500 session + SAG Super Bowl residuals",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"BARTENDER","type":"Principal","ageRange":"45-60","gender":"Any","ethnicity":"Any","desc":"Lifer bartender. Says more with a look than a sentence."}
+    ])
+
+add(id=60, slug="chase-app-young-prof", title="Chase — Mobile App", tagline="Digital Banking Campaign",
+    prod="Droga5 NY", type="Commercial", pay="$2,200 session + digital buyout",
+    location="Brooklyn, NY", deadline="May 5, 2026", union="SAG-AFTRA",
+    desc="Young-professional-in-the-city spot for Chase's mobile banking app.",
+    director="Tara Nadolny", shoots="1-day shoot",
+    rate="$2,200 session + $3,500 digital buyout (12 months)",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"YOUNG PROFESSIONAL","type":"Principal","ageRange":"24-32","gender":"Any","ethnicity":"Any","desc":"Real, relatable. Rides the subway. Orders dinner on their phone."}
+    ])
+
+add(id=61, slug="target-back-to-school", title="Target — Back to School", tagline="National Retail Campaign",
+    prod="Mother New York", type="Commercial", pay="$2,500 session + residuals",
+    location="Los Angeles, CA", deadline="May 11, 2026", union="SAG-AFTRA",
+    desc="Back-to-school campaign across TV and digital.",
+    director="Melina Matsoukas", shoots="3-day shoot, Jun 2026",
+    rate="$2,500 session + SAG residuals · Class A TV",
+    auditionFormat="In-person (LA)",
+    roles=[
+      {"name":"MOM","type":"Principal","ageRange":"33-45","gender":"Female","ethnicity":"Any","desc":"Real mom energy. Funny with kids."},
+      {"name":"KIDS (ages 6, 9, 13)","type":"Principal","ageRange":"5-14","gender":"Any","ethnicity":"Any","desc":"Real-sibling casting preferred. Any mix."}
+    ])
+
+add(id=62, slug="uber-eats-late-night", title="Uber Eats — Late Night", tagline="Digital Ad Campaign",
+    prod="Special Group", type="Commercial", pay="$1,800 session + digital",
+    location="Los Angeles, CA", deadline="Apr 29, 2026", union="SAG-AFTRA",
+    desc="A 5-spot late-night digital campaign for Uber Eats.",
+    director="Craig Gillespie", shoots="2 days",
+    rate="$1,800 session + $2,800 digital buyout",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"HUNGRY GUY","type":"Principal","ageRange":"24-38","gender":"Any","ethnicity":"Any","desc":"Genuinely funny. Physical comedy a plus."}
+    ])
+
+add(id=63, slug="dove-real-beauty", title="Dove — Self Esteem Project", tagline="Documentary-Style Brand Film",
+    prod="Ogilvy", type="Commercial", pay="$1,500/day + usage",
+    location="Multiple US cities", deadline="May 8, 2026", union="Non-Union",
+    desc="A docu-style brand film featuring real women and girls talking about self-image.",
+    director="Lucy Walker", shoots="Rolling, May-Jul 2026",
+    rate="$1,500/day + global usage",
+    auditionFormat="Interview video",
+    roles=[
+      {"name":"REAL WOMEN & GIRLS","type":"Real People","ageRange":"10-65","gender":"Female","ethnicity":"Any","desc":"Not actors. Seeking real women and girls willing to speak honestly on camera."}
+    ])
+
+add(id=64, slug="geico-absurdist", title="GEICO — New Campaign", tagline="National TV Commercial",
+    prod="The Martin Agency", type="Commercial", pay="$2,800 session + residuals",
+    location="Richmond, VA", deadline="May 1, 2026", union="SAG-AFTRA",
+    desc="The latest absurdist spot in the long-running GEICO campaign.",
+    director="The Perlorian Brothers", shoots="2 days",
+    rate="$2,800 session + SAG residuals",
+    auditionFormat="In-person (NY/LA)",
+    roles=[
+      {"name":"UPTIGHT GUY","type":"Principal","ageRange":"35-50","gender":"Male","ethnicity":"Any","desc":"Comic actor. Straight-man to an absurd situation."}
+    ])
+
+add(id=65, slug="mcdonalds-breakfast", title="McDonald's — Breakfast Run", tagline="National Spot",
+    prod="Wieden+Kennedy NY", type="Commercial", pay="$2,400 session + residuals",
+    location="Atlanta, GA", deadline="May 6, 2026", union="SAG-AFTRA",
+    desc="Morning-commute breakfast spot.",
+    director="Matt Reeves (commercial director)", shoots="1 day",
+    rate="$2,400 session + SAG residuals",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"COMMUTER","type":"Principal","ageRange":"28-45","gender":"Any","ethnicity":"Any","desc":"Real-morning energy. Real not-a-morning-person."}
+    ])
+
+add(id=66, slug="peloton-ride-instructor", title="Peloton — Instructor Spotlight", tagline="Brand Content",
+    prod="In-house (Peloton)", type="Commercial", pay="$1,800/day",
+    location="New York, NY", deadline="Apr 26, 2026", union="Non-Union",
+    desc="Four-spot mini-series about Peloton's newest instructor.",
+    director="Liz Scott", shoots="3 days, mid-May",
+    rate="$1,800/day + 12-month digital usage",
+    auditionFormat="Self-tape (include 90-sec workout)",
+    roles=[
+      {"name":"FITNESS INSTRUCTOR","type":"Principal","ageRange":"25-40","gender":"Any","ethnicity":"Any","desc":"Real fitness background. Camera-confident. Must actually be able to teach a class on camera."}
+    ])
+
+add(id=67, slug="nike-basketball-campaign", title="Nike — Basketball Spring", tagline="Global Brand Campaign",
+    prod="Wieden+Kennedy Portland", type="Commercial", pay="$4,000 session + residuals",
+    location="Los Angeles, CA", deadline="May 3, 2026", union="SAG-AFTRA",
+    desc="Global basketball campaign tied to the spring release.",
+    director="Paul Hunter", shoots="3 days",
+    rate="$4,000 session + SAG Class A + global digital",
+    auditionFormat="In-person (LA)",
+    roles=[
+      {"name":"YOUNG HOOPER","type":"Principal","ageRange":"16-22","gender":"Any","ethnicity":"Any","desc":"Real high-school or college basketball player. Real skills on camera."}
+    ])
+
+add(id=68, slug="liquid-death-irreverent", title="Liquid Death — Spring Campaign", tagline="Irreverent Digital Spot",
+    prod="In-house", type="Commercial", pay="$1,500 session + buyout",
+    location="Los Angeles, CA", deadline="Apr 27, 2026", union="SAG-AFTRA",
+    desc="Signature Liquid Death weirdness.",
+    director="Andy DeEmmony", shoots="2 days",
+    rate="$1,500 session + $2,500 buyout",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"UNHINGED PITCHMAN","type":"Principal","ageRange":"30-50","gender":"Any","ethnicity":"Any","desc":"Can deliver absurd monologue as if reading a real news story."}
+    ])
+
+add(id=69, slug="samsung-galaxy-unpacked", title="Samsung — Galaxy Unpacked", tagline="Product Launch Film",
+    prod="Cheil Worldwide", type="Commercial", pay="$3,200/day",
+    location="Seoul, South Korea", deadline="May 15, 2026", union="Non-Union",
+    desc="Product launch film for the new Galaxy flagship.",
+    director="Park Chan-wook (short-form project)", shoots="2 days",
+    rate="$3,200/day + travel + per diem",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"CREATIVE PROFESSIONAL","type":"Principal","ageRange":"28-38","gender":"Any","ethnicity":"Any","desc":"Real-designer energy. Expressive without words."}
+    ])
+
+add(id=70, slug="allstate-mayhem-revival", title="Allstate — Mayhem Returns", tagline="National TV Commercial",
+    prod="Leo Burnett", type="Commercial", pay="$3,800 session + residuals",
+    location="Chicago, IL", deadline="Apr 25, 2026", union="SAG-AFTRA",
+    desc="Two-spot revival of the classic 'Mayhem' campaign.",
+    director="Phil Morrison", shoots="3 days",
+    rate="$3,800 session + SAG Class A",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"MAYHEM","type":"Principal","ageRange":"35-55","gender":"Male","ethnicity":"Any","desc":"Physical comedy specialist. Must deliver deadpan while absolute chaos unfolds."}
+    ])
+
+# ---- Modeling / Print / Lookbook (71-85) ----
+add(id=71, slug="glossier-spring-campaign", title="Glossier — Spring Beauty", tagline="National Beauty Campaign",
+    prod="Glossier In-house", type="Modeling", pay="$2,500/day",
+    location="New York, NY", deadline="Apr 26, 2026", union="Non-Union",
+    desc="Spring campaign across print, digital, OOH.",
+    director="Sara Messinger (photographer)", shoots="3 days",
+    rate="$2,500/day + global usage",
+    auditionFormat="Polaroids + interview",
+    roles=[
+      {"name":"CAMPAIGN FACES (6)","type":"Principal","ageRange":"18-45","gender":"Any","ethnicity":"Any","desc":"Real skin texture, real eyes. Seeking a wide range of features and backgrounds."}
+    ])
+
+add(id=72, slug="mejuri-lookbook", title="Mejuri — Summer Lookbook", tagline="Lookbook · Fine Jewelry",
+    prod="Mejuri In-house", type="Modeling", pay="$1,200/day",
+    location="Toronto, ON", deadline="Apr 30, 2026", union="Non-Union",
+    desc="Summer lookbook for digital and retail.",
+    shoots="2 days", rate="$1,200/day + agency usage",
+    auditionFormat="Digitals + polaroids",
+    roles=[
+      {"name":"LEAD MODEL","type":"Principal","ageRange":"22-32","gender":"Female","ethnicity":"Any","desc":"Warm, approachable. Strong jawline and hands."},
+      {"name":"HANDS MODEL","type":"Parts","ageRange":"20-40","gender":"Any","ethnicity":"Any","desc":"Hands only. Seeking clean, unscarred, well-proportioned."}
+    ])
+
+add(id=73, slug="everlane-denim", title="Everlane — Denim Refresh", tagline="E-commerce + Editorial",
+    prod="Everlane", type="Modeling", pay="$800/day",
+    location="Los Angeles, CA", deadline="May 1, 2026", union="Non-Union",
+    desc="Denim campaign across e-com, social, and a small editorial film.",
+    shoots="2 days", rate="$800/day + 1-year digital usage",
+    auditionFormat="Polaroids + size info",
+    roles=[
+      {"name":"MODEL","type":"Principal","ageRange":"21-35","gender":"Any","ethnicity":"Any","desc":"Straight-size and size-inclusive both wanted. Comfortable on camera."}
+    ])
+
+add(id=74, slug="harpers-bazaar-editorial", title="Harper's Bazaar — Summer Editorial", tagline="Magazine Editorial",
+    prod="Harper's Bazaar", type="Modeling", pay="$1,500/day",
+    location="Joshua Tree, CA", deadline="May 5, 2026", union="Non-Union",
+    desc="Six-page editorial shot in Joshua Tree. Hi-fashion.",
+    director="Tyler Mitchell (photographer)", shoots="2 days",
+    rate="$1,500/day · tear sheets",
+    auditionFormat="Digitals + agency request",
+    roles=[
+      {"name":"EDITORIAL MODEL","type":"Principal","ageRange":"18-28","gender":"Female","ethnicity":"Any","desc":"5'9\"+. Editorial tear-sheets preferred but new faces with strong looks welcome."}
+    ])
+
+add(id=75, slug="patagonia-activism", title="Patagonia — Activist Portraits", tagline="Editorial Brand Film",
+    prod="Patagonia In-house", type="Modeling", pay="$1,200/day",
+    location="Bozeman, MT", deadline="May 4, 2026", union="Non-Union",
+    desc="Portrait series of real climate activists and guides. Non-actors welcome.",
+    shoots="3 days", rate="$1,200/day",
+    auditionFormat="Interview",
+    roles=[
+      {"name":"REAL PEOPLE (4)","type":"Real People","ageRange":"25-70","gender":"Any","ethnicity":"Any","desc":"Working activists, guides, scientists. Lived experience strongly preferred over acting credits."}
+    ])
+
+add(id=76, slug="ssense-directional", title="SSENSE — Directional", tagline="High-Fashion Editorial",
+    prod="SSENSE", type="Modeling", pay="$1,800/day",
+    location="Montreal, QC", deadline="May 2, 2026", union="Non-Union",
+    desc="Directional editorial for SSENSE's Summer issue.",
+    director="Renell Medrano", shoots="1 day",
+    rate="$1,800/day",
+    auditionFormat="Digitals + polaroids",
+    roles=[
+      {"name":"MODEL","type":"Principal","ageRange":"18-28","gender":"Any","ethnicity":"Any","desc":"Strong, unconventional look. Editorial experience preferred."}
+    ])
+
+add(id=77, slug="j-crew-summer-catalog", title="J.Crew — Summer Catalog", tagline="Catalog + Digital",
+    prod="J.Crew", type="Modeling", pay="$750/day",
+    location="Nantucket, MA", deadline="Apr 28, 2026", union="Non-Union",
+    desc="Summer catalog shoot.",
+    shoots="4 days", rate="$750/day + travel + per diem",
+    auditionFormat="Digitals",
+    roles=[
+      {"name":"MODELS (8)","type":"Principal","ageRange":"22-50","gender":"Any","ethnicity":"Any","desc":"Warm, accessible. Casting across age, size, and background."}
+    ])
+
+add(id=78, slug="nars-beauty-film", title="NARS — Matte Collection", tagline="Beauty Film",
+    prod="NARS / 72andSunny", type="Modeling", pay="$2,000/day",
+    location="Paris, France", deadline="May 7, 2026", union="Non-Union",
+    desc="Short-form beauty film for new NARS matte lip collection.",
+    director="Emmanuel Adjei", shoots="2 days",
+    rate="$2,000/day + travel",
+    auditionFormat="Polaroids + makeup-free selfie",
+    roles=[
+      {"name":"BEAUTY MODEL","type":"Principal","ageRange":"21-32","gender":"Any","ethnicity":"Any","desc":"Symmetrical features, strong lip shape. Clear skin, no recent cosmetic work."}
+    ])
+
+add(id=79, slug="aritzia-fall-lookbook", title="Aritzia — Fall Lookbook", tagline="Lookbook · Apparel",
+    prod="Aritzia", type="Modeling", pay="$900/day",
+    location="Vancouver, BC", deadline="Apr 30, 2026", union="Non-Union",
+    desc="Fall lookbook across in-store, e-com, social.",
+    shoots="3 days", rate="$900/day + agency usage",
+    auditionFormat="Digitals + walk video",
+    roles=[
+      {"name":"MODELS (6)","type":"Principal","ageRange":"20-34","gender":"Female","ethnicity":"Any","desc":"Size 4-8. Strong walk. Camera-fluid."}
+    ])
+
+add(id=80, slug="gap-kids-campaign", title="Gap Kids — Back to School", tagline="Kids Print + Digital",
+    prod="Gap Inc.", type="Modeling", pay="$650/day",
+    location="San Francisco, CA", deadline="May 3, 2026", union="Non-Union",
+    desc="Back-to-school print and digital campaign featuring kids.",
+    shoots="2 days", rate="$650/day + family travel + usage",
+    auditionFormat="Polaroids + short video",
+    roles=[
+      {"name":"KIDS (12)","type":"Principal","ageRange":"5-14","gender":"Any","ethnicity":"Any","desc":"Casting for wide variety of real-kid looks. Previous experience not required."}
+    ])
+
+add(id=81, slug="ikea-lifestyle", title="IKEA — Lifestyle Shoot", tagline="Home Lifestyle Campaign",
+    prod="IKEA Creative", type="Modeling", pay="$1,000/day",
+    location="Brooklyn, NY", deadline="May 9, 2026", union="Non-Union",
+    desc="Lifestyle imagery for the IKEA spring catalog and website.",
+    shoots="3 days", rate="$1,000/day + global usage",
+    auditionFormat="Polaroids",
+    roles=[
+      {"name":"FAMILY UNIT","type":"Principal","ageRange":"4-55","gender":"Any","ethnicity":"Any","desc":"Casting for a 4-5 person family unit. Real families or mixed groups welcome."}
+    ])
+
+add(id=82, slug="la-times-portrait", title="LA Times — Portrait Feature", tagline="Editorial Portrait",
+    prod="Los Angeles Times", type="Modeling", pay="$500 flat",
+    location="Los Angeles, CA", deadline="Apr 29, 2026", union="Non-Union",
+    desc="Editorial portrait for the LA Times Sunday culture section.",
+    shoots="2 hours", rate="$500 flat",
+    auditionFormat="Selfie submission",
+    roles=[
+      {"name":"FEATURED SUBJECT","type":"Principal","ageRange":"25-70","gender":"Any","ethnicity":"Any","desc":"Real working artists and creatives welcomed. Non-actors preferred."}
+    ])
+
+add(id=83, slug="nike-run-club-women", title="Nike Run Club — Spring Campaign", tagline="Athletic Lifestyle",
+    prod="Wieden+Kennedy Portland", type="Modeling", pay="$1,200/day",
+    location="Portland, OR", deadline="May 11, 2026", union="Non-Union",
+    desc="Spring campaign for Nike Run Club.",
+    shoots="2 days", rate="$1,200/day + 12-month digital",
+    auditionFormat="Video of yourself running",
+    roles=[
+      {"name":"RUNNER","type":"Principal","ageRange":"22-40","gender":"Any","ethnicity":"Any","desc":"Real runner. Consistent pace on camera. Running-form diversity encouraged."}
+    ])
+
+add(id=84, slug="lululemon-yoga", title="Lululemon — Yoga Campaign", tagline="Digital Yoga Content",
+    prod="Lululemon", type="Modeling", pay="$1,100/day",
+    location="Vancouver, BC", deadline="May 5, 2026", union="Non-Union",
+    desc="Yoga instructor campaign across digital channels.",
+    shoots="3 days", rate="$1,100/day + global usage",
+    auditionFormat="Video + yoga credential",
+    roles=[
+      {"name":"YOGA INSTRUCTOR","type":"Principal","ageRange":"25-45","gender":"Any","ethnicity":"Any","desc":"Certified RYT-200 minimum. Real teacher. Camera-present."}
+    ])
+
+add(id=85, slug="reformation-spring", title="Reformation — Spring '26", tagline="Women's Apparel Campaign",
+    prod="Reformation", type="Modeling", pay="$1,400/day",
+    location="Los Angeles, CA", deadline="Apr 30, 2026", union="Non-Union",
+    desc="Spring apparel campaign.",
+    shoots="4 days", rate="$1,400/day + global usage",
+    auditionFormat="Digitals + walk",
+    roles=[
+      {"name":"MODELS (5)","type":"Principal","ageRange":"21-30","gender":"Female","ethnicity":"Any","desc":"5'8\"+ traditionally, also casting size-inclusive for this season."}
+    ])
+
+# ---- Music videos / Web series / VO / Industrial (86-100) ----
+add(id=86, slug="olivia-rodrigo-mv", title="Olivia Rodrigo — Music Video", tagline="Major Label Music Video",
+    prod="Geffen Records / Object & Animal", type="Music Video", pay="$800/day",
+    location="Los Angeles, CA", deadline="Apr 27, 2026", union="SAG-AFTRA",
+    desc="High-concept music video for Olivia Rodrigo's upcoming single.",
+    director="Petra Collins", shoots="2-day shoot",
+    rate="$800/day (SAG music video scale)",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"BEST FRIEND","type":"Principal","ageRange":"18-24","gender":"Female","ethnicity":"Any","desc":"Chemistry with talent. Expressive face. Will appear in multiple scenes."}
+    ])
+
+add(id=87, slug="indie-band-mv", title="Phoebe Bridgers — Music Video", tagline="Indie Music Video",
+    prod="Dead Oceans / LAV Films", type="Music Video", pay="$500/day",
+    location="Joshua Tree, CA", deadline="Apr 25, 2026", union="Non-Union",
+    desc="Dream-logic music video for a new Phoebe Bridgers single.",
+    director="Alana Haim (directing debut)", shoots="1 day",
+    rate="$500/day + meals",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"WOMAN IN THE DESERT","type":"Principal","ageRange":"24-34","gender":"Female","ethnicity":"Any","desc":"Still-faced. Comfortable with long takes and silence."}
+    ])
+
+add(id=88, slug="rap-video-shoot", title="Denzel Curry — Music Video", tagline="Hip-Hop Music Video",
+    prod="Loma Vista Records", type="Music Video", pay="$600/day",
+    location="Miami, FL", deadline="Apr 28, 2026", union="Non-Union",
+    desc="New music video for Denzel Curry.",
+    director="Zac Facts", shoots="1 day",
+    rate="$600/day + meals",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"CREW (6)","type":"Principal","ageRange":"18-30","gender":"Any","ethnicity":"Any","desc":"Posse shots, car shots, street. Real personality over polish."}
+    ])
+
+add(id=89, slug="country-music-mv", title="Kacey Musgraves — Music Video", tagline="Country Music Video",
+    prod="MCA Nashville", type="Music Video", pay="$700/day",
+    location="Nashville, TN", deadline="Apr 30, 2026", union="Non-Union",
+    desc="Americana-tinged music video shot on 16mm.",
+    director="Emily Kai Bock", shoots="2 days",
+    rate="$700/day",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"LOVE INTEREST","type":"Principal","ageRange":"25-35","gender":"Male","ethnicity":"Any","desc":"Understated, lived-in face. Horse-riding a plus."}
+    ])
+
+add(id=90, slug="web-series-youtube", title="Two Hot Takes — Web Series", tagline="YouTube / Premium Web Series",
+    prod="Portal A / YouTube Originals", type="Web Series", pay="$900/episode",
+    location="Los Angeles, CA", deadline="Apr 26, 2026", union="SAG-AFTRA New Media",
+    desc="10-episode dramedy web series for YouTube Premium.",
+    director="Sam Bailey (showrunner)", shoots="Summer 2026",
+    rate="$900/ep + backend", auditionFormat="Self-tape",
+    roles=[
+      {"name":"SERIES LEAD","type":"Series Regular","ageRange":"22-30","gender":"Any","ethnicity":"Any","desc":"Comedy chops. Improv background a plus."}
+    ])
+
+add(id=91, slug="spotify-original-podcast", title="Spotify Original — Scripted Podcast", tagline="Scripted Audio Drama",
+    prod="Spotify Studios", type="Voice Over", pay="$1,200/session",
+    location="Remote (home studio) + NY booth", deadline="May 2, 2026", union="SAG-AFTRA",
+    desc="A six-episode scripted mystery podcast.",
+    director="Alex Lewis", shoots="Jun 2026",
+    rate="$1,200/session · SAG-AFTRA audio",
+    auditionFormat="Voice sample + cold read",
+    roles=[
+      {"name":"DETECTIVE RHODA IVEY","type":"Lead","ageRange":"45-60","gender":"Female","ethnicity":"Any","desc":"Dry, older detective narrating the case. Broadcast-quality home studio required."}
+    ])
+
+add(id=92, slug="animated-feature-vo", title="Animated Feature — VO", tagline="Animated Feature Voice Work",
+    prod="Dreamworks Animation", type="Voice Over", pay="$1,800/session",
+    location="Glendale, CA", deadline="May 6, 2026", union="SAG-AFTRA",
+    desc="Supporting voice role in an animated Dreamworks feature.",
+    shoots="Rolling sessions through Fall 2026",
+    rate="$1,800/session + residuals",
+    auditionFormat="VO demo + cold read",
+    roles=[
+      {"name":"RIBBIT (talking frog)","type":"Supporting","ageRange":"N/A (character voice)","gender":"Any","ethnicity":"N/A","desc":"Character-voice specialist. Pitch-flexible. Quick learner with director's notes."}
+    ])
+
+add(id=93, slug="audible-audiobook", title="Audible — Literary Fiction Narrator", tagline="Audiobook Narration",
+    prod="Audible Studios", type="Voice Over", pay="$350/finished hour",
+    location="Remote (home studio)", deadline="May 4, 2026", union="SAG-AFTRA (audiobook)",
+    desc="Narrator for a literary fiction novel, approx. 10 finished hours.",
+    shoots="2 weeks recording", rate="$350/finished hour (approx. $3,500 total)",
+    auditionFormat="5-minute sample read",
+    roles=[
+      {"name":"NARRATOR","type":"Principal","ageRange":"30-60","gender":"Any","ethnicity":"Any","desc":"Experienced narrator with proven home studio. Literary fiction demo required."}
+    ])
+
+add(id=94, slug="industrial-training-video", title="Johnson & Johnson — Training Video", tagline="Corporate Industrial",
+    prod="Johnson & Johnson", type="Industrial", pay="$900/day",
+    location="New Brunswick, NJ", deadline="May 1, 2026", union="Non-Union",
+    desc="A 20-minute internal training video for J&J pharmaceutical reps.",
+    shoots="1 day", rate="$900/day + 3-year internal usage",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"PRESENTER","type":"Principal","ageRange":"35-50","gender":"Any","ethnicity":"Any","desc":"Corporate-presenter energy. Can handle medical terminology."}
+    ])
+
+add(id=95, slug="hospital-explainer", title="Cleveland Clinic — Patient Explainer", tagline="Healthcare Explainer",
+    prod="Cleveland Clinic", type="Industrial", pay="$700/day",
+    location="Cleveland, OH", deadline="Apr 29, 2026", union="Non-Union",
+    desc="Patient-facing explainer videos about pre-op preparation.",
+    shoots="2 days", rate="$700/day + internal + web usage",
+    auditionFormat="Self-tape",
+    roles=[
+      {"name":"DOCTOR","type":"Principal","ageRange":"35-55","gender":"Any","ethnicity":"Any","desc":"Doctor-adjacent energy. Warm, reassuring."},
+      {"name":"PATIENT","type":"Principal","ageRange":"40-70","gender":"Any","ethnicity":"Any","desc":"Real, relatable. Can play both anxious and relieved."}
+    ])
+
+add(id=96, slug="youtube-sketch-channel", title="Lonely Island-Adjacent Sketch", tagline="Digital Sketch Comedy",
+    prod="Independent (YouTube)", type="Web Series", pay="$400/day",
+    location="Los Angeles, CA", deadline="Apr 26, 2026", union="Non-Union",
+    desc="Digital sketch channel with 2M+ subscribers casting recurring players.",
+    director="Ellie Kemper-Tay (channel creator)", shoots="2 days / month",
+    rate="$400/day + revenue share",
+    auditionFormat="Submit a 60-sec original sketch",
+    roles=[
+      {"name":"RECURRING PLAYER","type":"Recurring","ageRange":"22-35","gender":"Any","ethnicity":"Any","desc":"Comedy-first. Strong improv. UCB / Second City background a plus."}
+    ])
+
+add(id=97, slug="dance-film-short", title="Dance Film — NY Live Arts", tagline="Experimental Dance Film",
+    prod="New York Live Arts", type="Short Film", pay="$200/day",
+    location="New York, NY", deadline="Apr 27, 2026", union="Non-Union",
+    desc="A short experimental dance film.",
+    director="Bobbi Jene Smith", shoots="3 days",
+    rate="$200/day + meals + digital use",
+    auditionFormat="Movement audition (in person, NYC)",
+    roles=[
+      {"name":"DANCERS (4)","type":"Principal","ageRange":"22-40","gender":"Any","ethnicity":"Any","desc":"Strong modern technique. Gaga / release / contemporary background."}
+    ])
+
+add(id=98, slug="festival-tent-theater", title="Under the Stars", tagline="Outdoor Festival Theater",
+    prod="Oregon Shakespeare Festival", type="Theater", pay="$850/week",
+    location="Ashland, OR", deadline="May 10, 2026", union="AEA (SPT)",
+    desc="Six-week outdoor run of *A Midsummer Night's Dream*.",
+    director="Sarah Benson", shoots="Rehearsals Jun 22 · Performances Aug 3 – Sept 14",
+    rate="$850/week + housing", rehearsal="5 weeks",
+    auditionFormat="Classical monologue + song",
+    roles=[
+      {"name":"PUCK","type":"Lead","ageRange":"22-32","gender":"Any","ethnicity":"Any","desc":"Physical, mischievous, fast with verse. Strong movement."}
+    ])
+
+add(id=99, slug="childrens-tv-series", title="Mama Bear Mornings", tagline="PBS Kids Series",
+    prod="PBS Kids", type="TV", pay="$1,900/episode",
+    location="Philadelphia, PA", deadline="Apr 28, 2026", union="SAG-AFTRA",
+    desc="Preschool live-action + puppet PBS Kids series.",
+    director="Lynn Ahrens (showrunner)", shoots="Summer 2026",
+    rate="$1,900/ep", auditionFormat="Self-tape (warm, kid-friendly)",
+    roles=[
+      {"name":"HOST","type":"Series Regular","ageRange":"28-42","gender":"Any","ethnicity":"Any","desc":"Warm, energetic, genuinely likes kids. Previous children's education or theater-for-young-audiences welcome."}
+    ])
+
+add(id=100, slug="feature-film-period", title="The Long Way Back", tagline="Period Drama Feature · Plan B",
+    prod="Plan B Entertainment", type="Film", pay="$85,000",
+    location="Charleston, SC", deadline="Jun 6, 2026", union="SAG-AFTRA",
+    desc="A 1948-set drama about a young Black soldier returning home from WWII to a South that refuses to see him.",
+    synopsis="Drama feature from director Kenji Morales. Strict period commitment. Extensive dialect work.",
+    director="Kenji Morales", shoots="Sept – Dec 2026", rate="$85,000 flat + travel",
+    rehearsal="2 weeks dialect + period movement",
+    auditionFormat="Self-tape → callback (Atlanta)",
+    roles=[
+      {"name":"SGT. LEE WILLIAMS","type":"Lead","ageRange":"22-30","gender":"Male","ethnicity":"Black","desc":"Staff sergeant, 92nd Infantry. Contained, observant, on the edge of something he can barely name."},
+      {"name":"MAE WILLIAMS","type":"Lead","ageRange":"22-28","gender":"Female","ethnicity":"Black","desc":"Lee's wife. Has been running the household for three years. Will not be told what to do."},
+      {"name":"PASTOR HOWARD","type":"Supporting","ageRange":"55-70","gender":"Male","ethnicity":"Black","desc":"Local church pastor. Knows how to survive. Knows the cost."}
+    ])
+
+# Output as JS
+def js_str(s):
+    # Escape for a double-quoted JS string. Keep unicode chars as-is.
+    if s is None: return 'undefined'
+    return json.dumps(s, ensure_ascii=False)
+
+def js_obj(d, indent=2):
+    parts = []
+    for k, v in d.items():
+        if isinstance(v, str):
+            parts.append(f"{k}:{js_str(v)}")
+        elif isinstance(v, (int, float)):
+            parts.append(f"{k}:{v}")
+        elif isinstance(v, list):
+            items = [js_obj(x, indent+2) for x in v]
+            parts.append(f"{k}:[{','.join(items)}]")
+        else:
+            parts.append(f"{k}:{js_str(str(v))}")
+    return "{"+",".join(parts)+"}"
+
+out = "const CASTINGS = [\n" + ",\n".join("  "+js_obj(c) for c in castings) + "\n];\n"
+
+# Also emit a count check
+print(f"// {len(castings)} castings generated", file=__import__('sys').stderr)
+
+open("castings-array.js","w").write(out)
+print("wrote castings-array.js", file=__import__('sys').stderr)
