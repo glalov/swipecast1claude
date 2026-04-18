@@ -410,3 +410,86 @@ create policy profiles_select on public.profiles
         and c.cd_id = auth.uid()
     )
   );
+
+-- ════════════════════════════════════════════════════════════════════
+-- MIGRATION 2026-04-18 — fix "infinite recursion in policy for relation
+-- applications". Idempotent: safe to re-run at any time.
+--
+-- ROOT CAUSE
+-- The previous `profiles_select` policy contained an EXISTS clause that
+-- queried `applications`. When a talent INSERTed into `applications`,
+-- Postgres evaluated `applications_insert` WITH CHECK, which did
+--   `EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() ...)`
+-- which invoked `profiles_select`, which in turn did
+--   `EXISTS (SELECT 1 FROM applications a ...)`
+-- and the engine refused because evaluating a policy on `applications`
+-- now required selecting from `applications` again → recursion.
+--
+-- FIX
+-- Move cross-table checks into SECURITY DEFINER functions. These run with
+-- the function-owner's privileges and BYPASS RLS, so their internal
+-- queries don't re-trigger the policies that invoke them. The business
+-- rule is unchanged — CDs still see applicant profiles, talent still
+-- must have a profile row — but the check no longer loops.
+-- ════════════════════════════════════════════════════════════════════
+
+-- Helper: returns profiles.user_type for a given auth user, bypassing RLS.
+create or replace function public.user_type_of(p_uid uuid)
+returns text
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select user_type from public.profiles where id = p_uid;
+$$;
+grant execute on function public.user_type_of(uuid) to authenticated, anon;
+
+-- Helper: does the current CD have an application from this talent? Bypasses RLS.
+create or replace function public.cd_has_applicant(p_talent_id uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.applications a
+    join public.castings c on c.id = a.casting_id
+    where a.talent_id = p_talent_id
+      and c.cd_id = auth.uid()
+  );
+$$;
+grant execute on function public.cd_has_applicant(uuid) to authenticated, anon;
+
+-- ── PROFILES SELECT: replace inline cross-table EXISTS with helper call ──
+drop policy if exists profiles_select on public.profiles;
+create policy profiles_select on public.profiles
+  for select using (
+    (visible = true and suspended = false)
+    or id = auth.uid()
+    or is_admin()
+    or public.cd_has_applicant(profiles.id)
+  );
+
+-- ── APPLICATIONS INSERT: check user_type via helper instead of subquery ──
+-- This was the direct trigger of the recursion. WITH CHECK no longer does
+-- a protected SELECT on profiles.
+drop policy if exists applications_insert on public.applications;
+create policy applications_insert on public.applications
+  for insert with check (
+    talent_id = auth.uid()
+    and public.user_type_of(auth.uid()) in ('talent','admin')
+  );
+
+-- ── CASTINGS INSERT: same pattern for consistency (and to prevent a similar
+-- recursion if profiles_select ever references castings) ──
+drop policy if exists castings_insert on public.castings;
+create policy castings_insert on public.castings
+  for insert with check (
+    cd_id = auth.uid()
+    and public.user_type_of(auth.uid()) in ('cd','admin')
+  );
+
+-- Done. Re-run this whole file (or just this migration block) in
+-- Supabase → SQL Editor → New Query → RUN.

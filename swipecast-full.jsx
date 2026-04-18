@@ -1132,12 +1132,15 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth})
   const [coverNote,setCoverNote]=useState("");
   const [submitting,setSubmitting]=useState(false);
   const [applyErr,setApplyErr]=useState("");
+  const [applyOk,setApplyOk]=useState(false);      // shows success confirmation in modal before auto-close
   const [realRoleIds,setRealRoleIds]=useState({}); // maps role index -> real DB role id (for DB-backed castings)
   const [myPhotos,setMyPhotos]=useState([]);   // list of actor's photo URLs (headshot first, then gallery)
   const [selectedPhoto,setSelectedPhoto]=useState("");
+  const submittingRef=useRef(false);           // double-click guard for Submit Application
+  const withTimeout=(promise,ms=20000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Please try again.`)),ms))]);
   const c=casting;
   const isDbCasting=!!(c&&c.id&&typeof c.id==="string"&&c.id.length>20); // UUID check
-  const handleApply=(r,i)=>{if(isLoggedIn){setApplyRole({...r,idx:i});setCoverNote("");setApplyErr("");setSelectedPhoto(myPhotos[0]||"");}else{onRequireAuth&&onRequireAuth(c,{...r,idx:i});}};
+  const handleApply=(r,i)=>{if(isLoggedIn){setApplyRole({...r,idx:i});setCoverNote("");setApplyErr("");setApplyOk(false);setSelectedPhoto(myPhotos[0]||"");}else{onRequireAuth&&onRequireAuth(c,{...r,idx:i});}};
   useEffect(()=>{(async()=>{
     if(!isLoggedIn||!c)return;
     // load the actor's photos for the picker
@@ -1163,26 +1166,64 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth})
     }
   })();},[c,isLoggedIn,isDbCasting]);
   const submitApp=async()=>{
-    setApplyErr("");setSubmitting(true);
+    if(submittingRef.current){console.log("[apply] blocked: already submitting");return;}
+    submittingRef.current=true;
+    setApplyErr("");setApplyOk(false);setSubmitting(true);
     try{
       const {data:{session:s}}=await window.sb.auth.getSession();
-      if(!s?.user)throw new Error("You must be logged in.");
+      if(!s?.user){setApplyErr("Your session has expired. Please log in again to apply.");return;}
       if(!isDbCasting){
-        // demo casting — fake it for now (still mark applied locally so UI feels real)
+        // demo/mock casting (seeded landing data, not a real row) — still acknowledge locally
+        console.log("[apply] demo casting, local-only mark applied");
         setApplied(p=>new Set([...p,applyRole.idx]));
-        setApplyRole(null);return;
+        setApplyOk(true);
+        setTimeout(()=>{setApplyRole(null);setApplyOk(false);},1200);
+        return;
       }
       const roleId=realRoleIds[applyRole.idx];
-      if(!roleId)throw new Error("Role not found.");
-      const {error}=await window.sb.from("applications").insert({role_id:roleId,casting_id:c.id,talent_id:s.user.id,cover_note:coverNote||null,selected_photo_url:selectedPhoto||null});
-      if(error)throw error;
+      if(!roleId){setApplyErr("This role is no longer available. Please refresh the page and try again.");return;}
+      if(myPhotos.length>0&&!selectedPhoto){setApplyErr("Please pick a photo to submit with your application.");return;}
+      console.log("[apply] submitting role:",roleId,"casting:",c.id,"talent:",s.user.id);
+      const {error}=await withTimeout(
+        window.sb.from("applications").insert({role_id:roleId,casting_id:c.id,talent_id:s.user.id,cover_note:coverNote||null,selected_photo_url:selectedPhoto||null}),
+        20000,
+        "Submission"
+      );
+      if(error){
+        console.warn("[apply] insert error:",error.code||"",error.message||error);
+        const raw=(error.message||"").toLowerCase();
+        const code=(error.code||"").toLowerCase();
+        if(raw.includes("duplicate")||raw.includes("unique")||code==="23505"){
+          setApplyErr("You've already applied to this role.");
+          // treat as success locally — the row exists
+          setApplied(p=>new Set([...p,applyRole.idx]));
+        }else if(raw.includes("recursion")||raw.includes("policy")||raw.includes("permission")||raw.includes("row-level")||raw.includes("rls")||code==="42p17"||code==="42501"){
+          setApplyErr("Something's temporarily wrong on our end. Please try again in a moment — if it keeps failing, contact support.");
+        }else if(raw.includes("violates foreign key")||code==="23503"){
+          setApplyErr("This role or casting is no longer available.");
+        }else if(raw.includes("not-null")||code==="23502"){
+          setApplyErr("Some required information is missing. Please reload the page and try again.");
+        }else if(raw.includes("timed out")){
+          setApplyErr("The submission timed out. Check your connection and try again.");
+        }else{
+          setApplyErr("Could not submit your application. Please try again, or contact support if this keeps happening.");
+        }
+        return;
+      }
+      console.log("[apply] success for role:",roleId);
       setApplied(p=>new Set([...p,applyRole.idx]));
-      setApplyRole(null);
+      setApplyOk(true);
+      setTimeout(()=>{setApplyRole(null);setApplyOk(false);},1400);
     }catch(e){
-      let msg=e.message||"Could not submit.";
-      if(msg.includes("duplicate"))msg="You already applied to this role.";
-      setApplyErr(msg);
-    }finally{setSubmitting(false);}
+      console.warn("[apply] threw:",e?.message||e);
+      const raw=(e?.message||"").toLowerCase();
+      if(raw.includes("timed out")){setApplyErr("The submission timed out. Check your connection and try again.");}
+      else if(raw.includes("network")||raw.includes("fetch")){setApplyErr("Network error. Please check your connection and try again.");}
+      else{setApplyErr("Could not submit your application. Please try again.");}
+    }finally{
+      submittingRef.current=false;
+      setSubmitting(false);
+    }
   };
   if(!c)return(<div className="page"><p>Casting not found.</p><button className="btn-s" onClick={onBack}>← Back</button></div>);
   const render=(txt)=>txt.split(/(\*[^*]+\*)/g).map((s,i)=>s.startsWith("*")&&s.endsWith("*")?<em key={i} style={{fontStyle:"italic",color:"var(--t1)"}}>{s.slice(1,-1)}</em>:<span key={i}>{s}</span>);
@@ -1249,27 +1290,36 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth})
     </section>
 
     {applyRole&&<div className="modal-overlay" onClick={()=>!submitting&&setApplyRole(null)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:560}}>
-      <h2>Submit for Role</h2>
-      <div style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:20}}>
-        <h4 style={{fontSize:14,fontWeight:700}}>{applyRole.name}</h4>
-        <p style={{color:"var(--t2)",fontSize:12,marginTop:2}}>{c.title} · {c.prod}</p>
-      </div>
-      {applyErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{applyErr}</div>}
-      <div className="form-group">
-        <label className="label">Choose the photo to submit</label>
-        {myPhotos.length===0?
-          <div style={{background:"var(--s2)",border:"1px dashed var(--bdr)",borderRadius:10,padding:18,fontSize:13,color:"var(--t3)",textAlign:"center"}}>No photos yet. Upload a headshot from your profile first — it'll go to the casting director with your submission.</div>:
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(88px,1fr))",gap:8}}>
-            {myPhotos.map((u,i)=>
-              <div key={i} onClick={()=>setSelectedPhoto(u)} style={{cursor:"pointer",position:"relative",aspectRatio:"4/5",borderRadius:8,overflow:"hidden",border:selectedPhoto===u?"3px solid var(--acc)":"3px solid transparent",transition:"all .15s"}}>
-                <img src={u} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-                {selectedPhoto===u&&<div style={{position:"absolute",top:4,right:4,background:"var(--acc)",color:"#fff",width:20,height:20,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800}}>✓</div>}
-              </div>)}
-          </div>}
-      </div>
-      <div className="form-group"><label className="label">Cover Note (Optional)</label><textarea className="textarea" placeholder="Tell the casting director why you're right for this role..." value={coverNote} onChange={e=>setCoverNote(e.target.value)}></textarea></div>
-      <p style={{fontSize:12,color:"var(--t3)",marginTop:-4,marginBottom:16}}>The casting director will see the photo you picked plus your full profile — reel, bio, credits — with this note.</p>
-      <div style={{display:"flex",gap:12,marginTop:24}}><button className="btn-p" style={{flex:1}} onClick={submitApp} disabled={submitting}>{submitting?"Submitting…":"Submit Application"}</button><button className="btn-s" onClick={()=>setApplyRole(null)} disabled={submitting}>Cancel</button></div>
+      {applyOk?
+        <div style={{textAlign:"center",padding:"24px 8px"}}>
+          <div style={{width:64,height:64,borderRadius:"50%",background:"rgba(80,200,120,0.15)",color:"#27ae60",display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,fontWeight:800,margin:"0 auto 16px"}}>✓</div>
+          <h2 style={{marginBottom:6}}>Application Submitted</h2>
+          <p style={{color:"var(--t2)",fontSize:14}}>You applied for <strong>{applyRole.name}</strong>. The casting director will see your submission in their inbox.</p>
+        </div>:
+        <>
+          <h2>Submit for Role</h2>
+          <div style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:20}}>
+            <h4 style={{fontSize:14,fontWeight:700}}>{applyRole.name}</h4>
+            <p style={{color:"var(--t2)",fontSize:12,marginTop:2}}>{c.title} · {c.prod}</p>
+          </div>
+          {applyErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{applyErr}</div>}
+          <div className="form-group">
+            <label className="label">Choose the photo to submit</label>
+            {myPhotos.length===0?
+              <div style={{background:"var(--s2)",border:"1px dashed var(--bdr)",borderRadius:10,padding:18,fontSize:13,color:"var(--t3)",textAlign:"center"}}>No photos yet. Upload a headshot from your profile first — it'll go to the casting director with your submission.</div>:
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(88px,1fr))",gap:8}}>
+                {myPhotos.map((u,i)=>
+                  <div key={i} onClick={()=>setSelectedPhoto(u)} style={{cursor:"pointer",position:"relative",aspectRatio:"4/5",borderRadius:8,overflow:"hidden",border:selectedPhoto===u?"3px solid var(--acc)":"3px solid transparent",transition:"all .15s"}}>
+                    <img src={u} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                    {selectedPhoto===u&&<div style={{position:"absolute",top:4,right:4,background:"var(--acc)",color:"#fff",width:20,height:20,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800}}>✓</div>}
+                  </div>)}
+              </div>}
+          </div>
+          <div className="form-group"><label className="label">Cover Note (Optional)</label><textarea className="textarea" placeholder="Tell the casting director why you're right for this role..." value={coverNote} onChange={e=>setCoverNote(e.target.value)}></textarea></div>
+          <p style={{fontSize:12,color:"var(--t3)",marginTop:-4,marginBottom:16}}>The casting director will see the photo you picked plus your full profile — reel, bio, credits — with this note.</p>
+          <div style={{display:"flex",gap:12,marginTop:24}}><button className="btn-p" style={{flex:1}} onClick={submitApp} disabled={submitting}>{submitting?"Submitting…":"Submit Application"}</button><button className="btn-s" onClick={()=>setApplyRole(null)} disabled={submitting}>Cancel</button></div>
+        </>
+      }
     </div></div>}
 
     <Footer onNavigate={onNavigate}/></div>);
