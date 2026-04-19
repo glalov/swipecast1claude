@@ -2673,137 +2673,293 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE: ADMIN / OWNER DASHBOARD (only for officecasting01@gmail.com)
 // ═══════════════════════════════════════════
-function AdminPage({session,onNavigate}){
-  const [tab,setTab]=useState("overview");
-  const [stats,setStats]=useState({users:0,talent:0,cds:0,castings:0,applications:0,reports:0});
+// ═══════════════════════════════════════════
+// ADMIN PANEL — sidebar-navigated, RPC-backed, audit-logged
+// Full oversight. All writes go through SECURITY DEFINER RPCs on the DB side —
+// the frontend only *triggers* actions. Permissions are enforced server-side.
+// ═══════════════════════════════════════════
+function AdminPage({session,profile,isSuperAdmin,onNavigate}){
+  const [section,setSection]=useState("overview");
+  const role=profile?.user_type||"(unknown)";
+  return(<div className="page page-wide" style={{display:"grid",gridTemplateColumns:"220px 1fr",gap:28,alignItems:"start"}}>
+    <aside style={{position:"sticky",top:24,background:"var(--s2)",borderRadius:14,padding:18,border:"1px solid var(--bdr)"}}>
+      <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,color:"var(--acc)",marginBottom:6}}>{isSuperAdmin?"SUPER ADMIN":"ADMIN"}</div>
+      <div style={{fontSize:13,fontWeight:700,marginBottom:2,wordBreak:"break-word"}}>{profile?.display_name||session?.user?.email||"—"}</div>
+      <div style={{fontSize:11,color:"var(--t3)",marginBottom:18,wordBreak:"break-word"}}>{session?.user?.email}</div>
+      <AdminNavLink current={section} target="overview" label="Overview" onClick={setSection}/>
+      <AdminNavLink current={section} target="users" label="Users" onClick={setSection}/>
+      <AdminNavLink current={section} target="castings" label="Castings" onClick={setSection}/>
+      <AdminNavLink current={section} target="applications" label="Applications" onClick={setSection}/>
+      <AdminNavLink current={section} target="audit" label="Audit log" onClick={setSection}/>
+      <AdminNavLink current={section} target="settings" label="Site settings" onClick={setSection}/>
+      <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid var(--bdr)",fontSize:10,color:"var(--t3)",lineHeight:1.5}}>
+        All admin writes are logged and enforced by the database. Your role is <strong style={{color:"var(--t1)"}}>{role}</strong>.
+      </div>
+    </aside>
+    <div>
+      {section==="overview"&&<AdminOverview/>}
+      {section==="users"&&<AdminUsers isSuperAdmin={isSuperAdmin} session={session}/>}
+      {section==="castings"&&<AdminCastings/>}
+      {section==="applications"&&<AdminApplications/>}
+      {section==="audit"&&<AdminAudit/>}
+      {section==="settings"&&<AdminSettings/>}
+      <div style={{marginTop:40}}><Footer onNavigate={onNavigate}/></div>
+    </div>
+  </div>);
+}
+function AdminNavLink({current,target,label,onClick}){
+  const active=current===target;
+  return(<button onClick={()=>onClick(target)} style={{display:"block",width:"100%",textAlign:"left",padding:"9px 12px",borderRadius:8,border:"none",background:active?"var(--acc)":"transparent",color:active?"#fff":"var(--t1)",fontSize:13,fontWeight:active?700:500,cursor:"pointer",marginBottom:4,fontFamily:"inherit"}}>{label}</button>);
+}
+
+// ─── Overview: counts + recent audit activity
+function AdminOverview(){
+  const [stats,setStats]=useState(null);
+  const [audit,setAudit]=useState([]);
+  const [err,setErr]=useState("");
+  useEffect(()=>{(async()=>{
+    try{
+      const [p,c,a,au]=await Promise.all([
+        window.sb.from("profiles").select("user_type,banned,suspended,verified,featured",{count:"exact"}).limit(5000),
+        window.sb.from("castings").select("status,featured",{count:"exact"}).limit(5000),
+        window.sb.from("applications").select("status",{count:"exact"}).limit(10000),
+        window.sb.from("audit_logs").select("*").order("created_at",{ascending:false}).limit(10)
+      ]);
+      if(p.error||c.error||a.error||au.error){setErr((p.error||c.error||a.error||au.error).message);return;}
+      const pu=p.data||[],cu=c.data||[],au2=a.data||[];
+      setStats({
+        users:pu.length,
+        talent:pu.filter(x=>x.user_type==="talent").length,
+        cds:pu.filter(x=>x.user_type==="cd").length,
+        admins:pu.filter(x=>x.user_type==="admin"||x.user_type==="super_admin").length,
+        banned:pu.filter(x=>x.banned).length,
+        suspended:pu.filter(x=>x.suspended).length,
+        verified:pu.filter(x=>x.verified).length,
+        castings:cu.length,
+        open_castings:cu.filter(x=>x.status==="open").length,
+        featured_castings:cu.filter(x=>x.featured).length,
+        applications:au2.length,
+        pending:au2.filter(x=>x.status==="pending").length,
+        hold:au2.filter(x=>x.status==="hold").length,
+        selected:au2.filter(x=>x.status==="selected").length,
+        rejected:au2.filter(x=>x.status==="rejected").length
+      });
+      setAudit(au.data||[]);
+    }catch(e){setErr(e.message||String(e));}
+  })();},[]);
+  if(err)return(<div style={{color:"#c0392b",fontSize:13}}>Error loading overview: {err}</div>);
+  if(!stats)return(<div style={{color:"var(--t3)"}}>Loading overview…</div>);
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Overview</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:24}}>Platform health at a glance.</p>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:28}}>
+      <StatTile num={stats.users} label="Users"/>
+      <StatTile num={stats.talent} label="Actors"/>
+      <StatTile num={stats.cds} label="Casting directors"/>
+      <StatTile num={stats.admins} label="Admins"/>
+      <StatTile num={stats.verified} label="Verified"/>
+      <StatTile num={stats.suspended} label="Suspended" danger={stats.suspended>0}/>
+      <StatTile num={stats.banned} label="Banned" danger={stats.banned>0}/>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:28}}>
+      <StatTile num={stats.castings} label="Castings"/>
+      <StatTile num={stats.open_castings} label="Open"/>
+      <StatTile num={stats.featured_castings} label="Featured"/>
+      <StatTile num={stats.applications} label="Applications"/>
+      <StatTile num={stats.pending} label="Pending review"/>
+      <StatTile num={stats.selected} label="Selected"/>
+      <StatTile num={stats.rejected} label="Rejected"/>
+    </div>
+    <div className="card" style={{padding:20}}>
+      <h3 style={{fontSize:15,fontWeight:700,marginBottom:14}}>Recent admin activity</h3>
+      {audit.length===0?<p style={{color:"var(--t3)",fontSize:13}}>No actions logged yet.</p>:
+        audit.map(r=><div key={r.id} style={{padding:"10px 0",borderBottom:"1px solid var(--bdr)",fontSize:12,display:"flex",justifyContent:"space-between",gap:12}}>
+          <div><strong>{r.actor_email||"(system)"}</strong> — {r.action} {r.target_table?<span style={{color:"var(--t3)"}}>on {r.target_table}</span>:""} {r.note?<span style={{color:"var(--t3)"}}>· {r.note}</span>:""}</div>
+          <div style={{color:"var(--t3)",whiteSpace:"nowrap"}}>{new Date(r.created_at).toLocaleString()}</div>
+        </div>)
+      }
+    </div>
+  </>);
+}
+function StatTile({num,label,danger}){
+  return(<div className="dash-stat" style={{borderColor:danger?"#c0392b":undefined}}><div className="dash-stat-num" style={{color:danger?"#c0392b":undefined}}>{num}</div><div className="dash-stat-label">{label}</div></div>);
+}
+
+// ─── Users: search + filter + role/suspend/ban/verify/feature/delete
+function AdminUsers({isSuperAdmin,session}){
   const [users,setUsers]=useState([]);
-  const [castings,setCastings]=useState([]);
-  const [reports,setReports]=useState([]);
-  const [loading,setLoading]=useState(true);
   const [q,setQ]=useState("");
-  const [cq,setCq]=useState(""); // casting search
-  const [viewCasting,setViewCasting]=useState(null);   // casting currently viewed in modal
-  const [editCasting,setEditCasting]=useState(null);   // casting currently being edited
+  const [typeFilter,setTypeFilter]=useState("all");
+  const [loading,setLoading]=useState(true);
+  const [msg,setMsg]=useState("");
+  const [reasonPrompt,setReasonPrompt]=useState(null); // {user, kind}
   const reload=useCallback(async()=>{
     setLoading(true);
-    const [u,c,r]=await Promise.all([
-      window.sb.from("profiles").select("*").order("created_at",{ascending:false}).limit(500),
-      window.sb.from("castings").select("*,profiles:cd_id(display_name,email,company_name),roles(id,name,description,gender,age_range,ethnicity)").order("created_at",{ascending:false}).limit(500),
-      window.sb.from("reports").select("*").order("created_at",{ascending:false}).limit(100)
-    ]);
-    const allUsers=u.data||[];
-    setUsers(allUsers);
-    setCastings(c.data||[]);
-    setReports(r.data||[]);
-    setStats({
-      users:allUsers.length,
-      talent:allUsers.filter(x=>x.user_type==="talent").length,
-      cds:allUsers.filter(x=>x.user_type==="cd").length,
-      castings:(c.data||[]).length,
-      applications:0,
-      reports:(r.data||[]).filter(x=>x.status==="open").length
-    });
-    const {count}=await window.sb.from("applications").select("*",{count:"exact",head:true});
-    setStats(s=>({...s,applications:count||0}));
-    setLoading(false);
+    const {data,error}=await window.sb.from("profiles").select("*").order("created_at",{ascending:false}).limit(1000);
+    if(error)setMsg("Load failed: "+error.message);
+    setUsers(data||[]);setLoading(false);
   },[]);
   useEffect(()=>{reload();},[reload]);
-  const toggleSuspend=async(u)=>{await window.sb.from("profiles").update({suspended:!u.suspended}).eq("id",u.id);reload();};
-  const deleteUser=async(u)=>{if(!confirm(`Delete profile for ${u.display_name||u.email}? This removes their data.`))return;await window.sb.from("profiles").delete().eq("id",u.id);reload();};
-  const resolveReport=async(r,status)=>{await window.sb.from("reports").update({status}).eq("id",r.id);reload();};
-  // ─── casting moderation actions
-  const deleteCasting=async(c)=>{
-    if(!confirm(`DELETE casting "${c.title}"?\n\nThis permanently removes the casting, all its roles, and all submissions. Cannot be undone.`))return;
+  const callRpc=async(fn,args,successLabel)=>{
+    setMsg("");
+    const {error}=await window.sb.rpc(fn,args);
+    if(error){setMsg(fn+" failed: "+error.message);return false;}
+    setMsg(successLabel);await reload();return true;
+  };
+  const setRole=async(u,newRole)=>{
+    if(u.id===session?.user?.id&&newRole!==u.user_type){
+      if(!confirm("You are changing YOUR OWN role. This can lock you out of admin. Continue?"))return;
+    }
+    await callRpc("admin_set_user_role",{p_target:u.id,p_role:newRole},`Role changed to ${newRole}.`);
+  };
+  const toggleVerified=(u)=>callRpc("admin_set_user_verified",{p_target:u.id,p_verified:!u.verified},u.verified?"Unverified.":"Verified.");
+  const toggleFeatured=(u)=>callRpc("admin_set_user_featured",{p_target:u.id,p_featured:!u.featured},u.featured?"Unfeatured.":"Featured.");
+  const toggleSuspended=(u)=>{
+    if(!u.suspended){setReasonPrompt({user:u,kind:"suspend"});return;}
+    callRpc("admin_set_user_suspended",{p_target:u.id,p_suspended:false,p_reason:null},"Unsuspended.");
+  };
+  const toggleBanned=(u)=>{
+    if(!u.banned){setReasonPrompt({user:u,kind:"ban"});return;}
+    callRpc("admin_set_user_banned",{p_target:u.id,p_target_banned:false,p_reason:null},"Unbanned.");
+  };
+  const doDelete=async(u)=>{
+    if(!confirm(`Permanently DELETE profile ${u.email}?\n\nThis removes their profile row, reviews, applications, and any castings they posted. Cannot be undone.`))return;
+    if(u.id===session?.user?.id){alert("You cannot delete your own profile.");return;}
+    await callRpc("admin_delete_profile",{p_target:u.id},"Profile deleted.");
+  };
+  const filtered=users.filter(u=>{
+    if(typeFilter!=="all"&&u.user_type!==typeFilter)return false;
+    if(!q)return true;
+    const needle=q.toLowerCase();
+    return [u.display_name,u.email,u.location,u.company_name].some(x=>x&&x.toLowerCase().includes(needle));
+  });
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Users</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{filtered.length} of {users.length} users{typeFilter==="all"?"":` · ${typeFilter}`}</p>
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+    <div style={{display:"grid",gridTemplateColumns:"1fr 200px",gap:10,marginBottom:14}}>
+      <input className="input" placeholder="Search by name, email, location, company…" value={q} onChange={e=>setQ(e.target.value)}/>
+      <select className="select" value={typeFilter} onChange={e=>setTypeFilter(e.target.value)}>
+        <option value="all">All roles</option>
+        <option value="talent">Actors</option>
+        <option value="cd">Casting directors</option>
+        <option value="admin">Admins</option>
+        <option value="super_admin">Super admins</option>
+      </select>
+    </div>
+    {loading?<p style={{color:"var(--t3)"}}>Loading…</p>:
+      <div className="card" style={{padding:0,overflow:"hidden"}}>
+        {filtered.map(u=><UserRow key={u.id} u={u} isSuperAdmin={isSuperAdmin} self={u.id===session?.user?.id} onSetRole={setRole} onToggleVerified={toggleVerified} onToggleFeatured={toggleFeatured} onToggleSuspended={toggleSuspended} onToggleBanned={toggleBanned} onDelete={doDelete}/>)}
+        {filtered.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No users match.</div>}
+      </div>
+    }
+    {reasonPrompt&&<ReasonModal title={reasonPrompt.kind==="suspend"?"Suspend user":"Ban user"} cta={reasonPrompt.kind==="suspend"?"Suspend":"Ban"} onCancel={()=>setReasonPrompt(null)} onSubmit={async(reason)=>{
+      const u=reasonPrompt.user,kind=reasonPrompt.kind;
+      setReasonPrompt(null);
+      if(kind==="suspend")await callRpc("admin_set_user_suspended",{p_target:u.id,p_suspended:true,p_reason:reason||null},"Suspended.");
+      else await callRpc("admin_set_user_banned",{p_target:u.id,p_target_banned:true,p_reason:reason||null},"Banned.");
+    }}/>}
+  </>);
+}
+function UserRow({u,isSuperAdmin,self,onSetRole,onToggleVerified,onToggleFeatured,onToggleSuspended,onToggleBanned,onDelete}){
+  const canEditRole=isSuperAdmin||(u.user_type!=="super_admin"&&u.user_type!=="admin");
+  const canDelete=isSuperAdmin&&!self&&u.user_type!=="super_admin";
+  const statusBadges=[];
+  if(u.banned)statusBadges.push(<span key="b" style={{color:"#fff",background:"#c0392b",fontSize:10,fontWeight:700,padding:"2px 6px",borderRadius:4,marginLeft:6}}>BANNED</span>);
+  if(u.suspended)statusBadges.push(<span key="s" style={{color:"#c0392b",fontSize:10,fontWeight:700,marginLeft:6}}>SUSPENDED</span>);
+  if(u.verified)statusBadges.push(<span key="v" style={{color:"#1d7b44",fontSize:10,fontWeight:700,marginLeft:6}}>✓ VERIFIED</span>);
+  if(u.featured)statusBadges.push(<span key="f" style={{color:"var(--acc)",fontSize:10,fontWeight:700,marginLeft:6}}>★ FEATURED</span>);
+  return(<div style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"center",opacity:u.banned?0.45:u.suspended?0.7:1}}>
+    <div>
+      <div style={{fontWeight:600,fontSize:14}}>{u.display_name||"—"} {self&&<span style={{color:"var(--acc)",fontSize:10,fontWeight:700,marginLeft:6}}>(YOU)</span>}{statusBadges}</div>
+      <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{u.email} {u.location?`· ${u.location}`:""} {u.company_name?`· ${u.company_name}`:""}</div>
+      {(u.suspended_reason||u.banned_reason)&&<div style={{fontSize:11,color:"#c0392b",marginTop:2,fontStyle:"italic"}}>Reason: {u.banned_reason||u.suspended_reason}</div>}
+    </div>
+    <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"flex-end"}}>
+      <select className="select" style={{fontSize:12,padding:"6px 8px",height:"auto"}} disabled={!canEditRole} value={u.user_type} onChange={e=>onSetRole(u,e.target.value)}>
+        <option value="talent">actor</option>
+        <option value="cd">CD</option>
+        <option value="admin">admin</option>
+        {isSuperAdmin&&<option value="super_admin">super_admin</option>}
+      </select>
+      <button className="btn-s btn-sm" onClick={()=>onToggleVerified(u)}>{u.verified?"Unverify":"Verify"}</button>
+      <button className="btn-s btn-sm" onClick={()=>onToggleFeatured(u)}>{u.featured?"Unfeature":"Feature"}</button>
+      <button className="btn-s btn-sm" onClick={()=>onToggleSuspended(u)}>{u.suspended?"Unsuspend":"Suspend"}</button>
+      <button className="btn-s btn-sm" style={{color:"#c0392b",borderColor:"#e8c6c6"}} onClick={()=>onToggleBanned(u)}>{u.banned?"Unban":"Ban"}</button>
+      {canDelete&&<button className="btn-s btn-sm" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} onClick={()=>onDelete(u)}>Delete</button>}
+    </div>
+  </div>);
+}
+function ReasonModal({title,cta,onCancel,onSubmit}){
+  const [reason,setReason]=useState("");
+  const [busy,setBusy]=useState(false);
+  return(<div className="modal-overlay" onClick={()=>!busy&&onCancel()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:440}}>
+    <h2 style={{marginBottom:10}}>{title}</h2>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Record a short reason (stored in audit log and shown on the user's profile).</p>
+    <textarea className="textarea" placeholder="e.g. Repeated spam submissions" value={reason} onChange={e=>setReason(e.target.value)}/>
+    <div style={{display:"flex",gap:10,marginTop:16}}>
+      <button className="btn-p" style={{flex:1}} disabled={busy} onClick={async()=>{setBusy(true);await onSubmit(reason.trim());}}>{busy?"…":cta}</button>
+      <button className="btn-s" onClick={onCancel} disabled={busy}>Cancel</button>
+    </div>
+  </div></div>);
+}
+
+// ─── Castings: feature/close/reopen/edit/delete, still uses existing EditCastingModal
+function AdminCastings(){
+  const [castings,setCastings]=useState([]);
+  const [q,setQ]=useState("");
+  const [loading,setLoading]=useState(true);
+  const [msg,setMsg]=useState("");
+  const [viewCasting,setViewCasting]=useState(null);
+  const [editCasting,setEditCasting]=useState(null);
+  const reload=useCallback(async()=>{
+    setLoading(true);
+    const {data,error}=await window.sb.from("castings").select("*,profiles:cd_id(display_name,email,company_name),roles(id,name,description,gender,age_range,ethnicity)").order("created_at",{ascending:false}).limit(1000);
+    if(error)setMsg("Load failed: "+error.message);
+    setCastings(data||[]);setLoading(false);
+  },[]);
+  useEffect(()=>{reload();},[reload]);
+  const toggleFeatured=async(c)=>{
+    const {error}=await window.sb.rpc("admin_set_casting_featured",{p_casting:c.id,p_featured:!c.featured});
+    if(error){setMsg("Failed: "+error.message);return;}
+    setMsg(c.featured?"Unfeatured.":"Featured.");reload();
+  };
+  const setStatus=async(c,newStatus)=>{
+    const {error}=await window.sb.rpc("admin_set_casting_status",{p_casting:c.id,p_status:newStatus});
+    if(error){setMsg("Failed: "+error.message);return;}
+    setMsg("Casting "+newStatus+".");reload();
+  };
+  const doDelete=async(c)=>{
+    if(!confirm(`DELETE casting "${c.title}"?\n\nThis permanently removes the casting, all roles, and all submissions. Cannot be undone.`))return;
+    // direct delete — admin-only RLS policy on castings permits it (is_admin())
     const {error}=await window.sb.from("castings").delete().eq("id",c.id);
-    if(error){alert("Delete failed: "+error.message);return;}
-    reload();
+    if(error){setMsg("Delete failed: "+error.message);return;}
+    setMsg("Casting deleted.");reload();
   };
-  const toggleCastingStatus=async(c)=>{
-    const newStatus=c.status==="open"?"closed":"open";
-    const {error}=await window.sb.from("castings").update({status:newStatus,published:newStatus==="open"}).eq("id",c.id);
-    if(error){alert("Update failed: "+error.message);return;}
-    reload();
-  };
-  const fu=users.filter(u=>!q||[u.display_name,u.email,u.location,u.company_name].some(x=>x&&x.toLowerCase().includes(q.toLowerCase())));
-  const fc=castings.filter(c=>!cq||[c.title,c.prod,c.location,c.tagline,c.synopsis,c.profiles?.email,c.profiles?.display_name].some(x=>x&&x.toLowerCase().includes(cq.toLowerCase())));
-
-  return(<div className="page page-wide">
-    <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}>
-      <div style={{background:"var(--acc)",color:"#fff",padding:"4px 10px",borderRadius:100,fontSize:10,fontWeight:800,letterSpacing:1.5,fontFamily:"'DM Sans',sans-serif"}}>OWNER / ADMIN</div>
-    </div>
-    <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1,marginBottom:8}}>Moderator Dashboard</h1>
-    <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Only you ({session?.user?.email}) can access this page.</p>
-
-    <div className="dash-stats" style={{marginBottom:24}}>
-      <div className="dash-stat"><div className="dash-stat-num">{stats.users}</div><div className="dash-stat-label">Total Users</div></div>
-      <div className="dash-stat"><div className="dash-stat-num">{stats.talent}</div><div className="dash-stat-label">Actors</div></div>
-      <div className="dash-stat"><div className="dash-stat-num">{stats.cds}</div><div className="dash-stat-label">Casting Directors</div></div>
-      <div className="dash-stat"><div className="dash-stat-num">{stats.castings}</div><div className="dash-stat-label">Active Castings</div></div>
-      <div className="dash-stat"><div className="dash-stat-num">{stats.applications}</div><div className="dash-stat-label">Applications</div></div>
-      <div className="dash-stat" style={{borderColor:stats.reports>0?"#c0392b":undefined}}><div className="dash-stat-num" style={{color:stats.reports>0?"#c0392b":undefined}}>{stats.reports}</div><div className="dash-stat-label">Open Reports</div></div>
-    </div>
-
-    <div className="tabs">
-      <button className={`tab ${tab==="overview"?"active":""}`} onClick={()=>setTab("overview")}>Overview</button>
-      <button className={`tab ${tab==="users"?"active":""}`} onClick={()=>setTab("users")}>Users</button>
-      <button className={`tab ${tab==="castings"?"active":""}`} onClick={()=>setTab("castings")}>Castings</button>
-      <button className={`tab ${tab==="reports"?"active":""}`} onClick={()=>setTab("reports")}>Reports</button>
-    </div>
-
-    {loading?<p style={{color:"var(--t3)"}}>Loading…</p>:<>
-      {tab==="overview"&&<div className="card" style={{padding:24}}>
-        <h3 style={{fontSize:16,fontWeight:700,marginBottom:16}}>Recent signups</h3>
-        {users.slice(0,10).map(u=><div key={u.id} style={{padding:"10px 0",borderBottom:"1px solid var(--bdr)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div><div style={{fontWeight:600,fontSize:14}}>{u.display_name||"—"}</div><div style={{fontSize:12,color:"var(--t3)"}}>{u.email} · {u.user_type} · {u.location||"no location"}</div></div>
-          <div style={{fontSize:11,color:"var(--t3)"}}>{new Date(u.created_at).toLocaleString()}</div>
-        </div>)}
-      </div>}
-
-      {tab==="users"&&<>
-        <input className="input" placeholder="Search users by name, email, location, company…" value={q} onChange={e=>setQ(e.target.value)} style={{marginBottom:16}}/>
-        <div className="card" style={{padding:0,overflow:"hidden"}}>
-          {fu.map(u=><div key={u.id} style={{padding:"14px 20px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto auto auto",gap:12,alignItems:"center",opacity:u.suspended?0.5:1}}>
-            <div>
-              <div style={{fontWeight:600,fontSize:14}}>{u.display_name||"—"} {u.suspended&&<span style={{color:"#c0392b",fontSize:11,fontWeight:700,marginLeft:6}}>SUSPENDED</span>}</div>
-              <div style={{fontSize:12,color:"var(--t3)"}}>{u.email} · {u.user_type} {u.location?`· ${u.location}`:""} {u.company_name?`· ${u.company_name}`:""}</div>
-            </div>
-            <span className="tag" style={{fontSize:10,background:u.user_type==="cd"?"rgba(26,26,46,0.08)":"var(--s2)"}}>{u.user_type.toUpperCase()}</span>
-            <button className="btn-s btn-sm" onClick={()=>toggleSuspend(u)}>{u.suspended?"Unsuspend":"Suspend"}</button>
-            <button className="btn-s btn-sm" onClick={()=>deleteUser(u)} style={{color:"#c0392b",borderColor:"#e8c6c6"}}>Delete</button>
-          </div>)}
-          {fu.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No users match.</div>}
-        </div>
-      </>}
-
-      {tab==="castings"&&<>
-        <input className="input" placeholder="Search castings by title, company, location, CD email…" value={cq} onChange={e=>setCq(e.target.value)} style={{marginBottom:16}}/>
-        <p style={{color:"var(--t3)",fontSize:12,marginBottom:12}}>{fc.length} casting{fc.length===1?"":"s"} · click View to see the full listing · Close hides it from Browse · Delete permanently removes it</p>
-        <div className="card" style={{padding:0,overflow:"hidden"}}>
-          {fc.map(c=><div key={c.id} style={{padding:"14px 20px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto auto auto auto auto",gap:8,alignItems:"center",opacity:c.status==="closed"?0.55:1}}>
-            <div>
-              <div style={{fontWeight:600,fontSize:14}}>{c.title} {c.status!=="open"&&<span style={{color:"#c0392b",fontSize:10,fontWeight:700,marginLeft:6}}>{c.status.toUpperCase()}</span>}</div>
-              <div style={{fontSize:12,color:"var(--t3)"}}>{c.prod||"—"} · {c.location||"—"} · {c.roles?.length||0} role{c.roles?.length===1?"":"s"} · by <strong>{c.profiles?.display_name||c.profiles?.email||"—"}</strong> · {new Date(c.created_at).toLocaleDateString()}</div>
-            </div>
-            <span className="badge tag-acc" style={{fontSize:10}}>{c.type||"—"}</span>
+  const filtered=castings.filter(c=>!q||[c.title,c.prod,c.location,c.tagline,c.synopsis,c.profiles?.email,c.profiles?.display_name].some(x=>x&&x.toLowerCase().includes(q.toLowerCase())));
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Castings</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{filtered.length} of {castings.length} listings</p>
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+    <input className="input" placeholder="Search title, production, location, CD…" value={q} onChange={e=>setQ(e.target.value)} style={{marginBottom:14}}/>
+    {loading?<p style={{color:"var(--t3)"}}>Loading…</p>:
+      <div className="card" style={{padding:0,overflow:"hidden"}}>
+        {filtered.map(c=><div key={c.id} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"center",opacity:c.status==="closed"?0.55:1}}>
+          <div>
+            <div style={{fontWeight:600,fontSize:14}}>{c.title} {c.featured&&<span style={{color:"var(--acc)",fontSize:10,fontWeight:700,marginLeft:6}}>★ FEATURED</span>} {c.status!=="open"&&<span style={{color:"#c0392b",fontSize:10,fontWeight:700,marginLeft:6}}>{c.status.toUpperCase()}</span>}</div>
+            <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{c.type||"—"} · {c.prod||"—"} · {c.location||"—"} · {c.roles?.length||0} role{c.roles?.length===1?"":"s"} · by <strong>{c.profiles?.display_name||c.profiles?.email||"—"}</strong> · {new Date(c.created_at).toLocaleDateString()}</div>
+          </div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"flex-end"}}>
             <button className="btn-s btn-sm" onClick={()=>setViewCasting(c)}>View</button>
             <button className="btn-s btn-sm" onClick={()=>setEditCasting(c)}>Edit</button>
-            <button className="btn-s btn-sm" onClick={()=>toggleCastingStatus(c)}>{c.status==="open"?"Close":"Reopen"}</button>
-            <button className="btn-s btn-sm" onClick={()=>deleteCasting(c)} style={{color:"#c0392b",borderColor:"#e8c6c6"}}>Delete</button>
-          </div>)}
-          {fc.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No castings match.</div>}
-        </div>
-      </>}
-
-      {tab==="reports"&&<div className="card" style={{padding:0,overflow:"hidden"}}>
-        {reports.map(r=><div key={r.id} style={{padding:"14px 20px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto auto",gap:12,alignItems:"center"}}>
-          <div><div style={{fontWeight:600,fontSize:14}}>{r.reason}</div>{r.details&&<div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{r.details}</div>}<div style={{fontSize:11,color:"var(--t3)",marginTop:2}}>{new Date(r.created_at).toLocaleString()}</div></div>
-          <button className="btn-s btn-sm" onClick={()=>resolveReport(r,"resolved")}>Resolve</button>
-          <button className="btn-s btn-sm" onClick={()=>resolveReport(r,"dismissed")}>Dismiss</button>
+            <button className="btn-s btn-sm" onClick={()=>toggleFeatured(c)}>{c.featured?"Unfeature":"Feature"}</button>
+            <button className="btn-s btn-sm" onClick={()=>setStatus(c,c.status==="open"?"closed":"open")}>{c.status==="open"?"Close":"Reopen"}</button>
+            <button className="btn-s btn-sm" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} onClick={()=>doDelete(c)}>Delete</button>
+          </div>
         </div>)}
-        {reports.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No reports. Clean house ✨</div>}
-      </div>}
-    </>}
-
+        {filtered.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No castings match.</div>}
+      </div>
+    }
     {viewCasting&&<div className="modal-overlay" onClick={()=>setViewCasting(null)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"90vh",overflowY:"auto"}}>
       <div className="flex-between" style={{marginBottom:16}}>
         <h2 style={{marginBottom:0}}>{viewCasting.title}</h2>
@@ -2833,15 +2989,169 @@ function AdminPage({session,onNavigate}){
       </div>
       <div style={{display:"flex",gap:10,marginTop:20,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
         <button className="btn-s" onClick={()=>{setEditCasting(viewCasting);setViewCasting(null);}}>Edit</button>
-        <button className="btn-s" onClick={()=>{toggleCastingStatus(viewCasting);setViewCasting(null);}}>{viewCasting.status==="open"?"Close Listing":"Reopen Listing"}</button>
-        <button className="btn-s" onClick={()=>{deleteCasting(viewCasting);setViewCasting(null);}} style={{color:"#c0392b",borderColor:"#e8c6c6"}}>Delete</button>
         <button className="btn-p" style={{marginLeft:"auto"}} onClick={()=>setViewCasting(null)}>Close</button>
       </div>
     </div></div>}
-
     {editCasting&&<EditCastingModal casting={editCasting} onClose={()=>setEditCasting(null)} onSaved={()=>{setEditCasting(null);reload();}}/>}
+  </>);
+}
 
-    <Footer onNavigate={onNavigate}/></div>);
+// ─── Applications: filter by status, inspect, override status, delete
+function AdminApplications(){
+  const [apps,setApps]=useState([]);
+  const [q,setQ]=useState("");
+  const [statusFilter,setStatusFilter]=useState("all");
+  const [loading,setLoading]=useState(true);
+  const [msg,setMsg]=useState("");
+  const reload=useCallback(async()=>{
+    setLoading(true);
+    const {data,error}=await window.sb.from("applications").select("*,talent:talent_id(display_name,email),casting:casting_id(title,prod),role:role_id(name)").order("created_at",{ascending:false}).limit(1000);
+    if(error)setMsg("Load failed: "+error.message);
+    setApps(data||[]);setLoading(false);
+  },[]);
+  useEffect(()=>{reload();},[reload]);
+  const setStatus=async(a,newStatus)=>{
+    const {error}=await window.sb.rpc("admin_set_application_status",{p_application:a.id,p_status:newStatus});
+    if(error){setMsg("Failed: "+error.message);return;}
+    setMsg("Status → "+newStatus);reload();
+  };
+  const doDelete=async(a)=>{
+    if(!confirm(`DELETE this application from ${a.talent?.email||"user"}?`))return;
+    const {error}=await window.sb.rpc("admin_delete_application",{p_application:a.id});
+    if(error){setMsg("Delete failed: "+error.message);return;}
+    setMsg("Application deleted.");reload();
+  };
+  const filtered=apps.filter(a=>{
+    if(statusFilter!=="all"&&a.status!==statusFilter)return false;
+    if(!q)return true;
+    const needle=q.toLowerCase();
+    return [a.talent?.display_name,a.talent?.email,a.casting?.title,a.role?.name].some(x=>x&&x.toLowerCase().includes(needle));
+  });
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Applications</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{filtered.length} of {apps.length} applications</p>
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+    <div style={{display:"grid",gridTemplateColumns:"1fr 200px",gap:10,marginBottom:14}}>
+      <input className="input" placeholder="Search by actor, casting, role…" value={q} onChange={e=>setQ(e.target.value)}/>
+      <select className="select" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}>
+        <option value="all">All statuses</option>
+        <option value="pending">Pending</option>
+        <option value="hold">On hold</option>
+        <option value="selected">Selected</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+    {loading?<p style={{color:"var(--t3)"}}>Loading…</p>:
+      <div className="card" style={{padding:0,overflow:"hidden"}}>
+        {filtered.map(a=><div key={a.id} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"center"}}>
+          <div>
+            <div style={{fontWeight:600,fontSize:14}}>{a.talent?.display_name||a.talent?.email||"—"} → {a.casting?.title||"—"} {a.role?.name?<span style={{color:"var(--t3)",fontWeight:400}}>· {a.role.name}</span>:""}</div>
+            <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{a.talent?.email} · status: <strong style={{color:"var(--t1)"}}>{a.status}</strong> · {new Date(a.created_at).toLocaleString()}</div>
+          </div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"flex-end"}}>
+            <select className="select" style={{fontSize:12,padding:"6px 8px",height:"auto"}} value={a.status} onChange={e=>setStatus(a,e.target.value)}>
+              <option value="pending">Pending</option>
+              <option value="hold">Hold</option>
+              <option value="selected">Selected</option>
+              <option value="rejected">Rejected</option>
+            </select>
+            <button className="btn-s btn-sm" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} onClick={()=>doDelete(a)}>Delete</button>
+          </div>
+        </div>)}
+        {filtered.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No applications match.</div>}
+      </div>
+    }
+  </>);
+}
+
+// ─── Audit log: paginated read-only feed
+function AdminAudit(){
+  const [rows,setRows]=useState([]);
+  const [page,setPage]=useState(0);
+  const [loading,setLoading]=useState(true);
+  const [hasMore,setHasMore]=useState(true);
+  const PAGE_SIZE=50;
+  const load=useCallback(async(p)=>{
+    setLoading(true);
+    const from=p*PAGE_SIZE,to=from+PAGE_SIZE-1;
+    const {data,error}=await window.sb.from("audit_logs").select("*").order("id",{ascending:false}).range(from,to);
+    if(!error){
+      setRows(data||[]);
+      setHasMore((data||[]).length===PAGE_SIZE);
+    }
+    setLoading(false);
+  },[]);
+  useEffect(()=>{load(page);},[load,page]);
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Audit log</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Every admin action is recorded here. Read-only.</p>
+    {loading?<p style={{color:"var(--t3)"}}>Loading…</p>:
+      <div className="card" style={{padding:0,overflow:"hidden"}}>
+        {rows.map(r=><div key={r.id} style={{padding:"12px 16px",borderBottom:"1px solid var(--bdr)",fontSize:12,display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"start"}}>
+          <div>
+            <div><strong>{r.actor_email||"(system)"}</strong> <span style={{color:"var(--acc)",fontWeight:600}}>{r.action}</span> {r.target_table?<span style={{color:"var(--t3)"}}>on <code>{r.target_table}</code></span>:""} {r.target_id?<span style={{color:"var(--t3)"}}>· <code>{String(r.target_id).slice(0,8)}…</code></span>:""}</div>
+            {r.note&&<div style={{color:"var(--t3)",marginTop:3,fontStyle:"italic"}}>{r.note}</div>}
+            {(r.old_value||r.new_value)&&<details style={{marginTop:6,fontSize:11,color:"var(--t3)"}}><summary style={{cursor:"pointer"}}>diff</summary>
+              {r.old_value&&<pre style={{background:"var(--s2)",padding:8,borderRadius:6,marginTop:4,overflow:"auto",maxHeight:160}}>OLD: {JSON.stringify(r.old_value,null,2)}</pre>}
+              {r.new_value&&<pre style={{background:"var(--s2)",padding:8,borderRadius:6,marginTop:4,overflow:"auto",maxHeight:160}}>NEW: {JSON.stringify(r.new_value,null,2)}</pre>}
+            </details>}
+          </div>
+          <div style={{color:"var(--t3)",whiteSpace:"nowrap"}}>{new Date(r.created_at).toLocaleString()}</div>
+        </div>)}
+        {rows.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No entries on this page.</div>}
+      </div>
+    }
+    <div style={{display:"flex",gap:10,marginTop:14,alignItems:"center"}}>
+      <button className="btn-s btn-sm" disabled={page===0} onClick={()=>setPage(p=>Math.max(0,p-1))}>← Prev</button>
+      <span style={{fontSize:12,color:"var(--t3)"}}>Page {page+1}</span>
+      <button className="btn-s btn-sm" disabled={!hasMore} onClick={()=>setPage(p=>p+1)}>Next →</button>
+    </div>
+  </>);
+}
+
+// ─── Site settings: maintenance mode, support email, custom banner
+function AdminSettings(){
+  const [settings,setSettings]=useState(null);
+  const [form,setForm]=useState({});
+  const [loading,setLoading]=useState(true);
+  const [msg,setMsg]=useState("");
+  const [busy,setBusy]=useState(false);
+  useEffect(()=>{(async()=>{
+    const {data,error}=await window.sb.from("site_settings").select("*").eq("id",1).maybeSingle();
+    if(error){setMsg("Load failed: "+error.message);setLoading(false);return;}
+    setSettings(data||{});
+    setForm({
+      maintenance_mode:!!data?.maintenance_mode,
+      maintenance_message:data?.maintenance_message||"",
+      support_email:data?.support_email||"",
+      announcement:data?.announcement||""
+    });
+    setLoading(false);
+  })();},[]);
+  const save=async()=>{
+    setBusy(true);setMsg("");
+    const {error}=await window.sb.rpc("admin_update_site_settings",{p_settings:form});
+    if(error)setMsg("Save failed: "+error.message);
+    else{setMsg("Saved.");setSettings(s=>({...s,...form}));}
+    setBusy(false);
+  };
+  if(loading)return(<div style={{color:"var(--t3)"}}>Loading…</div>);
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Site settings</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Platform-wide toggles. All changes are audit-logged.</p>
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+    <div className="card" style={{padding:24}}>
+      <div className="form-group" style={{display:"flex",alignItems:"center",gap:10}}>
+        <input type="checkbox" id="mm" checked={!!form.maintenance_mode} onChange={e=>setForm(f=>({...f,maintenance_mode:e.target.checked}))}/>
+        <label htmlFor="mm" style={{fontSize:14,fontWeight:600,cursor:"pointer"}}>Maintenance mode</label>
+      </div>
+      <p style={{color:"var(--t3)",fontSize:12,marginTop:-8,marginBottom:12}}>When on, non-admins see the maintenance message instead of the app. (UI rendering of this flag is optional — the setting is stored and readable by any page.)</p>
+      <div className="form-group"><label className="label">Maintenance message</label><textarea className="textarea" value={form.maintenance_message||""} onChange={e=>setForm(f=>({...f,maintenance_message:e.target.value}))} placeholder="We're upgrading things. Be back shortly."/></div>
+      <div className="form-group"><label className="label">Support email</label><input className="input" value={form.support_email||""} onChange={e=>setForm(f=>({...f,support_email:e.target.value}))} placeholder="hello@swipecast.io"/></div>
+      <div className="form-group"><label className="label">Site-wide announcement (shown on home)</label><input className="input" value={form.announcement||""} onChange={e=>setForm(f=>({...f,announcement:e.target.value}))} placeholder="e.g. New feature: one-tap callbacks"/></div>
+      <button className="btn-p" disabled={busy} onClick={save}>{busy?"Saving…":"Save settings"}</button>
+    </div>
+  </>);
 }
 
 // ─── Admin edit-casting modal (fixes spelling, tweaks fields, edits roles)
@@ -2943,10 +3253,14 @@ export default function App(){
   const [authReady,setAuthReady]=useState(false);
   const [pendingApply,setPendingApply]=useState(null);
   const isLoggedIn=!!session;
-  // Admin derived from the SESSION email — known the instant auth completes,
-  // before the profiles row has loaded. Prevents the blank-admin-page freeze.
+  // Admin derived from the PROFILE row (authoritative, server-enforced via RLS + RPCs).
+  // SC_CONFIG.ADMIN_EMAIL is kept only as a *fallback* so the owner can still reach
+  // the panel even if the profile row hasn't loaded yet. DB will reject any write
+  // from a non-admin regardless of what the frontend believes.
   const adminEmail=(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase();
-  const isAdmin=!!(session?.user?.email&&session.user.email.toLowerCase()===adminEmail);
+  const emailMatchesOwner=!!(session?.user?.email&&session.user.email.toLowerCase()===adminEmail);
+  const isSuperAdmin=myProfile?.user_type==="super_admin"||(emailMatchesOwner&&!myProfile);
+  const isAdmin=["admin","super_admin"].includes(myProfile?.user_type)||isSuperAdmin||(emailMatchesOwner&&!myProfile);
 
   const loadProfile=useCallback(async(uid)=>{
     if(!uid){setMyProfile(null);return null;}
@@ -3031,7 +3345,8 @@ export default function App(){
       const {data,error}=await window.sb.from("profiles").select("user_type,email").eq("id",user.id).maybeSingle();
       if(error)console.warn("[auth] route fetch error:",error.message);
       const email=(data?.email||user.email||"").toLowerCase();
-      const isAd=email&&email===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase();
+      const fallbackOwner=email&&email===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase();
+      const isAd=data?.user_type==="admin"||data?.user_type==="super_admin"||fallbackOwner;
       if(isAd)navigate("admin");
       else if(data?.user_type==="cd")navigate("dashboard");
       else if(pendingApply)completeAuth();
@@ -3084,7 +3399,7 @@ export default function App(){
       {page==="dashboard"&&<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile}/>}
       {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{setPage(prevPage);setViewingProfile(null);}} onNavigate={navigate}/>}
       {page==="my-profile"&&isLoggedIn&&<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate}/>}
-      {page==="admin"&&isLoggedIn&&isAdmin&&<AdminPage session={session} onNavigate={navigate}/>}
+      {page==="admin"&&isLoggedIn&&isAdmin&&<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>}
       {page==="register-talent"&&<RegisterTalent onNavigate={navigate}/>}
       {page==="register-cd"&&<RegisterCD onNavigate={navigate}/>}
       {page==="login"&&<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn}/>}

@@ -498,3 +498,301 @@ create policy castings_insert on public.castings
 
 -- Done. Re-run this whole file (or just this migration block) in
 -- Supabase → SQL Editor → New Query → RUN.
+
+-- ════════════════════════════════════════════════════════════════════
+-- MIGRATION 2026-04-19 — admin_system_foundation
+--
+-- Purpose
+-- Give the platform a proper admin layer: role hierarchy, suspension/ban
+-- flags, verified/featured badges, site-wide settings, and a tamper-evident
+-- audit log. All admin writes go through SECURITY DEFINER RPCs that
+-- (a) check authorisation server-side and (b) write an audit_logs row.
+--
+-- The frontend is a trigger, not a gatekeeper: hiding the admin page in
+-- the UI is defence-in-depth only. Every admin action is also rejected
+-- by the DB if the caller isn't an admin/super_admin.
+-- ════════════════════════════════════════════════════════════════════
+
+-- 1. Extend the user_type vocabulary to include super_admin.
+alter table public.profiles drop constraint if exists profiles_user_type_check;
+alter table public.profiles add constraint profiles_user_type_check
+  check (user_type in ('talent','cd','admin','super_admin'));
+
+-- 2. Moderation flags on profiles.
+alter table public.profiles add column if not exists banned boolean default false;
+alter table public.profiles add column if not exists featured boolean default false;
+alter table public.profiles add column if not exists verified boolean default false;
+alter table public.profiles add column if not exists suspended_reason text;
+alter table public.profiles add column if not exists suspended_at timestamptz;
+alter table public.profiles add column if not exists banned_reason text;
+alter table public.profiles add column if not exists banned_at timestamptz;
+
+-- 3. Site settings — singleton row, readable to all, writable only via RPC.
+create table if not exists public.site_settings (
+  id int primary key check (id = 1),
+  maintenance_mode boolean default false,
+  maintenance_message text,
+  support_email text,
+  announcement text,
+  updated_at timestamptz default now()
+);
+insert into public.site_settings (id) values (1) on conflict (id) do nothing;
+alter table public.site_settings enable row level security;
+drop policy if exists site_settings_select on public.site_settings;
+create policy site_settings_select on public.site_settings for select using (true);
+-- No insert/update/delete policies → only SECURITY DEFINER RPCs can write.
+
+-- 4. Audit log. Append-only, readable only to admins. No update/delete policy
+--    exists, so even admins can't tamper with history from the client.
+create table if not exists public.audit_logs (
+  id bigserial primary key,
+  actor_id uuid references auth.users(id) on delete set null,
+  actor_email text,
+  action text not null,
+  target_table text,
+  target_id text,
+  old_value jsonb,
+  new_value jsonb,
+  note text,
+  created_at timestamptz default now()
+);
+create index if not exists audit_logs_created_at_idx on public.audit_logs(created_at desc);
+create index if not exists audit_logs_actor_idx on public.audit_logs(actor_id);
+create index if not exists audit_logs_target_idx on public.audit_logs(target_table, target_id);
+alter table public.audit_logs enable row level security;
+drop policy if exists audit_logs_select on public.audit_logs;
+create policy audit_logs_select on public.audit_logs
+  for select using (public.is_admin());
+
+-- 5. Updated is_admin() — now profile-driven, recognises super_admin, and
+--    keeps the hard-coded owner email as a fallback so the platform can
+--    still recover if the profile row is lost.
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid()
+      and p.user_type in ('admin','super_admin')
+  ) or exists (
+    select 1 from auth.users u
+    where u.id = auth.uid()
+      and lower(u.email) = 'officecasting01@gmail.com'
+  );
+$$;
+
+-- 6. is_super_admin() — strictly checks profile role.
+create or replace function public.is_super_admin()
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid() and p.user_type = 'super_admin'
+  );
+$$;
+
+-- 7. Internal audit writer — callable only by admin RPCs in this file.
+--    `revoke` removes default grants so client code can't call it directly.
+create or replace function public._audit(
+  p_action text,
+  p_table text default null,
+  p_id text default null,
+  p_old jsonb default null,
+  p_new jsonb default null,
+  p_note text default null
+) returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare v_email text;
+begin
+  select email into v_email from auth.users where id = auth.uid();
+  insert into public.audit_logs (actor_id, actor_email, action, target_table, target_id, old_value, new_value, note)
+  values (auth.uid(), v_email, p_action, p_table, p_id, p_old, p_new, p_note);
+end;
+$$;
+revoke all on function public._audit(text,text,text,jsonb,jsonb,text) from public, authenticated, anon;
+
+-- 8. Admin RPCs. Each one:
+--    • runs as SECURITY DEFINER (so RLS doesn't block legitimate admin writes)
+--    • asserts is_admin() / is_super_admin() before doing anything
+--    • writes an audit_logs row via _audit()
+
+create or replace function public.admin_set_user_role(p_target uuid, p_role text)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_old text;
+begin
+  if not public.is_admin() then raise exception 'not authorised'; end if;
+  if p_role not in ('talent','cd','admin','super_admin') then raise exception 'invalid role'; end if;
+  -- Only super_admin may assign admin or super_admin.
+  if p_role in ('admin','super_admin') and not public.is_super_admin() then raise exception 'only super_admin can grant admin roles'; end if;
+  select user_type into v_old from public.profiles where id = p_target;
+  -- Only super_admin may change a super_admin's role (including their own).
+  if v_old = 'super_admin' and not public.is_super_admin() then raise exception 'only super_admin can change a super_admin role'; end if;
+  update public.profiles set user_type = p_role, updated_at = now() where id = p_target;
+  perform public._audit('set_user_role','profiles',p_target::text,
+    jsonb_build_object('user_type',v_old),
+    jsonb_build_object('user_type',p_role), null);
+end; $$;
+
+create or replace function public.admin_set_user_suspended(p_target uuid, p_suspended boolean, p_reason text default null)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'not authorised'; end if;
+  update public.profiles
+     set suspended = p_suspended,
+         suspended_reason = case when p_suspended then p_reason else null end,
+         suspended_at = case when p_suspended then now() else null end,
+         updated_at = now()
+   where id = p_target;
+  perform public._audit(case when p_suspended then 'suspend_user' else 'unsuspend_user' end,
+    'profiles',p_target::text,null,jsonb_build_object('suspended',p_suspended,'reason',p_reason),p_reason);
+end; $$;
+
+create or replace function public.admin_set_user_banned(p_target uuid, p_target_banned boolean, p_reason text default null)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'not authorised'; end if;
+  update public.profiles
+     set banned = p_target_banned,
+         banned_reason = case when p_target_banned then p_reason else null end,
+         banned_at = case when p_target_banned then now() else null end,
+         updated_at = now()
+   where id = p_target;
+  perform public._audit(case when p_target_banned then 'ban_user' else 'unban_user' end,
+    'profiles',p_target::text,null,jsonb_build_object('banned',p_target_banned,'reason',p_reason),p_reason);
+end; $$;
+
+create or replace function public.admin_set_user_verified(p_target uuid, p_verified boolean)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'not authorised'; end if;
+  update public.profiles set verified = p_verified, updated_at = now() where id = p_target;
+  perform public._audit('set_user_verified','profiles',p_target::text,null,jsonb_build_object('verified',p_verified),null);
+end; $$;
+
+create or replace function public.admin_set_user_featured(p_target uuid, p_featured boolean)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'not authorised'; end if;
+  update public.profiles set featured = p_featured, updated_at = now() where id = p_target;
+  perform public._audit('set_user_featured','profiles',p_target::text,null,jsonb_build_object('featured',p_featured),null);
+end; $$;
+
+create or replace function public.admin_set_casting_featured(p_casting uuid, p_featured boolean)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'not authorised'; end if;
+  update public.castings set featured = p_featured, updated_at = now() where id = p_casting;
+  perform public._audit('set_casting_featured','castings',p_casting::text,null,jsonb_build_object('featured',p_featured),null);
+end; $$;
+
+create or replace function public.admin_set_casting_status(p_casting uuid, p_status text)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_old text;
+begin
+  if not public.is_admin() then raise exception 'not authorised'; end if;
+  if p_status not in ('draft','open','closed','archived') then raise exception 'invalid status'; end if;
+  select status into v_old from public.castings where id = p_casting;
+  update public.castings
+     set status = p_status, published = (p_status = 'open'), updated_at = now()
+   where id = p_casting;
+  perform public._audit('set_casting_status','castings',p_casting::text,
+    jsonb_build_object('status',v_old),jsonb_build_object('status',p_status),null);
+end; $$;
+
+create or replace function public.admin_set_application_status(p_application uuid, p_status text)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_old text;
+begin
+  if not public.is_admin() then raise exception 'not authorised'; end if;
+  if p_status not in ('pending','hold','selected','rejected') then raise exception 'invalid status'; end if;
+  select status into v_old from public.applications where id = p_application;
+  update public.applications
+     set status = p_status,
+         reviewed_at = case when p_status <> 'pending' then now() else null end,
+         updated_at = now()
+   where id = p_application;
+  perform public._audit('set_application_status','applications',p_application::text,
+    jsonb_build_object('status',v_old),jsonb_build_object('status',p_status),null);
+end; $$;
+
+create or replace function public.admin_delete_application(p_application uuid)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_row jsonb;
+begin
+  if not public.is_admin() then raise exception 'not authorised'; end if;
+  select to_jsonb(a) into v_row from public.applications a where id = p_application;
+  delete from public.applications where id = p_application;
+  perform public._audit('delete_application','applications',p_application::text,v_row,null,null);
+end; $$;
+
+create or replace function public.admin_update_site_settings(p_settings jsonb)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_old jsonb;
+begin
+  if not public.is_admin() then raise exception 'not authorised'; end if;
+  select to_jsonb(s) into v_old from public.site_settings s where id = 1;
+  update public.site_settings
+     set maintenance_mode = coalesce((p_settings->>'maintenance_mode')::boolean, maintenance_mode),
+         maintenance_message = coalesce(p_settings->>'maintenance_message', maintenance_message),
+         support_email = coalesce(p_settings->>'support_email', support_email),
+         announcement = coalesce(p_settings->>'announcement', announcement),
+         updated_at = now()
+   where id = 1;
+  perform public._audit('update_site_settings','site_settings','1',v_old,p_settings,null);
+end; $$;
+
+create or replace function public.admin_request_password_reset(p_target uuid)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'not authorised'; end if;
+  -- This is an audit-only stub. Sending a reset email requires the service-role
+  -- key via an Edge Function; logging the intent here gives a trail when that
+  -- channel is used out-of-band (e.g. by the owner through the Supabase dashboard).
+  perform public._audit('request_password_reset','profiles',p_target::text,null,null,'requested');
+end; $$;
+
+create or replace function public.admin_delete_profile(p_target uuid)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_target_role text; v_row jsonb;
+begin
+  if not public.is_super_admin() then raise exception 'only super_admin can delete profiles'; end if;
+  if p_target = auth.uid() then raise exception 'you cannot delete your own profile'; end if;
+  select user_type into v_target_role from public.profiles where id = p_target;
+  if v_target_role = 'super_admin' then raise exception 'cannot delete another super_admin'; end if;
+  select to_jsonb(p) into v_row from public.profiles p where id = p_target;
+  delete from public.profiles where id = p_target;
+  perform public._audit('delete_profile','profiles',p_target::text,v_row,null,null);
+end; $$;
+
+-- 9. Grant execute on the admin RPCs to authenticated (functions still enforce
+--    is_admin() internally, so granting does not weaken security).
+grant execute on function public.admin_set_user_role(uuid,text)           to authenticated;
+grant execute on function public.admin_set_user_suspended(uuid,boolean,text) to authenticated;
+grant execute on function public.admin_set_user_banned(uuid,boolean,text)    to authenticated;
+grant execute on function public.admin_set_user_verified(uuid,boolean)       to authenticated;
+grant execute on function public.admin_set_user_featured(uuid,boolean)       to authenticated;
+grant execute on function public.admin_set_casting_featured(uuid,boolean)    to authenticated;
+grant execute on function public.admin_set_casting_status(uuid,text)         to authenticated;
+grant execute on function public.admin_set_application_status(uuid,text)     to authenticated;
+grant execute on function public.admin_delete_application(uuid)              to authenticated;
+grant execute on function public.admin_update_site_settings(jsonb)           to authenticated;
+grant execute on function public.admin_request_password_reset(uuid)          to authenticated;
+grant execute on function public.admin_delete_profile(uuid)                  to authenticated;
+
+-- 10. Bootstrap: promote the owner email to super_admin so the platform
+--     has at least one super user. Safe to re-run.
+update public.profiles
+   set user_type = 'super_admin', updated_at = now()
+ where lower(email) = 'officecasting01@gmail.com'
+   and user_type <> 'super_admin';
