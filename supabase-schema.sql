@@ -796,3 +796,57 @@ update public.profiles
    set user_type = 'super_admin', updated_at = now()
  where lower(email) = 'officecasting01@gmail.com'
    and user_type <> 'super_admin';
+
+-- ════════════════════════════════════════════════════════════════════
+-- MIGRATION 2026-04-19 — admin_inherits_cd_capabilities
+--
+-- Root cause
+--   castings_insert required user_type in ('cd','admin'). When the owner
+--   was bootstrapped to 'super_admin' in admin_system_foundation, that
+--   single clause started rejecting their casting inserts. Every other
+--   write path (update/delete/roles) already used is_admin(), which
+--   already returns true for super_admin — so only the insert gate was
+--   broken.
+--
+-- Fix
+--   Introduce is_cd_capable() returning true for {cd, admin, super_admin}
+--   and rewrite castings_insert to use it. This makes "post a casting"
+--   an inherited superset: admin and super_admin automatically have CD
+--   posting powers, without duplicating accounts.
+--
+-- Security
+--   - Talent-only capabilities (applications_insert) remain gated to
+--     user_type = 'talent' — admins do NOT become actors.
+--   - Admin-only capabilities (admin_* RPCs) remain gated to is_admin()
+--     — CDs do NOT get admin powers.
+--   - The inheritance is one-way: admin ⊇ CD, but CD ⊄ admin.
+-- ════════════════════════════════════════════════════════════════════
+
+create or replace function public.is_cd_capable()
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid()
+      and p.user_type in ('cd','admin','super_admin')
+  );
+$$;
+grant execute on function public.is_cd_capable() to authenticated, anon;
+
+drop policy if exists castings_insert on public.castings;
+create policy castings_insert on public.castings
+  for insert with check (
+    cd_id = auth.uid()
+    and public.is_cd_capable()
+  );
+
+drop policy if exists roles_insert on public.roles;
+create policy roles_insert on public.roles
+  for insert with check (
+    exists (select 1 from public.castings c where c.id = roles.casting_id and c.cd_id = auth.uid())
+    or public.is_admin()
+  );

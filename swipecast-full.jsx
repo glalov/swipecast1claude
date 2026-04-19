@@ -2505,7 +2505,10 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     onReload&&onReload();setMsg("Resume removed.");setTimeout(()=>setMsg(""),3000);
   };
   if(!profile)return(<div className="page"><p style={{color:"var(--t2)"}}>Loading…</p><Footer onNavigate={onNavigate}/></div>);
-  const isCD=profile.user_type==="cd";
+  // CD-style profile view for anyone with CD-posting capability (cd/admin/super_admin).
+  // Actors stay on the talent profile view. This lets admins fill in company_name etc.
+  // so their casting posts carry proper attribution without needing a separate account.
+  const isCD=["cd","admin","super_admin"].includes(profile.user_type);
   const allPhotos=[profile.headshot_url,...photos].filter(Boolean);
   return(<div className="page page-wide">
     {msg&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.3)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{msg}</div>}
@@ -2692,6 +2695,12 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       <AdminNavLink current={section} target="applications" label="Applications" onClick={setSection}/>
       <AdminNavLink current={section} target="audit" label="Audit log" onClick={setSection}/>
       <AdminNavLink current={section} target="settings" label="Site settings" onClick={setSection}/>
+      {/* Direct jump to the CD dashboard — admins inherit CD capabilities, so they post + review
+          submissions from there using the exact same interface as regular casting directors. */}
+      <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
+        <button onClick={()=>onNavigate("dashboard")} style={{display:"block",width:"100%",textAlign:"left",padding:"9px 12px",borderRadius:8,border:"1px dashed var(--bdr)",background:"transparent",color:"var(--acc)",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>→ Casting Dashboard</button>
+        <p style={{fontSize:10,color:"var(--t3)",marginTop:6,lineHeight:1.5}}>Post castings and review submissions. Same interface as regular CDs — admin access is preserved.</p>
+      </div>
       <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid var(--bdr)",fontSize:10,color:"var(--t3)",lineHeight:1.5}}>
         All admin writes are logged and enforced by the database. Your role is <strong style={{color:"var(--t1)"}}>{role}</strong>.
       </div>
@@ -3382,7 +3391,8 @@ export default function App(){
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
           {!authReady?null:isLoggedIn?<>
             {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navigate("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)"}}>Admin</button>}
-            {myProfile?.user_type==="cd"?<button className="btn-s btn-sm" onClick={()=>navigate("dashboard")}>Dashboard</button>:null}
+            {/* CD Dashboard is available to anyone with CD-capable user_type — admin/super_admin inherit CD posting+review. */}
+            {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navigate("dashboard")}>Dashboard</button>:null}
             <button className="btn-s btn-sm" onClick={()=>navigate("my-profile")}>{myProfile?.display_name?.split(" ")[0]||"Profile"}</button>
             <button className="btn-p btn-sm" onClick={signOut}>Sign out</button>
           </>:<>
