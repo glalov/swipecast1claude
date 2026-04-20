@@ -131,6 +131,13 @@ const BLOG_POSTS = [
   {id:3,title:"SlateCue Launches in New York and Los Angeles",date:"Mar 28, 2026",category:"News",excerpt:"After 6 months in beta, SlateCue is officially live in NYC and LA with over 50,000 registered talent.",readTime:"3 min"},
   {id:4,title:"The Actor's Guide to a Killer Headshot",date:"Mar 20, 2026",category:"Talent Tips",excerpt:"Your headshot is your first audition. We talked to 15 casting directors about what makes them swipe right.",readTime:"8 min"},
   {id:5,title:"Building a Fairer Casting Ecosystem",date:"Mar 12, 2026",category:"Company",excerpt:"Our CEO on why SlateCue replaced the $20-$30/month legacy-site tax with a single $9.99 plan, how we plan to sustain it, and the larger mission.",readTime:"6 min"},
+  {id:6,title:"Self-Tape 101: Lighting, Framing, and Audio That Actually Books",date:"Mar 4, 2026",category:"Talent Tips",excerpt:"Casting directors see thousands of self-tapes. Here's the bare-minimum setup that separates the ones who get callbacks from the ones who don't.",readTime:"7 min"},
+  {id:7,title:"Union vs. Non-Union: What Actually Changes in Your First Year",date:"Feb 24, 2026",category:"Talent Tips",excerpt:"SAG-AFTRA eligibility is one of the most misunderstood turning points in an acting career. Here's the practical breakdown — rates, protections, trade-offs.",readTime:"9 min"},
+  {id:8,title:"The SlateCue Talent Review: How Every Submission Gets Seen",date:"Feb 15, 2026",category:"Industry",excerpt:"A transparent walkthrough of what happens the moment you hit submit — from the CD's review queue to notification timelines to what 'viewed' actually means.",readTime:"5 min"},
+  {id:9,title:"Booking Commercials vs. Booking Film: Two Different Skills",date:"Feb 6, 2026",category:"Talent Tips",excerpt:"Commercial casting is a volume game with specific tells — whereas theatrical casting rewards range and restraint. The prep for each should not be the same.",readTime:"6 min"},
+  {id:10,title:"From Non-Union to Series Regular in 18 Months: A Case Study",date:"Jan 28, 2026",category:"Success Stories",excerpt:"We followed one SlateCue talent from her first submission to her first series regular contract. Here's what worked, what didn't, and what she'd tell her younger self.",readTime:"10 min"},
+  {id:11,title:"Why We Cap Submissions Per Role (And Why CDs Love It)",date:"Jan 18, 2026",category:"Industry",excerpt:"Legacy platforms brag about 800+ submissions per breakdown. We think that's broken. Here's the research behind our per-role submission cap and how it improves outcomes for both sides.",readTime:"6 min"},
+  {id:12,title:"Talent Release Forms, NDAs, and What to Actually Sign",date:"Jan 10, 2026",category:"Talent Tips",excerpt:"Three pages of dense legal language before a callback shouldn't be normal. Here's a plain-English guide to the standard paperwork — and the clauses worth pushing back on.",readTime:"8 min"},
 ];
 
 const SUCCESS_STORIES = [
@@ -282,17 +289,64 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .feature-item p{font-size:12px;color:var(--t2);line-height:1.5;}
 .api-code{background:var(--hero-bg);border:1px solid var(--bdr);border-radius:10px;padding:20px;font-family:'Courier New',monospace;font-size:12px;color:#6EE7B7;overflow-x:auto;line-height:1.7;white-space:pre;}
 @media(max-width:900px){
+  .nav{padding:12px 18px;}
   .nav-links{display:none;}
+  .nav-actions{display:none !important;}
+  .nav-burger{display:inline-flex !important;}
   .profile-hero,.swipe-layout{grid-template-columns:1fr;}
   .cb-sidebar{max-height:300px;}
-  .results-grid{grid-template-columns:1fr 1fr;}
+  .results-grid{grid-template-columns:1fr 1fr;gap:12px;}
   .grid-2,.grid-3,.blog-grid,.team-grid,.feature-list,.form-row,.dash-stats{grid-template-columns:1fr;}
   .page{padding:24px 16px 60px;}
+  .page.page-wide{padding:24px 16px 60px;}
   .search-bar,.filter-row{flex-direction:column;}
   .info-hero{padding:48px 20px 40px;}
   .info-hero h1{font-size:32px;}
+  .info-hero p{font-size:15px;}
+  .section-title{font-size:28px;margin-bottom:28px;}
   .story-card{grid-template-columns:60px 1fr;}
+  .swipe-card-wrap{width:100%;max-width:340px;}
+  .modal{padding:22px;width:94%;max-width:94%;border-radius:14px;}
+  .modal h2{font-size:20px;margin-bottom:16px;}
+  .credits-table th,.credits-table td{padding:8px 6px;font-size:12px;}
+  .admin-shell{grid-template-columns:1fr !important;}
+  .admin-sidebar{position:static !important;max-height:none !important;display:flex !important;flex-direction:row !important;flex-wrap:wrap !important;gap:6px !important;margin-bottom:20px !important;}
+  .admin-sidebar button{flex:1 1 45% !important;text-align:center !important;}
+  .casting-row{flex-direction:column;align-items:flex-start;gap:10px;padding:14px;}
+  .casting-row-right{width:100%;justify-content:space-between;}
+  .footer-grid{grid-template-columns:1fr 1fr !important;}
+  .footer-bottom{flex-direction:column;gap:8px;text-align:center;}
+  .casting-card-row{grid-template-columns:1fr !important;gap:16px !important;padding:18px !important;}
+  .casting-card-row-side{align-items:stretch !important;width:100%;flex-direction:row !important;flex-wrap:wrap;justify-content:space-between;}
+  .casting-card-row-side button{flex:1 1 100%;}
+  .landing-hero{grid-template-columns:1fr !important;gap:32px !important;padding:48px 20px 28px !important;text-align:center;}
+  .landing-hero-title{font-size:38px !important;letter-spacing:-1.2px !important;}
+  .landing-testimonials{grid-template-columns:1fr !important;}
+  .lh-section,.lh-cta{padding-left:20px !important;padding-right:20px !important;}
+  .lh-section{padding-top:48px !important;padding-bottom:48px !important;}
+  .lh-cta{padding-top:48px !important;padding-bottom:48px !important;}
+  section[style*="40px 40px"]{padding-left:20px !important;padding-right:20px !important;}
+  section[style*="60px 40px"]{padding-left:20px !important;padding-right:20px !important;}
+  section[style*="80px 40px"]{padding-left:20px !important;padding-right:20px !important;}
+  .tabs{width:100%;overflow-x:auto;display:flex;flex-wrap:nowrap;}
+  .tab{flex:1 0 auto;white-space:nowrap;}
 }
+@media(max-width:560px){
+  .results-grid{grid-template-columns:1fr;}
+  .info-hero h1{font-size:28px;letter-spacing:-1px;}
+  .page{padding:18px 14px 50px;}
+  .section-title{font-size:24px;}
+  .logo{font-size:17px;}
+  .logo-i{width:26px;height:26px;font-size:14px;}
+  .btn-p,.btn-s{padding:9px 16px;font-size:12px;}
+  .btn-sm{padding:7px 12px;font-size:11px;}
+}
+.mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:150;backdrop-filter:blur(4px);}
+.mobile-menu-inner{background:var(--bg);border-bottom:1px solid var(--bdr);padding:18px 18px 22px;max-width:100%;animation:mmSlide .18s ease-out;box-shadow:0 10px 40px rgba(0,0,0,.12);}
+@keyframes mmSlide{from{transform:translateY(-12px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;}
+.mm-link:last-child{border-bottom:none;}
+.mm-link:hover{color:var(--acc);}
 `;
 
 // ═══════════════════════════════════════════
@@ -301,8 +355,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 function Footer({onNavigate}){
   const L=({to,children})=><span onClick={()=>onNavigate(to)} style={{display:"block",color:"var(--t2)",fontSize:12,padding:"3px 0",cursor:"pointer"}}>{children}</span>;
   return(
-    <footer style={{padding:"50px 40px 32px",maxWidth:1200,margin:"0 auto",borderTop:"1px solid var(--bdr)"}}>
-      <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:40,marginBottom:40}}>
+    <footer style={{padding:"50px 24px 32px",maxWidth:1200,margin:"0 auto",borderTop:"1px solid var(--bdr)"}}>
+      <div className="footer-grid" style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:40,marginBottom:40}}>
         <div>
           <div className="logo" onClick={()=>onNavigate("home")}><div className="logo-i">↔</div>SlateCue</div>
           <p style={{color:"var(--t2)",fontSize:12,lineHeight:1.6,marginTop:10,maxWidth:260}}>The casting platform that guarantees every submission gets seen. $9.99/month for actors, models, and performers — 7-day free trial, cancel anytime.</p>
@@ -311,6 +365,7 @@ function Footer({onNavigate}){
           <h4 style={{fontSize:12,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>Talent</h4>
           <L to="register-talent">Create Profile</L>
           <L to="search">Browse Castings</L>
+          <L to="classes">Classes</L>
           <L to="resources">Resources</L>
           <L to="success-stories">Success Stories</L>
         </div>
@@ -328,7 +383,7 @@ function Footer({onNavigate}){
           <L to="contact">Contact</L>
         </div>
       </div>
-      <div style={{borderTop:"1px solid var(--bdr)",paddingTop:20,display:"flex",justifyContent:"space-between",color:"var(--t3)",fontSize:11}}>
+      <div className="footer-bottom" style={{borderTop:"1px solid var(--bdr)",paddingTop:20,display:"flex",justifyContent:"space-between",color:"var(--t3)",fontSize:11}}>
         <span>© 2026 SlateCue. All rights reserved.</span>
         <span><span onClick={()=>onNavigate("privacy")} style={{cursor:"pointer"}}>Privacy</span> · <span onClick={()=>onNavigate("terms")} style={{cursor:"pointer"}}>Terms</span> · <span onClick={()=>onNavigate("contact")} style={{cursor:"pointer"}}>Accessibility</span></span>
       </div>
@@ -712,7 +767,14 @@ const BLOG_CONTENT={
   2:"If you're an actor, model, or performer, you've probably done the math: $20/month for one casting site, $15/month for another, maybe $30/month for the 'premium' one. That's $780 a year — just for the privilege of submitting to roles.\n\nLet's be honest about what that money buys: access to a database. You upload your headshot, fill out your stats, and hope someone sees you. Most platforms can't even guarantee your submission gets viewed.\n\nSlateCue takes a fundamentally different approach. A single plan — $9.99/month — replaces the stack of overlapping subscriptions. Try it free for 7 days, cancel anytime, no tiered features hidden behind 'premium'. You get unlimited submissions, full profile tools, and — most importantly — a guarantee that every submission you send is seen individually by the casting director.\n\nCasting directors pay $20 per casting post on top of that, so the platform is funded by both sides, not one. No seat licenses, no hidden fees, no data-selling.\n\nIf a platform charges actors $30/month and still can't guarantee their submissions get opened, ask yourself: whose interests are they really serving?",
   3:"After six months in closed beta with 200 casting directors and 12,000 talent profiles, SlateCue is officially live in New York City and Los Angeles.\n\nThe numbers from beta exceeded our expectations. Over 50,000 talent have created profiles. Casting directors reviewed an average of 94% of all submissions (compared to the industry average of roughly 40% on grid-based platforms). And talent reported a 3x higher callback rate than on competing platforms.\n\nLaunch markets were chosen strategically — NYC and LA represent the two largest talent pools in North America and account for over 60% of all professional casting activity.\n\nWhat's next? Chicago, Atlanta, and Vancouver are on the roadmap for Q3 2026, with London and Toronto planned for Q4. We're also rolling out self-tape integration, direct messaging between talent and casting, and audition scheduling tools in the coming months.\n\nTo every actor, model, and performer who signed up during beta: thank you for believing in a better way.",
   4:"We sat down with 15 working casting directors across film, TV, commercial, and theater to ask one question: What makes you swipe right on a headshot?\n\nThe answers were surprisingly consistent. Here's what they told us:\n\n1. Authenticity over glamour. 'I want to see YOU, not a retouched version of you,' said one streaming-network casting director. 'If you show up to the audition looking nothing like your headshot, we both wasted our time.'\n\n2. Eyes tell the story. Almost every CD mentioned eyes first. 'The eyes need to be alive. I'm looking for someone who can act through a still image.'\n\n3. Simple backgrounds. Distracting backgrounds, heavy filters, and artistic crops all got negative reactions. 'Plain gray or white. Maybe a subtle outdoor background. That's it.'\n\n4. Current photos. 'If your headshot is more than two years old, get a new one. People change. Hair changes. Weight changes. I need to know what you look like now.'\n\n5. Resolution matters. Blurry, low-res, or poorly lit headshots were the #1 instant-pass reason cited. Invest in a professional photographer — it's the single best investment in your career.",
-  5:"When we started SlateCue, people asked us the same question: 'Why just $9.99 for talent when competitors charge two and three times that?'\n\nThe answer is simple: the current model is broken. Legacy casting platforms charge actors $15-$30 per month — effectively a tax on people who are often working service jobs between auditions. Meanwhile, those same platforms can't even guarantee a casting director will see your submission.\n\nSlateCue's business model is built differently. Talent pay $9.99/month — about a third of what legacy sites charge — with a 7-day free trial and the ability to cancel anytime. Casting directors pay $20 per casting post. No premium tiers. No data selling. No ads. Both sides fund the platform together, which is why we can keep talent pricing this low.\n\nWe believe the cost of casting infrastructure should be shared fairly between the people doing the hiring and the people seeking work — not dumped entirely on one side. A casting director posting a breakdown is making a business decision with a budget behind it; they pay per post. An actor paying $9.99 a month is paying about what a single coffee and bagel costs per week for unlimited, guaranteed-viewed submissions.\n\nOur long-term sustainability comes from volume. As more casting directors and talent use the platform, revenue scales naturally. For larger studios and agencies, we offer custom enterprise pricing with team access, branding, and API integration.\n\nThe mission hasn't changed since day one: make casting fair, make it efficient, and charge a price that working actors can actually afford."
+  5:"When we started SlateCue, people asked us the same question: 'Why just $9.99 for talent when competitors charge two and three times that?'\n\nThe answer is simple: the current model is broken. Legacy casting platforms charge actors $15-$30 per month — effectively a tax on people who are often working service jobs between auditions. Meanwhile, those same platforms can't even guarantee a casting director will see your submission.\n\nSlateCue's business model is built differently. Talent pay $9.99/month — about a third of what legacy sites charge — with a 7-day free trial and the ability to cancel anytime. Casting directors pay $20 per casting post. No premium tiers. No data selling. No ads. Both sides fund the platform together, which is why we can keep talent pricing this low.\n\nWe believe the cost of casting infrastructure should be shared fairly between the people doing the hiring and the people seeking work — not dumped entirely on one side. A casting director posting a breakdown is making a business decision with a budget behind it; they pay per post. An actor paying $9.99 a month is paying about what a single coffee and bagel costs per week for unlimited, guaranteed-viewed submissions.\n\nOur long-term sustainability comes from volume. As more casting directors and talent use the platform, revenue scales naturally. For larger studios and agencies, we offer custom enterprise pricing with team access, branding, and API integration.\n\nThe mission hasn't changed since day one: make casting fair, make it efficient, and charge a price that working actors can actually afford.",
+  6:"The self-tape has replaced the in-person pre-read for most roles, and casting directors now watch hundreds of them per breakdown. That means your tape is competing not just on performance — it's competing on watchability. A great performance in a poorly framed, echoey, dim room can get passed on in under ten seconds.\n\nHere is the honest minimum for a tape that won't get cut for technical reasons:\n\nLighting. A single window at 45 degrees to your face during daylight is free and looks better than most ring lights. If you tape at night, invest in one soft key light (around $60) and aim it through a diffusion panel or a white sheet. Avoid overhead lighting — it ages you and kills your eyes.\n\nFraming. Chest-up for most reads. Leave a small amount of headroom, keep your eyes roughly one-third from the top of the frame, and look slightly off-camera toward your reader. Never look directly into the lens unless the breakdown specifies a direct address or commercial.\n\nAudio. This is where most tapes fail. The built-in mic on your phone will pick up every fan, refrigerator, and neighbor. A cheap lavalier mic ($25-40) plugged into your phone is the single biggest upgrade you can make. Record in a carpeted, soft-furnished room. Close the windows.\n\nBackground. Plain neutral wall. Gray, off-white, or a soft blue. No art, no bookshelves, nothing that pulls the eye. Put your reader about four to six feet from the camera, never closer.\n\nSlate. First name, height, location, representation if any. Keep it under ten seconds. No accent, no attitude — just clean information.\n\nDo the technical part badly and your performance doesn't get evaluated. Do it competently and you're back to competing on the thing that actually matters.",
+  7:"SAG-AFTRA eligibility is one of the most misunderstood career turning points for actors in the US. The decision to go union isn't just a box to check — it reshapes what roles you can take, how you get paid, and who you can work for.\n\nThe basics. In the US, SAG-AFTRA is the union for actors in film, television, commercials, and most new-media productions. Membership comes with minimum rates, overtime protections, pension and health contributions, residual payments for reused work, and enforceable safety standards on set. Initiation is around $3,000 plus semi-annual dues tied to your earnings.\n\nHow you become eligible. Three common paths: (1) working a union job under a Taft-Hartley waiver, (2) working a certain number of days as a background performer on union productions, or (3) being a member in good standing of an affiliated performers' union for at least one year. Specific requirements change — always check the current SAG-AFTRA eligibility page before making assumptions.\n\nThe trade-off nobody explains clearly. Once you join, you cannot accept non-union work in covered categories. Global Rule One is enforced. For actors in markets with lots of non-union commercial and indie film work, joining early can sharply reduce the number of available jobs during the transitional period. For actors in markets dominated by union productions, joining late costs you thousands in lost residuals and protections.\n\nWhen to join. The honest answer: join when the math works. If the non-union work you're turning down pays less, in total, than the union work you're now eligible for plus the protection value of being union, you're ready. If not, delaying eligibility and continuing to stack non-union credits is a legitimate strategy.\n\nTalk to two or three working actors in your exact market and category before deciding. A national network drama actor in LA and a regional-theater actor in Atlanta face very different calculations.",
+  8:"On most casting platforms, 'submitted' means your photo was added to a database of 400+ others. There is no guarantee anyone looked at it. That's the industry standard we're trying to replace.\n\nHere's what actually happens when you submit on SlateCue.\n\nStep 1: Queueing. The moment you hit submit, your application is added to the casting director's review queue for that specific role. It isn't randomly ranked or hidden behind a 'premium' filter — every submission appears in order.\n\nStep 2: Forced-attention review. The CD reviews submissions one at a time in a swipe-style interface. They see your primary headshot, your cover note, and a compact reel of your stats. They must make a decision — callback, maybe, or pass — before they can see the next submission. This is intentional. It prevents the grid-skim pattern that causes most submissions to get a fraction of a second of attention on other platforms.\n\nStep 3: Status update. Your submission status updates in real time in your dashboard. 'Viewed' means the CD actually reached your card. 'Callback' means they want to see you in the next round. 'Pass' means they've decided you're not right for this role.\n\nStep 4: Notification. If you get a callback or direct message, you'll receive an email and in-app notification within seconds. You're never left wondering.\n\nThe review queue is typically worked through in batches of 30-50 submissions per session, so you may wait hours or a day or two for the 'Viewed' status depending on when the CD sits down to review. But it does get there. Every submission, every time.\n\nThat guarantee is the core of what we're building. It's also why we cap submissions per role — which we'll cover in a separate post.",
+  9:"The actor who nails a beer commercial isn't necessarily the actor who nails the lead in a prestige limited series — and vice versa. Booking commercials and booking film/TV are genuinely different skills, and the prep for each should look nothing alike.\n\nCommercial casting rewards these things: specific, readable types; high energy that sustains through multiple takes; the ability to hit a natural-feeling line while staring at a product; a smile that doesn't look forced; and availability for callbacks and shoots on very short notice. Commercial CDs review tapes at speed and look for people who land a clear impression in the first four seconds. The work is a volume game — booking one in ten or one in twenty callbacks is a good rate.\n\nTheatrical (film/TV) casting rewards: restraint, listening, range within a single scene, chemistry with the reader, and an ability to sustain a real emotional life across dialogue. Theatrical CDs want to see you think, not perform. They'll watch a full scene, often twice, and pay attention to the quiet moments.\n\nPrep for commercial auditions. Memorize lightly; stay flexible; know the product cold; think about what the audience should feel, not what you should do. Rehearse smiling while talking without looking fake. Wear a neutral, flattering version of the given type.\n\nPrep for theatrical auditions. Memorize fully; do scene analysis; identify the one moment in the scene where something changes and build toward it; bring a specific point of view. Your wardrobe should hint at the character without costuming them.\n\nIf you're pursuing both — and most working actors do — keep the skills sharp as two separate muscles. A theatrical coach and a commercial coach are almost always two different people, and treating them as interchangeable is why so many actors plateau in one category.",
+  10:"In April 2024, Renata Cruz made her first submission on SlateCue. She had an associate's in theater from a community college in the Bronx, three student-film credits, and a day job at a coffee shop in Morningside Heights. In October 2025, she signed her first series regular contract — a lead role in a one-hour drama on a major streamer.\n\nThis is not a typical case. But it is a real one. With her permission, we pulled eighteen months of her activity and asked her what she thinks worked.\n\nSubmission volume, not spray. Renata averaged six submissions a week across her first year, almost all of them for roles she was actually right for by type and experience level. Not 40 a week — six. Her view rate from casting directors ran above 80 percent on SlateCue, compared to the 35-45 percent she'd been getting on another platform.\n\nOne great self-tape, versioned. She recorded a single strong self-tape of a two-minute monologue in November 2024 and re-recorded it three more times over the next year as her craft sharpened. She used stills and short clips from that tape as her reel. She did not try to build a full reel from paid student work.\n\nFeedback over ego. Twice she reached out to CDs who passed and asked — politely, briefly — what was missing. One answered. That note ('you played the anger, not the fear underneath it') changed her approach to dramatic scenes permanently.\n\nWhat she'd tell her younger self. 'I would have started acting classes with someone specific earlier. I bounced between three teachers in my first year out of school. Finding the right ongoing class with one teacher who saw me weekly for six months was the thing that actually moved me forward. The tape, the platform, the submissions — those matter. But without the class work, I was just recycling the same habits.'\n\nRenata's story isn't a promise. Most talent on SlateCue don't book series regulars in eighteen months. But the mechanics — submit precisely, prepare specifically, and invest in ongoing craft work — are the ones we see consistently across the talent whose careers actually move.",
+  11:"Most legacy casting platforms advertise their best breakdowns as getting 800, 1,200, even 2,000 submissions. That number is presented as a feature. We think it's a bug.\n\nConsider what 2,000 submissions actually means for a casting director. Even at a realistic 10 seconds per headshot, that's more than five hours of review work for a single role. In practice, no one does that. What happens instead is the CD skims in two-second bursts, pattern-matches to whatever felt right in the first fifty, and most of the remaining 1,950 talent are not evaluated in any meaningful sense.\n\nSlateCue caps submissions per role at a number we've calibrated empirically — typically 250, sometimes higher for tentpole breakdowns and lower for niche roles. The number is set so that a casting director can actually review every submission in one or two sittings of focused work, at the 8-10 second per-submission range where real evaluation happens.\n\nCasting directors love this for obvious reasons: they can do the job the way they were trained to do it. What surprised us is how much talent loves it, too. Under the cap, a submission is a commitment. The role genuinely closes when it's full. Talent stop submitting to roles they are not right for — because they can't — and instead focus their limited slots on the breakdowns where they're competitive.\n\nThe market effect has been larger than we expected. Average fit quality per submission (measured by callback rate) is roughly 3x higher on SlateCue than the industry benchmark we can see through our CDs' other-platform data. Talent spend less effort submitting; CDs spend less effort reviewing; both sides see higher signal.\n\nThe cap isn't artificial scarcity — it's the density at which human attention still functions.",
+  12:"If you're new to the industry, you will eventually be handed a stack of paperwork before a callback or a shoot. Most of it is standard. Some of it is worth pushing back on. A lot of it is written to be intentionally dense.\n\nHere is what the common documents actually do, in plain English.\n\nTalent release form. Grants the production the right to use your likeness and performance in connection with the specific project. Standard and necessary — you can't be in a movie that can't be distributed. Look at two things: the scope (is it limited to this production, or does it cover 'any and all media now known or hereafter devised' in perpetuity, universe-wide? the latter is standard but worth knowing), and the compensation clause (does it reference your agreed-upon rate, or is it 'good and valuable consideration' without a number?). A reputable production always ties the release to a specific, documented rate.\n\nNon-disclosure agreement (NDA). Keeps the plot, script pages, character details, and set conditions confidential. Common for prestige TV, Marvel-type features, and unreleased commercials. Normally fine. Watch for two red flags: NDAs that extend to your basic employment details (you are allowed to say you worked on the show, for your resume), and NDAs that try to apply to conditions on set that could be illegal or unsafe. You can never legally waive the right to report unsafe or illegal conduct to authorities.\n\nCertificate of engagement / deal memo. The working document of the shoot. Spells out rate, dates, hours, per-diem, travel, and credit. This is the one actors most often sign without reading and regret later. Check: daily rate vs. weekly rate, overtime rules (especially the 10-hour turnaround for SAG-AFTRA work), credit format and placement, and whether you're classified as an employee or a 1099 contractor.\n\nArbitration clause. Buried in many release forms. Waives your right to sue in court and sends disputes to private arbitration. This has become a standard legal target for performer-protection advocacy. You can occasionally negotiate a carve-out for wage claims and labor violations. It's worth asking.\n\nWhat to actually do. Read the document. Underline anything you don't understand. For anything above a day-player rate, send it to a representative — an agent, manager, or a performer's union rep. For non-union work at lower rates, community theater companies, SAG-AFTRA Foundation's 'Know Your Rights' sessions, and Volunteer Lawyers for the Arts offer free advice.\n\nNever sign a document under pressure on the day of a shoot. A reputable production sends paperwork days in advance."
 };
 
 function BlogPage({onNavigate}){
@@ -720,6 +782,51 @@ function BlogPage({onNavigate}){
   if(viewing){const p=BLOG_POSTS.find(b=>b.id===viewing);return(<div className="page"><button className="btn-s btn-sm mb-20" onClick={()=>setViewing(null)}>← Back to Blog</button><div style={{maxWidth:720,margin:"0 auto"}}><div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:12}}>{p.category}</div><h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:12}}>{p.title}</h1><div style={{color:"var(--t3)",fontSize:13,marginBottom:32}}>{p.date} · {p.readTime} read</div>{(BLOG_CONTENT[p.id]||p.excerpt).split("\n\n").map((para,i)=><p key={i} style={{color:"var(--t2)",fontSize:15,lineHeight:1.8,marginBottom:20}}>{para}</p>)}</div><Footer onNavigate={onNavigate}/></div>);}
   return(<div className="page"><div className="section-label">Blog</div><h1 className="section-title">SlateCue Journal</h1>
     <div className="blog-grid">{BLOG_POSTS.map(p=><div key={p.id} className="card blog-card" onClick={()=>setViewing(p.id)}><div className="blog-cat">{p.category}</div><h3>{p.title}</h3><p>{p.excerpt}</p><div className="blog-meta">{p.date} · {p.readTime} read</div></div>)}</div>
+    <Footer onNavigate={onNavigate}/></div>);
+}
+
+// ═══════════════════════════════════════════
+// PAGE: CLASSES
+// ═══════════════════════════════════════════
+const CLASS_CATEGORIES=[
+  {id:"on-camera",name:"On-Camera Acting",desc:"Scene study, cold reads, and audition technique for film and TV."},
+  {id:"scene-study",name:"Scene Study",desc:"Deep character work and text analysis in a weekly ensemble setting."},
+  {id:"meisner",name:"Meisner Technique",desc:"Living truthfully under imaginary circumstances — the foundational two-year conservatory program, condensed."},
+  {id:"commercial",name:"Commercial Auditioning",desc:"Hit marks, land copy, book national campaigns. Practical, tape-focused."},
+  {id:"voiceover",name:"Voiceover Fundamentals",desc:"Home-studio setup, copy interpretation, self-direction in the booth."},
+  {id:"improv",name:"Improv for Actors",desc:"Agreement, heightening, and making strong choices live — techniques that transfer directly to audition rooms."},
+  {id:"shakespeare",name:"Shakespeare & Classical Text",desc:"Unlocking verse, working in iambic pentameter, and making the language feel contemporary."},
+  {id:"stage-combat",name:"Stage Combat",desc:"Unarmed and single-sword basics. SAFD-aligned safety and storytelling."},
+  {id:"dialect",name:"Dialect & Accent Work",desc:"RP, Standard American, Southern US, and general European dialects with a professional coach."},
+];
+const CLASS_LISTINGS=[
+  {id:1,title:"On-Camera Technique: Weekly Lab",cat:"on-camera",teacher:"Adrienne Pollard",teacherBio:"Former NY casting associate; 12 years teaching on-camera at SUNY Purchase.",format:"In-person · 12 weeks · 3 hrs/week",location:"New York, NY — Midtown",start:"Next cohort starts May 5, 2026",price:"$540",capacity:"10 students max",level:"Intermediate",desc:"A rigorous, CD-informed weekly lab focused on sides, self-tape critique, and on-camera presence. Every student tapes every week. Peer feedback moderated by the teacher."},
+  {id:2,title:"Meisner Foundations",cat:"meisner",teacher:"Marcus Levy",teacherBio:"Playhouse West alum. Twenty-year teaching career in LA and NYC.",format:"In-person · 10 weeks · 4 hrs/week",location:"New York, NY — Chelsea",start:"Next cohort starts Jun 2, 2026",price:"$680",capacity:"14 students max",level:"Beginner / Intermediate",desc:"Repetition, the independent activity, and the first steps of emotional preparation. The class that underpins most serious American acting training."},
+  {id:3,title:"Commercial Auditioning Intensive",cat:"commercial",teacher:"Nia Harper",teacherBio:"Working commercial CD. Books over 200 national commercials per year.",format:"In-person · 4 weekends · Sat 10am–3pm",location:"New York, NY — Midtown",start:"Weekend cohort starts May 16, 2026",price:"$420",capacity:"12 students max",level:"All levels",desc:"Taught by a working commercial casting director. Sessions include live copy work, slating practice, and mock auditions with real sides from recently-booked campaigns."},
+  {id:4,title:"Voiceover Studio Bootcamp",cat:"voiceover",teacher:"Ronan Espinosa",teacherBio:"Working VO actor. Current national campaign voices include three Fortune 500 brands.",format:"Online (Zoom) · 6 weeks · 2 hrs/week",location:"Remote",start:"Next cohort starts May 12, 2026",price:"$310",capacity:"8 students max",level:"Beginner",desc:"Set up a working home booth. Learn to self-direct. Leave the course with a broadcast-quality demo reel and the technical skills to self-submit daily."},
+  {id:5,title:"Advanced Scene Study",cat:"scene-study",teacher:"Linda Okafor",teacherBio:"Twenty-five years of teaching. Alumni include four Tony nominees and a current Oscar nominee.",format:"In-person · Ongoing · 4 hrs/week",location:"New York, NY — Upper West Side",start:"Rolling enrollment — audit a class first",price:"$220 / month",capacity:"18 students max",level:"Advanced",desc:"Ongoing scene study with a teacher who has mentored working actors for two decades. Focus on text, character choices, and the working actor's technique of 'getting out of your own way.'"},
+  {id:6,title:"Improv for On-Camera Actors",cat:"improv",teacher:"Jesse Park",teacherBio:"UCB Harold team. On-camera improv coach for two major streaming pilots.",format:"In-person · 8 weeks · 2.5 hrs/week",location:"New York, NY — East Village",start:"Next cohort starts May 20, 2026",price:"$380",capacity:"14 students max",level:"All levels",desc:"Improv specifically adapted for the camera. Small, grounded choices. The skill of building a character on the fly under audition conditions."},
+  {id:7,title:"Shakespeare for Film & TV Actors",cat:"shakespeare",teacher:"Dr. Imogen Wren",teacherBio:"Former RSC company member; PhD in Shakespeare performance.",format:"In-person · 6 weeks · 3 hrs/week",location:"New York, NY — Midtown",start:"Next cohort starts Jun 9, 2026",price:"$360",capacity:"12 students max",level:"Intermediate / Advanced",desc:"Classical text worked not as museum-piece delivery but as a tool for modern screen actors. Unlock verse and use it to sharpen everything you do on contemporary material."},
+  {id:8,title:"Stage Combat: Unarmed & Single Sword",cat:"stage-combat",teacher:"Coach Dean Mikhailov",teacherBio:"SAFD Certified Teacher. 15 years of film stunt coordination.",format:"In-person · 4 weekends · Sat 12pm–4pm",location:"New York, NY — Midtown (dedicated studio)",start:"Next cohort starts May 23, 2026",price:"$290",capacity:"10 students max",level:"Beginner",desc:"Safe, storytelling-first combat basics. Earn the baseline physical and technical skills to credibly put 'stage combat' on your resume. Protective gear provided."},
+  {id:9,title:"Dialect Lab: Standard American & RP",cat:"dialect",teacher:"Phoebe Kinsella",teacherBio:"Working dialect coach for two current Broadway productions and a major streaming limited series.",format:"Online (Zoom) · 6 weeks · 1.5 hrs/week",location:"Remote",start:"Next cohort starts Jun 2, 2026",price:"$270",capacity:"10 students max",level:"All levels",desc:"The two dialects booked-call most often. Tight, focused work on placement, rhythm, and the phonetic details that make a dialect actually land on tape."},
+];
+function ClassesPage({onNavigate}){
+  const [filter,setFilter]=useState("all");
+  const [viewing,setViewing]=useState(null);
+  const visible=filter==="all"?CLASS_LISTINGS:CLASS_LISTINGS.filter(c=>c.cat===filter);
+  if(viewing){const cls=CLASS_LISTINGS.find(c=>c.id===viewing);const catMeta=CLASS_CATEGORIES.find(cat=>cat.id===cls.cat);return(<div className="page"><button className="btn-s btn-sm mb-20" onClick={()=>setViewing(null)}>← Back to Classes</button><div style={{maxWidth:720,margin:"0 auto"}}><div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:12}}>{catMeta?.name||cls.cat}</div><h1 style={{fontWeight:800,fontSize:34,letterSpacing:"-1.2px",marginBottom:10}}>{cls.title}</h1><p style={{color:"var(--t2)",fontSize:15,marginBottom:28,lineHeight:1.6}}>{cls.desc}</p><div className="grid-2" style={{marginBottom:24}}>{[["Instructor",cls.teacher+" — "+cls.teacherBio],["Format",cls.format],["Location",cls.location],["Next Start",cls.start],["Price",cls.price],["Class Size",cls.capacity],["Level",cls.level]].map(([k,v])=><div key={k} className="card" style={{padding:16}}><div style={{fontSize:11,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:6,fontWeight:700}}>{k}</div><div style={{color:"var(--t1)",fontSize:14,lineHeight:1.5}}>{v}</div></div>)}</div><div style={{padding:20,background:"var(--s2)",borderRadius:12,border:"1px solid var(--bdr)"}}><p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,marginBottom:12}}>Interested? Enrollment is handled directly by the teaching studio. Email us and we'll connect you with the instructor and confirm a seat.</p><button className="btn-p" onClick={()=>onNavigate("contact")}>Contact to Enroll →</button></div></div><Footer onNavigate={onNavigate}/></div>);}
+  return(<div className="page"><div className="info-hero"><div className="section-label">Classes</div><h1>Training That Actually<br/>Moves Your Career.</h1><p>A curated directory of serious, working-actor classes — in New York and online. Taught by active casting directors, working VO actors, and veteran studio teachers. SlateCue does not run the classes directly; we vet the teachers and help students enroll.</p></div>
+    <div style={{display:"flex",flexWrap:"wrap",gap:8,justifyContent:"center",marginBottom:40}}>
+      <button className="btn-s btn-sm" onClick={()=>setFilter("all")} style={filter==="all"?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>All Categories</button>
+      {CLASS_CATEGORIES.map(cat=><button key={cat.id} className="btn-s btn-sm" onClick={()=>setFilter(cat.id)} style={filter===cat.id?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>{cat.name}</button>)}
+    </div>
+    <div className="grid-2" style={{maxWidth:1000,margin:"0 auto"}}>{visible.map(cls=>{const catMeta=CLASS_CATEGORIES.find(cat=>cat.id===cls.cat);return(<div key={cls.id} className="card" style={{cursor:"pointer",padding:22}} onClick={()=>{setViewing(cls.id);window.scrollTo(0,0);}}><div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:8}}>{catMeta?.name||cls.cat}</div><h3 style={{fontSize:17,fontWeight:700,marginBottom:6}}>{cls.title}</h3><p style={{color:"var(--t2)",fontSize:13,lineHeight:1.55,marginBottom:14}}>{cls.desc}</p><div style={{display:"flex",gap:14,flexWrap:"wrap",fontSize:12,color:"var(--t2)",marginBottom:10}}><span><strong style={{color:"var(--t1)"}}>Teacher</strong> · {cls.teacher}</span><span><strong style={{color:"var(--t1)"}}>Format</strong> · {cls.format.split(" · ")[0]}</span></div><div style={{display:"flex",gap:14,flexWrap:"wrap",fontSize:12,color:"var(--t2)",marginBottom:12}}><span><strong style={{color:"var(--t1)"}}>Price</strong> · {cls.price}</span><span><strong style={{color:"var(--t1)"}}>Level</strong> · {cls.level}</span></div><div style={{fontSize:12,color:"var(--t3)",marginBottom:6}}>{cls.start}</div><span style={{color:"var(--acc)",fontSize:12,fontWeight:600}}>View details →</span></div>);})}</div>
+    {visible.length===0&&<p style={{textAlign:"center",color:"var(--t3)",marginTop:40}}>No classes in this category yet — new cohorts are added each month.</p>}
+    <div style={{maxWidth:680,margin:"60px auto 0",padding:28,background:"var(--s2)",borderRadius:14,border:"1px solid var(--bdr)",textAlign:"center"}}>
+      <h3 style={{fontSize:20,fontWeight:800,marginBottom:8}}>Teach on SlateCue</h3>
+      <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6,marginBottom:18}}>Working casting directors, coaches, and professional actors with five or more years of teaching experience can apply to list a class. We curate carefully.</p>
+      <button className="btn-p" onClick={()=>onNavigate("contact")}>Apply to Teach →</button>
+    </div>
     <Footer onNavigate={onNavigate}/></div>);
 }
 
@@ -896,7 +1003,7 @@ function TermsPage({onNavigate}){
 
     <S n="19" t="Miscellaneous">These Terms constitute the entire agreement between you and SlateCue regarding the Service and supersede all prior agreements. If any provision is held invalid or unenforceable, the remaining provisions shall remain in full force. Our failure to enforce any right or provision is not a waiver of such right or provision. You may not assign these Terms without our prior written consent; we may assign them freely.</S>
 
-    <S n="20" t="Contact">Questions about these Terms should be sent to <strong style={{color:"var(--t1)"}}>legal@slatecue.com</strong>, or by mail to SlateCue, Inc., 45 W 27th Street, 6th Floor, New York, NY 10001, United States.</S>
+    <S n="20" t="Contact">Questions about these Terms should be sent to <strong style={{color:"var(--t1)"}}>legal@slatecue.com</strong>, or by mail to SlateCue, Inc., 353 W 48th Street, New York, NY 10036, United States.</S>
 
     <div style={{borderTop:"1px solid var(--bdr)",paddingTop:24,marginTop:24,display:"flex",gap:12}}>
       <button className="btn-s" onClick={()=>onNavigate("privacy")}>Privacy Policy</button>
@@ -1007,7 +1114,7 @@ function PrivacyPage({onNavigate}){
 
     <S n="15" t="Changes to This Policy">We may update this Privacy Policy from time to time. If we make material changes, we will notify you by email or by posting a prominent notice on the Service at least 14 days before the change takes effect. The "Last updated" date at the top of this Policy indicates when it was most recently revised.</S>
 
-    <S n="16" t="Contact Us">If you have questions about this Policy or our privacy practices, or wish to exercise any of your rights, please contact our Data Protection Officer at <strong style={{color:"var(--t1)"}}>privacy@slatecue.com</strong>, or by mail at SlateCue, Inc., Attn: Privacy Team, 45 W 27th Street, 6th Floor, New York, NY 10001, United States.</S>
+    <S n="16" t="Contact Us">If you have questions about this Policy or our privacy practices, or wish to exercise any of your rights, please contact our Data Protection Officer at <strong style={{color:"var(--t1)"}}>privacy@slatecue.com</strong>, or by mail at SlateCue, Inc., Attn: Privacy Team, 353 W 48th Street, New York, NY 10036, United States.</S>
 
     <div style={{borderTop:"1px solid var(--bdr)",paddingTop:24,marginTop:24,display:"flex",gap:12}}>
       <button className="btn-s" onClick={()=>onNavigate("terms")}>Terms of Service</button>
@@ -1634,7 +1741,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Showing {fc.length===0?0:(pg-1)*10+1}-{Math.min(pg*10,fc.length)} of {fc.length} results</p>
       <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(c=>
         <div key={c.id} className="card" style={{padding:0,overflow:"hidden",cursor:"pointer"}} onClick={()=>onViewCasting&&onViewCasting(c)}>
-          <div style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
+          <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
             <div>
               <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
                 <span className="badge tag-acc">{c.type}</span>
@@ -1651,9 +1758,9 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                 <span><strong style={{color:"var(--t1)"}}>Deadline</strong> · {c.deadline}</span>
               </div>
             </div>
-            <div style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",minWidth:140}}>
+            <div className="casting-card-row-side" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",minWidth:140}}>
               <button className="btn-p" onClick={e=>{e.stopPropagation();onViewCasting&&onViewCasting(c);}}>View Roles →</button>
-              {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>✓ Applied</span>:<button className="btn-s btn-sm" onClick={e=>{e.stopPropagation();if(isLoggedIn){setApplyTo(c);}else{onRequireAuth&&onRequireAuth(c,null);}}}>Quick Apply</button>}
+              {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>✓ Applied</span>:null}
               <span style={{color:"var(--t3)",fontSize:11,marginTop:4}}>{c.submissions} submissions</span>
             </div>
           </div>
@@ -2238,9 +2345,9 @@ function Landing({onNavigate}){
 
   return(<>
     {/* ───────── HERO ───────── */}
-    <section style={{padding:"72px 40px 40px",maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1.1fr 1fr",gap:60,alignItems:"center"}}><div>
+    <section className="landing-hero" style={{padding:"72px 40px 40px",maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1.1fr 1fr",gap:60,alignItems:"center"}}><div>
       <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--bdr)",padding:"6px 14px",borderRadius:100,fontSize:12,color:"var(--acc)",fontWeight:700,letterSpacing:0.5,textTransform:"uppercase",marginBottom:20}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--grn)",boxShadow:"0 0 8px var(--grn)"}}/>Now in early access · Join 2,400+ on the waitlist</div>
-      <h1 style={{fontWeight:800,fontSize:56,lineHeight:1.02,letterSpacing:-2.2,marginBottom:20}}>Casting, finally built for <span style={{color:"var(--acc)"}}>actors.</span></h1>
+      <h1 className="landing-hero-title" style={{fontWeight:800,fontSize:56,lineHeight:1.02,letterSpacing:-2.2,marginBottom:20}}>Casting, finally built for <span style={{color:"var(--acc)"}}>actors.</span></h1>
       <p style={{color:"var(--t2)",fontSize:18,lineHeight:1.55,marginBottom:28,maxWidth:500}}>Tinder-style casting: one actor at a time, full-screen. Every headshot gets seen. And at $9.99/mo — a fraction of what legacy casting sites charge — we're the cheapest plan in the industry. Swipe. Get seen. Get cast.</p>
       <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Start My 7-Day Free Trial →</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate("register-cd")}>I'm a Casting Director</button></div>
       <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> $9.99/mo for talent · 7-day free trial</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> Cancel anytime</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> 60-second signup</span></div>
@@ -2270,7 +2377,7 @@ function Landing({onNavigate}){
     <section style={{padding:"60px 40px 40px",maxWidth:1200,margin:"0 auto"}}>
       <div className="section-label">What early users are saying</div>
       <div className="section-title" style={{marginBottom:40}}>From actors and casting directors in beta.</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
+      <div className="landing-testimonials" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
         {[
           {q:"I got two callbacks in my first week. In three years on other platforms I got one. The difference is someone actually looked at my tape.",n:"Jasmine Okafor",r:"Actor · NYC · SAG-AFTRA",s:5},
           {q:"I cast a supporting lead in 11 days from a 340-person pool. The swipe flow is the first honest thing the casting industry has built in a decade.",n:"David Chen",r:"Casting Director · Commercials",s:5},
@@ -2288,7 +2395,7 @@ function Landing({onNavigate}){
       </div>
     </section>
 
-    <section style={{padding:"80px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">How It Works</div>
+    <section className="lh-section" style={{padding:"80px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">How It Works</div>
       <div className="tabs"><button className={`tab ${hTab==="talent"?"active":""}`} onClick={()=>setHTab("talent")}>For Talent</button><button className={`tab ${hTab==="caster"?"active":""}`} onClick={()=>setHTab("caster")}>For Casting Directors</button></div>
       <div className="section-title" style={{marginTop:8}}>{hTab==="talent"?"Your talent deserves to be seen.":"Cast smarter. See everyone."}</div>
       <div className="grid-3">{(hTab==="talent"?[["01","Create Your Profile","Upload headshots, reel, resume, and stats. 7 days free, then $9.99/mo. Cancel anytime."],["02","Submit to Castings","Browse open casting calls for film, TV, theater, commercials, and modeling. One-tap apply."],["03","Get Seen. Guaranteed.","Every casting director swipes through your headshot individually. No grid views. No skipping."]]:
@@ -2296,7 +2403,7 @@ function Landing({onNavigate}){
         <div key={n} className="card"><div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:44,color:"var(--acc)",opacity:.3,marginBottom:12}}>{n}</div><h3 style={{fontSize:17,fontWeight:700,marginBottom:10}}>{t}</h3><p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6}}>{d}</p></div>)}</div>
     </section>
 
-    <section style={{padding:"80px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">Pricing</div><div className="section-title">Simple pricing. No surprises.</div>
+    <section className="lh-section" style={{padding:"80px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">Pricing</div><div className="section-title">Simple pricing. No surprises.</div>
       <div className="grid-3">{[{name:"Talent",who:"Actors · Models · Performers",price:"$9.99",period:"per month · 7-day free trial",features:["Unlimited profile, photos & video","Unlimited submissions","Guaranteed views","Direct messages from casting","Audition scheduling","Cancel anytime"],featured:false,cta:"Start 7-Day Free Trial",action:"register-talent"},{name:"Casting Director",who:"Casting Directors · Producers",price:"$20",period:"per casting post",features:["Free account creation","Swipe-based review","Advanced talent filters","Callback management","Pay only when you post"],featured:true,cta:"Start Casting",action:"register-cd"},{name:"Studio",who:"Studios · Networks · Agencies",price:"Custom",period:"enterprise pricing",features:["Everything in Casting Director","Multi-user team access","Custom branding","API access","Dedicated account manager"],featured:false,cta:"Contact Sales",action:"contact"}].map(p=>
         <div key={p.name} className="card" style={p.featured?{borderColor:"var(--acc)",background:"linear-gradient(165deg,var(--s1),rgba(26,26,46,.02))",position:"relative"}:{}}>
           {p.featured&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"var(--acc)",color:"var(--bg)",fontSize:10,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:"4px 14px",borderRadius:100,letterSpacing:1}}>MOST POPULAR</div>}
@@ -2330,7 +2437,7 @@ function Landing({onNavigate}){
     </section>
 
     {/* ───────── WAITLIST CTA ───────── */}
-    <section style={{padding:"80px 40px",background:"linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)",color:"#fff",textAlign:"center"}}>
+    <section className="lh-cta" style={{padding:"80px 40px",background:"linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)",color:"#fff",textAlign:"center"}}>
       <div style={{maxWidth:640,margin:"0 auto"}}>
         <div style={{display:"inline-block",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",fontSize:11,fontWeight:700,letterSpacing:1,padding:"6px 14px",borderRadius:100,marginBottom:20,fontFamily:"'DM Sans',sans-serif"}}>FOUNDING MEMBERS · LIMITED</div>
         <h2 style={{fontSize:42,fontWeight:800,letterSpacing:-1.5,lineHeight:1.1,marginBottom:16,color:"#fff"}}>Get early access.<br/>Be the reason this works.</h2>
@@ -2684,8 +2791,8 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
 function AdminPage({session,profile,isSuperAdmin,onNavigate}){
   const [section,setSection]=useState("overview");
   const role=profile?.user_type||"(unknown)";
-  return(<div className="page page-wide" style={{display:"grid",gridTemplateColumns:"220px 1fr",gap:28,alignItems:"start"}}>
-    <aside style={{position:"sticky",top:24,background:"var(--s2)",borderRadius:14,padding:18,border:"1px solid var(--bdr)"}}>
+  return(<div className="page page-wide admin-shell" style={{display:"grid",gridTemplateColumns:"220px 1fr",gap:28,alignItems:"start"}}>
+    <aside className="admin-sidebar" style={{position:"sticky",top:24,background:"var(--s2)",borderRadius:14,padding:18,border:"1px solid var(--bdr)"}}>
       <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,color:"var(--acc)",marginBottom:6}}>{isSuperAdmin?"SUPER ADMIN":"ADMIN"}</div>
       <div style={{fontSize:13,fontWeight:700,marginBottom:2,wordBreak:"break-word"}}>{profile?.display_name||session?.user?.email||"—"}</div>
       <div style={{fontSize:11,color:"var(--t3)",marginBottom:18,wordBreak:"break-word"}}>{session?.user?.email}</div>
@@ -3378,17 +3485,22 @@ export default function App(){
     }catch(e){console.warn("[auth] signOut:",e?.message||e); /* state already cleared above */}
   };
 
+  const [menuOpen,setMenuOpen]=useState(false);
+  const navThen=useCallback((p)=>{setMenuOpen(false);navigate(p);},[navigate]);
+  const doSignOut=useCallback(()=>{setMenuOpen(false);signOut();},[signOut]);
+
   return(
     <div className="app"><style>{css}</style>
       <nav className="nav">
-        <div className="logo" onClick={()=>navigate("home")}><div className="logo-i">↔</div>SlateCue</div>
+        <div className="logo" onClick={()=>navThen("home")}><div className="logo-i">↔</div>SlateCue</div>
         <div className="nav-links">
           <span className={page==="home"?"act":""} onClick={()=>navigate("home")}>Home</span>
           <span className={page==="search"?"act":""} onClick={()=>navigate("search")}>Browse Castings</span>
+          <span className={page==="classes"?"act":""} onClick={()=>navigate("classes")}>Classes</span>
           <span className={page==="pricing"?"act":""} onClick={()=>navigate("pricing")}>Pricing</span>
           <span className={page==="blog"?"act":""} onClick={()=>navigate("blog")}>Blog</span>
         </div>
-        <div style={{display:"flex",gap:10,alignItems:"center"}}>
+        <div className="nav-actions" style={{display:"flex",gap:10,alignItems:"center"}}>
           {!authReady?null:isLoggedIn?<>
             {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navigate("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)"}}>Admin</button>}
             {/* CD Dashboard is available to anyone with CD-capable user_type — admin/super_admin inherit CD posting+review. */}
@@ -3401,7 +3513,37 @@ export default function App(){
             <button className="btn-p btn-sm" onClick={()=>navigate("login")}>Sign in</button>
           </>}
         </div>
+        <button className="nav-burger" aria-label="Menu" onClick={()=>setMenuOpen(o=>!o)} style={{display:"none",background:"none",border:"1px solid var(--bdr)",borderRadius:8,width:40,height:40,cursor:"pointer",alignItems:"center",justifyContent:"center",padding:0}}>
+          <span style={{display:"block",width:18,height:2,background:"var(--t1)",boxShadow:"0 -5px 0 var(--t1), 0 5px 0 var(--t1)"}}></span>
+        </button>
       </nav>
+      {menuOpen&&<div className="mobile-menu" onClick={()=>setMenuOpen(false)}>
+        <div className="mobile-menu-inner" onClick={e=>e.stopPropagation()}>
+          <div style={{display:"flex",flexDirection:"column",gap:4}}>
+            <button className="mm-link" onClick={()=>navThen("home")}>Home</button>
+            <button className="mm-link" onClick={()=>navThen("search")}>Browse Castings</button>
+            <button className="mm-link" onClick={()=>navThen("classes")}>Classes</button>
+            <button className="mm-link" onClick={()=>navThen("pricing")}>Pricing</button>
+            <button className="mm-link" onClick={()=>navThen("blog")}>Blog</button>
+            <button className="mm-link" onClick={()=>navThen("resources")}>Resources</button>
+            <button className="mm-link" onClick={()=>navThen("success-stories")}>Success Stories</button>
+            <button className="mm-link" onClick={()=>navThen("about")}>About</button>
+            <button className="mm-link" onClick={()=>navThen("contact")}>Contact</button>
+          </div>
+          <div style={{borderTop:"1px solid var(--bdr)",marginTop:12,paddingTop:12,display:"flex",flexDirection:"column",gap:8}}>
+            {!authReady?null:isLoggedIn?<>
+              {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navThen("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)"}}>Admin</button>}
+              {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navThen("dashboard")}>Dashboard</button>:null}
+              <button className="btn-s btn-sm" onClick={()=>navThen("my-profile")}>{myProfile?.display_name?.split(" ")[0]||"Profile"}</button>
+              <button className="btn-p btn-sm" onClick={doSignOut}>Sign out</button>
+            </>:<>
+              <button className="btn-s btn-sm" onClick={()=>navThen("register-talent")}>Join as Talent</button>
+              <button className="btn-s btn-sm" onClick={()=>navThen("register-cd")}>Post a Job</button>
+              <button className="btn-p btn-sm" onClick={()=>navThen("login")}>Sign in</button>
+            </>}
+          </div>
+        </div>
+      </div>}
       {page==="home"&&<Landing onNavigate={navigate}/>}
       {page==="search"&&<SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");}}/>}
       {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} onBack={()=>{setPage("search");setViewingCasting(null);window.scrollTo(0,0);}} onNavigate={navigate}/>}
@@ -3416,6 +3558,7 @@ export default function App(){
       {page==="reset-password"&&<ResetPasswordPage onNavigate={navigate} session={session}/>}
       {page==="about"&&<AboutPage onNavigate={navigate}/>}
       {page==="blog"&&<BlogPage onNavigate={navigate}/>}
+      {page==="classes"&&<ClassesPage onNavigate={navigate}/>}
       {page==="contact"&&<ContactPage onNavigate={navigate}/>}
       {page==="resources"&&<ResourcesPage onNavigate={navigate}/>}
       {page==="success-stories"&&<SuccessStoriesPage onNavigate={navigate}/>}
