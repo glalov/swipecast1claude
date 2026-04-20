@@ -14,9 +14,9 @@ html = f'''<!DOCTYPE html>
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SwipeCast — Casting, finally built for actors.</title>
-  <meta name="description" content="SwipeCast is the casting platform where every submission gets seen. Free forever for actors. Trusted by CDs across film, TV, theater, and commercials."/>
-  <meta property="og:title" content="SwipeCast — Casting, finally built for actors."/>
+  <title>SlateCue — Casting, finally built for actors.</title>
+  <meta name="description" content="SlateCue is the casting platform where every submission gets seen. Free forever for actors. Trusted by CDs across film, TV, theater, and commercials."/>
+  <meta property="og:title" content="SlateCue — Casting, finally built for actors."/>
   <meta property="og:description" content="Every headshot seen. Guaranteed. Join the casting platform built for working actors."/>
   <meta property="og:type" content="website"/>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
