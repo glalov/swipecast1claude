@@ -2348,8 +2348,7 @@ function Landing({onNavigate}){
   const [openFaq,setOpenFaq]=useState(0);
   const [wlBusy,setWlBusy]=useState(false);
   const [wlErr,setWlErr]=useState("");
-  // ⚠️ Replace YOUR_FORM_ID with the endpoint from https://formspree.io (1-min signup, free tier = 50 submissions/mo)
-  // Or use ConvertKit / Mailchimp / any form service. Comment out fetch() and keep localStorage-only if you want.
+  // Waitlist goes to Formspree (free tier = 50 submissions/mo). Swap to a real email-service endpoint once traffic scales past that.
   const WAITLIST_ENDPOINT="https://formspree.io/f/mvzdgvkn";
   const submitWaitlist=async(e)=>{
     e.preventDefault();
