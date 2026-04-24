@@ -1566,7 +1566,7 @@ function CareersPage({onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE: TALENT PROFILE VIEW
 // ═══════════════════════════════════════════
-function TalentProfile({talent,onBack,onNavigate}){
+function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   // Parse credits: either already an array of {role,project,type,year} (demo data)
   // or a plain-text field with "Role · Project · Year" per line (DB data).
   const parseCredits=(c)=>{
@@ -1578,6 +1578,10 @@ function TalentProfile({talent,onBack,onNavigate}){
     });
   };
   const credits=parseCredits(talent.credits);
+  // CD-side action state — mounted only when the viewer is a CD/admin and the talent has a real DB id
+  const viewerIsCd=!!myProfile&&(myProfile.user_type==="cd"||myProfile.user_type==="admin"||myProfile.user_type==="super_admin");
+  const talentDbId=typeof talent.id==="string"&&/^[0-9a-f]{8}-/i.test(String(talent.id))?talent.id:null;
+  const [cdAction,setCdAction]=useState(null); // "save"|"invite"|"dm"|null
   const gallery=(talent._allPhotos&&talent._allPhotos.length)?talent._allPhotos:[talent.img,...(talent.additional_photos||[])].filter(Boolean);
   const videos=(talent.video_links||[]).filter(v=>v);
   // Render a video link — pulls out a reliable embed for YouTube/Vimeo, falls back to a link button.
@@ -1617,6 +1621,13 @@ function TalentProfile({talent,onBack,onNavigate}){
           {talent.instagram&&<span style={{color:"var(--t2)"}}><strong>IG:</strong> {talent.instagram}</span>}
           {talent.phone&&<span style={{color:"var(--t2)"}}><strong>Phone:</strong> {talent.phone}</span>}
         </div>}
+        {/* ── CD-only action panel: Save · Invite · DM. Hidden for talent-on-talent views, demo profiles
+              (no real UUID), and self-views. */}
+        {viewerIsCd&&talentDbId&&talentDbId!==session?.user?.id&&<div className="mt-20" style={{display:"flex",gap:8,flexWrap:"wrap",borderTop:"1px solid var(--bdr)",paddingTop:16}}>
+          <button className="btn-p btn-sm" onClick={()=>setCdAction("save")}>★ Save to List</button>
+          <button className="btn-s btn-sm" onClick={()=>setCdAction("invite")}>📩 Invite to Project</button>
+          <button className="btn-s btn-sm" onClick={()=>setCdAction("dm")}>💬 Send Message</button>
+        </div>}
       </div>
     </div>
 
@@ -1654,6 +1665,11 @@ function TalentProfile({talent,onBack,onNavigate}){
         :<p style={{fontSize:13,color:"var(--t3)"}}>Resume attached — the applicant hasn't added per-line credits yet.</p>}
     </div>}
 
+    {/* ── CD action modals — only one open at a time ── */}
+    {cdAction==="save"&&talentDbId&&<SaveToListModal cdId={session?.user?.id} talentId={talentDbId} talentName={talent.name||talent.display_name||"Talent"} onClose={()=>setCdAction(null)}/>}
+    {cdAction==="invite"&&talentDbId&&<InviteToProjectModal cdId={session?.user?.id} talentId={talentDbId} talentName={talent.name||talent.display_name||"Talent"} onClose={()=>setCdAction(null)}/>}
+    {cdAction==="dm"&&talentDbId&&<ComposeDMModal fromId={session?.user?.id} toId={talentDbId} toName={talent.name||talent.display_name||"Talent"} onClose={()=>setCdAction(null)}/>}
+
     <Footer onNavigate={onNavigate}/></div>);
 }
 
@@ -1670,9 +1686,6 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const [dbCastings,setDbCastings]=useState([]);
   const [dbTalent,setDbTalent]=useState([]);
   const [refreshTick,setRefreshTick]=useState(0);
-  // CD-side: per-talent action panel (invite / message / save to list)
-  const [talentAction,setTalentAction]=useState(null); // {talent, mode: "invite"|"message"|"list"}
-  const [mySavedLists,setMySavedLists]=useState([]);   // CD's talent lists (loaded from Supabase)
   useEffect(()=>{setPg(1);},[q,f.type,f.location,f.union,f.gender,f.ethnicity,mode]);
   // Refetch when tab becomes visible again — keeps castings list in sync after CD posts
   useEffect(()=>{
@@ -1732,17 +1745,6 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
     }catch(e){/* silent */}
   })();},[refreshTick,castingsVersion]);
 
-  // CD's talent lists — loaded once the CD arrives and whenever lists change
-  useEffect(()=>{
-    const cdId=session?.user?.id;
-    if(!cdId||myProfile?.user_type!=="cd"&&myProfile?.user_type!=="admin"&&myProfile?.user_type!=="super_admin")return;
-    (async()=>{
-      try{
-        const {data}=await window.sb.from("talent_lists").select("id,name,created_at").eq("cd_id",cdId).order("created_at",{ascending:false});
-        setMySavedLists(data||[]);
-      }catch(_){}
-    })();
-  },[session?.user?.id,myProfile?.user_type,refreshTick]);
   // Merge: real DB castings first (newest), then demo. Real talent first, then demo.
   const allCastings=[...dbCastings,...CASTINGS];
   const allTalent=[...dbTalent,...TALENT];
@@ -1822,6 +1824,14 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   const [allSelected,setAllSelected]=useState([]); // cross-casting "everyone I selected"
   const [reloadTick,setReloadTick]=useState(0);
   const [msgApp,setMsgApp]=useState(null);
+  // Saved-lists tab state — loaded on demand and refreshed when the CD adds/removes
+  const [savedLists,setSavedLists]=useState([]);     // [{id,name,members:[{talent_id,profile}]}]
+  const [savedListsLoading,setSavedListsLoading]=useState(false);
+  const [activeList,setActiveList]=useState(null);   // expanded list view
+  const [showNewListInline,setShowNewListInline]=useState(false);
+  const [newListName,setNewListName]=useState("");
+  const [savedListsErr,setSavedListsErr]=useState("");
+  const [composeDmTo,setComposeDmTo]=useState(null); // {id,name} when CD is composing a DM from saved-lists tab
   const [search,setSearch]=useState("");
   const [sortBy,setSortBy]=useState("newest");     // newest | oldest | name
   const [lastUndo,setLastUndo]=useState(null);     // {appId, prevStatus, newStatus, name}
@@ -1882,6 +1892,83 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     setAllSelected(sel);
     setLoading(false);
   })();},[uid,reloadTick,castingsVersion]);
+
+  // ─── Load saved talent lists + members. Runs whenever the CD opens that tab or
+  //     after they add/remove a list / member.
+  const loadSavedLists=useCallback(async()=>{
+    if(!uid)return;
+    setSavedListsLoading(true);setSavedListsErr("");
+    try{
+      const {data:lists,error}=await window.sb.from("talent_lists").select("id,name,created_at").eq("cd_id",uid).order("created_at",{ascending:false});
+      if(error)throw error;
+      const ids=(lists||[]).map(l=>l.id);
+      let memberRows=[];
+      if(ids.length){
+        const {data:mm,error:mErr}=await window.sb.from("talent_list_members")
+          .select("list_id,talent_id,added_at,profiles:talent_id(id,display_name,headshot_url,location,age,gender,union_status,user_type)")
+          .in("list_id",ids)
+          .order("added_at",{ascending:false});
+        if(mErr)throw mErr;
+        memberRows=mm||[];
+      }
+      const grouped=(lists||[]).map(l=>({...l,members:memberRows.filter(m=>m.list_id===l.id)}));
+      setSavedLists(grouped);
+      // If we were viewing a list that just got refreshed, sync it
+      if(activeList){
+        const fresh=grouped.find(l=>l.id===activeList.id);
+        setActiveList(fresh||null);
+      }
+    }catch(e){setSavedListsErr(e.message||"Could not load lists.");}
+    finally{setSavedListsLoading(false);}
+  },[uid,activeList]);
+
+  useEffect(()=>{if(tab==="savedLists")loadSavedLists();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[tab,uid,reloadTick]);
+
+  const createList=async()=>{
+    const name=newListName.trim();
+    if(!name)return;
+    setSavedListsErr("");
+    try{
+      const {data,error}=await window.sb.from("talent_lists").insert({cd_id:uid,name}).select().single();
+      if(error)throw error;
+      setSavedLists(prev=>[{...data,members:[]},...prev]);
+      setNewListName("");setShowNewListInline(false);
+    }catch(e){setSavedListsErr(e.message||"Could not create list.");}
+  };
+
+  const deleteList=async(listId)=>{
+    if(!confirm("Delete this list? Members aren't deleted — only your saved-list grouping."))return;
+    setSavedListsErr("");
+    // Optimistic
+    const prev=savedLists;
+    setSavedLists(p=>p.filter(l=>l.id!==listId));
+    if(activeList?.id===listId)setActiveList(null);
+    try{
+      const {error}=await window.sb.from("talent_lists").delete().eq("id",listId);
+      if(error)throw error;
+    }catch(e){
+      setSavedLists(prev);
+      setSavedListsErr(e.message||"Could not delete list.");
+    }
+  };
+
+  const removeFromList=async(listId,talentId)=>{
+    setSavedListsErr("");
+    const prev=savedLists;
+    setSavedLists(p=>p.map(l=>l.id===listId?{...l,members:l.members.filter(m=>m.talent_id!==talentId)}:l));
+    if(activeList?.id===listId){
+      setActiveList(a=>a?{...a,members:a.members.filter(m=>m.talent_id!==talentId)}:a);
+    }
+    try{
+      const {error}=await window.sb.from("talent_list_members").delete().eq("list_id",listId).eq("talent_id",talentId);
+      if(error)throw error;
+    }catch(e){
+      setSavedLists(prev);
+      setSavedListsErr(e.message||"Could not remove member.");
+    }
+  };
 
   // ─── Open a casting — load per-role counts (total + pending)
   const openReview=async(casting)=>{
@@ -2179,6 +2266,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       <div className="tabs">
         <button className={`tab ${tab==="castings"?"active":""}`} onClick={()=>setTab("castings")}>My Castings</button>
         <button className={`tab ${tab==="allSelected"?"active":""}`} onClick={()=>setTab("allSelected")}>All Selected <span style={{opacity:.6}}>({allSelected.length})</span></button>
+        <button className={`tab ${tab==="savedLists"?"active":""}`} onClick={()=>{setTab("savedLists");setActiveList(null);}}>Saved Lists <span style={{opacity:.6}}>({savedLists.length})</span></button>
       </div>
       {tab==="castings"?
         myCastings.length===0?<div className="card" style={{textAlign:"center",padding:48}}>
@@ -2194,8 +2282,78 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
               <span style={{color:"var(--acc)",fontSize:18}}>→</span>
             </div>
           </div>)}</div>:
-        allSelected.length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No selected talent yet. Review your pending submissions to build your shortlist.</p></div>:
-        <div className="results-grid">{allSelected.map((a,i)=>{const p=a.profiles||{};return(<div key={a.id||i} className="talent-thumb" onClick={()=>onViewProfile(buildTalentView(a))}><img src={a.selected_photo_url||p.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?"} alt={p.display_name||""}/><div className="talent-thumb-info"><h4>{p.display_name||"Applicant"}</h4><p>{[p.age,p.location].filter(Boolean).join(" · ")}</p></div></div>);})}</div>}
+        tab==="allSelected"?
+          (allSelected.length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No selected talent yet. Review your pending submissions to build your shortlist.</p></div>:
+          <div className="results-grid">{allSelected.map((a,i)=>{const p=a.profiles||{};return(<div key={a.id||i} className="talent-thumb" onClick={()=>onViewProfile(buildTalentView(a))}><img src={a.selected_photo_url||p.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?"} alt={p.display_name||""}/><div className="talent-thumb-info"><h4>{p.display_name||"Applicant"}</h4><p>{[p.age,p.location].filter(Boolean).join(" · ")}</p></div></div>);})}</div>):
+        // ─── Saved Lists tab: index of lists, then drill-down to members ───
+        <>
+          {savedListsErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{savedListsErr}</div>}
+          {activeList?<>
+            {/* Drill-down: members of one list */}
+            <button className="btn-s btn-sm mb-20" onClick={()=>setActiveList(null)}>← Back to Lists</button>
+            <div className="flex-between" style={{marginBottom:14,alignItems:"center",flexWrap:"wrap",gap:12}}>
+              <div>
+                <h3 style={{fontSize:20,fontWeight:800}}>{activeList.name}</h3>
+                <p style={{color:"var(--t2)",fontSize:13}}>{activeList.members.length} talent · created {new Date(activeList.created_at).toLocaleDateString()}</p>
+              </div>
+              <button className="btn-s btn-sm" onClick={()=>deleteList(activeList.id)} style={{color:"#c0392b",borderColor:"rgba(255,100,100,0.4)"}}>Delete List</button>
+            </div>
+            {activeList.members.length===0?<div className="card" style={{padding:48,textAlign:"center"}}>
+              <p style={{color:"var(--t3)"}}>This list is empty. Open any talent profile and use "★ Save to List" to add them here.</p>
+            </div>:<div className="results-grid">{activeList.members.map(m=>{
+              const p=m.profiles||{};
+              const tv={
+                ...p,
+                id:p.id||m.talent_id,
+                name:p.display_name||"Talent",
+                img:p.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?",
+                union:p.union_status||"Non-Union",
+                _db:true
+              };
+              return(<div key={m.talent_id} className="talent-thumb" style={{position:"relative"}}>
+                <img src={tv.img} alt={tv.name} onClick={()=>onViewProfile(tv)} style={{cursor:"pointer"}}/>
+                <div className="talent-thumb-info">
+                  <h4 onClick={()=>onViewProfile(tv)} style={{cursor:"pointer"}}>{tv.name}</h4>
+                  <p>{[p.age,p.gender,p.location].filter(Boolean).join(" · ")||"—"}</p>
+                  <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
+                    <button className="btn-p btn-sm" style={{fontSize:11,padding:"6px 10px"}} onClick={()=>setComposeDmTo({id:m.talent_id,name:tv.name})}>💬 Message</button>
+                    <button className="btn-s btn-sm" style={{fontSize:11,padding:"6px 10px",color:"#c0392b",borderColor:"rgba(255,100,100,0.35)"}} onClick={()=>removeFromList(activeList.id,m.talent_id)}>Remove</button>
+                  </div>
+                </div>
+              </div>);
+            })}</div>}
+          </>:<>
+            {/* Index: all lists */}
+            <div className="flex-between" style={{marginBottom:14,flexWrap:"wrap",gap:12}}>
+              <p style={{color:"var(--t2)",fontSize:13}}>Custom lists you build by saving talent from their profiles. Use lists to organize callbacks, recurring collaborators, or shortlists per project.</p>
+              {!showNewListInline&&<button className="btn-p btn-sm" onClick={()=>setShowNewListInline(true)}>+ New List</button>}
+            </div>
+            {showNewListInline&&<div className="card" style={{padding:14,marginBottom:14,display:"flex",gap:10,alignItems:"flex-end",flexWrap:"wrap"}}>
+              <div style={{flex:1,minWidth:220}}>
+                <label className="label">List name</label>
+                <input className="input" autoFocus value={newListName} onChange={e=>setNewListName(e.target.value)} placeholder="e.g. Lead Talent — Spring 2026" onKeyDown={e=>{if(e.key==="Enter")createList();}}/>
+              </div>
+              <button className="btn-p btn-sm" onClick={createList} disabled={!newListName.trim()}>Create</button>
+              <button className="btn-s btn-sm" onClick={()=>{setShowNewListInline(false);setNewListName("");}}>Cancel</button>
+            </div>}
+            {savedListsLoading?<p style={{color:"var(--t3)"}}>Loading your lists…</p>:savedLists.length===0?<div className="card" style={{padding:48,textAlign:"center"}}>
+              <p style={{color:"var(--t3)",marginBottom:16}}>No saved lists yet.</p>
+              <p style={{color:"var(--t3)",fontSize:13}}>Open any talent profile and click <strong>★ Save to List</strong> to start organizing.</p>
+            </div>:<div className="card-flat">{savedLists.map(l=>
+              <div key={l.id} className="casting-row" onClick={()=>setActiveList(l)} style={{cursor:"pointer"}}>
+                <div className="casting-row-left">
+                  <h4>{l.name}</h4>
+                  <p>{l.members.length} talent · created {new Date(l.created_at).toLocaleDateString()}</p>
+                </div>
+                <div className="casting-row-right">
+                  <div style={{display:"flex",gap:6,marginRight:12}}>
+                    {l.members.slice(0,4).map((m,i)=><img key={i} src={m.profiles?.headshot_url||"https://placehold.co/40x40/e5e5e5/999?text=?"} alt="" style={{width:32,height:32,borderRadius:"50%",objectFit:"cover",border:"2px solid var(--s1)",marginLeft:i===0?0:-12}}/>)}
+                  </div>
+                  <span style={{color:"var(--acc)",fontSize:18}}>→</span>
+                </div>
+              </div>)}</div>}
+          </>}
+        </>}
     </>}
 
     {showNew&&<NewCastingModal onClose={()=>setShowNew(false)} onPosted={(inserted)=>{
@@ -2212,6 +2370,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         if(bumpCastings)bumpCastings();     // global: SearchPage + realtime consumers
       }} uid={uid}/>}
     {msgApp&&<MessageModal app={msgApp} fromId={uid} castingTitle={active?.title||""} onClose={()=>setMsgApp(null)} onSent={()=>setMsgApp(null)}/>}
+    {composeDmTo&&<ComposeDMModal fromId={uid} toId={composeDmTo.id} toName={composeDmTo.name} onClose={()=>setComposeDmTo(null)}/>}
 
     <Footer onNavigate={onNavigate}/></div>);
 }
@@ -2264,6 +2423,215 @@ function MessageModal({app,fromId,castingTitle,onClose,onSent}){
         <div className="form-group" style={{marginBottom:0}}><label className="label">Location / Details</label><input className="input" placeholder="e.g. 1420 Broadway, Studio 7 · bring sides" value={auditionNote} onChange={e=>setAuditionNote(e.target.value)}/></div>
       </div>
       <div style={{display:"flex",gap:12}}><button className="btn-p" style={{flex:1}} onClick={send} disabled={busy}>{busy?"Sending…":"Send Message"}</button><button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button></div>
+    </>}
+  </div></div>);
+}
+
+// ─── Save talent to one of the CD's custom lists (or create a new list inline).
+// Writes to talent_lists (if creating) and talent_list_members. Idempotent — adding the
+// same talent to the same list twice is a no-op (unique PK on (list_id, talent_id)).
+function SaveToListModal({cdId,talentId,talentName,onClose}){
+  const [lists,setLists]=useState([]);          // CD's existing lists
+  const [members,setMembers]=useState(new Set()); // list_ids that already contain this talent
+  const [loading,setLoading]=useState(true);
+  const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState("");
+  const [creatingName,setCreatingName]=useState("");
+  const [showCreate,setShowCreate]=useState(false);
+  const [done,setDone]=useState(false);
+
+  // Load CD's lists + which ones already include this talent
+  useEffect(()=>{(async()=>{
+    if(!cdId){setLoading(false);return;}
+    try{
+      const {data:ls}=await window.sb.from("talent_lists").select("id,name,created_at").eq("cd_id",cdId).order("created_at",{ascending:false});
+      const ids=(ls||[]).map(l=>l.id);
+      let m=new Set();
+      if(ids.length){
+        const {data:mm}=await window.sb.from("talent_list_members").select("list_id").eq("talent_id",talentId).in("list_id",ids);
+        (mm||[]).forEach(r=>m.add(r.list_id));
+      }
+      setLists(ls||[]);
+      setMembers(m);
+    }catch(e){setErr(e.message||"Could not load your lists.");}
+    finally{setLoading(false);}
+  })();},[cdId,talentId]);
+
+  const toggleList=async(listId)=>{
+    if(busy)return;
+    setBusy(true);setErr("");
+    const inAlready=members.has(listId);
+    // Optimistic
+    setMembers(prev=>{const n=new Set(prev);if(inAlready)n.delete(listId);else n.add(listId);return n;});
+    try{
+      if(inAlready){
+        const {error}=await window.sb.from("talent_list_members").delete().eq("list_id",listId).eq("talent_id",talentId);
+        if(error)throw error;
+      }else{
+        const {error}=await window.sb.from("talent_list_members").insert({list_id:listId,talent_id:talentId});
+        if(error)throw error;
+      }
+    }catch(e){
+      // Roll back
+      setMembers(prev=>{const n=new Set(prev);if(inAlready)n.add(listId);else n.delete(listId);return n;});
+      setErr(e.message||"Could not update list.");
+    }finally{setBusy(false);}
+  };
+
+  const createListAndAdd=async()=>{
+    const name=creatingName.trim();
+    if(!name){setErr("Give your list a name.");return;}
+    setBusy(true);setErr("");
+    try{
+      const {data:list,error:lErr}=await window.sb.from("talent_lists").insert({cd_id:cdId,name}).select().single();
+      if(lErr)throw lErr;
+      const {error:mErr}=await window.sb.from("talent_list_members").insert({list_id:list.id,talent_id:talentId});
+      if(mErr)throw mErr;
+      setLists(prev=>[list,...prev]);
+      setMembers(prev=>{const n=new Set(prev);n.add(list.id);return n;});
+      setCreatingName("");setShowCreate(false);
+      setDone(true);setTimeout(()=>setDone(false),1400);
+    }catch(e){setErr(e.message||"Could not create list.");}
+    finally{setBusy(false);}
+  };
+
+  return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:480}}>
+    <h2>Save {talentName}</h2>
+    <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:18}}>Add this talent to one of your saved lists, or create a new one. Tap a list to add or remove.</p>
+    {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{err}</div>}
+    {done&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.35)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>✓ Saved</div>}
+    {loading?<p style={{color:"var(--t3)"}}>Loading your lists…</p>:<>
+      {lists.length===0&&!showCreate&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:14}}>You don't have any lists yet. Create your first one below.</p>}
+      {lists.length>0&&<div style={{maxHeight:280,overflowY:"auto",border:"1px solid var(--bdr)",borderRadius:10,marginBottom:12}}>
+        {lists.map(l=>{const inList=members.has(l.id);return(
+          <button key={l.id} type="button" onClick={()=>toggleList(l.id)} disabled={busy} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"12px 14px",background:inList?"rgba(46,204,113,0.08)":"transparent",border:"none",borderBottom:"1px solid var(--bdr)",cursor:"pointer",fontSize:14,fontWeight:inList?700:500,color:"var(--t1)",textAlign:"left"}}>
+            <span>{l.name}</span>
+            <span style={{fontSize:12,color:inList?"#1d7b44":"var(--t3)",fontWeight:700}}>{inList?"✓ In list":"+ Add"}</span>
+          </button>
+        );})}
+      </div>}
+      {showCreate?<div style={{background:"var(--s2)",borderRadius:10,padding:14,marginBottom:12}}>
+        <label className="label">New list name</label>
+        <input className="input" autoFocus value={creatingName} onChange={e=>setCreatingName(e.target.value)} placeholder="e.g. Lead Talent — Spring 2026" onKeyDown={e=>{if(e.key==="Enter")createListAndAdd();}}/>
+        <div style={{display:"flex",gap:8,marginTop:10}}>
+          <button className="btn-p btn-sm" onClick={createListAndAdd} disabled={busy}>{busy?"Creating…":"Create & Add"}</button>
+          <button className="btn-s btn-sm" onClick={()=>{setShowCreate(false);setCreatingName("");setErr("");}} disabled={busy}>Cancel</button>
+        </div>
+      </div>:<button className="btn-s btn-sm" onClick={()=>setShowCreate(true)} disabled={busy}>+ New List</button>}
+    </>}
+    <div style={{display:"flex",gap:10,marginTop:18,justifyContent:"flex-end"}}>
+      <button className="btn-p" onClick={onClose} disabled={busy}>Done</button>
+    </div>
+  </div></div>);
+}
+
+// ─── Invite a talent to apply for a specific role on one of the CD's open castings.
+// Writes to project_invites with status='pending'. The talent sees the invite in their inbox.
+function InviteToProjectModal({cdId,talentId,talentName,onClose}){
+  const [castings,setCastings]=useState([]);
+  const [pickedCasting,setPickedCasting]=useState(null);
+  const [pickedRole,setPickedRole]=useState(null);
+  const [note,setNote]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState("");
+  const [loading,setLoading]=useState(true);
+  const [sent,setSent]=useState(false);
+
+  useEffect(()=>{(async()=>{
+    if(!cdId){setLoading(false);return;}
+    try{
+      const {data}=await window.sb.from("castings").select("id,title,prod,location,roles(id,name)").eq("cd_id",cdId).eq("status","open").order("created_at",{ascending:false});
+      setCastings(data||[]);
+    }catch(e){setErr(e.message||"Could not load your castings.");}
+    finally{setLoading(false);}
+  })();},[cdId]);
+
+  const send=async()=>{
+    setErr("");
+    if(!pickedCasting){setErr("Pick which casting you're inviting them to.");return;}
+    setBusy(true);
+    try{
+      const payload={cd_id:cdId,talent_id:talentId,casting_id:pickedCasting.id,role_id:pickedRole?.id||null,note:note.trim()||null,status:"pending"};
+      const {error}=await window.sb.from("project_invites").insert(payload);
+      if(error)throw error;
+      // Also drop a notification in the messages thread so the talent sees it in inbox immediately
+      try{
+        const body=`📩 You've been invited to ${pickedCasting.title}${pickedRole?` for the role of ${pickedRole.name}`:""}.${note.trim()?`\n\n"${note.trim()}"`:""}\n\nOpen your applications tab to accept or decline.`;
+        await window.sb.from("messages").insert({from_id:cdId,to_id:talentId,application_id:null,body});
+      }catch(_){/* non-fatal */}
+      setSent(true);
+      setTimeout(()=>onClose(),1100);
+    }catch(e){setErr(e.message||"Could not send invite.");}
+    finally{setBusy(false);}
+  };
+
+  return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:560}}>
+    {sent?<div className="success-msg"><div className="check">✓</div><h3>Invite Sent</h3><p>{talentName} will see your invite in their inbox.</p></div>:<>
+      <h2>Invite {talentName}</h2>
+      <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:18}}>Pick a casting and (optionally) a role. The talent gets a project invite they can accept or decline from their inbox.</p>
+      {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{err}</div>}
+      {loading?<p style={{color:"var(--t3)"}}>Loading your castings…</p>:castings.length===0?<>
+        <div className="card" style={{padding:18,textAlign:"center",background:"var(--s2)"}}>
+          <p style={{color:"var(--t3)",fontSize:13}}>You don't have any open castings yet. Post a casting first, then come back to invite this talent.</p>
+        </div>
+      </>:<>
+        <div className="form-group">
+          <label className="label">Casting *</label>
+          <select className="select" style={{width:"100%"}} value={pickedCasting?.id||""} onChange={e=>{const c=castings.find(x=>x.id===e.target.value)||null;setPickedCasting(c);setPickedRole(null);}}>
+            <option value="">— Pick one of your castings —</option>
+            {castings.map(c=><option key={c.id} value={c.id}>{c.title}{c.prod?` · ${c.prod}`:""}</option>)}
+          </select>
+        </div>
+        {pickedCasting&&(pickedCasting.roles||[]).length>0&&<div className="form-group">
+          <label className="label">Role (optional)</label>
+          <select className="select" style={{width:"100%"}} value={pickedRole?.id||""} onChange={e=>{const r=(pickedCasting.roles||[]).find(x=>x.id===e.target.value)||null;setPickedRole(r);}}>
+            <option value="">— Any open role —</option>
+            {(pickedCasting.roles||[]).map(r=><option key={r.id} value={r.id}>{r.name}</option>)}
+          </select>
+        </div>}
+        <div className="form-group">
+          <label className="label">Personal note (optional)</label>
+          <textarea className="textarea" rows="4" placeholder={`Hi ${talentName.split(" ")[0]||"there"} — I think you'd be a great fit for this role. Take a look and let me know if you're interested.`} value={note} onChange={e=>setNote(e.target.value)}></textarea>
+        </div>
+        <div style={{display:"flex",gap:12,marginTop:8}}>
+          <button className="btn-p" style={{flex:1}} onClick={send} disabled={busy||!pickedCasting}>{busy?"Sending…":"Send Invite"}</button>
+          <button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
+        </div>
+      </>}
+    </>}
+  </div></div>);
+}
+
+// ─── General-purpose direct message (not tied to an application). CD-side use mostly,
+// but the same modal works for talent → CD too. Writes to public.messages with application_id=null.
+function ComposeDMModal({fromId,toId,toName,onClose}){
+  const [body,setBody]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState("");
+  const [sent,setSent]=useState(false);
+  const send=async()=>{
+    setErr("");
+    if(!body.trim()){setErr("Write something to send.");return;}
+    if(!fromId||!toId){setErr("Missing sender or recipient.");return;}
+    setBusy(true);
+    try{
+      const {error}=await window.sb.from("messages").insert({from_id:fromId,to_id:toId,application_id:null,body:body.trim()});
+      if(error)throw error;
+      setSent(true);
+      setTimeout(()=>onClose(),900);
+    }catch(e){setErr(e.message||"Could not send.");}
+    finally{setBusy(false);}
+  };
+  return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:520}}>
+    {sent?<div className="success-msg"><div className="check">✓</div><h3>Message Sent</h3><p>{toName} will see it in their inbox.</p></div>:<>
+      <h2>Message {toName}</h2>
+      <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:18}}>Direct message — no application or audition attached. Use this for quick check-ins or follow-ups.</p>
+      {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{err}</div>}
+      <div className="form-group"><label className="label">Message</label><textarea className="textarea" rows="6" placeholder={`Hi ${toName.split(" ")[0]||"there"} — …`} value={body} onChange={e=>setBody(e.target.value)} autoFocus></textarea></div>
+      <div style={{display:"flex",gap:12,marginTop:8}}>
+        <button className="btn-p" style={{flex:1}} onClick={send} disabled={busy}>{busy?"Sending…":"Send Message"}</button>
+        <button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
+      </div>
     </>}
   </div></div>);
 }
@@ -2651,6 +3019,8 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
   const [uploading,setUploading]=useState(false);
   const [myApps,setMyApps]=useState([]);
   const [inbox,setInbox]=useState([]);       // received messages
+  const [invites,setInvites]=useState([]);   // received project_invites (talent only)
+  const [inviteBusy,setInviteBusy]=useState({}); // {invite_id: bool}
   const [photos,setPhotos]=useState([]);     // additional_photos array
   // Cropper state: {file, target: "headshot"|"additional", aspect, label}
   const [cropState,setCropState]=useState(null);
@@ -2687,11 +3057,42 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     if(profile?.user_type==="talent"){
       const {data}=await window.sb.from("applications").select("id,status,created_at,cover_note,selected_photo_url,audition_at,audition_note,casting_id,role_id,castings(title,prod,type,location),roles(name)").eq("talent_id",session.user.id).order("created_at",{ascending:false});
       setMyApps(data||[]);
+      // Project invites the talent has received from CDs (any status — show pending first)
+      try{
+        const {data:invs}=await window.sb.from("project_invites")
+          .select("id,status,note,created_at,casting_id,role_id,cd_id,castings(title,prod,location,type),roles(name),profiles:cd_id(display_name,company_name,headshot_url)")
+          .eq("talent_id",session.user.id)
+          .order("created_at",{ascending:false});
+        setInvites(invs||[]);
+      }catch(_){setInvites([]);}
     }
     // inbox — messages received (for both talent + CD)
     const {data:mdata}=await window.sb.from("messages").select("id,from_id,body,created_at,read_at,application_id,profiles:from_id(display_name,headshot_url,company_name,user_type)").eq("to_id",session.user.id).order("created_at",{ascending:false}).limit(100);
     setInbox(mdata||[]);
   })();},[session,profile]);
+  // Talent action — accept or decline a project invite
+  const respondInvite=async(inv,nextStatus)=>{
+    if(inviteBusy[inv.id])return;
+    setInviteBusy(p=>({...p,[inv.id]:true}));
+    // Optimistic flip
+    setInvites(p=>p.map(x=>x.id===inv.id?{...x,status:nextStatus}:x));
+    try{
+      const {error}=await window.sb.from("project_invites").update({status:nextStatus,updated_at:new Date().toISOString()}).eq("id",inv.id);
+      if(error)throw error;
+      // If accepted, also drop a courtesy message back to the CD
+      if(nextStatus==="accepted"){
+        try{
+          await window.sb.from("messages").insert({from_id:session.user.id,to_id:inv.cd_id,application_id:null,body:`✓ I've accepted your invite to ${inv.castings?.title||"the project"}${inv.roles?.name?` (${inv.roles.name})`:""}. Looking forward to it — let me know the next steps.`});
+        }catch(_){}
+      }
+    }catch(e){
+      // Roll back
+      setInvites(p=>p.map(x=>x.id===inv.id?{...x,status:inv.status}:x));
+      alert("Could not update invite: "+(e.message||"unknown error"));
+    }finally{
+      setInviteBusy(p=>{const n={...p};delete n[inv.id];return n;});
+    }
+  };
   const markRead=async(id)=>{
     await window.sb.from("messages").update({read_at:new Date().toISOString()}).eq("id",id);
     setInbox(p=>p.map(m=>m.id===id?{...m,read_at:new Date().toISOString()}:m));
@@ -2819,7 +3220,7 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
       {!isCD&&<button className={`tab ${tab==="photos"?"active":""}`} onClick={()=>setTab("photos")}>Photos ({allPhotos.length}/10)</button>}
       {!isCD&&<button className={`tab ${tab==="videos"?"active":""}`} onClick={()=>setTab("videos")}>Video Links ({(profile.video_links||[]).filter(v=>v).length}/5)</button>}
       {!isCD&&<button className={`tab ${tab==="applications"?"active":""}`} onClick={()=>setTab("applications")}>My Applications ({myApps.length})</button>}
-      <button className={`tab ${tab==="messages"?"active":""}`} onClick={()=>setTab("messages")}>Messages {inbox.filter(m=>!m.read_at).length>0?<span className="tag tag-acc" style={{marginLeft:6,fontSize:10}}>{inbox.filter(m=>!m.read_at).length}</span>:null}</button>
+      <button className={`tab ${tab==="messages"?"active":""}`} onClick={()=>setTab("messages")}>Inbox {(inbox.filter(m=>!m.read_at).length+invites.filter(i=>i.status==="pending").length)>0?<span className="tag tag-acc" style={{marginLeft:6,fontSize:10}}>{inbox.filter(m=>!m.read_at).length+invites.filter(i=>i.status==="pending").length}</span>:null}</button>
     </div>
 
     {/* ── PROFILE TAB ── */}
@@ -2930,8 +3331,38 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     </div>}
 
     {/* ── MESSAGES TAB ── */}
-    {tab==="messages"&&<div className="card" style={{padding:24}}>
-      <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Inbox ({inbox.length})</h3>
+    {tab==="messages"&&<>
+    {/* Project invites — only for talent. Pending invites first, then resolved ones for history. */}
+    {!isCD&&invites.length>0&&<div className="card" style={{padding:24,marginBottom:16}}>
+      <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Project Invites ({invites.filter(i=>i.status==="pending").length} pending)</h3>
+      <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>Casting directors who want you for a specific role. Accept to express interest, or decline if it's not a fit.</p>
+      {[...invites].sort((a,b)=>(a.status==="pending"?-1:1)-(b.status==="pending"?-1:1)).map(inv=>{
+        const cd=inv.profiles||{};
+        const cName=cd.display_name||cd.company_name||"Casting Director";
+        const c=inv.castings||{};
+        const r=inv.roles||{};
+        const statusTag=inv.status==="accepted"?{bg:"rgba(46,204,113,0.15)",fg:"#1d7b44",label:"ACCEPTED"}:inv.status==="declined"?{bg:"rgba(255,100,100,0.1)",fg:"#c0392b",label:"DECLINED"}:{bg:"rgba(26,26,46,0.08)",fg:"var(--acc)",label:"NEW INVITE"};
+        return(<div key={inv.id} style={{padding:"16px 0",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:14,alignItems:"flex-start"}}>
+          <img src={cd.headshot_url||"https://placehold.co/52x52/e5e5e5/999?text=?"} alt="" style={{width:52,height:52,borderRadius:"50%",objectFit:"cover"}}/>
+          <div style={{minWidth:0}}>
+            <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:4}}>
+              <strong style={{fontSize:14}}>{cName}</strong>
+              <span className="tag" style={{background:statusTag.bg,color:statusTag.fg,fontSize:10,fontWeight:700}}>{statusTag.label}</span>
+            </div>
+            <div style={{fontSize:13,color:"var(--t1)",fontWeight:600}}>{c.title||"Casting"}{r.name?<> · <span style={{color:"var(--t2)",fontWeight:500}}>{r.name}</span></>:""}</div>
+            <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{[c.prod,c.location,c.type].filter(Boolean).join(" · ")}</div>
+            {inv.note&&<p style={{fontSize:13,color:"var(--t2)",marginTop:8,fontStyle:"italic",lineHeight:1.5}}>"{inv.note}"</p>}
+            {inv.status==="pending"&&<div style={{display:"flex",gap:8,marginTop:10}}>
+              <button className="btn-p btn-sm" disabled={!!inviteBusy[inv.id]} onClick={()=>respondInvite(inv,"accepted")}>{inviteBusy[inv.id]?"…":"✓ Accept"}</button>
+              <button className="btn-s btn-sm" disabled={!!inviteBusy[inv.id]} onClick={()=>respondInvite(inv,"declined")}>{inviteBusy[inv.id]?"…":"Decline"}</button>
+            </div>}
+          </div>
+          <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap"}}>{new Date(inv.created_at).toLocaleDateString()}</span>
+        </div>);
+      })}
+    </div>}
+    <div className="card" style={{padding:24}}>
+      <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Messages ({inbox.length})</h3>
       <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>Messages and audition invites from casting directors.</p>
       {inbox.length===0?<p style={{color:"var(--t3)",fontSize:14}}>No messages yet.</p>:
       inbox.map(m=><div key={m.id} onClick={()=>!m.read_at&&markRead(m.id)} style={{padding:"14px 0",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:12,alignItems:"flex-start",cursor:m.read_at?"default":"pointer",opacity:m.read_at?0.75:1}}>
@@ -2942,7 +3373,7 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
         </div>
         <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap"}}>{new Date(m.created_at).toLocaleDateString()}</span>
       </div>)}
-    </div>}
+    </div></>}
 
     {cropState&&<ImageCropModal
       file={cropState.file}
@@ -3762,7 +4193,7 @@ export default function App(){
       {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} onBack={()=>{setPage("search");setViewingCasting(null);window.scrollTo(0,0);}} onNavigate={navigate}/>}
       {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
       {page==="dashboard"&&<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings}/>}
-      {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{setPage(prevPage);setViewingProfile(null);}} onNavigate={navigate}/>}
+      {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{setPage(prevPage);setViewingProfile(null);}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
       {page==="my-profile"&&isLoggedIn&&<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate}/>}
       {page==="admin"&&isLoggedIn&&isAdmin&&<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>}
       {page==="register-talent"&&<RegisterTalent onNavigate={navigate}/>}
