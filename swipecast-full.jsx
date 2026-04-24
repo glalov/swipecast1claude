@@ -457,7 +457,10 @@ function RegisterTalent({onNavigate}){
           hair:f.hair||null,eyes:f.eyes||null,ethnicity:f.ethnicity||null,
           union_status:f.union_status,bio:f.bio||null,training:f.training||null,
           skills:f.skills?f.skills.split(",").map(s=>s.trim()).filter(Boolean):[],
-          agent:f.agent||null,onboarded:true
+          agent:f.agent||null,onboarded:true,
+          // Bug fix: talent_types was collected in Step 2 but never persisted — now flows
+          // straight from signup into the profile so the user sees their selections.
+          talent_types:Array.isArray(f.types)?f.types:[]
         }).eq("id",data.user.id),15000,"Profile save").catch(e=>console.warn("Profile update failed (non-blocking):",e));
       }
       setStep(4); // go to payment step
@@ -1657,7 +1660,7 @@ function TalentProfile({talent,onBack,onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE: SEARCH / BROWSE
 // ═══════════════════════════════════════════
-function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth}){
+function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,castingsVersion=0,session,myProfile}){
   const [mode,setMode]=useState(userType==="cd"?"talent":"castings");
   const [q,setQ]=useState("");
   const [f,setF]=useState({gender:"",ethnicity:"",location:"",union:"",type:""});
@@ -1667,6 +1670,9 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const [dbCastings,setDbCastings]=useState([]);
   const [dbTalent,setDbTalent]=useState([]);
   const [refreshTick,setRefreshTick]=useState(0);
+  // CD-side: per-talent action panel (invite / message / save to list)
+  const [talentAction,setTalentAction]=useState(null); // {talent, mode: "invite"|"message"|"list"}
+  const [mySavedLists,setMySavedLists]=useState([]);   // CD's talent lists (loaded from Supabase)
   useEffect(()=>{setPg(1);},[q,f.type,f.location,f.union,f.gender,f.ethnicity,mode]);
   // Refetch when tab becomes visible again — keeps castings list in sync after CD posts
   useEffect(()=>{
@@ -1724,7 +1730,19 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       }));
       setDbTalent(mapped);
     }catch(e){/* silent */}
-  })();},[refreshTick]);
+  })();},[refreshTick,castingsVersion]);
+
+  // CD's talent lists — loaded once the CD arrives and whenever lists change
+  useEffect(()=>{
+    const cdId=session?.user?.id;
+    if(!cdId||myProfile?.user_type!=="cd"&&myProfile?.user_type!=="admin"&&myProfile?.user_type!=="super_admin")return;
+    (async()=>{
+      try{
+        const {data}=await window.sb.from("talent_lists").select("id,name,created_at").eq("cd_id",cdId).order("created_at",{ascending:false});
+        setMySavedLists(data||[]);
+      }catch(_){}
+    })();
+  },[session?.user?.id,myProfile?.user_type,refreshTick]);
   // Merge: real DB castings first (newest), then demo. Real talent first, then demo.
   const allCastings=[...dbCastings,...CASTINGS];
   const allTalent=[...dbTalent,...TALENT];
@@ -1788,7 +1806,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
 // Hold / Selected / Rejected = filtered list views with search + sort
 // Undo reverts the most recent decision.
 // ═══════════════════════════════════════════════════════════════════
-function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
+function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion=0,bumpCastings}){
   const [active,setActive]=useState(null);         // casting currently being reviewed
   const [activeRole,setActiveRole]=useState(null); // role within the casting
   const [roleCounts,setRoleCounts]=useState({});   // role_id -> total count
@@ -1863,7 +1881,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
     setStats({total,pending,selected,hold});
     setAllSelected(sel);
     setLoading(false);
-  })();},[uid,reloadTick]);
+  })();},[uid,reloadTick,castingsVersion]);
 
   // ─── Open a casting — load per-role counts (total + pending)
   const openReview=async(casting)=>{
@@ -2180,7 +2198,19 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile}){
         <div className="results-grid">{allSelected.map((a,i)=>{const p=a.profiles||{};return(<div key={a.id||i} className="talent-thumb" onClick={()=>onViewProfile(buildTalentView(a))}><img src={a.selected_photo_url||p.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?"} alt={p.display_name||""}/><div className="talent-thumb-info"><h4>{p.display_name||"Applicant"}</h4><p>{[p.age,p.location].filter(Boolean).join(" · ")}</p></div></div>);})}</div>}
     </>}
 
-    {showNew&&<NewCastingModal onClose={()=>setShowNew(false)} onPosted={()=>{setShowNew(false);setReloadTick(t=>t+1);}} uid={uid}/>}
+    {showNew&&<NewCastingModal onClose={()=>setShowNew(false)} onPosted={(inserted)=>{
+        // Optimistic update: prepend the newly-inserted casting to myCastings so
+        // it appears immediately, before the background refetch lands.
+        if(inserted&&inserted.id){
+          setMyCastings(prev=>{
+            if(prev.some(c=>c.id===inserted.id))return prev; // idempotent
+            return [{...inserted,_count:0,roles:inserted.roles||[]},...prev];
+          });
+        }
+        setShowNew(false);
+        setReloadTick(t=>t+1);              // my-castings refetch
+        if(bumpCastings)bumpCastings();     // global: SearchPage + realtime consumers
+      }} uid={uid}/>}
     {msgApp&&<MessageModal app={msgApp} fromId={uid} castingTitle={active?.title||""} onClose={()=>setMsgApp(null)} onSent={()=>setMsgApp(null)}/>}
 
     <Footer onNavigate={onNavigate}/></div>);
@@ -2239,16 +2269,137 @@ function MessageModal({app,fromId,castingTitle,onClose,onSent}){
 }
 
 // ─── New Casting creation modal — writes to castings + roles tables
+// ─── Headshot / photo cropper — zoom + pan + crop to fixed aspect before upload.
+// Emits a JPEG blob via onConfirm(blob). Self-contained — no external libs.
+function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm}){
+  const [imgUrl,setImgUrl]=useState("");
+  const [imgEl,setImgEl]=useState(null);
+  const [loaded,setLoaded]=useState(false);
+  const [zoom,setZoom]=useState(1);
+  const [pan,setPan]=useState({x:0,y:0});
+  const [busy,setBusy]=useState(false);
+  const containerRef=useRef(null);
+  const dragRef=useRef(null);
+
+  useEffect(()=>{
+    if(!file)return;
+    const url=URL.createObjectURL(file);
+    setImgUrl(url);
+    const im=new window.Image();
+    im.onload=()=>{setImgEl(im);setLoaded(true);};
+    im.onerror=()=>{setLoaded(true);};
+    im.src=url;
+    return()=>{try{URL.revokeObjectURL(url);}catch(_){}};
+  },[file]);
+
+  const onPointerDown=(e)=>{
+    e.preventDefault();
+    dragRef.current={startX:e.clientX,startY:e.clientY,panX:pan.x,panY:pan.y};
+    try{e.currentTarget.setPointerCapture(e.pointerId);}catch(_){}
+  };
+  const onPointerMove=(e)=>{
+    if(!dragRef.current)return;
+    const dx=e.clientX-dragRef.current.startX;
+    const dy=e.clientY-dragRef.current.startY;
+    setPan({x:dragRef.current.panX+dx,y:dragRef.current.panY+dy});
+  };
+  const onPointerUp=(e)=>{
+    dragRef.current=null;
+    try{e.currentTarget.releasePointerCapture(e.pointerId);}catch(_){}
+  };
+
+  const confirm=()=>{
+    if(!imgEl||!containerRef.current||busy)return;
+    setBusy(true);
+    try{
+      const rect=containerRef.current.getBoundingClientRect();
+      const BW=rect.width,BH=rect.height;
+      const imgAspect=imgEl.naturalWidth/imgEl.naturalHeight;
+      const boxAspect=BW/BH;
+      let baseW,baseH;
+      if(imgAspect>boxAspect){baseW=BW;baseH=BW/imgAspect;}
+      else{baseH=BH;baseW=BH*imgAspect;}
+      const dispW=baseW*zoom,dispH=baseH*zoom;
+      const dispX=(BW-dispW)/2+pan.x;
+      const dispY=(BH-dispH)/2+pan.y;
+      const scale=imgEl.naturalWidth/dispW;
+      const srcX=-dispX*scale,srcY=-dispY*scale;
+      const srcW=BW*scale,srcH=BH*scale;
+      // Clamp source rect to image bounds — otherwise canvas paints transparent edges
+      const cx=Math.max(0,Math.min(srcX,imgEl.naturalWidth));
+      const cy=Math.max(0,Math.min(srcY,imgEl.naturalHeight));
+      const cw=Math.min(srcW,imgEl.naturalWidth-cx);
+      const ch=Math.min(srcH,imgEl.naturalHeight-cy);
+      const offsetDX=(cx-srcX)/srcW;
+      const offsetDY=(cy-srcY)/srcH;
+      const OUT_W=1200;
+      const OUT_H=Math.round(OUT_W/(BW/BH));
+      const canvas=document.createElement("canvas");
+      canvas.width=OUT_W;canvas.height=OUT_H;
+      const ctx=canvas.getContext("2d");
+      ctx.fillStyle="#000";ctx.fillRect(0,0,OUT_W,OUT_H);
+      const destX=offsetDX*OUT_W;
+      const destY=offsetDY*OUT_H;
+      const destW=(cw/srcW)*OUT_W;
+      const destH=(ch/srcH)*OUT_H;
+      ctx.drawImage(imgEl,cx,cy,cw,ch,destX,destY,destW,destH);
+      canvas.toBlob((blob)=>{
+        setBusy(false);
+        if(blob)onConfirm(blob);
+        else onClose();
+      },"image/jpeg",0.92);
+    }catch(e){setBusy(false);console.warn("[crop] error",e);onClose();}
+  };
+
+  return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}>
+    <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:540,padding:22}}>
+      <h3 style={{fontSize:17,fontWeight:700,marginBottom:4}}>{label}</h3>
+      <p style={{color:"var(--t2)",fontSize:12,marginBottom:14}}>Drag the image to reposition. Use the slider to zoom. The visible frame is exactly what casting directors will see.</p>
+      {!loaded&&<p style={{color:"var(--t3)",fontSize:13,padding:"40px 0",textAlign:"center"}}>Loading image…</p>}
+      {loaded&&imgEl&&<>
+        <div ref={containerRef}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          style={{position:"relative",width:"100%",paddingBottom:`${100/aspect}%`,background:"#000",overflow:"hidden",borderRadius:10,border:"2px dashed var(--acc)",cursor:dragRef.current?"grabbing":"grab",userSelect:"none",touchAction:"none"}}>
+          <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <img src={imgUrl} alt="Preview" draggable={false} style={{
+              maxWidth:"100%",maxHeight:"100%",
+              transform:`translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+              transformOrigin:"center center",
+              pointerEvents:"none",
+              userSelect:"none"
+            }}/>
+          </div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginTop:16}}>
+          <span style={{fontSize:12,color:"var(--t2)",width:44}}>Zoom</span>
+          <input type="range" min="1" max="4" step="0.02" value={zoom} onChange={e=>setZoom(parseFloat(e.target.value))} style={{flex:1}}/>
+          <button type="button" className="btn-s btn-sm" onClick={()=>{setZoom(1);setPan({x:0,y:0});}}>Reset</button>
+        </div>
+        <div style={{display:"flex",gap:10,marginTop:18}}>
+          <button className="btn-p" style={{flex:1}} onClick={confirm} disabled={busy}>{busy?"Saving…":"Save Crop & Upload"}</button>
+          <button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
+        </div>
+      </>}
+    </div>
+  </div>);
+}
+
 function NewCastingModal({onClose,onPosted,uid}){
   const [step,setStep]=useState(1); // 1 = form, 2 = success
   const [err,setErr]=useState("");
   const [busy,setBusy]=useState(false);
   const [f,setF]=useState({title:"",prod:"",type:"Film",location:"",pay:"",union:"SAG-AFTRA",deadline:"",tagline:"",synopsis:""});
   const [roles,setRoles]=useState([{name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any"}]);
+  const [inserted,setInserted]=useState(null); // holds the Supabase-returned row so onPosted can optimistically add it
   const setField=(k,v)=>setF(p=>({...p,[k]:v}));
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
   const addRole=()=>setRoles(p=>[...p,{name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any"}]);
   const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
+  // Common pay presets shown as one-tap chips beside the pay field
+  const PAY_PRESETS=["$100/day","$150/day","$200/day","$20/hour","$50/hour","Unpaid","Deferred","Negotiable","SAG Scale"];
   const submit=async()=>{
     setErr("");
     if(!f.title.trim()){setErr("Title required.");return;}
@@ -2259,10 +2410,14 @@ function NewCastingModal({onClose,onPosted,uid}){
       const {data:casting,error:cErr}=await window.sb.from("castings").insert(payload).select().single();
       if(cErr)throw cErr;
       const rolePayload=roles.filter(r=>r.name.trim()).map(r=>({casting_id:casting.id,name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:r.age_range||null,ethnicity:r.ethnicity||null}));
+      let insertedRoles=[];
       if(rolePayload.length){
-        const {error:rErr}=await window.sb.from("roles").insert(rolePayload);
+        const {data:rdata,error:rErr}=await window.sb.from("roles").insert(rolePayload).select();
         if(rErr)throw rErr;
+        insertedRoles=rdata||[];
       }
+      // Stash the full row so step 2's "Back to Dashboard" can hand it up for optimistic insertion.
+      setInserted({...casting,roles:insertedRoles});
       setStep(2);
     }catch(e){setErr(e.message||"Something went wrong.");}finally{setBusy(false);}
   };
@@ -2271,7 +2426,7 @@ function NewCastingModal({onClose,onPosted,uid}){
       <div className="check">✓</div>
       <h3>Casting Posted</h3>
       <p>Your casting is now live and visible to every actor on SlateCue. They'll get notified and start submitting immediately.</p>
-      <button className="btn-p mt-20" onClick={onPosted}>Back to Dashboard</button>
+      <button className="btn-p mt-20" onClick={()=>onPosted(inserted)}>Back to Dashboard</button>
     </div>:<>
       <h2>Post New Casting</h2>
       <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:20}}>$20 per casting post. Goes live immediately.</p>
@@ -2283,7 +2438,7 @@ function NewCastingModal({onClose,onPosted,uid}){
       </div>
       <div className="form-row">
         <div><label className="label">Location</label><input className="input" value={f.location} onChange={e=>setField("location",e.target.value)} placeholder="City, State"/></div>
-        <div><label className="label">Pay / Rate</label><input className="input" value={f.pay} onChange={e=>setField("pay",e.target.value)} placeholder="e.g. SAG Scale, $500/day"/></div>
+        <div><label className="label">Pay / Rate</label><input className="input" value={f.pay} onChange={e=>setField("pay",e.target.value)} placeholder="e.g. $150/day, $20/hour, Negotiable"/><div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:8}}>{PAY_PRESETS.map(p=><button type="button" key={p} onClick={()=>setField("pay",p)} style={{fontSize:11,padding:"4px 10px",borderRadius:999,border:"1px solid var(--bdr)",background:f.pay===p?"var(--acc)":"var(--s2)",color:f.pay===p?"#fff":"var(--t2)",cursor:"pointer",fontWeight:500}}>{p}</button>)}</div></div>
       </div>
       <div className="form-row">
         <div><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union} onChange={e=>setField("union",e.target.value)}><option>SAG-AFTRA</option><option>AEA</option><option>Non-Union</option><option>SAG-AFTRA / Non-Union</option></select></div>
@@ -2497,6 +2652,8 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
   const [myApps,setMyApps]=useState([]);
   const [inbox,setInbox]=useState([]);       // received messages
   const [photos,setPhotos]=useState([]);     // additional_photos array
+  // Cropper state: {file, target: "headshot"|"additional", aspect, label}
+  const [cropState,setCropState]=useState(null);
   const [videos,setVideos]=useState(["","","","",""]);  // 5 video link slots
   const [msgModal,setMsgModal]=useState(null); // {from_id,body,created_at}
   const [f,setF]=useState(()=>({
@@ -2506,7 +2663,9 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     union_status:profile?.union_status||"Non-Union",agent:profile?.agent||"",training:profile?.training||"",
     skills:(profile?.skills||[]).join(", "),instagram:profile?.instagram||"",phone:profile?.phone||"",
     company_name:profile?.company_name||"",company_role:profile?.company_role||"",website:profile?.website||"",
-    credits:profile?.credits||""
+    credits:profile?.credits||"",
+    body_type:profile?.body_type||"",age_range:profile?.age_range||"",
+    talent_types:Array.isArray(profile?.talent_types)?profile.talent_types:[]
   }));
   useEffect(()=>{if(profile){
     setF(x=>({...x,display_name:profile.display_name||"",bio:profile.bio||"",location:profile.location||"",
@@ -2515,7 +2674,9 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
       union_status:profile.union_status||"Non-Union",agent:profile.agent||"",training:profile.training||"",
       skills:(profile.skills||[]).join(", "),instagram:profile.instagram||"",phone:profile.phone||"",
       company_name:profile.company_name||"",company_role:profile.company_role||"",website:profile.website||"",
-      credits:profile.credits||""
+      credits:profile.credits||"",
+      body_type:profile.body_type||"",age_range:profile.age_range||"",
+      talent_types:Array.isArray(profile.talent_types)?profile.talent_types:[]
     }));
     const ap=profile.additional_photos||[];setPhotos(ap);
     const vl=profile.video_links||[];
@@ -2551,7 +2712,9 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
         skills:f.skills?f.skills.split(",").map(s=>s.trim()).filter(Boolean):[],
         instagram:f.instagram||null,phone:f.phone||null,
         company_name:f.company_name||null,company_role:f.company_role||null,website:f.website||null,
-        credits:f.credits||null,video_links:vl
+        credits:f.credits||null,video_links:vl,
+        body_type:f.body_type||null,age_range:f.age_range||null,
+        talent_types:Array.isArray(f.talent_types)?f.talent_types:[]
       };
       const {error}=await withTimeout(window.sb.from("profiles").update(patch).eq("id",session.user.id),30000,"Save");
       if(error)throw error;
@@ -2561,9 +2724,10 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
   const uploadFile=async(file,bucket,field)=>{
     if(!file)return;setUploading(true);setErr("");
     try{
-      const ext=(file.name.split(".").pop()||"jpg").toLowerCase();
+      // Blob from cropper has no .name — default to .jpg
+      const ext=(file.name&&file.name.split(".").pop()||"jpg").toLowerCase();
       const path=`${session.user.id}/${Date.now()}.${ext}`;
-      const {error:upErr}=await withTimeout(window.sb.storage.from(bucket).upload(path,file,{cacheControl:"3600",upsert:false}),60000,"Upload");
+      const {error:upErr}=await withTimeout(window.sb.storage.from(bucket).upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type||"image/jpeg"}),60000,"Upload");
       if(upErr)throw upErr;
       const {data:pub}=window.sb.storage.from(bucket).getPublicUrl(path);
       const patch={};patch[field]=pub.publicUrl;
@@ -2576,9 +2740,9 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     if(photos.length>=10){setErr("Maximum 10 photos allowed.");return;}
     setUploading(true);setErr("");
     try{
-      const ext=(file.name.split(".").pop()||"jpg").toLowerCase();
+      const ext=(file.name&&file.name.split(".").pop()||"jpg").toLowerCase();
       const path=`${session.user.id}/gallery_${Date.now()}.${ext}`;
-      const {error:upErr}=await window.sb.storage.from("headshots").upload(path,file,{cacheControl:"3600",upsert:false});
+      const {error:upErr}=await window.sb.storage.from("headshots").upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type||"image/jpeg"});
       if(upErr)throw upErr;
       const {data:pub}=window.sb.storage.from("headshots").getPublicUrl(path);
       const newPhotos=[...photos,pub.publicUrl];
@@ -2628,7 +2792,7 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
         {profile.headshot_url
           ?<img src={profile.headshot_url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:10}}/>
           :<div style={{width:"100%",aspectRatio:"3/4",background:"var(--s2)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t3)",fontSize:12,textAlign:"center",padding:12}}>No headshot yet</div>}
-        <label className="btn-s" style={{width:"100%",display:"block",textAlign:"center",cursor:"pointer",marginTop:8,fontSize:11}}>{uploading?"Uploading…":"Change Headshot"}<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>uploadFile(e.target.files?.[0],"headshots","headshot_url")}/></label>
+        <label className="btn-s" style={{width:"100%",display:"block",textAlign:"center",cursor:"pointer",marginTop:8,fontSize:11}}>{uploading?"Uploading…":"Change Headshot"}<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/></label>
       </div>
       <div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
@@ -2670,10 +2834,12 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
       {!isCD&&<>
         <div className="card" style={{padding:24,marginBottom:16}}>
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Physical Stats</h3>
-          <div className="form-row"><div className="form-group"><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={f.gender} onChange={e=>up("gender",e.target.value)}><option value="">—</option><option>Female</option><option>Male</option><option>Non-Binary</option><option>Other</option></select></div><div className="form-group"><label className="label">Age</label><input className="input" type="number" value={f.age} onChange={e=>up("age",e.target.value)}/></div></div>
-          <div className="form-row"><div className="form-group"><label className="label">Height</label><input className="input" placeholder={'5\'8"'} value={f.height} onChange={e=>up("height",e.target.value)}/></div><div className="form-group"><label className="label">Weight</label><input className="input" placeholder="150 lbs" value={f.weight} onChange={e=>up("weight",e.target.value)}/></div></div>
-          <div className="form-row"><div className="form-group"><label className="label">Hair Color</label><input className="input" value={f.hair} onChange={e=>up("hair",e.target.value)}/></div><div className="form-group"><label className="label">Eye Color</label><input className="input" value={f.eyes} onChange={e=>up("eyes",e.target.value)}/></div></div>
-          <div className="form-row"><div className="form-group"><label className="label">Ethnicity</label><input className="input" value={f.ethnicity} onChange={e=>up("ethnicity",e.target.value)}/></div><div className="form-group"><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union_status} onChange={e=>up("union_status",e.target.value)}><option>Non-Union</option><option>SAG-AFTRA</option><option>AEA</option><option>SAG-AFTRA / AEA</option><option>ACTRA</option></select></div></div>
+          <div className="form-row"><div className="form-group"><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={f.gender} onChange={e=>up("gender",e.target.value)}><option value="">—</option><option>Female</option><option>Male</option><option>Non-Binary</option><option>Other</option></select></div><div className="form-group"><label className="label">Age</label><input className="input" type="number" min="1" max="120" value={f.age} onChange={e=>up("age",e.target.value)}/></div></div>
+          <div className="form-row"><div className="form-group"><label className="label">Height</label><select className="select" style={{width:"100%"}} value={f.height} onChange={e=>up("height",e.target.value)}><option value="">Select</option>{HEIGHTS.map(h=><option key={h} value={h}>{h}</option>)}</select></div><div className="form-group"><label className="label">Weight</label><select className="select" style={{width:"100%"}} value={f.weight} onChange={e=>up("weight",e.target.value)}><option value="">Select</option>{WEIGHTS.map(w=><option key={w} value={w}>{w}</option>)}</select></div></div>
+          <div className="form-row"><div className="form-group"><label className="label">Hair Color</label><select className="select" style={{width:"100%"}} value={f.hair} onChange={e=>up("hair",e.target.value)}><option value="">Select</option>{HAIR_COLORS.map(h=><option key={h} value={h}>{h}</option>)}</select></div><div className="form-group"><label className="label">Eye Color</label><select className="select" style={{width:"100%"}} value={f.eyes} onChange={e=>up("eyes",e.target.value)}><option value="">Select</option>{EYE_COLORS.map(ec=><option key={ec} value={ec}>{ec}</option>)}</select></div></div>
+          <div className="form-row"><div className="form-group"><label className="label">Ethnicity</label><select className="select" style={{width:"100%"}} value={f.ethnicity} onChange={e=>up("ethnicity",e.target.value)}><option value="">Select</option>{ETHNICITIES.map(et=><option key={et} value={et}>{et}</option>)}</select></div><div className="form-group"><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union_status} onChange={e=>up("union_status",e.target.value)}><option>Non-Union</option><option>SAG-AFTRA</option><option>AEA</option><option>SAG-AFTRA / AEA</option><option>ACTRA</option></select></div></div>
+          <div className="form-row"><div className="form-group"><label className="label">Body Type</label><select className="select" style={{width:"100%"}} value={f.body_type||""} onChange={e=>up("body_type",e.target.value)}><option value="">Select</option><option>Slim</option><option>Athletic / Toned</option><option>Average</option><option>Muscular</option><option>Curvy</option><option>Plus-size</option><option>Heavyset</option><option>Petite</option><option>Tall / Lean</option></select></div><div className="form-group"><label className="label">Playable Age Range</label><select className="select" style={{width:"100%"}} value={f.age_range||""} onChange={e=>up("age_range",e.target.value)}><option value="">Select</option><option>0-5</option><option>6-12</option><option>13-17</option><option>18-24</option><option>25-34</option><option>35-44</option><option>45-54</option><option>55-64</option><option>65+</option></select></div></div>
+          <div className="form-group"><label className="label">Talent Types (select all that apply)</label><div style={{display:"flex",gap:16,flexWrap:"wrap",marginTop:6}}>{["Film","TV","Theater","Commercial","Modeling","Voiceover"].map(t=>{const arr=Array.isArray(f.talent_types)?f.talent_types:(f.talent_types?[f.talent_types]:[]);const on=arr.includes(t);return(<label key={t} className="checkbox-row"><input type="checkbox" checked={on} onChange={()=>up("talent_types",on?arr.filter(x=>x!==t):[...arr,t])}/>{t}</label>);})}</div></div>
         </div>
         <div className="card" style={{padding:24,marginBottom:16}}>
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Training & Skills</h3>
@@ -2715,7 +2881,7 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
       <div className="card" style={{padding:24,marginBottom:16}}>
         <div className="flex-between" style={{marginBottom:16}}>
           <div><h3 style={{fontSize:15,fontWeight:700,marginBottom:2}}>Photo Gallery</h3><p style={{fontSize:12,color:"var(--t3)"}}>{allPhotos.length} of 10 photos · Your headshot is always first</p></div>
-          {allPhotos.length<10&&<label className="btn-p btn-sm" style={{cursor:"pointer"}}>{uploading?"Uploading…":"+ Add Photo"}<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>uploadAdditionalPhoto(e.target.files?.[0])}/></label>}
+          {allPhotos.length<10&&<label className="btn-p btn-sm" style={{cursor:"pointer"}}>{uploading?"Uploading…":"+ Add Photo"}<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"additional",aspect:0.75,label:"Crop Photo"});e.target.value="";}}/></label>}
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:12}}>
           {profile.headshot_url&&<div style={{position:"relative",borderRadius:8,overflow:"hidden",border:"2px solid var(--acc)"}}>
@@ -2726,7 +2892,7 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
             <img src={url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",display:"block"}}/>
             <button onClick={()=>removePhoto(url)} style={{position:"absolute",top:4,right:4,background:"rgba(0,0,0,0.6)",border:"none",color:"#fff",borderRadius:"50%",width:22,height:22,cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
           </div>)}
-          {allPhotos.length<10&&Array.from({length:Math.min(2,10-allPhotos.length)}).map((_,i)=><label key={`empty-${i}`} style={{aspectRatio:"3/4",background:"var(--s2)",borderRadius:8,border:"1px dashed var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexDirection:"column",gap:6,color:"var(--t3)",fontSize:12}}>+ Add<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>uploadAdditionalPhoto(e.target.files?.[0])}/></label>)}
+          {allPhotos.length<10&&Array.from({length:Math.min(2,10-allPhotos.length)}).map((_,i)=><label key={`empty-${i}`} style={{aspectRatio:"3/4",background:"var(--s2)",borderRadius:8,border:"1px dashed var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexDirection:"column",gap:6,color:"var(--t3)",fontSize:12}}>+ Add<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"additional",aspect:0.75,label:"Crop Photo"});e.target.value="";}}/></label>)}
         </div>
       </div>
       <p style={{fontSize:12,color:"var(--t3)"}}>These photos are visible to casting directors. When you apply to a role, you choose which photo to submit.</p>
@@ -2778,6 +2944,18 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
       </div>)}
     </div>}
 
+    {cropState&&<ImageCropModal
+      file={cropState.file}
+      aspect={cropState.aspect}
+      label={cropState.label}
+      onClose={()=>setCropState(null)}
+      onConfirm={async(blob)=>{
+        const target=cropState.target;
+        setCropState(null);
+        if(target==="headshot"){await uploadFile(blob,"headshots","headshot_url");}
+        else if(target==="additional"){await uploadAdditionalPhoto(blob);}
+      }}
+    />}
     <Footer onNavigate={onNavigate}/></div>);
 }
 
@@ -3369,6 +3547,16 @@ export default function App(){
   const [myProfile,setMyProfile]=useState(null);
   const [authReady,setAuthReady]=useState(false);
   const [pendingApply,setPendingApply]=useState(null);
+  // ───────────────────────────────────────────────────────────────
+  // Shared refresh signal for cross-page data (castings, talent, etc.)
+  // Any page that wants to know "something important changed, re-fetch"
+  // depends on castingsVersion in its useEffect. Any mutation that should
+  // trigger refetches (new casting, edit, delete, realtime event) calls
+  // bumpCastings(). Fixes the long-standing "new castings don't appear
+  // until manual refresh" bug.
+  // ───────────────────────────────────────────────────────────────
+  const [castingsVersion,setCastingsVersion]=useState(0);
+  const bumpCastings=useCallback(()=>setCastingsVersion(v=>v+1),[]);
   const isLoggedIn=!!session;
   // Admin derived from the PROFILE row (authoritative, server-enforced via RLS + RPCs).
   // SC_CONFIG.ADMIN_EMAIL is kept only as a *fallback* so the owner can still reach
@@ -3437,6 +3625,30 @@ export default function App(){
     });
     return()=>{window.removeEventListener("popstate",onPop);sub?.subscription?.unsubscribe?.();};
   },[loadProfile]);
+
+  // ───────────────────────────────────────────────────────────────
+  // Supabase realtime: whenever the castings table changes, bump the
+  // shared version so any open view re-fetches. Safety net — the
+  // explicit bumpCastings() call from NewCastingModal handles the
+  // same-user case; this covers admin edits, other CDs, and any
+  // write that doesn't run through our modal. If realtime is not
+  // enabled on the table, the subscribe just never fires — harmless.
+  // ───────────────────────────────────────────────────────────────
+  useEffect(()=>{
+    if(!window.sb?.channel)return;
+    let ch;
+    try{
+      ch=window.sb.channel("castings-realtime")
+        .on("postgres_changes",{event:"*",schema:"public",table:"castings"},()=>{
+          setCastingsVersion(v=>v+1);
+        })
+        .on("postgres_changes",{event:"*",schema:"public",table:"roles"},()=>{
+          setCastingsVersion(v=>v+1);
+        })
+        .subscribe();
+    }catch(e){/* realtime not available — silent */}
+    return()=>{if(ch){try{window.sb.removeChannel(ch);}catch(_){}}};
+  },[]);
 
   const pushHist=(p)=>{try{window.history.pushState({swipecast:true,page:p},"","");}catch(e){}};
   const navigate=useCallback((p)=>{
@@ -3546,10 +3758,10 @@ export default function App(){
         </div>
       </div>}
       {page==="home"&&<Landing onNavigate={navigate}/>}
-      {page==="search"&&<SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");}}/>}
+      {page==="search"&&<SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");}}/>}
       {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} onBack={()=>{setPage("search");setViewingCasting(null);window.scrollTo(0,0);}} onNavigate={navigate}/>}
       {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
-      {page==="dashboard"&&<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile}/>}
+      {page==="dashboard"&&<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings}/>}
       {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{setPage(prevPage);setViewingProfile(null);}} onNavigate={navigate}/>}
       {page==="my-profile"&&isLoggedIn&&<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate}/>}
       {page==="admin"&&isLoggedIn&&isAdmin&&<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>}
