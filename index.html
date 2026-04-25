@@ -1711,18 +1711,23 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const [dbCastings,setDbCastings]=useState([]);
   const [dbTalent,setDbTalent]=useState([]);
   const [refreshTick,setRefreshTick]=useState(0);
+  const [loading,setLoading]=useState(true);          // initial fetch in flight
+  const [fetchErr,setFetchErr]=useState("");          // surfaced castings fetch error
+  const [lastFetchAt,setLastFetchAt]=useState(0);     // timestamp of last successful fetch
   useEffect(()=>{setPg(1);},[q,f.type,f.location,f.union,f.gender,f.ethnicity,mode]);
-  // Refetch when tab becomes visible again — keeps castings list in sync after CD posts
-  useEffect(()=>{
-    const onFocus=()=>setRefreshTick(t=>t+1);
-    window.addEventListener("focus",onFocus);
-    document.addEventListener("visibilitychange",onFocus);
-    return()=>{window.removeEventListener("focus",onFocus);document.removeEventListener("visibilitychange",onFocus);};
-  },[]);
-  useEffect(()=>{(async()=>{
+
+  // ─── Fetch castings — extracted into a stable callback so realtime, polling,
+  //     focus, and the manual retry button all hit the same code path. The previous
+  //     silent catch was the root cause of "castings disappear until refresh" — any
+  //     transient network blip would clear results with no recovery. Now we keep the
+  //     last good data on failure and surface the error to the user.
+  const fetchCastings=useCallback(async()=>{
     try{
-      const {data:cs}=await window.sb.from("castings").select("*,roles(id,name,description,gender,age_range,ethnicity,pay)").eq("status","open").eq("published",true).order("created_at",{ascending:false});
-      // normalize DB castings to match demo shape so the rest of the UI just works
+      const {data:cs,error}=await window.sb.from("castings")
+        .select("*,roles(id,name,description,gender,age_range,ethnicity,pay)")
+        .eq("status","open").eq("published",true)
+        .order("created_at",{ascending:false});
+      if(error)throw error;
       const mapped=(cs||[]).map(c=>({
         id:c.id,
         title:c.title,
@@ -1747,9 +1752,22 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         }))
       }));
       setDbCastings(mapped);
-    }catch(e){/* silent */}
+      setFetchErr("");
+      setLastFetchAt(Date.now());
+    }catch(e){
+      console.error("[SearchPage] castings fetch failed:",e);
+      setFetchErr(e.message||"Could not load castings.");
+      // Intentionally do NOT clear dbCastings — preserve last good state.
+    }
+  },[]);
+
+  const fetchTalent=useCallback(async()=>{
     try{
-      const {data:ps}=await window.sb.from("profiles").select("id,display_name,headshot_url,age,gender,ethnicity,location,union_status,skills,bio").eq("user_type","talent").eq("visible",true).eq("suspended",false).eq("onboarded",true).limit(200);
+      const {data:ps,error}=await window.sb.from("profiles")
+        .select("id,display_name,headshot_url,age,gender,ethnicity,location,union_status,skills,bio")
+        .eq("user_type","talent").eq("visible",true).eq("suspended",false).eq("onboarded",true)
+        .limit(200);
+      if(error)throw error;
       const mapped=(ps||[]).filter(p=>p.headshot_url).map(p=>({
         id:p.id,
         name:p.display_name||"Talent",
@@ -1767,8 +1785,30 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         _db:true
       }));
       setDbTalent(mapped);
-    }catch(e){/* silent */}
-  })();},[refreshTick,castingsVersion]);
+    }catch(e){console.error("[SearchPage] talent fetch failed:",e);/* keep last good */}
+  },[]);
+
+  // Initial + reactive fetches: any of these triggers a refresh
+  useEffect(()=>{
+    let cancelled=false;
+    setLoading(true);
+    Promise.all([fetchCastings(),fetchTalent()]).finally(()=>{if(!cancelled)setLoading(false);});
+    return()=>{cancelled=true;};
+  },[refreshTick,castingsVersion,fetchCastings,fetchTalent]);
+
+  // Refetch when tab becomes visible again — keeps castings list in sync after CD posts.
+  // Plus a 60s polling backstop in case realtime gets disconnected.
+  useEffect(()=>{
+    const onFocus=()=>setRefreshTick(t=>t+1);
+    window.addEventListener("focus",onFocus);
+    document.addEventListener("visibilitychange",onFocus);
+    const tid=setInterval(()=>{fetchCastings();fetchTalent();},60000);
+    return()=>{
+      window.removeEventListener("focus",onFocus);
+      document.removeEventListener("visibilitychange",onFocus);
+      clearInterval(tid);
+    };
+  },[fetchCastings,fetchTalent]);
 
   // Merge: real DB castings first (newest), then demo. Real talent first, then demo.
   const allCastings=[...dbCastings,...CASTINGS];
@@ -1785,7 +1825,14 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       <div className="results-grid">{ft.map(t=><div key={t.id} className="talent-thumb" onClick={()=>onViewProfile(t)}><img src={t.img} alt={t.name}/><div className="talent-thumb-info"><h4>{t.name}</h4><p>{t.age} · {t.gender} · {t.location}</p><div style={{marginTop:6}}><span className="tag" style={{fontSize:10}}>{t.union||"Non-Union"}</span></div></div></div>)}</div>
     </>:<>
       <div className="filter-row"><select className="select" value={f.type} onChange={e=>setF(x=>({...x,type:e.target.value}))}><option value="">All Types</option><option>Film</option><option>TV</option><option>Theater</option><option>Commercial</option><option>Modeling</option></select><select className="select" value={f.location} onChange={e=>setF(x=>({...x,location:e.target.value}))}><option value="">All Locations</option><option value="New York">New York</option><option value="Los Angeles">Los Angeles</option><option value="Atlanta">Atlanta</option><option value="Miami">Miami</option></select><select className="select" value={f.union} onChange={e=>setF(x=>({...x,union:e.target.value}))}><option value="">All Union Status</option><option value="SAG-AFTRA">SAG-AFTRA</option><option value="AEA">AEA</option><option value="Non-Union">Non-Union</option></select></div>
-      <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Showing {fc.length===0?0:(pg-1)*10+1}-{Math.min(pg*10,fc.length)} of {fc.length} results</p>
+      {fetchErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+        <span>Couldn't refresh castings: {fetchErr}{dbCastings.length>0?" — showing last loaded list.":""}</span>
+        <button className="btn-s btn-sm" onClick={()=>{setRefreshTick(t=>t+1);}}>Retry</button>
+      </div>}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,gap:10,flexWrap:"wrap"}}>
+        <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{loading&&dbCastings.length===0?"Loading castings…":`Showing ${fc.length===0?0:(pg-1)*10+1}-${Math.min(pg*10,fc.length)} of ${fc.length} results`}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· updated {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
+        <button className="btn-s btn-sm" onClick={()=>setRefreshTick(t=>t+1)} disabled={loading}>{loading?"…":"↻ Refresh"}</button>
+      </div>
       <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(c=>
         <div key={c.id} className="card" style={{padding:0,overflow:"hidden",cursor:"pointer"}} onClick={()=>onViewCasting&&onViewCasting(c)}>
           <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
@@ -1892,31 +1939,59 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   };
 
   // ─── Load castings + aggregate stats (and cross-casting Selected list)
-  useEffect(()=>{if(!uid){setLoading(false);return;}(async()=>{
+  //     Errors are now surfaced (was silent console.warn) and the load is wrapped in
+  //     a callback so a 60s polling interval + focus refetch can keep the dashboard
+  //     synced even if realtime drops. On failure, last good state is preserved.
+  const [cdLoadErr,setCdLoadErr]=useState("");
+  const loadCdCastings=useCallback(async()=>{
+    if(!uid){setLoading(false);return;}
     setLoading(true);
-    const {data:cs,error:csErr}=await window.sb.from("castings").select("*,roles(id,name)").eq("cd_id",uid).order("created_at",{ascending:false});
-    if(csErr)console.warn("[cd] castings load error:",csErr.message);
-    const castings=cs||[];
-    const ids=castings.map(c=>c.id);
-    let counts={};let total=0;let pending=0;let selected=0;let hold=0;let sel=[];
-    if(ids.length){
-      const {data:apps,error:appErr}=await window.sb.from("applications")
-        .select("id,casting_id,role_id,status,talent_id,cover_note,selected_photo_url,created_at,reviewed_at,profiles(*),roles(id,name)")
-        .in("casting_id",ids);
-      if(appErr)console.warn("[cd] apps load error:",appErr.message);
-      (apps||[]).forEach(a=>{
-        counts[a.casting_id]=(counts[a.casting_id]||0)+1;
-        total++;
-        if(a.status==='pending')pending++;
-        else if(a.status==='hold')hold++;
-        else if(a.status==='selected'){selected++;sel.push(a);}
-      });
-    }
-    setMyCastings(castings.map(c=>({...c,_count:counts[c.id]||0})));
-    setStats({total,pending,selected,hold});
-    setAllSelected(sel);
-    setLoading(false);
-  })();},[uid,reloadTick,castingsVersion]);
+    try{
+      const {data:cs,error:csErr}=await window.sb.from("castings").select("*,roles(id,name)").eq("cd_id",uid).order("created_at",{ascending:false});
+      if(csErr)throw csErr;
+      const castings=cs||[];
+      const ids=castings.map(c=>c.id);
+      let counts={};let total=0;let pending=0;let selected=0;let hold=0;let sel=[];
+      if(ids.length){
+        const {data:apps,error:appErr}=await window.sb.from("applications")
+          .select("id,casting_id,role_id,status,talent_id,cover_note,selected_photo_url,created_at,reviewed_at,profiles(*),roles(id,name)")
+          .in("casting_id",ids);
+        if(appErr)throw appErr;
+        (apps||[]).forEach(a=>{
+          counts[a.casting_id]=(counts[a.casting_id]||0)+1;
+          total++;
+          if(a.status==='pending')pending++;
+          else if(a.status==='hold')hold++;
+          else if(a.status==='selected'){selected++;sel.push(a);}
+        });
+      }
+      setMyCastings(castings.map(c=>({...c,_count:counts[c.id]||0})));
+      setStats({total,pending,selected,hold});
+      setAllSelected(sel);
+      setCdLoadErr("");
+    }catch(e){
+      console.error("[cd] dashboard load failed:",e);
+      setCdLoadErr(e.message||"Could not load your castings.");
+      // Preserve last good state — do NOT clear myCastings.
+    }finally{setLoading(false);}
+  },[uid]);
+
+  useEffect(()=>{loadCdCastings();},[loadCdCastings,reloadTick,castingsVersion]);
+
+  // Polling backstop + focus refetch — covers websocket disconnects so a posted
+  // casting never silently vanishes from the CD's own dashboard.
+  useEffect(()=>{
+    if(!uid)return;
+    const onFocus=()=>setReloadTick(t=>t+1);
+    window.addEventListener("focus",onFocus);
+    document.addEventListener("visibilitychange",onFocus);
+    const tid=setInterval(()=>loadCdCastings(),60000);
+    return()=>{
+      window.removeEventListener("focus",onFocus);
+      document.removeEventListener("visibilitychange",onFocus);
+      clearInterval(tid);
+    };
+  },[uid,loadCdCastings]);
 
   // ─── Load saved talent lists + members. Runs whenever the CD opens that tab or
   //     after they add/remove a list / member.
@@ -2293,10 +2368,14 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         <button className={`tab ${tab==="allSelected"?"active":""}`} onClick={()=>setTab("allSelected")}>All Selected <span style={{opacity:.6}}>({allSelected.length})</span></button>
         <button className={`tab ${tab==="savedLists"?"active":""}`} onClick={()=>{setTab("savedLists");setActiveList(null);}}>Saved Lists <span style={{opacity:.6}}>({savedLists.length})</span></button>
       </div>
+      {cdLoadErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+        <span>Couldn't refresh dashboard: {cdLoadErr}{myCastings.length>0?" — showing last loaded list.":""}</span>
+        <button className="btn-s btn-sm" onClick={()=>setReloadTick(t=>t+1)}>Retry</button>
+      </div>}
       {tab==="castings"?
         myCastings.length===0?<div className="card" style={{textAlign:"center",padding:48}}>
-          <p style={{color:"var(--t3)",marginBottom:16}}>You haven't posted any castings yet.</p>
-          <button className="btn-p" onClick={()=>setShowNew(true)}>+ Post Your First Casting</button>
+          <p style={{color:"var(--t3)",marginBottom:16}}>{loading?"Loading your castings…":"You haven't posted any castings yet."}</p>
+          {!loading&&<button className="btn-p" onClick={()=>setShowNew(true)}>+ Post Your First Casting</button>}
         </div>:
         <div className="card-flat">{myCastings.map(c=>
           <div key={c.id} className="casting-row" onClick={()=>openReview(c)}>
@@ -2661,6 +2740,174 @@ function ComposeDMModal({fromId,toId,toName,onClose}){
   </div></div>);
 }
 
+// ─── Full thread view for a single inbox message.
+// Shows sender info, exact date+time, casting context (if the message is tied to an
+// application), the full message body, plus reply / delete / back actions.
+// Auto-marks the message as read on mount so the unread badge updates instantly.
+function MessageThreadModal({message,sessionUid,onClose,onRead,onDeleted,onReplied}){
+  const [reply,setReply]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [deleting,setDeleting]=useState(false);
+  const [err,setErr]=useState("");
+  const [sent,setSent]=useState(false);
+  const [castingCtx,setCastingCtx]=useState(null); // {title, prod, location, role}
+  const [thread,setThread]=useState([]);           // prior messages between same parties (best-effort)
+  const readFiredRef=useRef(false);
+
+  // 1) Mark unread → read on mount, exactly once. The parent already updates inbox state
+  //    optimistically; this also writes through to the DB.
+  useEffect(()=>{
+    if(readFiredRef.current)return;
+    readFiredRef.current=true;
+    if(message&&!message.read_at&&typeof onRead==="function")onRead();
+  },[message,onRead]);
+
+  // 2) Lookup casting / role context if this message is tied to an application.
+  useEffect(()=>{
+    let cancelled=false;
+    if(!message?.application_id){setCastingCtx(null);return;}
+    (async()=>{
+      try{
+        const {data}=await window.sb.from("applications")
+          .select("id,castings(id,title,prod,location,type),roles(name)")
+          .eq("id",message.application_id).maybeSingle();
+        if(!cancelled&&data)setCastingCtx({
+          casting:data.castings||null,
+          role:data.roles||null
+        });
+      }catch(_){/* silent — context is nice-to-have */}
+    })();
+    return()=>{cancelled=true;};
+  },[message?.application_id]);
+
+  // 3) Best-effort prior-thread fetch — pull a short history of messages between the
+  //    same two parties so the user sees prior context, not just one orphan message.
+  useEffect(()=>{
+    let cancelled=false;
+    if(!message||!sessionUid)return;
+    const other=message.from_id===sessionUid?message.to_id:message.from_id;
+    (async()=>{
+      try{
+        const {data}=await window.sb.from("messages")
+          .select("id,from_id,to_id,body,created_at,read_at,application_id,profiles:from_id(display_name,company_name,headshot_url,user_type)")
+          .or(`and(from_id.eq.${sessionUid},to_id.eq.${other}),and(from_id.eq.${other},to_id.eq.${sessionUid})`)
+          .order("created_at",{ascending:true})
+          .limit(50);
+        if(!cancelled)setThread(data||[]);
+      }catch(_){if(!cancelled)setThread([]);}
+    })();
+    return()=>{cancelled=true;};
+  },[message?.id,sessionUid]);
+
+  if(!message)return null;
+  const sender=message.profiles||{};
+  const senderName=sender.display_name||sender.company_name||"Unknown sender";
+  const senderTypeLabel=(()=>{
+    const t=(sender.user_type||"").toLowerCase();
+    if(t==="cd")return "Casting Director";
+    if(t==="talent")return "Actor / Talent";
+    if(t==="admin"||t==="super_admin")return "SlateCue Admin";
+    if(t==="producer")return "Producer";
+    return "Member";
+  })();
+  const created=new Date(message.created_at);
+  const dateStr=created.toLocaleDateString(undefined,{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  const timeStr=created.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+
+  const sendReply=async()=>{
+    const body=reply.trim();
+    if(!body||busy)return;
+    setBusy(true);setErr("");
+    try{
+      // Reply goes BACK to the original sender. Carry application_id so the thread stays linked.
+      const payload={
+        from_id:sessionUid,
+        to_id:message.from_id,
+        application_id:message.application_id||null,
+        body
+      };
+      const {data,error}=await window.sb.from("messages").insert(payload).select("id,from_id,to_id,body,created_at,read_at,application_id").single();
+      if(error)throw error;
+      setReply("");
+      setSent(true);
+      // Append to local thread so the user sees their reply immediately
+      setThread(p=>[...p,{...data,profiles:{display_name:"You",user_type:"self"}}]);
+      if(typeof onReplied==="function")onReplied(data);
+      setTimeout(()=>setSent(false),1800);
+    }catch(e){setErr(e.message||"Could not send reply.");}
+    finally{setBusy(false);}
+  };
+
+  const deleteMsg=async()=>{
+    if(deleting)return;
+    if(!window.confirm("Delete this message? This cannot be undone."))return;
+    setDeleting(true);setErr("");
+    try{
+      const {error}=await window.sb.from("messages").delete().eq("id",message.id);
+      if(error)throw error;
+      if(typeof onDeleted==="function")onDeleted(message.id);
+      onClose();
+    }catch(e){setErr(e.message||"Could not delete.");setDeleting(false);}
+  };
+
+  return(<div className="modal-overlay" onClick={()=>!busy&&!deleting&&onClose()}>
+    <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:640,maxHeight:"90vh",overflowY:"auto"}}>
+      {/* Header — back button + delete */}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18,paddingBottom:14,borderBottom:"1px solid var(--bdr)"}}>
+        <button className="btn-s btn-sm" onClick={onClose} disabled={busy||deleting}>← Back to inbox</button>
+        <button onClick={deleteMsg} disabled={deleting||busy} style={{background:"transparent",border:"1px solid rgba(255,100,100,0.4)",color:"#c0392b",fontSize:12,fontWeight:600,padding:"7px 14px",borderRadius:8,cursor:"pointer"}}>{deleting?"Deleting…":"🗑 Delete"}</button>
+      </div>
+
+      {/* Sender header */}
+      <div style={{display:"flex",gap:14,alignItems:"flex-start",marginBottom:18}}>
+        <img src={sender.headshot_url||"https://placehold.co/56x56/e5e5e5/999?text=?"} alt="" style={{width:56,height:56,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
+        <div style={{minWidth:0,flex:1}}>
+          <div style={{fontWeight:800,fontSize:17,letterSpacing:"-0.2px"}}>{senderName}</div>
+          <div style={{fontSize:11,letterSpacing:1,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,marginTop:2}}>{senderTypeLabel}</div>
+          <div style={{fontSize:12,color:"var(--t3)",marginTop:6}}>{dateStr} · {timeStr}</div>
+        </div>
+      </div>
+
+      {/* Casting context — only when message is tied to an application */}
+      {castingCtx?.casting&&<div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 14px",marginBottom:18}}>
+        <div style={{fontSize:10,letterSpacing:1.2,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,marginBottom:4}}>Related casting</div>
+        <div style={{fontSize:14,fontWeight:700,color:"var(--t1)"}}>{castingCtx.casting.title||"Casting"}{castingCtx.role?.name?<span style={{color:"var(--t2)",fontWeight:500}}> · {castingCtx.role.name}</span>:null}</div>
+        <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{[castingCtx.casting.prod,castingCtx.casting.location,castingCtx.casting.type].filter(Boolean).join(" · ")}</div>
+      </div>}
+
+      {/* Message body — pre-wrap so newlines render */}
+      <div style={{background:"var(--s1)",borderRadius:10,padding:"14px 16px",marginBottom:18,whiteSpace:"pre-wrap",lineHeight:1.6,fontSize:14,color:"var(--t1)",border:"1px solid var(--bdr)"}}>{message.body}</div>
+
+      {/* Prior thread (if any) — kept compact, scroll within the modal if long */}
+      {thread.length>1&&<div style={{marginBottom:20}}>
+        <div style={{fontSize:10,letterSpacing:1.2,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,marginBottom:8}}>Conversation history</div>
+        <div style={{display:"flex",flexDirection:"column",gap:10,maxHeight:240,overflowY:"auto",paddingRight:4}}>
+          {thread.filter(t=>t.id!==message.id).map(t=>{
+            const mine=t.from_id===sessionUid;
+            const fromLabel=mine?"You":(t.profiles?.display_name||t.profiles?.company_name||"Them");
+            return(<div key={t.id} style={{alignSelf:mine?"flex-end":"flex-start",maxWidth:"85%",background:mine?"var(--acc)":"var(--s2)",color:mine?"#fff":"var(--t1)",padding:"10px 13px",borderRadius:12,fontSize:13,lineHeight:1.5,whiteSpace:"pre-wrap"}}>
+              <div style={{fontSize:10,fontWeight:700,letterSpacing:0.5,opacity:0.75,marginBottom:4}}>{fromLabel} · {new Date(t.created_at).toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}</div>
+              <div>{t.body}</div>
+            </div>);
+          })}
+        </div>
+      </div>}
+
+      {/* Reply box */}
+      <div style={{borderTop:"1px solid var(--bdr)",paddingTop:18}}>
+        <label className="label">Reply to {senderName.split(" ")[0]||senderName}</label>
+        <textarea className="textarea" rows="4" placeholder={`Write your reply…`} value={reply} onChange={e=>setReply(e.target.value)} disabled={busy||deleting}/>
+        {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginTop:10}}>{err}</div>}
+        {sent&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.35)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginTop:10,fontWeight:600}}>✓ Reply sent</div>}
+        <div style={{display:"flex",gap:10,marginTop:12}}>
+          <button className="btn-p" onClick={sendReply} disabled={busy||deleting||!reply.trim()} style={{flex:1}}>{busy?"Sending…":"Send Reply"}</button>
+          <button className="btn-s" onClick={onClose} disabled={busy||deleting}>Close</button>
+        </div>
+      </div>
+    </div>
+  </div>);
+}
+
 // ─── New Casting creation modal — writes to castings + roles tables
 // ─── Headshot / photo cropper — zoom + pan + crop to fixed aspect before upload.
 // Emits a JPEG blob via onConfirm(blob). Self-contained — no external libs.
@@ -2902,12 +3149,12 @@ function Landing({onNavigate}){
       <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> $9.99/mo for talent · 7-day free trial</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> Cancel anytime</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> 60-second signup</span></div>
     </div><div style={{display:"flex",justifyContent:"center"}}><LandingSwipe/></div></section>
 
-    {/* ───────── LOGO STRIP ───────── */}
+    {/* ───────── INDUSTRY STRIP — who SlateCue is built for ───────── */}
     <div style={{borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)",padding:"28px 40px",background:"var(--s2)"}}>
       <div style={{maxWidth:1200,margin:"0 auto",textAlign:"center"}}>
-        <p style={{fontSize:11,letterSpacing:1,textTransform:"uppercase",color:"var(--t3)",marginBottom:18,fontWeight:700}}>Talent trained at & working with</p>
-        <div style={{display:"flex",justifyContent:"center",gap:"clamp(24px,5vw,64px)",alignItems:"center",flexWrap:"wrap",opacity:0.55}}>
-          {["JUILLIARD","YALE DRAMA","NYU TISCH","RADA","GROUNDLINGS","STELLA ADLER","UCB","AMDA"].map(n=><span key={n} style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:14,letterSpacing:1,color:"var(--t1)"}}>{n}</span>)}
+        <p style={{fontSize:11,letterSpacing:1,textTransform:"uppercase",color:"var(--t3)",marginBottom:18,fontWeight:700}}>Built for the casting industry</p>
+        <div style={{display:"flex",justifyContent:"center",gap:"clamp(20px,4vw,52px)",alignItems:"center",flexWrap:"wrap",opacity:0.7}}>
+          {["STUDIOS","PRODUCTION COMPANIES","CASTING OFFICES","INDEPENDENT PRODUCERS","FILM & TV PRODUCTIONS"].map(n=><span key={n} style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:13,letterSpacing:1,color:"var(--t1)"}}>{n}</span>)}
         </div>
       </div>
     </div>
@@ -3050,7 +3297,9 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
   // Cropper state: {file, target: "headshot"|"additional", aspect, label}
   const [cropState,setCropState]=useState(null);
   const [videos,setVideos]=useState(["","","","",""]);  // 5 video link slots
-  const [msgModal,setMsgModal]=useState(null); // {from_id,body,created_at}
+  const [openMsg,setOpenMsg]=useState(null);   // currently-opened inbox thread
+  const [inboxErr,setInboxErr]=useState("");   // surfaced fetch error
+  const [inboxLoading,setInboxLoading]=useState(false);
   const [f,setF]=useState(()=>({
     display_name:profile?.display_name||"",bio:profile?.bio||"",location:profile?.location||"",
     age:profile?.age||"",gender:profile?.gender||"",ethnicity:profile?.ethnicity||"",
@@ -3077,6 +3326,27 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     const vl=profile.video_links||[];
     const slots=["","","","",""];vl.forEach((v,i)=>{if(i<5)slots[i]=v;});setVideos(slots);
   }},[profile]);
+  // ─── Fetch inbox — extracted so it can be re-run after reply, delete, or polling tick.
+  //     Errors are surfaced to the UI instead of being silently swallowed (was the
+  //     "messages disappeared" bug). Existing data is preserved on a transient failure.
+  const fetchInbox=useCallback(async()=>{
+    if(!session?.user)return;
+    setInboxLoading(true);
+    try{
+      const {data,error}=await window.sb.from("messages")
+        .select("id,from_id,to_id,body,created_at,read_at,application_id,profiles:from_id(display_name,headshot_url,company_name,user_type)")
+        .eq("to_id",session.user.id)
+        .order("created_at",{ascending:false})
+        .limit(200);
+      if(error)throw error;
+      setInbox(data||[]);
+      setInboxErr("");
+    }catch(e){
+      console.error("[inbox] load failed:",e);
+      setInboxErr(e.message||"Could not load inbox.");
+    }finally{setInboxLoading(false);}
+  },[session?.user?.id]);
+
   useEffect(()=>{(async()=>{
     if(!session?.user)return;
     if(profile?.user_type==="talent"){
@@ -3092,9 +3362,34 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
       }catch(_){setInvites([]);}
     }
     // inbox — messages received (for both talent + CD)
-    const {data:mdata}=await window.sb.from("messages").select("id,from_id,body,created_at,read_at,application_id,profiles:from_id(display_name,headshot_url,company_name,user_type)").eq("to_id",session.user.id).order("created_at",{ascending:false}).limit(100);
-    setInbox(mdata||[]);
-  })();},[session,profile]);
+    fetchInbox();
+  })();},[session,profile,fetchInbox]);
+
+  // ─── Realtime + polling backstop for the inbox. Realtime catches new sends + deletes
+  //     instantly; the 45s poll covers cases where the websocket is stale. Both update the
+  //     same state, so the unread badge always reflects truth without a manual refresh.
+  useEffect(()=>{
+    if(!session?.user?.id)return;
+    let cancelled=false;
+    let ch=null;
+    try{
+      ch=window.sb.channel(`inbox-${session.user.id}`)
+        .on("postgres_changes",{event:"*",schema:"public",table:"messages",filter:`to_id=eq.${session.user.id}`},()=>{if(!cancelled)fetchInbox();})
+        .on("postgres_changes",{event:"*",schema:"public",table:"messages",filter:`from_id=eq.${session.user.id}`},()=>{if(!cancelled)fetchInbox();})
+        .subscribe();
+    }catch(_){/* realtime optional */}
+    const tid=setInterval(()=>{if(!cancelled)fetchInbox();},45000);
+    const onFocus=()=>{if(!cancelled)fetchInbox();};
+    window.addEventListener("focus",onFocus);
+    document.addEventListener("visibilitychange",onFocus);
+    return()=>{
+      cancelled=true;
+      clearInterval(tid);
+      window.removeEventListener("focus",onFocus);
+      document.removeEventListener("visibilitychange",onFocus);
+      if(ch){try{window.sb.removeChannel(ch);}catch(_){}}
+    };
+  },[session?.user?.id,fetchInbox]);
   // Talent action — accept or decline a project invite
   const respondInvite=async(inv,nextStatus)=>{
     if(inviteBusy[inv.id])return;
@@ -3387,14 +3682,27 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
       })}
     </div>}
     <div className="card" style={{padding:24}}>
-      <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Messages ({inbox.length})</h3>
-      <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>Messages and audition invites from casting directors.</p>
-      {inbox.length===0?<p style={{color:"var(--t3)",fontSize:14}}>No messages yet.</p>:
-      inbox.map(m=><div key={m.id} onClick={()=>!m.read_at&&markRead(m.id)} style={{padding:"14px 0",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:12,alignItems:"flex-start",cursor:m.read_at?"default":"pointer",opacity:m.read_at?0.75:1}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4,gap:12,flexWrap:"wrap"}}>
+        <h3 style={{fontSize:15,fontWeight:700}}>Messages ({inbox.length}{inbox.filter(m=>!m.read_at).length>0?` · ${inbox.filter(m=>!m.read_at).length} unread`:""})</h3>
+        <button className="btn-s btn-sm" onClick={fetchInbox} disabled={inboxLoading}>{inboxLoading?"Refreshing…":"↻ Refresh"}</button>
+      </div>
+      <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>{isCD?"Replies from talent and direct messages.":"Messages and audition invites from casting directors and producers."} Click any message to open the full thread, reply, or delete.</p>
+      {inboxErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+        <span>Couldn't load messages: {inboxErr}</span>
+        <button className="btn-s btn-sm" onClick={fetchInbox}>Retry</button>
+      </div>}
+      {inbox.length===0?<p style={{color:"var(--t3)",fontSize:14}}>{inboxLoading?"Loading…":"No messages yet."}</p>:
+      inbox.map(m=><div key={m.id} onClick={()=>setOpenMsg(m)} style={{padding:"14px 0",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:12,alignItems:"flex-start",cursor:"pointer",opacity:m.read_at?0.78:1,transition:"background 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--s2)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
         <img src={m.profiles?.headshot_url||"https://placehold.co/44x44/e5e5e5/999?text=?"} style={{width:44,height:44,objectFit:"cover",borderRadius:"50%"}}/>
-        <div>
-          <div style={{fontWeight:700,fontSize:14}}>{m.profiles?.display_name||m.profiles?.company_name||"Casting Director"}{!m.read_at&&<span className="tag tag-acc" style={{marginLeft:8,fontSize:9}}>NEW</span>}</div>
-          <div style={{fontSize:13,color:"var(--t1)",whiteSpace:"pre-wrap",marginTop:4,lineHeight:1.5}}>{m.body}</div>
+        <div style={{minWidth:0}}>
+          <div style={{fontWeight:700,fontSize:14,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+            <span>{m.profiles?.display_name||m.profiles?.company_name||"Sender"}</span>
+            {m.profiles?.user_type==="cd"&&<span className="tag" style={{fontSize:9,background:"var(--s2)",color:"var(--t2)"}}>CD</span>}
+            {m.profiles?.user_type==="talent"&&<span className="tag" style={{fontSize:9,background:"var(--s2)",color:"var(--t2)"}}>Talent</span>}
+            {(m.profiles?.user_type==="admin"||m.profiles?.user_type==="super_admin")&&<span className="tag" style={{fontSize:9,background:"var(--s2)",color:"var(--t2)"}}>Admin</span>}
+            {!m.read_at&&<span className="tag tag-acc" style={{fontSize:9}}>NEW</span>}
+          </div>
+          <div style={{fontSize:13,color:"var(--t1)",whiteSpace:"pre-wrap",marginTop:4,lineHeight:1.5,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{m.body}</div>
         </div>
         <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap"}}>{new Date(m.created_at).toLocaleDateString()}</span>
       </div>)}
@@ -3411,6 +3719,24 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
         if(target==="headshot"){await uploadFile(blob,"headshots","headshot_url");}
         else if(target==="additional"){await uploadAdditionalPhoto(blob);}
       }}
+    />}
+    {/* ── Inbox thread modal — opens whenever a row is clicked. Marks read on mount,
+           supports reply, hard-delete, and shows full date+time + casting context. ── */}
+    {openMsg&&<MessageThreadModal
+      message={openMsg}
+      sessionUid={session.user.id}
+      onClose={()=>setOpenMsg(null)}
+      onRead={()=>{
+        // Optimistic: flip the row's read_at locally so the unread badge ticks down instantly.
+        setInbox(p=>p.map(x=>x.id===openMsg.id?{...x,read_at:new Date().toISOString()}:x));
+        markRead(openMsg.id);
+      }}
+      onDeleted={(id)=>{
+        setInbox(p=>p.filter(x=>x.id!==id));
+        // Also re-sync from server in case the delete cascaded anything
+        setTimeout(fetchInbox,300);
+      }}
+      onReplied={()=>{/* no-op — realtime subscription will pick up our outbound row if needed */}}
     />}
     <Footer onNavigate={onNavigate}/></div>);
 }
