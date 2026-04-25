@@ -347,6 +347,27 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;}
 .mm-link:last-child{border-bottom:none;}
 .mm-link:hover{color:var(--acc);}
+/* ─── Featured castings slider — homepage hero carousel ─── */
+.fcs-section{position:relative;max-width:1200px;margin:0 auto;padding:48px 40px 16px;}
+.fcs-track{position:relative;border-radius:20px;}
+.fcs-card{position:relative;background:var(--s1);border:1px solid var(--bdr);border-radius:20px;padding:38px 44px;cursor:pointer;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;box-shadow:0 1px 2px rgba(0,0,0,0.02);min-height:280px;}
+.fcs-card:hover{transform:translateY(-3px);box-shadow:0 14px 36px rgba(0,0,0,0.08);border-color:var(--acc);}
+.fcs-arrow{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;background:var(--s1);border:1px solid var(--bdr);color:var(--t1);cursor:pointer;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:3;box-shadow:0 4px 14px rgba(0,0,0,0.08);transition:transform .18s ease,background .18s ease,color .18s ease;font-family:'DM Sans',sans-serif;line-height:1;}
+.fcs-arrow:hover{background:var(--acc);color:#fff;transform:translateY(-50%) scale(1.06);border-color:var(--acc);}
+.fcs-arrow:disabled{opacity:0.45;cursor:not-allowed;}
+.fcs-arrow.prev{left:-22px;}
+.fcs-arrow.next{right:-22px;}
+.fcs-dots{display:flex;justify-content:center;gap:7px;margin-top:22px;flex-wrap:wrap;}
+.fcs-dot{width:8px;height:8px;border-radius:50%;background:var(--bdr);border:none;padding:0;cursor:pointer;transition:width .25s ease,background .25s ease;}
+.fcs-dot.active{width:28px;border-radius:5px;background:var(--acc);}
+@media (max-width:768px){
+  .fcs-section{padding:32px 16px 12px;}
+  .fcs-card{padding:24px 22px;min-height:auto;}
+  .fcs-card h3{font-size:22px !important;}
+  .fcs-arrow{width:38px;height:38px;font-size:15px;}
+  .fcs-arrow.prev{left:6px;}
+  .fcs-arrow.next{right:6px;}
+}
 /* ─── Industry partners marquee — infinite horizontal scroll, paused on hover ─── */
 .partners-marquee{position:relative;overflow:hidden;width:100%;padding:6px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);}
 .partners-track{display:flex;gap:clamp(40px,5vw,72px);align-items:center;width:max-content;animation:partnersSlide 36s linear infinite;will-change:transform;}
@@ -3294,10 +3315,188 @@ function NewCastingModal({onClose,onPosted,uid}){
   </div></div>);
 }
 
+// ─── FeaturedCastingsSlider — homepage carousel that pulls from the SAME source
+//     as Browse Castings (public.castings where status='open' and published=true).
+//     Click any card to open that casting's detail page. Realtime + 60s polling +
+//     focus refetch keep it in sync; last-good preservation on transient failures.
+function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
+  const [castings,setCastings]=useState([]);
+  const [idx,setIdx]=useState(0);
+  const [loading,setLoading]=useState(true);
+  const [err,setErr]=useState("");
+  const [paused,setPaused]=useState(false);
+  const touchRef=useRef({startX:0,active:false});
+
+  // Same select shape as SearchPage so the click navigates seamlessly into CastingDetailPage.
+  const fetchCastings=useCallback(async()=>{
+    try{
+      const {data,error}=await window.sb.from("castings")
+        .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,cd_id,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url)")
+        .eq("status","open").eq("published",true)
+        .order("created_at",{ascending:false})
+        .limit(12);
+      if(error)throw error;
+      // Map to the shape CastingDetailPage / SearchPage already understand
+      const mapped=(data||[]).map(c=>({
+        id:c.id,
+        title:c.title,
+        type:c.type||"Film",
+        prod:c.prod||"",
+        tagline:c.tagline||"",
+        synopsis:c.synopsis||"",
+        desc:c.synopsis||c.tagline||"",
+        location:c.location||"",
+        pay:c.pay||"",
+        rate:c.pay||"",
+        deadline:c.deadline||"",
+        union:c.union_status||"",
+        submissions:0,
+        _cd:c.profiles||null,
+        roles:(c.roles||[]).map(r=>({
+          name:r.name,
+          desc:r.description||"",
+          type:"Supporting",
+          gender:r.gender||"Any",
+          ageRange:r.age_range||"",
+          ethnicity:r.ethnicity||"Any"
+        }))
+      }));
+      setCastings(mapped);
+      setErr("");
+    }catch(e){
+      console.error("[FeaturedSlider] fetch failed:",e);
+      setErr(e.message||"Could not load castings.");
+      // keep last good
+    }finally{setLoading(false);}
+  },[]);
+
+  useEffect(()=>{fetchCastings();},[fetchCastings,castingsVersion]);
+
+  // Realtime subscription + 60s polling backstop + focus refetch — same defensive pattern
+  // as SearchPage so newly-posted castings appear automatically without manual refresh.
+  useEffect(()=>{
+    let cancelled=false;
+    let ch=null;
+    try{
+      ch=window.sb.channel("featured-castings-realtime")
+        .on("postgres_changes",{event:"*",schema:"public",table:"castings"},()=>{if(!cancelled)fetchCastings();})
+        .on("postgres_changes",{event:"*",schema:"public",table:"roles"},()=>{if(!cancelled)fetchCastings();})
+        .subscribe();
+    }catch(_){/* realtime optional */}
+    const tid=setInterval(()=>{if(!cancelled)fetchCastings();},60000);
+    const onFocus=()=>{if(!cancelled)fetchCastings();};
+    window.addEventListener("focus",onFocus);
+    document.addEventListener("visibilitychange",onFocus);
+    return()=>{
+      cancelled=true;clearInterval(tid);
+      window.removeEventListener("focus",onFocus);
+      document.removeEventListener("visibilitychange",onFocus);
+      if(ch){try{window.sb.removeChannel(ch);}catch(_){}}
+    };
+  },[fetchCastings]);
+
+  // Auto-advance every 7s — paused on hover/focus and during touch swipe.
+  useEffect(()=>{
+    if(paused||castings.length<2)return;
+    const tid=setInterval(()=>setIdx(i=>(i+1)%castings.length),7000);
+    return()=>clearInterval(tid);
+  },[paused,castings.length]);
+
+  // Defensive: clamp index if data shrinks (e.g. casting deleted while viewing)
+  useEffect(()=>{if(idx>=castings.length&&castings.length>0)setIdx(0);},[castings.length,idx]);
+
+  const next=()=>setIdx(i=>(i+1)%(castings.length||1));
+  const prev=()=>setIdx(i=>(i-1+(castings.length||1))%(castings.length||1));
+  const onTouchStart=(e)=>{touchRef.current={startX:e.touches[0].clientX,active:true};setPaused(true);};
+  const onTouchEnd=(e)=>{
+    if(!touchRef.current.active)return;
+    const dx=e.changedTouches[0].clientX-touchRef.current.startX;
+    if(dx>50)prev();else if(dx<-50)next();
+    touchRef.current.active=false;
+    setTimeout(()=>setPaused(false),3000);
+  };
+
+  // ─── Render states: loading skeleton, empty, error, or the active card ───
+  if(loading&&castings.length===0){
+    return(<section className="fcs-section">
+      <div className="section-label">Featured Castings</div>
+      <div className="fcs-card" style={{textAlign:"center",cursor:"default"}}>
+        <p style={{color:"var(--t3)",fontSize:14,margin:0}}>Loading active casting calls…</p>
+      </div>
+    </section>);
+  }
+  if(castings.length===0){
+    return(<section className="fcs-section">
+      <div className="section-label">Featured Castings</div>
+      <div className="fcs-card" style={{textAlign:"center",cursor:"default"}}>
+        <h3 style={{fontSize:20,fontWeight:800,marginBottom:8,letterSpacing:-0.5}}>No active casting calls yet</h3>
+        <p style={{color:"var(--t3)",fontSize:14,maxWidth:420,margin:"0 auto 18px"}}>Check back soon — new roles are posted weekly. Casting directors, you can post one in seconds.</p>
+        {onNavigate&&<button className="btn-p btn-sm" onClick={()=>onNavigate("register-cd")}>Post a Casting →</button>}
+      </div>
+    </section>);
+  }
+
+  const c=castings[idx]||castings[0];
+  const cd=c._cd||{};
+  const cdName=cd.display_name||cd.company_name||"";
+  const roles=c.roles||[];
+  const firstRole=roles[0];
+  const rawSyn=(c.synopsis||c.tagline||"").replace(/\*/g,"").trim();
+  const desc=rawSyn.length>220?rawSyn.slice(0,220).trim()+"…":rawSyn;
+
+  return(<section className="fcs-section" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)}>
+    <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:12,marginBottom:18,flexWrap:"wrap"}}>
+      <div>
+        <div className="section-label">Featured Castings</div>
+        <h2 style={{fontWeight:800,fontSize:30,letterSpacing:-1,margin:0,lineHeight:1.1}}>Open jobs from real productions.</h2>
+        <p style={{color:"var(--t2)",fontSize:13,marginTop:6}}>Updated live — same listings as Browse Castings. Tap any card to view full role breakdown and apply.</p>
+      </div>
+      {onNavigate&&<button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse all →</button>}
+    </div>
+
+    {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+      <span>Couldn't refresh featured castings: {err}{castings.length>0?" — showing last loaded list.":""}</span>
+      <button className="btn-s btn-sm" onClick={fetchCastings}>Retry</button>
+    </div>}
+
+    <div className="fcs-track" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      {castings.length>1&&<button className="fcs-arrow prev" aria-label="Previous casting" onClick={(e)=>{e.stopPropagation();prev();}}>‹</button>}
+      <div className="fcs-card" onClick={()=>onViewCasting&&onViewCasting(c)}>
+        <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
+          <span className="badge tag-acc">{c.type||"Film"}</span>
+          {c.union&&<span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.union}</span>}
+          <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{roles.length||1} {roles.length===1?"role":"roles"}</span>
+          {firstRole?.name&&<span className="badge" style={{background:"rgba(26,26,46,0.06)",color:"var(--acc)",fontWeight:700}}>{firstRole.name}</span>}
+        </div>
+        <h3 style={{fontSize:30,fontWeight:800,letterSpacing:-1,marginBottom:6,color:"var(--t1)",lineHeight:1.15}}>{c.title}</h3>
+        {c.tagline&&c.tagline!==c.synopsis&&<p style={{color:"var(--t2)",fontSize:15,marginBottom:6,fontWeight:500}}>{c.tagline}</p>}
+        {(cdName||c.prod)&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:14,fontWeight:500}}>{cdName?`Posted by ${cdName}`:""}{cdName&&c.prod?" · ":""}{c.prod||""}</p>}
+        {desc&&<p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:18,maxWidth:680}}>{desc}</p>}
+        <div style={{display:"flex",gap:24,flexWrap:"wrap",fontSize:13,color:"var(--t2)",marginBottom:22}}>
+          {c.location&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Location</strong> · {c.location}</span>}
+          {c.pay&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Pay</strong> · {c.pay}</span>}
+          {c.deadline&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Deadline</strong> · {c.deadline}</span>}
+        </div>
+        <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+          <button className="btn-p" onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(c);}}>View Roles &amp; Apply →</button>
+          <span style={{fontSize:11,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase",fontWeight:700}}>· Casting {idx+1} of {castings.length}</span>
+        </div>
+      </div>
+      {castings.length>1&&<button className="fcs-arrow next" aria-label="Next casting" onClick={(e)=>{e.stopPropagation();next();}}>›</button>}
+    </div>
+
+    {castings.length>1&&<div className="fcs-dots" role="tablist" aria-label="Casting navigation">
+      {castings.map((_,i)=>
+        <button key={i} className={`fcs-dot ${i===idx?"active":""}`} aria-label={`Go to casting ${i+1}`} aria-selected={i===idx} onClick={()=>setIdx(i)}/>
+      )}
+    </div>}
+  </section>);
+}
+
 // ═══════════════════════════════════════════
 // LANDING PAGE
 // ═══════════════════════════════════════════
-function Landing({onNavigate}){
+function Landing({onNavigate,onViewCasting,castingsVersion=0}){
   const [hTab,setHTab]=useState("talent");
   const [wlEmail,setWlEmail]=useState("");
   const [wlRole,setWlRole]=useState("talent");
@@ -3333,6 +3532,9 @@ function Landing({onNavigate}){
       <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Start My 7-Day Free Trial →</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate("register-cd")}>I'm a Casting Director</button></div>
       <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> $9.99/mo for talent · 7-day free trial</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> Cancel anytime</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> 60-second signup</span></div>
     </div><div style={{display:"flex",justifyContent:"center"}}><LandingSwipe/></div></section>
+
+    {/* ───────── FEATURED CASTINGS SLIDER — pulls live from public.castings (same as Browse Castings) ───────── */}
+    <FeaturedCastingsSlider onViewCasting={onViewCasting} onNavigate={onNavigate} castingsVersion={castingsVersion}/>
 
     {/* ───────── INDUSTRY PARTNERS MARQUEE — infinite horizontal scroll of studio + streamer wordmarks ───────── */}
     <div style={{borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)",padding:"32px 0",background:"var(--s2)"}}>
@@ -4780,9 +4982,9 @@ export default function App(){
           </div>
         </div>
       </div>}
-      {page==="home"&&<Landing onNavigate={navigate}/>}
+      {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} onViewCasting={(c)=>{setPrevPage("home");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail");}}/>}
       {page==="search"&&<SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");}}/>}
-      {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} onBack={()=>{setPage("search");setViewingCasting(null);window.scrollTo(0,0);}} onNavigate={navigate}/>}
+      {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} onBack={()=>{setPage(prevPage==="home"?"home":"search");setViewingCasting(null);window.scrollTo(0,0);}} onNavigate={navigate}/>}
       {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
       {page==="dashboard"&&<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings}/>}
       {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{setPage(prevPage);setViewingProfile(null);}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
