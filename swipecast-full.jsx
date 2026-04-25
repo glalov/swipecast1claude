@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 
 // ═══════════════════════════════════════════
 // DATA
@@ -347,6 +347,14 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;}
 .mm-link:last-child{border-bottom:none;}
 .mm-link:hover{color:var(--acc);}
+/* ─── Industry partners marquee — infinite horizontal scroll, paused on hover ─── */
+.partners-marquee{position:relative;overflow:hidden;width:100%;padding:6px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);}
+.partners-track{display:flex;gap:clamp(40px,5vw,72px);align-items:center;width:max-content;animation:partnersSlide 36s linear infinite;will-change:transform;}
+.partners-marquee:hover .partners-track{animation-play-state:paused;}
+.partners-item{flex-shrink:0;font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(15px,1.6vw,20px);letter-spacing:1px;color:var(--t1);opacity:0.55;transition:opacity .25s ease,transform .25s ease;white-space:nowrap;text-transform:uppercase;}
+.partners-item:hover{opacity:1;transform:scale(1.04);}
+@keyframes partnersSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
+@media (prefers-reduced-motion: reduce){.partners-track{animation:none;}}
 `;
 
 // ═══════════════════════════════════════════
@@ -2342,6 +2350,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         <button className={`tab ${tab==="castings"?"active":""}`} onClick={()=>setTab("castings")}>My Castings</button>
         <button className={`tab ${tab==="allSelected"?"active":""}`} onClick={()=>setTab("allSelected")}>All Selected <span style={{opacity:.6}}>({allSelected.length})</span></button>
         <button className={`tab ${tab==="savedLists"?"active":""}`} onClick={()=>{setTab("savedLists");setActiveList(null);}}>Saved Lists <span style={{opacity:.6}}>({savedLists.length})</span></button>
+        <button className={`tab ${tab==="inbox"?"active":""}`} onClick={()=>onNavigate("inbox")}>Inbox →</button>
       </div>
       {cdLoadErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
         <span>Couldn't refresh dashboard: {cdLoadErr}{myCastings.length>0?" — showing last loaded list.":""}</span>
@@ -2883,6 +2892,207 @@ function MessageThreadModal({message,sessionUid,onClose,onRead,onDeleted,onRepli
   </div>);
 }
 
+// ─── Dedicated full-page Inbox. Used for ALL profile types (talent, CD, producer,
+// studio, admin). Groups messages by counterparty into threads — one card per
+// person you're talking to, showing the latest message + unread count. Clicking
+// opens MessageThreadModal which already supports reply, delete, and full history.
+// Realtime + 30s polling + focus listener keep it synced without manual refresh.
+function InboxPage({session,profile,onNavigate}){
+  const [messages,setMessages]=useState([]);    // raw flat list of all messages I'm in
+  const [counterparties,setCounterparties]=useState({}); // id -> profile snapshot
+  const [openMsg,setOpenMsg]=useState(null);
+  const [loading,setLoading]=useState(true);
+  const [err,setErr]=useState("");
+  const [search,setSearch]=useState("");
+  const uid=session?.user?.id;
+
+  // ─── Pull every message where I'm from_id OR to_id, plus the counterparty profile
+  //     for each thread. Grouping happens client-side in `threads` below.
+  const load=useCallback(async()=>{
+    if(!uid){setLoading(false);return;}
+    setLoading(true);
+    try{
+      const {data,error}=await window.sb.from("messages")
+        .select("id,from_id,to_id,body,created_at,read_at,application_id")
+        .or(`from_id.eq.${uid},to_id.eq.${uid}`)
+        .order("created_at",{ascending:false})
+        .limit(500);
+      if(error)throw error;
+      setMessages(data||[]);
+      setErr("");
+      // Resolve every counterparty profile in one shot
+      const others=Array.from(new Set((data||[]).map(m=>m.from_id===uid?m.to_id:m.from_id).filter(Boolean)));
+      if(others.length){
+        const {data:profs}=await window.sb.from("profiles")
+          .select("id,display_name,company_name,headshot_url,user_type")
+          .in("id",others);
+        const map={};(profs||[]).forEach(p=>{map[p.id]=p;});
+        setCounterparties(map);
+      }
+    }catch(e){
+      console.error("[inbox-page] load failed:",e);
+      setErr(e.message||"Could not load inbox.");
+    }finally{setLoading(false);}
+  },[uid]);
+
+  useEffect(()=>{load();},[load]);
+
+  // Realtime + polling backstop + focus refetch — same defensive pattern as MyProfilePage
+  useEffect(()=>{
+    if(!uid)return;
+    let cancelled=false;
+    let ch=null;
+    try{
+      ch=window.sb.channel(`inboxpage-${uid}`)
+        .on("postgres_changes",{event:"*",schema:"public",table:"messages",filter:`to_id=eq.${uid}`},()=>{if(!cancelled)load();})
+        .on("postgres_changes",{event:"*",schema:"public",table:"messages",filter:`from_id=eq.${uid}`},()=>{if(!cancelled)load();})
+        .subscribe();
+    }catch(_){/* realtime optional */}
+    const tid=setInterval(()=>{if(!cancelled)load();},30000);
+    const onFocus=()=>{if(!cancelled)load();};
+    window.addEventListener("focus",onFocus);
+    document.addEventListener("visibilitychange",onFocus);
+    return()=>{
+      cancelled=true;clearInterval(tid);
+      window.removeEventListener("focus",onFocus);
+      document.removeEventListener("visibilitychange",onFocus);
+      if(ch){try{window.sb.removeChannel(ch);}catch(_){}}
+    };
+  },[uid,load]);
+
+  // ─── Thread grouping. Key = counterparty user_id. Each thread keeps the latest
+  //     message, total count, and unread count (messages addressed to me, unread).
+  const threads=useMemo(()=>{
+    const map=new Map();
+    messages.forEach(m=>{
+      const other=m.from_id===uid?m.to_id:m.from_id;
+      if(!other)return;
+      const t=map.get(other)||{otherId:other,latest:null,unread:0,total:0,messages:[]};
+      t.messages.push(m);
+      t.total++;
+      if(m.to_id===uid&&!m.read_at)t.unread++;
+      if(!t.latest||new Date(m.created_at)>new Date(t.latest.created_at))t.latest=m;
+      map.set(other,t);
+    });
+    // Sort threads by most-recent activity
+    return Array.from(map.values()).sort((a,b)=>new Date(b.latest?.created_at||0)-new Date(a.latest?.created_at||0));
+  },[messages,uid]);
+
+  const totalUnread=threads.reduce((n,t)=>n+t.unread,0);
+  const filtered=threads.filter(t=>{
+    if(!search.trim())return true;
+    const p=counterparties[t.otherId]||{};
+    const name=(p.display_name||p.company_name||"").toLowerCase();
+    const body=(t.latest?.body||"").toLowerCase();
+    const q=search.toLowerCase();
+    return name.includes(q)||body.includes(q);
+  });
+
+  // Mark a single message as read (called when modal opens)
+  const markRead=useCallback(async(id)=>{
+    setMessages(p=>p.map(m=>m.id===id?{...m,read_at:new Date().toISOString()}:m));
+    try{await window.sb.from("messages").update({read_at:new Date().toISOString()}).eq("id",id);}catch(_){}
+  },[]);
+
+  const senderTypeLabel=(t)=>{
+    const v=(t||"").toLowerCase();
+    if(v==="cd")return "Casting Director";
+    if(v==="talent")return "Actor";
+    if(v==="admin"||v==="super_admin")return "Admin";
+    if(v==="producer")return "Producer";
+    if(v==="studio")return "Studio";
+    return "Member";
+  };
+
+  // For the modal: hand it the latest message AND attach the counterparty profile
+  // so the modal's existing UI (sender name, role tag) renders without an extra fetch.
+  const openThread=(thread)=>{
+    const cp=counterparties[thread.otherId]||{};
+    // Use the latest INCOMING message if there is one; otherwise the latest outgoing.
+    const incoming=thread.messages.find(m=>m.to_id===uid);
+    const seed=incoming||thread.latest;
+    setOpenMsg({...seed,profiles:cp});
+  };
+
+  if(!uid){
+    return(<div className="page page-wide">
+      <div className="card" style={{padding:48,textAlign:"center"}}>
+        <h2 style={{fontSize:20,marginBottom:8}}>Sign in to see your inbox</h2>
+        <p style={{color:"var(--t3)",marginBottom:18}}>Messages between you and casting directors, producers, and talent live here.</p>
+        <button className="btn-p" onClick={()=>onNavigate("login")}>Sign in</button>
+      </div>
+      <Footer onNavigate={onNavigate}/>
+    </div>);
+  }
+
+  return(<div className="page page-wide">
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18,gap:12,flexWrap:"wrap"}}>
+      <div>
+        <div className="section-label">Messages</div>
+        <h1 style={{fontSize:30,fontWeight:800,letterSpacing:"-0.5px",margin:0}}>Inbox{totalUnread>0?<span style={{marginLeft:10,fontSize:14,color:"var(--acc)",fontWeight:700,verticalAlign:"middle"}}>· {totalUnread} unread</span>:null}</h1>
+      </div>
+      <div style={{display:"flex",gap:10,alignItems:"center"}}>
+        <input className="input" placeholder="Search messages…" value={search} onChange={e=>setSearch(e.target.value)} style={{minWidth:220}}/>
+        <button className="btn-s btn-sm" onClick={load} disabled={loading}>{loading?"…":"↻ Refresh"}</button>
+      </div>
+    </div>
+
+    {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+      <span>Couldn't load inbox: {err}</span>
+      <button className="btn-s btn-sm" onClick={load}>Retry</button>
+    </div>}
+
+    {loading&&threads.length===0?<div className="card" style={{padding:48,textAlign:"center"}}><p style={{color:"var(--t3)"}}>Loading messages…</p></div>:
+     threads.length===0?<div className="card" style={{padding:48,textAlign:"center"}}>
+       <h3 style={{fontSize:16,fontWeight:700,marginBottom:6}}>No messages yet</h3>
+       <p style={{color:"var(--t3)",fontSize:14,maxWidth:420,margin:"0 auto"}}>{profile?.user_type==="talent"?"When a casting director messages you about a role or invite, it'll show up here.":"When talent applies to one of your castings or replies to your messages, conversations land here."}</p>
+     </div>:
+     <div className="card" style={{padding:0,overflow:"hidden"}}>
+       {filtered.map(t=>{
+         const cp=counterparties[t.otherId]||{};
+         const cpName=cp.display_name||cp.company_name||"Unknown user";
+         const isFromMe=t.latest?.from_id===uid;
+         const previewPrefix=isFromMe?"You: ":"";
+         const dt=t.latest?new Date(t.latest.created_at):null;
+         const sameDay=dt&&new Date().toDateString()===dt.toDateString();
+         const dateLabel=dt?(sameDay?dt.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"}):dt.toLocaleDateString(undefined,{month:"short",day:"numeric"})):"";
+         return(<div key={t.otherId} onClick={()=>openThread(t)} style={{display:"grid",gridTemplateColumns:"auto 1fr auto",gap:14,padding:"16px 22px",borderBottom:"1px solid var(--bdr)",cursor:"pointer",alignItems:"center",background:t.unread>0?"rgba(26,26,46,0.025)":"transparent",transition:"background 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--s2)"} onMouseLeave={e=>e.currentTarget.style.background=t.unread>0?"rgba(26,26,46,0.025)":"transparent"}>
+           <div style={{position:"relative"}}>
+             <img src={cp.headshot_url||"https://placehold.co/52x52/e5e5e5/999?text=?"} alt="" style={{width:52,height:52,borderRadius:"50%",objectFit:"cover",display:"block"}}/>
+             {t.unread>0&&<span style={{position:"absolute",top:-2,right:-2,background:"var(--acc)",color:"#fff",borderRadius:"50%",minWidth:20,height:20,padding:"0 5px",fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid var(--s1)"}}>{t.unread}</span>}
+           </div>
+           <div style={{minWidth:0}}>
+             <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:3}}>
+               <strong style={{fontSize:14,fontWeight:t.unread>0?800:700}}>{cpName}</strong>
+               <span className="tag" style={{fontSize:9,background:"var(--s2)",color:"var(--t2)",fontWeight:700}}>{senderTypeLabel(cp.user_type).toUpperCase()}</span>
+               <span style={{fontSize:11,color:"var(--t3)"}}>· {t.total} message{t.total===1?"":"s"}</span>
+             </div>
+             <div style={{fontSize:13,color:t.unread>0?"var(--t1)":"var(--t2)",fontWeight:t.unread>0?500:400,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{previewPrefix}{t.latest?.body||""}</div>
+           </div>
+           <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap",alignSelf:"flex-start"}}>{dateLabel}</span>
+         </div>);
+       })}
+       {filtered.length===0&&<div style={{padding:30,textAlign:"center",color:"var(--t3)",fontSize:13}}>No threads match "{search}".</div>}
+     </div>
+    }
+
+    {openMsg&&<MessageThreadModal
+      message={openMsg}
+      sessionUid={uid}
+      onClose={()=>setOpenMsg(null)}
+      onRead={()=>markRead(openMsg.id)}
+      onDeleted={(id)=>{setMessages(p=>p.filter(m=>m.id!==id));setTimeout(load,300);}}
+      onReplied={(newRow)=>{
+        // Optimistic append so the thread list reflects the new outgoing message instantly
+        if(newRow)setMessages(p=>[{...newRow},...p]);
+        setTimeout(load,300);
+      }}
+    />}
+
+    <Footer onNavigate={onNavigate}/>
+  </div>);
+}
+
 // ─── New Casting creation modal — writes to castings + roles tables
 // ─── Headshot / photo cropper — zoom + pan + crop to fixed aspect before upload.
 // Emits a JPEG blob via onConfirm(blob). Self-contained — no external libs.
@@ -3124,12 +3334,19 @@ function Landing({onNavigate}){
       <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> $9.99/mo for talent · 7-day free trial</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> Cancel anytime</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> 60-second signup</span></div>
     </div><div style={{display:"flex",justifyContent:"center"}}><LandingSwipe/></div></section>
 
-    {/* ───────── INDUSTRY STRIP — who SlateCue is built for ───────── */}
-    <div style={{borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)",padding:"28px 40px",background:"var(--s2)"}}>
-      <div style={{maxWidth:1200,margin:"0 auto",textAlign:"center"}}>
-        <p style={{fontSize:11,letterSpacing:1,textTransform:"uppercase",color:"var(--t3)",marginBottom:18,fontWeight:700}}>Built for the casting industry</p>
-        <div style={{display:"flex",justifyContent:"center",gap:"clamp(20px,4vw,52px)",alignItems:"center",flexWrap:"wrap",opacity:0.7}}>
-          {["STUDIOS","PRODUCTION COMPANIES","CASTING OFFICES","INDEPENDENT PRODUCERS","FILM & TV PRODUCTIONS"].map(n=><span key={n} style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:13,letterSpacing:1,color:"var(--t1)"}}>{n}</span>)}
+    {/* ───────── INDUSTRY PARTNERS MARQUEE — infinite horizontal scroll of studio + streamer wordmarks ───────── */}
+    <div style={{borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)",padding:"32px 0",background:"var(--s2)"}}>
+      <div style={{maxWidth:1200,margin:"0 auto",textAlign:"center",padding:"0 24px",marginBottom:18}}>
+        <p style={{fontSize:11,letterSpacing:1.5,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,margin:0}}>Trusted across studios, streamers &amp; production companies</p>
+      </div>
+      <div className="partners-marquee" aria-label="Industry partners">
+        {/* Track is duplicated so the keyframe translateX(-50%) loops seamlessly. */}
+        <div className="partners-track">
+          {(() => {
+            const PARTNERS=["DISNEY","NETFLIX","A24","AMAZON STUDIOS","HULU","WARNER BROS.","UNIVERSAL","PARAMOUNT","SONY PICTURES","LIONSGATE","HBO MAX","APPLE TV+"];
+            const doubled=[...PARTNERS,...PARTNERS];
+            return doubled.map((n,i)=><span key={`${n}-${i}`} className="partners-item">{n}</span>);
+          })()}
         </div>
       </div>
     </div>
@@ -4314,6 +4531,10 @@ export default function App(){
   // ───────────────────────────────────────────────────────────────
   const [castingsVersion,setCastingsVersion]=useState(0);
   const bumpCastings=useCallback(()=>setCastingsVersion(v=>v+1),[]);
+  // ─── Global unread message count — drives the Inbox nav badge for ALL profile types
+  //     (talent, CD, producer, studio, admin). One subscription per session lives
+  //     here so every page sees the same number; no per-page polling drift.
+  const [globalUnread,setGlobalUnread]=useState(0);
   const isLoggedIn=!!session;
   // Admin derived from the PROFILE row (authoritative, server-enforced via RLS + RPCs).
   // SC_CONFIG.ADMIN_EMAIL is kept only as a *fallback* so the owner can still reach
@@ -4407,6 +4628,45 @@ export default function App(){
     return()=>{if(ch){try{window.sb.removeChannel(ch);}catch(_){}}};
   },[]);
 
+  // ───────────────────────────────────────────────────────────────
+  // Global unread-message counter — drives the Inbox nav badge for every
+  // signed-in user. One subscription owns the count so all pages stay in
+  // sync. Realtime catches new messages instantly; the 30s poll covers
+  // dropped websockets; focus refetch covers tab-switching.
+  // ───────────────────────────────────────────────────────────────
+  useEffect(()=>{
+    const uid=session?.user?.id;
+    if(!uid){setGlobalUnread(0);return;}
+    let cancelled=false;
+    let ch=null;
+    const fetchCount=async()=>{
+      try{
+        const {count,error}=await window.sb.from("messages")
+          .select("id",{count:"exact",head:true})
+          .eq("to_id",uid)
+          .is("read_at",null);
+        if(error)throw error;
+        if(!cancelled)setGlobalUnread(count||0);
+      }catch(_){/* keep last value */}
+    };
+    fetchCount();
+    try{
+      ch=window.sb.channel(`global-unread-${uid}`)
+        .on("postgres_changes",{event:"*",schema:"public",table:"messages",filter:`to_id=eq.${uid}`},fetchCount)
+        .subscribe();
+    }catch(_){/* realtime optional */}
+    const tid=setInterval(fetchCount,30000);
+    const onFocus=()=>fetchCount();
+    window.addEventListener("focus",onFocus);
+    document.addEventListener("visibilitychange",onFocus);
+    return()=>{
+      cancelled=true;clearInterval(tid);
+      window.removeEventListener("focus",onFocus);
+      document.removeEventListener("visibilitychange",onFocus);
+      if(ch){try{window.sb.removeChannel(ch);}catch(_){}}
+    };
+  },[session?.user?.id]);
+
   const pushHist=(p)=>{try{window.history.pushState({swipecast:true,page:p},"","");}catch(e){}};
   const navigate=useCallback((p)=>{
     window.scrollTo(0,0);
@@ -4475,6 +4735,11 @@ export default function App(){
             {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navigate("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)"}}>Admin</button>}
             {/* CD Dashboard is available to anyone with CD-capable user_type — admin/super_admin inherit CD posting+review. */}
             {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navigate("dashboard")}>Dashboard</button>:null}
+            {/* Universal Inbox button — visible for every signed-in user_type with live unread badge */}
+            <button className="btn-s btn-sm" onClick={()=>navigate("inbox")} style={{position:"relative",display:"inline-flex",alignItems:"center",gap:6}}>
+              <span>Inbox</span>
+              {globalUnread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800,minWidth:20,textAlign:"center",lineHeight:1.2}}>{globalUnread>99?"99+":globalUnread}</span>}
+            </button>
             <button className="btn-s btn-sm" onClick={()=>navigate("my-profile")}>{myProfile?.display_name?.split(" ")[0]||"Profile"}</button>
             <button className="btn-p btn-sm" onClick={signOut}>Sign out</button>
           </>:<>
@@ -4504,6 +4769,7 @@ export default function App(){
             {!authReady?null:isLoggedIn?<>
               {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navThen("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)"}}>Admin</button>}
               {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navThen("dashboard")}>Dashboard</button>:null}
+              <button className="btn-s btn-sm" onClick={()=>navThen("inbox")} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Inbox{globalUnread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800}}>{globalUnread>99?"99+":globalUnread}</span>}</button>
               <button className="btn-s btn-sm" onClick={()=>navThen("my-profile")}>{myProfile?.display_name?.split(" ")[0]||"Profile"}</button>
               <button className="btn-p btn-sm" onClick={doSignOut}>Sign out</button>
             </>:<>
@@ -4521,6 +4787,7 @@ export default function App(){
       {page==="dashboard"&&<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings}/>}
       {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{setPage(prevPage);setViewingProfile(null);}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
       {page==="my-profile"&&isLoggedIn&&<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate}/>}
+      {page==="inbox"&&<InboxPage session={session} profile={myProfile} onNavigate={navigate}/>}
       {page==="admin"&&isLoggedIn&&isAdmin&&<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>}
       {page==="register-talent"&&<RegisterTalent onNavigate={navigate}/>}
       {page==="register-cd"&&<RegisterCD onNavigate={navigate}/>}

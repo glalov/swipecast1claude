@@ -5,7 +5,7 @@ jsx_content = re.sub(r'^\s*import\s+.*?from\s+["\'][^"\']+["\'];?\s*\n', '', jsx
 # Replace `export default function App` with plain `function App`
 jsx_content = jsx_content.replace("export default function App", "function App")
 # Inject the React hooks destructure at the top so useState etc. work in-browser
-jsx_content = "const { useState, useRef, useCallback, useEffect } = React;\n" + jsx_content
+jsx_content = "const { useState, useRef, useCallback, useEffect, useMemo } = React;\n" + jsx_content
 # Render the App at the end
 jsx_content += "\nReactDOM.createRoot(document.getElementById('root')).render(<App />);\n"
 
