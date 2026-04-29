@@ -386,6 +386,25 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media (max-width:768px){.partners-tile{min-width:130px;height:74px;padding:14px 20px;}.partners-tile img{max-height:30px;max-width:100px;}}
 `;
 
+// ─── Tiny redirect-on-mount component used to bounce logged-in users away
+//     from registration pages. Picks the destination based on the existing
+//     profile's user_type so talents land on My Profile and CDs/admins on
+//     the Dashboard. Renders a brief skeleton while the redirect fires.
+function LoggedInRedirect({targetForTalent,targetForCd,myProfile,onNavigate}){
+  useEffect(()=>{
+    const t=(myProfile?.user_type||"").toLowerCase();
+    const dest=(t==="cd"||t==="admin"||t==="super_admin"||t==="producer"||t==="studio")
+      ?(targetForCd||"dashboard")
+      :(targetForTalent||"my-profile");
+    // Defer one tick so the new render commits cleanly before navigation.
+    const tid=setTimeout(()=>onNavigate(dest),0);
+    return()=>clearTimeout(tid);
+  },[myProfile?.user_type,targetForTalent,targetForCd,onNavigate]);
+  return(<div className="page" style={{padding:"60px 24px",textAlign:"center"}}>
+    <p style={{color:"var(--t3)",fontSize:14}}>You already have an account — taking you there now…</p>
+  </div>);
+}
+
 // ═══════════════════════════════════════════
 // FOOTER (shared across all pages)
 // ═══════════════════════════════════════════
@@ -465,10 +484,38 @@ function RegisterTalent({onNavigate}){
     try{
       const display_name=(f.first+" "+f.last).trim();
       const email=f.email.trim().toLowerCase();
+      // Carry EVERY profile field through Supabase user_metadata. The
+      // public.handle_new_user trigger reads these inside the signup tx and
+      // populates public.profiles atomically — bypassing the RLS race that
+      // used to drop client-side .update() calls when the session wasn't
+      // established yet.
+      const signupMeta={
+        user_type:"talent",
+        display_name,
+        location:f.location||"",
+        gender:f.gender||"",
+        age:f.age?String(f.age):"",
+        height:f.height||"",
+        weight:f.weight||"",
+        hair:f.hair||"",
+        eyes:f.eyes||"",
+        ethnicity:f.ethnicity||"",
+        union_status:f.union_status||"Non-Union",
+        bio:f.bio||"",
+        training:f.training||"",
+        agent:f.agent||"",
+        skills:f.skills?f.skills.split(",").map(s=>s.trim()).filter(Boolean):[],
+        talent_types:Array.isArray(f.types)?f.types:[],
+        onboarded:true
+      };
+      // Stash a local copy too — if the user opens the app from the email
+      // confirmation link before the trigger has run (extremely rare race),
+      // the RPC will pick this up on first authenticated load as a backstop.
+      try{localStorage.setItem(`sc_signup_meta_${email}`,JSON.stringify(signupMeta));}catch(_){}
       console.log("[auth] signUp attempt:",email);
       const {data,error}=await withTimeout(window.sb.auth.signUp({
         email,password:f.password,
-        options:{emailRedirectTo:window.location.origin,data:{user_type:"talent",display_name}}
+        options:{emailRedirectTo:window.location.origin,data:signupMeta}
       }),30000,"Sign up");
       if(error){
         const em=(error.message||"").toLowerCase();
@@ -485,20 +532,13 @@ function RegisterTalent({onNavigate}){
         setErr("An account with this email already exists. If you never received the verification email, resend it below — otherwise log in.");
         window.scrollTo(0,0);setLoading(false);submittingRef.current=false;return;
       }
-      if(data.user){
-        // Fire-and-forget the profile update so a slow DB write can't freeze the payment step.
-        // If it errors, we log it; the user can still edit from My Profile after confirming email.
-        withTimeout(window.sb.from("profiles").update({
-          display_name,user_type:"talent",location:f.location,gender:f.gender||null,
-          age:f.age?parseInt(f.age):null,height:f.height||null,weight:f.weight||null,
-          hair:f.hair||null,eyes:f.eyes||null,ethnicity:f.ethnicity||null,
-          union_status:f.union_status,bio:f.bio||null,training:f.training||null,
-          skills:f.skills?f.skills.split(",").map(s=>s.trim()).filter(Boolean):[],
-          agent:f.agent||null,onboarded:true,
-          // Bug fix: talent_types was collected in Step 2 but never persisted — now flows
-          // straight from signup into the profile so the user sees their selections.
-          talent_types:Array.isArray(f.types)?f.types:[]
-        }).eq("id",data.user.id),15000,"Profile save").catch(e=>console.warn("Profile update failed (non-blocking):",e));
+      // Profile row is created by the public.handle_new_user trigger using the
+      // metadata we passed above — no separate client-side update() call needed
+      // (and the old one ran unauthenticated and was silently dropped by RLS).
+      // If a session WAS issued (rare — happens when email-confirmation is off),
+      // run the backfill RPC just to be belt-and-braces certain.
+      if(data?.session){
+        try{await window.sb.rpc("apply_signup_metadata_to_profile");}catch(_){}
       }
       setStep(4); // go to payment step
     }catch(e){console.warn("[auth] createAccount caught:",e?.message||e);setErr(e.message||"Something went wrong. Please try again.");window.scrollTo(0,0);}
@@ -592,10 +632,22 @@ function RegisterCD({onNavigate}){
     try{
       const display_name=(f.first+" "+f.last).trim();
       const email=f.email.trim().toLowerCase();
+      // Pass the full CD profile through user_metadata — handle_new_user will
+      // write it inside the signup tx so it survives email confirmation.
+      const signupMeta={
+        user_type:"cd",
+        display_name,
+        company_name:f.company_name||"",
+        company_role:f.company_role||"Casting Director",
+        location:f.location||"",
+        website:f.website||"",
+        onboarded:true
+      };
+      try{localStorage.setItem(`sc_signup_meta_${email}`,JSON.stringify(signupMeta));}catch(_){}
       console.log("[auth] CD signUp attempt:",email);
       const {data,error}=await withTimeout(window.sb.auth.signUp({
         email,password:f.password,
-        options:{emailRedirectTo:window.location.origin,data:{user_type:"cd",display_name}}
+        options:{emailRedirectTo:window.location.origin,data:signupMeta}
       }),30000,"Sign up");
       if(error){
         const em=(error.message||"").toLowerCase();
@@ -612,14 +664,11 @@ function RegisterCD({onNavigate}){
         setErr("An account with this email already exists. If you never received the verification email, resend it below — otherwise log in.");
         setLoading(false);submittingRef.current=false;return;
       }
-      if(data.user){
-        // Fire-and-forget — don't block the success screen on a slow profile write
-        withTimeout(window.sb.from("profiles").update({
-          display_name,user_type:"cd",
-          company_name:f.company_name,company_role:f.company_role,
-          location:f.location||null,website:f.website||null,
-          onboarded:true
-        }).eq("id",data.user.id),15000,"Profile save").catch(e=>console.warn("[auth] CD profile update failed (non-blocking):",e?.message||e));
+      // The handle_new_user trigger now populates the profile row from the
+      // signup metadata atomically. Belt-and-braces: if a session was issued,
+      // run the backfill RPC too.
+      if(data?.session){
+        try{await window.sb.rpc("apply_signup_metadata_to_profile");}catch(_){}
       }
       setDone(true);
     }catch(e){console.warn("[auth] CD submit caught:",e?.message||e);setErr(e.message||"Something went wrong. Please try again.");}
@@ -3606,7 +3655,20 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
 // ═══════════════════════════════════════════
 // LANDING PAGE
 // ═══════════════════════════════════════════
-function Landing({onNavigate,onViewCasting,castingsVersion=0}){
+function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,myProfile=null}){
+  // Logged-in-aware destinations — talents go to My Profile / Browse, CDs and
+  // admins go to Dashboard / Browse. Replaces the old "Start My 7-Day Free
+  // Trial" CTA which was gaslighting existing users.
+  const userKind=(myProfile?.user_type||"").toLowerCase();
+  const isCDish=["cd","admin","super_admin","producer","studio"].includes(userKind);
+  const heroPrimary=!isLoggedIn
+    ?{label:"Start My 7-Day Free Trial →",to:"register-talent"}
+    : isCDish
+      ?{label:"Open Dashboard →",to:"dashboard"}
+      :{label:"Browse Castings →",to:"search"};
+  const heroSecondary=!isLoggedIn
+    ?{label:"I'm a Casting Director",to:"register-cd"}
+    :{label:"My Profile",to:"my-profile"};
   const [hTab,setHTab]=useState("talent");
   const [wlEmail,setWlEmail]=useState("");
   const [wlRole,setWlRole]=useState("talent");
@@ -3636,10 +3698,10 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0}){
   return(<>
     {/* ───────── HERO ───────── */}
     <section className="landing-hero" style={{padding:"72px 40px 40px",maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1.1fr 1fr",gap:60,alignItems:"center"}}><div>
-      <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--bdr)",padding:"6px 14px",borderRadius:100,fontSize:12,color:"var(--acc)",fontWeight:700,letterSpacing:0.5,textTransform:"uppercase",marginBottom:20}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--grn)",boxShadow:"0 0 8px var(--grn)"}}/>Now in early access · Join 2,400+ on the waitlist</div>
+      <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--bdr)",padding:"6px 14px",borderRadius:100,fontSize:12,color:"var(--acc)",fontWeight:700,letterSpacing:0.5,textTransform:"uppercase",marginBottom:20}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--grn)",boxShadow:"0 0 8px var(--grn)"}}/>{isLoggedIn?`Welcome back${myProfile?.display_name?", "+myProfile.display_name.split(" ")[0]:""} · You're all set`:"Now in early access · Join 2,400+ on the waitlist"}</div>
       <h1 className="landing-hero-title" style={{fontWeight:800,fontSize:56,lineHeight:1.02,letterSpacing:-2.2,marginBottom:20}}>Casting, finally built for <span style={{color:"var(--acc)"}}>actors.</span></h1>
       <p style={{color:"var(--t2)",fontSize:18,lineHeight:1.55,marginBottom:28,maxWidth:500}}>Tinder-style casting: one actor at a time, full-screen. Every headshot gets seen. And at $9.99/mo — a fraction of what legacy casting sites charge — we're the cheapest plan in the industry. Swipe. Get seen. Get cast.</p>
-      <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Start My 7-Day Free Trial →</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate("register-cd")}>I'm a Casting Director</button></div>
+      <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate(heroPrimary.to)}>{heroPrimary.label}</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate(heroSecondary.to)}>{heroSecondary.label}</button></div>
       <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> $9.99/mo for talent · 7-day free trial</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> Cancel anytime</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> 60-second signup</span></div>
     </div><div style={{display:"flex",justifyContent:"center"}}><LandingSwipe/></div></section>
 
@@ -3772,8 +3834,9 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0}){
       </div>
     </section>
 
-    {/* ───────── WAITLIST CTA ───────── */}
-    <section className="lh-cta" style={{padding:"80px 40px",background:"linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)",color:"#fff",textAlign:"center"}}>
+    {/* ───────── WAITLIST CTA — only for anonymous visitors. Logged-in users
+                already have an account, so we don't ask them to "Get Early Access". ───────── */}
+    {!isLoggedIn&&<section className="lh-cta" style={{padding:"80px 40px",background:"linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)",color:"#fff",textAlign:"center"}}>
       <div style={{maxWidth:640,margin:"0 auto"}}>
         <div style={{display:"inline-block",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",fontSize:11,fontWeight:700,letterSpacing:1,padding:"6px 14px",borderRadius:100,marginBottom:20,fontFamily:"'DM Sans',sans-serif"}}>FOUNDING MEMBERS · LIMITED</div>
         <h2 style={{fontSize:42,fontWeight:800,letterSpacing:-1.5,lineHeight:1.1,marginBottom:16,color:"#fff"}}>Get early access.<br/>Be the reason this works.</h2>
@@ -3804,7 +3867,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0}){
           <span>⚡ Access opens Q2 2026</span>
         </div>
       </div>
-    </section>
+    </section>}
 
     <Footer onNavigate={onNavigate}/>
   </>);
@@ -4899,8 +4962,19 @@ export default function App(){
   const loadProfile=useCallback(async(uid)=>{
     if(!uid){setMyProfile(null);return null;}
     try{
-      const {data,error}=await window.sb.from("profiles").select("*").eq("id",uid).maybeSingle();
+      let {data,error}=await window.sb.from("profiles").select("*").eq("id",uid).maybeSingle();
       if(error){console.warn("[auth] loadProfile error:",error.message);setMyProfile(null);return null;}
+      // Backfill safety net: if the row exists but core fields are blank
+      // (legacy signup before the new trigger landed) AND the user has signup
+      // metadata stored on auth.users, run the RPC to fill the gaps. This is
+      // the user-visible fix for "I filled out the form but my profile is empty".
+      if(data&&data.onboarded!==true&&!data.location&&!data.bio&&!data.company_name){
+        try{
+          await window.sb.rpc("apply_signup_metadata_to_profile");
+          const re=await window.sb.from("profiles").select("*").eq("id",uid).maybeSingle();
+          if(!re.error&&re.data)data=re.data;
+        }catch(e){console.warn("[auth] backfill RPC failed:",e?.message||e);}
+      }
       setMyProfile(data||null);return data||null;
     }catch(e){console.warn("[auth] loadProfile threw:",e?.message||e);setMyProfile(null);return null;}
   },[]);
@@ -5131,7 +5205,7 @@ export default function App(){
           </div>
         </div>
       </div>}
-      {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} onViewCasting={(c)=>{setPrevPage("home");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail");}}/>}
+      {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("home");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail");}}/>}
       {page==="search"&&<SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");}}/>}
       {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} onBack={()=>{setPage(prevPage==="home"?"home":"search");setViewingCasting(null);window.scrollTo(0,0);}} onNavigate={navigate}/>}
       {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
@@ -5140,8 +5214,13 @@ export default function App(){
       {page==="my-profile"&&isLoggedIn&&<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate}/>}
       {page==="inbox"&&<InboxPage session={session} profile={myProfile} onNavigate={navigate}/>}
       {page==="admin"&&isLoggedIn&&isAdmin&&<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>}
-      {page==="register-talent"&&<RegisterTalent onNavigate={navigate}/>}
-      {page==="register-cd"&&<RegisterCD onNavigate={navigate}/>}
+      {/* Registration pages are guarded — a logged-in user with an existing
+          profile (any user_type) is redirected to the page that makes sense for
+          them. Talents go to My Profile, CDs/Producers/Admins go to the
+          Dashboard. Stops the "Join for Free" / "Create Profile" leakage that
+          gaslit signed-in users. */}
+      {page==="register-talent"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterTalent onNavigate={navigate}/>)}
+      {page==="register-cd"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterCD onNavigate={navigate}/>)}
       {page==="login"&&<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn}/>}
       {page==="reset-password"&&<ResetPasswordPage onNavigate={navigate} session={session}/>}
       {page==="about"&&<AboutPage onNavigate={navigate}/>}
