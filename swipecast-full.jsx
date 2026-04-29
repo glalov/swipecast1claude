@@ -368,14 +368,17 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .fcs-arrow.prev{left:6px;}
   .fcs-arrow.next{right:6px;}
 }
-/* ─── Industry partners marquee — infinite horizontal scroll, paused on hover ─── */
+/* ─── Industry partners marquee — infinite horizontal scroll of real studio logos ─── */
 .partners-marquee{position:relative;overflow:hidden;width:100%;padding:6px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);}
-.partners-track{display:flex;gap:clamp(40px,5vw,72px);align-items:center;width:max-content;animation:partnersSlide 36s linear infinite;will-change:transform;}
+.partners-track{display:flex;gap:clamp(14px,1.6vw,22px);align-items:center;width:max-content;animation:partnersSlide 48s linear infinite;will-change:transform;}
 .partners-marquee:hover .partners-track{animation-play-state:paused;}
-.partners-item{flex-shrink:0;font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(15px,1.6vw,20px);letter-spacing:1px;color:var(--t1);opacity:0.55;transition:opacity .25s ease,transform .25s ease;white-space:nowrap;text-transform:uppercase;}
-.partners-item:hover{opacity:1;transform:scale(1.04);}
+.partners-tile{flex-shrink:0;background:#fff;border:1px solid var(--bdr);border-radius:14px;padding:18px 26px;min-width:160px;height:88px;display:flex;align-items:center;justify-content:center;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;}
+.partners-tile:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.06);border-color:rgba(26,26,46,.18);}
+.partners-tile img{max-height:38px;max-width:130px;object-fit:contain;display:block;opacity:.78;transition:opacity .25s ease;filter:saturate(.85);}
+.partners-tile:hover img{opacity:1;filter:saturate(1);}
 @keyframes partnersSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
 @media (prefers-reduced-motion: reduce){.partners-track{animation:none;}}
+@media (max-width:768px){.partners-tile{min-width:130px;height:74px;padding:14px 20px;}.partners-tile img{max-height:30px;max-width:100px;}}
 `;
 
 // ═══════════════════════════════════════════
@@ -3533,25 +3536,61 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0}){
       <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> $9.99/mo for talent · 7-day free trial</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> Cancel anytime</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> 60-second signup</span></div>
     </div><div style={{display:"flex",justifyContent:"center"}}><LandingSwipe/></div></section>
 
-    {/* ───────── FEATURED CASTINGS SLIDER — pulls live from public.castings (same as Browse Castings) ───────── */}
-    <FeaturedCastingsSlider onViewCasting={onViewCasting} onNavigate={onNavigate} castingsVersion={castingsVersion}/>
-
-    {/* ───────── INDUSTRY PARTNERS MARQUEE — infinite horizontal scroll of studio + streamer wordmarks ───────── */}
-    <div style={{borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)",padding:"32px 0",background:"var(--s2)"}}>
-      <div style={{maxWidth:1200,margin:"0 auto",textAlign:"center",padding:"0 24px",marginBottom:18}}>
+    {/* ───────── INDUSTRY PARTNERS MARQUEE — real studio + streamer logos, infinite scroll ───────── */}
+    <div style={{borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)",padding:"40px 0 44px",background:"var(--s2)"}}>
+      <div style={{maxWidth:1200,margin:"0 auto",textAlign:"center",padding:"0 24px",marginBottom:24}}>
         <p style={{fontSize:11,letterSpacing:1.5,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,margin:0}}>Trusted across studios, streamers &amp; production companies</p>
       </div>
       <div className="partners-marquee" aria-label="Industry partners">
         {/* Track is duplicated so the keyframe translateX(-50%) loops seamlessly. */}
         <div className="partners-track">
           {(() => {
-            const PARTNERS=["DISNEY","NETFLIX","A24","AMAZON STUDIOS","HULU","WARNER BROS.","UNIVERSAL","PARAMOUNT","SONY PICTURES","LIONSGATE","HBO MAX","APPLE TV+"];
+            // Real brand SVG logos from Wikimedia Commons (Special:FilePath redirects to canonical asset).
+            // Each entry: name (alt text + fallback wordmark) and URL of the SVG.
+            const PARTNERS=[
+              {name:"Netflix",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Netflix_2015_logo.svg"},
+              {name:"Disney",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Disney_wordmark.svg"},
+              {name:"HBO Max",src:"https://commons.wikimedia.org/wiki/Special:FilePath/HBO_Max_Logo.svg"},
+              {name:"Hulu",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Hulu_Logo.svg"},
+              {name:"Amazon Studios",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Amazon_Studios_logo.svg"},
+              {name:"Apple TV+",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Apple_TV_Plus_Logo.svg"},
+              {name:"A24",src:"https://commons.wikimedia.org/wiki/Special:FilePath/A24_logo.svg"},
+              {name:"Warner Bros.",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Warner_Bros._logo.svg"},
+              {name:"Universal Pictures",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Universal_Pictures_logo.svg"},
+              {name:"Paramount Pictures",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Paramount_Pictures_logo.svg"},
+              {name:"Sony Pictures",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Sony_Pictures_logo.svg"},
+              {name:"Lionsgate",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Lionsgate_Studios_logo.svg"}
+            ];
+            // Duplicate so the marquee keyframe (translateX -50%) loops seamlessly without a visible jump.
             const doubled=[...PARTNERS,...PARTNERS];
-            return doubled.map((n,i)=><span key={`${n}-${i}`} className="partners-item">{n}</span>);
+            return doubled.map((p,i)=>(
+              <div key={`${p.name}-${i}`} className="partners-tile" title={p.name} role="img" aria-label={p.name}>
+                <img
+                  src={p.src}
+                  alt={p.name}
+                  loading="lazy"
+                  decoding="async"
+                  draggable="false"
+                  onError={e=>{
+                    // If a logo URL ever 404s, swap to a clean text wordmark so the row never breaks.
+                    if(e.currentTarget.dataset.fallback)return;
+                    e.currentTarget.dataset.fallback="1";
+                    e.currentTarget.style.display="none";
+                    const span=document.createElement("span");
+                    span.textContent=p.name.toUpperCase();
+                    span.style.cssText="font-family:'DM Sans',sans-serif;font-weight:800;font-size:14px;letter-spacing:1px;color:var(--t1);opacity:.78;";
+                    e.currentTarget.parentNode.appendChild(span);
+                  }}
+                />
+              </div>
+            ));
           })()}
         </div>
       </div>
     </div>
+
+    {/* ───────── FEATURED CASTINGS SLIDER — pulls live from public.castings (same as Browse Castings) ───────── */}
+    <FeaturedCastingsSlider onViewCasting={onViewCasting} onNavigate={onNavigate} castingsVersion={castingsVersion}/>
 
     {/* ───────── STATS ───────── */}
     <div style={{display:"flex",justifyContent:"center",gap:"clamp(32px,6vw,80px)",padding:"56px 40px",maxWidth:1200,margin:"0 auto",flexWrap:"wrap"}}>{[["100%","Of submissions reviewed"],["$9.99","/mo · cheapest in casting"],["3.2×","Faster to callback"],["72hr","Avg. response time"]].map(([n,l])=><div key={l} style={{textAlign:"center"}}><div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:42,color:"var(--acc)",letterSpacing:-1}}>{n}</div><div style={{color:"var(--t2)",fontSize:12,marginTop:4,letterSpacing:0.3}}>{l}</div></div>)}</div>
