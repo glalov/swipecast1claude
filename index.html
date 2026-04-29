@@ -372,6 +372,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;}
 .mm-link:last-child{border-bottom:none;}
 .mm-link:hover{color:var(--acc);}
+/* ─── Per-message delete button reveals on bubble hover (modal timeline) ─── */
+.msg-bubble{position:relative;}
+.msg-bubble .msg-del-btn{display:none;align-items:center;justify-content:center;}
+.msg-bubble:hover .msg-del-btn{display:flex;}
+.msg-del-btn:hover{color:#c0392b !important;border-color:#c0392b !important;}
 /* ─── Featured castings slider — homepage hero carousel ─── */
 .fcs-section{position:relative;max-width:1200px;margin:0 auto;padding:48px 40px 16px;}
 .fcs-track{position:relative;border-radius:20px;}
@@ -2773,29 +2778,120 @@ function ComposeDMModal({fromId,toId,toName,onClose}){
   </div></div>);
 }
 
-// ─── Full thread view for a single inbox message.
-// Shows sender info, exact date+time, casting context (if the message is tied to an
-// application), the full message body, plus reply / delete / back actions.
-// Auto-marks the message as read on mount so the unread badge updates instantly.
+// ─── Full thread view for one conversation between sessionUid and a counterparty.
+// Renders ALL messages between the two users in chronological order (oldest top,
+// newest bottom). On mount: bulk-marks every unread incoming message as read in a
+// single DB call so the unread badge always settles to truth, not just one less.
+// Realtime-subscribes to the conversation_id so new messages from the other side
+// appear live without a manual refresh — and they get marked read immediately too,
+// since the user is actively viewing the thread.
 function MessageThreadModal({message,sessionUid,onClose,onRead,onDeleted,onReplied}){
   const [reply,setReply]=useState("");
   const [busy,setBusy]=useState(false);
   const [deleting,setDeleting]=useState(false);
   const [err,setErr]=useState("");
-  const [sent,setSent]=useState(false);
-  const [castingCtx,setCastingCtx]=useState(null); // {title, prod, location, role}
-  const [thread,setThread]=useState([]);           // prior messages between same parties (best-effort)
+  const [castingCtx,setCastingCtx]=useState(null);
+  const [thread,setThread]=useState([]);
+  const [counterpartyProfile,setCounterpartyProfile]=useState(null);
   const readFiredRef=useRef(false);
+  const scrollRef=useRef(null);
 
-  // 1) Mark unread → read on mount, exactly once. The parent already updates inbox state
-  //    optimistically; this also writes through to the DB.
+  // Stable conversation key — same formula as the generated DB column. Order-agnostic
+  // so {a,b} always produces the same id whether a or b started the thread.
+  const counterpartyId=message?(message.from_id===sessionUid?message.to_id:message.from_id):null;
+  const conversationId=(message&&sessionUid&&counterpartyId)
+    ? (sessionUid<counterpartyId?`${sessionUid}|${counterpartyId}`:`${counterpartyId}|${sessionUid}`)
+    : null;
+
+  // ─── Bulk mark-read helper. Takes an array of message IDs; updates DB + bubbles
+  //     the IDs back to the parent so the inbox / global badge can recompute locally.
+  const bulkMarkRead=useCallback(async(ids)=>{
+    if(!ids||ids.length===0)return;
+    const stamp=new Date().toISOString();
+    setThread(p=>p.map(m=>ids.includes(m.id)?{...m,read_at:stamp}:m));
+    try{await window.sb.from("messages").update({read_at:stamp}).in("id",ids);}catch(_){/* surfaced via realtime */}
+    if(typeof onRead==="function")onRead(ids);
+  },[onRead]);
+
+  // ─── Load the entire conversation (using the indexed conversation_id) and bulk-mark
+  //     every unread incoming message as read in one round-trip. Single source of truth.
   useEffect(()=>{
-    if(readFiredRef.current)return;
-    readFiredRef.current=true;
-    if(message&&!message.read_at&&typeof onRead==="function")onRead();
-  },[message,onRead]);
+    let cancelled=false;
+    if(!conversationId||!sessionUid)return;
+    (async()=>{
+      try{
+        const {data,error}=await window.sb.from("messages")
+          .select("id,from_id,to_id,body,created_at,read_at,application_id,conversation_id,profiles:from_id(id,display_name,company_name,headshot_url,user_type)")
+          .eq("conversation_id",conversationId)
+          .order("created_at",{ascending:true})
+          .limit(500);
+        if(error)throw error;
+        if(cancelled)return;
+        const rows=data||[];
+        setThread(rows);
+        // Lock in the counterparty profile from any of their messages
+        const cpRow=rows.find(r=>r.from_id===counterpartyId&&r.profiles);
+        if(cpRow?.profiles)setCounterpartyProfile(cpRow.profiles);
+        // Bulk read — only first time the modal opens, regardless of how many unread
+        if(!readFiredRef.current){
+          readFiredRef.current=true;
+          const unreadIds=rows.filter(r=>r.to_id===sessionUid&&!r.read_at).map(r=>r.id);
+          if(unreadIds.length>0)bulkMarkRead(unreadIds);
+        }
+      }catch(e){if(!cancelled)setErr(e.message||"Could not load conversation.");}
+    })();
+    return()=>{cancelled=true;};
+  },[conversationId,sessionUid,counterpartyId,bulkMarkRead]);
 
-  // 2) Lookup casting / role context if this message is tied to an application.
+  // Fallback: if no thread row carries the counterparty's profile (e.g. they only
+  // received messages), look it up directly so the header still shows their name.
+  useEffect(()=>{
+    let cancelled=false;
+    if(counterpartyProfile||!counterpartyId)return;
+    (async()=>{
+      try{
+        const {data}=await window.sb.from("profiles")
+          .select("id,display_name,company_name,headshot_url,user_type")
+          .eq("id",counterpartyId).maybeSingle();
+        if(!cancelled&&data)setCounterpartyProfile(data);
+      }catch(_){/* silent */}
+    })();
+    return()=>{cancelled=true;};
+  },[counterpartyProfile,counterpartyId]);
+
+  // Realtime: when the OTHER user sends a new message OR the DB updates an existing
+  // row (e.g. another tab marks-read), reflect it locally. This also bulk-reads any
+  // newly-arrived incoming message because the user is actively looking at the thread.
+  useEffect(()=>{
+    if(!conversationId||!sessionUid)return;
+    let cancelled=false;
+    let ch=null;
+    try{
+      ch=window.sb.channel(`thread-${conversationId}`)
+        .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages",filter:`conversation_id=eq.${conversationId}`},async(p)=>{
+          if(cancelled)return;
+          const row=p.new;
+          // De-dupe with our own optimistic insert
+          setThread(prev=>prev.some(m=>m.id===row.id)?prev:[...prev,row].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)));
+          // If the incoming row is addressed to us, mark it read right away
+          if(row.to_id===sessionUid&&!row.read_at)bulkMarkRead([row.id]);
+        })
+        .on("postgres_changes",{event:"UPDATE",schema:"public",table:"messages",filter:`conversation_id=eq.${conversationId}`},(p)=>{
+          if(cancelled)return;
+          const row=p.new;
+          setThread(prev=>prev.map(m=>m.id===row.id?{...m,...row}:m));
+        })
+        .on("postgres_changes",{event:"DELETE",schema:"public",table:"messages",filter:`conversation_id=eq.${conversationId}`},(p)=>{
+          if(cancelled)return;
+          const id=p.old?.id;
+          if(id)setThread(prev=>prev.filter(m=>m.id!==id));
+        })
+        .subscribe();
+    }catch(_){/* realtime optional */}
+    return()=>{cancelled=true;if(ch){try{window.sb.removeChannel(ch);}catch(_){}}};
+  },[conversationId,sessionUid,bulkMarkRead]);
+
+  // Casting context — pulled from the seed message's application_id, not changed.
   useEffect(()=>{
     let cancelled=false;
     if(!message?.application_id){setCastingCtx(null);return;}
@@ -2804,138 +2900,144 @@ function MessageThreadModal({message,sessionUid,onClose,onRead,onDeleted,onRepli
         const {data}=await window.sb.from("applications")
           .select("id,castings(id,title,prod,location,type),roles(name)")
           .eq("id",message.application_id).maybeSingle();
-        if(!cancelled&&data)setCastingCtx({
-          casting:data.castings||null,
-          role:data.roles||null
-        });
-      }catch(_){/* silent — context is nice-to-have */}
+        if(!cancelled&&data)setCastingCtx({casting:data.castings||null,role:data.roles||null});
+      }catch(_){/* silent */}
     })();
     return()=>{cancelled=true;};
   },[message?.application_id]);
 
-  // 3) Best-effort prior-thread fetch — pull a short history of messages between the
-  //    same two parties so the user sees prior context, not just one orphan message.
-  useEffect(()=>{
-    let cancelled=false;
-    if(!message||!sessionUid)return;
-    const other=message.from_id===sessionUid?message.to_id:message.from_id;
-    (async()=>{
-      try{
-        const {data}=await window.sb.from("messages")
-          .select("id,from_id,to_id,body,created_at,read_at,application_id,profiles:from_id(display_name,company_name,headshot_url,user_type)")
-          .or(`and(from_id.eq.${sessionUid},to_id.eq.${other}),and(from_id.eq.${other},to_id.eq.${sessionUid})`)
-          .order("created_at",{ascending:true})
-          .limit(50);
-        if(!cancelled)setThread(data||[]);
-      }catch(_){if(!cancelled)setThread([]);}
-    })();
-    return()=>{cancelled=true;};
-  },[message?.id,sessionUid]);
+  // Auto-scroll to the bottom whenever new messages land — keeps focus on the latest.
+  useEffect(()=>{if(scrollRef.current){scrollRef.current.scrollTop=scrollRef.current.scrollHeight;}},[thread.length]);
 
   if(!message)return null;
-  const sender=message.profiles||{};
-  const senderName=sender.display_name||sender.company_name||"Unknown sender";
-  const senderTypeLabel=(()=>{
-    const t=(sender.user_type||"").toLowerCase();
+  const cp=counterpartyProfile||message.profiles||{};
+  const cpName=cp.display_name||cp.company_name||"Unknown user";
+  const cpTypeLabel=(()=>{
+    const t=(cp.user_type||"").toLowerCase();
     if(t==="cd")return "Casting Director";
     if(t==="talent")return "Actor / Talent";
     if(t==="admin"||t==="super_admin")return "SlateCue Admin";
     if(t==="producer")return "Producer";
+    if(t==="studio")return "Studio";
     return "Member";
   })();
-  const created=new Date(message.created_at);
-  const dateStr=created.toLocaleDateString(undefined,{weekday:"long",year:"numeric",month:"long",day:"numeric"});
-  const timeStr=created.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
 
+  // Send a reply: insert the row, then optimistically append. Realtime will reconcile.
   const sendReply=async()=>{
     const body=reply.trim();
-    if(!body||busy)return;
+    if(!body||busy||!counterpartyId)return;
     setBusy(true);setErr("");
     try{
-      // Reply goes BACK to the original sender. Carry application_id so the thread stays linked.
-      const payload={
-        from_id:sessionUid,
-        to_id:message.from_id,
-        application_id:message.application_id||null,
-        body
-      };
-      const {data,error}=await window.sb.from("messages").insert(payload).select("id,from_id,to_id,body,created_at,read_at,application_id").single();
+      const payload={from_id:sessionUid,to_id:counterpartyId,application_id:message.application_id||null,body};
+      const {data,error}=await window.sb.from("messages")
+        .insert(payload)
+        .select("id,from_id,to_id,body,created_at,read_at,application_id,conversation_id")
+        .single();
       if(error)throw error;
       setReply("");
-      setSent(true);
-      // Append to local thread so the user sees their reply immediately
-      setThread(p=>[...p,{...data,profiles:{display_name:"You",user_type:"self"}}]);
+      setThread(p=>p.some(m=>m.id===data.id)?p:[...p,data]);
       if(typeof onReplied==="function")onReplied(data);
-      setTimeout(()=>setSent(false),1800);
     }catch(e){setErr(e.message||"Could not send reply.");}
     finally{setBusy(false);}
   };
 
-  const deleteMsg=async()=>{
-    if(deleting)return;
-    if(!window.confirm("Delete this message? This cannot be undone."))return;
+  // Delete the entire conversation (for this user — RLS limits to messages they
+  // sent or received). Per-message delete UI sits inline on each bubble.
+  const deleteConversation=async()=>{
+    if(deleting||thread.length===0)return;
+    if(!window.confirm(`Delete the entire conversation with ${cpName}? Both directions, all ${thread.length} message${thread.length===1?"":"s"}. This cannot be undone.`))return;
     setDeleting(true);setErr("");
     try{
-      const {error}=await window.sb.from("messages").delete().eq("id",message.id);
+      const ids=thread.map(t=>t.id);
+      const {error}=await window.sb.from("messages").delete().in("id",ids);
       if(error)throw error;
-      if(typeof onDeleted==="function")onDeleted(message.id);
+      if(typeof onDeleted==="function")ids.forEach(id=>onDeleted(id));
       onClose();
     }catch(e){setErr(e.message||"Could not delete.");setDeleting(false);}
   };
 
+  // Per-message delete from inside the timeline.
+  const deleteOne=async(id)=>{
+    if(!window.confirm("Delete this message?"))return;
+    try{
+      const {error}=await window.sb.from("messages").delete().eq("id",id);
+      if(error)throw error;
+      setThread(p=>p.filter(m=>m.id!==id));
+      if(typeof onDeleted==="function")onDeleted(id);
+    }catch(e){setErr(e.message||"Could not delete.");}
+  };
+
   return(<div className="modal-overlay" onClick={()=>!busy&&!deleting&&onClose()}>
-    <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:640,maxHeight:"90vh",overflowY:"auto"}}>
-      {/* Header — back button + delete */}
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18,paddingBottom:14,borderBottom:"1px solid var(--bdr)"}}>
-        <button className="btn-s btn-sm" onClick={onClose} disabled={busy||deleting}>← Back to inbox</button>
-        <button onClick={deleteMsg} disabled={deleting||busy} style={{background:"transparent",border:"1px solid rgba(255,100,100,0.4)",color:"#c0392b",fontSize:12,fontWeight:600,padding:"7px 14px",borderRadius:8,cursor:"pointer"}}>{deleting?"Deleting…":"🗑 Delete"}</button>
-      </div>
-
-      {/* Sender header */}
-      <div style={{display:"flex",gap:14,alignItems:"flex-start",marginBottom:18}}>
-        <img src={sender.headshot_url||"https://placehold.co/56x56/e5e5e5/999?text=?"} alt="" style={{width:56,height:56,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
+    <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column",padding:0,overflow:"hidden"}}>
+      {/* Header — back button, counterparty info, delete-conversation */}
+      <div style={{display:"flex",alignItems:"center",gap:14,padding:"18px 22px",borderBottom:"1px solid var(--bdr)",flexShrink:0}}>
+        <button className="btn-s btn-sm" onClick={onClose} disabled={busy||deleting}>←</button>
+        <img src={cp.headshot_url||"https://placehold.co/44x44/e5e5e5/999?text=?"} alt="" style={{width:44,height:44,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
         <div style={{minWidth:0,flex:1}}>
-          <div style={{fontWeight:800,fontSize:17,letterSpacing:"-0.2px"}}>{senderName}</div>
-          <div style={{fontSize:11,letterSpacing:1,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,marginTop:2}}>{senderTypeLabel}</div>
-          <div style={{fontSize:12,color:"var(--t3)",marginTop:6}}>{dateStr} · {timeStr}</div>
+          <div style={{fontWeight:800,fontSize:15,letterSpacing:"-0.2px",lineHeight:1.2}}>{cpName}</div>
+          <div style={{fontSize:10,letterSpacing:1,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,marginTop:3}}>{cpTypeLabel}</div>
         </div>
+        <button onClick={deleteConversation} disabled={deleting||busy} title="Delete entire conversation" style={{background:"transparent",border:"1px solid rgba(255,100,100,0.4)",color:"#c0392b",fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:8,cursor:"pointer",whiteSpace:"nowrap"}}>{deleting?"Deleting…":"🗑 Delete"}</button>
       </div>
 
-      {/* Casting context — only when message is tied to an application */}
-      {castingCtx?.casting&&<div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 14px",marginBottom:18}}>
-        <div style={{fontSize:10,letterSpacing:1.2,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,marginBottom:4}}>Related casting</div>
-        <div style={{fontSize:14,fontWeight:700,color:"var(--t1)"}}>{castingCtx.casting.title||"Casting"}{castingCtx.role?.name?<span style={{color:"var(--t2)",fontWeight:500}}> · {castingCtx.role.name}</span>:null}</div>
-        <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{[castingCtx.casting.prod,castingCtx.casting.location,castingCtx.casting.type].filter(Boolean).join(" · ")}</div>
+      {/* Casting context strip — sticky-feeling block under the header */}
+      {castingCtx?.casting&&<div style={{background:"var(--s2)",borderBottom:"1px solid var(--bdr)",padding:"10px 22px",flexShrink:0}}>
+        <div style={{fontSize:9,letterSpacing:1.2,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,marginBottom:2}}>Related casting</div>
+        <div style={{fontSize:13,fontWeight:700,color:"var(--t1)"}}>{castingCtx.casting.title||"Casting"}{castingCtx.role?.name?<span style={{color:"var(--t2)",fontWeight:500}}> · {castingCtx.role.name}</span>:null} <span style={{color:"var(--t3)",fontWeight:500,fontSize:12}}>· {[castingCtx.casting.prod,castingCtx.casting.location].filter(Boolean).join(" · ")}</span></div>
       </div>}
 
-      {/* Message body — pre-wrap so newlines render */}
-      <div style={{background:"var(--s1)",borderRadius:10,padding:"14px 16px",marginBottom:18,whiteSpace:"pre-wrap",lineHeight:1.6,fontSize:14,color:"var(--t1)",border:"1px solid var(--bdr)"}}>{message.body}</div>
+      {/* Chronological timeline — oldest top, newest bottom. Day separators on date change. */}
+      <div ref={scrollRef} style={{flex:1,overflowY:"auto",padding:"18px 22px",background:"var(--s1)",minHeight:240}}>
+        {thread.length===0?<p style={{color:"var(--t3)",fontSize:13,textAlign:"center",margin:"20px 0"}}>Loading conversation…</p>:
+         (() => {
+           // Group by day for friendly date separators
+           let lastDay="";
+           return thread.map(m=>{
+             const mine=m.from_id===sessionUid;
+             const dt=new Date(m.created_at);
+             const day=dt.toDateString();
+             const showSeparator=day!==lastDay;
+             lastDay=day;
+             const today=new Date().toDateString();
+             const yesterday=new Date(Date.now()-86400000).toDateString();
+             const dayLabel=day===today?"Today":day===yesterday?"Yesterday":dt.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:dt.getFullYear()!==new Date().getFullYear()?"numeric":undefined});
+             const time=dt.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+             const fromLabel=mine?"You":(m.profiles?.display_name||m.profiles?.company_name||cpName);
+             return(<div key={m.id}>
+               {showSeparator&&<div style={{textAlign:"center",margin:"14px 0 12px",fontSize:10,letterSpacing:1.2,textTransform:"uppercase",color:"var(--t3)",fontWeight:700}}>{dayLabel}</div>}
+               <div style={{display:"flex",justifyContent:mine?"flex-end":"flex-start",marginBottom:8}}>
+                 <div style={{maxWidth:"82%",display:"flex",flexDirection:"column",alignItems:mine?"flex-end":"flex-start",gap:3}}>
+                   <div style={{fontSize:10,fontWeight:700,letterSpacing:0.4,color:"var(--t3)",textTransform:"uppercase",padding:"0 4px"}}>{fromLabel} · {time}</div>
+                   <div className="msg-bubble" style={{background:mine?"var(--acc)":"#fff",color:mine?"#fff":"var(--t1)",border:mine?"none":"1px solid var(--bdr)",padding:"10px 14px",borderRadius:14,fontSize:14,lineHeight:1.5,whiteSpace:"pre-wrap",wordBreak:"break-word"}}>
+                     {m.body}
+                     <button onClick={()=>deleteOne(m.id)} title="Delete this message" className="msg-del-btn" style={{position:"absolute",top:-8,[mine?"left":"right"]:-8,width:22,height:22,borderRadius:"50%",border:"1px solid var(--bdr)",background:"#fff",color:"var(--t3)",fontSize:11,cursor:"pointer",padding:0}}>✕</button>
+                   </div>
+                   {m.to_id===sessionUid&&!m.read_at&&<span style={{fontSize:9,fontWeight:800,color:"var(--acc)",letterSpacing:1,padding:"0 4px"}}>NEW</span>}
+                 </div>
+               </div>
+             </div>);
+           });
+         })()
+        }
+      </div>
 
-      {/* Prior thread (if any) — kept compact, scroll within the modal if long */}
-      {thread.length>1&&<div style={{marginBottom:20}}>
-        <div style={{fontSize:10,letterSpacing:1.2,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,marginBottom:8}}>Conversation history</div>
-        <div style={{display:"flex",flexDirection:"column",gap:10,maxHeight:240,overflowY:"auto",paddingRight:4}}>
-          {thread.filter(t=>t.id!==message.id).map(t=>{
-            const mine=t.from_id===sessionUid;
-            const fromLabel=mine?"You":(t.profiles?.display_name||t.profiles?.company_name||"Them");
-            return(<div key={t.id} style={{alignSelf:mine?"flex-end":"flex-start",maxWidth:"85%",background:mine?"var(--acc)":"var(--s2)",color:mine?"#fff":"var(--t1)",padding:"10px 13px",borderRadius:12,fontSize:13,lineHeight:1.5,whiteSpace:"pre-wrap"}}>
-              <div style={{fontSize:10,fontWeight:700,letterSpacing:0.5,opacity:0.75,marginBottom:4}}>{fromLabel} · {new Date(t.created_at).toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}</div>
-              <div>{t.body}</div>
-            </div>);
-          })}
+      {/* Reply composer — pinned to bottom of the modal */}
+      <div style={{borderTop:"1px solid var(--bdr)",padding:"14px 22px",background:"var(--s1)",flexShrink:0}}>
+        {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"8px 12px",borderRadius:8,fontSize:12,marginBottom:10}}>{err}</div>}
+        <div style={{display:"flex",gap:10,alignItems:"flex-end"}}>
+          <textarea
+            className="textarea"
+            rows="2"
+            placeholder={`Reply to ${cpName.split(" ")[0]||cpName}…`}
+            value={reply}
+            onChange={e=>setReply(e.target.value)}
+            disabled={busy||deleting}
+            onKeyDown={e=>{if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){e.preventDefault();sendReply();}}}
+            style={{flex:1,minHeight:46,resize:"vertical"}}
+          />
+          <button className="btn-p" onClick={sendReply} disabled={busy||deleting||!reply.trim()} style={{whiteSpace:"nowrap",height:46}}>{busy?"Sending…":"Send"}</button>
         </div>
-      </div>}
-
-      {/* Reply box */}
-      <div style={{borderTop:"1px solid var(--bdr)",paddingTop:18}}>
-        <label className="label">Reply to {senderName.split(" ")[0]||senderName}</label>
-        <textarea className="textarea" rows="4" placeholder={`Write your reply…`} value={reply} onChange={e=>setReply(e.target.value)} disabled={busy||deleting}/>
-        {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginTop:10}}>{err}</div>}
-        {sent&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.35)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginTop:10,fontWeight:600}}>✓ Reply sent</div>}
-        <div style={{display:"flex",gap:10,marginTop:12}}>
-          <button className="btn-p" onClick={sendReply} disabled={busy||deleting||!reply.trim()} style={{flex:1}}>{busy?"Sending…":"Send Reply"}</button>
-          <button className="btn-s" onClick={onClose} disabled={busy||deleting}>Close</button>
-        </div>
+        <p style={{fontSize:10,color:"var(--t3)",marginTop:6,letterSpacing:0.3}}>Press ⌘/Ctrl+Enter to send · Hover any message to delete it</p>
       </div>
     </div>
   </div>);
@@ -3129,11 +3231,16 @@ function InboxPage({session,profile,onNavigate}){
       message={openMsg}
       sessionUid={uid}
       onClose={()=>setOpenMsg(null)}
-      onRead={()=>markRead(openMsg.id)}
+      // Bulk mark-read: modal hands us every newly-read message id in one call.
+      onRead={(ids)=>{
+        const stamp=new Date().toISOString();
+        const idSet=new Set(Array.isArray(ids)?ids:[ids]);
+        setMessages(p=>p.map(m=>idSet.has(m.id)?{...m,read_at:stamp}:m));
+      }}
       onDeleted={(id)=>{setMessages(p=>p.filter(m=>m.id!==id));setTimeout(load,300);}}
       onReplied={(newRow)=>{
         // Optimistic append so the thread list reflects the new outgoing message instantly
-        if(newRow)setMessages(p=>[{...newRow},...p]);
+        if(newRow)setMessages(p=>p.some(m=>m.id===newRow.id)?p:[{...newRow},...p]);
         setTimeout(load,300);
       }}
     />}
@@ -4184,10 +4291,13 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
       message={openMsg}
       sessionUid={session.user.id}
       onClose={()=>setOpenMsg(null)}
-      onRead={()=>{
-        // Optimistic: flip the row's read_at locally so the unread badge ticks down instantly.
-        setInbox(p=>p.map(x=>x.id===openMsg.id?{...x,read_at:new Date().toISOString()}:x));
-        markRead(openMsg.id);
+      // Bulk mark-read: the modal already wrote read_at to the DB for every unread
+      // incoming message in this thread; we just need to mirror that locally so the
+      // inbox row + nav badge update without another round-trip.
+      onRead={(ids)=>{
+        const stamp=new Date().toISOString();
+        const idSet=new Set(Array.isArray(ids)?ids:[ids]);
+        setInbox(p=>p.map(x=>idSet.has(x.id)?{...x,read_at:stamp}:x));
       }}
       onDeleted={(id)=>{
         setInbox(p=>p.filter(x=>x.id!==id));
