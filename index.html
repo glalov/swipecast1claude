@@ -411,6 +411,209 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media (max-width:768px){.partners-tile{min-width:130px;height:74px;padding:14px 20px;}.partners-tile img{max-height:30px;max-width:100px;}}
 `;
 
+// ─── Membership plans. Single source of truth — used by MembershipPage,
+//     PlanSummaryPage, the red banner copy, and the activate_membership RPC.
+const MEMBERSHIP_PLANS={
+  yearly:{key:"yearly",label:"Early Plan — 12 Months",monthly:7.99,months:12,total:7.99*12,note:"Billed once, locks in our lowest founder price."},
+  six_month:{key:"six_month",label:"6 Month Plan",monthly:8.99,months:6,total:8.99*6,note:"Billed every six months."},
+  monthly:{key:"monthly",label:"Monthly Plan",monthly:9.99,months:1,total:9.99,note:"Billed monthly. Cancel anytime."}
+};
+
+// ─── Red sticky banner shown at the very top of every page when the user is
+//     a free-tier talent (CDs / producers / admins / studios are unaffected).
+//     Click anywhere → /membership.
+function ActivateMembershipBanner({myProfile,onNavigate}){
+  const userType=(myProfile?.user_type||"").toLowerCase();
+  const isTalent=userType==="talent";
+  const status=myProfile?.membership_status||"free";
+  if(!isTalent)return null;            // only talent see it
+  if(status==="active")return null;    // hide once active
+  return(<button
+    onClick={()=>onNavigate&&onNavigate("membership")}
+    className="member-banner"
+    aria-label="Activate your membership"
+    style={{
+      position:"sticky",top:0,zIndex:100,
+      width:"100%",border:"none",cursor:"pointer",
+      background:"linear-gradient(90deg,#e74c3c 0%,#c0392b 100%)",
+      color:"#fff",fontFamily:"'DM Sans',sans-serif",fontWeight:700,
+      fontSize:13,letterSpacing:0.5,padding:"10px 24px",
+      display:"flex",alignItems:"center",justifyContent:"center",gap:10,
+      boxShadow:"0 1px 0 rgba(0,0,0,0.15)"
+    }}>
+    <span style={{fontSize:14}}>⚡</span>
+    <span>Activate your membership to start submitting to castings →</span>
+  </button>);
+}
+
+// ─── Plan-picker. Three tiers (Yearly / 6mo / Monthly). Click a plan card
+//     → routes to PlanSummaryPage. The cards mirror Backstage's layout but
+//     stay on-brand. Already-active members see a different card explaining
+//     their current plan + expiry instead of plan options.
+function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
+  if(!session?.user){
+    return(<div className="page page-wide"><div className="card" style={{padding:48,textAlign:"center"}}>
+      <h2 style={{fontSize:20,marginBottom:8}}>Sign in to manage your membership</h2>
+      <p style={{color:"var(--t3)",marginBottom:18}}>Free profiles can browse castings — submitting requires a membership.</p>
+      <button className="btn-p" onClick={()=>onNavigate("login")}>Sign in</button>
+    </div><Footer onNavigate={onNavigate}/></div>);
+  }
+  const userType=(myProfile?.user_type||"").toLowerCase();
+  const isTalent=userType==="talent";
+  const isActive=myProfile?.membership_status==="active";
+  const currentPlan=isActive?MEMBERSHIP_PLANS[myProfile?.plan_type||"monthly"]:null;
+  return(<div className="page page-wide">
+    <div className="section-label">Membership</div>
+    <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1.2,marginBottom:8}}>{isActive?"You're all set.":"Pick your plan."}</h1>
+    <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>
+      {isActive
+        ?`Your ${currentPlan?.label||"membership"} is active${myProfile?.membership_end_date?` until ${new Date(myProfile.membership_end_date).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}`:""}. You can submit to castings without restriction.`
+        :isTalent
+          ?"You can browse castings and build your profile for free. To submit for roles you need a SlateCue membership — pick the plan that fits."
+          :"Casting Director and Industry Professional accounts are free — you only pay when you post a casting. No membership required."}
+    </p>
+
+    {!isTalent&&!isActive&&<div className="card" style={{padding:32,textAlign:"center",maxWidth:560,margin:"0 auto"}}>
+      <h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>You don't need a membership.</h3>
+      <p style={{color:"var(--t3)",fontSize:14,marginBottom:18}}>Industry accounts are free — head to your dashboard and post a casting when you're ready.</p>
+      <button className="btn-p" onClick={()=>onNavigate("dashboard")}>Open Dashboard →</button>
+    </div>}
+
+    {isTalent&&isActive&&currentPlan&&<div className="card" style={{padding:32,maxWidth:560,margin:"0 auto"}}>
+      <div style={{display:"inline-block",background:"rgba(46,204,113,0.15)",color:"#1d7b44",fontSize:11,fontWeight:800,letterSpacing:1.2,padding:"4px 12px",borderRadius:100,marginBottom:14}}>ACTIVE</div>
+      <h3 style={{fontSize:20,fontWeight:800,marginBottom:6}}>{currentPlan.label}</h3>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:14}}>${currentPlan.monthly.toFixed(2)}/month · {currentPlan.note}</p>
+      {myProfile?.membership_start_date&&<p style={{fontSize:12,color:"var(--t3)"}}>Started {new Date(myProfile.membership_start_date).toLocaleDateString()}</p>}
+      {myProfile?.membership_end_date&&<p style={{fontSize:12,color:"var(--t3)"}}>Renews {new Date(myProfile.membership_end_date).toLocaleDateString()}</p>}
+      <button className="btn-p" style={{marginTop:18}} onClick={()=>onNavigate("search")}>Browse Castings →</button>
+    </div>}
+
+    {isTalent&&!isActive&&<div className="grid-3" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18,maxWidth:1100,margin:"0 auto"}}>
+      {Object.values(MEMBERSHIP_PLANS).map(p=>{
+        const featured=p.key==="yearly";
+        return(<div key={p.key} className="card" style={{padding:28,position:"relative",border:featured?"2px solid var(--acc)":"1px solid var(--bdr)"}}>
+          {featured&&<div style={{position:"absolute",top:-12,left:24,background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.2,padding:"4px 10px",borderRadius:100,fontFamily:"'DM Sans',sans-serif"}}>BEST VALUE</div>}
+          <h3 style={{fontSize:16,fontWeight:800,marginBottom:6}}>{p.label}</h3>
+          <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:6}}>
+            <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:38,letterSpacing:-1.2,color:featured?"var(--acc)":"var(--t1)"}}>${p.monthly.toFixed(2)}</span>
+            <span style={{fontSize:13,color:"var(--t2)"}}>/month</span>
+          </div>
+          <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>{p.note}</p>
+          <ul style={{listStyle:"none",padding:0,margin:"0 0 22px",display:"flex",flexDirection:"column",gap:6}}>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Unlimited submissions</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Direct messages from CDs</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Audition scheduling</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Cancel anytime</li>
+          </ul>
+          <div style={{borderTop:"1px solid var(--bdr)",paddingTop:14,marginBottom:14,fontSize:12,color:"var(--t3)"}}>Total billed: <strong style={{color:"var(--t1)"}}>${p.total.toFixed(2)}</strong>{p.months>1?` for ${p.months} months`:" today"}</div>
+          <button className={featured?"btn-p":"btn-s"} style={{width:"100%"}} onClick={()=>onPickPlan(p.key)}>Select Plan →</button>
+        </div>);
+      })}
+    </div>}
+
+    <Footer onNavigate={onNavigate}/>
+  </div>);
+}
+
+// ─── Selected-plan summary + activation. Shows plan, billing length, total
+//     due. The "Activate" button calls the activate_membership SECURITY
+//     DEFINER RPC. When real Stripe is wired this becomes a checkout redirect
+//     and the RPC moves to a webhook handler — frontend stays the same.
+function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onReload}){
+  const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState("");
+  const [done,setDone]=useState(false);
+  const plan=MEMBERSHIP_PLANS[planKey]||MEMBERSHIP_PLANS.monthly;
+  const userType=(myProfile?.user_type||"").toLowerCase();
+  const isTalent=userType==="talent";
+
+  if(!session?.user){
+    return(<div className="page page-wide"><div className="card" style={{padding:48,textAlign:"center"}}>
+      <h2 style={{fontSize:20,marginBottom:8}}>Sign in to activate your membership</h2>
+      <button className="btn-p" onClick={()=>onNavigate("login")}>Sign in</button>
+    </div><Footer onNavigate={onNavigate}/></div>);
+  }
+  if(!isTalent){
+    return(<div className="page page-wide"><div className="card" style={{padding:48,textAlign:"center"}}>
+      <h2 style={{fontSize:20,marginBottom:8}}>Industry accounts don't need a membership</h2>
+      <p style={{color:"var(--t3)",fontSize:14,marginBottom:18}}>You only pay when you post a casting.</p>
+      <button className="btn-p" onClick={()=>onNavigate("dashboard")}>Open Dashboard →</button>
+    </div><Footer onNavigate={onNavigate}/></div>);
+  }
+
+  const activate=async()=>{
+    if(busy)return;
+    setBusy(true);setErr("");
+    try{
+      const {data,error}=await window.sb.rpc("activate_membership",{p_plan:plan.key});
+      if(error)throw error;
+      setDone(true);
+      // Reload the local profile so the red banner disappears immediately
+      // and the apply-gate flips to allow.
+      if(typeof onReload==="function")onReload();
+      // If the user came here from a casting they tried to apply to, return them.
+      let returnTo=null;
+      try{returnTo=JSON.parse(sessionStorage.getItem("sc_post_membership_return")||"null");}catch(_){}
+      if(returnTo?.casting?.id){
+        sessionStorage.removeItem("sc_post_membership_return");
+        if(typeof onActivated==="function")onActivated(returnTo);
+      }else{
+        setTimeout(()=>onNavigate("search"),1200);
+      }
+    }catch(e){console.error("[membership] activate failed:",e);setErr(e.message||"Could not activate membership.");}
+    finally{setBusy(false);}
+  };
+
+  return(<div className="page" style={{maxWidth:560,margin:"0 auto"}}>
+    <button className="btn-s btn-sm" onClick={()=>onNavigate("membership")} style={{marginBottom:18}}>← Back to plans</button>
+    <div className="section-label">Order summary</div>
+    <h1 style={{fontWeight:800,fontSize:30,letterSpacing:-1.2,marginBottom:24}}>Now let's confirm your plan</h1>
+
+    {done?<div className="success-msg" style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.35)",borderRadius:14,padding:"32px 28px",textAlign:"center"}}>
+      <div style={{fontSize:32,marginBottom:8}}>✓</div>
+      <h3 style={{fontSize:20,fontWeight:800,marginBottom:8}}>Membership activated</h3>
+      <p style={{color:"var(--t2)",fontSize:14}}>Your {plan.label} is live. Heading to your next step…</p>
+    </div>:<>
+      <div className="card" style={{padding:24,marginBottom:18}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingBottom:14,borderBottom:"1px solid var(--bdr)",marginBottom:14}}>
+          <div>
+            <div style={{fontSize:11,letterSpacing:1,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,marginBottom:4}}>Selected plan</div>
+            <h3 style={{fontSize:18,fontWeight:800}}>{plan.label}</h3>
+          </div>
+          <div style={{textAlign:"right"}}>
+            <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:28,color:"var(--acc)",letterSpacing:-0.8}}>${plan.monthly.toFixed(2)}</div>
+            <div style={{fontSize:12,color:"var(--t3)"}}>/month</div>
+          </div>
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:8}}>
+          <span style={{color:"var(--t2)"}}>Billing period</span>
+          <strong style={{color:"var(--t1)"}}>{plan.months===1?"Monthly · renews each month":`${plan.months} months · billed once`}</strong>
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:8}}>
+          <span style={{color:"var(--t2)"}}>Effective rate</span>
+          <strong style={{color:"var(--t1)"}}>${plan.monthly.toFixed(2)}/month</strong>
+        </div>
+        {plan.months>1&&<div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:8}}>
+          <span style={{color:"var(--t2)"}}>{plan.months}-month total</span>
+          <strong style={{color:"var(--t1)"}}>${plan.total.toFixed(2)}</strong>
+        </div>}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",paddingTop:14,marginTop:14,borderTop:"1px solid var(--bdr)",fontSize:15}}>
+          <strong>Total due today</strong>
+          <strong style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:26,color:"var(--acc)",letterSpacing:-0.8}}>${plan.total.toFixed(2)}</strong>
+        </div>
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:12,lineHeight:1.5}}>Renews automatically. Cancel anytime from your profile. Plus tax where applicable.</p>
+      </div>
+
+      {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}</div>}
+
+      <button className="btn-p" style={{width:"100%",padding:"16px"}} onClick={activate} disabled={busy}>{busy?"Activating membership…":`Activate Membership · $${plan.total.toFixed(2)}`}</button>
+      <p style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginTop:12}}>Secure activation. Card collection via Stripe arrives next release — your plan will be confirmed under your email.</p>
+    </>}
+
+    <Footer onNavigate={onNavigate}/>
+  </div>);
+}
+
 // ─── Tiny redirect-on-mount component used to bounce logged-in users away
 //     from registration pages. Picks the destination based on the existing
 //     profile's user_type so talents land on My Profile and CDs/admins on
@@ -565,27 +768,30 @@ function RegisterTalent({onNavigate}){
       if(data?.session){
         try{await window.sb.rpc("apply_signup_metadata_to_profile");}catch(_){}
       }
-      setStep(4); // go to payment step
+      // Signup is FREE — no Stripe step. The user verifies email, logs in,
+      // and the red "Activate Membership" banner prompts them to upgrade
+      // when (and only when) they try to submit for a role.
+      setDone(true);
     }catch(e){console.warn("[auth] createAccount caught:",e?.message||e);setErr(e.message||"Something went wrong. Please try again.");window.scrollTo(0,0);}
     finally{setLoading(false);submittingRef.current=false;}
   };
-  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:24,color:"var(--t2)",fontSize:14}}>Click the link in that email, then log in and start submitting to castings.</p><div style={{display:"flex",gap:12,justifyContent:"center"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
+  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:24,color:"var(--t2)",fontSize:14}}>Your free profile is ready. Click the link in that email, then log in to browse castings. You'll only need to activate a membership when you're ready to submit for a role.</p><div style={{display:"flex",gap:12,justifyContent:"center"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
   return(
     <div className="page"><div style={{maxWidth:640,margin:"0 auto"}}>
-      <div className="section-label">Join SlateCue</div>
+      <div className="section-label">Join SlateCue — Free</div>
       <h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:8}}>Create Your Talent Profile</h1>
-      <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>$9.99/month after your free 7-day trial. Cancel anytime. Already have an account? <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>Log in</span></p>
-      <div style={{display:"flex",gap:8,marginBottom:32}}>{[1,2,3,4].map(s=><div key={s} style={{flex:1,height:4,borderRadius:2,background:s<=step?"var(--acc)":"var(--s3)",transition:"background .3s"}}/>)}</div>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>Free to create. You only need a $7.99–$9.99/month membership when you start submitting to castings. Already have an account? <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>Log in</span></p>
+      <div style={{display:"flex",gap:8,marginBottom:32}}>{[1,2,3].map(s=><div key={s} style={{flex:1,height:4,borderRadius:2,background:s<=step?"var(--acc)":"var(--s3)",transition:"background .3s"}}/>)}</div>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}>✓ Verification email re-sent — check your inbox.</div>}</div>}
 
-      {step===1&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>Step 1 of 4 — Account</h3>
+      {step===1&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>Step 1 of 3 — Account</h3>
         <div className="form-row"><div className="form-group"><label className="label">First Name</label><input className="input" placeholder="First name" value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">Last Name</label><input className="input" placeholder="Last name" value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
         <div className="form-group"><label className="label">Email Address</label><input className="input" type="email" placeholder="you@email.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
         <div className="form-group"><label className="label">Password</label><input className="input" type="password" placeholder="Create a password (8+ characters)" value={f.password} onChange={e=>up("password",e.target.value)}/></div>
         <div className="form-group"><label className="label">Location</label><select className="select" style={{width:"100%"}} value={f.location} onChange={e=>up("location",e.target.value)}><option value="">Select your state</option>{US_STATES.map(s=><option key={s} value={s}>{s}</option>)}</select></div>
         <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={()=>{if(validStep1())setStep(2);}}>Continue →</button></>}
 
-      {step===2&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>Step 2 of 4 — Physical Stats</h3>
+      {step===2&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>Step 2 of 3 — Physical Stats</h3>
         <div className="form-row"><div className="form-group"><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={f.gender} onChange={e=>up("gender",e.target.value)}><option value="">Select</option><option>Female</option><option>Male</option><option>Non-Binary</option><option>Other</option></select></div><div className="form-group"><label className="label">Age</label><input className="input" type="number" placeholder="Age" value={f.age} onChange={e=>up("age",e.target.value)}/></div></div>
         <div className="form-row"><div className="form-group"><label className="label">Height</label><select className="select" style={{width:"100%"}} value={f.height} onChange={e=>up("height",e.target.value)}><option value="">Select</option>{HEIGHTS.map(h=><option key={h} value={h}>{h}</option>)}</select></div><div className="form-group"><label className="label">Weight</label><select className="select" style={{width:"100%"}} value={f.weight} onChange={e=>up("weight",e.target.value)}><option value="">Select</option>{WEIGHTS.map(w=><option key={w} value={w}>{w}</option>)}</select></div></div>
         <div className="form-row"><div className="form-group"><label className="label">Hair Color</label><select className="select" style={{width:"100%"}} value={f.hair} onChange={e=>up("hair",e.target.value)}><option value="">Select</option>{HAIR_COLORS.map(h=><option key={h} value={h}>{h}</option>)}</select></div><div className="form-group"><label className="label">Eye Color</label><select className="select" style={{width:"100%"}} value={f.eyes} onChange={e=>up("eyes",e.target.value)}><option value="">Select</option>{EYE_COLORS.map(ec=><option key={ec} value={ec}>{ec}</option>)}</select></div></div>
@@ -593,33 +799,17 @@ function RegisterTalent({onNavigate}){
         <div className="form-group"><label className="label">Talent Type (select all that apply)</label><div style={{display:"flex",gap:16,flexWrap:"wrap",marginTop:6}}>{["Film","TV","Theater","Commercial","Modeling","Voiceover"].map(t=><label key={t} className="checkbox-row"><input type="checkbox" checked={f.types.includes(t)} onChange={()=>toggleType(t)}/>{t}</label>)}</div></div>
         <div style={{display:"flex",gap:12,marginTop:8}}><button className="btn-s" onClick={()=>setStep(1)}>← Back</button><button className="btn-p" style={{flex:1}} onClick={()=>setStep(3)}>Continue →</button></div></>}
 
-      {step===3&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>Step 3 of 4 — Your Craft</h3>
+      {step===3&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>Step 3 of 3 — Your Craft</h3>
         <div className="form-group"><label className="label">Bio / About</label><textarea className="textarea" placeholder="Tell casting directors about yourself, your experience, and what makes you unique..." style={{minHeight:120}} value={f.bio} onChange={e=>up("bio",e.target.value)}></textarea></div>
         <div className="form-group"><label className="label">Training</label><input className="input" placeholder="e.g. BFA Acting, NYU Tisch · Meisner Technique" value={f.training} onChange={e=>up("training",e.target.value)}/></div>
         <div className="form-group"><label className="label">Special Skills (comma separated)</label><input className="input" placeholder="e.g. Stage Combat, Fluent Spanish, Horseback Riding" value={f.skills} onChange={e=>up("skills",e.target.value)}/></div>
         <div className="form-group"><label className="label">Agent / Manager (optional)</label><input className="input" placeholder="Agency name, or 'Seeking Representation'" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
         <label className="checkbox-row" style={{marginTop:12}}><input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)}/> I agree to SlateCue's Terms of Service and Privacy Policy</label>
-        <div style={{display:"flex",gap:12,marginTop:12}}><button className="btn-s" onClick={()=>setStep(2)} disabled={loading}>← Back</button><button className="btn-p" style={{flex:1}} onClick={createAccount} disabled={loading}>{loading?"Creating profile…":"Continue to Payment →"}</button></div></>}
+        <div style={{display:"flex",gap:12,marginTop:12}}><button className="btn-s" onClick={()=>setStep(2)} disabled={loading}>← Back</button><button className="btn-p" style={{flex:1}} onClick={createAccount} disabled={loading}>{loading?"Creating profile…":"Create Free Account →"}</button></div></>}
 
-      {step===4&&<>
-        <h3 style={{fontSize:18,fontWeight:700,marginBottom:6}}>Step 4 of 4 — Subscribe</h3>
-        <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Your profile has been created. Complete your subscription to unlock submissions and casting access.</p>
-        <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:12,padding:24,marginBottom:20}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-            <div><div style={{fontWeight:700,fontSize:16}}>SlateCue Talent Membership</div><div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>Monthly subscription · Cancel anytime</div></div>
-            <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:32,color:"var(--acc)"}}>$9.99<span style={{fontSize:14,color:"var(--t2)",fontWeight:400}}>/mo</span></div>
-          </div>
-          {["Submit to unlimited castings","Every submission reviewed by CD","Upload headshots, reel, photos, video links","Direct messages from casting directors","Priority placement in talent search","Cancel anytime, no penalties"].map(f=><div key={f} style={{display:"flex",gap:8,alignItems:"center",padding:"6px 0",fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}</div>)}
-        </div>
-        {STRIPE_ACTOR_LINK
-          ?<a href={`${STRIPE_ACTOR_LINK}?prefilled_email=${encodeURIComponent(f.email)}&client_reference_id=${f.email}`} style={{display:"block",width:"100%",textAlign:"center",padding:"16px",background:"var(--acc)",color:"#fff",borderRadius:10,fontWeight:700,fontSize:15,textDecoration:"none"}}>Pay $9.99/month with Stripe →</a>
-          :<div style={{background:"rgba(26,26,46,0.04)",border:"1px dashed var(--bdr)",borderRadius:10,padding:20,textAlign:"center"}}>
-            <div style={{fontWeight:700,marginBottom:8}}>Payment coming very soon</div>
-            <p style={{fontSize:13,color:"var(--t2)",marginBottom:16}}>Your profile is created and reserved. We're finalising our Stripe integration — you'll receive an email with the payment link within 24 hours.</p>
-            <button className="btn-p" onClick={()=>setDone(true)}>Go to Login →</button>
-          </div>}
-        <p style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginTop:12}}>Secure payment via Stripe. Your card details are never stored by SlateCue.</p>
-      </>}
+      {/* Step 4 (Stripe) removed — signup is now free. Membership is activated
+          later from the dedicated /membership page when the user wants to submit
+          for a role. The trigger has already saved the profile by this point. */}
     </div><Footer onNavigate={onNavigate}/></div>
   );
 }
@@ -1349,7 +1539,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
 // ═══════════════════════════════════════════
 // PAGE: CASTING DETAIL
 // ═══════════════════════════════════════════
-function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth}){
+function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile}){
   const [applyRole,setApplyRole]=useState(null);
   const [applied,setApplied]=useState(new Set());
   const [coverNote,setCoverNote]=useState("");
@@ -1363,7 +1553,21 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth})
   const withTimeout=(promise,ms=20000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Please try again.`)),ms))]);
   const c=casting;
   const isDbCasting=!!(c&&c.id&&typeof c.id==="string"&&c.id.length>20); // UUID check
-  const handleApply=(r,i)=>{if(isLoggedIn){setApplyRole({...r,idx:i});setCoverNote("");setApplyErr("");setApplyOk(false);setSelectedPhoto(myPhotos[0]||"");}else{onRequireAuth&&onRequireAuth(c,{...r,idx:i});}};
+  // ─── Membership gate. Only Talent are gated — CDs/admins/producers/studios
+  //     are free-tier always (they pay per casting post, not per submission).
+  const isTalent=(myProfile?.user_type||"").toLowerCase()==="talent";
+  const hasActiveMembership=myProfile?.membership_status==="active";
+  const handleApply=(r,i)=>{
+    if(!isLoggedIn){onRequireAuth&&onRequireAuth(c,{...r,idx:i});return;}
+    // Block submission for free-tier talent. Send them to the membership page
+    // so they can pick a plan, then bounce back to this casting after activation.
+    if(isTalent&&!hasActiveMembership){
+      try{sessionStorage.setItem("sc_post_membership_return",JSON.stringify({casting:c,role:r,roleIdx:i}));}catch(_){}
+      onNavigate&&onNavigate("membership");
+      return;
+    }
+    setApplyRole({...r,idx:i});setCoverNote("");setApplyErr("");setApplyOk(false);setSelectedPhoto(myPhotos[0]||"");
+  };
   useEffect(()=>{(async()=>{
     if(!isLoggedIn||!c)return;
     // load the actor's photos for the picker
@@ -4960,6 +5164,9 @@ function App(){
   const [myProfile,setMyProfile]=useState(null);
   const [authReady,setAuthReady]=useState(false);
   const [pendingApply,setPendingApply]=useState(null);
+  // Selected plan key for PlanSummaryPage. Stored at App level so navigating
+  // to "plan-summary" doesn't lose the choice if the user refreshes mid-flow.
+  const [selectedPlan,setSelectedPlan]=useState(null);
   // ───────────────────────────────────────────────────────────────
   // Shared refresh signal for cross-page data (castings, talent, etc.)
   // Any page that wants to know "something important changed, re-fetch"
@@ -5171,6 +5378,9 @@ function App(){
 
   return(
     <div className="app"><style>{css}</style>
+      {/* Free-tier talent see this red sticky banner above the nav until they
+          activate. Hidden for CDs/admins/producers/studios and once active. */}
+      <ActivateMembershipBanner myProfile={myProfile} onNavigate={navigate}/>
       <nav className="nav">
         <div className="logo" onClick={()=>navThen("home")}><div className="logo-i">↔</div>SlateCue</div>
         <div className="nav-links">
@@ -5232,7 +5442,7 @@ function App(){
       </div>}
       {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("home");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail");}}/>}
       {page==="search"&&<SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");}}/>}
-      {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} onBack={()=>{setPage(prevPage==="home"?"home":"search");setViewingCasting(null);window.scrollTo(0,0);}} onNavigate={navigate}/>}
+      {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} onBack={()=>{setPage(prevPage==="home"?"home":"search");setViewingCasting(null);window.scrollTo(0,0);}} onNavigate={navigate}/>}
       {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
       {page==="dashboard"&&<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings}/>}
       {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{setPage(prevPage);setViewingProfile(null);}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
@@ -5247,6 +5457,17 @@ function App(){
       {page==="register-talent"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterTalent onNavigate={navigate}/>)}
       {page==="register-cd"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterCD onNavigate={navigate}/>)}
       {page==="login"&&<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn}/>}
+      {page==="membership"&&<MembershipPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}}/>}
+      {page==="plan-summary"&&<PlanSummaryPage session={session} myProfile={myProfile} planKey={selectedPlan||"monthly"} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} onActivated={(returnInfo)=>{
+        // Came from a casting they tried to apply to — bounce back to that casting.
+        if(returnInfo?.casting){
+          setPrevPage("home");
+          setViewingCasting(returnInfo.casting);
+          window.scrollTo(0,0);
+          setPage("casting-detail");
+          pushHist("casting-detail");
+        }
+      }}/>}
       {page==="reset-password"&&<ResetPasswordPage onNavigate={navigate} session={session}/>}
       {page==="about"&&<AboutPage onNavigate={navigate}/>}
       {page==="blog"&&<BlogPage onNavigate={navigate}/>}
