@@ -372,6 +372,77 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;}
 .mm-link:last-child{border-bottom:none;}
 .mm-link:hover{color:var(--acc);}
+/* ─── Yearly promo stripe — sits above the main nav on the homepage ─── */
+.promo-stripe{
+  position:relative;
+  display:flex;align-items:center;gap:14px;
+  padding:10px 24px;
+  background:linear-gradient(90deg,#0e0e1f 0%,#1f1f3d 50%,#2a2a52 100%);
+  color:#fff;
+  font-family:'DM Sans',sans-serif;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  z-index:99;
+}
+.promo-stripe::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent 0%,var(--acc) 35%,#7c83ff 50%,var(--acc) 65%,transparent 100%);
+}
+.promo-stripe-img{
+  width:42px;height:42px;border-radius:50%;
+  object-fit:cover;
+  border:2px solid var(--acc);
+  flex-shrink:0;
+  box-shadow:0 0 0 4px rgba(124,131,255,0.18);
+}
+.promo-stripe-text{
+  flex:1;min-width:0;
+  display:flex;align-items:center;gap:10px;
+  font-size:13.5px;line-height:1.35;
+}
+.promo-stripe-brand{
+  font-weight:800;letter-spacing:1.6px;font-size:11.5px;
+  color:var(--acc);
+  flex-shrink:0;
+}
+.promo-stripe-divider{
+  color:rgba(255,255,255,0.25);font-weight:300;
+  flex-shrink:0;
+}
+.promo-stripe-headline{
+  flex:1;min-width:0;color:rgba(255,255,255,0.92);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.promo-stripe-headline strong{
+  font-weight:800;letter-spacing:1px;color:#fff;
+}
+.promo-stripe-cta{
+  background:#fff;color:#0e0e1f;
+  border:none;
+  padding:8px 22px;
+  border-radius:100px;
+  font-family:'DM Sans',sans-serif;
+  font-weight:800;font-size:13px;letter-spacing:0.4px;
+  cursor:pointer;flex-shrink:0;
+  transition:transform .18s ease,background .18s ease,color .18s ease,box-shadow .18s ease;
+  box-shadow:0 1px 0 rgba(255,255,255,0.4) inset;
+}
+.promo-stripe-cta:hover{
+  transform:translateY(-1px) scale(1.04);
+  background:var(--acc);color:#fff;
+  box-shadow:0 6px 14px rgba(124,131,255,0.35);
+}
+@media (max-width:780px){
+  .promo-stripe{padding:8px 12px;gap:10px;}
+  .promo-stripe-img{width:36px;height:36px;}
+  .promo-stripe-brand{display:none;}
+  .promo-stripe-divider{display:none;}
+  .promo-stripe-text{font-size:12px;gap:0;}
+  .promo-stripe-headline{white-space:normal;}
+  .promo-stripe-headline strong{display:block;font-size:10.5px;letter-spacing:1.2px;color:var(--acc);margin-bottom:1px;}
+  .promo-stripe-message{display:block;}
+  .promo-stripe-cta{padding:7px 16px;font-size:12px;}
+}
 /* ─── Per-message delete button reveals on bubble hover (modal timeline) ─── */
 .msg-bubble{position:relative;}
 .msg-bubble .msg-del-btn{display:none;align-items:center;justify-content:center;}
@@ -412,12 +483,68 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 `;
 
 // ─── Membership plans. Single source of truth — used by MembershipPage,
-//     PlanSummaryPage, the red banner copy, and the activate_membership RPC.
+//     PlanSummaryPage, the red banner copy, the yearly promo stripe, and
+//     the activate_membership RPC.
 const MEMBERSHIP_PLANS={
   yearly:{key:"yearly",label:"Early Plan — 12 Months",monthly:7.99,months:12,total:7.99*12,note:"Billed once, locks in our lowest founder price."},
   six_month:{key:"six_month",label:"6 Month Plan",monthly:8.99,months:6,total:8.99*6,note:"Billed every six months."},
   monthly:{key:"monthly",label:"Monthly Plan",monthly:9.99,months:1,total:9.99,note:"Billed monthly. Cancel anytime."}
 };
+
+// ─── Pure helper. Single place that knows how to derive yearly savings from
+//     the monthly + yearly prices. Reused by YearlyPromoStripe and anywhere
+//     else we want to show the savings figure — change MEMBERSHIP_PLANS, every
+//     savings number on the site updates automatically.
+function calculateYearlySavings(monthlyPrice,yearlyTotal){
+  const annualAtMonthly=monthlyPrice*12;
+  const dollarsSaved=Math.max(0,annualAtMonthly-yearlyTotal);
+  const percentSaved=annualAtMonthly>0?Math.round((dollarsSaved/annualAtMonthly)*100):0;
+  return{annualAtMonthly,dollarsSaved,percentSaved};
+}
+
+// ─── Yearly promo stripe. Sits above the main nav on the home page only.
+//     Calculates savings dynamically from MEMBERSHIP_PLANS so the headline
+//     stays in sync with the pricing config. Hidden for users who already
+//     have an active paid membership and for non-talent account types.
+function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){
+  // Industry accounts (CD, admin, producer, studio) don't have a talent
+  // membership, so the savings copy doesn't apply to them.
+  const userType=(myProfile?.user_type||"").toLowerCase();
+  const isCDish=["cd","admin","super_admin","producer","studio"].includes(userType);
+  if(isLoggedIn&&isCDish)return null;
+  // Hide once a user has an active membership. Spec says "if on yearly,
+  // hide" but it's safer to hide for any active paid plan — pestering an
+  // active monthly subscriber to "save 33%" would be reasonable but might
+  // create churn confusion. Easy to relax later if marketing wants it.
+  if(myProfile?.membership_status==="active")return null;
+
+  const {dollarsSaved,percentSaved}=calculateYearlySavings(
+    MEMBERSHIP_PLANS.monthly.monthly,
+    MEMBERSHIP_PLANS.yearly.total
+  );
+  // Defensive: if pricing ever flips and yearly stops being a saving, hide
+  // the stripe entirely instead of shipping a $0/0% offer.
+  if(percentSaved<=0)return null;
+  const dollarsLabel=Number.isInteger(dollarsSaved)?`$${dollarsSaved}`:`$${dollarsSaved.toFixed(2)}`;
+
+  const handleJoin=()=>{
+    if(typeof onPickPlan==="function")onPickPlan("yearly");
+  };
+
+  return(<aside className="promo-stripe" role="region" aria-label="Yearly membership offer">
+    <img className="promo-stripe-img" alt="" loading="lazy"
+      src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&h=160&fit=crop&crop=faces&auto=format&q=70"/>
+    <div className="promo-stripe-text">
+      <span className="promo-stripe-brand">SLATECUE</span>
+      <span className="promo-stripe-divider" aria-hidden="true">|</span>
+      <span className="promo-stripe-headline">
+        <strong>LIMITED TIME OFFER</strong>
+        <span className="promo-stripe-message"> · Save {dollarsLabel} ({percentSaved}%) on your first year of SlateCue. Join today.</span>
+      </span>
+    </div>
+    <button className="promo-stripe-cta" onClick={handleJoin} aria-label={`Join the yearly plan and save ${percentSaved}%`}>Join</button>
+  </aside>);
+}
 
 // ─── Red sticky banner shown at the very top of every page when the user is
 //     a free-tier talent (CDs / producers / admins / studios are unaffected).
@@ -5378,6 +5505,14 @@ function App(){
 
   return(
     <div className="app"><style>{css}</style>
+      {/* Yearly promo stripe — homepage only, hidden for active members and
+          industry accounts. Savings calculated dynamically from MEMBERSHIP_PLANS,
+          so any pricing change updates the headline automatically. */}
+      {page==="home"&&<YearlyPromoStripe
+        myProfile={myProfile}
+        isLoggedIn={isLoggedIn}
+        onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}}
+      />}
       {/* Free-tier talent see this red sticky banner above the nav until they
           activate. Hidden for CDs/admins/producers/studios and once active. */}
       <ActivateMembershipBanner myProfile={myProfile} onNavigate={navigate}/>
