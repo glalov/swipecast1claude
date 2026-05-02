@@ -347,6 +347,29 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;}
 .mm-link:last-child{border-bottom:none;}
 .mm-link:hover{color:var(--acc);}
+/* ─── Global site footer — dark charcoal, applied via Footer component everywhere ─── */
+.site-footer{background:#1B1C20;color:#A8A8B3;border-top:1px solid rgba(255,255,255,0.06);margin-top:auto;}
+.site-footer-inner{max-width:1200px;margin:0 auto;padding:60px 40px 28px;}
+.site-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
+.site-footer-brand .logo{color:#fff;cursor:pointer;}
+.site-footer-brand .logo .logo-i{background:#fff;color:#1B1C20;}
+.site-footer-blurb{color:#9A9BA5;font-size:12.5px;line-height:1.65;margin-top:14px;max-width:280px;}
+.site-footer-heading{font-family:'DM Sans',sans-serif;color:#fff;font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:18px;}
+.site-footer-link{display:block;color:#9A9BA5;font-size:13px;padding:5px 0;cursor:pointer;transition:color .18s ease,transform .18s ease;font-family:'DM Sans',sans-serif;}
+.site-footer-link:hover{color:#fff;transform:translateX(2px);}
+.site-footer-bottom{border-top:1px solid rgba(255,255,255,0.08);padding-top:22px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:11.5px;color:#6F7078;}
+.site-footer-bottom-links{display:flex;gap:18px;flex-wrap:wrap;}
+.site-footer-bottom-links span{cursor:pointer;transition:color .18s ease;}
+.site-footer-bottom-links span:hover{color:#fff;}
+@media (max-width:900px){
+  .site-footer-grid{grid-template-columns:1fr 1fr;gap:32px;}
+  .site-footer-brand{grid-column:1/-1;}
+  .site-footer-inner{padding:48px 24px 24px;}
+}
+@media (max-width:520px){
+  .site-footer-grid{grid-template-columns:1fr;gap:28px;}
+  .site-footer-bottom{flex-direction:column;align-items:flex-start;}
+}
 /* ─── Yearly promo stripe — large, premium banner above the main nav on homepage.
        Navy SlateCue palette + warm cream highlights, capsule-shaped actor image
        on the left. Eye-catching headline copy in heavy uppercase. ─── */
@@ -775,39 +798,55 @@ function LoggedInRedirect({targetForTalent,targetForCd,myProfile,onNavigate}){
 // FOOTER (shared across all pages)
 // ═══════════════════════════════════════════
 function Footer({onNavigate}){
-  const L=({to,children})=><span onClick={()=>onNavigate(to)} style={{display:"block",color:"var(--t2)",fontSize:12,padding:"3px 0",cursor:"pointer"}}>{children}</span>;
+  // Reusable footer link — every link inherits the same hover treatment via .site-footer-link.
+  const L=({to,children})=><span className="site-footer-link" onClick={()=>onNavigate(to)}>{children}</span>;
+  const year=new Date().getFullYear();
   return(
-    <footer style={{padding:"50px 24px 32px",maxWidth:1200,margin:"0 auto",borderTop:"1px solid var(--bdr)"}}>
-      <div className="footer-grid" style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:40,marginBottom:40}}>
-        <div>
-          <div className="logo" onClick={()=>onNavigate("home")}><div className="logo-i">↔</div>SlateCue</div>
-          <p style={{color:"var(--t2)",fontSize:12,lineHeight:1.6,marginTop:10,maxWidth:260}}>The casting platform that guarantees every submission gets seen. $9.99/month for actors, models, and performers — 7-day free trial, cancel anytime.</p>
+    <footer className="site-footer">
+      <div className="site-footer-inner">
+        <div className="site-footer-grid">
+          <div className="site-footer-brand">
+            <div className="logo" onClick={()=>onNavigate("home")}><div className="logo-i">↔</div>SlateCue</div>
+            <p className="site-footer-blurb">The casting platform built for working actors. Every submission gets seen — guaranteed. Free profiles, $9.99/mo membership when you're ready to apply. Cancel anytime.</p>
+          </div>
+          <div>
+            <h4 className="site-footer-heading">Talent</h4>
+            <L to="register-talent">Create Profile</L>
+            <L to="search">Browse Castings</L>
+            <L to="classes">Classes</L>
+            <L to="resources">Resources</L>
+            <L to="success-stories">Success Stories</L>
+          </div>
+          <div>
+            <h4 className="site-footer-heading">Industry</h4>
+            <L to="register-cd">Post a Casting</L>
+            <L to="pricing">Pricing</L>
+            <L to="studios">For Studios</L>
+            <L to="api-info">API Access</L>
+          </div>
+          <div>
+            <h4 className="site-footer-heading">Company</h4>
+            <L to="about">About</L>
+            <L to="blog">Blog</L>
+            <L to="careers">Careers</L>
+            <L to="contact">Contact</L>
+          </div>
+          <div>
+            <h4 className="site-footer-heading">Support</h4>
+            <L to="contact">Help Center</L>
+            <L to="terms">Terms of Use</L>
+            <L to="privacy">Privacy Policy</L>
+            <L to="contact">Accessibility</L>
+          </div>
         </div>
-        <div>
-          <h4 style={{fontSize:12,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>Talent</h4>
-          <L to="register-talent">Create Profile</L>
-          <L to="search">Browse Castings</L>
-          <L to="classes">Classes</L>
-          <L to="resources">Resources</L>
-          <L to="success-stories">Success Stories</L>
+        <div className="site-footer-bottom">
+          <span>© {year} SlateCue. All rights reserved. Casting, finally built for actors.</span>
+          <div className="site-footer-bottom-links">
+            <span onClick={()=>onNavigate("privacy")}>Privacy</span>
+            <span onClick={()=>onNavigate("terms")}>Terms</span>
+            <span onClick={()=>onNavigate("contact")}>Contact</span>
+          </div>
         </div>
-        <div>
-          <h4 style={{fontSize:12,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>Industry</h4>
-          <L to="register-cd">Post a Casting</L>
-          <L to="pricing">Pricing</L>
-          <L to="studios">For Studios</L>
-        </div>
-        <div>
-          <h4 style={{fontSize:12,fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:12}}>Company</h4>
-          <L to="about">About</L>
-          <L to="blog">Blog</L>
-          <L to="careers">Careers</L>
-          <L to="contact">Contact</L>
-        </div>
-      </div>
-      <div className="footer-bottom" style={{borderTop:"1px solid var(--bdr)",paddingTop:20,display:"flex",justifyContent:"space-between",color:"var(--t3)",fontSize:11}}>
-        <span>© 2026 SlateCue. All rights reserved.</span>
-        <span><span onClick={()=>onNavigate("privacy")} style={{cursor:"pointer"}}>Privacy</span> · <span onClick={()=>onNavigate("terms")} style={{cursor:"pointer"}}>Terms</span> · <span onClick={()=>onNavigate("contact")} style={{cursor:"pointer"}}>Accessibility</span></span>
       </div>
     </footer>
   );
