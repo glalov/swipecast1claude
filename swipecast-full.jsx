@@ -153,8 +153,10 @@ const css = `
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{--bg:#F7F4EE;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;}
-body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;overflow-x:hidden;}
-.app{min-height:100vh;background:var(--bg);}
+html,body{min-height:100vh;}
+body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;overflow-x:hidden;margin:0;display:flex;flex-direction:column;}
+.app{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;flex:1 1 auto;}
+.page{display:flex;flex-direction:column;flex:1 1 auto;padding-bottom:0;}
 a{color:inherit;text-decoration:none;}
 h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;position:sticky;top:0;z-index:100;background:#FFFFFF;border-bottom:1px solid var(--bdr);}
@@ -350,15 +352,20 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 /* ─── Global site footer — dark charcoal, applied via Footer component everywhere.
        The width:100vw + negative-margin-50vw pattern lets the footer's dark bg
        escape any constrained .page (max-width:1200px) parent so it always
-       reaches the viewport edges, regardless of which page renders it. ─── */
+       reaches the viewport edges, regardless of which page renders it.
+       margin-top:auto pushes it to the bottom of its flex parent — combined
+       with .app + .page being flex columns with min-height:100vh, the footer
+       always sticks to the very bottom of the viewport even on short pages. ─── */
 .site-footer{
   background:#1B1C20;color:#A8A8B3;
   border-top:1px solid rgba(255,255,255,0.06);
-  margin-top:auto;
   position:relative;
   width:100vw;
   left:50%;right:50%;
+  margin-top:auto;
   margin-left:-50vw;margin-right:-50vw;
+  margin-bottom:0;
+  flex-shrink:0;
 }
 .site-footer-inner{max-width:1200px;margin:0 auto;padding:60px 40px 28px;}
 .site-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
