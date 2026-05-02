@@ -347,76 +347,110 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;}
 .mm-link:last-child{border-bottom:none;}
 .mm-link:hover{color:var(--acc);}
-/* ─── Yearly promo stripe — sits above the main nav on the homepage ─── */
+/* ─── Yearly promo stripe — large, premium banner above the main nav on homepage.
+       Navy SlateCue palette + warm cream highlights, capsule-shaped actor image
+       on the left. Eye-catching headline copy in heavy uppercase. ─── */
 .promo-stripe{
   position:relative;
-  display:flex;align-items:center;gap:14px;
-  padding:10px 24px;
-  background:linear-gradient(90deg,#0e0e1f 0%,#1f1f3d 50%,#2a2a52 100%);
+  display:flex;align-items:stretch;gap:22px;
+  padding:14px 30px 14px 14px;
+  background:linear-gradient(90deg,#0a0a1c 0%,#1a1a2e 45%,#2d2d44 100%);
   color:#fff;
   font-family:'DM Sans',sans-serif;
-  border-bottom:1px solid rgba(255,255,255,0.08);
+  border-bottom:1px solid rgba(255,255,255,0.1);
+  min-height:84px;
   z-index:99;
 }
 .promo-stripe::before{
   content:'';
   position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent 0%,var(--acc) 35%,#7c83ff 50%,var(--acc) 65%,transparent 100%);
+  background:linear-gradient(90deg,transparent 0%,#f5e8d0 30%,#fff 50%,#f5e8d0 70%,transparent 100%);
+  opacity:.55;
+}
+.promo-stripe::after{
+  content:'';
+  position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent 0%,rgba(245,232,208,0.4) 50%,transparent 100%);
 }
 .promo-stripe-img{
-  width:42px;height:42px;border-radius:50%;
+  width:160px;height:64px;
+  border-radius:100px;
   object-fit:cover;
-  border:2px solid var(--acc);
   flex-shrink:0;
-  box-shadow:0 0 0 4px rgba(124,131,255,0.18);
+  border:2px solid rgba(245,232,208,0.45);
+  box-shadow:0 0 0 1px rgba(255,255,255,0.05),0 4px 16px rgba(0,0,0,0.3);
 }
 .promo-stripe-text{
   flex:1;min-width:0;
-  display:flex;align-items:center;gap:10px;
-  font-size:13.5px;line-height:1.35;
+  display:flex;align-items:center;gap:18px;
+  line-height:1.15;
 }
 .promo-stripe-brand{
-  font-weight:800;letter-spacing:1.6px;font-size:11.5px;
-  color:var(--acc);
+  font-weight:900;letter-spacing:2.6px;font-size:22px;
+  color:#f5e8d0;
   flex-shrink:0;
+  text-transform:uppercase;
+  text-shadow:0 1px 2px rgba(0,0,0,0.25);
 }
 .promo-stripe-divider{
-  color:rgba(255,255,255,0.25);font-weight:300;
+  color:rgba(245,232,208,0.4);font-weight:200;font-size:30px;line-height:1;
   flex-shrink:0;
 }
 .promo-stripe-headline{
-  flex:1;min-width:0;color:rgba(255,255,255,0.92);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  flex:1;min-width:0;
+  font-size:18px;
+  font-weight:700;
+  color:#fff;
+  letter-spacing:.2px;
 }
 .promo-stripe-headline strong{
-  font-weight:800;letter-spacing:1px;color:#fff;
+  font-weight:900;letter-spacing:1.6px;
+  text-transform:uppercase;
+  font-size:22px;
+  color:#fff;
+  margin-right:6px;
+}
+.promo-stripe-message{
+  font-weight:600;
+  color:rgba(255,255,255,0.92);
 }
 .promo-stripe-cta{
-  background:#fff;color:#0e0e1f;
+  background:#f5e8d0;color:#1a1a2e;
   border:none;
-  padding:8px 22px;
+  padding:14px 36px;
   border-radius:100px;
   font-family:'DM Sans',sans-serif;
-  font-weight:800;font-size:13px;letter-spacing:0.4px;
+  font-weight:900;font-size:15px;letter-spacing:0.5px;
   cursor:pointer;flex-shrink:0;
   transition:transform .18s ease,background .18s ease,color .18s ease,box-shadow .18s ease;
-  box-shadow:0 1px 0 rgba(255,255,255,0.4) inset;
+  align-self:center;
+  box-shadow:0 4px 14px rgba(0,0,0,0.25);
+  text-transform:uppercase;
 }
 .promo-stripe-cta:hover{
   transform:translateY(-1px) scale(1.04);
-  background:var(--acc);color:#fff;
-  box-shadow:0 6px 14px rgba(124,131,255,0.35);
+  background:#fff;
+  box-shadow:0 8px 22px rgba(0,0,0,0.35);
 }
-@media (max-width:780px){
-  .promo-stripe{padding:8px 12px;gap:10px;}
-  .promo-stripe-img{width:36px;height:36px;}
+@media (max-width:900px){
+  .promo-stripe{gap:14px;padding:12px 16px 12px 12px;min-height:68px;}
+  .promo-stripe-img{width:96px;height:54px;}
+  .promo-stripe-brand{font-size:14px;letter-spacing:1.6px;}
+  .promo-stripe-divider{font-size:22px;}
+  .promo-stripe-headline{font-size:13px;line-height:1.3;}
+  .promo-stripe-headline strong{font-size:13px;letter-spacing:1.2px;}
+  .promo-stripe-cta{padding:11px 22px;font-size:13px;}
+}
+@media (max-width:600px){
+  .promo-stripe{padding:10px 12px 10px 10px;gap:10px;min-height:60px;}
+  .promo-stripe-img{width:64px;height:48px;}
   .promo-stripe-brand{display:none;}
   .promo-stripe-divider{display:none;}
-  .promo-stripe-text{font-size:12px;gap:0;}
-  .promo-stripe-headline{white-space:normal;}
-  .promo-stripe-headline strong{display:block;font-size:10.5px;letter-spacing:1.2px;color:var(--acc);margin-bottom:1px;}
+  .promo-stripe-text{gap:0;}
+  .promo-stripe-headline{font-size:12px;line-height:1.3;}
+  .promo-stripe-headline strong{display:block;font-size:11px;color:#f5e8d0;margin-bottom:2px;letter-spacing:1.4px;}
   .promo-stripe-message{display:block;}
-  .promo-stripe-cta{padding:7px 16px;font-size:12px;}
+  .promo-stripe-cta{padding:10px 18px;font-size:12px;}
 }
 /* ─── Per-message delete button reveals on bubble hover (modal timeline) ─── */
 .msg-bubble{position:relative;}
@@ -507,17 +541,19 @@ function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){
   };
 
   return(<aside className="promo-stripe" role="region" aria-label="Yearly membership offer">
+    {/* Cinematic crew/camera scene — Unsplash CDN URL, easy to swap for a
+        SlateCue-branded asset later (just change the src). */}
     <img className="promo-stripe-img" alt="" loading="lazy"
-      src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&h=160&fit=crop&crop=faces&auto=format&q=70"/>
+      src="https://images.unsplash.com/photo-1485846234645-a62644f84728?w=480&h=200&fit=crop&auto=format&q=80"/>
     <div className="promo-stripe-text">
       <span className="promo-stripe-brand">SLATECUE</span>
       <span className="promo-stripe-divider" aria-hidden="true">|</span>
       <span className="promo-stripe-headline">
         <strong>LIMITED TIME OFFER</strong>
-        <span className="promo-stripe-message"> · Save {dollarsLabel} ({percentSaved}%) on your first year of SlateCue. Join today.</span>
+        <span className="promo-stripe-message">Save {dollarsLabel} ({percentSaved}%) on your first year of SlateCue.</span>
       </span>
     </div>
-    <button className="promo-stripe-cta" onClick={handleJoin} aria-label={`Join the yearly plan and save ${percentSaved}%`}>Join</button>
+    <button className="promo-stripe-cta" onClick={handleJoin} aria-label={`Join the yearly plan and save ${percentSaved}%`}>Join Today</button>
   </aside>);
 }
 
