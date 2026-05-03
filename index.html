@@ -373,6 +373,10 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;}
 .mm-link:last-child{border-bottom:none;}
 .mm-link:hover{color:var(--acc);}
+/* ─── 40px breathing-room spacer rendered right before the footer by the Footer
+       component. Inherits the warm .app bg, flex-shrink:0 so it always exists
+       even when the page is taller than the viewport. ─── */
+.site-footer-spacer{height:40px;flex-shrink:0;background:var(--bg);width:100%;}
 /* ─── Global site footer — dark charcoal, applied via Footer component everywhere.
        The width:100vw + negative-margin-50vw pattern lets the footer's dark bg
        escape any constrained .page (max-width:1200px) parent so it always
@@ -843,7 +847,14 @@ function Footer({onNavigate}){
   // Reusable footer link — every link inherits the same hover treatment via .site-footer-link.
   const L=({to,children})=><span className="site-footer-link" onClick={()=>onNavigate(to)}>{children}</span>;
   const year=new Date().getFullYear();
-  return(
+  // Fragment: a flex-non-shrinking 40px spacer (inherits warm .app bg) sits right
+  // before the footer. Gives every page consistent breathing room between the last
+  // content section and the dark footer, without breaking the sticky-footer
+  // margin-top:auto behavior. On short pages: 40px spacer + auto warm gap + footer.
+  // On long pages: 40px spacer + footer (auto collapses to 0 — but the spacer
+  // still guarantees the gap).
+  return(<>
+    <div className="site-footer-spacer" aria-hidden="true"/>
     <footer className="site-footer">
       <div className="site-footer-inner">
         <div className="site-footer-grid">
@@ -891,7 +902,7 @@ function Footer({onNavigate}){
         </div>
       </div>
     </footer>
-  );
+  </>);
 }
 
 // ═══════════════════════════════════════════
