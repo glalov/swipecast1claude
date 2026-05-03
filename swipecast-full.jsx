@@ -516,40 +516,42 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .msg-bubble .msg-del-btn{display:none;align-items:center;justify-content:center;}
 .msg-bubble:hover .msg-del-btn{display:flex;}
 .msg-del-btn:hover{color:#c0392b !important;border-color:#c0392b !important;}
-/* ─── Featured castings slider — peek-card carousel.
-       Center card fully visible; prev/next side cards are partially clipped
-       and dimmed, suggesting more content. Tap a side card to advance. ─── */
-.fcs-section{position:relative;max-width:1200px;margin:0 auto;padding:48px 40px 16px;}
-.fcs-stage{position:relative;}
-.fcs-track{position:relative;display:flex;align-items:stretch;justify-content:center;gap:24px;overflow:hidden;padding:14px 0;}
-.fcs-card{position:relative;background:var(--s1);border:1px solid var(--bdr);border-radius:20px;padding:36px 40px;cursor:pointer;transition:transform .35s cubic-bezier(.34,1.32,.64,1),box-shadow .35s ease,border-color .25s ease,opacity .35s ease,filter .35s ease;box-shadow:0 1px 2px rgba(0,0,0,0.02);box-sizing:border-box;flex-shrink:0;}
-.fcs-card-center{width:min(720px,calc(100% - 240px));z-index:2;opacity:1;filter:none;transform:scale(1);box-shadow:0 18px 38px rgba(26,26,46,0.08);}
-.fcs-card-center:hover{transform:translateY(-3px) scale(1.005);box-shadow:0 22px 50px rgba(26,26,46,0.12);border-color:var(--acc);}
-.fcs-card-prev,.fcs-card-next{width:340px;opacity:0.45;filter:grayscale(.15) blur(0.2px);transform:scale(.92);pointer-events:auto;user-select:none;align-self:center;min-height:240px;}
-.fcs-card-prev{margin-right:-260px;}
-.fcs-card-next{margin-left:-260px;}
-.fcs-card-prev:hover,.fcs-card-next:hover{opacity:0.65;filter:none;}
-.fcs-arrow{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;background:var(--s1);border:1px solid var(--bdr);color:var(--t1);cursor:pointer;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:5;box-shadow:0 4px 14px rgba(0,0,0,0.1);transition:transform .18s ease,background .18s ease,color .18s ease;font-family:'DM Sans',sans-serif;line-height:1;}
-.fcs-arrow:hover{background:var(--acc);color:#fff;transform:translateY(-50%) scale(1.06);border-color:var(--acc);}
+/* ─── Featured castings slider — track-translate carousel.
+       Every casting is rendered in a single flex track. The track translates
+       horizontally so the active card lands in the stage centre, producing a
+       smooth slide between cards instead of an instant content swap. Side cards
+       fade + slightly scale down so the centre card reads as dominant. ─── */
+.fcs-section{position:relative;max-width:1480px;margin:0 auto;padding:48px 24px 16px;}
+.fcs-stage{position:relative;overflow:hidden;padding:18px 0;}
+.fcs-track{display:flex;align-items:stretch;will-change:transform;transition:transform .55s cubic-bezier(.4,0,.2,1);}
+.fcs-card{position:relative;background:var(--s1);border:1px solid var(--bdr);border-radius:20px;padding:38px 42px;cursor:pointer;box-sizing:border-box;flex-shrink:0;min-height:300px;
+  transition:opacity .45s cubic-bezier(.4,0,.2,1),transform .45s cubic-bezier(.4,0,.2,1),filter .45s ease,box-shadow .45s ease,border-color .25s ease;
+  box-shadow:0 1px 2px rgba(0,0,0,0.02);
+}
+.fcs-card-center{opacity:1;filter:none;transform:scale(1);z-index:2;box-shadow:0 22px 44px rgba(26,26,46,0.10);}
+.fcs-card-center:hover{transform:scale(1.008) translateY(-2px);box-shadow:0 28px 56px rgba(26,26,46,0.14);border-color:var(--acc);}
+.fcs-card-side{opacity:0.42;filter:grayscale(.12);transform:scale(.92);}
+.fcs-card-side:hover{opacity:0.7;filter:none;transform:scale(.96);}
+.fcs-card-far{opacity:0.18;}
+.fcs-arrow{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;border-radius:50%;background:var(--s1);border:1px solid var(--bdr);color:var(--t1);cursor:pointer;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:5;box-shadow:0 6px 18px rgba(0,0,0,0.12);transition:transform .18s ease,background .18s ease,color .18s ease;font-family:'DM Sans',sans-serif;line-height:1;}
+.fcs-arrow:hover{background:var(--acc);color:#fff;transform:translateY(-50%) scale(1.08);border-color:var(--acc);}
 .fcs-arrow:disabled{opacity:0.45;cursor:not-allowed;}
-.fcs-arrow.prev{left:8px;}
-.fcs-arrow.next{right:8px;}
-.fcs-dots{display:flex;justify-content:center;gap:7px;margin-top:18px;flex-wrap:wrap;}
+.fcs-arrow.prev{left:14px;}
+.fcs-arrow.next{right:14px;}
+.fcs-dots{display:flex;justify-content:center;gap:7px;margin-top:22px;flex-wrap:wrap;}
 .fcs-dot{width:8px;height:8px;border-radius:50%;background:var(--bdr);border:none;padding:0;cursor:pointer;transition:width .25s ease,background .25s ease;}
-.fcs-dot.active{width:28px;border-radius:5px;background:var(--acc);}
+.fcs-dot.active{width:32px;border-radius:5px;background:var(--acc);}
 @media (max-width:1024px){
-  .fcs-card-prev,.fcs-card-next{width:280px;min-height:200px;}
-  .fcs-card-prev{margin-right:-220px;}
-  .fcs-card-next{margin-left:-220px;}
-  .fcs-card-center{width:min(600px,calc(100% - 180px));}
+  .fcs-section{padding:40px 20px 14px;max-width:none;}
+  .fcs-card{padding:30px 32px;min-height:260px;}
+  .fcs-card-center h3{font-size:26px !important;}
+  .fcs-arrow{width:44px;height:44px;font-size:18px;}
 }
 @media (max-width:768px){
   .fcs-section{padding:32px 16px 12px;}
-  .fcs-track{gap:12px;padding:8px 0;}
-  .fcs-card{padding:24px 22px;}
-  .fcs-card h3{font-size:22px !important;}
-  .fcs-card-prev,.fcs-card-next{display:none;}
-  .fcs-card-center{width:100%;max-width:none;}
+  .fcs-stage{padding:6px 0;}
+  .fcs-card{padding:24px 22px;min-height:auto;}
+  .fcs-card-center h3{font-size:22px !important;}
   .fcs-arrow{width:38px;height:38px;font-size:16px;}
   .fcs-arrow.prev{left:4px;}
   .fcs-arrow.next{right:4px;}
@@ -4200,6 +4202,15 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   const [err,setErr]=useState("");
   const [paused,setPaused]=useState(false);
   const touchRef=useRef({startX:0,active:false});
+  // Stage width drives the responsive card sizing + the track-translate math.
+  const sectionRef=useRef(null);
+  const [sectionWidth,setSectionWidth]=useState(1200);
+  useEffect(()=>{
+    const update=()=>{if(sectionRef.current)setSectionWidth(sectionRef.current.offsetWidth);};
+    update();
+    window.addEventListener("resize",update);
+    return()=>window.removeEventListener("resize",update);
+  },[]);
 
   // Same select shape as SearchPage so the click navigates seamlessly into CastingDetailPage.
   const fetchCastings=useCallback(async()=>{
@@ -4318,7 +4329,18 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   const rawSyn=(c.synopsis||c.tagline||"").replace(/\*/g,"").trim();
   const desc=rawSyn.length>220?rawSyn.slice(0,220).trim()+"…":rawSyn;
 
-  return(<section className="fcs-section" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)}>
+  // ─── Responsive card sizing + track translation math.
+  //     All cards have the same layout width so a single transform on the track
+  //     can translate the active card to the stage centre. Center card stays at
+  //     scale(1) for emphasis; sides fade + slightly scale down via CSS.
+  const isWide=sectionWidth>=1024;
+  const isMid=sectionWidth>=720&&sectionWidth<1024;
+  const cardWidth=isWide?720:isMid?540:Math.max(280,sectionWidth-48);
+  const gap=isWide?28:isMid?20:14;
+  const itemStep=cardWidth+gap;
+  // Translate so the centre card is centred horizontally in the stage.
+  const trackOffset=(sectionWidth/2)-(cardWidth/2)-(idx*itemStep);
+  return(<section className="fcs-section" ref={sectionRef} onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)}>
     <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:12,marginBottom:18,flexWrap:"wrap"}}>
       <div>
         <div className="section-label">Featured Castings</div>
@@ -4333,55 +4355,56 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       <button className="btn-s btn-sm" onClick={fetchCastings}>Retry</button>
     </div>}
 
-    {/* Peek-card layout: previous + center + next, only the center is interactive
-        and fully visible. Side cards are clipped, dimmed, and clickable so users
-        can advance to them with a tap. Falls back to single-card on narrow screens. */}
+    {/* Track-translate carousel: every casting is rendered in a single flex track,
+        the track translates so the active card sits in the centre of the stage,
+        and CSS transitions on the track + per-card transform/opacity produce a
+        smooth slide. Side cards remain clickable to jump straight to them. */}
     <div className="fcs-stage" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       {castings.length>1&&<button className="fcs-arrow prev" aria-label="Previous casting" onClick={(e)=>{e.stopPropagation();prev();}}>‹</button>}
-      <div className="fcs-track">
-        {(() => {
-          // Show up to 3 cards (prev / center / next). When there are fewer than 3
-          // castings we just render the center; the side slots stay empty.
-          const slots=[];
-          if(castings.length>=2)slots.push({pos:"prev",casting:castings[(idx-1+castings.length)%castings.length],i:(idx-1+castings.length)%castings.length});
-          slots.push({pos:"center",casting:c,i:idx});
-          if(castings.length>=2)slots.push({pos:"next",casting:castings[(idx+1)%castings.length],i:(idx+1)%castings.length});
-          return slots.map(slot=>{
-            const sc=slot.casting;
-            const sCd=sc._cd||{};
-            const sCdName=sCd.display_name||sCd.company_name||"";
-            const sRoles=sc.roles||[];
-            const sFirstRole=sRoles[0];
-            const sRaw=(sc.synopsis||sc.tagline||"").replace(/\*/g,"").trim();
-            const sDesc=sRaw.length>180?sRaw.slice(0,180).trim()+"…":sRaw;
-            const isCenter=slot.pos==="center";
-            const onSlotClick=(e)=>{
-              if(isCenter){onViewCasting&&onViewCasting(sc);}
-              else{e.stopPropagation();setIdx(slot.i);}
-            };
-            return(<div key={`${slot.pos}-${slot.i}`} className={`fcs-card fcs-card-${slot.pos}`} onClick={onSlotClick} aria-hidden={!isCenter}>
-              <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
-                <span className="badge tag-acc">{sc.type||"Film"}</span>
-                {sc.union&&<span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{sc.union}</span>}
-                <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{sRoles.length||1} {sRoles.length===1?"role":"roles"}</span>
-                {sFirstRole?.name&&<span className="badge" style={{background:"rgba(26,26,46,0.06)",color:"var(--acc)",fontWeight:700}}>{sFirstRole.name}</span>}
-              </div>
-              <h3 style={{fontSize:isCenter?30:24,fontWeight:800,letterSpacing:-1,marginBottom:6,color:"var(--t1)",lineHeight:1.15}}>{sc.title}</h3>
-              {sc.tagline&&sc.tagline!==sc.synopsis&&<p style={{color:"var(--t2)",fontSize:15,marginBottom:6,fontWeight:500}}>{sc.tagline}</p>}
-              {(sCdName||sc.prod)&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:14,fontWeight:500}}>{sCdName?`Posted by ${sCdName}`:""}{sCdName&&sc.prod?" · ":""}{sc.prod||""}</p>}
-              {sDesc&&<p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:18,maxWidth:680}}>{sDesc}</p>}
-              <div style={{display:"flex",gap:24,flexWrap:"wrap",fontSize:13,color:"var(--t2)",marginBottom:22}}>
-                {sc.location&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Location</strong> · {sc.location}</span>}
-                {sc.pay&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Pay</strong> · {sc.pay}</span>}
-                {sc.deadline&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Deadline</strong> · {sc.deadline}</span>}
-              </div>
-              {isCenter&&<div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
-                <button className="btn-p" onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(sc);}}>View Roles &amp; Apply →</button>
-                <span style={{fontSize:11,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase",fontWeight:700}}>· Casting {idx+1} of {castings.length}</span>
-              </div>}
-            </div>);
-          });
-        })()}
+      <div className="fcs-track" style={{transform:`translate3d(${trackOffset}px,0,0)`,gap:`${gap}px`}}>
+        {castings.map((sc,i)=>{
+          const isCenter=i===idx;
+          const dist=Math.abs(i-idx);
+          // Hide far-away cards from screen readers + visual flow on small screens.
+          // On wide stages we keep prev/next interactive; further away is hidden.
+          const visuallyHidden=!isWide&&!isCenter;
+          const sCd=sc._cd||{};
+          const sCdName=sCd.display_name||sCd.company_name||"";
+          const sRoles=sc.roles||[];
+          const sFirstRole=sRoles[0];
+          const sRaw=(sc.synopsis||sc.tagline||"").replace(/\*/g,"").trim();
+          const sDesc=sRaw.length>200?sRaw.slice(0,200).trim()+"…":sRaw;
+          const onSlotClick=(e)=>{
+            if(isCenter){onViewCasting&&onViewCasting(sc);}
+            else{e.stopPropagation();setIdx(i);}
+          };
+          return(<div key={sc.id||i}
+            className={`fcs-card ${isCenter?"fcs-card-center":"fcs-card-side"} ${dist>=2?"fcs-card-far":""}`}
+            style={{flex:`0 0 ${cardWidth}px`,visibility:visuallyHidden?"hidden":"visible"}}
+            onClick={onSlotClick}
+            aria-hidden={!isCenter}
+            tabIndex={isCenter?0:-1}>
+            <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
+              <span className="badge tag-acc">{sc.type||"Film"}</span>
+              {sc.union&&<span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{sc.union}</span>}
+              <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{sRoles.length||1} {sRoles.length===1?"role":"roles"}</span>
+              {sFirstRole?.name&&<span className="badge" style={{background:"rgba(26,26,46,0.06)",color:"var(--acc)",fontWeight:700}}>{sFirstRole.name}</span>}
+            </div>
+            <h3 style={{fontSize:isCenter?32:24,fontWeight:800,letterSpacing:-1,marginBottom:6,color:"var(--t1)",lineHeight:1.15}}>{sc.title}</h3>
+            {sc.tagline&&sc.tagline!==sc.synopsis&&<p style={{color:"var(--t2)",fontSize:15,marginBottom:6,fontWeight:500}}>{sc.tagline}</p>}
+            {(sCdName||sc.prod)&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:14,fontWeight:500}}>{sCdName?`Posted by ${sCdName}`:""}{sCdName&&sc.prod?" · ":""}{sc.prod||""}</p>}
+            {sDesc&&<p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:18,maxWidth:680}}>{sDesc}</p>}
+            <div style={{display:"flex",gap:24,flexWrap:"wrap",fontSize:13,color:"var(--t2)",marginBottom:22}}>
+              {sc.location&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Location</strong> · {sc.location}</span>}
+              {sc.pay&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Pay</strong> · {sc.pay}</span>}
+              {sc.deadline&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Deadline</strong> · {sc.deadline}</span>}
+            </div>
+            {isCenter&&<div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+              <button className="btn-p" onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(sc);}}>View Roles &amp; Apply →</button>
+              <span style={{fontSize:11,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase",fontWeight:700}}>· Casting {idx+1} of {castings.length}</span>
+            </div>}
+          </div>);
+        })}
       </div>
       {castings.length>1&&<button className="fcs-arrow next" aria-label="Next casting" onClick={(e)=>{e.stopPropagation();next();}}>›</button>}
     </div>
