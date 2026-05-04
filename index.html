@@ -869,6 +869,70 @@ function readCookiePrefs(){
 function writeCookiePrefs(p){
   try{localStorage.setItem(COOKIE_PREF_KEY,JSON.stringify({...p,savedAt:new Date().toISOString()}));}catch(_){}
 }
+// ─── ReportModal — invoked from a casting page or talent profile via the
+//     "Report" link. Inserts into public.reports (RLS-protected: any
+//     authenticated user can write their own report; admins read & action).
+//     Falls back to a clear "Sign in to report" message for anonymous users.
+function ReportModal({open,onClose,session,target}){
+  const [reason,setReason]=useState("inappropriate");
+  const [details,setDetails]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState("");
+  const [done,setDone]=useState(false);
+  useEffect(()=>{if(open){setReason("inappropriate");setDetails("");setBusy(false);setErr("");setDone(false);}},[open]);
+  if(!open)return null;
+  const isAuthed=!!session?.user?.id;
+  const submit=async()=>{
+    if(busy)return;
+    setBusy(true);setErr("");
+    try{
+      const row={
+        reporter_id:session.user.id,
+        reason,
+        details:details.trim()||null,
+        status:"open",
+        subject_profile_id:target?.kind==="profile"?target.id:null,
+        subject_casting_id:target?.kind==="casting"?target.id:null
+      };
+      const {error}=await window.sb.from("reports").insert(row);
+      if(error)throw error;
+      setDone(true);
+      setTimeout(onClose,1500);
+    }catch(e){setErr(e.message||"Could not submit report.");}
+    finally{setBusy(false);}
+  };
+  return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}>
+    <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:520}}>
+      <h2 style={{marginBottom:6}}>Report {target?.kind==="profile"?"this profile":"this casting"}</h2>
+      <p style={{color:"var(--t2)",fontSize:13,marginTop:0,marginBottom:18,lineHeight:1.6}}>Reports go to the SlateCue safety team. We review every report and take action when our policies are violated. Your identity is not shared with the reported party.</p>
+      {!isAuthed?<>
+        <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:14,fontSize:13,color:"var(--t2)",marginBottom:16}}>You need to be signed in to submit a report. This lets us follow up if we need more details.</div>
+        <div style={{display:"flex",gap:10}}><button className="btn-s" onClick={onClose} style={{flex:1}}>Close</button></div>
+      </>:done?<div className="success-msg" style={{padding:"24px 20px"}}><div className="check">✓</div><h3 style={{marginTop:6}}>Report received</h3><p style={{fontSize:13,color:"var(--t2)"}}>Thanks for flagging this. We'll review it shortly.</p></div>:<>
+        <div className="form-group"><label className="label">Reason</label>
+          <select className="select" style={{width:"100%"}} value={reason} onChange={e=>setReason(e.target.value)} disabled={busy}>
+            <option value="inappropriate">Inappropriate or unsafe content</option>
+            <option value="scam">Looks like a scam or fake casting</option>
+            <option value="spam">Spam or off-topic</option>
+            <option value="impersonation">Impersonation or stolen identity</option>
+            <option value="underage">Concerns about a minor</option>
+            <option value="illegal">Illegal activity</option>
+            <option value="other">Something else</option>
+          </select>
+        </div>
+        <div className="form-group"><label className="label">Details (optional)</label>
+          <textarea className="textarea" rows="4" placeholder="Anything specific we should know?" value={details} onChange={e=>setDetails(e.target.value)} disabled={busy}/>
+        </div>
+        {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginTop:6,marginBottom:12}}>{err}</div>}
+        <div style={{display:"flex",gap:10,marginTop:8}}>
+          <button className="btn-p" onClick={submit} disabled={busy} style={{flex:1}}>{busy?"Submitting…":"Submit Report"}</button>
+          <button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
+        </div>
+      </>}
+    </div>
+  </div>);
+}
+
 function CookieConsentModal({open,onClose}){
   // Necessary always true. Analytics + marketing default off and rehydrate from saved prefs.
   const [analytics,setAnalytics]=useState(false);
@@ -1047,7 +1111,7 @@ function RegisterTalent({onNavigate}){
   const [dupEmail,setDupEmail]=useState(false); // true when the email is already registered → show Resend / Login
   const [resentOk,setResentOk]=useState(false);
   const submittingRef=useRef(false); // blocks double-click races that fire two signUp calls
-  const [f,setF]=useState({first:"",last:"",email:"",password:"",location:"",gender:"",age:"",height:"",weight:"",hair:"",eyes:"",ethnicity:"",union_status:"Non-Union",types:[],bio:"",training:"",skills:"",agent:"",agree:false});
+  const [f,setF]=useState({first:"",last:"",email:"",password:"",location:"",gender:"",age:"",height:"",weight:"",hair:"",eyes:"",ethnicity:"",union_status:"Non-Union",types:[],bio:"",training:"",skills:"",agent:"",agree:false,guardian_name:"",guardian_email:""});
   const up=(k,v)=>setF(x=>({...x,[k]:v}));
   const toggleType=t=>setF(x=>({...x,types:x.types.includes(t)?x.types.filter(y=>y!==t):[...x.types,t]}));
   const validStep1=()=>{if(!f.first||!f.last){setErr("Please enter your first and last name.");return false;}if(!f.email||!f.email.includes("@")){setErr("Please enter a valid email address.");return false;}if(!f.password||f.password.length<8){setErr("Password must be at least 8 characters.");return false;}if(!f.location){setErr("Please enter your location.");return false;}setErr("");return true;};
@@ -1091,6 +1155,11 @@ function RegisterTalent({onNavigate}){
         agent:f.agent||"",
         skills:f.skills?f.skills.split(",").map(s=>s.trim()).filter(Boolean):[],
         talent_types:Array.isArray(f.types)?f.types:[],
+        // Minor + guardian — only sent if the talent's age is set and < 18.
+        // The DB trigger derives is_minor from the age too, but we send the
+        // guardian fields so the trigger can populate them on first insert.
+        guardian_name:f.guardian_name||"",
+        guardian_email:f.guardian_email||"",
         onboarded:true
       };
       // Stash a local copy too — if the user opens the app from the email
@@ -1154,7 +1223,30 @@ function RegisterTalent({onNavigate}){
         <div className="form-row"><div className="form-group"><label className="label">Hair Color</label><select className="select" style={{width:"100%"}} value={f.hair} onChange={e=>up("hair",e.target.value)}><option value="">Select</option>{HAIR_COLORS.map(h=><option key={h} value={h}>{h}</option>)}</select></div><div className="form-group"><label className="label">Eye Color</label><select className="select" style={{width:"100%"}} value={f.eyes} onChange={e=>up("eyes",e.target.value)}><option value="">Select</option>{EYE_COLORS.map(ec=><option key={ec} value={ec}>{ec}</option>)}</select></div></div>
         <div className="form-row"><div className="form-group"><label className="label">Ethnicity</label><select className="select" style={{width:"100%"}} value={f.ethnicity} onChange={e=>up("ethnicity",e.target.value)}><option value="">Select</option>{ETHNICITIES.map(et=><option key={et} value={et}>{et}</option>)}</select></div><div className="form-group"><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union_status} onChange={e=>up("union_status",e.target.value)}><option>Non-Union</option><option>SAG-AFTRA</option><option>AEA</option><option>SAG-AFTRA / AEA</option><option>ACTRA</option></select></div></div>
         <div className="form-group"><label className="label">Talent Type (select all that apply)</label><div style={{display:"flex",gap:16,flexWrap:"wrap",marginTop:6}}>{["Film","TV","Theater","Commercial","Modeling","Voiceover"].map(t=><label key={t} className="checkbox-row"><input type="checkbox" checked={f.types.includes(t)} onChange={()=>toggleType(t)}/>{t}</label>)}</div></div>
-        <div style={{display:"flex",gap:12,marginTop:8}}><button className="btn-s" onClick={()=>setStep(1)}>← Back</button><button className="btn-p" style={{flex:1}} onClick={()=>setStep(3)}>Continue →</button></div></>}
+        {/* Guardian capture — only shown when the entered age is under 18.
+            We require both name and email so the admin team can contact the
+            guardian if there's any safety question about the minor's account. */}
+        {f.age&&parseInt(f.age,10)<18&&parseInt(f.age,10)>0&&<div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:18,marginTop:12}}>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",color:"var(--acc)",marginBottom:8}}>Parent / Legal Guardian Required</div>
+          <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.5,marginBottom:14}}>Talent under 18 must register a parent or legal guardian. Their email will be on file for safety follow-ups; we don't display it publicly.</p>
+          <div className="form-row">
+            <div className="form-group"><label className="label">Guardian's Name</label><input className="input" placeholder="Full legal name" value={f.guardian_name} onChange={e=>up("guardian_name",e.target.value)}/></div>
+            <div className="form-group"><label className="label">Guardian's Email</label><input className="input" type="email" placeholder="parent@email.com" value={f.guardian_email} onChange={e=>up("guardian_email",e.target.value)}/></div>
+          </div>
+        </div>}
+        <div style={{display:"flex",gap:12,marginTop:8}}><button className="btn-s" onClick={()=>setStep(1)}>← Back</button><button className="btn-p" style={{flex:1}} onClick={()=>{
+          // Validate guardian fields if minor
+          const ageNum=parseInt(f.age,10);
+          if(ageNum>0&&ageNum<18){
+            if(!f.guardian_name||!f.guardian_email||!f.guardian_email.includes("@")){
+              setErr("Talent under 18 must provide a parent or legal guardian's name and email.");
+              window.scrollTo(0,0);
+              return;
+            }
+          }
+          setErr("");
+          setStep(3);
+        }}>Continue →</button></div></>}
 
       {step===3&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>Step 3 of 3 — Your Craft</h3>
         <div className="form-group"><label className="label">Bio / About</label><textarea className="textarea" placeholder="Tell casting directors about yourself, your experience, and what makes you unique..." style={{minHeight:120}} value={f.bio} onChange={e=>up("bio",e.target.value)}></textarea></div>
@@ -1502,13 +1594,13 @@ const FAQ_CATEGORIES=[
     {q:"What payment methods do you accept?",a:"All major credit and debit cards. Payments are processed securely by our payment provider — SlateCue never stores your card details."},
     {q:"Can I get a receipt?",a:"Yes. Receipts are emailed automatically after each transaction, and a full billing history is available under My Profile → Membership."}
   ]},
-  {id:"safety",label:"Safety & Trust",icon:"🛡️",blurb:"How we vet castings, protect talent, and handle reports.",items:[
-    {q:"How do you vet casting directors and productions?",a:"Industry accounts go through a basic verification step before posting. We check name, company, and at least one verifiable production credit. Suspicious or unverifiable accounts can post but are flagged in the queue and reviewed before going live."},
-    {q:"What if a casting feels off?",a:"Use the 'Report' link on any casting page. Reports go directly to the safety team and we review same-day. Castings that violate our standards are removed and posters are warned, suspended, or banned."},
-    {q:"Can minors use SlateCue?",a:"Only with a parent or legal guardian managing the account. We require guardian verification and comply with COPPA and state child-performer laws. Minors' contact information is never displayed publicly."},
-    {q:"Are you NDA-friendly?",a:"Yes. Casting posts can be marked confidential, in which case the project title and synopsis are hidden until a callback is offered. Talent who receive callbacks see the project details and can sign an NDA before continuing."},
-    {q:"How do you protect against fake or scam castings?",a:"All paid casting posts are reviewed by a real human before going live. Anything that requests payment from talent, asks for personal financial information, or doesn't meet our standards for a legitimate production is rejected."},
-    {q:"What about audition safety?",a:"All in-person callbacks must take place in a verified production office or studio. Talent are encouraged to bring a chaperone for any audition that feels off. Report any safety concern through the Inbox or the Contact page."}
+  {id:"safety",label:"Safety & Trust",icon:"🛡️",blurb:"How we handle reports and what the verified badge means.",items:[
+    {q:"What does the 'Verified' badge mean on a caster?",a:"Casters with the green Verified badge have been reviewed by SlateCue admins — typically because they've posted before, are tied to a recognised production, or have provided documentation. Casters without the badge are marked Unverified until that review happens. Treat unverified posts with extra care: confirm details and, when possible, ask for a phone or video conversation before sharing personal information."},
+    {q:"What if a casting feels off?",a:"Click the 'Report' link on any casting page (or any profile). Reports go straight to the SlateCue admin Reports queue, where we review and take action — dismissing false flags, contacting posters for clarification, or removing the casting outright. You can pick a reason (scam, inappropriate content, impersonation, concerns about a minor, etc.) and add details."},
+    {q:"Can minors (under 18) use SlateCue?",a:"Talent under 18 are required to register a parent or legal guardian's email at signup. We don't grant unsupervised platform access to minors, and minors' contact information is never displayed publicly. Casters posting roles for minors should comply with COPPA and applicable state child-performer laws."},
+    {q:"How do you handle fake or scam castings?",a:"Any post can be flagged via the Report link. Admins review the queue and remove posts that violate our standards. Casters who request payment from talent, ask for personal financial information, or don't meet our standards for a legitimate production get suspended or banned — and we keep an internal record so the same actor can't re-register easily."},
+    {q:"What about audition safety?",a:"In-person callbacks should take place at a verified production office or studio. SlateCue is not a substitute for your judgement: if an audition location, timing, or request feels off, don't go. Bring a chaperone where relevant, and report anything suspicious via the Report link or the Contact page."},
+    {q:"Are reports actually reviewed?",a:"Yes. Every report lands in the admin Reports tab with the reason, the reporter, and the target (a casting or a profile). Admins can mark reports as Reviewing, Actioned, or Dismissed, with internal notes. The reporter is not shown to the reported party."}
   ]},
   {id:"account",label:"Account & Privacy",icon:"🔐",blurb:"Your data, your settings, and your privacy controls.",items:[
     {q:"What data do you collect?",a:"The information you put in your profile (headshots, stats, bio, credits) and basic account data (email, login activity, payment confirmations). We do not sell, license, or share your data with third parties for advertising."},
@@ -2052,7 +2144,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
 // ═══════════════════════════════════════════
 // PAGE: CASTING DETAIL
 // ═══════════════════════════════════════════
-function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile}){
+function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session}){
   const [applyRole,setApplyRole]=useState(null);
   const [applied,setApplied]=useState(new Set());
   const [coverNote,setCoverNote]=useState("");
@@ -2062,6 +2154,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const [realRoleIds,setRealRoleIds]=useState({}); // maps role index -> real DB role id (for DB-backed castings)
   const [myPhotos,setMyPhotos]=useState([]);   // list of actor's photo URLs (headshot first, then gallery)
   const [selectedPhoto,setSelectedPhoto]=useState("");
+  const [showReport,setShowReport]=useState(false);
   const submittingRef=useRef(false);           // double-click guard for Submit Application
   const withTimeout=(promise,ms=20000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Please try again.`)),ms))]);
   const c=casting;
@@ -2124,16 +2217,21 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       if(!roleId){setApplyErr("This role is no longer available. Please refresh the page and try again.");return;}
       if(myPhotos.length>0&&!selectedPhoto){setApplyErr("Please pick a photo to submit with your application.");return;}
       console.log("[apply] submitting role:",roleId,"casting:",c.id,"talent:",s.user.id);
+      // Goes through public.submit_application (SECURITY DEFINER) so the
+      // 50/24h cap and per-role uniqueness check are enforced server-side
+      // and cannot be bypassed by direct insert.
       const {error}=await withTimeout(
-        window.sb.from("applications").insert({role_id:roleId,casting_id:c.id,talent_id:s.user.id,cover_note:coverNote||null,selected_photo_url:selectedPhoto||null}),
+        window.sb.rpc("submit_application",{p_casting:c.id,p_role:roleId,p_cover:coverNote||null,p_photo:selectedPhoto||null}),
         20000,
         "Submission"
       );
       if(error){
-        console.warn("[apply] insert error:",error.code||"",error.message||error);
+        console.warn("[apply] rpc error:",error.code||"",error.message||error);
         const raw=(error.message||"").toLowerCase();
         const code=(error.code||"").toLowerCase();
-        if(raw.includes("duplicate")||raw.includes("unique")||code==="23505"){
+        if(raw.includes("daily submission limit")){
+          setApplyErr("You've hit today's 50-application limit. Try again tomorrow.");
+        }else if(raw.includes("already submitted")||raw.includes("duplicate")||raw.includes("unique")||code==="23505"){
           setApplyErr("You've already applied to this role.");
           // treat as success locally — the row exists
           setApplied(p=>new Set([...p,applyRole.idx]));
@@ -2168,13 +2266,18 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   if(!c)return(<div className="page"><p>Casting not found.</p><button className="btn-s" onClick={onBack}>← Back</button></div>);
   const render=(txt)=>txt.split(/(\*[^*]+\*)/g).map((s,i)=>s.startsWith("*")&&s.endsWith("*")?<em key={i} style={{fontStyle:"italic",color:"var(--t1)"}}>{s.slice(1,-1)}</em>:<span key={i}>{s}</span>);
   return(<div className="page" style={{maxWidth:920}}>
-    <button className="btn-s btn-sm mb-20" onClick={onBack}>← Back to Castings</button>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:20,flexWrap:"wrap"}}>
+      <button className="btn-s btn-sm" onClick={onBack}>← Back to Castings</button>
+      <button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this casting">⚑ Report</button>
+    </div>
 
     <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
       <span className="badge tag-acc">{c.type}</span>
       <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.union}</span>
       <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.location}</span>
     </div>
+    {/* ReportModal — opens when the user clicks the Report link above */}
+    <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={isDbCasting?{kind:"casting",id:c.id}:null}/>
     <h1 style={{fontSize:42,fontWeight:800,letterSpacing:-1.5,marginBottom:8,color:"var(--t1)"}}>{c.title}</h1>
     <p style={{color:"var(--t2)",fontSize:17,marginBottom:4}}>{c.tagline}</p>
     <p style={{color:"var(--t3)",fontSize:13,marginBottom:28}}>Produced by {c.prod} {c.director?`· Directed by ${c.director}`:""}</p>
@@ -2410,6 +2513,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   const viewerIsCd=!!myProfile&&(myProfile.user_type==="cd"||myProfile.user_type==="admin"||myProfile.user_type==="super_admin");
   const talentDbId=typeof talent.id==="string"&&/^[0-9a-f]{8}-/i.test(String(talent.id))?talent.id:null;
   const [cdAction,setCdAction]=useState(null); // "save"|"invite"|"dm"|null
+  const [showReport,setShowReport]=useState(false);
   const gallery=(talent._allPhotos&&talent._allPhotos.length)?talent._allPhotos:[talent.img,...(talent.additional_photos||[])].filter(Boolean);
   const videos=(talent.video_links||[]).filter(v=>v);
   // Render a video link — pulls out a reliable embed for YouTube/Vimeo, falls back to a link button.
@@ -2423,7 +2527,12 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
       :<a key={i} href={url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",display:"inline-block"}}>▶ Watch clip {i+1}</a>;
   };
   return(<div className="page">
-    <button className="btn-s btn-sm mb-20" onClick={onBack}>← Back</button>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:20,flexWrap:"wrap"}}>
+      <button className="btn-s btn-sm" onClick={onBack}>← Back</button>
+      {/* Don't show Report on the user's own profile */}
+      {talent?.id&&talent.id!==session?.user?.id&&<button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this profile">⚑ Report</button>}
+    </div>
+    <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={talent?.id?{kind:"profile",id:talent.id}:null}/>
 
     {/* ── Submission note banner (only shown when CD is reviewing a specific submission) ── */}
     {talent._coverNote&&<div className="card" style={{padding:18,marginBottom:16,borderLeft:"4px solid var(--acc)",background:"var(--s1)"}}>
@@ -2614,8 +2723,13 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   },[fetchCastings,fetchTalent]);
 
   // Merge: real DB castings first (newest), then demo. Real talent first, then demo.
-  const allCastings=[...dbCastings,...CASTINGS];
-  const allTalent=[...dbTalent,...TALENT];
+  // Real DB data only — demo CASTINGS / TALENT arrays were merged here for the
+  // pre-launch preview but actively misrepresent the platform's real activity.
+  // They're kept in the codebase as a fallback for the empty Browse state on
+  // a brand-new install (see `allCastings.length===0` branch below) but never
+  // merged into search results once any real data exists.
+  const allCastings=dbCastings.length>0?dbCastings:[];
+  const allTalent=dbTalent.length>0?dbTalent:[];
   const ft=allTalent.filter(t=>{if(q&&!t.name.toLowerCase().includes(q.toLowerCase())&&!t.skills.join(" ").toLowerCase().includes(q.toLowerCase()))return false;if(f.gender&&t.gender!==f.gender)return false;if(f.ethnicity&&!t.ethnicity.toLowerCase().includes(f.ethnicity.toLowerCase()))return false;if(f.location&&!t.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&t.union!==f.union)return false;return true;});
   const fc=allCastings.filter(c=>{if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&c.type!==f.type)return false;if(f.location&&!c.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;});
   return(<div className="page page-wide">
@@ -4241,7 +4355,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   const fetchCastings=useCallback(async()=>{
     try{
       const {data,error}=await window.sb.from("castings")
-        .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,cd_id,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url)")
+        .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,cd_id,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified)")
         .eq("status","open").eq("published",true)
         .order("created_at",{ascending:false})
         .limit(12);
@@ -4417,7 +4531,11 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
             </div>
             <h3 style={{fontSize:isCenter?32:24,fontWeight:800,letterSpacing:-1,marginBottom:6,color:"var(--t1)",lineHeight:1.15}}>{sc.title}</h3>
             {sc.tagline&&sc.tagline!==sc.synopsis&&<p style={{color:"var(--t2)",fontSize:15,marginBottom:6,fontWeight:500}}>{sc.tagline}</p>}
-            {(sCdName||sc.prod)&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:14,fontWeight:500}}>{sCdName?`Posted by ${sCdName}`:""}{sCdName&&sc.prod?" · ":""}{sc.prod||""}</p>}
+            {(sCdName||sc.prod)&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:14,fontWeight:500,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+              <span>{sCdName?`Posted by ${sCdName}`:""}{sCdName&&sc.prod?" · ":""}{sc.prod||""}</span>
+              {sCd.verified===true&&<span style={{background:"rgba(46,204,113,0.12)",color:"#1d7b44",fontSize:9,fontWeight:800,letterSpacing:0.6,padding:"2px 8px",borderRadius:99}} title="Verified casting director">✓ VERIFIED</span>}
+              {sCd.verified===false&&sCdName&&<span style={{background:"rgba(200,137,0,0.12)",color:"#c88900",fontSize:9,fontWeight:800,letterSpacing:0.6,padding:"2px 8px",borderRadius:99}} title="This caster has not yet been verified by SlateCue">UNVERIFIED</span>}
+            </p>}
             {sDesc&&<p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:18,maxWidth:680}}>{sDesc}</p>}
             <div style={{display:"flex",gap:24,flexWrap:"wrap",fontSize:13,color:"var(--t2)",marginBottom:22}}>
               {sc.location&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Location</strong> · {sc.location}</span>}
@@ -5142,6 +5260,8 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       <AdminNavLink current={section} target="users" label="Users" onClick={setSection}/>
       <AdminNavLink current={section} target="castings" label="Castings" onClick={setSection}/>
       <AdminNavLink current={section} target="applications" label="Applications" onClick={setSection}/>
+      <AdminNavLink current={section} target="reports" label="Reports" onClick={setSection}/>
+      <AdminNavLink current={section} target="errors" label="Error log" onClick={setSection}/>
       <AdminNavLink current={section} target="audit" label="Audit log" onClick={setSection}/>
       <AdminNavLink current={section} target="settings" label="Site settings" onClick={setSection}/>
       {/* Direct jump to the CD dashboard — admins inherit CD capabilities, so they post + review
@@ -5159,6 +5279,8 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="users"&&<AdminUsers isSuperAdmin={isSuperAdmin} session={session}/>}
       {section==="castings"&&<AdminCastings/>}
       {section==="applications"&&<AdminApplications/>}
+      {section==="reports"&&<AdminReports/>}
+      {section==="errors"&&<AdminErrors/>}
       {section==="audit"&&<AdminAudit/>}
       {section==="settings"&&<AdminSettings/>}
       <div style={{marginTop:40}}><Footer onNavigate={onNavigate}/></div>
@@ -5522,6 +5644,115 @@ function AdminApplications(){
   </>);
 }
 
+// ─── Reports: review user-submitted reports against castings/profiles. Mark
+//     status (open / reviewing / actioned / dismissed) and write admin notes.
+function AdminReports(){
+  const [rows,setRows]=useState([]);
+  const [statusFilter,setStatusFilter]=useState("open");
+  const [loading,setLoading]=useState(true);
+  const [msg,setMsg]=useState("");
+  const [active,setActive]=useState(null);
+  const [notes,setNotes]=useState("");
+  const reload=useCallback(async()=>{
+    setLoading(true);
+    let q=window.sb.from("reports")
+      .select("id,reporter_id,reason,details,status,created_at,resolved_at,admin_notes,subject_profile_id,subject_casting_id,reporter:reporter_id(display_name,email,user_type),subject_profile:subject_profile_id(display_name,company_name,email,user_type),subject_casting:subject_casting_id(title,prod,location,status)")
+      .order("created_at",{ascending:false}).limit(100);
+    if(statusFilter!=="all")q=q.eq("status",statusFilter);
+    const {data,error}=await q;
+    if(error)setMsg("Load failed: "+error.message);
+    setRows(data||[]);setLoading(false);
+  },[statusFilter]);
+  useEffect(()=>{reload();},[reload]);
+  const setReportStatus=async(id,nextStatus,extraNotes)=>{
+    const patch={status:nextStatus,resolved_at:nextStatus==="actioned"||nextStatus==="dismissed"?new Date().toISOString():null};
+    if(typeof extraNotes==="string")patch.admin_notes=extraNotes;
+    const {error}=await window.sb.from("reports").update(patch).eq("id",id);
+    if(error){setMsg("Update failed: "+error.message);return;}
+    setMsg("Report "+nextStatus+".");setActive(null);reload();
+  };
+  const reasonLabel=(r)=>({inappropriate:"Inappropriate / unsafe",scam:"Scam or fake casting",spam:"Spam / off-topic",impersonation:"Impersonation",underage:"Concerns about a minor",illegal:"Illegal activity",other:"Other"}[r]||r);
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Reports</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{rows.length} {statusFilter==="all"?"":statusFilter} report{rows.length===1?"":"s"}</p>
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+    <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
+      {[["open","Open"],["reviewing","Reviewing"],["actioned","Actioned"],["dismissed","Dismissed"],["all","All"]].map(([k,l])=><button key={k} className="btn-s btn-sm" onClick={()=>setStatusFilter(k)} style={statusFilter===k?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>{l}</button>)}
+    </div>
+    {loading?<p style={{color:"var(--t3)"}}>Loading…</p>:rows.length===0?<div className="card" style={{padding:32,textAlign:"center",color:"var(--t3)"}}>No reports.</div>:
+      <div className="card" style={{padding:0,overflow:"hidden"}}>
+        {rows.map(r=>{
+          const target=r.subject_casting?{kind:"casting",label:`Casting: ${r.subject_casting.title}`,detail:[r.subject_casting.prod,r.subject_casting.location].filter(Boolean).join(" · ")}:r.subject_profile?{kind:"profile",label:`Profile: ${r.subject_profile.display_name||r.subject_profile.company_name||r.subject_profile.email}`,detail:r.subject_profile.user_type||""}:{kind:"unknown",label:"Unknown target",detail:""};
+          const reporter=r.reporter?(r.reporter.display_name||r.reporter.email||r.reporter_id):r.reporter_id;
+          return(<div key={r.id} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"center"}}>
+            <div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",marginBottom:4}}>
+                <span className="tag" style={{background:r.status==="open"?"rgba(214,59,59,0.12)":r.status==="reviewing"?"rgba(200,137,0,0.15)":r.status==="actioned"?"rgba(46,204,113,0.15)":"var(--s2)",color:r.status==="open"?"#c0392b":r.status==="reviewing"?"#c88900":r.status==="actioned"?"#1d7b44":"var(--t2)",fontSize:10,fontWeight:700,letterSpacing:0.5}}>{r.status.toUpperCase()}</span>
+                <span className="tag" style={{background:"var(--s2)",color:"var(--t2)",fontSize:10,fontWeight:700}}>{reasonLabel(r.reason)}</span>
+                <span style={{fontSize:11,color:"var(--t3)"}}>{new Date(r.created_at).toLocaleString()}</span>
+              </div>
+              <div style={{fontWeight:600,fontSize:14}}>{target.label}</div>
+              <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{target.detail}{target.detail&&" · "}Reported by <strong>{reporter}</strong></div>
+              {r.details&&<p style={{fontSize:12,color:"var(--t2)",marginTop:6,fontStyle:"italic",lineHeight:1.5}}>"{r.details}"</p>}
+            </div>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"flex-end"}}>
+              <button className="btn-s btn-sm" onClick={()=>{setActive(r);setNotes(r.admin_notes||"");}}>Review</button>
+            </div>
+          </div>);
+        })}
+      </div>
+    }
+    {active&&<div className="modal-overlay" onClick={()=>setActive(null)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:560}}>
+      <h2 style={{marginBottom:6}}>Review Report</h2>
+      <p style={{color:"var(--t2)",fontSize:13,marginTop:0,marginBottom:16}}>Reason: <strong>{reasonLabel(active.reason)}</strong></p>
+      {active.details&&<div style={{background:"var(--s2)",borderRadius:10,padding:14,marginBottom:14,fontSize:13,color:"var(--t2)",fontStyle:"italic"}}>"{active.details}"</div>}
+      <div className="form-group"><label className="label">Admin notes</label><textarea className="textarea" rows="4" value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Internal notes — what action was taken, why."/></div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:14}}>
+        <button className="btn-s btn-sm" onClick={()=>setReportStatus(active.id,"reviewing",notes)}>Mark Reviewing</button>
+        <button className="btn-s btn-sm" style={{borderColor:"#1d7b44",color:"#1d7b44"}} onClick={()=>setReportStatus(active.id,"actioned",notes)}>Mark Actioned</button>
+        <button className="btn-s btn-sm" onClick={()=>setReportStatus(active.id,"dismissed",notes)}>Dismiss</button>
+        <button className="btn-p btn-sm" style={{marginLeft:"auto"}} onClick={()=>setActive(null)}>Close</button>
+      </div>
+    </div></div>}
+  </>);
+}
+
+// ─── Client errors: read-only feed of front-end exceptions captured by the
+//     window.onerror hook. Keeps a shallow stack + URL to make triage easy.
+function AdminErrors(){
+  const [rows,setRows]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [msg,setMsg]=useState("");
+  const reload=useCallback(async()=>{
+    setLoading(true);
+    const {data,error}=await window.sb.from("client_errors")
+      .select("id,user_id,page,message,stack,user_agent,url,created_at")
+      .order("created_at",{ascending:false}).limit(200);
+    if(error)setMsg("Load failed: "+error.message);
+    setRows(data||[]);setLoading(false);
+  },[]);
+  useEffect(()=>{reload();},[reload]);
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Error log</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{rows.length} captured front-end errors (most recent first).</p>
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+    {loading?<p style={{color:"var(--t3)"}}>Loading…</p>:rows.length===0?<div className="card" style={{padding:32,textAlign:"center",color:"var(--t3)"}}>No errors logged.</div>:
+      <div className="card" style={{padding:0,overflow:"hidden"}}>
+        {rows.map(r=><div key={r.id} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)"}}>
+          <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:4}}>
+            <span className="tag" style={{background:"rgba(214,59,59,0.12)",color:"#c0392b",fontSize:10,fontWeight:700}}>{r.page||"unknown page"}</span>
+            <span style={{fontSize:11,color:"var(--t3)"}}>{new Date(r.created_at).toLocaleString()}</span>
+            {r.user_id&&<span style={{fontSize:11,color:"var(--t3)"}}>· user {String(r.user_id).slice(0,8)}…</span>}
+          </div>
+          <div style={{fontWeight:600,fontSize:13,color:"#c0392b"}}>{r.message||"(no message)"}</div>
+          {r.url&&<div style={{fontSize:11,color:"var(--t3)",marginTop:2,wordBreak:"break-all"}}>{r.url}</div>}
+          {r.stack&&<details style={{marginTop:6}}><summary style={{cursor:"pointer",fontSize:11,color:"var(--t3)"}}>Stack</summary><pre style={{fontSize:10,fontFamily:"monospace",color:"var(--t2)",marginTop:6,padding:10,background:"var(--s2)",borderRadius:6,overflowX:"auto",lineHeight:1.5}}>{r.stack}</pre></details>}
+        </div>)}
+      </div>
+    }
+  </>);
+}
+
 // ─── Audit log: paginated read-only feed
 function AdminAudit(){
   const [rows,setRows]=useState([]);
@@ -5793,6 +6024,46 @@ function App(){
       }
     };
     window.addEventListener("popstate",onPop);
+    // ─── Lightweight client-error logger. Captures uncaught JS errors and
+    //     unhandled Promise rejections, sends them to public.client_errors.
+    //     RLS allows anonymous + authenticated INSERT, but only admins can
+    //     read. Best-effort fire-and-forget — failures are silently swallowed
+    //     so the logger itself can never become a source of new errors.
+    let errLastSig="";let errLastAt=0;
+    const logClientError=(payload)=>{
+      try{
+        // De-dupe: skip identical messages within a 4s window so a render-loop
+        // bug doesn't spam thousands of rows.
+        const sig=(payload.message||"")+"|"+(payload.url||"");
+        const now=Date.now();
+        if(sig===errLastSig&&now-errLastAt<4000)return;
+        errLastSig=sig;errLastAt=now;
+        const row={
+          user_id:session?.user?.id||null,
+          page:(typeof window!=="undefined"&&window.location?window.location.pathname:null),
+          message:String(payload.message||"").slice(0,500),
+          stack:String(payload.stack||"").slice(0,4000),
+          user_agent:(navigator&&navigator.userAgent||"").slice(0,300),
+          url:(typeof window!=="undefined"&&window.location?window.location.href:"").slice(0,500)
+        };
+        if(window.sb&&window.sb.from){window.sb.from("client_errors").insert(row).then(()=>{}, ()=>{});}
+      }catch(_){}
+    };
+    const onErr=(ev)=>{
+      logClientError({
+        message:ev?.error?.message||ev?.message||"Unknown error",
+        stack:ev?.error?.stack||""
+      });
+    };
+    const onRej=(ev)=>{
+      const r=ev?.reason;
+      logClientError({
+        message:(r&&r.message)?`Unhandled rejection: ${r.message}`:String(r||"Unhandled promise rejection"),
+        stack:(r&&r.stack)||""
+      });
+    };
+    window.addEventListener("error",onErr);
+    window.addEventListener("unhandledrejection",onRej);
     // SINGLE source of truth for session state: onAuthStateChange.
     // Supabase fires INITIAL_SESSION immediately with the persisted session, so we do
     // NOT call getSession() separately — that created a lock race with the listener
@@ -5814,7 +6085,12 @@ function App(){
       // TOKEN_REFRESHED intentionally ignored — no profile re-fetch on hourly refresh.
       setAuthReady(true);
     });
-    return()=>{window.removeEventListener("popstate",onPop);sub?.subscription?.unsubscribe?.();};
+    return()=>{
+      window.removeEventListener("popstate",onPop);
+      window.removeEventListener("error",onErr);
+      window.removeEventListener("unhandledrejection",onRej);
+      sub?.subscription?.unsubscribe?.();
+    };
   },[loadProfile]);
 
   // ───────────────────────────────────────────────────────────────
@@ -6006,7 +6282,7 @@ function App(){
       </div>}
       {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("home");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail");}}/>}
       {page==="search"&&<SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");}}/>}
-      {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} onBack={()=>{setPage(prevPage==="home"?"home":"search");setViewingCasting(null);window.scrollTo(0,0);}} onNavigate={navigate}/>}
+      {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{setPage(prevPage==="home"?"home":"search");setViewingCasting(null);window.scrollTo(0,0);}} onNavigate={navigate}/>}
       {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
       {page==="dashboard"&&<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings}/>}
       {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{setPage(prevPage);setViewingProfile(null);}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
