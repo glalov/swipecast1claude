@@ -1024,7 +1024,7 @@ function Footer({onNavigate}){
         <div className="site-footer-grid">
           <div className="site-footer-brand">
             <div className="logo" onClick={()=>onNavigate("home")}><div className="logo-i">↔</div>SlateCue</div>
-            <p className="site-footer-blurb">The casting platform built for working actors. Every submission gets seen — guaranteed. Free profiles, $9.99/mo membership when you're ready to apply. Cancel anytime.</p>
+            <p className="site-footer-blurb">The casting platform built for working actors. Every submission gets seen — guaranteed. Free accounts included — upgrade to Premium ($9.99/mo) for unlimited submissions and more.</p>
           </div>
           <div>
             <h4 className="site-footer-heading">Talent</h4>
@@ -1188,7 +1188,7 @@ function RegisterTalent({onNavigate}){
     <div className="page"><div style={{maxWidth:640,margin:"0 auto"}}>
       <div className="section-label">Join SlateCue — Free</div>
       <h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:8}}>Create Your Talent Profile</h1>
-      <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>Free to create. You only need a $7.99–$9.99/month membership when you start submitting to castings. Already have an account? <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>Log in</span></p>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>Free to create — submit to up to 3 castings per day at no cost. Upgrade to Premium ($9.99/month) for unlimited submissions, 10 headshots, and video reels. Already have an account? <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>Log in</span></p>
       <div style={{display:"flex",gap:8,marginBottom:32}}>{[1,2,3].map(s=><div key={s} style={{flex:1,height:4,borderRadius:2,background:s<=step?"var(--acc)":"var(--s3)",transition:"background .3s"}}/>)}</div>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}>✓ Verification email re-sent — check your inbox.</div>}</div>}
 
@@ -1539,15 +1539,15 @@ const FAQ_CATEGORIES=[
   {id:"getting-started",label:"Getting Started",icon:"🎬",blurb:"Creating your account, first steps, and how SlateCue works.",items:[
     {q:"What is SlateCue?",a:"SlateCue is a casting platform built for working actors. Free profiles, an active membership only when you're ready to submit, and a swipe-based review system that guarantees every submission gets seen one at a time — not buried in a grid of 200 headshots."},
     {q:"Is SlateCue actually live?",a:"Yes. The platform is live and active. Casting directors are posting roles, talent are submitting, and conversations are happening in the inbox right now."},
-    {q:"Do I need a membership to create a profile?",a:"No. Profiles are free for everyone — talent and industry. You only activate a $9.99/month talent membership when you want to submit for a role. Cancel anytime."},
+    {q:"Do I need a membership to create a profile?",a:"No. Profiles are free for everyone. Free actors can submit to up to 3 castings per day. Upgrade to Premium ($9.99/month) for unlimited submissions, 10 headshots, and up to 5 video reel links. Cancel anytime."},
     {q:"Where is SlateCue available?",a:"Anywhere with a browser. Castings are organised by city, so you'll see roles in your market — but creating a profile and browsing castings works from anywhere."},
-    {q:"How do I get started as an actor?",a:"Create a free account, upload a current headshot, fill out your stats, and add a short bio. Then browse Open Castings and apply to roles you fit. When you submit, you'll be prompted to activate the membership."},
+    {q:"How do I get started as an actor?",a:"Create a free account, upload a headshot, fill out your stats, and add a short bio. Then browse Open Castings and apply. Free accounts can submit to up to 3 castings per day. Upgrade to Premium ($9.99/month) for unlimited submissions, more headshots, and video reels."},
     {q:"How do I get started as a casting director or producer?",a:"Create a free industry account, then click 'Post a Casting' from your dashboard. You only pay the $19.99 fee when you actually publish the casting."}
   ]},
   {id:"talent-profiles",label:"Talent Profiles",icon:"👤",blurb:"Headshots, stats, bio, reel — building a profile that gets callbacks.",items:[
     {q:"What should I put in my talent profile?",a:"A current headshot (within the last 18 months), accurate stats, a 2-3 sentence bio with your training and strongest types, your three most recent credits with years, and one current piece of footage. Special skills only if you can perform them on demand."},
     {q:"What size should my headshot be?",a:"At least 800×1000 pixels, JPG or PNG, with your face filling about 60% of the frame. Natural or soft studio lighting and a simple background read best."},
-    {q:"Can I have multiple headshots?",a:"Yes — you can upload a primary headshot plus a small gallery of additional photos. Casting directors can see all of them on your profile, but you can choose which one to attach to each individual submission."},
+    {q:"Can I have multiple headshots?",a:"Free accounts include 1 headshot. Premium accounts ($9.99/month) can upload up to 10 headshots and add up to 5 video reel links. You choose which photo to attach to each submission."},
     {q:"What goes in the bio?",a:"Two to three sentences. Lead with your training, then your strongest types, then any genuine differentiator. Avoid generic 'I love acting' lines — CDs skip past them."},
     {q:"How do I add my reel?",a:"Edit your profile and paste a YouTube or Vimeo URL into the Reel field. We embed it automatically. Keep reels under two minutes and lead with your strongest, most recent work."},
     {q:"How do I update my profile later?",a:"My Profile → Edit Profile. Changes save instantly. Casting directors see your latest version on every submission, including ones you've already sent."}
@@ -1569,7 +1569,7 @@ const FAQ_CATEGORIES=[
     {q:"What if I need to edit a casting after it's posted?",a:"You can edit the breakdown, role specs, and deadline at any time from the dashboard. Already-submitted talent are notified of any changes that affect their submission."}
   ]},
   {id:"payments",label:"Payments & Membership",icon:"💳",blurb:"Talent membership, casting fees, billing, and cancellations.",items:[
-    {q:"How much does the talent membership cost?",a:"$9.99 per month. New talent members get a 7-day free trial. We also offer 6-month ($8.99/mo) and 12-month ($7.99/mo) plans for actors who want to lock in a lower rate."},
+    {q:"How much does the talent membership cost?",a:"Actor accounts are free — you can create a profile and submit to up to 3 castings per day at no cost. Premium is $9.99/month and gives you unlimited submissions, up to 10 headshots, and up to 5 video reel links. New Premium members get a 7-day free trial."},
     {q:"How much does it cost to post a casting?",a:"$19.99 per casting post. There's no subscription for industry accounts — you only pay when you actually publish a casting. Account creation is free."},
     {q:"How do I cancel my membership?",a:"My Profile → Membership → Cancel. Your membership stays active through the end of the current billing period, then doesn't renew. No fees, no friction."},
     {q:"Are payments refundable?",a:"Membership fees are non-refundable except where required by law, but cancelled memberships continue until the end of the period you've already paid for. Casting post fees are non-refundable once the casting is published."},
@@ -1792,6 +1792,9 @@ function PricingPage({onNavigate}){
     </div>
   );
   return(<div className="page">
+    <div style={{background:"#1a1a2e",color:"#f5e8d0",fontFamily:"monospace",fontSize:13,fontWeight:700,padding:"10px 20px",textAlign:"center",letterSpacing:0.5}}>
+      PLAN LIMITS VERSION 2 — Free 1 headshot / 3 submissions/day · Premium $9.99/month: 10 headshots / 5 videos / unlimited submissions
+    </div>
     <div className="info-hero">
       <div className="section-label">Pricing</div>
       <h1>Simple pricing.<br/>No surprises.</h1>
@@ -4787,7 +4790,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           {q:"How is SlateCue different from legacy casting websites?",a:"On older platforms, your submission lands in a grid where a CD can scan 80 faces in 20 seconds. On SlateCue, every submission is full-screen, one at a time, swipe-style. CDs decide on you individually. No one gets skipped."},
           {q:"Can minors (under 18) sign up?",a:"Only with a parent or legal guardian managing the account. We require guardian verification and comply with COPPA and state child-performer laws."},
           {q:"Is this SAG-AFTRA friendly?",a:"Yes. SAG-AFTRA, AEA, and non-union castings are all supported. Union status is displayed on every casting post and can be filtered."},
-          {q:"How does SlateCue work?",a:"Create a free profile, browse open castings on the Browse page, and apply to roles you're right for. Casting directors review every submission individually and respond through the inbox. You only activate a $9.99/month membership when you're ready to submit for a role."}
+          {q:"How does SlateCue work?",a:"Create a free profile, browse open castings, and apply. Free accounts can submit to 3 castings per day. Upgrade to Premium ($9.99/month) for unlimited submissions, 10 headshots, and video reels. Casting directors review every submission individually."}
         ].map((f,i)=>
           <div key={i} className="card" style={{padding:0,cursor:"pointer"}} onClick={()=>setOpenFaq(openFaq===i?-1:i)}>
             <div style={{padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:16}}>
