@@ -5475,6 +5475,7 @@ function AdminCastings(){
   const [msg,setMsg]=useState("");
   const [viewCasting,setViewCasting]=useState(null);
   const [editCasting,setEditCasting]=useState(null);
+  const [busy,setBusy]=useState(null); // casting id + action key currently in flight
   const reload=useCallback(async()=>{
     setLoading(true);
     const {data,error}=await window.sb.from("castings").select("*,profiles:cd_id(display_name,email,company_name),roles(id,name,description,gender,age_range,ethnicity)").order("created_at",{ascending:false}).limit(1000);
@@ -5482,22 +5483,34 @@ function AdminCastings(){
     setCastings(data||[]);setLoading(false);
   },[]);
   useEffect(()=>{reload();},[reload]);
+  const showMsg=(m)=>{setMsg(m);setTimeout(()=>setMsg(""),4000);};
   const toggleFeatured=async(c)=>{
-    const {error}=await window.sb.rpc("admin_set_casting_featured",{p_casting:c.id,p_featured:!c.featured});
-    if(error){setMsg("Failed: "+error.message);return;}
-    setMsg(c.featured?"Unfeatured.":"Featured.");reload();
+    const key=c.id+":feature";
+    console.log("[AdminCastings] admin_set_casting_featured",{p_casting_id:c.id,p_featured:!c.featured});
+    setBusy(key);
+    const {error}=await window.sb.rpc("admin_set_casting_featured",{p_casting_id:c.id,p_featured:!c.featured});
+    setBusy(null);
+    if(error){showMsg("Failed: "+error.message);return;}
+    showMsg(c.featured?"Unfeatured.":"Featured.");reload();
   };
   const setStatus=async(c,newStatus)=>{
-    const {error}=await window.sb.rpc("admin_set_casting_status",{p_casting:c.id,p_status:newStatus});
-    if(error){setMsg("Failed: "+error.message);return;}
-    setMsg("Casting "+newStatus+".");reload();
+    const key=c.id+":status";
+    console.log("[AdminCastings] admin_set_casting_status",{p_casting_id:c.id,p_status:newStatus});
+    setBusy(key);
+    const {error}=await window.sb.rpc("admin_set_casting_status",{p_casting_id:c.id,p_status:newStatus});
+    setBusy(null);
+    if(error){showMsg("Failed: "+error.message);return;}
+    showMsg("Casting "+newStatus+".");reload();
   };
   const doDelete=async(c)=>{
     if(!confirm(`DELETE casting "${c.title}"?\n\nThis permanently removes the casting, all roles, and all submissions. Cannot be undone.`))return;
-    // direct delete — admin-only RLS policy on castings permits it (is_admin())
+    const key=c.id+":delete";
+    console.log("[AdminCastings] delete casting",{id:c.id,title:c.title});
+    setBusy(key);
     const {error}=await window.sb.from("castings").delete().eq("id",c.id);
-    if(error){setMsg("Delete failed: "+error.message);return;}
-    setMsg("Casting deleted.");reload();
+    setBusy(null);
+    if(error){showMsg("Delete failed: "+error.message);return;}
+    showMsg("Casting deleted.");reload();
   };
   const filtered=castings.filter(c=>!q||[c.title,c.prod,c.location,c.tagline,c.synopsis,c.profiles?.email,c.profiles?.display_name].some(x=>x&&x.toLowerCase().includes(q.toLowerCase())));
   return(<>
@@ -5515,9 +5528,9 @@ function AdminCastings(){
           <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"flex-end"}}>
             <button className="btn-s btn-sm" onClick={()=>setViewCasting(c)}>View</button>
             <button className="btn-s btn-sm" onClick={()=>setEditCasting(c)}>Edit</button>
-            <button className="btn-s btn-sm" onClick={()=>toggleFeatured(c)}>{c.featured?"Unfeature":"Feature"}</button>
-            <button className="btn-s btn-sm" onClick={()=>setStatus(c,c.status==="open"?"closed":"open")}>{c.status==="open"?"Close":"Reopen"}</button>
-            <button className="btn-s btn-sm" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} onClick={()=>doDelete(c)}>Delete</button>
+            <button className="btn-s btn-sm" disabled={busy===c.id+":feature"} onClick={()=>toggleFeatured(c)}>{busy===c.id+":feature"?"…":c.featured?"Unfeature":"Feature"}</button>
+            <button className="btn-s btn-sm" disabled={busy===c.id+":status"} onClick={()=>setStatus(c,c.status==="open"?"closed":"open")}>{busy===c.id+":status"?"…":c.status==="open"?"Close":"Reopen"}</button>
+            <button className="btn-s btn-sm" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} disabled={busy===c.id+":delete"} onClick={()=>doDelete(c)}>{busy===c.id+":delete"?"…":"Delete"}</button>
           </div>
         </div>)}
         {filtered.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No castings match.</div>}

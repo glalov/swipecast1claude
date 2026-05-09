@@ -718,25 +718,25 @@ begin
     jsonb_build_object('featured',p_featured), null);
 end; $$;
 
-create or replace function public.admin_set_casting_featured(p_casting uuid, p_featured boolean)
+create or replace function public.admin_set_casting_featured(p_casting_id uuid, p_featured boolean)
 returns void language plpgsql security definer set search_path = public as $$
 begin
   if not public.is_admin() then raise exception 'not authorised'; end if;
-  update public.castings set featured = p_featured, updated_at = now() where id = p_casting;
-  perform public._audit('set_casting_featured','castings',p_casting::text,null,jsonb_build_object('featured',p_featured),null);
+  update public.castings set featured = p_featured, updated_at = now() where id = p_casting_id;
+  perform public._audit('set_casting_featured','castings',p_casting_id::text,null,jsonb_build_object('featured',p_featured),null);
 end; $$;
 
-create or replace function public.admin_set_casting_status(p_casting uuid, p_status text)
+create or replace function public.admin_set_casting_status(p_casting_id uuid, p_status text, p_note text default null)
 returns void language plpgsql security definer set search_path = public as $$
 declare v_old text;
 begin
   if not public.is_admin() then raise exception 'not authorised'; end if;
   if p_status not in ('draft','open','closed','archived') then raise exception 'invalid status'; end if;
-  select status into v_old from public.castings where id = p_casting;
+  select status into v_old from public.castings where id = p_casting_id;
   update public.castings
      set status = p_status, published = (p_status = 'open'), updated_at = now()
-   where id = p_casting;
-  perform public._audit('set_casting_status','castings',p_casting::text,
+   where id = p_casting_id;
+  perform public._audit('set_casting_status','castings',p_casting_id::text,
     jsonb_build_object('status',v_old),jsonb_build_object('status',p_status),null);
 end; $$;
 
@@ -810,8 +810,8 @@ grant execute on function public.admin_set_user_suspended(uuid,boolean,text) to 
 grant execute on function public.admin_set_user_banned(uuid,boolean,text)    to authenticated;
 grant execute on function public.admin_set_user_verified(uuid,boolean)       to authenticated;
 grant execute on function public.admin_set_user_featured(uuid,boolean)       to authenticated;
-grant execute on function public.admin_set_casting_featured(uuid,boolean)    to authenticated;
-grant execute on function public.admin_set_casting_status(uuid,text)         to authenticated;
+grant execute on function public.admin_set_casting_featured(uuid,boolean)      to authenticated;
+grant execute on function public.admin_set_casting_status(uuid,text,text)     to authenticated;
 grant execute on function public.admin_set_application_status(uuid,text)     to authenticated;
 grant execute on function public.admin_delete_application(uuid)              to authenticated;
 grant execute on function public.admin_update_site_settings(jsonb)           to authenticated;
