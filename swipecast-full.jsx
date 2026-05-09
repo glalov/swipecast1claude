@@ -578,6 +578,13 @@ const MEMBERSHIP_PLANS={
   monthly:{key:"monthly",label:"Monthly Plan",monthly:9.99,months:1,total:9.99,note:"Billed monthly. Cancel anytime."}
 };
 
+// ─── Actor plan limits — single source of truth used by profile upload, casting
+//     submission gate, and the pricing page.
+const FREE_PLAN={headshotsTotal:1,additionalPhotos:0,videos:0,submissionsPerDay:3};
+const PREMIUM_PLAN={headshotsTotal:10,additionalPhotos:9,videos:5,submissionsPerDay:Infinity};
+const PREMIUM_PRICE="$9.99/month";
+const UPGRADE_MSG="You've reached the free plan limit. Upgrade to Premium for 10 headshots, up to 5 videos, and unlimited casting submissions.";
+
 // ─── Pure helper. Single place that knows how to derive yearly savings from
 //     the monthly + yearly prices. Reused by YearlyPromoStripe and anywhere
 //     else we want to show the savings figure — change MEMBERSHIP_PLANS, every
@@ -642,23 +649,23 @@ function ActivateMembershipBanner({myProfile,onNavigate}){
   const userType=(myProfile?.user_type||"").toLowerCase();
   const isTalent=userType==="talent";
   const status=myProfile?.membership_status||"free";
-  if(!isTalent)return null;            // only talent see it
-  if(status==="active")return null;    // hide once active
+  if(!isTalent)return null;
+  if(status==="active")return null;
   return(<button
     onClick={()=>onNavigate&&onNavigate("membership")}
     className="member-banner"
-    aria-label="Activate your membership"
+    aria-label="Upgrade to Premium"
     style={{
       position:"sticky",top:0,zIndex:100,
       width:"100%",border:"none",cursor:"pointer",
-      background:"linear-gradient(90deg,#e74c3c 0%,#c0392b 100%)",
+      background:"linear-gradient(90deg,#1a1a2e 0%,#16213e 100%)",
       color:"#fff",fontFamily:"'DM Sans',sans-serif",fontWeight:700,
       fontSize:13,letterSpacing:0.5,padding:"10px 24px",
       display:"flex",alignItems:"center",justifyContent:"center",gap:10,
       boxShadow:"0 1px 0 rgba(0,0,0,0.15)"
     }}>
-    <span style={{fontSize:14}}>⚡</span>
-    <span>Activate your membership to start submitting to castings →</span>
+    <span style={{fontSize:14}}>⭐</span>
+    <span>Free Plan: {FREE_PLAN.submissionsPerDay} submissions/day · 1 headshot · Upgrade to Premium ({PREMIUM_PRICE}) for unlimited →</span>
   </button>);
 }
 
@@ -670,7 +677,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
   if(!session?.user){
     return(<div className="page page-wide"><div className="card" style={{padding:48,textAlign:"center"}}>
       <h2 style={{fontSize:20,marginBottom:8}}>Sign in to manage your membership</h2>
-      <p style={{color:"var(--t3)",marginBottom:18}}>Free profiles can browse castings — submitting requires a membership.</p>
+      <p style={{color:"var(--t3)",marginBottom:18}}>Sign in to manage your membership.</p>
       <button className="btn-p" onClick={()=>onNavigate("login")}>Sign in</button>
     </div><Footer onNavigate={onNavigate}/></div>);
   }
@@ -685,7 +692,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
       {isActive
         ?`Your ${currentPlan?.label||"membership"} is active${myProfile?.membership_end_date?` until ${new Date(myProfile.membership_end_date).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}`:""}. You can submit to castings without restriction.`
         :isTalent
-          ?"You can browse castings and build your profile for free. To submit for roles you need a SlateCue membership — pick the plan that fits."
+          ?`Free actors can submit to ${FREE_PLAN.submissionsPerDay} castings per day and upload ${FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium (${PREMIUM_PRICE}) for unlimited submissions, 10 headshots, and up to 5 video links.`
           :"Casting Director and Industry Professional accounts are free — you only pay when you post a casting. No membership required."}
     </p>
 
@@ -1777,24 +1784,79 @@ function SuccessStoriesPage({onNavigate}){
 // PAGE: PRICING
 // ═══════════════════════════════════════════
 function PricingPage({onNavigate}){
-  const plans=[
-    {name:"Talent",who:"Actors · Models · Performers",price:"$9.99",period:"per month · 7-day free trial",features:["Unlimited profile, photos & video","Unlimited submissions","Guaranteed views on every submission","Direct messages from casting","Audition scheduling","Cancel anytime"],featured:false,cta:"Start 7-Day Free Trial",action:"register-talent"},
-    {name:"Casting Director",who:"Casting Directors · Producers",price:"$19.99",period:"per casting post",features:["Free account creation","Swipe-based review system","Advanced talent search & filters","Callback management tools","Pay only when you post"],featured:true,cta:"Start Casting",action:"register-cd"},
-    {name:"Studio",who:"Studios · Networks · Agencies",price:"Custom",period:"enterprise pricing",features:["Everything in Casting Director","Multi-user team access (up to 10)","Custom branding on postings","Full API access","Dedicated account manager"],featured:false,cta:"Contact Sales",action:"contact"},
-  ];
+  const featureRow=(label,free,premium)=>(
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,padding:"10px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,alignItems:"center"}}>
+      <span style={{color:"var(--t2)"}}>{label}</span>
+      <span style={{textAlign:"center",color:"var(--t1)",fontWeight:600}}>{free}</span>
+      <span style={{textAlign:"center",color:"var(--acc)",fontWeight:600}}>{premium}</span>
+    </div>
+  );
   return(<div className="page">
-    <div className="info-hero"><div className="section-label">Pricing</div><h1>Simple pricing.<br/>No surprises.</h1><p>Talent: $9.99/month with a 7-day free trial. Casting directors pay just $19.99 per casting post — no subscriptions.</p></div>
-    <div className="grid-3" style={{maxWidth:1000,margin:"0 auto"}}>{plans.map(p=>
-      <div key={p.name} className="card" style={p.featured?{borderColor:"var(--acc)",background:"linear-gradient(165deg,var(--s1),rgba(26,26,46,.02))",position:"relative"}:{}}>
-        {p.featured&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"var(--acc)",color:"var(--bg)",fontSize:10,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:"4px 14px",borderRadius:100,letterSpacing:1}}>MOST POPULAR</div>}
-        <h3 style={{fontSize:18,fontWeight:700,marginBottom:4,textAlign:"center"}}>{p.name}</h3>
-        <p style={{color:"var(--t2)",fontSize:12,marginBottom:20,textAlign:"center"}}>{p.who}</p>
-        <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:44,color:"var(--t1)",textAlign:"center"}}>{p.price}</div>
-        <p style={{color:"var(--t2)",fontSize:12,marginBottom:24,textAlign:"center"}}>{p.period}</p>
-        {p.features.map(f=><div key={f} style={{display:"flex",gap:8,alignItems:"center",padding:"7px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}</div>)}
-        <button className={p.featured?"btn-p":"btn-s"} style={{width:"100%",marginTop:24}} onClick={()=>onNavigate(p.action)}>{p.cta}</button>
+    <div className="info-hero">
+      <div className="section-label">Pricing</div>
+      <h1>Simple pricing.<br/>No surprises.</h1>
+      <p>Start free as an actor. Upgrade to Premium for {PREMIUM_PRICE} when you're ready to go full throttle.</p>
+    </div>
+
+    {/* ── Actor Plans ── */}
+    <div style={{maxWidth:860,margin:"0 auto 56px"}}>
+      <div className="section-label" style={{marginBottom:20,textAlign:"center"}}>Actor Plans</div>
+      <div className="grid-2" style={{marginBottom:24}}>
+        {/* Free card */}
+        <div className="card">
+          <h3 style={{fontSize:18,fontWeight:700,marginBottom:4,textAlign:"center"}}>Free</h3>
+          <p style={{color:"var(--t2)",fontSize:12,marginBottom:20,textAlign:"center"}}>Actors · Models · Performers</p>
+          <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:44,color:"var(--t1)",textAlign:"center"}}>$0</div>
+          <p style={{color:"var(--t2)",fontSize:12,marginBottom:24,textAlign:"center"}}>No credit card required</p>
+          {[`${FREE_PLAN.submissionsPerDay} casting submissions per day`,"1 headshot","Basic actor profile","Browse all castings","No video links"].map(f=><div key={f} style={{display:"flex",gap:8,alignItems:"center",padding:"7px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}</div>)}
+          <button className="btn-s" style={{width:"100%",marginTop:24}} onClick={()=>onNavigate("register-talent")}>Get Started Free</button>
+        </div>
+        {/* Premium card */}
+        <div className="card" style={{borderColor:"var(--acc)",background:"linear-gradient(165deg,var(--s1),rgba(26,26,46,.02))",position:"relative"}}>
+          <div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"var(--acc)",color:"var(--bg)",fontSize:10,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:"4px 14px",borderRadius:100,letterSpacing:1}}>RECOMMENDED</div>
+          <h3 style={{fontSize:18,fontWeight:700,marginBottom:4,textAlign:"center"}}>Premium</h3>
+          <p style={{color:"var(--t2)",fontSize:12,marginBottom:20,textAlign:"center"}}>Actors · Models · Performers</p>
+          <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:44,color:"var(--t1)",textAlign:"center"}}>$9.99</div>
+          <p style={{color:"var(--t2)",fontSize:12,marginBottom:24,textAlign:"center"}}>per month · 7-day free trial · cancel anytime</p>
+          {["Unlimited casting submissions","10 headshots","Up to 5 video reel links","Guaranteed views on every submission","Direct messages from casting","Audition scheduling"].map(f=><div key={f} style={{display:"flex",gap:8,alignItems:"center",padding:"7px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{f}</div>)}
+          <button className="btn-p" style={{width:"100%",marginTop:24}} onClick={()=>onNavigate("register-talent")}>Start 7-Day Free Trial</button>
+        </div>
       </div>
-    )}</div>
+
+      {/* Feature comparison table */}
+      <div className="card" style={{padding:"24px 28px"}}>
+        <h4 style={{fontSize:14,fontWeight:700,marginBottom:16}}>Feature Comparison</h4>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,padding:"8px 0",borderBottom:"2px solid var(--bdr)",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)"}}>
+          <span>Feature</span><span style={{textAlign:"center"}}>Free</span><span style={{textAlign:"center",color:"var(--acc)"}}>Premium</span>
+        </div>
+        {featureRow("Casting submissions / day",`${FREE_PLAN.submissionsPerDay}`,"Unlimited")}
+        {featureRow("Headshots",`${FREE_PLAN.headshotsTotal}`,"Up to 10")}
+        {featureRow("Video reel links","None","Up to 5")}
+        {featureRow("Browse castings","✓","✓")}
+        {featureRow("Basic profile","✓","✓")}
+        {featureRow("Direct messages from casting","—","✓")}
+        {featureRow("Audition scheduling","—","✓")}
+        {featureRow("Guaranteed views","—","✓")}
+        {featureRow("Price","Free",PREMIUM_PRICE)}
+      </div>
+    </div>
+
+    {/* ── Casting Director ── */}
+    <div style={{maxWidth:860,margin:"0 auto 48px"}}>
+      <div className="section-label" style={{marginBottom:20,textAlign:"center"}}>For Casting Directors</div>
+      <div style={{maxWidth:440,margin:"0 auto"}}>
+        <div className="card" style={{borderColor:"var(--acc)",background:"linear-gradient(165deg,var(--s1),rgba(26,26,46,.02))",position:"relative"}}>
+          <div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"var(--acc)",color:"var(--bg)",fontSize:10,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:"4px 14px",borderRadius:100,letterSpacing:1}}>MOST POPULAR</div>
+          <h3 style={{fontSize:18,fontWeight:700,marginBottom:4,textAlign:"center"}}>Casting Director</h3>
+          <p style={{color:"var(--t2)",fontSize:12,marginBottom:20,textAlign:"center"}}>Casting Directors · Producers</p>
+          <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:44,color:"var(--t1)",textAlign:"center"}}>$19.99</div>
+          <p style={{color:"var(--t2)",fontSize:12,marginBottom:24,textAlign:"center"}}>per casting post · free account creation</p>
+          {["Free account creation","Swipe-based review system","Advanced talent search & filters","Callback management tools","Pay only when you post"].map(f=><div key={f} style={{display:"flex",gap:8,alignItems:"center",padding:"7px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}</div>)}
+          <button className="btn-p" style={{width:"100%",marginTop:24}} onClick={()=>onNavigate("register-cd")}>Start Casting</button>
+        </div>
+      </div>
+    </div>
+
     <Footer onNavigate={onNavigate}/></div>);
 }
 
@@ -2125,33 +2187,31 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const [coverNote,setCoverNote]=useState("");
   const [submitting,setSubmitting]=useState(false);
   const [applyErr,setApplyErr]=useState("");
-  const [applyOk,setApplyOk]=useState(false);      // shows success confirmation in modal before auto-close
-  const [realRoleIds,setRealRoleIds]=useState({}); // maps role index -> real DB role id (for DB-backed castings)
-  const [myPhotos,setMyPhotos]=useState([]);   // list of actor's photo URLs (headshot first, then gallery)
+  const [applyOk,setApplyOk]=useState(false);
+  const [realRoleIds,setRealRoleIds]=useState({});
+  const [myPhotos,setMyPhotos]=useState([]);
   const [selectedPhoto,setSelectedPhoto]=useState("");
   const [showReport,setShowReport]=useState(false);
-  const submittingRef=useRef(false);           // double-click guard for Submit Application
+  const [showUpgradePrompt,setShowUpgradePrompt]=useState(false);
+  const [todayCount,setTodayCount]=useState(0); // free actor's submission count today
+  const submittingRef=useRef(false);
   const withTimeout=(promise,ms=20000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Please try again.`)),ms))]);
   const c=casting;
-  const isDbCasting=!!(c&&c.id&&typeof c.id==="string"&&c.id.length>20); // UUID check
-  // ─── Membership gate. Only Talent are gated — CDs/admins/producers/studios
-  //     are free-tier always (they pay per casting post, not per submission).
+  const isDbCasting=!!(c&&c.id&&typeof c.id==="string"&&c.id.length>20);
   const isTalent=(myProfile?.user_type||"").toLowerCase()==="talent";
-  const hasActiveMembership=myProfile?.membership_status==="active";
+  const isPremium=myProfile?.membership_status==="active";
+  const dailyLimit=isPremium?PREMIUM_PLAN.submissionsPerDay:FREE_PLAN.submissionsPerDay;
   const handleApply=(r,i)=>{
     if(!isLoggedIn){onRequireAuth&&onRequireAuth(c,{...r,idx:i});return;}
-    // Block submission for free-tier talent. Send them to the membership page
-    // so they can pick a plan, then bounce back to this casting after activation.
-    if(isTalent&&!hasActiveMembership){
-      try{sessionStorage.setItem("sc_post_membership_return",JSON.stringify({casting:c,role:r,roleIdx:i}));}catch(_){}
-      onNavigate&&onNavigate("membership");
+    // Free actors hit their 3/day cap → show upgrade prompt instead of apply modal.
+    if(isTalent&&!isPremium&&todayCount>=FREE_PLAN.submissionsPerDay){
+      setShowUpgradePrompt(true);
       return;
     }
     setApplyRole({...r,idx:i});setCoverNote("");setApplyErr("");setApplyOk(false);setSelectedPhoto(myPhotos[0]||"");
   };
   useEffect(()=>{(async()=>{
     if(!isLoggedIn||!c)return;
-    // load the actor's photos for the picker
     const {data:{session:s}}=await window.sb.auth.getSession();
     if(s?.user){
       const {data:prof}=await window.sb.from("profiles").select("headshot_url,additional_photos").eq("id",s.user.id).maybeSingle();
@@ -2159,8 +2219,13 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       if(prof?.headshot_url)list.push(prof.headshot_url);
       (prof?.additional_photos||[]).forEach(u=>{if(u&&!list.includes(u))list.push(u);});
       setMyPhotos(list);
+      // count today's submissions for free-actor gate
+      if(isTalent&&!isPremium){
+        const today=new Date();today.setHours(0,0,0,0);
+        const {count}=await window.sb.from("applications").select("id",{count:"exact",head:true}).eq("talent_id",s.user.id).gte("created_at",today.toISOString());
+        setTodayCount(count||0);
+      }
     }
-    // if casting is DB-backed, fetch real role ids & already-applied
     if(isDbCasting){
       const {data:roles}=await window.sb.from("roles").select("id,name").eq("casting_id",c.id);
       const map={};(roles||[]).forEach((r,idx)=>{map[idx]=r.id;});
@@ -2172,7 +2237,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
         setApplied(appliedIdx);
       }
     }
-  })();},[c,isLoggedIn,isDbCasting]);
+  })();},[c,isLoggedIn,isDbCasting,isTalent,isPremium]);
   const submitApp=async()=>{
     if(submittingRef.current){console.log("[apply] blocked: already submitting");return;}
     submittingRef.current=true;
@@ -2205,7 +2270,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
         const raw=(error.message||"").toLowerCase();
         const code=(error.code||"").toLowerCase();
         if(raw.includes("daily submission limit")){
-          setApplyErr("You've hit today's 50-application limit. Try again tomorrow.");
+          const lim=isPremium?"unlimited":FREE_PLAN.submissionsPerDay;
+          setApplyErr(`You've reached your daily submission limit (${lim}). ${isPremium?"Contact support.":UPGRADE_MSG}`);
         }else if(raw.includes("already submitted")||raw.includes("duplicate")||raw.includes("unique")||code==="23505"){
           setApplyErr("You've already applied to this role.");
           // treat as success locally — the row exists
@@ -2225,6 +2291,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       }
       console.log("[apply] success for role:",roleId);
       setApplied(p=>new Set([...p,applyRole.idx]));
+      setTodayCount(n=>n+1);
       setApplyOk(true);
       setTimeout(()=>{setApplyRole(null);setApplyOk(false);},1400);
     }catch(e){
@@ -2251,8 +2318,24 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.union}</span>
       <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.location}</span>
     </div>
-    {/* ReportModal — opens when the user clicks the Report link above */}
     <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={isDbCasting?{kind:"casting",id:c.id}:null}/>
+
+    {/* ── Free-actor daily limit upgrade prompt ── */}
+    {showUpgradePrompt&&<div className="modal-overlay" onClick={()=>setShowUpgradePrompt(false)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:480,textAlign:"center",padding:"36px 32px"}}>
+      <div style={{fontSize:40,marginBottom:16}}>⭐</div>
+      <h2 style={{fontSize:22,fontWeight:800,marginBottom:10}}>Daily Limit Reached</h2>
+      <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,marginBottom:24}}>{UPGRADE_MSG}</p>
+      <div style={{display:"flex",gap:12,justifyContent:"center"}}>
+        <button className="btn-p" onClick={()=>{setShowUpgradePrompt(false);onNavigate&&onNavigate("membership");}}>Upgrade to Premium — {PREMIUM_PRICE}</button>
+        <button className="btn-s" onClick={()=>setShowUpgradePrompt(false)}>Maybe Later</button>
+      </div>
+    </div></div>}
+
+    {/* ── Free-actor submissions remaining badge ── */}
+    {isTalent&&!isPremium&&isLoggedIn&&<div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+      <span style={{fontSize:13,color:"var(--t2)"}}>Free Plan: <strong style={{color:todayCount>=FREE_PLAN.submissionsPerDay?"#c0392b":"var(--t1)"}}>{Math.max(0,FREE_PLAN.submissionsPerDay-todayCount)}</strong> of {FREE_PLAN.submissionsPerDay} submissions remaining today</span>
+      <button className="btn-s btn-sm" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade for Unlimited</button>
+    </div>}
     <h1 style={{fontSize:42,fontWeight:800,letterSpacing:-1.5,marginBottom:8,color:"var(--t1)"}}>{c.title}</h1>
     <p style={{color:"var(--t2)",fontSize:17,marginBottom:4}}>{c.tagline}</p>
     <p style={{color:"var(--t3)",fontSize:13,marginBottom:28}}>Produced by {c.prod} {c.director?`· Directed by ${c.director}`:""}</p>
@@ -2303,7 +2386,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
 
     <section style={{padding:"28px 32px",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,marginBottom:32,textAlign:"center"}}>
       <h3 style={{fontSize:18,fontWeight:700,marginBottom:6}}>Think you're right for multiple roles?</h3>
-      <p style={{color:"var(--t2)",fontSize:13,marginBottom:14}}>You can submit for as many roles as you'd like. Each submission is reviewed individually by the casting director.</p>
+      <p style={{color:"var(--t2)",fontSize:13,marginBottom:14}}>{isTalent&&!isPremium?`Free plan: up to ${FREE_PLAN.submissionsPerDay} submissions per day across all castings. Upgrade to Premium for unlimited.`:"You can submit for as many roles as you'd like."} Each submission is reviewed individually by the casting director.</p>
       <button className="btn-s btn-sm" onClick={onBack}>← Back to All Castings</button>
     </section>
 
@@ -4895,7 +4978,8 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
   const save=async()=>{
     setErr("");setMsg("");setSaving(true);
     try{
-      const vl=videos.filter(v=>v.trim());
+      const videoSlots=profile?.membership_status==="active"?PREMIUM_PLAN.videos:FREE_PLAN.videos;
+    const vl=videos.slice(0,videoSlots).filter(v=>v.trim());
       const patch={
         display_name:f.display_name.trim()||null,bio:f.bio||null,location:f.location||null,
         age:f.age?parseInt(f.age):null,gender:f.gender||null,ethnicity:f.ethnicity||null,
@@ -4929,7 +5013,10 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
   };
   const uploadAdditionalPhoto=async(file)=>{
     if(!file)return;
-    if(photos.length>=10){setErr("Maximum 10 photos allowed.");return;}
+    const _premium=profile?.membership_status==="active";
+    if(!_premium){setErr(UPGRADE_MSG);return;}
+    const _maxAdditional=PREMIUM_PLAN.additionalPhotos; // 9
+    if(photos.length>=_maxAdditional){setErr(`Maximum ${PREMIUM_PLAN.headshotsTotal} photos allowed on your plan.`);return;}
     setUploading(true);setErr("");
     try{
       const ext=(file.name&&file.name.split(".").pop()||"jpg").toLowerCase();
@@ -4969,11 +5056,13 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     onReload&&onReload();setMsg("Resume removed.");setTimeout(()=>setMsg(""),3000);
   };
   if(!profile)return(<div className="page"><p style={{color:"var(--t2)"}}>Loading…</p><Footer onNavigate={onNavigate}/></div>);
-  // CD-style profile view for anyone with CD-posting capability (cd/admin/super_admin).
-  // Actors stay on the talent profile view. This lets admins fill in company_name etc.
-  // so their casting posts carry proper attribution without needing a separate account.
   const isCD=["cd","admin","super_admin"].includes(profile.user_type);
+  const isPremium=profile.membership_status==="active";
+  const planLimits=isPremium?PREMIUM_PLAN:FREE_PLAN;
   const allPhotos=[profile.headshot_url,...photos].filter(Boolean);
+  const maxTotalPhotos=planLimits.headshotsTotal;   // 1 for free, 10 for premium
+  const maxAdditional=planLimits.additionalPhotos;  // 0 for free, 9 for premium
+  const maxVideos=planLimits.videos;                 // 0 for free, 5 for premium
   return(<div className="page page-wide">
     {msg&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.3)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{msg}</div>}
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
@@ -5008,8 +5097,8 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     {/* ── TABS ── */}
     <div className="tabs" style={{marginBottom:24}}>
       <button className={`tab ${tab==="profile"?"active":""}`} onClick={()=>setTab("profile")}>Edit Profile</button>
-      {!isCD&&<button className={`tab ${tab==="photos"?"active":""}`} onClick={()=>setTab("photos")}>Photos ({allPhotos.length}/10)</button>}
-      {!isCD&&<button className={`tab ${tab==="videos"?"active":""}`} onClick={()=>setTab("videos")}>Video Links ({(profile.video_links||[]).filter(v=>v).length}/5)</button>}
+      {!isCD&&<button className={`tab ${tab==="photos"?"active":""}`} onClick={()=>setTab("photos")}>Photos ({allPhotos.length}/{maxTotalPhotos})</button>}
+      {!isCD&&<button className={`tab ${tab==="videos"?"active":""}`} onClick={()=>setTab("videos")}>Video Links ({(profile.video_links||[]).filter(v=>v).length}/{maxVideos||"—"}{!isPremium?" · Premium":""}) </button>}
       {!isCD&&<button className={`tab ${tab==="applications"?"active":""}`} onClick={()=>setTab("applications")}>My Applications ({myApps.length})</button>}
       <button className={`tab ${tab==="messages"?"active":""}`} onClick={()=>setTab("messages")}>Inbox {(inbox.filter(m=>!m.read_at).length+invites.filter(i=>i.status==="pending").length)>0?<span className="tag tag-acc" style={{marginLeft:6,fontSize:10}}>{inbox.filter(m=>!m.read_at).length+invites.filter(i=>i.status==="pending").length}</span>:null}</button>
     </div>
@@ -5070,10 +5159,14 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
 
     {/* ── PHOTOS TAB ── */}
     {tab==="photos"&&!isCD&&<>
+      {!isPremium&&<div style={{background:"rgba(26,26,46,0.06)",border:"1px solid var(--bdr)",borderRadius:10,padding:"14px 18px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+        <span style={{fontSize:13,color:"var(--t2)"}}>⭐ <strong>Free Plan:</strong> 1 headshot only. Upgrade to Premium for up to 10 headshots.</span>
+        <button className="btn-s btn-sm" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade — {PREMIUM_PRICE}</button>
+      </div>}
       <div className="card" style={{padding:24,marginBottom:16}}>
         <div className="flex-between" style={{marginBottom:16}}>
-          <div><h3 style={{fontSize:15,fontWeight:700,marginBottom:2}}>Photo Gallery</h3><p style={{fontSize:12,color:"var(--t3)"}}>{allPhotos.length} of 10 photos · Your headshot is always first</p></div>
-          {allPhotos.length<10&&<label className="btn-p btn-sm" style={{cursor:"pointer"}}>{uploading?"Uploading…":"+ Add Photo"}<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"additional",aspect:0.75,label:"Crop Photo"});e.target.value="";}}/></label>}
+          <div><h3 style={{fontSize:15,fontWeight:700,marginBottom:2}}>Photo Gallery</h3><p style={{fontSize:12,color:"var(--t3)"}}>{allPhotos.length} of {maxTotalPhotos} photo{maxTotalPhotos===1?"":"s"} · Your headshot is always first</p></div>
+          {isPremium&&allPhotos.length<maxTotalPhotos&&<label className="btn-p btn-sm" style={{cursor:"pointer"}}>{uploading?"Uploading…":"+ Add Photo"}<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"additional",aspect:0.75,label:"Crop Photo"});e.target.value="";}}/></label>}
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:12}}>
           {profile.headshot_url&&<div style={{position:"relative",borderRadius:8,overflow:"hidden",border:"2px solid var(--acc)"}}>
@@ -5084,7 +5177,7 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
             <img src={url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",display:"block"}}/>
             <button onClick={()=>removePhoto(url)} style={{position:"absolute",top:4,right:4,background:"rgba(0,0,0,0.6)",border:"none",color:"#fff",borderRadius:"50%",width:22,height:22,cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
           </div>)}
-          {allPhotos.length<10&&Array.from({length:Math.min(2,10-allPhotos.length)}).map((_,i)=><label key={`empty-${i}`} style={{aspectRatio:"3/4",background:"var(--s2)",borderRadius:8,border:"1px dashed var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexDirection:"column",gap:6,color:"var(--t3)",fontSize:12}}>+ Add<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"additional",aspect:0.75,label:"Crop Photo"});e.target.value="";}}/></label>)}
+          {isPremium&&allPhotos.length<maxTotalPhotos&&Array.from({length:Math.min(2,maxTotalPhotos-allPhotos.length)}).map((_,i)=><label key={`empty-${i}`} style={{aspectRatio:"3/4",background:"var(--s2)",borderRadius:8,border:"1px dashed var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexDirection:"column",gap:6,color:"var(--t3)",fontSize:12}}>+ Add<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"additional",aspect:0.75,label:"Crop Photo"});e.target.value="";}}/></label>)}
         </div>
       </div>
       <p style={{fontSize:12,color:"var(--t3)"}}>These photos are visible to casting directors. When you apply to a role, you choose which photo to submit.</p>
@@ -5093,13 +5186,24 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     {/* ── VIDEOS TAB ── */}
     {tab==="videos"&&!isCD&&<div className="card" style={{padding:24}}>
       <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Video Reel Links</h3>
-      <p style={{fontSize:12,color:"var(--t3)",marginBottom:20}}>Paste up to 5 YouTube or Vimeo links. They'll appear as embedded players on your profile.</p>
-      {videos.map((v,i)=><div key={i} style={{marginBottom:16}}>
-        <label className="label">Link {i+1}</label>
-        <input className="input" placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..." value={v} onChange={e=>setVideos(p=>{const n=[...p];n[i]=e.target.value;return n;})}/>
-        {getVideoEmbed(v)&&<iframe src={getVideoEmbed(v)} style={{width:"100%",height:220,borderRadius:8,border:"none",marginTop:8}} allowFullScreen/>}
-      </div>)}
-      <button className="btn-p" onClick={save} disabled={saving}>{saving?"Saving…":"Save Video Links"}</button>
+      {!isPremium?(
+        <div style={{textAlign:"center",padding:"40px 24px"}}>
+          <div style={{fontSize:40,marginBottom:16}}>🎬</div>
+          <h4 style={{fontSize:17,fontWeight:700,marginBottom:8}}>Premium Feature</h4>
+          <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,marginBottom:24,maxWidth:400,margin:"0 auto 24px"}}>Video reel links are available on the Premium plan. Upgrade to add up to 5 YouTube or Vimeo links that appear as embedded players on your profile.</p>
+          <button className="btn-p" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium — {PREMIUM_PRICE}</button>
+        </div>
+      ):(
+        <>
+          <p style={{fontSize:12,color:"var(--t3)",marginBottom:20}}>Paste up to {maxVideos} YouTube or Vimeo links. They'll appear as embedded players on your profile.</p>
+          {videos.slice(0,maxVideos).map((v,i)=><div key={i} style={{marginBottom:16}}>
+            <label className="label">Link {i+1}</label>
+            <input className="input" placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..." value={v} onChange={e=>setVideos(p=>{const n=[...p];n[i]=e.target.value;return n;})}/>
+            {getVideoEmbed(v)&&<iframe src={getVideoEmbed(v)} style={{width:"100%",height:220,borderRadius:8,border:"none",marginTop:8}} allowFullScreen/>}
+          </div>)}
+          <button className="btn-p" onClick={save} disabled={saving}>{saving?"Saving…":"Save Video Links"}</button>
+        </>
+      )}
     </div>}
 
     {/* ── APPLICATIONS TAB ── */}

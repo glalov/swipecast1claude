@@ -878,3 +878,72 @@ create policy roles_insert on public.roles
     exists (select 1 from public.castings c where c.id = roles.casting_id and c.cd_id = auth.uid())
     or public.is_admin()
   );
+
+-- ════════════════════════════════════════════════════════════════════
+-- MIGRATION 2026-05-09 — submit_application with plan-aware daily cap
+--
+-- Adds a SECURITY DEFINER RPC that:
+--   1. Enforces a daily submission cap based on membership_status:
+--        free (no active plan)  → 3 submissions per UTC day
+--        active (Premium)       → unlimited
+--   2. Prevents duplicate applications to the same role.
+--   3. Inserts into applications — bypasses RLS so the recursive-policy
+--      bug from the previous applications_insert cannot trigger.
+--
+-- Frontend calls: window.sb.rpc("submit_application", {p_casting, p_role, p_cover, p_photo})
+-- ════════════════════════════════════════════════════════════════════
+
+create or replace function public.submit_application(
+  p_casting uuid,
+  p_role    uuid,
+  p_cover   text default null,
+  p_photo   text default null
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_membership text;
+  v_daily_limit int;
+  v_today_count int;
+begin
+  if auth.uid() is null then
+    raise exception 'not authenticated' using errcode = '42501';
+  end if;
+
+  -- resolve membership status; default to free if not set
+  select coalesce(membership_status, 'free')
+    into v_membership
+    from public.profiles
+   where id = auth.uid();
+
+  -- premium members get a very large cap (effectively unlimited)
+  v_daily_limit := case when v_membership = 'active' then 2147483647 else 3 end;
+
+  -- count submissions since the start of today (UTC)
+  select count(*)
+    into v_today_count
+    from public.applications
+   where talent_id  = auth.uid()
+     and created_at >= date_trunc('day', now() at time zone 'utc');
+
+  if v_today_count >= v_daily_limit then
+    raise exception 'daily submission limit reached' using errcode = 'P0001';
+  end if;
+
+  -- prevent duplicate apply to the same role
+  if exists (
+    select 1 from public.applications
+     where talent_id = auth.uid() and role_id = p_role
+  ) then
+    raise exception 'already submitted to this role' using errcode = '23505';
+  end if;
+
+  insert into public.applications (casting_id, role_id, talent_id, cover_note, selected_photo_url)
+  values (p_casting, p_role, auth.uid(), p_cover, p_photo);
+end;
+$$;
+
+grant execute on function public.submit_application(uuid, uuid, text, text) to authenticated;
