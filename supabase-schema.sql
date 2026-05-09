@@ -603,10 +603,10 @@ $$;
 --    `revoke` removes default grants so client code can't call it directly.
 create or replace function public._audit(
   p_action text,
-  p_table text default null,
-  p_id text default null,
-  p_old jsonb default null,
-  p_new jsonb default null,
+  p_table text,
+  p_id uuid,
+  p_old jsonb,
+  p_new jsonb,
   p_note text default null
 ) returns void
 language plpgsql
@@ -617,75 +617,105 @@ declare v_email text;
 begin
   select email into v_email from auth.users where id = auth.uid();
   insert into public.audit_logs (actor_id, actor_email, action, target_table, target_id, old_value, new_value, note)
-  values (auth.uid(), v_email, p_action, p_table, p_id, p_old, p_new, p_note);
+  values (auth.uid(), v_email, p_action, p_table, p_id::text, p_old, p_new, p_note);
 end;
 $$;
-revoke all on function public._audit(text,text,text,jsonb,jsonb,text) from public, authenticated, anon;
+revoke all on function public._audit(text,text,uuid,jsonb,jsonb,text) from public, authenticated, anon;
 
 -- 8. Admin RPCs. Each one:
 --    • runs as SECURITY DEFINER (so RLS doesn't block legitimate admin writes)
 --    • asserts is_admin() / is_super_admin() before doing anything
 --    • writes an audit_logs row via _audit()
 
-create or replace function public.admin_set_user_role(p_target uuid, p_role text)
+create or replace function public.admin_set_user_role(p_user_id uuid, p_role text, p_note text default null)
 returns void language plpgsql security definer set search_path = public as $$
 declare v_old text;
 begin
-  if not public.is_admin() then raise exception 'not authorised'; end if;
-  if p_role not in ('talent','cd','admin','super_admin') then raise exception 'invalid role'; end if;
-  -- Only super_admin may assign admin or super_admin.
-  if p_role in ('admin','super_admin') and not public.is_super_admin() then raise exception 'only super_admin can grant admin roles'; end if;
-  select user_type into v_old from public.profiles where id = p_target;
-  -- Only super_admin may change a super_admin's role (including their own).
-  if v_old = 'super_admin' and not public.is_super_admin() then raise exception 'only super_admin can change a super_admin role'; end if;
-  update public.profiles set user_type = p_role, updated_at = now() where id = p_target;
-  perform public._audit('set_user_role','profiles',p_target::text,
+  if not public.is_admin() then raise exception 'not authorized' using errcode='42501'; end if;
+  if p_role not in ('talent','cd','admin','super_admin') then raise exception 'invalid role: %', p_role; end if;
+  select user_type into v_old from public.profiles where id = p_user_id;
+  if v_old is null then raise exception 'user not found'; end if;
+  if p_role = 'super_admin' and not public.is_super_admin() then
+    raise exception 'only super_admin can promote to super_admin' using errcode='42501';
+  end if;
+  if v_old = 'super_admin' and not public.is_super_admin() then
+    raise exception 'only super_admin can change a super_admin role' using errcode='42501';
+  end if;
+  update public.profiles set user_type = p_role where id = p_user_id;
+  perform public._audit('user.role.set','profiles',p_user_id,
     jsonb_build_object('user_type',v_old),
-    jsonb_build_object('user_type',p_role), null);
+    jsonb_build_object('user_type',p_role), p_note);
 end; $$;
 
-create or replace function public.admin_set_user_suspended(p_target uuid, p_suspended boolean, p_reason text default null)
+create or replace function public.admin_set_user_suspended(p_user_id uuid, p_suspended boolean, p_reason text default null)
 returns void language plpgsql security definer set search_path = public as $$
+declare v_was boolean; v_target text;
 begin
-  if not public.is_admin() then raise exception 'not authorised'; end if;
+  if not public.is_admin() then raise exception 'not authorized' using errcode='42501'; end if;
+  select suspended, user_type into v_was, v_target from public.profiles where id = p_user_id;
+  if v_target is null then raise exception 'user not found'; end if;
+  if v_target = 'super_admin' and not public.is_super_admin() then raise exception 'only super_admin can suspend a super_admin' using errcode='42501'; end if;
   update public.profiles
      set suspended = p_suspended,
          suspended_reason = case when p_suspended then p_reason else null end,
-         suspended_at = case when p_suspended then now() else null end,
-         updated_at = now()
-   where id = p_target;
-  perform public._audit(case when p_suspended then 'suspend_user' else 'unsuspend_user' end,
-    'profiles',p_target::text,null,jsonb_build_object('suspended',p_suspended,'reason',p_reason),p_reason);
+         suspended_at = case when p_suspended then now() else null end
+   where id = p_user_id;
+  perform public._audit(
+    case when p_suspended then 'user.suspend' else 'user.unsuspend' end,
+    'profiles', p_user_id,
+    jsonb_build_object('suspended',v_was),
+    jsonb_build_object('suspended',p_suspended), p_reason);
 end; $$;
 
-create or replace function public.admin_set_user_banned(p_target uuid, p_target_banned boolean, p_reason text default null)
+create or replace function public.admin_set_user_banned(p_user_id uuid, p_banned boolean, p_reason text default null)
 returns void language plpgsql security definer set search_path = public as $$
+declare v_was boolean; v_target text;
 begin
-  if not public.is_admin() then raise exception 'not authorised'; end if;
+  if not public.is_admin() then raise exception 'not authorized' using errcode='42501'; end if;
+  select banned, user_type into v_was, v_target from public.profiles where id = p_user_id;
+  if v_target is null then raise exception 'user not found'; end if;
+  if v_target = 'super_admin' and not public.is_super_admin() then raise exception 'only super_admin can ban a super_admin' using errcode='42501'; end if;
   update public.profiles
-     set banned = p_target_banned,
-         banned_reason = case when p_target_banned then p_reason else null end,
-         banned_at = case when p_target_banned then now() else null end,
-         updated_at = now()
-   where id = p_target;
-  perform public._audit(case when p_target_banned then 'ban_user' else 'unban_user' end,
-    'profiles',p_target::text,null,jsonb_build_object('banned',p_target_banned,'reason',p_reason),p_reason);
+     set banned = p_banned,
+         banned_reason = case when p_banned then p_reason else null end,
+         banned_at = case when p_banned then now() else null end,
+         suspended = case when p_banned then true else suspended end
+   where id = p_user_id;
+  perform public._audit(
+    case when p_banned then 'user.ban' else 'user.unban' end,
+    'profiles', p_user_id,
+    jsonb_build_object('banned',v_was),
+    jsonb_build_object('banned',p_banned), p_reason);
 end; $$;
 
-create or replace function public.admin_set_user_verified(p_target uuid, p_verified boolean)
+create or replace function public.admin_set_user_verified(p_user_id uuid, p_verified boolean)
 returns void language plpgsql security definer set search_path = public as $$
+declare v_was boolean;
 begin
-  if not public.is_admin() then raise exception 'not authorised'; end if;
-  update public.profiles set verified = p_verified, updated_at = now() where id = p_target;
-  perform public._audit('set_user_verified','profiles',p_target::text,null,jsonb_build_object('verified',p_verified),null);
+  if not public.is_admin() then raise exception 'not authorized' using errcode='42501'; end if;
+  select verified into v_was from public.profiles where id = p_user_id;
+  if v_was is null then raise exception 'user not found'; end if;
+  update public.profiles set verified = p_verified where id = p_user_id;
+  perform public._audit(
+    case when p_verified then 'user.verify' else 'user.unverify' end,
+    'profiles', p_user_id,
+    jsonb_build_object('verified',v_was),
+    jsonb_build_object('verified',p_verified), null);
 end; $$;
 
-create or replace function public.admin_set_user_featured(p_target uuid, p_featured boolean)
+create or replace function public.admin_set_user_featured(p_user_id uuid, p_featured boolean)
 returns void language plpgsql security definer set search_path = public as $$
+declare v_was boolean;
 begin
-  if not public.is_admin() then raise exception 'not authorised'; end if;
-  update public.profiles set featured = p_featured, updated_at = now() where id = p_target;
-  perform public._audit('set_user_featured','profiles',p_target::text,null,jsonb_build_object('featured',p_featured),null);
+  if not public.is_admin() then raise exception 'not authorized' using errcode='42501'; end if;
+  select featured into v_was from public.profiles where id = p_user_id;
+  if v_was is null then raise exception 'user not found'; end if;
+  update public.profiles set featured = p_featured where id = p_user_id;
+  perform public._audit(
+    case when p_featured then 'user.feature' else 'user.unfeature' end,
+    'profiles', p_user_id,
+    jsonb_build_object('featured',v_was),
+    jsonb_build_object('featured',p_featured), null);
 end; $$;
 
 create or replace function public.admin_set_casting_featured(p_casting uuid, p_featured boolean)
@@ -752,32 +782,30 @@ begin
   perform public._audit('update_site_settings','site_settings','1',v_old,p_settings,null);
 end; $$;
 
-create or replace function public.admin_request_password_reset(p_target uuid)
+create or replace function public.admin_request_password_reset(p_user_id uuid)
 returns void language plpgsql security definer set search_path = public as $$
 begin
-  if not public.is_admin() then raise exception 'not authorised'; end if;
-  -- This is an audit-only stub. Sending a reset email requires the service-role
-  -- key via an Edge Function; logging the intent here gives a trail when that
-  -- channel is used out-of-band (e.g. by the owner through the Supabase dashboard).
-  perform public._audit('request_password_reset','profiles',p_target::text,null,null,'requested');
+  if not public.is_admin() then raise exception 'not authorized' using errcode='42501'; end if;
+  perform public._audit('request_password_reset','profiles',p_user_id,null,null,'requested');
 end; $$;
 
-create or replace function public.admin_delete_profile(p_target uuid)
+create or replace function public.admin_delete_profile(p_user_id uuid, p_reason text default null)
 returns void language plpgsql security definer set search_path = public as $$
 declare v_target_role text; v_row jsonb;
 begin
-  if not public.is_super_admin() then raise exception 'only super_admin can delete profiles'; end if;
-  if p_target = auth.uid() then raise exception 'you cannot delete your own profile'; end if;
-  select user_type into v_target_role from public.profiles where id = p_target;
+  if not public.is_super_admin() then raise exception 'only super_admin can delete profiles' using errcode='42501'; end if;
+  if p_user_id = auth.uid() then raise exception 'you cannot delete your own profile'; end if;
+  select user_type into v_target_role from public.profiles where id = p_user_id;
+  if v_target_role is null then raise exception 'user not found'; end if;
   if v_target_role = 'super_admin' then raise exception 'cannot delete another super_admin'; end if;
-  select to_jsonb(p) into v_row from public.profiles p where id = p_target;
-  delete from public.profiles where id = p_target;
-  perform public._audit('delete_profile','profiles',p_target::text,v_row,null,null);
+  select to_jsonb(p) into v_row from public.profiles p where id = p_user_id;
+  delete from public.profiles where id = p_user_id;
+  perform public._audit('delete_profile','profiles',p_user_id,v_row,null,p_reason);
 end; $$;
 
 -- 9. Grant execute on the admin RPCs to authenticated (functions still enforce
 --    is_admin() internally, so granting does not weaken security).
-grant execute on function public.admin_set_user_role(uuid,text)           to authenticated;
+grant execute on function public.admin_set_user_role(uuid,text,text)         to authenticated;
 grant execute on function public.admin_set_user_suspended(uuid,boolean,text) to authenticated;
 grant execute on function public.admin_set_user_banned(uuid,boolean,text)    to authenticated;
 grant execute on function public.admin_set_user_verified(uuid,boolean)       to authenticated;
@@ -788,7 +816,7 @@ grant execute on function public.admin_set_application_status(uuid,text)     to 
 grant execute on function public.admin_delete_application(uuid)              to authenticated;
 grant execute on function public.admin_update_site_settings(jsonb)           to authenticated;
 grant execute on function public.admin_request_password_reset(uuid)          to authenticated;
-grant execute on function public.admin_delete_profile(uuid)                  to authenticated;
+grant execute on function public.admin_delete_profile(uuid,text)             to authenticated;
 
 -- 10. Bootstrap: promote the owner email to super_admin so the platform
 --     has at least one super user. Safe to re-run.

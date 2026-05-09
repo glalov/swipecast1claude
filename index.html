@@ -5372,40 +5372,50 @@ function AdminUsers({isSuperAdmin,session}){
   const [typeFilter,setTypeFilter]=useState("all");
   const [loading,setLoading]=useState(true);
   const [msg,setMsg]=useState("");
-  const [reasonPrompt,setReasonPrompt]=useState(null); // {user, kind}
+  const [msgType,setMsgType]=useState("info");
+  const [busyId,setBusyId]=useState(null);
+  const [reasonPrompt,setReasonPrompt]=useState(null);
   const reload=useCallback(async()=>{
     setLoading(true);
     const {data,error}=await window.sb.from("profiles").select("*").order("created_at",{ascending:false}).limit(1000);
-    if(error)setMsg("Load failed: "+error.message);
+    if(error){setMsg("Load failed: "+error.message);setMsgType("error");}
     setUsers(data||[]);setLoading(false);
   },[]);
   useEffect(()=>{reload();},[reload]);
-  const callRpc=async(fn,args,successLabel)=>{
-    setMsg("");
+  const callRpc=async(fn,args,successLabel,userId)=>{
+    console.log("[AdminRPC]",fn,JSON.stringify(args));
+    setMsg("");setBusyId(userId||null);
     const {error}=await window.sb.rpc(fn,args);
-    if(error){setMsg(fn+" failed: "+error.message);return false;}
-    setMsg(successLabel);await reload();return true;
+    setBusyId(null);
+    if(error){console.error("[AdminRPC] FAILED",fn,error.message);setMsg(fn+" failed: "+error.message);setMsgType("error");return false;}
+    console.log("[AdminRPC] OK",fn);
+    setMsg(successLabel);setMsgType("success");await reload();return true;
   };
   const setRole=async(u,newRole)=>{
+    if(u.id===session?.user?.id&&u.user_type==="super_admin"&&newRole!=="super_admin"){
+      alert("You cannot remove your own super_admin access.");return;
+    }
     if(u.id===session?.user?.id&&newRole!==u.user_type){
       if(!confirm("You are changing YOUR OWN role. This can lock you out of admin. Continue?"))return;
     }
-    await callRpc("admin_set_user_role",{p_target:u.id,p_role:newRole},`Role changed to ${newRole}.`);
+    await callRpc("admin_set_user_role",{p_user_id:u.id,p_role:newRole},`Role changed to ${newRole}.`,u.id);
   };
-  const toggleVerified=(u)=>callRpc("admin_set_user_verified",{p_target:u.id,p_verified:!u.verified},u.verified?"Unverified.":"Verified.");
-  const toggleFeatured=(u)=>callRpc("admin_set_user_featured",{p_target:u.id,p_featured:!u.featured},u.featured?"Unfeatured.":"Featured.");
+  const toggleVerified=(u)=>callRpc("admin_set_user_verified",{p_user_id:u.id,p_verified:!u.verified},u.verified?"Unverified.":"Verified.",u.id);
+  const toggleFeatured=(u)=>callRpc("admin_set_user_featured",{p_user_id:u.id,p_featured:!u.featured},u.featured?"Unfeatured.":"Featured.",u.id);
   const toggleSuspended=(u)=>{
     if(!u.suspended){setReasonPrompt({user:u,kind:"suspend"});return;}
-    callRpc("admin_set_user_suspended",{p_target:u.id,p_suspended:false,p_reason:null},"Unsuspended.");
+    callRpc("admin_set_user_suspended",{p_user_id:u.id,p_suspended:false,p_reason:null},"Unsuspended.",u.id);
   };
   const toggleBanned=(u)=>{
     if(!u.banned){setReasonPrompt({user:u,kind:"ban"});return;}
-    callRpc("admin_set_user_banned",{p_target:u.id,p_target_banned:false,p_reason:null},"Unbanned.");
+    if(!confirm(`Unban ${u.display_name||u.email}?`))return;
+    callRpc("admin_set_user_banned",{p_user_id:u.id,p_banned:false,p_reason:null},"Unbanned.",u.id);
   };
   const doDelete=async(u)=>{
-    if(!confirm(`Permanently DELETE profile ${u.email}?\n\nThis removes their profile row, reviews, applications, and any castings they posted. Cannot be undone.`))return;
     if(u.id===session?.user?.id){alert("You cannot delete your own profile.");return;}
-    await callRpc("admin_delete_profile",{p_target:u.id},"Profile deleted.");
+    if(u.user_type==="super_admin"){alert("Cannot delete a super_admin account.");return;}
+    if(!confirm(`Permanently DELETE profile ${u.email}?\n\nThis removes their profile row, reviews, applications, and any castings they posted. Cannot be undone.`))return;
+    await callRpc("admin_delete_profile",{p_user_id:u.id},"Profile deleted.",u.id);
   };
   const filtered=users.filter(u=>{
     if(typeFilter!=="all"&&u.user_type!==typeFilter)return false;
@@ -5416,7 +5426,7 @@ function AdminUsers({isSuperAdmin,session}){
   return(<>
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Users</h1>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{filtered.length} of {users.length} users{typeFilter==="all"?"":` · ${typeFilter}`}</p>
-    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+    {msg&&<div style={{background:msgType==="error"?"rgba(192,57,43,0.1)":"rgba(46,204,113,0.12)",color:msgType==="error"?"#c0392b":"#1d7b44",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
     <div style={{display:"grid",gridTemplateColumns:"1fr 200px",gap:10,marginBottom:14}}>
       <input className="input" placeholder="Search by name, email, location, company…" value={q} onChange={e=>setQ(e.target.value)}/>
       <select className="select" value={typeFilter} onChange={e=>setTypeFilter(e.target.value)}>
@@ -5429,19 +5439,19 @@ function AdminUsers({isSuperAdmin,session}){
     </div>
     {loading?<p style={{color:"var(--t3)"}}>Loading…</p>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
-        {filtered.map(u=><UserRow key={u.id} u={u} isSuperAdmin={isSuperAdmin} self={u.id===session?.user?.id} onSetRole={setRole} onToggleVerified={toggleVerified} onToggleFeatured={toggleFeatured} onToggleSuspended={toggleSuspended} onToggleBanned={toggleBanned} onDelete={doDelete}/>)}
+        {filtered.map(u=><UserRow key={u.id} u={u} isSuperAdmin={isSuperAdmin} self={u.id===session?.user?.id} busy={busyId===u.id} onSetRole={setRole} onToggleVerified={toggleVerified} onToggleFeatured={toggleFeatured} onToggleSuspended={toggleSuspended} onToggleBanned={toggleBanned} onDelete={doDelete}/>)}
         {filtered.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No users match.</div>}
       </div>
     }
     {reasonPrompt&&<ReasonModal title={reasonPrompt.kind==="suspend"?"Suspend user":"Ban user"} cta={reasonPrompt.kind==="suspend"?"Suspend":"Ban"} onCancel={()=>setReasonPrompt(null)} onSubmit={async(reason)=>{
       const u=reasonPrompt.user,kind=reasonPrompt.kind;
       setReasonPrompt(null);
-      if(kind==="suspend")await callRpc("admin_set_user_suspended",{p_target:u.id,p_suspended:true,p_reason:reason||null},"Suspended.");
-      else await callRpc("admin_set_user_banned",{p_target:u.id,p_target_banned:true,p_reason:reason||null},"Banned.");
+      if(kind==="suspend")await callRpc("admin_set_user_suspended",{p_user_id:u.id,p_suspended:true,p_reason:reason||null},"Suspended.",u.id);
+      else await callRpc("admin_set_user_banned",{p_user_id:u.id,p_banned:true,p_reason:reason||null},"Banned.",u.id);
     }}/>}
   </>);
 }
-function UserRow({u,isSuperAdmin,self,onSetRole,onToggleVerified,onToggleFeatured,onToggleSuspended,onToggleBanned,onDelete}){
+function UserRow({u,isSuperAdmin,self,busy,onSetRole,onToggleVerified,onToggleFeatured,onToggleSuspended,onToggleBanned,onDelete}){
   const canEditRole=isSuperAdmin||(u.user_type!=="super_admin"&&u.user_type!=="admin");
   const canDelete=isSuperAdmin&&!self&&u.user_type!=="super_admin";
   const statusBadges=[];
@@ -5455,18 +5465,18 @@ function UserRow({u,isSuperAdmin,self,onSetRole,onToggleVerified,onToggleFeature
       <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{u.email} {u.location?`· ${u.location}`:""} {u.company_name?`· ${u.company_name}`:""}</div>
       {(u.suspended_reason||u.banned_reason)&&<div style={{fontSize:11,color:"#c0392b",marginTop:2,fontStyle:"italic"}}>Reason: {u.banned_reason||u.suspended_reason}</div>}
     </div>
-    <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"flex-end"}}>
-      <select className="select" style={{fontSize:12,padding:"6px 8px",height:"auto"}} disabled={!canEditRole} value={u.user_type} onChange={e=>onSetRole(u,e.target.value)}>
+    <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"flex-end",pointerEvents:busy?"none":"auto",opacity:busy?0.5:1}}>
+      <select className="select" style={{fontSize:12,padding:"6px 8px",height:"auto"}} disabled={!canEditRole||busy} value={u.user_type} onChange={e=>onSetRole(u,e.target.value)}>
         <option value="talent">actor</option>
         <option value="cd">CD</option>
         <option value="admin">admin</option>
         {isSuperAdmin&&<option value="super_admin">super_admin</option>}
       </select>
-      <button className="btn-s btn-sm" onClick={()=>onToggleVerified(u)}>{u.verified?"Unverify":"Verify"}</button>
-      <button className="btn-s btn-sm" onClick={()=>onToggleFeatured(u)}>{u.featured?"Unfeature":"Feature"}</button>
-      <button className="btn-s btn-sm" onClick={()=>onToggleSuspended(u)}>{u.suspended?"Unsuspend":"Suspend"}</button>
-      <button className="btn-s btn-sm" style={{color:"#c0392b",borderColor:"#e8c6c6"}} onClick={()=>onToggleBanned(u)}>{u.banned?"Unban":"Ban"}</button>
-      {canDelete&&<button className="btn-s btn-sm" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} onClick={()=>onDelete(u)}>Delete</button>}
+      <button className="btn-s btn-sm" disabled={busy} onClick={()=>onToggleVerified(u)}>{u.verified?"Unverify":"Verify"}</button>
+      <button className="btn-s btn-sm" disabled={busy} onClick={()=>onToggleFeatured(u)}>{u.featured?"Unfeature":"Feature"}</button>
+      <button className="btn-s btn-sm" disabled={busy} onClick={()=>onToggleSuspended(u)}>{u.suspended?"Unsuspend":"Suspend"}</button>
+      <button className="btn-s btn-sm" disabled={busy} style={{color:"#c0392b",borderColor:"#e8c6c6"}} onClick={()=>onToggleBanned(u)}>{u.banned?"Unban":"Ban"}</button>
+      {canDelete&&<button className="btn-s btn-sm" disabled={busy} style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} onClick={()=>onDelete(u)}>Delete</button>}
     </div>
   </div>);
 }
