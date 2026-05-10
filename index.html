@@ -2968,10 +2968,13 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
     }catch(e){console.error("[SearchPage] talent fetch failed:",e);/* keep last good */}
   },[]);
 
-  // Initial + reactive fetches: any of these triggers a refresh
+  // Initial + reactive fetches: any of these triggers a refresh.
+  // Only show loading=true when we have no data yet (first load). Subsequent
+  // refreshes (castingsVersion bump, polling) update silently in the background
+  // so the list never flashes blank while reloading.
   useEffect(()=>{
     let cancelled=false;
-    setLoading(true);
+    if(dbCastings.length===0)setLoading(true);
     Promise.all([fetchCastings(),fetchTalent()]).finally(()=>{if(!cancelled)setLoading(false);});
     return()=>{cancelled=true;};
   },[refreshTick,castingsVersion,fetchCastings,fetchTalent]);
@@ -6375,9 +6378,10 @@ function App(){
     const onPageShow=(e)=>{
       if(!e.persisted)return;
       const p=urlToPage();
+      const slug=urlToCastingSlug();
       setPage(p);
       if(p!=="profile")setViewingProfile(null);
-      if(p==="casting-detail"){const slug=urlToCastingSlug();if(slug){const c=CASTINGS.find(x=>x.slug===slug);if(c)setViewingCasting(c);}}
+      if(p==="casting-detail"){if(slug){const c=CASTINGS.find(x=>x.slug===slug);if(c)setViewingCasting(c);}}
       else setViewingCasting(null);
     };
     window.addEventListener("pageshow",onPageShow);
@@ -6659,7 +6663,13 @@ function App(){
         </div>
       </div>}
       {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("home");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c.slug});}}/>}
-      {page==="search"&&<SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c.slug});}}/>}
+      {/* SearchPage is kept mounted while on casting-detail so its fetched castings state
+          survives the navigation. CSS display:none hides it visually; React keeps it alive.
+          This eliminates the remount→loading=true→blank flash when pressing Back. */}
+      {(page==="search"||page==="casting-detail")&&
+        <div style={{display:page==="search"?"block":"none"}} aria-hidden={page!=="search"}>
+          <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c.slug});}}/>
+        </div>}
       {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
       {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
       {page==="dashboard"&&(!authReady?<PageLoader/>:<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings}/>)}
