@@ -4612,23 +4612,46 @@ function CastingCreatorVerificationBanner({myProfile}){
   const status=myProfile?.verification_status||"not_started";
   const [startMsg,setStartMsg]=useState("");
   const [starting,setStarting]=useState(false);
+  const [debugInfo,setDebugInfo]=useState(null);
 
   const startVerification=async()=>{
-    setStarting(true);setStartMsg("");
+    setStarting(true);setStartMsg("");setDebugInfo(null);
     try{
       const{data,error}=await window.sb.functions.invoke("create-verification-session");
-      if(error)throw error;
-      if(data?.url){
-        // Redirect to provider — do not clear loading state; page is navigating away
-        window.location.href=data.url;
+      if(error){
+        let httpStatus=error.context?.status||null;
+        let body=null;
+        try{body=await error.context?.json();}catch(_){}
+        const provider=body?.provider||"unknown";
+        const errMsg=body?.error||body?.message||error.message||"Unknown error";
+        console.error("Verification session failed",{httpStatus,provider,endpoint:"create-verification-session",error:errMsg,body});
+        let userMsg,nextStep;
+        const em=(errMsg||"").toLowerCase();
+        if(em.includes("api_key")||em.includes("not configured")||em.includes("missing")||httpStatus===503){
+          userMsg="Verification provider is not connected. Missing DIDIT_API_KEY or required provider configuration.";
+          nextStep="Set DIDIT_API_KEY (or PERSONA_API_KEY) in your Supabase project Edge Function secrets.";
+        }else if(em.includes("redirect")||em.includes("webhook")){
+          userMsg="Verification redirect/webhook URL is not configured.";
+          nextStep="Set VERIFICATION_REDIRECT_URL and VERIFICATION_WEBHOOK_URL in Edge Function secrets.";
+        }else{
+          userMsg=errMsg||"Verification setup error. See debug panel below.";
+          nextStep="Check Supabase Edge Function logs for detail.";
+        }
+        setStartMsg(userMsg);
+        setDebugInfo({provider,endpoint:"create-verification-session",status:httpStatus,error:errMsg,body,nextStep});
         return;
       }
-      if(data?.error==="already_verified"){setStartMsg("Your account is already verified.");}
-      else{setStartMsg("Verification provider is not connected yet. Admin must connect Persona or Didit before live verification can begin. Your account has been flagged as pending — an admin will review and enable posting access.");}
+      if(data?.url){window.location.href=data.url;return;}
+      if(data?.error==="already_verified"){setStartMsg("Your account is already verified.");return;}
+      // Unexpected success-shape with no URL
+      const fallbackErr=data?.error||data?.message||"No verification URL returned.";
+      console.error("Verification session failed",{data});
+      setStartMsg(fallbackErr);
+      setDebugInfo({provider:data?.provider||"unknown",endpoint:"create-verification-session",status:200,error:fallbackErr,body:data,nextStep:"Check edge function — it returned 200 but no URL."});
     }catch(e){
-      const m=(e.message||"").toLowerCase();
-      if(m.includes("already_verified")||m.includes("already verified")){setStartMsg("Your account is already verified.");}
-      else{setStartMsg("Verification provider is not connected yet. Admin must connect Persona or Didit before live verification can begin. Your account has been flagged as pending — an admin will review and enable posting access.");}
+      console.error("Verification session failed",e);
+      setStartMsg(e.message||"Unexpected error starting verification.");
+      setDebugInfo({provider:"unknown",endpoint:"create-verification-session",status:null,error:e.message||String(e),nextStep:"Check browser console and Supabase Edge Function logs."});
     }finally{setStarting(false);}
   };
 
@@ -4641,7 +4664,18 @@ function CastingCreatorVerificationBanner({myProfile}){
         <div style={{fontWeight:800,fontSize:15,marginBottom:6}}>Verify Your Identity to Post Castings</div>
         <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.65,marginBottom:8}}>To protect actors and performers, all casting creators must complete identity verification before publishing casting calls. Some accounts may require additional manual review.</p>
         <div style={{fontSize:12,color:"var(--t3)"}}>Current status: <strong style={{color:statusColor}}>{statusLabel}</strong></div>
-        {startMsg&&<div style={{marginTop:10,background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,color:"var(--t2)",lineHeight:1.6}}>{startMsg}</div>}
+        {startMsg&&<div style={{marginTop:10,background:debugInfo?"rgba(231,76,60,0.07)":"var(--s2)",border:debugInfo?"1px solid rgba(231,76,60,0.25)":"none",borderRadius:8,padding:"10px 14px",fontSize:13,color:debugInfo?"#c0392b":"var(--t2)",lineHeight:1.6}}>{startMsg}</div>}
+        {debugInfo&&<div style={{marginTop:8,background:"rgba(231,76,60,0.06)",border:"1px solid rgba(231,76,60,0.22)",borderRadius:8,padding:"12px 14px"}}>
+          <div style={{fontWeight:700,fontSize:12,marginBottom:8,color:"#c0392b",letterSpacing:.3}}>VERIFICATION SETUP ERROR</div>
+          <div style={{fontFamily:"monospace",fontSize:11,lineHeight:1.8}}>
+            <div><strong>Provider:</strong> {debugInfo.provider}</div>
+            <div><strong>Endpoint:</strong> {debugInfo.endpoint}</div>
+            {debugInfo.status!=null&&<div><strong>HTTP status:</strong> {debugInfo.status}</div>}
+            <div><strong>Error:</strong> {debugInfo.error}</div>
+            {debugInfo.body&&<div style={{marginTop:4}}><strong>Response body:</strong><pre style={{margin:"2px 0 0",whiteSpace:"pre-wrap",fontSize:10,opacity:.9}}>{JSON.stringify(debugInfo.body,null,2)}</pre></div>}
+          </div>
+          <div style={{marginTop:8,fontSize:12,color:"#8e44ad",fontFamily:"sans-serif"}}><strong>Next step:</strong> {debugInfo.nextStep}</div>
+        </div>}
       </div>
       {status!=="pending"&&status!=="needs_review"&&status!=="rejected"&&(
         <button className="btn-p" onClick={startVerification} disabled={starting} style={{whiteSpace:"nowrap",flexShrink:0}}>
@@ -4663,10 +4697,53 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   const [f,setF]=useState({title:"",prod:"",type:"Film",location:"",pay:"",union:"SAG-AFTRA",deadline:"",tagline:"",synopsis:""});
   const [roles,setRoles]=useState([{name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any"}]);
   const [inserted,setInserted]=useState(null); // holds the Supabase-returned row so onPosted can optimistically add it
+  const [verifyMsg,setVerifyMsg]=useState("");
+  const [verifying,setVerifying]=useState(false);
+  const [verifyDebug,setVerifyDebug]=useState(null);
   const setField=(k,v)=>setF(p=>({...p,[k]:v}));
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
   const addRole=()=>setRoles(p=>[...p,{name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any"}]);
   const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
+
+  const startVerificationFromModal=async()=>{
+    setVerifying(true);setVerifyMsg("");setVerifyDebug(null);
+    try{
+      const{data,error}=await window.sb.functions.invoke("create-verification-session");
+      if(error){
+        let httpStatus=error.context?.status||null;
+        let body=null;
+        try{body=await error.context?.json();}catch(_){}
+        const provider=body?.provider||"unknown";
+        const errMsg=body?.error||body?.message||error.message||"Unknown error";
+        console.error("Verification session failed",{httpStatus,provider,endpoint:"create-verification-session",error:errMsg,body});
+        let userMsg,nextStep;
+        const em=(errMsg||"").toLowerCase();
+        if(em.includes("api_key")||em.includes("not configured")||em.includes("missing")||httpStatus===503){
+          userMsg="Verification provider is not connected. Missing DIDIT_API_KEY or required provider configuration.";
+          nextStep="Set DIDIT_API_KEY (or PERSONA_API_KEY) in your Supabase project Edge Function secrets.";
+        }else if(em.includes("redirect")||em.includes("webhook")){
+          userMsg="Verification redirect/webhook URL is not configured.";
+          nextStep="Set VERIFICATION_REDIRECT_URL and VERIFICATION_WEBHOOK_URL in Edge Function secrets.";
+        }else{
+          userMsg=errMsg||"Verification setup error. See debug panel below.";
+          nextStep="Check Supabase Edge Function logs for detail.";
+        }
+        setVerifyMsg(userMsg);
+        setVerifyDebug({provider,endpoint:"create-verification-session",status:httpStatus,error:errMsg,body,nextStep});
+        return;
+      }
+      if(data?.url){window.location.href=data.url;return;}
+      if(data?.error==="already_verified"){setVerifyMsg("Your account is already verified.");return;}
+      const fallbackErr=data?.error||data?.message||"No verification URL returned.";
+      console.error("Verification session failed",{data});
+      setVerifyMsg(fallbackErr);
+      setVerifyDebug({provider:data?.provider||"unknown",endpoint:"create-verification-session",status:200,error:fallbackErr,body:data,nextStep:"Check edge function — it returned 200 but no URL."});
+    }catch(e){
+      console.error("Verification session failed",e);
+      setVerifyMsg(e.message||"Unexpected error starting verification.");
+      setVerifyDebug({provider:"unknown",endpoint:"create-verification-session",status:null,error:e.message||String(e),nextStep:"Check browser console and Supabase Edge Function logs."});
+    }finally{setVerifying(false);}
+  };
 
   // Blocked — verification required
   if(!canPost){
@@ -4674,21 +4751,21 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
       <div style={{fontSize:44,marginBottom:16}}>🔒</div>
       <h2 style={{fontSize:22,fontWeight:800,marginBottom:10}}>Verification Required</h2>
       <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,marginBottom:8}}>To protect actors and performers, all casting creators must complete identity verification before publishing casting calls. Some accounts may require additional manual review.</p>
-      <p style={{color:"var(--t3)",fontSize:13,marginBottom:28}}>Your current status: <strong style={{color:"var(--acc)"}}>{myProfile?.verification_status||"not started"}</strong></p>
+      <p style={{color:"var(--t3)",fontSize:13,marginBottom:verifyMsg?12:28}}>Your current status: <strong style={{color:"var(--acc)"}}>{myProfile?.verification_status||"not started"}</strong></p>
+      {verifyMsg&&<div style={{marginBottom:verifyDebug?8:20,padding:"10px 14px",borderRadius:8,background:"rgba(231,76,60,0.07)",border:"1px solid rgba(231,76,60,0.22)",fontSize:13,color:"#c0392b",textAlign:"left",lineHeight:1.6}}>{verifyMsg}</div>}
+      {verifyDebug&&<div style={{marginBottom:20,padding:"12px 14px",borderRadius:8,background:"rgba(231,76,60,0.06)",border:"1px solid rgba(231,76,60,0.2)",textAlign:"left"}}>
+        <div style={{fontWeight:700,fontSize:11,marginBottom:8,color:"#c0392b",letterSpacing:.3}}>VERIFICATION SETUP ERROR</div>
+        <div style={{fontFamily:"monospace",fontSize:11,lineHeight:1.8}}>
+          <div><strong>Provider:</strong> {verifyDebug.provider}</div>
+          <div><strong>Endpoint:</strong> {verifyDebug.endpoint}</div>
+          {verifyDebug.status!=null&&<div><strong>HTTP status:</strong> {verifyDebug.status}</div>}
+          <div><strong>Error:</strong> {verifyDebug.error}</div>
+          {verifyDebug.body&&<div style={{marginTop:4}}><strong>Response body:</strong><pre style={{margin:"2px 0 0",whiteSpace:"pre-wrap",fontSize:10,opacity:.9}}>{JSON.stringify(verifyDebug.body,null,2)}</pre></div>}
+        </div>
+        <div style={{marginTop:8,fontSize:12,color:"#8e44ad",fontFamily:"sans-serif"}}><strong>Next step:</strong> {verifyDebug.nextStep}</div>
+      </div>}
       <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-        <button className="btn-p" onClick={async()=>{
-          try{
-            const{data,error}=await window.sb.functions.invoke("create-verification-session");
-            if(error)throw error;
-            if(data?.url){window.location.href=data.url;return;}
-            if(data?.error==="already_verified"){alert("Your account is already verified.");}
-            else{alert("Verification provider is not connected yet. Admin must connect Persona or Didit before live verification can begin.\n\nYour account has been flagged as pending. An admin will review your account and enable posting access.");}
-          }catch(e){
-            const m=(e.message||"").toLowerCase();
-            if(m.includes("already_verified")||m.includes("already verified")){alert("Your account is already verified.");}
-            else{alert("Verification provider is not connected yet. Admin must connect Persona or Didit before live verification can begin.\n\nYour account has been flagged as pending. An admin will review your account and enable posting access.");}
-          }
-        }}>Start Verification</button>
+        <button className="btn-p" onClick={startVerificationFromModal} disabled={verifying}>{verifying?"Starting…":"Start Verification"}</button>
         <button className="btn-s" onClick={onClose}>Close</button>
       </div>
     </div></div>);
