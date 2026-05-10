@@ -2878,11 +2878,21 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   //     transient network blip would clear results with no recovery. Now we keep the
   //     last good data on failure and surface the error to the user.
   const fetchCastings=useCallback(async()=>{
+    let timeoutId;
     try{
-      const {data:cs,error}=await window.sb.from("castings")
-        .select("*,roles(id,name,description,gender,age_range,ethnicity,pay)")
-        .eq("status","open").eq("published",true)
-        .order("created_at",{ascending:false});
+      // 10-second hard timeout — prevents infinite loading when Supabase
+      // doesn't respond (dropped connection, idle tab waking up, etc.)
+      const timeoutPromise=new Promise((_,reject)=>{
+        timeoutId=setTimeout(()=>reject(new Error("Request timed out. Please check your connection and try again.")),10000);
+      });
+      const {data:cs,error}=await Promise.race([
+        window.sb.from("castings")
+          .select("*,roles(id,name,description,gender,age_range,ethnicity,pay)")
+          .eq("status","open").eq("published",true)
+          .order("created_at",{ascending:false}),
+        timeoutPromise
+      ]);
+      clearTimeout(timeoutId);
       if(error)throw error;
       const mapped=(cs||[]).map(c=>({
         id:c.id,
@@ -2911,6 +2921,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       setFetchErr("");
       setLastFetchAt(Date.now());
     }catch(e){
+      clearTimeout(timeoutId);
       console.error("[SearchPage] castings fetch failed:",e);
       setFetchErr(e.message||"Could not load castings.");
       // Intentionally do NOT clear dbCastings — preserve last good state.
@@ -2956,15 +2967,18 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   },[refreshTick,castingsVersion,fetchCastings,fetchTalent]);
 
   // Refetch when tab becomes visible again — keeps castings list in sync after CD posts.
+  // visibilitychange fires on BOTH hide and show; guard to only refresh on show so we
+  // don't kick off a background fetch every time the user switches away from the tab.
   // Plus a 60s polling backstop in case realtime gets disconnected.
   useEffect(()=>{
     const onFocus=()=>setRefreshTick(t=>t+1);
+    const onVis=()=>{if(document.visibilityState==="visible")setRefreshTick(t=>t+1);};
     window.addEventListener("focus",onFocus);
-    document.addEventListener("visibilitychange",onFocus);
+    document.addEventListener("visibilitychange",onVis);
     const tid=setInterval(()=>{fetchCastings();fetchTalent();},60000);
     return()=>{
       window.removeEventListener("focus",onFocus);
-      document.removeEventListener("visibilitychange",onFocus);
+      document.removeEventListener("visibilitychange",onVis);
       clearInterval(tid);
     };
   },[fetchCastings,fetchTalent]);
@@ -2988,47 +3002,64 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{ft.length} results</p>
       <div className="results-grid">{ft.map(t=><div key={t.id} className="talent-thumb" onClick={()=>onViewProfile(t)}><img src={t.img} alt={t.name}/><div className="talent-thumb-info"><h4>{t.name}</h4><p>{t.age} · {t.gender} · {t.location}</p><div style={{marginTop:6}}><span className="tag" style={{fontSize:10}}>{t.union||"Non-Union"}</span></div></div></div>)}</div>
     </>:<>
-      <div className="filter-row"><select className="select" value={f.type} onChange={e=>setF(x=>({...x,type:e.target.value}))}><option value="">All Types</option><option>Film</option><option>TV</option><option>Theater</option><option>Commercial</option><option>Modeling</option></select><select className="select" value={f.location} onChange={e=>setF(x=>({...x,location:e.target.value}))}><option value="">All Locations</option><option value="New York">New York</option><option value="Los Angeles">Los Angeles</option><option value="Atlanta">Atlanta</option><option value="Miami">Miami</option></select><select className="select" value={f.union} onChange={e=>setF(x=>({...x,union:e.target.value}))}><option value="">All Union Status</option><option value="SAG-AFTRA">SAG-AFTRA</option><option value="AEA">AEA</option><option value="Non-Union">Non-Union</option></select></div>
-      {fetchErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
-        <span>Couldn't refresh castings: {fetchErr}{dbCastings.length>0?" — showing last loaded list.":""}</span>
-        <button className="btn-s btn-sm" onClick={()=>{setRefreshTick(t=>t+1);}}>Retry</button>
-      </div>}
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,gap:10,flexWrap:"wrap"}}>
-        <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{loading&&dbCastings.length===0?"Loading castings…":`Showing ${fc.length===0?0:(pg-1)*10+1}-${Math.min(pg*10,fc.length)} of ${fc.length} results`}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· updated {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
-        <button className="btn-s btn-sm" onClick={()=>setRefreshTick(t=>t+1)} disabled={loading}>{loading?"…":"↻ Refresh"}</button>
-      </div>
-      <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(c=>
-        <div key={c.id} className="card" style={{padding:0,overflow:"hidden",cursor:"pointer"}} onClick={()=>onViewCasting&&onViewCasting(c)}>
-          <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
-            <div>
-              <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
-                <span className="badge tag-acc">{c.type}</span>
-                <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.union}</span>
-                <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.roles?.length||1} {(c.roles?.length||1)===1?"role":"roles"}</span>
-              </div>
-              <h3 style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:4,color:"var(--t1)"}}>{c.title}</h3>
-              <p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{c.tagline||c.prod}</p>
-              <p style={{color:"var(--t3)",fontSize:12,marginBottom:14}}>{c.prod}</p>
-              <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6,marginBottom:16,maxWidth:620}}>{c.synopsis?c.synopsis.replace(/\*/g,"").slice(0,200)+(c.synopsis.length>200?"…":""):c.desc}</p>
-              <div style={{display:"flex",gap:20,flexWrap:"wrap",fontSize:12,color:"var(--t2)"}}>
-                <span><strong style={{color:"var(--t1)"}}>Location</strong> · {c.location}</span>
-                <span><strong style={{color:"var(--t1)"}}>Pay</strong> · {c.pay}</span>
-                <span><strong style={{color:"var(--t1)"}}>Deadline</strong> · {c.deadline}</span>
-              </div>
-            </div>
-            <div className="casting-card-row-side" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",minWidth:140}}>
-              <button className="btn-p" onClick={e=>{e.stopPropagation();onViewCasting&&onViewCasting(c);}}>View Roles →</button>
-              {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>✓ Applied</span>:null}
-              <span style={{color:"var(--t3)",fontSize:11,marginTop:4}}>{c.submissions} submissions</span>
-            </div>
+      {/* Full-height loading placeholder — only during initial load (no cached data).
+          Keeps the footer pinned to the bottom so it never flashes upward. */}
+      {loading&&dbCastings.length===0
+        ?<div style={{flex:"1 1 auto",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"calc(100vh - 260px)",gap:14}}>
+            <div style={{width:32,height:32,borderRadius:"50%",border:"3px solid var(--bdr)",borderTopColor:"var(--acc)",animation:"scSpin 0.8s linear infinite"}}></div>
+            <p style={{color:"var(--t2)",fontSize:14,margin:0}}>Loading castings…</p>
           </div>
-        </div>)}</div>
-      {fc.length>10&&(()=>{const tp=Math.ceil(fc.length/10);const pages=[];for(let i=1;i<=tp;i++)pages.push(i);return(
-        <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:6,marginTop:32,flexWrap:"wrap"}}>
-          <button className="btn-s btn-sm" disabled={pg===1} onClick={()=>{setPg(p=>Math.max(1,p-1));window.scrollTo(0,0);}} style={{opacity:pg===1?0.4:1}}>← Prev</button>
-          {pages.map(n=><button key={n} onClick={()=>{setPg(n);window.scrollTo(0,0);}} style={{minWidth:36,height:36,borderRadius:8,border:pg===n?"1px solid var(--acc)":"1px solid var(--bdr)",background:pg===n?"var(--acc)":"var(--s1)",color:pg===n?"#fff":"var(--t1)",fontWeight:600,fontSize:13,cursor:"pointer"}}>{n}</button>)}
-          <button className="btn-s btn-sm" disabled={pg===tp} onClick={()=>{setPg(p=>Math.min(tp,p+1));window.scrollTo(0,0);}} style={{opacity:pg===tp?0.4:1}}>Next →</button>
-        </div>);})()}
+        /* Full-height error state — only when fetch failed with no cached data to fall back to */
+        :!loading&&fetchErr&&dbCastings.length===0
+        ?<div style={{flex:"1 1 auto",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"calc(100vh - 260px)",gap:16,textAlign:"center",padding:"0 24px"}}>
+            <p style={{color:"var(--t1)",fontSize:16,fontWeight:700,margin:0}}>Castings could not load</p>
+            <p style={{color:"var(--t3)",fontSize:13,maxWidth:380,margin:0,lineHeight:1.6}}>{fetchErr}</p>
+            <button className="btn-p" onClick={()=>{setFetchErr("");setRefreshTick(t=>t+1);}}>Retry Loading Castings</button>
+          </div>
+        /* Normal state — castings loaded, or background-refreshing with cached list showing */
+        :<>
+          <div className="filter-row"><select className="select" value={f.type} onChange={e=>setF(x=>({...x,type:e.target.value}))}><option value="">All Types</option><option>Film</option><option>TV</option><option>Theater</option><option>Commercial</option><option>Modeling</option></select><select className="select" value={f.location} onChange={e=>setF(x=>({...x,location:e.target.value}))}><option value="">All Locations</option><option value="New York">New York</option><option value="Los Angeles">Los Angeles</option><option value="Atlanta">Atlanta</option><option value="Miami">Miami</option></select><select className="select" value={f.union} onChange={e=>setF(x=>({...x,union:e.target.value}))}><option value="">All Union Status</option><option value="SAG-AFTRA">SAG-AFTRA</option><option value="AEA">AEA</option><option value="Non-Union">Non-Union</option></select></div>
+          {fetchErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+            <span>Couldn't refresh castings: {fetchErr}{dbCastings.length>0?" — showing last loaded list.":""}</span>
+            <button className="btn-s btn-sm" onClick={()=>{setFetchErr("");setRefreshTick(t=>t+1);}}>Retry</button>
+          </div>}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,gap:10,flexWrap:"wrap"}}>
+            <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{`Showing ${fc.length===0?0:(pg-1)*10+1}–${Math.min(pg*10,fc.length)} of ${fc.length} results`}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· updated {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
+            <button className="btn-s btn-sm" onClick={()=>setRefreshTick(t=>t+1)} disabled={loading}>{loading?"…":"↻ Refresh"}</button>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(c=>
+            <div key={c.id} className="card" style={{padding:0,overflow:"hidden",cursor:"pointer"}} onClick={()=>onViewCasting&&onViewCasting(c)}>
+              <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
+                <div>
+                  <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
+                    <span className="badge tag-acc">{c.type}</span>
+                    <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.union}</span>
+                    <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.roles?.length||1} {(c.roles?.length||1)===1?"role":"roles"}</span>
+                  </div>
+                  <h3 style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:4,color:"var(--t1)"}}>{c.title}</h3>
+                  <p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{c.tagline||c.prod}</p>
+                  <p style={{color:"var(--t3)",fontSize:12,marginBottom:14}}>{c.prod}</p>
+                  <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6,marginBottom:16,maxWidth:620}}>{c.synopsis?c.synopsis.replace(/\*/g,"").slice(0,200)+(c.synopsis.length>200?"…":""):c.desc}</p>
+                  <div style={{display:"flex",gap:20,flexWrap:"wrap",fontSize:12,color:"var(--t2)"}}>
+                    <span><strong style={{color:"var(--t1)"}}>Location</strong> · {c.location}</span>
+                    <span><strong style={{color:"var(--t1)"}}>Pay</strong> · {c.pay}</span>
+                    <span><strong style={{color:"var(--t1)"}}>Deadline</strong> · {c.deadline}</span>
+                  </div>
+                </div>
+                <div className="casting-card-row-side" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",minWidth:140}}>
+                  <button className="btn-p" onClick={e=>{e.stopPropagation();onViewCasting&&onViewCasting(c);}}>View Roles →</button>
+                  {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>✓ Applied</span>:null}
+                  <span style={{color:"var(--t3)",fontSize:11,marginTop:4}}>{c.submissions} submissions</span>
+                </div>
+              </div>
+            </div>)}</div>
+          {fc.length>10&&(()=>{const tp=Math.ceil(fc.length/10);const pages=[];for(let i=1;i<=tp;i++)pages.push(i);return(
+            <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:6,marginTop:32,flexWrap:"wrap"}}>
+              <button className="btn-s btn-sm" disabled={pg===1} onClick={()=>{setPg(p=>Math.max(1,p-1));window.scrollTo(0,0);}} style={{opacity:pg===1?0.4:1}}>← Prev</button>
+              {pages.map(n=><button key={n} onClick={()=>{setPg(n);window.scrollTo(0,0);}} style={{minWidth:36,height:36,borderRadius:8,border:pg===n?"1px solid var(--acc)":"1px solid var(--bdr)",background:pg===n?"var(--acc)":"var(--s1)",color:pg===n?"#fff":"var(--t1)",fontWeight:600,fontSize:13,cursor:"pointer"}}>{n}</button>)}
+              <button className="btn-s btn-sm" disabled={pg===tp} onClick={()=>{setPg(p=>Math.min(tp,p+1));window.scrollTo(0,0);}} style={{opacity:pg===tp?0.4:1}}>Next →</button>
+            </div>);})()}
+        </>}
     </>}
     {applyTo&&<div className="modal-overlay" onClick={()=>setApplyTo(null)}><div className="modal" onClick={e=>e.stopPropagation()}><h2>Submit for Role</h2><div style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:20}}><h4 style={{fontSize:14,fontWeight:700}}>{applyTo.title}</h4><p style={{color:"var(--t2)",fontSize:12,marginTop:2}}>{applyTo.prod} · {applyTo.location}</p></div><div className="form-group"><label className="label">Cover Note (Optional)</label><textarea className="textarea" placeholder="Tell the casting director why you're right for this role..."></textarea></div><div className="form-group"><label className="label">Which headshot?</label><div style={{display:"flex",gap:10,marginTop:8}}><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"2px solid var(--acc)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t2)",textAlign:"center",padding:4}}>Primary</div><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t3)",textAlign:"center",padding:4,cursor:"pointer"}}>+ Add</div></div></div><div style={{display:"flex",gap:12,marginTop:24}}><button className="btn-p" style={{flex:1}} onClick={()=>{setApplied(p=>new Set([...p,applyTo.id]));setApplyTo(null);}}>Submit Application</button><button className="btn-s" onClick={()=>setApplyTo(null)}>Cancel</button></div></div></div>}
     <Footer onNavigate={onNavigate}/></div>);
