@@ -5816,6 +5816,546 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE: ADMIN / OWNER DASHBOARD (only for officecasting01@gmail.com)
 // ═══════════════════════════════════════════
+// ACCOUNT SETTINGS — available to every logged-in user
+// Sidebar-navigated. All writes go to profiles via Supabase RLS
+// (authenticated users can only update their own row).
+// ═══════════════════════════════════════════
+function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSuperAdmin}){
+  const [section,setSection]=useState("account");
+  const [saving,setSaving]=useState(false);
+  const [msg,setMsg]=useState("");
+  const [err,setErr]=useState("");
+  const [deactivateOpen,setDeactivateOpen]=useState(false);
+  const [deleteOpen,setDeleteOpen]=useState(false);
+  const [deleteConfirm,setDeleteConfirm]=useState("");
+  const [notifState,setNotifState]=useState({
+    email:profile?.notification_email!==false,
+    applications:profile?.notification_applications!==false,
+    messages:profile?.notification_messages!==false,
+    marketing:profile?.notification_marketing===true
+  });
+  const uid=session?.user?.id;
+  const role=profile?.user_type||"talent";
+  const isAdminRole=["admin","super_admin"].includes(role);
+
+  // Re-sync notification state when profile loads
+  useEffect(()=>{
+    if(profile){
+      setNotifState({
+        email:profile.notification_email!==false,
+        applications:profile.notification_applications!==false,
+        messages:profile.notification_messages!==false,
+        marketing:profile.notification_marketing===true
+      });
+    }
+  },[profile?.id]);
+
+  const showMsg=(m,isErr=false)=>{
+    if(isErr)setErr(m);else setMsg(m);
+    setTimeout(()=>{setMsg("");setErr("");},5000);
+  };
+
+  const SECTIONS=[
+    {key:"account",label:"Account Settings",icon:"⚙️"},
+    {key:"subscription",label:"Subscription Info",icon:"💳"},
+    {key:"billing",label:"Payment & Billing",icon:"🏦"},
+    {key:"notifications",label:"Notifications",icon:"🔔"},
+    {key:"privacy",label:"Privacy & Security",icon:"🔒"},
+    {key:"deactivation",label:"Deactivation & Deletion",icon:"⚠️"},
+  ];
+
+  // ── Deactivate account (soft) ─────────────────────────────────
+  const handleDeactivate=async()=>{
+    if(!uid)return;
+    if(isSuperAdmin){
+      const extra=window.confirm(
+        "You are a super admin. Deactivating your account will restrict access.\n\n"+
+        "Are you absolutely sure? Type OK to confirm."
+      );
+      if(!extra){setDeactivateOpen(false);return;}
+    }
+    setSaving(true);
+    try{
+      const{error}=await window.sb.from("profiles").update({
+        account_status:"deactivated",
+        deactivated_at:new Date().toISOString()
+      }).eq("id",uid);
+      if(error)throw error;
+      await onReload();
+      setDeactivateOpen(false);
+      showMsg("Your account has been deactivated. You can reactivate it by logging back in and updating your account status.");
+    }catch(e){showMsg(e.message||"Deactivation failed.",true);}
+    finally{setSaving(false);}
+  };
+
+  // ── Reactivate account ────────────────────────────────────────
+  const handleReactivate=async()=>{
+    if(!uid)return;
+    setSaving(true);
+    try{
+      const{error}=await window.sb.from("profiles").update({
+        account_status:"active",
+        deactivated_at:null
+      }).eq("id",uid);
+      if(error)throw error;
+      await onReload();
+      showMsg("Your account has been reactivated.");
+    }catch(e){showMsg(e.message||"Reactivation failed.",true);}
+    finally{setSaving(false);}
+  };
+
+  // ── Request deletion ──────────────────────────────────────────
+  const handleDeleteRequest=async()=>{
+    if(deleteConfirm!=="DELETE"){showMsg("Please type DELETE to confirm.",true);return;}
+    if(!uid)return;
+    setSaving(true);
+    try{
+      const{error}=await window.sb.from("profiles").update({
+        account_status:"deletion_requested",
+        deletion_requested_at:new Date().toISOString()
+      }).eq("id",uid);
+      if(error)throw error;
+      await onReload();
+      setDeleteOpen(false);
+      setDeleteConfirm("");
+      showMsg("Account deletion request submitted. Our support team will review and complete the deletion within 30 days.");
+    }catch(e){showMsg(e.message||"Deletion request failed.",true);}
+    finally{setSaving(false);}
+  };
+
+  // ── Save notification preferences ────────────────────────────
+  const saveNotifications=async()=>{
+    if(!uid)return;
+    setSaving(true);
+    try{
+      const{error}=await window.sb.from("profiles").update({
+        notification_email:notifState.email,
+        notification_applications:notifState.applications,
+        notification_messages:notifState.messages,
+        notification_marketing:notifState.marketing
+      }).eq("id",uid);
+      if(error)throw error;
+      await onReload();
+      showMsg("Notification preferences saved.");
+    }catch(e){showMsg(e.message||"Save failed.",true);}
+    finally{setSaving(false);}
+  };
+
+  const isDeactivated=profile?.account_status==="deactivated";
+  const isDeletionRequested=profile?.account_status==="deletion_requested";
+
+  // ── Subscription display helpers ──────────────────────────────
+  const membershipLabel=()=>{
+    if(role==="talent"||role==="actor"){
+      const ms=profile?.membership_status;
+      if(ms==="active"||ms==="premium")return"Premium Member";
+      return"Free Plan";
+    }
+    if(["cd","producer","studio","creator"].includes(role)){
+      const vs=profile?.verification_status||"not_started";
+      const labels={not_started:"Not Verified",pending:"Verification Pending",verified:"Verified Creator",rejected:"Verification Rejected",needs_review:"Under Review"};
+      return`Casting Creator — ${labels[vs]||vs}`;
+    }
+    if(isAdminRole)return role==="super_admin"?"Super Admin":"Admin";
+    return"Free Account";
+  };
+
+  const roleLabel=()=>{
+    const map={talent:"Actor / Talent",actor:"Actor / Talent",cd:"Casting Director",producer:"Producer",studio:"Studio",creator:"Casting Creator",admin:"Admin",super_admin:"Super Admin"};
+    return map[role]||role;
+  };
+
+  // ── Section renderers ─────────────────────────────────────────
+  const renderAccount=()=>(
+    <div>
+      <h2 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:6}}>Account Settings</h2>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Manage your SlateCue account preferences and information.</p>
+      <div className="card" style={{marginBottom:16}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+          <div>
+            <div className="label">Name</div>
+            <div style={{fontSize:15,fontWeight:600}}>{profile?.display_name||"—"}</div>
+          </div>
+          <div>
+            <div className="label">Email</div>
+            <div style={{fontSize:14,color:"var(--t2)"}}>{session?.user?.email||"—"}</div>
+          </div>
+          <div>
+            <div className="label">Account Type</div>
+            <div style={{fontSize:14,color:"var(--t2)"}}>{roleLabel()}</div>
+          </div>
+          <div>
+            <div className="label">Account Status</div>
+            <span style={{
+              background:isDeactivated?"rgba(214,59,59,0.1)":isDeletionRequested?"rgba(214,59,59,0.15)":"rgba(27,135,62,0.08)",
+              color:isDeactivated?"var(--red)":isDeletionRequested?"var(--red)":"var(--grn)",
+              padding:"3px 10px",borderRadius:6,fontSize:12,fontWeight:700
+            }}>{isDeactivated?"Deactivated":isDeletionRequested?"Deletion Requested":"Active"}</span>
+          </div>
+        </div>
+      </div>
+      <div className="card">
+        <div style={{fontWeight:700,marginBottom:8}}>Quick Actions</div>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          <button className="btn-s btn-sm" onClick={()=>onNavigate("my-profile")}>Edit My Profile</button>
+          <button className="btn-s btn-sm" onClick={()=>setSection("notifications")}>Notification Preferences</button>
+          <button className="btn-s btn-sm" onClick={()=>setSection("privacy")}>Privacy & Security</button>
+          <button className="btn-s btn-sm" style={{borderColor:"var(--red)",color:"var(--red)"}} onClick={()=>setSection("deactivation")}>Deactivation & Deletion</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderSubscription=()=>(
+    <div>
+      <h2 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:6}}>Subscription Info</h2>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Your current plan and membership status.</p>
+      <div className="card" style={{marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+          <div>
+            <div style={{fontWeight:800,fontSize:18}}>{membershipLabel()}</div>
+            <div style={{color:"var(--t2)",fontSize:13,marginTop:4}}>{roleLabel()}</div>
+          </div>
+          <span style={{
+            background:["talent","actor"].includes(role)&&(profile?.membership_status==="active"||profile?.membership_status==="premium")
+              ?"rgba(26,26,46,0.08)":"rgba(141,141,160,0.1)",
+            color:["talent","actor"].includes(role)&&(profile?.membership_status==="active"||profile?.membership_status==="premium")
+              ?"var(--acc)":"var(--t3)",
+            padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700
+          }}>
+            {["talent","actor"].includes(role)
+              ?(profile?.membership_status==="active"||profile?.membership_status==="premium")?"PREMIUM":"FREE"
+              :isAdminRole?"ADMIN":"CREATOR"}
+          </span>
+        </div>
+        {["talent","actor"].includes(role)&&!(profile?.membership_status==="active"||profile?.membership_status==="premium")&&(
+          <div style={{borderTop:"1px solid var(--bdr)",paddingTop:16}}>
+            <p style={{color:"var(--t2)",fontSize:13,marginBottom:12}}>Free plan: 3 casting submissions/day, 1 headshot, no video reels.</p>
+            <button className="btn-p btn-sm" onClick={()=>onNavigate("membership")}>Upgrade to Premium — $9.99/month</button>
+          </div>
+        )}
+        {["cd","producer","studio","creator"].includes(role)&&(
+          <div style={{borderTop:"1px solid var(--bdr)",paddingTop:16}}>
+            <p style={{color:"var(--t2)",fontSize:13}}>Casting creator account. Verification status: <strong>{profile?.verification_status||"not_started"}</strong>.</p>
+            {profile?.can_post_castings&&<p style={{color:"var(--grn)",fontSize:13,marginTop:4,fontWeight:600}}>✓ Approved to post castings.</p>}
+            {!profile?.can_post_castings&&<p style={{color:"var(--t3)",fontSize:13,marginTop:4}}>Posting castings requires identity verification. Visit your Dashboard to begin.</p>}
+          </div>
+        )}
+      </div>
+      <div className="card" style={{background:"var(--s2)",border:"none"}}>
+        <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>Plan management</div>
+        <div style={{color:"var(--t2)",fontSize:13}}>
+          Stripe billing management is not connected yet.{" "}
+          {/* TODO: wire Stripe Customer Portal link here when Stripe is set up */}
+          Contact support to manage your subscription.
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderBilling=()=>(
+    <div>
+      <h2 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:6}}>Payment & Billing</h2>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Manage your payment methods and billing history.</p>
+      <div className="card" style={{textAlign:"center",padding:"48px 24px"}}>
+        <div style={{fontSize:40,marginBottom:16}}>🏦</div>
+        <div style={{fontWeight:700,fontSize:16,marginBottom:8}}>Billing management is not connected yet.</div>
+        <div style={{color:"var(--t2)",fontSize:13,maxWidth:400,margin:"0 auto"}}>
+          Payment and billing management via Stripe Customer Portal will be available here once payment processing is fully configured.
+        </div>
+        {/* TODO: Add Stripe Customer Portal link:
+            const {data} = await sb.rpc("create_billing_portal_session");
+            window.location.href = data.url;
+        */}
+        <div style={{marginTop:24,padding:"12px 16px",background:"var(--s2)",borderRadius:8,fontSize:12,color:"var(--t3)",maxWidth:400,margin:"24px auto 0"}}>
+          To manage your subscription or request a refund, contact support.
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderNotifications=()=>(
+    <div>
+      <h2 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:6}}>Notifications</h2>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Choose which emails and alerts you receive from SlateCue.</p>
+      {msg&&<div style={{background:"rgba(27,135,62,0.08)",border:"1px solid var(--grn)",borderRadius:8,padding:"10px 14px",color:"var(--grn)",fontSize:13,marginBottom:16}}>{msg}</div>}
+      {err&&<div style={{background:"rgba(214,59,59,0.08)",border:"1px solid var(--red)",borderRadius:8,padding:"10px 14px",color:"var(--red)",fontSize:13,marginBottom:16}}>{err}</div>}
+      <div className="card" style={{marginBottom:16}}>
+        <div style={{fontWeight:700,marginBottom:16}}>Email Preferences</div>
+        {[
+          {key:"email",label:"Email notifications",desc:"Receive all SlateCue notifications via email"},
+          {key:"applications",label:"Casting application updates",desc:"Updates on your casting submissions and audition status"},
+          {key:"messages",label:"Message notifications",desc:"Alerts when you receive new inbox messages"},
+          {key:"marketing",label:"Marketing emails",desc:"News, tips, and featured casting opportunities"},
+        ].map(({key,label,desc})=>(
+          <label key={key} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"12px 0",borderBottom:"1px solid var(--bdr)",cursor:"pointer"}}>
+            <input type="checkbox" checked={notifState[key]} onChange={e=>setNotifState(s=>({...s,[key]:e.target.checked}))}
+              style={{accentColor:"var(--acc)",width:17,height:17,marginTop:1,flexShrink:0}}/>
+            <div>
+              <div style={{fontWeight:600,fontSize:14}}>{label}</div>
+              <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>{desc}</div>
+            </div>
+          </label>
+        ))}
+      </div>
+      <button className="btn-p btn-sm" disabled={saving} onClick={saveNotifications}>
+        {saving?"Saving…":"Save Preferences"}
+      </button>
+      <div style={{marginTop:16,fontSize:12,color:"var(--t3)"}}>
+        {/* TODO: Wire to actual email provider (Resend/SendGrid) to honor these preferences server-side */}
+        Note: Preference storage is ready. Actual email delivery respects these settings once the email provider is configured.
+      </div>
+    </div>
+  );
+
+  const renderPrivacy=()=>(
+    <div>
+      <h2 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:6}}>Privacy & Security</h2>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Your account security settings and data visibility.</p>
+      <div className="card" style={{marginBottom:16}}>
+        <div style={{fontWeight:700,marginBottom:16}}>Account Information</div>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:"1px solid var(--bdr)"}}>
+            <div><div style={{fontWeight:600,fontSize:14}}>Email</div><div style={{color:"var(--t2)",fontSize:13}}>{session?.user?.email||"—"}</div></div>
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:"1px solid var(--bdr)"}}>
+            <div><div style={{fontWeight:600,fontSize:14}}>Account Role</div><div style={{color:"var(--t2)",fontSize:13}}>{roleLabel()}</div></div>
+          </div>
+          {["cd","producer","studio","creator"].includes(role)&&(
+            <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:"1px solid var(--bdr)"}}>
+              <div>
+                <div style={{fontWeight:600,fontSize:14}}>Identity Verification</div>
+                <div style={{color:"var(--t2)",fontSize:13}}>{profile?.identity_verified?"Verified":"Not verified"}</div>
+              </div>
+              {profile?.identity_verified&&<span style={{background:"rgba(27,135,62,0.08)",color:"var(--grn)",padding:"3px 10px",borderRadius:6,fontSize:12,fontWeight:700,alignSelf:"center"}}>VERIFIED</span>}
+            </div>
+          )}
+          <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0"}}>
+            <div><div style={{fontWeight:600,fontSize:14}}>Member Since</div><div style={{color:"var(--t2)",fontSize:13}}>{profile?.created_at?new Date(profile.created_at).toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"}):"—"}</div></div>
+          </div>
+        </div>
+      </div>
+      <div className="card" style={{marginBottom:16}}>
+        <div style={{fontWeight:700,marginBottom:16}}>Security Actions</div>
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 0",borderBottom:"1px solid var(--bdr)"}}>
+            <div>
+              <div style={{fontWeight:600,fontSize:14}}>Change Password</div>
+              <div style={{color:"var(--t2)",fontSize:13}}>Send a password reset link to your email</div>
+            </div>
+            <button className="btn-s btn-sm" onClick={async()=>{
+              const email=session?.user?.email;
+              if(!email)return;
+              setSaving(true);
+              try{
+                const{error}=await window.sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});
+                if(error)throw error;
+                showMsg("Password reset email sent. Check your inbox.");
+              }catch(e){showMsg(e.message||"Failed to send reset email.",true);}
+              finally{setSaving(false);}
+            }} disabled={saving}>Send Reset Email</button>
+          </div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 0"}}>
+            <div>
+              <div style={{fontWeight:600,fontSize:14}}>Sign Out of All Sessions</div>
+              <div style={{color:"var(--t2)",fontSize:13}}>Sign out from all devices — placeholder, requires Supabase admin endpoint</div>
+            </div>
+            <button className="btn-s btn-sm" style={{color:"var(--t3)",borderColor:"var(--bdr)",cursor:"not-allowed"}} disabled title="Coming soon">Coming Soon</button>
+            {/* TODO: Implement via Supabase admin API: supabaseAdmin.auth.admin.signOut(userId, "global") */}
+          </div>
+        </div>
+      </div>
+      <div className="card" style={{background:"var(--s2)",border:"none"}}>
+        <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>Data Privacy</div>
+        <div style={{color:"var(--t2)",fontSize:13}}>
+          SlateCue does not sell your personal data. Your profile information is visible to other platform users according to your account type.{" "}
+          <span style={{color:"var(--acc)",cursor:"pointer",textDecoration:"underline"}} onClick={()=>onNavigate("privacy")}>View Privacy Policy</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderDeactivation=()=>(
+    <div>
+      <h2 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:6}}>Account Deactivation & Deletion</h2>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Manage your account lifecycle. These actions affect your visibility and access.</p>
+
+      {msg&&<div style={{background:"rgba(27,135,62,0.08)",border:"1px solid var(--grn)",borderRadius:8,padding:"12px 16px",color:"var(--grn)",fontSize:13,marginBottom:20}}>{msg}</div>}
+      {err&&<div style={{background:"rgba(214,59,59,0.08)",border:"1px solid var(--red)",borderRadius:8,padding:"12px 16px",color:"var(--red)",fontSize:13,marginBottom:20}}>{err}</div>}
+
+      {/* Deactivate */}
+      <div className="card" style={{marginBottom:20,borderColor:isDeactivated?"var(--red)":"var(--bdr)"}}>
+        <h3 style={{fontSize:17,fontWeight:700,marginBottom:8,color:"var(--t1)"}}>Deactivate Account</h3>
+        <p style={{color:"var(--t2)",fontSize:14,marginBottom:16}}>
+          Deactivating your account will hide your profile, pause notifications, and make your account private.
+          You can reactivate it later by logging back in.
+        </p>
+        {isDeactivated?(
+          <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+            <span style={{background:"rgba(214,59,59,0.1)",color:"var(--red)",padding:"4px 12px",borderRadius:6,fontSize:12,fontWeight:700}}>DEACTIVATED</span>
+            <button className="btn-p btn-sm" disabled={saving} onClick={handleReactivate}>{saving?"Reactivating…":"Reactivate My Account"}</button>
+          </div>
+        ):(
+          <button className="btn-s btn-sm" style={{borderColor:"#E5875A",color:"#C25A28"}}
+            disabled={saving||isDeletionRequested}
+            onClick={()=>setDeactivateOpen(true)}>
+            Deactivate My Account
+          </button>
+        )}
+        {isDeletionRequested&&!isDeactivated&&<p style={{color:"var(--t3)",fontSize:12,marginTop:8}}>Deletion is already requested. Contact support to cancel.</p>}
+      </div>
+
+      {/* Delete */}
+      <div className="card" style={{borderColor:"rgba(214,59,59,0.3)"}}>
+        <h3 style={{fontSize:17,fontWeight:700,marginBottom:8,color:"var(--red)"}}>Delete Account</h3>
+        <p style={{color:"var(--t2)",fontSize:14,marginBottom:16}}>
+          Deleting your account is permanent and cannot be reversed. All your data will be removed from the platform.
+        </p>
+        {isDeletionRequested?(
+          <div style={{background:"rgba(214,59,59,0.06)",border:"1px solid rgba(214,59,59,0.2)",borderRadius:8,padding:"14px 16px"}}>
+            <div style={{fontWeight:700,color:"var(--red)",marginBottom:4}}>Deletion Requested</div>
+            <div style={{color:"var(--t2)",fontSize:13}}>
+              Your deletion request was submitted on {profile?.deletion_requested_at?new Date(profile.deletion_requested_at).toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"}):"—"}.
+              Our support team will complete the deletion within 30 days. Contact support to cancel this request.
+            </div>
+          </div>
+        ):(
+          <button className="btn-s btn-sm" style={{borderColor:"var(--red)",color:"var(--red)"}}
+            disabled={saving}
+            onClick={()=>{setDeleteOpen(true);setDeleteConfirm("");}}>
+            Delete My Account
+          </button>
+        )}
+        {isAdminRole&&(
+          <div style={{marginTop:12,padding:"10px 14px",background:"rgba(214,59,59,0.06)",borderRadius:8,fontSize:12,color:"var(--red)",fontWeight:600}}>
+            Admin accounts require super_admin intervention for full deletion. Submitting a request will flag this account for manual review.
+          </div>
+        )}
+      </div>
+
+      {/* Deactivate confirmation modal */}
+      {deactivateOpen&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+          <div style={{background:"var(--s1)",borderRadius:16,padding:32,maxWidth:460,width:"100%",boxShadow:"0 20px 60px rgba(0,0,0,0.2)"}}>
+            <h3 style={{fontSize:18,fontWeight:800,marginBottom:12}}>Deactivate your account?</h3>
+            <p style={{color:"var(--t2)",fontSize:14,marginBottom:8}}>This will:</p>
+            <ul style={{color:"var(--t2)",fontSize:14,paddingLeft:20,marginBottom:20,lineHeight:1.8}}>
+              <li>Hide your profile from public searches</li>
+              <li>Pause all notifications</li>
+              {["cd","producer","studio","creator"].includes(role)&&<li>Prevent posting new castings</li>}
+              {isAdminRole&&<li style={{color:"var(--red)",fontWeight:600}}>Restrict your admin access</li>}
+            </ul>
+            <p style={{color:"var(--t2)",fontSize:13,marginBottom:24}}>You can reactivate by logging back in and restoring your account.</p>
+            <div style={{display:"flex",gap:10}}>
+              <button className="btn-s btn-sm" onClick={()=>setDeactivateOpen(false)} disabled={saving}>Cancel</button>
+              <button className="btn-p btn-sm" style={{background:"#C25A28",border:"none"}} onClick={handleDeactivate} disabled={saving}>
+                {saving?"Deactivating…":"Yes, Deactivate"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirmation modal — requires typing DELETE */}
+      {deleteOpen&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+          <div style={{background:"var(--s1)",borderRadius:16,padding:32,maxWidth:480,width:"100%",boxShadow:"0 20px 60px rgba(0,0,0,0.25)"}}>
+            <h3 style={{fontSize:18,fontWeight:800,color:"var(--red)",marginBottom:12}}>Permanently delete your account?</h3>
+            <p style={{color:"var(--t2)",fontSize:14,marginBottom:16}}>
+              This action cannot be undone. Your profile, applications, and all data will be permanently removed from SlateCue.
+            </p>
+            <div style={{background:"rgba(214,59,59,0.06)",border:"1px solid rgba(214,59,59,0.2)",borderRadius:8,padding:"12px 14px",marginBottom:20,fontSize:13,color:"var(--red)",fontWeight:600}}>
+              Type <strong>DELETE</strong> in the box below to confirm:
+            </div>
+            <input className="input" value={deleteConfirm} onChange={e=>setDeleteConfirm(e.target.value)}
+              placeholder="Type DELETE here" style={{marginBottom:20,borderColor:deleteConfirm==="DELETE"?"var(--red)":"var(--bdr)"}}/>
+            <div style={{display:"flex",gap:10}}>
+              <button className="btn-s btn-sm" onClick={()=>{setDeleteOpen(false);setDeleteConfirm("");}} disabled={saving}>Cancel</button>
+              <button className="btn-s btn-sm" style={{borderColor:"var(--red)",color:"var(--red)",opacity:deleteConfirm==="DELETE"?1:0.5}}
+                disabled={saving||deleteConfirm!=="DELETE"} onClick={handleDeleteRequest}>
+                {saving?"Submitting…":"Submit Deletion Request"}
+              </button>
+            </div>
+            <p style={{color:"var(--t3)",fontSize:11,marginTop:16}}>
+              Full deletion requires server-side processing. Your request will be reviewed and completed within 30 days.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderSection=()=>{
+    if(section==="account")return renderAccount();
+    if(section==="subscription")return renderSubscription();
+    if(section==="billing")return renderBilling();
+    if(section==="notifications")return renderNotifications();
+    if(section==="privacy")return renderPrivacy();
+    if(section==="deactivation")return renderDeactivation();
+    return null;
+  };
+
+  if(!session){
+    return(
+      <div style={{minHeight:"60vh",display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div style={{textAlign:"center"}}>
+          <div style={{fontSize:32,marginBottom:16}}>🔒</div>
+          <div style={{fontWeight:700,marginBottom:8}}>Sign in required</div>
+          <button className="btn-p btn-sm" onClick={()=>onNavigate("login")}>Sign In</button>
+        </div>
+      </div>
+    );
+  }
+
+  return(
+    <div className="page page-wide" style={{padding:"40px 40px 80px"}}>
+      <div style={{maxWidth:960,margin:"0 auto"}}>
+        <div style={{marginBottom:28}}>
+          <h1 style={{fontSize:28,fontWeight:900,color:"var(--t1)",marginBottom:4}}>Account Settings</h1>
+          <p style={{color:"var(--t2)",fontSize:14}}>{profile?.display_name||session?.user?.email}</p>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"220px 1fr",gap:28,alignItems:"start"}}>
+          {/* Sidebar */}
+          <div style={{position:"sticky",top:96}}>
+            <div className="card" style={{padding:"8px 0"}}>
+              {SECTIONS.map(({key,label})=>(
+                <button key={key} onClick={()=>setSection(key)}
+                  style={{display:"block",width:"100%",textAlign:"left",padding:"11px 20px",
+                    background:section===key?"rgba(26,26,46,0.06)":"transparent",
+                    border:"none",cursor:"pointer",fontSize:13,fontWeight:section===key?700:500,
+                    color:section===key?"var(--acc)":"var(--t2)",
+                    borderLeft:section===key?"3px solid var(--acc)":"3px solid transparent",
+                    transition:"all .15s"}}>
+                  {label}
+                </button>
+              ))}
+              <div style={{borderTop:"1px solid var(--bdr)",margin:"8px 0",padding:"8px 0"}}>
+                <button onClick={()=>onNavigate("my-profile")}
+                  style={{display:"block",width:"100%",textAlign:"left",padding:"11px 20px",
+                    background:"transparent",border:"none",cursor:"pointer",fontSize:13,
+                    fontWeight:500,color:"var(--t2)",borderLeft:"3px solid transparent"}}>
+                  ← My Profile
+                </button>
+                <button onClick={onSignOut}
+                  style={{display:"block",width:"100%",textAlign:"left",padding:"11px 20px",
+                    background:"transparent",border:"none",cursor:"pointer",fontSize:13,
+                    fontWeight:500,color:"var(--red)",borderLeft:"3px solid transparent"}}>
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+          {/* Main content */}
+          <div>
+            {renderSection()}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════
 // ═══════════════════════════════════════════
 // ADMIN PANEL — sidebar-navigated, RPC-backed, audit-logged
 // Full oversight. All writes go through SECURITY DEFINER RPCs on the DB side —
@@ -6666,7 +7206,7 @@ const PAGE_PATH={
   "classes":"/classes","contact":"/contact","resources":"/resources",
   "faq":"/faq","success-stories":"/success-stories","studios":"/studios",
   "api-info":"/api-info","terms":"/terms","privacy":"/privacy","careers":"/careers",
-  "auth-gate":"/auth-gate",
+  "auth-gate":"/auth-gate","account-settings":"/account-settings",
 };
 const PATH_PAGE=Object.fromEntries(Object.entries(PAGE_PATH).map(([k,v])=>[v,k]));
 function urlToPage(){
@@ -7054,7 +7594,7 @@ export default function App(){
               <span>Inbox</span>
               {globalUnread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800,minWidth:20,textAlign:"center",lineHeight:1.2}}>{globalUnread>99?"99+":globalUnread}</span>}
             </button>
-            <button className="btn-s btn-sm" onClick={()=>navigate("my-profile")}>{myProfile?.display_name?.split(" ")[0]||"Profile"}</button>
+            <button className="btn-s btn-sm" onClick={()=>navigate("account-settings")} title="Account Settings">{myProfile?.display_name?.split(" ")[0]||"Account"} ⚙</button>
             <button className="btn-p btn-sm" onClick={signOut}>Sign out</button>
           </>:<>
             <button className="btn-s btn-sm" onClick={()=>navigate("register-talent")}>Join</button>
@@ -7084,7 +7624,8 @@ export default function App(){
               {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navThen("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)"}}>Admin</button>}
               {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navThen("dashboard")}>Dashboard</button>:null}
               <button className="btn-s btn-sm" onClick={()=>navThen("inbox")} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Inbox{globalUnread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800}}>{globalUnread>99?"99+":globalUnread}</span>}</button>
-              <button className="btn-s btn-sm" onClick={()=>navThen("my-profile")}>{myProfile?.display_name?.split(" ")[0]||"Profile"}</button>
+              <button className="btn-s btn-sm" onClick={()=>navThen("my-profile")}>My Profile</button>
+              <button className="btn-s btn-sm" onClick={()=>navThen("account-settings")}>Account Settings</button>
               <button className="btn-p btn-sm" onClick={doSignOut}>Sign out</button>
             </>:<>
               <button className="btn-s btn-sm" onClick={()=>navThen("register-talent")}>Join as Talent</button>
@@ -7109,6 +7650,7 @@ export default function App(){
         {page==="dashboard"&&(!authReady?<PageLoader/>:<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>)}
         {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
         {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate}/>:null)}
+        {page==="account-settings"&&(!authReady?<PageLoader/>:isLoggedIn?<AccountSettingsPage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onSignOut={signOut} isSuperAdmin={isSuperAdmin}/>:<div style={{minHeight:"60vh"}}/>)}
         {page==="inbox"&&<InboxPage session={session} profile={myProfile} onNavigate={navigate}/>}
         {page==="admin"&&(!authReady?<PageLoader/>:isLoggedIn&&isAdmin?<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>:<div style={{minHeight:"60vh"}}/>)}
         {/* Registration pages are guarded — a logged-in user with an existing

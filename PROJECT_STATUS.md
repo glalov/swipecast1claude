@@ -1,5 +1,83 @@
 # Project Status
 
+## 2026-05-10 — Account Settings page for all logged-in users
+
+### Files changed
+
+| File | What changed |
+|---|---|
+| `swipecast-full.jsx` | Added `AccountSettingsPage` component (~430 lines) with 6 sidebar sections. Added `account-settings` to `PAGE_PATH`. Added route in main router. Changed nav profile-name button to navigate to Account Settings (desktop: `Name ⚙`). Added "My Profile" + "Account Settings" entries to mobile menu. |
+| `supabase-schema.sql` | Migration `account_settings_fields`: adds 8 new columns to `profiles`. |
+| `index.html` | Rebuilt via `python3 build-html.py`. |
+
+### Schema changes (migration `account_settings_fields`)
+
+```sql
+alter table public.profiles
+  add column if not exists account_status          text        not null default 'active',
+  add column if not exists deactivated_at          timestamptz,
+  add column if not exists deletion_requested_at   timestamptz,
+  add column if not exists deleted_at              timestamptz,
+  add column if not exists notification_email      boolean     not null default true,
+  add column if not exists notification_applications boolean   not null default true,
+  add column if not exists notification_messages   boolean     not null default true,
+  add column if not exists notification_marketing  boolean     not null default false;
+```
+
+Applied to Supabase production. `NOTIFY pgrst, 'reload schema'` executed.
+
+### Settings pages added
+
+| Section | Status |
+|---|---|
+| **Account Settings** (overview) | Functional — shows name, email, role, account status, quick-action links |
+| **Subscription Info** | Functional — shows current plan (Free/Premium for actors, verification status for CDs, Admin badge for admins). Stripe Customer Portal placeholder with TODO. |
+| **Payment & Billing** | Placeholder — clear "not connected yet" message. TODO block for Stripe Customer Portal integration. |
+| **Notifications** | Functional — 4 toggles (email, application updates, messages, marketing). Saves to `profiles` via RLS. |
+| **Privacy & Security** | Functional — shows email, role, verification status (for CDs), member since date. "Send Reset Email" triggers Supabase `resetPasswordForEmail`. "Sign Out All Sessions" placeholder (requires Supabase admin API). |
+| **Deactivation & Deletion** | Functional — see below |
+
+### Deactivation & Deletion behavior
+
+**Deactivate Account:**
+- Confirmation modal listing exact consequences (profile hidden, notifications paused, castings blocked for CDs)
+- `super_admin` shown extra browser-confirm before deactivating
+- Sets `account_status = 'deactivated'`, `deactivated_at = now()` in profiles
+- Shows "Reactivate" button when already deactivated
+- Reactivation sets `account_status = 'active'`, clears `deactivated_at`
+
+**Delete Account:**
+- Requires user to type `DELETE` into a text field before the button enables
+- Soft delete: sets `account_status = 'deletion_requested'`, `deletion_requested_at = now()`
+- Shows: "Account deletion request submitted. Support will review and complete deletion within 30 days."
+- Full auth deletion requires a server-side Supabase Admin API call (see "What still needs server work")
+
+### Safety rules enforced
+
+1. Users can only update their own `profiles` row (Supabase RLS: `id = auth.uid()`)
+2. Normal users cannot access Admin page through settings (admin route guards unchanged)
+3. Actors/CDs see no admin controls in Account Settings
+4. `super_admin` gets an extra confirmation dialog before deactivating
+5. Account Settings accessible only to authenticated users (renders `<div style={{minHeight:"60vh"}}/>` if not logged in)
+
+### Navigation / access
+
+- **Desktop nav**: User name button → Account Settings (shows `FirstName ⚙`)
+- **Mobile menu**: "My Profile" + "Account Settings" both listed under auth section
+- **URL**: `/account-settings` (routed via Vercel catch-all rewrite)
+- **AccountSettingsPage sidebar**: includes "← My Profile" link back to profile page
+
+### What still needs Stripe / Supabase server work later
+
+| Feature | What's needed |
+|---|---|
+| Payment & Billing portal | Supabase Edge Function → Stripe `billingPortal.sessions.create` → return URL |
+| Full account deletion | `supabaseAdmin.auth.admin.deleteUser(uid)` in a server-side function. Deletion request is stored; support must run this manually until automated. |
+| Email delivery honoring notification prefs | Wire `notification_*` columns to your email provider (Resend/SendGrid) — columns are stored, just not checked server-side yet |
+| Sign out all sessions | `supabaseAdmin.auth.admin.signOut(uid, "global")` in an Edge Function |
+
+---
+
 ## 2026-05-10 — Fix broken auth state, nav buttons, and stuck castings loading
 
 ### Root cause

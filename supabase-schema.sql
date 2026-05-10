@@ -1128,3 +1128,24 @@ begin
     jsonb_build_object('verification_status','not_started','can_post_castings',false),p_notes);
 end; $$;
 grant execute on function public.admin_reset_casting_verification(uuid,text) to authenticated;
+
+-- ═══════════════════════════════════════════════════════════════
+-- MIGRATION 2026-05-10 — account_settings_fields
+-- Adds account status, deactivation, deletion, and notification
+-- preference columns to profiles.
+-- Safe to re-run: all ADD COLUMN IF NOT EXISTS.
+-- After running, execute: NOTIFY pgrst, 'reload schema';
+-- ═══════════════════════════════════════════════════════════════
+
+alter table public.profiles
+  add column if not exists account_status          text        not null default 'active',
+  add column if not exists deactivated_at          timestamptz,
+  add column if not exists deletion_requested_at   timestamptz,
+  add column if not exists deleted_at              timestamptz,
+  add column if not exists notification_email      boolean     not null default true,
+  add column if not exists notification_applications boolean   not null default true,
+  add column if not exists notification_messages   boolean     not null default true,
+  add column if not exists notification_marketing  boolean     not null default false;
+
+comment on column public.profiles.account_status is
+  'Lifecycle status: active | deactivated | deletion_requested | deleted';
