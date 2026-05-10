@@ -724,8 +724,8 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
           <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>{p.note}</p>
           <ul style={{listStyle:"none",padding:0,margin:"0 0 22px",display:"flex",flexDirection:"column",gap:6}}>
             <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Unlimited submissions</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Direct messages from CDs</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Audition scheduling</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>10 headshots</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Up to 5 video reel links</li>
             <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Cancel anytime</li>
           </ul>
           <div style={{borderTop:"1px solid var(--bdr)",paddingTop:14,marginBottom:14,fontSize:12,color:"var(--t3)"}}>Total billed: <strong style={{color:"var(--t1)"}}>${p.total.toFixed(2)}</strong>{p.months>1?` for ${p.months} months`:" today"}</div>
@@ -1773,7 +1773,7 @@ function SuccessStoriesPage({onNavigate}){
     <div style={{maxWidth:700,margin:"0 auto",display:"flex",flexDirection:"column",gap:24}}>
       {SUCCESS_STORIES.map((s,i)=><div key={i} className="card story-card"><img src={s.img} alt={s.name}/><div><h4>{s.name}</h4><div className="story-role">{s.role}</div><p>"{s.quote}"</p></div></div>)}
     </div>
-    <div style={{textAlign:"center",marginTop:48}}><p style={{color:"var(--t2)",fontSize:15,marginBottom:16}}>Ready to write your own success story?</p><button className="btn-p" onClick={()=>onNavigate("register-talent")}>Start My 7-Day Free Trial →</button></div>
+    <div style={{textAlign:"center",marginTop:48}}><p style={{color:"var(--t2)",fontSize:15,marginBottom:16}}>Ready to write your own success story?</p><button className="btn-p" onClick={()=>onNavigate("register-talent")}>Create My Free Profile →</button></div>
     <Footer onNavigate={onNavigate}/></div>);
 }
 
@@ -1781,6 +1781,7 @@ function SuccessStoriesPage({onNavigate}){
 // PAGE: PRICING
 // ═══════════════════════════════════════════
 function PricingPage({onNavigate}){
+  const [premiumMsg,setPremiumMsg]=React.useState(false);
   const featureRow=(label,free,premium)=>(
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,padding:"10px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,alignItems:"center"}}>
       <span style={{color:"var(--t2)"}}>{label}</span>
@@ -1790,12 +1791,12 @@ function PricingPage({onNavigate}){
   );
   return(<div className="page">
     <div style={{background:"#1a1a2e",color:"#f5e8d0",fontFamily:"monospace",fontSize:13,fontWeight:700,padding:"10px 20px",textAlign:"center",letterSpacing:0.5}}>
-      PLAN LIMITS VERSION 2 — Free 1 headshot / 3 submissions/day · Premium $9.99/month: 10 headshots / 5 videos / unlimited submissions
+      PRICING PAGE VERSION 3 - FREE + PREMIUM LIMITS
     </div>
     <div className="info-hero">
       <div className="section-label">Pricing</div>
       <h1>Simple pricing.<br/>No surprises.</h1>
-      <p>Start free as an actor. Upgrade to Premium for {PREMIUM_PRICE} when you're ready to go full throttle.</p>
+      <p>Create a free account and start submitting. Upgrade to Premium for {PREMIUM_PRICE} to unlock more headshots, video reels, and unlimited submissions.</p>
     </div>
 
     {/* ── Actor Plans ── */}
@@ -1808,7 +1809,7 @@ function PricingPage({onNavigate}){
           <p style={{color:"var(--t2)",fontSize:12,marginBottom:20,textAlign:"center"}}>Actors · Models · Performers</p>
           <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:44,color:"var(--t1)",textAlign:"center"}}>$0</div>
           <p style={{color:"var(--t2)",fontSize:12,marginBottom:24,textAlign:"center"}}>No credit card required</p>
-          {[`${FREE_PLAN.submissionsPerDay} casting submissions per day`,"1 headshot","Basic actor profile","Browse all castings","No video links"].map(f=><div key={f} style={{display:"flex",gap:8,alignItems:"center",padding:"7px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}</div>)}
+          {["Free account","1 headshot","3 casting submissions per day","No video uploads","Basic actor profile"].map(f=><div key={f} style={{display:"flex",gap:8,alignItems:"center",padding:"7px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}</div>)}
           <button className="btn-s" style={{width:"100%",marginTop:24}} onClick={()=>onNavigate("register-talent")}>Get Started Free</button>
         </div>
         {/* Premium card */}
@@ -1817,9 +1818,10 @@ function PricingPage({onNavigate}){
           <h3 style={{fontSize:18,fontWeight:700,marginBottom:4,textAlign:"center"}}>Premium</h3>
           <p style={{color:"var(--t2)",fontSize:12,marginBottom:20,textAlign:"center"}}>Actors · Models · Performers</p>
           <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:44,color:"var(--t1)",textAlign:"center"}}>$9.99</div>
-          <p style={{color:"var(--t2)",fontSize:12,marginBottom:24,textAlign:"center"}}>per month · 7-day free trial · cancel anytime</p>
-          {["Unlimited casting submissions","10 headshots","Up to 5 video reel links","Guaranteed views on every submission","Direct messages from casting","Audition scheduling"].map(f=><div key={f} style={{display:"flex",gap:8,alignItems:"center",padding:"7px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{f}</div>)}
-          <button className="btn-p" style={{width:"100%",marginTop:24}} onClick={()=>onNavigate("register-talent")}>Start 7-Day Free Trial</button>
+          <p style={{color:"var(--t2)",fontSize:12,marginBottom:24,textAlign:"center"}}>per month · cancel anytime</p>
+          {["10 headshots","Up to 5 video reel links","Unlimited casting submissions","Premium profile features"].map(f=><div key={f} style={{display:"flex",gap:8,alignItems:"center",padding:"7px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{f}</div>)}
+          {premiumMsg&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginTop:16,textAlign:"center"}}>Premium checkout is not connected yet. Please try again later.</div>}
+          <button className="btn-p" style={{width:"100%",marginTop:16}} onClick={()=>setPremiumMsg(true)}>Premium Checkout Coming Soon</button>
         </div>
       </div>
 
@@ -1829,14 +1831,12 @@ function PricingPage({onNavigate}){
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,padding:"8px 0",borderBottom:"2px solid var(--bdr)",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)"}}>
           <span>Feature</span><span style={{textAlign:"center"}}>Free</span><span style={{textAlign:"center",color:"var(--acc)"}}>Premium</span>
         </div>
-        {featureRow("Casting submissions / day",`${FREE_PLAN.submissionsPerDay}`,"Unlimited")}
-        {featureRow("Headshots",`${FREE_PLAN.headshotsTotal}`,"Up to 10")}
+        {featureRow("Casting submissions / day","3","Unlimited")}
+        {featureRow("Headshots","1","Up to 10")}
         {featureRow("Video reel links","None","Up to 5")}
         {featureRow("Browse castings","✓","✓")}
-        {featureRow("Basic profile","✓","✓")}
-        {featureRow("Direct messages from casting","—","✓")}
-        {featureRow("Audition scheduling","—","✓")}
-        {featureRow("Guaranteed views","—","✓")}
+        {featureRow("Basic actor profile","✓","✓")}
+        {featureRow("Premium profile features","—","✓")}
         {featureRow("Price","Free",PREMIUM_PRICE)}
       </div>
     </div>
@@ -1845,14 +1845,14 @@ function PricingPage({onNavigate}){
     <div style={{maxWidth:860,margin:"0 auto 48px"}}>
       <div className="section-label" style={{marginBottom:20,textAlign:"center"}}>For Casting Directors</div>
       <div style={{maxWidth:440,margin:"0 auto"}}>
-        <div className="card" style={{borderColor:"var(--acc)",background:"linear-gradient(165deg,var(--s1),rgba(26,26,46,.02))",position:"relative"}}>
-          <div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"var(--acc)",color:"var(--bg)",fontSize:10,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:"4px 14px",borderRadius:100,letterSpacing:1}}>MOST POPULAR</div>
+        <div className="card" style={{position:"relative"}}>
           <h3 style={{fontSize:18,fontWeight:700,marginBottom:4,textAlign:"center"}}>Casting Director</h3>
           <p style={{color:"var(--t2)",fontSize:12,marginBottom:20,textAlign:"center"}}>Casting Directors · Producers</p>
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:44,color:"var(--t1)",textAlign:"center"}}>$19.99</div>
-          <p style={{color:"var(--t2)",fontSize:12,marginBottom:24,textAlign:"center"}}>per casting post · free account creation</p>
-          {["Free account creation","Swipe-based review system","Advanced talent search & filters","Callback management tools","Pay only when you post"].map(f=><div key={f} style={{display:"flex",gap:8,alignItems:"center",padding:"7px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}</div>)}
-          <button className="btn-p" style={{width:"100%",marginTop:24}} onClick={()=>onNavigate("register-cd")}>Start Casting</button>
+          <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:44,color:"var(--t1)",textAlign:"center"}}>Free</div>
+          <p style={{color:"var(--t2)",fontSize:12,marginBottom:24,textAlign:"center"}}>to create an account</p>
+          {["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent search & filters"].map(f=><div key={f} style={{display:"flex",gap:8,alignItems:"center",padding:"7px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}</div>)}
+          <p style={{fontSize:11,color:"var(--t3)",marginTop:16,lineHeight:1.5}}>Posting fees and payment options will be finalized before launch. Account creation is always free.</p>
+          <button className="btn-p" style={{width:"100%",marginTop:16}} onClick={()=>onNavigate("register-cd")}>Create CD Account</button>
         </div>
       </div>
     </div>
@@ -2104,7 +2104,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
         </div>}
 
         <ul style={{listStyle:"none",padding:0,margin:0,display:"flex",flexDirection:"column",gap:10}}>
-          {["Unlimited casting submissions","Every headshot guaranteed to be seen","Direct messages from casting directors","$9.99/mo — cheapest plan in casting"].map(t=><li key={t} style={{display:"flex",gap:10,alignItems:"flex-start",color:"var(--t2)",fontSize:13,lineHeight:1.5}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{t}</li>)}
+          {["Free account — 3 submissions/day, 1 headshot","Upgrade to Premium ($9.99/mo) for unlimited submissions","10 headshots and up to 5 video reel links with Premium","Cancel anytime — no contracts"].map(t=><li key={t} style={{display:"flex",gap:10,alignItems:"flex-start",color:"var(--t2)",fontSize:13,lineHeight:1.5}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{t}</li>)}
         </ul>
       </div>
 
@@ -4628,7 +4628,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
   const userKind=(myProfile?.user_type||"").toLowerCase();
   const isCDish=["cd","admin","super_admin","producer","studio"].includes(userKind);
   const heroPrimary=!isLoggedIn
-    ?{label:"Start My 7-Day Free Trial →",to:"register-talent"}
+    ?{label:"Create My Free Profile →",to:"register-talent"}
     : isCDish
       ?{label:"Open Dashboard →",to:"dashboard"}
       :{label:"Browse Castings →",to:"search"};
@@ -4762,19 +4762,19 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <section className="lh-section" style={{padding:"80px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">How It Works</div>
       <div className="tabs"><button className={`tab ${hTab==="talent"?"active":""}`} onClick={()=>setHTab("talent")}>For Talent</button><button className={`tab ${hTab==="caster"?"active":""}`} onClick={()=>setHTab("caster")}>For Casting Directors</button></div>
       <div className="section-title" style={{marginTop:8}}>{hTab==="talent"?"Your talent deserves to be seen.":"Cast smarter. See everyone."}</div>
-      <div className="grid-3">{(hTab==="talent"?[["01","Create Your Profile","Upload headshots, reel, resume, and stats. 7 days free, then $9.99/mo. Cancel anytime."],["02","Submit to Castings","Browse open casting calls for film, TV, theater, commercials, and modeling. One-tap apply."],["03","Get Seen. Guaranteed.","Every casting director swipes through your headshot individually. No grid views. No skipping."]]:
+      <div className="grid-3">{(hTab==="talent"?[["01","Create Your Profile","Upload headshots, resume, and stats. Free accounts get 1 headshot and 3 submissions/day. Upgrade to Premium for $9.99/mo."],["02","Submit to Castings","Browse open casting calls for film, TV, theater, commercials, and modeling. One-tap apply."],["03","Get Seen. Guaranteed.","Every casting director swipes through your headshot individually. No grid views. No skipping."]]:
         [["01","Post Your Breakdown","Describe the role, specs, and pay. Your casting goes live instantly."],["02","Swipe Through Talent","Review every submission one by one. Right to callback, left to pass."],["03","Manage & Schedule","Organize callbacks, send sides, schedule auditions — all from your dashboard."]]).map(([n,t,d])=>
         <div key={n} className="card"><div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:44,color:"var(--acc)",opacity:.3,marginBottom:12}}>{n}</div><h3 style={{fontSize:17,fontWeight:700,marginBottom:10}}>{t}</h3><p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6}}>{d}</p></div>)}</div>
     </section>
 
     <section className="lh-section" style={{padding:"80px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">Pricing</div><div className="section-title">Simple pricing. No surprises.</div>
-      <div className="grid-3">{[{name:"Talent",who:"Actors · Models · Performers",price:"$9.99",period:"per month · 7-day free trial",features:["Unlimited profile, photos & video","Unlimited submissions","Guaranteed views","Direct messages from casting","Audition scheduling","Cancel anytime"],featured:false,cta:"Start 7-Day Free Trial",action:"register-talent"},{name:"Casting Director",who:"Casting Directors · Producers",price:"$19.99",period:"per casting post",features:["Free account creation","Swipe-based review","Advanced talent filters","Callback management","Pay only when you post"],featured:true,cta:"Start Casting",action:"register-cd"},{name:"Studio",who:"Studios · Networks · Agencies",price:"Custom",period:"enterprise pricing",features:["Everything in Casting Director","Multi-user team access","Custom branding","API access","Dedicated account manager"],featured:false,cta:"Contact Sales",action:"contact"}].map(p=>
+      <div className="grid-3">{[{name:"Actor Free",who:"Actors · Models · Performers",price:"$0",period:"no credit card required",features:["Free account","1 headshot","3 submissions per day","Basic actor profile","Browse all castings"],featured:false,cta:"Get Started Free",action:"register-talent"},{name:"Actor Premium",who:"Actors · Models · Performers",price:"$9.99",period:"per month · cancel anytime",features:["10 headshots","Up to 5 video reel links","Unlimited submissions","Premium profile features"],featured:true,cta:"Premium Checkout Coming Soon",action:null},{name:"Casting Director",who:"Casting Directors · Producers",price:"Free",period:"to create an account",features:["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent filters"],featured:false,cta:"Create CD Account",action:"register-cd"}].map(p=>
         <div key={p.name} className="card" style={p.featured?{borderColor:"var(--acc)",background:"linear-gradient(165deg,var(--s1),rgba(26,26,46,.02))",position:"relative"}:{}}>
-          {p.featured&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"var(--acc)",color:"var(--bg)",fontSize:10,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:"4px 14px",borderRadius:100,letterSpacing:1}}>MOST POPULAR</div>}
+          {p.featured&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"var(--acc)",color:"var(--bg)",fontSize:10,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:"4px 14px",borderRadius:100,letterSpacing:1}}>RECOMMENDED</div>}
           <h3 style={{fontSize:18,fontWeight:700,marginBottom:4,textAlign:"center"}}>{p.name}</h3><p style={{color:"var(--t2)",fontSize:12,marginBottom:20,textAlign:"center"}}>{p.who}</p>
           <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:44,color:"var(--t1)",textAlign:"center"}}>{p.price}</div><p style={{color:"var(--t2)",fontSize:12,marginBottom:24,textAlign:"center"}}>{p.period}</p>
           {p.features.map(f=><div key={f} style={{display:"flex",gap:8,alignItems:"center",padding:"7px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}</div>)}
-          <button className={p.featured?"btn-p":"btn-s"} style={{width:"100%",marginTop:24}} onClick={()=>onNavigate(p.action)}>{p.cta}</button></div>)}</div>
+          <button className={p.featured?"btn-p":"btn-s"} style={{width:"100%",marginTop:24}} onClick={()=>p.action?onNavigate(p.action):onNavigate("pricing")}>{p.cta}</button></div>)}</div>
     </section>
 
     {/* ───────── FAQ ───────── */}
