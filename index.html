@@ -763,14 +763,11 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
   </div>);
 }
 
-// ─── Selected-plan summary + activation. Shows plan, billing length, total
-//     due. The "Activate" button calls the activate_membership SECURITY
-//     DEFINER RPC. When real Stripe is wired this becomes a checkout redirect
-//     and the RPC moves to a webhook handler — frontend stays the same.
+// ─── Selected-plan summary. Shows plan details and a placeholder checkout
+//     button. When Stripe is wired, handleUpgradeClick redirects to a
+//     server-side Checkout session; activate_membership is called by webhook.
 function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onReload}){
-  const [busy,setBusy]=useState(false);
   const [err,setErr]=useState("");
-  const [done,setDone]=useState(false);
   const plan=MEMBERSHIP_PLANS[planKey]||MEMBERSHIP_PLANS.monthly;
   const userType=(myProfile?.user_type||"").toLowerCase();
   const isTalent=userType==="talent";
@@ -789,40 +786,19 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
     </div><Footer onNavigate={onNavigate}/></div>);
   }
 
-  const activate=async()=>{
-    if(busy)return;
-    setBusy(true);setErr("");
-    try{
-      const {data,error}=await window.sb.rpc("activate_membership",{p_plan:plan.key});
-      if(error)throw error;
-      setDone(true);
-      // Reload the local profile so the red banner disappears immediately
-      // and the apply-gate flips to allow.
-      if(typeof onReload==="function")onReload();
-      // If the user came here from a casting they tried to apply to, return them.
-      let returnTo=null;
-      try{returnTo=JSON.parse(sessionStorage.getItem("sc_post_membership_return")||"null");}catch(_){}
-      if(returnTo?.casting?.id){
-        sessionStorage.removeItem("sc_post_membership_return");
-        if(typeof onActivated==="function")onActivated(returnTo);
-      }else{
-        setTimeout(()=>onNavigate("search"),1200);
-      }
-    }catch(e){console.error("[membership] activate failed:",e);setErr(e.message||"Could not activate membership.");}
-    finally{setBusy(false);}
-  };
+  // TODO (Stripe): Replace handleUpgradeClick with a redirect to your Stripe Checkout
+  // session endpoint (POST /api/stripe/checkout) once STRIPE_ACTOR_LINK is configured
+  // and the checkout.session.completed webhook calls activate_membership server-side.
+  // NEVER call activate_membership from the browser — membership_status must only be
+  // set to 'active' after Stripe confirms payment on the server.
+  const handleUpgradeClick=()=>{ setErr("stripe-not-connected"); };
 
   return(<div className="page" style={{maxWidth:560,margin:"0 auto"}}>
     <button className="btn-s btn-sm" onClick={()=>onNavigate("membership")} style={{marginBottom:18}}>← Back to plans</button>
     <div className="section-label">Order summary</div>
     <h1 style={{fontWeight:800,fontSize:30,letterSpacing:-1.2,marginBottom:24}}>Now let's confirm your plan</h1>
 
-    {done?<div className="success-msg" style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.35)",borderRadius:14,padding:"32px 28px",textAlign:"center"}}>
-      <div style={{fontSize:32,marginBottom:8}}>✓</div>
-      <h3 style={{fontSize:20,fontWeight:800,marginBottom:8}}>Membership activated</h3>
-      <p style={{color:"var(--t2)",fontSize:14}}>Your {plan.label} is live. Heading to your next step…</p>
-    </div>:<>
-      <div className="card" style={{padding:24,marginBottom:18}}>
+    <div className="card" style={{padding:24,marginBottom:18}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingBottom:14,borderBottom:"1px solid var(--bdr)",marginBottom:14}}>
           <div>
             <div style={{fontSize:11,letterSpacing:1,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,marginBottom:4}}>Selected plan</div>
@@ -852,11 +828,10 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
         <p style={{fontSize:11,color:"var(--t3)",marginTop:12,lineHeight:1.5}}>Renews automatically. Cancel anytime from your profile. Plus tax where applicable.</p>
       </div>
 
-      {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}</div>}
+      {err==="stripe-not-connected"&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"12px 16px",borderRadius:8,fontSize:13,marginBottom:14,textAlign:"center"}}>Premium checkout is not connected yet. Please try again later.</div>}
 
-      <button className="btn-p" style={{width:"100%",padding:"16px"}} onClick={activate} disabled={busy}>{busy?"Activating membership…":`Activate Membership · $${plan.total.toFixed(2)}`}</button>
-      <p style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginTop:12}}>Secure activation. Card collection via Stripe arrives next release — your plan will be confirmed under your email.</p>
-    </>}
+      <button className="btn-p" style={{width:"100%",padding:"16px"}} onClick={handleUpgradeClick}>Upgrade to Premium — {PREMIUM_PRICE}</button>
+      <p style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginTop:12}}>Stripe payment integration coming soon. Your plan will activate automatically after successful payment.</p>
 
     <Footer onNavigate={onNavigate}/>
   </div>);
@@ -1106,9 +1081,31 @@ function Footer({onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE: REGISTER TALENT (3-step form)
 // ═══════════════════════════════════════════
-// Stripe Payment Links — replace these with your real Stripe links once your account is set up
-const STRIPE_ACTOR_LINK = "https://buy.stripe.com/test_bJe28l3C5bgq2XQcuL7g401";  // SlateCue Actor — 7-day free trial, then $9.99/mo (Stripe sandbox; swap for live link before launch)
-const STRIPE_CD_LINK    = null;  // e.g. "https://buy.stripe.com/your_cd_link"
+// ─── STRIPE INTEGRATION — NOT CONNECTED YET ───────────────────────────────
+// To wire up real Premium payments, complete every TODO below before
+// enabling checkout. Do NOT call activate_membership from the frontend —
+// membership_status must only be set to 'active' inside a server-side
+// webhook AFTER Stripe confirms successful payment.
+//
+// TODO: Create a Stripe account at https://dashboard.stripe.com
+// TODO: Create Product "SlateCue Actor Premium" ($9.99/month recurring)
+// TODO: Copy the Price ID → STRIPE_ACTOR_PREMIUM_PRICE_ID below
+// TODO: Set STRIPE_SECRET_KEY in Vercel env vars (never in frontend)
+// TODO: Set STRIPE_WEBHOOK_SECRET in Vercel env vars
+// TODO: Create a Supabase Edge Function or Next.js API route at
+//       POST /api/stripe/checkout  — creates a Stripe Checkout Session
+//       and passes auth.uid() as client_reference_id
+// TODO: Handle checkout.session.completed webhook → call
+//       window.sb.rpc("activate_membership", {p_plan:"monthly"}) server-side
+//       (or direct UPDATE profiles SET membership_status='active')
+//       ONLY after payment is confirmed — never from the browser
+// TODO: Replace STRIPE_ACTOR_LINK below with your live Payment Link or
+//       point the button to your /api/stripe/checkout endpoint
+//
+const STRIPE_ACTOR_PREMIUM_PRICE_ID = null; // TODO: "price_XXXXXXXXXXXX"
+const STRIPE_ACTOR_LINK = null;             // TODO: "https://buy.stripe.com/your_live_link"
+const STRIPE_CD_LINK    = null;             // TODO: "https://buy.stripe.com/your_cd_link"
+// ──────────────────────────────────────────────────────────────────────────
 
 function RegisterTalent({onNavigate}){
   const [step,setStep]=useState(1);
