@@ -4643,11 +4643,27 @@ function CastingCreatorVerificationBanner({myProfile}){
       }
       if(data?.url){window.location.href=data.url;return;}
       if(data?.error==="already_verified"){setStartMsg("Your account is already verified.");return;}
-      // Unexpected success-shape with no URL
+      if(data?.error==="no_api_key_in_db"){
+        const msg="Verification provider is not connected. Missing DIDIT_API_KEY in the app_secrets table.";
+        console.error("Verification session failed",{data});
+        setStartMsg(msg);
+        setDebugInfo({provider:"didit",endpoint:"create-verification-session (POST https://apx.didit.me/v1/session/)",status:"200 (no key)",error:"no_api_key_in_db — didit_api_key not found in app_secrets table",body:data,nextStep:"INSERT INTO app_secrets (key,value) VALUES ('didit_api_key','<your-key>') or UPDATE the existing row."});
+        return;
+      }
+      if(data?.error==="didit_api_error"){
+        const ds=data?.didit_status;
+        const dr=data?.didit_response;
+        const msg=`Didit API returned HTTP ${ds}. ${ds===401?"API key is invalid or expired.":ds===403?"API key lacks permission.":ds===404?"Session endpoint not found — check Didit API version.":"See response body for detail."}`;
+        console.error("Verification session failed",{didit_status:ds,didit_response:dr,data});
+        setStartMsg(msg);
+        setDebugInfo({provider:"didit",endpoint:"POST https://apx.didit.me/v1/session/",status:ds,error:msg,body:dr,nextStep:ds===401?"Update didit_api_key in the app_secrets table with a valid key from your Didit dashboard.":ds===404?"Check the Didit API endpoint URL — the session creation path may have changed in a newer API version.":"Check Didit dashboard and update didit_api_key in app_secrets if needed."});
+        return;
+      }
+      // Unknown shape
       const fallbackErr=data?.error||data?.message||"No verification URL returned.";
       console.error("Verification session failed",{data});
       setStartMsg(fallbackErr);
-      setDebugInfo({provider:data?.provider||"unknown",endpoint:"create-verification-session",status:200,error:fallbackErr,body:data,nextStep:"Check edge function — it returned 200 but no URL."});
+      setDebugInfo({provider:data?.provider||"unknown",endpoint:"create-verification-session",status:200,error:fallbackErr,body:data,nextStep:"Check Supabase Edge Function logs for detail."});
     }catch(e){
       console.error("Verification session failed",e);
       setStartMsg(e.message||"Unexpected error starting verification.");
@@ -4734,10 +4750,26 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
       }
       if(data?.url){window.location.href=data.url;return;}
       if(data?.error==="already_verified"){setVerifyMsg("Your account is already verified.");return;}
+      if(data?.error==="no_api_key_in_db"){
+        const msg="Verification provider is not connected. Missing DIDIT_API_KEY in the app_secrets table.";
+        console.error("Verification session failed",{data});
+        setVerifyMsg(msg);
+        setVerifyDebug({provider:"didit",endpoint:"create-verification-session (POST https://apx.didit.me/v1/session/)",status:"200 (no key)",error:"no_api_key_in_db — didit_api_key not found in app_secrets table",body:data,nextStep:"INSERT INTO app_secrets (key,value) VALUES ('didit_api_key','<your-key>') or UPDATE the existing row."});
+        return;
+      }
+      if(data?.error==="didit_api_error"){
+        const ds=data?.didit_status;
+        const dr=data?.didit_response;
+        const msg=`Didit API returned HTTP ${ds}. ${ds===401?"API key is invalid or expired.":ds===403?"API key lacks permission.":ds===404?"Session endpoint not found — check Didit API version.":"See response body for detail."}`;
+        console.error("Verification session failed",{didit_status:ds,didit_response:dr,data});
+        setVerifyMsg(msg);
+        setVerifyDebug({provider:"didit",endpoint:"POST https://apx.didit.me/v1/session/",status:ds,error:msg,body:dr,nextStep:ds===401?"Update didit_api_key in the app_secrets table with a valid key from your Didit dashboard.":ds===404?"Check the Didit API endpoint URL — the session creation path may have changed in a newer API version.":"Check Didit dashboard and update didit_api_key in app_secrets if needed."});
+        return;
+      }
       const fallbackErr=data?.error||data?.message||"No verification URL returned.";
       console.error("Verification session failed",{data});
       setVerifyMsg(fallbackErr);
-      setVerifyDebug({provider:data?.provider||"unknown",endpoint:"create-verification-session",status:200,error:fallbackErr,body:data,nextStep:"Check edge function — it returned 200 but no URL."});
+      setVerifyDebug({provider:data?.provider||"unknown",endpoint:"create-verification-session",status:200,error:fallbackErr,body:data,nextStep:"Check Supabase Edge Function logs for detail."});
     }catch(e){
       console.error("Verification session failed",e);
       setVerifyMsg(e.message||"Unexpected error starting verification.");
