@@ -2562,7 +2562,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     <p style={{color:"var(--t2)",fontSize:17,marginBottom:4}}>{c.tagline}</p>
     <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:28}}>
       <p style={{color:"var(--t3)",fontSize:13,margin:0}}>Produced by {c.prod} {c.director?`· Directed by ${c.director}`:""}</p>
-      {cdProfile&&cdProfile.identity_verified===true&&cdProfile.can_post_castings===true&&cdProfile.verification_status==="verified"&&<span style={{background:"rgba(46,204,113,0.12)",color:"#1d7b44",fontSize:10,fontWeight:800,letterSpacing:0.5,padding:"2px 9px",borderRadius:99}}>✓ ID Verified</span>}
+      {cdProfile&&cdProfile.identity_verified===true&&cdProfile.can_post_castings===true&&cdProfile.verification_status==="verified"&&<IDVerifiedBadge/>}
       {cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
     </div>
 
@@ -3121,7 +3121,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
 // Hold / Selected / Rejected = filtered list views with search + sort
 // Undo reverts the most recent decision.
 // ═══════════════════════════════════════════════════════════════════
-function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion=0,bumpCastings}){
+function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion=0,bumpCastings,verificationReturn=false,onClearVerificationReturn}){
   const [active,setActive]=useState(null);         // casting currently being reviewed
   const [activeRole,setActiveRole]=useState(null); // role within the casting
   const [roleCounts,setRoleCounts]=useState({});   // role_id -> total count
@@ -3518,6 +3518,13 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       <div className="dash-stat"><div className="dash-stat-num" style={{color:stats.pending>0?"var(--acc)":undefined}}>{stats.pending}</div><div className="dash-stat-label">Pending Review</div></div>
       <div className="dash-stat"><div className="dash-stat-num">{stats.selected}</div><div className="dash-stat-label">Selected</div></div>
     </div>
+    {verificationReturn&&<div style={{background:"rgba(46,204,113,0.09)",border:"1px solid rgba(46,204,113,0.35)",borderRadius:12,padding:"14px 20px",marginBottom:16,display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+      <div>
+        <div style={{fontWeight:700,fontSize:14,color:"#1d7b44",marginBottom:2}}>Verification submitted</div>
+        <div style={{fontSize:13,color:"var(--t2)"}}>Your identity verification has been submitted to our provider. Results are typically available within minutes. Your status is shown below.</div>
+      </div>
+      <button className="btn-s btn-sm" style={{flexShrink:0,fontSize:12}} onClick={onClearVerificationReturn}>Dismiss</button>
+    </div>}
     {myProfile&&<CastingCreatorVerificationBanner myProfile={myProfile}/> }
 
     {active&&activeRole?<>
@@ -4573,7 +4580,34 @@ function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm}){
   </div>);
 }
 
-// ─── CastingVerifiedBadge — "Background Checked" badge with disclaimer tooltip
+// ─── IDVerifiedBadge — "ID Verified" badge with disclaimer tooltip
+//     Shown when identity_verified=true and verification_status="verified".
+//     Does NOT imply a criminal background check.
+function IDVerifiedBadge({size="sm"}){
+  const [show,setShow]=useState(false);
+  const fs=size==="xs"?9:10;
+  const pad=size==="xs"?"2px 8px":"2px 9px";
+  return(<span style={{position:"relative",display:"inline-flex",alignItems:"center",gap:3}}>
+    <span style={{background:"rgba(46,204,113,0.12)",color:"#1d7b44",fontSize:fs,fontWeight:800,letterSpacing:0.5,padding:pad,borderRadius:99}}>✓ ID Verified</span>
+    <span
+      onMouseEnter={()=>setShow(true)}
+      onMouseLeave={()=>setShow(false)}
+      onFocus={()=>setShow(true)}
+      onBlur={()=>setShow(false)}
+      tabIndex={0}
+      style={{cursor:"pointer",fontSize:10,color:"var(--t3)",lineHeight:1,userSelect:"none"}}
+      aria-label="ID verification disclaimer"
+    >ⓘ</span>
+    {show&&<span style={{position:"absolute",bottom:"calc(100% + 8px)",left:"50%",transform:"translateX(-50%)",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:8,padding:"10px 14px",fontSize:11,color:"var(--t2)",lineHeight:1.55,width:300,zIndex:99,boxShadow:"0 4px 16px rgba(0,0,0,0.12)",pointerEvents:"none",textAlign:"left"}}>
+      This casting creator has completed identity verification through a third-party provider. Identity verification does not guarantee the legitimacy, safety, conduct, payment, or quality of any project, person, company, audition, or communication. Always use your own judgment and report suspicious activity.
+    </span>}
+  </span>);
+}
+
+// ─── CastingVerifiedBadge — "Background Checked" badge
+//     Only shown when background_check_status="passed" via a real criminal-background
+//     check provider (e.g. Checkr). Admin approve no longer sets this field, so the
+//     badge will not appear until Checkr or equivalent is connected.
 function CastingVerifiedBadge(){
   const [show,setShow]=useState(false);
   return(<span style={{position:"relative",display:"inline-flex",alignItems:"center",gap:3}}>
@@ -4588,7 +4622,7 @@ function CastingVerifiedBadge(){
       aria-label="Background check disclaimer"
     >ⓘ</span>
     {show&&<span style={{position:"absolute",bottom:"calc(100% + 8px)",left:"50%",transform:"translateX(-50%)",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:8,padding:"10px 14px",fontSize:11,color:"var(--t2)",lineHeight:1.55,width:280,zIndex:99,boxShadow:"0 4px 16px rgba(0,0,0,0.12)",pointerEvents:"none",textAlign:"left"}}>
-      This casting creator has completed our verification process. Verification does not guarantee the legitimacy, safety, conduct, payment, or quality of any project, individual, company, audition, production, job offer, or communication. Always use your own judgment, never share sensitive personal information outside the platform, and report suspicious activity.
+      This casting creator has passed a third-party criminal background check. Background checks do not guarantee the legitimacy, safety, conduct, payment, or quality of any project, individual, company, audition, or communication. Always use your own judgment and report suspicious activity.
     </span>}
   </span>);
 }
@@ -4607,12 +4641,19 @@ function CastingCreatorVerificationBanner({myProfile}){
   const startVerification=async()=>{
     setStarting(true);setStartMsg("");
     try{
-      await window.sb.rpc("start_verification_session",{p_provider:null});
-      setStartMsg("Verification provider is not connected yet. Admin must connect Persona, Didit, or Stripe Identity before live verification can begin. Your account has been flagged as pending — an admin will review and enable posting access.");
+      const{data,error}=await window.sb.functions.invoke("create-verification-session");
+      if(error)throw error;
+      if(data?.url){
+        // Redirect to provider — do not clear loading state; page is navigating away
+        window.location.href=data.url;
+        return;
+      }
+      if(data?.error==="already_verified"){setStartMsg("Your account is already verified.");}
+      else{setStartMsg("Verification provider is not connected yet. Admin must connect Persona or Didit before live verification can begin. Your account has been flagged as pending — an admin will review and enable posting access.");}
     }catch(e){
       const m=(e.message||"").toLowerCase();
-      if(m.includes("already verified")){setStartMsg("Your account is already verified.");}
-      else{setStartMsg("Verification provider is not connected yet. Admin must connect Persona, Didit, or Stripe Identity before live verification can begin. Your account has been flagged as pending — an admin will review and enable posting access.");}
+      if(m.includes("already_verified")||m.includes("already verified")){setStartMsg("Your account is already verified.");}
+      else{setStartMsg("Verification provider is not connected yet. Admin must connect Persona or Didit before live verification can begin. Your account has been flagged as pending — an admin will review and enable posting access.");}
     }finally{setStarting(false);}
   };
 
@@ -4661,8 +4702,17 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
       <p style={{color:"var(--t3)",fontSize:13,marginBottom:28}}>Your current status: <strong style={{color:"var(--acc)"}}>{myProfile?.verification_status||"not started"}</strong></p>
       <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
         <button className="btn-p" onClick={async()=>{
-          try{await window.sb.rpc("start_verification_session",{p_provider:null});alert("Verification provider is not connected yet. Admin must connect Persona, Didit, or Stripe Identity before live verification can begin.\n\nYour account has been flagged as pending. An admin will review your account and enable posting access.");}
-          catch(e){const m=(e.message||"").toLowerCase();if(m.includes("already verified")){alert("Your account is already verified.");}else{alert("Verification provider is not connected yet. Admin must connect Persona, Didit, or Stripe Identity before live verification can begin.\n\nYour account has been flagged as pending. An admin will review your account and enable posting access.");}}
+          try{
+            const{data,error}=await window.sb.functions.invoke("create-verification-session");
+            if(error)throw error;
+            if(data?.url){window.location.href=data.url;return;}
+            if(data?.error==="already_verified"){alert("Your account is already verified.");}
+            else{alert("Verification provider is not connected yet. Admin must connect Persona or Didit before live verification can begin.\n\nYour account has been flagged as pending. An admin will review your account and enable posting access.");}
+          }catch(e){
+            const m=(e.message||"").toLowerCase();
+            if(m.includes("already_verified")||m.includes("already verified")){alert("Your account is already verified.");}
+            else{alert("Verification provider is not connected yet. Admin must connect Persona or Didit before live verification can begin.\n\nYour account has been flagged as pending. An admin will review your account and enable posting access.");}
+          }
         }}>Start Verification</button>
         <button className="btn-s" onClick={onClose}>Close</button>
       </div>
@@ -4950,7 +5000,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
             {sc.tagline&&sc.tagline!==sc.synopsis&&<p style={{color:"var(--t2)",fontSize:15,marginBottom:6,fontWeight:500}}>{sc.tagline}</p>}
             {(sCdName||sc.prod)&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:14,fontWeight:500,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
               <span>{sCdName?`Posted by ${sCdName}`:""}{sCdName&&sc.prod?" · ":""}{sc.prod||""}</span>
-              {(sCd.identity_verified===true&&sCd.can_post_castings===true&&sCd.verification_status==="verified")&&<span style={{background:"rgba(46,204,113,0.12)",color:"#1d7b44",fontSize:9,fontWeight:800,letterSpacing:0.6,padding:"2px 8px",borderRadius:99}} title="ID verified by SlateCue">✓ ID Verified</span>}
+              {(sCd.identity_verified===true&&sCd.can_post_castings===true&&sCd.verification_status==="verified")&&<IDVerifiedBadge size="xs"/>}
               {(sCd.identity_verified===true&&sCd.background_check_status==="passed")&&<CastingVerifiedBadge/>}
               {!(sCd.identity_verified===true&&sCd.can_post_castings===true)&&sCdName&&<span style={{background:"rgba(200,137,0,0.12)",color:"#c88900",fontSize:9,fontWeight:800,letterSpacing:0.6,padding:"2px 8px",borderRadius:99}} title="This caster has not yet completed identity verification">UNVERIFIED</span>}
             </p>}
@@ -6580,6 +6630,8 @@ function App(){
   // custom DOM event ("sc:open-cookies") rather than threading a callback
   // through every page's <Footer/> usage.
   const [cookieModalOpen,setCookieModalOpen]=useState(false);
+  // Set when user returns from Persona/Didit after completing verification
+  const [verificationReturn,setVerificationReturn]=useState(false);
   useEffect(()=>{
     const handler=()=>setCookieModalOpen(true);
     window.addEventListener("sc:open-cookies",handler);
@@ -6630,6 +6682,12 @@ function App(){
     const qs=window.location.search||"";
     if(hash.includes("type=recovery")||qs.includes("type=recovery")){
       setPage("reset-password");
+    }
+    // Detect return from Persona/Didit verification flow
+    if(qs.includes("verification_return=1")){
+      setVerificationReturn(true);
+      setPage("dashboard");
+      try{window.history.replaceState({swipecast:true,page:"dashboard"},"",window.location.pathname);}catch(_){}
     }
     // Seed browser history with current URL so back-button works after refresh
     try{
@@ -6964,7 +7022,7 @@ function App(){
           </div>}
         {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
         {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
-        {page==="dashboard"&&(!authReady?<PageLoader/>:<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings}/>)}
+        {page==="dashboard"&&(!authReady?<PageLoader/>:<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>)}
         {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
         {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate}/>:null)}
         {page==="inbox"&&<InboxPage session={session} profile={myProfile} onNavigate={navigate}/>}

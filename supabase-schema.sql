@@ -992,7 +992,6 @@ as $$
       and p.can_post_castings = true
       and p.identity_verified  = true
       and p.verification_status = 'verified'
-      and p.background_check_status = 'passed'
   );
 $$;
 grant execute on function public.can_post_castings_check() to authenticated, anon;
@@ -1049,7 +1048,6 @@ begin
   update public.profiles
      set verification_status      = 'verified',
          identity_verified        = true,
-         background_check_status  = 'passed',
          can_post_castings        = true,
          verified                 = true,
          verification_approved_at = now(),
@@ -1073,7 +1071,6 @@ begin
   update public.profiles
      set verification_status      = 'rejected',
          identity_verified        = false,
-         background_check_status  = 'failed',
          can_post_castings        = false,
          verified                 = false,
          verification_rejected_at = now(),
