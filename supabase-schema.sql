@@ -947,3 +947,187 @@ end;
 $$;
 
 grant execute on function public.submit_application(uuid, uuid, text, text) to authenticated;
+
+-- ════════════════════════════════════════════════════════════════════
+-- MIGRATION 2026-05-10 — casting_creator_verification
+--
+-- Purpose
+-- Block unverified casting directors/producers from publishing castings.
+-- Adds a full verification state machine to profiles and secure admin
+-- RPCs for approve/reject/needs_review/reset.
+-- Also adds a user-facing RPC so the frontend can start a verification
+-- session without granting the user any self-approval power.
+--
+-- Policy change
+-- castings_insert now requires can_post_castings = true OR is_admin().
+-- Existing castings are unaffected (published flag stays).
+-- ════════════════════════════════════════════════════════════════════
+
+-- 1. New verification columns on profiles.
+alter table public.profiles add column if not exists verification_status        text not null default 'not_started' check (verification_status in ('not_started','pending','verified','rejected','needs_review'));
+alter table public.profiles add column if not exists verification_provider      text;
+alter table public.profiles add column if not exists verification_session_id    text;
+alter table public.profiles add column if not exists identity_verified          boolean not null default false;
+alter table public.profiles add column if not exists background_check_status    text not null default 'not_started' check (background_check_status in ('not_started','pending','passed','failed','needs_review'));
+alter table public.profiles add column if not exists can_post_castings          boolean not null default false;
+alter table public.profiles add column if not exists verification_submitted_at  timestamptz;
+alter table public.profiles add column if not exists verification_approved_at   timestamptz;
+alter table public.profiles add column if not exists verification_rejected_at   timestamptz;
+alter table public.profiles add column if not exists verification_notes         text;
+create index if not exists profiles_verification_status_idx on public.profiles(verification_status);
+create index if not exists profiles_can_post_castings_idx   on public.profiles(can_post_castings);
+
+-- 2. Helper: is this user fully cleared to post?
+--    Bypasses RLS; used in the new castings_insert policy.
+create or replace function public.can_post_castings_check()
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid()
+      and p.can_post_castings = true
+      and p.identity_verified  = true
+      and p.verification_status = 'verified'
+      and p.background_check_status = 'passed'
+  );
+$$;
+grant execute on function public.can_post_castings_check() to authenticated, anon;
+
+-- 3. Tighten castings_insert: CD/admin role is necessary but not sufficient —
+--    the user also needs a verified posting clearance (or must be admin/super_admin).
+drop policy if exists castings_insert on public.castings;
+create policy castings_insert on public.castings
+  for insert with check (
+    cd_id = auth.uid()
+    and public.is_cd_capable()
+    and (public.is_admin() or public.can_post_castings_check())
+  );
+
+-- 4. User-facing RPC: start_verification_session
+--    Sets verification_status → pending and records submitted_at.
+--    Does NOT grant verification. Provider integration happens externally.
+create or replace function public.start_verification_session(p_provider text default null)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'not authenticated' using errcode = '42501';
+  end if;
+  -- Only CD-capable accounts can start verification.
+  if not public.is_cd_capable() then
+    raise exception 'only casting director accounts can start verification' using errcode = '42501';
+  end if;
+  -- Verified accounts do not need to restart.
+  if exists (select 1 from public.profiles where id = auth.uid() and verification_status = 'verified') then
+    raise exception 'account already verified' using errcode = 'P0001';
+  end if;
+  update public.profiles
+     set verification_status       = 'pending',
+         verification_provider     = coalesce(p_provider, verification_provider),
+         verification_submitted_at = coalesce(verification_submitted_at, now()),
+         updated_at                = now()
+   where id = auth.uid();
+end;
+$$;
+grant execute on function public.start_verification_session(text) to authenticated;
+
+-- 5. Admin RPC: approve a casting creator.
+create or replace function public.admin_approve_casting_creator(p_user_id uuid, p_notes text default null)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_old jsonb;
+begin
+  if not public.is_admin() then raise exception 'not authorized' using errcode='42501'; end if;
+  select to_jsonb(p) into v_old from public.profiles p where id = p_user_id;
+  if v_old is null then raise exception 'user not found'; end if;
+  update public.profiles
+     set verification_status      = 'verified',
+         identity_verified        = true,
+         background_check_status  = 'passed',
+         can_post_castings        = true,
+         verified                 = true,
+         verification_approved_at = now(),
+         verification_rejected_at = null,
+         verification_notes       = coalesce(p_notes, verification_notes),
+         updated_at               = now()
+   where id = p_user_id;
+  perform public._audit('cd.verification.approve','profiles',p_user_id,v_old,
+    jsonb_build_object('verification_status','verified','can_post_castings',true),p_notes);
+end; $$;
+grant execute on function public.admin_approve_casting_creator(uuid,text) to authenticated;
+
+-- 6. Admin RPC: reject a casting creator.
+create or replace function public.admin_reject_casting_creator(p_user_id uuid, p_notes text default null)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_old jsonb;
+begin
+  if not public.is_admin() then raise exception 'not authorized' using errcode='42501'; end if;
+  select to_jsonb(p) into v_old from public.profiles p where id = p_user_id;
+  if v_old is null then raise exception 'user not found'; end if;
+  update public.profiles
+     set verification_status      = 'rejected',
+         identity_verified        = false,
+         background_check_status  = 'failed',
+         can_post_castings        = false,
+         verified                 = false,
+         verification_rejected_at = now(),
+         verification_approved_at = null,
+         verification_notes       = coalesce(p_notes, verification_notes),
+         updated_at               = now()
+   where id = p_user_id;
+  perform public._audit('cd.verification.reject','profiles',p_user_id,v_old,
+    jsonb_build_object('verification_status','rejected','can_post_castings',false),p_notes);
+end; $$;
+grant execute on function public.admin_reject_casting_creator(uuid,text) to authenticated;
+
+-- 7. Admin RPC: flag a casting creator for manual review.
+create or replace function public.admin_needs_review_casting_creator(p_user_id uuid, p_notes text default null)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_old jsonb;
+begin
+  if not public.is_admin() then raise exception 'not authorized' using errcode='42501'; end if;
+  select to_jsonb(p) into v_old from public.profiles p where id = p_user_id;
+  if v_old is null then raise exception 'user not found'; end if;
+  update public.profiles
+     set verification_status      = 'needs_review',
+         can_post_castings        = false,
+         verification_notes       = coalesce(p_notes, verification_notes),
+         updated_at               = now()
+   where id = p_user_id;
+  perform public._audit('cd.verification.needs_review','profiles',p_user_id,v_old,
+    jsonb_build_object('verification_status','needs_review','can_post_castings',false),p_notes);
+end; $$;
+grant execute on function public.admin_needs_review_casting_creator(uuid,text) to authenticated;
+
+-- 8. Admin RPC: reset a casting creator's verification to not_started.
+create or replace function public.admin_reset_casting_verification(p_user_id uuid, p_notes text default null)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_old jsonb;
+begin
+  if not public.is_admin() then raise exception 'not authorized' using errcode='42501'; end if;
+  select to_jsonb(p) into v_old from public.profiles p where id = p_user_id;
+  if v_old is null then raise exception 'user not found'; end if;
+  update public.profiles
+     set verification_status      = 'not_started',
+         identity_verified        = false,
+         background_check_status  = 'not_started',
+         can_post_castings        = false,
+         verified                 = false,
+         verification_provider    = null,
+         verification_session_id  = null,
+         verification_submitted_at= null,
+         verification_approved_at = null,
+         verification_rejected_at = null,
+         verification_notes       = coalesce(p_notes, null),
+         updated_at               = now()
+   where id = p_user_id;
+  perform public._audit('cd.verification.reset','profiles',p_user_id,v_old,
+    jsonb_build_object('verification_status','not_started','can_post_castings',false),p_notes);
+end; $$;
+grant execute on function public.admin_reset_casting_verification(uuid,text) to authenticated;

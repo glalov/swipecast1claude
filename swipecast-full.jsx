@@ -2380,6 +2380,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const [showReport,setShowReport]=useState(false);
   const [showUpgradePrompt,setShowUpgradePrompt]=useState(false);
   const [todayCount,setTodayCount]=useState(0); // free actor's submission count today
+  const [cdProfile,setCdProfile]=useState(null); // CD's profile for verification badges
   const submittingRef=useRef(false);
   const withTimeout=(promise,ms=20000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Please try again.`)),ms))]);
   const c=casting;
@@ -2422,6 +2423,16 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
         (apps||[]).forEach(a=>{Object.entries(map).forEach(([idx,rid])=>{if(rid===a.role_id)appliedIdx.add(parseInt(idx));});});
         setApplied(appliedIdx);
       }
+      // Fetch CD profile for verification badges (uses cd_id on casting if available)
+      const cdId=c.cd_id||(c.profiles?.id);
+      if(cdId){
+        const {data:cdp}=await window.sb.from("profiles").select("display_name,company_name,identity_verified,background_check_status,can_post_castings,verification_status").eq("id",cdId).maybeSingle();
+        if(cdp)setCdProfile(cdp);
+      }else if(c.profiles){
+        setCdProfile(c.profiles); // already embedded from slider query
+      }
+    }else if(c.profiles){
+      setCdProfile(c.profiles); // embedded from FeaturedCastingsSlider
     }
   })();},[c,isLoggedIn,isDbCasting,isTalent,isPremium]);
   const submitApp=async()=>{
@@ -2524,7 +2535,11 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     </div>}
     <h1 style={{fontSize:42,fontWeight:800,letterSpacing:-1.5,marginBottom:8,color:"var(--t1)"}}>{c.title}</h1>
     <p style={{color:"var(--t2)",fontSize:17,marginBottom:4}}>{c.tagline}</p>
-    <p style={{color:"var(--t3)",fontSize:13,marginBottom:28}}>Produced by {c.prod} {c.director?`· Directed by ${c.director}`:""}</p>
+    <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:28}}>
+      <p style={{color:"var(--t3)",fontSize:13,margin:0}}>Produced by {c.prod} {c.director?`· Directed by ${c.director}`:""}</p>
+      {cdProfile&&cdProfile.identity_verified===true&&cdProfile.can_post_castings===true&&cdProfile.verification_status==="verified"&&<span style={{background:"rgba(46,204,113,0.12)",color:"#1d7b44",fontSize:10,fontWeight:800,letterSpacing:0.5,padding:"2px 9px",borderRadius:99}}>✓ ID Verified</span>}
+      {cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
+    </div>
 
     <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,padding:"20px 24px",marginBottom:32,display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"14px 28px"}}>
       <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>Union</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.union}</div></div>
@@ -3472,6 +3487,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       <div className="dash-stat"><div className="dash-stat-num" style={{color:stats.pending>0?"var(--acc)":undefined}}>{stats.pending}</div><div className="dash-stat-label">Pending Review</div></div>
       <div className="dash-stat"><div className="dash-stat-num">{stats.selected}</div><div className="dash-stat-label">Selected</div></div>
     </div>
+    {myProfile&&<CastingCreatorVerificationBanner myProfile={myProfile}/> }
 
     {active&&activeRole?<>
       {/* ─── Per-role review: folder tabs + swipe deck (pending) or list (hold/selected/rejected) ─── */}
@@ -3668,7 +3684,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         setShowNew(false);
         setReloadTick(t=>t+1);              // my-castings refetch
         if(bumpCastings)bumpCastings();     // global: SearchPage + realtime consumers
-      }} uid={uid}/>}
+      }} uid={uid} myProfile={myProfile}/>}
     {msgApp&&<MessageModal app={msgApp} fromId={uid} castingTitle={active?.title||""} onClose={()=>setMsgApp(null)} onSent={()=>setMsgApp(null)}/>}
     {composeDmTo&&<ComposeDMModal fromId={uid} toId={composeDmTo.id} toName={composeDmTo.name} onClose={()=>setComposeDmTo(null)}/>}
 
@@ -4526,7 +4542,74 @@ function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm}){
   </div>);
 }
 
-function NewCastingModal({onClose,onPosted,uid}){
+// ─── CastingVerifiedBadge — "Background Checked" badge with disclaimer tooltip
+function CastingVerifiedBadge(){
+  const [show,setShow]=useState(false);
+  return(<span style={{position:"relative",display:"inline-flex",alignItems:"center",gap:3}}>
+    <span style={{background:"rgba(41,128,185,0.12)",color:"#1a5276",fontSize:9,fontWeight:800,letterSpacing:0.6,padding:"2px 8px",borderRadius:99}}>✓ Background Checked</span>
+    <span
+      onMouseEnter={()=>setShow(true)}
+      onMouseLeave={()=>setShow(false)}
+      onFocus={()=>setShow(true)}
+      onBlur={()=>setShow(false)}
+      tabIndex={0}
+      style={{cursor:"pointer",fontSize:10,color:"var(--t3)",lineHeight:1,userSelect:"none"}}
+      aria-label="Background check disclaimer"
+    >ⓘ</span>
+    {show&&<span style={{position:"absolute",bottom:"calc(100% + 8px)",left:"50%",transform:"translateX(-50%)",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:8,padding:"10px 14px",fontSize:11,color:"var(--t2)",lineHeight:1.55,width:280,zIndex:99,boxShadow:"0 4px 16px rgba(0,0,0,0.12)",pointerEvents:"none",textAlign:"left"}}>
+      This casting creator has completed our verification process. Verification does not guarantee the legitimacy, safety, conduct, payment, or quality of any project, individual, company, audition, production, job offer, or communication. Always use your own judgment, never share sensitive personal information outside the platform, and report suspicious activity.
+    </span>}
+  </span>);
+}
+
+// ─── CastingCreatorVerificationBanner
+//     Shown in the CD dashboard when the account is not yet cleared to post.
+function CastingCreatorVerificationBanner({myProfile}){
+  const isAdmin=myProfile&&(myProfile.user_type==="admin"||myProfile.user_type==="super_admin");
+  if(isAdmin)return null; // admins are always clear
+  if(myProfile?.can_post_castings===true&&myProfile?.verification_status==="verified")return null;
+
+  const status=myProfile?.verification_status||"not_started";
+  const [startMsg,setStartMsg]=useState("");
+  const [starting,setStarting]=useState(false);
+
+  const startVerification=async()=>{
+    setStarting(true);setStartMsg("");
+    try{
+      await window.sb.rpc("start_verification_session",{p_provider:null});
+      setStartMsg("Verification provider is not connected yet. Admin must connect Persona, Didit, or Stripe Identity before live verification can begin. Your account has been flagged as pending — an admin will review and enable posting access.");
+    }catch(e){
+      const m=(e.message||"").toLowerCase();
+      if(m.includes("already verified")){setStartMsg("Your account is already verified.");}
+      else{setStartMsg("Verification provider is not connected yet. Admin must connect Persona, Didit, or Stripe Identity before live verification can begin. Your account has been flagged as pending — an admin will review and enable posting access.");}
+    }finally{setStarting(false);}
+  };
+
+  const statusColor={not_started:"#c88900",pending:"#2980b9",needs_review:"#8e44ad",rejected:"#c0392b"}[status]||"var(--t2)";
+  const statusLabel={not_started:"Not started",pending:"Pending review",needs_review:"Needs review",rejected:"Rejected"}[status]||status;
+
+  return(<div style={{background:"rgba(200,137,0,0.07)",border:"1px solid rgba(200,137,0,0.28)",borderRadius:12,padding:"20px 24px",marginBottom:20}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:16,flexWrap:"wrap"}}>
+      <div style={{flex:1}}>
+        <div style={{fontWeight:800,fontSize:15,marginBottom:6}}>Verify Your Identity to Post Castings</div>
+        <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.65,marginBottom:8}}>To protect actors and performers, all casting creators must complete identity verification before publishing casting calls. Some accounts may require additional manual review.</p>
+        <div style={{fontSize:12,color:"var(--t3)"}}>Current status: <strong style={{color:statusColor}}>{statusLabel}</strong></div>
+        {startMsg&&<div style={{marginTop:10,background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,color:"var(--t2)",lineHeight:1.6}}>{startMsg}</div>}
+      </div>
+      {status!=="pending"&&status!=="needs_review"&&status!=="rejected"&&(
+        <button className="btn-p" onClick={startVerification} disabled={starting} style={{whiteSpace:"nowrap",flexShrink:0}}>
+          {starting?"Starting…":"Start Verification"}
+        </button>
+      )}
+      {status==="rejected"&&<div style={{fontSize:12,color:"#c0392b",fontWeight:600,flexShrink:0}}>Contact support to appeal.</div>}
+    </div>
+  </div>);
+}
+
+function NewCastingModal({onClose,onPosted,uid,myProfile}){
+  // Admins bypass the verification gate so they can always post.
+  const isAdmin=myProfile&&(myProfile.user_type==="admin"||myProfile.user_type==="super_admin");
+  const canPost=isAdmin||(myProfile&&myProfile.can_post_castings===true&&myProfile.identity_verified===true&&myProfile.verification_status==="verified");
   const [step,setStep]=useState(1); // 1 = form, 2 = success
   const [err,setErr]=useState("");
   const [busy,setBusy]=useState(false);
@@ -4537,6 +4620,24 @@ function NewCastingModal({onClose,onPosted,uid}){
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
   const addRole=()=>setRoles(p=>[...p,{name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any"}]);
   const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
+
+  // Blocked — verification required
+  if(!canPost){
+    return(<div className="modal-overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:520,textAlign:"center",padding:"44px 36px"}}>
+      <div style={{fontSize:44,marginBottom:16}}>🔒</div>
+      <h2 style={{fontSize:22,fontWeight:800,marginBottom:10}}>Verification Required</h2>
+      <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,marginBottom:8}}>To protect actors and performers, all casting creators must complete identity verification before publishing casting calls. Some accounts may require additional manual review.</p>
+      <p style={{color:"var(--t3)",fontSize:13,marginBottom:28}}>Your current status: <strong style={{color:"var(--acc)"}}>{myProfile?.verification_status||"not started"}</strong></p>
+      <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+        <button className="btn-p" onClick={async()=>{
+          try{await window.sb.rpc("start_verification_session",{p_provider:null});alert("Verification provider is not connected yet. Admin must connect Persona, Didit, or Stripe Identity before live verification can begin.\n\nYour account has been flagged as pending. An admin will review your account and enable posting access.");}
+          catch(e){const m=(e.message||"").toLowerCase();if(m.includes("already verified")){alert("Your account is already verified.");}else{alert("Verification provider is not connected yet. Admin must connect Persona, Didit, or Stripe Identity before live verification can begin.\n\nYour account has been flagged as pending. An admin will review your account and enable posting access.");}}
+        }}>Start Verification</button>
+        <button className="btn-s" onClick={onClose}>Close</button>
+      </div>
+    </div></div>);
+  }
+
   // Common pay presets shown as one-tap chips beside the pay field
   const PAY_PRESETS=["$100/day","$150/day","$200/day","$20/hour","$50/hour","Unpaid","Deferred","Negotiable","SAG Scale"];
   const submit=async()=>{
@@ -4633,7 +4734,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   const fetchCastings=useCallback(async()=>{
     try{
       const {data,error}=await window.sb.from("castings")
-        .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,cd_id,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified)")
+        .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,cd_id,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
         .eq("status","open").eq("published",true)
         .order("created_at",{ascending:false})
         .limit(12);
@@ -4811,8 +4912,9 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
             {sc.tagline&&sc.tagline!==sc.synopsis&&<p style={{color:"var(--t2)",fontSize:15,marginBottom:6,fontWeight:500}}>{sc.tagline}</p>}
             {(sCdName||sc.prod)&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:14,fontWeight:500,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
               <span>{sCdName?`Posted by ${sCdName}`:""}{sCdName&&sc.prod?" · ":""}{sc.prod||""}</span>
-              {sCd.verified===true&&<span style={{background:"rgba(46,204,113,0.12)",color:"#1d7b44",fontSize:9,fontWeight:800,letterSpacing:0.6,padding:"2px 8px",borderRadius:99}} title="Verified casting director">✓ VERIFIED</span>}
-              {sCd.verified===false&&sCdName&&<span style={{background:"rgba(200,137,0,0.12)",color:"#c88900",fontSize:9,fontWeight:800,letterSpacing:0.6,padding:"2px 8px",borderRadius:99}} title="This caster has not yet been verified by SlateCue">UNVERIFIED</span>}
+              {(sCd.identity_verified===true&&sCd.can_post_castings===true&&sCd.verification_status==="verified")&&<span style={{background:"rgba(46,204,113,0.12)",color:"#1d7b44",fontSize:9,fontWeight:800,letterSpacing:0.6,padding:"2px 8px",borderRadius:99}} title="ID verified by SlateCue">✓ ID Verified</span>}
+              {(sCd.identity_verified===true&&sCd.background_check_status==="passed")&&<CastingVerifiedBadge/>}
+              {!(sCd.identity_verified===true&&sCd.can_post_castings===true)&&sCdName&&<span style={{background:"rgba(200,137,0,0.12)",color:"#c88900",fontSize:9,fontWeight:800,letterSpacing:0.6,padding:"2px 8px",borderRadius:99}} title="This caster has not yet completed identity verification">UNVERIFIED</span>}
             </p>}
             {sDesc&&<p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:18,maxWidth:680}}>{sDesc}</p>}
             <div style={{display:"flex",gap:24,flexWrap:"wrap",fontSize:13,color:"var(--t2)",marginBottom:22}}>
@@ -5557,6 +5659,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       <div style={{fontSize:11,color:"var(--t3)",marginBottom:18,wordBreak:"break-word"}}>{session?.user?.email}</div>
       <AdminNavLink current={section} target="overview" label="Overview" onClick={setSection}/>
       <AdminNavLink current={section} target="users" label="Users" onClick={setSection}/>
+      <AdminNavLink current={section} target="cd-verification" label="CD Verification" onClick={setSection}/>
       <AdminNavLink current={section} target="castings" label="Castings" onClick={setSection}/>
       <AdminNavLink current={section} target="applications" label="Applications" onClick={setSection}/>
       <AdminNavLink current={section} target="reports" label="Reports" onClick={setSection}/>
@@ -5576,6 +5679,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
     <div>
       {section==="overview"&&<AdminOverview/>}
       {section==="users"&&<AdminUsers isSuperAdmin={isSuperAdmin} session={session}/>}
+      {section==="cd-verification"&&<AdminCDVerification/>}
       {section==="castings"&&<AdminCastings/>}
       {section==="applications"&&<AdminApplications/>}
       {section==="reports"&&<AdminReports/>}
@@ -5599,7 +5703,7 @@ function AdminOverview(){
   useEffect(()=>{(async()=>{
     try{
       const [p,c,a,au]=await Promise.all([
-        window.sb.from("profiles").select("user_type,banned,suspended,verified,featured",{count:"exact"}).limit(5000),
+        window.sb.from("profiles").select("user_type,banned,suspended,verified,featured,verification_status,can_post_castings",{count:"exact"}).limit(5000),
         window.sb.from("castings").select("status,featured",{count:"exact"}).limit(5000),
         window.sb.from("applications").select("status",{count:"exact"}).limit(10000),
         window.sb.from("audit_logs").select("*").order("created_at",{ascending:false}).limit(10)
@@ -5614,6 +5718,8 @@ function AdminOverview(){
         banned:pu.filter(x=>x.banned).length,
         suspended:pu.filter(x=>x.suspended).length,
         verified:pu.filter(x=>x.verified).length,
+        cd_verified:pu.filter(x=>x.can_post_castings).length,
+        cd_pending:pu.filter(x=>["pending","needs_review"].includes(x.verification_status)&&!x.can_post_castings).length,
         castings:cu.length,
         open_castings:cu.filter(x=>x.status==="open").length,
         featured_castings:cu.filter(x=>x.featured).length,
@@ -5637,6 +5743,8 @@ function AdminOverview(){
       <StatTile num={stats.cds} label="Casting directors"/>
       <StatTile num={stats.admins} label="Admins"/>
       <StatTile num={stats.verified} label="Verified"/>
+      <StatTile num={stats.cd_verified} label="CDs approved to post"/>
+      <StatTile num={stats.cd_pending} label="CD verif. pending" danger={stats.cd_pending>0}/>
       <StatTile num={stats.suspended} label="Suspended" danger={stats.suspended>0}/>
       <StatTile num={stats.banned} label="Banned" danger={stats.banned>0}/>
     </div>
@@ -5664,6 +5772,127 @@ function StatTile({num,label,danger}){
   return(<div className="dash-stat" style={{borderColor:danger?"#c0392b":undefined}}><div className="dash-stat-num" style={{color:danger?"#c0392b":undefined}}>{num}</div><div className="dash-stat-label">{label}</div></div>);
 }
 
+// ─── AdminCDVerification — full casting creator verification management
+function AdminCDVerification(){
+  const [users,setUsers]=useState([]);
+  const [q,setQ]=useState("");
+  const [statusFilter,setStatusFilter]=useState("all");
+  const [loading,setLoading]=useState(true);
+  const [msg,setMsg]=useState("");
+  const [msgType,setMsgType]=useState("info");
+  const [busyId,setBusyId]=useState(null);
+  const [expandedId,setExpandedId]=useState(null);
+  const [reasonPrompt,setReasonPrompt]=useState(null); // {user,action}
+
+  const reload=useCallback(async()=>{
+    setLoading(true);
+    const {data,error}=await window.sb.from("profiles")
+      .select("id,display_name,email,phone,company_name,company_role,user_type,verification_status,identity_verified,background_check_status,can_post_castings,verification_provider,verification_submitted_at,verification_approved_at,verification_rejected_at,verification_notes,created_at")
+      .in("user_type",["cd","admin","super_admin"])
+      .order("created_at",{ascending:false})
+      .limit(500);
+    if(error){setMsg("Load failed: "+error.message);setMsgType("error");}
+    setUsers(data||[]);setLoading(false);
+  },[]);
+  useEffect(()=>{reload();},[reload]);
+
+  const callRpc=async(fn,args,successLabel,userId)=>{
+    setMsg("");setBusyId(userId||null);
+    const {error}=await window.sb.rpc(fn,args);
+    setBusyId(null);
+    if(error){setMsg(fn+" failed: "+error.message);setMsgType("error");return false;}
+    setMsg(successLabel);setMsgType("success");await reload();return true;
+  };
+
+  const approve=(u,notes)=>callRpc("admin_approve_casting_creator",{p_user_id:u.id,p_notes:notes||null},`${u.display_name||u.email} approved.`,u.id);
+  const reject=(u,notes)=>callRpc("admin_reject_casting_creator",{p_user_id:u.id,p_notes:notes||null},`${u.display_name||u.email} rejected.`,u.id);
+  const needsReview=(u,notes)=>callRpc("admin_needs_review_casting_creator",{p_user_id:u.id,p_notes:notes||null},`${u.display_name||u.email} flagged for review.`,u.id);
+  const reset=(u)=>{if(!confirm(`Reset verification for ${u.display_name||u.email}? This clears all verification data.`))return;callRpc("admin_reset_casting_verification",{p_user_id:u.id},`${u.display_name||u.email} reset.`,u.id);};
+
+  const filtered=users.filter(u=>{
+    if(statusFilter!=="all"&&u.verification_status!==statusFilter)return false;
+    if(!q)return true;
+    const n=q.toLowerCase();
+    return [u.display_name,u.email,u.company_name,u.phone].some(x=>x&&x.toLowerCase().includes(n));
+  });
+
+  const STATUS_COLOR={not_started:"#c88900",pending:"#2980b9",verified:"#1d7b44",rejected:"#c0392b",needs_review:"#8e44ad"};
+  const STATUS_LABEL={not_started:"Not started",pending:"Pending",verified:"Verified",rejected:"Rejected",needs_review:"Needs review"};
+  const BG_COLOR={not_started:"#c88900",pending:"#2980b9",passed:"#1d7b44",failed:"#c0392b",needs_review:"#8e44ad"};
+
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>CD Verification</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Review and approve casting creator identity verification requests.</p>
+    {msg&&<div style={{background:msgType==="error"?"rgba(192,57,43,0.1)":"rgba(46,204,113,0.12)",color:msgType==="error"?"#c0392b":"#1d7b44",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+    <div style={{display:"grid",gridTemplateColumns:"1fr 200px",gap:10,marginBottom:14}}>
+      <input className="input" placeholder="Search by name, email, company…" value={q} onChange={e=>setQ(e.target.value)}/>
+      <select className="select" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}>
+        <option value="all">All statuses</option>
+        <option value="not_started">Not started</option>
+        <option value="pending">Pending</option>
+        <option value="needs_review">Needs review</option>
+        <option value="verified">Verified</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+    {loading?<p style={{color:"var(--t3)"}}>Loading…</p>:
+      <div className="card" style={{padding:0,overflow:"hidden"}}>
+        {filtered.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No accounts match.</div>}
+        {filtered.map(u=>{
+          const busy=busyId===u.id;
+          const expanded=expandedId===u.id;
+          const vs=u.verification_status||"not_started";
+          return(<div key={u.id} style={{borderBottom:"1px solid var(--bdr)"}}>
+            <div style={{padding:"14px 18px",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"center",cursor:"pointer"}} onClick={()=>setExpandedId(expanded?null:u.id)}>
+              <div>
+                <div style={{fontWeight:600,fontSize:14,display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+                  {u.display_name||"—"}
+                  <span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:99,background:STATUS_COLOR[vs]+"22",color:STATUS_COLOR[vs]}}>{STATUS_LABEL[vs]||vs}</span>
+                  {u.can_post_castings&&<span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:99,background:"rgba(46,204,113,0.12)",color:"#1d7b44"}}>✓ Can Post</span>}
+                </div>
+                <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{u.email}{u.company_name?` · ${u.company_name}`:""}{u.company_role?` · ${u.company_role}`:""}</div>
+              </div>
+              <span style={{color:"var(--t3)",fontSize:12}}>{expanded?"▲":"▼"}</span>
+            </div>
+            {expanded&&<div style={{padding:"0 18px 18px",borderTop:"1px solid var(--bdr)"}}>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12,marginBottom:16,marginTop:16}}>
+                <div style={{fontSize:12}}><div style={{color:"var(--t3)",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>Role</div>{u.user_type}</div>
+                <div style={{fontSize:12}}><div style={{color:"var(--t3)",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>Phone</div>{u.phone||"—"}</div>
+                <div style={{fontSize:12}}><div style={{color:"var(--t3)",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>Provider</div>{u.verification_provider||"—"}</div>
+                <div style={{fontSize:12}}><div style={{color:"var(--t3)",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>Identity Verified</div><span style={{color:u.identity_verified?"#1d7b44":"#c0392b",fontWeight:700}}>{u.identity_verified?"Yes":"No"}</span></div>
+                <div style={{fontSize:12}}><div style={{color:"var(--t3)",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>Background Check</div><span style={{color:BG_COLOR[u.background_check_status]||"var(--t2)",fontWeight:700}}>{u.background_check_status||"not_started"}</span></div>
+                <div style={{fontSize:12}}><div style={{color:"var(--t3)",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>Can Post Castings</div><span style={{color:u.can_post_castings?"#1d7b44":"#c0392b",fontWeight:700}}>{u.can_post_castings?"Yes":"No"}</span></div>
+                <div style={{fontSize:12}}><div style={{color:"var(--t3)",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>Submitted</div>{u.verification_submitted_at?new Date(u.verification_submitted_at).toLocaleDateString():"—"}</div>
+                <div style={{fontSize:12}}><div style={{color:"var(--t3)",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>Approved</div>{u.verification_approved_at?new Date(u.verification_approved_at).toLocaleDateString():"—"}</div>
+                <div style={{fontSize:12}}><div style={{color:"var(--t3)",fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>Rejected</div>{u.verification_rejected_at?new Date(u.verification_rejected_at).toLocaleDateString():"—"}</div>
+              </div>
+              {u.verification_notes&&<div style={{fontSize:12,color:"var(--t2)",marginBottom:14,background:"var(--s2)",borderRadius:8,padding:"8px 12px"}}><strong>Notes:</strong> {u.verification_notes}</div>}
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",pointerEvents:busy?"none":"auto",opacity:busy?0.5:1}}>
+                {vs!=="verified"&&<button className="btn-p btn-sm" disabled={busy} onClick={()=>setReasonPrompt({user:u,action:"approve"})}>✓ Approve</button>}
+                {vs!=="rejected"&&<button className="btn-s btn-sm" disabled={busy} style={{color:"#c0392b",borderColor:"#e8c6c6"}} onClick={()=>setReasonPrompt({user:u,action:"reject"})}>✕ Reject</button>}
+                {vs!=="needs_review"&&<button className="btn-s btn-sm" disabled={busy} style={{color:"#8e44ad"}} onClick={()=>setReasonPrompt({user:u,action:"needs_review"})}>⚑ Needs Review</button>}
+                <button className="btn-s btn-sm" disabled={busy} onClick={()=>reset(u)}>↺ Reset</button>
+              </div>
+            </div>}
+          </div>);
+        })}
+      </div>
+    }
+    {reasonPrompt&&<ReasonModal
+      title={reasonPrompt.action==="approve"?"Approve Casting Creator":reasonPrompt.action==="reject"?"Reject Casting Creator":"Flag for Review"}
+      cta={reasonPrompt.action==="approve"?"Approve":reasonPrompt.action==="reject"?"Reject":"Flag for Review"}
+      onCancel={()=>setReasonPrompt(null)}
+      onSubmit={async(notes)=>{
+        const{user,action}=reasonPrompt;
+        setReasonPrompt(null);
+        if(action==="approve")await approve(user,notes);
+        else if(action==="reject")await reject(user,notes);
+        else await needsReview(user,notes);
+      }}
+    />}
+  </>);
+}
+
 // ─── Users: search + filter + role/suspend/ban/verify/feature/delete
 function AdminUsers({isSuperAdmin,session}){
   const [users,setUsers]=useState([]);
@@ -5676,7 +5905,7 @@ function AdminUsers({isSuperAdmin,session}){
   const [reasonPrompt,setReasonPrompt]=useState(null);
   const reload=useCallback(async()=>{
     setLoading(true);
-    const {data,error}=await window.sb.from("profiles").select("*").order("created_at",{ascending:false}).limit(1000);
+    const {data,error}=await window.sb.from("profiles").select("*,verification_status,identity_verified,background_check_status,can_post_castings,verification_submitted_at,verification_approved_at,verification_rejected_at,verification_notes,verification_provider").order("created_at",{ascending:false}).limit(1000);
     if(error){setMsg("Load failed: "+error.message);setMsgType("error");}
     setUsers(data||[]);setLoading(false);
   },[]);
@@ -5756,6 +5985,11 @@ function UserRow({u,isSuperAdmin,self,busy,onSetRole,onToggleVerified,onToggleFe
   if(u.suspended)statusBadges.push(<span key="s" style={{color:"#c0392b",fontSize:10,fontWeight:700,marginLeft:6}}>SUSPENDED</span>);
   if(u.verified)statusBadges.push(<span key="v" style={{color:"#1d7b44",fontSize:10,fontWeight:700,marginLeft:6}}>✓ VERIFIED</span>);
   if(u.featured)statusBadges.push(<span key="f" style={{color:"var(--acc)",fontSize:10,fontWeight:700,marginLeft:6}}>★ FEATURED</span>);
+  const isCdType=(u.user_type==="cd"||u.user_type==="admin"||u.user_type==="super_admin");
+  const vsColor={not_started:"#c88900",pending:"#2980b9",verified:"#1d7b44",rejected:"#c0392b",needs_review:"#8e44ad"}[u.verification_status]||"var(--t3)";
+  const vsLabel={not_started:"Verification: Not started",pending:"Verification: Pending",verified:"Verification: ✓",rejected:"Verification: Rejected",needs_review:"Verification: Needs review"}[u.verification_status];
+  if(isCdType&&vsLabel)statusBadges.push(<span key="vs" style={{color:vsColor,fontSize:10,fontWeight:700,marginLeft:6}}>{vsLabel}</span>);
+  if(isCdType&&u.can_post_castings)statusBadges.push(<span key="cp" style={{color:"#1d7b44",fontSize:10,fontWeight:700,marginLeft:6}}>✓ Can Post</span>);
   return(<div style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"center",opacity:u.banned?0.45:u.suspended?0.7:1}}>
     <div>
       <div style={{fontWeight:600,fontSize:14}}>{u.display_name||"—"} {self&&<span style={{color:"var(--acc)",fontSize:10,fontWeight:700,marginLeft:6}}>(YOU)</span>}{statusBadges}</div>
