@@ -192,6 +192,7 @@ const css = `
 :root{--bg:#F7F4EE;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;}
 html,body{min-height:100vh;background:#1B1C20;}
 body{color:var(--t1);font-family:'DM Sans',sans-serif;overflow-x:hidden;margin:0;display:flex;flex-direction:column;}
+#root{flex:1 1 auto;display:flex;flex-direction:column;min-height:100vh;}
 .app{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;flex:1 1 auto;}
 a{color:inherit;text-decoration:none;}
 h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
@@ -6664,12 +6665,12 @@ function App(){
       </div>}
       {/* Stable route content wrapper — always holds at least viewport height so the
           footer never jumps upward during route transitions or while data loads. */}
-      <main style={{flex:"1 1 auto",display:"flex",flexDirection:"column",minHeight:"calc(100vh - 80px)"}}>
+      <main style={{flex:"1 1 auto",display:"flex",flexDirection:"column",minHeight:"100vh"}}>
         {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("home");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c.slug});}}/>}
-        {/* SearchPage is kept mounted while on casting-detail so its fetched castings state
-            survives the navigation. display:none hides it while keeping React state alive. */}
-        {(page==="search"||page==="casting-detail")&&
-          <div style={{display:page==="search"?"flex":"none",flexDirection:"column",flex:"1 1 auto"}} aria-hidden={page!=="search"}>
+        {/* SearchPage is pre-mounted on home page too so it's already loaded when the
+            user clicks Browse Castings — prevents the fresh-mount loading flash. */}
+        {(page==="home"||page==="search"||page==="casting-detail")&&
+          <div style={{display:page==="search"?"flex":"none",flexDirection:"column",flex:"1 1 auto",minHeight:"calc(100vh - 80px)"}} aria-hidden={page!=="search"}>
             <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c.slug});}}/>
           </div>}
         {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
