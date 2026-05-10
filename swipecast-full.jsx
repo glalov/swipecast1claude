@@ -1788,12 +1788,13 @@ function PricingPage({onNavigate}){
     display:"flex",flexDirection:"column",
     background:"var(--s1)",
     border:"1px solid var(--bdr)",
-    borderRadius:20,
-    padding:"0 28px 28px",
+    borderRadius:16,
+    padding:"0 24px 24px",
     overflow:"hidden",
+    boxShadow:"0 1px 6px rgba(0,0,0,0.05)",
   };
   const feat=(f,check)=>(
-    <div key={f} style={{display:"flex",gap:10,alignItems:"center",padding:"9px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)"}}>
+    <div key={f} style={{display:"flex",gap:10,alignItems:"center",padding:"8px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)"}}>
       <span style={{color:check||"var(--grn)",fontWeight:700,flexShrink:0,fontSize:14}}>✓</span>{f}
     </div>
   );
@@ -1806,82 +1807,78 @@ function PricingPage({onNavigate}){
   );
 
   return(<div className="page">
-    <div style={{background:"#1a1a2e",color:"#f5e8d0",fontFamily:"monospace",fontSize:13,fontWeight:700,padding:"10px 20px",textAlign:"center",letterSpacing:0.5}}>
-      PRICING PAGE VERSION 3 - FREE + PREMIUM LIMITS
-    </div>
     <div className="info-hero">
       <div className="section-label">Pricing</div>
       <h1>Simple pricing.<br/>No surprises.</h1>
-      <p>Create a free account and start submitting. Upgrade to Premium for {PREMIUM_PRICE} to unlock more headshots, video reels, and unlimited submissions.</p>
+      <p>Start free. Upgrade only when you need more submissions, media, and visibility.</p>
     </div>
 
     {/* ── Three cards in one row ── */}
-    <div style={{maxWidth:1080,margin:"0 auto 56px",padding:"0 20px"}}>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:24,alignItems:"stretch"}}>
+    <div style={{maxWidth:1080,margin:"0 auto 32px",padding:"0 20px"}}>
+      <div style={{background:"var(--s2)",borderRadius:28,padding:"40px 32px",border:"1px solid var(--bdr)"}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20,alignItems:"stretch"}}>
 
-        {/* ── Card 1: Actor Free ── */}
-        <div style={cardBase}>
-          {/* Badge spacer — keeps titles aligned across all cards */}
-          <div style={{height:36,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:4}}/>
-          <div style={{textAlign:"center",marginBottom:20}}>
-            <h3 style={{fontSize:17,fontWeight:800,letterSpacing:-0.3,marginBottom:5,color:"var(--t1)"}}>Actor Free</h3>
-            <p style={{color:"var(--t3)",fontSize:12,lineHeight:1.4}}>Actors · Models · Performers</p>
+          {/* ── Card 1: Actor Free ── */}
+          <div style={cardBase}>
+            <div style={{height:36,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:4}}/>
+            <div style={{textAlign:"center",marginBottom:20}}>
+              <h3 style={{fontSize:18,fontWeight:800,letterSpacing:-0.3,marginBottom:5,color:"var(--t1)"}}>Actor Free</h3>
+              <p style={{color:"var(--t3)",fontSize:12,lineHeight:1.4}}>Actors · Models · Performers</p>
+            </div>
+            <div style={{textAlign:"center",paddingBottom:20,borderBottom:"1px solid var(--bdr)",marginBottom:20}}>
+              <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:42,color:"var(--t1)",letterSpacing:-2,lineHeight:1}}>$0</div>
+              <div style={{color:"var(--t3)",fontSize:12,marginTop:8}}>No credit card required</div>
+            </div>
+            <div style={{flex:1}}>
+              {["Free account","1 headshot","3 submissions per day","No video uploads","Basic actor profile","Browse all castings"].map(f=>feat(f,"var(--grn)"))}
+            </div>
+            <button className="btn-s" style={{width:"100%",marginTop:24}} onClick={()=>onNavigate("register-talent")}>Get Started Free</button>
           </div>
-          <div style={{textAlign:"center",paddingBottom:22,borderBottom:"1px solid var(--bdr)",marginBottom:22}}>
-            <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:48,color:"var(--t1)",letterSpacing:-2,lineHeight:1}}>$0</div>
-            <div style={{color:"var(--t3)",fontSize:12,marginTop:8}}>No credit card required</div>
+
+          {/* ── Card 2: Actor Premium (featured) ── */}
+          <div style={{...cardBase,border:"2px solid var(--acc)",boxShadow:"0 4px 20px rgba(26,26,46,0.13)"}}>
+            <div style={{height:36,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:4}}>
+              <span style={{background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",padding:"4px 18px",borderRadius:100,fontFamily:"'DM Sans',sans-serif",whiteSpace:"nowrap"}}>Recommended</span>
+            </div>
+            <div style={{textAlign:"center",marginBottom:20}}>
+              <h3 style={{fontSize:18,fontWeight:800,letterSpacing:-0.3,marginBottom:5,color:"var(--t1)"}}>Actor Premium</h3>
+              <p style={{color:"var(--t3)",fontSize:12,lineHeight:1.4}}>Actors · Models · Performers</p>
+            </div>
+            <div style={{textAlign:"center",paddingBottom:20,borderBottom:"1px solid var(--bdr)",marginBottom:20}}>
+              <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:42,color:"var(--acc)",letterSpacing:-2,lineHeight:1}}>$9.99</div>
+              <div style={{color:"var(--t3)",fontSize:12,marginTop:8}}>per month · cancel anytime</div>
+            </div>
+            <div style={{flex:1}}>
+              {["10 headshots","Up to 5 video reel links","Unlimited casting submissions","Premium profile features"].map(f=>feat(f,"var(--acc)"))}
+            </div>
+            {premiumMsg&&<div style={{background:"rgba(255,100,100,0.08)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:12,marginTop:16,textAlign:"center",lineHeight:1.5}}>Premium checkout is not connected yet. Please try again later.</div>}
+            <button className="btn-p" style={{width:"100%",marginTop:24}} onClick={()=>setPremiumMsg(true)}>Premium Checkout Coming Soon</button>
           </div>
-          <div style={{flex:1}}>
-            {["Free account","1 headshot","3 submissions per day","No video uploads","Basic actor profile","Browse all castings"].map(f=>feat(f,"var(--grn)"))}
+
+          {/* ── Card 3: Casting Director ── */}
+          <div style={cardBase}>
+            <div style={{height:36,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:4}}/>
+            <div style={{textAlign:"center",marginBottom:20}}>
+              <h3 style={{fontSize:18,fontWeight:800,letterSpacing:-0.3,marginBottom:5,color:"var(--t1)"}}>Casting Director</h3>
+              <p style={{color:"var(--t3)",fontSize:12,lineHeight:1.4}}>Casting Directors · Producers</p>
+            </div>
+            <div style={{textAlign:"center",paddingBottom:20,borderBottom:"1px solid var(--bdr)",marginBottom:20}}>
+              <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:42,color:"var(--t1)",letterSpacing:-2,lineHeight:1}}>Free</div>
+              <div style={{color:"var(--t3)",fontSize:12,marginTop:8}}>to create an account</div>
+            </div>
+            <div style={{flex:1}}>
+              {["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent filters"].map(f=>feat(f,"var(--grn)"))}
+              <p style={{fontSize:11,color:"var(--t3)",marginTop:16,lineHeight:1.6}}>Posting fees and payment options will be finalized before launch. Account creation is always free.</p>
+            </div>
+            <button className="btn-s" style={{width:"100%",marginTop:24}} onClick={()=>onNavigate("register-cd")}>Create CD Account</button>
           </div>
-          <button className="btn-s" style={{width:"100%",marginTop:24}} onClick={()=>onNavigate("register-talent")}>Get Started Free</button>
+
         </div>
-
-        {/* ── Card 2: Actor Premium (featured) ── */}
-        <div style={{...cardBase,border:"2px solid var(--acc)",boxShadow:"0 4px 32px rgba(26,26,46,0.11)"}}>
-          {/* Badge — centered pill */}
-          <div style={{height:36,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:4}}>
-            <span style={{background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",padding:"4px 18px",borderRadius:100,fontFamily:"'DM Sans',sans-serif",whiteSpace:"nowrap"}}>Recommended</span>
-          </div>
-          <div style={{textAlign:"center",marginBottom:20}}>
-            <h3 style={{fontSize:17,fontWeight:800,letterSpacing:-0.3,marginBottom:5,color:"var(--t1)"}}>Actor Premium</h3>
-            <p style={{color:"var(--t3)",fontSize:12,lineHeight:1.4}}>Actors · Models · Performers</p>
-          </div>
-          <div style={{textAlign:"center",paddingBottom:22,borderBottom:"1px solid var(--bdr)",marginBottom:22}}>
-            <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:48,color:"var(--acc)",letterSpacing:-2,lineHeight:1}}>$9.99</div>
-            <div style={{color:"var(--t3)",fontSize:12,marginTop:8}}>per month · cancel anytime</div>
-          </div>
-          <div style={{flex:1}}>
-            {["10 headshots","Up to 5 video reel links","Unlimited casting submissions","Premium profile features"].map(f=>feat(f,"var(--acc)"))}
-          </div>
-          {premiumMsg&&<div style={{background:"rgba(255,100,100,0.08)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:12,marginTop:16,textAlign:"center",lineHeight:1.5}}>Premium checkout is not connected yet. Please try again later.</div>}
-          <button className="btn-p" style={{width:"100%",marginTop:24}} onClick={()=>setPremiumMsg(true)}>Premium Checkout Coming Soon</button>
-        </div>
-
-        {/* ── Card 3: Casting Director ── */}
-        <div style={cardBase}>
-          {/* Badge spacer — keeps titles aligned */}
-          <div style={{height:36,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:4}}/>
-          <div style={{textAlign:"center",marginBottom:20}}>
-            <h3 style={{fontSize:17,fontWeight:800,letterSpacing:-0.3,marginBottom:5,color:"var(--t1)"}}>Casting Director</h3>
-            <p style={{color:"var(--t3)",fontSize:12,lineHeight:1.4}}>Casting Directors · Producers</p>
-          </div>
-          <div style={{textAlign:"center",paddingBottom:22,borderBottom:"1px solid var(--bdr)",marginBottom:22}}>
-            <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:48,color:"var(--t1)",letterSpacing:-2,lineHeight:1}}>Free</div>
-            <div style={{color:"var(--t3)",fontSize:12,marginTop:8}}>to create an account</div>
-          </div>
-          <div style={{flex:1}}>
-            {["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent filters"].map(f=>feat(f,"var(--grn)"))}
-            <p style={{fontSize:11,color:"var(--t3)",marginTop:16,lineHeight:1.6}}>Posting fees and payment options will be finalized before launch. Account creation is always free.</p>
-          </div>
-          <button className="btn-s" style={{width:"100%",marginTop:24}} onClick={()=>onNavigate("register-cd")}>Create CD Account</button>
-        </div>
-
       </div>
     </div>
 
     {/* ── Feature comparison table ── */}
-    <div style={{maxWidth:740,margin:"0 auto 56px",padding:"0 20px"}}>
+    <div style={{maxWidth:740,margin:"0 auto 40px",padding:"0 20px"}}>
       <div className="card" style={{padding:"24px 28px"}}>
         <h4 style={{fontSize:14,fontWeight:700,marginBottom:16}}>Actor Plan Comparison</h4>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,padding:"8px 0",borderBottom:"2px solid var(--bdr)",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)"}}>
