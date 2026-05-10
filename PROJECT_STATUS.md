@@ -1,5 +1,43 @@
 # Project Status
 
+## 2026-05-09 — Stripe placeholder: Premium checkout disabled until Stripe is wired
+
+### What changed
+
+| File | What changed |
+|---|---|
+| `swipecast-full.jsx` | `PlanSummaryPage`: removed `activate_membership` RPC call from the browser. Button now reads "Upgrade to Premium — $9.99/month". Clicking shows "Premium checkout is not connected yet. Please try again later." `done`/`busy` states removed (no longer needed). Added comprehensive TODO block near Stripe constants listing every step required to complete Stripe integration. |
+| `index.html` | Rebuilt from `swipecast-full.jsx` via `python3 build-html.py`. Deployed to Vercel production (commit `2471e87`). |
+
+### Stripe integration — what is NOT connected yet
+
+Premium accounts already in the DB stay Premium (their `membership_status='active'` row is unchanged). New upgrades are fully blocked at the UI until Stripe is configured.
+
+#### Steps to enable real Premium payments
+
+1. **Create a Stripe account** at https://dashboard.stripe.com
+2. **Create Product** "SlateCue Actor Premium" → recurring price $9.99/month
+3. **Copy the Price ID** (e.g. `price_1ABC...`) → paste into `STRIPE_ACTOR_PREMIUM_PRICE_ID` in `swipecast-full.jsx`
+4. **Create a server-side checkout endpoint** (Supabase Edge Function or Next.js API route at `POST /api/stripe/checkout`):
+   - Accept the user's `auth.uid()` as `client_reference_id`
+   - Create a Stripe Checkout Session with the price ID
+   - Return the session URL to the browser (browser redirects to it)
+5. **Handle `checkout.session.completed` webhook** server-side:
+   - Verify the Stripe signature with `STRIPE_WEBHOOK_SECRET`
+   - Call `window.sb.rpc("activate_membership", {p_plan:"monthly"})` — or direct UPDATE — for the `client_reference_id` user
+   - **NEVER call `activate_membership` from the browser**
+6. **Set env vars** in Vercel: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+7. **Replace `STRIPE_ACTOR_LINK`** in `swipecast-full.jsx` with your live Stripe Payment Link or point `handleUpgradeClick` to your `/api/stripe/checkout` endpoint
+8. **Remove the "not connected yet" placeholder message** and redirect the user to Stripe Checkout instead
+
+### What the button currently does
+
+- Button label: "Upgrade to Premium — $9.99/month"
+- On click: shows red notice "Premium checkout is not connected yet. Please try again later."
+- No RPC is called. No DB state changes. Existing Premium accounts unaffected.
+
+---
+
 ## 2026-05-09 — Actor Free vs Premium plan limits
 
 ### What changed
