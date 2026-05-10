@@ -6662,55 +6662,57 @@ function App(){
           </div>
         </div>
       </div>}
-      {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("home");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c.slug});}}/>}
-      {/* SearchPage is kept mounted while on casting-detail so its fetched castings state
-          survives the navigation. The wrapper is flex:1 1 auto when visible so it re-joins
-          the .app flex chain (preserving the .page fill-height behaviour). display:none
-          hides it while keeping React state alive. */}
-      {(page==="search"||page==="casting-detail")&&
-        <div style={{display:page==="search"?"flex":"none",flexDirection:"column",flex:"1 1 auto"}} aria-hidden={page!=="search"}>
-          <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c.slug});}}/>
-        </div>}
-      {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
-      {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
-      {page==="dashboard"&&(!authReady?<PageLoader/>:<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings}/>)}
-      {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
-      {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate}/>:null)}
-      {page==="inbox"&&<InboxPage session={session} profile={myProfile} onNavigate={navigate}/>}
-      {page==="admin"&&(!authReady?<PageLoader/>:isLoggedIn&&isAdmin?<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>:null)}
-      {/* Registration pages are guarded — a logged-in user with an existing
-          profile (any user_type) is redirected to the page that makes sense for
-          them. Talents go to My Profile, CDs/Producers/Admins go to the
-          Dashboard. Stops the "Join for Free" / "Create Profile" leakage that
-          gaslit signed-in users. */}
-      {page==="register-talent"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterTalent onNavigate={navigate}/>)}
-      {page==="register-cd"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterCD onNavigate={navigate}/>)}
-      {page==="login"&&<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn}/>}
-      {page==="membership"&&<MembershipPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}}/>}
-      {page==="plan-summary"&&<PlanSummaryPage session={session} myProfile={myProfile} planKey={selectedPlan||"monthly"} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} onActivated={(returnInfo)=>{
-        // Came from a casting they tried to apply to — bounce back to that casting.
-        if(returnInfo?.casting){
-          setPrevPage("home");
-          setViewingCasting(returnInfo.casting);
-          window.scrollTo(0,0);
-          setPage("casting-detail");
-          pushHist("casting-detail",{slug:returnInfo.casting?.slug});
-        }
-      }}/>}
-      {page==="reset-password"&&<ResetPasswordPage onNavigate={navigate} session={session}/>}
-      {page==="about"&&<AboutPage onNavigate={navigate}/>}
-      {page==="blog"&&<BlogPage onNavigate={navigate}/>}
-      {page==="classes"&&<ClassesPage onNavigate={navigate}/>}
-      {page==="contact"&&<ContactPage onNavigate={navigate}/>}
-      {page==="resources"&&<ResourcesPage onNavigate={navigate}/>}
-      {page==="faq"&&<FaqPage onNavigate={navigate}/>}
-      {page==="success-stories"&&<SuccessStoriesPage onNavigate={navigate}/>}
-      {page==="pricing"&&<PricingPage onNavigate={navigate}/>}
-      {page==="studios"&&<StudiosPage onNavigate={navigate}/>}
-      {page==="api-info"&&<ApiPage onNavigate={navigate}/>}
-      {page==="terms"&&<TermsPage onNavigate={navigate}/>}
-      {page==="privacy"&&<PrivacyPage onNavigate={navigate}/>}
-      {page==="careers"&&<CareersPage onNavigate={navigate}/>}
+      {/* Stable route content wrapper — always holds at least viewport height so the
+          footer never jumps upward during route transitions or while data loads. */}
+      <main style={{flex:"1 1 auto",display:"flex",flexDirection:"column",minHeight:"calc(100vh - 80px)"}}>
+        {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("home");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c.slug});}}/>}
+        {/* SearchPage is kept mounted while on casting-detail so its fetched castings state
+            survives the navigation. display:none hides it while keeping React state alive. */}
+        {(page==="search"||page==="casting-detail")&&
+          <div style={{display:page==="search"?"flex":"none",flexDirection:"column",flex:"1 1 auto"}} aria-hidden={page!=="search"}>
+            <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c.slug});}}/>
+          </div>}
+        {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
+        {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
+        {page==="dashboard"&&(!authReady?<PageLoader/>:<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings}/>)}
+        {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
+        {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate}/>:null)}
+        {page==="inbox"&&<InboxPage session={session} profile={myProfile} onNavigate={navigate}/>}
+        {page==="admin"&&(!authReady?<PageLoader/>:isLoggedIn&&isAdmin?<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>:null)}
+        {/* Registration pages are guarded — a logged-in user with an existing
+            profile (any user_type) is redirected to the page that makes sense for
+            them. Talents go to My Profile, CDs/Producers/Admins go to the
+            Dashboard. Stops the "Join for Free" / "Create Profile" leakage that
+            gaslit signed-in users. */}
+        {page==="register-talent"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterTalent onNavigate={navigate}/>)}
+        {page==="register-cd"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterCD onNavigate={navigate}/>)}
+        {page==="login"&&<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn}/>}
+        {page==="membership"&&<MembershipPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}}/>}
+        {page==="plan-summary"&&<PlanSummaryPage session={session} myProfile={myProfile} planKey={selectedPlan||"monthly"} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} onActivated={(returnInfo)=>{
+          // Came from a casting they tried to apply to — bounce back to that casting.
+          if(returnInfo?.casting){
+            setPrevPage("home");
+            setViewingCasting(returnInfo.casting);
+            window.scrollTo(0,0);
+            setPage("casting-detail");
+            pushHist("casting-detail",{slug:returnInfo.casting?.slug});
+          }
+        }}/>}
+        {page==="reset-password"&&<ResetPasswordPage onNavigate={navigate} session={session}/>}
+        {page==="about"&&<AboutPage onNavigate={navigate}/>}
+        {page==="blog"&&<BlogPage onNavigate={navigate}/>}
+        {page==="classes"&&<ClassesPage onNavigate={navigate}/>}
+        {page==="contact"&&<ContactPage onNavigate={navigate}/>}
+        {page==="resources"&&<ResourcesPage onNavigate={navigate}/>}
+        {page==="faq"&&<FaqPage onNavigate={navigate}/>}
+        {page==="success-stories"&&<SuccessStoriesPage onNavigate={navigate}/>}
+        {page==="pricing"&&<PricingPage onNavigate={navigate}/>}
+        {page==="studios"&&<StudiosPage onNavigate={navigate}/>}
+        {page==="api-info"&&<ApiPage onNavigate={navigate}/>}
+        {page==="terms"&&<TermsPage onNavigate={navigate}/>}
+        {page==="privacy"&&<PrivacyPage onNavigate={navigate}/>}
+        {page==="careers"&&<CareersPage onNavigate={navigate}/>}
+      </main>
       {/* Cookie preferences modal — opened via the footer "Cookie Preferences" link.
           Mounted at App level so it can sit on top of any page. */}
       <CookieConsentModal open={cookieModalOpen} onClose={()=>setCookieModalOpen(false)}/>
