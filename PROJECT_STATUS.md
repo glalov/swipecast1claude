@@ -1,5 +1,85 @@
 # Project Status
 
+## 2026-05-10 — Casting creator identity verification gate
+
+### What changed
+
+| File | What changed |
+|---|---|
+| `swipecast-full.jsx` | Added `CastingVerifiedBadge` (Background Checked badge with disclaimer tooltip), `CastingCreatorVerificationBanner` (shown in CD Dashboard to unverified accounts), and expanded `NewCastingModal` to block unverified accounts. Updated `FeaturedCastingsSlider` query to include new verification fields and replaced simple `verified` badge logic with ID Verified + Background Checked badges. `CastingDetailPage` now fetches CD profile data and shows verification badges near the producer line. Added `AdminCDVerification` section to the admin panel (Approve / Reject / Needs Review / Reset per creator). Updated `AdminUsers` to fetch and display verification status in `UserRow`. Updated `AdminOverview` to show "CDs approved to post" and "CD verif. pending" stat tiles. |
+| `supabase-schema.sql` | New migration `2026-05-10 — casting_creator_verification`: adds 10 new columns to `profiles` (verification_status, identity_verified, background_check_status, can_post_castings, verification_provider, verification_session_id, plus 4 timestamp columns). Adds `can_post_castings_check()` helper. Tightens `castings_insert` RLS policy to require `can_post_castings = true` (admins bypass). Adds 5 new RPCs: `start_verification_session`, `admin_approve_casting_creator`, `admin_reject_casting_creator`, `admin_needs_review_casting_creator`, `admin_reset_casting_verification`. |
+| `index.html` | Rebuilt from `swipecast-full.jsx` via `python3 build-html.py`. |
+
+### How it works
+
+**User flow (unverified CD):**
+1. CD creates account → `verification_status = not_started`, `can_post_castings = false`
+2. CD clicks "+ New Casting" → blocked at modal level with lock screen
+3. CD dashboard shows amber verification banner with "Start Verification" button
+4. Clicking "Start Verification" calls `start_verification_session()` RPC → sets status to `pending` but does NOT grant verification
+5. A real provider (Persona/Didit/Stripe Identity) must be connected for live verification
+
+**Admin flow:**
+1. Admin panel → "CD Verification" section lists all CD accounts with status
+2. Admin can Approve / Reject / Needs Review / Reset each creator
+3. Approve sets: `verification_status=verified`, `identity_verified=true`, `background_check_status=passed`, `can_post_castings=true`
+4. All actions are audit-logged via `_audit()`
+
+**Gate layers:**
+- UI: `NewCastingModal` blocks if `can_post_castings !== true`
+- UI: dashboard banner always visible when not verified
+- DB: `castings_insert` RLS policy enforces `can_post_castings_check()` — cannot be bypassed by direct insert
+- Server: `start_verification_session` RPC refuses to self-approve
+
+### Database migration required
+
+Run in Supabase SQL Editor — paste the `MIGRATION 2026-05-10 — casting_creator_verification` block from `supabase-schema.sql`, then:
+```sql
+NOTIFY pgrst, 'reload schema';
+```
+
+This is safe to re-run (uses `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`).
+
+### Third-party verification providers — what you need
+
+The gate is built and working. To connect a real provider, you need one of:
+
+**Persona** (recommended — most flexible, good free tier)
+- Account: persona.com
+- API key: `PERSONA_API_KEY`
+- Inquiry template ID: create an "ID + Selfie" template → get `tmpl_...`
+- Webhook secret: `PERSONA_WEBHOOK_SECRET`
+- Redirect URL: `https://slatecue.com/verify-return` (or your domain)
+- Webhook endpoint: Supabase Edge Function at `/functions/v1/persona-webhook`
+- Edge function should: verify signature → on `inquiry.completed` → call `admin_approve_casting_creator` or `admin_needs_review_casting_creator`
+
+**Didit**
+- Account: didit.me
+- API key: `DIDIT_API_KEY`
+- Verification workflow ID
+- Webhook secret: `DIDIT_WEBHOOK_SECRET`
+- Redirect URL + webhook endpoint (same pattern as Persona)
+
+**Stripe Identity**
+- Stripe account (existing one works)
+- `STRIPE_SECRET_KEY` (already needed for payments)
+- Webhook secret: `STRIPE_IDENTITY_WEBHOOK_SECRET`
+- Create a VerificationSession server-side → return URL to browser
+- On `identity.verification_session.verified` webhook → approve creator
+
+**Easiest to connect:** Stripe Identity — you likely already have/need a Stripe account for actor Premium payments. One account, one webhook endpoint, two features.
+
+### What third-party setup is still needed
+
+- [ ] Choose a verification provider (Persona / Didit / Stripe Identity)
+- [ ] Create account + API keys
+- [ ] Build Supabase Edge Function for webhook receiver
+- [ ] Wire `start_verification_session` to redirect to provider's hosted flow
+- [ ] On webhook callback: call `admin_approve_casting_creator` or `admin_needs_review_casting_creator`
+- [ ] Until then: Admin must manually approve creators via Admin → CD Verification
+
+---
+
 ## 2026-05-09 — Stripe placeholder: Premium checkout disabled until Stripe is wired
 
 ### What changed
