@@ -2076,14 +2076,112 @@ function PrivacyPage({onNavigate}){
 // ═══════════════════════════════════════════
 function AuthGate({pending,onComplete,onNavigate,onCancel}){
   const [mode,setMode]=useState("signup");
-  const [socialMsg,setSocialMsg]=useState(false);
   const [premiumMsg,setPremiumMsg]=useState(false);
+  const [loading,setLoading]=useState(false);
+  const [err,setErr]=useState("");
+  const [signupDone,setSignupDone]=useState(false); // email confirmation sent
+  // signup form fields
+  const [firstName,setFirstName]=useState("");
+  const [lastName,setLastName]=useState("");
+  const [suEmail,setSuEmail]=useState("");
+  const [suPass,setSuPass]=useState("");
+  const [agreed,setAgreed]=useState(false);
+  // login form fields
+  const [liEmail,setLiEmail]=useState("");
+  const [liPass,setLiPass]=useState("");
+  const submittingRef=useRef(false);
   const c=pending?.casting;
   const r=pending?.role;
-  const handleSocial=()=>setSocialMsg(true);
+
+  const handleSignUp=async()=>{
+    if(submittingRef.current)return;
+    setErr("");
+    if(!firstName.trim()||!lastName.trim()){setErr("Please enter your first and last name.");return;}
+    if(!suEmail||!suEmail.includes("@")){setErr("Please enter a valid email address.");return;}
+    if(!suPass||suPass.length<8){setErr("Password must be at least 8 characters.");return;}
+    if(!agreed){setErr("Please agree to the Terms of Service and Privacy Policy.");return;}
+    submittingRef.current=true;setLoading(true);
+    try{
+      const email=suEmail.trim().toLowerCase();
+      const {data,error}=await window.sb.auth.signUp({
+        email,password:suPass,
+        options:{
+          emailRedirectTo:window.location.origin,
+          data:{user_type:"talent",display_name:(firstName+" "+lastName).trim(),onboarded:false}
+        }
+      });
+      if(error){
+        const em=(error.message||"").toLowerCase();
+        if(em.includes("already")||em.includes("exist")||em.includes("registered")){
+          setErr("An account with this email already exists. Please log in instead.");
+        }else{setErr(error.message||"Sign up failed. Please try again.");}
+        return;
+      }
+      if(data?.user&&Array.isArray(data.user.identities)&&data.user.identities.length===0){
+        setErr("An account with this email already exists. Please log in instead.");return;
+      }
+      // Save pending apply so it survives email confirmation + page reload
+      if(pending){
+        try{sessionStorage.setItem("sc_post_auth_apply",JSON.stringify({casting:pending.casting,role:pending.role}));}catch(_){}
+      }
+      if(data?.session){
+        // Email confirmation off — session issued immediately, proceed
+        onComplete();
+      }else{
+        // Email confirmation required — tell the user to check their inbox
+        setSignupDone(true);
+      }
+    }catch(e){setErr(e?.message||"Something went wrong. Please try again.");}
+    finally{setLoading(false);submittingRef.current=false;}
+  };
+
+  const handleSignIn=async()=>{
+    if(submittingRef.current)return;
+    setErr("");
+    if(!liEmail||!liEmail.includes("@")){setErr("Please enter a valid email address.");return;}
+    if(!liPass){setErr("Please enter your password.");return;}
+    submittingRef.current=true;setLoading(true);
+    try{
+      const {data,error}=await window.sb.auth.signInWithPassword({email:liEmail.trim().toLowerCase(),password:liPass});
+      if(error){
+        const ml=(error.message||"").toLowerCase();
+        if(ml.includes("email not confirmed"))setErr("Please verify your email first. Check your inbox for the confirmation link.");
+        else if(ml.includes("invalid login"))setErr("Email or password incorrect.");
+        else setErr(error.message||"Login failed. Please try again.");
+        return;
+      }
+      // Save pending apply in case onComplete triggers a re-render race
+      if(pending){
+        try{sessionStorage.setItem("sc_post_auth_apply",JSON.stringify({casting:pending.casting,role:pending.role}));}catch(_){}
+      }
+      onComplete();
+    }catch(e){setErr(e?.message||"Something went wrong. Please try again.");}
+    finally{setLoading(false);submittingRef.current=false;}
+  };
+
+  if(signupDone)return(<div className="page" style={{maxWidth:640,margin:"0 auto"}}>
+    <div style={{background:"#1a1a2e",color:"#f5e8d0",fontFamily:"monospace",fontSize:13,fontWeight:700,padding:"8px 20px",textAlign:"center",letterSpacing:0.5}}>
+      APPLY SIGNUP VERSION 3 - FUNCTIONAL FREE APPLY FLOW
+    </div>
+    <div style={{background:"rgba(46,204,113,0.08)",border:"1px solid rgba(46,204,113,0.3)",borderRadius:16,padding:"48px 36px",marginTop:40,textAlign:"center"}}>
+      <div style={{fontSize:48,marginBottom:16}}>✓</div>
+      <h2 style={{fontSize:24,fontWeight:800,marginBottom:10}}>Check your email to confirm</h2>
+      <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,marginBottom:24}}>We sent a confirmation link to <strong>{suEmail}</strong>.<br/>Click the link in that email, then log in here to continue your application.</p>
+      {c&&<div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:10,padding:"14px 18px",marginBottom:24,textAlign:"left"}}>
+        <div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,fontWeight:700,marginBottom:6}}>Saved — you're applying to</div>
+        <strong style={{fontSize:14}}>{c.title}</strong>{r&&<span style={{color:"var(--t2)",fontSize:13}}> · {r.name}</span>}
+        <p style={{fontSize:12,color:"var(--t3)",marginTop:4}}>After confirming your email and logging in, you'll be taken directly to the application form.</p>
+      </div>}
+      <div style={{display:"flex",gap:12,justifyContent:"center"}}>
+        <button className="btn-p" onClick={()=>setMode("login")||setSignupDone(false)}>Log In Now</button>
+        <button className="btn-s" onClick={onCancel}>Back to Casting</button>
+      </div>
+    </div>
+    <Footer onNavigate={onNavigate}/></div>);
+
   return(<div className="page" style={{maxWidth:960}}>
     <div style={{background:"#1a1a2e",color:"#f5e8d0",fontFamily:"monospace",fontSize:13,fontWeight:700,padding:"8px 20px",textAlign:"center",letterSpacing:0.5,marginBottom:0}}>
-      APPLY SIGNUP VERSION 2 - FREE ACCOUNT DEFAULT
+      APPLY SIGNUP VERSION 3 - FUNCTIONAL FREE APPLY FLOW
     </div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:48,alignItems:"start",padding:"20px 0 60px"}}>
       {/* LEFT: Context panel */}
@@ -2118,6 +2216,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
               <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--grn)"}}>$0</span>
             </div>
             {["1 headshot","3 casting submissions per day","No video uploads","Basic actor profile"].map(f=><div key={f} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}</div>)}
+            <div style={{marginTop:10,fontSize:11,color:"var(--t3)",fontStyle:"italic"}}>↑ Use the email form to create your free account</div>
           </div>
           {/* Premium option */}
           <div style={{border:"1px solid var(--bdr)",borderRadius:12,padding:"14px 16px",opacity:0.85}}>
@@ -2126,8 +2225,8 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
               <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--acc)"}}>$9.99/mo</span>
             </div>
             {["10 headshots","Up to 5 video reel links","Unlimited casting submissions","Premium profile features"].map(f=><div key={f} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{f}</div>)}
-            {premiumMsg&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"8px 12px",borderRadius:8,fontSize:12,marginTop:10,textAlign:"center"}}>Premium checkout is not connected yet. Please try again later.</div>}
-            <button className="btn-s" style={{width:"100%",marginTop:10,fontSize:12}} onClick={()=>setPremiumMsg(true)}>Premium Checkout Coming Soon</button>
+            {premiumMsg&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"8px 12px",borderRadius:8,fontSize:12,marginTop:10,textAlign:"center"}}>Premium checkout is not connected yet. Please create a free account for now. You can upgrade later.</div>}
+            <button className="btn-s" style={{width:"100%",marginTop:10,fontSize:12,opacity:0.7,cursor:"default"}} onClick={()=>setPremiumMsg(true)}>Premium Checkout Coming Soon</button>
           </div>
         </div>
       </div>
@@ -2135,67 +2234,72 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
       {/* RIGHT: Sign up / Log in form */}
       <div>
         <div className="tabs" style={{marginBottom:24}}>
-          <button className={`tab ${mode==="signup"?"active":""}`} onClick={()=>setMode("signup")}>Sign Up</button>
-          <button className={`tab ${mode==="login"?"active":""}`} onClick={()=>setMode("login")}>Log In</button>
+          <button className={`tab ${mode==="signup"?"active":""}`} onClick={()=>{setMode("signup");setErr("");}}>Sign Up</button>
+          <button className={`tab ${mode==="login"?"active":""}`} onClick={()=>{setMode("login");setErr("");}}>Log In</button>
         </div>
 
         {mode==="signup"?<>
           <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:8}}>Create your free actor account</h2>
-          <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>Takes about 60 seconds. No credit card required.</p>
+          <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>Takes about 60 seconds. No payment required.</p>
 
-          {socialMsg&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14,textAlign:"center"}}>Social sign-up is not connected yet. Please use email sign-up for now.</div>}
-          <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
-            <button className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={handleSocial}>
-              <span>🔵</span> Continue with Google
-            </button>
-            <button className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={handleSocial}>
-              <span></span> Continue with Apple
-            </button>
-            <button className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={handleSocial}>
-              <span>📘</span> Continue with Facebook
-            </button>
+          {/* Social buttons — disabled until OAuth is configured */}
+          <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
+            {[["🔵","Continue with Google"],["","Continue with Apple"],["📘","Continue with Facebook"]].map(([ic,label])=>(
+              <button key={label} className="btn-s" disabled style={{width:"100%",justifyContent:"center",display:"flex",gap:10,opacity:0.45,cursor:"not-allowed"}}>
+                <span>{ic}</span>{label} <span style={{fontSize:11,color:"var(--t3)",marginLeft:4}}>(Coming Soon)</span>
+              </button>
+            ))}
           </div>
 
-          <div style={{display:"flex",alignItems:"center",gap:12,margin:"20px 0",color:"var(--t3)",fontSize:12}}>
-            <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
+          <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
+            <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
           </div>
 
-          <div className="form-row"><div className="form-group"><label className="label">First Name</label><input className="input" placeholder="Jordan"/></div><div className="form-group"><label className="label">Last Name</label><input className="input" placeholder="Alvarez"/></div></div>
-          <div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com"/></div>
-          <div className="form-group"><label className="label">Password</label><input className="input" type="password" placeholder="At least 8 characters"/></div>
+          {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}</div>}
+
+          <div className="form-row">
+            <div className="form-group"><label className="label">First Name</label><input className="input" placeholder="Jordan" value={firstName} onChange={e=>setFirstName(e.target.value)}/></div>
+            <div className="form-group"><label className="label">Last Name</label><input className="input" placeholder="Alvarez" value={lastName} onChange={e=>setLastName(e.target.value)}/></div>
+          </div>
+          <div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com" value={suEmail} onChange={e=>setSuEmail(e.target.value)}/></div>
+          <div className="form-group"><label className="label">Password</label><input className="input" type="password" placeholder="At least 8 characters" value={suPass} onChange={e=>setSuPass(e.target.value)}/></div>
 
           <div style={{display:"flex",gap:10,alignItems:"flex-start",margin:"16px 0",color:"var(--t2)",fontSize:12,lineHeight:1.55}}>
-            <input type="checkbox" defaultChecked style={{marginTop:3}}/>
+            <input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)} style={{marginTop:3}}/>
             <span>I agree to SlateCue's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm I am at least 18 years old.</span>
           </div>
 
-          <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={onComplete}>Create Free Account & Apply →</button>
+          <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={handleSignUp} disabled={loading}>{loading?"Creating account…":"Create Free Account & Apply →"}</button>
 
-          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>setMode("login")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
+          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>{setMode("login");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
         </>:<>
           <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:8}}>Welcome back</h2>
           <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>Log in to continue your application.</p>
 
-          {socialMsg&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14,textAlign:"center"}}>Social sign-in is not connected yet. Please use email sign-in for now.</div>}
-          <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
-            <button className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={handleSocial}><span>🔵</span> Continue with Google</button>
-            <button className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={handleSocial}><span></span> Continue with Apple</button>
+          {/* Social buttons — disabled until OAuth is configured */}
+          <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
+            {[["🔵","Continue with Google"],["","Continue with Apple"]].map(([ic,label])=>(
+              <button key={label} className="btn-s" disabled style={{width:"100%",justifyContent:"center",display:"flex",gap:10,opacity:0.45,cursor:"not-allowed"}}>
+                <span>{ic}</span>{label} <span style={{fontSize:11,color:"var(--t3)",marginLeft:4}}>(Coming Soon)</span>
+              </button>
+            ))}
           </div>
 
-          <div style={{display:"flex",alignItems:"center",gap:12,margin:"20px 0",color:"var(--t3)",fontSize:12}}>
-            <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or log in with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
+          <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
+            <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>log in with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
           </div>
 
-          <div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com"/></div>
-          <div className="form-group"><label className="label">Password</label><input className="input" type="password" placeholder="••••••••"/></div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:12,marginBottom:20,color:"var(--t2)"}}>
-            <label style={{display:"flex",gap:6,alignItems:"center"}}><input type="checkbox"/> Remember me</label>
-            <span style={{color:"var(--blu)",cursor:"pointer"}}>Forgot password?</span>
+          {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}</div>}
+
+          <div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com" value={liEmail} onChange={e=>setLiEmail(e.target.value)}/></div>
+          <div className="form-group"><label className="label">Password</label><input className="input" type="password" placeholder="••••••••" value={liPass} onChange={e=>setLiPass(e.target.value)}/></div>
+          <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",fontSize:12,marginBottom:20,color:"var(--t2)"}}>
+            <span style={{color:"var(--blu)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>Forgot password?</span>
           </div>
 
-          <button className="btn-p" style={{width:"100%"}} onClick={onComplete}>Log In & Continue to Apply →</button>
+          <button className="btn-p" style={{width:"100%"}} onClick={handleSignIn} disabled={loading}>{loading?"Logging in…":"Log In & Continue to Apply →"}</button>
 
-          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>New to SlateCue? <span onClick={()=>setMode("signup")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Create a free account</span></p>
+          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>New to SlateCue? <span onClick={()=>{setMode("signup");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Create a free account</span></p>
         </>}
 
         <p style={{textAlign:"center",color:"var(--t3)",fontSize:11,marginTop:24}}><span onClick={onCancel} style={{cursor:"pointer",textDecoration:"underline"}}>← Back to casting</span></p>
@@ -2207,8 +2311,16 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
 // ═══════════════════════════════════════════
 // PAGE: CASTING DETAIL
 // ═══════════════════════════════════════════
-function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session}){
+function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session,autoApplyRole,onAutoApplyConsumed}){
   const [applyRole,setApplyRole]=useState(null);
+  const autoOpenedRef=useRef(false);
+  useEffect(()=>{
+    if(autoApplyRole&&isLoggedIn&&!autoOpenedRef.current){
+      autoOpenedRef.current=true;
+      setApplyRole(autoApplyRole);
+      onAutoApplyConsumed?.();
+    }
+  },[]);// eslint-disable-line
   const [applied,setApplied]=useState(new Set());
   const [coverNote,setCoverNote]=useState("");
   const [submitting,setSubmitting]=useState(false);
@@ -6203,7 +6315,26 @@ export default function App(){
         window.scrollTo(0,0);setPage("reset-password");setAuthReady(true);return;
       }
       if(e==="SIGNED_IN"||e==="INITIAL_SESSION"||e==="USER_UPDATED"){
-        if(s?.user){await loadProfile(s.user.id);}
+        if(s?.user){
+          await loadProfile(s.user.id);
+          // Restore a pending casting application that was saved to sessionStorage
+          // before email confirmation (page may have reloaded since the auth-gate).
+          if(e==="SIGNED_IN"){
+            try{
+              const raw=sessionStorage.getItem("sc_post_auth_apply");
+              if(raw){
+                const pa=JSON.parse(raw);
+                sessionStorage.removeItem("sc_post_auth_apply");
+                if(pa?.casting){
+                  setPendingApply(pa);
+                  setViewingCasting(pa.casting);
+                  setPage("casting-detail");
+                  pushHist("casting-detail");
+                }
+              }
+            }catch(_){}
+          }
+        }
         else{setMyProfile(null);}
       }else if(e==="SIGNED_OUT"){
         setMyProfile(null);
@@ -6297,6 +6428,7 @@ export default function App(){
   },[]);
   const viewProfile=(t)=>{setPrevPage(page);setViewingProfile(t);setPage("profile");pushHist("profile");};
   const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");pushHist("auth-gate");};
+  const clearPendingApply=useCallback(()=>setPendingApply(null),[]);
   const completeAuth=()=>{if(pendingApply){const c=pendingApply.casting;setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail");}else{setPage("home");pushHist("home");}};
   const onLoggedIn=async(user)=>{
     // onAuthStateChange SIGNED_IN will populate myProfile in parallel — do NOT call
@@ -6408,7 +6540,7 @@ export default function App(){
       </div>}
       {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("home");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail");}}/>}
       {page==="search"&&<SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");}}/>}
-      {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{setPage(prevPage==="home"?"home":"search");setViewingCasting(null);window.scrollTo(0,0);}} onNavigate={navigate}/>}
+      {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{setPage(prevPage==="home"?"home":"search");setViewingCasting(null);window.scrollTo(0,0);}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
       {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
       {page==="dashboard"&&<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings}/>}
       {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{setPage(prevPage);setViewingProfile(null);}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
