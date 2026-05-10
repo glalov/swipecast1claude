@@ -382,6 +382,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:150;backdrop-filter:blur(4px);}
 .mobile-menu-inner{background:var(--s1);border-bottom:1px solid var(--bdr);padding:18px 18px 22px;max-width:100%;animation:mmSlide .18s ease-out;box-shadow:0 10px 40px rgba(0,0,0,.12);}
 @keyframes mmSlide{from{transform:translateY(-12px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+@keyframes scSpin{to{transform:rotate(360deg);}}
 .mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;}
 .mm-link:last-child{border-bottom:none;}
 .mm-link:hover{color:var(--acc);}
@@ -992,6 +993,17 @@ function LoggedInRedirect({targetForTalent,targetForCd,myProfile,onNavigate}){
   return(<div className="page" style={{padding:"60px 24px",textAlign:"center"}}>
     <p style={{color:"var(--t3)",fontSize:14}}>You already have an account — taking you there now…</p>
   </div>);
+}
+
+// ═══════════════════════════════════════════
+// PAGE LOADER — shown while auth state resolves for guarded pages
+// ═══════════════════════════════════════════
+function PageLoader(){
+  return(
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"60vh"}}>
+      <div style={{width:32,height:32,borderRadius:"50%",border:"3px solid var(--bdr)",borderTopColor:"var(--acc)",animation:"scSpin 0.8s linear infinite"}}></div>
+    </div>
+  );
 }
 
 // ═══════════════════════════════════════════
@@ -6357,6 +6369,18 @@ function App(){
       }
     };
     window.addEventListener("popstate",onPop);
+    // When browser restores a page from the Back/Forward Cache (BFCache), the
+    // JS state is frozen at the time of navigation. Re-sync route from the URL
+    // so the correct page is always shown after a BFCache restore.
+    const onPageShow=(e)=>{
+      if(!e.persisted)return;
+      const p=urlToPage();
+      setPage(p);
+      if(p!=="profile")setViewingProfile(null);
+      if(p==="casting-detail"){const slug=urlToCastingSlug();if(slug){const c=CASTINGS.find(x=>x.slug===slug);if(c)setViewingCasting(c);}}
+      else setViewingCasting(null);
+    };
+    window.addEventListener("pageshow",onPageShow);
     // ─── Lightweight client-error logger. Captures uncaught JS errors and
     //     unhandled Promise rejections, sends them to public.client_errors.
     //     RLS allows anonymous + authenticated INSERT, but only admins can
@@ -6439,6 +6463,7 @@ function App(){
     });
     return()=>{
       window.removeEventListener("popstate",onPop);
+      window.removeEventListener("pageshow",onPageShow);
       window.removeEventListener("error",onErr);
       window.removeEventListener("unhandledrejection",onRej);
       sub?.subscription?.unsubscribe?.();
@@ -6637,11 +6662,11 @@ function App(){
       {page==="search"&&<SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c.slug});}}/>}
       {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
       {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
-      {page==="dashboard"&&<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings}/>}
+      {page==="dashboard"&&(!authReady?<PageLoader/>:<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings}/>)}
       {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
-      {page==="my-profile"&&isLoggedIn&&<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate}/>}
+      {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate}/>:null)}
       {page==="inbox"&&<InboxPage session={session} profile={myProfile} onNavigate={navigate}/>}
-      {page==="admin"&&isLoggedIn&&isAdmin&&<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>}
+      {page==="admin"&&(!authReady?<PageLoader/>:isLoggedIn&&isAdmin?<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>:null)}
       {/* Registration pages are guarded — a logged-in user with an existing
           profile (any user_type) is redirected to the page that makes sense for
           them. Talents go to My Profile, CDs/Producers/Admins go to the
