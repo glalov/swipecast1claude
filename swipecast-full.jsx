@@ -6202,13 +6202,38 @@ function EditCastingModal({casting,onClose,onSaved}){
 }
 
 // ═══════════════════════════════════════════
+// URL ↔ PAGE ROUTING HELPERS
+// ═══════════════════════════════════════════
+const PAGE_PATH={
+  "home":"/","search":"/browse-castings","pricing":"/pricing",
+  "dashboard":"/dashboard","admin":"/admin","my-profile":"/my-profile",
+  "inbox":"/inbox","membership":"/membership","plan-summary":"/plan-summary",
+  "login":"/login","register-talent":"/register-talent","register-cd":"/register-cd",
+  "reset-password":"/reset-password","about":"/about","blog":"/blog",
+  "classes":"/classes","contact":"/contact","resources":"/resources",
+  "faq":"/faq","success-stories":"/success-stories","studios":"/studios",
+  "api-info":"/api-info","terms":"/terms","privacy":"/privacy","careers":"/careers",
+  "auth-gate":"/auth-gate",
+};
+const PATH_PAGE=Object.fromEntries(Object.entries(PAGE_PATH).map(([k,v])=>[v,k]));
+function urlToPage(){
+  const path=window.location.pathname;
+  if(/^\/casting\//.test(path))return"casting-detail";
+  return PATH_PAGE[path]||"home";
+}
+function urlToCastingSlug(){
+  const m=window.location.pathname.match(/^\/casting\/(.+)$/);
+  return m?decodeURIComponent(m[1]):null;
+}
+
+// ═══════════════════════════════════════════
 // MAIN APP — ROUTER
 // ═══════════════════════════════════════════
 export default function App(){
-  const [page,setPage]=useState("home");
+  const [page,setPage]=useState(()=>urlToPage());
   const [userType,setUserType]=useState("talent");
   const [viewingProfile,setViewingProfile]=useState(null);
-  const [viewingCasting,setViewingCasting]=useState(null);
+  const [viewingCasting,setViewingCasting]=useState(()=>{const slug=urlToCastingSlug();return slug?(CASTINGS.find(c=>c.slug===slug)||null):null;});
   const [prevPage,setPrevPage]=useState("home");
   const [session,setSession]=useState(null);
   const [myProfile,setMyProfile]=useState(null);
@@ -6278,22 +6303,32 @@ export default function App(){
     if(hash.includes("type=recovery")||qs.includes("type=recovery")){
       setPage("reset-password");
     }
-    // Seed browser history with the current page so back-button works
+    // Seed browser history with current URL so back-button works after refresh
     try{
+      const curPage=urlToPage();
+      const slug=urlToCastingSlug();
+      const st={swipecast:true,page:curPage};
+      if(slug)st.castingSlug=slug;
       if(!window.history.state||!window.history.state.swipecast){
-        window.history.replaceState({swipecast:true,page:"home"},"","");
+        window.history.replaceState(st,"",window.location.pathname||"/");
       }
     }catch(e){}
-    // Back-button handler — pop to previous swipecast page, or home
+    // Back/forward button handler — restore page from history state or URL
     const onPop=(e)=>{
       const st=e.state;
       window.scrollTo(0,0);
       if(st&&st.swipecast){
-        setPage(st.page||"home");
-        if(st.page!=="profile")setViewingProfile(null);
-        if(st.page!=="casting-detail")setViewingCasting(null);
+        const p=st.page||"home";
+        setPage(p);
+        if(p!=="profile")setViewingProfile(null);
+        if(p!=="casting-detail"){setViewingCasting(null);}
+        else if(st.castingSlug){const c=CASTINGS.find(x=>x.slug===st.castingSlug);if(c)setViewingCasting(c);}
       }else{
-        setPage("home");setViewingProfile(null);setViewingCasting(null);
+        const p=urlToPage();
+        setPage(p);
+        setViewingProfile(null);
+        if(p!=="casting-detail"){setViewingCasting(null);}
+        else{const slug=urlToCastingSlug();if(slug){const c=CASTINGS.find(x=>x.slug===slug);if(c)setViewingCasting(c);}}
       }
     };
     window.addEventListener("popstate",onPop);
@@ -6364,7 +6399,7 @@ export default function App(){
                   setPendingApply(pa);
                   setViewingCasting(pa.casting);
                   setPage("casting-detail");
-                  pushHist("casting-detail");
+                  pushHist("casting-detail",{slug:pa.casting?.slug});
                 }
               }
             }catch(_){}
@@ -6448,7 +6483,7 @@ export default function App(){
     };
   },[session?.user?.id]);
 
-  const pushHist=(p)=>{try{window.history.pushState({swipecast:true,page:p},"","");}catch(e){}};
+  const pushHist=(p,opts={})=>{try{let url=PAGE_PATH[p]||"/";const st={swipecast:true,page:p,...opts};if(p==="casting-detail"&&opts.slug){url=`/casting/${encodeURIComponent(opts.slug)}`;st.castingSlug=opts.slug;}window.history.pushState(st,"",url);}catch(e){}};
   const navigate=useCallback((p)=>{
     window.scrollTo(0,0);
     let target=p;
@@ -6464,7 +6499,7 @@ export default function App(){
   const viewProfile=(t)=>{setPrevPage(page);setViewingProfile(t);setPage("profile");pushHist("profile");};
   const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");pushHist("auth-gate");};
   const clearPendingApply=useCallback(()=>setPendingApply(null),[]);
-  const completeAuth=()=>{if(pendingApply){const c=pendingApply.casting;setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail");}else{setPage("home");pushHist("home");}};
+  const completeAuth=()=>{if(pendingApply){const c=pendingApply.casting;setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c?.slug});}else{setPage("home");pushHist("home");}};
   const onLoggedIn=async(user)=>{
     // onAuthStateChange SIGNED_IN will populate myProfile in parallel — do NOT call
     // loadProfile here too (that created a double-fetch race). Fetch a minimal row
@@ -6573,12 +6608,12 @@ export default function App(){
           </div>
         </div>
       </div>}
-      {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("home");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail");}}/>}
-      {page==="search"&&<SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");}}/>}
-      {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{setPage(prevPage==="home"?"home":"search");setViewingCasting(null);window.scrollTo(0,0);}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
+      {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("home");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c.slug});}}/>}
+      {page==="search"&&<SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c.slug});}}/>}
+      {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
       {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
       {page==="dashboard"&&<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings}/>}
-      {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{setPage(prevPage);setViewingProfile(null);}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
+      {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
       {page==="my-profile"&&isLoggedIn&&<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate}/>}
       {page==="inbox"&&<InboxPage session={session} profile={myProfile} onNavigate={navigate}/>}
       {page==="admin"&&isLoggedIn&&isAdmin&&<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>}
@@ -6598,7 +6633,7 @@ export default function App(){
           setViewingCasting(returnInfo.casting);
           window.scrollTo(0,0);
           setPage("casting-detail");
-          pushHist("casting-detail");
+          pushHist("casting-detail",{slug:returnInfo.casting?.slug});
         }
       }}/>}
       {page==="reset-password"&&<ResetPasswordPage onNavigate={navigate} session={session}/>}
