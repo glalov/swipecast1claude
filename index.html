@@ -2969,11 +2969,17 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   },[]);
 
   const fetchTalent=useCallback(async()=>{
+    let tid;
     try{
-      const {data:ps,error}=await window.sb.from("profiles")
-        .select("id,display_name,headshot_url,age,gender,ethnicity,location,union_status,skills,bio")
-        .eq("user_type","talent").eq("visible",true).eq("suspended",false).eq("onboarded",true)
-        .limit(200);
+      const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("Talent fetch timed out")),10000);});
+      const {data:ps,error}=await Promise.race([
+        window.sb.from("profiles")
+          .select("id,display_name,headshot_url,age,gender,ethnicity,location,union_status,skills,bio")
+          .eq("user_type","talent").eq("visible",true).eq("suspended",false).eq("onboarded",true)
+          .limit(200),
+        timeout
+      ]);
+      clearTimeout(tid);
       if(error)throw error;
       const mapped=(ps||[]).filter(p=>p.headshot_url).map(p=>({
         id:p.id,
@@ -2992,7 +2998,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         _db:true
       }));
       setDbTalent(mapped);
-    }catch(e){console.error("[SearchPage] talent fetch failed:",e);/* keep last good */}
+    }catch(e){clearTimeout(tid);console.error("[SearchPage] talent fetch failed:",e);/* keep last good */}
   },[]);
 
   // Initial + reactive fetches: any of these triggers a refresh.
@@ -4757,12 +4763,18 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
 
   // Same select shape as SearchPage so the click navigates seamlessly into CastingDetailPage.
   const fetchCastings=useCallback(async()=>{
+    let tid;
     try{
-      const {data,error}=await window.sb.from("castings")
-        .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,cd_id,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
-        .eq("status","open").eq("published",true)
-        .order("created_at",{ascending:false})
-        .limit(12);
+      const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("Request timed out. Please try again.")),10000);});
+      const {data,error}=await Promise.race([
+        window.sb.from("castings")
+          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,cd_id,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .eq("status","open").eq("published",true)
+          .order("created_at",{ascending:false})
+          .limit(12),
+        timeout
+      ]);
+      clearTimeout(tid);
       if(error)throw error;
       // Map to the shape CastingDetailPage / SearchPage already understand
       const mapped=(data||[]).map(c=>({
@@ -4792,6 +4804,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       setCastings(mapped);
       setErr("");
     }catch(e){
+      clearTimeout(tid);
       console.error("[FeaturedSlider] fetch failed:",e);
       setErr(e.message||"Could not load castings.");
       // keep last good
@@ -6585,7 +6598,16 @@ function App(){
   const loadProfile=useCallback(async(uid)=>{
     if(!uid){setMyProfile(null);return null;}
     try{
-      let {data,error}=await window.sb.from("profiles").select("*").eq("id",uid).maybeSingle();
+      // 10s hard timeout — prevents loadProfile from hanging when Supabase is slow
+      // or PostgREST is reloading its schema. Without this, onAuthStateChange's
+      // await never returns → setAuthReady(true) never fires → nav shows nothing.
+      let tid;
+      const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("Profile load timed out")),10000);});
+      let {data,error}=await Promise.race([
+        window.sb.from("profiles").select("*").eq("id",uid).maybeSingle(),
+        timeout
+      ]);
+      clearTimeout(tid);
       if(error){console.warn("[auth] loadProfile error:",error.message);setMyProfile(null);return null;}
       // Backfill safety net: if the row exists but core fields are blank
       // (legacy signup before the new trigger landed) AND the user has signup
@@ -6697,39 +6719,41 @@ function App(){
     // (manifested as "Lock 'sb-...-auth-token' was released because another request stole it").
     const {data:sub}=window.sb.auth.onAuthStateChange(async(e,s)=>{
       console.log("[auth] event:",e,s?.user?.email||"(no session)");
-      setSession(s||null);
-      if(e==="PASSWORD_RECOVERY"){
-        // Don't run loadProfile here — the recovery session is in-flight and any
-        // concurrent DB call races Supabase's own lock. Just route to the reset page.
-        window.scrollTo(0,0);setPage("reset-password");setAuthReady(true);return;
-      }
-      if(e==="SIGNED_IN"||e==="INITIAL_SESSION"||e==="USER_UPDATED"){
-        if(s?.user){
-          await loadProfile(s.user.id);
-          // Restore a pending casting application that was saved to sessionStorage
-          // before email confirmation (page may have reloaded since the auth-gate).
-          if(e==="SIGNED_IN"){
-            try{
-              const raw=sessionStorage.getItem("sc_post_auth_apply");
-              if(raw){
-                const pa=JSON.parse(raw);
-                sessionStorage.removeItem("sc_post_auth_apply");
-                if(pa?.casting){
-                  setPendingApply(pa);
-                  setViewingCasting(pa.casting);
-                  setPage("casting-detail");
-                  pushHist("casting-detail",{slug:pa.casting?.slug});
-                }
-              }
-            }catch(_){}
-          }
+      try{
+        setSession(s||null);
+        if(e==="PASSWORD_RECOVERY"){
+          // Don't run loadProfile here — the recovery session is in-flight and any
+          // concurrent DB call races Supabase's own lock. Just route to the reset page.
+          window.scrollTo(0,0);setPage("reset-password");return;
         }
-        else{setMyProfile(null);}
-      }else if(e==="SIGNED_OUT"){
-        setMyProfile(null);
-      }
-      // TOKEN_REFRESHED intentionally ignored — no profile re-fetch on hourly refresh.
-      setAuthReady(true);
+        if(e==="SIGNED_IN"||e==="INITIAL_SESSION"||e==="USER_UPDATED"){
+          if(s?.user){
+            await loadProfile(s.user.id);
+            // Restore a pending casting application that was saved to sessionStorage
+            // before email confirmation (page may have reloaded since the auth-gate).
+            if(e==="SIGNED_IN"){
+              try{
+                const raw=sessionStorage.getItem("sc_post_auth_apply");
+                if(raw){
+                  const pa=JSON.parse(raw);
+                  sessionStorage.removeItem("sc_post_auth_apply");
+                  if(pa?.casting){
+                    setPendingApply(pa);
+                    setViewingCasting(pa.casting);
+                    setPage("casting-detail");
+                    pushHist("casting-detail",{slug:pa.casting?.slug});
+                  }
+                }
+              }catch(_){}
+            }
+          }
+          else{setMyProfile(null);}
+        }else if(e==="SIGNED_OUT"){
+          setMyProfile(null);
+        }
+        // TOKEN_REFRESHED intentionally ignored — no profile re-fetch on hourly refresh.
+      }catch(authErr){console.warn("[auth] onAuthStateChange error:",authErr?.message||authErr);}
+      finally{setAuthReady(true);}
     });
     return()=>{
       window.removeEventListener("popstate",onPop);

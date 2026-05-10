@@ -1,5 +1,49 @@
 # Project Status
 
+## 2026-05-10 — Fix broken auth state, nav buttons, and stuck castings loading
+
+### Root cause
+
+Three independent issues all manifested together after the `add_verification_columns_to_profiles` migration:
+
+1. **`loadProfile` had no timeout.** When the Supabase PostgREST process reloads its schema cache (triggered by `NOTIFY pgrst, 'reload schema'`), it briefly stops responding to queries. Any `loadProfile` call during that window would `await` forever. Because `onAuthStateChange` `await`s `loadProfile` before calling `setAuthReady(true)`, the nav rendered `null` (its `!authReady` guard) — **all top-right buttons vanished**.
+
+2. **`onAuthStateChange` had no overall try/finally.** An unexpected exception anywhere in the handler body could prevent `setAuthReady(true)` from firing.
+
+3. **`FeaturedCastingsSlider.fetchCastings` and `SearchPage.fetchTalent` had no timeout.** If the DB or PostgREST was slow, the `finally{setLoading(false)}` / `Promise.all().finally()` never ran, leaving the "Loading active casting calls…" spinner permanently visible.
+
+### Files changed
+
+| File | What changed |
+|---|---|
+| `swipecast-full.jsx` | `loadProfile`: added 10 s `Promise.race` timeout so it always resolves even if PostgREST is reloading. `onAuthStateChange`: wrapped body in `try/catch/finally` with `setAuthReady(true)` in the `finally` block — guaranteed to fire no matter what. `FeaturedCastingsSlider.fetchCastings`: added 10 s timeout matching `SearchPage.fetchCastings`. `fetchTalent`: added 10 s timeout so `Promise.all().finally()` always fires and the search loading spinner always stops. |
+| `index.html` | Rebuilt via `python3 build-html.py`. |
+
+### Supabase
+
+Sent `NOTIFY pgrst, 'reload schema'` again to ensure PostgREST has the latest schema after adding the verification columns.
+
+### Role/access behaviour (unchanged, confirmed correct)
+
+- `super_admin` / `admin` → Admin button + Dashboard + Inbox + Profile
+- `cd` → Dashboard + Inbox + Profile (no Admin button)
+- `talent` → Inbox + Profile (no Admin, no Dashboard)
+- Non-admin visiting `/admin` directly → blank 60 vh placeholder (footer does not jump)
+
+---
+
+## 2026-05-10 — Fix admin 404, missing verification columns, footer jump
+
+### Root cause + fixes
+
+| Problem | Root cause | Fix |
+|---|---|---|
+| `/admin` gives Vercel 404 | `vercel.json` rewrite used negative-lookahead regex `/((?!.*\\.).*)`  which `path-to-regexp` silently rejected | Changed to simple `/(.*)`  catch-all — actual files still win over rewrites |
+| "column profiles.verification_status does not exist" | 10 verification columns were referenced in frontend queries but never added to the live DB | Applied migration `add_verification_columns_to_profiles` |
+| Footer jumping on admin page | Admin route rendered `null` for non-admin/unauthenticated users | Changed to `<div style={{minHeight:"60vh"}}/>` |
+
+---
+
 ## 2026-05-10 — Casting creator identity verification gate
 
 ### What changed
