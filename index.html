@@ -1591,7 +1591,7 @@ const FAQ_CATEGORIES=[
     {q:"What if I need to edit a casting after it's posted?",a:"You can edit the breakdown, role specs, and deadline at any time from the dashboard. Already-submitted talent are notified of any changes that affect their submission."}
   ]},
   {id:"payments",label:"Payments & Membership",icon:"💳",blurb:"Talent membership, casting fees, billing, and cancellations.",items:[
-    {q:"How much does the talent membership cost?",a:"Actor accounts are free — you can create a profile and submit to up to 3 castings per day at no cost. Premium is $9.99/month and gives you unlimited submissions, up to 10 headshots, and up to 5 video reel links. New Premium members get a 7-day free trial."},
+    {q:"How much does the talent membership cost?",a:"Actor accounts are free — you can create a profile and submit to up to 3 castings per day at no cost. Premium is $9.99/month and gives you unlimited submissions, up to 10 headshots, and up to 5 video reel links."},
     {q:"How much does it cost to post a casting?",a:"$19.99 per casting post. There's no subscription for industry accounts — you only pay when you actually publish a casting. Account creation is free."},
     {q:"How do I cancel my membership?",a:"My Profile → Membership → Cancel. Your membership stays active through the end of the current billing period, then doesn't renew. No fees, no friction."},
     {q:"Are payments refundable?",a:"Membership fees are non-refundable except where required by law, but cancelled memberships continue until the end of the period you've already paid for. Casting post fees are non-refundable once the casting is published."},
@@ -2101,15 +2101,21 @@ function PrivacyPage({onNavigate}){
 // ═══════════════════════════════════════════
 function AuthGate({pending,onComplete,onNavigate,onCancel}){
   const [mode,setMode]=useState("signup");
+  const [socialMsg,setSocialMsg]=useState(false);
+  const [premiumMsg,setPremiumMsg]=useState(false);
   const c=pending?.casting;
   const r=pending?.role;
+  const handleSocial=()=>setSocialMsg(true);
   return(<div className="page" style={{maxWidth:960}}>
+    <div style={{background:"#1a1a2e",color:"#f5e8d0",fontFamily:"monospace",fontSize:13,fontWeight:700,padding:"8px 20px",textAlign:"center",letterSpacing:0.5,marginBottom:0}}>
+      APPLY SIGNUP VERSION 2 - FREE ACCOUNT DEFAULT
+    </div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:48,alignItems:"start",padding:"20px 0 60px"}}>
-      {/* LEFT: Context panel showing what they're applying to */}
+      {/* LEFT: Context panel */}
       <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16,padding:"32px 28px",position:"sticky",top:100}}>
         <div className="section-label" style={{marginBottom:8}}>Almost there</div>
-        <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginBottom:10,lineHeight:1.15}}>Start your 7-day free trial to apply.</h2>
-        <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:24}}>SlateCue is <strong style={{color:"var(--t1)"}}>$9.99/month</strong> for talent after a 7-day free trial. Cancel anytime. You only need an account so casting directors can review your headshot and contact you.</p>
+        <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginBottom:10,lineHeight:1.15}}>Create a free account to apply.</h2>
+        <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:20}}>Creating an actor account is <strong style={{color:"var(--t1)"}}>free</strong>. You can upgrade to Premium later for more uploads and unlimited submissions.</p>
 
         {c&&<div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,padding:"18px 20px",marginBottom:20}}>
           <div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,fontWeight:700,marginBottom:8}}>You're applying to</div>
@@ -2128,9 +2134,27 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
           </>}
         </div>}
 
-        <ul style={{listStyle:"none",padding:0,margin:0,display:"flex",flexDirection:"column",gap:10}}>
-          {["Free account — 3 submissions/day, 1 headshot","Upgrade to Premium ($9.99/mo) for unlimited submissions","10 headshots and up to 5 video reel links with Premium","Cancel anytime — no contracts"].map(t=><li key={t} style={{display:"flex",gap:10,alignItems:"flex-start",color:"var(--t2)",fontSize:13,lineHeight:1.5}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{t}</li>)}
-        </ul>
+        {/* Free vs Premium mini comparison */}
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {/* Free option */}
+          <div style={{border:"2px solid var(--grn)",borderRadius:12,padding:"14px 16px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+              <span style={{fontWeight:800,fontSize:14}}>Free Account</span>
+              <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--grn)"}}>$0</span>
+            </div>
+            {["1 headshot","3 casting submissions per day","No video uploads","Basic actor profile"].map(f=><div key={f} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}</div>)}
+          </div>
+          {/* Premium option */}
+          <div style={{border:"1px solid var(--bdr)",borderRadius:12,padding:"14px 16px",opacity:0.85}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+              <span style={{fontWeight:800,fontSize:14}}>Actor Premium</span>
+              <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--acc)"}}>$9.99/mo</span>
+            </div>
+            {["10 headshots","Up to 5 video reel links","Unlimited casting submissions","Premium profile features"].map(f=><div key={f} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{f}</div>)}
+            {premiumMsg&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"8px 12px",borderRadius:8,fontSize:12,marginTop:10,textAlign:"center"}}>Premium checkout is not connected yet. Please try again later.</div>}
+            <button className="btn-s" style={{width:"100%",marginTop:10,fontSize:12}} onClick={()=>setPremiumMsg(true)}>Premium Checkout Coming Soon</button>
+          </div>
+        </div>
       </div>
 
       {/* RIGHT: Sign up / Log in form */}
@@ -2141,17 +2165,18 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
         </div>
 
         {mode==="signup"?<>
-          <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:8}}>Start your 7-day free trial</h2>
+          <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:8}}>Create your free actor account</h2>
           <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>Takes about 60 seconds. No credit card required.</p>
 
+          {socialMsg&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14,textAlign:"center"}}>Social sign-up is not connected yet. Please use email sign-up for now.</div>}
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
-            <button className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={onComplete}>
+            <button className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={handleSocial}>
               <span>🔵</span> Continue with Google
             </button>
-            <button className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={onComplete}>
+            <button className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={handleSocial}>
               <span></span> Continue with Apple
             </button>
-            <button className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={onComplete}>
+            <button className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={handleSocial}>
               <span>📘</span> Continue with Facebook
             </button>
           </div>
@@ -2169,16 +2194,17 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
             <span>I agree to SlateCue's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm I am at least 18 years old.</span>
           </div>
 
-          <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={onComplete}>Create Account & Continue to Apply →</button>
+          <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={onComplete}>Create Free Account & Apply →</button>
 
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>setMode("login")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
         </>:<>
           <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:8}}>Welcome back</h2>
           <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>Log in to continue your application.</p>
 
+          {socialMsg&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14,textAlign:"center"}}>Social sign-in is not connected yet. Please use email sign-in for now.</div>}
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
-            <button className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={onComplete}><span>🔵</span> Continue with Google</button>
-            <button className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={onComplete}><span></span> Continue with Apple</button>
+            <button className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={handleSocial}><span>🔵</span> Continue with Google</button>
+            <button className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={handleSocial}><span></span> Continue with Apple</button>
           </div>
 
           <div style={{display:"flex",alignItems:"center",gap:12,margin:"20px 0",color:"var(--t3)",fontSize:12}}>
@@ -2194,7 +2220,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
 
           <button className="btn-p" style={{width:"100%"}} onClick={onComplete}>Log In & Continue to Apply →</button>
 
-          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>New to SlateCue? <span onClick={()=>setMode("signup")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Start your 7-day free trial</span></p>
+          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>New to SlateCue? <span onClick={()=>setMode("signup")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Create a free account</span></p>
         </>}
 
         <p style={{textAlign:"center",color:"var(--t3)",fontSize:11,marginTop:24}}><span onClick={onCancel} style={{cursor:"pointer",textDecoration:"underline"}}>← Back to casting</span></p>
@@ -4693,7 +4719,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <h1 className="landing-hero-title" style={{fontWeight:800,fontSize:56,lineHeight:1.02,letterSpacing:-2.2,marginBottom:20}}>Casting, finally built for <span style={{color:"var(--acc)"}}>actors.</span></h1>
       <p style={{color:"var(--t2)",fontSize:18,lineHeight:1.55,marginBottom:28,maxWidth:500}}>Tinder-style casting: one actor at a time, full-screen. Every headshot gets seen. And at $9.99/mo — a fraction of what legacy casting sites charge — we're the cheapest plan in the industry. Swipe. Get seen. Get cast.</p>
       <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate(heroPrimary.to)}>{heroPrimary.label}</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate(heroSecondary.to)}>{heroSecondary.label}</button></div>
-      <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> $9.99/mo for talent · 7-day free trial</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> Cancel anytime</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> 60-second signup</span></div>
+      <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> Free actor account — upgrade to Premium at $9.99/mo</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> No credit card to sign up</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> 60-second signup</span></div>
     </div><div style={{display:"flex",justifyContent:"center"}}><LandingSwipe/></div></section>
 
     {/* ───────── INDUSTRY PARTNERS MARQUEE — real studio + streamer logos, infinite scroll ───────── */}
@@ -4808,7 +4834,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div className="section-title" style={{textAlign:"center",marginBottom:32}}>Everything you want to know.</div>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         {[
-          {q:"How much does SlateCue cost for actors?",a:"$9.99/month with a 7-day free trial. Cancel anytime. No 'featured' upgrade, no per-submission fees, no hidden tiers — and cheaper than every other major casting site."},
+          {q:"How much does SlateCue cost for actors?",a:"Free accounts get 1 headshot and 3 casting submissions per day. Premium is $9.99/month and gives you unlimited submissions, up to 10 headshots, and up to 5 video reel links. No hidden tiers, no per-submission fees."},
           {q:"How is SlateCue different from legacy casting websites?",a:"On older platforms, your submission lands in a grid where a CD can scan 80 faces in 20 seconds. On SlateCue, every submission is full-screen, one at a time, swipe-style. CDs decide on you individually. No one gets skipped."},
           {q:"Can minors (under 18) sign up?",a:"Only with a parent or legal guardian managing the account. We require guardian verification and comply with COPPA and state child-performer laws."},
           {q:"Is this SAG-AFTRA friendly?",a:"Yes. SAG-AFTRA, AEA, and non-union castings are all supported. Union status is displayed on every casting post and can be filtered."},
