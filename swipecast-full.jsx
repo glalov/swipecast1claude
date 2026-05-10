@@ -182,7 +182,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .btn-s{background:transparent;color:var(--t1);border:1px solid var(--bdr);padding:10px 22px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;}
 .btn-s:hover{border-color:var(--t2);background:var(--s1);}
 .btn-sm{padding:8px 16px;font-size:12px;border-radius:6px;}
-.page{max-width:1200px;margin:0 auto;padding:40px 40px 0;width:100%;display:flex;flex-direction:column;flex:1 1 auto;}
+.page{max-width:1200px;margin:0 auto;padding:40px 40px 0;width:100%;display:flex;flex-direction:column;flex:1 1 auto;min-height:calc(100vh - 80px);}
 .page-wide{max-width:1400px;}
 .section-label{font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:12px;}
 .section-title{font-weight:800;font-size:36px;letter-spacing:-1.5px;margin-bottom:40px;line-height:1.1;}
@@ -975,7 +975,7 @@ function LoggedInRedirect({targetForTalent,targetForCd,myProfile,onNavigate}){
 // ═══════════════════════════════════════════
 function PageLoader(){
   return(
-    <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"60vh"}}>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",flex:"1 1 auto",minHeight:"calc(100vh - 80px)"}}>
       <div style={{width:32,height:32,borderRadius:"50%",border:"3px solid var(--bdr)",borderTopColor:"var(--acc)",animation:"scSpin 0.8s linear infinite"}}></div>
     </div>
   );
@@ -6639,10 +6639,11 @@ export default function App(){
       </div>}
       {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("home");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c.slug});}}/>}
       {/* SearchPage is kept mounted while on casting-detail so its fetched castings state
-          survives the navigation. CSS display:none hides it visually; React keeps it alive.
-          This eliminates the remount→loading=true→blank flash when pressing Back. */}
+          survives the navigation. The wrapper is flex:1 1 auto when visible so it re-joins
+          the .app flex chain (preserving the .page fill-height behaviour). display:none
+          hides it while keeping React state alive. */}
       {(page==="search"||page==="casting-detail")&&
-        <div style={{display:page==="search"?"block":"none"}} aria-hidden={page!=="search"}>
+        <div style={{display:page==="search"?"flex":"none",flexDirection:"column",flex:"1 1 auto"}} aria-hidden={page!=="search"}>
           <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c.slug});}}/>
         </div>}
       {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
