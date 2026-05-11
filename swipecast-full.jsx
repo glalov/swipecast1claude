@@ -1794,10 +1794,10 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
         {Array.isArray(viewing.instructor_poster_urls)&&viewing.instructor_poster_urls.length>0&&(
           <div style={{marginBottom:32}}>
             <h3 style={{fontSize:18,fontWeight:700,marginBottom:16}}>Selected Instructor Credits</h3>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16,maxWidth:540}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
               {viewing.instructor_poster_urls.map((p,i)=>(
-                <div key={i} style={{borderRadius:12,overflow:"hidden",boxShadow:"0 4px 18px rgba(0,0,0,0.18)",lineHeight:0,flexShrink:0}}>
-                  <img src={p.url||p} alt={`Instructor credit ${i+1}`} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",display:"block",borderRadius:12}}/>
+                <div key={i} style={{borderRadius:12,overflow:"hidden",boxShadow:"0 4px 18px rgba(0,0,0,0.18)",lineHeight:0}}>
+                  <img src={p.url||p} alt={`Instructor credit ${i+1}`} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",display:"block"}}/>
                 </div>
               ))}
             </div>
