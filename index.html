@@ -3039,6 +3039,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       if(error)throw error;
       const mapped=(cs||[]).map(c=>({
         id:c.id,
+        cd_id:c.cd_id||null,
         title:c.title,
         type:c.type||"Film",
         prod:c.prod||"",
@@ -3051,8 +3052,13 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         deadline:c.deadline||"",
         union:c.union_status||"",
         featured:c.featured===true,
+        casting_image_url:c.casting_image_url||null,
+        casting_image_path:c.casting_image_path||null,
+        casting_website_url:c.casting_website_url||null,
         creator_verified:c.profiles?.identity_verified===true&&c.profiles?.can_post_castings===true&&c.profiles?.verification_status==="verified",
+        profiles:c.profiles||null,
         roles:(c.roles||[]).map(r=>({
+          id:r.id||null,
           name:r.name,
           desc:r.description||"",
           type:"Supporting",
@@ -3882,7 +3888,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     // unmounted mid-fill. The early-return loader at line ~4147 only fires when loading===true.
     if(!firstLoadDone.current)setLoading(true);
     try{
-      const {data:cs,error:csErr}=await window.sb.from("castings").select("*,roles(id,name)").eq("cd_id",uid).order("created_at",{ascending:false});
+      const {data:cs,error:csErr}=await window.sb.from("castings").select("*,roles(id,name,description,gender,age_range,ethnicity)").eq("cd_id",uid).order("created_at",{ascending:false});
       if(csErr)throw csErr;
       const castings=cs||[];
       const ids=castings.map(c=>c.id);
@@ -5592,7 +5598,9 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
         if(r.id){const{error:uErr}=await window.sb.from("roles").update(rp).eq("id",r.id);if(uErr)throw uErr;}
         else{const{error:iErr}=await window.sb.from("roles").insert({...rp,casting_id:casting.id});if(iErr)throw iErr;}
       }
-      onSaved({...casting,...patch});
+      // Re-fetch roles from DB so onSaved carries fresh IDs (new roles get DB-generated IDs)
+      const{data:freshRoles}=await window.sb.from("roles").select("id,name,description,gender,age_range,ethnicity").eq("casting_id",casting.id);
+      onSaved({...casting,...patch,roles:freshRoles||[]});
     }catch(e){setErr(e.message||"Save failed.");}finally{setBusy(false);}
   };
 
@@ -5963,7 +5971,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("Request timed out. Please try again.")),10000);});
       const {data,error}=await Promise.race([
         window.sb.from("castings")
-          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq("status","open").eq("published",true)
           .order("featured",{ascending:false})
           .order("created_at",{ascending:false})
@@ -5988,8 +5996,14 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         union:c.union_status||"",
         featured:c.featured===true,
         submissions:0,
+        cd_id:c.cd_id||null,
+        profiles:c.profiles||null,
         _cd:c.profiles||null,
+        casting_image_url:c.casting_image_url||null,
+        casting_image_path:c.casting_image_path||null,
+        casting_website_url:c.casting_website_url||null,
         roles:(c.roles||[]).map(r=>({
+          id:r.id||null,
           name:r.name,
           desc:r.description||"",
           type:"Supporting",
@@ -8685,7 +8699,7 @@ function App(){
     if(!castingId)return;
     try{
       const{data,error}=await window.sb.from("castings")
-        .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,cd_id,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+        .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
         .eq("id",castingId).maybeSingle();
       if(error||!data)return;
       const c={
@@ -8693,9 +8707,13 @@ function App(){
         tagline:data.tagline||"",synopsis:data.synopsis||"",desc:data.synopsis||data.tagline||"",
         location:data.location||"",pay:data.pay||"",rate:data.pay||"",
         deadline:data.deadline||"",union:data.union_status||"",submissions:0,
-        cd_id:data.cd_id,_cd:data.profiles||null,
+        featured:data.featured===true,
+        cd_id:data.cd_id,profiles:data.profiles||null,_cd:data.profiles||null,
+        casting_image_url:data.casting_image_url||null,
+        casting_image_path:data.casting_image_path||null,
+        casting_website_url:data.casting_website_url||null,
         roles:(data.roles||[]).map(r=>({
-          name:r.name||"",desc:r.description||"",type:"Supporting",
+          id:r.id||null,name:r.name||"",desc:r.description||"",type:"Supporting",
           ageRange:r.age_range||"",gender:r.gender||"Any",
           ethnicity:r.ethnicity||"Any",pay:r.pay||"",
         })),
