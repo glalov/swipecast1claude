@@ -4280,15 +4280,24 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           <p style={{color:"var(--t3)",marginBottom:16}}>{loading?<span style={{display:"inline-flex",alignItems:"center",gap:8}}><span style={{width:14,height:14,borderRadius:"50%",border:"2px solid var(--bdr)",borderTopColor:"var(--acc)",animation:"scSpin 0.8s linear infinite",display:"inline-block"}}></span>Loading your castings…</span>:"You haven't posted any castings yet."}</p>
           {!loading&&<button className="btn-p" onClick={()=>setShowNew(true)}>+ Post Your First Casting</button>}
         </div>:
-        <div className="card-flat">{myCastings.map(c=>
-          <div key={c.id} className="casting-row" onClick={()=>openReview(c)}>
-            <div className="casting-row-left"><h4>{c.title}</h4><p>{c.prod||"—"} · {c.location||"—"} · {(c.roles||[]).length} role{(c.roles||[]).length===1?"":"s"} · Deadline {c.deadline||"—"}</p></div>
+        <div className="card-flat">{myCastings.map(c=>{
+          const isPendingReview=c.status==="pending_review";
+          const isRejected=c.status==="rejected";
+          return(<div key={c.id} className="casting-row" onClick={()=>!isPendingReview&&!isRejected&&openReview(c)} style={{cursor:isPendingReview||isRejected?"default":"pointer",opacity:isRejected?0.6:1}}>
+            <div className="casting-row-left">
+              <h4 style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.title}
+                {isPendingReview&&<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"rgba(200,137,0,0.12)",color:"#c88900"}}>PENDING REVIEW</span>}
+                {isRejected&&<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>REJECTED</span>}
+              </h4>
+              <p>{c.prod||"—"} · {c.location||"—"} · {(c.roles||[]).length} role{(c.roles||[]).length===1?"":"s"} · Deadline {c.deadline||"—"}{isPendingReview&&<em style={{color:"var(--t3)"}}> · Awaiting admin approval</em>}</p>
+            </div>
             <div className="casting-row-right">
               <span className="badge tag-acc">{c.type||"Film"}</span>
-              <div style={{textAlign:"right"}}><div className="sub-count">{c._count}</div><div style={{fontSize:10,color:"var(--t3)"}}>submissions</div></div>
-              <span style={{color:"var(--acc)",fontSize:18}}>→</span>
+              {!isPendingReview&&!isRejected&&<><div style={{textAlign:"right"}}><div className="sub-count">{c._count}</div><div style={{fontSize:10,color:"var(--t3)"}}>submissions</div></div>
+              <span style={{color:"var(--acc)",fontSize:18}}>→</span></>}
             </div>
-          </div>)}</div>:
+          </div>);
+        })}</div>:
         tab==="allSelected"?
           (allSelected.length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No selected talent yet. Review your pending submissions to build your shortlist.</p></div>:
           <div className="results-grid">{allSelected.map((a,i)=>{const p=a.profiles||{};return(<div key={a.id||i} className="talent-thumb" onClick={()=>onViewProfile(buildTalentView(a))}><img src={a.selected_photo_url||p.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?"} alt={p.display_name||""}/><div className="talent-thumb-info"><h4>{p.display_name||"Applicant"}</h4><p>{[p.age,p.location].filter(Boolean).join(" · ")}</p></div></div>);})}</div>):
@@ -7185,6 +7194,7 @@ function AdminOverview(){
         cd_pending:pu.filter(x=>["pending","needs_review"].includes(x.verification_status)&&!x.can_post_castings).length,
         castings:cu.length,
         open_castings:cu.filter(x=>x.status==="open").length,
+        pending_review_castings:cu.filter(x=>x.status==="pending_review").length,
         featured_castings:cu.filter(x=>x.featured).length,
         applications:au2.length,
         pending:au2.filter(x=>x.status==="pending").length,
@@ -7214,6 +7224,7 @@ function AdminOverview(){
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:28}}>
       <StatTile num={stats.castings} label="Castings"/>
       <StatTile num={stats.open_castings} label="Open"/>
+      <StatTile num={stats.pending_review_castings} label="Pending review"/>
       <StatTile num={stats.featured_castings} label="Featured"/>
       <StatTile num={stats.applications} label="Applications"/>
       <StatTile num={stats.pending} label="Pending review"/>
@@ -7541,19 +7552,32 @@ function AdminCastings(){
     <input className="input" placeholder="Search title, production, location, CD…" value={q} onChange={e=>setQ(e.target.value)} style={{marginBottom:14}}/>
     {loading?<SlateCueLoader size="inline" text="Loading…"/>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
-        {filtered.map(c=><div key={c.id} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"center",opacity:c.status==="closed"?0.55:1}}>
-          <div>
-            <div style={{fontWeight:600,fontSize:14}}>{c.title} {c.featured&&<span style={{color:"var(--acc)",fontSize:10,fontWeight:700,marginLeft:6}}>★ FEATURED</span>} {c.status!=="open"&&<span style={{color:"#c0392b",fontSize:10,fontWeight:700,marginLeft:6}}>{c.status.toUpperCase()}</span>}</div>
-            <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{c.type||"—"} · {c.prod||"—"} · {c.location||"—"} · {c.roles?.length||0} role{c.roles?.length===1?"":"s"} · by <strong>{c.profiles?.display_name||c.profiles?.email||"—"}</strong> · {new Date(c.created_at).toLocaleDateString()}</div>
-          </div>
-          <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"flex-end"}}>
-            <button className="btn-s btn-sm" onClick={()=>setViewCasting(c)}>View</button>
-            <button className="btn-s btn-sm" onClick={()=>setEditCasting(c)}>Edit</button>
-            <button className="btn-s btn-sm" disabled={busy===c.id+":feature"} onClick={()=>toggleFeatured(c)}>{busy===c.id+":feature"?"…":c.featured?"Unfeature":"Feature"}</button>
-            <button className="btn-s btn-sm" disabled={busy===c.id+":status"} onClick={()=>setStatus(c,c.status==="open"?"closed":"open")}>{busy===c.id+":status"?"…":c.status==="open"?"Close":"Reopen"}</button>
-            <button className="btn-s btn-sm" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} disabled={busy===c.id+":delete"} onClick={()=>doDelete(c)}>{busy===c.id+":delete"?"…":"Delete"}</button>
-          </div>
-        </div>)}
+        {filtered.map(c=>{
+          const isPending=c.status==="pending_review";
+          const statusColor=isPending?"#c88900":c.status==="open"?"#1d7b44":c.status==="rejected"?"#c0392b":"var(--t2)";
+          const statusBg=isPending?"rgba(200,137,0,0.12)":c.status==="open"?"rgba(46,204,113,0.12)":c.status==="rejected"?"rgba(192,57,43,0.1)":"var(--s2)";
+          const statusLabel=isPending?"PENDING REVIEW":c.status.toUpperCase();
+          return(<div key={c.id} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"center",opacity:c.status==="closed"||c.status==="rejected"?0.6:1,borderLeft:isPending?"3px solid #c88900":"3px solid transparent"}}>
+            <div>
+              <div style={{fontWeight:600,fontSize:14}}>
+                {c.title}
+                {c.featured&&<span style={{color:"var(--acc)",fontSize:10,fontWeight:700,marginLeft:6}}>★ FEATURED</span>}
+                <span style={{color:statusColor,background:statusBg,fontSize:10,fontWeight:700,marginLeft:8,padding:"2px 7px",borderRadius:99}}>{statusLabel}</span>
+              </div>
+              <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{c.type||"—"} · {c.prod||"—"} · {c.location||"—"} · {c.roles?.length||0} role{c.roles?.length===1?"":"s"} · by <strong>{c.profiles?.display_name||c.profiles?.email||"—"}</strong> · {new Date(c.created_at).toLocaleDateString()}</div>
+            </div>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"flex-end"}}>
+              <button className="btn-s btn-sm" onClick={()=>setViewCasting(c)}>View</button>
+              <button className="btn-s btn-sm" onClick={()=>setEditCasting(c)}>Edit</button>
+              <button className="btn-s btn-sm" disabled={busy===c.id+":feature"} onClick={()=>toggleFeatured(c)}>{busy===c.id+":feature"?"…":c.featured?"Unfeature":"Feature"}</button>
+              {isPending?<>
+                <button className="btn-s btn-sm" style={{color:"#fff",background:"#1d7b44",borderColor:"#1d7b44"}} disabled={busy===c.id+":status"} onClick={()=>setStatus(c,"open")}>{busy===c.id+":status"?"…":"✓ Approve"}</button>
+                <button className="btn-s btn-sm" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} disabled={busy===c.id+":status"} onClick={()=>setStatus(c,"rejected")}>{busy===c.id+":status"?"…":"✕ Reject"}</button>
+              </>:<button className="btn-s btn-sm" disabled={busy===c.id+":status"} onClick={()=>setStatus(c,c.status==="open"?"closed":"open")}>{busy===c.id+":status"?"…":c.status==="open"?"Close":"Reopen"}</button>}
+              <button className="btn-s btn-sm" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} disabled={busy===c.id+":delete"} onClick={()=>doDelete(c)}>{busy===c.id+":delete"?"…":"Delete"}</button>
+            </div>
+          </div>);
+        })}
         {filtered.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No castings match.</div>}
       </div>
     }
