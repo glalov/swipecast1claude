@@ -1790,6 +1790,20 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
             </div>
           )}
         </div>
+        {/* ── Selected Instructor Credits (posters) ── */}
+        {Array.isArray(viewing.instructor_poster_urls)&&viewing.instructor_poster_urls.length>0&&(
+          <div style={{marginBottom:32}}>
+            <h3 style={{fontSize:18,fontWeight:700,marginBottom:16}}>Selected Instructor Credits</h3>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16,maxWidth:540}}>
+              {viewing.instructor_poster_urls.map((p,i)=>(
+                <div key={i} style={{borderRadius:12,overflow:"hidden",boxShadow:"0 4px 18px rgba(0,0,0,0.18)",lineHeight:0,flexShrink:0}}>
+                  <img src={p.url||p} alt={`Instructor credit ${i+1}`} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",display:"block",borderRadius:12}}/>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {clsSlots.length>0&&<>
           <h3 style={{fontSize:18,fontWeight:700,marginBottom:14}}>Upcoming Sessions</h3>
           {clsSlots.map(slot=>upcomingDates(slot.day_of_week,4).map(date=>{
@@ -8490,6 +8504,9 @@ function AdminEditClass({cls,onClose}){
     location_room:cls.location_room||"",online_note:cls.online_note||"",
     image_url:cls.image_url||"",active:cls.active!==false
   });
+  // posters: array of {url, path} — max 3
+  const[posters,setPosters]=useState(()=>Array.isArray(cls.instructor_poster_urls)?cls.instructor_poster_urls:[]);
+  const[posterBusy,setPosterBusy]=useState(false);
   const[busy,setBusy]=useState(false);
   const[msg,setMsg]=useState("");
   const up=(k,v)=>setF(p=>({...p,[k]:v}));
@@ -8505,12 +8522,49 @@ function AdminEditClass({cls,onClose}){
       level:f.level.trim()||null,price:f.price.trim()||null,format:f.format.trim()||null,
       location_name:f.location_name.trim()||null,location_city_state:f.location_city_state.trim()||null,
       location_room:f.location_room.trim()||null,online_note:f.online_note.trim()||null,
-      image_url:f.image_url.trim()||null,active:f.active
+      image_url:f.image_url.trim()||null,active:f.active,
+      instructor_poster_urls:posters
     }).eq("id",cls.id);
     setBusy(false);
     if(error){setMsg("Save failed: "+error.message);return;}
     setMsg("Saved successfully.");
     setTimeout(()=>onClose(),900);
+  };
+
+  const uploadPoster=async(file)=>{
+    if(!file)return;
+    if(posters.length>=3){setMsg("Maximum 3 posters per instructor.");return;}
+    const allowed=["image/jpeg","image/jpg","image/png","image/webp"];
+    if(!allowed.includes(file.type)){setMsg("Accepted formats: JPG, PNG, WebP.");return;}
+    if(file.size>5*1024*1024){setMsg("Poster must be 5 MB or smaller.");return;}
+    setPosterBusy(true);setMsg("");
+    try{
+      const ext=file.name.split(".").pop().toLowerCase();
+      const path=`class-posters/${cls.id}/${Date.now()}-${Math.random().toString(36).slice(2,7)}.${ext}`;
+      const{data,error}=await window.sb.storage.from("class-media").upload(path,file,{upsert:false});
+      if(error)throw error;
+      const{data:{publicUrl}}=window.sb.storage.from("class-media").getPublicUrl(data.path);
+      setPosters(p=>[...p,{url:publicUrl,path:data.path}]);
+      setMsg("Poster uploaded. Click Save Changes to confirm.");
+    }catch(e){setMsg("Upload failed: "+e.message);}
+    finally{setPosterBusy(false);}
+  };
+
+  const removePoster=async(idx)=>{
+    const poster=posters[idx];
+    if(!poster)return;
+    // attempt to remove from storage (best-effort)
+    if(poster.path){
+      window.sb.storage.from("class-media").remove([poster.path]).catch(()=>{});
+    }
+    setPosters(p=>p.filter((_,i)=>i!==idx));
+    setMsg("Poster removed. Click Save Changes to confirm.");
+  };
+
+  const movePoster=(idx,dir)=>{
+    const next=idx+dir;
+    if(next<0||next>=posters.length)return;
+    setPosters(p=>{const a=[...p];[a[idx],a[next]]=[a[next],a[idx]];return a;});
   };
 
   const inp=(label,key,type="text",placeholder="")=>(
@@ -8527,7 +8581,7 @@ function AdminEditClass({cls,onClose}){
       <button className="btn-s btn-sm" onClick={onClose}>← Back to Classes</button>
       <h1 style={{fontWeight:800,fontSize:22,margin:0}}>Edit: {cls.title}</h1>
     </div>
-    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,color:msg.startsWith("Save failed")||msg==="Title is required."?"#c0392b":"var(--t1)"}}>{msg}</div>}
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,color:msg.startsWith("Save failed")||msg==="Title is required."||msg.startsWith("Maximum")||msg.startsWith("Accepted")||msg.startsWith("Poster must")||msg.startsWith("Upload failed")?"#c0392b":"var(--t1)"}}>{msg}</div>}
     <div className="card" style={{padding:24,marginBottom:16}}>
       <h3 style={{fontWeight:700,fontSize:15,marginBottom:14}}>Class Info</h3>
       {inp("Class Title","title","text","e.g. On-Camera Film Acting")}
@@ -8554,6 +8608,40 @@ function AdminEditClass({cls,onClose}){
       {inp("Instructor Photo URL","instructor_photo_url","text","https://... (optional)")}
       {inp("Instructor IMDb Link","instructor_imdb","text","https://www.imdb.com/name/... (optional)")}
     </div>
+
+    {/* ── Instructor Credits / Movie Posters ─────────────────────── */}
+    <div className="card" style={{padding:24,marginBottom:16}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:6}}>
+        <h3 style={{fontWeight:700,fontSize:15,margin:0}}>Instructor Credits / Movie Posters</h3>
+        <span style={{fontSize:12,color:"var(--t3)",fontWeight:600}}>{posters.length} of 3 uploaded</span>
+      </div>
+      <p style={{fontSize:12,color:"var(--t3)",marginBottom:16,lineHeight:1.5}}>Upload up to 3 movie or project posters for projects this instructor has worked on. JPG, PNG, or WebP · max 5 MB each. Shown publicly on the class detail page.</p>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:16}}>
+        {posters.map((p,i)=>(
+          <div key={i} style={{position:"relative",borderRadius:10,overflow:"hidden",border:"1px solid var(--bdr)",background:"var(--s2)"}}>
+            <img src={p.url} alt={`Poster ${i+1}`} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",display:"block"}}/>
+            <div style={{position:"absolute",top:6,right:6,display:"flex",gap:4}}>
+              {i>0&&<button onClick={()=>movePoster(i,-1)} title="Move left" style={{background:"rgba(0,0,0,0.6)",color:"#fff",border:"none",borderRadius:4,padding:"3px 7px",cursor:"pointer",fontSize:12}}>←</button>}
+              {i<posters.length-1&&<button onClick={()=>movePoster(i,1)} title="Move right" style={{background:"rgba(0,0,0,0.6)",color:"#fff",border:"none",borderRadius:4,padding:"3px 7px",cursor:"pointer",fontSize:12}}>→</button>}
+              <button onClick={()=>removePoster(i)} title="Remove poster" style={{background:"rgba(192,57,43,0.85)",color:"#fff",border:"none",borderRadius:4,padding:"3px 7px",cursor:"pointer",fontSize:12,fontWeight:700}}>×</button>
+            </div>
+            <div style={{padding:"6px 8px",fontSize:11,color:"var(--t3)",textAlign:"center"}}>Poster {i+1}</div>
+          </div>
+        ))}
+        {posters.length<3&&(
+          <label style={{border:"2px dashed var(--bdr)",borderRadius:10,aspectRatio:"2/3",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:posterBusy?"not-allowed":"pointer",color:"var(--t3)",gap:8,background:"var(--s2)",transition:"border-color 0.15s"}} onMouseEnter={e=>e.currentTarget.style.borderColor="var(--acc)"} onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bdr)"}>
+            <input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" style={{display:"none"}} disabled={posterBusy||posters.length>=3} onChange={e=>{uploadPoster(e.target.files[0]);e.target.value="";}}/>
+            {posterBusy?<SlateCueLoader size="inline" text=""/>:<>
+              <span style={{fontSize:28,lineHeight:1}}>+</span>
+              <span style={{fontSize:12,fontWeight:600}}>Upload Poster</span>
+              <span style={{fontSize:11}}>JPG · PNG · WebP</span>
+            </>}
+          </label>
+        )}
+      </div>
+      <p style={{fontSize:11,color:"var(--t3)",lineHeight:1.5}}>Only upload posters for real projects this instructor has worked on. Use the arrows to reorder. Changes take effect when you click Save Changes below.</p>
+    </div>
+
     <div className="card" style={{padding:24,marginBottom:20}}>
       <h3 style={{fontWeight:700,fontSize:15,marginBottom:14}}>Location</h3>
       {inp("Location Name","location_name","text","e.g. New York, NY — Midtown or Remote")}
@@ -8562,8 +8650,8 @@ function AdminEditClass({cls,onClose}){
       {inp("Online Meeting Note","online_note","text","e.g. Zoom link sent upon enrollment (for online/hybrid classes)")}
     </div>
     <div style={{display:"flex",gap:10}}>
-      <button className="btn-p" onClick={save} disabled={busy}>{busy?"Saving…":"Save Changes"}</button>
-      <button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
+      <button className="btn-p" onClick={save} disabled={busy||posterBusy}>{busy?"Saving…":"Save Changes"}</button>
+      <button className="btn-s" onClick={onClose} disabled={busy||posterBusy}>Cancel</button>
     </div>
   </>);
 }
