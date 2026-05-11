@@ -1,5 +1,72 @@
 # Project Status
 
+## 2026-05-11 — Featured Castings: admin controls, sorting, and public badge
+
+### Files changed
+
+| File | What changed |
+|---|---|
+| `swipecast-full.jsx` | Admin Feature button success messages fixed. Browse Castings query now orders `featured DESC, created_at DESC`. `featured` field included in mapped castings object. Featured badge added to Browse Castings cards and Casting Detail page. FeaturedCastingsSlider also orders featured first and passes `featured` through. |
+| `index.html` | Rebuilt via `python3 build-html.py`. |
+
+### Schema changes
+
+Two migrations applied to `public.castings`:
+
+**Migration `add_featured_at_featured_by_to_castings`**:
+```sql
+ALTER TABLE public.castings
+  ADD COLUMN IF NOT EXISTS featured_at timestamptz,
+  ADD COLUMN IF NOT EXISTS featured_by uuid REFERENCES auth.users(id) ON DELETE SET NULL;
+NOTIFY pgrst, 'reload schema';
+```
+
+**Migration `update_admin_set_casting_featured_with_timestamps`** — updated RPC:
+- On feature: sets `featured = true`, `featured_at = now()`, `featured_by = auth.uid()`
+- On unfeature: sets `featured = false`, `featured_at = null`, `featured_by = null`
+
+The `featured boolean default false` column already existed.
+
+### How featured sorting works
+
+Browse Castings (SearchPage) and FeaturedCastingsSlider both query with:
+```
+.order("featured", { ascending: false })
+.order("created_at", { ascending: false })
+```
+This puts featured castings (`featured = true`) at the top, sorted by newest within each group. Unfeature removes the pin immediately on next refresh.
+
+Only `status = 'open'` and `published = true` castings are shown publicly — featured status does not override approval gates.
+
+### Admin controls
+
+- Feature button shows `"Feature"` when `c.featured === false`, `"Unfeature"` when `c.featured === true`
+- Loading state (`…`) while action is in flight
+- Success message: `"Casting marked as featured."` / `"Casting removed from featured."`
+- Error message if RPC fails
+- `★ FEATURED` label shown inline in the Admin → Castings row title
+- Only admin/super_admin can call `admin_set_casting_featured` (enforced by `is_admin()` check in RPC)
+
+### Public badge
+
+A subtle pill badge `★ Featured` (purple tint, matching accent color) appears:
+- **Browse Castings card**: before the type badge in the badge row
+- **Casting Detail page**: before the type badge in the top badge row
+
+### Test results
+
+A. Admin click "Feature" on a casting → button shows `…` then `"Unfeature"`, success msg shown ✓  
+B. Admin → Castings row shows `★ FEATURED` label ✓  
+C. Browse Castings puts featured casting first ✓  
+D. Browse Castings card shows `★ Featured` badge ✓  
+E. Casting detail page shows `★ Featured` badge ✓  
+F. Admin click "Unfeature" → button reverts to `"Feature"`, msg shown ✓  
+G. Badge disappears after unfeature + reload ✓  
+H. Casting returns to normal sort order ✓  
+I. Non-admin users cannot call `admin_set_casting_featured` (RPC raises `42501`) ✓  
+
+---
+
 ## 2026-05-11 — Casting cards: remove public submission count + ID Verified badge
 
 ### Files changed
