@@ -1376,7 +1376,7 @@ function RegisterCD({onNavigate}){
     <div className="page"><div style={{maxWidth:640,margin:"0 auto"}}>
       <div className="section-label">For Industry Professionals</div>
       <h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:8}}>Create a Casting Director Account</h1>
-      <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>Create your free account and start discovering talent. You only pay $19.99 when you post a casting. Already have an account? <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>Log in</span></p>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>Create your free account and start discovering talent. Casting posts are free to submit and go live after admin approval. Already have an account? <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>Log in</span></p>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}>✓ Verification email re-sent — check your inbox.</div>}</div>}
       <div className="form-row"><div className="form-group"><label className="label">First Name</label><input className="input" placeholder="First name" value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">Last Name</label><input className="input" placeholder="Last name" value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
       <div className="form-group"><label className="label">Email Address</label><input className="input" type="email" placeholder="you@company.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
@@ -1384,7 +1384,7 @@ function RegisterCD({onNavigate}){
       <div className="form-row"><div className="form-group"><label className="label">Company / Production</label><input className="input" placeholder="Company name" value={f.company_name} onChange={e=>up("company_name",e.target.value)}/></div><div className="form-group"><label className="label">Title / Role</label><select className="select" style={{width:"100%"}} value={f.company_role} onChange={e=>up("company_role",e.target.value)}><option>Casting Director</option><option>Producer</option><option>Director</option><option>Casting Associate</option><option>Talent Manager</option><option>Studio Executive</option></select></div></div>
       <div className="form-group"><label className="label">Location</label><input className="input" placeholder="City, State" value={f.location} onChange={e=>up("location",e.target.value)}/></div>
       <div className="form-group"><label className="label">Website or IMDb (optional)</label><input className="input" placeholder="https://" value={f.website} onChange={e=>up("website",e.target.value)}/></div>
-      <div style={{background:"var(--s2)",borderRadius:10,padding:16,marginTop:8}}><div style={{display:"flex",alignItems:"center",gap:12}}><div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:24,color:"var(--grn)"}}>FREE</div><div><p style={{fontSize:13,fontWeight:600}}>Free to create your account</p><p style={{fontSize:12,color:"var(--t2)"}}>You only pay $19.99 per casting post at checkout</p></div></div></div>
+      <div style={{background:"var(--s2)",borderRadius:10,padding:16,marginTop:8}}><div style={{display:"flex",alignItems:"center",gap:12}}><div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:24,color:"var(--grn)"}}>FREE</div><div><p style={{fontSize:13,fontWeight:600}}>Free to create your account</p><p style={{fontSize:12,color:"var(--t2)"}}>Casting posts are free — go live after admin approval</p></div></div></div>
       <label className="checkbox-row" style={{marginTop:16}}><input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)}/> I agree to SlateCue's Terms of Service and Privacy Policy</label>
       <button className="btn-p" style={{width:"100%",marginTop:16}} onClick={submit} disabled={loading}>{loading?"Creating account…":"Create Casting Account"}</button>
     </div><Footer onNavigate={onNavigate}/></div>
@@ -1593,7 +1593,7 @@ const FAQ_CATEGORIES=[
     {q:"Do I need a membership to create a profile?",a:"No. Profiles are free for everyone. Free actors can submit to up to 3 castings per day. Upgrade to Premium ($9.99/month) for unlimited submissions, 10 headshots, and up to 5 video reel links. Cancel anytime."},
     {q:"Where is SlateCue available?",a:"Anywhere with a browser. Castings are organised by city, so you'll see roles in your market — but creating a profile and browsing castings works from anywhere."},
     {q:"How do I get started as an actor?",a:"Create a free account, upload a headshot, fill out your stats, and add a short bio. Then browse Open Castings and apply. Free accounts can submit to up to 3 castings per day. Upgrade to Premium ($9.99/month) for unlimited submissions, more headshots, and video reels."},
-    {q:"How do I get started as a casting director or producer?",a:"Create a free industry account, then click 'Post a Casting' from your dashboard. You only pay the $19.99 fee when you actually publish the casting."}
+    {q:"How do I get started as a casting director or producer?",a:"Create a free industry account, then click 'Post a Casting' from your dashboard. Submit your casting for free — it goes live after admin approval."}
   ]},
   {id:"talent-profiles",label:"Talent Profiles",icon:"👤",blurb:"Headshots, stats, bio, reel — building a profile that gets callbacks.",items:[
     {q:"What should I put in my talent profile?",a:"A current headshot (within the last 18 months), accurate stats, a 2-3 sentence bio with your training and strongest types, your three most recent credits with years, and one current piece of footage. Special skills only if you can perform them on demand."},
@@ -1612,7 +1612,7 @@ const FAQ_CATEGORIES=[
     {q:"What if I missed the deadline?",a:"Submit anyway, but expect lower review priority — many CDs start reviewing days before the deadline closes. Earlier submissions land in the freshest review pass."}
   ]},
   {id:"industry",label:"Casting Directors & Producers",icon:"🎥",blurb:"Posting castings, reviewing submissions, and scheduling callbacks.",items:[
-    {q:"How do I post a casting?",a:"From the Dashboard, click 'Post Casting'. Fill out the breakdown — title, type, location, role specs, pay, deadline — and confirm. The fee is $19.99 per published casting. Goes live immediately."},
+    {q:"How do I post a casting?",a:"From the Dashboard, click 'Post Casting'. Fill out the breakdown — title, type, location, role specs, pay, deadline — and submit. Casting posts are free. Your casting goes live after admin review and approval."},
     {q:"How does the review interface work?",a:"Open a casting from your dashboard, then start reviewing. Each submission is shown one at a time, full-screen on phone or desktop, with the headshot, name, stats, and bio. Swipe right (or click Callback) to add to the callback list. Swipe left to pass."},
     {q:"Can I cap submissions per role?",a:"We cap roles at the level where you can actually review every submission with full attention — typically 250-500 depending on the breakdown. The cap closes the role automatically when reached."},
     {q:"How do I send a callback request?",a:"From your callback list, select the talent you want and click 'Send Callback'. Pick three available time slots, write a short message, and we'll email and inbox-message the actor."},
@@ -1621,7 +1621,7 @@ const FAQ_CATEGORIES=[
   ]},
   {id:"payments",label:"Payments & Membership",icon:"💳",blurb:"Talent membership, casting fees, billing, and cancellations.",items:[
     {q:"How much does the talent membership cost?",a:"Actor accounts are free — you can create a profile and submit to up to 3 castings per day at no cost. Premium is $9.99/month and gives you unlimited submissions, up to 10 headshots, and up to 5 video reel links."},
-    {q:"How much does it cost to post a casting?",a:"$19.99 per casting post. There's no subscription for industry accounts — you only pay when you actually publish a casting. Account creation is free."},
+    {q:"How much does it cost to post a casting?",a:"Casting posts are free. Create a free industry account and submit your casting breakdown. It goes live after admin review and approval."},
     {q:"How do I cancel my membership?",a:"My Profile → Membership → Cancel. Your membership stays active through the end of the current billing period, then doesn't renew. No fees, no friction."},
     {q:"Are payments refundable?",a:"Membership fees are non-refundable except where required by law, but cancelled memberships continue until the end of the period you've already paid for. Casting post fees are non-refundable once the casting is published."},
     {q:"What payment methods do you accept?",a:"All major credit and debit cards. Payments are processed securely by our payment provider — SlateCue never stores your card details."},
@@ -5402,16 +5402,29 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   const [step,setStep]=useState(1); // 1 = form, 2 = success
   const [err,setErr]=useState("");
   const [busy,setBusy]=useState(false);
-  const [f,setF]=useState({title:"",prod:"",type:"Film",location:"",pay:"",union:"SAG-AFTRA",deadline:"",tagline:"",synopsis:""});
-  const [roles,setRoles]=useState([{name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any"}]);
-  const [inserted,setInserted]=useState(null); // holds the Supabase-returned row so onPosted can optimistically add it
+  // Form state is intentionally NOT reset on re-renders or prop changes — only on successful submit.
+  const [f,setF]=useState({title:"",prod:"",type:"Film & TV",location:"",pay:"",union:"SAG-AFTRA",deadline:"",tagline:"",synopsis:""});
+  const [roles,setRoles]=useState([{name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:""}]);
+  const [inserted,setInserted]=useState(null);
   const [verifyMsg,setVerifyMsg]=useState("");
   const [verifying,setVerifying]=useState(false);
   const [verifyDebug,setVerifyDebug]=useState(null);
   const setField=(k,v)=>setF(p=>({...p,[k]:v}));
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
-  const addRole=()=>setRoles(p=>[...p,{name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any"}]);
+  const addRole=()=>setRoles(p=>[...p,{name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:""}]);
   const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
+
+  const PROJECT_TYPES=[
+    {value:"Film & TV",label:"Film & TV",desc:"Feature films, short films, indie films, and television series."},
+    {value:"Commercials & Branded Content",label:"Commercials & Branded Content",desc:"Commercials, branded content, social media ads, and industrial videos."},
+    {value:"Theater & Musicals",label:"Theater & Musicals",desc:"Broadway, off-Broadway, regional, and community theater."},
+    {value:"Digital & New Media",label:"Digital & New Media",desc:"Web series, webisodes, digital commercials, and user-generated content (UGC)."},
+    {value:"Voiceover",label:"Voiceover",desc:"Animation, commercial, narration, and video game voice acting."},
+    {value:"Modeling & Fashion",label:"Modeling & Fashion",desc:"Print modeling, fashion, photo shoots, and runway."},
+    {value:"Other Media",label:"Other Media",desc:"Music videos, reality TV, student films, and photo shoots."},
+  ];
+  const ETHNICITY_OPTIONS=["Any ethnicity","Black / African descent","White / European descent","Hispanic / Latino","Asian","South Asian","Middle Eastern / North African","Native American / Indigenous","Pacific Islander","Mixed ethnicity","Other / open to all"];
+  const AGE_PRESETS=["Any age","0–5","6–12","13–17","18–25","20–30","25–35","30–40","35–50","40–60","50–70","60+","Custom range"];
 
   const startVerificationFromModal=async()=>{
     setVerifying(true);setVerifyMsg("");setVerifyDebug(null);
@@ -5497,23 +5510,31 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
 
   // Common pay presets shown as one-tap chips beside the pay field
   const PAY_PRESETS=["$100/day","$150/day","$200/day","$20/hour","$50/hour","Unpaid","Deferred","Negotiable","SAG Scale"];
-  const submit=async()=>{
+  const submit=async(e)=>{
+    if(e&&e.preventDefault)e.preventDefault();
     setErr("");
     if(!f.title.trim()){setErr("Title required.");return;}
     if(!roles.length||!roles[0].name.trim()){setErr("At least one role with a name is required.");return;}
     setBusy(true);
     try{
-      const payload={cd_id:uid,title:f.title.trim(),type:f.type,prod:f.prod||null,tagline:f.tagline||null,synopsis:f.synopsis||null,location:f.location||null,pay:f.pay||null,union_status:f.union,deadline:f.deadline||null,status:"open",published:true};
+      const payload={cd_id:uid,title:f.title.trim(),type:f.type,prod:f.prod||null,tagline:f.tagline||null,synopsis:f.synopsis||null,location:f.location||null,pay:f.pay||null,union_status:f.union,deadline:f.deadline||null,status:"pending_review",published:false};
       const {data:casting,error:cErr}=await window.sb.from("castings").insert(payload).select().single();
       if(cErr)throw cErr;
-      const rolePayload=roles.filter(r=>r.name.trim()).map(r=>({casting_id:casting.id,name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:r.age_range||null,ethnicity:r.ethnicity||null}));
+      const rolePayload=roles.filter(r=>r.name.trim()).map(r=>{
+        let ageRange="";
+        if(r.age_preset==="Custom range"){
+          ageRange=[r.age_min,r.age_max].filter(Boolean).join("-");
+        }else if(r.age_preset&&r.age_preset!=="Any age"){
+          ageRange=r.age_preset;
+        }
+        return {casting_id:casting.id,name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:ageRange||null,ethnicity:(r.ethnicity&&r.ethnicity!=="Any ethnicity")?r.ethnicity:null};
+      });
       let insertedRoles=[];
       if(rolePayload.length){
         const {data:rdata,error:rErr}=await window.sb.from("roles").insert(rolePayload).select();
         if(rErr)throw rErr;
         insertedRoles=rdata||[];
       }
-      // Stash the full row so step 2's "Back to Dashboard" can hand it up for optimistic insertion.
       setInserted({...casting,roles:insertedRoles});
       setStep(2);
     }catch(e){setErr(e.message||"Something went wrong.");}finally{setBusy(false);}
@@ -5521,18 +5542,22 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"90vh",overflowY:"auto"}}>
     {step===2?<div className="success-msg">
       <div className="check">✓</div>
-      <h3>Casting Posted</h3>
-      <p>Your casting is now live and visible to every actor on SlateCue. They'll get notified and start submitting immediately.</p>
-      <button className="btn-p mt-20" onClick={()=>onPosted(inserted)}>Back to Dashboard</button>
+      <h3>Casting Submitted</h3>
+      <p>Your casting has been submitted for admin review. It will appear publicly once approved.</p>
+      <button type="button" className="btn-p mt-20" onClick={()=>onPosted(inserted)}>Back to Dashboard</button>
     </div>:<>
       <h2>Post New Casting</h2>
-      <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:20}}>$19.99 per casting post. Goes live immediately.</p>
+      <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:8}}>Free to submit. Castings go live after admin approval.</p>
+      <p style={{color:"var(--t3)",fontSize:12,marginBottom:20}}>Your casting will be submitted for admin review before it appears publicly.</p>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
       <div className="form-group"><label className="label">Project Title *</label><input className="input" value={f.title} onChange={e=>setField("title",e.target.value)} placeholder="e.g. Lead Role — Untitled Horror Feature"/></div>
       <div className="form-row">
         <div><label className="label">Production Company</label><input className="input" value={f.prod} onChange={e=>setField("prod",e.target.value)} placeholder="Company name"/></div>
-        <div><label className="label">Project Type</label><select className="select" style={{width:"100%"}} value={f.type} onChange={e=>setField("type",e.target.value)}><option>Film</option><option>TV</option><option>Theater</option><option>Commercial</option><option>Modeling</option></select></div>
+        <div><label className="label">Project Type</label><select className="select" style={{width:"100%"}} value={f.type} onChange={e=>setField("type",e.target.value)}>
+          {PROJECT_TYPES.map(pt=><option key={pt.value} value={pt.value}>{pt.label}</option>)}
+        </select></div>
       </div>
+      {f.type&&PROJECT_TYPES.find(pt=>pt.value===f.type)&&<p style={{fontSize:11,color:"var(--t3)",marginTop:-8,marginBottom:12}}>{PROJECT_TYPES.find(pt=>pt.value===f.type).desc}</p>}
       <div className="form-row">
         <div><label className="label">Location</label><input className="input" value={f.location} onChange={e=>setField("location",e.target.value)} placeholder="City, State"/></div>
         <div><label className="label">Pay / Rate</label><input className="input" value={f.pay} onChange={e=>setField("pay",e.target.value)} placeholder="e.g. $150/day, $20/hour, Negotiable"/><div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:8}}>{PAY_PRESETS.map(p=><button type="button" key={p} onClick={()=>setField("pay",p)} style={{fontSize:11,padding:"4px 10px",borderRadius:999,border:"1px solid var(--bdr)",background:f.pay===p?"var(--acc)":"var(--s2)",color:f.pay===p?"#fff":"var(--t2)",cursor:"pointer",fontWeight:500}}>{p}</button>)}</div></div>
@@ -5545,22 +5570,34 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
       <div className="form-group"><label className="label">Project Summary</label><textarea className="textarea" value={f.synopsis} onChange={e=>setField("synopsis",e.target.value)} placeholder="Describe the project — genre, tone, what the production is about..."></textarea></div>
 
       <div style={{borderTop:"1px solid var(--bdr)",paddingTop:20,marginTop:20}}>
-        <div className="flex-between" style={{marginBottom:12}}><h3 style={{fontSize:16,fontWeight:700}}>Roles</h3><button className="btn-s btn-sm" onClick={addRole} type="button">+ Add Role</button></div>
+        <div className="flex-between" style={{marginBottom:12}}><h3 style={{fontSize:16,fontWeight:700}}>Roles</h3><button type="button" className="btn-s btn-sm" onClick={addRole}>+ Add Role</button></div>
         {roles.map((r,i)=><div key={i} style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:12}}>
-          <div className="flex-between" style={{marginBottom:10}}><strong style={{fontSize:13}}>Role {i+1}</strong>{roles.length>1&&<button onClick={()=>removeRole(i)} style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:12}}>✕ Remove</button>}</div>
+          <div className="flex-between" style={{marginBottom:10}}><strong style={{fontSize:13}}>Role {i+1}</strong>{roles.length>1&&<button type="button" onClick={()=>removeRole(i)} style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:12}}>✕ Remove</button>}</div>
           <div className="form-group" style={{marginBottom:10}}><label className="label">Role Name *</label><input className="input" value={r.name} onChange={e=>setRole(i,"name",e.target.value)} placeholder="e.g. Sarah — Lead"/></div>
           <div className="form-row">
             <div><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={r.gender} onChange={e=>setRole(i,"gender",e.target.value)}><option>Any</option><option>Male</option><option>Female</option><option>Non-Binary</option></select></div>
-            <div><label className="label">Age Range</label><input className="input" value={r.age_range} onChange={e=>setRole(i,"age_range",e.target.value)} placeholder="e.g. 25-35"/></div>
+            <div><label className="label">Age Range</label>
+              <select className="select" style={{width:"100%"}} value={r.age_preset} onChange={e=>setRole(i,"age_preset",e.target.value)}>
+                {AGE_PRESETS.map(ap=><option key={ap} value={ap}>{ap}</option>)}
+              </select>
+              {r.age_preset==="Custom range"&&<div style={{display:"flex",gap:8,marginTop:8}}>
+                <input className="input" value={r.age_min} onChange={e=>setRole(i,"age_min",e.target.value)} placeholder="Min age" style={{flex:1}}/>
+                <input className="input" value={r.age_max} onChange={e=>setRole(i,"age_max",e.target.value)} placeholder="Max age" style={{flex:1}}/>
+              </div>}
+            </div>
           </div>
-          <div className="form-group" style={{marginTop:10,marginBottom:0}}><label className="label">Ethnicity</label><input className="input" value={r.ethnicity} onChange={e=>setRole(i,"ethnicity",e.target.value)} placeholder="e.g. Any, Black, Latin, Asian"/></div>
+          <div className="form-group" style={{marginTop:10,marginBottom:0}}><label className="label">Ethnicity</label>
+            <select className="select" style={{width:"100%"}} value={r.ethnicity} onChange={e=>setRole(i,"ethnicity",e.target.value)}>
+              {ETHNICITY_OPTIONS.map(opt=><option key={opt} value={opt}>{opt}</option>)}
+            </select>
+          </div>
           <div className="form-group" style={{marginTop:10,marginBottom:0}}><label className="label">Role Description</label><textarea className="textarea" value={r.description} onChange={e=>setRole(i,"description",e.target.value)} placeholder="Describe the role, personality, key scenes..."></textarea></div>
         </div>)}
       </div>
 
       <div style={{display:"flex",gap:12,marginTop:24}}>
-        <button className="btn-p" style={{flex:1}} onClick={submit} disabled={busy}>{busy?"Posting…":"Post Casting"}</button>
-        <button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
+        <button type="button" className="btn-p" style={{flex:1}} onClick={submit} disabled={busy}>{busy?"Submitting…":"Submit for Review"}</button>
+        <button type="button" className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
       </div>
     </>}
   </div></div>);
