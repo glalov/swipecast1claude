@@ -5870,6 +5870,7 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
   const [openMsg,setOpenMsg]=useState(null);   // currently-opened inbox thread
   const [inboxErr,setInboxErr]=useState("");   // surfaced fetch error
   const [inboxLoading,setInboxLoading]=useState(false);
+  const [profileErrVisible,setProfileErrVisible]=useState(false);
   const [f,setF]=useState(()=>({
     display_name:profile?.display_name||"",bio:profile?.bio||"",location:profile?.location||"",
     age:profile?.age||"",gender:profile?.gender||"",ethnicity:profile?.ethnicity||"",
@@ -6071,7 +6072,25 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     await window.sb.from("profiles").update({resume_url:null}).eq("id",session.user.id);
     onReload&&onReload();setMsg("Resume removed.");setTimeout(()=>setMsg(""),3000);
   };
-  if(!profile)return(<div className="page" style={{justifyContent:"center"}}><SlateCueLoader text="Loading profile…"/><Footer onNavigate={onNavigate}/></div>);
+  // When profile is null (initial load, timeout, or post-tab-wake failure):
+  // auto-trigger a reload and show an error with retry after 10 seconds.
+  useEffect(()=>{
+    if(profile){setProfileErrVisible(false);return;}
+    setProfileErrVisible(false);
+    if(onReload)onReload();
+    const tid=setTimeout(()=>setProfileErrVisible(true),10000);
+    return()=>clearTimeout(tid);
+  },[!!profile]);// eslint-disable-line react-hooks/exhaustive-deps
+  if(!profile){
+    if(profileErrVisible){
+      return(<div className="page" style={{justifyContent:"center",alignItems:"center",flexDirection:"column",gap:16,minHeight:"60vh"}}>
+        <p style={{color:"var(--t2)",fontSize:14,textAlign:"center"}}>Profile could not load. Please try again.</p>
+        <button className="btn-p" onClick={()=>{setProfileErrVisible(false);if(onReload)onReload();}}>Retry Loading Profile</button>
+        <Footer onNavigate={onNavigate}/>
+      </div>);
+    }
+    return(<div className="page" style={{justifyContent:"center"}}><SlateCueLoader text="Loading profile…"/><Footer onNavigate={onNavigate}/></div>);
+  }
   const isCD=["cd","admin","super_admin"].includes(profile.user_type);
   const isPremium=profile.membership_status==="active";
   const planLimits=isPremium?PREMIUM_PLAN:FREE_PLAN;
@@ -7822,6 +7841,17 @@ export default function App(){
     }catch(e){console.warn("[auth] loadProfile threw:",e?.message||e);setMyProfile(null);return null;}
   },[]);
 
+  // Safety net: if onAuthStateChange never fires within 15 s (e.g. network hiccup on
+  // page load, Supabase initialising slowly), force authReady so the app never stays
+  // blank behind a <PageLoader/> indefinitely.
+  useEffect(()=>{
+    const tid=setTimeout(()=>setAuthReady(r=>{
+      if(!r){console.warn("[auth] authReady timeout — forcing ready");return true;}
+      return r;
+    }),15000);
+    return()=>clearTimeout(tid);
+  },[]);
+
   useEffect(()=>{
     // URL-fragment detection for password-recovery link (before Supabase consumes it)
     const hash=window.location.hash||"";
@@ -8030,6 +8060,25 @@ export default function App(){
       if(ch){try{window.sb.removeChannel(ch);}catch(_){}}
     };
   },[session?.user?.id]);
+
+  // Profile recovery: when the tab becomes visible again or the window regains focus,
+  // if we have a live session but myProfile is null (can happen after long inactivity
+  // where the initial loadProfile call timed out or failed), silently re-fetch.
+  // This effect only activates in the broken state (session + no profile) and
+  // self-removes once myProfile is populated.
+  useEffect(()=>{
+    if(!authReady||!session?.user?.id||myProfile)return;
+    // Attempt recovery immediately in case we just woke from a BFCache freeze
+    loadProfile(session.user.id);
+    const onVis=()=>{if(document.visibilityState==="visible")loadProfile(session.user.id);};
+    const onFocus=()=>loadProfile(session.user.id);
+    document.addEventListener("visibilitychange",onVis);
+    window.addEventListener("focus",onFocus);
+    return()=>{
+      document.removeEventListener("visibilitychange",onVis);
+      window.removeEventListener("focus",onFocus);
+    };
+  },[session?.user?.id,!!myProfile,authReady,loadProfile]);
 
   const pushHist=(p,opts={})=>{try{let url=PAGE_PATH[p]||"/";const st={swipecast:true,page:p,...opts};if(p==="casting-detail"&&opts.slug){url=`/casting/${encodeURIComponent(opts.slug)}`;st.castingSlug=opts.slug;}window.history.pushState(st,"",url);}catch(e){}};
   const navigate=useCallback((p)=>{
