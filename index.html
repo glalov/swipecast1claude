@@ -2625,6 +2625,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     </div>
 
     <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
+      {c.featured&&<span className="badge" style={{background:"rgba(99,60,180,0.12)",color:"var(--acc)",border:"1px solid rgba(99,60,180,0.25)",fontWeight:700}}>★ Featured</span>}
       <span className="badge tag-acc">{c.type}</span>
       <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.union}</span>
       <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.location}</span>
@@ -3018,6 +3019,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         window.sb.from("castings")
           .select("*,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(identity_verified,can_post_castings,verification_status)")
           .eq("status","open").eq("published",true)
+          .order("featured",{ascending:false})
           .order("created_at",{ascending:false}),
         timeoutPromise
       ]);
@@ -3036,6 +3038,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         rate:c.pay||"",
         deadline:c.deadline||"",
         union:c.union_status||"",
+        featured:c.featured===true,
         creator_verified:c.profiles?.identity_verified===true&&c.profiles?.can_post_castings===true&&c.profiles?.verification_status==="verified",
         roles:(c.roles||[]).map(r=>({
           name:r.name,
@@ -3164,6 +3167,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
                 <div>
                   <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
+                    {c.featured&&<span className="badge" style={{background:"rgba(99,60,180,0.12)",color:"var(--acc)",border:"1px solid rgba(99,60,180,0.25)",fontWeight:700}}>★ Featured</span>}
                     <span className="badge tag-acc">{c.type}</span>
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.union}</span>
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.roles?.length||1} {(c.roles?.length||1)===1?"role":"roles"}</span>
@@ -5696,8 +5700,9 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("Request timed out. Please try again.")),10000);});
       const {data,error}=await Promise.race([
         window.sb.from("castings")
-          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,cd_id,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq("status","open").eq("published",true)
+          .order("featured",{ascending:false})
           .order("created_at",{ascending:false})
           .limit(12),
         timeout
@@ -5718,6 +5723,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         rate:c.pay||"",
         deadline:c.deadline||"",
         union:c.union_status||"",
+        featured:c.featured===true,
         submissions:0,
         _cd:c.profiles||null,
         roles:(c.roles||[]).map(r=>({
@@ -7576,7 +7582,7 @@ function AdminCastings(){
     const {error}=await window.sb.rpc("admin_set_casting_featured",{p_casting_id:c.id,p_featured:!c.featured});
     setBusy(null);
     if(error){showMsg("Failed: "+error.message);return;}
-    showMsg(c.featured?"Unfeatured.":"Featured.");reload();
+    showMsg(c.featured?"Casting removed from featured.":"Casting marked as featured.");reload();
   };
   const setStatus=async(c,newStatus)=>{
     const key=c.id+":status";
