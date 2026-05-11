@@ -594,6 +594,10 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @keyframes partnersSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
 @media (prefers-reduced-motion: reduce){.partners-track{animation:none;}}
 @media (max-width:768px){.partners-tile{min-width:130px;height:74px;padding:14px 20px;}.partners-tile img{max-height:30px;max-width:100px;}}
+/* ─── Talent Dashboard responsive grid ─── */
+.td-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
+.td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
+@media(max-width:900px){.td-grid{grid-template-columns:1fr;}.td-stats{grid-template-columns:repeat(2,1fr);}}
 `;
 
 // ─── Membership plans. Single source of truth — used by MembershipPage,
@@ -3128,8 +3132,16 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
   const [msgsLoading,setMsgsLoading]=useState(true);
   const [recommended,setRecommended]=useState([]);
   const [recsLoading,setRecsLoading]=useState(true);
+  // Saved castings — placeholder until saved_castings table is added.
+  // TODO: query saved_castings (talent_id, casting_id, saved_at) joined to castings.
+  const [savedCastings]=useState([]);
+  // Recently viewed — placeholder until recently_viewed_castings table is added.
+  // TODO: track in DB table (talent_id, casting_id, viewed_at) OR localStorage array refreshed from DB.
+  const [recentlyViewed]=useState([]);
+  const [globalUnreadCount,setGlobalUnreadCount]=useState(0);
 
   const fmtDate=(s)=>{if(!s)return"—";const d=new Date(s);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
+  const fmtDeadline=(s)=>{if(!s)return null;try{const d=new Date(s);const now=new Date();const diff=Math.ceil((d-now)/(1000*60*60*24));if(diff<0)return{label:"Closed",urgent:false};if(diff===0)return{label:"Closes today",urgent:true};if(diff<=3)return{label:`${diff}d left`,urgent:true};return{label:`${diff}d left`,urgent:false};}catch{return null;}};
 
   const loadApps=useCallback(async()=>{
     if(!uid){setAppsLoading(false);return;}
@@ -3149,26 +3161,35 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
     if(!uid){setMsgsLoading(false);return;}
     try{
       const{data}=await window.sb.from("messages")
-        .select("id,from_id,to_id,body,created_at,read_at")
+        .select("id,from_id,to_id,body,created_at,read_at,application_id")
         .or(`from_id.eq.${uid},to_id.eq.${uid}`)
         .order("created_at",{ascending:false}).limit(100);
       const map=new Map();
+      let totalUnread=0;
       (data||[]).forEach(m=>{
         const other=m.from_id===uid?m.to_id:m.from_id;
         if(!other)return;
-        if(!map.has(other))map.set(other,{latest:m,unread:0});
+        if(!map.has(other))map.set(other,{latest:m,unread:0,appId:m.application_id});
         const t=map.get(other);
-        if(m.to_id===uid&&!m.read_at)t.unread++;
-        if(new Date(m.created_at)>new Date(t.latest.created_at))t.latest=m;
+        if(m.to_id===uid&&!m.read_at){t.unread++;totalUnread++;}
+        if(new Date(m.created_at)>new Date(t.latest.created_at)){t.latest=m;if(m.application_id)t.appId=m.application_id;}
       });
+      setGlobalUnreadCount(totalUnread);
       const otherIds=Array.from(map.keys()).slice(0,10);
       let profileMap={};
       if(otherIds.length){
         const{data:profs}=await window.sb.from("profiles").select("id,display_name,company_name,headshot_url,user_type").in("id",otherIds);
         (profs||[]).forEach(p=>{profileMap[p.id]=p;});
       }
+      // Resolve application casting titles for context
+      const appIds=[...new Set(Array.from(map.values()).map(t=>t.appId).filter(Boolean))].slice(0,10);
+      let castingTitleMap={};
+      if(appIds.length){
+        const{data:apps}=await window.sb.from("applications").select("id,castings(title)").in("id",appIds);
+        (apps||[]).forEach(a=>{if(a.castings?.title)castingTitleMap[a.id]=a.castings.title;});
+      }
       const threadList=Array.from(map.entries())
-        .map(([id,t])=>({otherId:id,...t,profile:profileMap[id]}))
+        .map(([id,t])=>({otherId:id,...t,profile:profileMap[id],castingTitle:t.appId?castingTitleMap[t.appId]:null}))
         .sort((a,b)=>new Date(b.latest.created_at)-new Date(a.latest.created_at))
         .slice(0,5);
       setThreads(threadList);
@@ -3177,6 +3198,8 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
   },[uid]);
 
   const loadRecommended=useCallback(async()=>{
+    // TODO: implement profile-based matching using: location, gender, age_range, union_status, skills.
+    // For now shows most recent open castings as a baseline.
     try{
       const{data}=await window.sb.from("castings")
         .select("id,title,type,location,deadline,slug,roles(id,name)")
@@ -3194,7 +3217,7 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
     if(appsTab==="submitted")return applications.filter(a=>["pending","viewed"].includes(a.status));
     if(appsTab==="auditions")return applications.filter(a=>a.status==="audition_requested");
     if(appsTab==="archived")return applications.filter(a=>["archived","rejected"].includes(a.status));
-    return[]; // invites / drafts: TODO when those features are built
+    return[]; // invites / drafts: TODO when those features exist
   },[applications,appsTab]);
 
   const profileChecks=[
@@ -3217,30 +3240,53 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
   const hasResume=!!(myProfile?.credits?.trim());
 
   const STATUS_LABELS={
-    pending:{label:"Submitted",color:"var(--t2)"},
-    viewed:{label:"Viewed",color:"#2563eb"},
-    hold:{label:"On Hold",color:"#d97706"},
-    selected:{label:"Selected",color:"var(--grn)"},
-    rejected:{label:"Not Selected",color:"var(--red)"},
-    audition_requested:{label:"Audition Requested",color:"var(--acc)"},
-    archived:{label:"Archived",color:"var(--t3)"},
+    pending:{label:"Submitted",color:"var(--t2)",bg:"var(--s2)"},
+    viewed:{label:"Viewed",color:"#2563eb",bg:"rgba(37,99,235,0.08)"},
+    hold:{label:"On Hold",color:"#d97706",bg:"rgba(217,119,6,0.08)"},
+    selected:{label:"Selected",color:"var(--grn)",bg:"rgba(27,135,62,0.08)"},
+    rejected:{label:"Not Selected",color:"var(--red)",bg:"rgba(220,38,38,0.08)"},
+    audition_requested:{label:"Audition Requested",color:"var(--acc)",bg:"rgba(99,60,180,0.08)"},
+    archived:{label:"Archived",color:"var(--t3)",bg:"var(--s2)"},
   };
   const APP_TABS=["all","invites","drafts","submitted","auditions","archived"];
 
-  // Responsive grid: stacks on narrow viewports via inline media fallback
-  const isNarrow=typeof window!=="undefined"&&window.innerWidth<860;
+  const tabCounts=useMemo(()=>({
+    all:applications.length,
+    submitted:applications.filter(a=>["pending","viewed"].includes(a.status)).length,
+    auditions:applications.filter(a=>a.status==="audition_requested").length,
+    archived:applications.filter(a=>["archived","rejected"].includes(a.status)).length,
+  }),[applications]);
+
+  const auditionCount=applications.filter(a=>a.status==="audition_requested").length;
+  const profilePct=Math.round((completedCount/profileChecks.length)*100);
 
   return(
-    <div style={{maxWidth:1200,margin:"0 auto",padding:"32px 24px"}}>
-      {/* Welcome header */}
-      <div style={{marginBottom:32}}>
+    <div style={{maxWidth:1240,margin:"0 auto",padding:"32px 24px 64px"}}>
+      {/* ── Welcome header ── */}
+      <div style={{marginBottom:28}}>
         <div className="section-label">Talent Dashboard</div>
-        <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.8,color:"var(--t1)",marginBottom:6}}>Welcome back, {firstName}.</h1>
+        <h1 style={{fontWeight:800,fontSize:30,letterSpacing:-0.8,color:"var(--t1)",marginBottom:6,margin:"0 0 6px"}}>Welcome back, {firstName}.</h1>
         <p style={{color:"var(--t2)",fontSize:15,margin:0}}>Here are the latest updates for your acting profile.</p>
       </div>
 
-      {/* Two-column grid */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 320px",gap:24,alignItems:"start"}}>
+      {/* ── Quick stats row ── */}
+      <div className="td-stats">
+        {[
+          {label:"Applications",value:appsLoading?"…":applications.length,sub:"total submitted",accent:false},
+          {label:"Audition Requests",value:appsLoading?"…":auditionCount,sub:auditionCount>0?"action needed":"none pending",accent:auditionCount>0},
+          {label:"Unread Messages",value:msgsLoading?"…":globalUnreadCount,sub:globalUnreadCount>0?"open inbox":"all caught up",accent:globalUnreadCount>0},
+          {label:"Profile",value:isProfileComplete?"Live":`${profilePct}%`,sub:isProfileComplete?"visible to CDs":"complete your profile",accent:!isProfileComplete&&profilePct<60},
+        ].map((s,i)=>(
+          <div key={i} style={{background:"var(--s1)",border:`1px solid ${s.accent?"var(--acc)":"var(--bdr)"}`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:4}}>
+            <div style={{fontSize:11,fontWeight:600,color:s.accent?"var(--acc)":"var(--t3)",textTransform:"uppercase",letterSpacing:0.6}}>{s.label}</div>
+            <div style={{fontSize:26,fontWeight:800,color:s.accent?"var(--acc)":"var(--t1)",letterSpacing:-0.5,lineHeight:1}}>{s.value}</div>
+            <div style={{fontSize:11,color:"var(--t3)"}}>{s.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Two-column grid ── */}
+      <div className="td-grid">
         {/* ── LEFT COLUMN ── */}
         <div style={{display:"flex",flexDirection:"column",gap:24,minWidth:0}}>
 
@@ -3248,49 +3294,66 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
           <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
             <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Applications</h2>
-              <span style={{fontSize:13,color:"var(--t3)"}}>{applications.length} total</span>
+              <button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>
             </div>
             {/* Tab bar */}
-            <div style={{display:"flex",borderBottom:"1px solid var(--bdr)",overflowX:"auto"}}>
-              {APP_TABS.map(t=>(
-                <button key={t} onClick={()=>setAppsTab(t)} style={{
-                  padding:"10px 16px",fontSize:12,fontWeight:600,cursor:"pointer",
-                  border:"none",background:"none",
-                  color:appsTab===t?"var(--acc)":"var(--t2)",
-                  borderBottom:appsTab===t?"2px solid var(--acc)":"2px solid transparent",
-                  fontFamily:"inherit",textTransform:"capitalize",whiteSpace:"nowrap",flexShrink:0,
-                  transition:"color .15s"
-                }}>{t}</button>
-              ))}
+            <div style={{display:"flex",borderBottom:"1px solid var(--bdr)",overflowX:"auto",scrollbarWidth:"none"}}>
+              {APP_TABS.map(t=>{
+                const cnt=tabCounts[t];
+                return(
+                  <button key={t} onClick={()=>setAppsTab(t)} style={{
+                    padding:"10px 14px",fontSize:12,fontWeight:600,cursor:"pointer",flexShrink:0,
+                    border:"none",background:"none",fontFamily:"inherit",textTransform:"capitalize",whiteSpace:"nowrap",
+                    color:appsTab===t?"var(--acc)":"var(--t2)",
+                    borderBottom:appsTab===t?"2px solid var(--acc)":"2px solid transparent",
+                    transition:"color .15s",display:"flex",alignItems:"center",gap:5
+                  }}>
+                    {t}
+                    {cnt!=null&&cnt>0&&<span style={{fontSize:10,fontWeight:700,padding:"1px 5px",borderRadius:8,background:appsTab===t?"var(--acc)":"var(--s2)",color:appsTab===t?"#fff":"var(--t2)"}}>{cnt}</span>}
+                  </button>
+                );
+              })}
             </div>
             <div style={{padding:24}}>
               {appsLoading?(
-                <div style={{color:"var(--t3)",fontSize:13,textAlign:"center",padding:"32px 0"}}>Loading applications…</div>
+                <div style={{color:"var(--t3)",fontSize:13,textAlign:"center",padding:"40px 0"}}>Loading applications…</div>
               ):appsErr?(
                 <div style={{color:"var(--red)",fontSize:13,padding:"8px 0"}}>{appsErr}</div>
               ):filteredApps.length===0?(
-                <div style={{textAlign:"center",padding:"32px 0"}}>
-                  <p style={{color:"var(--t3)",fontSize:14,marginBottom:16}}>
+                <div style={{textAlign:"center",padding:"40px 0"}}>
+                  <div style={{fontSize:32,marginBottom:10}}>📋</div>
+                  <p style={{color:"var(--t2)",fontSize:14,marginBottom:16,fontWeight:500}}>
                     {appsTab==="all"?"You don't have any applications here yet.":
-                     appsTab==="invites"?"No invites yet.":
-                     appsTab==="drafts"?"No drafts saved.":
+                     appsTab==="invites"?"No casting invites yet.":
+                     appsTab==="drafts"?"No saved drafts.":
                      appsTab==="submitted"?"No submitted applications.":
                      appsTab==="auditions"?"No audition requests yet.":
                      "No archived applications."}
                   </p>
-                  {appsTab==="all"&&<button className="btn-p" style={{fontSize:13}} onClick={()=>onNavigate("search")}>Browse Castings</button>}
+                  {(appsTab==="all"||appsTab==="submitted")&&<button className="btn-p btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>}
                 </div>
               ):(
                 <div style={{display:"flex",flexDirection:"column",gap:10}}>
                   {filteredApps.map(app=>{
-                    const st=STATUS_LABELS[app.status]||{label:app.status,color:"var(--t2)"};
+                    const st=STATUS_LABELS[app.status]||{label:app.status,color:"var(--t2)",bg:"var(--s2)"};
+                    const dl=app.castings?.deadline?fmtDeadline(app.castings.deadline):null;
                     return(
-                      <div key={app.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 16px",background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:10,gap:12,flexWrap:"wrap"}}>
+                      <div key={app.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px",background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:10,gap:12,flexWrap:"wrap",transition:"border-color .15s"}}>
                         <div style={{flex:1,minWidth:0}}>
-                          <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",marginBottom:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{app.castings?.title||"Unknown Project"}</div>
-                          <div style={{fontSize:12,color:"var(--t2)"}}>Role: <strong>{app.roles?.name||"—"}</strong> · Submitted {fmtDate(app.created_at)}</div>
+                          <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",marginBottom:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{app.castings?.title||"Unknown Project"}</div>
+                          <div style={{fontSize:12,color:"var(--t2)",display:"flex",flexWrap:"wrap",gap:"4px 10px"}}>
+                            <span>Role: <strong style={{color:"var(--t1)"}}>{app.roles?.name||"—"}</strong></span>
+                            {app.castings?.type&&<span style={{color:"var(--t3)"}}>·</span>}
+                            {app.castings?.type&&<span>{app.castings.type}</span>}
+                            {app.castings?.location&&<span style={{color:"var(--t3)"}}>·</span>}
+                            {app.castings?.location&&<span>{app.castings.location}</span>}
+                          </div>
+                          <div style={{fontSize:11,color:"var(--t3)",marginTop:3}}>Submitted {fmtDate(app.created_at)}{dl&&<span style={{marginLeft:8,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>}</div>
                         </div>
-                        <span style={{fontSize:12,fontWeight:600,padding:"4px 10px",borderRadius:6,background:"rgba(0,0,0,0.04)",color:st.color,border:`1px solid ${st.color}33`,flexShrink:0}}>{st.label}</span>
+                        <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+                          <span style={{fontSize:12,fontWeight:600,padding:"4px 10px",borderRadius:6,background:st.bg,color:st.color,border:`1px solid ${st.color}33`}}>{st.label}</span>
+                          {app.castings?.slug&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px"}} onClick={()=>onNavigate("search")}>View →</button>}
+                        </div>
                       </div>
                     );
                   })}
@@ -3302,28 +3365,38 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
           {/* Messages Inbox preview */}
           <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
             <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Messages Inbox</h2>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Messages Inbox</h2>
+                {globalUnreadCount>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 8px",fontSize:11,fontWeight:800}}>{globalUnreadCount}</span>}
+              </div>
               <button className="btn-s btn-sm" onClick={()=>onNavigate("inbox")}>Open Inbox →</button>
             </div>
             <div style={{padding:24}}>
               {msgsLoading?(
-                <div style={{color:"var(--t3)",fontSize:13,textAlign:"center",padding:"20px 0"}}>Loading messages…</div>
+                <div style={{color:"var(--t3)",fontSize:13,textAlign:"center",padding:"28px 0"}}>Loading messages…</div>
               ):threads.length===0?(
-                <p style={{color:"var(--t3)",fontSize:14,textAlign:"center",padding:"20px 0",margin:0}}>No messages yet.</p>
+                <div style={{textAlign:"center",padding:"28px 0"}}>
+                  <div style={{fontSize:32,marginBottom:8}}>✉️</div>
+                  <p style={{color:"var(--t2)",fontSize:14,margin:0}}>No messages yet.</p>
+                  <p style={{color:"var(--t3)",fontSize:12,margin:"6px 0 0"}}>When a casting director reaches out, it'll appear here.</p>
+                </div>
               ):(
-                <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
                   {threads.map(t=>(
-                    <div key={t.otherId} onClick={()=>onNavigate("inbox")} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:10,border:t.unread>0?"1px solid var(--acc)":"1px solid var(--bdr)",background:"var(--bg)",cursor:"pointer",borderLeft:t.unread>0?"3px solid var(--acc)":"3px solid transparent",transition:"border-color .2s"}}>
-                      <div style={{width:36,height:36,borderRadius:"50%",flexShrink:0,background:"var(--s2)",overflow:"hidden",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"var(--t2)"}}>
+                    <div key={t.otherId} onClick={()=>onNavigate("inbox")} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:10,border:t.unread>0?"1px solid var(--acc)":"1px solid var(--bdr)",background:t.unread>0?"rgba(99,60,180,0.02)":"var(--bg)",cursor:"pointer",borderLeft:t.unread>0?"3px solid var(--acc)":"3px solid transparent",transition:"border-color .15s"}}>
+                      <div style={{width:40,height:40,borderRadius:"50%",flexShrink:0,background:"var(--s2)",overflow:"hidden",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"var(--t2)"}}>
                         {t.profile?.headshot_url?<img src={t.profile.headshot_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:(t.profile?.display_name||t.profile?.company_name||"?")[0]?.toUpperCase()}
                       </div>
                       <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontWeight:t.unread>0?700:500,fontSize:13,color:"var(--t1)",marginBottom:2}}>{t.profile?.display_name||t.profile?.company_name||"Unknown"}</div>
-                        <div style={{fontSize:12,color:"var(--t2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{(t.latest?.body||"").slice(0,60)}{(t.latest?.body||"").length>60?"…":""}</div>
+                        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
+                          <span style={{fontWeight:t.unread>0?700:500,fontSize:13,color:"var(--t1)"}}>{t.profile?.display_name||t.profile?.company_name||"Unknown"}</span>
+                          {t.castingTitle&&<span style={{fontSize:10,color:"var(--t3)",background:"var(--s2)",padding:"1px 6px",borderRadius:4,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:160}}>{t.castingTitle}</span>}
+                        </div>
+                        <div style={{fontSize:12,color:"var(--t2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{(t.latest?.body||"").slice(0,72)}{(t.latest?.body||"").length>72?"…":""}</div>
                       </div>
                       <div style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
-                        <span style={{fontSize:11,color:"var(--t3)"}}>{fmtDate(t.latest?.created_at)}</span>
-                        {t.unread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800}}>{t.unread}</span>}
+                        <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap"}}>{fmtDate(t.latest?.created_at)}</span>
+                        {t.unread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800}}>{t.unread}</span>}
                       </div>
                     </div>
                   ))}
@@ -3333,133 +3406,189 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
           </div>
 
           {/* Recommended Castings */}
-          {/* TODO: implement profile-based matching (location, gender, age_range, union_status, skills). Currently shows most recent open castings. */}
           <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
             <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Recommended for You</h2>
+              <div>
+                <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Recommended for You</h2>
+                <p style={{fontSize:11,color:"var(--t3)",margin:"2px 0 0"}}>Based on recent activity · profile matching coming soon</p>
+              </div>
               <button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse All →</button>
             </div>
             <div style={{padding:24}}>
               {recsLoading?(
-                <div style={{color:"var(--t3)",fontSize:13,textAlign:"center",padding:"20px 0"}}>Loading recommendations…</div>
+                <div style={{color:"var(--t3)",fontSize:13,textAlign:"center",padding:"28px 0"}}>Loading recommendations…</div>
               ):recommended.length===0?(
-                <p style={{color:"var(--t3)",fontSize:14,textAlign:"center",margin:0}}>No open castings right now.</p>
+                <div style={{textAlign:"center",padding:"28px 0"}}>
+                  <p style={{color:"var(--t2)",fontSize:14,margin:"0 0 14px"}}>No open castings right now.</p>
+                  <button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse All Castings</button>
+                </div>
               ):(
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-                  {recommended.map(c=>(
-                    <div key={c.id} style={{padding:"14px 16px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",flexDirection:"column",gap:6}}>
-                      <div style={{fontWeight:700,fontSize:13,color:"var(--t1)",lineHeight:1.3}}>{c.title}</div>
-                      <div style={{fontSize:12,color:"var(--t2)"}}>{c.type}{c.location?` · ${c.location}`:""}</div>
-                      {c.deadline&&<div style={{fontSize:11,color:"var(--t3)"}}>Deadline: {c.deadline}</div>}
-                      <button className="btn-s btn-sm" style={{fontSize:12,marginTop:4,alignSelf:"flex-start"}} onClick={()=>onNavigate("search")}>View Casting</button>
-                    </div>
-                  ))}
+                  {recommended.map(c=>{
+                    const dl=c.deadline?fmtDeadline(c.deadline):null;
+                    return(
+                      <div key={c.id} style={{padding:"14px 16px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",flexDirection:"column",gap:6,transition:"border-color .15s"}}>
+                        <div style={{fontWeight:700,fontSize:13,color:"var(--t1)",lineHeight:1.3}}>{c.title}</div>
+                        <div style={{fontSize:11,color:"var(--t2)"}}>{c.type}{c.location?` · ${c.location}`:""}</div>
+                        {c.roles?.length>0&&<div style={{fontSize:11,color:"var(--t3)"}}>Roles: {c.roles.slice(0,2).map(r=>r.name).join(", ")}{c.roles.length>2?` +${c.roles.length-2}`:""}</div>}
+                        {dl&&<div style={{fontSize:11,color:dl.urgent?"var(--red)":"var(--t3)",fontWeight:dl.urgent?600:400}}>Deadline: {dl.label}</div>}
+                        <button className="btn-s btn-sm" style={{fontSize:11,marginTop:4,alignSelf:"flex-start"}} onClick={()=>onNavigate("search")}>View Casting →</button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
           </div>
 
           {/* Saved Castings */}
-          {/* TODO: needs a saved_castings table (id, talent_id uuid, casting_id uuid, saved_at timestamptz). Add "Save" bookmark button on CastingDetailPage. RLS: talent can only read/write their own rows. */}
+          {/* TODO: query saved_castings table (talent_id uuid, casting_id uuid, saved_at timestamptz) joined to castings.
+              Add a bookmark icon on CastingDetailPage that inserts/deletes a saved_castings row.
+              RLS: talent can only read/write their own rows. */}
           <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
-            <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)"}}>
+            <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Saved Castings</h2>
+              {savedCastings.length>0&&<span style={{fontSize:12,color:"var(--t3)"}}>{savedCastings.length} saved</span>}
             </div>
-            <div style={{padding:24,textAlign:"center"}}>
-              <p style={{color:"var(--t3)",fontSize:14,marginBottom:16,margin:0,marginBottom:16}}>You haven't saved any castings yet.</p>
-              <button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>
+            <div style={{padding:24}}>
+              {savedCastings.length===0?(
+                <div style={{textAlign:"center",padding:"28px 0"}}>
+                  <div style={{fontSize:28,marginBottom:8}}>🔖</div>
+                  <p style={{color:"var(--t2)",fontSize:14,marginBottom:14,margin:"0 0 14px"}}>You haven't saved any castings yet.</p>
+                  <button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>
+                </div>
+              ):(
+                <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                  {savedCastings.map(c=>(
+                    <div key={c.id} style={{padding:"12px 14px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
+                      <div style={{minWidth:0}}>
+                        <div style={{fontWeight:600,fontSize:13,color:"var(--t1)"}}>{c.title}</div>
+                        <div style={{fontSize:11,color:"var(--t3)"}}>{c.type}{c.location?` · ${c.location}`:""}</div>
+                      </div>
+                      <button className="btn-s btn-sm" style={{fontSize:11,flexShrink:0}} onClick={()=>onNavigate("search")}>View →</button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* ── RIGHT COLUMN ── */}
-        <div style={{display:"flex",flexDirection:"column",gap:20}}>
+        <div style={{display:"flex",flexDirection:"column",gap:18}}>
 
           {/* Profile Completion card */}
-          <div className="card" style={{padding:20}}>
-            <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:"0 0 10px 0"}}>{isProfileComplete?"Your profile is live.":"Complete Your Actor Profile"}</h3>
-            {!isProfileComplete&&(
+          <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:20}}>
+            <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:"0 0 12px 0"}}>{isProfileComplete?"Your Profile is Live":"Complete Your Actor Profile"}</h3>
+            {!isProfileComplete?(
               <>
                 <div style={{marginBottom:14}}>
                   <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"var(--t2)",marginBottom:6}}>
                     <span>{completedCount} of {profileChecks.length} complete</span>
-                    <span style={{color:"var(--acc)",fontWeight:700}}>{Math.round((completedCount/profileChecks.length)*100)}%</span>
+                    <span style={{color:"var(--acc)",fontWeight:700}}>{profilePct}%</span>
                   </div>
-                  <div style={{height:5,background:"var(--s2)",borderRadius:3,overflow:"hidden"}}>
-                    <div style={{width:`${(completedCount/profileChecks.length)*100}%`,height:"100%",background:"var(--acc)",borderRadius:3,transition:"width .4s"}}/>
+                  <div style={{height:6,background:"var(--s2)",borderRadius:3,overflow:"hidden"}}>
+                    <div style={{width:`${profilePct}%`,height:"100%",background:profilePct<50?"var(--red)":profilePct<80?"#d97706":"var(--grn)",borderRadius:3,transition:"width .4s"}}/>
                   </div>
                 </div>
-                <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:16}}>
+                <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
                   {profileChecks.map((c,i)=>(
-                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,fontSize:12}}>
-                      <span style={{color:c.done?"var(--grn)":"var(--t3)",fontWeight:700,fontSize:13}}>{c.done?"✓":"○"}</span>
-                      <span style={{color:c.done?"var(--t1)":"var(--t2)"}}>{c.label}
+                    <div key={i} style={{display:"flex",alignItems:"flex-start",gap:8,fontSize:12}}>
+                      <span style={{color:c.done?"var(--grn)":"var(--t3)",fontWeight:700,fontSize:14,flexShrink:0,marginTop:-1}}>{c.done?"✓":"○"}</span>
+                      <span style={{color:c.done?"var(--t1)":"var(--t2)",lineHeight:1.4}}>
+                        {c.label}
                         {c.premium&&!isPremium&&<span style={{fontSize:10,color:"var(--t3)",marginLeft:4}}>(Premium)</span>}
                       </span>
                     </div>
                   ))}
                 </div>
               </>
+            ):(
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(27,135,62,0.06)",border:"1px solid rgba(27,135,62,0.2)",borderRadius:8,marginBottom:14}}>
+                <span style={{fontSize:18}}>✓</span>
+                <p style={{fontSize:13,color:"var(--t2)",margin:0}}>Your profile is visible to casting directors browsing talent.</p>
+              </div>
             )}
-            {isProfileComplete&&<p style={{fontSize:13,color:"var(--t2)",margin:"0 0 14px 0"}}>Your profile is visible to casting directors browsing talent.</p>}
-            <button className="btn-p btn-sm" style={{width:"100%"}} onClick={()=>onNavigate("my-profile")}>{isProfileComplete?"View My Profile":"Edit My Profile"}</button>
+            <button className="btn-p btn-sm" style={{width:"100%"}} onClick={()=>onNavigate("my-profile")}>{isProfileComplete?"View My Profile →":"Edit My Profile →"}</button>
           </div>
 
           {/* Media Locker card */}
-          <div className="card" style={{padding:20}}>
+          <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:20}}>
             <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:"0 0 14px 0"}}>Media Locker</h3>
             <div style={{display:"flex",flexDirection:"column",gap:0,marginBottom:16,border:"1px solid var(--bdr)",borderRadius:8,overflow:"hidden"}}>
               {[
-                {label:"Photos",val:`${totalPhotos} / ${photoLimit}`,warn:totalPhotos>=photoLimit&&totalPhotos>0},
-                {label:"Videos",val:isPremium?`${videoLinks.length} / ${videoLimit}`:"0 / 0",note:!isPremium?"Premium":null,warn:false},
-                {label:"Documents",val:"—",note:null,warn:false},
+                {label:"Photos",val:`${totalPhotos} / ${photoLimit}`,ok:totalPhotos>0,warn:totalPhotos>=photoLimit&&totalPhotos>0},
+                {label:"Videos",val:isPremium?`${videoLinks.length} / ${videoLimit}`:"Not included",note:!isPremium?"Upgrade":null,ok:isPremium&&videoLinks.length>0,warn:false},
+                {label:"Documents",val:"—",warn:false},
                 {label:"Resume / Credits",val:hasResume?"Uploaded":"Missing",ok:hasResume,warn:!hasResume},
               ].map((row,i,arr)=>(
-                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:13,padding:"10px 14px",background:i%2===0?"var(--s1)":"var(--bg)",borderBottom:i<arr.length-1?"1px solid var(--bdr)":"none"}}>
-                  <span style={{color:"var(--t2)"}}>{row.label}</span>
+                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:13,padding:"11px 14px",background:i%2===0?"var(--s1)":"var(--bg)",borderBottom:i<arr.length-1?"1px solid var(--bdr)":"none"}}>
+                  <span style={{color:"var(--t2)",fontWeight:500}}>{row.label}</span>
                   <span style={{fontWeight:600,color:row.ok?"var(--grn)":row.warn?"var(--red)":"var(--t1)"}}>
-                    {row.val}{row.note&&<span style={{fontWeight:400,color:"var(--t3)",marginLeft:4,fontSize:10}}>({row.note})</span>}
+                    {row.val}{row.note&&<span style={{fontWeight:400,color:"var(--acc)",marginLeft:5,fontSize:10,cursor:"pointer"}} onClick={()=>onNavigate("membership")}>({row.note})</span>}
                   </span>
                 </div>
               ))}
             </div>
-            <button className="btn-s btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("my-profile")}>Manage Media</button>
+            <button className="btn-s btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("my-profile")}>Manage Media →</button>
           </div>
 
           {/* Plan Status card */}
-          <div className="card" style={{padding:20}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+          <div style={{background:isPremium?"linear-gradient(135deg,rgba(99,60,180,0.06),rgba(99,60,180,0.02))":"var(--s1)",border:isPremium?"1px solid rgba(99,60,180,0.2)":"1px solid var(--bdr)",borderRadius:14,padding:20}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
               <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:0}}>Your Plan</h3>
-              <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:6,background:isPremium?"rgba(27,135,62,0.1)":"var(--s2)",color:isPremium?"var(--grn)":"var(--t2)",textTransform:"uppercase",letterSpacing:0.5}}>{isPremium?"Premium":"Free"}</span>
+              <span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:6,background:isPremium?"rgba(99,60,180,0.12)":"var(--s2)",color:isPremium?"var(--acc)":"var(--t2)",textTransform:"uppercase",letterSpacing:0.6}}>{isPremium?"Premium":"Free"}</span>
             </div>
             {isPremium?(
               <>
-                <p style={{fontSize:13,color:"var(--t2)",margin:"0 0 10px 0"}}>Actor Premium</p>
-                <ul style={{fontSize:13,color:"var(--t2)",paddingLeft:18,margin:"0 0 4px 0",lineHeight:2}}>
-                  <li>Up to {PREMIUM_PLAN.headshotsTotal} headshots</li>
-                  <li>Up to {PREMIUM_PLAN.videos} video reel links</li>
-                  <li>Unlimited submissions</li>
-                </ul>
+                <p style={{fontSize:13,color:"var(--t2)",margin:"0 0 12px",fontWeight:500}}>Actor Premium</p>
+                <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:4}}>
+                  {[`Up to ${PREMIUM_PLAN.headshotsTotal} headshots`,`Up to ${PREMIUM_PLAN.videos} video reel links`,"Unlimited submissions"].map((f,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:7,fontSize:12,color:"var(--t2)"}}>
+                      <span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}
+                    </div>
+                  ))}
+                </div>
               </>
             ):(
               <>
-                <p style={{fontSize:13,color:"var(--t2)",margin:"0 0 10px 0"}}>Free Actor Account</p>
-                <ul style={{fontSize:13,color:"var(--t2)",paddingLeft:18,margin:"0 0 14px 0",lineHeight:2}}>
-                  <li>{FREE_PLAN.headshotsTotal} headshot</li>
-                  <li>{FREE_PLAN.submissionsPerDay} submissions per day</li>
-                  <li>No video uploads</li>
-                </ul>
-                <button className="btn-p btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium</button>
+                <p style={{fontSize:13,color:"var(--t2)",margin:"0 0 12px",fontWeight:500}}>Free Actor Account</p>
+                <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:16}}>
+                  {[`${FREE_PLAN.headshotsTotal} headshot`,`${FREE_PLAN.submissionsPerDay} submissions per day`,"No video uploads"].map((f,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:7,fontSize:12,color:"var(--t2)"}}>
+                      <span style={{color:"var(--t3)"}}>—</span>{f}
+                    </div>
+                  ))}
+                </div>
+                <button className="btn-p btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>
               </>
             )}
           </div>
 
           {/* Recently Viewed Castings */}
-          {/* TODO: implement — needs a recently_viewed_castings table (id, talent_id, casting_id, viewed_at) OR localStorage array of casting IDs refreshed from DB. Update on CastingDetailPage mount. Limit to 5 most recent. */}
-          <div className="card" style={{padding:20}}>
-            <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:"0 0 12px 0"}}>Recently Viewed Castings</h3>
-            <p style={{color:"var(--t3)",fontSize:13,margin:"0 0 14px 0"}}>You haven't viewed any casting calls yet.</p>
-            <button className="btn-s btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("search")}>Browse Castings</button>
+          {/* TODO: implement — needs a recently_viewed_castings table (id, talent_id uuid, casting_id uuid, viewed_at timestamptz)
+              OR a localStorage array of casting IDs synced to DB. Update on CastingDetailPage mount.
+              Limit to 5 most recent entries. */}
+          <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:20}}>
+            <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:"0 0 12px 0"}}>Recently Viewed</h3>
+            {recentlyViewed.length===0?(
+              <>
+                <p style={{color:"var(--t3)",fontSize:13,margin:"0 0 14px"}}>You haven't viewed any casting calls yet.</p>
+                <button className="btn-s btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("search")}>Browse Castings →</button>
+              </>
+            ):(
+              <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
+                {recentlyViewed.map(c=>(
+                  <div key={c.id} style={{padding:"10px 12px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
+                    <div style={{minWidth:0}}>
+                      <div style={{fontWeight:600,fontSize:12,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.title}</div>
+                      <div style={{fontSize:11,color:"var(--t3)"}}>{c.type}{c.location?` · ${c.location}`:""}</div>
+                    </div>
+                    <button className="btn-s btn-sm" style={{fontSize:10,padding:"3px 8px",flexShrink:0}} onClick={()=>onNavigate("search")}>View</button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -7938,6 +8067,15 @@ function App(){
       ]);
     }catch(e){console.warn("[auth] signOut:",e?.message||e); /* state already cleared above */}
   };
+
+  // If a talent user lands on /dashboard (CD dashboard), redirect them to their Talent Dashboard.
+  // This handles direct URL loads, post-login routing, and nav button presses that call navigate("dashboard").
+  useEffect(()=>{
+    if(page==="dashboard"&&myProfile?.user_type==="talent"){
+      setPage("talent-dashboard");
+      try{window.history.replaceState({swipecast:true,page:"talent-dashboard"},"","/talent-dashboard");}catch(_){}
+    }
+  },[page,myProfile?.user_type]);
 
   const [menuOpen,setMenuOpen]=useState(false);
   const navThen=useCallback((p)=>{setMenuOpen(false);navigate(p);},[navigate]);

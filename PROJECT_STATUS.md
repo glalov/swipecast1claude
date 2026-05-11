@@ -1,27 +1,28 @@
 # Project Status
 
-## 2026-05-10 — Talent Dashboard for actor accounts
+## 2026-05-10 — Enhanced Talent Dashboard (v2)
 
 ### Files changed
 
 | File | What changed |
 |---|---|
-| `swipecast-full.jsx` | Added `TalentDashboard` component (~270 lines). Added `"talent-dashboard": "/talent-dashboard"` to `PAGE_PATH`. Added `talent-dashboard` branch in `navigate()`. Added Dashboard nav button (desktop + mobile) for `user_type === "talent"` users. Added `talent-dashboard` page renderer in the main router. |
+| `swipecast-full.jsx` | Rewrote `TalentDashboard` component (~400 lines). Added responsive `.td-grid` and `.td-stats` CSS classes. Added role-aware `/dashboard` redirect (talent users landing on `page="dashboard"` are auto-redirected to `page="talent-dashboard"`). Messages query now fetches `application_id` and joins to `castings` to show the project title on each thread. Applications panel shows deadline countdown badges and a "View →" button per row. Quick stats row added above the grid (Applications / Audition Requests / Unread Messages / Profile %). |
 | `index.html` | Rebuilt via `python3 build-html.py`. |
 
-### Talent Dashboard sections added
+### Talent Dashboard sections
 
 | Section | Status |
 |---|---|
-| **Welcome header** | Functional — shows first name from `myProfile.display_name`, tagline |
-| **Applications panel** | Functional — fetches from `applications` table joined with `castings` + `roles`. Tabs: All / Invites / Drafts / Submitted / Auditions / Archived. Status badges: Submitted / Viewed / On Hold / Selected / Not Selected / Audition Requested / Archived |
-| **Messages Inbox preview** | Functional — shows up to 5 most recent message threads. Unread count badge. Avatar from counterparty profile. "Open Inbox →" links to full InboxPage |
-| **Recommended for You** | Placeholder functional — shows 6 most recent open castings. Future: match by actor location, gender, age_range, union_status, skills |
-| **Saved Castings** | Placeholder — empty state with "Browse Castings" CTA. Needs `saved_castings` table |
-| **Profile Completion card** | Functional — checks headshot, bio, location, age_range, credits, video_link (Premium). Progress bar + checklist. Links to MyProfilePage |
-| **Media Locker card** | Functional — shows Photos count vs limit, Videos count vs limit, Documents placeholder, Resume (credits) uploaded/missing. Respects Free vs Premium limits |
-| **Plan Status card** | Functional — reads `membership_status`. Free: shows limits + "Upgrade to Premium" button → MembershipPage. Premium: shows expanded limits |
-| **Recently Viewed Castings** | Placeholder — empty state. Needs `recently_viewed_castings` table or localStorage tracking |
+| **Welcome header** | Functional — shows first name from `myProfile.display_name`, subtitle |
+| **Quick stats row** | Functional — 4 stat tiles: total applications, audition requests (highlighted when > 0), unread messages (highlighted when > 0), profile completion % |
+| **Applications panel** | Functional — fetches from `applications` joined with `castings` + `roles`. Tabs: All / Invites / Drafts / Submitted / Auditions / Archived (with count badges). Status pills: Submitted / Viewed / On Hold / Selected / Not Selected / Audition Requested / Archived. Deadline countdown on each row. "View →" button links to casting search page (direct casting link requires casting-detail nav wiring). |
+| **Messages Inbox preview** | Functional — up to 5 recent threads. Shows unread badge on card header. Each thread shows counterparty avatar, name, casting title (if linked via `application_id`), message preview, date, and per-thread unread count. "Open Inbox →" links to InboxPage. |
+| **Recommended for You** | Functional placeholder — shows 6 most recent open castings with role list and deadline countdown. TODO: real profile-based matching. |
+| **Saved Castings** | Placeholder — empty state. TODO: `saved_castings` table. |
+| **Profile Completion card** | Functional — progress bar color shifts red → amber → green by %. Checks headshot, bio, location, age_range, credits, video_link (Premium). |
+| **Media Locker card** | Functional — Photos/Videos/Documents/Resume counts vs plan limits. "Upgrade" inline link for video on Free plan. |
+| **Plan Status card** | Functional — styled differently for Free vs Premium. Free → "Upgrade to Premium →" button → MembershipPage → PlanSummaryPage (shows Stripe-not-connected message there). |
+| **Recently Viewed** | Placeholder — empty state + "Browse Castings" CTA. TODO: `recently_viewed_castings` table. |
 
 ### Role routing behavior
 
@@ -32,27 +33,27 @@
 | `admin` / `super_admin` | ✓ shown in nav (both Admin + Dashboard buttons) | Casting Director Dashboard (`/dashboard`) |
 | `producer` / `studio` | ✓ shown (CD button) | Casting Director Dashboard (`/dashboard`) |
 
-Talent users cannot access the CD Dashboard. Navigating directly to `/dashboard` as a talent user shows the CDDashboard component, which only loads data for the current CD's castings (their `cd_id` query will return empty — no data leak, no cross-role access). Navigating to `/talent-dashboard` as a non-talent renders an empty `60vh` div.
+**Direct URL `/dashboard` is now role-aware:** a `useEffect` in App detects when `page="dashboard"` and `myProfile.user_type="talent"` and redirects to `page="talent-dashboard"` (replaces history entry with `/talent-dashboard`). Talent users can no longer accidentally land on the CD Dashboard by typing `/dashboard` directly.
 
 ### What is functional (real data from Supabase)
 
-- Applications list — reads from `applications` table where `talent_id = uid`
-- Messages preview — reads from `messages` table where `from_id = uid OR to_id = uid`
+- Applications list — reads from `applications` where `talent_id = uid`
+- Messages preview — reads from `messages` where `from_id = uid OR to_id = uid`; joins `applications` → `castings` for project title
 - Recommended castings — reads from `castings` where `status = 'open'`, ordered by `created_at DESC`
-- Profile completeness — derived from `myProfile` fields already loaded by `onAuthStateChange`
+- Profile completeness — derived from `myProfile` fields
 - Media Locker counts — derived from `myProfile.headshot_url`, `additional_photos[]`, `video_links[]`, `credits`
-- Plan status — reads `myProfile.membership_status` and `plan_type`
+- Plan status — reads `myProfile.membership_status`
 
 ### What is placeholder / needs future backend work
 
 | Feature | What's needed |
 |---|---|
-| **Saved Castings** | `saved_castings` table: `(id uuid, talent_id uuid, casting_id uuid, saved_at timestamptz)`. RLS: talent read/write own rows. Add bookmark button on `CastingDetailPage`. |
-| **Recently Viewed Castings** | Option A: `recently_viewed_castings` table updated on `CastingDetailPage` mount. Option B: localStorage array of casting IDs. Limit to 5 most recent per talent. |
-| **Recommended For You** | Replace current "most recent open castings" query with a matching query: filter by actor's `location`, `gender`, `age_range`, `union_status`, and/or `skills`. Could be a Supabase RPC or client-side filter. |
-| **Invites tab** | Needs an invites system — CDs can invite specific talent to castings. Requires `invites` table. |
-| **Drafts tab** | Needs a draft application system — talent can save an application before submitting. |
-| **Application "View" link** | Currently shows status only. Need to navigate to the specific casting detail page from the application row (store casting slug in `applications` or join through `castings.slug`). |
+| **Saved Castings** | `saved_castings` table: `(id uuid, talent_id uuid, casting_id uuid, saved_at timestamptz)`. RLS: talent read/write own rows. Add bookmark icon on `CastingDetailPage`. |
+| **Recently Viewed Castings** | Option A: `recently_viewed_castings` table updated on `CastingDetailPage` mount. Option B: localStorage array synced from DB. Limit to 5 most recent per talent. |
+| **Recommended For You** | Replace "most recent open castings" with profile-matched query: filter by actor `location`, `gender`, `age_range`, `union_status`, `skills`. Could be a Supabase RPC or client-side filter after fetching open castings. |
+| **Invites tab** | Needs an `invites` table — CDs invite specific talent to castings. |
+| **Drafts tab** | Needs draft application system — talent saves an application before submitting. |
+| **Application "View" link** | Currently navigates to search page. Future: navigate directly to casting detail page using `castings.slug` already present in the query result. |
 
 ---
 
