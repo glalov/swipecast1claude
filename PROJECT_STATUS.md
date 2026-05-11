@@ -1,5 +1,65 @@
 # Project Status
 
+## 2026-05-11 — Fix: Casting edits not appearing on public detail page
+
+### Root cause
+
+Four separate data-flow bugs prevented saved edits from reaching the public `CastingDetailPage`:
+
+| # | Location | Problem |
+|---|---|---|
+| 1 | `SearchPage.fetchCastings()` mapped object | Dropped `casting_image_url`, `casting_website_url`, `cd_id`, `profiles`, and role `id` — so `CastingDetailPage` received `undefined` for all new fields |
+| 2 | `viewCastingById()` SELECT + mapped object | Same omission in a separate fetch used from Talent Dashboard |
+| 3 | `FeaturedCastingsSlider.fetchCastings()` SELECT + mapped | Same omission |
+| 4 | `CDDashboard.loadCdCastings()` role SELECT | Only fetched `roles(id,name)` — `CreatorEditCastingModal` opened with blank `description`, `gender`, `age_range`, `ethnicity` for every role |
+
+### Files changed
+
+| File | What changed |
+|---|---|
+| `swipecast-full.jsx` | Four targeted fixes (see below). No unrelated pages touched. |
+| `index.html` | Rebuilt via `python3 build-html.py`. |
+
+### Fixes applied
+
+**SearchPage** (`fetchCastings` mapped object):  
+Added `casting_image_url`, `casting_image_path`, `casting_website_url`, `cd_id`, `profiles`, `role.id` to the mapped casting that is passed to `CastingDetailPage`.
+
+**`viewCastingById`** (App-level callback):  
+Extended SELECT to include `casting_image_url,casting_image_path,casting_website_url,featured`. Extended mapped object to pass them through.
+
+**`FeaturedCastingsSlider`**:  
+Extended SELECT and mapped object identically.
+
+**`CDDashboard.loadCdCastings`**:  
+Changed `roles(id,name)` → `roles(id,name,description,gender,age_range,ethnicity)` so the Edit form correctly pre-fills all role fields when opened.
+
+**`CreatorEditCastingModal.save()`**:  
+After saving all roles, re-fetches `roles` from DB so `onSaved` carries back fresh IDs (needed for newly-inserted roles) into `CDDashboard.myCastings`.
+
+### Which fields were not saving/displaying (now fixed)
+
+- Casting image / poster → was dropped by SearchPage mapping → now included
+- Website link → same → now included  
+- Role description / body stats / appearance → was blank in Edit form because CDDashboard only fetched `id,name` per role → now fetches full row
+- All other casting fields (title, synopsis, type, pay, deadline…) were already saving correctly
+
+### Schema / storage changes
+
+None. Columns `casting_image_url`, `casting_image_path`, `casting_website_url` already added in previous migration.
+
+### Live test results
+
+A. Edit live casting → save → go to Browse Castings → open same casting → image appears ✓  
+B. Website button "Visit Project Website" visible on detail page ✓  
+C. Project summary update visible immediately ✓  
+D. Role description / appearance info visible immediately ✓  
+E. Reopen Edit → all saved fields still present (roles pre-filled) ✓  
+F. Hard refresh → all edits persist ✓  
+G. Casting stays live after edit (status unchanged) ✓  
+
+---
+
 ## 2026-05-11 — Creator Casting Edit, Media Upload, and Website Link
 
 ### Files changed
