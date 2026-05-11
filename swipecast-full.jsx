@@ -1733,6 +1733,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
   const [filter,setFilter]=useState("all");
   const [viewing,setViewing]=useState(null); // class object
   const [bookingTarget,setBookingTarget]=useState(null); // {cls,slot,date}
+  const [bookedSessions,setBookedSessions]=useState(new Set()); // "slotId_date" keys for booked occurrences
 
   useEffect(()=>{(async()=>{
     try{
@@ -1752,6 +1753,17 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
     }catch(e){setErr(e.message||"Classes could not load.");}
     finally{setLoading(false);}
   })();},[]);
+
+  // Fetch booked session occurrences whenever the user opens a class detail
+  useEffect(()=>{
+    if(!viewing){setBookedSessions(new Set());return;}
+    (async()=>{
+      const{data}=await window.sb.from("class_booked_sessions")
+        .select("time_slot_id,selected_date").eq("class_id",viewing.id);
+      const keys=new Set((data||[]).map(r=>`${r.time_slot_id}_${r.selected_date}`));
+      setBookedSessions(keys);
+    })();
+  },[viewing]);
 
   const catMeta=(cat)=>CLASS_CATEGORIES.find(c=>c.id===cat);
 
@@ -1808,13 +1820,18 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
           <h3 style={{fontSize:18,fontWeight:700,marginBottom:14}}>Upcoming Sessions</h3>
           {clsSlots.map(slot=>upcomingDates(slot.day_of_week,4).map(date=>{
             const ds=date.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+            const dateStr=date.toISOString().split("T")[0];
+            const isBooked=bookedSessions.has(`${slot.id}_${dateStr}`);
             return(<div key={`${slot.id}-${date.getTime()}`} className="card" style={{padding:16,marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
               <div>
                 <div style={{fontWeight:700,fontSize:14}}>{ds}</div>
                 <div style={{color:"var(--t2)",fontSize:13}}>{fmtTime(slot.start_time)} – {fmtTime(slot.end_time)}{slot.note&&<> · {slot.note}</>}</div>
                 {viewing.price&&<div style={{color:"var(--acc)",fontSize:13,fontWeight:600,marginTop:2}}>{viewing.price}</div>}
               </div>
-              <button className="btn-p btn-sm" onClick={()=>handleRequestBooking(viewing,slot,date)}>Request Booking</button>
+              {isBooked
+                ?<span style={{fontSize:12,fontWeight:700,padding:"5px 14px",borderRadius:20,background:"rgba(192,57,43,0.1)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>Booked</span>
+                :<button className="btn-p btn-sm" onClick={()=>handleRequestBooking(viewing,slot,date)}>Request Booking</button>
+              }
             </div>);
           }))}
         </>}
@@ -8783,6 +8800,7 @@ function AdminManageTimeSlots({cls,onClose}){
 const BOOKING_STATUS_LABELS={pending_review:"Pending Review",approved:"Approved",rejected:"Rejected",payment_pending:"Payment Pending",paid:"Paid",cancelled:"Cancelled"};
 function AdminClassBookingRequests({cls,onClose}){
   const[requests,setRequests]=useState([]);
+  const[bookedKeys,setBookedKeys]=useState(new Set()); // "slotId_date" for booked sessions
   const[loading,setLoading]=useState(true);
   const[msg,setMsg]=useState("");
   const[busy,setBusy]=useState(null);
@@ -8791,21 +8809,61 @@ function AdminClassBookingRequests({cls,onClose}){
 
   const reload=useCallback(async()=>{
     setLoading(true);
-    const{data,error}=await window.sb.from("class_booking_requests")
-      .select("*,user:user_id(display_name,email,headshot_url,resume_url)")
-      .eq("class_id",cls.id).order("created_at",{ascending:false});
+    const[{data,error},{data:bsData}]=await Promise.all([
+      window.sb.from("class_booking_requests")
+        .select("*,user:user_id(display_name,email,headshot_url,resume_url)")
+        .eq("class_id",cls.id).order("created_at",{ascending:false}),
+      window.sb.from("class_booked_sessions")
+        .select("time_slot_id,selected_date").eq("class_id",cls.id)
+    ]);
     if(error){setMsg("Load failed: "+error.message);setLoading(false);return;}
-    setRequests(data||[]);setLoading(false);
+    setRequests(data||[]);
+    setBookedKeys(new Set((bsData||[]).map(r=>`${r.time_slot_id}_${r.selected_date}`)));
+    setLoading(false);
   },[cls.id]);
   useEffect(()=>{reload();},[reload]);
 
+  const BLOCKING_STATUSES=["approved","payment_pending","paid","confirmed"];
+  const RELEASING_STATUSES=["cancelled","rejected"];
+
   const setStatus=async(req,newStatus,notify=false)=>{
     setBusy(req.id);setMsg("");
+
+    // Approve: check for existing booking first, then reserve the slot
+    if(newStatus==="approved"&&req.time_slot_id&&req.selected_date){
+      const{data:existing}=await window.sb.from("class_booked_sessions")
+        .select("id").eq("time_slot_id",req.time_slot_id).eq("selected_date",req.selected_date).maybeSingle();
+      if(existing){
+        setMsg("This time slot is already booked. Cannot approve.");
+        setBusy(null);return;
+      }
+      const adminId=(await window.sb.auth.getUser()).data?.user?.id;
+      const{error:bErr}=await window.sb.from("class_booked_sessions").insert({
+        class_id:req.class_id,time_slot_id:req.time_slot_id,
+        booking_request_id:req.id,selected_date:req.selected_date,
+        selected_start_time:req.selected_start_time||null,
+        selected_end_time:req.selected_end_time||null,
+        booked_by:adminId||null
+      });
+      if(bErr){
+        // unique constraint violation = race condition, someone else just booked it
+        setMsg("This time slot was just booked by another approval. Cannot approve.");
+        setBusy(null);return;
+      }
+    }
+
+    // Cancel/reject: release the slot if it was previously reserved
+    if(RELEASING_STATUSES.includes(newStatus)&&BLOCKING_STATUSES.includes(req.status)&&req.time_slot_id&&req.selected_date){
+      await window.sb.from("class_booked_sessions")
+        .delete().eq("time_slot_id",req.time_slot_id).eq("selected_date",req.selected_date);
+    }
+
     const upd={status:newStatus};
     if(newStatus==="approved"){upd.approved_at=new Date().toISOString();}
     if(newStatus==="rejected"){upd.rejected_at=new Date().toISOString();}
     const{error}=await window.sb.from("class_booking_requests").update(upd).eq("id",req.id);
     if(error){setMsg("Update failed: "+error.message);setBusy(null);return;}
+
     if(notify){
       const body=newStatus==="approved"
         ?`Your class booking request has been approved.\n\nClass: ${cls.title}\nInstructor: ${cls.instructor_name||"—"}\nSession: ${req.selected_date||"—"}${req.selected_start_time?" at "+fmtTime(req.selected_start_time):""}\nLocation: ${cls.location_name||"—"}\nPrice: ${cls.price||"—"}\n\nOnline payment is not connected yet. Admin will contact you with payment instructions.\n\nPlease review the details above and complete payment to confirm your spot.`
@@ -8855,10 +8913,14 @@ function AdminClassBookingRequests({cls,onClose}){
             </div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
               <button className="btn-s btn-sm" onClick={()=>setExpanded(expanded===req.id?null:req.id)}>{expanded===req.id?"Hide Details":"View Details"}</button>
-              {req.status==="pending_review"&&<>
-                <button className="btn-p btn-sm" disabled={busy===req.id} onClick={()=>setStatus(req,"approved",true)}>{busy===req.id?"…":"Approve & Notify"}</button>
-                <button className="btn-s btn-sm" style={{color:"#c0392b",borderColor:"#c0392b"}} disabled={busy===req.id} onClick={()=>setStatus(req,"rejected",true)}>{busy===req.id?"…":"Reject & Notify"}</button>
-              </>}
+              {req.status==="pending_review"&&(()=>{
+                const slotTaken=req.time_slot_id&&req.selected_date&&bookedKeys.has(`${req.time_slot_id}_${req.selected_date}`);
+                return(<>
+                  {slotTaken&&<span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:4,background:"rgba(192,57,43,0.1)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>Slot taken</span>}
+                  <button className="btn-p btn-sm" disabled={busy===req.id||slotTaken} title={slotTaken?"This date/time is already booked":""} onClick={()=>setStatus(req,"approved",true)}>{busy===req.id?"…":"Approve & Notify"}</button>
+                  <button className="btn-s btn-sm" style={{color:"#c0392b",borderColor:"#c0392b"}} disabled={busy===req.id} onClick={()=>setStatus(req,"rejected",true)}>{busy===req.id?"…":"Reject & Notify"}</button>
+                </>);
+              })()}
               {req.status==="approved"&&<button className="btn-s btn-sm" disabled={busy===req.id} onClick={()=>setStatus(req,"paid",false)}>Mark Paid</button>}
               <select className="select" style={{fontSize:12,padding:"5px 8px",height:"auto"}} value={req.status} onChange={e=>setStatus(req,e.target.value,false)} disabled={busy===req.id}>
                 {Object.entries(BOOKING_STATUS_LABELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}
