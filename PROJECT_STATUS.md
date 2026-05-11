@@ -2,6 +2,56 @@
 
 ---
 
+## 2026-05-11 — Fix: Instructor Poster Uploader (Classes)
+
+### Root cause
+
+Three distinct problems caused uploads to silently fail with no feedback:
+
+| # | Problem | Impact |
+|---|---|---|
+| 1 | `class-media` and `booking-uploads` storage buckets were never created — only RLS policies existed | Every upload attempt immediately failed with "Bucket not found" |
+| 2 | `upsert: false` in storage upload call | Path collision (same timestamp/random suffix) would reject the upload |
+| 3 | Errors called `setMsg()` which updates a banner at the **top** of the 10-section form — invisible when scrolled to the poster section at the bottom | User saw no indication of failure |
+| 4 | `<SlateCueLoader size="inline" text=""/>` inside a small dashed upload slot renders invisibly (tiny spinner, empty label) | User saw no loading indicator during upload |
+
+### Storage bucket changes
+
+**Migration `create_class_media_booking_uploads_buckets`** applied:
+
+```sql
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES
+  ('class-media', 'class-media', true, 5242880, ARRAY['image/jpeg','image/png','image/webp']),
+  ('booking-uploads', 'booking-uploads', false, 10485760, NULL)
+ON CONFLICT (id) DO NOTHING;
+```
+
+RLS policies for `class-media`: public SELECT, admin INSERT/UPDATE/DELETE.  
+RLS policies for `booking-uploads`: owner-folder INSERT/SELECT, admin SELECT all.
+
+### Code changes (swipecast-full.jsx)
+
+- Added separate `posterErr` state; error display is now a red alert box rendered **inline inside the poster card**, directly above the poster grid
+- Changed `upsert: false` → `upsert: true` in storage upload call
+- Replaced `<SlateCueLoader size="inline" text=""/>` in the dashed upload slot with `"Uploading…"` text (visible at any screen size)
+- Max-3 enforcement, file-type rejection, and size rejection now all set `posterErr` (not `setMsg`)
+- Successful upload clears `posterErr` and immediately shows the poster thumbnail
+- Remove button still works; reorder arrows still work; all changes persist after Save Changes
+
+### What was tested
+
+A. Upload JPG/PNG/WebP → thumbnail appears immediately in the slot ✓  
+B. Error message (exact text) shown inline in poster card on failure ✓  
+C. "Uploading…" text visible in slot during upload ✓  
+D. Max 3 enforcement: 4th upload slot hidden; attempt via direct call shows inline error ✓  
+E. Save Changes persists posters to `instructor_poster_urls` jsonb column ✓  
+F. Hard refresh → posters still appear (public detail + admin edit form) ✓  
+G. "Selected Instructor Credits" grid visible publicly after save ✓  
+H. Remove poster → removed from grid + storage ✓  
+
+---
+
 ## 2026-05-11 — Admin-managed Classes system + Booking Requests
 
 ### Schema changes
