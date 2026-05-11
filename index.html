@@ -8532,6 +8532,7 @@ function AdminEditClass({cls,onClose}){
   // posters: array of {url, path} — max 3
   const[posters,setPosters]=useState(()=>Array.isArray(cls.instructor_poster_urls)?cls.instructor_poster_urls:[]);
   const[posterBusy,setPosterBusy]=useState(false);
+  const[posterErr,setPosterErr]=useState("");
   const[busy,setBusy]=useState(false);
   const[msg,setMsg]=useState("");
   const up=(k,v)=>setF(p=>({...p,[k]:v}));
@@ -8558,32 +8559,31 @@ function AdminEditClass({cls,onClose}){
 
   const uploadPoster=async(file)=>{
     if(!file)return;
-    if(posters.length>=3){setMsg("Maximum 3 posters per instructor.");return;}
+    if(posters.length>=3){setPosterErr("Maximum 3 posters allowed.");return;}
     const allowed=["image/jpeg","image/jpg","image/png","image/webp"];
-    if(!allowed.includes(file.type)){setMsg("Accepted formats: JPG, PNG, WebP.");return;}
-    if(file.size>5*1024*1024){setMsg("Poster must be 5 MB or smaller.");return;}
-    setPosterBusy(true);setMsg("");
+    if(!allowed.includes(file.type)){setPosterErr("Accepted formats: JPG, PNG, WebP.");return;}
+    if(file.size>5*1024*1024){setPosterErr("Poster must be 5 MB or smaller.");return;}
+    setPosterBusy(true);setPosterErr("");
     try{
       const ext=file.name.split(".").pop().toLowerCase();
       const path=`class-posters/${cls.id}/${Date.now()}-${Math.random().toString(36).slice(2,7)}.${ext}`;
-      const{data,error}=await window.sb.storage.from("class-media").upload(path,file,{upsert:false});
+      const{data,error}=await window.sb.storage.from("class-media").upload(path,file,{upsert:true});
       if(error)throw error;
       const{data:{publicUrl}}=window.sb.storage.from("class-media").getPublicUrl(data.path);
       setPosters(p=>[...p,{url:publicUrl,path:data.path}]);
-      setMsg("Poster uploaded. Click Save Changes to confirm.");
-    }catch(e){setMsg("Upload failed: "+e.message);}
+      setPosterErr("");
+    }catch(e){setPosterErr("Upload failed: "+e.message);}
     finally{setPosterBusy(false);}
   };
 
   const removePoster=async(idx)=>{
     const poster=posters[idx];
     if(!poster)return;
-    // attempt to remove from storage (best-effort)
     if(poster.path){
       window.sb.storage.from("class-media").remove([poster.path]).catch(()=>{});
     }
     setPosters(p=>p.filter((_,i)=>i!==idx));
-    setMsg("Poster removed. Click Save Changes to confirm.");
+    setPosterErr("");
   };
 
   const movePoster=(idx,dir)=>{
@@ -8641,6 +8641,7 @@ function AdminEditClass({cls,onClose}){
         <span style={{fontSize:12,color:"var(--t3)",fontWeight:600}}>{posters.length} of 3 uploaded</span>
       </div>
       <p style={{fontSize:12,color:"var(--t3)",marginBottom:16,lineHeight:1.5}}>Upload up to 3 movie or project posters for projects this instructor has worked on. JPG, PNG, or WebP · max 5 MB each. Shown publicly on the class detail page.</p>
+      {posterErr&&<div style={{background:"#fdf2f2",border:"1px solid #f5c6cb",borderRadius:6,padding:"8px 12px",fontSize:13,color:"#c0392b",marginBottom:12}}>{posterErr}</div>}
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:16}}>
         {posters.map((p,i)=>(
           <div key={i} style={{position:"relative",borderRadius:10,overflow:"hidden",border:"1px solid var(--bdr)",background:"var(--s2)"}}>
@@ -8654,9 +8655,11 @@ function AdminEditClass({cls,onClose}){
           </div>
         ))}
         {posters.length<3&&(
-          <label style={{border:"2px dashed var(--bdr)",borderRadius:10,aspectRatio:"2/3",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:posterBusy?"not-allowed":"pointer",color:"var(--t3)",gap:8,background:"var(--s2)",transition:"border-color 0.15s"}} onMouseEnter={e=>e.currentTarget.style.borderColor="var(--acc)"} onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bdr)"}>
+          <label style={{border:"2px dashed var(--bdr)",borderRadius:10,aspectRatio:"2/3",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:posterBusy?"not-allowed":"pointer",color:"var(--t3)",gap:8,background:"var(--s2)",transition:"border-color 0.15s"}} onMouseEnter={e=>{if(!posterBusy)e.currentTarget.style.borderColor="var(--acc)"}} onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bdr)"}>
             <input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" style={{display:"none"}} disabled={posterBusy||posters.length>=3} onChange={e=>{uploadPoster(e.target.files[0]);e.target.value="";}}/>
-            {posterBusy?<SlateCueLoader size="inline" text=""/>:<>
+            {posterBusy?<>
+              <span style={{fontSize:13,fontWeight:600,color:"var(--acc)"}}>Uploading…</span>
+            </>:<>
               <span style={{fontSize:28,lineHeight:1}}>+</span>
               <span style={{fontSize:12,fontWeight:600}}>Upload Poster</span>
               <span style={{fontSize:11}}>JPG · PNG · WebP</span>
