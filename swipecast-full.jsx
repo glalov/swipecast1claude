@@ -197,7 +197,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .tag{background:var(--s2);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:500;color:var(--t2);display:inline-block;}
 .tag-acc{background:rgba(26,26,46,0.08);color:var(--acc);}
 .tag-grn{background:rgba(27,135,62,0.08);color:var(--grn);}
-.badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:4px 10px;border-radius:6px;}
+.badge{font-size:11px;font-weight:600;letter-spacing:0;padding:4px 10px;border-radius:100px;display:inline-flex;align-items:center;}
 .tabs{display:inline-flex;background:var(--s1);border:1px solid var(--bdr);border-radius:10px;padding:4px;margin-bottom:32px;}
 .tab{padding:9px 20px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;border:none;background:none;color:var(--t2);font-family:'DM Sans',sans-serif;}
 .tab.active{background:var(--acc);color:#fff;}
@@ -2600,10 +2600,10 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     </div>
 
     <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
-      {c.featured&&<span className="badge" style={{background:"rgba(99,60,180,0.12)",color:"var(--acc)",border:"1px solid rgba(99,60,180,0.25)",fontWeight:700}}>★ Featured</span>}
-      <span className="badge tag-acc">{c.type}</span>
-      <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.union}</span>
-      <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.location}</span>
+      {c.featured&&<span className="badge" style={{background:"rgba(99,60,180,0.10)",color:"#5b3ecb",border:"1px solid rgba(99,60,180,0.22)"}}>★ Featured</span>}
+      <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{castingTypeLabel(c.type)}</span>
+      <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.union}</span>
+      <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.location}</span>
     </div>
     <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={isDbCasting?{kind:"casting",id:c.id}:null}/>
 
@@ -2959,6 +2959,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     <Footer onNavigate={onNavigate}/></div>);
 }
 
+function castingTypeLabel(t){if(!t)return"";if(t==="Commercials & Branded Content")return"Commercial";if(t==="Film & Television")return"Film & TV";return t;}
+
 // ═══════════════════════════════════════════
 // PAGE: SEARCH / BROWSE
 // ═══════════════════════════════════════════
@@ -3142,10 +3144,10 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
                 <div>
                   <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
-                    {c.featured&&<span className="badge" style={{background:"rgba(99,60,180,0.12)",color:"var(--acc)",border:"1px solid rgba(99,60,180,0.25)",fontWeight:700}}>★ Featured</span>}
-                    <span className="badge tag-acc">{c.type}</span>
-                    <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.union}</span>
-                    <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{c.roles?.length||1} {(c.roles?.length||1)===1?"role":"roles"}</span>
+                    {c.featured&&<span className="badge" style={{background:"rgba(99,60,180,0.10)",color:"#5b3ecb",border:"1px solid rgba(99,60,180,0.22)"}}>★ Featured</span>}
+                    <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{castingTypeLabel(c.type)}</span>
+                    <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.union}</span>
+                    <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{(c.roles?.length||1)===1?"1 Role":`${c.roles?.length||1} Roles`}</span>
                   </div>
                   <h3 style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:4,color:"var(--t1)"}}>{c.title}</h3>
                   <p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{c.tagline||c.prod}</p>
@@ -5274,10 +5276,8 @@ function FixedTooltip({anchorRef,children,width=300}){
 function IDVerifiedBadge({size="sm"}){
   const [show,setShow]=useState(false);
   const iconRef=useRef(null);
-  const fs=size==="xs"?9:10;
-  const pad=size==="xs"?"2px 8px":"2px 9px";
   return(<span style={{display:"inline-flex",alignItems:"center",gap:3}}>
-    <span style={{background:"rgba(46,204,113,0.12)",color:"#1d7b44",fontSize:fs,fontWeight:800,letterSpacing:0.5,padding:pad,borderRadius:99}}>✓ ID Verified</span>
+    <span style={{background:"rgba(46,204,113,0.12)",color:"#1d7b44",fontSize:size==="xs"?10:11,fontWeight:600,letterSpacing:0,padding:size==="xs"?"3px 8px":"4px 10px",borderRadius:100}}>✓ ID Verified</span>
     <span
       ref={iconRef}
       onMouseEnter={()=>setShow(true)}
@@ -5850,10 +5850,10 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
             aria-hidden={!isCenter}
             tabIndex={isCenter?0:-1}>
             <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
-              <span className="badge tag-acc">{sc.type||"Film"}</span>
-              {sc.union&&<span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{sc.union}</span>}
-              <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{sRoles.length||1} {sRoles.length===1?"role":"roles"}</span>
-              {sFirstRole?.name&&<span className="badge" style={{background:"rgba(26,26,46,0.06)",color:"var(--acc)",fontWeight:700}}>{sFirstRole.name}</span>}
+              <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{castingTypeLabel(sc.type||"Film")}</span>
+              {sc.union&&<span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{sc.union}</span>}
+              <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{sRoles.length===1?"1 Role":`${sRoles.length||1} Roles`}</span>
+              {sFirstRole?.name&&<span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{sFirstRole.name}</span>}
             </div>
             <h3 style={{fontSize:isCenter?32:24,fontWeight:800,letterSpacing:-1,marginBottom:6,color:"var(--t1)",lineHeight:1.15}}>{sc.title}</h3>
             {sc.tagline&&sc.tagline!==sc.synopsis&&<p style={{color:"var(--t2)",fontSize:15,marginBottom:6,fontWeight:500}}>{sc.tagline}</p>}
