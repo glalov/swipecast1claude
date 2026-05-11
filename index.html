@@ -2236,6 +2236,35 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
     finally{setLoading(false);submittingRef.current=false;}
   };
 
+  const handleSocialAuth=async(provider)=>{
+    setErr("");
+    // Save pending apply before redirect — it survives the OAuth round-trip
+    if(pending){
+      try{sessionStorage.setItem("sc_post_auth_apply",JSON.stringify({casting:pending.casting,role:pending.role}));}catch(_){}
+    }
+    try{
+      const {error}=await window.sb.auth.signInWithOAuth({
+        provider,
+        options:{redirectTo:window.location.origin}
+      });
+      if(error){
+        try{sessionStorage.removeItem("sc_post_auth_apply");}catch(_){}
+        const name=provider.charAt(0).toUpperCase()+provider.slice(1);
+        const em=(error.message||"").toLowerCase();
+        if(em.includes("provider")&&(em.includes("not enabled")||em.includes("not supported")||em.includes("disabled"))){
+          setErr(`${name} sign-up is not connected yet. Admin must enable ${name} OAuth in Supabase.`);
+        }else{
+          setErr(`${name} sign-in failed: ${error.message}`);
+        }
+      }
+      // On success the browser redirects away — nothing more to do here
+    }catch(e){
+      try{sessionStorage.removeItem("sc_post_auth_apply");}catch(_){}
+      const name=provider.charAt(0).toUpperCase()+provider.slice(1);
+      setErr(`${name} sign-up is not connected yet. Admin must enable ${name} OAuth in Supabase.`);
+    }
+  };
+
   if(signupDone)return(<div className="page" style={{maxWidth:640,margin:"0 auto"}}>
     <div style={{background:"#1a1a2e",color:"#f5e8d0",fontFamily:"monospace",fontSize:13,fontWeight:700,padding:"8px 20px",textAlign:"center",letterSpacing:0.5}}>
       APPLY SIGNUP VERSION 3 - FUNCTIONAL FREE APPLY FLOW
@@ -2319,11 +2348,11 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
           <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:8}}>Create your free actor account</h2>
           <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>Takes about 60 seconds. No payment required.</p>
 
-          {/* Social buttons — disabled until OAuth is configured */}
+          {/* Social OAuth buttons */}
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
-            {[["🔵","Continue with Google"],["","Continue with Apple"],["📘","Continue with Facebook"]].map(([ic,label])=>(
-              <button key={label} className="btn-s" disabled style={{width:"100%",justifyContent:"center",display:"flex",gap:10,opacity:0.45,cursor:"not-allowed"}}>
-                <span>{ic}</span>{label} <span style={{fontSize:11,color:"var(--t3)",marginLeft:4}}>(Coming Soon)</span>
+            {[["🔵","Continue with Google","google"],["","Continue with Apple","apple"],["📘","Continue with Facebook","facebook"]].map(([ic,label,provider])=>(
+              <button key={label} className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={()=>handleSocialAuth(provider)}>
+                <span>{ic}</span>{label}
               </button>
             ))}
           </div>
@@ -2353,11 +2382,11 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
           <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:8}}>Welcome back</h2>
           <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>Log in to continue your application.</p>
 
-          {/* Social buttons — disabled until OAuth is configured */}
+          {/* Social OAuth buttons */}
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
-            {[["🔵","Continue with Google"],["","Continue with Apple"]].map(([ic,label])=>(
-              <button key={label} className="btn-s" disabled style={{width:"100%",justifyContent:"center",display:"flex",gap:10,opacity:0.45,cursor:"not-allowed"}}>
-                <span>{ic}</span>{label} <span style={{fontSize:11,color:"var(--t3)",marginLeft:4}}>(Coming Soon)</span>
+            {[["🔵","Continue with Google","google"],["","Continue with Apple","apple"],["📘","Continue with Facebook","facebook"]].map(([ic,label,provider])=>(
+              <button key={label} className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={()=>handleSocialAuth(provider)}>
+                <span>{ic}</span>{label}
               </button>
             ))}
           </div>
