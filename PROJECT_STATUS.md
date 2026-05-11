@@ -1,5 +1,41 @@
 # Project Status
 
+## 2026-05-11 — Casting cards: remove public submission count + ID Verified badge
+
+### Files changed
+
+| File | What changed |
+|---|---|
+| `swipecast-full.jsx` | Removed public submission count from Browse Castings cards. Updated Browse Castings fetch query to include `profiles:cd_id(identity_verified,can_post_castings,verification_status)`. Added `creator_verified` flag to mapped castings. Added `IDVerifiedBadge` to Browse Castings card producer row. |
+| `index.html` | Rebuilt via `python3 build-html.py`. |
+
+### Submission count removal
+
+- **Removed from**: Browse Castings card side column (`{c.submissions} submissions` span, previously at line 3158).
+- **Not removed from**: Admin dashboard, Casting Creator dashboard — private views for CDs and admins are unaffected.
+- The `submissions` field still exists in the demo data array (CASTINGS_DEMO) and in the DB mapped object for internal use, but is no longer rendered to actors.
+
+### ID Verified badge logic
+
+The `IDVerifiedBadge` component (defined at line ~5226) is shown on:
+- **Browse Castings card**: inline next to the producer/company name, when `c.creator_verified === true`
+- **Casting Detail Page**: already present, shown near "Produced by" when creator profile has the verified flags
+
+Badge shows only when ALL three conditions are true:
+1. `identity_verified === true`
+2. `verification_status === "verified"`
+3. `can_post_castings === true`
+
+Browse Castings fetch now joins `profiles:cd_id(identity_verified,can_post_castings,verification_status)` so real DB castings include creator verification state. The mapped object adds `creator_verified: boolean`.
+
+### Didit / webhook setup still needed
+
+- Didit webhook must update `identity_verified`, `verification_status`, and `can_post_castings` on the `profiles` table when a verification is approved.
+- Until the webhook is live, no real users will show the badge (correct behavior — do not fake it).
+- Admin can manually set `can_post_castings=true`, `identity_verified=true`, `verification_status="verified"` in the Admin panel to grant the badge to approved accounts.
+
+---
+
 ## 2026-05-11 — Talent Dashboard fully functional (v3)
 
 ### Root cause of "slug does not exist" error

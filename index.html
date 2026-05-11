@@ -3015,7 +3015,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       });
       const {data:cs,error}=await Promise.race([
         window.sb.from("castings")
-          .select("*,roles(id,name,description,gender,age_range,ethnicity,pay)")
+          .select("*,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(identity_verified,can_post_castings,verification_status)")
           .eq("status","open").eq("published",true)
           .order("created_at",{ascending:false}),
         timeoutPromise
@@ -3035,7 +3035,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         rate:c.pay||"",
         deadline:c.deadline||"",
         union:c.union_status||"",
-        submissions:0,
+        creator_verified:c.profiles?.identity_verified===true&&c.profiles?.can_post_castings===true&&c.profiles?.verification_status==="verified",
         roles:(c.roles||[]).map(r=>({
           name:r.name,
           desc:r.description||"",
@@ -3169,7 +3169,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                   </div>
                   <h3 style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:4,color:"var(--t1)"}}>{c.title}</h3>
                   <p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{c.tagline||c.prod}</p>
-                  <p style={{color:"var(--t3)",fontSize:12,marginBottom:14}}>{c.prod}</p>
+                  <p style={{color:"var(--t3)",fontSize:12,marginBottom:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.prod}{c.creator_verified&&<IDVerifiedBadge size="xs"/>}</p>
                   <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6,marginBottom:16,maxWidth:620}}>{c.synopsis?c.synopsis.replace(/\*/g,"").slice(0,200)+(c.synopsis.length>200?"…":""):c.desc}</p>
                   <div style={{display:"flex",gap:20,flexWrap:"wrap",fontSize:12,color:"var(--t2)"}}>
                     <span><strong style={{color:"var(--t1)"}}>Location</strong> · {c.location}</span>
@@ -3180,7 +3180,6 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                 <div className="casting-card-row-side" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",minWidth:140}}>
                   <button className="btn-p" onClick={e=>{e.stopPropagation();onViewCasting&&onViewCasting(c);}}>View Roles →</button>
                   {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>✓ Applied</span>:null}
-                  <span style={{color:"var(--t3)",fontSize:11,marginTop:4}}>{c.submissions} submissions</span>
                 </div>
               </div>
             </div>)}</div>
