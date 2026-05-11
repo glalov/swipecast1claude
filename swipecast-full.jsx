@@ -1720,24 +1720,254 @@ const CLASS_LISTINGS=[
   {id:9,title:"Dialect Lab: Standard American & RP",cat:"dialect",teacher:"Phoebe Kinsella",teacherBio:"Working dialect coach for two current Broadway productions and a major streaming limited series.",format:"Online (Zoom) · 6 weeks · 1.5 hrs/week",location:"Remote",start:"Next cohort starts Jun 2, 2026",price:"$270",capacity:"10 students max",level:"All levels",desc:"The two dialects booked-call most often. Tight, focused work on placement, rhythm, and the phonetic details that make a dialect actually land on tape."},
   {id:10,title:"Makeup & Special Effects for Film",cat:"makeup-sfx",teacher:"Toni Bisset",teacherBio:"Working NYC makeup and special-effects artist with film, TV, and commercial credits. Teaches beauty, character, and SFX makeup from the kit up — how to build a pro kit, hold continuity over a shoot day, and execute wound work, age makeup, and prosthetic appliances under real production pressure.",imdb:"https://www.imdb.com/name/nm11533395/",format:"In-person · 8 weeks · 3 hrs/week",location:"New York, NY — Midtown (working studio)",start:"Next cohort starts May 28, 2026",price:"$620",capacity:"8 students max",level:"Beginner / Intermediate",desc:"A hands-on, kit-in-front-of-you class. Weeks 1–3 cover beauty and corrective makeup. Weeks 4–6 move into character work — age, injury, and transformations. Weeks 7–8 focus on on-set SFX workflow: continuity, touch-ups between takes, and working cleanly with wardrobe and camera. Model practice every session."},
 ];
-function ClassesPage({onNavigate}){
+// ─── helper: format 24-h time to 12-h AM/PM ───────────────────────
+function fmtTime(t){if(!t)return"";const[h,m]=t.split(":").map(Number);const ap=h>=12?"PM":"AM";const h12=h%12||12;return`${h12}:${m.toString().padStart(2,"0")} ${ap}`;}
+// ─── helper: next N occurrences of a day-of-week (0=Sun…6=Sat) ───
+function upcomingDates(dow,count=4){const dates=[];const d=new Date();d.setHours(0,0,0,0);const diff=(dow-d.getDay()+7)%7;d.setDate(d.getDate()+(diff===0?7:diff));for(let i=0;i<count;i++){dates.push(new Date(d));d.setDate(d.getDate()+7);}return dates;}
+
+function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
+  const [classes,setClasses]=useState([]);
+  const [slots,setSlots]=useState({}); // {classId:[slot,...]}
+  const [loading,setLoading]=useState(true);
+  const [err,setErr]=useState("");
   const [filter,setFilter]=useState("all");
-  const [viewing,setViewing]=useState(null);
-  const visible=filter==="all"?CLASS_LISTINGS:CLASS_LISTINGS.filter(c=>c.cat===filter);
-  if(viewing){const cls=CLASS_LISTINGS.find(c=>c.id===viewing);const catMeta=CLASS_CATEGORIES.find(cat=>cat.id===cls.cat);return(<div className="page"><button className="btn-s btn-sm mb-20" onClick={()=>setViewing(null)}>← Back to Classes</button><div style={{maxWidth:720,margin:"0 auto"}}><div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:12}}>{catMeta?.name||cls.cat}</div><h1 style={{fontWeight:800,fontSize:34,letterSpacing:"-1.2px",marginBottom:10}}>{cls.title}</h1><p style={{color:"var(--t2)",fontSize:15,marginBottom:28,lineHeight:1.6}}>{cls.desc}</p><div className="grid-2" style={{marginBottom:24}}><div className="card" style={{padding:16}}><div style={{fontSize:11,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:6,fontWeight:700}}>Instructor</div><div style={{color:"var(--t1)",fontSize:14,lineHeight:1.5}}><strong>{cls.teacher}</strong> — {cls.teacherBio}{cls.imdb&&<><br/><a href={cls.imdb} target="_blank" rel="noopener noreferrer" style={{color:"var(--acc)",fontSize:12,fontWeight:600,textDecoration:"none",marginTop:10,display:"inline-block"}}>View IMDB profile →</a></>}</div></div>{[["Format",cls.format],["Location",cls.location],["Next Start",cls.start],["Price",cls.price],["Class Size",cls.capacity],["Level",cls.level]].map(([k,v])=><div key={k} className="card" style={{padding:16}}><div style={{fontSize:11,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:6,fontWeight:700}}>{k}</div><div style={{color:"var(--t1)",fontSize:14,lineHeight:1.5}}>{v}</div></div>)}</div><div style={{padding:20,background:"var(--s2)",borderRadius:12,border:"1px solid var(--bdr)"}}><p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,marginBottom:12}}>Interested? Enrollment is handled directly by the teaching studio. Email us and we'll connect you with the instructor and confirm a seat.</p><button className="btn-p" onClick={()=>onNavigate("contact")}>Contact to Enroll →</button></div></div><Footer onNavigate={onNavigate}/></div>);}
-  return(<div className="page"><div className="info-hero"><div className="section-label">Classes</div><h1>Training That Actually<br/>Moves Your Career.</h1><p>A curated directory of serious, working-actor classes — in New York and online. Taught by active casting directors, working VO actors, and veteran studio teachers. SlateCue does not run the classes directly; we vet the teachers and help students enroll.</p></div>
+  const [viewing,setViewing]=useState(null); // class object
+  const [bookingTarget,setBookingTarget]=useState(null); // {cls,slot,date}
+
+  useEffect(()=>{(async()=>{
+    try{
+      const{data,error}=await window.sb.from("classes").select("*").eq("active",true).order("created_at");
+      if(error)throw error;
+      const cls=data||[];
+      setClasses(cls);
+      if(cls.length){
+        const{data:sd,error:se}=await window.sb.from("class_time_slots")
+          .select("*").in("class_id",cls.map(c=>c.id)).eq("active",true).order("day_of_week");
+        if(!se){
+          const map={};
+          for(const s of sd||[]){if(!map[s.class_id])map[s.class_id]=[];map[s.class_id].push(s);}
+          setSlots(map);
+        }
+      }
+    }catch(e){setErr(e.message||"Classes could not load.");}
+    finally{setLoading(false);}
+  })();},[]);
+
+  const catMeta=(cat)=>CLASS_CATEGORIES.find(c=>c.id===cat);
+
+  const handleRequestBooking=(cls,slot,date)=>{
+    if(!isLoggedIn){onNavigate("login");return;}
+    if(myProfile?.user_type!=="talent"){alert("Only talent/actor profiles can request class bookings.");return;}
+    setBookingTarget({cls,slot,date});
+  };
+
+  if(loading)return(<div className="page"><SlateCueLoader text="Loading classes…"/></div>);
+  if(err)return(<div className="page" style={{textAlign:"center",padding:"80px 24px"}}><p style={{color:"var(--t2)",marginBottom:16}}>{err}</p><button className="btn-p" onClick={()=>window.location.reload()}>Retry</button><Footer onNavigate={onNavigate}/></div>);
+
+  if(viewing){
+    const clsSlots=slots[viewing.id]||[];
+    const cm=catMeta(viewing.category);
+    return(<div className="page">
+      <button className="btn-s btn-sm mb-20" onClick={()=>{setViewing(null);window.scrollTo(0,0);}}>← Back to Classes</button>
+      <div style={{maxWidth:720,margin:"0 auto"}}>
+        <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:12}}>{cm?.name||viewing.category}</div>
+        <h1 style={{fontWeight:800,fontSize:34,letterSpacing:"-1.2px",marginBottom:10}}>{viewing.title}</h1>
+        {viewing.image_url&&<img src={viewing.image_url} alt={viewing.title} style={{width:"100%",maxHeight:320,objectFit:"cover",borderRadius:12,marginBottom:24}}/>}
+        <p style={{color:"var(--t2)",fontSize:15,marginBottom:28,lineHeight:1.6}}>{viewing.full_description||viewing.short_description}</p>
+        <div className="grid-2" style={{marginBottom:24}}>
+          <div className="card" style={{padding:16}}>
+            <div style={{fontSize:11,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:6,fontWeight:700}}>Instructor</div>
+            {viewing.instructor_photo_url&&<img src={viewing.instructor_photo_url} alt={viewing.instructor_name} style={{width:64,height:64,borderRadius:"50%",objectFit:"cover",marginBottom:8,display:"block"}}/>}
+            <div style={{color:"var(--t1)",fontSize:14,lineHeight:1.5}}>
+              <strong>{viewing.instructor_name}</strong>{viewing.instructor_bio&&<> — {viewing.instructor_bio}</>}
+              {viewing.instructor_imdb&&<><br/><a href={viewing.instructor_imdb} target="_blank" rel="noopener noreferrer" style={{color:"var(--acc)",fontSize:12,fontWeight:600,textDecoration:"none",marginTop:10,display:"inline-block"}}>View IMDb profile →</a></>}
+            </div>
+          </div>
+          {[["Format",viewing.format],["Location",viewing.location_name||viewing.location_city_state],["Price",viewing.price],["Level",viewing.level]].filter(([,v])=>v).map(([k,v])=>
+            <div key={k} className="card" style={{padding:16}}>
+              <div style={{fontSize:11,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:6,fontWeight:700}}>{k}</div>
+              <div style={{color:"var(--t1)",fontSize:14}}>{v}</div>
+            </div>
+          )}
+        </div>
+        {clsSlots.length>0&&<>
+          <h3 style={{fontSize:18,fontWeight:700,marginBottom:14}}>Upcoming Sessions</h3>
+          {clsSlots.map(slot=>upcomingDates(slot.day_of_week,4).map(date=>{
+            const ds=date.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+            return(<div key={`${slot.id}-${date.getTime()}`} className="card" style={{padding:16,marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
+              <div>
+                <div style={{fontWeight:700,fontSize:14}}>{ds}</div>
+                <div style={{color:"var(--t2)",fontSize:13}}>{fmtTime(slot.start_time)} – {fmtTime(slot.end_time)}{slot.note&&<> · {slot.note}</>}</div>
+                {viewing.price&&<div style={{color:"var(--acc)",fontSize:13,fontWeight:600,marginTop:2}}>{viewing.price}</div>}
+              </div>
+              <button className="btn-p btn-sm" onClick={()=>handleRequestBooking(viewing,slot,date)}>Request Booking</button>
+            </div>);
+          }))}
+        </>}
+        {clsSlots.length===0&&<div style={{padding:20,background:"var(--s2)",borderRadius:12,border:"1px solid var(--bdr)",marginBottom:24}}>
+          <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,marginBottom:12}}>Interested? Enrollment is handled directly by the teaching studio. Email us and we'll connect you with the instructor and confirm a seat.</p>
+          <button className="btn-p" onClick={()=>onNavigate("contact")}>Contact to Enroll →</button>
+        </div>}
+        {viewing.online_note&&<div style={{padding:14,background:"var(--s2)",borderRadius:10,border:"1px solid var(--bdr)",marginBottom:24,fontSize:13,color:"var(--t2)"}}>{viewing.online_note}</div>}
+        {!isLoggedIn&&clsSlots.length>0&&<div style={{padding:16,background:"var(--s2)",borderRadius:10,border:"1px solid var(--bdr)",marginBottom:24,textAlign:"center"}}>
+          <p style={{fontSize:13,color:"var(--t2)",marginBottom:10}}>You must log in or create a talent profile before requesting a class booking.</p>
+          <button className="btn-p btn-sm" onClick={()=>onNavigate("login")}>Sign In</button>
+          {" "}<button className="btn-s btn-sm" onClick={()=>onNavigate("register-talent")}>Create Profile</button>
+        </div>}
+      </div>
+      {bookingTarget&&<BookingRequestModal target={bookingTarget} myProfile={myProfile} session={session} onClose={()=>setBookingTarget(null)} onSubmitted={()=>setBookingTarget(null)}/>}
+      <Footer onNavigate={onNavigate}/>
+    </div>);
+  }
+
+  const visible=filter==="all"?classes:classes.filter(c=>c.category===filter);
+  return(<div className="page">
+    <div className="info-hero">
+      <div className="section-label">Classes</div>
+      <h1>Training That Actually<br/>Moves Your Career.</h1>
+      <p>A curated directory of serious, working-actor classes — in New York and online. Taught by active casting directors, working VO actors, and veteran studio teachers. SlateCue does not run the classes directly; we vet the teachers and help students enroll.</p>
+    </div>
     <div style={{display:"flex",flexWrap:"wrap",gap:8,justifyContent:"center",marginBottom:40}}>
       <button className="btn-s btn-sm" onClick={()=>setFilter("all")} style={filter==="all"?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>All Categories</button>
       {CLASS_CATEGORIES.map(cat=><button key={cat.id} className="btn-s btn-sm" onClick={()=>setFilter(cat.id)} style={filter===cat.id?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>{cat.name}</button>)}
     </div>
-    <div className="grid-2" style={{maxWidth:1000,margin:"0 auto"}}>{visible.map(cls=>{const catMeta=CLASS_CATEGORIES.find(cat=>cat.id===cls.cat);return(<div key={cls.id} className="card" style={{cursor:"pointer",padding:22}} onClick={()=>{setViewing(cls.id);window.scrollTo(0,0);}}><div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:8}}>{catMeta?.name||cls.cat}</div><h3 style={{fontSize:17,fontWeight:700,marginBottom:6}}>{cls.title}</h3><p style={{color:"var(--t2)",fontSize:13,lineHeight:1.55,marginBottom:14}}>{cls.desc}</p><div style={{display:"flex",gap:14,flexWrap:"wrap",fontSize:12,color:"var(--t2)",marginBottom:10}}><span><strong style={{color:"var(--t1)"}}>Teacher</strong> · {cls.teacher}</span><span><strong style={{color:"var(--t1)"}}>Format</strong> · {cls.format.split(" · ")[0]}</span></div><div style={{display:"flex",gap:14,flexWrap:"wrap",fontSize:12,color:"var(--t2)",marginBottom:12}}><span><strong style={{color:"var(--t1)"}}>Price</strong> · {cls.price}</span><span><strong style={{color:"var(--t1)"}}>Level</strong> · {cls.level}</span></div><div style={{fontSize:12,color:"var(--t3)",marginBottom:6}}>{cls.start}</div><span style={{color:"var(--acc)",fontSize:12,fontWeight:600}}>View details →</span></div>);})}</div>
+    <div className="grid-2" style={{maxWidth:1000,margin:"0 auto"}}>
+      {visible.map(cls=>{
+        const cm=catMeta(cls.category);
+        const clsSlots=slots[cls.id]||[];
+        const next=clsSlots.length>0?upcomingDates(clsSlots[0].day_of_week,1)[0]:null;
+        return(<div key={cls.id} className="card" style={{cursor:"pointer",padding:22}} onClick={()=>{setViewing(cls);window.scrollTo(0,0);}}>
+          {cls.image_url&&<img src={cls.image_url} alt={cls.title} style={{width:"100%",height:160,objectFit:"cover",borderRadius:8,marginBottom:14}}/>}
+          <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:8}}>{cm?.name||cls.category}</div>
+          <h3 style={{fontSize:17,fontWeight:700,marginBottom:6}}>{cls.title}</h3>
+          <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.55,marginBottom:14}}>{cls.short_description}</p>
+          <div style={{display:"flex",gap:14,flexWrap:"wrap",fontSize:12,color:"var(--t2)",marginBottom:10}}>
+            {cls.instructor_name&&<span><strong style={{color:"var(--t1)"}}>Teacher</strong> · {cls.instructor_name}</span>}
+            {cls.format&&<span><strong style={{color:"var(--t1)"}}>Format</strong> · {cls.format.split(" · ")[0]}</span>}
+          </div>
+          <div style={{display:"flex",gap:14,flexWrap:"wrap",fontSize:12,color:"var(--t2)",marginBottom:12}}>
+            {cls.price&&<span><strong style={{color:"var(--t1)"}}>Price</strong> · {cls.price}</span>}
+            {cls.level&&<span><strong style={{color:"var(--t1)"}}>Level</strong> · {cls.level}</span>}
+          </div>
+          {next&&clsSlots[0]&&<div style={{fontSize:12,color:"var(--t3)",marginBottom:6}}>Next: {next.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})} · {fmtTime(clsSlots[0].start_time)}</div>}
+          <span style={{color:"var(--acc)",fontSize:12,fontWeight:600}}>View details →</span>
+        </div>);
+      })}
+    </div>
     {visible.length===0&&<p style={{textAlign:"center",color:"var(--t3)",marginTop:40}}>No classes in this category yet — new cohorts are added each month.</p>}
     <div style={{maxWidth:680,margin:"60px auto 0",padding:28,background:"var(--s2)",borderRadius:14,border:"1px solid var(--bdr)",textAlign:"center"}}>
       <h3 style={{fontSize:20,fontWeight:800,marginBottom:8}}>Teach on SlateCue</h3>
       <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6,marginBottom:18}}>Working casting directors, coaches, and professional actors with five or more years of teaching experience can apply to list a class. We curate carefully.</p>
       <button className="btn-p" onClick={()=>onNavigate("contact")}>Apply to Teach →</button>
     </div>
-    <Footer onNavigate={onNavigate}/></div>);
+    <Footer onNavigate={onNavigate}/>
+  </div>);
+}
+
+// ═══════════════════════════════════════════
+// MODAL: BOOKING REQUEST (talent → class)
+// ═══════════════════════════════════════════
+function BookingRequestModal({target,myProfile,session,onClose,onSubmitted}){
+  const{cls,slot,date}=target;
+  const[form,setForm]=useState({short_bio:myProfile?.bio||"",note:""});
+  const[headshotFile,setHeadshotFile]=useState(null);
+  const[headshotPreview,setHeadshotPreview]=useState(myProfile?.headshot_url||null);
+  const[useExistingHs,setUseExistingHs]=useState(!!myProfile?.headshot_url);
+  const[resumeFile,setResumeFile]=useState(null);
+  const[busy,setBusy]=useState(false);
+  const[err,setErr]=useState("");
+  const[done,setDone]=useState(false);
+  const up=(k,v)=>setForm(f=>({...f,[k]:v}));
+  const dateStr=date.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+
+  const onHsChange=(e)=>{const f=e.target.files[0];if(!f)return;setHeadshotFile(f);setUseExistingHs(false);setHeadshotPreview(URL.createObjectURL(f));};
+
+  const uploadFile=async(file,bucket,path)=>{
+    const{data,error}=await window.sb.storage.from(bucket).upload(path,file,{upsert:true});
+    if(error)throw error;
+    const{data:{publicUrl}}=window.sb.storage.from(bucket).getPublicUrl(data.path);
+    return publicUrl;
+  };
+
+  const handleSubmit=async()=>{
+    if(!form.short_bio.trim()){setErr("Short bio is required.");return;}
+    if(!useExistingHs&&!headshotFile){setErr("Headshot is required.");return;}
+    setBusy(true);setErr("");
+    try{
+      const uid=session.user.id;
+      let headshot_url=useExistingHs?myProfile.headshot_url:null;
+      if(headshotFile){
+        const ext=headshotFile.name.split(".").pop();
+        headshot_url=await uploadFile(headshotFile,"booking-uploads",`${uid}/headshots/cls-${cls.id}-${Date.now()}.${ext}`);
+      }
+      let resume_url=null;
+      if(resumeFile){
+        const ext=resumeFile.name.split(".").pop();
+        resume_url=await uploadFile(resumeFile,"booking-uploads",`${uid}/resumes/cls-${cls.id}-${Date.now()}.${ext}`);
+      }
+      const{error}=await window.sb.from("class_booking_requests").insert({
+        class_id:cls.id,time_slot_id:slot?.id||null,user_id:uid,
+        selected_date:date.toISOString().split("T")[0],
+        selected_start_time:slot?.start_time||null,selected_end_time:slot?.end_time||null,
+        headshot_url,resume_url,short_bio:form.short_bio.trim(),
+        note:form.note.trim()||null,status:"pending_review"
+      });
+      if(error)throw error;
+      setDone(true);
+    }catch(e){setErr(e.message||"Booking request could not be submitted. Please try again.");}
+    finally{setBusy(false);}
+  };
+
+  return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}>
+    <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:560,maxHeight:"90vh",overflowY:"auto"}}>
+      {done?(<div style={{padding:24,textAlign:"center"}}>
+        <div className="check">✓</div>
+        <h3 style={{marginTop:8}}>Request Submitted</h3>
+        <p style={{color:"var(--t2)",fontSize:14,marginTop:8,marginBottom:20}}>Your booking request has been submitted for review. If approved, you'll receive a message in your inbox with payment details.</p>
+        <button className="btn-p" onClick={onSubmitted}>Done</button>
+      </div>):(<>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"start",marginBottom:16}}>
+          <h3 style={{fontWeight:800,fontSize:18}}>Request Booking</h3>
+          <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",fontSize:22,color:"var(--t3)",lineHeight:1}}>×</button>
+        </div>
+        <div style={{padding:14,background:"var(--s2)",borderRadius:8,marginBottom:20,fontSize:13,lineHeight:1.6}}>
+          <div style={{fontWeight:700,marginBottom:2}}>{cls.title}</div>
+          {cls.instructor_name&&<div style={{color:"var(--t2)"}}>Instructor: {cls.instructor_name}</div>}
+          <div style={{color:"var(--t2)"}}>{dateStr}{slot&&<> · {fmtTime(slot.start_time)}–{fmtTime(slot.end_time)}</>}</div>
+          {cls.location_name&&<div style={{color:"var(--t2)"}}>Location: {cls.location_name}</div>}
+          {cls.price&&<div style={{color:"var(--acc)",fontWeight:600}}>Price: {cls.price}</div>}
+        </div>
+        {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
+        <div className="form-group">
+          <label className="label">Headshot <span style={{color:"#c0392b"}}>*</span></label>
+          {headshotPreview&&<img src={headshotPreview} alt="preview" style={{width:72,height:72,borderRadius:"50%",objectFit:"cover",marginBottom:8,display:"block"}}/>}
+          {myProfile?.headshot_url&&<div style={{marginBottom:8,fontSize:13,display:"flex",gap:16,flexWrap:"wrap"}}>
+            <label style={{cursor:"pointer"}}><input type="radio" checked={useExistingHs} onChange={()=>{setUseExistingHs(true);setHeadshotFile(null);setHeadshotPreview(myProfile.headshot_url);}}/> Use my profile headshot</label>
+            <label style={{cursor:"pointer"}}><input type="radio" checked={!useExistingHs} onChange={()=>setUseExistingHs(false)}/> Upload a different one</label>
+          </div>}
+          {!useExistingHs&&<input type="file" accept="image/*" onChange={onHsChange} disabled={busy}/>}
+        </div>
+        <div className="form-group">
+          <label className="label">Short Bio <span style={{color:"#c0392b"}}>*</span></label>
+          <textarea className="textarea" rows={3} value={form.short_bio} onChange={e=>up("short_bio",e.target.value)} placeholder="2–3 sentences about yourself and your experience" disabled={busy}/>
+        </div>
+        <div className="form-group">
+          <label className="label">Resume <span style={{color:"var(--t3)",fontWeight:400,fontSize:12}}>(optional — PDF or Word)</span></label>
+          {myProfile?.resume_url&&<p style={{fontSize:12,color:"var(--t2)",marginBottom:4}}>You have a resume on file. Upload a new one to use it for this request instead.</p>}
+          <input type="file" accept=".pdf,.doc,.docx" onChange={e=>setResumeFile(e.target.files[0])} disabled={busy}/>
+        </div>
+        <div className="form-group">
+          <label className="label">Message to Instructor <span style={{color:"var(--t3)",fontWeight:400,fontSize:12}}>(optional)</span></label>
+          <textarea className="textarea" rows={3} value={form.note} onChange={e=>up("note",e.target.value)} placeholder="Anything specific you'd like the instructor to know" disabled={busy}/>
+        </div>
+        <div style={{display:"flex",gap:10,marginTop:4}}>
+          <button className="btn-p" onClick={handleSubmit} disabled={busy} style={{flex:1}}>{busy?"Submitting…":"Submit Booking Request"}</button>
+          <button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
+        </div>
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:12,lineHeight:1.5}}>No payment is taken now. If your request is approved, you will receive payment instructions in your SlateCue inbox.</p>
+      </>)}
+    </div>
+  </div>);
 }
 
 // ═══════════════════════════════════════════
@@ -7445,6 +7675,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       <AdminNavLink current={section} target="cd-verification" label="CD Verification" onClick={setSection}/>
       <AdminNavLink current={section} target="castings" label="Castings" onClick={setSection}/>
       <AdminNavLink current={section} target="applications" label="Applications" onClick={setSection}/>
+      <AdminNavLink current={section} target="classes" label="Classes" onClick={setSection}/>
       <AdminNavLink current={section} target="reports" label="Reports" onClick={setSection}/>
       <AdminNavLink current={section} target="errors" label="Error log" onClick={setSection}/>
       <AdminNavLink current={section} target="audit" label="Audit log" onClick={setSection}/>
@@ -7465,6 +7696,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="cd-verification"&&<AdminCDVerification/>}
       {section==="castings"&&<AdminCastings/>}
       {section==="applications"&&<AdminApplications/>}
+      {section==="classes"&&<AdminClasses/>}
       {section==="reports"&&<AdminReports/>}
       {section==="errors"&&<AdminErrors/>}
       {section==="audit"&&<AdminAudit/>}
@@ -8195,6 +8427,370 @@ function AdminSettings(){
   </>);
 }
 
+// ═══════════════════════════════════════════════════════════════
+// ADMIN: CLASSES MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+function AdminClasses(){
+  const[classes,setClasses]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const[msg,setMsg]=useState("");
+  const[editingClass,setEditingClass]=useState(null);
+  const[managingSlots,setManagingSlots]=useState(null);
+  const[viewingRequests,setViewingRequests]=useState(null);
+
+  const reload=useCallback(async()=>{
+    setLoading(true);
+    const{data,error}=await window.sb.from("classes").select("*").order("created_at");
+    if(error){setMsg("Load failed: "+error.message);setLoading(false);return;}
+    setClasses(data||[]);setLoading(false);
+  },[]);
+  useEffect(()=>{reload();},[reload]);
+
+  if(editingClass)return<AdminEditClass cls={editingClass} onClose={()=>{setEditingClass(null);reload();}}/>;
+  if(managingSlots)return<AdminManageTimeSlots cls={managingSlots} onClose={()=>setManagingSlots(null)}/>;
+  if(viewingRequests)return<AdminClassBookingRequests cls={viewingRequests} onClose={()=>setViewingRequests(null)}/>;
+
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Classes</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Manage the classes listed on the public Classes page. Changes are reflected immediately.</p>
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+    {loading?<SlateCueLoader size="inline" text="Loading classes…"/>:
+      <div>{classes.map(cls=>(
+        <div key={cls.id} className="card" style={{padding:18,marginBottom:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"start",gap:12,flexWrap:"wrap"}}>
+            <div style={{flex:1,minWidth:200}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:2}}>
+                <span style={{fontWeight:700,fontSize:15}}>{cls.title}</span>
+                {!cls.active&&<span style={{fontSize:10,background:"rgba(192,57,43,0.12)",color:"#c0392b",padding:"2px 7px",borderRadius:4,fontWeight:700,letterSpacing:0.5}}>INACTIVE</span>}
+              </div>
+              <div style={{color:"var(--t2)",fontSize:13}}>{cls.instructor_name}{cls.category&&<> · {cls.category}</>}{cls.level&&<> · {cls.level}</>}</div>
+              <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{cls.price}{cls.format&&<> · {cls.format.split(" · ")[0]}</>}</div>
+            </div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+              <button className="btn-s btn-sm" onClick={()=>setEditingClass(cls)}>Edit Class</button>
+              <button className="btn-s btn-sm" onClick={()=>setManagingSlots(cls)}>Time Slots</button>
+              <button className="btn-s btn-sm" onClick={()=>setViewingRequests(cls)}>Booking Requests</button>
+            </div>
+          </div>
+        </div>
+      ))}</div>
+    }
+  </>);
+}
+
+// ── Admin: Edit Class fields ─────────────────────────────────────
+function AdminEditClass({cls,onClose}){
+  const[f,setF]=useState({
+    title:cls.title||"",short_description:cls.short_description||"",
+    full_description:cls.full_description||"",instructor_name:cls.instructor_name||"",
+    instructor_bio:cls.instructor_bio||"",instructor_imdb:cls.instructor_imdb||"",
+    instructor_photo_url:cls.instructor_photo_url||"",category:cls.category||"",
+    level:cls.level||"",price:cls.price||"",format:cls.format||"",
+    location_name:cls.location_name||"",location_city_state:cls.location_city_state||"",
+    location_room:cls.location_room||"",online_note:cls.online_note||"",
+    image_url:cls.image_url||"",active:cls.active!==false
+  });
+  const[busy,setBusy]=useState(false);
+  const[msg,setMsg]=useState("");
+  const up=(k,v)=>setF(p=>({...p,[k]:v}));
+
+  const save=async()=>{
+    if(!f.title.trim()){setMsg("Title is required.");return;}
+    setBusy(true);setMsg("");
+    const{error}=await window.sb.from("classes").update({
+      title:f.title.trim(),short_description:f.short_description.trim()||null,
+      full_description:f.full_description.trim()||null,instructor_name:f.instructor_name.trim()||null,
+      instructor_bio:f.instructor_bio.trim()||null,instructor_imdb:f.instructor_imdb.trim()||null,
+      instructor_photo_url:f.instructor_photo_url.trim()||null,category:f.category.trim()||null,
+      level:f.level.trim()||null,price:f.price.trim()||null,format:f.format.trim()||null,
+      location_name:f.location_name.trim()||null,location_city_state:f.location_city_state.trim()||null,
+      location_room:f.location_room.trim()||null,online_note:f.online_note.trim()||null,
+      image_url:f.image_url.trim()||null,active:f.active
+    }).eq("id",cls.id);
+    setBusy(false);
+    if(error){setMsg("Save failed: "+error.message);return;}
+    setMsg("Saved successfully.");
+    setTimeout(()=>onClose(),900);
+  };
+
+  const inp=(label,key,type="text",placeholder="")=>(
+    <div className="form-group" key={key}>
+      <label className="label">{label}</label>
+      {type==="textarea"
+        ?<textarea className="textarea" rows={3} value={f[key]} onChange={e=>up(key,e.target.value)} placeholder={placeholder} disabled={busy}/>
+        :<input className="input" type={type} value={f[key]} onChange={e=>up(key,e.target.value)} placeholder={placeholder} disabled={busy}/>}
+    </div>
+  );
+
+  return(<>
+    <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
+      <button className="btn-s btn-sm" onClick={onClose}>← Back to Classes</button>
+      <h1 style={{fontWeight:800,fontSize:22,margin:0}}>Edit: {cls.title}</h1>
+    </div>
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,color:msg.startsWith("Save failed")||msg==="Title is required."?"#c0392b":"var(--t1)"}}>{msg}</div>}
+    <div className="card" style={{padding:24,marginBottom:16}}>
+      <h3 style={{fontWeight:700,fontSize:15,marginBottom:14}}>Class Info</h3>
+      {inp("Class Title","title","text","e.g. On-Camera Film Acting")}
+      {inp("Short Description (shown on card)","short_description","textarea","1–2 sentence summary shown in the class listing")}
+      {inp("Full Description (shown on detail page)","full_description","textarea","Full description of the class — what students will learn, class structure, etc.")}
+      <div className="form-row">
+        {inp("Category","category","text","e.g. on-camera, meisner, commercial")}
+        {inp("Level","level","text","e.g. Beginner, Intermediate, All levels")}
+      </div>
+      <div className="form-row">
+        {inp("Price","price","text","e.g. $540 or $220 / month")}
+        {inp("Format","format","text","e.g. In-person · 12 weeks · 3 hrs/week")}
+      </div>
+      {inp("Class Image URL","image_url","text","https://...")}
+      <div className="form-group" style={{display:"flex",alignItems:"center",gap:10}}>
+        <input type="checkbox" id="cls-active" checked={!!f.active} onChange={e=>up("active",e.target.checked)}/>
+        <label htmlFor="cls-active" style={{fontSize:14,fontWeight:600,cursor:"pointer"}}>Active (visible on public Classes page)</label>
+      </div>
+    </div>
+    <div className="card" style={{padding:24,marginBottom:16}}>
+      <h3 style={{fontWeight:700,fontSize:15,marginBottom:14}}>Instructor</h3>
+      {inp("Instructor Name","instructor_name","text","Full name")}
+      {inp("Instructor Bio","instructor_bio","textarea","Short bio shown on class detail page")}
+      {inp("Instructor Photo URL","instructor_photo_url","text","https://... (optional)")}
+      {inp("Instructor IMDb Link","instructor_imdb","text","https://www.imdb.com/name/... (optional)")}
+    </div>
+    <div className="card" style={{padding:24,marginBottom:20}}>
+      <h3 style={{fontWeight:700,fontSize:15,marginBottom:14}}>Location</h3>
+      {inp("Location Name","location_name","text","e.g. New York, NY — Midtown or Remote")}
+      {inp("City / State","location_city_state","text","e.g. New York, NY")}
+      {inp("Room / Studio Details","location_room","text","e.g. Studio B, 3rd floor (optional)")}
+      {inp("Online Meeting Note","online_note","text","e.g. Zoom link sent upon enrollment (for online/hybrid classes)")}
+    </div>
+    <div style={{display:"flex",gap:10}}>
+      <button className="btn-p" onClick={save} disabled={busy}>{busy?"Saving…":"Save Changes"}</button>
+      <button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
+    </div>
+  </>);
+}
+
+// ── Admin: Manage Time Slots ─────────────────────────────────────
+const DAY_NAMES_FULL=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+function AdminManageTimeSlots({cls,onClose}){
+  const[slots,setSlots]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const[msg,setMsg]=useState("");
+  const[busy,setBusy]=useState(false);
+  const[newSlot,setNewSlot]=useState({day_of_week:"1",start_time:"18:00",end_time:"20:00",capacity:"",note:"",timezone:"America/New_York"});
+  const upNew=(k,v)=>setNewSlot(p=>({...p,[k]:v}));
+
+  const reload=useCallback(async()=>{
+    setLoading(true);
+    const{data,error}=await window.sb.from("class_time_slots").select("*").eq("class_id",cls.id).order("day_of_week");
+    if(error){setMsg("Load failed: "+error.message);setLoading(false);return;}
+    setSlots(data||[]);setLoading(false);
+  },[cls.id]);
+  useEffect(()=>{reload();},[reload]);
+
+  const addSlot=async()=>{
+    if(!newSlot.start_time||!newSlot.end_time){setMsg("Start and end time are required.");return;}
+    setBusy(true);setMsg("");
+    const{error}=await window.sb.from("class_time_slots").insert({
+      class_id:cls.id,day_of_week:parseInt(newSlot.day_of_week),
+      start_time:newSlot.start_time,end_time:newSlot.end_time,
+      timezone:newSlot.timezone||"America/New_York",
+      capacity:newSlot.capacity?parseInt(newSlot.capacity):null,
+      note:newSlot.note.trim()||null,active:true
+    });
+    setBusy(false);
+    if(error){setMsg("Add failed: "+error.message);return;}
+    setMsg("Time slot added.");setNewSlot({day_of_week:"1",start_time:"18:00",end_time:"20:00",capacity:"",note:"",timezone:"America/New_York"});
+    reload();
+  };
+
+  const toggleActive=async(slot)=>{
+    const{error}=await window.sb.from("class_time_slots").update({active:!slot.active}).eq("id",slot.id);
+    if(error){setMsg("Update failed: "+error.message);return;}
+    reload();
+  };
+
+  const deleteSlot=async(slot)=>{
+    if(!confirm(`Delete this ${DAY_NAMES_FULL[slot.day_of_week]} ${fmtTime(slot.start_time)} slot?`))return;
+    const{error}=await window.sb.from("class_time_slots").delete().eq("id",slot.id);
+    if(error){setMsg("Delete failed: "+error.message);return;}
+    setMsg("Slot deleted.");reload();
+  };
+
+  return(<>
+    <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
+      <button className="btn-s btn-sm" onClick={onClose}>← Back to Classes</button>
+      <h1 style={{fontWeight:800,fontSize:22,margin:0}}>Time Slots: {cls.title}</h1>
+    </div>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Each slot repeats weekly on the same day and time. The public Classes page shows upcoming sessions for the next 4 weeks.</p>
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+
+    <div className="card" style={{padding:20,marginBottom:20}}>
+      <h3 style={{fontWeight:700,fontSize:15,marginBottom:14}}>Add New Recurring Time Slot</h3>
+      <p style={{fontSize:12,color:"var(--t3)",marginBottom:14}}>Changing a recurring slot only affects future sessions. Approved bookings are not automatically cancelled — contact booked talent separately if needed.</p>
+      <div className="form-row">
+        <div className="form-group">
+          <label className="label">Day of Week</label>
+          <select className="select" value={newSlot.day_of_week} onChange={e=>upNew("day_of_week",e.target.value)} disabled={busy} style={{width:"100%"}}>
+            {DAY_NAMES_FULL.map((d,i)=><option key={i} value={i}>{d}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="label">Start Time</label>
+          <input className="input" type="time" value={newSlot.start_time} onChange={e=>upNew("start_time",e.target.value)} disabled={busy}/>
+        </div>
+        <div className="form-group">
+          <label className="label">End Time</label>
+          <input className="input" type="time" value={newSlot.end_time} onChange={e=>upNew("end_time",e.target.value)} disabled={busy}/>
+        </div>
+      </div>
+      <div className="form-row">
+        <div className="form-group">
+          <label className="label">Timezone</label>
+          <select className="select" value={newSlot.timezone} onChange={e=>upNew("timezone",e.target.value)} disabled={busy} style={{width:"100%"}}>
+            <option value="America/New_York">Eastern (ET)</option>
+            <option value="America/Chicago">Central (CT)</option>
+            <option value="America/Denver">Mountain (MT)</option>
+            <option value="America/Los_Angeles">Pacific (PT)</option>
+            <option value="UTC">UTC</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="label">Capacity (optional)</label>
+          <input className="input" type="number" min="1" value={newSlot.capacity} onChange={e=>upNew("capacity",e.target.value)} placeholder="e.g. 12" disabled={busy}/>
+        </div>
+      </div>
+      <div className="form-group">
+        <label className="label">Note (optional)</label>
+        <input className="input" value={newSlot.note} onChange={e=>upNew("note",e.target.value)} placeholder="e.g. Bring your own sides" disabled={busy}/>
+      </div>
+      <button className="btn-p" onClick={addSlot} disabled={busy}>{busy?"Adding…":"Add Time Slot"}</button>
+    </div>
+
+    <h3 style={{fontWeight:700,fontSize:15,marginBottom:12}}>Existing Time Slots</h3>
+    {loading?<SlateCueLoader size="inline" text="Loading slots…"/>:slots.length===0?
+      <p style={{color:"var(--t3)",fontSize:13}}>No time slots yet. Add one above.</p>:
+      <div>{slots.map(slot=>{
+        const upcoming=upcomingDates(slot.day_of_week,2);
+        return(<div key={slot.id} className="card" style={{padding:16,marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"start",gap:12,flexWrap:"wrap"}}>
+          <div>
+            <div style={{fontWeight:700,fontSize:14}}>{DAY_NAMES_FULL[slot.day_of_week]} · {fmtTime(slot.start_time)}–{fmtTime(slot.end_time)} <span style={{color:"var(--t3)",fontWeight:400,fontSize:12}}>({slot.timezone})</span></div>
+            {slot.capacity&&<div style={{fontSize:12,color:"var(--t2)"}}>Capacity: {slot.capacity}</div>}
+            {slot.note&&<div style={{fontSize:12,color:"var(--t2)"}}>Note: {slot.note}</div>}
+            <div style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Next: {upcoming.map(d=>d.toLocaleDateString("en-US",{month:"short",day:"numeric"})).join(", ")}</div>
+            {!slot.active&&<span style={{fontSize:10,background:"rgba(192,57,43,0.12)",color:"#c0392b",padding:"2px 7px",borderRadius:4,fontWeight:700}}>INACTIVE</span>}
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button className="btn-s btn-sm" onClick={()=>toggleActive(slot)}>{slot.active?"Deactivate":"Activate"}</button>
+            <button className="btn-s btn-sm" style={{color:"#c0392b",borderColor:"#c0392b"}} onClick={()=>deleteSlot(slot)}>Delete</button>
+          </div>
+        </div>);
+      })}</div>
+    }
+  </>);
+}
+
+// ── Admin: Class Booking Requests ────────────────────────────────
+const BOOKING_STATUS_LABELS={pending_review:"Pending Review",approved:"Approved",rejected:"Rejected",payment_pending:"Payment Pending",paid:"Paid",cancelled:"Cancelled"};
+function AdminClassBookingRequests({cls,onClose}){
+  const[requests,setRequests]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const[msg,setMsg]=useState("");
+  const[busy,setBusy]=useState(null);
+  const[expanded,setExpanded]=useState(null);
+  const[statusFilter,setStatusFilter]=useState("all");
+
+  const reload=useCallback(async()=>{
+    setLoading(true);
+    const{data,error}=await window.sb.from("class_booking_requests")
+      .select("*,user:user_id(display_name,email,headshot_url,resume_url)")
+      .eq("class_id",cls.id).order("created_at",{ascending:false});
+    if(error){setMsg("Load failed: "+error.message);setLoading(false);return;}
+    setRequests(data||[]);setLoading(false);
+  },[cls.id]);
+  useEffect(()=>{reload();},[reload]);
+
+  const setStatus=async(req,newStatus,notify=false)=>{
+    setBusy(req.id);setMsg("");
+    const upd={status:newStatus};
+    if(newStatus==="approved"){upd.approved_at=new Date().toISOString();}
+    if(newStatus==="rejected"){upd.rejected_at=new Date().toISOString();}
+    const{error}=await window.sb.from("class_booking_requests").update(upd).eq("id",req.id);
+    if(error){setMsg("Update failed: "+error.message);setBusy(null);return;}
+    if(notify){
+      const body=newStatus==="approved"
+        ?`Your class booking request has been approved.\n\nClass: ${cls.title}\nInstructor: ${cls.instructor_name||"—"}\nSession: ${req.selected_date||"—"}${req.selected_start_time?" at "+fmtTime(req.selected_start_time):""}\nLocation: ${cls.location_name||"—"}\nPrice: ${cls.price||"—"}\n\nOnline payment is not connected yet. Admin will contact you with payment instructions.\n\nPlease review the details above and complete payment to confirm your spot.`
+        :`Your class booking request for ${cls.title} has been reviewed.\n\nStatus: ${BOOKING_STATUS_LABELS[newStatus]||newStatus}\n\nIf you have questions, please reply to this message.`;
+      const adminId=(await window.sb.auth.getUser()).data?.user?.id;
+      if(adminId&&req.user_id){
+        await window.sb.from("messages").insert({from_id:adminId,to_id:req.user_id,body});
+      }
+    }
+    setMsg("Status updated"+(notify?" and message sent":"")+".");
+    setBusy(null);reload();
+  };
+
+  const filtered=statusFilter==="all"?requests:requests.filter(r=>r.status===statusFilter);
+  const statusColor={pending_review:"var(--acc)",approved:"var(--grn)",rejected:"#c0392b",payment_pending:"#e67e22",paid:"var(--grn)",cancelled:"var(--t3)"};
+
+  return(<>
+    <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
+      <button className="btn-s btn-sm" onClick={onClose}>← Back to Classes</button>
+      <h1 style={{fontWeight:800,fontSize:22,margin:0}}>Booking Requests: {cls.title}</h1>
+    </div>
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+    <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
+      {["all","pending_review","approved","rejected","payment_pending","paid","cancelled"].map(s=>(
+        <button key={s} className="btn-s btn-sm" onClick={()=>setStatusFilter(s)} style={statusFilter===s?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>{s==="all"?"All":BOOKING_STATUS_LABELS[s]||s}</button>
+      ))}
+    </div>
+    {loading?<SlateCueLoader size="inline" text="Loading requests…"/>:filtered.length===0?
+      <p style={{color:"var(--t3)",fontSize:13}}>No booking requests{statusFilter!=="all"?` with status "${statusFilter}"`:""}.</p>:
+      <div>{filtered.map(req=>(
+        <div key={req.id} className="card" style={{padding:18,marginBottom:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"start",gap:12,flexWrap:"wrap"}}>
+            <div style={{flex:1,minWidth:200}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+                {req.headshot_url&&<img src={req.headshot_url} alt="headshot" style={{width:44,height:44,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>}
+                <div>
+                  <div style={{fontWeight:700,fontSize:14}}>{req.user?.display_name||req.user?.email||"Unknown"}</div>
+                  <div style={{fontSize:12,color:"var(--t2)"}}>{req.user?.email}</div>
+                </div>
+              </div>
+              <div style={{fontSize:12,color:"var(--t2)",marginBottom:4}}>
+                {req.selected_date&&<span>Date: {req.selected_date}</span>}
+                {req.selected_start_time&&<span> · {fmtTime(req.selected_start_time)}–{fmtTime(req.selected_end_time)}</span>}
+              </div>
+              <div style={{display:"inline-block",fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:4,background:`${statusColor[req.status]||"var(--t3)"}22`,color:statusColor[req.status]||"var(--t3)"}}>{BOOKING_STATUS_LABELS[req.status]||req.status}</div>
+              <div style={{fontSize:11,color:"var(--t3)",marginTop:4}}>{new Date(req.created_at).toLocaleString()}</div>
+            </div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+              <button className="btn-s btn-sm" onClick={()=>setExpanded(expanded===req.id?null:req.id)}>{expanded===req.id?"Hide Details":"View Details"}</button>
+              {req.status==="pending_review"&&<>
+                <button className="btn-p btn-sm" disabled={busy===req.id} onClick={()=>setStatus(req,"approved",true)}>{busy===req.id?"…":"Approve & Notify"}</button>
+                <button className="btn-s btn-sm" style={{color:"#c0392b",borderColor:"#c0392b"}} disabled={busy===req.id} onClick={()=>setStatus(req,"rejected",true)}>{busy===req.id?"…":"Reject & Notify"}</button>
+              </>}
+              {req.status==="approved"&&<button className="btn-s btn-sm" disabled={busy===req.id} onClick={()=>setStatus(req,"paid",false)}>Mark Paid</button>}
+              <select className="select" style={{fontSize:12,padding:"5px 8px",height:"auto"}} value={req.status} onChange={e=>setStatus(req,e.target.value,false)} disabled={busy===req.id}>
+                {Object.entries(BOOKING_STATUS_LABELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}
+              </select>
+            </div>
+          </div>
+          {expanded===req.id&&<div style={{marginTop:16,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
+            {req.short_bio&&<div style={{marginBottom:12}}><div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,color:"var(--t3)",marginBottom:4}}>Bio</div><p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}>{req.short_bio}</p></div>}
+            {req.note&&<div style={{marginBottom:12}}><div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,color:"var(--t3)",marginBottom:4}}>Message to Instructor</div><p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}>{req.note}</p></div>}
+            <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+              {req.headshot_url&&<a href={req.headshot_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm">View Headshot</a>}
+              {req.resume_url&&<a href={req.resume_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm">View Resume</a>}
+              {!req.headshot_url&&!req.resume_url&&<span style={{fontSize:12,color:"var(--t3)"}}>No files uploaded.</span>}
+            </div>
+            {req.admin_notes&&<div style={{marginTop:12,padding:10,background:"var(--s2)",borderRadius:8,fontSize:12,color:"var(--t2)"}}>Admin notes: {req.admin_notes}</div>}
+          </div>}
+        </div>
+      ))}</div>
+    }
+    {/* TODO: instructor account review access — currently admin-only */}
+  </>);
+}
+
 // ─── Admin edit-casting modal (fixes spelling, tweaks fields, edits roles)
 function EditCastingModal({casting,onClose,onSaved}){
   const [err,setErr]=useState("");
@@ -8860,7 +9456,7 @@ export default function App(){
         {page==="reset-password"&&<ResetPasswordPage onNavigate={navigate} session={session}/>}
         {page==="about"&&<AboutPage onNavigate={navigate}/>}
         {page==="blog"&&<BlogPage onNavigate={navigate}/>}
-        {page==="classes"&&<ClassesPage onNavigate={navigate}/>}
+        {page==="classes"&&<ClassesPage onNavigate={navigate} session={session} myProfile={myProfile} isLoggedIn={isLoggedIn}/>}
         {page==="contact"&&<ContactPage onNavigate={navigate}/>}
         {page==="resources"&&<ResourcesPage onNavigate={navigate}/>}
         {page==="faq"&&<FaqPage onNavigate={navigate}/>}
