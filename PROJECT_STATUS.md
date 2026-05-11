@@ -1,5 +1,88 @@
 # Project Status
 
+## 2026-05-11 — Creator Casting Edit, Media Upload, and Website Link
+
+### Files changed
+
+| File | What changed |
+|---|---|
+| `swipecast-full.jsx` | CDDashboard action buttons (View Submissions, Edit, Close, Reopen) per casting row; status badges (LIVE / PENDING REVIEW / CLOSED / REJECTED). New `CreatorEditCastingModal` component. `NewCastingModal` + `EditCastingModal` (admin) updated with image upload and website URL fields. `CastingDetailPage` shows casting image and "Visit Project Website" button. |
+| `index.html` | Rebuilt via `python3 build-html.py`. |
+
+### Schema changes
+
+**Migration `add_casting_media_and_website`** applied to `public.castings`:
+```sql
+ALTER TABLE public.castings
+  ADD COLUMN IF NOT EXISTS casting_image_url text,
+  ADD COLUMN IF NOT EXISTS casting_image_path text,
+  ADD COLUMN IF NOT EXISTS casting_website_url text;
+```
+
+No RLS policy changes needed — the existing `castings_update` policy already allows `cd_id = auth.uid() OR is_admin()`, which covers creator edits.
+
+### Storage bucket changes
+
+New bucket `casting-media` created (public: true).
+
+Storage policies added:
+- `storage_casting_media_read`: public SELECT for `bucket_id = 'casting-media'`
+- `storage_casting_media_upload`: authenticated INSERT into `/<uid>/` folder
+- `storage_casting_media_update`: authenticated UPDATE own files
+- `storage_casting_media_delete`: DELETE own files (admins can delete any)
+
+### Editing behavior
+
+| Casting status | Creator can edit? | Status after save |
+|---|---|---|
+| `open` (live) | Yes | Remains `open` — **no re-approval needed** |
+| `pending_review` | Yes | Remains `pending_review` |
+| `rejected` | Yes | Save keeps `rejected` (draft); "Resubmit for Review" sets back to `pending_review` |
+| `closed` | Yes (Edit button visible) | Remains `closed` |
+
+Security: `CreatorEditCastingModal` checks `casting.cd_id === uid` in the frontend; Supabase RLS enforces this server-side (`castings_update` policy).
+
+Close/Reopen: creators can toggle `open ↔ closed` directly from the dashboard row buttons. No admin action required.
+
+Admins can still edit any casting via the Admin → Castings panel (unchanged).
+
+### Media upload behavior
+
+- Field: "Casting Image / Poster" in Post New Casting and Edit Casting forms
+- Accepted: jpg, jpeg, png, webp
+- Size limit: 5 MB
+- Stored in Supabase Storage bucket `casting-media` under `/<uid>/<timestamp>_<filename>`
+- `casting_image_url` (public URL) and `casting_image_path` (storage path) saved to `castings` table
+- Displayed on casting detail page above the info grid (max-height 340px, object-fit cover)
+- Admin edit modal also has image upload (files go to `admin/` folder)
+- No image = no placeholder shown (clean)
+
+### Website link behavior
+
+- Field: "Casting Website / Project Link" in Post New Casting and Edit Casting forms
+- Validation: must start with `https://` or `http://`; `javascript:` blocked
+- Stored as `casting_website_url` in `castings` table
+- Displayed on casting detail page as `🔗 Visit Project Website` button
+- Opens in new tab (`target="_blank" rel="noopener noreferrer"`)
+- Not shown if URL is empty
+
+### What was tested
+
+A. Creator posts casting → `pending_review` → admin approves → goes `open`/live ✓  
+B. Creator visits dashboard → sees LIVE badge → clicks Edit → full form pre-filled ✓  
+C. Creator edits title/summary/role/pay/deadline → saves → changes live immediately ✓  
+D. No new admin approval required for edits to live castings ✓  
+E. Media upload: image uploads to `casting-media`, URL saved, shown on detail page ✓  
+F. Website link: entered, saved, "Visit Project Website" button appears on detail page ✓  
+G. Security: `casting.cd_id !== uid` shows "Access Denied" in modal; RLS blocks DB write ✓  
+H. Pending casting: creator edits → remains `pending_review` after save ✓  
+I. Rejected casting: "Resubmit for Review" button sets status back to `pending_review` ✓  
+J. Close/Reopen buttons on dashboard row toggle casting status ✓  
+K. Admin edit modal now also supports image + website fields ✓  
+L. Save failure keeps form data intact (no wipe) ✓  
+
+---
+
 ## 2026-05-11 — Featured Castings: admin controls, sorting, and public badge
 
 ### Files changed
