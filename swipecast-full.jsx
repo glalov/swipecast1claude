@@ -978,12 +978,24 @@ function LoggedInRedirect({targetForTalent,targetForCd,myProfile,onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE LOADER — shown while auth state resolves for guarded pages
 // ═══════════════════════════════════════════
-function PageLoader(){
+// Branded loader — shows the SlateCue logo + subtle spinner.
+// size="page"   → 70vh min-height, large logo, used for full-page / route loads.
+// size="inline" → compact padding, smaller logo, used inside cards, tabs, modals.
+function SlateCueLoader({text="Loading...",size="page"}){
+  const pg=size==="page";
   return(
-    <div style={{display:"flex",alignItems:"center",justifyContent:"center",flex:"1 1 auto",minHeight:"calc(100vh - 80px)"}}>
-      <div style={{width:32,height:32,borderRadius:"50%",border:"3px solid var(--bdr)",borderTopColor:"var(--acc)",animation:"scSpin 0.8s linear infinite"}}></div>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:"1 1 auto",minHeight:pg?"70vh":"auto",padding:pg?"60px 24px":"28px 24px",gap:pg?18:12}}>
+      <div className="logo" style={{fontSize:pg?22:17,gap:pg?10:7,cursor:"default",userSelect:"none"}}>
+        <div className="logo-i" style={{width:pg?36:26,height:pg?36:26,fontSize:pg?20:13}}>↔</div>
+        SlateCue
+      </div>
+      <div style={{width:pg?26:18,height:pg?26:18,borderRadius:"50%",border:pg?"3px solid var(--bdr)":"2px solid var(--bdr)",borderTopColor:"var(--acc)",animation:"scSpin 0.8s linear infinite"}}></div>
+      {text&&<p style={{color:"var(--t3)",fontSize:pg?13:12,margin:0,fontWeight:500,letterSpacing:"0.2px"}}>{text}</p>}
     </div>
   );
+}
+function PageLoader({text}){
+  return <SlateCueLoader size="page" text={text||"Loading..."}/>;
 }
 
 // ═══════════════════════════════════════════
@@ -3059,10 +3071,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       {/* Full-height loading placeholder — only during initial load (no cached data).
           Keeps the footer pinned to the bottom so it never flashes upward. */}
       {loading&&dbCastings.length===0
-        ?<div style={{flex:"1 1 auto",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"calc(100vh - 260px)",gap:14}}>
-            <div style={{width:32,height:32,borderRadius:"50%",border:"3px solid var(--bdr)",borderTopColor:"var(--acc)",animation:"scSpin 0.8s linear infinite"}}></div>
-            <p style={{color:"var(--t2)",fontSize:14,margin:0}}>Loading castings…</p>
-          </div>
+        ?<div style={{flex:"1 1 auto",display:"flex",flexDirection:"column",minHeight:"calc(100vh - 260px)"}}><SlateCueLoader text="Loading castings…"/></div>
         /* Full-height error state — only when fetch failed with no cached data to fall back to */
         :!loading&&fetchErr&&dbCastings.length===0
         ?<div style={{flex:"1 1 auto",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"calc(100vh - 260px)",gap:16,textAlign:"center",padding:"0 24px"}}>
@@ -3320,7 +3329,7 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
             </div>
             <div style={{padding:24}}>
               {appsLoading?(
-                <div style={{color:"var(--t3)",fontSize:13,textAlign:"center",padding:"40px 0"}}>Loading applications…</div>
+                <SlateCueLoader size="inline" text="Loading applications…"/>
               ):appsErr?(
                 <div style={{color:"var(--red)",fontSize:13,padding:"8px 0"}}>{appsErr}</div>
               ):filteredApps.length===0?(
@@ -3377,7 +3386,7 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
             </div>
             <div style={{padding:24}}>
               {msgsLoading?(
-                <div style={{color:"var(--t3)",fontSize:13,textAlign:"center",padding:"28px 0"}}>Loading messages…</div>
+                <SlateCueLoader size="inline" text="Loading messages…"/>
               ):threads.length===0?(
                 <div style={{textAlign:"center",padding:"28px 0"}}>
                   <div style={{fontSize:32,marginBottom:8}}>✉️</div>
@@ -3420,7 +3429,7 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
             </div>
             <div style={{padding:24}}>
               {recsLoading?(
-                <div style={{color:"var(--t3)",fontSize:13,textAlign:"center",padding:"28px 0"}}>Loading recommendations…</div>
+                <SlateCueLoader size="inline" text="Loading recommendations…"/>
               ):recommended.length===0?(
                 <div style={{textAlign:"center",padding:"28px 0"}}>
                   <p style={{color:"var(--t2)",fontSize:14,margin:"0 0 14px"}}>No open castings right now.</p>
@@ -3990,7 +3999,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   };
 
   if(!uid)return(<div className="page page-wide"><p>Not logged in.</p></div>);
-  if(loading)return(<div className="page page-wide"><p style={{color:"var(--t2)"}}>Loading your dashboard…</p></div>);
+  if(loading)return(<div className="page page-wide" style={{justifyContent:"center"}}><SlateCueLoader text="Loading your dashboard…"/></div>);
 
   return(<div className="page page-wide">
     <div className="flex-between mb-20">
@@ -4112,7 +4121,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       </div>}
       {tab==="castings"?
         myCastings.length===0?<div className="card" style={{textAlign:"center",padding:48}}>
-          <p style={{color:"var(--t3)",marginBottom:16}}>{loading?"Loading your castings…":"You haven't posted any castings yet."}</p>
+          <p style={{color:"var(--t3)",marginBottom:16}}>{loading?<span style={{display:"inline-flex",alignItems:"center",gap:8}}><span style={{width:14,height:14,borderRadius:"50%",border:"2px solid var(--bdr)",borderTopColor:"var(--acc)",animation:"scSpin 0.8s linear infinite",display:"inline-block"}}></span>Loading your castings…</span>:"You haven't posted any castings yet."}</p>
           {!loading&&<button className="btn-p" onClick={()=>setShowNew(true)}>+ Post Your First Casting</button>}
         </div>:
         <div className="card-flat">{myCastings.map(c=>
@@ -4178,7 +4187,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
               <button className="btn-p btn-sm" onClick={createList} disabled={!newListName.trim()}>Create</button>
               <button className="btn-s btn-sm" onClick={()=>{setShowNewListInline(false);setNewListName("");}}>Cancel</button>
             </div>}
-            {savedListsLoading?<p style={{color:"var(--t3)"}}>Loading your lists…</p>:savedLists.length===0?<div className="card" style={{padding:48,textAlign:"center"}}>
+            {savedListsLoading?<SlateCueLoader size="inline" text="Loading your lists…"/>:savedLists.length===0?<div className="card" style={{padding:48,textAlign:"center"}}>
               <p style={{color:"var(--t3)",marginBottom:16}}>No saved lists yet.</p>
               <p style={{color:"var(--t3)",fontSize:13}}>Open any talent profile and click <strong>★ Save to List</strong> to start organizing.</p>
             </div>:<div className="card-flat">{savedLists.map(l=>
@@ -4342,7 +4351,7 @@ function SaveToListModal({cdId,talentId,talentName,onClose}){
     <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:18}}>Add this talent to one of your saved lists, or create a new one. Tap a list to add or remove.</p>
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{err}</div>}
     {done&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.35)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>✓ Saved</div>}
-    {loading?<p style={{color:"var(--t3)"}}>Loading your lists…</p>:<>
+    {loading?<SlateCueLoader size="inline" text="Loading your lists…"/>:<>
       {lists.length===0&&!showCreate&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:14}}>You don't have any lists yet. Create your first one below.</p>}
       {lists.length>0&&<div style={{maxHeight:280,overflowY:"auto",border:"1px solid var(--bdr)",borderRadius:10,marginBottom:12}}>
         {lists.map(l=>{const inList=members.has(l.id);return(
@@ -4412,7 +4421,7 @@ function InviteToProjectModal({cdId,talentId,talentName,onClose}){
       <h2>Invite {talentName}</h2>
       <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:18}}>Pick a casting and (optionally) a role. The talent gets a project invite they can accept or decline from their inbox.</p>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{err}</div>}
-      {loading?<p style={{color:"var(--t3)"}}>Loading your castings…</p>:castings.length===0?<>
+      {loading?<SlateCueLoader size="inline" text="Loading your castings…"/>:castings.length===0?<>
         <div className="card" style={{padding:18,textAlign:"center",background:"var(--s2)"}}>
           <p style={{color:"var(--t3)",fontSize:13}}>You don't have any open castings yet. Post a casting first, then come back to invite this talent.</p>
         </div>
@@ -4688,7 +4697,7 @@ function MessageThreadModal({message,sessionUid,onClose,onRead,onDeleted,onRepli
 
       {/* Chronological timeline — oldest top, newest bottom. Day separators on date change. */}
       <div ref={scrollRef} style={{flex:1,overflowY:"auto",padding:"18px 22px",background:"var(--s1)",minHeight:240}}>
-        {thread.length===0?<p style={{color:"var(--t3)",fontSize:13,textAlign:"center",margin:"20px 0"}}>Loading conversation…</p>:
+        {thread.length===0?<SlateCueLoader size="inline" text="Loading conversation…"/>:
          (() => {
            // Group by day for friendly date separators
            let lastDay="";
@@ -4893,7 +4902,7 @@ function InboxPage({session,profile,onNavigate}){
       <button className="btn-s btn-sm" onClick={load}>Retry</button>
     </div>}
 
-    {loading&&threads.length===0?<div className="card" style={{padding:48,textAlign:"center"}}><p style={{color:"var(--t3)"}}>Loading messages…</p></div>:
+    {loading&&threads.length===0?<div className="card" style={{padding:0}}><SlateCueLoader size="inline" text="Loading messages…"/></div>:
      threads.length===0?<div className="card" style={{padding:48,textAlign:"center"}}>
        <h3 style={{fontSize:16,fontWeight:700,marginBottom:6}}>No messages yet</h3>
        <p style={{color:"var(--t3)",fontSize:14,maxWidth:420,margin:"0 auto"}}>{profile?.user_type==="talent"?"When a casting director messages you about a role or invite, it'll show up here.":"When talent applies to one of your castings or replies to your messages, conversations land here."}</p>
@@ -5508,8 +5517,8 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   if(loading&&castings.length===0){
     return(<section className="fcs-section">
       <div className="section-label">Featured Castings</div>
-      <div className="fcs-card" style={{textAlign:"center",cursor:"default"}}>
-        <p style={{color:"var(--t3)",fontSize:14,margin:0}}>Loading active casting calls…</p>
+      <div className="fcs-card" style={{cursor:"default",display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <SlateCueLoader size="inline" text="Loading active casting calls…"/>
       </div>
     </section>);
   }
@@ -6062,7 +6071,7 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     await window.sb.from("profiles").update({resume_url:null}).eq("id",session.user.id);
     onReload&&onReload();setMsg("Resume removed.");setTimeout(()=>setMsg(""),3000);
   };
-  if(!profile)return(<div className="page"><p style={{color:"var(--t2)"}}>Loading…</p><Footer onNavigate={onNavigate}/></div>);
+  if(!profile)return(<div className="page" style={{justifyContent:"center"}}><SlateCueLoader text="Loading profile…"/><Footer onNavigate={onNavigate}/></div>);
   const isCD=["cd","admin","super_admin"].includes(profile.user_type);
   const isPremium=profile.membership_status==="active";
   const planLimits=isPremium?PREMIUM_PLAN:FREE_PLAN;
@@ -6273,7 +6282,7 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
         <span>Couldn't load messages: {inboxErr}</span>
         <button className="btn-s btn-sm" onClick={fetchInbox}>Retry</button>
       </div>}
-      {inbox.length===0?<p style={{color:"var(--t3)",fontSize:14}}>{inboxLoading?"Loading…":"No messages yet."}</p>:
+      {inbox.length===0?<div>{inboxLoading?<SlateCueLoader size="inline" text="Loading messages…"/>:<p style={{color:"var(--t3)",fontSize:14}}>No messages yet.</p>}</div>:
       inbox.map(m=><div key={m.id} onClick={()=>setOpenMsg(m)} style={{padding:"14px 0",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:12,alignItems:"flex-start",cursor:"pointer",opacity:m.read_at?0.78:1,transition:"background 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--s2)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
         <img src={m.profiles?.headshot_url||"https://placehold.co/44x44/e5e5e5/999?text=?"} style={{width:44,height:44,objectFit:"cover",borderRadius:"50%"}}/>
         <div style={{minWidth:0}}>
@@ -6958,7 +6967,7 @@ function AdminOverview(){
     }catch(e){setErr(e.message||String(e));}
   })();},[]);
   if(err)return(<div style={{color:"#c0392b",fontSize:13}}>Error loading overview: {err}</div>);
-  if(!stats)return(<div style={{color:"var(--t3)"}}>Loading overview…</div>);
+  if(!stats)return(<SlateCueLoader size="inline" text="Loading overview…"/>);
   return(<>
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Overview</h1>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:24}}>Platform health at a glance.</p>
@@ -7060,7 +7069,7 @@ function AdminCDVerification(){
         <option value="rejected">Rejected</option>
       </select>
     </div>
-    {loading?<p style={{color:"var(--t3)"}}>Loading…</p>:
+    {loading?<SlateCueLoader size="inline" text="Loading…"/>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
         {filtered.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No accounts match.</div>}
         {filtered.map(u=>{
@@ -7188,7 +7197,7 @@ function AdminUsers({isSuperAdmin,session}){
         <option value="super_admin">Super admins</option>
       </select>
     </div>
-    {loading?<p style={{color:"var(--t3)"}}>Loading…</p>:
+    {loading?<SlateCueLoader size="inline" text="Loading…"/>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
         {filtered.map(u=><UserRow key={u.id} u={u} isSuperAdmin={isSuperAdmin} self={u.id===session?.user?.id} busy={busyId===u.id} onSetRole={setRole} onToggleVerified={toggleVerified} onToggleFeatured={toggleFeatured} onToggleSuspended={toggleSuspended} onToggleBanned={toggleBanned} onDelete={doDelete}/>)}
         {filtered.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No users match.</div>}
@@ -7301,7 +7310,7 @@ function AdminCastings(){
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{filtered.length} of {castings.length} listings</p>
     {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
     <input className="input" placeholder="Search title, production, location, CD…" value={q} onChange={e=>setQ(e.target.value)} style={{marginBottom:14}}/>
-    {loading?<p style={{color:"var(--t3)"}}>Loading…</p>:
+    {loading?<SlateCueLoader size="inline" text="Loading…"/>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
         {filtered.map(c=><div key={c.id} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"center",opacity:c.status==="closed"?0.55:1}}>
           <div>
@@ -7400,7 +7409,7 @@ function AdminApplications(){
         <option value="rejected">Rejected</option>
       </select>
     </div>
-    {loading?<p style={{color:"var(--t3)"}}>Loading…</p>:
+    {loading?<SlateCueLoader size="inline" text="Loading…"/>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
         {filtered.map(a=><div key={a.id} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"center"}}>
           <div>
@@ -7458,7 +7467,7 @@ function AdminReports(){
     <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
       {[["open","Open"],["reviewing","Reviewing"],["actioned","Actioned"],["dismissed","Dismissed"],["all","All"]].map(([k,l])=><button key={k} className="btn-s btn-sm" onClick={()=>setStatusFilter(k)} style={statusFilter===k?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>{l}</button>)}
     </div>
-    {loading?<p style={{color:"var(--t3)"}}>Loading…</p>:rows.length===0?<div className="card" style={{padding:32,textAlign:"center",color:"var(--t3)"}}>No reports.</div>:
+    {loading?<SlateCueLoader size="inline" text="Loading…"/>:rows.length===0?<div className="card" style={{padding:32,textAlign:"center",color:"var(--t3)"}}>No reports.</div>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
         {rows.map(r=>{
           const target=r.subject_casting?{kind:"casting",label:`Casting: ${r.subject_casting.title}`,detail:[r.subject_casting.prod,r.subject_casting.location].filter(Boolean).join(" · ")}:r.subject_profile?{kind:"profile",label:`Profile: ${r.subject_profile.display_name||r.subject_profile.company_name||r.subject_profile.email}`,detail:r.subject_profile.user_type||""}:{kind:"unknown",label:"Unknown target",detail:""};
@@ -7515,7 +7524,7 @@ function AdminErrors(){
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Error log</h1>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{rows.length} captured front-end errors (most recent first).</p>
     {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
-    {loading?<p style={{color:"var(--t3)"}}>Loading…</p>:rows.length===0?<div className="card" style={{padding:32,textAlign:"center",color:"var(--t3)"}}>No errors logged.</div>:
+    {loading?<SlateCueLoader size="inline" text="Loading…"/>:rows.length===0?<div className="card" style={{padding:32,textAlign:"center",color:"var(--t3)"}}>No errors logged.</div>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
         {rows.map(r=><div key={r.id} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)"}}>
           <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:4}}>
@@ -7553,7 +7562,7 @@ function AdminAudit(){
   return(<>
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Audit log</h1>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Every admin action is recorded here. Read-only.</p>
-    {loading?<p style={{color:"var(--t3)"}}>Loading…</p>:
+    {loading?<SlateCueLoader size="inline" text="Loading…"/>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
         {rows.map(r=><div key={r.id} style={{padding:"12px 16px",borderBottom:"1px solid var(--bdr)",fontSize:12,display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"start"}}>
           <div>
@@ -7603,7 +7612,7 @@ function AdminSettings(){
     else{setMsg("Saved.");setSettings(s=>({...s,...form}));}
     setBusy(false);
   };
-  if(loading)return(<div style={{color:"var(--t3)"}}>Loading…</div>);
+  if(loading)return(<SlateCueLoader size="inline" text="Loading settings…"/>);
   return(<>
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Site settings</h1>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Platform-wide toggles. All changes are audit-logged.</p>
