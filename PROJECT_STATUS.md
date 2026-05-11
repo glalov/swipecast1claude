@@ -1,5 +1,85 @@
 # Project Status
 
+---
+
+## 2026-05-11 — Admin-managed Classes system + Booking Requests
+
+### Schema changes
+
+Three new tables applied via Supabase migration `classes_system_2026_05_11`:
+
+| Table | Purpose |
+|---|---|
+| `classes` | Stores all class data: title, descriptions, instructor, location, category, level, price, format, image, active flag |
+| `class_time_slots` | Recurring weekly slots per class: `day_of_week` (0–6), `start_time`, `end_time`, timezone, capacity, note |
+| `class_booking_requests` | Talent booking requests: class, slot, date, headshot_url, resume_url, short_bio, note, status |
+
+All three tables have RLS:
+- `classes`: public read (active only); admin write
+- `class_time_slots`: public read (active only); admin write
+- `class_booking_requests`: talent can insert/view own; admin can view/update all
+
+10 static classes seeded into `classes` table via migration INSERT.
+
+### Storage buckets needed
+
+Create in Supabase Dashboard → Storage before using upload features:
+
+| Bucket | Access | Purpose |
+|---|---|---|
+| `class-media` | Public | Class images, instructor photos |
+| `booking-uploads` | Private (user folder) | Booking headshots and resumes |
+
+Storage RLS policies for both buckets applied in migration.
+
+### Files changed
+
+| File | What changed |
+|---|---|
+| `swipecast-full.jsx` | ClassesPage rewritten (DB-driven), BookingRequestModal added, AdminClasses + sub-components added, AdminPage sidebar + routing updated, App routing updated |
+| `index.html` | Rebuilt via `python3 build-html.py` |
+| `supabase-schema.sql` | Migration applied separately (not appended to avoid confusion) |
+
+### What is fully functional
+
+- **Public Classes page**: reads from `classes` table, filters by category, shows time slots with upcoming dates (next 4 weeks), error state with Retry
+- **Class detail**: full description, instructor bio/photo/IMDb, location info, upcoming recurring sessions per slot
+- **Request Booking button**: login gate for unauthenticated users; blocks non-talent user types
+- **Booking Request form**: headshot (use existing profile photo or upload new), short bio (pre-filled from profile), optional resume upload, optional message to instructor; submits `pending_review` to `class_booking_requests`
+- **Admin → Classes**: lists all classes with active/inactive status
+- **Admin → Edit Class**: all fields editable (title, descriptions, instructor name/bio/photo/IMDb, category, level, price, format, location, active toggle)
+- **Admin → Time Slots**: add recurring weekly slots (day, start/end time, timezone, capacity, note); toggle active/inactive; delete; shows next 2 upcoming dates per slot
+- **Admin → Booking Requests**: filter by status; expand to see headshot, bio, resume, message; Approve & Notify / Reject & Notify sends inbox message; manual status dropdown; Mark Paid button
+
+### What is placeholder / next steps
+
+**Stripe payment integration** — not connected. Approval message says:
+> "Online payment is not connected yet. Admin will contact you with payment instructions."
+
+Steps to connect:
+1. Set up Stripe account and create a product/price per class
+2. Add Stripe Checkout session creation (Supabase Edge Function recommended)
+3. On booking approval, generate a Checkout link and include it in the approval inbox message
+4. Add a `stripe_payment_intent_id` or `stripe_session_id` column to `class_booking_requests`
+5. Use a Stripe webhook to auto-update status to `paid` on payment success
+
+**Instructor accounts** — not built. All booking review is admin-only. A `TODO` comment is in `AdminClassBookingRequests`. Future steps:
+1. Add `instructor` user_type or a separate `class_instructors` table with auth link
+2. Add instructor-facing booking review view filtered to their classes
+
+### Live test checklist
+
+A. Admin → Classes → list of 10 classes ✓ (seeded from migration)  
+B. Admin → Edit Class → change title/description/location → save → public Classes page reflects change ✓  
+C. Admin → Time Slots → add Monday 6 PM–8 PM → public Classes page shows upcoming Mondays ✓  
+D. Logged-out user clicks Request Booking → redirected to login ✓  
+E. Logged-in talent → fills form → uploads headshot → submits → status pending_review ✓  
+F. Admin → Booking Requests → Approve & Notify → talent gets inbox message with class details + payment placeholder ✓  
+G. Reject → status updated → talent gets inbox notification ✓  
+H. No existing pages broken: casting posts, dashboards, admin permissions all unaffected ✓  
+
+---
+
 ## 2026-05-11 — Fix: Casting edits not appearing on public detail page
 
 ### Root cause
