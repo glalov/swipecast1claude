@@ -3817,6 +3817,11 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   const [lastUndo,setLastUndo]=useState(null);     // {appId, prevStatus, newStatus, name}
   const [savingErr,setSavingErr]=useState("");
   const decidingRef=useRef(false);
+  // Track whether the first data load has completed. Background refreshes (polling,
+  // focus, realtime) must NOT set loading=true after the first load — that triggers
+  // the early-return loader which unmounts the whole tree including NewCastingModal,
+  // wiping any in-progress casting draft.
+  const firstLoadDone=useRef(false);
 
   const uid=session?.user?.id;
 
@@ -3853,7 +3858,10 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   const [cdLoadErr,setCdLoadErr]=useState("");
   const loadCdCastings=useCallback(async()=>{
     if(!uid){setLoading(false);return;}
-    setLoading(true);
+    // Only show the full-page loader on the very first data fetch. Background refreshes
+    // (60s polling, focus, realtime bumps) run silently so the NewCastingModal is never
+    // unmounted mid-fill. The early-return loader at line ~4147 only fires when loading===true.
+    if(!firstLoadDone.current)setLoading(true);
     try{
       const {data:cs,error:csErr}=await window.sb.from("castings").select("*,roles(id,name)").eq("cd_id",uid).order("created_at",{ascending:false});
       if(csErr)throw csErr;
@@ -3877,6 +3885,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       setStats({total,pending,selected,hold});
       setAllSelected(sel);
       setCdLoadErr("");
+      firstLoadDone.current=true;
     }catch(e){
       console.error("[cd] dashboard load failed:",e);
       setCdLoadErr(e.message||"Could not load your castings.");
@@ -3891,12 +3900,14 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   useEffect(()=>{
     if(!uid)return;
     const onFocus=()=>setReloadTick(t=>t+1);
+    // Only refresh when the tab becomes visible (not when it's hidden).
+    const onVis=()=>{if(document.visibilityState==="visible")setReloadTick(t=>t+1);};
     window.addEventListener("focus",onFocus);
-    document.addEventListener("visibilitychange",onFocus);
+    document.addEventListener("visibilitychange",onVis);
     const tid=setInterval(()=>loadCdCastings(),60000);
     return()=>{
       window.removeEventListener("focus",onFocus);
-      document.removeEventListener("visibilitychange",onFocus);
+      document.removeEventListener("visibilitychange",onVis);
       clearInterval(tid);
     };
   },[uid,loadCdCastings]);
@@ -5402,17 +5413,33 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   const [step,setStep]=useState(1); // 1 = form, 2 = success
   const [err,setErr]=useState("");
   const [busy,setBusy]=useState(false);
-  // Form state is intentionally NOT reset on re-renders or prop changes — only on successful submit.
-  const [f,setF]=useState({title:"",prod:"",type:"Film & TV",location:"",pay:"",union:"SAG-AFTRA",deadline:"",tagline:"",synopsis:""});
-  const [roles,setRoles]=useState([{name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:""}]);
+  const DRAFT_KEY="sc_new_casting_draft";
+  const BLANK_F={title:"",prod:"",type:"Film & TV",location:"",pay:"",union:"SAG-AFTRA",deadline:"",tagline:"",synopsis:""};
+  const BLANK_ROLE={name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:""};
+  // Initialize form from localStorage draft so a remount (e.g. background refresh) restores what the user typed.
+  const [f,setF]=useState(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(p?.f?.title!==undefined)return p.f;}}catch(_){}return BLANK_F;});
+  const [roles,setRoles]=useState(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(Array.isArray(p?.roles)&&p.roles.length)return p.roles;}}catch(_){}return[BLANK_ROLE];});
   const [inserted,setInserted]=useState(null);
   const [verifyMsg,setVerifyMsg]=useState("");
   const [verifying,setVerifying]=useState(false);
   const [verifyDebug,setVerifyDebug]=useState(null);
   const setField=(k,v)=>setF(p=>({...p,[k]:v}));
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
-  const addRole=()=>setRoles(p=>[...p,{name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:""}]);
+  const addRole=()=>setRoles(p=>[...p,{...BLANK_ROLE}]);
   const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
+  const clearDraft=()=>{try{localStorage.removeItem(DRAFT_KEY);}catch(_){}};
+  const hasDraft=f.title.trim()||f.prod.trim()||f.synopsis.trim()||f.tagline.trim()||f.location.trim()||roles.some(r=>r.name.trim()||r.description.trim());
+
+  // Persist draft to localStorage on every field change — survives remounts caused by background refreshes.
+  useEffect(()=>{try{localStorage.setItem(DRAFT_KEY,JSON.stringify({f,roles}));}catch(_){}}, [f,roles]);
+
+  // Confirm before closing if the user has typed anything.
+  const handleClose=()=>{
+    if(busy)return;
+    if(hasDraft&&!window.confirm("Discard this casting draft?"))return;
+    clearDraft();
+    onClose();
+  };
 
   const PROJECT_TYPES=[
     {value:"Film & TV",label:"Film & TV",desc:"Feature films, short films, indie films, and television series."},
@@ -5536,15 +5563,16 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
         insertedRoles=rdata||[];
       }
       setInserted({...casting,roles:insertedRoles});
+      clearDraft(); // draft submitted — safe to clear
       setStep(2);
-    }catch(e){setErr(e.message||"Something went wrong.");}finally{setBusy(false);}
+    }catch(e){setErr(e.message||"Something went wrong.");/* keep all form data on error */}finally{setBusy(false);}
   };
-  return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"90vh",overflowY:"auto"}}>
+  return(<div className="modal-overlay" onClick={handleClose}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"90vh",overflowY:"auto"}}>
     {step===2?<div className="success-msg">
       <div className="check">✓</div>
       <h3>Casting Submitted</h3>
       <p>Your casting has been submitted for admin review. It will appear publicly once approved.</p>
-      <button type="button" className="btn-p mt-20" onClick={()=>onPosted(inserted)}>Back to Dashboard</button>
+      <button type="button" className="btn-p mt-20" onClick={()=>{clearDraft();onPosted(inserted);}}>Back to Dashboard</button>
     </div>:<>
       <h2>Post New Casting</h2>
       <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:8}}>Free to submit. Castings go live after admin approval.</p>
@@ -5597,7 +5625,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
 
       <div style={{display:"flex",gap:12,marginTop:24}}>
         <button type="button" className="btn-p" style={{flex:1}} onClick={submit} disabled={busy}>{busy?"Submitting…":"Submit for Review"}</button>
-        <button type="button" className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
+        <button type="button" className="btn-s" onClick={handleClose} disabled={busy}>Cancel</button>
       </div>
     </>}
   </div></div>);
