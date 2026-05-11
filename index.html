@@ -611,10 +611,20 @@ const MEMBERSHIP_PLANS={
 
 // ─── Actor plan limits — single source of truth used by profile upload, casting
 //     submission gate, and the pricing page.
-const FREE_PLAN={headshotsTotal:1,additionalPhotos:0,videos:0,submissionsPerDay:3};
-const PREMIUM_PLAN={headshotsTotal:10,additionalPhotos:9,videos:5,submissionsPerDay:Infinity};
+const FREE_PLAN={headshotsTotal:1,additionalPhotos:0,videos:0,submissionsPerDay:3,castingTypes:2,castingMoodClips:0,castingSupportingPhotos:0};
+const PREMIUM_PLAN={headshotsTotal:10,additionalPhotos:9,videos:5,submissionsPerDay:Infinity,castingTypes:5,castingMoodClips:1,castingSupportingPhotos:3};
 const PREMIUM_PRICE="$9.99/month";
 const UPGRADE_MSG="You've reached the free plan limit. Upgrade to Premium for 10 headshots, up to 5 videos, and unlimited casting submissions.";
+
+// ─── "Cast Me As" / Casting Fit DNA ─────────────────────────────────────────
+const CASTING_TYPES=[
+  "Quiet Threat","Final Girl / Final Boy","Romantic Lead","Unhinged Neighbor",
+  "Corporate Villain","Lost Soul","Best Friend With Secrets","Detective Type",
+  "Cult Member","Period Drama Face","Comedy Chaos","Dark Indie Lead",
+  "High-Status Aristocrat","Small-Town Innocence","Dangerous Beauty","Deadpan Weirdo",
+  "Warm and Charming","Haunted Lead","Mysterious Stranger","Action Survivor",
+  "Villain's Assistant","Outsider / Loner","Innocent Witness","Cunning Socialite"
+];
 
 // ─── Pure helper. Single place that knows how to derive yearly savings from
 //     the monthly + yearly prices. Reused by YearlyPromoStripe and anywhere
@@ -3247,6 +3257,9 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
         :<p style={{fontSize:13,color:"var(--t3)"}}>Resume attached — the applicant hasn't added per-line credits yet.</p>}
     </div>}
 
+    {/* ── Cast Me As ── only shown when talent has at least one entry (loaded inside the component) */}
+    {talentDbId&&<CastMeAsSection talentId={talentDbId}/>}
+
     {/* ── CD action modals — only one open at a time ── */}
     {cdAction==="save"&&talentDbId&&<SaveToListModal cdId={session?.user?.id} talentId={talentDbId} talentName={talent.name||talent.display_name||"Talent"} onClose={()=>setCdAction(null)}/>}
     {cdAction==="invite"&&talentDbId&&<InviteToProjectModal cdId={session?.user?.id} talentId={talentDbId} talentName={talent.name||talent.display_name||"Talent"} onClose={()=>setCdAction(null)}/>}
@@ -3263,7 +3276,11 @@ function castingTypeLabel(t){if(!t)return"";if(t==="Commercials & Branded Conten
 function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,castingsVersion=0,session,myProfile}){
   const [mode,setMode]=useState(userType==="cd"?"talent":"castings");
   const [q,setQ]=useState("");
-  const [f,setF]=useState({gender:"",ethnicity:"",location:"",union:"",type:""});
+  const [f,setF]=useState({gender:"",ethnicity:"",location:"",union:"",type:"",castingType:""});
+  // TODO(casting-filter): castingType filter — when set, load user_ids from
+  // talent_casting_fit_dna where casting_type = f.castingType and intersect with talent results.
+  // Data is already stored; filtering just needs a join or secondary query here.
+  const [castingTypeIds,setCastingTypeIds]=useState(null); // null=no filter, Set=filtered ids
   const [applyTo,setApplyTo]=useState(null);
   const [applied,setApplied]=useState(new Set());
   const [pg,setPg]=useState(1);
@@ -3273,7 +3290,19 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const [loading,setLoading]=useState(true);          // initial fetch in flight
   const [fetchErr,setFetchErr]=useState("");          // surfaced castings fetch error
   const [lastFetchAt,setLastFetchAt]=useState(0);     // timestamp of last successful fetch
-  useEffect(()=>{setPg(1);},[q,f.type,f.location,f.union,f.gender,f.ethnicity,mode]);
+  useEffect(()=>{setPg(1);},[q,f.type,f.location,f.union,f.gender,f.ethnicity,f.castingType,mode]);
+
+  // ── Load Cast Me As filter IDs when castingType filter changes ─────────────
+  useEffect(()=>{
+    if(!f.castingType){setCastingTypeIds(null);return;}
+    (async()=>{
+      try{
+        const{data}=await window.sb.from("talent_casting_fit_dna")
+          .select("user_id").eq("casting_type",f.castingType);
+        setCastingTypeIds(new Set((data||[]).map(r=>r.user_id)));
+      }catch(_){setCastingTypeIds(null);}
+    })();
+  },[f.castingType]);
 
   // ─── Fetch castings — extracted into a stable callback so realtime, polling,
   //     focus, and the manual retry button all hit the same code path. The previous
@@ -3408,15 +3437,15 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   // merged into search results once any real data exists.
   const allCastings=dbCastings.length>0?dbCastings:[];
   const allTalent=dbTalent.length>0?dbTalent:[];
-  const ft=allTalent.filter(t=>{if(q&&!t.name.toLowerCase().includes(q.toLowerCase())&&!t.skills.join(" ").toLowerCase().includes(q.toLowerCase()))return false;if(f.gender&&t.gender!==f.gender)return false;if(f.ethnicity&&!t.ethnicity.toLowerCase().includes(f.ethnicity.toLowerCase()))return false;if(f.location&&!t.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&t.union!==f.union)return false;return true;});
+  const ft=allTalent.filter(t=>{if(q&&!t.name.toLowerCase().includes(q.toLowerCase())&&!t.skills.join(" ").toLowerCase().includes(q.toLowerCase()))return false;if(f.gender&&t.gender!==f.gender)return false;if(f.ethnicity&&!t.ethnicity.toLowerCase().includes(f.ethnicity.toLowerCase()))return false;if(f.location&&!t.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&t.union!==f.union)return false;if(castingTypeIds!==null&&!castingTypeIds.has(t.id))return false;return true;});
   const fc=allCastings.filter(c=>{if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&c.type!==f.type)return false;if(f.location&&!c.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;});
   return(<div className="page page-wide">
     <div className="section-label">Search</div>
     <div className="tabs"><button className={`tab ${mode==="castings"?"active":""}`} onClick={()=>setMode("castings")}>Open Castings</button><button className={`tab ${mode==="talent"?"active":""}`} onClick={()=>setMode("talent")}>Talent Directory</button></div>
     <div className="search-bar"><input className="input" placeholder={mode==="talent"?"Search by name, skill, keyword...":"Search castings..."} value={q} onChange={e=>setQ(e.target.value)}/><button className="btn-p">Search</button></div>
     {mode==="talent"?<>
-      <div className="filter-row"><select className="select" value={f.gender} onChange={e=>setF(x=>({...x,gender:e.target.value}))}><option value="">All Genders</option><option>Male</option><option>Female</option><option>Non-Binary</option></select><select className="select" value={f.ethnicity} onChange={e=>setF(x=>({...x,ethnicity:e.target.value}))}><option value="">All Ethnicities</option><option value="Black">Black</option><option value="Latin">Latino/Latina</option><option value="Asian">Asian</option><option value="European">European</option></select><select className="select" value={f.location} onChange={e=>setF(x=>({...x,location:e.target.value}))}><option value="">All Locations</option><option value="New York">New York</option><option value="Los Angeles">Los Angeles</option><option value="Atlanta">Atlanta</option><option value="Chicago">Chicago</option><option value="Miami">Miami</option></select><select className="select" value={f.union} onChange={e=>setF(x=>({...x,union:e.target.value}))}><option value="">All Union Status</option><option>SAG-AFTRA</option><option>AEA</option><option>Non-Union</option></select></div>
-      <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{ft.length} results</p>
+      <div className="filter-row"><select className="select" value={f.gender} onChange={e=>setF(x=>({...x,gender:e.target.value}))}><option value="">All Genders</option><option>Male</option><option>Female</option><option>Non-Binary</option></select><select className="select" value={f.ethnicity} onChange={e=>setF(x=>({...x,ethnicity:e.target.value}))}><option value="">All Ethnicities</option><option value="Black">Black</option><option value="Latin">Latino/Latina</option><option value="Asian">Asian</option><option value="European">European</option></select><select className="select" value={f.location} onChange={e=>setF(x=>({...x,location:e.target.value}))}><option value="">All Locations</option><option value="New York">New York</option><option value="Los Angeles">Los Angeles</option><option value="Atlanta">Atlanta</option><option value="Chicago">Chicago</option><option value="Miami">Miami</option></select><select className="select" value={f.union} onChange={e=>setF(x=>({...x,union:e.target.value}))}><option value="">All Union Status</option><option>SAG-AFTRA</option><option>AEA</option><option>Non-Union</option></select><select className="select" value={f.castingType} onChange={e=>setF(x=>({...x,castingType:e.target.value}))}><option value="">Cast Me As: All</option>{CASTING_TYPES.map(t=><option key={t} value={t}>{t}</option>)}</select></div>
+      <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{ft.length} results{f.castingType&&<span style={{color:"var(--acc)",marginLeft:8,fontSize:12}}>· filtered by: {f.castingType}</span>}</p>
       <div className="results-grid">{ft.map(t=><div key={t.id} className="talent-thumb" onClick={()=>onViewProfile(t)}><img src={t.img} alt={t.name}/><div className="talent-thumb-info"><h4>{t.name}</h4><p>{t.age} · {t.gender} · {t.location}</p><div style={{marginTop:6}}><span className="tag" style={{fontSize:10}}>{t.union||"Non-Union"}</span></div></div></div>)}</div>
     </>:<>
       {/* Full-height loading placeholder — only during initial load (no cached data).
@@ -6667,6 +6696,312 @@ const getVideoEmbed=(url)=>{
 };
 
 // ═══════════════════════════════════════════
+// COMPONENT: CASTING FIT DNA EDITOR (Cast Me As)
+// Used inside MyProfilePage → "Cast Me As" tab (talent only)
+// ═══════════════════════════════════════════
+function CastingFitDNAEditor({session,isPremium,onNavigate}){
+  const maxTypes=isPremium?PREMIUM_PLAN.castingTypes:FREE_PLAN.castingTypes;
+  const [entries,setEntries]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [saving,setSaving]=useState({}); // {id:true}
+  const [uploading,setUploading]=useState({}); // {id_field:true}
+  const [err,setErr]=useState("");
+  const [addType,setAddType]=useState("");
+  const uid=session?.user?.id;
+
+  // ── load existing entries ──────────────────────────────────────────────────
+  const load=async()=>{
+    if(!uid)return;
+    setLoading(true);
+    try{
+      const{data,error}=await window.sb.from("talent_casting_fit_dna")
+        .select("*").eq("user_id",uid).order("display_order").order("created_at");
+      if(error)throw error;
+      setEntries(data||[]);
+    }catch(e){setErr(e.message||"Could not load Cast Me As entries.");}
+    finally{setLoading(false);}
+  };
+  useEffect(()=>{load();},[uid]);
+
+  // ── add type ───────────────────────────────────────────────────────────────
+  const addEntry=async()=>{
+    if(!addType){setErr("Please choose a casting type.");return;}
+    if(entries.length>=maxTypes){
+      setErr(`${isPremium?"Premium plan":"Free plan"} limit is ${maxTypes} casting types.${!isPremium?" Upgrade to Premium for up to 5.":""}`);
+      return;
+    }
+    if(entries.some(e=>e.casting_type===addType)){setErr("You already have that casting type.");return;}
+    setErr("");
+    try{
+      const{data,error}=await window.sb.from("talent_casting_fit_dna")
+        .insert({user_id:uid,casting_type:addType,display_order:entries.length})
+        .select().single();
+      if(error)throw error;
+      setEntries(x=>[...x,data]);
+      setAddType("");
+    }catch(e){setErr(e.message||"Could not add entry.");}
+  };
+
+  // ── update role_note ───────────────────────────────────────────────────────
+  const updateNote=async(id,note)=>{
+    setSaving(x=>({...x,[id]:true}));
+    try{
+      const{error}=await window.sb.from("talent_casting_fit_dna").update({role_note:note,updated_at:new Date().toISOString()}).eq("id",id).eq("user_id",uid);
+      if(error)throw error;
+      setEntries(x=>x.map(e=>e.id===id?{...e,role_note:note}:e));
+    }catch(e){setErr(e.message||"Could not save note.");}
+    finally{setSaving(x=>({...x,[id]:false}));}
+  };
+
+  // ── delete entry ───────────────────────────────────────────────────────────
+  const deleteEntry=async(entry)=>{
+    if(!window.confirm(`Remove "${entry.casting_type}" from your Cast Me As section?`))return;
+    try{
+      // remove mood clip from storage if exists
+      if(entry.mood_clip_path)await window.sb.storage.from("talent-media").remove([entry.mood_clip_path]);
+      // remove supporting photos from storage
+      const paths=Array.isArray(entry.supporting_photo_paths)?entry.supporting_photo_paths:[];
+      if(paths.length)await window.sb.storage.from("talent-media").remove(paths);
+      const{error}=await window.sb.from("talent_casting_fit_dna").delete().eq("id",entry.id).eq("user_id",uid);
+      if(error)throw error;
+      setEntries(x=>x.filter(e=>e.id!==entry.id));
+    }catch(e){setErr(e.message||"Could not remove entry.");}
+  };
+
+  // ── upload mood clip (Premium only) ───────────────────────────────────────
+  const uploadMoodClip=async(entry,file)=>{
+    if(!isPremium){setErr("Upgrade to Premium to upload mood clips.");return;}
+    if(!file)return;
+    const ext=(file.name.split(".").pop()||"mp4").toLowerCase();
+    if(!["mp4","mov","webm"].includes(ext)){setErr("Mood clip must be MP4, MOV, or WebM.");return;}
+    if(file.size>50*1024*1024){setErr("Mood clip must be under 50 MB.");return;}
+    const key=`${entry.id}_clip`;
+    setUploading(x=>({...x,[key]:true}));setErr("");
+    try{
+      const path=`${uid}/casting-dna/${entry.id}/clip_${Date.now()}.${ext}`;
+      // remove old clip if exists
+      if(entry.mood_clip_path)await window.sb.storage.from("talent-media").remove([entry.mood_clip_path]);
+      const{error:upErr}=await window.sb.storage.from("talent-media").upload(path,file,{upsert:true,contentType:file.type});
+      if(upErr)throw upErr;
+      const{data:{publicUrl}}=window.sb.storage.from("talent-media").getPublicUrl(path);
+      const{error}=await window.sb.from("talent_casting_fit_dna").update({mood_clip_url:publicUrl,mood_clip_path:path,updated_at:new Date().toISOString()}).eq("id",entry.id).eq("user_id",uid);
+      if(error)throw error;
+      setEntries(x=>x.map(e=>e.id===entry.id?{...e,mood_clip_url:publicUrl,mood_clip_path:path}:e));
+    }catch(e){setErr(e.message||"Clip upload failed.");}
+    finally{setUploading(x=>({...x,[key]:false}));}
+  };
+
+  // ── remove mood clip ───────────────────────────────────────────────────────
+  const removeMoodClip=async(entry)=>{
+    try{
+      if(entry.mood_clip_path)await window.sb.storage.from("talent-media").remove([entry.mood_clip_path]);
+      await window.sb.from("talent_casting_fit_dna").update({mood_clip_url:null,mood_clip_path:null,updated_at:new Date().toISOString()}).eq("id",entry.id).eq("user_id",uid);
+      setEntries(x=>x.map(e=>e.id===entry.id?{...e,mood_clip_url:null,mood_clip_path:null}:e));
+    }catch(e){setErr(e.message||"Could not remove clip.");}
+  };
+
+  // ── upload supporting photo (Premium, max 3 per type) ─────────────────────
+  const uploadSupportingPhoto=async(entry,file)=>{
+    if(!isPremium){setErr("Upgrade to Premium to upload supporting photos.");return;}
+    if(!file)return;
+    const urls=Array.isArray(entry.supporting_photo_urls)?entry.supporting_photo_urls:[];
+    const paths=Array.isArray(entry.supporting_photo_paths)?entry.supporting_photo_paths:[];
+    if(urls.length>=PREMIUM_PLAN.castingSupportingPhotos){setErr(`Maximum ${PREMIUM_PLAN.castingSupportingPhotos} supporting photos per type.`);return;}
+    const ext=(file.name.split(".").pop()||"jpg").toLowerCase();
+    if(!["jpg","jpeg","png","webp"].includes(ext)){setErr("Photos must be JPG, PNG, or WebP.");return;}
+    if(file.size>10*1024*1024){setErr("Photos must be under 10 MB.");return;}
+    const key=`${entry.id}_photo`;
+    setUploading(x=>({...x,[key]:true}));setErr("");
+    try{
+      const path=`${uid}/casting-dna/${entry.id}/photo_${Date.now()}.${ext}`;
+      const{error:upErr}=await window.sb.storage.from("talent-media").upload(path,file,{upsert:false,contentType:file.type});
+      if(upErr)throw upErr;
+      const{data:{publicUrl}}=window.sb.storage.from("talent-media").getPublicUrl(path);
+      const newUrls=[...urls,publicUrl];
+      const newPaths=[...paths,path];
+      const{error}=await window.sb.from("talent_casting_fit_dna").update({supporting_photo_urls:newUrls,supporting_photo_paths:newPaths,updated_at:new Date().toISOString()}).eq("id",entry.id).eq("user_id",uid);
+      if(error)throw error;
+      setEntries(x=>x.map(e=>e.id===entry.id?{...e,supporting_photo_urls:newUrls,supporting_photo_paths:newPaths}:e));
+    }catch(e){setErr(e.message||"Photo upload failed.");}
+    finally{setUploading(x=>({...x,[key]:false}));}
+  };
+
+  // ── remove supporting photo ────────────────────────────────────────────────
+  const removeSupportingPhoto=async(entry,idx)=>{
+    const urls=Array.isArray(entry.supporting_photo_urls)?[...entry.supporting_photo_urls]:[];
+    const paths=Array.isArray(entry.supporting_photo_paths)?[...entry.supporting_photo_paths]:[];
+    const removedPath=paths[idx];
+    urls.splice(idx,1);paths.splice(idx,1);
+    try{
+      if(removedPath)await window.sb.storage.from("talent-media").remove([removedPath]);
+      await window.sb.from("talent_casting_fit_dna").update({supporting_photo_urls:urls,supporting_photo_paths:paths,updated_at:new Date().toISOString()}).eq("id",entry.id).eq("user_id",uid);
+      setEntries(x=>x.map(e=>e.id===entry.id?{...e,supporting_photo_urls:urls,supporting_photo_paths:paths}:e));
+    }catch(e){setErr(e.message||"Could not remove photo.");}
+  };
+
+  const availableTypes=CASTING_TYPES.filter(t=>!entries.some(e=>e.casting_type===t));
+
+  if(loading)return<div style={{padding:40,textAlign:"center"}}><SlateCueLoader text="Loading Cast Me As…"/></div>;
+
+  return(<div>
+    {/* plan banner */}
+    <div style={{background:isPremium?"rgba(99,60,180,0.07)":"rgba(26,26,46,0.06)",border:"1px solid var(--bdr)",borderRadius:10,padding:"14px 18px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+      <span style={{fontSize:13,color:"var(--t2)"}}>
+        {isPremium
+          ?<>⭐ <strong>Premium:</strong> up to {PREMIUM_PLAN.castingTypes} casting types · 1 mood clip + {PREMIUM_PLAN.castingSupportingPhotos} photos per type</>
+          :<>Free Plan: up to {FREE_PLAN.castingTypes} casting types · no clips or photos. <strong>Upgrade for full Cast Me As.</strong></>}
+      </span>
+      {!isPremium&&<button className="btn-s btn-sm" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade — {PREMIUM_PRICE}</button>}
+    </div>
+    {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
+
+    {/* add new type */}
+    {entries.length<maxTypes&&<div className="card" style={{padding:20,marginBottom:20,display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
+      <select className="select" style={{flex:"1 1 200px"}} value={addType} onChange={e=>setAddType(e.target.value)}>
+        <option value="">— Choose a casting type to add —</option>
+        {availableTypes.map(t=><option key={t} value={t}>{t}</option>)}
+      </select>
+      <button className="btn-p btn-sm" onClick={addEntry} disabled={!addType}>+ Add</button>
+    </div>}
+    {entries.length>=maxTypes&&<div style={{fontSize:13,color:"var(--t3)",marginBottom:16}}>
+      You've added the maximum {maxTypes} casting types for your plan.{!isPremium&&<> <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium</span> for up to 5.</>}
+    </div>}
+
+    {entries.length===0&&<div className="card" style={{padding:40,textAlign:"center",color:"var(--t3)"}}>
+      <p style={{fontSize:22,marginBottom:8}}>🎭</p>
+      <p style={{fontWeight:700,marginBottom:4}}>No casting types yet</p>
+      <p style={{fontSize:13}}>Choose up to {maxTypes} types that describe what you're best cast as.</p>
+    </div>}
+
+    {/* entry cards */}
+    {entries.map(entry=>{
+      const photos=Array.isArray(entry.supporting_photo_urls)?entry.supporting_photo_urls:[];
+      const photoKey=`${entry.id}_photo`;
+      const clipKey=`${entry.id}_clip`;
+      return(<div key={entry.id} className="card" style={{padding:20,marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,marginBottom:14,flexWrap:"wrap"}}>
+          <h4 style={{fontSize:16,fontWeight:700,margin:0}}>{entry.casting_type}</h4>
+          <button className="btn-s btn-sm" style={{color:"#c0392b",borderColor:"rgba(192,57,43,0.3)"}} onClick={()=>deleteEntry(entry)}>Remove</button>
+        </div>
+
+        {/* role note */}
+        <div style={{marginBottom:16}}>
+          <label style={{fontSize:12,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.5,display:"block",marginBottom:6}}>Role-fit note (shown on your public profile)</label>
+          <div style={{display:"flex",gap:8}}>
+            <input className="input" style={{flex:1}} placeholder="Best for cult follower, mysterious neighbor, killer's accomplice." defaultValue={entry.role_note||""}
+              onBlur={e=>{if(e.target.value!==entry.role_note)updateNote(entry.id,e.target.value.trim());}}/>
+            {saving[entry.id]&&<span style={{fontSize:12,color:"var(--t3)",alignSelf:"center"}}>Saving…</span>}
+          </div>
+        </div>
+
+        {/* mood clip */}
+        <div style={{marginBottom:16}}>
+          <label style={{fontSize:12,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.5,display:"block",marginBottom:6}}>Mood Clip {isPremium?"(MP4/MOV/WebM, ≤50 MB, aim for 10–20 sec)":"· Premium only"}</label>
+          {entry.mood_clip_url
+            ?<div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+                <video src={entry.mood_clip_url} controls muted style={{maxWidth:280,borderRadius:8,background:"#000"}}/>
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  <label className="btn-s btn-sm" style={{cursor:"pointer"}}>{uploading[clipKey]?"Uploading…":"Replace Clip"}<input type="file" accept="video/mp4,video/quicktime,video/webm" style={{display:"none"}} onChange={e=>uploadMoodClip(entry,e.target.files?.[0])}/></label>
+                  <button className="btn-s btn-sm" style={{color:"#c0392b"}} onClick={()=>removeMoodClip(entry)}>Remove</button>
+                </div>
+              </div>
+            :<label className={`btn-s btn-sm ${!isPremium?"":"btn-p"}`} style={{cursor:isPremium?"pointer":"not-allowed",opacity:isPremium?1:0.5,display:"inline-block"}}>
+                {uploading[clipKey]?"Uploading…":"📎 Upload Mood Clip"}
+                {isPremium&&<input type="file" accept="video/mp4,video/quicktime,video/webm" style={{display:"none"}} onChange={e=>{const f=e.target.files?.[0];if(f)uploadMoodClip(entry,f);e.target.value="";}}/>}
+              </label>}
+          {!isPremium&&<p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>
+            <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium</span> to add mood clips, supporting photos, and up to 5 casting types.
+          </p>}
+        </div>
+
+        {/* supporting photos (Premium only) */}
+        {isPremium&&<div>
+          <label style={{fontSize:12,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.5,display:"block",marginBottom:8}}>Supporting Photos ({photos.length}/{PREMIUM_PLAN.castingSupportingPhotos})</label>
+          <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"flex-start"}}>
+            {photos.map((url,i)=><div key={i} style={{position:"relative",width:90,flexShrink:0}}>
+              <img src={url} alt="" style={{width:90,height:113,objectFit:"cover",borderRadius:8,border:"1px solid var(--bdr)",display:"block"}}/>
+              <button onClick={()=>removeSupportingPhoto(entry,i)} style={{position:"absolute",top:4,right:4,background:"rgba(0,0,0,0.65)",color:"#fff",border:"none",borderRadius:4,width:20,height:20,cursor:"pointer",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center"}}>&times;</button>
+            </div>)}
+            {photos.length<PREMIUM_PLAN.castingSupportingPhotos&&<label style={{width:90,height:113,border:"2px dashed var(--bdr)",borderRadius:8,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--t3)",fontSize:12,gap:4}}>
+              {uploading[photoKey]?"Uploading…":<><span style={{fontSize:20}}>+</span><span>Photo</span></>}
+              {!uploading[photoKey]&&<input type="file" accept="image/jpeg,image/png,image/webp" style={{display:"none"}} onChange={e=>{const f=e.target.files?.[0];if(f)uploadSupportingPhoto(entry,f);e.target.value="";}}/>}
+            </label>}
+          </div>
+        </div>}
+      </div>);
+    })}
+  </div>);
+}
+
+// ═══════════════════════════════════════════
+// COMPONENT: CAST ME AS (public display on talent profile)
+// ═══════════════════════════════════════════
+function CastMeAsSection({talentId}){
+  const [entries,setEntries]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [playingId,setPlayingId]=useState(null);
+
+  useEffect(()=>{
+    if(!talentId)return;
+    (async()=>{
+      try{
+        const{data}=await window.sb.from("talent_casting_fit_dna")
+          .select("id,casting_type,role_note,mood_clip_url,supporting_photo_urls,display_order")
+          .eq("user_id",talentId).order("display_order").order("created_at");
+        setEntries(data||[]);
+      }catch(_){}
+      finally{setLoading(false);}
+    })();
+  },[talentId]);
+
+  if(loading||entries.length===0)return null;
+
+  return(<div className="card mt-20">
+    <h3 style={{fontSize:18,fontWeight:700,marginBottom:4}}>Cast Me As</h3>
+    <p style={{fontSize:13,color:"var(--t3)",marginBottom:20}}>Casting identity — the energies and archetypes this actor plays best.</p>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:16}}>
+      {entries.map(entry=>{
+        const photos=Array.isArray(entry.supporting_photo_urls)?entry.supporting_photo_urls.filter(Boolean):[];
+        const hasClip=!!entry.mood_clip_url;
+        const isPlaying=playingId===entry.id;
+        return(<div key={entry.id} style={{border:"1px solid var(--bdr)",borderRadius:12,overflow:"hidden",background:"var(--s1)",display:"flex",flexDirection:"column"}}>
+          {/* header */}
+          <div style={{padding:"14px 16px 10px",borderBottom:"1px solid var(--bdr)"}}>
+            <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:4}}>Cast Me As</div>
+            <div style={{fontSize:17,fontWeight:800,letterSpacing:"-0.3px",color:"var(--t1)",marginBottom:entry.role_note?6:0}}>{entry.casting_type}</div>
+            {entry.role_note&&<p style={{fontSize:13,color:"var(--t2)",lineHeight:1.5,margin:0,fontStyle:"italic"}}>"{entry.role_note}"</p>}
+          </div>
+
+          {/* mood clip */}
+          {hasClip&&<div style={{background:"#000",position:"relative"}}>
+            {isPlaying
+              ?<video src={entry.mood_clip_url} controls autoPlay muted playsInline style={{width:"100%",maxHeight:200,display:"block",objectFit:"cover"}} onEnded={()=>setPlayingId(null)}/>
+              :<div style={{position:"relative",cursor:"pointer"}} onClick={()=>setPlayingId(entry.id)}>
+                  <video src={`${entry.mood_clip_url}#t=0.1`} muted playsInline style={{width:"100%",maxHeight:200,display:"block",objectFit:"cover",opacity:0.7}}/>
+                  <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <div style={{width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>▶</div>
+                  </div>
+                  <div style={{position:"absolute",bottom:8,right:10,background:"rgba(0,0,0,0.6)",color:"#fff",fontSize:10,padding:"2px 7px",borderRadius:4,fontWeight:600}}>clip</div>
+                </div>}
+          </div>}
+
+          {/* supporting photos */}
+          {photos.length>0&&<div style={{display:"flex",gap:4,padding:"8px 10px",background:"var(--s2)"}}>
+            {photos.map((u,i)=><img key={i} src={u} alt="" style={{width:56,height:70,objectFit:"cover",borderRadius:6,border:"1px solid var(--bdr)"}}/>)}
+          </div>}
+
+          {/* footer tags */}
+          <div style={{padding:"10px 14px",display:"flex",gap:6,flexWrap:"wrap"}}>
+            {hasClip&&<span style={{fontSize:10,background:"rgba(99,60,180,0.1)",color:"#5b3ecb",border:"1px solid rgba(99,60,180,0.2)",borderRadius:20,padding:"2px 8px",fontWeight:600}}>clip</span>}
+            {photos.length>0&&<span style={{fontSize:10,background:"var(--s2)",color:"var(--t3)",border:"1px solid var(--bdr)",borderRadius:20,padding:"2px 8px"}}>{photos.length} photo{photos.length>1?"s":""}</span>}
+          </div>
+        </div>);
+      })}
+    </div>
+  </div>);
+}
+
+// ═══════════════════════════════════════════
 // PAGE: MY PROFILE — Backstage-style with gallery + videos
 // ═══════════════════════════════════════════
 function MyProfilePage({session,profile,onReload,onNavigate}){
@@ -6951,6 +7286,7 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
       {!isCD&&<button className={`tab ${tab==="photos"?"active":""}`} onClick={()=>setTab("photos")}>Photos ({allPhotos.length}/{maxTotalPhotos})</button>}
       {!isCD&&<button className={`tab ${tab==="videos"?"active":""}`} onClick={()=>setTab("videos")}>Video Links ({(profile.video_links||[]).filter(v=>v).length}/{maxVideos||"—"}{!isPremium?" · Premium":""}) </button>}
       {!isCD&&<button className={`tab ${tab==="applications"?"active":""}`} onClick={()=>setTab("applications")}>My Applications ({myApps.length})</button>}
+      {!isCD&&<button className={`tab ${tab==="cast-me-as"?"active":""}`} onClick={()=>setTab("cast-me-as")}>Cast Me As</button>}
       <button className={`tab ${tab==="messages"?"active":""}`} onClick={()=>setTab("messages")}>Inbox {(inbox.filter(m=>!m.read_at).length+invites.filter(i=>i.status==="pending").length)>0?<span className="tag tag-acc" style={{marginLeft:6,fontSize:10}}>{inbox.filter(m=>!m.read_at).length+invites.filter(i=>i.status==="pending").length}</span>:null}</button>
     </div>
 
@@ -7074,6 +7410,15 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
         </div>
         <span className="tag" style={{background:a.status==="selected"?"rgba(46,204,113,0.15)":a.status==="rejected"?"rgba(255,100,100,0.1)":a.status==="hold"?"rgba(200,137,0,0.15)":"var(--s2)",color:a.status==="selected"?"#1d7b44":a.status==="rejected"?"#c0392b":a.status==="hold"?"#c88900":"var(--t2)",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{a.status==="pending"?"UNDER REVIEW":a.status==="selected"?"SHORTLISTED":a.status==="hold"?"ON HOLD":a.status==="rejected"?"NOT SELECTED":String(a.status||"").toUpperCase()}</span>
       </div>)}
+    </div>}
+
+    {/* ── CAST ME AS TAB ── */}
+    {tab==="cast-me-as"&&!isCD&&<div className="card" style={{padding:24}}>
+      <div style={{marginBottom:16}}>
+        <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Cast Me As — Casting Fit DNA</h3>
+        <p style={{fontSize:13,color:"var(--t3)",lineHeight:1.6}}>Choose the archetypes and energies you're best cast as. These appear as visual cards on your public profile so casting directors can instantly see your range. Free plan: up to {FREE_PLAN.castingTypes} types. Premium: up to {PREMIUM_PLAN.castingTypes} types with mood clips and supporting photos.</p>
+      </div>
+      <CastingFitDNAEditor session={session} isPremium={isPremium} onNavigate={onNavigate}/>
     </div>}
 
     {/* ── MESSAGES TAB ── */}

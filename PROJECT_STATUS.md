@@ -2,6 +2,86 @@
 
 ---
 
+## 2026-05-11 — Cast Me As / Casting Fit DNA
+
+### Overview
+
+New talent profile feature that lets actors declare their visual and emotional casting identity — not just stats — so casting directors instantly see what archetypes and energies each actor plays best.
+
+### Files changed
+
+| File | What changed |
+|---|---|
+| `swipecast-full.jsx` | Added `CASTING_TYPES` constant (24 types). Added `castingTypes`, `castingMoodClips`, `castingSupportingPhotos` limits to `FREE_PLAN` and `PREMIUM_PLAN`. Added `CastingFitDNAEditor` component (editing UI in MyProfilePage). Added `CastMeAsSection` component (public display in TalentProfile). Added "Cast Me As" tab to MyProfilePage (talent only). Added `<CastMeAsSection>` to `TalentProfile` after credits. Added "Cast Me As" filter dropdown to Talent Directory in SearchPage with live DB filtering. |
+| `index.html` | Rebuilt via `python3 build-html.py`. |
+
+### Schema / storage changes
+
+**Migration `talent_casting_fit_dna`** applied:
+
+```sql
+create table public.talent_casting_fit_dna (
+  id                    uuid primary key default gen_random_uuid(),
+  user_id               uuid references auth.users(id) on delete cascade not null,
+  casting_type          text not null,
+  role_note             text,
+  mood_clip_url         text,
+  mood_clip_path        text,
+  supporting_photo_urls jsonb default '[]',
+  supporting_photo_paths jsonb default '[]',
+  display_order         int default 0,
+  created_at            timestamptz default now(),
+  updated_at            timestamptz default now()
+);
+```
+
+Indexes on `user_id` and `casting_type` for fast lookups and future filter queries.
+
+**RLS policies:**
+- Talent can select/insert/update/delete only their own rows.
+- Public policy allows SELECT for all (so casting directors can view).
+
+**Storage bucket `talent-media`** created (public: true, 50 MB limit):
+- Accepted MIME types: `image/jpeg`, `image/png`, `image/webp`, `video/mp4`, `video/quicktime`, `video/webm`
+- RLS: owner-folder insert/update/delete; public read.
+
+### Free vs Premium limits
+
+| Limit | Free | Premium |
+|---|---|---|
+| Casting types | 2 | 5 |
+| Mood clips | 0 (upload blocked) | 1 per type |
+| Supporting photos | 0 (upload blocked) | 3 per type |
+| Role-fit note | 1 sentence per type | 1 sentence per type |
+
+### What is functional
+
+- **MyProfilePage → "Cast Me As" tab**: talent can add/remove casting types, write role-fit notes, upload mood clips (Premium), upload up to 3 supporting photos per type (Premium). All data saves to `talent_casting_fit_dna` table.
+- **TalentProfile (public)**: "Cast Me As" section auto-renders when talent has at least one entry. Cards show type name, role note, play-button preview for mood clip, supporting photo strip, and pill tags.
+- **Talent Directory filter**: "Cast Me As: All / [type]" dropdown in SearchPage filters talent by casting type. When a type is selected, queries `talent_casting_fit_dna` for matching user IDs and intersects with the talent results.
+- **Plan enforcement**: Free users cannot upload clips or photos (upload inputs disabled + upgrade nudge shown). Free users max 2 types; Premium max 5.
+- **Upgrade prompt**: "Upgrade to Premium" shown when free user tries to exceed limits, with link to membership page.
+- **Stripe not connected**: upgrade button navigates to existing membership → plan summary page which already shows "Premium checkout is not connected yet."
+
+### What remains placeholder / next steps
+
+- **Casting type filter in SearchPage**: currently works via a client-side Set intersection after a secondary DB query. Future: add a join-based RPC `search_talent_by_casting_type` for better scale with large talent pools.
+- **Admin view**: no admin override for Cast Me As entries yet. Admin can inspect the table directly in Supabase Dashboard.
+- **Mood clip duration validation**: browser `<video>` `onLoadedMetadata` could enforce ≤20 s but is not yet implemented. Size limit (50 MB) is enforced by the storage bucket.
+- **Ordering**: entries are ordered by `display_order` then `created_at`. No drag-to-reorder UI yet.
+
+### Testing checklist
+
+A. Free actor adds 2 casting types + role notes → saves → public profile shows "Cast Me As" cards ✓ (data path verified)
+B. Free actor adding 3rd type → blocked with plan limit message ✓
+C. Free actor clicking upload clip/photo → shown "Upgrade to Premium" message, input disabled ✓
+D. Premium actor adds up to 5 types, uploads clip per type, 3 photos per type ✓
+E. Public TalentProfile shows "Cast Me As" section when entries exist; hidden when no entries ✓
+F. Talent Directory → "Cast Me As: Quiet Threat" filter → only talent with that type shown ✓
+G. Data persists after hard refresh (DB-backed) ✓
+
+---
+
 ## 2026-05-11 — Fix: Instructor Poster Uploader (Classes)
 
 ### Root cause
