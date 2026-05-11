@@ -2656,6 +2656,10 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       {cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
     </div>
 
+    {c.casting_image_url&&<div style={{marginBottom:28,borderRadius:12,overflow:"hidden",maxHeight:340,background:"var(--s2)"}}>
+      <img src={c.casting_image_url} alt={c.title+" poster"} style={{width:"100%",maxHeight:340,objectFit:"cover",display:"block"}}/>
+    </div>}
+
     <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,padding:"20px 24px",marginBottom:32,display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"14px 28px"}}>
       <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>Union</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.union}</div></div>
       <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>Location</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.location}</div></div>
@@ -2665,6 +2669,12 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       {c.rehearsal&&<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>Rehearsal</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.rehearsal}</div></div>}
       {c.auditionFormat&&<div style={{gridColumn:"1 / -1"}}><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>Audition Format</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.auditionFormat}</div></div>}
     </div>
+
+    {c.casting_website_url&&<div style={{marginBottom:24}}>
+      <a href={c.casting_website_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,textDecoration:"none"}}>
+        🔗 Visit Project Website
+      </a>
+    </div>}
 
     <section style={{marginBottom:40}}>
       <div className="section-label" style={{marginBottom:12}}>Project Summary</div>
@@ -3823,6 +3833,8 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   const [sortBy,setSortBy]=useState("newest");     // newest | oldest | name
   const [lastUndo,setLastUndo]=useState(null);     // {appId, prevStatus, newStatus, name}
   const [savingErr,setSavingErr]=useState("");
+  const [editCasting,setEditCasting]=useState(null);
+  const [closingId,setClosingId]=useState(null);
   const decidingRef=useRef(false);
   // Track whether the first data load has completed. Background refreshes (polling,
   // focus, realtime) must NOT set loading=true after the first load — that triggers
@@ -3901,6 +3913,16 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   },[uid]);
 
   useEffect(()=>{loadCdCastings();},[loadCdCastings,reloadTick,castingsVersion]);
+
+  const toggleCastingStatus=async(casting,newStatus)=>{
+    setClosingId(casting.id);
+    const{error}=await window.sb.from("castings").update({status:newStatus}).eq("id",casting.id).eq("cd_id",uid);
+    setClosingId(null);
+    if(error){alert("Could not update status: "+error.message);return;}
+    setMyCastings(p=>p.map(c=>c.id===casting.id?{...c,status:newStatus}:c));
+    setReloadTick(t=>t+1);
+    if(bumpCastings)bumpCastings();
+  };
 
   // Polling backstop + focus refetch — covers websocket disconnects so a posted
   // casting never silently vanishes from the CD's own dashboard.
@@ -4315,18 +4337,37 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         <div className="card-flat">{myCastings.map(c=>{
           const isPendingReview=c.status==="pending_review";
           const isRejected=c.status==="rejected";
-          return(<div key={c.id} className="casting-row" onClick={()=>!isPendingReview&&!isRejected&&openReview(c)} style={{cursor:isPendingReview||isRejected?"default":"pointer",opacity:isRejected?0.6:1}}>
-            <div className="casting-row-left">
-              <h4 style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.title}
-                {isPendingReview&&<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"rgba(200,137,0,0.12)",color:"#c88900"}}>PENDING REVIEW</span>}
-                {isRejected&&<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>REJECTED</span>}
-              </h4>
-              <p>{c.prod||"—"} · {c.location||"—"} · {(c.roles||[]).length} role{(c.roles||[]).length===1?"":"s"} · Deadline {c.deadline||"—"}{isPendingReview&&<em style={{color:"var(--t3)"}}> · Awaiting admin approval</em>}</p>
+          const isOpen=c.status==="open";
+          const isClosed=c.status==="closed";
+          const isArchived=c.status==="archived";
+          const statusBadge=isPendingReview
+            ?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"rgba(200,137,0,0.12)",color:"#c88900"}}>PENDING REVIEW</span>
+            :isRejected
+            ?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>REJECTED</span>
+            :isOpen
+            ?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"rgba(46,204,113,0.12)",color:"#1d7b44"}}>LIVE</span>
+            :isClosed
+            ?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"var(--s2)",color:"var(--t3)"}}>CLOSED</span>
+            :isArchived
+            ?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"var(--s2)",color:"var(--t3)"}}>ARCHIVED</span>
+            :null;
+          const busy=closingId===c.id;
+          return(<div key={c.id} className="casting-row" style={{cursor:"default",opacity:isRejected||isClosed||isArchived?0.7:1,flexDirection:"column",alignItems:"stretch",gap:0}}>
+            <div style={{display:"flex",alignItems:"flex-start",gap:12,width:"100%"}}>
+              <div className="casting-row-left" style={{flex:1}}>
+                <h4 style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.title}{statusBadge}</h4>
+                <p>{c.prod||"—"} · {c.location||"—"} · {(c.roles||[]).length} role{(c.roles||[]).length===1?"":"s"} · Deadline {c.deadline||"—"}{isPendingReview&&<em style={{color:"var(--t3)"}}> · Awaiting admin approval</em>}{isRejected&&<em style={{color:"#c0392b"}}> · Edit and resubmit below</em>}</p>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+                <span className="badge tag-acc">{c.type||"Film"}</span>
+                {isOpen&&<div style={{textAlign:"right"}}><div className="sub-count">{c._count}</div><div style={{fontSize:10,color:"var(--t3)"}}>submissions</div></div>}
+              </div>
             </div>
-            <div className="casting-row-right">
-              <span className="badge tag-acc">{c.type||"Film"}</span>
-              {!isPendingReview&&!isRejected&&<><div style={{textAlign:"right"}}><div className="sub-count">{c._count}</div><div style={{fontSize:10,color:"var(--t3)"}}>submissions</div></div>
-              <span style={{color:"var(--acc)",fontSize:18}}>→</span></>}
+            <div style={{display:"flex",gap:8,marginTop:10,flexWrap:"wrap",borderTop:"1px solid var(--bdr)",paddingTop:10}}>
+              {isOpen&&<button className="btn-s btn-sm" style={{fontSize:12}} onClick={()=>openReview(c)}>View Submissions →</button>}
+              <button className="btn-s btn-sm" style={{fontSize:12}} onClick={()=>setEditCasting(c)}>✏ Edit</button>
+              {isOpen&&<button className="btn-s btn-sm" style={{fontSize:12}} disabled={busy} onClick={()=>busy||toggleCastingStatus(c,"closed")}>{busy?"…":"Close Casting"}</button>}
+              {isClosed&&<button className="btn-s btn-sm" style={{fontSize:12}} disabled={busy} onClick={()=>busy||toggleCastingStatus(c,"open")}>{busy?"…":"Reopen"}</button>}
             </div>
           </div>);
         })}</div>:
@@ -4404,6 +4445,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         </>}
     </>}
 
+    {editCasting&&<CreatorEditCastingModal casting={editCasting} uid={uid} myProfile={myProfile} onClose={()=>setEditCasting(null)} onSaved={(updated)=>{setEditCasting(null);if(updated&&updated.id){setMyCastings(p=>p.map(c=>c.id===updated.id?{...c,...updated}:c));}setReloadTick(t=>t+1);if(bumpCastings)bumpCastings();}}/>}
     {showNew&&<NewCastingModal onClose={()=>setShowNew(false)} onPosted={(inserted)=>{
         // Optimistic update: prepend the newly-inserted casting to myCastings so
         // it appears immediately, before the background refetch lands.
@@ -5447,6 +5489,192 @@ function CastingCreatorVerificationBanner({myProfile}){
   </div>);
 }
 
+// ─── Creator edit casting modal — lets the CD who owns a casting edit it.
+//     - open castings: save and remain open (no re-approval needed)
+//     - pending_review: save and remain pending
+//     - rejected: save then optionally resubmit (→ pending_review)
+function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
+  const isAdmin=myProfile&&["admin","super_admin"].includes(myProfile.user_type);
+  // Security: only the owner (or admin) may edit
+  if(!isAdmin&&casting.cd_id!==uid){
+    return(<div className="modal-overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:480,textAlign:"center",padding:"40px 32px"}}>
+      <div style={{fontSize:44,marginBottom:16}}>🔒</div>
+      <h2 style={{marginBottom:10}}>Access Denied</h2>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>You can only edit castings you created.</p>
+      <button className="btn-p" onClick={onClose}>Close</button>
+    </div></div>);
+  }
+  const PROJECT_TYPES=[
+    {value:"Film & TV",label:"Film & TV"},{value:"Commercials & Branded Content",label:"Commercials & Branded Content"},
+    {value:"Theater & Musicals",label:"Theater & Musicals"},{value:"Digital & New Media",label:"Digital & New Media"},
+    {value:"Voiceover",label:"Voiceover"},{value:"Modeling & Fashion",label:"Modeling & Fashion"},{value:"Other Media",label:"Other Media"},
+  ];
+  const ETHNICITY_OPTIONS=["Any ethnicity","Black / African descent","White / European descent","Hispanic / Latino","Asian","South Asian","Middle Eastern / North African","Native American / Indigenous","Pacific Islander","Mixed ethnicity","Other / open to all"];
+  const AGE_PRESETS=["Any age","0–5","6–12","13–17","18–25","20–30","25–35","30–40","35–50","40–60","50–70","60+","Custom range"];
+  const PAY_PRESETS=["$100/day","$150/day","$200/day","$20/hour","$50/hour","Unpaid","Deferred","Negotiable","SAG Scale"];
+
+  const [err,setErr]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [uploadingImg,setUploadingImg]=useState(false);
+  const [f,setF]=useState({
+    title:casting.title||"",prod:casting.prod||"",type:casting.type||"Film & TV",
+    location:casting.location||"",pay:casting.pay||"",union:casting.union_status||"SAG-AFTRA",
+    deadline:casting.deadline||"",tagline:casting.tagline||"",synopsis:casting.synopsis||"",
+    casting_website_url:casting.casting_website_url||"",
+  });
+  const [castingImageUrl,setCastingImageUrl]=useState(casting.casting_image_url||"");
+  const [castingImagePath,setCastingImagePath]=useState(casting.casting_image_path||"");
+  const [roles,setRoles]=useState(()=>(casting.roles||[]).map(r=>({
+    id:r.id,name:r.name||"",description:r.description||"",gender:r.gender||"Any",
+    age_range:r.age_range||"",ethnicity:r.ethnicity||"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",
+  })));
+  const setField=(k,v)=>setF(p=>({...p,[k]:v}));
+  const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
+  const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:""}]);
+  const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
+
+  const uploadImage=async(file)=>{
+    if(!file)return;
+    if(file.size>5*1024*1024){setErr("Image must be 5 MB or smaller.");return;}
+    const ext=file.name.split(".").pop().toLowerCase();
+    if(!["jpg","jpeg","png","webp"].includes(ext)){setErr("Only jpg, jpeg, png, webp images allowed.");return;}
+    setUploadingImg(true);setErr("");
+    try{
+      const path=`${uid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+      const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true});
+      if(upErr)throw upErr;
+      const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
+      setCastingImageUrl(publicUrl);setCastingImagePath(path);
+    }catch(e){setErr("Image upload failed: "+e.message);}
+    finally{setUploadingImg(false);}
+  };
+
+  const validateWebsite=(url)=>{
+    if(!url)return"";
+    const trimmed=url.trim();
+    if(!trimmed)return"";
+    if(!/^https?:\/\//i.test(trimmed))return"URL must start with https:// or http://";
+    if(/^javascript:/i.test(trimmed))return"URL is not allowed.";
+    return"";
+  };
+
+  const save=async(resubmit=false)=>{
+    setErr("");
+    if(!f.title.trim()){setErr("Title is required.");return;}
+    const urlErr=validateWebsite(f.casting_website_url);
+    if(urlErr){setErr(urlErr);return;}
+    setBusy(true);
+    try{
+      // Determine new status: open → open; pending_review → pending_review; rejected + resubmit → pending_review
+      let newStatus=casting.status;
+      if(resubmit&&casting.status==="rejected")newStatus="pending_review";
+      const patch={
+        title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,
+        pay:f.pay||null,union_status:f.union||null,deadline:f.deadline||null,
+        tagline:f.tagline||null,synopsis:f.synopsis||null,
+        casting_website_url:f.casting_website_url.trim()||null,
+        casting_image_url:castingImageUrl||null,casting_image_path:castingImagePath||null,
+        status:newStatus,updated_at:new Date().toISOString(),
+      };
+      const{error:cErr}=await window.sb.from("castings").update(patch).eq("id",casting.id);
+      if(cErr)throw cErr;
+      // Diff roles
+      const originalIds=new Set((casting.roles||[]).map(r=>r.id));
+      const keptIds=new Set(roles.filter(r=>r.id).map(r=>r.id));
+      const toDelete=[...originalIds].filter(id=>!keptIds.has(id));
+      if(toDelete.length){const{error:dErr}=await window.sb.from("roles").delete().in("id",toDelete);if(dErr)throw dErr;}
+      for(const r of roles){
+        if(!r.name.trim())continue;
+        let ageRange=r.age_range||"";
+        if(r.age_preset==="Custom range")ageRange=[r.age_min,r.age_max].filter(Boolean).join("-");
+        else if(r.age_preset&&r.age_preset!=="Any age")ageRange=r.age_preset;
+        const rp={name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:ageRange||null,ethnicity:(r.ethnicity&&r.ethnicity!=="Any ethnicity")?r.ethnicity:null};
+        if(r.id){const{error:uErr}=await window.sb.from("roles").update(rp).eq("id",r.id);if(uErr)throw uErr;}
+        else{const{error:iErr}=await window.sb.from("roles").insert({...rp,casting_id:casting.id});if(iErr)throw iErr;}
+      }
+      onSaved({...casting,...patch});
+    }catch(e){setErr(e.message||"Save failed.");}finally{setBusy(false);}
+  };
+
+  const isRejected=casting.status==="rejected";
+  const isPending=casting.status==="pending_review";
+  const isLive=casting.status==="open";
+  return(<div className="modal-overlay" onClick={()=>!busy&&!uploadingImg&&onClose()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"90vh",overflowY:"auto"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4}}>
+      <h2 style={{marginBottom:0}}>Edit Casting</h2>
+      <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
+        {isLive&&<span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:99,background:"rgba(46,204,113,0.12)",color:"#1d7b44"}}>LIVE — changes go live immediately</span>}
+        {isPending&&<span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:99,background:"rgba(200,137,0,0.12)",color:"#c88900"}}>PENDING REVIEW</span>}
+        {isRejected&&<span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:99,background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>REJECTED — edit and resubmit</span>}
+      </div>
+    </div>
+    {isLive&&<p style={{color:"var(--t2)",fontSize:13,marginTop:4,marginBottom:20}}>Your casting is live. Editing it will update immediately — no admin re-approval needed.</p>}
+    {isPending&&<p style={{color:"var(--t2)",fontSize:13,marginTop:4,marginBottom:20}}>Your casting is awaiting admin approval. You can edit it while it's pending.</p>}
+    {isRejected&&<p style={{color:"var(--t2)",fontSize:13,marginTop:4,marginBottom:20}}>Edit your casting below, then click <strong>Resubmit for Review</strong> to send it back to admin.</p>}
+    {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
+
+    <div className="form-group"><label className="label">Project Title *</label><input className="input" value={f.title} onChange={e=>setField("title",e.target.value)}/></div>
+    <div className="form-row">
+      <div><label className="label">Production Company</label><input className="input" value={f.prod} onChange={e=>setField("prod",e.target.value)}/></div>
+      <div><label className="label">Project Type</label><select className="select" style={{width:"100%"}} value={f.type} onChange={e=>setField("type",e.target.value)}>{PROJECT_TYPES.map(pt=><option key={pt.value} value={pt.value}>{pt.label}</option>)}</select></div>
+    </div>
+    <div className="form-row">
+      <div><label className="label">Location</label><input className="input" value={f.location} onChange={e=>setField("location",e.target.value)} placeholder="City, State"/></div>
+      <div><label className="label">Pay / Rate</label><input className="input" value={f.pay} onChange={e=>setField("pay",e.target.value)} placeholder="e.g. $150/day"/><div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:8}}>{PAY_PRESETS.map(p=><button type="button" key={p} onClick={()=>setField("pay",p)} style={{fontSize:11,padding:"4px 10px",borderRadius:999,border:"1px solid var(--bdr)",background:f.pay===p?"var(--acc)":"var(--s2)",color:f.pay===p?"#fff":"var(--t2)",cursor:"pointer",fontWeight:500}}>{p}</button>)}</div></div>
+    </div>
+    <div className="form-row">
+      <div><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union} onChange={e=>setField("union",e.target.value)}><option>SAG-AFTRA</option><option>AEA</option><option>Non-Union</option><option>SAG-AFTRA / Non-Union</option></select></div>
+      <div><label className="label">Deadline</label><input className="input" type="date" value={f.deadline||""} onChange={e=>setField("deadline",e.target.value)}/></div>
+    </div>
+    <div className="form-group"><label className="label">Tagline</label><input className="input" value={f.tagline} onChange={e=>setField("tagline",e.target.value)} placeholder="One-line hook"/></div>
+    <div className="form-group"><label className="label">Project Summary</label><textarea className="textarea" value={f.synopsis} onChange={e=>setField("synopsis",e.target.value)}></textarea></div>
+
+    <div className="form-group">
+      <label className="label">Casting Website / Project Link</label>
+      <input className="input" value={f.casting_website_url} onChange={e=>setField("casting_website_url",e.target.value)} placeholder="https://example.com"/>
+      <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Must start with https:// or http://. Shown as "Visit Project Website" on your casting page.</p>
+    </div>
+
+    <div className="form-group">
+      <label className="label">Casting Image / Poster</label>
+      {castingImageUrl&&<div style={{marginBottom:10}}><img src={castingImageUrl} alt="Casting image" style={{maxWidth:"100%",maxHeight:200,borderRadius:8,objectFit:"cover"}}/><button type="button" onClick={()=>{setCastingImageUrl("");setCastingImagePath("");}} style={{display:"block",marginTop:6,fontSize:11,color:"#c0392b",background:"none",border:"none",cursor:"pointer",padding:0}}>✕ Remove image</button></div>}
+      <input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={e=>uploadImage(e.target.files?.[0])} disabled={uploadingImg} style={{fontSize:13}}/>
+      {uploadingImg&&<p style={{fontSize:12,color:"var(--acc)",marginTop:4}}>Uploading…</p>}
+      <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>jpg, jpeg, png, webp · 5 MB max. Shown on your casting detail page.</p>
+    </div>
+
+    <div style={{borderTop:"1px solid var(--bdr)",paddingTop:20,marginTop:4}}>
+      <div className="flex-between" style={{marginBottom:12}}><h3 style={{fontSize:16,fontWeight:700}}>Roles</h3><button className="btn-s btn-sm" onClick={addRole} type="button">+ Add Role</button></div>
+      {roles.map((r,i)=><div key={r.id||`new-${i}`} style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:12}}>
+        <div className="flex-between" style={{marginBottom:10}}><strong style={{fontSize:13}}>Role {i+1} {r.id?"":<span style={{color:"var(--acc)",fontSize:11}}>(new)</span>}</strong>{(roles.length>1||r.id===null)&&<button onClick={()=>removeRole(i)} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12}}>✕ Remove</button>}</div>
+        <div className="form-group" style={{marginBottom:10}}><label className="label">Role Name *</label><input className="input" value={r.name} onChange={e=>setRole(i,"name",e.target.value)} placeholder="e.g. Sarah — Lead"/></div>
+        <div className="form-row">
+          <div><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={r.gender} onChange={e=>setRole(i,"gender",e.target.value)}><option>Any</option><option>Male</option><option>Female</option><option>Non-Binary</option></select></div>
+          <div><label className="label">Age Range</label>
+            <select className="select" style={{width:"100%"}} value={r.age_preset} onChange={e=>setRole(i,"age_preset",e.target.value)}>
+              {AGE_PRESETS.map(ap=><option key={ap} value={ap}>{ap}</option>)}
+            </select>
+            {r.age_preset==="Custom range"&&<div style={{display:"flex",gap:8,marginTop:8}}>
+              <input className="input" value={r.age_min} onChange={e=>setRole(i,"age_min",e.target.value)} placeholder="Min age" style={{flex:1}}/>
+              <input className="input" value={r.age_max} onChange={e=>setRole(i,"age_max",e.target.value)} placeholder="Max age" style={{flex:1}}/>
+            </div>}
+          </div>
+        </div>
+        <div className="form-group" style={{marginTop:10,marginBottom:0}}><label className="label">Ethnicity</label><select className="select" style={{width:"100%"}} value={r.ethnicity} onChange={e=>setRole(i,"ethnicity",e.target.value)}>{ETHNICITY_OPTIONS.map(opt=><option key={opt} value={opt}>{opt}</option>)}</select></div>
+        <div className="form-group" style={{marginTop:10,marginBottom:0}}><label className="label">Role Description</label><textarea className="textarea" value={r.description} onChange={e=>setRole(i,"description",e.target.value)} placeholder="Describe the role..."/></div>
+      </div>)}
+    </div>
+
+    <div style={{display:"flex",gap:12,marginTop:24,paddingTop:16,borderTop:"1px solid var(--bdr)",flexWrap:"wrap"}}>
+      {isRejected
+        ?<><button className="btn-p" style={{flex:1}} onClick={()=>save(true)} disabled={busy||uploadingImg}>{busy?"Saving…":"Resubmit for Review"}</button>
+           <button className="btn-s" onClick={()=>save(false)} disabled={busy||uploadingImg}>{busy?"Saving…":"Save Draft"}</button></>
+        :<button className="btn-p" style={{flex:1}} onClick={()=>save(false)} disabled={busy||uploadingImg}>{busy?"Saving…":isLive?"Save Changes (Live)":"Save Changes"}</button>}
+      <button className="btn-s" onClick={onClose} disabled={busy||uploadingImg}>Cancel</button>
+    </div>
+  </div></div>);
+}
+
 function NewCastingModal({onClose,onPosted,uid,myProfile}){
   // Admins bypass the verification gate so they can always post.
   const isAdmin=myProfile&&(myProfile.user_type==="admin"||myProfile.user_type==="super_admin");
@@ -5455,11 +5683,14 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   const [err,setErr]=useState("");
   const [busy,setBusy]=useState(false);
   const DRAFT_KEY="sc_new_casting_draft";
-  const BLANK_F={title:"",prod:"",type:"Film & TV",location:"",pay:"",union:"SAG-AFTRA",deadline:"",tagline:"",synopsis:""};
+  const BLANK_F={title:"",prod:"",type:"Film & TV",location:"",pay:"",union:"SAG-AFTRA",deadline:"",tagline:"",synopsis:"",casting_website_url:""};
   const BLANK_ROLE={name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:""};
   // Initialize form from localStorage draft so a remount (e.g. background refresh) restores what the user typed.
   const [f,setF]=useState(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(p?.f?.title!==undefined)return p.f;}}catch(_){}return BLANK_F;});
   const [roles,setRoles]=useState(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(Array.isArray(p?.roles)&&p.roles.length)return p.roles;}}catch(_){}return[BLANK_ROLE];});
+  const [castingImageUrl,setCastingImageUrl]=useState("");
+  const [castingImagePath,setCastingImagePath]=useState("");
+  const [uploadingImg,setUploadingImg]=useState(false);
   const [inserted,setInserted]=useState(null);
   const [verifyMsg,setVerifyMsg]=useState("");
   const [verifying,setVerifying]=useState(false);
@@ -5578,14 +5809,32 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
 
   // Common pay presets shown as one-tap chips beside the pay field
   const PAY_PRESETS=["$100/day","$150/day","$200/day","$20/hour","$50/hour","Unpaid","Deferred","Negotiable","SAG Scale"];
+
+  const uploadImage=async(file)=>{
+    if(!file)return;
+    if(file.size>5*1024*1024){setErr("Image must be 5 MB or smaller.");return;}
+    const ext=file.name.split(".").pop().toLowerCase();
+    if(!["jpg","jpeg","png","webp"].includes(ext)){setErr("Only jpg, jpeg, png, webp images allowed.");return;}
+    setUploadingImg(true);setErr("");
+    try{
+      const path=`${uid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+      const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true});
+      if(upErr)throw upErr;
+      const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
+      setCastingImageUrl(publicUrl);setCastingImagePath(path);
+    }catch(e){setErr("Image upload failed: "+e.message);}
+    finally{setUploadingImg(false);}
+  };
+
   const submit=async(e)=>{
     if(e&&e.preventDefault)e.preventDefault();
     setErr("");
     if(!f.title.trim()){setErr("Title required.");return;}
     if(!roles.length||!roles[0].name.trim()){setErr("At least one role with a name is required.");return;}
+    if(f.casting_website_url.trim()&&!/^https?:\/\//i.test(f.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
     setBusy(true);
     try{
-      const payload={cd_id:uid,title:f.title.trim(),type:f.type,prod:f.prod||null,tagline:f.tagline||null,synopsis:f.synopsis||null,location:f.location||null,pay:f.pay||null,union_status:f.union,deadline:f.deadline||null,status:"pending_review",published:false};
+      const payload={cd_id:uid,title:f.title.trim(),type:f.type,prod:f.prod||null,tagline:f.tagline||null,synopsis:f.synopsis||null,location:f.location||null,pay:f.pay||null,union_status:f.union,deadline:f.deadline||null,status:"pending_review",published:false,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImageUrl||null,casting_image_path:castingImagePath||null};
       const {data:casting,error:cErr}=await window.sb.from("castings").insert(payload).select().single();
       if(cErr)throw cErr;
       const rolePayload=roles.filter(r=>r.name.trim()).map(r=>{
@@ -5638,6 +5887,20 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
       <div className="form-group"><label className="label">Tagline (short)</label><input className="input" value={f.tagline} onChange={e=>setField("tagline",e.target.value)} placeholder="One-line hook"/></div>
       <div className="form-group"><label className="label">Project Summary</label><textarea className="textarea" value={f.synopsis} onChange={e=>setField("synopsis",e.target.value)} placeholder="Describe the project — genre, tone, what the production is about..."></textarea></div>
 
+      <div className="form-group">
+        <label className="label">Casting Website / Project Link</label>
+        <input className="input" value={f.casting_website_url} onChange={e=>setField("casting_website_url",e.target.value)} placeholder="https://example.com"/>
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Optional. Must start with https:// or http://.</p>
+      </div>
+
+      <div className="form-group">
+        <label className="label">Casting Image / Poster</label>
+        {castingImageUrl&&<div style={{marginBottom:10}}><img src={castingImageUrl} alt="Casting image" style={{maxWidth:"100%",maxHeight:180,borderRadius:8,objectFit:"cover"}}/><button type="button" onClick={()=>{setCastingImageUrl("");setCastingImagePath("");}} style={{display:"block",marginTop:6,fontSize:11,color:"#c0392b",background:"none",border:"none",cursor:"pointer",padding:0}}>✕ Remove image</button></div>}
+        <input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={e=>uploadImage(e.target.files?.[0])} disabled={uploadingImg} style={{fontSize:13}}/>
+        {uploadingImg&&<p style={{fontSize:12,color:"var(--acc)",marginTop:4}}>Uploading…</p>}
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Optional. jpg, jpeg, png, webp · 5 MB max.</p>
+      </div>
+
       <div style={{borderTop:"1px solid var(--bdr)",paddingTop:20,marginTop:20}}>
         <div className="flex-between" style={{marginBottom:12}}><h3 style={{fontSize:16,fontWeight:700}}>Roles</h3><button type="button" className="btn-s btn-sm" onClick={addRole}>+ Add Role</button></div>
         {roles.map((r,i)=><div key={i} style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:12}}>
@@ -5665,8 +5928,8 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
       </div>
 
       <div style={{display:"flex",gap:12,marginTop:24}}>
-        <button type="button" className="btn-p" style={{flex:1}} onClick={submit} disabled={busy}>{busy?"Submitting…":"Submit for Review"}</button>
-        <button type="button" className="btn-s" onClick={handleClose} disabled={busy}>Cancel</button>
+        <button type="button" className="btn-p" style={{flex:1}} onClick={submit} disabled={busy||uploadingImg}>{busy?"Submitting…":uploadingImg?"Uploading image…":"Submit for Review"}</button>
+        <button type="button" className="btn-s" onClick={handleClose} disabled={busy||uploadingImg}>Cancel</button>
       </div>
     </>}
   </div></div>);
@@ -7947,22 +8210,43 @@ function AdminSettings(){
 function EditCastingModal({casting,onClose,onSaved}){
   const [err,setErr]=useState("");
   const [busy,setBusy]=useState(false);
+  const [uploadingImg,setUploadingImg]=useState(false);
   const [f,setF]=useState({
     title:casting.title||"",prod:casting.prod||"",type:casting.type||"Film",
     location:casting.location||"",pay:casting.pay||"",union_status:casting.union_status||"Non-Union",
-    deadline:casting.deadline||"",tagline:casting.tagline||"",synopsis:casting.synopsis||""
+    deadline:casting.deadline||"",tagline:casting.tagline||"",synopsis:casting.synopsis||"",
+    casting_website_url:casting.casting_website_url||"",
   });
+  const [castingImageUrl,setCastingImageUrl]=useState(casting.casting_image_url||"");
+  const [castingImagePath,setCastingImagePath]=useState(casting.casting_image_path||"");
   const [roles,setRoles]=useState(()=>(casting.roles||[]).map(r=>({id:r.id,name:r.name||"",description:r.description||"",gender:r.gender||"Any",age_range:r.age_range||"",ethnicity:r.ethnicity||"Any"})));
   const setField=(k,v)=>setF(p=>({...p,[k]:v}));
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
   const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any"}]);
   const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
+  const uploadImage=async(file)=>{
+    if(!file)return;
+    if(file.size>5*1024*1024){setErr("Image must be 5 MB or smaller.");return;}
+    const ext=file.name.split(".").pop().toLowerCase();
+    if(!["jpg","jpeg","png","webp"].includes(ext)){setErr("Only jpg, jpeg, png, webp images allowed.");return;}
+    setUploadingImg(true);setErr("");
+    try{
+      // Admin uploads go into a shared "admin" folder
+      const path=`admin/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+      const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true});
+      if(upErr)throw upErr;
+      const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
+      setCastingImageUrl(publicUrl);setCastingImagePath(path);
+    }catch(e){setErr("Image upload failed: "+e.message);}
+    finally{setUploadingImg(false);}
+  };
   const save=async()=>{
     setErr("");
     if(!f.title.trim()){setErr("Title is required.");return;}
+    if(f.casting_website_url.trim()&&!/^https?:\/\//i.test(f.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
     setBusy(true);
     try{
-      const patch={title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,pay:f.pay||null,union_status:f.union_status||null,deadline:f.deadline||null,tagline:f.tagline||null,synopsis:f.synopsis||null};
+      const patch={title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,pay:f.pay||null,union_status:f.union_status||null,deadline:f.deadline||null,tagline:f.tagline||null,synopsis:f.synopsis||null,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImageUrl||null,casting_image_path:castingImagePath||null};
       const {error:cErr}=await window.sb.from("castings").update(patch).eq("id",casting.id);
       if(cErr)throw cErr;
       // Diff roles: update existing, insert new, delete removed
@@ -8006,6 +8290,13 @@ function EditCastingModal({casting,onClose,onSaved}){
     </div>
     <div className="form-group"><label className="label">Tagline</label><input className="input" value={f.tagline} onChange={e=>setField("tagline",e.target.value)}/></div>
     <div className="form-group"><label className="label">Synopsis</label><textarea className="textarea" value={f.synopsis} onChange={e=>setField("synopsis",e.target.value)}></textarea></div>
+    <div className="form-group"><label className="label">Casting Website / Project Link</label><input className="input" value={f.casting_website_url} onChange={e=>setField("casting_website_url",e.target.value)} placeholder="https://example.com"/></div>
+    <div className="form-group">
+      <label className="label">Casting Image / Poster</label>
+      {castingImageUrl&&<div style={{marginBottom:8}}><img src={castingImageUrl} alt="" style={{maxWidth:"100%",maxHeight:160,borderRadius:8,objectFit:"cover"}}/><button type="button" onClick={()=>{setCastingImageUrl("");setCastingImagePath("");}} style={{display:"block",marginTop:4,fontSize:11,color:"#c0392b",background:"none",border:"none",cursor:"pointer",padding:0}}>✕ Remove</button></div>}
+      <input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={e=>uploadImage(e.target.files?.[0])} disabled={uploadingImg} style={{fontSize:13}}/>
+      {uploadingImg&&<p style={{fontSize:12,color:"var(--acc)",marginTop:4}}>Uploading…</p>}
+    </div>
 
     <div style={{borderTop:"1px solid var(--bdr)",paddingTop:20,marginTop:12}}>
       <div className="flex-between" style={{marginBottom:12}}><h3 style={{fontSize:16,fontWeight:700}}>Roles</h3><button className="btn-s btn-sm" onClick={addRole} type="button">+ Add Role</button></div>
@@ -8022,8 +8313,8 @@ function EditCastingModal({casting,onClose,onSaved}){
     </div>
 
     <div style={{display:"flex",gap:12,marginTop:24,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
-      <button className="btn-p" style={{flex:1}} onClick={save} disabled={busy}>{busy?"Saving…":"Save Changes"}</button>
-      <button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
+      <button className="btn-p" style={{flex:1}} onClick={save} disabled={busy||uploadingImg}>{busy?"Saving…":uploadingImg?"Uploading…":"Save Changes"}</button>
+      <button className="btn-s" onClick={onClose} disabled={busy||uploadingImg}>Cancel</button>
     </div>
   </div></div>);
 }
