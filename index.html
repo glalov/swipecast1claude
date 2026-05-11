@@ -2451,6 +2451,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const [showUpgradePrompt,setShowUpgradePrompt]=useState(false);
   const [todayCount,setTodayCount]=useState(0); // free actor's submission count today
   const [cdProfile,setCdProfile]=useState(null); // CD's profile for verification badges
+  const [isSaved,setIsSaved]=useState(false);
+  const [savingCasting,setSavingCasting]=useState(false);
   const submittingRef=useRef(false);
   const withTimeout=(promise,ms=20000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Please try again.`)),ms))]);
   const c=casting;
@@ -2505,6 +2507,40 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       setCdProfile(c.profiles); // embedded from FeaturedCastingsSlider
     }
   })();},[c,isLoggedIn,isDbCasting,isTalent,isPremium]);
+
+  // Track recently viewed + check saved state for logged-in talent
+  useEffect(()=>{
+    if(!isLoggedIn||!isDbCasting||!c?.id)return;
+    const uid=session?.user?.id;
+    if(!uid)return;
+    // Track recently viewed (upsert so repeat views just update the timestamp)
+    window.sb.from("recently_viewed_castings")
+      .upsert({user_id:uid,casting_id:c.id,viewed_at:new Date().toISOString()},{onConflict:"user_id,casting_id"})
+      .then(({error})=>{if(error)console.warn("[recently-viewed] upsert:",error.message);});
+    // Check if this casting is already saved
+    if(isTalent){
+      window.sb.from("saved_castings").select("casting_id",{count:"exact",head:true}).eq("user_id",uid).eq("casting_id",c.id)
+        .then(({count})=>setIsSaved((count||0)>0));
+    }
+  },[c?.id,isLoggedIn,isDbCasting,isTalent,session?.user?.id]);
+
+  const handleToggleSave=async()=>{
+    if(!isLoggedIn){onRequireAuth&&onRequireAuth(c,null);return;}
+    const uid=session?.user?.id;
+    if(!uid||savingCasting)return;
+    setSavingCasting(true);
+    try{
+      if(isSaved){
+        await window.sb.from("saved_castings").delete().eq("user_id",uid).eq("casting_id",c.id);
+        setIsSaved(false);
+      }else{
+        await window.sb.from("saved_castings").insert({user_id:uid,casting_id:c.id});
+        setIsSaved(true);
+      }
+    }catch(e){console.warn("[save-casting]",e);}
+    finally{setSavingCasting(false);}
+  };
+
   const submitApp=async()=>{
     if(submittingRef.current){console.log("[apply] blocked: already submitting");return;}
     submittingRef.current=true;
@@ -2577,7 +2613,14 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   return(<div className="page" style={{maxWidth:920}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:20,flexWrap:"wrap"}}>
       <button className="btn-s btn-sm" onClick={onBack}>← Back to Castings</button>
-      <button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this casting">⚑ Report</button>
+      <div style={{display:"flex",gap:8,alignItems:"center"}}>
+        {isLoggedIn&&isTalent&&isDbCasting&&<button
+          disabled={savingCasting}
+          onClick={handleToggleSave}
+          style={{fontSize:12,padding:"5px 12px",borderRadius:7,border:`1px solid ${isSaved?"var(--acc)":"var(--bdr)"}`,background:isSaved?"rgba(99,60,180,0.08)":"var(--s2)",color:isSaved?"var(--acc)":"var(--t2)",cursor:savingCasting?"not-allowed":"pointer",fontFamily:"inherit",fontWeight:600,transition:"all .15s"}}
+        >{savingCasting?"…":isSaved?"✓ Saved":"🔖 Save"}</button>}
+        <button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this casting">⚑ Report</button>
+      </div>
     </div>
 
     <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
@@ -3157,7 +3200,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
 // ═══════════════════════════════════════════
 // PAGE: TALENT DASHBOARD — actor/talent accounts
 // ═══════════════════════════════════════════
-function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
+function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,castingsVersion=0}){
   const uid=session?.user?.id;
   const isPremium=myProfile?.membership_status==="active";
   const firstName=(myProfile?.display_name||"").split(" ")[0]||"there";
@@ -3170,12 +3213,12 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
   const [msgsLoading,setMsgsLoading]=useState(true);
   const [recommended,setRecommended]=useState([]);
   const [recsLoading,setRecsLoading]=useState(true);
-  // Saved castings — placeholder until saved_castings table is added.
-  // TODO: query saved_castings (talent_id, casting_id, saved_at) joined to castings.
-  const [savedCastings]=useState([]);
-  // Recently viewed — placeholder until recently_viewed_castings table is added.
-  // TODO: track in DB table (talent_id, casting_id, viewed_at) OR localStorage array refreshed from DB.
-  const [recentlyViewed]=useState([]);
+  const [savedCastings,setSavedCastings]=useState([]);
+  const [savedIds,setSavedIds]=useState(new Set());
+  const [savedLoading,setSavedLoading]=useState(true);
+  const [recentlyViewed,setRecentlyViewed]=useState([]);
+  const [rvLoading,setRvLoading]=useState(true);
+  const [savingId,setSavingId]=useState(null);
   const [globalUnreadCount,setGlobalUnreadCount]=useState(0);
 
   const fmtDate=(s)=>{if(!s)return"—";const d=new Date(s);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
@@ -3186,7 +3229,7 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
     setAppsLoading(true);
     try{
       const{data,error}=await window.sb.from("applications")
-        .select("id,status,created_at,casting_id,role_id,castings(id,title,slug,type,location,deadline),roles(id,name)")
+        .select("id,status,created_at,casting_id,role_id,castings(id,title,type,location,deadline),roles(id,name)")
         .eq("talent_id",uid)
         .order("created_at",{ascending:false});
       if(error)throw error;
@@ -3236,19 +3279,94 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
   },[uid]);
 
   const loadRecommended=useCallback(async()=>{
-    // TODO: implement profile-based matching using: location, gender, age_range, union_status, skills.
-    // For now shows most recent open castings as a baseline.
     try{
       const{data}=await window.sb.from("castings")
-        .select("id,title,type,location,deadline,slug,roles(id,name)")
-        .eq("status","open")
-        .order("created_at",{ascending:false}).limit(6);
-      setRecommended(data||[]);
+        .select("id,title,type,location,deadline,roles(id,name,gender,age_range)")
+        .eq("status","open").eq("published",true)
+        .order("created_at",{ascending:false}).limit(50);
+      const castingsList=data||[];
+      const talentGender=(myProfile?.gender||"").toLowerCase().trim();
+      const talentAgeRange=myProfile?.age_range||"";
+      const talentAge=myProfile?.age||null;
+      const talentLocation=(myProfile?.location||"").toLowerCase();
+      let talentAgeMin=null,talentAgeMax=null;
+      const amatch=talentAgeRange.match(/(\d+)\s*[-–]\s*(\d+)/);
+      if(amatch){talentAgeMin=parseInt(amatch[1]);talentAgeMax=parseInt(amatch[2]);}
+      else if(talentAge){talentAgeMin=talentAge-3;talentAgeMax=talentAge+3;}
+      const scored=castingsList.map(c=>{
+        let score=0;
+        for(const r of(c.roles||[])){
+          const rg=(r.gender||"any").toLowerCase();
+          const gm=rg==="any"||!talentGender||rg===talentGender||rg.includes(talentGender)||talentGender.includes(rg);
+          if(gm)score+=2;
+          if(r.age_range&&talentAgeMin!==null){
+            const rm=r.age_range.match(/(\d+)\s*[-–]\s*(\d+)/);
+            if(rm){const rMin=parseInt(rm[1]),rMax=parseInt(rm[2]);if(talentAgeMin<=rMax&&talentAgeMax>=rMin)score+=2;}
+          }
+        }
+        if(talentLocation){
+          const cl=(c.location||"").toLowerCase();
+          const tc=talentLocation.split(",")[0].trim(),cc=cl.split(",")[0].trim();
+          if(tc&&cc&&tc===cc)score+=3;
+          else if(tc&&cl.includes(tc))score+=1;
+        }
+        return{...c,_score:score};
+      });
+      scored.sort((a,b)=>b._score-a._score);
+      setRecommended(scored.slice(0,3));
     }catch(e){console.warn("[talent-dashboard] recommended:",e);}
     finally{setRecsLoading(false);}
-  },[]);
+  },[myProfile?.gender,myProfile?.age_range,myProfile?.age,myProfile?.location]);
 
-  useEffect(()=>{loadApps();loadMessages();loadRecommended();},[loadApps,loadMessages,loadRecommended]);
+  const loadSaved=useCallback(async()=>{
+    if(!uid){setSavedLoading(false);return;}
+    try{
+      const{data,error}=await window.sb.from("saved_castings")
+        .select("casting_id,created_at,castings(id,title,type,location,deadline)")
+        .eq("user_id",uid)
+        .order("created_at",{ascending:false});
+      if(error)throw error;
+      const list=(data||[]).filter(s=>s.castings);
+      setSavedCastings(list);
+      setSavedIds(new Set(list.map(s=>s.casting_id)));
+    }catch(e){console.warn("[talent-dashboard] saved:",e);}
+    finally{setSavedLoading(false);}
+  },[uid]);
+
+  const loadRecentlyViewed=useCallback(async()=>{
+    if(!uid){setRvLoading(false);return;}
+    try{
+      const{data,error}=await window.sb.from("recently_viewed_castings")
+        .select("casting_id,viewed_at,castings(id,title,type,location,deadline)")
+        .eq("user_id",uid)
+        .order("viewed_at",{ascending:false})
+        .limit(5);
+      if(error)throw error;
+      setRecentlyViewed((data||[]).filter(r=>r.castings));
+    }catch(e){console.warn("[talent-dashboard] recently-viewed:",e);}
+    finally{setRvLoading(false);}
+  },[uid]);
+
+  const toggleSave=useCallback(async(castingId,castingData)=>{
+    if(!uid||savingId)return;
+    setSavingId(castingId);
+    try{
+      if(savedIds.has(castingId)){
+        await window.sb.from("saved_castings").delete().eq("user_id",uid).eq("casting_id",castingId);
+        setSavedIds(prev=>{const n=new Set(prev);n.delete(castingId);return n;});
+        setSavedCastings(prev=>prev.filter(s=>s.casting_id!==castingId));
+      }else{
+        const{error}=await window.sb.from("saved_castings").insert({user_id:uid,casting_id:castingId});
+        if(!error){
+          setSavedIds(prev=>new Set([...prev,castingId]));
+          if(castingData)setSavedCastings(prev=>[{casting_id:castingId,created_at:new Date().toISOString(),castings:castingData},...prev]);
+        }
+      }
+    }catch(e){console.warn("[toggle-save]",e);}
+    finally{setSavingId(null);}
+  },[uid,savedIds,savingId]);
+
+  useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadRecentlyViewed();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed]);
 
   const filteredApps=useMemo(()=>{
     if(appsTab==="all")return applications;
@@ -3356,7 +3474,10 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
               {appsLoading?(
                 <SlateCueLoader size="inline" text="Loading applications…"/>
               ):appsErr?(
-                <div style={{color:"var(--red)",fontSize:13,padding:"8px 0"}}>{appsErr}</div>
+                <div style={{textAlign:"center",padding:"28px 0"}}>
+                  <p style={{color:"var(--red)",fontSize:13,marginBottom:12}}>Applications could not load. Please try again.</p>
+                  <button className="btn-s btn-sm" onClick={loadApps}>Retry</button>
+                </div>
               ):filteredApps.length===0?(
                 <div style={{textAlign:"center",padding:"40px 0"}}>
                   <div style={{fontSize:32,marginBottom:10}}>📋</div>
@@ -3390,7 +3511,7 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
                         </div>
                         <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
                           <span style={{fontSize:12,fontWeight:600,padding:"4px 10px",borderRadius:6,background:st.bg,color:st.color,border:`1px solid ${st.color}33`}}>{st.label}</span>
-                          {app.castings?.slug&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px"}} onClick={()=>onNavigate("search")}>View →</button>}
+                          {app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px"}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View →</button>}
                         </div>
                       </div>
                     );
@@ -3448,7 +3569,7 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
             <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div>
                 <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Recommended for You</h2>
-                <p style={{fontSize:11,color:"var(--t3)",margin:"2px 0 0"}}>Based on recent activity · profile matching coming soon</p>
+                <p style={{fontSize:11,color:"var(--t3)",margin:"2px 0 0"}}>Matched to your gender, age range and location</p>
               </div>
               <button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse All →</button>
             </div>
@@ -3457,20 +3578,36 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
                 <SlateCueLoader size="inline" text="Loading recommendations…"/>
               ):recommended.length===0?(
                 <div style={{textAlign:"center",padding:"28px 0"}}>
-                  <p style={{color:"var(--t2)",fontSize:14,margin:"0 0 14px"}}>No open castings right now.</p>
+                  <p style={{color:"var(--t2)",fontSize:14,margin:"0 0 14px"}}>No matching castings right now.</p>
                   <button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse All Castings</button>
                 </div>
               ):(
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                <div style={{display:"flex",flexDirection:"column",gap:12}}>
                   {recommended.map(c=>{
                     const dl=c.deadline?fmtDeadline(c.deadline):null;
+                    const isSaved=savedIds.has(c.id);
+                    const isSaving=savingId===c.id;
+                    const firstRole=(c.roles||[])[0];
                     return(
-                      <div key={c.id} style={{padding:"14px 16px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",flexDirection:"column",gap:6,transition:"border-color .15s"}}>
-                        <div style={{fontWeight:700,fontSize:13,color:"var(--t1)",lineHeight:1.3}}>{c.title}</div>
-                        <div style={{fontSize:11,color:"var(--t2)"}}>{c.type}{c.location?` · ${c.location}`:""}</div>
-                        {c.roles?.length>0&&<div style={{fontSize:11,color:"var(--t3)"}}>Roles: {c.roles.slice(0,2).map(r=>r.name).join(", ")}{c.roles.length>2?` +${c.roles.length-2}`:""}</div>}
+                      <div key={c.id} style={{padding:"14px 16px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",flexDirection:"column",gap:6}}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
+                          <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",lineHeight:1.3}}>{c.title}</div>
+                          <button
+                            disabled={isSaving}
+                            onClick={()=>toggleSave(c.id,{id:c.id,title:c.title,type:c.type,location:c.location,deadline:c.deadline})}
+                            style={{fontSize:11,padding:"3px 9px",borderRadius:6,border:`1px solid ${isSaved?"var(--acc)":"var(--bdr)"}`,background:isSaved?"rgba(99,60,180,0.08)":"var(--s2)",color:isSaved?"var(--acc)":"var(--t2)",cursor:isSaving?"not-allowed":"pointer",flexShrink:0,fontFamily:"inherit",fontWeight:600,transition:"all .15s"}}
+                          >{isSaving?"…":isSaved?"✓ Saved":"Save"}</button>
+                        </div>
+                        <div style={{fontSize:12,color:"var(--t2)"}}>{c.type}{c.location?` · ${c.location}`:""}</div>
+                        {firstRole&&<div style={{fontSize:11,color:"var(--t3)"}}>
+                          {firstRole.name&&<span style={{fontWeight:600,color:"var(--t2)"}}>{firstRole.name}</span>}
+                          {firstRole.gender&&firstRole.gender!=="Any"&&<span> · {firstRole.gender}</span>}
+                          {firstRole.age_range&&<span> · Age {firstRole.age_range}</span>}
+                        </div>}
                         {dl&&<div style={{fontSize:11,color:dl.urgent?"var(--red)":"var(--t3)",fontWeight:dl.urgent?600:400}}>Deadline: {dl.label}</div>}
-                        <button className="btn-s btn-sm" style={{fontSize:11,marginTop:4,alignSelf:"flex-start"}} onClick={()=>onNavigate("search")}>View Casting →</button>
+                        <div style={{display:"flex",gap:8,marginTop:4}}>
+                          <button className="btn-p btn-sm" style={{fontSize:11}} onClick={()=>onViewCastingById?onViewCastingById(c.id):onNavigate("search")}>View Casting</button>
+                        </div>
                       </div>
                     );
                   })}
@@ -3480,16 +3617,15 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
           </div>
 
           {/* Saved Castings */}
-          {/* TODO: query saved_castings table (talent_id uuid, casting_id uuid, saved_at timestamptz) joined to castings.
-              Add a bookmark icon on CastingDetailPage that inserts/deletes a saved_castings row.
-              RLS: talent can only read/write their own rows. */}
           <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
             <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Saved Castings</h2>
               {savedCastings.length>0&&<span style={{fontSize:12,color:"var(--t3)"}}>{savedCastings.length} saved</span>}
             </div>
             <div style={{padding:24}}>
-              {savedCastings.length===0?(
+              {savedLoading?(
+                <SlateCueLoader size="inline" text="Loading saved castings…"/>
+              ):savedCastings.length===0?(
                 <div style={{textAlign:"center",padding:"28px 0"}}>
                   <div style={{fontSize:28,marginBottom:8}}>🔖</div>
                   <p style={{color:"var(--t2)",fontSize:14,marginBottom:14,margin:"0 0 14px"}}>You haven't saved any castings yet.</p>
@@ -3497,15 +3633,22 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
                 </div>
               ):(
                 <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                  {savedCastings.map(c=>(
-                    <div key={c.id} style={{padding:"12px 14px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
-                      <div style={{minWidth:0}}>
-                        <div style={{fontWeight:600,fontSize:13,color:"var(--t1)"}}>{c.title}</div>
-                        <div style={{fontSize:11,color:"var(--t3)"}}>{c.type}{c.location?` · ${c.location}`:""}</div>
+                  {savedCastings.map(s=>{
+                    const c=s.castings;
+                    const dl=c?.deadline?fmtDeadline(c.deadline):null;
+                    return(
+                      <div key={s.casting_id} style={{padding:"12px 14px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+                        <div style={{minWidth:0,flex:1}}>
+                          <div style={{fontWeight:600,fontSize:13,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c?.title||"Unknown"}</div>
+                          <div style={{fontSize:11,color:"var(--t3)",marginTop:2}}>{c?.type}{c?.location?` · ${c.location}`:""}{dl?<span style={{marginLeft:6,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>:null}</div>
+                        </div>
+                        <div style={{display:"flex",gap:6,flexShrink:0}}>
+                          <button className="btn-p btn-sm" style={{fontSize:11}} onClick={()=>onViewCastingById?onViewCastingById(s.casting_id):onNavigate("search")}>View</button>
+                          <button className="btn-s btn-sm" style={{fontSize:11,color:"var(--red)"}} onClick={()=>toggleSave(s.casting_id)}>Remove</button>
+                        </div>
                       </div>
-                      <button className="btn-s btn-sm" style={{fontSize:11,flexShrink:0}} onClick={()=>onNavigate("search")}>View →</button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -3604,27 +3747,30 @@ function TalentDashboard({session,myProfile,onNavigate,castingsVersion=0}){
           </div>
 
           {/* Recently Viewed Castings */}
-          {/* TODO: implement — needs a recently_viewed_castings table (id, talent_id uuid, casting_id uuid, viewed_at timestamptz)
-              OR a localStorage array of casting IDs synced to DB. Update on CastingDetailPage mount.
-              Limit to 5 most recent entries. */}
           <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:20}}>
             <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:"0 0 12px 0"}}>Recently Viewed</h3>
-            {recentlyViewed.length===0?(
+            {rvLoading?(
+              <SlateCueLoader size="inline" text="Loading…"/>
+            ):recentlyViewed.length===0?(
               <>
                 <p style={{color:"var(--t3)",fontSize:13,margin:"0 0 14px"}}>You haven't viewed any casting calls yet.</p>
                 <button className="btn-s btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("search")}>Browse Castings →</button>
               </>
             ):(
               <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
-                {recentlyViewed.map(c=>(
-                  <div key={c.id} style={{padding:"10px 12px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
-                    <div style={{minWidth:0}}>
-                      <div style={{fontWeight:600,fontSize:12,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.title}</div>
-                      <div style={{fontSize:11,color:"var(--t3)"}}>{c.type}{c.location?` · ${c.location}`:""}</div>
+                {recentlyViewed.map(r=>{
+                  const c=r.castings;
+                  return(
+                    <div key={r.casting_id} style={{padding:"10px 12px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
+                      <div style={{minWidth:0}}>
+                        <div style={{fontWeight:600,fontSize:12,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c?.title||"Unknown"}</div>
+                        <div style={{fontSize:11,color:"var(--t3)"}}>{c?.type}{c?.location?` · ${c.location}`:""}</div>
+                        <div style={{fontSize:10,color:"var(--t3)",marginTop:1}}>Viewed {fmtDate(r.viewed_at)}</div>
+                      </div>
+                      <button className="btn-s btn-sm" style={{fontSize:10,padding:"3px 8px",flexShrink:0}} onClick={()=>onViewCastingById?onViewCastingById(r.casting_id):onNavigate("search")}>View</button>
                     </div>
-                    <button className="btn-s btn-sm" style={{fontSize:10,padding:"3px 8px",flexShrink:0}} onClick={()=>onNavigate("search")}>View</button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -8105,7 +8251,7 @@ function App(){
     };
   },[session?.user?.id,!!myProfile,authReady,loadProfile]);
 
-  const pushHist=(p,opts={})=>{try{let url=PAGE_PATH[p]||"/";const st={swipecast:true,page:p,...opts};if(p==="casting-detail"&&opts.slug){url=`/casting/${encodeURIComponent(opts.slug)}`;st.castingSlug=opts.slug;}window.history.pushState(st,"",url);}catch(e){}};
+  const pushHist=(p,opts={})=>{try{let url=PAGE_PATH[p]||"/";const st={swipecast:true,page:p,...opts};if(p==="casting-detail"&&opts.slug){url=`/casting/${encodeURIComponent(opts.slug)}`;st.castingSlug=opts.slug;}else if(p==="casting-detail"&&opts.id){url=`/casting/${encodeURIComponent(opts.id)}`;}window.history.pushState(st,"",url);}catch(e){}};
   const navigate=useCallback((p)=>{
     window.scrollTo(0,0);
     let target=p;
@@ -8122,6 +8268,29 @@ function App(){
   const viewProfile=(t)=>{setPrevPage(page);setViewingProfile(t);setPage("profile");pushHist("profile");};
   const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");pushHist("auth-gate");};
   const clearPendingApply=useCallback(()=>setPendingApply(null),[]);
+  const viewCastingById=useCallback(async(castingId)=>{
+    if(!castingId)return;
+    try{
+      const{data,error}=await window.sb.from("castings")
+        .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,cd_id,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+        .eq("id",castingId).maybeSingle();
+      if(error||!data)return;
+      const c={
+        id:data.id,title:data.title,type:data.type||"Film",prod:data.prod||"",
+        tagline:data.tagline||"",synopsis:data.synopsis||"",desc:data.synopsis||data.tagline||"",
+        location:data.location||"",pay:data.pay||"",rate:data.pay||"",
+        deadline:data.deadline||"",union:data.union_status||"",submissions:0,
+        cd_id:data.cd_id,_cd:data.profiles||null,
+        roles:(data.roles||[]).map(r=>({
+          name:r.name||"",desc:r.description||"",type:"Supporting",
+          ageRange:r.age_range||"",gender:r.gender||"Any",
+          ethnicity:r.ethnicity||"Any",pay:r.pay||"",
+        })),
+      };
+      setPrevPage(page);setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");
+      pushHist("casting-detail",{id:castingId});
+    }catch(e){console.warn("[viewCastingById]",e);}
+  },[page]);
   const completeAuth=()=>{if(pendingApply){const c=pendingApply.casting;setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c?.slug});}else{setPage("home");pushHist("home");}};
   const onLoggedIn=async(user)=>{
     // onAuthStateChange SIGNED_IN will populate myProfile in parallel — do NOT call
@@ -8257,7 +8426,7 @@ function App(){
         {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
         {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
         {page==="dashboard"&&(!authReady?<PageLoader/>:<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>)}
-        {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&myProfile?.user_type==="talent"?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} castingsVersion={castingsVersion}/>:<div style={{minHeight:"60vh"}}/>)}
+        {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&myProfile?.user_type==="talent"?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>:<div style={{minHeight:"60vh"}}/>)}
         {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
         {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate}/>:null)}
         {page==="account-settings"&&(!authReady?<PageLoader/>:isLoggedIn?<AccountSettingsPage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onSignOut={signOut} isSuperAdmin={isSuperAdmin}/>:<div style={{minHeight:"60vh"}}/>)}

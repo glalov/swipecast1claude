@@ -1,5 +1,79 @@
 # Project Status
 
+## 2026-05-11 — Talent Dashboard fully functional (v3)
+
+### Root cause of "slug does not exist" error
+
+The `castings` database table has no `slug` column. The previous TalentDashboard queries included `slug` in two selects: the applications join (`castings(id,title,slug,...)`) and the recommended castings query (`id,title,...,slug,...`). PostgREST rejected both queries with "column castings_1.slug does not exist". Fixed by removing `slug` from all castings DB selects. Navigation now uses casting `id` instead.
+
+### Schema changes applied
+
+**Migration `add_saved_and_recently_viewed_castings`** (applied 2026-05-11):
+
+```sql
+-- saved_castings
+create table public.saved_castings (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade not null,
+  casting_id uuid references public.castings(id) on delete cascade not null,
+  created_at timestamptz default now() not null,
+  unique(user_id, casting_id)
+);
+-- RLS: select/insert/delete by user_id = auth.uid()
+
+-- recently_viewed_castings
+create table public.recently_viewed_castings (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade not null,
+  casting_id uuid references public.castings(id) on delete cascade not null,
+  viewed_at timestamptz default now() not null,
+  unique(user_id, casting_id)
+);
+-- RLS: select/insert/update/delete by user_id = auth.uid()
+```
+
+`NOTIFY pgrst, 'reload schema'` executed after migration.
+
+### Files changed
+
+| File | What changed |
+|---|---|
+| `swipecast-full.jsx` | Removed `slug` from all castings DB queries. Added `saved_castings` and `recently_viewed_castings` real DB queries to TalentDashboard. Replaced placeholder saved/recently-viewed sections with live data. Added profile-aware recommended castings (gender/age/location matching). Added `onViewCastingById` prop + `viewCastingById` helper in App that fetches full casting by id and navigates to casting-detail. Added Save/Unsave button to CastingDetailPage for logged-in talent. Added recently-viewed upsert on CastingDetailPage mount. Fixed `pushHist` to support id-based casting URLs. |
+| `index.html` | Rebuilt via `python3 build-html.py`. |
+
+### Dashboard sections — updated status
+
+| Section | Status |
+|---|---|
+| **Recommended for You** | Functional — fetches open/published castings, scores by talent gender + age_range + location match, shows top 3 with Save button per card |
+| **Applications** | Functional — real DB data, slug error fixed, "View →" navigates to full CastingDetailPage via `viewCastingById` |
+| **Saved Castings** | Functional — reads/writes `saved_castings` table. Save/Unsave from dashboard and from CastingDetailPage. Remove button in saved list. |
+| **Recently Viewed** | Functional — reads `recently_viewed_castings`. CastingDetailPage upserts a row on every view by a logged-in user. Shows last 5 with View button. |
+| **Messages Inbox** | Functional (unchanged) |
+| **Profile Completion** | Functional (unchanged) — `age_range` field counted |
+| **Media Locker** | Functional (unchanged) |
+| **Plan Status** | Functional (unchanged) |
+
+### What is still placeholder / needs future backend work
+
+| Feature | What's needed |
+|---|---|
+| **Invites tab** | Needs `invites` table — CDs invite specific talent to castings |
+| **Drafts tab** | Needs draft application system |
+| **Application "View Application"** | No separate application detail page yet |
+| **Recommended scoring** | Currently client-side. Could be a Supabase RPC for better performance at scale |
+
+### Live test notes
+
+- slug error is eliminated — applications query uses `castings(id,title,type,location,deadline)` with no slug
+- Save button appears on CastingDetailPage for logged-in talent (DB castings only)
+- Talent viewing a casting auto-records it in `recently_viewed_castings`
+- Saved and recently viewed sections show real data from DB
+- "View Casting" from dashboard fetches full casting and opens CastingDetailPage
+- "View →" in applications does the same
+
+---
+
 ## 2026-05-10 — Enhanced Talent Dashboard (v2)
 
 ### Files changed
