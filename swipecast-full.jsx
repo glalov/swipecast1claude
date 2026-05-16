@@ -627,6 +627,26 @@ const SOCIAL_LINK_FIELDS=[
 
 const CREDIT_CATEGORIES=["Film & TV","Theatre","Commercials","Other"];
 
+// ─── Social platform icon component (inline SVG, no external library needed)
+function SocialIcon({platform,size=18}){
+  const s={width:size,height:size,display:"block",flexShrink:0};
+  const icons={
+    instagram_url:<svg style={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>,
+    imdb_url:<svg style={s} viewBox="0 0 24 24" fill="currentColor"><rect x="1" y="6" width="22" height="12" rx="2" fill="#F5C518"/><text x="12" y="15.5" textAnchor="middle" fontSize="6.5" fontWeight="900" fill="#000" fontFamily="Arial,sans-serif">IMDb</text></svg>,
+    twitter_url:<svg style={s} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>,
+    youtube_url:<svg style={s} viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>,
+    vimeo_url:<svg style={s} viewBox="0 0 24 24" fill="currentColor"><path d="M23.977 6.416c-.105 2.338-1.739 5.543-4.894 9.609-3.268 4.247-6.026 6.37-8.29 6.37-1.409 0-2.578-1.294-3.553-3.881L5.322 11.4C4.603 8.816 3.834 7.522 3.01 7.522c-.179 0-.806.378-1.881 1.132L0 7.197c1.185-1.044 2.351-2.084 3.501-3.128C5.08 2.701 6.266 1.984 7.055 1.91c1.867-.18 3.016 1.1 3.447 3.838.465 2.953.789 4.789.971 5.507.539 2.45 1.131 3.674 1.776 3.674.502 0 1.256-.796 2.265-2.385 1.004-1.589 1.54-2.797 1.612-3.628.144-1.371-.395-2.061-1.614-2.061-.574 0-1.167.121-1.777.391 1.186-3.868 3.434-5.757 6.762-5.637 2.473.06 3.628 1.664 3.48 4.807z"/></svg>,
+    tiktok_url:<svg style={s} viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.27 8.27 0 0 0 4.83 1.54V6.78a4.85 4.85 0 0 1-1.06-.09z"/></svg>,
+    facebook_url:<svg style={s} viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>,
+    linkedin_url:<svg style={s} viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>,
+    website_url:<svg style={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+    agency_url:<svg style={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="9" width="18" height="13" rx="2"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/><line x1="12" y1="13" x2="12" y2="16"/></svg>,
+    instagram:<svg style={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>,
+  };
+  const fallback=<svg style={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>;
+  return icons[platform]||fallback;
+}
+
 // ─── Pure helper. Single place that knows how to derive yearly savings from
 //     the monthly + yearly prices. Reused by YearlyPromoStripe and anywhere
 //     else we want to show the savings figure — change MEMBERSHIP_PLANS, every
@@ -3211,10 +3231,10 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   const allSocialLinks=[];
   SOCIAL_LINK_FIELDS.forEach(({key,label})=>{
     const v=socialLinks[key];
-    if(v&&v.trim())allSocialLinks.push({label,url:v.trim()});
+    if(v&&v.trim())allSocialLinks.push({key,label,url:v.trim()});
   });
   // Legacy instagram field as fallback
-  if(!socialLinks.instagram_url&&talent.instagram)allSocialLinks.unshift({label:"Instagram",url:talent.instagram.startsWith("http")?talent.instagram:`https://instagram.com/${talent.instagram.replace(/^@/,"")}`});
+  if(!socialLinks.instagram_url&&talent.instagram)allSocialLinks.unshift({key:"instagram",label:"Instagram",url:talent.instagram.startsWith("http")?talent.instagram:`https://instagram.com/${talent.instagram.replace(/^@/,"")}`});
 
   // Group DB credits by category
   const creditsByCategory={};
@@ -3327,33 +3347,30 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
       </div>
     </div>}
 
-    {/* ── TRAINING ── */}
-    {talent.training&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
-      {sectionHead("Training")}
-      <p style={{fontSize:13,color:"var(--t1)",lineHeight:1.5}}>{talent.training}</p>
-    </div>}
-
     {/* ── STRUCTURED CREDITS (from DB) ── */}
     {hasStructuredCredits&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,flexWrap:"wrap",gap:8}}>
-        {sectionHead("Credits")}
+      <div style={{background:"#ff0",color:"#000",fontWeight:700,fontSize:12,padding:"4px 8px",borderRadius:4,marginBottom:10,display:"inline-block"}}>PROFILE UPDATE TEST - REMOVE AFTER CONFIRMATION</div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
+        {sectionHead("Credits & Experience")}
         {talent.resume_url&&<a href={talent.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:11}}>📄 Resume</a>}
       </div>
       {CREDIT_CATEGORIES.filter(cat=>creditsByCategory[cat]).map(cat=>(
-        <div key={cat} style={{marginBottom:12}}>
-          <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase",color:"var(--acc)",marginBottom:5}}>{cat}</div>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+        <div key={cat} style={{marginBottom:18}}>
+          <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--acc)",marginBottom:6,paddingBottom:6,borderBottom:"1px solid var(--bdr)"}}>{cat}</div>
+          <table style={{width:"100%",borderCollapse:"collapse"}}>
             <tbody>
               {creditsByCategory[cat].map((c,i)=>(
                 <tr key={c.id||i} style={{borderBottom:"1px solid var(--bdr)"}}>
-                  <td style={{padding:"5px 8px 5px 0",color:"var(--t3)",whiteSpace:"nowrap",width:42}}>{c.credit_year||"—"}</td>
-                  <td style={{padding:"5px 8px 5px 0",fontWeight:600,color:"var(--t1)"}}>
-                    {c.website_url
-                      ?<a href={c.website_url} target="_blank" rel="noopener noreferrer" style={{color:"var(--t1)",textDecoration:"none"}}>{c.production_title}</a>
-                      :c.production_title}
+                  <td style={{padding:"11px 14px 11px 0",color:"var(--t3)",whiteSpace:"nowrap",width:50,fontSize:13,fontWeight:500,verticalAlign:"top"}}>{c.credit_year||"—"}</td>
+                  <td style={{padding:"11px 14px 11px 0",verticalAlign:"top"}}>
+                    <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",lineHeight:1.3}}>
+                      {c.website_url
+                        ?<a href={c.website_url} target="_blank" rel="noopener noreferrer" style={{color:"var(--t1)",textDecoration:"none"}}>{c.production_title}</a>
+                        :c.production_title}
+                    </div>
+                    {c.role&&<div style={{fontSize:12,color:"var(--t2)",marginTop:3}}>{c.role}</div>}
                   </td>
-                  <td style={{padding:"5px 8px 5px 0",color:"var(--t2)"}}>{c.role}</td>
-                  <td style={{padding:"5px 0",color:"var(--t3)",textAlign:"right",whiteSpace:"nowrap"}}>{[c.director_or_company,c.location].filter(Boolean).join(" · ")}</td>
+                  <td style={{padding:"11px 0",color:"var(--t3)",textAlign:"right",fontSize:12,verticalAlign:"top",maxWidth:180,wordBreak:"break-word"}}>{[c.director_or_company,c.location].filter(Boolean).join(" · ")}</td>
                 </tr>
               ))}
             </tbody>
@@ -3364,26 +3381,50 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
 
     {/* ── LEGACY CREDITS (plain-text / demo data) ── */}
     {!hasStructuredCredits&&(legacyCredits.length>0||talent.resume_url)&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,flexWrap:"wrap",gap:8}}>
-        {sectionHead("Credits")}
+      <div style={{background:"#ff0",color:"#000",fontWeight:700,fontSize:12,padding:"4px 8px",borderRadius:4,marginBottom:10,display:"inline-block"}}>PROFILE UPDATE TEST - REMOVE AFTER CONFIRMATION</div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
+        {sectionHead("Credits & Experience")}
         {talent.resume_url&&<a href={talent.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:11}}>📄 Resume</a>}
       </div>
       {legacyCredits.length>0
-        ?<table className="credits-table"><thead><tr><th>Role</th><th>Project</th><th>Type</th><th>Year</th></tr></thead>
-          <tbody>{legacyCredits.map((c,i)=><tr key={i}><td style={{fontWeight:600}}>{c.role}</td><td>{c.project}</td><td style={{color:"var(--t2)"}}>{c.type}</td><td style={{color:"var(--t2)"}}>{c.year}</td></tr>)}</tbody></table>
+        ?<table style={{width:"100%",borderCollapse:"collapse"}}>
+            <tbody>
+              {legacyCredits.map((c,i)=>(
+                <tr key={i} style={{borderBottom:"1px solid var(--bdr)"}}>
+                  <td style={{padding:"11px 14px 11px 0",color:"var(--t3)",whiteSpace:"nowrap",width:50,fontSize:13,fontWeight:500,verticalAlign:"top"}}>{c.year||"—"}</td>
+                  <td style={{padding:"11px 14px 11px 0",verticalAlign:"top"}}>
+                    <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",lineHeight:1.3}}>{c.project}</div>
+                    {c.role&&<div style={{fontSize:12,color:"var(--t2)",marginTop:3}}>{c.role}</div>}
+                  </td>
+                  <td style={{padding:"11px 0",color:"var(--t3)",textAlign:"right",fontSize:12,verticalAlign:"top"}}>{c.type}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         :<p style={{fontSize:12,color:"var(--t3)"}}>Resume attached — credits not added yet.</p>}
+    </div>}
+
+    {/* ── TRAINING ── */}
+    {(freshProfile?.training||talent.training)&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
+      {sectionHead("Training")}
+      <p style={{fontSize:13,color:"var(--t1)",lineHeight:1.5}}>{freshProfile?.training||talent.training}</p>
     </div>}
 
     {/* ── CAST ME AS ── */}
     {talentDbId&&<CastMeAsSection talentId={talentDbId}/>}
 
-    {/* ── SOCIAL / WEBSITE LINKS ── */}
+    {/* ── SOCIAL / WEBSITE LINKS (icon row) ── */}
     {allSocialLinks.length>0&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
-      {sectionHead("Websites & Social")}
-      <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-        {allSocialLinks.map(({label,url},i)=>{
+      {sectionHead("Social & Web")}
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+        {allSocialLinks.map(({key,label,url},i)=>{
           const href=url.startsWith("http")?url:`https://${url}`;
-          return<a key={i} href={href} target="_blank" rel="noopener noreferrer" style={{padding:"4px 10px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:20,fontSize:11,color:"var(--acc)",textDecoration:"none",fontWeight:500,display:"inline-flex",alignItems:"center",gap:4}}>{label} ↗</a>;
+          return(
+            <a key={i} href={href} target="_blank" rel="noopener noreferrer" title={label}
+              style={{width:38,height:38,borderRadius:9,background:"var(--s2)",border:"1px solid var(--bdr)",display:"inline-flex",alignItems:"center",justifyContent:"center",color:"var(--t1)",textDecoration:"none",flexShrink:0}}>
+              <SocialIcon platform={key} size={18}/>
+            </a>
+          );
         })}
       </div>
     </div>}
