@@ -601,6 +601,37 @@ const CASTING_TYPES=[
   "Villain's Assistant","Outsider / Loner","Innocent Witness","Cunning Socialite"
 ];
 
+const SKILLS_LIST=[
+  "Accents / Dialects","Voiceover","Singing","Dancing","Stage Combat","Stunts",
+  "Improvisation","Comedy","Drama","Classical Theatre","Shakespeare","Teleprompter",
+  "Hosting","Presenting","Modeling","Runway","Commercial Acting","Monologues",
+  "Self-Tape","Musical Theatre","Guitar","Piano","Drums","Violin",
+  "Horseback Riding","Swimming","Martial Arts","Boxing","Yoga","Fitness / Athletics",
+  "Driving","Motorcycle Riding","Firearms Training","Sword Fighting","Foreign Languages",
+  "American Accent","British Accent","Spanish Language","French Language","Other"
+];
+
+const SOCIAL_LINK_FIELDS=[
+  {key:"website_url",label:"Personal Website",placeholder:"https://yourwebsite.com"},
+  {key:"imdb_url",label:"IMDb",placeholder:"https://imdb.com/name/nm..."},
+  {key:"instagram_url",label:"Instagram",placeholder:"https://instagram.com/handle"},
+  {key:"tiktok_url",label:"TikTok",placeholder:"https://tiktok.com/@handle"},
+  {key:"youtube_url",label:"YouTube",placeholder:"https://youtube.com/@channel"},
+  {key:"vimeo_url",label:"Vimeo",placeholder:"https://vimeo.com/yourname"},
+  {key:"twitter_url",label:"X / Twitter",placeholder:"https://x.com/handle"},
+  {key:"facebook_url",label:"Facebook",placeholder:"https://facebook.com/yourpage"},
+  {key:"linkedin_url",label:"LinkedIn",placeholder:"https://linkedin.com/in/yourname"},
+  {key:"spotlight_url",label:"Spotlight",placeholder:"https://spotlight.com/..."},
+  {key:"actors_access_url",label:"Actors Access",placeholder:"https://actorsaccess.com/..."},
+  {key:"casting_networks_url",label:"Casting Networks",placeholder:"https://app.castingnetworks.com/..."},
+  {key:"backstage_url",label:"Backstage",placeholder:"https://backstage.com/u/..."},
+  {key:"mandy_url",label:"Mandy",placeholder:"https://mandy.com/..."},
+  {key:"agency_url",label:"Agency Website",placeholder:"https://..."},
+  {key:"other_profile_url",label:"Other",placeholder:"https://..."},
+];
+
+const CREDIT_CATEGORIES=["Film & TV","Theatre","Commercials","Other"];
+
 // ─── Pure helper. Single place that knows how to derive yearly savings from
 //     the monthly + yearly prices. Reused by YearlyPromoStripe and anywhere
 //     else we want to show the savings figure — change MEMBERSHIP_PLANS, every
@@ -3128,9 +3159,34 @@ function CareersPage({onNavigate}){
 // PAGE: TALENT PROFILE VIEW
 // ═══════════════════════════════════════════
 function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
-  // Parse credits: either already an array of {role,project,type,year} (demo data)
-  // or a plain-text field with "Role · Project · Year" per line (DB data).
-  const parseCredits=(c)=>{
+  const viewerIsCd=!!myProfile&&(myProfile.user_type==="cd"||myProfile.user_type==="admin"||myProfile.user_type==="super_admin");
+  const talentDbId=typeof talent.id==="string"&&/^[0-9a-f]{8}-/i.test(String(talent.id))?talent.id:null;
+  const [cdAction,setCdAction]=useState(null);
+  const [showReport,setShowReport]=useState(false);
+  const [dbCredits,setDbCredits]=useState(null);   // null=loading, []=none
+  const [uploadedVideos,setUploadedVideos]=useState([]);
+
+  // Load structured credits + uploaded videos from DB (only for real DB profiles)
+  useEffect(()=>{
+    if(!talentDbId){setDbCredits([]);return;}
+    (async()=>{
+      try{
+        const {data}=await window.sb.from("talent_credits")
+          .select("*").eq("user_id",talentDbId)
+          .order("credit_year",{ascending:false}).order("display_order");
+        setDbCredits(data||[]);
+      }catch(_){setDbCredits([]);}
+      try{
+        const {data}=await window.sb.from("profile_media")
+          .select("*").eq("user_id",talentDbId).eq("media_type","video")
+          .order("display_order").order("created_at");
+        setUploadedVideos(data||[]);
+      }catch(_){}
+    })();
+  },[talentDbId]);
+
+  // Parse legacy plain-text credits (demo data + old DB rows)
+  const parseLegacyCredits=(c)=>{
     if(!c)return [];
     if(Array.isArray(c))return c;
     return String(c).split("\n").map(l=>l.trim()).filter(Boolean).map(line=>{
@@ -3138,104 +3194,195 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
       return {role:parts[0]||"",project:parts[1]||"",type:"",year:parts[2]||""};
     });
   };
-  const credits=parseCredits(talent.credits);
-  // CD-side action state — mounted only when the viewer is a CD/admin and the talent has a real DB id
-  const viewerIsCd=!!myProfile&&(myProfile.user_type==="cd"||myProfile.user_type==="admin"||myProfile.user_type==="super_admin");
-  const talentDbId=typeof talent.id==="string"&&/^[0-9a-f]{8}-/i.test(String(talent.id))?talent.id:null;
-  const [cdAction,setCdAction]=useState(null); // "save"|"invite"|"dm"|null
-  const [showReport,setShowReport]=useState(false);
+  const legacyCredits=parseLegacyCredits(talent.credits);
+
   const gallery=(talent._allPhotos&&talent._allPhotos.length)?talent._allPhotos:[talent.img,...(talent.additional_photos||[])].filter(Boolean);
-  const videos=(talent.video_links||[]).filter(v=>v);
-  // Render a video link — pulls out a reliable embed for YouTube/Vimeo, falls back to a link button.
-  const renderVideo=(url,i)=>{
+  const videoLinks=(talent.video_links||[]).filter(v=>v);
+  const skills=Array.isArray(talent.skills)?talent.skills:(talent.skills?String(talent.skills).split(",").map(s=>s.trim()).filter(Boolean):[]);
+  const socialLinks=talent.social_links||(typeof talent.social_links==="object"?talent.social_links:{});
+
+  // Build social links to display (from social_links jsonb + legacy instagram)
+  const allSocialLinks=[];
+  SOCIAL_LINK_FIELDS.forEach(({key,label})=>{
+    const v=socialLinks[key];
+    if(v&&v.trim())allSocialLinks.push({label,url:v.trim()});
+  });
+  // Legacy instagram field as fallback
+  if(!socialLinks.instagram_url&&talent.instagram)allSocialLinks.unshift({label:"Instagram",url:talent.instagram.startsWith("http")?talent.instagram:`https://instagram.com/${talent.instagram.replace(/^@/,"")}`});
+
+  // Group DB credits by category
+  const creditsByCategory={};
+  if(dbCredits&&dbCredits.length){
+    CREDIT_CATEGORIES.forEach(cat=>{
+      const rows=dbCredits.filter(c=>c.category===cat);
+      if(rows.length)creditsByCategory[cat]=rows;
+    });
+  }
+  const hasStructuredCredits=Object.keys(creditsByCategory).length>0;
+
+  // Render a YouTube/Vimeo embed or a link button
+  const renderVideoLink=(url,i)=>{
     let embed=null;
     const ytM=url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-    if(ytM){embed=`https://www.youtube.com/embed/${ytM[1]}`;}
-    else{const vmM=url.match(/vimeo\.com\/(?:video\/)?(\d+)/);if(vmM){embed=`https://player.vimeo.com/video/${vmM[1]}`;}}
+    if(ytM)embed=`https://www.youtube.com/embed/${ytM[1]}`;
+    else{const vmM=url.match(/vimeo\.com\/(?:video\/)?(\d+)/);if(vmM)embed=`https://player.vimeo.com/video/${vmM[1]}`;}
     return embed
       ?<div key={i} style={{position:"relative",paddingBottom:"56.25%",height:0,borderRadius:8,overflow:"hidden",background:"#000"}}><iframe src={embed} frameBorder="0" allowFullScreen style={{position:"absolute",top:0,left:0,width:"100%",height:"100%"}}/></div>
       :<a key={i} href={url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",display:"inline-block"}}>▶ Watch clip {i+1}</a>;
   };
+
+  const sectionHead=(title,extra)=>(
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+      <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--t3)"}}>{title}</div>
+      {extra}
+    </div>
+  );
+
   return(<div className="page">
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:20,flexWrap:"wrap"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:14,flexWrap:"wrap"}}>
       <button className="btn-s btn-sm" onClick={onBack}>← Back</button>
-      {/* Don't show Report on the user's own profile */}
       {talent?.id&&talent.id!==session?.user?.id&&<button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this profile">⚑ Report</button>}
     </div>
     <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={talent?.id?{kind:"profile",id:talent.id}:null}/>
 
-    {/* ── Submission note banner (only shown when CD is reviewing a specific submission) ── */}
-    {talent._coverNote&&<div className="card" style={{padding:18,marginBottom:16,borderLeft:"4px solid var(--acc)",background:"var(--s1)"}}>
-      <div className="section-label" style={{marginBottom:4}}>Cover note from {talent.name||"the applicant"}</div>
-      <p style={{fontSize:14,lineHeight:1.6,fontStyle:"italic",color:"var(--t1)"}}>"{talent._coverNote}"</p>
-      {talent._roleName&&<p style={{fontSize:12,color:"var(--t3)",marginTop:8}}>Submitted for role: <strong>{talent._roleName}</strong></p>}
+    {/* Cover note banner */}
+    {talent._coverNote&&<div className="card" style={{padding:"12px 16px",marginBottom:12,borderLeft:"3px solid var(--acc)",background:"var(--s1)"}}>
+      <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--t3)",marginBottom:3}}>Cover note from {talent.name||"the applicant"}</div>
+      <p style={{fontSize:13,lineHeight:1.6,fontStyle:"italic",color:"var(--t1)"}}>"{talent._coverNote}"</p>
+      {talent._roleName&&<p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Submitted for: <strong>{talent._roleName}</strong></p>}
     </div>}
 
-    <div className="profile-hero"><div>
-      <img src={talent.img||"https://placehold.co/400x500/e5e5e5/999?text=No+Headshot"} alt={talent.name} className="profile-photo"/>
-      {talent._selectedPhoto&&talent._selectedPhoto!==talent.img&&<p style={{fontSize:11,color:"var(--t3)",marginTop:6,textAlign:"center"}}>↑ Photo the applicant chose for this submission</p>}
-    </div>
+    {/* ── COMPACT HERO ── */}
+    <div style={{display:"grid",gridTemplateColumns:"180px 1fr",gap:20,alignItems:"flex-start",marginBottom:14,padding:"20px",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12}}>
       <div>
-        <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}><span className="tag tag-acc">{talent.union||talent.union_status||"Non-Union"}</span>{talent.type&&<span className="tag">{talent.type}</span>}</div>
-        <h1 style={{fontSize:38,fontWeight:800,letterSpacing:"-1.5px",marginBottom:4}}>{talent.name||talent.display_name||"—"}</h1>
-        <p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{talent.location||""}</p>
-        {talent.agent&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:16}}>Rep: {talent.agent}</p>}
-        {talent.bio&&<p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6,marginBottom:20}}>{talent.bio}</p>}
-        <div className="profile-stats">{[["Height",talent.height],["Weight",talent.weight],["Hair",talent.hair],["Eyes",talent.eyes],["Age",talent.age],["Gender",talent.gender],["Ethnicity",talent.ethnicity]].filter(([,v])=>v).map(([l,v])=><div key={l} className="profile-stat"><div className="profile-stat-label">{l}</div><div className="profile-stat-value">{v}</div></div>)}</div>
-        {talent.training&&<div className="mt-20"><div className="label">Training</div><p style={{fontSize:14}}>{talent.training}</p></div>}
-        {(talent.skills||[]).length>0&&<div className="mt-20"><div className="label">Special Skills</div><div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:4}}>{talent.skills.map((s,i)=><span className="tag" key={i}>{s}</span>)}</div></div>}
-        {(talent.instagram||talent.phone)&&<div className="mt-20" style={{display:"flex",gap:16,flexWrap:"wrap",fontSize:13}}>
-          {talent.instagram&&<span style={{color:"var(--t2)"}}><strong>IG:</strong> {talent.instagram}</span>}
-          {talent.phone&&<span style={{color:"var(--t2)"}}><strong>Phone:</strong> {talent.phone}</span>}
-        </div>}
-        {/* ── CD-only action panel: Save · Invite · DM. Hidden for talent-on-talent views, demo profiles
-              (no real UUID), and self-views. */}
-        {viewerIsCd&&talentDbId&&talentDbId!==session?.user?.id&&<div className="mt-20" style={{display:"flex",gap:8,flexWrap:"wrap",borderTop:"1px solid var(--bdr)",paddingTop:16}}>
-          <button className="btn-p btn-sm" onClick={()=>setCdAction("save")}>★ Save to List</button>
-          <button className="btn-s btn-sm" onClick={()=>setCdAction("invite")}>📩 Invite to Project</button>
-          <button className="btn-s btn-sm" onClick={()=>setCdAction("dm")}>💬 Send Message</button>
+        <img src={talent.img||"https://placehold.co/400x500/e5e5e5/999?text=No+Headshot"} alt={talent.name} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:8,display:"block"}}/>
+        {talent._selectedPhoto&&talent._selectedPhoto!==talent.img&&<p style={{fontSize:10,color:"var(--t3)",marginTop:4,textAlign:"center"}}>↑ Chosen for this submission</p>}
+      </div>
+      <div>
+        <div style={{display:"flex",gap:6,marginBottom:8,flexWrap:"wrap"}}>
+          <span className="tag tag-acc" style={{fontSize:10}}>{talent.union||talent.union_status||"Non-Union"}</span>
+          {talent.type&&<span className="tag" style={{fontSize:10}}>{talent.type}</span>}
+        </div>
+        <h1 style={{fontSize:28,fontWeight:800,letterSpacing:"-1px",marginBottom:2,lineHeight:1.1}}>{talent.name||talent.display_name||"—"}</h1>
+        <p style={{color:"var(--t2)",fontSize:13,marginBottom:talent.agent?2:8}}>{talent.location||""}</p>
+        {talent.agent&&<p style={{color:"var(--t3)",fontSize:12,marginBottom:8}}>Rep: {talent.agent}</p>}
+        {talent.bio&&<p style={{color:"var(--t2)",fontSize:13,lineHeight:1.55,marginBottom:10}}>{talent.bio}</p>}
+
+        {/* Appearance grid */}
+        {[["Height",talent.height],["Weight",talent.weight],["Hair",talent.hair],["Eyes",talent.eyes],["Age",talent.age],["Gender",talent.gender],["Ethnicity",talent.ethnicity],["Body",talent.body_type],["Plays",talent.age_range]].filter(([,v])=>v).length>0&&
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(90px,1fr))",gap:"4px 12px",marginBottom:10}}>
+            {[["Height",talent.height],["Weight",talent.weight],["Hair",talent.hair],["Eyes",talent.eyes],["Age",talent.age],["Gender",talent.gender],["Ethnicity",talent.ethnicity],["Body",talent.body_type],["Plays",talent.age_range]].filter(([,v])=>v).map(([l,v])=>
+              <div key={l}><div style={{fontSize:9,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em"}}>{l}</div><div style={{fontSize:12,fontWeight:600,color:"var(--t1)"}}>{v}</div></div>
+            )}
+          </div>
+        }
+
+        {/* CD action panel */}
+        {viewerIsCd&&talentDbId&&talentDbId!==session?.user?.id&&<div style={{display:"flex",gap:6,flexWrap:"wrap",borderTop:"1px solid var(--bdr)",paddingTop:10,marginTop:4}}>
+          <button className="btn-p btn-sm" onClick={()=>setCdAction("save")}>★ Save</button>
+          <button className="btn-s btn-sm" onClick={()=>setCdAction("invite")}>📩 Invite</button>
+          <button className="btn-s btn-sm" onClick={()=>setCdAction("dm")}>💬 Message</button>
         </div>}
       </div>
     </div>
 
-    {/* ── Photo gallery ── */}
-    {gallery.length>1&&<div className="card mt-20">
-      <h3 style={{fontSize:18,fontWeight:700,marginBottom:12}}>Photos ({gallery.length})</h3>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:10}}>
-        {gallery.map((u,i)=><img key={i} src={u} alt={`${talent.name} photo ${i+1}`} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:8,border:"1px solid var(--bdr)"}}/>)}
+    {/* ── PHOTO GRID + VIDEOS side by side ── */}
+    {(gallery.length>1||uploadedVideos.length>0||videoLinks.length>0||talent.reel_url)&&
+      <div style={{display:"grid",gridTemplateColumns:gallery.length>1?"1fr auto":"1fr",gap:12,marginBottom:12,alignItems:"flex-start"}}>
+        {/* Uploaded / reel videos */}
+        {(uploadedVideos.length>0||talent.reel_url||videoLinks.length>0)&&<div className="card" style={{padding:"14px 16px"}}>
+          {sectionHead(`Videos (${uploadedVideos.length+videoLinks.length+(talent.reel_url?1:0)})`)}
+          {talent.reel_url&&<video src={talent.reel_url} controls style={{width:"100%",borderRadius:6,background:"#000",maxHeight:280,marginBottom:8}}/>}
+          {uploadedVideos.length>0&&<div style={{display:"grid",gap:8}}>
+            {uploadedVideos.map((v,i)=><div key={v.id||i} style={{background:"var(--s2)",borderRadius:6,overflow:"hidden"}}>
+              <video src={v.url} controls preload="metadata" style={{width:"100%",maxHeight:200,display:"block",background:"#000"}}/>
+              {v.title&&<div style={{padding:"4px 8px",fontSize:11,color:"var(--t2)",fontWeight:600}}>{v.title}</div>}
+            </div>)}
+          </div>}
+          {videoLinks.length>0&&<div style={{display:"grid",gap:8,marginTop:uploadedVideos.length?8:0}}>
+            {videoLinks.map(renderVideoLink)}
+          </div>}
+        </div>}
+        {/* Photo gallery */}
+        {gallery.length>1&&<div className="card" style={{padding:"14px 16px",minWidth:0}}>
+          {sectionHead(`Photos (${gallery.length})`)}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(100px,1fr))",gap:6}}>
+            {gallery.map((u,i)=><img key={i} src={u} alt={`photo ${i+1}`} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:6,border:"1px solid var(--bdr)"}}/>)}
+          </div>
+        </div>}
+      </div>
+    }
+
+    {/* ── SKILLS ── */}
+    {skills.length>0&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
+      {sectionHead("Skills")}
+      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+        {skills.map((s,i)=><span key={i} style={{padding:"3px 9px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:20,fontSize:11,color:"var(--t1)",fontWeight:500}}>{s}</span>)}
       </div>
     </div>}
 
-    {/* ── Reel ── */}
-    {talent.reel_url&&<div className="card mt-20">
-      <h3 style={{fontSize:18,fontWeight:700,marginBottom:12}}>Demo Reel</h3>
-      <video src={talent.reel_url} controls style={{width:"100%",borderRadius:8,background:"#000",maxHeight:560}}/>
+    {/* ── TRAINING ── */}
+    {talent.training&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
+      {sectionHead("Training")}
+      <p style={{fontSize:13,color:"var(--t1)",lineHeight:1.5}}>{talent.training}</p>
     </div>}
 
-    {/* ── Video links (YouTube / Vimeo etc.) ── */}
-    {videos.length>0&&<div className="card mt-20">
-      <h3 style={{fontSize:18,fontWeight:700,marginBottom:12}}>Video Clips ({videos.length})</h3>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:12}}>
-        {videos.map(renderVideo)}
+    {/* ── STRUCTURED CREDITS (from DB) ── */}
+    {hasStructuredCredits&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,flexWrap:"wrap",gap:8}}>
+        {sectionHead("Credits")}
+        {talent.resume_url&&<a href={talent.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:11}}>📄 Resume</a>}
       </div>
+      {CREDIT_CATEGORIES.filter(cat=>creditsByCategory[cat]).map(cat=>(
+        <div key={cat} style={{marginBottom:12}}>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase",color:"var(--acc)",marginBottom:5}}>{cat}</div>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+            <tbody>
+              {creditsByCategory[cat].map((c,i)=>(
+                <tr key={c.id||i} style={{borderBottom:"1px solid var(--bdr)"}}>
+                  <td style={{padding:"5px 8px 5px 0",color:"var(--t3)",whiteSpace:"nowrap",width:42}}>{c.credit_year||"—"}</td>
+                  <td style={{padding:"5px 8px 5px 0",fontWeight:600,color:"var(--t1)"}}>
+                    {c.website_url
+                      ?<a href={c.website_url} target="_blank" rel="noopener noreferrer" style={{color:"var(--t1)",textDecoration:"none"}}>{c.production_title}</a>
+                      :c.production_title}
+                  </td>
+                  <td style={{padding:"5px 8px 5px 0",color:"var(--t2)"}}>{c.role}</td>
+                  <td style={{padding:"5px 0",color:"var(--t3)",textAlign:"right",whiteSpace:"nowrap"}}>{[c.director_or_company,c.location].filter(Boolean).join(" · ")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ))}
     </div>}
 
-    {/* ── Credits + resume ── */}
-    {(credits.length>0||talent.resume_url)&&<div className="card mt-20">
-      <div className="flex-between" style={{marginBottom:12,alignItems:"center",gap:12,flexWrap:"wrap"}}>
-        <h3 style={{fontSize:18,fontWeight:700}}>Credits</h3>
-        {talent.resume_url&&<a href={talent.resume_url} target="_blank" rel="noreferrer" className="btn-p btn-sm" style={{textDecoration:"none"}}>📄 Download Resume</a>}
+    {/* ── LEGACY CREDITS (plain-text / demo data) ── */}
+    {!hasStructuredCredits&&(legacyCredits.length>0||talent.resume_url)&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,flexWrap:"wrap",gap:8}}>
+        {sectionHead("Credits")}
+        {talent.resume_url&&<a href={talent.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:11}}>📄 Resume</a>}
       </div>
-      {credits.length>0
+      {legacyCredits.length>0
         ?<table className="credits-table"><thead><tr><th>Role</th><th>Project</th><th>Type</th><th>Year</th></tr></thead>
-          <tbody>{credits.map((c,i)=><tr key={i}><td style={{fontWeight:600}}>{c.role}</td><td>{c.project}</td><td style={{color:"var(--t2)"}}>{c.type}</td><td style={{color:"var(--t2)"}}>{c.year}</td></tr>)}</tbody></table>
-        :<p style={{fontSize:13,color:"var(--t3)"}}>Resume attached — the applicant hasn't added per-line credits yet.</p>}
+          <tbody>{legacyCredits.map((c,i)=><tr key={i}><td style={{fontWeight:600}}>{c.role}</td><td>{c.project}</td><td style={{color:"var(--t2)"}}>{c.type}</td><td style={{color:"var(--t2)"}}>{c.year}</td></tr>)}</tbody></table>
+        :<p style={{fontSize:12,color:"var(--t3)"}}>Resume attached — credits not added yet.</p>}
     </div>}
 
-    {/* ── Cast Me As ── only shown when talent has at least one entry (loaded inside the component) */}
+    {/* ── CAST ME AS ── */}
     {talentDbId&&<CastMeAsSection talentId={talentDbId}/>}
 
-    {/* ── CD action modals — only one open at a time ── */}
+    {/* ── SOCIAL / WEBSITE LINKS ── */}
+    {allSocialLinks.length>0&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
+      {sectionHead("Websites & Social")}
+      <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+        {allSocialLinks.map(({label,url},i)=>{
+          const href=url.startsWith("http")?url:`https://${url}`;
+          return<a key={i} href={href} target="_blank" rel="noopener noreferrer" style={{padding:"4px 10px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:20,fontSize:11,color:"var(--acc)",textDecoration:"none",fontWeight:500,display:"inline-flex",alignItems:"center",gap:4}}>{label} ↗</a>;
+        })}
+      </div>
+    </div>}
+
+    {/* ── CD action modals ── */}
     {cdAction==="save"&&talentDbId&&<SaveToListModal cdId={session?.user?.id} talentId={talentDbId} talentName={talent.name||talent.display_name||"Talent"} onClose={()=>setCdAction(null)}/>}
     {cdAction==="invite"&&talentDbId&&<InviteToProjectModal cdId={session?.user?.id} talentId={talentDbId} talentName={talent.name||talent.display_name||"Talent"} onClose={()=>setCdAction(null)}/>}
     {cdAction==="dm"&&talentDbId&&<ComposeDMModal fromId={session?.user?.id} toId={talentDbId} toName={talent.name||talent.display_name||"Talent"} onClose={()=>setCdAction(null)}/>}
@@ -3349,7 +3496,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("Talent fetch timed out")),10000);});
       const {data:ps,error}=await Promise.race([
         window.sb.from("profiles")
-          .select("id,display_name,headshot_url,age,gender,ethnicity,location,union_status,skills,bio")
+          .select("id,display_name,headshot_url,age,gender,ethnicity,location,union_status,skills,bio,social_links,body_type,age_range,hair,eyes,height,weight,training,agent,credits,video_links,additional_photos,resume_url")
           .eq("user_type","talent").eq("visible",true).eq("suspended",false).eq("onboarded",true)
           .limit(200),
         timeout
@@ -3359,17 +3506,29 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       const mapped=(ps||[]).filter(p=>p.headshot_url).map(p=>({
         id:p.id,
         name:p.display_name||"Talent",
+        display_name:p.display_name||"Talent",
         img:p.headshot_url,
         age:p.age||"",
         gender:p.gender||"",
         ethnicity:p.ethnicity||"",
         location:p.location||"",
         union:p.union_status||"Non-Union",
-        height:"",
+        union_status:p.union_status||"Non-Union",
+        height:p.height||"",
+        weight:p.weight||"",
+        hair:p.hair||"",
+        eyes:p.eyes||"",
+        body_type:p.body_type||"",
+        age_range:p.age_range||"",
         skills:Array.isArray(p.skills)?p.skills:[],
         bio:p.bio||"",
-        credits:[],
-        training:"",
+        training:p.training||"",
+        agent:p.agent||"",
+        credits:p.credits||"",
+        video_links:Array.isArray(p.video_links)?p.video_links:[],
+        additional_photos:Array.isArray(p.additional_photos)?p.additional_photos:[],
+        resume_url:p.resume_url||null,
+        social_links:p.social_links||{},
         _db:true
       }));
       setDbTalent(mapped);
@@ -6992,7 +7151,16 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
   const [photos,setPhotos]=useState([]);     // additional_photos array
   // Cropper state: {file, target: "headshot"|"additional", aspect, label}
   const [cropState,setCropState]=useState(null);
-  const [videos,setVideos]=useState(["","","","",""]);  // 5 video link slots
+  const [videos,setVideos]=useState(["","","","",""]);  // 5 video link slots (legacy)
+  const [socialLinks,setSocialLinks]=useState({});      // social_links jsonb
+  const [selectedSkills,setSelectedSkills]=useState([]); // skills array
+  const [customSkill,setCustomSkill]=useState("");
+  const [dbCredits,setDbCredits]=useState([]);           // talent_credits rows
+  const [creditForm,setCreditForm]=useState({category:"Film & TV",production_title:"",role:"",director_or_company:"",location:"",credit_year:"",website_url:""});
+  const [editingCreditId,setEditingCreditId]=useState(null);
+  const [creditsLoading,setCreditsLoading]=useState(false);
+  const [mediaItems,setMediaItems]=useState([]);         // profile_media video rows
+  const [videoUploading,setVideoUploading]=useState(false);
   const [openMsg,setOpenMsg]=useState(null);   // currently-opened inbox thread
   const [inboxErr,setInboxErr]=useState("");   // surfaced fetch error
   const [inboxLoading,setInboxLoading]=useState(false);
@@ -7022,7 +7190,27 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     const ap=profile.additional_photos||[];setPhotos(ap);
     const vl=profile.video_links||[];
     const slots=["","","","",""];vl.forEach((v,i)=>{if(i<5)slots[i]=v;});setVideos(slots);
+    setSocialLinks(profile.social_links&&typeof profile.social_links==="object"?profile.social_links:{});
+    setSelectedSkills(Array.isArray(profile.skills)?profile.skills:[]);
   }},[profile]);
+
+  // Load talent_credits + uploaded videos for the current user
+  const loadCredits=useCallback(async()=>{
+    if(!session?.user)return;
+    setCreditsLoading(true);
+    try{
+      const {data}=await window.sb.from("talent_credits").select("*").eq("user_id",session.user.id).order("credit_year",{ascending:false}).order("display_order");
+      setDbCredits(data||[]);
+    }catch(_){}finally{setCreditsLoading(false);}
+  },[session?.user?.id]);
+
+  const loadMediaItems=useCallback(async()=>{
+    if(!session?.user)return;
+    try{
+      const {data}=await window.sb.from("profile_media").select("*").eq("user_id",session.user.id).eq("media_type","video").order("display_order").order("created_at");
+      setMediaItems(data||[]);
+    }catch(_){}
+  },[session?.user?.id]);
   // ─── Fetch inbox — extracted so it can be re-run after reply, delete, or polling tick.
   //     Errors are surfaced to the UI instead of being silently swallowed (was the
   //     "messages disappeared" bug). Existing data is preserved on a transient failure.
@@ -7047,6 +7235,8 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
   useEffect(()=>{(async()=>{
     if(!session?.user)return;
     if(profile?.user_type==="talent"){
+      loadCredits();
+      loadMediaItems();
       const {data}=await window.sb.from("applications").select("id,status,created_at,cover_note,selected_photo_url,audition_at,audition_note,casting_id,role_id,castings(title,prod,type,location),roles(name)").eq("talent_id",session.user.id).order("created_at",{ascending:false});
       setMyApps(data||[]);
       // Project invites the talent has received from CDs (any status — show pending first)
@@ -7060,7 +7250,7 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     }
     // inbox — messages received (for both talent + CD)
     fetchInbox();
-  })();},[session,profile,fetchInbox]);
+  })();},[session,profile,fetchInbox,loadCredits,loadMediaItems]);
 
   // ─── Realtime + polling backstop for the inbox. Realtime catches new sends + deletes
   //     instantly; the 45s poll covers cases where the websocket is stale. Both update the
@@ -7123,17 +7313,21 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     try{
       const videoSlots=profile?.membership_status==="active"?PREMIUM_PLAN.videos:FREE_PLAN.videos;
     const vl=videos.slice(0,videoSlots).filter(v=>v.trim());
+      // Merge selected skills with any freetext skills from the old field
+      const skillsFromText=f.skills?f.skills.split(",").map(s=>s.trim()).filter(Boolean):[];
+      const mergedSkills=[...new Set([...selectedSkills,...skillsFromText])];
       const patch={
         display_name:f.display_name.trim()||null,bio:f.bio||null,location:f.location||null,
         age:f.age?parseInt(f.age):null,gender:f.gender||null,ethnicity:f.ethnicity||null,
         height:f.height||null,weight:f.weight||null,hair:f.hair||null,eyes:f.eyes||null,
         union_status:f.union_status||null,agent:f.agent||null,training:f.training||null,
-        skills:f.skills?f.skills.split(",").map(s=>s.trim()).filter(Boolean):[],
+        skills:mergedSkills,
         instagram:f.instagram||null,phone:f.phone||null,
         company_name:f.company_name||null,company_role:f.company_role||null,website:f.website||null,
         credits:f.credits||null,video_links:vl,
         body_type:f.body_type||null,age_range:f.age_range||null,
-        talent_types:Array.isArray(f.talent_types)?f.talent_types:[]
+        talent_types:Array.isArray(f.talent_types)?f.talent_types:[],
+        social_links:socialLinks||{}
       };
       const {error}=await withTimeout(window.sb.from("profiles").update(patch).eq("id",session.user.id),30000,"Save");
       if(error)throw error;
@@ -7259,8 +7453,11 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     <div className="tabs" style={{marginBottom:24}}>
       <button className={`tab ${tab==="profile"?"active":""}`} onClick={()=>setTab("profile")}>Edit Profile</button>
       {!isCD&&<button className={`tab ${tab==="photos"?"active":""}`} onClick={()=>setTab("photos")}>Photos ({allPhotos.length}/{maxTotalPhotos})</button>}
-      {!isCD&&<button className={`tab ${tab==="videos"?"active":""}`} onClick={()=>setTab("videos")}>Video Links ({(profile.video_links||[]).filter(v=>v).length}/{maxVideos||"—"}{!isPremium?" · Premium":""}) </button>}
-      {!isCD&&<button className={`tab ${tab==="applications"?"active":""}`} onClick={()=>setTab("applications")}>My Applications ({myApps.length})</button>}
+      {!isCD&&<button className={`tab ${tab==="videos"?"active":""}`} onClick={()=>setTab("videos")}>Videos ({mediaItems.length}/{maxVideos||"—"}{!isPremium?" · Premium":""})</button>}
+      {!isCD&&<button className={`tab ${tab==="skills"?"active":""}`} onClick={()=>setTab("skills")}>Skills ({selectedSkills.length})</button>}
+      {!isCD&&<button className={`tab ${tab==="credits"?"active":""}`} onClick={()=>setTab("credits")}>Credits ({dbCredits.length})</button>}
+      {!isCD&&<button className={`tab ${tab==="social"?"active":""}`} onClick={()=>setTab("social")}>Social Links</button>}
+      {!isCD&&<button className={`tab ${tab==="applications"?"active":""}`} onClick={()=>setTab("applications")}>Applications ({myApps.length})</button>}
       {!isCD&&<button className={`tab ${tab==="cast-me-as"?"active":""}`} onClick={()=>setTab("cast-me-as")}>Cast Me As</button>}
       <button className={`tab ${tab==="messages"?"active":""}`} onClick={()=>setTab("messages")}>Inbox {(inbox.filter(m=>!m.read_at).length+invites.filter(i=>i.status==="pending").length)>0?<span className="tag tag-acc" style={{marginLeft:6,fontSize:10}}>{inbox.filter(m=>!m.read_at).length+invites.filter(i=>i.status==="pending").length}</span>:null}</button>
     </div>
@@ -7345,27 +7542,217 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
       <p style={{fontSize:12,color:"var(--t3)"}}>These photos are visible to casting directors. When you apply to a role, you choose which photo to submit.</p>
     </>}
 
-    {/* ── VIDEOS TAB ── */}
+    {/* ── VIDEOS TAB ── real uploads */}
     {tab==="videos"&&!isCD&&<div className="card" style={{padding:24}}>
-      <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Video Reel Links</h3>
+      <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Video Uploads</h3>
       {!isPremium?(
         <div style={{textAlign:"center",padding:"40px 24px"}}>
-          <div style={{fontSize:40,marginBottom:16}}>🎬</div>
-          <h4 style={{fontSize:17,fontWeight:700,marginBottom:8}}>Premium Feature</h4>
-          <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,marginBottom:24,maxWidth:400,margin:"0 auto 24px"}}>Video reel links are available on the Premium plan. Upgrade to add up to 5 YouTube or Vimeo links that appear as embedded players on your profile.</p>
+          <div style={{fontSize:36,marginBottom:12}}>🎬</div>
+          <h4 style={{fontSize:16,fontWeight:700,marginBottom:8}}>Premium Feature</h4>
+          <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.7,marginBottom:20,maxWidth:360,margin:"0 auto 20px"}}>Upgrade to Premium to upload up to {PREMIUM_PLAN.videos} videos. Videos are stored and played directly on your profile.</p>
           <button className="btn-p" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium — {PREMIUM_PRICE}</button>
         </div>
       ):(
         <>
-          <p style={{fontSize:12,color:"var(--t3)",marginBottom:20}}>Paste up to {maxVideos} YouTube or Vimeo links. They'll appear as embedded players on your profile.</p>
-          {videos.slice(0,maxVideos).map((v,i)=><div key={i} style={{marginBottom:16}}>
-            <label className="label">Link {i+1}</label>
-            <input className="input" placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..." value={v} onChange={e=>setVideos(p=>{const n=[...p];n[i]=e.target.value;return n;})}/>
-            {getVideoEmbed(v)&&<iframe src={getVideoEmbed(v)} style={{width:"100%",height:220,borderRadius:8,border:"none",marginTop:8}} allowFullScreen/>}
-          </div>)}
-          <button className="btn-p" onClick={save} disabled={saving}>{saving?"Saving…":"Save Video Links"}</button>
+          <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>Upload up to {maxVideos} videos (MP4, MOV, WebM · max 100 MB each). They appear on your public profile.</p>
+          {/* Existing uploaded videos */}
+          {mediaItems.length>0&&<div style={{marginBottom:16,display:"grid",gap:10}}>
+            {mediaItems.map((item,i)=>(
+              <div key={item.id} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:10,alignItems:"center",background:"var(--s2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--bdr)"}}>
+                <div style={{minWidth:0}}>
+                  <video src={item.url} controls preload="metadata" style={{width:"100%",maxHeight:160,borderRadius:6,background:"#000",display:"block",marginBottom:4}}/>
+                  <div style={{fontSize:12,fontWeight:600,color:"var(--t1)"}}>{item.title||`Video ${i+1}`}</div>
+                </div>
+                <button onClick={async()=>{
+                  if(!window.confirm("Delete this video?"))return;
+                  try{
+                    if(item.path)await window.sb.storage.from("talent-media").remove([item.path]);
+                    await window.sb.from("profile_media").delete().eq("id",item.id);
+                    loadMediaItems();
+                  }catch(e){showErr(e.message||"Delete failed.");}
+                }} style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:18,padding:4}} title="Delete">✕</button>
+              </div>
+            ))}
+          </div>}
+          {/* Upload new video */}
+          {mediaItems.length<maxVideos&&<>
+            <div style={{marginBottom:10}}>
+              <label className="label">Video Title (optional)</label>
+              <input id="video-title-input" className="input" placeholder="e.g. Drama Reel 2025" style={{marginBottom:8}}/>
+            </div>
+            <label className="btn-p btn-sm" style={{cursor:"pointer",display:"inline-block"}}>
+              {videoUploading?"Uploading…":"+ Upload Video"}
+              <input type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm" style={{display:"none"}} disabled={videoUploading} onChange={async e=>{
+                const file=e.target.files?.[0];if(!file)return;
+                if(file.size>100*1024*1024){showErr("Video must be under 100 MB.");return;}
+                const titleEl=document.getElementById("video-title-input");
+                const title=(titleEl&&titleEl.value.trim())||"";
+                setVideoUploading(true);setErr("");
+                try{
+                  const ext=(file.name.split(".").pop()||"mp4").toLowerCase();
+                  const path=`${session.user.id}/video_${Date.now()}.${ext}`;
+                  const {error:upErr}=await withTimeout(window.sb.storage.from("talent-media").upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type||"video/mp4"}),120000,"Video upload");
+                  if(upErr)throw upErr;
+                  const {data:pub}=window.sb.storage.from("talent-media").getPublicUrl(path);
+                  const {error:dbErr}=await window.sb.from("profile_media").insert({user_id:session.user.id,media_type:"video",url:pub.publicUrl,path,title,display_order:mediaItems.length});
+                  if(dbErr)throw dbErr;
+                  if(titleEl)titleEl.value="";
+                  loadMediaItems();
+                  setMsg("Video uploaded.");setTimeout(()=>setMsg(""),3000);
+                }catch(e){showErr(e.message||"Video upload failed.");}
+                finally{setVideoUploading(false);e.target.value="";}
+              }}/>
+            </label>
+          </>}
+          {mediaItems.length>=maxVideos&&<p style={{fontSize:12,color:"var(--t3)"}}>You've reached the {maxVideos}-video limit on your plan.</p>}
         </>
       )}
+    </div>}
+
+    {/* ── SKILLS TAB ── */}
+    {tab==="skills"&&!isCD&&<div className="card" style={{padding:24}}>
+      <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Skills</h3>
+      <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>Select skills that appear as pills on your public profile. Save Profile to apply changes.</p>
+      {/* Selected pills */}
+      {selectedSkills.length>0&&<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
+        {selectedSkills.map((s,i)=>(
+          <span key={i} style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",background:"var(--acc)",color:"#fff",borderRadius:20,fontSize:12,fontWeight:600}}>
+            {s}
+            <button onClick={()=>setSelectedSkills(p=>p.filter(x=>x!==s))} style={{background:"none",border:"none",color:"rgba(255,255,255,0.8)",cursor:"pointer",padding:0,fontSize:13,lineHeight:1}}>×</button>
+          </span>
+        ))}
+      </div>}
+      {/* Predefined list */}
+      <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:14}}>
+        {SKILLS_LIST.filter(s=>s!=="Other"&&!selectedSkills.includes(s)).map(s=>(
+          <button key={s} onClick={()=>setSelectedSkills(p=>[...p,s])} style={{padding:"3px 9px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:20,fontSize:11,color:"var(--t1)",cursor:"pointer",fontWeight:500}}>+ {s}</button>
+        ))}
+      </div>
+      {/* Custom skill */}
+      <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:16}}>
+        <input className="input" style={{flex:1}} placeholder='Add custom skill…' value={customSkill} onChange={e=>setCustomSkill(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&customSkill.trim()){setSelectedSkills(p=>[...p,customSkill.trim()]);setCustomSkill("");}}}/>
+        <button className="btn-s btn-sm" onClick={()=>{if(customSkill.trim()){setSelectedSkills(p=>[...p,customSkill.trim()]);setCustomSkill("");}}}>Add</button>
+      </div>
+      <button className="btn-p" onClick={save} disabled={saving}>{saving?"Saving…":"Save Skills"}</button>
+    </div>}
+
+    {/* ── CREDITS TAB ── */}
+    {tab==="credits"&&!isCD&&<>
+      {/* Add / Edit form */}
+      <div className="card" style={{padding:24,marginBottom:16}}>
+        <h3 style={{fontSize:15,fontWeight:700,marginBottom:12}}>{editingCreditId?"Edit Credit":"Add Credit"}</h3>
+        <div className="form-row">
+          <div className="form-group"><label className="label">Category</label>
+            <select className="select" style={{width:"100%"}} value={creditForm.category} onChange={e=>setCreditForm(x=>({...x,category:e.target.value}))}>
+              {CREDIT_CATEGORIES.map(c=><option key={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="form-group"><label className="label">Year</label>
+            <input className="input" placeholder="2025" value={creditForm.credit_year} onChange={e=>setCreditForm(x=>({...x,credit_year:e.target.value}))}/>
+          </div>
+        </div>
+        <div className="form-group"><label className="label">Production Title *</label>
+          <input className="input" placeholder="e.g. The Substance" value={creditForm.production_title} onChange={e=>setCreditForm(x=>({...x,production_title:e.target.value}))}/>
+        </div>
+        <div className="form-row">
+          <div className="form-group"><label className="label">Role / Character</label>
+            <input className="input" placeholder="e.g. TV Host" value={creditForm.role} onChange={e=>setCreditForm(x=>({...x,role:e.target.value}))}/>
+          </div>
+          <div className="form-group"><label className="label">Director / Company</label>
+            <input className="input" placeholder="e.g. Universal" value={creditForm.director_or_company} onChange={e=>setCreditForm(x=>({...x,director_or_company:e.target.value}))}/>
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-group"><label className="label">Location</label>
+            <input className="input" placeholder="e.g. New York, NY" value={creditForm.location} onChange={e=>setCreditForm(x=>({...x,location:e.target.value}))}/>
+          </div>
+          <div className="form-group"><label className="label">Website (optional)</label>
+            <input className="input" placeholder="https://..." value={creditForm.website_url} onChange={e=>setCreditForm(x=>({...x,website_url:e.target.value}))}/>
+          </div>
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <button className="btn-p btn-sm" disabled={creditsLoading||!creditForm.production_title.trim()} onClick={async()=>{
+            if(!creditForm.production_title.trim()){showErr("Production title is required.");return;}
+            setCreditsLoading(true);setErr("");
+            try{
+              const row={user_id:session.user.id,category:creditForm.category,production_title:creditForm.production_title.trim(),role:creditForm.role.trim()||null,director_or_company:creditForm.director_or_company.trim()||null,location:creditForm.location.trim()||null,credit_year:creditForm.credit_year.trim()||null,website_url:creditForm.website_url.trim()||null,display_order:dbCredits.length};
+              if(editingCreditId){
+                const {error}=await window.sb.from("talent_credits").update({...row,updated_at:new Date().toISOString()}).eq("id",editingCreditId);
+                if(error)throw error;
+                setEditingCreditId(null);
+              }else{
+                const {error}=await window.sb.from("talent_credits").insert(row);
+                if(error)throw error;
+              }
+              setCreditForm({category:creditForm.category,production_title:"",role:"",director_or_company:"",location:"",credit_year:"",website_url:""});
+              loadCredits();
+              setMsg(editingCreditId?"Credit updated.":"Credit added.");setTimeout(()=>setMsg(""),3000);
+            }catch(e){showErr(e.message||"Could not save credit.");}
+            finally{setCreditsLoading(false);}
+          }}>{creditsLoading?"Saving…":editingCreditId?"Update Credit":"Add Credit"}</button>
+          {editingCreditId&&<button className="btn-s btn-sm" onClick={()=>{setEditingCreditId(null);setCreditForm({category:"Film & TV",production_title:"",role:"",director_or_company:"",location:"",credit_year:"",website_url:""});}}>Cancel</button>}
+        </div>
+      </div>
+      {/* Credits list grouped by category */}
+      {creditsLoading&&dbCredits.length===0?<p style={{color:"var(--t3)",fontSize:13}}>Loading…</p>:dbCredits.length===0?<p style={{color:"var(--t3)",fontSize:13}}>No credits yet. Add your first above.</p>:
+        CREDIT_CATEGORIES.filter(cat=>dbCredits.some(c=>c.category===cat)).map(cat=>(
+          <div key={cat} className="card" style={{padding:"16px 20px",marginBottom:10}}>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--acc)",marginBottom:8}}>{cat}</div>
+            {dbCredits.filter(c=>c.category===cat).map(c=>(
+              <div key={c.id} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,alignItems:"flex-start",padding:"8px 0",borderBottom:"1px solid var(--bdr)"}}>
+                <div>
+                  <div style={{fontSize:13,fontWeight:600}}>{c.credit_year&&<span style={{color:"var(--t3)",fontWeight:400,marginRight:8}}>{c.credit_year}</span>}{c.production_title}{c.role&&<span style={{color:"var(--t2)",fontWeight:400}}> · {c.role}</span>}</div>
+                  {(c.director_or_company||c.location)&&<div style={{fontSize:11,color:"var(--t3)",marginTop:2}}>{[c.director_or_company,c.location].filter(Boolean).join(" · ")}</div>}
+                </div>
+                <div style={{display:"flex",gap:6,whiteSpace:"nowrap"}}>
+                  <button className="btn-s btn-sm" style={{fontSize:11}} onClick={()=>{setEditingCreditId(c.id);setCreditForm({category:c.category,production_title:c.production_title,role:c.role||"",director_or_company:c.director_or_company||"",location:c.location||"",credit_year:c.credit_year||"",website_url:c.website_url||""});window.scrollTo({top:0,behavior:"smooth"});}}>Edit</button>
+                  <button className="btn-s btn-sm" style={{fontSize:11,color:"var(--red)"}} onClick={async()=>{
+                    if(!window.confirm("Delete this credit?"))return;
+                    try{await window.sb.from("talent_credits").delete().eq("id",c.id);loadCredits();}
+                    catch(e){showErr(e.message||"Delete failed.");}
+                  }}>Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ))
+      }
+    </>}
+
+    {/* ── SOCIAL LINKS TAB ── */}
+    {tab==="social"&&!isCD&&<div className="card" style={{padding:24}}>
+      <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Websites & Social Media</h3>
+      <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>Add your professional links. They'll appear on your public profile. URLs must start with https://</p>
+      {SOCIAL_LINK_FIELDS.map(({key,label,placeholder})=>(
+        <div className="form-group" key={key}>
+          <label className="label">{label}</label>
+          <input className="input" placeholder={placeholder} value={socialLinks[key]||""} onChange={e=>{
+            const v=e.target.value.trim();
+            setSocialLinks(prev=>({...prev,[key]:v}));
+          }}/>
+        </div>
+      ))}
+      <button className="btn-p" onClick={async()=>{
+        // Validate and auto-prefix URLs
+        const cleaned={};
+        let errMsg="";
+        for(const {key} of SOCIAL_LINK_FIELDS){
+          let v=(socialLinks[key]||"").trim();
+          if(!v){cleaned[key]="";continue;}
+          if(!v.startsWith("http://")&&!v.startsWith("https://"))v="https://"+v;
+          try{new URL(v);}catch(_){errMsg=`Invalid URL for field — please check your links.`;break;}
+          cleaned[key]=v;
+        }
+        if(errMsg){showErr(errMsg);return;}
+        setSocialLinks(cleaned);
+        setSaving(true);setErr("");
+        try{
+          const {error}=await withTimeout(window.sb.from("profiles").update({social_links:cleaned}).eq("id",session.user.id),30000,"Save");
+          if(error)throw error;
+          onReload&&onReload();setMsg("Social links saved.");window.scrollTo({top:0,behavior:"smooth"});setTimeout(()=>setMsg(""),3000);
+        }catch(e){showErr(e.message||"Could not save links.");}
+        finally{setSaving(false);}
+      }} disabled={saving}>{saving?"Saving…":"Save Links"}</button>
     </div>}
 
     {/* ── APPLICATIONS TAB ── */}
