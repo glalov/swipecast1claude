@@ -646,11 +646,6 @@ const SOCIAL_LINK_FIELDS=[
   {key:"twitter_url",label:"X / Twitter",placeholder:"https://x.com/handle"},
   {key:"facebook_url",label:"Facebook",placeholder:"https://facebook.com/yourpage"},
   {key:"linkedin_url",label:"LinkedIn",placeholder:"https://linkedin.com/in/yourname"},
-  {key:"spotlight_url",label:"Spotlight",placeholder:"https://spotlight.com/..."},
-  {key:"actors_access_url",label:"Actors Access",placeholder:"https://actorsaccess.com/..."},
-  {key:"casting_networks_url",label:"Casting Networks",placeholder:"https://app.castingnetworks.com/..."},
-  {key:"backstage_url",label:"Backstage",placeholder:"https://backstage.com/u/..."},
-  {key:"mandy_url",label:"Mandy",placeholder:"https://mandy.com/..."},
   {key:"agency_url",label:"Agency Website",placeholder:"https://..."},
   {key:"other_profile_url",label:"Other",placeholder:"https://..."},
 ];
@@ -3190,11 +3185,19 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   const [showReport,setShowReport]=useState(false);
   const [dbCredits,setDbCredits]=useState(null);   // null=loading, []=none
   const [uploadedVideos,setUploadedVideos]=useState([]);
+  const [freshProfile,setFreshProfile]=useState(null); // live profile data from DB
 
-  // Load structured credits + uploaded videos from DB (only for real DB profiles)
+  // Load structured credits, uploaded videos, and fresh profile fields from DB
   useEffect(()=>{
     if(!talentDbId){setDbCredits([]);return;}
     (async()=>{
+      // Fetch fresh profile fields so social_links, skills, etc. are always current
+      try{
+        const {data}=await window.sb.from("profiles")
+          .select("social_links,skills,body_type,age_range,training,agent,bio,location")
+          .eq("id",talentDbId).maybeSingle();
+        if(data)setFreshProfile(data);
+      }catch(_){}
       try{
         const {data}=await window.sb.from("talent_credits")
           .select("*").eq("user_id",talentDbId)
@@ -3223,8 +3226,11 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
 
   const gallery=(talent._allPhotos&&talent._allPhotos.length)?talent._allPhotos:[talent.img,...(talent.additional_photos||[])].filter(Boolean);
   const videoLinks=(talent.video_links||[]).filter(v=>v);
-  const skills=Array.isArray(talent.skills)?talent.skills:(talent.skills?String(talent.skills).split(",").map(s=>s.trim()).filter(Boolean):[]);
-  const socialLinks=talent.social_links||(typeof talent.social_links==="object"?talent.social_links:{});
+  // Prefer freshProfile (loaded from DB) over stale talent prop for social_links and skills
+  const rawSkills=freshProfile?.skills??talent.skills;
+  const skills=Array.isArray(rawSkills)?rawSkills:(rawSkills?String(rawSkills).split(",").map(s=>s.trim()).filter(Boolean):[]);
+  const rawSocialLinks=freshProfile?.social_links??talent.social_links;
+  const socialLinks=(rawSocialLinks&&typeof rawSocialLinks==="object")?rawSocialLinks:{};
 
   // Build social links to display (from social_links jsonb + legacy instagram)
   const allSocialLinks=[];
@@ -7164,6 +7170,7 @@ function CastMeAsSection({talentId}){
 // PAGE: MY PROFILE — Backstage-style with gallery + videos
 // ═══════════════════════════════════════════
 function MyProfilePage({session,profile,onReload,onNavigate}){
+  const profileInitializedRef=useRef(false); // prevent focus/reload from wiping form state
   const [tab,setTab]=useState("profile");
   const [saving,setSaving]=useState(false);
   const [msg,setMsg]=useState("");
@@ -7201,23 +7208,30 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     body_type:profile?.body_type||"",age_range:profile?.age_range||"",
     talent_types:Array.isArray(profile?.talent_types)?profile.talent_types:[]
   }));
-  useEffect(()=>{if(profile){
-    setF(x=>({...x,display_name:profile.display_name||"",bio:profile.bio||"",location:profile.location||"",
-      age:profile.age||"",gender:profile.gender||"",ethnicity:profile.ethnicity||"",
-      height:profile.height||"",weight:profile.weight||"",hair:profile.hair||"",eyes:profile.eyes||"",
-      union_status:profile.union_status||"Non-Union",agent:profile.agent||"",training:profile.training||"",
-      skills:(profile.skills||[]).join(", "),instagram:profile.instagram||"",phone:profile.phone||"",
-      company_name:profile.company_name||"",company_role:profile.company_role||"",website:profile.website||"",
-      credits:profile.credits||"",
-      body_type:profile.body_type||"",age_range:profile.age_range||"",
-      talent_types:Array.isArray(profile.talent_types)?profile.talent_types:[]
-    }));
-    const ap=profile.additional_photos||[];setPhotos(ap);
-    const vl=profile.video_links||[];
-    const slots=["","","","",""];vl.forEach((v,i)=>{if(i<5)slots[i]=v;});setVideos(slots);
-    setSocialLinks(profile.social_links&&typeof profile.social_links==="object"?profile.social_links:{});
-    setSelectedSkills(Array.isArray(profile.skills)?profile.skills:[]);
-  }},[profile]);
+  useEffect(()=>{
+    if(!profile)return;
+    // Only run full form sync once (on first profile load).
+    // Subsequent background reloads (focus, visibility, headshot upload) must NOT
+    // wipe unsaved form state — that was the root cause of the blink/reset bug.
+    if(!profileInitializedRef.current){
+      profileInitializedRef.current=true;
+      setF(x=>({...x,display_name:profile.display_name||"",bio:profile.bio||"",location:profile.location||"",
+        age:profile.age||"",gender:profile.gender||"",ethnicity:profile.ethnicity||"",
+        height:profile.height||"",weight:profile.weight||"",hair:profile.hair||"",eyes:profile.eyes||"",
+        union_status:profile.union_status||"Non-Union",agent:profile.agent||"",training:profile.training||"",
+        skills:(profile.skills||[]).join(", "),instagram:profile.instagram||"",phone:profile.phone||"",
+        company_name:profile.company_name||"",company_role:profile.company_role||"",website:profile.website||"",
+        credits:profile.credits||"",
+        body_type:profile.body_type||"",age_range:profile.age_range||"",
+        talent_types:Array.isArray(profile.talent_types)?profile.talent_types:[]
+      }));
+      const ap=profile.additional_photos||[];setPhotos(ap);
+      const vl=profile.video_links||[];
+      const slots=["","","","",""];vl.forEach((v,i)=>{if(i<5)slots[i]=v;});setVideos(slots);
+      setSocialLinks(profile.social_links&&typeof profile.social_links==="object"?profile.social_links:{});
+      setSelectedSkills(Array.isArray(profile.skills)?profile.skills:[]);
+    }
+  },[profile]);
 
   // Load talent_credits + uploaded videos for the current user
   const loadCredits=useCallback(async()=>{
@@ -7513,9 +7527,27 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
           <div className="form-group"><label className="label">Representation</label><input className="input" placeholder="Agency, manager, or 'Seeking Representation'" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
         </div>
         <div className="card" style={{padding:24,marginBottom:16}}>
-          <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Credits (one per line: Role · Project · Year)</h3>
-          <textarea className="textarea" style={{minHeight:160,fontFamily:"monospace",fontSize:13}} value={f.credits} onChange={e=>up("credits",e.target.value)} placeholder={"Elena · Burning Season (Feature) · 2025\nLady Macbeth · Macbeth (Off-Broadway) · 2024\nDetective Ross · Crime Scene (TV) · 2023"}/>
-          <div style={{marginTop:20,paddingTop:20,borderTop:"1px solid var(--bdr)"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,flexWrap:"wrap",gap:8}}>
+            <h3 style={{fontSize:15,fontWeight:700}}>Credits {dbCredits.length>0&&<span style={{fontSize:12,fontWeight:400,color:"var(--t3)"}}>{dbCredits.length} credit{dbCredits.length!==1?"s":""} added</span>}</h3>
+            <button className="btn-s btn-sm" onClick={()=>setTab("credits")}>+ Add / Edit Credits →</button>
+          </div>
+          {dbCredits.length===0
+            ?<p style={{fontSize:13,color:"var(--t3)",marginBottom:0}}>No credits yet. Use the Credits tab to add your Film & TV, Theatre, and Commercial credits.</p>
+            :CREDIT_CATEGORIES.filter(cat=>dbCredits.some(c=>c.category===cat)).map(cat=>(
+              <div key={cat} style={{marginBottom:10}}>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--acc)",marginBottom:4}}>{cat}</div>
+                {dbCredits.filter(c=>c.category===cat).map(c=>(
+                  <div key={c.id} style={{fontSize:13,padding:"3px 0",borderBottom:"1px solid var(--bdr)",color:"var(--t1)"}}>
+                    {c.credit_year&&<span style={{color:"var(--t3)",marginRight:8,fontSize:12}}>{c.credit_year}</span>}
+                    <strong>{c.production_title}</strong>
+                    {c.role&&<span style={{color:"var(--t2)"}}> · {c.role}</span>}
+                    {c.director_or_company&&<span style={{color:"var(--t3)",fontSize:12}}> · {c.director_or_company}</span>}
+                  </div>
+                ))}
+              </div>
+            ))
+          }
+          <div style={{marginTop:16,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
             <label className="label">Resume / CV (PDF, DOC, or DOCX — max 10 MB)</label>
             <p style={{fontSize:12,color:"var(--t3)",marginTop:-4,marginBottom:10}}>Casting directors can download this directly from your profile and from every submission you send.</p>
             {profile.resume_url?(
@@ -7746,26 +7778,26 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
 
     {/* ── SOCIAL LINKS TAB ── */}
     {tab==="social"&&!isCD&&<div className="card" style={{padding:24}}>
-      <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Websites & Social Media</h3>
-      <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>Add your professional links. They'll appear on your public profile. URLs must start with https://</p>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4,flexWrap:"wrap",gap:8}}>
+        <h3 style={{fontSize:15,fontWeight:700}}>Websites & Social Media</h3>
+        {(()=>{const count=SOCIAL_LINK_FIELDS.filter(({key})=>(socialLinks[key]||"").trim()).length;return count>0&&<span style={{fontSize:12,color:"var(--t3)"}}>{count} social link{count!==1?"s":""} added</span>;})()}
+      </div>
+      <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>Add your professional links. They'll appear on your public profile. Leave blank to hide.</p>
       {SOCIAL_LINK_FIELDS.map(({key,label,placeholder})=>(
         <div className="form-group" key={key}>
           <label className="label">{label}</label>
-          <input className="input" placeholder={placeholder} value={socialLinks[key]||""} onChange={e=>{
-            const v=e.target.value.trim();
-            setSocialLinks(prev=>({...prev,[key]:v}));
-          }}/>
+          <input className="input" placeholder={placeholder} value={socialLinks[key]||""}
+            onChange={e=>setSocialLinks(prev=>({...prev,[key]:e.target.value}))}/>
         </div>
       ))}
       <button className="btn-p" onClick={async()=>{
-        // Validate and auto-prefix URLs
         const cleaned={};
         let errMsg="";
         for(const {key} of SOCIAL_LINK_FIELDS){
           let v=(socialLinks[key]||"").trim();
           if(!v){cleaned[key]="";continue;}
           if(!v.startsWith("http://")&&!v.startsWith("https://"))v="https://"+v;
-          try{new URL(v);}catch(_){errMsg=`Invalid URL for field — please check your links.`;break;}
+          try{new URL(v);}catch(_){errMsg="One or more URLs are not valid — please check your links.";break;}
           cleaned[key]=v;
         }
         if(errMsg){showErr(errMsg);return;}
@@ -7774,7 +7806,8 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
         try{
           const {error}=await withTimeout(window.sb.from("profiles").update({social_links:cleaned}).eq("id",session.user.id),30000,"Save");
           if(error)throw error;
-          onReload&&onReload();setMsg("Social links saved.");window.scrollTo({top:0,behavior:"smooth"});setTimeout(()=>setMsg(""),3000);
+          // Update local cache without triggering a full profile reload (which would reset form state)
+          setMsg("Social links saved.");setTimeout(()=>setMsg(""),3000);
         }catch(e){showErr(e.message||"Could not save links.");}
         finally{setSaving(false);}
       }} disabled={saving}>{saving?"Saving…":"Save Links"}</button>
