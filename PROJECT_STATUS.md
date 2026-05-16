@@ -2,6 +2,137 @@
 
 ---
 
+## 2026-05-16 — Talent Profile Overhaul (Parts 1–10)
+
+### Overview
+
+Full overhaul of the Talent Profile page and edit flow: compact layout, structured credits, skills picker, social/website links, real video uploads, and all associated DB schema.
+
+### Files changed
+
+| File | What changed |
+|---|---|
+| `swipecast-full.jsx` | Rewrote `TalentProfile` (compact layout). Added `SKILLS_LIST`, `SOCIAL_LINK_FIELDS`, `CREDIT_CATEGORIES` constants. Added state, load hooks, and new tabs to `MyProfilePage`. Extended `fetchTalent` in `SearchPage` to include all profile fields. |
+| `index.html` | Rebuilt via `python3 build-html.py`. |
+
+### Schema / storage changes
+
+**Migration `talent_profile_enhancements`** applied:
+
+```sql
+-- New column on profiles
+ALTER TABLE profiles ADD COLUMN social_links jsonb DEFAULT '{}';
+
+-- New tables
+CREATE TABLE talent_credits (
+  id uuid PK, user_id uuid FK,
+  category text, production_title text, role text,
+  director_or_company text, location text, credit_year text,
+  website_url text, display_order int, created_at/updated_at
+);
+
+CREATE TABLE profile_media (
+  id uuid PK, user_id uuid FK,
+  media_type text, url text, path text, title text,
+  display_order int, is_main_headshot bool, is_featured bool, created_at
+);
+```
+
+RLS on both tables: public SELECT, authenticated INSERT/UPDATE/DELETE own rows only.
+
+Storage bucket `talent-media` (already existed from Cast Me As migration) used for video uploads.
+
+### Compact layout changes (Part 1)
+
+- Profile hero grid reduced from 28px gap/padding to 20px
+- Headshot column narrowed from 200px to 180px
+- H1 from 38px → 28px, tighter letter-spacing
+- Appearance stats in mini 9-column grid (9px/12px type) instead of large stat boxes
+- Section headings replaced with uppercase 11px labels
+- All cards reduced from `padding:24` to `padding:"14px 16px"`
+- Gallery grid minmax 100px (was 140px), tighter 6px gap
+- Vertical spacing between sections 12px (was `mt-20` = 20px)
+
+### Media ordering and featured media (Part 2)
+
+- `profile_media` table has `display_order`, `is_main_headshot`, `is_featured` columns (schema ready)
+- UI to reorder/set main headshot not yet built (next iteration)
+
+### Video uploads (Part 3)
+
+- Videos tab replaced: real file uploads to `talent-media` bucket
+- Accepted types: mp4, mov, webm · max 100 MB
+- Stored in `profile_media` table (media_type='video')
+- Public profile plays inline with `<video controls>`
+- Free users see upgrade prompt; Premium users get up to 5 uploads
+- Legacy YouTube/Vimeo link rendering preserved for existing `video_links` rows
+
+### Social / website links (Part 4)
+
+- 16 platforms: Personal Website, IMDb, Instagram, TikTok, YouTube, Vimeo, X/Twitter, Facebook, LinkedIn, Spotlight, Actors Access, Casting Networks, Backstage, Mandy, Agency, Other
+- Stored as `social_links jsonb` on profiles table
+- Auto-prefix `https://` if missing; URL validation on save
+- Public profile shows pill links with ↗ arrows, opens in new tab
+- New "Social Links" tab in MyProfilePage
+
+### Skills section (Part 5)
+
+- 39 predefined skills selectable as pills
+- Custom skill "Add" field
+- Remove selected skills by clicking ×
+- Saved to existing `profiles.skills text[]` column (merged with any legacy comma-text)
+- Public profile shows compact skill pills
+- New "Skills" tab in MyProfilePage; saves via main Save Profile
+
+### Professional credits (Part 6)
+
+- Structured credits stored in `talent_credits` table
+- Add/edit/delete form with: Category, Year, Production Title, Role, Director/Company, Location, Website URL
+- Categories: Film & TV, Theatre, Commercials, Other
+- Public profile groups credits by category, newest year first
+- Legacy plain-text credits preserved as fallback
+- New "Credits" tab in MyProfilePage
+
+### Appearance section (Part 7)
+
+- Compact mini-grid on public profile: Height, Weight, Hair, Eyes, Age, Gender, Ethnicity, Body Type, Plays (age range)
+- 9px labels / 12px values, auto-fill columns
+
+### Save / persistence (Part 8)
+
+- Social links: saved via dedicated button in Social Links tab → `profiles.social_links`
+- Skills: saved via Save Skills button (or main Save Profile) → `profiles.skills`
+- Credits: saved per-row via Add Credit / Update Credit
+- Videos: uploaded immediately on file select → `profile_media` table
+- All DB errors surfaced via `showErr()`; no silent failures
+
+### Free vs Premium (Part 9)
+
+| Feature | Free | Premium |
+|---|---|---|
+| Video uploads | 0 (upgrade prompt) | Up to 5 |
+| Skills / Credits / Social | ✓ | ✓ |
+| Headshots | 1 | 10 |
+| Submissions | 3/day | Unlimited |
+
+### What is functional
+
+- ✅ Compact TalentProfile layout live in production
+- ✅ Skills picker with predefined list + custom add
+- ✅ Structured credits (add/edit/delete) per category
+- ✅ Social links (16 platforms) with validation
+- ✅ Real video uploads for Premium users
+- ✅ DB tables created with RLS
+- ✅ Vercel production deployment READY
+
+### What remains placeholder
+
+- Drag-to-reorder media (profile_media display_order column exists, UI not built)
+- "Set as Main Headshot" / "Set as Featured" UI (schema columns exist)
+- Skills proficiency levels (Beginner/Intermediate/Advanced/Professional) — schema not added yet
+
+---
+
 ## 2026-05-11 — Cast Me As / Casting Fit DNA
 
 ### Overview
