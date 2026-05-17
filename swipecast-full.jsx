@@ -573,6 +573,27 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .td-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
 @media(max-width:900px){.td-grid{grid-template-columns:1fr;}.td-stats{grid-template-columns:repeat(2,1fr);}}
+/* ─── Class detail page — responsive layout ─── */
+.cls-detail-grid{display:grid;gap:24px;align-items:start;}
+.cls-credits-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.cls-slot-row{display:flex;align-items:center;gap:14px;padding:13px 18px;}
+.cls-card-row{display:flex;align-items:stretch;border-radius:14px;overflow:hidden;cursor:pointer;margin-bottom:16px;position:relative;transition:box-shadow 0.15s,transform 0.1s;}
+.cls-card-img{width:190px;min-width:190px;position:relative;overflow:hidden;background:var(--s2);flex-shrink:0;}
+@media(max-width:768px){
+  .cls-detail-grid{grid-template-columns:1fr !important;}
+  .cls-credits-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  html,body{overflow-x:hidden;max-width:100%;}
+  .fcs-section{overflow:hidden;}
+}
+@media(max-width:560px){
+  .cls-slot-row{flex-wrap:wrap;gap:10px;padding:12px 14px;}
+  .cls-slot-row .slot-btn{width:100%;text-align:center;}
+  .cls-card-row{flex-direction:column;}
+  .cls-card-img{width:100% !important;min-width:0 !important;height:160px;}
+  .cls-detail-hero{padding:20px 18px !important;}
+  .cls-detail-no-media{padding:24px 18px !important;}
+  .cls-hero-inner{height:280px !important;}
+}
 `;
 
 // ─── Membership plans. Single source of truth — used by MembershipPage,
@@ -1904,10 +1925,10 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
       <div style={{maxWidth:900,margin:"0 auto",marginBottom:36}}>
         {hasHeroMedia?(
           <div style={{position:"relative",borderRadius:16,overflow:"hidden",lineHeight:0,marginBottom:0}}>
-            <div style={{height:400,position:"relative"}}>
+            <div className="cls-hero-inner" style={{height:400,position:"relative"}}>
               <ClassPosterCollage posters={viewing.instructor_poster_urls} imageUrl={viewing.image_url} title={viewing.title}/>
               <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.88) 0%,rgba(0,0,0,0.35) 55%,transparent 100%)"}}/>
-              <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"28px 32px",lineHeight:"normal"}}>
+              <div className="cls-detail-hero" style={{position:"absolute",bottom:0,left:0,right:0,padding:"28px 32px",lineHeight:"normal"}}>
                 {cm&&<div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"rgba(255,255,255,0.6)",marginBottom:8}}>{cm.name}</div>}
                 <h1 style={{fontWeight:800,fontSize:30,letterSpacing:"-0.8px",marginBottom:6,color:"#fff",lineHeight:1.2}}>{viewing.title}</h1>
                 {viewing.instructor_name&&<div style={{color:"rgba(255,255,255,0.75)",fontSize:14,marginBottom:14}}>with {viewing.instructor_name}</div>}
@@ -1924,7 +1945,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
             </div>
           </div>
         ):(
-          <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:16,padding:"36px 32px",marginBottom:0}}>
+          <div className="cls-detail-no-media" style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:16,padding:"36px 32px",marginBottom:0}}>
             {cm&&<div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:8}}>{cm.name}</div>}
             <h1 style={{fontWeight:800,fontSize:30,letterSpacing:"-0.8px",marginBottom:6,lineHeight:1.2}}>{viewing.title}</h1>
             {viewing.instructor_name&&<div style={{color:"var(--t2)",fontSize:14,marginBottom:14}}>with {viewing.instructor_name}</div>}
@@ -1940,7 +1961,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
         )}
 
         {/* Description + Instructor sidebar */}
-        <div style={{display:"grid",gridTemplateColumns:viewing.instructor_name?"1fr 260px":"1fr",gap:24,marginTop:28,alignItems:"start"}}>
+        <div className="cls-detail-grid" style={{gridTemplateColumns:viewing.instructor_name?"1fr 260px":"1fr",marginTop:28}}>
           <div>
             {(viewing.full_description||viewing.short_description)&&<p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,margin:0}}>{viewing.full_description||viewing.short_description}</p>}
           </div>
@@ -1959,7 +1980,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
         {Array.isArray(viewing.instructor_poster_urls)&&viewing.instructor_poster_urls.length>0&&(
           <div style={{marginTop:32}}>
             <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:14}}>Selected Credits</div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+            <div className="cls-credits-grid">
               {viewing.instructor_poster_urls.map((p,i)=>(
                 <div key={i} style={{borderRadius:10,overflow:"hidden",lineHeight:0,boxShadow:"0 4px 16px rgba(0,0,0,0.15)"}}>
                   <img src={p.url||p} alt={`Credit ${i+1}`} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",display:"block"}}/>
@@ -2014,7 +2035,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
                         return(
                           <React.Fragment key={slot.id}>
                             {idx>0&&<div style={{height:1,background:"var(--bdr)",margin:"0 18px"}}/>}
-                            <div style={{display:"flex",alignItems:"center",gap:14,padding:"13px 18px",opacity:isBooked?0.6:1}}>
+                            <div className="cls-slot-row" style={{opacity:isBooked?0.6:1}}>
                               <div style={{flex:1,minWidth:0}}>
                                 <div style={{fontSize:15,fontWeight:700,color:"var(--t1)"}}>{fmtTime(slot.start_time)} – {fmtTime(slot.end_time)}</div>
                                 {slot.note&&<div style={{fontSize:11,color:"var(--t2)",marginTop:2,lineHeight:1.4}}>{slot.note}</div>}
@@ -2025,9 +2046,9 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
                                 ):(viewing.price||"")}
                               </div>
                               {isBooked?(
-                                <div style={{fontSize:11,fontWeight:700,padding:"6px 12px",borderRadius:8,background:"rgba(192,57,43,0.07)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.18)",flexShrink:0,whiteSpace:"nowrap"}}>Fully Booked</div>
+                                <div className="slot-btn" style={{fontSize:11,fontWeight:700,padding:"6px 12px",borderRadius:8,background:"rgba(192,57,43,0.07)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.18)",flexShrink:0,whiteSpace:"nowrap"}}>Fully Booked</div>
                               ):(
-                                <button className="btn-p btn-sm" style={{whiteSpace:"nowrap",flexShrink:0}} onClick={()=>handleRequestBooking(viewing,slot,date)}>Request Booking</button>
+                                <button className="btn-p btn-sm slot-btn" style={{whiteSpace:"nowrap",flexShrink:0}} onClick={()=>handleRequestBooking(viewing,slot,date)}>Request Booking</button>
                               )}
                             </div>
                           </React.Fragment>
@@ -2078,19 +2099,18 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
     const isFeatured=cls.is_featured||cls.is_highlighted;
     return(
       <div key={cls.id}
+        className="cls-card-row"
         style={{
-          display:"flex",alignItems:"stretch",borderRadius:14,overflow:"hidden",
           border:isFeatured?"2px solid var(--acc)":"1px solid var(--bdr)",
-          background:"var(--s1)",cursor:"pointer",marginBottom:16,
+          background:"var(--s1)",
           boxShadow:isFeatured?"0 4px 24px rgba(var(--acc-rgb,99,102,241),0.13)":"0 1px 6px rgba(0,0,0,0.05)",
-          transition:"box-shadow 0.15s,transform 0.1s",position:"relative"
         }}
         onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 6px 28px rgba(0,0,0,0.12)";e.currentTarget.style.transform="translateY(-1px)";}}
         onMouseLeave={e=>{e.currentTarget.style.boxShadow=isFeatured?"0 4px 24px rgba(99,102,241,0.13)":"0 1px 6px rgba(0,0,0,0.05)";e.currentTarget.style.transform="";}}
         onClick={()=>{setViewing(cls);window.scrollTo(0,0);}}
       >
         {/* Image / Collage */}
-        <div style={{width:190,minWidth:190,position:"relative",overflow:"hidden",background:"var(--s2)",flexShrink:0}}>
+        <div className="cls-card-img">
           <ClassPosterCollage posters={cls.instructor_poster_urls} imageUrl={cls.image_url} title={cls.title}/>
           {isFeatured&&(
             <div style={{position:"absolute",top:10,left:10,background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:0.8,textTransform:"uppercase",padding:"3px 8px",borderRadius:20,lineHeight:1.4}}>Featured</div>
@@ -6741,7 +6761,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   const touchRef=useRef({startX:0,active:false});
   // Stage width drives the responsive card sizing + the track-translate math.
   const sectionRef=useRef(null);
-  const [sectionWidth,setSectionWidth]=useState(1200);
+  const [sectionWidth,setSectionWidth]=useState(()=>typeof window!=="undefined"?Math.min(window.innerWidth,1200):1200);
   useEffect(()=>{
     const update=()=>{if(sectionRef.current)setSectionWidth(sectionRef.current.offsetWidth);};
     update();
