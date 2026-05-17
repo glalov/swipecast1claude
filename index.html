@@ -190,6 +190,7 @@ const css = `
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{--bg:#F7F4EE;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;}
+html,body,#root{max-width:100%;overflow-x:hidden;}
 html,body{min-height:100vh;background:#1B1C20;}
 body{color:var(--t1);font-family:'DM Sans',sans-serif;overflow-x:hidden;margin:0;display:flex;flex-direction:column;}
 #root{flex:1 1 auto;display:flex;flex-direction:column;min-height:100vh;}
@@ -2763,6 +2764,9 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
   const [loading,setLoading]=useState(false);
   const [err,setErr]=useState("");
   const [signupDone,setSignupDone]=useState(false); // email confirmation sent
+  const [vpw,setVpw]=useState(typeof window!=="undefined"?window.innerWidth:1200);
+  useEffect(()=>{const h=()=>setVpw(window.innerWidth);window.addEventListener("resize",h);return()=>window.removeEventListener("resize",h);},[]);
+  const isMobile=vpw<768;
   // signup form fields
   const [firstName,setFirstName]=useState("");
   const [lastName,setLastName]=useState("");
@@ -2891,13 +2895,13 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
     </div>
     <Footer onNavigate={onNavigate}/></div>);
 
-  return(<div className="page" style={{maxWidth:960}}>
+  return(<div className="page" style={{maxWidth:960,width:"100%",boxSizing:"border-box"}}>
     <div style={{background:"#1a1a2e",color:"#f5e8d0",fontFamily:"monospace",fontSize:13,fontWeight:700,padding:"8px 20px",textAlign:"center",letterSpacing:0.5,marginBottom:0}}>
-      APPLY SIGNUP VERSION 3 - FUNCTIONAL FREE APPLY FLOW
+      MOBILE APPLY FIX TEST
     </div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:48,alignItems:"start",padding:"20px 0 60px"}}>
+    <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 1fr",gap:isMobile?20:48,alignItems:"start",padding:isMobile?"16px 0 60px":"20px 0 60px"}}>
       {/* LEFT: Context panel */}
-      <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16,padding:"32px 28px",position:"sticky",top:100}}>
+      <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16,padding:isMobile?"20px 16px":"32px 28px",position:isMobile?"static":"sticky",top:100}}>
         <div className="section-label" style={{marginBottom:8}}>Almost there</div>
         <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginBottom:10,lineHeight:1.15}}>Create a free account to apply.</h2>
         <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:20}}>Creating an actor account is <strong style={{color:"var(--t1)"}}>free</strong>. You can upgrade to Premium later for more uploads and unlimited submissions.</p>
