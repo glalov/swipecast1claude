@@ -3212,8 +3212,10 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     if(!talentDbId){setDbCredits([]);return;}
     (async()=>{
       try{
+        // Fetch full profile so all fields (photos, video_links, stats, etc.) are current —
+        // prevents stale/deleted data from appearing in the CD view.
         const {data}=await window.sb.from("profiles")
-          .select("social_links,skills,body_type,age_range,training,agent,bio,location,union_status,representation")
+          .select("*")
           .eq("id",talentDbId).maybeSingle();
         if(data)setFreshProfile(data);
       }catch(_){}
@@ -3242,8 +3244,14 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   };
   const legacyCredits=parseLegacyCredits(talent.credits);
 
-  const gallery=(talent._allPhotos&&talent._allPhotos.length)?talent._allPhotos:[talent.img,...(talent.additional_photos||[])].filter(Boolean);
-  const videoLinks=(talent.video_links||[]).filter(v=>v);
+  // Build gallery from fresh profile data when available so new/deleted photos reflect immediately.
+  const freshHeadshot=freshProfile?.headshot_url||talent.img;
+  const freshAdditional=Array.isArray(freshProfile?.additional_photos)?freshProfile.additional_photos:(talent.additional_photos||[]);
+  const _galSeen=new Set();const gallery=[];
+  [talent._selectedPhoto,freshHeadshot,...freshAdditional].forEach(u=>{if(u&&!_galSeen.has(u)){_galSeen.add(u);gallery.push(u);}});
+  if(!gallery.length)gallery.push(talent.img||"");
+  // Use fresh video_links so deleted YouTube/Vimeo links don't persist in CD view.
+  const videoLinks=(freshProfile?.video_links||talent.video_links||[]).filter(v=>v);
   const rawSkills=freshProfile?.skills??talent.skills;
   const skills=Array.isArray(rawSkills)?rawSkills:(rawSkills?String(rawSkills).split(",").map(s=>s.trim()).filter(Boolean):[]);
   const rawSocialLinks=freshProfile?.social_links??talent.social_links;
@@ -3268,7 +3276,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   // Build unified video list: uploaded → reel → embedded links
   const allVideoItems=[
     ...uploadedVideos.map(v=>({kind:"upload",...v})),
-    ...(!uploadedVideos.length&&talent.reel_url?[{kind:"reel",url:talent.reel_url,title:"Demo Reel"}]:[]),
+    ...(!uploadedVideos.length&&(freshProfile?.reel_url||talent.reel_url)?[{kind:"reel",url:freshProfile?.reel_url||talent.reel_url,title:"Demo Reel"}]:[]),
     ...videoLinks.map((url,i)=>{
       const ytM=url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
       const vmM=!ytM&&url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
@@ -3307,14 +3315,20 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
 
   const agentOrRep=freshProfile?.representation||freshProfile?.agent||talent.agent;
   const trainingText=freshProfile?.training||talent.training;
+  const resumeUrl=freshProfile?.resume_url||talent.resume_url||null;
   const bioText=freshProfile?.bio||talent.bio;
   const locationText=freshProfile?.location||talent.location;
   const unionText=freshProfile?.union_status||talent.union||talent.union_status;
 
   const statsData=[
-    ["Height",talent.height],["Weight",talent.weight],["Hair",talent.hair],
-    ["Eyes",talent.eyes],["Age",talent.age],["Gender",talent.gender],
-    ["Ethnicity",talent.ethnicity],["Body",freshProfile?.body_type||talent.body_type],
+    ["Height",freshProfile?.height||talent.height],
+    ["Weight",freshProfile?.weight||talent.weight],
+    ["Hair",freshProfile?.hair||talent.hair],
+    ["Eyes",freshProfile?.eyes||talent.eyes],
+    ["Age",freshProfile?.age||talent.age],
+    ["Gender",freshProfile?.gender||talent.gender],
+    ["Ethnicity",freshProfile?.ethnicity||talent.ethnicity],
+    ["Body",freshProfile?.body_type||talent.body_type],
     ["Plays",freshProfile?.age_range||talent.age_range],
   ].filter(([,v])=>v);
 
@@ -3337,7 +3351,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
         {/* Headshot */}
         <div style={{position:"relative",background:"var(--s2)"}}>
           <img src={talent.img||"https://placehold.co/400x600/e5e5e5/999?text=No+Headshot"} alt={talent.name} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",display:"block"}}/>
-          {talent._selectedPhoto&&talent._selectedPhoto!==talent.img&&<p style={{fontSize:10,color:"var(--t3)",padding:"4px 8px",textAlign:"center",background:"var(--s1)"}}>↑ Chosen for this submission</p>}
+          {talent._selectedPhoto&&talent._selectedPhoto!==freshHeadshot&&<p style={{fontSize:10,color:"var(--t3)",padding:"4px 8px",textAlign:"center",background:"var(--s1)"}}>↑ Chosen for this submission</p>}
         </div>
         {/* Right: videos stacked, max 2 */}
         {hasRightPanel&&<div style={{background:"var(--s1)",padding:10,display:"flex",flexDirection:"column",gap:8,borderLeft:"1px solid var(--bdr)"}}>
@@ -3370,7 +3384,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
         </div>
 
         {/* Name */}
-        <h1 style={{fontSize:32,fontWeight:800,letterSpacing:"-1px",marginBottom:4,lineHeight:1.1}}>{talent.name||talent.display_name||"—"}</h1>
+        <h1 style={{fontSize:32,fontWeight:800,letterSpacing:"-1px",marginBottom:4,lineHeight:1.1}}>{freshProfile?.display_name||talent.name||talent.display_name||"—"}</h1>
 
         {/* Location & rep */}
         {locationText&&<p style={{color:"var(--t2)",fontSize:14,marginBottom:3}}>{locationText}</p>}
@@ -3427,7 +3441,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     {hasStructuredCredits&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:8}}>
         {sectionHead("Credits & Experience")}
-        {talent.resume_url&&<a href={talent.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}>📄 Resume</a>}
+        {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}>📄 Resume</a>}
       </div>
       {CREDIT_CATEGORIES.filter(cat=>creditsByCategory[cat]).map(cat=>(
         <div key={cat} style={{marginBottom:20}}>
@@ -3455,10 +3469,10 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     </div>}
 
     {/* ── LEGACY CREDITS (plain-text / demo data) ── */}
-    {!hasStructuredCredits&&(legacyCredits.length>0||talent.resume_url)&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
+    {!hasStructuredCredits&&(legacyCredits.length>0||resumeUrl)&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:8}}>
         {sectionHead("Credits & Experience")}
-        {talent.resume_url&&<a href={talent.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}>📄 Resume</a>}
+        {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}>📄 Resume</a>}
       </div>
       {legacyCredits.length>0
         ?<table style={{width:"100%",borderCollapse:"collapse"}}>
