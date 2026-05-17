@@ -657,7 +657,7 @@ function SocialIcon({platform,size=18}){
   const s={width:size,height:size,display:"block",flexShrink:0};
   const icons={
     instagram_url:<svg style={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>,
-    imdb_url:<svg style={s} viewBox="0 0 24 24" fill="currentColor"><rect x="1" y="6" width="22" height="12" rx="2" fill="#F5C518"/><text x="12" y="15.5" textAnchor="middle" fontSize="6.5" fontWeight="900" fill="#000" fontFamily="Arial,sans-serif">IMDb</text></svg>,
+    imdb_url:<svg style={s} viewBox="0 0 24 24" fill="currentColor"><rect x="1" y="6" width="22" height="12" rx="2" fill="currentColor"/><text x="12" y="15.5" textAnchor="middle" fontSize="6.5" fontWeight="900" fill="#fff" fontFamily="Arial,sans-serif">IMDb</text></svg>,
     twitter_url:<svg style={s} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>,
     youtube_url:<svg style={s} viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>,
     vimeo_url:<svg style={s} viewBox="0 0 24 24" fill="currentColor"><path d="M23.977 6.416c-.105 2.338-1.739 5.543-4.894 9.609-3.268 4.247-6.026 6.37-8.29 6.37-1.409 0-2.578-1.294-3.553-3.881L5.322 11.4C4.603 8.816 3.834 7.522 3.01 7.522c-.179 0-.806.378-1.881 1.132L0 7.197c1.185-1.044 2.351-2.084 3.501-3.128C5.08 2.701 6.266 1.984 7.055 1.91c1.867-.18 3.016 1.1 3.447 3.838.465 2.953.789 4.789.971 5.507.539 2.45 1.131 3.674 1.776 3.674.502 0 1.256-.796 2.265-2.385 1.004-1.589 1.54-2.797 1.612-3.628.144-1.371-.395-2.061-1.614-2.061-.574 0-1.167.121-1.777.391 1.186-3.868 3.434-5.757 6.762-5.637 2.473.06 3.628 1.664 3.48 4.807z"/></svg>,
@@ -3289,6 +3289,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     </div>
   );
 
+  const hasVid=uploadedVideos.length>0||!!talent.reel_url||videoLinks.length>0;
+  const hasRightPanel=hasVid||gallery.length>1;
   return(<div className="page">
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:14,flexWrap:"wrap"}}>
       <button className="btn-s btn-sm" onClick={onBack}>← Back</button>
@@ -3303,13 +3305,45 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
       {talent._roleName&&<p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Submitted for: <strong>{talent._roleName}</strong></p>}
     </div>}
 
-    {/* ── COMPACT HERO ── */}
-    <div style={{display:"grid",gridTemplateColumns:"180px 1fr",gap:20,alignItems:"flex-start",marginBottom:14,padding:"20px",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12}}>
-      <div>
-        <img src={talent.img||"https://placehold.co/400x500/e5e5e5/999?text=No+Headshot"} alt={talent.name} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:8,display:"block"}}/>
-        {talent._selectedPhoto&&talent._selectedPhoto!==talent.img&&<p style={{fontSize:10,color:"var(--t3)",marginTop:4,textAlign:"center"}}>↑ Chosen for this submission</p>}
+    {/* ── MEDIA BANNER: large headshot left + videos right ── */}
+    <div style={{marginBottom:14}}>
+      <div style={{display:"grid",gridTemplateColumns:hasRightPanel?"1fr 1fr":"1fr",borderRadius:12,overflow:"hidden",border:"1px solid var(--bdr)",marginBottom:10}}>
+        {/* Large headshot */}
+        <div style={{position:"relative"}}>
+          <img src={talent.img||"https://placehold.co/400x600/e5e5e5/999?text=No+Headshot"} alt={talent.name} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",display:"block"}}/>
+          {talent._selectedPhoto&&talent._selectedPhoto!==talent.img&&<p style={{fontSize:10,color:"var(--t3)",padding:"4px 8px",textAlign:"center",background:"var(--s1)"}}>↑ Chosen for this submission</p>}
+        </div>
+        {/* Right panel: videos in 2-col grid, or extra photos if no videos */}
+        {hasRightPanel&&<div style={{background:"#111",padding:8,display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,alignContent:"flex-start"}}>
+          {uploadedVideos.slice(0,4).map((v,i)=>(
+            <div key={v.id||i} style={{borderRadius:6,overflow:"hidden",background:"#1a1a2e"}}>
+              <video src={v.url} controls preload="metadata" style={{width:"100%",aspectRatio:"4/3",objectFit:"cover",display:"block",background:"#000"}}/>
+              {v.title&&<div style={{padding:"4px 8px",fontSize:10,color:"#fff",fontWeight:600,background:"rgba(0,0,0,0.75)"}}>{v.title}</div>}
+            </div>
+          ))}
+          {!uploadedVideos.length&&talent.reel_url&&(
+            <div style={{borderRadius:6,overflow:"hidden",background:"#1a1a2e",gridColumn:"1/-1"}}>
+              <video src={talent.reel_url} controls style={{width:"100%",aspectRatio:"16/9",display:"block",background:"#000"}}/>
+              <div style={{padding:"4px 8px",fontSize:10,color:"#fff",fontWeight:600,background:"rgba(0,0,0,0.75)"}}>Demo Reel</div>
+            </div>
+          )}
+          {videoLinks.slice(0,Math.max(0,4-uploadedVideos.length)).map((url,i)=>{
+            const ytM=url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+            const vmM=!ytM&&url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+            const embed=ytM?`https://www.youtube.com/embed/${ytM[1]}`:vmM?`https://player.vimeo.com/video/${vmM[1]}`:null;
+            return embed?(
+              <div key={i} style={{borderRadius:6,overflow:"hidden",position:"relative",paddingBottom:"75%",background:"#000"}}>
+                <iframe src={embed} frameBorder="0" allowFullScreen style={{position:"absolute",top:0,left:0,width:"100%",height:"100%"}}/>
+              </div>
+            ):null;
+          })}
+          {!hasVid&&gallery.slice(1,5).map((u,i)=>(
+            <img key={i} src={u} alt={`photo ${i+2}`} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",borderRadius:6}}/>
+          ))}
+        </div>}
       </div>
-      <div>
+      {/* Profile info card below media */}
+      <div className="card" style={{padding:"16px 20px",marginBottom:0}}>
         <div style={{display:"flex",gap:6,marginBottom:8,flexWrap:"wrap"}}>
           <span className="tag tag-acc" style={{fontSize:10}}>{talent.union||talent.union_status||"Non-Union"}</span>
           {talent.type&&<span className="tag" style={{fontSize:10}}>{talent.type}</span>}
@@ -3318,8 +3352,6 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
         <p style={{color:"var(--t2)",fontSize:13,marginBottom:talent.agent?2:8}}>{talent.location||""}</p>
         {talent.agent&&<p style={{color:"var(--t3)",fontSize:12,marginBottom:8}}>Rep: {talent.agent}</p>}
         {talent.bio&&<p style={{color:"var(--t2)",fontSize:13,lineHeight:1.55,marginBottom:10}}>{talent.bio}</p>}
-
-        {/* Appearance grid */}
         {[["Height",talent.height],["Weight",talent.weight],["Hair",talent.hair],["Eyes",talent.eyes],["Age",talent.age],["Gender",talent.gender],["Ethnicity",talent.ethnicity],["Body",talent.body_type],["Plays",talent.age_range]].filter(([,v])=>v).length>0&&
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(90px,1fr))",gap:"4px 12px",marginBottom:10}}>
             {[["Height",talent.height],["Weight",talent.weight],["Hair",talent.hair],["Eyes",talent.eyes],["Age",talent.age],["Gender",talent.gender],["Ethnicity",talent.ethnicity],["Body",talent.body_type],["Plays",talent.age_range]].filter(([,v])=>v).map(([l,v])=>
@@ -3327,8 +3359,6 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
             )}
           </div>
         }
-
-        {/* CD action panel */}
         {viewerIsCd&&talentDbId&&talentDbId!==session?.user?.id&&<div style={{display:"flex",gap:6,flexWrap:"wrap",borderTop:"1px solid var(--bdr)",paddingTop:10,marginTop:4}}>
           <button className="btn-p btn-sm" onClick={()=>setCdAction("save")}>★ Save</button>
           <button className="btn-s btn-sm" onClick={()=>setCdAction("invite")}>📩 Invite</button>
@@ -3336,33 +3366,6 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
         </div>}
       </div>
     </div>
-
-    {/* ── PHOTO GRID + VIDEOS side by side ── */}
-    {(gallery.length>1||uploadedVideos.length>0||videoLinks.length>0||talent.reel_url)&&
-      <div style={{display:"grid",gridTemplateColumns:gallery.length>1?"1fr auto":"1fr",gap:12,marginBottom:12,alignItems:"flex-start"}}>
-        {/* Uploaded / reel videos */}
-        {(uploadedVideos.length>0||talent.reel_url||videoLinks.length>0)&&<div className="card" style={{padding:"14px 16px"}}>
-          {sectionHead(`Videos (${uploadedVideos.length+videoLinks.length+(talent.reel_url?1:0)})`)}
-          {talent.reel_url&&<video src={talent.reel_url} controls style={{width:"100%",borderRadius:6,background:"#000",maxHeight:280,marginBottom:8}}/>}
-          {uploadedVideos.length>0&&<div style={{display:"grid",gap:8}}>
-            {uploadedVideos.map((v,i)=><div key={v.id||i} style={{background:"var(--s2)",borderRadius:6,overflow:"hidden"}}>
-              <video src={v.url} controls preload="metadata" style={{width:"100%",maxHeight:200,display:"block",background:"#000"}}/>
-              {v.title&&<div style={{padding:"4px 8px",fontSize:11,color:"var(--t2)",fontWeight:600}}>{v.title}</div>}
-            </div>)}
-          </div>}
-          {videoLinks.length>0&&<div style={{display:"grid",gap:8,marginTop:uploadedVideos.length?8:0}}>
-            {videoLinks.map(renderVideoLink)}
-          </div>}
-        </div>}
-        {/* Photo gallery */}
-        {gallery.length>1&&<div className="card" style={{padding:"14px 16px",minWidth:0}}>
-          {sectionHead(`Photos (${gallery.length})`)}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(100px,1fr))",gap:6}}>
-            {gallery.map((u,i)=><img key={i} src={u} alt={`photo ${i+1}`} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:6,border:"1px solid var(--bdr)"}}/>)}
-          </div>
-        </div>}
-      </div>
-    }
 
     {/* ── SKILLS ── */}
     {skills.length>0&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
@@ -3385,16 +3388,16 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
             <tbody>
               {creditsByCategory[cat].map((c,i)=>(
                 <tr key={c.id||i} style={{borderBottom:"1px solid var(--bdr)"}}>
-                  <td style={{padding:"11px 14px 11px 0",color:"var(--t3)",whiteSpace:"nowrap",width:50,fontSize:13,fontWeight:500,verticalAlign:"top"}}>{c.credit_year||"—"}</td>
-                  <td style={{padding:"11px 14px 11px 0",verticalAlign:"top"}}>
+                  <td style={{padding:"8px 10px 8px 0",color:"var(--t3)",whiteSpace:"nowrap",width:58,fontSize:12,fontWeight:500,verticalAlign:"top"}}>{c.credit_year||"—"}</td>
+                  <td style={{padding:"8px 10px 8px 0",verticalAlign:"top"}}>
                     <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",lineHeight:1.3}}>
                       {c.website_url
                         ?<a href={c.website_url} target="_blank" rel="noopener noreferrer" style={{color:"var(--t1)",textDecoration:"none"}}>{c.production_title}</a>
                         :c.production_title}
                     </div>
-                    {c.role&&<div style={{fontSize:12,color:"var(--t2)",marginTop:3}}>{c.role}</div>}
+                    {c.role&&<div style={{fontSize:12,color:"var(--t2)",marginTop:2}}>{c.role}</div>}
                   </td>
-                  <td style={{padding:"11px 0",color:"var(--t3)",textAlign:"right",fontSize:12,verticalAlign:"top",maxWidth:180,wordBreak:"break-word"}}>{[c.director_or_company,c.location].filter(Boolean).join(" · ")}</td>
+                  <td style={{padding:"8px 0",color:"var(--t3)",fontSize:12,verticalAlign:"top",width:160,textAlign:"right"}}>{[c.director_or_company,c.location].filter(Boolean).join(" · ")}</td>
                 </tr>
               ))}
             </tbody>
@@ -3414,12 +3417,12 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
             <tbody>
               {legacyCredits.map((c,i)=>(
                 <tr key={i} style={{borderBottom:"1px solid var(--bdr)"}}>
-                  <td style={{padding:"11px 14px 11px 0",color:"var(--t3)",whiteSpace:"nowrap",width:50,fontSize:13,fontWeight:500,verticalAlign:"top"}}>{c.year||"—"}</td>
-                  <td style={{padding:"11px 14px 11px 0",verticalAlign:"top"}}>
+                  <td style={{padding:"8px 10px 8px 0",color:"var(--t3)",whiteSpace:"nowrap",width:58,fontSize:12,fontWeight:500,verticalAlign:"top"}}>{c.year||"—"}</td>
+                  <td style={{padding:"8px 10px 8px 0",verticalAlign:"top"}}>
                     <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",lineHeight:1.3}}>{c.project}</div>
-                    {c.role&&<div style={{fontSize:12,color:"var(--t2)",marginTop:3}}>{c.role}</div>}
+                    {c.role&&<div style={{fontSize:12,color:"var(--t2)",marginTop:2}}>{c.role}</div>}
                   </td>
-                  <td style={{padding:"11px 0",color:"var(--t3)",textAlign:"right",fontSize:12,verticalAlign:"top"}}>{c.type}</td>
+                  <td style={{padding:"8px 0",color:"var(--t3)",fontSize:12,verticalAlign:"top",width:160,textAlign:"right"}}>{c.type}</td>
                 </tr>
               ))}
             </tbody>
@@ -3444,8 +3447,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
           const href=url.startsWith("http")?url:`https://${url}`;
           return(
             <a key={i} href={href} target="_blank" rel="noopener noreferrer" title={label}
-              style={{width:38,height:38,borderRadius:9,background:"var(--s2)",border:"1px solid var(--bdr)",display:"inline-flex",alignItems:"center",justifyContent:"center",color:"var(--t1)",textDecoration:"none",flexShrink:0}}>
-              <SocialIcon platform={key} size={18}/>
+              style={{width:42,height:42,borderRadius:8,background:"#fff",border:"1px solid #ddd",display:"inline-flex",alignItems:"center",justifyContent:"center",color:"#000",textDecoration:"none",flexShrink:0}}>
+              <SocialIcon platform={key} size={20}/>
             </a>
           );
         })}
