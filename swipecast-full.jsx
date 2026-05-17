@@ -1781,6 +1781,32 @@ function fmtTime(t){if(!t)return"";const[h,m]=t.split(":").map(Number);const ap=
 // ─── helper: next N occurrences of a day-of-week (0=Sun…6=Sat) ───
 function upcomingDates(dow,count=4){const dates=[];const d=new Date();d.setHours(0,0,0,0);const diff=(dow-d.getDay()+7)%7;d.setDate(d.getDate()+(diff===0?7:diff));for(let i=0;i<count;i++){dates.push(new Date(d));d.setDate(d.getDate()+7);}return dates;}
 
+function ClassPosterCollage({posters,imageUrl,title}){
+  const imgs=Array.isArray(posters)&&posters.length>0
+    ?posters.map(p=>p.url||p)
+    :imageUrl?[imageUrl]:[];
+  if(imgs.length===0)return(
+    <div style={{width:"100%",height:"100%",background:"var(--s2)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{width:36,height:36,borderRadius:8,background:"var(--s3)",opacity:0.35}}/>
+    </div>
+  );
+  if(imgs.length===1)return<img src={imgs[0]} alt={title} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>;
+  if(imgs.length===2)return(
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",height:"100%",gap:2}}>
+      {imgs.map((url,i)=><img key={i} src={url} alt={`${title} ${i+1}`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>)}
+    </div>
+  );
+  return(
+    <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",height:"100%",gap:2}}>
+      <img src={imgs[0]} alt={`${title} 1`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+      <div style={{display:"grid",gridTemplateRows:"1fr 1fr",gap:2}}>
+        <img src={imgs[1]} alt={`${title} 2`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+        <img src={imgs[2]} alt={`${title} 3`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+      </div>
+    </div>
+  );
+}
+
 function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
   const [classes,setClasses]=useState([]);
   const [slots,setSlots]=useState({}); // {classId:[slot,...]}
@@ -1793,9 +1819,15 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
 
   useEffect(()=>{(async()=>{
     try{
-      const{data,error}=await window.sb.from("classes").select("*").eq("active",true).order("created_at");
+      const{data,error}=await window.sb.from("classes").select("*").eq("active",true);
       if(error)throw error;
-      const cls=data||[];
+      const cls=(data||[]).sort((a,b)=>{
+        if(a.is_featured&&!b.is_featured)return -1;
+        if(!a.is_featured&&b.is_featured)return 1;
+        const ao=a.display_order??999,bo=b.display_order??999;
+        if(ao!==bo)return ao-bo;
+        return new Date(a.created_at)-new Date(b.created_at);
+      });
       setClasses(cls);
       if(cls.length){
         const{data:sd,error:se}=await window.sb.from("class_time_slots")
@@ -1908,6 +1940,83 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
   }
 
   const visible=filter==="all"?classes:classes.filter(c=>c.category===filter);
+  const featured=visible.filter(c=>c.is_featured||c.is_highlighted);
+  const regular=visible.filter(c=>!c.is_featured&&!c.is_highlighted);
+
+  const renderClassRow=(cls)=>{
+    const cm=catMeta(cls.category);
+    const clsSlots=slots[cls.id]||[];
+    const next=clsSlots.length>0?upcomingDates(clsSlots[0].day_of_week,1)[0]:null;
+    const hasSale=cls.sale_price&&cls.price&&cls.sale_price!==cls.price;
+    const displayDate=cls.start_date||(next?next.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):null);
+    const isFeatured=cls.is_featured||cls.is_highlighted;
+    return(
+      <div key={cls.id}
+        style={{
+          display:"flex",alignItems:"stretch",borderRadius:14,overflow:"hidden",
+          border:isFeatured?"2px solid var(--acc)":"1px solid var(--bdr)",
+          background:"var(--s1)",cursor:"pointer",marginBottom:16,
+          boxShadow:isFeatured?"0 4px 24px rgba(var(--acc-rgb,99,102,241),0.13)":"0 1px 6px rgba(0,0,0,0.05)",
+          transition:"box-shadow 0.15s,transform 0.1s",position:"relative"
+        }}
+        onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 6px 28px rgba(0,0,0,0.12)";e.currentTarget.style.transform="translateY(-1px)";}}
+        onMouseLeave={e=>{e.currentTarget.style.boxShadow=isFeatured?"0 4px 24px rgba(99,102,241,0.13)":"0 1px 6px rgba(0,0,0,0.05)";e.currentTarget.style.transform="";}}
+        onClick={()=>{setViewing(cls);window.scrollTo(0,0);}}
+      >
+        {/* Image / Collage */}
+        <div style={{width:190,minWidth:190,position:"relative",overflow:"hidden",background:"var(--s2)",flexShrink:0}}>
+          <ClassPosterCollage posters={cls.instructor_poster_urls} imageUrl={cls.image_url} title={cls.title}/>
+          {isFeatured&&(
+            <div style={{position:"absolute",top:10,left:10,background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:0.8,textTransform:"uppercase",padding:"3px 8px",borderRadius:20,lineHeight:1.4}}>Featured</div>
+          )}
+          {hasSale&&(
+            <div style={{position:"absolute",bottom:10,left:10,background:"#e74c3c",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:0.6,padding:"3px 8px",borderRadius:20,lineHeight:1.4}}>Sale</div>
+          )}
+        </div>
+
+        {/* Details */}
+        <div style={{flex:1,padding:"18px 20px",display:"flex",flexDirection:"column",justifyContent:"center",minWidth:0}}>
+          {displayDate&&(
+            <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:5}}>
+              Starts: {displayDate}
+              {next&&clsSlots[0]&&<span style={{marginLeft:6,fontWeight:500}}>· {fmtTime(clsSlots[0].start_time)}</span>}
+            </div>
+          )}
+          <h3 style={{fontSize:18,fontWeight:800,letterSpacing:"-0.4px",marginBottom:8,lineHeight:1.25,color:"var(--t1)"}}>{cls.title}</h3>
+          <div style={{display:"flex",alignItems:"baseline",gap:8,marginBottom:8,flexWrap:"wrap"}}>
+            {hasSale?(
+              <>
+                <span style={{fontSize:16,fontWeight:800,color:"#e74c3c"}}>{cls.sale_price}</span>
+                <span style={{fontSize:14,color:"var(--t3)",textDecoration:"line-through"}}>{cls.price}</span>
+              </>
+            ):(
+              cls.price&&<span style={{fontSize:15,fontWeight:700,color:"var(--t1)"}}>{cls.price}</span>
+            )}
+            {cls.level&&<span style={{fontSize:12,color:"var(--t3)",background:"var(--s2)",padding:"2px 8px",borderRadius:10,border:"1px solid var(--bdr)"}}>{cls.level}</span>}
+          </div>
+          {cls.short_description&&<p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6,marginBottom:8,overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{cls.short_description}</p>}
+          <div style={{display:"flex",gap:14,flexWrap:"wrap",fontSize:12,color:"var(--t3)",marginTop:"auto"}}>
+            {cls.instructor_name&&<span>👤 {cls.instructor_name}</span>}
+            {cls.format&&<span>📍 {cls.format.split(" · ")[0]}</span>}
+            {cm&&!displayDate&&<span style={{color:"var(--acc)",fontWeight:600}}>{cm.name}</span>}
+          </div>
+        </div>
+
+        {/* Action */}
+        <div style={{padding:"18px 20px",display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"stretch",gap:8,borderLeft:"1px solid var(--bdr)",minWidth:140,flexShrink:0}}>
+          <button className="btn-p btn-sm" style={{whiteSpace:"nowrap"}}
+            onClick={e=>{e.stopPropagation();setViewing(cls);window.scrollTo(0,0);}}>
+            View Class
+          </button>
+          <button className="btn-s btn-sm" style={{whiteSpace:"nowrap"}}
+            onClick={e=>{e.stopPropagation();setViewing(cls);window.scrollTo(0,0);}}>
+            Quick View →
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return(<div className="page">
     <div className="info-hero">
       <div className="section-label">Classes</div>
@@ -1918,29 +2027,36 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
       <button className="btn-s btn-sm" onClick={()=>setFilter("all")} style={filter==="all"?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>All Categories</button>
       {CLASS_CATEGORIES.map(cat=><button key={cat.id} className="btn-s btn-sm" onClick={()=>setFilter(cat.id)} style={filter===cat.id?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>{cat.name}</button>)}
     </div>
-    <div className="grid-2" style={{maxWidth:1000,margin:"0 auto"}}>
-      {visible.map(cls=>{
-        const cm=catMeta(cls.category);
-        const clsSlots=slots[cls.id]||[];
-        const next=clsSlots.length>0?upcomingDates(clsSlots[0].day_of_week,1)[0]:null;
-        return(<div key={cls.id} className="card" style={{cursor:"pointer",padding:22}} onClick={()=>{setViewing(cls);window.scrollTo(0,0);}}>
-          {cls.image_url&&<img src={cls.image_url} alt={cls.title} style={{width:"100%",height:160,objectFit:"cover",borderRadius:8,marginBottom:14}}/>}
-          <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:8}}>{cm?.name||cls.category}</div>
-          <h3 style={{fontSize:17,fontWeight:700,marginBottom:6}}>{cls.title}</h3>
-          <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.55,marginBottom:14}}>{cls.short_description}</p>
-          <div style={{display:"flex",gap:14,flexWrap:"wrap",fontSize:12,color:"var(--t2)",marginBottom:10}}>
-            {cls.instructor_name&&<span><strong style={{color:"var(--t1)"}}>Teacher</strong> · {cls.instructor_name}</span>}
-            {cls.format&&<span><strong style={{color:"var(--t1)"}}>Format</strong> · {cls.format.split(" · ")[0]}</span>}
+
+    <div style={{maxWidth:900,margin:"0 auto"}}>
+      {/* Featured classes */}
+      {featured.length>0&&filter==="all"&&(
+        <div style={{marginBottom:32}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+            <div style={{fontSize:12,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)"}}>Featured Classes</div>
+            <div style={{flex:1,height:1,background:"var(--bdr)"}}/>
           </div>
-          <div style={{display:"flex",gap:14,flexWrap:"wrap",fontSize:12,color:"var(--t2)",marginBottom:12}}>
-            {cls.price&&<span><strong style={{color:"var(--t1)"}}>Price</strong> · {cls.price}</span>}
-            {cls.level&&<span><strong style={{color:"var(--t1)"}}>Level</strong> · {cls.level}</span>}
-          </div>
-          {next&&clsSlots[0]&&<div style={{fontSize:12,color:"var(--t3)",marginBottom:6}}>Next: {next.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})} · {fmtTime(clsSlots[0].start_time)}</div>}
-          <span style={{color:"var(--acc)",fontSize:12,fontWeight:600}}>View details →</span>
-        </div>);
-      })}
+          {featured.map(renderClassRow)}
+        </div>
+      )}
+
+      {/* Regular classes (all-categories view) */}
+      {filter==="all"&&regular.length>0&&(
+        <div>
+          {featured.length>0&&(
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+              <div style={{fontSize:12,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)"}}>All Classes</div>
+              <div style={{flex:1,height:1,background:"var(--bdr)"}}/>
+            </div>
+          )}
+          {regular.map(renderClassRow)}
+        </div>
+      )}
+
+      {/* When filtering by category, show all matching (featured + regular) */}
+      {filter!=="all"&&visible.map(renderClassRow)}
     </div>
+
     {visible.length===0&&<p style={{textAlign:"center",color:"var(--t3)",marginTop:40}}>No classes in this category yet — new cohorts are added each month.</p>}
     <div style={{maxWidth:680,margin:"60px auto 0",padding:28,background:"var(--s2)",borderRadius:14,border:"1px solid var(--bdr)",textAlign:"center"}}>
       <h3 style={{fontSize:20,fontWeight:800,marginBottom:8}}>Teach on SlateCue</h3>
@@ -9376,36 +9492,85 @@ function AdminClasses(){
 
   const reload=useCallback(async()=>{
     setLoading(true);
-    const{data,error}=await window.sb.from("classes").select("*").order("created_at");
+    const{data,error}=await window.sb.from("classes").select("*");
     if(error){setMsg("Load failed: "+error.message);setLoading(false);return;}
-    setClasses(data||[]);setLoading(false);
+    const sorted=(data||[]).sort((a,b)=>{
+      if(a.is_featured&&!b.is_featured)return -1;
+      if(!a.is_featured&&b.is_featured)return 1;
+      return(a.display_order??999)-(b.display_order??999)||new Date(a.created_at)-new Date(b.created_at);
+    });
+    setClasses(sorted);setLoading(false);
   },[]);
   useEffect(()=>{reload();},[reload]);
+
+  const moveOrder=async(cls,dir)=>{
+    const idx=classes.findIndex(c=>c.id===cls.id);
+    const neighbor=classes[idx+dir];
+    if(!neighbor)return;
+    const myOrder=cls.display_order??idx*10;
+    const nbOrder=neighbor.display_order??(idx+dir)*10;
+    await window.sb.from("classes").update({display_order:nbOrder}).eq("id",cls.id);
+    await window.sb.from("classes").update({display_order:myOrder}).eq("id",neighbor.id);
+    reload();
+  };
+
+  const toggleFeatured=async(cls)=>{
+    const{error}=await window.sb.from("classes").update({is_featured:!cls.is_featured,is_highlighted:!cls.is_featured}).eq("id",cls.id);
+    if(error){setMsg("Update failed: "+error.message);return;}
+    reload();
+  };
+
+  const addNewClass=async()=>{
+    const{data,error}=await window.sb.from("classes").insert({title:"New Class",active:false,display_order:999}).select().single();
+    if(error){setMsg("Create failed: "+error.message);return;}
+    setEditingClass(data);
+  };
 
   if(editingClass)return<AdminEditClass cls={editingClass} onClose={()=>{setEditingClass(null);reload();}}/>;
   if(managingSlots)return<AdminManageTimeSlots cls={managingSlots} onClose={()=>setManagingSlots(null)}/>;
   if(viewingRequests)return<AdminClassBookingRequests cls={viewingRequests} onClose={()=>setViewingRequests(null)}/>;
 
   return(<>
-    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Classes</h1>
-    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Manage the classes listed on the public Classes page. Changes are reflected immediately.</p>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4,flexWrap:"wrap",gap:10}}>
+      <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,margin:0}}>Classes</h1>
+      <button className="btn-p btn-sm" onClick={addNewClass}>+ Add Class</button>
+    </div>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Manage the classes listed on the public Classes page. Use the arrows to reorder. Star toggles Featured status.</p>
     {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
     {loading?<SlateCueLoader size="inline" text="Loading classes…"/>:
-      <div>{classes.map(cls=>(
-        <div key={cls.id} className="card" style={{padding:18,marginBottom:12}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"start",gap:12,flexWrap:"wrap"}}>
-            <div style={{flex:1,minWidth:200}}>
-              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:2}}>
+      <div>{classes.map((cls,idx)=>(
+        <div key={cls.id} className="card" style={{padding:16,marginBottom:10,borderLeft:cls.is_featured?"3px solid var(--acc)":"3px solid transparent"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+            {/* Order controls */}
+            <div style={{display:"flex",flexDirection:"column",gap:2,flexShrink:0}}>
+              <button onClick={()=>moveOrder(cls,-1)} disabled={idx===0} title="Move up" style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:4,width:24,height:22,cursor:"pointer",fontSize:11,lineHeight:1,color:idx===0?"var(--t3)":"var(--t1)"}}>▲</button>
+              <button onClick={()=>moveOrder(cls,1)} disabled={idx===classes.length-1} title="Move down" style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:4,width:24,height:22,cursor:"pointer",fontSize:11,lineHeight:1,color:idx===classes.length-1?"var(--t3)":"var(--t1)"}}>▼</button>
+            </div>
+            {/* Order number */}
+            <div style={{width:22,textAlign:"center",fontSize:11,color:"var(--t3)",fontWeight:700,flexShrink:0}}>{idx+1}</div>
+            {/* Featured toggle */}
+            <button onClick={()=>toggleFeatured(cls)} title={cls.is_featured?"Remove featured":"Mark as featured"} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,padding:"0 2px",flexShrink:0,lineHeight:1,color:cls.is_featured?"#f39c12":"var(--t3)"}}>
+              {cls.is_featured?"★":"☆"}
+            </button>
+            {/* Class info */}
+            <div style={{flex:1,minWidth:180}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:2,flexWrap:"wrap"}}>
                 <span style={{fontWeight:700,fontSize:15}}>{cls.title}</span>
+                {cls.is_featured&&<span style={{fontSize:10,background:"rgba(243,156,18,0.15)",color:"#e67e22",padding:"2px 7px",borderRadius:4,fontWeight:700,letterSpacing:0.5}}>FEATURED</span>}
                 {!cls.active&&<span style={{fontSize:10,background:"rgba(192,57,43,0.12)",color:"#c0392b",padding:"2px 7px",borderRadius:4,fontWeight:700,letterSpacing:0.5}}>INACTIVE</span>}
               </div>
-              <div style={{color:"var(--t2)",fontSize:13}}>{cls.instructor_name}{cls.category&&<> · {cls.category}</>}{cls.level&&<> · {cls.level}</>}</div>
-              <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{cls.price}{cls.format&&<> · {cls.format.split(" · ")[0]}</>}</div>
+              <div style={{color:"var(--t2)",fontSize:12}}>{cls.instructor_name}{cls.category&&<> · {cls.category}</>}{cls.level&&<> · {cls.level}</>}</div>
+              <div style={{fontSize:12,color:"var(--t3)",marginTop:1}}>
+                {cls.sale_price?<><span style={{color:"#e74c3c",fontWeight:600}}>{cls.sale_price}</span><span style={{textDecoration:"line-through",marginLeft:5}}>{cls.price}</span></>:cls.price}
+                {cls.start_date&&<> · Starts {cls.start_date}</>}
+                {cls.format&&<> · {cls.format.split(" · ")[0]}</>}
+              </div>
             </div>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
-              <button className="btn-s btn-sm" onClick={()=>setEditingClass(cls)}>Edit Class</button>
+            {/* Actions */}
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",flexShrink:0}}>
+              <button className="btn-s btn-sm" onClick={()=>setEditingClass(cls)}>Edit</button>
               <button className="btn-s btn-sm" onClick={()=>setManagingSlots(cls)}>Time Slots</button>
-              <button className="btn-s btn-sm" onClick={()=>setViewingRequests(cls)}>Booking Requests</button>
+              <button className="btn-s btn-sm" onClick={()=>setViewingRequests(cls)}>Bookings</button>
             </div>
           </div>
         </div>
@@ -9421,10 +9586,13 @@ function AdminEditClass({cls,onClose}){
     full_description:cls.full_description||"",instructor_name:cls.instructor_name||"",
     instructor_bio:cls.instructor_bio||"",instructor_imdb:cls.instructor_imdb||"",
     instructor_photo_url:cls.instructor_photo_url||"",category:cls.category||"",
-    level:cls.level||"",price:cls.price||"",format:cls.format||"",
+    level:cls.level||"",price:cls.price||"",sale_price:cls.sale_price||"",
+    start_date:cls.start_date||"",format:cls.format||"",
     location_name:cls.location_name||"",location_city_state:cls.location_city_state||"",
     location_room:cls.location_room||"",online_note:cls.online_note||"",
-    image_url:cls.image_url||"",active:cls.active!==false
+    image_url:cls.image_url||"",active:cls.active!==false,
+    is_featured:!!cls.is_featured,is_highlighted:!!cls.is_highlighted,
+    display_order:cls.display_order!=null?String(cls.display_order):"999"
   });
   // posters: array of {url, path} — max 3
   const[posters,setPosters]=useState(()=>Array.isArray(cls.instructor_poster_urls)?cls.instructor_poster_urls:[]);
@@ -9442,10 +9610,14 @@ function AdminEditClass({cls,onClose}){
       full_description:f.full_description.trim()||null,instructor_name:f.instructor_name.trim()||null,
       instructor_bio:f.instructor_bio.trim()||null,instructor_imdb:f.instructor_imdb.trim()||null,
       instructor_photo_url:f.instructor_photo_url.trim()||null,category:f.category.trim()||null,
-      level:f.level.trim()||null,price:f.price.trim()||null,format:f.format.trim()||null,
+      level:f.level.trim()||null,price:f.price.trim()||null,
+      sale_price:f.sale_price.trim()||null,start_date:f.start_date.trim()||null,
+      format:f.format.trim()||null,
       location_name:f.location_name.trim()||null,location_city_state:f.location_city_state.trim()||null,
       location_room:f.location_room.trim()||null,online_note:f.online_note.trim()||null,
       image_url:f.image_url.trim()||null,active:f.active,
+      is_featured:f.is_featured,is_highlighted:f.is_highlighted,
+      display_order:parseInt(f.display_order)||999,
       instructor_poster_urls:posters
     }).eq("id",cls.id);
     setBusy(false);
@@ -9514,13 +9686,29 @@ function AdminEditClass({cls,onClose}){
         {inp("Level","level","text","e.g. Beginner, Intermediate, All levels")}
       </div>
       <div className="form-row">
-        {inp("Price","price","text","e.g. $540 or $220 / month")}
+        {inp("Regular Price","price","text","e.g. $540 or $220 / month")}
+        {inp("Sale Price (optional)","sale_price","text","e.g. $399 — leave blank if no sale")}
+      </div>
+      <div className="form-row">
+        {inp("Start Date (shown on card)","start_date","text","e.g. May 19, 2026")}
         {inp("Format","format","text","e.g. In-person · 12 weeks · 3 hrs/week")}
       </div>
-      {inp("Class Image URL","image_url","text","https://...")}
-      <div className="form-group" style={{display:"flex",alignItems:"center",gap:10}}>
-        <input type="checkbox" id="cls-active" checked={!!f.active} onChange={e=>up("active",e.target.checked)}/>
-        <label htmlFor="cls-active" style={{fontSize:14,fontWeight:600,cursor:"pointer"}}>Active (visible on public Classes page)</label>
+      {inp("Class Image URL (fallback)","image_url","text","https://... — used only if no posters uploaded")}
+      <div className="form-row">
+        <div className="form-group">
+          <label className="label">Display Order (lower = higher on page)</label>
+          <input className="input" type="number" min="1" max="9999" value={f.display_order} onChange={e=>up("display_order",e.target.value)} disabled={busy}/>
+        </div>
+        <div className="form-group" style={{display:"flex",flexDirection:"column",gap:10,justifyContent:"flex-end"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <input type="checkbox" id="cls-active" checked={!!f.active} onChange={e=>up("active",e.target.checked)}/>
+            <label htmlFor="cls-active" style={{fontSize:14,fontWeight:600,cursor:"pointer"}}>Active (visible publicly)</label>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <input type="checkbox" id="cls-featured" checked={!!f.is_featured} onChange={e=>{up("is_featured",e.target.checked);up("is_highlighted",e.target.checked);}}/>
+            <label htmlFor="cls-featured" style={{fontSize:14,fontWeight:600,cursor:"pointer"}}>★ Featured / Highlighted</label>
+          </div>
+        </div>
       </div>
     </div>
     <div className="card" style={{padding:24,marginBottom:16}}>
