@@ -3265,7 +3265,6 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   );
 
   return(<div className="page">
-    <div style={{background:"#ff0",color:"#000",fontWeight:800,fontSize:13,padding:"8px 14px",borderRadius:6,marginBottom:12,textAlign:"center"}}>⚡ PROFILE TEST A — TalentProfile component (public view)</div>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:14,flexWrap:"wrap"}}>
       <button className="btn-s btn-sm" onClick={onBack}>← Back</button>
       {talent?.id&&talent.id!==session?.user?.id&&<button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this profile">⚑ Report</button>}
@@ -3350,7 +3349,6 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
 
     {/* ── STRUCTURED CREDITS (from DB) ── */}
     {hasStructuredCredits&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
-      <div style={{background:"#ff0",color:"#000",fontWeight:700,fontSize:12,padding:"4px 8px",borderRadius:4,marginBottom:10,display:"inline-block"}}>PROFILE UPDATE TEST - REMOVE AFTER CONFIRMATION</div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
         {sectionHead("Credits & Experience")}
         {talent.resume_url&&<a href={talent.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:11}}>📄 Resume</a>}
@@ -3382,7 +3380,6 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
 
     {/* ── LEGACY CREDITS (plain-text / demo data) ── */}
     {!hasStructuredCredits&&(legacyCredits.length>0||talent.resume_url)&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
-      <div style={{background:"#ff0",color:"#000",fontWeight:700,fontSize:12,padding:"4px 8px",borderRadius:4,marginBottom:10,display:"inline-block"}}>PROFILE UPDATE TEST - REMOVE AFTER CONFIRMATION</div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
         {sectionHead("Credits & Experience")}
         {talent.resume_url&&<a href={talent.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:11}}>📄 Resume</a>}
@@ -7475,7 +7472,6 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
   const maxAdditional=planLimits.additionalPhotos;  // 0 for free, 9 for premium
   const maxVideos=planLimits.videos;                 // 0 for free, 5 for premium
   return(<div className="page page-wide">
-    <div style={{background:"#0ff",color:"#000",fontWeight:800,fontSize:13,padding:"8px 14px",borderRadius:6,marginBottom:12,textAlign:"center"}}>⚡ PROFILE TEST B — MyProfilePage component (edit/own view)</div>
     {msg&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.3)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{msg}</div>}
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
 
@@ -7502,6 +7498,21 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
         {isCD&&<div style={{marginBottom:12}}>
           <div style={{fontSize:13,color:"var(--t2)"}}>{profile.company_name||""}{profile.website?<> · <a href={profile.website} target="_blank" rel="noreferrer" style={{color:"var(--acc)"}}>{profile.website}</a></>:""}</div>
         </div>}
+        {/* Social link icons — always visible in profile header */}
+        {!isCD&&SOCIAL_LINK_FIELDS.some(({key})=>(socialLinks[key]||"").trim())&&
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",marginBottom:12}}>
+            {SOCIAL_LINK_FIELDS.filter(({key})=>(socialLinks[key]||"").trim()).map(({key,label})=>{
+              const url=socialLinks[key].trim();
+              const href=url.startsWith("http")?url:`https://${url}`;
+              return(
+                <a key={key} href={href} target="_blank" rel="noopener noreferrer" title={label}
+                  style={{width:36,height:36,borderRadius:8,background:"var(--s2)",border:"1px solid var(--bdr)",display:"inline-flex",alignItems:"center",justifyContent:"center",color:"var(--t1)",textDecoration:"none",flexShrink:0}}>
+                  <SocialIcon platform={key} size={17}/>
+                </a>
+              );
+            })}
+          </div>
+        }
         <div style={{fontSize:11,color:"var(--t3)"}}>Member since {new Date(profile.created_at).toLocaleDateString()} · {session?.user?.email}</div>
       </div>
     </div>
@@ -7539,30 +7550,33 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
           <div className="form-group"><label className="label">Talent Types (select all that apply)</label><div style={{display:"flex",gap:16,flexWrap:"wrap",marginTop:6}}>{["Film","TV","Theater","Commercial","Modeling","Voiceover"].map(t=>{const arr=Array.isArray(f.talent_types)?f.talent_types:(f.talent_types?[f.talent_types]:[]);const on=arr.includes(t);return(<label key={t} className="checkbox-row"><input type="checkbox" checked={on} onChange={()=>up("talent_types",on?arr.filter(x=>x!==t):[...arr,t])}/>{t}</label>);})}</div></div>
         </div>
         <div className="card" style={{padding:24,marginBottom:16}}>
-          <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Training & Skills</h3>
-          <div className="form-group"><label className="label">Training / Education</label><input className="input" placeholder="e.g. BFA Acting, NYU Tisch · Meisner Technique" value={f.training} onChange={e=>up("training",e.target.value)}/></div>
-          <div className="form-group"><label className="label">Special Skills (comma separated)</label><input className="input" placeholder="Stage Combat, Fluent Spanish, Horseback Riding, Guitar…" value={f.skills} onChange={e=>up("skills",e.target.value)}/></div>
-          <div className="form-group"><label className="label">Representation</label><input className="input" placeholder="Agency, manager, or 'Seeking Representation'" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
-        </div>
-        <div className="card" style={{padding:24,marginBottom:16}}>
-          <div style={{background:"#f0f",color:"#fff",fontWeight:800,fontSize:11,padding:"4px 8px",borderRadius:4,marginBottom:8,display:"inline-block"}}>⚡ PROFILE TEST C — MyProfilePage credits card (edit tab)</div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,flexWrap:"wrap",gap:8}}>
-            <h3 style={{fontSize:15,fontWeight:700}}>Credits {dbCredits.length>0&&<span style={{fontSize:12,fontWeight:400,color:"var(--t3)"}}>{dbCredits.length} credit{dbCredits.length!==1?"s":""} added</span>}</h3>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
+            <h3 style={{fontSize:15,fontWeight:700}}>Credits & Experience {dbCredits.length>0&&<span style={{fontSize:12,fontWeight:400,color:"var(--t3)"}}>{dbCredits.length} credit{dbCredits.length!==1?"s":""} added</span>}</h3>
             <button className="btn-s btn-sm" onClick={()=>setTab("credits")}>+ Add / Edit Credits →</button>
           </div>
           {dbCredits.length===0
             ?<p style={{fontSize:13,color:"var(--t3)",marginBottom:0}}>No credits yet. Use the Credits tab to add your Film & TV, Theatre, and Commercial credits.</p>
             :CREDIT_CATEGORIES.filter(cat=>dbCredits.some(c=>c.category===cat)).map(cat=>(
-              <div key={cat} style={{marginBottom:10}}>
-                <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--acc)",marginBottom:4}}>{cat}</div>
-                {dbCredits.filter(c=>c.category===cat).map(c=>(
-                  <div key={c.id} style={{fontSize:13,padding:"3px 0",borderBottom:"1px solid var(--bdr)",color:"var(--t1)"}}>
-                    {c.credit_year&&<span style={{color:"var(--t3)",marginRight:8,fontSize:12}}>{c.credit_year}</span>}
-                    <strong>{c.production_title}</strong>
-                    {c.role&&<span style={{color:"var(--t2)"}}> · {c.role}</span>}
-                    {c.director_or_company&&<span style={{color:"var(--t3)",fontSize:12}}> · {c.director_or_company}</span>}
-                  </div>
-                ))}
+              <div key={cat} style={{marginBottom:18}}>
+                <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--acc)",marginBottom:6,paddingBottom:6,borderBottom:"1px solid var(--bdr)"}}>{cat}</div>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <tbody>
+                    {dbCredits.filter(c=>c.category===cat).map(c=>(
+                      <tr key={c.id} style={{borderBottom:"1px solid var(--bdr)"}}>
+                        <td style={{padding:"11px 14px 11px 0",color:"var(--t3)",whiteSpace:"nowrap",width:50,fontSize:13,fontWeight:500,verticalAlign:"top"}}>{c.credit_year||"—"}</td>
+                        <td style={{padding:"11px 14px 11px 0",verticalAlign:"top"}}>
+                          <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",lineHeight:1.3}}>
+                            {c.website_url
+                              ?<a href={c.website_url} target="_blank" rel="noopener noreferrer" style={{color:"var(--t1)",textDecoration:"none"}}>{c.production_title}</a>
+                              :c.production_title}
+                          </div>
+                          {c.role&&<div style={{fontSize:12,color:"var(--t2)",marginTop:3}}>{c.role}</div>}
+                        </td>
+                        <td style={{padding:"11px 0",color:"var(--t3)",textAlign:"right",fontSize:12,verticalAlign:"top"}}>{[c.director_or_company,c.location].filter(Boolean).join(" · ")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             ))
           }
@@ -7579,6 +7593,12 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
               <label className="btn-p btn-sm" style={{cursor:"pointer",display:"inline-block"}}>{uploading?"Uploading…":"📄 Upload Resume"}<input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style={{display:"none"}} onChange={e=>uploadResume(e.target.files?.[0])}/></label>
             )}
           </div>
+        </div>
+        <div className="card" style={{padding:24,marginBottom:16}}>
+          <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Training & Skills</h3>
+          <div className="form-group"><label className="label">Training / Education</label><input className="input" placeholder="e.g. BFA Acting, NYU Tisch · Meisner Technique" value={f.training} onChange={e=>up("training",e.target.value)}/></div>
+          <div className="form-group"><label className="label">Special Skills (comma separated)</label><input className="input" placeholder="Stage Combat, Fluent Spanish, Horseback Riding, Guitar…" value={f.skills} onChange={e=>up("skills",e.target.value)}/></div>
+          <div className="form-group"><label className="label">Representation</label><input className="input" placeholder="Agency, manager, or 'Seeking Representation'" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
         </div>
       </>}
       {isCD&&<>
