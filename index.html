@@ -3250,8 +3250,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   const _galSeen=new Set();const gallery=[];
   [talent._selectedPhoto,freshHeadshot,...freshAdditional].forEach(u=>{if(u&&!_galSeen.has(u)){_galSeen.add(u);gallery.push(u);}});
   if(!gallery.length)gallery.push(talent.img||"");
-  // Use fresh video_links so deleted YouTube/Vimeo links don't persist in CD view.
-  const videoLinks=(freshProfile?.video_links||talent.video_links||[]).filter(v=>v);
+  // Intentionally ignore video_links (old YouTube/Vimeo URL system). Videos are now
+  // upload-only via profile_media. Using video_links would surface deleted external links.
   const rawSkills=freshProfile?.skills??talent.skills;
   const skills=Array.isArray(rawSkills)?rawSkills:(rawSkills?String(rawSkills).split(",").map(s=>s.trim()).filter(Boolean):[]);
   const rawSocialLinks=freshProfile?.social_links??talent.social_links;
@@ -3273,16 +3273,13 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   }
   const hasStructuredCredits=Object.keys(creditsByCategory).length>0;
 
-  // Build unified video list: uploaded → reel → embedded links
+  // Build unified video list: only uploaded videos (profile_media table).
+  // reel_url is a fallback only if it points to uploaded storage (not YouTube/Vimeo).
+  const reelUrlRaw=freshProfile?.reel_url||talent.reel_url||"";
+  const reelIsExternal=/(youtube\.com|youtu\.be|vimeo\.com)/i.test(reelUrlRaw);
   const allVideoItems=[
     ...uploadedVideos.map(v=>({kind:"upload",...v})),
-    ...(!uploadedVideos.length&&(freshProfile?.reel_url||talent.reel_url)?[{kind:"reel",url:freshProfile?.reel_url||talent.reel_url,title:"Demo Reel"}]:[]),
-    ...videoLinks.map((url,i)=>{
-      const ytM=url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-      const vmM=!ytM&&url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-      const embed=ytM?`https://www.youtube.com/embed/${ytM[1]}`:vmM?`https://player.vimeo.com/video/${vmM[1]}`:null;
-      return embed?{kind:"embed",embed,url,index:i}:null;
-    }).filter(Boolean),
+    ...(!uploadedVideos.length&&reelUrlRaw&&!reelIsExternal?[{kind:"reel",url:reelUrlRaw,title:"Demo Reel"}]:[]),
   ];
   const panelVideos=allVideoItems.slice(0,2);
   const extraVideos=allVideoItems.slice(2);
@@ -3348,9 +3345,9 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     {/* ── MEDIA BANNER: headshot left, up to 2 videos right ── */}
     <div style={{marginBottom:16}}>
       <div style={{display:"grid",gridTemplateColumns:hasRightPanel?"3fr 2fr":"1fr",borderRadius:12,overflow:"hidden",border:"1px solid var(--bdr)"}}>
-        {/* Headshot */}
+        {/* Headshot — use fresh headshot from DB when available so current photo shows */}
         <div style={{position:"relative",background:"var(--s2)"}}>
-          <img src={talent.img||"https://placehold.co/400x600/e5e5e5/999?text=No+Headshot"} alt={talent.name} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",display:"block"}}/>
+          <img src={freshHeadshot||talent.img||"https://placehold.co/400x600/e5e5e5/999?text=No+Headshot"} alt={talent.name} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",display:"block"}}/>
           {talent._selectedPhoto&&talent._selectedPhoto!==freshHeadshot&&<p style={{fontSize:10,color:"var(--t3)",padding:"4px 8px",textAlign:"center",background:"var(--s1)"}}>↑ Chosen for this submission</p>}
         </div>
         {/* Right: videos stacked, max 2 */}
@@ -3387,8 +3384,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
         <h1 style={{fontSize:32,fontWeight:800,letterSpacing:"-1px",marginBottom:4,lineHeight:1.1}}>{freshProfile?.display_name||talent.name||talent.display_name||"—"}</h1>
 
         {/* Location & rep */}
-        {locationText&&<p style={{color:"var(--t2)",fontSize:14,marginBottom:3}}>{locationText}</p>}
-        {agentOrRep&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:8}}>Rep: {agentOrRep}</p>}
+        {locationText&&<p style={{color:"var(--t2)",fontSize:16,marginBottom:3}}>{locationText}</p>}
+        {agentOrRep&&<p style={{color:"var(--t2)",fontSize:15,marginBottom:8}}>Rep: {agentOrRep}</p>}
 
         {/* Social icons — right in the header area */}
         {allSocialLinks.length>0&&(
@@ -3453,9 +3450,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
                   <td style={{padding:"9px 12px 9px 0",color:"var(--t3)",whiteSpace:"nowrap",width:54,fontSize:13,fontWeight:500,verticalAlign:"top"}}>{c.credit_year||"—"}</td>
                   <td style={{padding:"9px 12px 9px 0",verticalAlign:"top"}}>
                     <div style={{fontWeight:700,fontSize:15,color:"var(--t1)",lineHeight:1.3}}>
-                      {c.website_url
-                        ?<a href={c.website_url} target="_blank" rel="noopener noreferrer" style={{color:"var(--t1)",textDecoration:"none"}}>{c.production_title}</a>
-                        :c.production_title}
+                      {c.production_title}
+                      {c.website_url&&<a href={c.website_url} target="_blank" rel="noopener noreferrer" style={{marginLeft:8,fontSize:12,color:"var(--blu)",textDecoration:"underline",fontWeight:500}}>↗ Link</a>}
                     </div>
                     {c.role&&<div style={{fontSize:13,color:"var(--t2)",marginTop:3}}>{c.role}</div>}
                   </td>
@@ -3496,6 +3492,19 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     {trainingText&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       {sectionHead("Training")}
       <p style={{fontSize:14,color:"var(--t1)",lineHeight:1.6}}>{trainingText}</p>
+    </div>}
+
+    {/* ── FULL PHOTO GALLERY ── show all photos when more than 1 exists */}
+    {gallery.length>1&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
+      {sectionHead("Photos")}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:8}}>
+        {gallery.map((u,i)=>(
+          <div key={i} style={{position:"relative"}}>
+            <img src={u} alt={`Photo ${i+1}`} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:8,display:"block",border:"1px solid var(--bdr)"}}/>
+            {i===0&&talent._selectedPhoto&&talent._selectedPhoto===u&&<span style={{position:"absolute",bottom:5,left:5,fontSize:9,fontWeight:700,background:"rgba(0,0,0,0.55)",color:"#fff",padding:"2px 5px",borderRadius:4,letterSpacing:0.5}}>SUBMISSION PHOTO</span>}
+          </div>
+        ))}
+      </div>
     </div>}
 
     {/* ── CAST ME AS ── */}
@@ -4519,9 +4528,14 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     finally{setSavedListsLoading(false);}
   },[uid,activeList]);
 
+  // Load saved lists on mount (for count badge) and when switching to the tab.
+  useEffect(()=>{
+    if(uid)loadSavedLists();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[uid]);
   useEffect(()=>{if(tab==="savedLists")loadSavedLists();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[tab,uid,reloadTick]);
+  },[tab,reloadTick]);
 
   const createList=async()=>{
     const name=newListName.trim();
@@ -4699,7 +4713,8 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       }
     };
     const credits=String(t.credits||"");
-    const reelUrl=Array.isArray(t.video_links)?t.video_links.find(u=>u):null;
+    // Do not show a reel link in the swipe card — video_links may contain stale/deleted URLs.
+    // The full profile view (one click away) fetches live uploaded videos from profile_media.
     return(<>
       <div className="sw-counter">{counts.pending} pending · reviewing {Math.min(si+1,pendingList.length)} of {pendingList.length} · Role: {app.roles?.name||activeRole?.name||"—"}</div>
       <div className="swipe-card-wrap">
@@ -4723,7 +4738,6 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
               {t.union_status&&<span style={{background:"rgba(26,26,46,.08)",color:"var(--acc)"}}>{t.union_status}</span>}
             </div>
             {credits&&<p style={{marginTop:8,fontSize:12,color:"var(--t2)"}}>{credits.slice(0,140)}{credits.length>140?"…":""}</p>}
-            {reelUrl&&<p style={{marginTop:6,fontSize:12}}><a href={reelUrl} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} style={{color:"var(--blu)",textDecoration:"underline"}}>🎬 Watch reel</a></p>}
             {app.cover_note&&<p style={{marginTop:8,fontSize:12,color:"var(--t2)",fontStyle:"italic"}}>"{String(app.cover_note).slice(0,160)}{String(app.cover_note).length>160?"…":""}"</p>}
           </div>
         </div>
@@ -5138,7 +5152,7 @@ function SaveToListModal({cdId,talentId,talentName,onClose}){
     <h2>Save {talentName}</h2>
     <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:18}}>Add this talent to one of your saved lists, or create a new one. Tap a list to add or remove.</p>
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{err}</div>}
-    {done&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.35)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>✓ Saved</div>}
+    {done&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.35)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>✓ Saved! Find your lists in your Dashboard under the <strong>Saved Lists</strong> tab.</div>}
     {loading?<SlateCueLoader size="inline" text="Loading your lists…"/>:<>
       {lists.length===0&&!showCreate&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:14}}>You don't have any lists yet. Create your first one below.</p>}
       {lists.length>0&&<div style={{maxHeight:280,overflowY:"auto",border:"1px solid var(--bdr)",borderRadius:10,marginBottom:12}}>
@@ -5195,7 +5209,7 @@ function InviteToProjectModal({cdId,talentId,talentName,onClose}){
       if(error)throw error;
       // Also drop a notification in the messages thread so the talent sees it in inbox immediately
       try{
-        const body=`📩 You've been invited to ${pickedCasting.title}${pickedRole?` for the role of ${pickedRole.name}`:""}.${note.trim()?`\n\n"${note.trim()}"`:""}\n\nOpen your applications tab to accept or decline.`;
+        const body=`📩 You've been invited to audition for ${pickedCasting.title}${pickedRole?` · ${pickedRole.name}`:""}.${note.trim()?`\n\n"${note.trim()}"`:""}`;
         await window.sb.from("messages").insert({from_id:cdId,to_id:talentId,application_id:null,body});
       }catch(_){/* non-fatal */}
       setSent(true);
@@ -5282,7 +5296,7 @@ function ComposeDMModal({fromId,toId,toName,onClose}){
 // Realtime-subscribes to the conversation_id so new messages from the other side
 // appear live without a manual refresh — and they get marked read immediately too,
 // since the user is actively viewing the thread.
-function MessageThreadModal({message,sessionUid,onClose,onRead,onDeleted,onReplied}){
+function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,onClose,onRead,onDeleted,onReplied}){
   const [reply,setReply]=useState("");
   const [busy,setBusy]=useState(false);
   const [deleting,setDeleting]=useState(false);
@@ -5409,6 +5423,7 @@ function MessageThreadModal({message,sessionUid,onClose,onRead,onDeleted,onRepli
   if(!message)return null;
   const cp=counterpartyProfile||message.profiles||{};
   const cpName=cp.display_name||cp.company_name||"Unknown user";
+  const isAdmin=(sessionUserType==="admin"||sessionUserType==="super_admin");
   const cpTypeLabel=(()=>{
     const t=(cp.user_type||"").toLowerCase();
     if(t==="cd")return "Casting Director";
@@ -5466,15 +5481,23 @@ function MessageThreadModal({message,sessionUid,onClose,onRead,onDeleted,onRepli
 
   return(<div className="modal-overlay" onClick={()=>!busy&&!deleting&&onClose()}>
     <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column",padding:0,overflow:"hidden"}}>
-      {/* Header — back button, counterparty info, delete-conversation */}
+      {/* Header — back button, counterparty info, delete-conversation (admin only) */}
       <div style={{display:"flex",alignItems:"center",gap:14,padding:"18px 22px",borderBottom:"1px solid var(--bdr)",flexShrink:0}}>
         <button className="btn-s btn-sm" onClick={onClose} disabled={busy||deleting}>←</button>
-        <img src={cp.headshot_url||"https://placehold.co/44x44/e5e5e5/999?text=?"} alt="" style={{width:44,height:44,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
+        <img
+          src={cp.headshot_url||"https://placehold.co/44x44/e5e5e5/999?text=?"}
+          alt=""
+          style={{width:44,height:44,borderRadius:"50%",objectFit:"cover",flexShrink:0,cursor:onViewProfile&&cp.id?"pointer":"default"}}
+          onClick={()=>{if(onViewProfile&&cp.id)onViewProfile({...cp,id:cp.id,name:cpName,display_name:cpName,img:cp.headshot_url||"",type:"Talent"});}}
+        />
         <div style={{minWidth:0,flex:1}}>
-          <div style={{fontWeight:800,fontSize:15,letterSpacing:"-0.2px",lineHeight:1.2}}>{cpName}</div>
+          <div
+            style={{fontWeight:800,fontSize:15,letterSpacing:"-0.2px",lineHeight:1.2,cursor:onViewProfile&&cp.id?"pointer":"default"}}
+            onClick={()=>{if(onViewProfile&&cp.id)onViewProfile({...cp,id:cp.id,name:cpName,display_name:cpName,img:cp.headshot_url||"",type:"Talent"});}}
+          >{cpName}</div>
           <div style={{fontSize:10,letterSpacing:1,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,marginTop:3}}>{cpTypeLabel}</div>
         </div>
-        <button onClick={deleteConversation} disabled={deleting||busy} title="Delete entire conversation" style={{background:"transparent",border:"1px solid rgba(255,100,100,0.4)",color:"#c0392b",fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:8,cursor:"pointer",whiteSpace:"nowrap"}}>{deleting?"Deleting…":"🗑 Delete"}</button>
+        {isAdmin&&<button onClick={deleteConversation} disabled={deleting||busy} title="Delete entire conversation" style={{background:"transparent",border:"1px solid rgba(255,100,100,0.4)",color:"#c0392b",fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:8,cursor:"pointer",whiteSpace:"nowrap"}}>{deleting?"Deleting…":"🗑 Delete"}</button>}
       </div>
 
       {/* Casting context strip — sticky-feeling block under the header */}
@@ -5507,7 +5530,7 @@ function MessageThreadModal({message,sessionUid,onClose,onRead,onDeleted,onRepli
                    <div style={{fontSize:10,fontWeight:700,letterSpacing:0.4,color:"var(--t3)",textTransform:"uppercase",padding:"0 4px"}}>{fromLabel} · {time}</div>
                    <div className="msg-bubble" style={{background:mine?"var(--acc)":"#fff",color:mine?"#fff":"var(--t1)",border:mine?"none":"1px solid var(--bdr)",padding:"10px 14px",borderRadius:14,fontSize:14,lineHeight:1.5,whiteSpace:"pre-wrap",wordBreak:"break-word"}}>
                      {m.body}
-                     <button onClick={()=>deleteOne(m.id)} title="Delete this message" className="msg-del-btn" style={{position:"absolute",top:-8,[mine?"left":"right"]:-8,width:22,height:22,borderRadius:"50%",border:"1px solid var(--bdr)",background:"#fff",color:"var(--t3)",fontSize:11,cursor:"pointer",padding:0}}>✕</button>
+                     {isAdmin&&<button onClick={()=>deleteOne(m.id)} title="Delete this message" className="msg-del-btn" style={{position:"absolute",top:-8,[mine?"left":"right"]:-8,width:22,height:22,borderRadius:"50%",border:"1px solid var(--bdr)",background:"#fff",color:"var(--t3)",fontSize:11,cursor:"pointer",padding:0}}>✕</button>}
                    </div>
                    {m.to_id===sessionUid&&!m.read_at&&<span style={{fontSize:9,fontWeight:800,color:"var(--acc)",letterSpacing:1,padding:"0 4px"}}>NEW</span>}
                  </div>
@@ -5534,7 +5557,7 @@ function MessageThreadModal({message,sessionUid,onClose,onRead,onDeleted,onRepli
           />
           <button className="btn-p" onClick={sendReply} disabled={busy||deleting||!reply.trim()} style={{whiteSpace:"nowrap",height:46}}>{busy?"Sending…":"Send"}</button>
         </div>
-        <p style={{fontSize:10,color:"var(--t3)",marginTop:6,letterSpacing:0.3}}>Press ⌘/Ctrl+Enter to send · Hover any message to delete it</p>
+        <p style={{fontSize:10,color:"var(--t3)",marginTop:6,letterSpacing:0.3}}>Press ⌘/Ctrl+Enter to send</p>
       </div>
     </div>
   </div>);
@@ -5545,7 +5568,7 @@ function MessageThreadModal({message,sessionUid,onClose,onRead,onDeleted,onRepli
 // person you're talking to, showing the latest message + unread count. Clicking
 // opens MessageThreadModal which already supports reply, delete, and full history.
 // Realtime + 30s polling + focus listener keep it synced without manual refresh.
-function InboxPage({session,profile,onNavigate}){
+function InboxPage({session,profile,onNavigate,onViewProfile}){
   const [messages,setMessages]=useState([]);    // raw flat list of all messages I'm in
   const [counterparties,setCounterparties]=useState({}); // id -> profile snapshot
   const [openMsg,setOpenMsg]=useState(null);
@@ -5727,6 +5750,8 @@ function InboxPage({session,profile,onNavigate}){
     {openMsg&&<MessageThreadModal
       message={openMsg}
       sessionUid={uid}
+      sessionUserType={profile?.user_type}
+      onViewProfile={onViewProfile}
       onClose={()=>setOpenMsg(null)}
       // Bulk mark-read: modal hands us every newly-read message id in one call.
       onRead={(ids)=>{
@@ -7257,7 +7282,7 @@ function CastMeAsSection({talentId}){
 // ═══════════════════════════════════════════
 // PAGE: MY PROFILE — Backstage-style with gallery + videos
 // ═══════════════════════════════════════════
-function MyProfilePage({session,profile,onReload,onNavigate}){
+function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
   const profileInitializedRef=useRef(false); // prevent focus/reload from wiping form state
   const [tab,setTab]=useState("profile");
   const [saving,setSaving]=useState(false);
@@ -8029,6 +8054,8 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     {openMsg&&<MessageThreadModal
       message={openMsg}
       sessionUid={session.user.id}
+      sessionUserType={profile?.user_type}
+      onViewProfile={onViewProfile}
       onClose={()=>setOpenMsg(null)}
       // Bulk mark-read: the modal already wrote read_at to the DB for every unread
       // incoming message in this thread; we just need to mirror that locally so the
@@ -10486,9 +10513,9 @@ function App(){
         {page==="dashboard"&&(!authReady?<PageLoader/>:<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>)}
         {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&myProfile?.user_type==="talent"?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>:<div style={{minHeight:"60vh"}}/>)}
         {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
-        {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate}/>:null)}
+        {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onViewProfile={viewProfile}/>:null)}
         {page==="account-settings"&&(!authReady?<PageLoader/>:isLoggedIn?<AccountSettingsPage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onSignOut={signOut} isSuperAdmin={isSuperAdmin}/>:<div style={{minHeight:"60vh"}}/>)}
-        {page==="inbox"&&<InboxPage session={session} profile={myProfile} onNavigate={navigate}/>}
+        {page==="inbox"&&<InboxPage session={session} profile={myProfile} onNavigate={navigate} onViewProfile={viewProfile}/>}
         {page==="admin"&&(!authReady?<PageLoader/>:isLoggedIn&&isAdmin?<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>:<div style={{minHeight:"60vh"}}/>)}
         {/* Registration pages are guarded — a logged-in user with an existing
             profile (any user_type) is redirected to the page that makes sense for
