@@ -3178,18 +3178,17 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   const talentDbId=typeof talent.id==="string"&&/^[0-9a-f]{8}-/i.test(String(talent.id))?talent.id:null;
   const [cdAction,setCdAction]=useState(null);
   const [showReport,setShowReport]=useState(false);
-  const [dbCredits,setDbCredits]=useState(null);   // null=loading, []=none
+  const [dbCredits,setDbCredits]=useState(null);
   const [uploadedVideos,setUploadedVideos]=useState([]);
-  const [freshProfile,setFreshProfile]=useState(null); // live profile data from DB
+  const [freshProfile,setFreshProfile]=useState(null);
+  const [showAllMedia,setShowAllMedia]=useState(false);
 
-  // Load structured credits, uploaded videos, and fresh profile fields from DB
   useEffect(()=>{
     if(!talentDbId){setDbCredits([]);return;}
     (async()=>{
-      // Fetch fresh profile fields so social_links, skills, etc. are always current
       try{
         const {data}=await window.sb.from("profiles")
-          .select("social_links,skills,body_type,age_range,training,agent,bio,location")
+          .select("social_links,skills,body_type,age_range,training,agent,bio,location,union_status,representation")
           .eq("id",talentDbId).maybeSingle();
         if(data)setFreshProfile(data);
       }catch(_){}
@@ -3208,7 +3207,6 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     })();
   },[talentDbId]);
 
-  // Parse legacy plain-text credits (demo data + old DB rows)
   const parseLegacyCredits=(c)=>{
     if(!c)return [];
     if(Array.isArray(c))return c;
@@ -3221,22 +3219,18 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
 
   const gallery=(talent._allPhotos&&talent._allPhotos.length)?talent._allPhotos:[talent.img,...(talent.additional_photos||[])].filter(Boolean);
   const videoLinks=(talent.video_links||[]).filter(v=>v);
-  // Prefer freshProfile (loaded from DB) over stale talent prop for social_links and skills
   const rawSkills=freshProfile?.skills??talent.skills;
   const skills=Array.isArray(rawSkills)?rawSkills:(rawSkills?String(rawSkills).split(",").map(s=>s.trim()).filter(Boolean):[]);
   const rawSocialLinks=freshProfile?.social_links??talent.social_links;
   const socialLinks=(rawSocialLinks&&typeof rawSocialLinks==="object")?rawSocialLinks:{};
 
-  // Build social links to display (from social_links jsonb + legacy instagram)
   const allSocialLinks=[];
   SOCIAL_LINK_FIELDS.forEach(({key,label})=>{
     const v=socialLinks[key];
     if(v&&v.trim())allSocialLinks.push({key,label,url:v.trim()});
   });
-  // Legacy instagram field as fallback
   if(!socialLinks.instagram_url&&talent.instagram)allSocialLinks.unshift({key:"instagram",label:"Instagram",url:talent.instagram.startsWith("http")?talent.instagram:`https://instagram.com/${talent.instagram.replace(/^@/,"")}`});
 
-  // Group DB credits by category
   const creditsByCategory={};
   if(dbCredits&&dbCredits.length){
     CREDIT_CATEGORIES.forEach(cat=>{
@@ -3246,95 +3240,149 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   }
   const hasStructuredCredits=Object.keys(creditsByCategory).length>0;
 
-  // Render a YouTube/Vimeo embed or a link button
-  const renderVideoLink=(url,i)=>{
-    let embed=null;
-    const ytM=url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-    if(ytM)embed=`https://www.youtube.com/embed/${ytM[1]}`;
-    else{const vmM=url.match(/vimeo\.com\/(?:video\/)?(\d+)/);if(vmM)embed=`https://player.vimeo.com/video/${vmM[1]}`;}
-    return embed
-      ?<div key={i} style={{position:"relative",paddingBottom:"56.25%",height:0,borderRadius:8,overflow:"hidden",background:"#000"}}><iframe src={embed} frameBorder="0" allowFullScreen style={{position:"absolute",top:0,left:0,width:"100%",height:"100%"}}/></div>
-      :<a key={i} href={url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",display:"inline-block"}}>▶ Watch clip {i+1}</a>;
+  // Build unified video list: uploaded → reel → embedded links
+  const allVideoItems=[
+    ...uploadedVideos.map(v=>({kind:"upload",...v})),
+    ...(!uploadedVideos.length&&talent.reel_url?[{kind:"reel",url:talent.reel_url,title:"Demo Reel"}]:[]),
+    ...videoLinks.map((url,i)=>{
+      const ytM=url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+      const vmM=!ytM&&url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+      const embed=ytM?`https://www.youtube.com/embed/${ytM[1]}`:vmM?`https://player.vimeo.com/video/${vmM[1]}`:null;
+      return embed?{kind:"embed",embed,url,index:i}:null;
+    }).filter(Boolean),
+  ];
+  const panelVideos=allVideoItems.slice(0,2);
+  const extraVideos=allVideoItems.slice(2);
+  const hasMoreVideos=extraVideos.length>0;
+  const hasVid=allVideoItems.length>0;
+  const hasRightPanel=hasVid||gallery.length>1;
+
+  const renderPanelVideo=(v,i)=>{
+    if(v.kind==="upload"||v.kind==="reel"){
+      return(
+        <div key={v.id||i} style={{borderRadius:8,overflow:"hidden",background:"#000"}}>
+          <video src={v.url} controls preload="metadata" style={{width:"100%",aspectRatio:"16/9",objectFit:"cover",display:"block"}}/>
+          {v.title&&<div style={{padding:"5px 10px",fontSize:11,color:"var(--t2)",fontWeight:600,background:"var(--s2)"}}>{v.title}</div>}
+        </div>
+      );
+    }
+    return(
+      <div key={i} style={{borderRadius:8,overflow:"hidden",position:"relative",paddingBottom:"56.25%",background:"#000"}}>
+        <iframe src={v.embed} frameBorder="0" allowFullScreen style={{position:"absolute",top:0,left:0,width:"100%",height:"100%"}}/>
+      </div>
+    );
   };
 
   const sectionHead=(title,extra)=>(
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-      <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--t3)"}}>{title}</div>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+      <div style={{fontSize:13,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--t3)"}}>{title}</div>
       {extra}
     </div>
   );
 
-  const hasVid=uploadedVideos.length>0||!!talent.reel_url||videoLinks.length>0;
-  const hasRightPanel=hasVid||gallery.length>1;
+  const agentOrRep=freshProfile?.representation||freshProfile?.agent||talent.agent;
+  const trainingText=freshProfile?.training||talent.training;
+  const bioText=freshProfile?.bio||talent.bio;
+  const locationText=freshProfile?.location||talent.location;
+  const unionText=freshProfile?.union_status||talent.union||talent.union_status;
+
+  const statsData=[
+    ["Height",talent.height],["Weight",talent.weight],["Hair",talent.hair],
+    ["Eyes",talent.eyes],["Age",talent.age],["Gender",talent.gender],
+    ["Ethnicity",talent.ethnicity],["Body",freshProfile?.body_type||talent.body_type],
+    ["Plays",freshProfile?.age_range||talent.age_range],
+  ].filter(([,v])=>v);
+
   return(<div className="page">
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:14,flexWrap:"wrap"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:16,flexWrap:"wrap"}}>
       <button className="btn-s btn-sm" onClick={onBack}>← Back</button>
       {talent?.id&&talent.id!==session?.user?.id&&<button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this profile">⚑ Report</button>}
     </div>
     <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={talent?.id?{kind:"profile",id:talent.id}:null}/>
 
-    {/* Cover note banner */}
-    {talent._coverNote&&<div className="card" style={{padding:"12px 16px",marginBottom:12,borderLeft:"3px solid var(--acc)",background:"var(--s1)"}}>
+    {talent._coverNote&&<div className="card" style={{padding:"12px 16px",marginBottom:14,borderLeft:"3px solid var(--acc)",background:"var(--s1)"}}>
       <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--t3)",marginBottom:3}}>Cover note from {talent.name||"the applicant"}</div>
       <p style={{fontSize:13,lineHeight:1.6,fontStyle:"italic",color:"var(--t1)"}}>"{talent._coverNote}"</p>
       {talent._roleName&&<p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Submitted for: <strong>{talent._roleName}</strong></p>}
     </div>}
 
-    {/* ── MEDIA BANNER: large headshot left + videos right ── */}
-    <div style={{marginBottom:14}}>
-      <div style={{display:"grid",gridTemplateColumns:hasRightPanel?"1fr 1fr":"1fr",borderRadius:12,overflow:"hidden",border:"1px solid var(--bdr)",marginBottom:10}}>
-        {/* Large headshot */}
-        <div style={{position:"relative"}}>
+    {/* ── MEDIA BANNER: headshot left, up to 2 videos right ── */}
+    <div style={{marginBottom:16}}>
+      <div style={{display:"grid",gridTemplateColumns:hasRightPanel?"3fr 2fr":"1fr",borderRadius:12,overflow:"hidden",border:"1px solid var(--bdr)"}}>
+        {/* Headshot */}
+        <div style={{position:"relative",background:"var(--s2)"}}>
           <img src={talent.img||"https://placehold.co/400x600/e5e5e5/999?text=No+Headshot"} alt={talent.name} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",display:"block"}}/>
           {talent._selectedPhoto&&talent._selectedPhoto!==talent.img&&<p style={{fontSize:10,color:"var(--t3)",padding:"4px 8px",textAlign:"center",background:"var(--s1)"}}>↑ Chosen for this submission</p>}
         </div>
-        {/* Right panel: videos in 2-col grid, or extra photos if no videos */}
-        {hasRightPanel&&<div style={{background:"#111",padding:8,display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,alignContent:"flex-start"}}>
-          {uploadedVideos.slice(0,4).map((v,i)=>(
-            <div key={v.id||i} style={{borderRadius:6,overflow:"hidden",background:"#1a1a2e"}}>
-              <video src={v.url} controls preload="metadata" style={{width:"100%",aspectRatio:"4/3",objectFit:"cover",display:"block",background:"#000"}}/>
-              {v.title&&<div style={{padding:"4px 8px",fontSize:10,color:"#fff",fontWeight:600,background:"rgba(0,0,0,0.75)"}}>{v.title}</div>}
-            </div>
+        {/* Right: videos stacked, max 2 */}
+        {hasRightPanel&&<div style={{background:"var(--s1)",padding:10,display:"flex",flexDirection:"column",gap:8,borderLeft:"1px solid var(--bdr)"}}>
+          {panelVideos.map((v,i)=>renderPanelVideo(v,i))}
+          {!hasVid&&gallery.slice(1,3).map((u,i)=>(
+            <img key={i} src={u} alt={`photo ${i+2}`} style={{width:"100%",aspectRatio:"3/2",objectFit:"cover",borderRadius:8}}/>
           ))}
-          {!uploadedVideos.length&&talent.reel_url&&(
-            <div style={{borderRadius:6,overflow:"hidden",background:"#1a1a2e",gridColumn:"1/-1"}}>
-              <video src={talent.reel_url} controls style={{width:"100%",aspectRatio:"16/9",display:"block",background:"#000"}}/>
-              <div style={{padding:"4px 8px",fontSize:10,color:"#fff",fontWeight:600,background:"rgba(0,0,0,0.75)"}}>Demo Reel</div>
-            </div>
+          {hasMoreVideos&&(
+            <button onClick={()=>setShowAllMedia(v=>!v)}
+              style={{marginTop:2,padding:"8px 12px",background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:8,fontSize:13,fontWeight:600,color:"var(--t1)",cursor:"pointer",textAlign:"center"}}>
+              {showAllMedia?"▲ Hide media":`▼ View all media (${allVideoItems.length} videos)`}
+            </button>
           )}
-          {videoLinks.slice(0,Math.max(0,4-uploadedVideos.length)).map((url,i)=>{
-            const ytM=url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-            const vmM=!ytM&&url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-            const embed=ytM?`https://www.youtube.com/embed/${ytM[1]}`:vmM?`https://player.vimeo.com/video/${vmM[1]}`:null;
-            return embed?(
-              <div key={i} style={{borderRadius:6,overflow:"hidden",position:"relative",paddingBottom:"75%",background:"#000"}}>
-                <iframe src={embed} frameBorder="0" allowFullScreen style={{position:"absolute",top:0,left:0,width:"100%",height:"100%"}}/>
-              </div>
-            ):null;
-          })}
-          {!hasVid&&gallery.slice(1,5).map((u,i)=>(
-            <img key={i} src={u} alt={`photo ${i+2}`} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",borderRadius:6}}/>
-          ))}
         </div>}
       </div>
-      {/* Profile info card below media */}
-      <div className="card" style={{padding:"16px 20px",marginBottom:0}}>
-        <div style={{display:"flex",gap:6,marginBottom:8,flexWrap:"wrap"}}>
-          <span className="tag tag-acc" style={{fontSize:10}}>{talent.union||talent.union_status||"Non-Union"}</span>
-          {talent.type&&<span className="tag" style={{fontSize:10}}>{talent.type}</span>}
+
+      {/* Expanded media section */}
+      {showAllMedia&&extraVideos.length>0&&(
+        <div style={{marginTop:10,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:10}}>
+          {extraVideos.map((v,i)=>renderPanelVideo(v,i))}
         </div>
-        <h1 style={{fontSize:28,fontWeight:800,letterSpacing:"-1px",marginBottom:2,lineHeight:1.1}}>{talent.name||talent.display_name||"—"}</h1>
-        <p style={{color:"var(--t2)",fontSize:13,marginBottom:talent.agent?2:8}}>{talent.location||""}</p>
-        {talent.agent&&<p style={{color:"var(--t3)",fontSize:12,marginBottom:8}}>Rep: {talent.agent}</p>}
-        {talent.bio&&<p style={{color:"var(--t2)",fontSize:13,lineHeight:1.55,marginBottom:10}}>{talent.bio}</p>}
-        {[["Height",talent.height],["Weight",talent.weight],["Hair",talent.hair],["Eyes",talent.eyes],["Age",talent.age],["Gender",talent.gender],["Ethnicity",talent.ethnicity],["Body",talent.body_type],["Plays",talent.age_range]].filter(([,v])=>v).length>0&&
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(90px,1fr))",gap:"4px 12px",marginBottom:10}}>
-            {[["Height",talent.height],["Weight",talent.weight],["Hair",talent.hair],["Eyes",talent.eyes],["Age",talent.age],["Gender",talent.gender],["Ethnicity",talent.ethnicity],["Body",talent.body_type],["Plays",talent.age_range]].filter(([,v])=>v).map(([l,v])=>
-              <div key={l}><div style={{fontSize:9,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em"}}>{l}</div><div style={{fontSize:12,fontWeight:600,color:"var(--t1)"}}>{v}</div></div>
-            )}
+      )}
+
+      {/* Profile info card */}
+      <div className="card" style={{padding:"20px 22px",marginTop:10}}>
+        {/* Tags row */}
+        <div style={{display:"flex",gap:6,marginBottom:10,flexWrap:"wrap",alignItems:"center"}}>
+          <span className="tag tag-acc" style={{fontSize:11}}>{unionText||"Non-Union"}</span>
+          {talent.type&&<span className="tag" style={{fontSize:11}}>{talent.type}</span>}
+        </div>
+
+        {/* Name */}
+        <h1 style={{fontSize:32,fontWeight:800,letterSpacing:"-1px",marginBottom:4,lineHeight:1.1}}>{talent.name||talent.display_name||"—"}</h1>
+
+        {/* Location & rep */}
+        {locationText&&<p style={{color:"var(--t2)",fontSize:14,marginBottom:3}}>{locationText}</p>}
+        {agentOrRep&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:8}}>Rep: {agentOrRep}</p>}
+
+        {/* Social icons — right in the header area */}
+        {allSocialLinks.length>0&&(
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",marginBottom:14}}>
+            {allSocialLinks.map(({key,label,url},i)=>{
+              const href=url.startsWith("http")?url:`https://${url}`;
+              return(
+                <a key={i} href={href} target="_blank" rel="noopener noreferrer" title={label}
+                  style={{width:44,height:44,borderRadius:10,background:"#fff",border:"1.5px solid #e0e0e0",display:"inline-flex",alignItems:"center",justifyContent:"center",color:"#000",textDecoration:"none",flexShrink:0,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
+                  <SocialIcon platform={key} size={22}/>
+                </a>
+              );
+            })}
           </div>
-        }
-        {viewerIsCd&&talentDbId&&talentDbId!==session?.user?.id&&<div style={{display:"flex",gap:6,flexWrap:"wrap",borderTop:"1px solid var(--bdr)",paddingTop:10,marginTop:4}}>
+        )}
+
+        {/* Bio */}
+        {bioText&&<p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6,marginBottom:14}}>{bioText}</p>}
+
+        {/* Appearance stats */}
+        {statsData.length>0&&(
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(90px,1fr))",gap:"6px 16px",marginBottom:14,paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
+            {statsData.map(([l,v])=>(
+              <div key={l}>
+                <div style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:1}}>{l}</div>
+                <div style={{fontSize:14,fontWeight:600,color:"var(--t1)"}}>{v}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* CD action buttons */}
+        {viewerIsCd&&talentDbId&&talentDbId!==session?.user?.id&&<div style={{display:"flex",gap:8,flexWrap:"wrap",borderTop:"1px solid var(--bdr)",paddingTop:12,marginTop:2}}>
           <button className="btn-p btn-sm" onClick={()=>setCdAction("save")}>★ Save</button>
           <button className="btn-s btn-sm" onClick={()=>setCdAction("invite")}>📩 Invite</button>
           <button className="btn-s btn-sm" onClick={()=>setCdAction("dm")}>💬 Message</button>
@@ -3343,36 +3391,36 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     </div>
 
     {/* ── SKILLS ── */}
-    {skills.length>0&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
+    {skills.length>0&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       {sectionHead("Skills")}
-      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-        {skills.map((s,i)=><span key={i} style={{padding:"3px 9px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:20,fontSize:11,color:"var(--t1)",fontWeight:500}}>{s}</span>)}
+      <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+        {skills.map((s,i)=><span key={i} style={{padding:"5px 12px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:20,fontSize:13,color:"var(--t1)",fontWeight:500}}>{s}</span>)}
       </div>
     </div>}
 
     {/* ── STRUCTURED CREDITS (from DB) ── */}
-    {hasStructuredCredits&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
+    {hasStructuredCredits&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:8}}>
         {sectionHead("Credits & Experience")}
-        {talent.resume_url&&<a href={talent.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:11}}>📄 Resume</a>}
+        {talent.resume_url&&<a href={talent.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}>📄 Resume</a>}
       </div>
       {CREDIT_CATEGORIES.filter(cat=>creditsByCategory[cat]).map(cat=>(
-        <div key={cat} style={{marginBottom:18}}>
-          <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--acc)",marginBottom:6,paddingBottom:6,borderBottom:"1px solid var(--bdr)"}}>{cat}</div>
+        <div key={cat} style={{marginBottom:20}}>
+          <div style={{fontSize:12,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--acc)",marginBottom:8,paddingBottom:6,borderBottom:"1px solid var(--bdr)"}}>{cat}</div>
           <table style={{width:"100%",borderCollapse:"collapse"}}>
             <tbody>
               {creditsByCategory[cat].map((c,i)=>(
                 <tr key={c.id||i} style={{borderBottom:"1px solid var(--bdr)"}}>
-                  <td style={{padding:"8px 10px 8px 0",color:"var(--t3)",whiteSpace:"nowrap",width:58,fontSize:12,fontWeight:500,verticalAlign:"top"}}>{c.credit_year||"—"}</td>
-                  <td style={{padding:"8px 10px 8px 0",verticalAlign:"top"}}>
-                    <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",lineHeight:1.3}}>
+                  <td style={{padding:"9px 12px 9px 0",color:"var(--t3)",whiteSpace:"nowrap",width:54,fontSize:13,fontWeight:500,verticalAlign:"top"}}>{c.credit_year||"—"}</td>
+                  <td style={{padding:"9px 12px 9px 0",verticalAlign:"top"}}>
+                    <div style={{fontWeight:700,fontSize:15,color:"var(--t1)",lineHeight:1.3}}>
                       {c.website_url
                         ?<a href={c.website_url} target="_blank" rel="noopener noreferrer" style={{color:"var(--t1)",textDecoration:"none"}}>{c.production_title}</a>
                         :c.production_title}
                     </div>
-                    {c.role&&<div style={{fontSize:12,color:"var(--t2)",marginTop:2}}>{c.role}</div>}
+                    {c.role&&<div style={{fontSize:13,color:"var(--t2)",marginTop:3}}>{c.role}</div>}
                   </td>
-                  <td style={{padding:"8px 0",color:"var(--t3)",fontSize:12,verticalAlign:"top",width:160,textAlign:"right"}}>{[c.director_or_company,c.location].filter(Boolean).join(" · ")}</td>
+                  <td style={{padding:"9px 0",color:"var(--t3)",fontSize:13,verticalAlign:"top",width:150,textAlign:"right"}}>{[c.director_or_company,c.location].filter(Boolean).join(" · ")}</td>
                 </tr>
               ))}
             </tbody>
@@ -3382,53 +3430,37 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     </div>}
 
     {/* ── LEGACY CREDITS (plain-text / demo data) ── */}
-    {!hasStructuredCredits&&(legacyCredits.length>0||talent.resume_url)&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
+    {!hasStructuredCredits&&(legacyCredits.length>0||talent.resume_url)&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:8}}>
         {sectionHead("Credits & Experience")}
-        {talent.resume_url&&<a href={talent.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:11}}>📄 Resume</a>}
+        {talent.resume_url&&<a href={talent.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}>📄 Resume</a>}
       </div>
       {legacyCredits.length>0
         ?<table style={{width:"100%",borderCollapse:"collapse"}}>
             <tbody>
               {legacyCredits.map((c,i)=>(
                 <tr key={i} style={{borderBottom:"1px solid var(--bdr)"}}>
-                  <td style={{padding:"8px 10px 8px 0",color:"var(--t3)",whiteSpace:"nowrap",width:58,fontSize:12,fontWeight:500,verticalAlign:"top"}}>{c.year||"—"}</td>
-                  <td style={{padding:"8px 10px 8px 0",verticalAlign:"top"}}>
-                    <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",lineHeight:1.3}}>{c.project}</div>
-                    {c.role&&<div style={{fontSize:12,color:"var(--t2)",marginTop:2}}>{c.role}</div>}
+                  <td style={{padding:"9px 12px 9px 0",color:"var(--t3)",whiteSpace:"nowrap",width:54,fontSize:13,fontWeight:500,verticalAlign:"top"}}>{c.year||"—"}</td>
+                  <td style={{padding:"9px 12px 9px 0",verticalAlign:"top"}}>
+                    <div style={{fontWeight:700,fontSize:15,color:"var(--t1)",lineHeight:1.3}}>{c.project}</div>
+                    {c.role&&<div style={{fontSize:13,color:"var(--t2)",marginTop:3}}>{c.role}</div>}
                   </td>
-                  <td style={{padding:"8px 0",color:"var(--t3)",fontSize:12,verticalAlign:"top",width:160,textAlign:"right"}}>{c.type}</td>
+                  <td style={{padding:"9px 0",color:"var(--t3)",fontSize:13,verticalAlign:"top",width:150,textAlign:"right"}}>{c.type}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        :<p style={{fontSize:12,color:"var(--t3)"}}>Resume attached — credits not added yet.</p>}
+        :<p style={{fontSize:13,color:"var(--t3)"}}>Resume attached — credits not added yet.</p>}
     </div>}
 
     {/* ── TRAINING ── */}
-    {(freshProfile?.training||talent.training)&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
+    {trainingText&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       {sectionHead("Training")}
-      <p style={{fontSize:13,color:"var(--t1)",lineHeight:1.5}}>{freshProfile?.training||talent.training}</p>
+      <p style={{fontSize:14,color:"var(--t1)",lineHeight:1.6}}>{trainingText}</p>
     </div>}
 
     {/* ── CAST ME AS ── */}
     {talentDbId&&<CastMeAsSection talentId={talentDbId}/>}
-
-    {/* ── SOCIAL / WEBSITE LINKS (icon row) ── */}
-    {allSocialLinks.length>0&&<div className="card" style={{padding:"14px 16px",marginBottom:12}}>
-      {sectionHead("Social & Web")}
-      <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
-        {allSocialLinks.map(({key,label,url},i)=>{
-          const href=url.startsWith("http")?url:`https://${url}`;
-          return(
-            <a key={i} href={href} target="_blank" rel="noopener noreferrer" title={label}
-              style={{width:42,height:42,borderRadius:8,background:"#fff",border:"1px solid #ddd",display:"inline-flex",alignItems:"center",justifyContent:"center",color:"#000",textDecoration:"none",flexShrink:0}}>
-              <SocialIcon platform={key} size={20}/>
-            </a>
-          );
-        })}
-      </div>
-    </div>}
 
     {/* ── CD action modals ── */}
     {cdAction==="save"&&talentDbId&&<SaveToListModal cdId={session?.user?.id} talentId={talentDbId} talentName={talent.name||talent.display_name||"Talent"} onClose={()=>setCdAction(null)}/>}
