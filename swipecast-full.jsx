@@ -1814,6 +1814,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
   const [err,setErr]=useState("");
   const [filter,setFilter]=useState("all");
   const [viewing,setViewing]=useState(null); // class object
+  const [sessionFilter,setSessionFilter]=useState("all");
   const [bookingTarget,setBookingTarget]=useState(null); // {cls,slot,date}
   const [bookedSessions,setBookedSessions]=useState(new Set()); // "slotId_date" keys for booked occurrences
 
@@ -1867,73 +1868,203 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
   if(viewing){
     const clsSlots=slots[viewing.id]||[];
     const cm=catMeta(viewing.category);
+    const hasSale=viewing.sale_price&&viewing.price&&viewing.sale_price!==viewing.price;
+    const isOnlineClass=viewing.format&&/online|virtual|zoom/i.test(viewing.format);
+    const hasHeroMedia=(viewing.image_url||(Array.isArray(viewing.instructor_poster_urls)&&viewing.instructor_poster_urls.length>0));
+
+    // Build sorted list of all upcoming occurrences across all slots
+    const allSessions=clsSlots.flatMap(slot=>
+      upcomingDates(slot.day_of_week,4).map(date=>({slot,date}))
+    ).sort((a,b)=>a.date-b.date);
+
+    const SESSION_FILTERS=[
+      {id:"all",label:"All"},
+      {id:"online",label:"Online"},
+      {id:"in-person",label:"In-Person"},
+      {id:"morning",label:"Morning"},
+      {id:"afternoon",label:"Afternoon"},
+      {id:"evening",label:"Evening"},
+    ];
+
+    const filteredSessions=allSessions.filter(({slot})=>{
+      if(sessionFilter==="online")return isOnlineClass;
+      if(sessionFilter==="in-person")return !isOnlineClass;
+      if(sessionFilter==="morning")return slot.start_time<"12:00";
+      if(sessionFilter==="afternoon")return slot.start_time>="12:00"&&slot.start_time<"17:00";
+      if(sessionFilter==="evening")return slot.start_time>="17:00";
+      return true;
+    });
+
+    const locationLabel=isOnlineClass?"Online":(viewing.location_city_state||viewing.location_name||"In-Person");
+
     return(<div className="page">
-      <button className="btn-s btn-sm mb-20" onClick={()=>{setViewing(null);window.scrollTo(0,0);}}>← Back to Classes</button>
-      <div style={{maxWidth:720,margin:"0 auto"}}>
-        <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:12}}>{cm?.name||viewing.category}</div>
-        <h1 style={{fontWeight:800,fontSize:34,letterSpacing:"-1.2px",marginBottom:10}}>{viewing.title}</h1>
-        {viewing.image_url&&<img src={viewing.image_url} alt={viewing.title} style={{width:"100%",maxHeight:320,objectFit:"cover",borderRadius:12,marginBottom:24}}/>}
-        <p style={{color:"var(--t2)",fontSize:15,marginBottom:28,lineHeight:1.6}}>{viewing.full_description||viewing.short_description}</p>
-        <div className="grid-2" style={{marginBottom:24}}>
-          <div className="card" style={{padding:16}}>
-            <div style={{fontSize:11,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:6,fontWeight:700}}>Instructor</div>
-            {viewing.instructor_photo_url&&<img src={viewing.instructor_photo_url} alt={viewing.instructor_name} style={{width:64,height:64,borderRadius:"50%",objectFit:"cover",marginBottom:8,display:"block"}}/>}
-            <div style={{color:"var(--t1)",fontSize:14,lineHeight:1.5}}>
-              <strong>{viewing.instructor_name}</strong>{viewing.instructor_bio&&<> — {viewing.instructor_bio}</>}
-              {viewing.instructor_imdb&&<><br/><a href={viewing.instructor_imdb} target="_blank" rel="noopener noreferrer" style={{color:"var(--acc)",fontSize:12,fontWeight:600,textDecoration:"none",marginTop:10,display:"inline-block"}}>View IMDb profile →</a></>}
+      <button className="btn-s btn-sm mb-20" onClick={()=>{setViewing(null);setSessionFilter("all");window.scrollTo(0,0);}}>← Back to Classes</button>
+
+      {/* ── Hero ── */}
+      <div style={{maxWidth:900,margin:"0 auto",marginBottom:36}}>
+        {hasHeroMedia?(
+          <div style={{position:"relative",borderRadius:16,overflow:"hidden",lineHeight:0,marginBottom:0}}>
+            <div style={{height:400,position:"relative"}}>
+              <ClassPosterCollage posters={viewing.instructor_poster_urls} imageUrl={viewing.image_url} title={viewing.title}/>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.88) 0%,rgba(0,0,0,0.35) 55%,transparent 100%)"}}/>
+              <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"28px 32px",lineHeight:"normal"}}>
+                {cm&&<div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"rgba(255,255,255,0.6)",marginBottom:8}}>{cm.name}</div>}
+                <h1 style={{fontWeight:800,fontSize:30,letterSpacing:"-0.8px",marginBottom:6,color:"#fff",lineHeight:1.2}}>{viewing.title}</h1>
+                {viewing.instructor_name&&<div style={{color:"rgba(255,255,255,0.75)",fontSize:14,marginBottom:14}}>with {viewing.instructor_name}</div>}
+                <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+                  {hasSale?(
+                    <><span style={{fontSize:22,fontWeight:800,color:"#fff"}}>{viewing.sale_price}</span><span style={{fontSize:15,color:"rgba(255,255,255,0.45)",textDecoration:"line-through"}}>{viewing.price}</span></>
+                  ):(
+                    viewing.price&&<span style={{fontSize:22,fontWeight:800,color:"#fff"}}>{viewing.price}</span>
+                  )}
+                  {viewing.level&&<span style={{fontSize:12,padding:"3px 10px",borderRadius:20,background:"rgba(255,255,255,0.18)",color:"rgba(255,255,255,0.9)",border:"1px solid rgba(255,255,255,0.28)",fontWeight:600}}>{viewing.level}</span>}
+                  {clsSlots.length>0&&<button className="btn-p btn-sm" style={{marginLeft:4}} onClick={()=>document.getElementById("sessions-section")?.scrollIntoView({behavior:"smooth"})}>Browse Sessions ↓</button>}
+                </div>
+              </div>
             </div>
           </div>
-          {[["Format",viewing.format],["Location",viewing.location_name||viewing.location_city_state],["Price",viewing.price],["Level",viewing.level]].filter(([,v])=>v).map(([k,v])=>
-            <div key={k} className="card" style={{padding:16}}>
-              <div style={{fontSize:11,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:6,fontWeight:700}}>{k}</div>
-              <div style={{color:"var(--t1)",fontSize:14}}>{v}</div>
+        ):(
+          <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:16,padding:"36px 32px",marginBottom:0}}>
+            {cm&&<div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:8}}>{cm.name}</div>}
+            <h1 style={{fontWeight:800,fontSize:30,letterSpacing:"-0.8px",marginBottom:6,lineHeight:1.2}}>{viewing.title}</h1>
+            {viewing.instructor_name&&<div style={{color:"var(--t2)",fontSize:14,marginBottom:14}}>with {viewing.instructor_name}</div>}
+            <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+              {hasSale?(
+                <><span style={{fontSize:22,fontWeight:800,color:"var(--acc)"}}>{viewing.sale_price}</span><span style={{fontSize:15,color:"var(--t3)",textDecoration:"line-through"}}>{viewing.price}</span></>
+              ):(
+                viewing.price&&<span style={{fontSize:22,fontWeight:800}}>{viewing.price}</span>
+              )}
+              {clsSlots.length>0&&<button className="btn-p btn-sm" onClick={()=>document.getElementById("sessions-section")?.scrollIntoView({behavior:"smooth"})}>Browse Sessions ↓</button>}
+            </div>
+          </div>
+        )}
+
+        {/* Description + Instructor sidebar */}
+        <div style={{display:"grid",gridTemplateColumns:viewing.instructor_name?"1fr 260px":"1fr",gap:24,marginTop:28,alignItems:"start"}}>
+          <div>
+            {(viewing.full_description||viewing.short_description)&&<p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,margin:0}}>{viewing.full_description||viewing.short_description}</p>}
+          </div>
+          {viewing.instructor_name&&(
+            <div className="card" style={{padding:20}}>
+              <div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:12}}>Instructor</div>
+              {viewing.instructor_photo_url&&<img src={viewing.instructor_photo_url} alt={viewing.instructor_name} style={{width:52,height:52,borderRadius:"50%",objectFit:"cover",marginBottom:10,display:"block"}}/>}
+              <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>{viewing.instructor_name}</div>
+              {viewing.instructor_bio&&<div style={{color:"var(--t2)",fontSize:12,lineHeight:1.55,marginBottom:8}}>{viewing.instructor_bio}</div>}
+              {viewing.instructor_imdb&&<a href={viewing.instructor_imdb} target="_blank" rel="noopener noreferrer" style={{color:"var(--acc)",fontSize:12,fontWeight:600,textDecoration:"none"}}>IMDb profile →</a>}
             </div>
           )}
         </div>
-        {/* ── Selected Instructor Credits (posters) ── */}
+
+        {/* Selected Instructor Credits */}
         {Array.isArray(viewing.instructor_poster_urls)&&viewing.instructor_poster_urls.length>0&&(
-          <div style={{marginBottom:32}}>
-            <h3 style={{fontSize:18,fontWeight:700,marginBottom:16}}>Selected Instructor Credits</h3>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
+          <div style={{marginTop:32}}>
+            <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:14}}>Selected Credits</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
               {viewing.instructor_poster_urls.map((p,i)=>(
-                <div key={i} style={{borderRadius:12,overflow:"hidden",boxShadow:"0 4px 18px rgba(0,0,0,0.18)",lineHeight:0}}>
-                  <img src={p.url||p} alt={`Instructor credit ${i+1}`} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",display:"block"}}/>
+                <div key={i} style={{borderRadius:10,overflow:"hidden",lineHeight:0,boxShadow:"0 4px 16px rgba(0,0,0,0.15)"}}>
+                  <img src={p.url||p} alt={`Credit ${i+1}`} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",display:"block"}}/>
                 </div>
               ))}
             </div>
           </div>
         )}
-
-        {clsSlots.length>0&&<>
-          <h3 style={{fontSize:18,fontWeight:700,marginBottom:14}}>Upcoming Sessions</h3>
-          {clsSlots.map(slot=>upcomingDates(slot.day_of_week,4).map(date=>{
-            const ds=date.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
-            const dateStr=date.toISOString().split("T")[0];
-            const isBooked=bookedSessions.has(`${slot.id}_${dateStr}`);
-            return(<div key={`${slot.id}-${date.getTime()}`} className="card" style={{padding:16,marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
-              <div>
-                <div style={{fontWeight:700,fontSize:14}}>{ds}</div>
-                <div style={{color:"var(--t2)",fontSize:13}}>{fmtTime(slot.start_time)} – {fmtTime(slot.end_time)}{slot.note&&<> · {slot.note}</>}</div>
-                {viewing.price&&<div style={{color:"var(--acc)",fontSize:13,fontWeight:600,marginTop:2}}>{viewing.price}</div>}
-              </div>
-              {isBooked
-                ?<span style={{fontSize:12,fontWeight:700,padding:"5px 14px",borderRadius:20,background:"rgba(192,57,43,0.1)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>Booked</span>
-                :<button className="btn-p btn-sm" onClick={()=>handleRequestBooking(viewing,slot,date)}>Request Booking</button>
-              }
-            </div>);
-          }))}
-        </>}
-        {clsSlots.length===0&&<div style={{padding:20,background:"var(--s2)",borderRadius:12,border:"1px solid var(--bdr)",marginBottom:24}}>
-          <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,marginBottom:12}}>Interested? Enrollment is handled directly by the teaching studio. Email us and we'll connect you with the instructor and confirm a seat.</p>
-          <button className="btn-p" onClick={()=>onNavigate("contact")}>Contact to Enroll →</button>
-        </div>}
-        {viewing.online_note&&<div style={{padding:14,background:"var(--s2)",borderRadius:10,border:"1px solid var(--bdr)",marginBottom:24,fontSize:13,color:"var(--t2)"}}>{viewing.online_note}</div>}
-        {!isLoggedIn&&clsSlots.length>0&&<div style={{padding:16,background:"var(--s2)",borderRadius:10,border:"1px solid var(--bdr)",marginBottom:24,textAlign:"center"}}>
-          <p style={{fontSize:13,color:"var(--t2)",marginBottom:10}}>You must log in or create a talent profile before requesting a class booking.</p>
-          <button className="btn-p btn-sm" onClick={()=>onNavigate("login")}>Sign In</button>
-          {" "}<button className="btn-s btn-sm" onClick={()=>onNavigate("register-talent")}>Create Profile</button>
-        </div>}
       </div>
+
+      {/* ── Available Sessions ── */}
+      {clsSlots.length>0&&(
+        <div id="sessions-section" style={{maxWidth:900,margin:"0 auto",paddingTop:8,paddingBottom:40}}>
+          <div style={{marginBottom:20}}>
+            <h2 style={{fontSize:20,fontWeight:800,letterSpacing:"-0.4px",margin:"0 0 14px"}}>Available Sessions</h2>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              {SESSION_FILTERS.map(f=>(
+                <button key={f.id} className="btn-s btn-sm"
+                  style={sessionFilter===f.id?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}
+                  onClick={()=>setSessionFilter(f.id)}>{f.label}</button>
+              ))}
+            </div>
+          </div>
+
+          {filteredSessions.length===0?(
+            <div style={{padding:32,background:"var(--s2)",borderRadius:12,border:"1px solid var(--bdr)",textAlign:"center"}}>
+              <p style={{color:"var(--t2)",fontSize:14,margin:0}}>No sessions match this filter.</p>
+            </div>
+          ):(
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,260px),1fr))",gap:14}}>
+              {filteredSessions.map(({slot,date})=>{
+                const dateStr=date.toISOString().split("T")[0];
+                const isBooked=bookedSessions.has(`${slot.id}_${dateStr}`);
+                const fullDate=date.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+                return(
+                  <div key={`${slot.id}-${date.getTime()}`} style={{
+                    background:"var(--s1)",
+                    border:"1px solid var(--bdr)",
+                    borderRadius:12,
+                    padding:"16px 18px",
+                    display:"flex",
+                    flexDirection:"column",
+                    gap:0,
+                    boxShadow:"0 1px 4px rgba(0,0,0,0.06)",
+                    opacity:isBooked?0.65:1,
+                  }}>
+                    {/* ── Date row ── */}
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                      <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",lineHeight:1.2}}>{fullDate}</div>
+                      <span style={{
+                        flexShrink:0,marginLeft:8,
+                        fontSize:10,fontWeight:700,letterSpacing:0.4,
+                        padding:"3px 9px",borderRadius:20,whiteSpace:"nowrap",
+                        background:isOnlineClass?"rgba(99,102,241,0.09)":"rgba(34,197,94,0.09)",
+                        color:isOnlineClass?"var(--acc)":"#15803d",
+                        border:isOnlineClass?"1px solid rgba(99,102,241,0.22)":"1px solid rgba(34,197,94,0.22)",
+                      }}>{locationLabel}</span>
+                    </div>
+                    {/* ── Time ── */}
+                    <div style={{fontSize:18,fontWeight:800,color:"var(--t1)",letterSpacing:"-0.3px",marginBottom:4}}>{fmtTime(slot.start_time)} – {fmtTime(slot.end_time)}</div>
+                    {/* ── Note ── */}
+                    {slot.note&&<div style={{fontSize:12,color:"var(--t2)",marginBottom:0,lineHeight:1.5}}>{slot.note}</div>}
+                    {/* ── Divider ── */}
+                    <div style={{height:1,background:"var(--bdr)",margin:"12px 0"}}/>
+                    {/* ── Price + CTA ── */}
+                    {isBooked?(
+                      <div style={{textAlign:"center",fontSize:12,fontWeight:700,padding:"9px",borderRadius:8,background:"rgba(192,57,43,0.07)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.18)"}}>Fully Booked</div>
+                    ):(
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+                        <div style={{fontSize:14,fontWeight:700,color:"var(--t1)"}}>
+                          {hasSale?(
+                            <><span style={{color:"#e74c3c"}}>{viewing.sale_price}</span>{" "}<span style={{fontSize:12,color:"var(--t3)",textDecoration:"line-through",fontWeight:400}}>{viewing.price}</span></>
+                          ):(
+                            viewing.price||""
+                          )}
+                        </div>
+                        <button className="btn-p btn-sm" style={{whiteSpace:"nowrap",flexShrink:0}} onClick={()=>handleRequestBooking(viewing,slot,date)}>Request Booking</button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {viewing.online_note&&<div style={{marginTop:18,padding:14,background:"var(--s2)",borderRadius:10,border:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)",lineHeight:1.6}}>{viewing.online_note}</div>}
+          {!isLoggedIn&&(
+            <div style={{marginTop:18,padding:18,background:"var(--s2)",borderRadius:10,border:"1px solid var(--bdr)",textAlign:"center"}}>
+              <p style={{fontSize:13,color:"var(--t2)",marginBottom:12}}>Log in or create a talent profile to request a class booking.</p>
+              <button className="btn-p btn-sm" onClick={()=>onNavigate("login")}>Sign In</button>
+              {" "}<button className="btn-s btn-sm" onClick={()=>onNavigate("register-talent")}>Create Profile</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {clsSlots.length===0&&(
+        <div style={{maxWidth:900,margin:"0 auto",paddingBottom:40}}>
+          <div style={{padding:24,background:"var(--s2)",borderRadius:12,border:"1px solid var(--bdr)"}}>
+            <p style={{fontSize:14,color:"var(--t2)",lineHeight:1.65,marginBottom:12}}>Interested? Enrollment is handled directly by the teaching studio. Email us and we'll connect you with the instructor and confirm a seat.</p>
+            <button className="btn-p" onClick={()=>onNavigate("contact")}>Contact to Enroll →</button>
+          </div>
+        </div>
+      )}
+
       {bookingTarget&&<BookingRequestModal target={bookingTarget} myProfile={myProfile} session={session} onClose={()=>setBookingTarget(null)} onSubmitted={()=>setBookingTarget(null)}/>}
       <Footer onNavigate={onNavigate}/>
     </div>);
