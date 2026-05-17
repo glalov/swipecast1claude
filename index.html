@@ -24,7 +24,8 @@
 <body>
   <div id="root"></div>
   <script type="text/babel">
-const { useState, useRef, useCallback, useEffect, useMemo } = React;
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+
 // ═══════════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════════
@@ -251,7 +252,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .credits-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);padding:8px 12px;border-bottom:1px solid var(--bdr);}
 .credits-table td{padding:10px 12px;font-size:13px;border-bottom:1px solid var(--bdr);}
 .credits-table tr:last-child td{border:none;}
-.swipe-layout{display:grid;grid-template-columns:1fr 380px;gap:32px;min-height:70vh;}
+.swipe-layout{display:grid;grid-template-columns:1fr 380px;gap:32px;min-height:70vh;width:100%;}
 .swipe-area{display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .swipe-card-wrap{position:relative;width:340px;height:480px;margin-bottom:20px;}
 .s-card{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:18px;overflow:hidden;background:var(--s1);border:1px solid var(--bdr);user-select:none;touch-action:none;box-shadow:0 8px 30px rgba(0,0,0,0.08);}
@@ -620,8 +621,23 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 /* ─── Talent Dashboard responsive grid ─── */
 .td-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
-@media(max-width:900px){.td-grid{grid-template-columns:1fr;}.td-stats{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:480px){.td-stats{grid-template-columns:1fr 1fr;gap:10px;}}
+@media(max-width:900px){
+  .td-grid{grid-template-columns:1fr;}
+  .td-grid>*{min-width:0;max-width:100%;}
+  .td-stats{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:480px){.td-stats{grid-template-columns:1fr;gap:10px;}}
+/* ─── Dashboard overflow prevention ─── */
+.td-dash-outer{width:100%;max-width:1240px;margin:0 auto;padding:24px 16px 64px;box-sizing:border-box;overflow-x:hidden;}
+.casting-row-left{min-width:0;overflow:hidden;}
+.casting-row-left h4{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+@media(max-width:900px){
+  .dash-stats{grid-template-columns:1fr 1fr;}
+  .page.page-wide{overflow-x:hidden;}
+}
+@media(max-width:480px){
+  .dash-stats{grid-template-columns:1fr;}
+}
 /* ─── Classes page responsive layout ─── */
 html,body{overflow-x:hidden;}
 .cls-detail-grid{display:grid;gap:24px;align-items:start;}
@@ -4080,6 +4096,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
 // PAGE: TALENT DASHBOARD — actor/talent accounts
 // ═══════════════════════════════════════════
 function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,castingsVersion=0}){
+  const vpw=useViewportWidth();
+  const isMobile=vpw<768;
   const uid=session?.user?.id;
   const isPremium=myProfile?.membership_status==="active";
   const firstName=(myProfile?.display_name||"").split(" ")[0]||"there";
@@ -4296,11 +4314,11 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const profilePct=Math.round((completedCount/profileChecks.length)*100);
 
   return(
-    <div style={{maxWidth:1240,margin:"0 auto",padding:"24px 16px 64px"}}>
+    <div className="td-dash-outer">
       {/* ── Welcome header ── */}
       <div style={{marginBottom:28}}>
         <div className="section-label">Talent Dashboard</div>
-        <h1 style={{fontWeight:800,fontSize:30,letterSpacing:-0.8,color:"var(--t1)",marginBottom:6,margin:"0 0 6px"}}>Welcome back, {firstName}. <span style={{fontSize:11,fontWeight:700,background:"rgba(26,26,46,0.08)",color:"var(--acc)",padding:"2px 8px",borderRadius:6,verticalAlign:"middle",marginLeft:4}}>MOBILE TALENT FIX TEST</span></h1>
+        <h1 style={{fontWeight:800,fontSize:isMobile?22:30,letterSpacing:-0.8,color:"var(--t1)",marginBottom:6,margin:"0 0 6px",wordBreak:"break-word"}}>Welcome back, {firstName}. <span style={{fontSize:11,fontWeight:700,background:"rgba(26,26,46,0.08)",color:"var(--acc)",padding:"2px 8px",borderRadius:6,verticalAlign:"middle",marginLeft:4}}>DASHBOARD MOBILE FIX TEST - TALENT</span></h1>
         <p style={{color:"var(--t2)",fontSize:15,margin:0}}>Here are the latest updates for your acting profile.</p>
       </div>
 
@@ -4376,8 +4394,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                     const st=STATUS_LABELS[app.status]||{label:app.status,color:"var(--t2)",bg:"var(--s2)"};
                     const dl=app.castings?.deadline?fmtDeadline(app.castings.deadline):null;
                     return(
-                      <div key={app.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px",background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:10,gap:12,flexWrap:"wrap",transition:"border-color .15s"}}>
-                        <div style={{flex:1,minWidth:0}}>
+                      <div key={app.id} style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",padding:"14px 16px",background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:10,gap:12,flexWrap:"wrap",transition:"border-color .15s",width:"100%",boxSizing:"border-box"}}>
+                        <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
                           <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",marginBottom:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{app.castings?.title||"Unknown Project"}</div>
                           <div style={{fontSize:12,color:"var(--t2)",display:"flex",flexWrap:"wrap",gap:"4px 10px"}}>
                             <span>Role: <strong style={{color:"var(--t1)"}}>{app.roles?.name||"—"}</strong></span>
@@ -4388,9 +4406,9 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                           </div>
                           <div style={{fontSize:11,color:"var(--t3)",marginTop:3}}>Submitted {fmtDate(app.created_at)}{dl&&<span style={{marginLeft:8,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>}</div>
                         </div>
-                        <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
-                          <span style={{fontSize:12,fontWeight:600,padding:"4px 10px",borderRadius:6,background:st.bg,color:st.color,border:`1px solid ${st.color}33`}}>{st.label}</span>
-                          {app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px"}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View →</button>}
+                        <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",flexShrink:0,maxWidth:isMobile?"100%":"none"}}>
+                          <span style={{fontSize:11,fontWeight:600,padding:"4px 8px",borderRadius:6,background:st.bg,color:st.color,border:`1px solid ${st.color}33`,whiteSpace:"nowrap"}}>{st.label}</span>
+                          {app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px",whiteSpace:"nowrap"}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View →</button>}
                         </div>
                       </div>
                     );
@@ -4421,7 +4439,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               ):(
                 <div style={{display:"flex",flexDirection:"column",gap:8}}>
                   {threads.map(t=>(
-                    <div key={t.otherId} onClick={()=>onNavigate("inbox")} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:10,border:t.unread>0?"1px solid var(--acc)":"1px solid var(--bdr)",background:t.unread>0?"rgba(99,60,180,0.02)":"var(--bg)",cursor:"pointer",borderLeft:t.unread>0?"3px solid var(--acc)":"3px solid transparent",transition:"border-color .15s"}}>
+                    <div key={t.otherId} onClick={()=>onNavigate("inbox")} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:10,border:t.unread>0?"1px solid var(--acc)":"1px solid var(--bdr)",background:t.unread>0?"rgba(99,60,180,0.02)":"var(--bg)",cursor:"pointer",borderLeft:t.unread>0?"3px solid var(--acc)":"3px solid transparent",transition:"border-color .15s",width:"100%",boxSizing:"border-box",overflow:"hidden"}}>
                       <div style={{width:40,height:40,borderRadius:"50%",flexShrink:0,background:"var(--s2)",overflow:"hidden",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"var(--t2)"}}>
                         {t.profile?.headshot_url?<img src={t.profile.headshot_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:(t.profile?.display_name||t.profile?.company_name||"?")[0]?.toUpperCase()}
                       </div>
@@ -4468,9 +4486,9 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                     const isSaving=savingId===c.id;
                     const firstRole=(c.roles||[])[0];
                     return(
-                      <div key={c.id} style={{padding:"14px 16px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",flexDirection:"column",gap:6}}>
+                      <div key={c.id} style={{padding:"14px 16px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",flexDirection:"column",gap:6,width:"100%",boxSizing:"border-box"}}>
                         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
-                          <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",lineHeight:1.3}}>{c.title}</div>
+                          <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",lineHeight:1.3,flex:1,minWidth:0,overflow:"hidden",wordBreak:"break-word"}}>{c.title}</div>
                           <button
                             disabled={isSaving}
                             onClick={()=>toggleSave(c.id,{id:c.id,title:c.title,type:c.type,location:c.location,deadline:c.deadline})}
@@ -4516,7 +4534,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                     const c=s.castings;
                     const dl=c?.deadline?fmtDeadline(c.deadline):null;
                     return(
-                      <div key={s.casting_id} style={{padding:"12px 14px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+                      <div key={s.casting_id} style={{padding:"12px 14px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",width:"100%",boxSizing:"border-box"}}>
                         <div style={{minWidth:0,flex:1}}>
                           <div style={{fontWeight:600,fontSize:13,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c?.title||"Unknown"}</div>
                           <div style={{fontSize:11,color:"var(--t3)",marginTop:2}}>{c?.type}{c?.location?` · ${c.location}`:""}{dl?<span style={{marginLeft:6,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>:null}</div>
@@ -4640,8 +4658,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 {recentlyViewed.map(r=>{
                   const c=r.castings;
                   return(
-                    <div key={r.casting_id} style={{padding:"10px 12px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
-                      <div style={{minWidth:0}}>
+                    <div key={r.casting_id} style={{padding:"10px 12px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,width:"100%",boxSizing:"border-box"}}>
+                      <div style={{minWidth:0,flex:1,overflow:"hidden"}}>
                         <div style={{fontWeight:600,fontSize:12,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c?.title||"Unknown"}</div>
                         <div style={{fontSize:11,color:"var(--t3)"}}>{c?.type}{c?.location?` · ${c.location}`:""}</div>
                         <div style={{fontSize:10,color:"var(--t3)",marginTop:1}}>Viewed {fmtDate(r.viewed_at)}</div>
@@ -4669,6 +4687,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
 // Undo reverts the most recent decision.
 // ═══════════════════════════════════════════════════════════════════
 function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion=0,bumpCastings,verificationReturn=false,onClearVerificationReturn}){
+  const vpw=useViewportWidth();
+  const isMobile=vpw<768;
   const [active,setActive]=useState(null);         // casting currently being reviewed
   const [activeRole,setActiveRole]=useState(null); // role within the casting
   const [roleCounts,setRoleCounts]=useState({});   // role_id -> total count
@@ -5055,8 +5075,8 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     const t=a.profiles||{};
     const img=a.selected_photo_url||t.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?";
     const statusTag=a.status==='selected'?'tag-grn':a.status==='hold'?'tag-acc':a.status==='rejected'?'tag-red':'';
-    return(<div className="card" style={{padding:14,display:"flex",gap:12,alignItems:"stretch"}}>
-      <img src={img} alt="" style={{width:80,height:100,objectFit:"cover",borderRadius:8,cursor:"pointer",flexShrink:0}} onClick={()=>onViewProfile(buildTalentView(a))}/>
+    return(<div className="card" style={{padding:14,display:"flex",gap:12,alignItems:"stretch",overflow:"hidden",width:"100%",boxSizing:"border-box"}}>
+      <img src={img} alt="" style={{width:72,height:90,objectFit:"cover",borderRadius:8,cursor:"pointer",flexShrink:0}} onClick={()=>onViewProfile(buildTalentView(a))}/>
       <div style={{flex:1,display:"flex",flexDirection:"column",gap:4,minWidth:0}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
           <div style={{minWidth:0,flex:1}}>
@@ -5079,13 +5099,14 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   if(!uid)return(<div className="page page-wide"><p>Not logged in.</p></div>);
   if(loading)return(<div className="page page-wide" style={{justifyContent:"center"}}><SlateCueLoader text="Loading your dashboard…"/></div>);
 
-  return(<div className="page page-wide">
+  return(<div className="page page-wide" style={{overflowX:"hidden"}}>
     <div className="flex-between mb-20">
-      <div>
+      <div style={{minWidth:0,flex:1,overflow:"hidden"}}>
         <div className="section-label">Dashboard</div>
-        <h2 className="section-title" style={{marginBottom:0}}>{myProfile?.display_name||"Casting Director"}</h2>
+        <h2 className="section-title" style={{marginBottom:0,wordBreak:"break-word"}}>{myProfile?.display_name||"Casting Director"}</h2>
+        <span style={{fontSize:11,fontWeight:700,background:"rgba(26,26,46,0.08)",color:"var(--acc)",padding:"2px 8px",borderRadius:6,display:"inline-block",marginTop:4}}>DASHBOARD MOBILE FIX TEST - CD</span>
       </div>
-      <button className="btn-p" onClick={()=>setShowNew(true)}>+ New Casting</button>
+      <button className="btn-p" style={{flexShrink:0,whiteSpace:"nowrap"}} onClick={()=>setShowNew(true)}>+ New Casting</button>
     </div>
     <div className="dash-stats">
       <div className="dash-stat"><div className="dash-stat-num">{myCastings.length}</div><div className="dash-stat-label">Active Castings</div></div>
@@ -5157,8 +5178,8 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       </>:<>
         {/* Search + sort for non-pending folders */}
         <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
-          <input className="input" style={{flex:1,minWidth:0,maxWidth:380}} placeholder={`Search in ${folder}…`} value={search} onChange={e=>setSearch(e.target.value)}/>
-          <select className="input" style={{maxWidth:180}} value={sortBy} onChange={e=>setSortBy(e.target.value)}>
+          <input className="input" style={{flex:1,minWidth:0}} placeholder={`Search in ${folder}…`} value={search} onChange={e=>setSearch(e.target.value)}/>
+          <select className="input" style={{flex:"0 1 auto",minWidth:0,width:isMobile?"100%":180}} value={sortBy} onChange={e=>setSortBy(e.target.value)}>
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>
             <option value="name">Name (A–Z)</option>
@@ -5169,7 +5190,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           <div className="card" style={{textAlign:"center",padding:48}}>
             <p style={{color:"var(--t3)"}}>No submissions in {folder}{search?" matching that search":""}.</p>
           </div>:
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(340px,1fr))",gap:12}}>
+          <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"repeat(auto-fill,minmax(min(340px,100%),1fr))",gap:12}}>
             {folderList.map(a=><FolderCard key={a.id} a={a}/>)}
           </div>}
       </>}
@@ -5180,8 +5201,8 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       {(active.roles||[]).length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No roles in this casting.</p></div>:
       <div className="card-flat">{active.roles.map(r=>
         <div key={r.id} className="casting-row" onClick={()=>openRole(r)}>
-          <div className="casting-row-left"><h4>{r.name}</h4><p>Role in {active.title} · <span style={{color:rolePending[r.id]?"var(--acc)":"var(--t3)",fontWeight:700}}>{rolePending[r.id]||0} pending review</span></p></div>
-          <div className="casting-row-right">
+          <div className="casting-row-left" style={{flex:1,minWidth:0,overflow:"hidden"}}><h4 style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.name}</h4><p style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>Role in {active.title} · <span style={{color:rolePending[r.id]?"var(--acc)":"var(--t3)",fontWeight:700}}>{rolePending[r.id]||0} pending review</span></p></div>
+          <div className="casting-row-right" style={{flexShrink:0}}>
             <div style={{textAlign:"right"}}><div className="sub-count">{roleCounts[r.id]||0}</div><div style={{fontSize:10,color:"var(--t3)"}}>submissions</div></div>
             <span style={{color:"var(--acc)",fontSize:18}}>→</span>
           </div>
@@ -5220,14 +5241,14 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             ?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"var(--s2)",color:"var(--t3)"}}>ARCHIVED</span>
             :null;
           const busy=closingId===c.id;
-          return(<div key={c.id} className="casting-row" style={{cursor:"default",opacity:isRejected||isClosed||isArchived?0.7:1,flexDirection:"column",alignItems:"stretch",gap:0}}>
-            <div style={{display:"flex",alignItems:"flex-start",gap:12,width:"100%"}}>
-              <div className="casting-row-left" style={{flex:1}}>
-                <h4 style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.title}{statusBadge}</h4>
-                <p>{c.prod||"—"} · {c.location||"—"} · {(c.roles||[]).length} role{(c.roles||[]).length===1?"":"s"} · Deadline {c.deadline||"—"}{isPendingReview&&<em style={{color:"var(--t3)"}}> · Awaiting admin approval</em>}{isRejected&&<em style={{color:"#c0392b"}}> · Edit and resubmit below</em>}</p>
+          return(<div key={c.id} className="casting-row" style={{cursor:"default",opacity:isRejected||isClosed||isArchived?0.7:1,flexDirection:"column",alignItems:"stretch",gap:0,overflow:"hidden"}}>
+            <div style={{display:"flex",alignItems:"flex-start",gap:12,width:"100%",flexWrap:"wrap"}}>
+              <div className="casting-row-left" style={{flex:1,minWidth:0,overflow:"hidden"}}>
+                <h4 style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",minWidth:0}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0,flex:1}}>{c.title}</span>{statusBadge}</h4>
+                <p style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:isMobile?"normal":"nowrap"}}>{c.prod||"—"} · {c.location||"—"} · {(c.roles||[]).length} role{(c.roles||[]).length===1?"":"s"} · Deadline {c.deadline||"—"}{isPendingReview&&<em style={{color:"var(--t3)"}}> · Awaiting admin approval</em>}{isRejected&&<em style={{color:"#c0392b"}}> · Edit and resubmit below</em>}</p>
               </div>
               <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
-                <span className="badge tag-acc">{c.type||"Film"}</span>
+                <span className="badge tag-acc" style={{maxWidth:isMobile?120:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.type||"Film"}</span>
                 {isOpen&&<div style={{textAlign:"right"}}><div className="sub-count">{c._count}</div><div style={{fontSize:10,color:"var(--t3)"}}>submissions</div></div>}
               </div>
             </div>
@@ -10411,7 +10432,7 @@ function urlToCastingSlug(){
 // ═══════════════════════════════════════════
 // MAIN APP — ROUTER
 // ═══════════════════════════════════════════
-function App(){
+export default function App(){
   const [page,setPage]=useState(()=>urlToPage());
   const [userType,setUserType]=useState("talent");
   const [viewingProfile,setViewingProfile]=useState(null);
@@ -10954,8 +10975,5 @@ function App(){
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-
   </script>
-</body>
 </html>
