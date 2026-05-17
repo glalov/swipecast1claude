@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+const { useState, useRef, useCallback, useEffect, useMemo } = React;
 
 // ═══════════════════════════════════════════
 // DATA
@@ -10406,7 +10406,7 @@ function urlToCastingSlug(){
 // ═══════════════════════════════════════════
 // MAIN APP — ROUTER
 // ═══════════════════════════════════════════
-export default function App(){
+function App(){
   const [page,setPage]=useState(()=>urlToPage());
   const [userType,setUserType]=useState("talent");
   const [viewingProfile,setViewingProfile]=useState(null);
