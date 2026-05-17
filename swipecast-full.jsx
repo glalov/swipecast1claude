@@ -573,26 +573,30 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .td-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
 @media(max-width:900px){.td-grid{grid-template-columns:1fr;}.td-stats{grid-template-columns:repeat(2,1fr);}}
-/* ─── Class detail page — responsive layout ─── */
+/* ─── Classes page responsive layout ─── */
+html,body{overflow-x:hidden;}
 .cls-detail-grid{display:grid;gap:24px;align-items:start;}
 .cls-credits-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-.cls-slot-row{display:flex;align-items:center;gap:14px;padding:13px 18px;}
+.cls-slot-row{display:flex;align-items:center;gap:14px;padding:13px 18px;flex-wrap:wrap;}
 .cls-card-row{display:flex;align-items:stretch;border-radius:14px;overflow:hidden;cursor:pointer;margin-bottom:16px;position:relative;transition:box-shadow 0.15s,transform 0.1s;}
 .cls-card-img{width:190px;min-width:190px;position:relative;overflow:hidden;background:var(--s2);flex-shrink:0;}
+.cls-card-action{padding:18px 20px;display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:8px;border-left:1px solid var(--bdr);min-width:140px;flex-shrink:0;}
+.cls-mobile-test-label{display:none;}
 @media(max-width:768px){
   .cls-detail-grid{grid-template-columns:1fr !important;}
   .cls-credits-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
-  html,body{overflow-x:hidden;max-width:100%;}
-  .fcs-section{overflow:hidden;}
+  .cls-mobile-test-label{display:block;background:#f59e0b;color:#000;font-weight:800;font-size:12px;text-align:center;padding:6px 12px;letter-spacing:0.5px;}
 }
 @media(max-width:560px){
-  .cls-slot-row{flex-wrap:wrap;gap:10px;padding:12px 14px;}
-  .cls-slot-row .slot-btn{width:100%;text-align:center;}
+  .cls-slot-row{gap:8px;padding:12px 14px;}
+  .cls-slot-row .slot-btn{width:100% !important;text-align:center;box-sizing:border-box;}
   .cls-card-row{flex-direction:column;}
   .cls-card-img{width:100% !important;min-width:0 !important;height:160px;}
+  .cls-card-action{border-left:none;border-top:1px solid var(--bdr);min-width:0;flex-direction:row;flex-wrap:wrap;}
+  .cls-card-action button{flex:1 1 auto;}
   .cls-detail-hero{padding:20px 18px !important;}
   .cls-detail-no-media{padding:24px 18px !important;}
-  .cls-hero-inner{height:280px !important;}
+  .cls-hero-inner{height:260px !important;}
 }
 `;
 
@@ -1828,7 +1832,20 @@ function ClassPosterCollage({posters,imageUrl,title}){
   );
 }
 
+function useViewportWidth(){
+  const [w,setW]=useState(typeof window!=="undefined"?window.innerWidth:1200);
+  useEffect(()=>{
+    const h=()=>setW(window.innerWidth);
+    window.addEventListener("resize",h,{passive:true});
+    return()=>window.removeEventListener("resize",h);
+  },[]);
+  return w;
+}
+
 function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
+  const vpw=useViewportWidth();
+  const isMobile=vpw<768;
+  const isNarrow=vpw<560;
   const [classes,setClasses]=useState([]);
   const [slots,setSlots]=useState({}); // {classId:[slot,...]}
   const [loading,setLoading]=useState(true);
@@ -1925,10 +1942,10 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
       <div style={{maxWidth:900,margin:"0 auto",marginBottom:36}}>
         {hasHeroMedia?(
           <div style={{position:"relative",borderRadius:16,overflow:"hidden",lineHeight:0,marginBottom:0}}>
-            <div className="cls-hero-inner" style={{height:400,position:"relative"}}>
+            <div className="cls-hero-inner" style={{height:isNarrow?260:400,position:"relative"}}>
               <ClassPosterCollage posters={viewing.instructor_poster_urls} imageUrl={viewing.image_url} title={viewing.title}/>
               <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.88) 0%,rgba(0,0,0,0.35) 55%,transparent 100%)"}}/>
-              <div className="cls-detail-hero" style={{position:"absolute",bottom:0,left:0,right:0,padding:"28px 32px",lineHeight:"normal"}}>
+              <div className="cls-detail-hero" style={{position:"absolute",bottom:0,left:0,right:0,padding:isNarrow?"18px 16px":"28px 32px",lineHeight:"normal"}}>
                 {cm&&<div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"rgba(255,255,255,0.6)",marginBottom:8}}>{cm.name}</div>}
                 <h1 style={{fontWeight:800,fontSize:30,letterSpacing:"-0.8px",marginBottom:6,color:"#fff",lineHeight:1.2}}>{viewing.title}</h1>
                 {viewing.instructor_name&&<div style={{color:"rgba(255,255,255,0.75)",fontSize:14,marginBottom:14}}>with {viewing.instructor_name}</div>}
@@ -1945,7 +1962,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
             </div>
           </div>
         ):(
-          <div className="cls-detail-no-media" style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:16,padding:"36px 32px",marginBottom:0}}>
+          <div className="cls-detail-no-media" style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:16,padding:isNarrow?"24px 16px":"36px 32px",marginBottom:0}}>
             {cm&&<div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:8}}>{cm.name}</div>}
             <h1 style={{fontWeight:800,fontSize:30,letterSpacing:"-0.8px",marginBottom:6,lineHeight:1.2}}>{viewing.title}</h1>
             {viewing.instructor_name&&<div style={{color:"var(--t2)",fontSize:14,marginBottom:14}}>with {viewing.instructor_name}</div>}
@@ -1961,7 +1978,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
         )}
 
         {/* Description + Instructor sidebar */}
-        <div className="cls-detail-grid" style={{gridTemplateColumns:viewing.instructor_name?"1fr 260px":"1fr",marginTop:28}}>
+        <div className="cls-detail-grid" style={{gridTemplateColumns:isMobile?"1fr":(viewing.instructor_name?"1fr 260px":"1fr"),marginTop:28}}>
           <div>
             {(viewing.full_description||viewing.short_description)&&<p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,margin:0}}>{viewing.full_description||viewing.short_description}</p>}
           </div>
@@ -1980,7 +1997,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
         {Array.isArray(viewing.instructor_poster_urls)&&viewing.instructor_poster_urls.length>0&&(
           <div style={{marginTop:32}}>
             <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:14}}>Selected Credits</div>
-            <div className="cls-credits-grid">
+            <div className="cls-credits-grid" style={{gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)"}}>
               {viewing.instructor_poster_urls.map((p,i)=>(
                 <div key={i} style={{borderRadius:10,overflow:"hidden",lineHeight:0,boxShadow:"0 4px 16px rgba(0,0,0,0.15)"}}>
                   <img src={p.url||p} alt={`Credit ${i+1}`} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",display:"block"}}/>
@@ -2149,7 +2166,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
         </div>
 
         {/* Action */}
-        <div style={{padding:"18px 20px",display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"stretch",gap:8,borderLeft:"1px solid var(--bdr)",minWidth:140,flexShrink:0}}>
+        <div className="cls-card-action">
           <button className="btn-p btn-sm" style={{whiteSpace:"nowrap"}}
             onClick={e=>{e.stopPropagation();setViewing(cls);window.scrollTo(0,0);}}>
             View Class
@@ -2164,6 +2181,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
   };
 
   return(<div className="page">
+    <div className="cls-mobile-test-label">MOBILE FIX TEST — REMOVE AFTER CONFIRMATION</div>
     <div className="info-hero">
       <div className="section-label">Classes</div>
       <h1>Training That Actually<br/>Moves Your Career.</h1>
@@ -6907,12 +6925,16 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   //     scale(1) for emphasis; sides fade + slightly scale down via CSS.
   const isWide=sectionWidth>=1024;
   const isMid=sectionWidth>=720&&sectionWidth<1024;
-  const cardWidth=isWide?720:isMid?540:Math.max(280,sectionWidth-48);
+  // fcs-section horizontal padding: 24px at ≥1024px, 20px at 768-1024px, 16px at ≤768px
+  const secHPad=sectionWidth>=1024?24:sectionWidth>=768?20:16;
+  const stageWidth=sectionWidth-2*secHPad;
+  const cardWidth=isWide?720:isMid?540:Math.max(260,stageWidth-8);
   const gap=isWide?28:isMid?20:14;
   const itemStep=cardWidth+gap;
-  // Translate so the centre card is centred horizontally in the stage.
-  const trackOffset=(sectionWidth/2)-(cardWidth/2)-(idx*itemStep);
+  // Centre card in the stage (not section) so it fills the visible area on mobile.
+  const trackOffset=(stageWidth/2)-(cardWidth/2)-(idx*itemStep);
   return(<section className="fcs-section" ref={sectionRef} onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)}>
+    <div className="cls-mobile-test-label" style={{marginBottom:8}}>MOBILE FIX TEST — REMOVE AFTER CONFIRMATION</div>
     <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:12,marginBottom:18,flexWrap:"wrap"}}>
       <div>
         <div className="section-label">Featured Castings</div>
