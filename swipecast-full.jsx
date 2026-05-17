@@ -7338,7 +7338,10 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     }
     // inbox — messages received (for both talent + CD)
     fetchInbox();
-  })();},[session,profile,fetchInbox,loadCredits,loadMediaItems]);
+  // Use stable scalar deps (id, user_type) instead of full objects so a background
+  // profile reload (after save/upload) doesn't re-trigger all data fetches and cause
+  // applications/credits/inbox to blink and reload unnecessarily.
+  })();},[session?.user?.id,profile?.id,profile?.user_type,fetchInbox,loadCredits,loadMediaItems]);
 
   // ─── Realtime + polling backstop for the inbox. Realtime catches new sends + deletes
   //     instantly; the 45s poll covers cases where the websocket is stale. Both update the
@@ -7480,20 +7483,21 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
     await window.sb.from("profiles").update({resume_url:null}).eq("id",session.user.id);
     onReload&&onReload();setMsg("Resume removed.");setTimeout(()=>setMsg(""),3000);
   };
-  // When profile is null (initial load, timeout, or post-tab-wake failure):
-  // auto-trigger a reload and show an error with retry after 10 seconds.
+  // When profile is null: show spinner and let App-level recovery handle retrying.
+  // Only surface a manual retry after 30 s so normal Supabase slowness never shows the button.
+  // Do NOT call onReload() here — the App recovery effect already handles retries on
+  // focus, visibility change, and initial load; double-calling creates parallel races.
   useEffect(()=>{
     if(profile){setProfileErrVisible(false);return;}
     setProfileErrVisible(false);
-    if(onReload)onReload();
-    const tid=setTimeout(()=>setProfileErrVisible(true),10000);
+    const tid=setTimeout(()=>setProfileErrVisible(true),30000);
     return()=>clearTimeout(tid);
   },[!!profile]);// eslint-disable-line react-hooks/exhaustive-deps
   if(!profile){
     if(profileErrVisible){
       return(<div className="page" style={{justifyContent:"center",alignItems:"center",flexDirection:"column",gap:16,minHeight:"60vh"}}>
-        <p style={{color:"var(--t2)",fontSize:14,textAlign:"center"}}>Profile could not load. Please try again.</p>
-        <button className="btn-p" onClick={()=>{setProfileErrVisible(false);if(onReload)onReload();}}>Retry Loading Profile</button>
+        <p style={{color:"var(--t2)",fontSize:14,textAlign:"center"}}>Still loading your profile… tap below if this takes too long.</p>
+        <button className="btn-p" onClick={()=>{setProfileErrVisible(false);if(onReload)onReload();}}>Retry</button>
         <Footer onNavigate={onNavigate}/>
       </div>);
     }
@@ -10011,7 +10015,9 @@ export default function App(){
         timeout
       ]);
       clearTimeout(tid);
-      if(error){console.warn("[auth] loadProfile error:",error.message);setMyProfile(null);return null;}
+      if(error){console.warn("[auth] loadProfile error:",error.message);
+        setMyProfile(m=>m); // keep existing data on background-reload failure; App recovery retries
+        return null;}
       // Backfill safety net: if the row exists but core fields are blank
       // (legacy signup before the new trigger landed) AND the user has signup
       // metadata stored on auth.users, run the RPC to fill the gaps. This is
@@ -10024,7 +10030,9 @@ export default function App(){
         }catch(e){console.warn("[auth] backfill RPC failed:",e?.message||e);}
       }
       setMyProfile(data||null);return data||null;
-    }catch(e){console.warn("[auth] loadProfile threw:",e?.message||e);setMyProfile(null);return null;}
+    }catch(e){console.warn("[auth] loadProfile threw:",e?.message||e);
+      setMyProfile(m=>m); // keep existing data on timeout/network error
+      return null;}
   },[]);
 
   // Safety net: if onAuthStateChange never fires within 15 s (e.g. network hiccup on
@@ -10444,8 +10452,20 @@ export default function App(){
           </div>}
         {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
         {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
-        {page==="dashboard"&&(!authReady?<PageLoader/>:<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>)}
-        {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&myProfile?.user_type==="talent"?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>:<div style={{minHeight:"60vh"}}/>)}
+        {/* CDDashboard: pre-mounted once we confirm the user is a CD/admin so that
+            navigating away (inbox, settings, search) and back never re-shows the full
+            "Loading your dashboard…" spinner. display:none hides it while off-page. */}
+        {page==="dashboard"&&!authReady&&<PageLoader/>}
+        {authReady&&isLoggedIn&&["cd","admin","super_admin"].includes(myProfile?.user_type)&&
+          <div style={{display:page==="dashboard"?"flex":"none",flexDirection:"column",flex:"1 1 auto",minHeight:"calc(100vh - 80px)"}} aria-hidden={page!=="dashboard"}>
+            <CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>
+          </div>}
+        {/* TalentDashboard: same pre-mount pattern */}
+        {page==="talent-dashboard"&&!authReady&&<PageLoader/>}
+        {authReady&&isLoggedIn&&myProfile?.user_type==="talent"&&
+          <div style={{display:page==="talent-dashboard"?"flex":"none",flexDirection:"column",flex:"1 1 auto",minHeight:"calc(100vh - 80px)"}} aria-hidden={page!=="talent-dashboard"}>
+            <TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>
+          </div>}
         {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
         {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate}/>:null)}
         {page==="account-settings"&&(!authReady?<PageLoader/>:isLoggedIn?<AccountSettingsPage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onSignOut={signOut} isSuperAdmin={isSuperAdmin}/>:<div style={{minHeight:"60vh"}}/>)}
