@@ -4324,7 +4324,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>
             </div>
             {/* Tab bar */}
-            <div style={{display:"flex",borderBottom:"1px solid var(--bdr)",overflowX:"auto",scrollbarWidth:"none"}}>
+            <div style={{display:"flex",borderBottom:"1px solid var(--bdr)",overflowX:"auto",scrollbarWidth:"none",paddingRight:16}}>
               {APP_TABS.map(t=>{
                 const cnt=tabCounts[t];
                 return(
@@ -10901,12 +10901,12 @@ function App(){
           </div>}
         {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
         {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
-        {page==="dashboard"&&(!authReady?<PageLoader/>:<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>)}
-        {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&myProfile?.user_type==="talent"?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>:<div style={{minHeight:"60vh"}}/>)}
+        {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?<PageLoader/>:<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>)}
+        {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?<PageLoader/>:isLoggedIn&&myProfile?.user_type==="talent"?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>:<div style={{minHeight:"60vh"}}/>)}
         {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
-        {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onViewProfile={viewProfile}/>:null)}
+        {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?<PageLoader/>:isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onViewProfile={viewProfile}/>:null)}
         {page==="account-settings"&&(!authReady?<PageLoader/>:isLoggedIn?<AccountSettingsPage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onSignOut={signOut} isSuperAdmin={isSuperAdmin}/>:<div style={{minHeight:"60vh"}}/>)}
-        {page==="inbox"&&<InboxPage session={session} profile={myProfile} onNavigate={navigate} onViewProfile={viewProfile}/>}
+        {page==="inbox"&&(!authReady?<PageLoader/>:<InboxPage session={session} profile={myProfile} onNavigate={navigate} onViewProfile={viewProfile}/>)}
         {page==="admin"&&(!authReady?<PageLoader/>:isLoggedIn&&isAdmin?<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>:<div style={{minHeight:"60vh"}}/>)}
         {/* Registration pages are guarded — a logged-in user with an existing
             profile (any user_type) is redirected to the page that makes sense for

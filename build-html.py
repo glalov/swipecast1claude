@@ -4,8 +4,7 @@ import re
 jsx_content = re.sub(r'^\s*import\s+.*?from\s+["\'][^"\']+["\'];?\s*\n', '', jsx_content, count=1, flags=re.MULTILINE)
 # Replace `export default function App` with plain `function App`
 jsx_content = jsx_content.replace("export default function App", "function App")
-# Inject the React hooks destructure at the top so useState etc. work in-browser
-jsx_content = "const { useState, useRef, useCallback, useEffect, useMemo } = React;\n" + jsx_content
+# swipecast-full.jsx already starts with the React hooks destructure — do NOT prepend again.
 # Render the App at the end
 jsx_content += "\nReactDOM.createRoot(document.getElementById('root')).render(<App />);\n"
 
@@ -19,10 +18,10 @@ html = f'''<!DOCTYPE html>
   <meta property="og:title" content="SlateCue — Casting, finally built for actors."/>
   <meta property="og:description" content="Every headshot seen. Guaranteed. Join the casting platform built for working actors."/>
   <meta property="og:type" content="website"/>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
   <script>
     window.SC_CONFIG = {{
       SUPABASE_URL: "https://mvqhqbjjvgkftninjcby.supabase.co",
@@ -34,7 +33,7 @@ html = f'''<!DOCTYPE html>
 </head>
 <body>
   <div id="root"></div>
-  <script type="text/babel">
+  <script type="text/babel" data-presets="react">
 {jsx_content}
   </script>
 </body>
