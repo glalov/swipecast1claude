@@ -606,11 +606,9 @@ html,body{overflow-x:hidden;}
 .cls-card-row{display:flex;align-items:stretch;border-radius:14px;overflow:hidden;cursor:pointer;margin-bottom:16px;position:relative;transition:box-shadow 0.15s,transform 0.1s;}
 .cls-card-img{width:190px;min-width:190px;position:relative;overflow:hidden;background:var(--s2);flex-shrink:0;}
 .cls-card-action{padding:18px 20px;display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:8px;border-left:1px solid var(--bdr);min-width:140px;flex-shrink:0;}
-.cls-mobile-test-label{display:none;}
 @media(max-width:768px){
   .cls-detail-grid{grid-template-columns:1fr !important;}
   .cls-credits-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
-  .cls-mobile-test-label{display:block;background:#f59e0b;color:#000;font-weight:800;font-size:12px;text-align:center;padding:6px 12px;letter-spacing:0.5px;}
 }
 @media(max-width:560px){
   .cls-slot-row{gap:8px;padding:12px 14px;}
@@ -2206,7 +2204,6 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
   };
 
   return(<div className="page">
-    <div className="cls-mobile-test-label">MOBILE FIX TEST — REMOVE AFTER CONFIRMATION</div>
     <div className="info-hero">
       <div className="section-label">Classes</div>
       <h1>Training That Actually<br/>Moves Your Career.</h1>
@@ -6802,6 +6799,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   const [err,setErr]=useState("");
   const [paused,setPaused]=useState(false);
   const touchRef=useRef({startX:0,active:false});
+  const vpw=useViewportWidth();
   // Stage width drives the responsive card sizing + the track-translate math.
   const sectionRef=useRef(null);
   const [sectionWidth,setSectionWidth]=useState(()=>typeof window!=="undefined"?Math.min(window.innerWidth,1200):1200);
@@ -6945,21 +6943,19 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   const desc=rawSyn.length>220?rawSyn.slice(0,220).trim()+"…":rawSyn;
 
   // ─── Responsive card sizing + track translation math.
-  //     All cards have the same layout width so a single transform on the track
-  //     can translate the active card to the stage centre. Center card stays at
-  //     scale(1) for emphasis; sides fade + slightly scale down via CSS.
-  const isWide=sectionWidth>=1024;
-  const isMid=sectionWidth>=720&&sectionWidth<1024;
-  // fcs-section horizontal padding: 24px at ≥1024px, 20px at 768-1024px, 16px at ≤768px
-  const secHPad=sectionWidth>=1024?24:sectionWidth>=768?20:16;
-  const stageWidth=sectionWidth-2*secHPad;
-  const cardWidth=isWide?720:isMid?540:Math.max(260,stageWidth-8);
+  //     On mobile (<768px) use vpw (always-fresh viewport width) to avoid the
+  //     sectionRef measurement missing during the loading-state early render.
+  //     The card fills the full stage width so the translate is simply -idx*step.
+  const isMobileVpw=vpw<768;
+  const isWide=isMobileVpw?false:sectionWidth>=1024;
+  const isMid=isMobileVpw?false:(sectionWidth>=720&&sectionWidth<1024);
+  const secHPad=isMobileVpw?16:(sectionWidth>=1024?24:sectionWidth>=768?20:16);
+  const stageWidth=isMobileVpw?(vpw-32):(sectionWidth-2*secHPad);
+  const cardWidth=isWide?720:isMid?540:stageWidth;
   const gap=isWide?28:isMid?20:14;
   const itemStep=cardWidth+gap;
-  // Centre card in the stage (not section) so it fills the visible area on mobile.
-  const trackOffset=(stageWidth/2)-(cardWidth/2)-(idx*itemStep);
+  const trackOffset=isMobileVpw?-(idx*itemStep):((stageWidth/2)-(cardWidth/2)-(idx*itemStep));
   return(<section className="fcs-section" ref={sectionRef} onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)}>
-    <div className="cls-mobile-test-label" style={{marginBottom:8}}>MOBILE FIX TEST — REMOVE AFTER CONFIRMATION</div>
     <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:12,marginBottom:18,flexWrap:"wrap"}}>
       <div>
         <div className="section-label">Featured Castings</div>
