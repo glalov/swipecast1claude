@@ -3265,6 +3265,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   );
 
   return(<div className="page">
+    <div style={{background:"#ff0",color:"#000",fontWeight:800,fontSize:13,padding:"8px 14px",borderRadius:6,marginBottom:12,textAlign:"center"}}>⚡ PROFILE TEST A — TalentProfile component (public view)</div>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:14,flexWrap:"wrap"}}>
       <button className="btn-s btn-sm" onClick={onBack}>← Back</button>
       {talent?.id&&talent.id!==session?.user?.id&&<button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this profile">⚑ Report</button>}
@@ -7474,6 +7475,7 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
   const maxAdditional=planLimits.additionalPhotos;  // 0 for free, 9 for premium
   const maxVideos=planLimits.videos;                 // 0 for free, 5 for premium
   return(<div className="page page-wide">
+    <div style={{background:"#0ff",color:"#000",fontWeight:800,fontSize:13,padding:"8px 14px",borderRadius:6,marginBottom:12,textAlign:"center"}}>⚡ PROFILE TEST B — MyProfilePage component (edit/own view)</div>
     {msg&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.3)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{msg}</div>}
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
 
@@ -7543,6 +7545,7 @@ function MyProfilePage({session,profile,onReload,onNavigate}){
           <div className="form-group"><label className="label">Representation</label><input className="input" placeholder="Agency, manager, or 'Seeking Representation'" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
         </div>
         <div className="card" style={{padding:24,marginBottom:16}}>
+          <div style={{background:"#f0f",color:"#fff",fontWeight:800,fontSize:11,padding:"4px 8px",borderRadius:4,marginBottom:8,display:"inline-block"}}>⚡ PROFILE TEST C — MyProfilePage credits card (edit tab)</div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,flexWrap:"wrap",gap:8}}>
             <h3 style={{fontSize:15,fontWeight:700}}>Credits {dbCredits.length>0&&<span style={{fontSize:12,fontWeight:400,color:"var(--t3)"}}>{dbCredits.length} credit{dbCredits.length!==1?"s":""} added</span>}</h3>
             <button className="btn-s btn-sm" onClick={()=>setTab("credits")}>+ Add / Edit Credits →</button>
