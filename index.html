@@ -190,10 +190,12 @@ const css = `
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{--bg:#F7F4EE;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;}
-html,body,#root{max-width:100%;overflow-x:hidden;}
 html,body{min-height:100vh;background:#1B1C20;}
+*{box-sizing:border-box;}
+html,body{overflow-x:hidden;width:100%;max-width:100%;}
 body{color:var(--t1);font-family:'DM Sans',sans-serif;overflow-x:hidden;margin:0;display:flex;flex-direction:column;}
-#root{flex:1 1 auto;display:flex;flex-direction:column;min-height:100vh;}
+#root{flex:1 1 auto;display:flex;flex-direction:column;min-height:100vh;width:100%;max-width:100%;}
+img,video,iframe{max-width:100%;}
 .app{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;flex:1 1 auto;}
 a{color:inherit;text-decoration:none;}
 h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
@@ -215,7 +217,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .section-title{font-weight:800;font-size:36px;letter-spacing:-1.5px;margin-bottom:40px;line-height:1.1;}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;}
-.flex-between{display:flex;justify-content:space-between;align-items:center;}
+.flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
 .mt-20{margin-top:20px;}.mt-40{margin-top:40px;}.mb-20{margin-bottom:20px;}.mb-8{margin-bottom:8px;}.mb-32{margin-bottom:32px;}
 .card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:24px;transition:all .3s;box-shadow:0 1px 2px rgba(26,26,46,0.03);}
 .card:hover{border-color:var(--acc);box-shadow:0 4px 20px rgba(26,26,46,0.06);}
@@ -371,6 +373,22 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .tabs{width:100%;overflow-x:auto;display:flex;flex-wrap:nowrap;}
   .tab{flex:1 0 auto;white-space:nowrap;}
 }
+@media(max-width:768px){
+  /* Account Settings sidebar → stacked */
+  .account-settings-layout{grid-template-columns:1fr !important;gap:16px !important;}
+  .account-settings-sidebar{position:static !important;top:auto !important;}
+  /* Pricing cards → single column */
+  .pricing-cards-grid{grid-template-columns:1fr !important;transform:none !important;max-width:420px !important;margin-left:auto !important;margin-right:auto !important;}
+  /* Profile hero → single column */
+  .my-profile-hero{grid-template-columns:1fr !important;gap:16px !important;}
+  .my-profile-hero-photo{max-width:200px !important;margin:0 auto !important;}
+  /* Stats within profile hero → 2 col */
+  .my-profile-stats-grid{grid-template-columns:repeat(2,1fr) !important;}
+  /* Talent profile media banner → single column */
+  .talent-profile-media-grid{grid-template-columns:1fr !important;}
+  /* Landing testimonials */
+  .landing-testimonials{grid-template-columns:1fr !important;}
+}
 @media(max-width:560px){
   .results-grid{grid-template-columns:1fr;}
   .info-hero h1{font-size:28px;letter-spacing:-1px;}
@@ -380,6 +398,10 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .logo-i{width:26px;height:26px;font-size:14px;}
   .btn-p,.btn-s{padding:9px 16px;font-size:12px;}
   .btn-sm{padding:7px 12px;font-size:11px;}
+  /* Profile hero photo smaller */
+  .my-profile-hero-photo{max-width:160px !important;}
+  /* Pricing cards compact */
+  .pricing-cards-grid{max-width:100% !important;}
 }
 .mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:150;backdrop-filter:blur(4px);}
 .mobile-menu-inner{background:var(--s1);border-bottom:1px solid var(--bdr);padding:18px 18px 22px;max-width:100%;animation:mmSlide .18s ease-out;box-shadow:0 10px 40px rgba(0,0,0,.12);}
@@ -599,6 +621,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .td-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
 @media(max-width:900px){.td-grid{grid-template-columns:1fr;}.td-stats{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:480px){.td-stats{grid-template-columns:1fr 1fr;gap:10px;}}
 /* ─── Classes page responsive layout ─── */
 html,body{overflow-x:hidden;}
 .cls-detail-grid{display:grid;gap:24px;align-items:start;}
@@ -2430,6 +2453,8 @@ function SuccessStoriesPage({onNavigate}){
 // PAGE: PRICING
 // ═══════════════════════════════════════════
 function PricingPage({onNavigate}){
+  const vpw=useViewportWidth();
+  const isMobile=vpw<768;
   const [premiumMsg,setPremiumMsg]=React.useState(false);
 
   const feat=(f,accent)=>(
@@ -2439,7 +2464,7 @@ function PricingPage({onNavigate}){
     </div>
   );
   const featureRow=(label,free,premium)=>(
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,padding:"10px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,alignItems:"center"}}>
+    <div style={{display:"grid",gridTemplateColumns:isMobile?"2fr 1fr 1fr":"1fr 1fr 1fr",gap:isMobile?4:8,padding:"10px 0",borderBottom:"1px solid var(--bdr)",fontSize:isMobile?12:13,alignItems:"center"}}>
       <span style={{color:"var(--t2)"}}>{label}</span>
       <span style={{textAlign:"center",color:"var(--t1)",fontWeight:600}}>{free}</span>
       <span style={{textAlign:"center",color:"var(--acc)",fontWeight:600}}>{premium}</span>
@@ -2462,7 +2487,7 @@ function PricingPage({onNavigate}){
 
       {/* ── Cards ── */}
       <div style={{maxWidth:1020,margin:"0 auto 48px",padding:"0 20px 12px"}}>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20,alignItems:"stretch"}}>
+        <div className="pricing-cards-grid" style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"repeat(3,1fr)",gap:isMobile?16:20,alignItems:"stretch"}}>
 
           {/* Actor Free */}
           <div style={card}>
@@ -2482,7 +2507,7 @@ function PricingPage({onNavigate}){
           </div>
 
           {/* Actor Premium */}
-          <div style={{...card,border:"2px solid var(--acc)",boxShadow:"0 8px 36px rgba(0,0,0,0.14)",transform:"translateY(-10px)"}}>
+          <div style={{...card,border:"2px solid var(--acc)",boxShadow:"0 8px 36px rgba(0,0,0,0.14)",transform:isMobile?"none":"translateY(-10px)"}}>
             <div style={{height:28,display:"flex",alignItems:"center",justifyContent:"center"}}>
               <span style={{background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",padding:"3px 16px",borderRadius:100,whiteSpace:"nowrap"}}>Recommended</span>
             </div>
@@ -2526,7 +2551,7 @@ function PricingPage({onNavigate}){
       <div style={{maxWidth:740,margin:"0 auto 40px",padding:"0 20px"}}>
         <div className="card" style={{padding:"24px 28px"}}>
           <h4 style={{fontSize:14,fontWeight:700,marginBottom:16}}>Actor Plan Comparison</h4>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,padding:"8px 0",borderBottom:"2px solid var(--bdr)",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)"}}>
+          <div style={{display:"grid",gridTemplateColumns:isMobile?"2fr 1fr 1fr":"1fr 1fr 1fr",gap:isMobile?4:8,padding:"8px 0",borderBottom:"2px solid var(--bdr)",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)"}}>
             <span>Feature</span><span style={{textAlign:"center"}}>Free</span><span style={{textAlign:"center",color:"var(--acc)"}}>Premium</span>
           </div>
           {featureRow("Casting submissions / day","3","Unlimited")}
@@ -2764,9 +2789,6 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
   const [loading,setLoading]=useState(false);
   const [err,setErr]=useState("");
   const [signupDone,setSignupDone]=useState(false); // email confirmation sent
-  const [vpw,setVpw]=useState(typeof window!=="undefined"?window.innerWidth:1200);
-  useEffect(()=>{const h=()=>setVpw(window.innerWidth);window.addEventListener("resize",h);return()=>window.removeEventListener("resize",h);},[]);
-  const isMobile=vpw<768;
   // signup form fields
   const [firstName,setFirstName]=useState("");
   const [lastName,setLastName]=useState("");
@@ -2895,13 +2917,13 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
     </div>
     <Footer onNavigate={onNavigate}/></div>);
 
-  return(<div className="page" style={{maxWidth:960,width:"100%",boxSizing:"border-box"}}>
+  return(<div className="page" style={{maxWidth:960}}>
     <div style={{background:"#1a1a2e",color:"#f5e8d0",fontFamily:"monospace",fontSize:13,fontWeight:700,padding:"8px 20px",textAlign:"center",letterSpacing:0.5,marginBottom:0}}>
-      MOBILE APPLY FIX TEST
+      APPLY SIGNUP VERSION 3 - FUNCTIONAL FREE APPLY FLOW
     </div>
-    <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 1fr",gap:isMobile?20:48,alignItems:"start",padding:isMobile?"16px 0 60px":"20px 0 60px"}}>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:48,alignItems:"start",padding:"20px 0 60px"}}>
       {/* LEFT: Context panel */}
-      <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16,padding:isMobile?"20px 16px":"32px 28px",position:isMobile?"static":"sticky",top:100}}>
+      <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16,padding:"32px 28px",position:"sticky",top:100}}>
         <div className="section-label" style={{marginBottom:8}}>Almost there</div>
         <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginBottom:10,lineHeight:1.15}}>Create a free account to apply.</h2>
         <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:20}}>Creating an actor account is <strong style={{color:"var(--t1)"}}>free</strong>. You can upgrade to Premium later for more uploads and unlimited submissions.</p>
@@ -3480,6 +3502,8 @@ function CareersPage({onNavigate}){
 // PAGE: TALENT PROFILE VIEW
 // ═══════════════════════════════════════════
 function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
+  const vpw=useViewportWidth();
+  const isMobile=vpw<768;
   const viewerIsCd=!!myProfile&&(myProfile.user_type==="cd"||myProfile.user_type==="admin"||myProfile.user_type==="super_admin");
   const talentDbId=typeof talent.id==="string"&&/^[0-9a-f]{8}-/i.test(String(talent.id))?talent.id:null;
   const [cdAction,setCdAction]=useState(null);
@@ -3625,7 +3649,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
 
     {/* ── MEDIA BANNER: headshot left, up to 2 videos right ── */}
     <div style={{marginBottom:16}}>
-      <div style={{display:"grid",gridTemplateColumns:hasRightPanel?"3fr 2fr":"1fr",borderRadius:12,overflow:"hidden",border:"1px solid var(--bdr)"}}>
+      <div className="talent-profile-media-grid" style={{display:"grid",gridTemplateColumns:(hasRightPanel&&!isMobile)?"3fr 2fr":"1fr",borderRadius:12,overflow:"hidden",border:"1px solid var(--bdr)"}}>
         {/* Headshot — use fresh headshot from DB when available so current photo shows */}
         <div style={{position:"relative",background:"var(--s2)"}}>
           <img src={freshHeadshot||talent.img||"https://placehold.co/400x600/e5e5e5/999?text=No+Headshot"} alt={talent.name} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",display:"block"}}/>
@@ -4272,11 +4296,11 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const profilePct=Math.round((completedCount/profileChecks.length)*100);
 
   return(
-    <div style={{maxWidth:1240,margin:"0 auto",padding:"32px 24px 64px"}}>
+    <div style={{maxWidth:1240,margin:"0 auto",padding:"24px 16px 64px"}}>
       {/* ── Welcome header ── */}
       <div style={{marginBottom:28}}>
         <div className="section-label">Talent Dashboard</div>
-        <h1 style={{fontWeight:800,fontSize:30,letterSpacing:-0.8,color:"var(--t1)",marginBottom:6,margin:"0 0 6px"}}>Welcome back, {firstName}.</h1>
+        <h1 style={{fontWeight:800,fontSize:30,letterSpacing:-0.8,color:"var(--t1)",marginBottom:6,margin:"0 0 6px"}}>Welcome back, {firstName}. <span style={{fontSize:11,fontWeight:700,background:"rgba(26,26,46,0.08)",color:"var(--acc)",padding:"2px 8px",borderRadius:6,verticalAlign:"middle",marginLeft:4}}>MOBILE TALENT FIX TEST</span></h1>
         <p style={{color:"var(--t2)",fontSize:15,margin:0}}>Here are the latest updates for your acting profile.</p>
       </div>
 
@@ -5133,7 +5157,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       </>:<>
         {/* Search + sort for non-pending folders */}
         <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
-          <input className="input" style={{flex:1,minWidth:220,maxWidth:380}} placeholder={`Search in ${folder}…`} value={search} onChange={e=>setSearch(e.target.value)}/>
+          <input className="input" style={{flex:1,minWidth:0,maxWidth:380}} placeholder={`Search in ${folder}…`} value={search} onChange={e=>setSearch(e.target.value)}/>
           <select className="input" style={{maxWidth:180}} value={sortBy} onChange={e=>setSortBy(e.target.value)}>
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>
@@ -5262,7 +5286,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
               {!showNewListInline&&<button className="btn-p btn-sm" onClick={()=>setShowNewListInline(true)}>+ New List</button>}
             </div>
             {showNewListInline&&<div className="card" style={{padding:14,marginBottom:14,display:"flex",gap:10,alignItems:"flex-end",flexWrap:"wrap"}}>
-              <div style={{flex:1,minWidth:220}}>
+              <div style={{flex:1,minWidth:0}}>
                 <label className="label">List name</label>
                 <input className="input" autoFocus value={newListName} onChange={e=>setNewListName(e.target.value)} placeholder="e.g. Lead Talent — Spring 2026" onKeyDown={e=>{if(e.key==="Enter")createList();}}/>
               </div>
@@ -5984,7 +6008,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
         <h1 style={{fontSize:30,fontWeight:800,letterSpacing:"-0.5px",margin:0}}>Inbox{totalUnread>0?<span style={{marginLeft:10,fontSize:14,color:"var(--acc)",fontWeight:700,verticalAlign:"middle"}}>· {totalUnread} unread</span>:null}</h1>
       </div>
       <div style={{display:"flex",gap:10,alignItems:"center"}}>
-        <input className="input" placeholder="Search messages…" value={search} onChange={e=>setSearch(e.target.value)} style={{minWidth:220}}/>
+        <input className="input" placeholder="Search messages…" value={search} onChange={e=>setSearch(e.target.value)} style={{flex:1,minWidth:0}}/>
         <button className="btn-s btn-sm" onClick={load} disabled={loading}>{loading?"…":"↻ Refresh"}</button>
       </div>
     </div>
@@ -6961,12 +6985,12 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   const trackOffset=isMobileVpw?-(idx*itemStep):((stageWidth/2)-(cardWidth/2)-(idx*itemStep));
   return(<section className="fcs-section" ref={sectionRef} onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)}>
     <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:12,marginBottom:18,flexWrap:"wrap"}}>
-      <div>
+      <div style={{flex:1,minWidth:0}}>
         <div className="section-label">Featured Castings</div>
-        <h2 style={{fontWeight:800,fontSize:30,letterSpacing:-1,margin:0,lineHeight:1.1}}>Open jobs from real productions.</h2>
-        <p style={{color:"var(--t2)",fontSize:13,marginTop:6}}>Updated live — same listings as Browse Castings. Tap any card to view full role breakdown and apply.</p>
+        <h2 style={{fontWeight:800,fontSize:isMobileVpw?22:30,letterSpacing:-1,margin:0,lineHeight:1.2,wordBreak:"break-word"}}>Open jobs from real productions.</h2>
+        {!isMobileVpw&&<p style={{color:"var(--t2)",fontSize:13,marginTop:6}}>Updated live — same listings as Browse Castings. Tap any card to view full role breakdown and apply.</p>}
       </div>
-      {onNavigate&&<button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse all →</button>}
+      {onNavigate&&<button className="btn-s btn-sm" style={{flexShrink:0}} onClick={()=>onNavigate("search")}>Browse all →</button>}
     </div>
 
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
@@ -7148,6 +7172,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </div>
 
     {/* ───────── FEATURED CASTINGS SLIDER — pulls live from public.castings (same as Browse Castings) ───────── */}
+    <div style={{textAlign:"center",padding:"4px 16px 0",fontSize:11,fontWeight:700,color:"var(--acc)"}}>MOBILE HOME FIX TEST</div>
     <FeaturedCastingsSlider onViewCasting={onViewCasting} onNavigate={onNavigate} castingsVersion={castingsVersion}/>
 
     {/* ───────── STATS ───────── */}
@@ -7567,6 +7592,8 @@ function CastMeAsSection({talentId}){
 // PAGE: MY PROFILE — Backstage-style with gallery + videos
 // ═══════════════════════════════════════════
 function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
+  const vpw=useViewportWidth();
+  const isMobile=vpw<768;
   const profileInitializedRef=useRef(false); // prevent focus/reload from wiping form state
   const [tab,setTab]=useState("profile");
   const [saving,setSaving]=useState(false);
@@ -7859,21 +7886,21 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
 
     {/* ── HERO (Backstage style) ── */}
-    <div style={{display:"grid",gridTemplateColumns:"200px 1fr",gap:28,alignItems:"flex-start",marginBottom:28,padding:"28px",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16}}>
-      <div>
+    <div className="my-profile-hero" style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"200px 1fr",gap:isMobile?16:28,alignItems:"flex-start",marginBottom:28,padding:isMobile?"16px":"28px",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16}}>
+      <div className="my-profile-hero-photo" style={isMobile?{maxWidth:180,margin:"0 auto",width:"100%"}:{}}>
         {profile.headshot_url
           ?<img src={profile.headshot_url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:10}}/>
           :<div style={{width:"100%",aspectRatio:"3/4",background:"var(--s2)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t3)",fontSize:12,textAlign:"center",padding:12}}>No headshot yet</div>}
         <label className="btn-s" style={{width:"100%",display:"block",textAlign:"center",cursor:"pointer",marginTop:8,fontSize:11}}>{uploading?"Uploading…":"Change Headshot"}<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/></label>
       </div>
-      <div>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
+      <div style={isMobile?{textAlign:"center"}:{}}>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8,justifyContent:isMobile?"center":"flex-start"}}>
           <span className="badge tag-acc">{profile.union_status||"Non-Union"}</span>
           {isCD&&<span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{profile.company_role||"Casting Director"}</span>}
         </div>
-        <h1 style={{fontWeight:800,fontSize:32,letterSpacing:-1,marginBottom:4}}>{profile.display_name||"Your Name"}</h1>
+        <h1 style={{fontWeight:800,fontSize:isMobile?24:32,letterSpacing:-1,marginBottom:4}}>{profile.display_name||"Your Name"}</h1>
         <p style={{color:"var(--t2)",fontSize:14,marginBottom:12}}>{profile.location||"Location not set"}{profile.agent?` · Rep: ${profile.agent}`:""}</p>
-        {!isCD&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"8px 20px",marginBottom:16}}>
+        {!isCD&&<div className="my-profile-stats-grid" style={{display:"grid",gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)",gap:"8px 20px",marginBottom:16,textAlign:"left"}}>
           {[["Gender",profile.gender],["Age",profile.age],["Height",profile.height],["Weight",profile.weight],["Hair",profile.hair],["Eyes",profile.eyes],["Ethnicity",profile.ethnicity]].filter(([,v])=>v).map(([k,v])=>
             <div key={k}><div style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1}}>{k}</div><div style={{fontSize:13,fontWeight:600,color:"var(--t1)"}}>{v}</div></div>
           )}
@@ -7883,7 +7910,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
         </div>}
         {/* Social link icons — always visible in profile header */}
         {!isCD&&SOCIAL_LINK_FIELDS.some(({key})=>(socialLinks[key]||"").trim())&&
-          <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",marginBottom:12}}>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",marginBottom:12,justifyContent:isMobile?"center":"flex-start"}}>
             {SOCIAL_LINK_FIELDS.filter(({key})=>(socialLinks[key]||"").trim()).map(({key,label})=>{
               const url=socialLinks[key].trim();
               const href=url.startsWith("http")?url:`https://${url}`;
@@ -8367,6 +8394,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
 // (authenticated users can only update their own row).
 // ═══════════════════════════════════════════
 function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSuperAdmin}){
+  const vpw=useViewportWidth();
+  const isMobile=vpw<768;
   const [section,setSection]=useState("account");
   const [saving,setSaving]=useState(false);
   const [msg,setMsg]=useState("");
@@ -8854,16 +8883,23 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
   }
 
   return(
-    <div className="page page-wide" style={{padding:"40px 40px 80px"}}>
+    <div className="page page-wide" style={{padding:isMobile?"20px 16px 60px":"40px 40px 80px"}}>
       <div style={{maxWidth:960,margin:"0 auto"}}>
         <div style={{marginBottom:28}}>
-          <h1 style={{fontSize:28,fontWeight:900,color:"var(--t1)",marginBottom:4}}>Account Settings</h1>
+          <h1 style={{fontSize:isMobile?22:28,fontWeight:900,color:"var(--t1)",marginBottom:4}}>Account Settings <span style={{fontSize:11,fontWeight:700,background:"rgba(26,26,46,0.08)",color:"var(--acc)",padding:"2px 8px",borderRadius:6,verticalAlign:"middle",marginLeft:6}}>MOBILE SETTINGS FIX TEST</span></h1>
           <p style={{color:"var(--t2)",fontSize:14}}>{profile?.display_name||session?.user?.email}</p>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"220px 1fr",gap:28,alignItems:"start"}}>
+        <div className="account-settings-layout" style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"220px 1fr",gap:isMobile?16:28,alignItems:"start"}}>
           {/* Sidebar */}
-          <div style={{position:"sticky",top:96}}>
-            <div className="card" style={{padding:"8px 0"}}>
+          <div className="account-settings-sidebar" style={{position:isMobile?"static":"sticky",top:isMobile?"auto":96}}>
+            {isMobile&&(
+              <div style={{marginBottom:12}}>
+                <select className="select" style={{width:"100%"}} value={section} onChange={e=>setSection(e.target.value)}>
+                  {SECTIONS.map(({key,label})=><option key={key} value={key}>{label}</option>)}
+                </select>
+              </div>
+            )}
+            {!isMobile&&<div className="card" style={{padding:"8px 0"}}>
               {SECTIONS.map(({key,label})=>(
                 <button key={key} onClick={()=>setSection(key)}
                   style={{display:"block",width:"100%",textAlign:"left",padding:"11px 20px",
@@ -8889,11 +8925,15 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
                   Sign Out
                 </button>
               </div>
-            </div>
+            </div>}
           </div>
           {/* Main content */}
           <div>
             {renderSection()}
+            {isMobile&&<div style={{marginTop:24,display:"flex",flexDirection:"column",gap:8}}>
+              <button onClick={()=>onNavigate("my-profile")} className="btn-s btn-sm" style={{width:"100%"}}>← My Profile</button>
+              <button onClick={onSignOut} className="btn-s btn-sm" style={{width:"100%",borderColor:"var(--red)",color:"var(--red)"}}>Sign Out</button>
+            </div>}
           </div>
         </div>
       </div>
