@@ -1893,7 +1893,7 @@ function useViewportWidth(){
   return w;
 }
 
-function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
+function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClassOpened}){
   const vpw=useViewportWidth();
   const isMobile=vpw<768;
   const isNarrow=vpw<560;
@@ -1919,6 +1919,12 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn}){
         return new Date(a.created_at)-new Date(b.created_at);
       });
       setClasses(cls);
+      // Deep-link: open a specific class directly (e.g. from recommendation card)
+      if(openClassId){
+        const target=cls.find(c=>c.id===openClassId);
+        if(target){setViewing(target);window.scrollTo(0,0);}
+        if(onClassOpened)onClassOpened();
+      }
       if(cls.length){
         const{data:sd,error:se}=await window.sb.from("class_time_slots")
           .select("*").in("class_id",cls.map(c=>c.id)).eq("active",true).order("day_of_week");
@@ -4572,18 +4578,6 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                             padding:"4px 10px",borderRadius:20,
                           }}>{cls.category}</span>
                         )}
-                        {(cls?.sale_price||cls?.price)&&(
-                          <span style={{
-                            background:"rgba(180,140,40,0.15)",border:"1px solid rgba(180,140,40,0.25)",
-                            color:"#6b4a00",fontSize:11,fontWeight:700,
-                            padding:"4px 10px",borderRadius:20,
-                          }}>
-                            {cls.sale_price
-                              ?<>{cls.sale_price} <span style={{textDecoration:"line-through",opacity:0.5,fontWeight:400}}>{cls.price}</span></>
-                              :cls.price
-                            }
-                          </span>
-                        )}
                       </div>
 
                       {/* Admin message */}
@@ -4613,7 +4607,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                             fontFamily:"inherit",whiteSpace:"nowrap",
                             flex:isMobile?1:"none",
                           }}
-                          onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes");}}
+                          onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes",{classId:inv.class_id});}}
                         >View Recommended Class →</button>
                         <button
                           style={{
@@ -10997,6 +10991,7 @@ function App(){
   const [myProfile,setMyProfile]=useState(null);
   const [authReady,setAuthReady]=useState(false);
   const [pendingApply,setPendingApply]=useState(null);
+  const [openClassId,setOpenClassId]=useState(null);
   // Selected plan key for PlanSummaryPage. Stored at App level so navigating
   // to "plan-summary" doesn't lose the choice if the user refreshes mid-flow.
   const [selectedPlan,setSelectedPlan]=useState(null);
@@ -11319,7 +11314,7 @@ function App(){
   },[session?.user?.id,!!myProfile,authReady,loadProfile]);
 
   const pushHist=(p,opts={})=>{try{let url=PAGE_PATH[p]||"/";const st={swipecast:true,page:p,...opts};if(p==="casting-detail"&&opts.slug){url=`/casting/${encodeURIComponent(opts.slug)}`;st.castingSlug=opts.slug;}else if(p==="casting-detail"&&opts.id){url=`/casting/${encodeURIComponent(opts.id)}`;}window.history.pushState(st,"",url);}catch(e){}};
-  const navigate=useCallback((p)=>{
+  const navigate=useCallback((p,opts={})=>{
     window.scrollTo(0,0);
     let target=p;
     if(p==="search-talent"){setUserType("talent");setPage("search");target="search";}
@@ -11328,6 +11323,9 @@ function App(){
     else if(p==="dashboard"){setUserType("cd");setPage("dashboard");}
     else if(p==="talent-dashboard"){setPage("talent-dashboard");}
     else setPage(p);
+    // Deep-link into a specific class detail
+    if(p==="classes"&&opts.classId){setOpenClassId(opts.classId);}
+    else if(p!=="classes"){setOpenClassId(null);}
     // Clear detail state on any nav that isn't a drilldown
     if(p!=="profile"&&p!=="casting-detail"&&p!=="auth-gate"){setViewingProfile(null);setViewingCasting(null);}
     pushHist(target);
@@ -11536,7 +11534,7 @@ function App(){
         {page==="reset-password"&&<ResetPasswordPage onNavigate={navigate} session={session}/>}
         {page==="about"&&<AboutPage onNavigate={navigate}/>}
         {page==="blog"&&<BlogPage onNavigate={navigate}/>}
-        {page==="classes"&&<ClassesPage onNavigate={navigate} session={session} myProfile={myProfile} isLoggedIn={isLoggedIn}/>}
+        {page==="classes"&&<ClassesPage onNavigate={navigate} session={session} myProfile={myProfile} isLoggedIn={isLoggedIn} openClassId={openClassId} onClassOpened={()=>setOpenClassId(null)}/>}
         {page==="contact"&&<ContactPage onNavigate={navigate}/>}
         {page==="resources"&&<ResourcesPage onNavigate={navigate}/>}
         {page==="faq"&&<FaqPage onNavigate={navigate}/>}
