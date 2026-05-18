@@ -4264,13 +4264,9 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const loadClassInvitations=useCallback(async()=>{
     if(!uid){setInvLoading(false);return;}
     try{
-      const{data,error}=await window.sb.from("class_invitations")
-        .select("*,class:class_id(id,title,instructor_name,category,level,price,sale_price,image_url,start_date,format)")
-        .eq("talent_user_id",uid)
-        .neq("status","dismissed")
-        .order("created_at",{ascending:false});
+      const{data,error}=await window.sb.rpc("get_my_class_invitations");
       if(error)throw error;
-      setClassInvitations(data||[]);
+      setClassInvitations(Array.isArray(data)?data:(data?[data]:[]));
     }catch(e){console.warn("[talent-dashboard] class-invitations:",e);}
     finally{setInvLoading(false);}
   },[uid]);
@@ -4631,8 +4627,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             </div>
           </div>
 
-          {/* Class Invitations — dashboard preview */}
-          {(invLoading||classInvitations.length>0)&&(
+          {/* Class Invitations — always visible */}
           <div style={{background:"var(--s1)",border:"1px solid rgba(99,60,180,0.18)",borderRadius:14,overflow:"hidden"}}>
             <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between",background:"linear-gradient(90deg,rgba(99,60,180,0.04),transparent)"}}>
               <div>
@@ -4643,31 +4638,41 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             </div>
             <div style={{padding:24}}>
               {invLoading?(
-                <SlateCueLoader size="inline" text="Loading…"/>
-              ):classInvitations.length===0?null:(
+                <SlateCueLoader size="inline" text="Loading recommendations…"/>
+              ):classInvitations.length===0?(
+                <div style={{textAlign:"center",padding:"28px 0"}}>
+                  <div style={{fontSize:28,marginBottom:8}}>🎓</div>
+                  <p style={{color:"var(--t2)",fontSize:14,margin:0}}>No class recommendations yet.</p>
+                  <p style={{color:"var(--t3)",fontSize:12,margin:"6px 0 0"}}>When SlateCue recommends a class for you, it will appear here.</p>
+                </div>
+              ):(
                 <>
                   <div style={{display:"flex",flexDirection:"column",gap:14}}>
                     {classInvitations.slice(0,3).map(inv=>{
                       const cls=inv.class;
-                      return(<div key={inv.id} style={{background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:10,overflow:"hidden",display:"flex",flexDirection:"column"}}>
-                        {cls?.image_url&&<div style={{height:80,background:`url(${cls.image_url}) center/cover no-repeat`,borderBottom:"1px solid var(--bdr)"}}/>}
-                        <div style={{padding:"14px 16px"}}>
-                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:6,marginBottom:4}}>
-                            <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",lineHeight:1.3}}>{cls?.title||"Class Invitation"}</div>
-                            <button onClick={()=>dismissInvitation(inv.id)} title="Dismiss" style={{border:"none",background:"none",color:"var(--t3)",cursor:"pointer",fontSize:16,padding:0,lineHeight:1,flexShrink:0,marginTop:1}}>×</button>
-                          </div>
-                          <div style={{fontSize:11,color:"var(--t2)",marginBottom:4,display:"flex",flexWrap:"wrap",gap:"2px 8px"}}>
-                            {cls?.instructor_name&&<span>with {cls.instructor_name}</span>}
-                            {cls?.category&&<span style={{color:"var(--t3)"}}>· {cls.category}</span>}
-                            {(cls?.sale_price||cls?.price)&&<span style={{color:"var(--t3)"}}>· {cls.sale_price||cls.price}</span>}
-                          </div>
-                          {inv.message&&<div style={{fontSize:11,color:"var(--t2)",background:"rgba(99,60,180,0.04)",border:"1px solid rgba(99,60,180,0.1)",borderRadius:6,padding:"7px 10px",marginBottom:10,lineHeight:1.5,fontStyle:"italic"}}>"{inv.message}"</div>}
-                          <div style={{display:"flex",gap:8,marginTop:8}}>
-                            <button className="btn-p btn-sm" style={{fontSize:11,flex:1}} onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes");}}>View Class →</button>
-                            <button className="btn-s btn-sm" style={{fontSize:11}} onClick={()=>dismissInvitation(inv.id)}>Dismiss</button>
+                      return(
+                        <div key={inv.id} style={{background:"var(--bg)",border:"1px solid rgba(99,60,180,0.12)",borderRadius:10,overflow:"hidden",display:"flex",flexDirection:"column"}}>
+                          {cls?.image_url&&<div style={{height:90,background:`url(${cls.image_url}) center/cover no-repeat`,borderBottom:"1px solid var(--bdr)"}}/>}
+                          <div style={{padding:"14px 16px"}}>
+                            <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,color:"var(--acc)",marginBottom:6}}>SlateCue recommended this class for you</div>
+                            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:6,marginBottom:4}}>
+                              <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",lineHeight:1.3}}>{cls?.title||"Class Invitation"}</div>
+                              <button onClick={()=>dismissInvitation(inv.id)} title="Dismiss" style={{border:"none",background:"none",color:"var(--t3)",cursor:"pointer",fontSize:18,padding:0,lineHeight:1,flexShrink:0}}>×</button>
+                            </div>
+                            <div style={{fontSize:12,color:"var(--t2)",marginBottom:6,display:"flex",flexWrap:"wrap",gap:"2px 10px"}}>
+                              {cls?.instructor_name&&<span>with <strong>{cls.instructor_name}</strong></span>}
+                              {cls?.category&&<span style={{color:"var(--t3)"}}>· {cls.category}</span>}
+                              {cls?.level&&<span style={{color:"var(--t3)"}}>· {cls.level}</span>}
+                            </div>
+                            {(cls?.sale_price||cls?.price)&&<div style={{fontSize:12,fontWeight:600,color:"var(--t1)",marginBottom:8}}>{cls.sale_price?<><span style={{color:"#e74c3c"}}>{cls.sale_price}</span><span style={{textDecoration:"line-through",marginLeft:5,fontWeight:400,color:"var(--t3)"}}>{cls.price}</span></>:cls.price}</div>}
+                            {inv.message&&<div style={{fontSize:12,color:"var(--t2)",background:"rgba(99,60,180,0.04)",border:"1px solid rgba(99,60,180,0.12)",borderRadius:6,padding:"8px 12px",marginBottom:10,lineHeight:1.6}}>{inv.message}</div>}
+                            <div style={{display:"flex",gap:8,marginTop:4}}>
+                              <button className="btn-p btn-sm" style={{fontSize:11,flex:1}} onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes");}}>View Class →</button>
+                              <button className="btn-s btn-sm" style={{fontSize:11,color:"var(--t3)"}} onClick={()=>dismissInvitation(inv.id)}>Dismiss</button>
+                            </div>
                           </div>
                         </div>
-                      </div>);
+                      );
                     })}
                   </div>
                   {classInvitations.length>3&&(
@@ -4680,7 +4685,6 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               )}
             </div>
           </div>
-          )}
 
           {/* Saved Castings — dashboard preview (3 most recent) */}
           <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
@@ -10528,15 +10532,10 @@ function AdminClassInvitations({session}){
 
   const loadInvitations=useCallback(async()=>{
     setLoading(true);
-    const{data,error}=await window.sb.from("class_invitations")
-      .select("*,talent:talent_user_id(display_name,email),class:class_id(title,instructor_name),admin:sent_by_admin_id(display_name)")
-      .order("created_at",{ascending:false}).limit(200);
-    if(error){
-      // Schema cache not refreshed yet — table exists, just show empty and let RPC handle sends
-      if(error.message?.includes("schema cache")){setInvitations([]);setLoading(false);return;}
-      setFormMsg("Load error: "+error.message);setLoading(false);return;
-    }
-    setInvitations(data||[]);setLoading(false);
+    const{data,error}=await window.sb.rpc("get_all_class_invitations");
+    if(error){setFormMsg("Load error: "+error.message);setLoading(false);return;}
+    setInvitations(Array.isArray(data)?data:(data?[data]:[]));
+    setLoading(false);
   },[]);
   useEffect(()=>{loadInvitations();},[loadInvitations]);
 
