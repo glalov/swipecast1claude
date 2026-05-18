@@ -4465,11 +4465,12 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       {/* ── Recommended Classes hero (class invitations) ── */}
       {!invLoading&&classInvitations.length>0&&(
         <div style={{marginBottom:28}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-            <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <span style={{fontSize:20,lineHeight:1}}>✨</span>
+          {/* Section header */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:18,lineHeight:1}}>✦</span>
               <div>
-                <div style={{fontWeight:800,fontSize:15,color:"var(--t1)",letterSpacing:-0.3}}>Recommended for Your Profile</div>
+                <div style={{fontWeight:800,fontSize:14,color:"var(--t1)",letterSpacing:-0.2}}>Recommended for Your Profile</div>
                 <div style={{fontSize:11,color:"var(--t3)",marginTop:1}}>Personally curated for you by SlateCue</div>
               </div>
             </div>
@@ -4477,108 +4478,164 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <button className="btn-s btn-sm" onClick={()=>setDashView("class-invitations")}>View All {classInvitations.length} →</button>
             )}
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:16}}>
+
+          <div style={{display:"flex",flexDirection:"column",gap:14}}>
             {classInvitations.slice(0,3).map(inv=>{
               const cls=inv.class;
               const isNew=inv.status==="sent";
               return(
                 <div key={inv.id} style={{
                   borderRadius:16,overflow:"hidden",
-                  border:isNew?"2px solid rgba(99,60,180,0.42)":"1px solid rgba(99,60,180,0.2)",
-                  background:isNew
-                    ?"linear-gradient(135deg,rgba(109,40,217,0.09) 0%,rgba(139,92,246,0.05) 50%,rgba(109,40,217,0.02) 100%)"
-                    :"linear-gradient(135deg,rgba(109,40,217,0.04) 0%,rgba(109,40,217,0.01) 100%)",
+                  border:isNew?"2px solid rgba(99,60,180,0.38)":"1px solid rgba(99,60,180,0.18)",
+                  background:"var(--s1)",
                   boxShadow:isNew
-                    ?"0 4px 28px rgba(99,60,180,0.14),0 0 0 4px rgba(99,60,180,0.05)"
-                    :"0 1px 8px rgba(99,60,180,0.06)",
+                    ?"0 6px 32px rgba(99,60,180,0.13),0 0 0 4px rgba(99,60,180,0.05)"
+                    :"0 2px 10px rgba(99,60,180,0.06)",
                 }}>
                   <div style={{display:"flex",flexDirection:isMobile?"column":"row"}}>
+
+                    {/* Image panel */}
                     {cls?.image_url&&(
                       <div style={{
-                        position:"relative",
-                        width:isMobile?"100%":220,
-                        minHeight:isMobile?170:200,
                         flexShrink:0,
-                        background:`url(${cls.image_url}) center/cover no-repeat`,
-                        borderRight:isMobile?"none":"1px solid rgba(99,60,180,0.14)",
-                        borderBottom:isMobile?"1px solid rgba(99,60,180,0.14)":"none",
+                        width:isMobile?"100%":200,
+                        minHeight:isMobile?190:0,
+                        overflow:"hidden",
+                        position:"relative",
                       }}>
+                        <img
+                          src={cls.image_url}
+                          alt={cls.title||"Class"}
+                          style={{
+                            width:"100%",
+                            height:isMobile?190:"100%",
+                            objectFit:"cover",
+                            objectPosition:"center top",
+                            display:"block",
+                          }}
+                        />
+                        {/* Subtle gradient fade at bottom of image on desktop */}
+                        {!isMobile&&<div style={{position:"absolute",bottom:0,left:0,right:0,height:40,background:"linear-gradient(transparent,rgba(0,0,0,0.08))"}}/>}
+                        {/* Divider line */}
                         <div style={{
-                          position:"absolute",top:10,left:10,
-                          background:isNew?"linear-gradient(90deg,#5b21b6,#7c3aed)":"rgba(80,40,160,0.82)",
-                          color:"#fff",fontSize:9,fontWeight:800,letterSpacing:1.1,
-                          textTransform:"uppercase",padding:"5px 10px",borderRadius:20,
-                          backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",
-                          boxShadow:"0 2px 8px rgba(0,0,0,0.18)",
-                        }}>
-                          {isNew?"✨ New Recommendation":"SlateCue Pick"}
-                        </div>
+                          position:"absolute",
+                          top:0,bottom:0,right:0,
+                          width:1,
+                          background:"rgba(99,60,180,0.12)",
+                          display:isMobile?"none":"block",
+                        }}/>
+                        <div style={{
+                          position:"absolute",
+                          bottom:0,left:0,right:0,
+                          height:1,
+                          background:"rgba(99,60,180,0.12)",
+                          display:isMobile?"block":"none",
+                        }}/>
                       </div>
                     )}
-                    <div style={{flex:1,padding:isMobile?"18px 18px 22px":"22px 26px",display:"flex",flexDirection:"column",minWidth:0}}>
-                      {!cls?.image_url&&(
-                        <div style={{marginBottom:12}}>
+
+                    {/* Content panel */}
+                    <div style={{flex:1,padding:isMobile?"16px 18px 20px":"20px 24px",display:"flex",flexDirection:"column",minWidth:0,position:"relative"}}>
+
+                      {/* Dismiss button — top right corner */}
+                      <button
+                        onClick={()=>dismissInvitation(inv.id)}
+                        title="Dismiss"
+                        style={{
+                          position:"absolute",top:14,right:14,
+                          border:"1px solid var(--bdr)",background:"var(--s2)",
+                          color:"var(--t3)",cursor:"pointer",fontSize:11,
+                          padding:"3px 7px",borderRadius:6,lineHeight:1,
+                          fontFamily:"inherit",transition:"opacity .15s",opacity:0.7,
+                        }}
+                      >✕</button>
+
+                      {/* Badge */}
+                      <div style={{marginBottom:10}}>
+                        {isNew?(
                           <span style={{
-                            background:isNew?"linear-gradient(90deg,#5b21b6,#7c3aed)":"rgba(99,60,180,0.12)",
-                            color:isNew?"#fff":"var(--acc)",
-                            fontSize:9,fontWeight:800,letterSpacing:1.1,textTransform:"uppercase",
-                            padding:"5px 10px",borderRadius:20,
-                          }}>{isNew?"✨ New Recommendation":"SlateCue Pick"}</span>
-                        </div>
-                      )}
-                      <div style={{fontSize:11,fontWeight:700,color:"rgba(99,60,180,0.65)",letterSpacing:0.4,marginBottom:7,textTransform:"uppercase"}}>
-                        SlateCue picked this class for you
+                            display:"inline-flex",alignItems:"center",gap:5,
+                            background:"linear-gradient(90deg,#5b21b6,#7c3aed)",
+                            color:"#fff",fontSize:10,fontWeight:800,
+                            letterSpacing:0.8,textTransform:"uppercase",
+                            padding:"4px 11px 4px 9px",borderRadius:20,
+                            boxShadow:"0 2px 8px rgba(99,60,180,0.3)",
+                          }}>
+                            <span style={{width:6,height:6,borderRadius:"50%",background:"rgba(255,255,255,0.85)",display:"inline-block",flexShrink:0}}/>
+                            New Recommendation
+                          </span>
+                        ):(
+                          <span style={{
+                            display:"inline-flex",alignItems:"center",gap:5,
+                            background:"rgba(99,60,180,0.09)",
+                            color:"var(--acc)",fontSize:10,fontWeight:700,
+                            letterSpacing:0.5,textTransform:"uppercase",
+                            padding:"4px 11px",borderRadius:20,
+                          }}>
+                            ✦ SlateCue Pick
+                          </span>
+                        )}
                       </div>
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8,marginBottom:10}}>
-                        <div style={{fontWeight:800,fontSize:isMobile?17:20,color:"var(--t1)",lineHeight:1.2,letterSpacing:-0.4}}>
-                          {cls?.title||"Class Invitation"}
-                        </div>
-                        <button
-                          onClick={()=>dismissInvitation(inv.id)}
-                          title="Dismiss"
-                          style={{border:"1px solid rgba(99,60,180,0.18)",background:"rgba(99,60,180,0.06)",color:"var(--t3)",cursor:"pointer",fontSize:12,padding:"4px 8px",borderRadius:8,lineHeight:1,flexShrink:0,fontFamily:"inherit",transition:"all .15s"}}
-                        >✕</button>
+
+                      {/* Headline + subtitle */}
+                      <div style={{fontSize:12,fontWeight:600,color:"rgba(99,60,180,0.7)",marginBottom:4,letterSpacing:0.1}}>
+                        SlateCue picked this class for your profile
                       </div>
-                      <div style={{display:"flex",flexWrap:"wrap",gap:"4px 16px",fontSize:12,color:"var(--t2)",marginBottom:10}}>
-                        {cls?.instructor_name&&<span style={{fontWeight:600}}>Teacher: {cls.instructor_name}</span>}
-                        {cls?.level&&<span>Level: {cls.level}</span>}
-                        {cls?.category&&<span style={{color:"var(--t3)"}}>Category: {cls.category}</span>}
+                      <div style={{fontSize:11,color:"var(--t3)",marginBottom:10,lineHeight:1.45}}>
+                        Based on your profile, this class may be a strong fit.
+                      </div>
+
+                      {/* Class title */}
+                      <div style={{fontWeight:800,fontSize:isMobile?16:18,color:"var(--t1)",lineHeight:1.25,letterSpacing:-0.3,marginBottom:10,paddingRight:28}}>
+                        {cls?.title||"Class Invitation"}
+                      </div>
+
+                      {/* Meta row */}
+                      <div style={{display:"flex",flexWrap:"wrap",gap:"3px 18px",fontSize:12,color:"var(--t2)",marginBottom:10,paddingBottom:10,borderBottom:"1px solid var(--bdr)"}}>
+                        {cls?.instructor_name&&<span><span style={{color:"var(--t3)"}}>Teacher</span> <strong style={{color:"var(--t1)"}}>{cls.instructor_name}</strong></span>}
+                        {cls?.level&&<span><span style={{color:"var(--t3)"}}>Level</span> {cls.level}</span>}
+                        {cls?.category&&<span><span style={{color:"var(--t3)"}}>Category</span> {cls.category}</span>}
                         {(cls?.sale_price||cls?.price)&&(
-                          <span style={{fontWeight:700}}>
+                          <span>
                             {cls.sale_price
-                              ?<><span style={{color:"#059669"}}>{cls.sale_price}</span><span style={{textDecoration:"line-through",marginLeft:6,fontWeight:400,color:"var(--t3)",fontSize:11}}>{cls.price}</span></>
-                              :<span style={{color:"var(--t1)"}}>{cls.price}</span>
+                              ?<><strong style={{color:"#059669"}}>{cls.sale_price}</strong><span style={{textDecoration:"line-through",marginLeft:5,color:"var(--t3)",fontSize:11}}>{cls.price}</span></>
+                              :<strong style={{color:"var(--t1)"}}>{cls.price}</strong>
                             }
                           </span>
                         )}
                       </div>
+
+                      {/* Admin message */}
                       {inv.message&&(
                         <div style={{
-                          fontSize:13,color:"var(--t2)",
-                          background:"rgba(99,60,180,0.05)",
-                          border:"1px solid rgba(99,60,180,0.15)",
-                          borderLeft:"3px solid rgba(99,60,180,0.35)",
-                          borderRadius:8,padding:"10px 14px",
-                          marginBottom:16,lineHeight:1.65,fontStyle:"italic",
+                          fontSize:13,color:"var(--t2)",lineHeight:1.65,fontStyle:"italic",
+                          padding:"10px 14px",marginBottom:14,
+                          background:"rgba(99,60,180,0.04)",
+                          border:"1px solid rgba(99,60,180,0.12)",
+                          borderLeft:"3px solid rgba(99,60,180,0.3)",
+                          borderRadius:"0 8px 8px 0",
                         }}>
                           "{inv.message}"
                         </div>
                       )}
-                      <div style={{display:"flex",gap:10,marginTop:"auto",paddingTop:inv.message?0:8,flexWrap:"wrap"}}>
+
+                      {/* CTA */}
+                      <div style={{display:"flex",gap:10,marginTop:"auto",paddingTop:4,flexWrap:"wrap"}}>
                         <button
                           className="btn-p btn-sm"
                           style={{
-                            fontSize:13,padding:"10px 22px",fontWeight:700,letterSpacing:0.1,
+                            fontSize:13,padding:"10px 24px",fontWeight:700,letterSpacing:0.1,
                             background:isNew?"linear-gradient(90deg,#5b21b6,#7c3aed)":undefined,
-                            flex:isMobile?"1":"none",
+                            boxShadow:isNew?"0 3px 12px rgba(99,60,180,0.3)":undefined,
+                            flex:isMobile?"1":"none",whiteSpace:"nowrap",
                           }}
                           onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes");}}
                         >View Recommended Class →</button>
                         <button
                           className="btn-s btn-sm"
-                          style={{fontSize:12,color:"var(--t3)",flex:isMobile?"1":"none"}}
+                          style={{fontSize:12,color:"var(--t3)",flex:isMobile?"1":"none",whiteSpace:"nowrap"}}
                           onClick={()=>dismissInvitation(inv.id)}
-                        >Dismiss</button>
+                        >Not Interested</button>
                       </div>
                     </div>
                   </div>
@@ -4586,8 +4643,9 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               );
             })}
           </div>
+
           {classInvitations.length>3&&(
-            <div style={{marginTop:14,textAlign:"center"}}>
+            <div style={{marginTop:12,textAlign:"center"}}>
               <button className="btn-s btn-sm" style={{fontSize:12}} onClick={()=>setDashView("class-invitations")}>
                 View All {classInvitations.length} Recommended Classes →
               </button>
