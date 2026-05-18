@@ -1496,6 +1496,7 @@ function LoginPage({onNavigate,onLoggedIn}){
   const [sentReset,setSentReset]=useState(false);
   const submittingRef=useRef(false);
   const withTimeout=(promise,ms=20000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Check your connection and try again.`)),ms))]);
+  const dbg=()=>{window.__SC_DBG=window.__SC_DBG||{};return window.__SC_DBG;};
   const submit=async(e)=>{
     if(e&&e.preventDefault)e.preventDefault();
     if(submittingRef.current)return; // no double-submit
@@ -1503,27 +1504,34 @@ function LoginPage({onNavigate,onLoggedIn}){
     if(!email||!email.includes("@")){setErr("Please enter a valid email.");return;}
     if(!forgot&&!password){setErr("Please enter your password.");return;}
     submittingRef.current=true;setLoading(true);
+    dbg().loginStep="submit-clicked";dbg().lastError="";
     try{
       const cleanEmail=email.trim().toLowerCase();
       if(forgot){
+        dbg().loginStep="reset-email-start";
         console.log("[auth] resetPasswordForEmail:",cleanEmail);
         const {error}=await withTimeout(
           window.sb.auth.resetPasswordForEmail(cleanEmail,{redirectTo:window.location.origin}),
           20000,"Password reset"
         );
         if(error)throw error;
+        dbg().loginStep="reset-email-sent";
         setSentReset(true);
       }else{
+        dbg().loginStep="supabase-login-start";
         console.log("[auth] signInWithPassword:",cleanEmail);
         const {data,error}=await withTimeout(
           window.sb.auth.signInWithPassword({email:cleanEmail,password}),
           20000,"Login"
         );
         if(error)throw error;
+        dbg().loginStep="supabase-login-ok-navigating";
         if(onLoggedIn&&data.user)await onLoggedIn(data.user);
+        dbg().loginStep="navigate-done";
       }
     }catch(e){
       console.warn("[auth] login submit error:",e?.message||e);
+      dbg().loginStep="login-error";dbg().lastError=e?.message||String(e);
       let msg=e?.message||"Login failed. Please try again.";
       const ml=msg.toLowerCase();
       if(ml.includes("email not confirmed"))msg="Please verify your email first. Check your inbox for the confirmation link.";
@@ -6835,9 +6843,12 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
 
   // Same select shape as SearchPage so the click navigates seamlessly into CastingDetailPage.
   const fetchCastings=useCallback(async()=>{
+    const _d=window.__SC_DBG=window.__SC_DBG||{};
+    _d.fcsQuery="status=open,published=true,limit=12";
+    _d.fcsError="";
     let tid;
     try{
-      const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("Request timed out. Please try again.")),10000);});
+      const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("FCS timed out after 10s")),10000);});
       const {data,error}=await Promise.race([
         window.sb.from("castings")
           .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
@@ -6849,6 +6860,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       ]);
       clearTimeout(tid);
       if(error)throw error;
+      _d.fcsCount=(data||[]).length;_d.lastFetchTs=Date.now();
       // Map to the shape CastingDetailPage / SearchPage already understand
       const mapped=(data||[]).map(c=>({
         id:c.id,
@@ -6885,6 +6897,9 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       setErr("");
     }catch(e){
       clearTimeout(tid);
+      const _d=window.__SC_DBG=window.__SC_DBG||{};
+      _d.fcsError=e?.message||String(e);
+      _d.lastError="FCS: "+(_d.fcsError);
       console.error("[FeaturedSlider] fetch failed:",e);
       setErr(e.message||"Could not load castings.");
       // keep last good
@@ -6950,9 +6965,20 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
     return(<section className="fcs-section">
       <div className="section-label">Featured Castings</div>
       <div className="fcs-card" style={{textAlign:"center",cursor:"default"}}>
-        <h3 style={{fontSize:20,fontWeight:800,marginBottom:8,letterSpacing:-0.5}}>No active casting calls yet</h3>
-        <p style={{color:"var(--t3)",fontSize:14,maxWidth:420,margin:"0 auto 18px"}}>Check back soon — new roles are posted weekly. Casting directors, you can post one in seconds.</p>
-        {onNavigate&&<button className="btn-p btn-sm" onClick={()=>onNavigate("register-cd")}>Post a Casting →</button>}
+        {err?(
+          <>
+            <h3 style={{fontSize:17,fontWeight:700,marginBottom:8,color:"var(--red,#c0392b)"}}>Could not load castings</h3>
+            <p style={{color:"var(--t2)",fontSize:13,maxWidth:420,margin:"0 auto 6px",wordBreak:"break-word"}}>{err}</p>
+            <p style={{color:"var(--t3)",fontSize:11,marginBottom:14}}>Filters: status=open, published=true</p>
+            <button className="btn-s btn-sm" onClick={fetchCastings}>Retry</button>
+          </>
+        ):(
+          <>
+            <h3 style={{fontSize:20,fontWeight:800,marginBottom:8,letterSpacing:-0.5}}>No active casting calls yet</h3>
+            <p style={{color:"var(--t3)",fontSize:14,maxWidth:420,margin:"0 auto 18px"}}>Check back soon — new roles are posted weekly. Casting directors, you can post one in seconds.</p>
+            {onNavigate&&<button className="btn-p btn-sm" onClick={()=>onNavigate("register-cd")}>Post a Casting →</button>}
+          </>
+        )}
       </div>
     </section>);
   }
@@ -10440,6 +10466,17 @@ function App(){
   const [cookieModalOpen,setCookieModalOpen]=useState(false);
   // Set when user returns from Persona/Didit after completing verification
   const [verificationReturn,setVerificationReturn]=useState(false);
+  // Mobile debug panel tick — forces re-render so the panel reflects live window.__SC_DBG
+  const [_dbgTick,_setDbgTick]=useState(0);
+  useEffect(()=>{
+    const d=window.__SC_DBG=window.__SC_DBG||{};
+    try{localStorage.setItem("__sc_t","1");localStorage.removeItem("__sc_t");d.ls=true;}catch(e){d.ls=false;}
+    d.sb=!!(window.sb&&window.sb.from);
+    d.supabaseGlobal=!!(window.supabase);
+    d.loginStep=d.loginStep||"idle";
+    const t=setInterval(()=>_setDbgTick(n=>n+1),1000);
+    return()=>clearInterval(t);
+  },[]);
   useEffect(()=>{
     const handler=()=>setCookieModalOpen(true);
     window.addEventListener("sc:open-cookies",handler);
@@ -10456,11 +10493,10 @@ function App(){
   const isAdmin=["admin","super_admin"].includes(myProfile?.user_type)||isSuperAdmin||(emailMatchesOwner&&!myProfile);
 
   const loadProfile=useCallback(async(uid)=>{
+    const _dbg=()=>{window.__SC_DBG=window.__SC_DBG||{};return window.__SC_DBG;};
     if(!uid){setMyProfile(null);return null;}
+    _dbg().loginStep="profile-fetch-start";
     try{
-      // 10s hard timeout — prevents loadProfile from hanging when Supabase is slow
-      // or PostgREST is reloading its schema. Without this, onAuthStateChange's
-      // await never returns → setAuthReady(true) never fires → nav shows nothing.
       let tid;
       const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("Profile load timed out")),10000);});
       let {data,error}=await Promise.race([
@@ -10468,11 +10504,10 @@ function App(){
         timeout
       ]);
       clearTimeout(tid);
-      if(error){console.warn("[auth] loadProfile error:",error.message);setMyProfile(null);return null;}
-      // Backfill safety net: if the row exists but core fields are blank
-      // (legacy signup before the new trigger landed) AND the user has signup
-      // metadata stored on auth.users, run the RPC to fill the gaps. This is
-      // the user-visible fix for "I filled out the form but my profile is empty".
+      if(error){
+        _dbg().loginStep="profile-fetch-error";_dbg().lastError="loadProfile: "+error.message;
+        console.warn("[auth] loadProfile error:",error.message);setMyProfile(null);return null;
+      }
       if(data&&data.onboarded!==true&&!data.location&&!data.bio&&!data.company_name){
         try{
           await window.sb.rpc("apply_signup_metadata_to_profile");
@@ -10480,8 +10515,12 @@ function App(){
           if(!re.error&&re.data)data=re.data;
         }catch(e){console.warn("[auth] backfill RPC failed:",e?.message||e);}
       }
+      _dbg().loginStep="profile-fetch-done";_dbg().lastFetchTs=Date.now();
       setMyProfile(data||null);return data||null;
-    }catch(e){console.warn("[auth] loadProfile threw:",e?.message||e);setMyProfile(null);return null;}
+    }catch(e){
+      _dbg().loginStep="profile-fetch-threw";_dbg().lastError="loadProfile threw: "+(e?.message||String(e));
+      console.warn("[auth] loadProfile threw:",e?.message||e);setMyProfile(null);return null;
+    }
   },[]);
 
   // Safety net: if onAuthStateChange never fires within 15 s (e.g. network hiccup on
@@ -10596,14 +10635,15 @@ function App(){
     // (manifested as "Lock 'sb-...-auth-token' was released because another request stole it").
     const {data:sub}=window.sb.auth.onAuthStateChange(async(e,s)=>{
       console.log("[auth] event:",e,s?.user?.email||"(no session)");
+      const _d=window.__SC_DBG=window.__SC_DBG||{};
+      _d.authEvent=e;_d.authUser=s?.user?.id||"none";
       try{
         setSession(s||null);
         if(e==="PASSWORD_RECOVERY"){
-          // Don't run loadProfile here — the recovery session is in-flight and any
-          // concurrent DB call races Supabase's own lock. Just route to the reset page.
           window.scrollTo(0,0);setPage("reset-password");return;
         }
         if(e==="SIGNED_IN"||e==="INITIAL_SESSION"||e==="USER_UPDATED"){
+          _d.loginStep="auth-callback-"+e.toLowerCase();
           if(s?.user){
             await loadProfile(s.user.id);
             // Restore a pending casting application that was saved to sessionStorage
@@ -10800,6 +10840,17 @@ function App(){
     }catch(e){console.warn("[auth] signOut:",e?.message||e); /* state already cleared above */}
   };
 
+  // If authReady and logged in but profile still null (load failed), attempt one automatic re-fetch.
+  const [profileRetryErr,setProfileRetryErr]=useState("");
+  useEffect(()=>{
+    if(!authReady||!session?.user?.id||myProfile)return;
+    const tid=setTimeout(async()=>{
+      const result=await loadProfile(session.user.id);
+      if(!result)setProfileRetryErr("Profile could not load. Check your connection and tap Retry.");
+    },1500);
+    return()=>clearTimeout(tid);
+  },[authReady,session?.user?.id,myProfile,loadProfile]);
+
   // If a talent user lands on /dashboard (CD dashboard), redirect them to their Talent Dashboard.
   // This handles direct URL loads, post-login routing, and nav button presses that call navigate("dashboard").
   useEffect(()=>{
@@ -10901,10 +10952,10 @@ function App(){
           </div>}
         {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
         {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
-        {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?<PageLoader/>:<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>)}
-        {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?<PageLoader/>:isLoggedIn&&myProfile?.user_type==="talent"?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>:<div style={{minHeight:"60vh"}}/>)}
+        {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}><p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p><button className="btn-p btn-sm" onClick={()=>{setProfileRetryErr("");loadProfile(session.user.id);}}>Retry</button></div>:<PageLoader/>):<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>)}
+        {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}><p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p><button className="btn-p btn-sm" onClick={()=>{setProfileRetryErr("");loadProfile(session.user.id);}}>Retry</button></div>:<PageLoader/>):isLoggedIn&&myProfile?.user_type==="talent"?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>:<div style={{minHeight:"60vh"}}/>)}
         {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
-        {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?<PageLoader/>:isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onViewProfile={viewProfile}/>:null)}
+        {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}><p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p><button className="btn-p btn-sm" onClick={()=>{setProfileRetryErr("");loadProfile(session.user.id);}}>Retry</button></div>:<PageLoader/>):isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onViewProfile={viewProfile}/>:null)}
         {page==="account-settings"&&(!authReady?<PageLoader/>:isLoggedIn?<AccountSettingsPage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onSignOut={signOut} isSuperAdmin={isSuperAdmin}/>:<div style={{minHeight:"60vh"}}/>)}
         {page==="inbox"&&(!authReady?<PageLoader/>:<InboxPage session={session} profile={myProfile} onNavigate={navigate} onViewProfile={viewProfile}/>)}
         {page==="admin"&&(!authReady?<PageLoader/>:isLoggedIn&&isAdmin?<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>:<div style={{minHeight:"60vh"}}/>)}
@@ -10945,6 +10996,47 @@ function App(){
       {/* Cookie preferences modal — opened via the footer "Cookie Preferences" link.
           Mounted at App level so it can sit on top of any page. */}
       <CookieConsentModal open={cookieModalOpen} onClose={()=>setCookieModalOpen(false)}/>
+      {/* ── Build marker — always visible, tiny, bottom of page ── */}
+      <div style={{textAlign:"center",fontSize:10,color:"rgba(128,128,128,0.5)",padding:"4px 0 8px",letterSpacing:0.3,userSelect:"none",pointerEvents:"none"}}>BUILD MOBILE DEBUG 2026-05-17-A</div>
+      {/* ── Mobile debug panel — visible when URL contains ?debug ── */}
+      {(()=>{
+        if(typeof window==="undefined")return null;
+        const showPanel=window.location.search.includes("debug")||window.location.hash.includes("debug");
+        if(!showPanel)return null;
+        const d=window.__SC_DBG||{};
+        const ts=d.lastFetchTs?new Date(d.lastFetchTs).toISOString().slice(11,19):"never";
+        const now=new Date().toISOString().slice(11,19);
+        const row=(label,val,bad)=>(
+          <div style={{display:"flex",gap:6,marginBottom:2}}>
+            <span style={{color:"#888",minWidth:110,flexShrink:0}}>{label}</span>
+            <span style={{color:bad?"#f88":"#0f0",wordBreak:"break-all"}}>{String(val==null?"null":val)}</span>
+          </div>
+        );
+        return(
+          <div style={{position:"fixed",bottom:0,left:0,right:0,background:"rgba(0,0,0,0.93)",color:"#ccc",fontFamily:"monospace",fontSize:11,padding:"10px 12px 20px",zIndex:99999,maxHeight:"55vh",overflowY:"auto",borderTop:"2px solid #0f0",lineHeight:1.5}}>
+            <div style={{color:"#ff0",fontWeight:700,marginBottom:6,fontSize:12}}>SC DEBUG — BUILD 2026-05-17-A — {now}</div>
+            {row("authReady",String(authReady),!authReady)}
+            {row("isLoggedIn",String(isLoggedIn))}
+            {row("userId",session?.user?.id||"null",!session?.user?.id)}
+            {row("userType",myProfile?.user_type||"null",!myProfile)}
+            {row("page",page)}
+            {row("fcsCount",d.fcsCount!=null?d.fcsCount:"?",d.fcsCount===0)}
+            {row("fcsQuery",d.fcsQuery||"?")}
+            {row("fcsError",d.fcsError||"none",!!d.fcsError)}
+            {row("loginStep",d.loginStep||"idle")}
+            {row("authEvent",d.authEvent||"none")}
+            {row("lastError",d.lastError||"none",!!d.lastError)}
+            {row("lastFetch",ts)}
+            {row("localStorage",String(d.ls),d.ls===false)}
+            {row("sb client",String(!!d.sb),!d.sb)}
+            {row("sb global",String(!!d.supabaseGlobal),!d.supabaseGlobal)}
+            <div style={{marginTop:8,borderTop:"1px solid #333",paddingTop:6}}>
+              <button onClick={()=>{window.__SC_DBG={};}} style={{background:"#333",color:"#fff",border:"none",borderRadius:4,padding:"2px 8px",marginRight:8,fontSize:10,cursor:"pointer"}}>Clear</button>
+              <button onClick={()=>window.location.reload()} style={{background:"#333",color:"#fff",border:"none",borderRadius:4,padding:"2px 8px",fontSize:10,cursor:"pointer"}}>Reload</button>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
