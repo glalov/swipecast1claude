@@ -649,17 +649,23 @@ html,body{overflow-x:hidden;}
 @media(max-width:768px){
   .cls-detail-grid{grid-template-columns:1fr !important;}
   .cls-credits-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .cls-card-row{flex-direction:column !important;}
+  .cls-card-img{width:100% !important;min-width:0 !important;height:180px !important;min-height:180px !important;flex-shrink:0;}
+  .cls-card-action{border-left:none !important;border-top:1px solid var(--bdr);min-width:0 !important;flex-direction:row !important;flex-wrap:wrap !important;}
+  .cls-card-action button{flex:1 1 auto;}
 }
 @media(max-width:560px){
   .cls-slot-row{gap:8px;padding:12px 14px;}
   .cls-slot-row .slot-btn{width:100% !important;text-align:center;box-sizing:border-box;}
-  .cls-card-row{flex-direction:column;}
-  .cls-card-img{width:100% !important;min-width:0 !important;height:160px;}
-  .cls-card-action{border-left:none;border-top:1px solid var(--bdr);min-width:0;flex-direction:row;flex-wrap:wrap;}
-  .cls-card-action button{flex:1 1 auto;}
   .cls-detail-hero{padding:20px 18px !important;}
   .cls-detail-no-media{padding:24px 18px !important;}
   .cls-hero-inner{height:260px !important;}
+}
+/* ─── AuthGate (Apply / Join / Signup) responsive layout ─── */
+.auth-gate-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;padding:20px 0 60px;}
+@media(max-width:768px){
+  .auth-gate-grid{grid-template-columns:1fr !important;gap:24px !important;padding:20px 0 40px !important;}
+  .auth-gate-grid>*{min-width:0 !important;width:100% !important;box-sizing:border-box !important;position:static !important;top:auto !important;}
 }
 `;
 
@@ -2945,7 +2951,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
     <div style={{background:"#1a1a2e",color:"#f5e8d0",fontFamily:"monospace",fontSize:13,fontWeight:700,padding:"8px 20px",textAlign:"center",letterSpacing:0.5,marginBottom:0}}>
       APPLY SIGNUP VERSION 3 - FUNCTIONAL FREE APPLY FLOW
     </div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:48,alignItems:"start",padding:"20px 0 60px"}}>
+    <div className="auth-gate-grid">
       {/* LEFT: Context panel */}
       <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16,padding:"32px 28px",position:"sticky",top:100}}>
         <div className="section-label" style={{marginBottom:8}}>Almost there</div>
