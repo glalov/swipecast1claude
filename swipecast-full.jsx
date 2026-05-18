@@ -4250,24 +4250,20 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   },[uid]);
 
   const dismissInvitation=useCallback(async(invId)=>{
+    setClassInvitations(prev=>prev.filter(i=>i.id!==invId)); // optimistic
     try{
-      await window.sb.from("class_invitations")
-        .update({status:"dismissed",dismissed_at:new Date().toISOString()})
-        .eq("id",invId).eq("talent_user_id",uid);
-      setClassInvitations(prev=>prev.filter(i=>i.id!==invId));
+      await window.sb.rpc("update_class_invitation_status",{p_invitation_id:invId,p_status:"dismissed"});
     }catch(e){console.warn("[dismiss-invitation]",e);}
-  },[uid]);
+  },[]);
 
   const markInvitationViewed=useCallback(async(invId)=>{
     const inv=classInvitations.find(i=>i.id===invId);
     if(!inv||["viewed","saved","enrolled"].includes(inv.status))return;
+    setClassInvitations(prev=>prev.map(i=>i.id===invId?{...i,status:"viewed"}:i)); // optimistic
     try{
-      await window.sb.from("class_invitations")
-        .update({status:"viewed",viewed_at:new Date().toISOString()})
-        .eq("id",invId).eq("talent_user_id",uid);
-      setClassInvitations(prev=>prev.map(i=>i.id===invId?{...i,status:"viewed",viewed_at:new Date().toISOString()}:i));
+      await window.sb.rpc("update_class_invitation_status",{p_invitation_id:invId,p_status:"viewed"});
     }catch(e){console.warn("[mark-viewed]",e);}
-  },[uid,classInvitations]);
+  },[classInvitations]);
 
   const toggleSave=useCallback(async(castingId,castingData)=>{
     if(!uid||savingId)return;
@@ -10509,7 +10505,11 @@ function AdminClassInvitations({session}){
     const{data,error}=await window.sb.from("class_invitations")
       .select("*,talent:talent_user_id(display_name,email),class:class_id(title,instructor_name),admin:sent_by_admin_id(display_name)")
       .order("created_at",{ascending:false}).limit(200);
-    if(error){setFormMsg("Load error: "+error.message);setLoading(false);return;}
+    if(error){
+      // Schema cache not refreshed yet — table exists, just show empty and let RPC handle sends
+      if(error.message?.includes("schema cache")){setInvitations([]);setLoading(false);return;}
+      setFormMsg("Load error: "+error.message);setLoading(false);return;
+    }
     setInvitations(data||[]);setLoading(false);
   },[]);
   useEffect(()=>{loadInvitations();},[loadInvitations]);
@@ -10541,25 +10541,20 @@ function AdminClassInvitations({session}){
     setFormMsg("");setBusy(true);
     try{
       const uid=session?.user?.id;
-      // Try insert first; if duplicate key, update the existing row instead
-      const{error}=await window.sb.from("class_invitations").insert({
-        talent_user_id:selectedTalent.id,
-        class_id:selectedClass.id,
-        sent_by_admin_id:uid||null,
-        message:finalMessage,
-        status:"sent",
-        viewed_at:null,
-        dismissed_at:null,
-        updated_at:new Date().toISOString()
+      // Use RPC to bypass PostgREST schema cache — direct table access causes
+      // "schema cache" errors immediately after table creation.
+      const{data,error}=await window.sb.rpc("send_class_invitation",{
+        p_talent_user_id:selectedTalent.id,
+        p_class_id:selectedClass.id,
+        p_message:finalMessage,
+        p_admin_id:uid||null
       });
-      if(error){
-        // Unique constraint violation — already invited
-        if(error.code==="23505"||error.message?.toLowerCase().includes("duplicate")||error.message?.toLowerCase().includes("unique")){
-          setFormMsg("This talent has already been invited to this class. No duplicate was sent.");
-          setBusy(false);return;
-        }
-        throw error;
+      if(error)throw error;
+      if(data?.error==="duplicate"){
+        setFormMsg("This talent has already been invited to this class. No duplicate was sent.");
+        setBusy(false);return;
       }
+      if(data?.error){throw new Error(data.error);}
       setFormMsg("✓ Invitation sent to "+((selectedTalent.display_name||selectedTalent.email)||"talent")+".");
       setSelectedTalent(null);setSelectedClass(null);
       setMessage("");setMessageUserEdited(false);
