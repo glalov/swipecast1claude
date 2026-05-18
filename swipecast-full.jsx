@@ -4436,6 +4436,164 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         ))}
       </div>
 
+      {/* ── Recommended Classes hero (class invitations) ── */}
+      {!invLoading&&classInvitations.length>0&&(
+        <div style={{marginBottom:28}}>
+          {/* Section label row */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <span style={{fontSize:20,lineHeight:1}}>✨</span>
+              <div>
+                <div style={{fontWeight:800,fontSize:15,color:"var(--t1)",letterSpacing:-0.3}}>Recommended for Your Profile</div>
+                <div style={{fontSize:11,color:"var(--t3)",marginTop:1}}>Personally curated for you by SlateCue</div>
+              </div>
+            </div>
+            {classInvitations.length>3&&(
+              <button className="btn-s btn-sm" onClick={()=>setDashView("class-invitations")}>View All {classInvitations.length} →</button>
+            )}
+          </div>
+
+          <div style={{display:"flex",flexDirection:"column",gap:16}}>
+            {classInvitations.slice(0,3).map(inv=>{
+              const cls=inv.class;
+              const isNew=inv.status==="sent";
+              return(
+                <div key={inv.id} style={{
+                  borderRadius:16,
+                  overflow:"hidden",
+                  border:isNew?"2px solid rgba(99,60,180,0.42)":"1px solid rgba(99,60,180,0.2)",
+                  background:isNew
+                    ?"linear-gradient(135deg,rgba(109,40,217,0.09) 0%,rgba(139,92,246,0.05) 50%,rgba(109,40,217,0.02) 100%)"
+                    :"linear-gradient(135deg,rgba(109,40,217,0.04) 0%,rgba(109,40,217,0.01) 100%)",
+                  boxShadow:isNew
+                    ?"0 4px 28px rgba(99,60,180,0.14),0 0 0 4px rgba(99,60,180,0.05)"
+                    :"0 1px 8px rgba(99,60,180,0.06)",
+                }}>
+                  <div style={{display:"flex",flexDirection:isMobile?"column":"row"}}>
+                    {/* Image */}
+                    {cls?.image_url&&(
+                      <div style={{
+                        position:"relative",
+                        width:isMobile?"100%":220,
+                        minHeight:isMobile?170:200,
+                        flexShrink:0,
+                        background:`url(${cls.image_url}) center/cover no-repeat`,
+                        borderRight:isMobile?"none":"1px solid rgba(99,60,180,0.14)",
+                        borderBottom:isMobile?"1px solid rgba(99,60,180,0.14)":"none",
+                      }}>
+                        <div style={{
+                          position:"absolute",top:10,left:10,
+                          background:isNew?"linear-gradient(90deg,#5b21b6,#7c3aed)":"rgba(80,40,160,0.82)",
+                          color:"#fff",fontSize:9,fontWeight:800,letterSpacing:1.1,
+                          textTransform:"uppercase",padding:"5px 10px",borderRadius:20,
+                          backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",
+                          boxShadow:"0 2px 8px rgba(0,0,0,0.18)",
+                        }}>
+                          {isNew?"✨ New Recommendation":"SlateCue Pick"}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Content */}
+                    <div style={{flex:1,padding:isMobile?"18px 18px 22px":"22px 26px",display:"flex",flexDirection:"column",minWidth:0}}>
+                      {/* Badge (when no image) */}
+                      {!cls?.image_url&&(
+                        <div style={{marginBottom:12}}>
+                          <span style={{
+                            background:isNew?"linear-gradient(90deg,#5b21b6,#7c3aed)":"rgba(99,60,180,0.12)",
+                            color:isNew?"#fff":"var(--acc)",
+                            fontSize:9,fontWeight:800,letterSpacing:1.1,textTransform:"uppercase",
+                            padding:"5px 10px",borderRadius:20,
+                          }}>
+                            {isNew?"✨ New Recommendation":"SlateCue Pick"}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Eyebrow label */}
+                      <div style={{fontSize:11,fontWeight:700,color:"rgba(99,60,180,0.65)",letterSpacing:0.4,marginBottom:7,textTransform:"uppercase"}}>
+                        SlateCue picked this class for you
+                      </div>
+
+                      {/* Title row */}
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8,marginBottom:10}}>
+                        <div style={{fontWeight:800,fontSize:isMobile?17:20,color:"var(--t1)",lineHeight:1.2,letterSpacing:-0.4}}>
+                          {cls?.title||"Class Invitation"}
+                        </div>
+                        <button
+                          onClick={()=>dismissInvitation(inv.id)}
+                          title="Dismiss"
+                          style={{border:"1px solid rgba(99,60,180,0.18)",background:"rgba(99,60,180,0.06)",color:"var(--t3)",cursor:"pointer",fontSize:12,padding:"4px 8px",borderRadius:8,lineHeight:1,flexShrink:0,fontFamily:"inherit",transition:"all .15s"}}
+                        >✕</button>
+                      </div>
+
+                      {/* Meta row */}
+                      <div style={{display:"flex",flexWrap:"wrap",gap:"4px 16px",fontSize:12,color:"var(--t2)",marginBottom:10}}>
+                        {cls?.instructor_name&&<span style={{fontWeight:600}}>Teacher: {cls.instructor_name}</span>}
+                        {cls?.level&&<span>Level: {cls.level}</span>}
+                        {cls?.category&&<span style={{color:"var(--t3)"}}>Category: {cls.category}</span>}
+                        {(cls?.sale_price||cls?.price)&&(
+                          <span style={{fontWeight:700}}>
+                            {cls.sale_price
+                              ?<><span style={{color:"#059669"}}>{cls.sale_price}</span><span style={{textDecoration:"line-through",marginLeft:6,fontWeight:400,color:"var(--t3)",fontSize:11}}>{cls.price}</span></>
+                              :<span style={{color:"var(--t1)"}}>{cls.price}</span>
+                            }
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Message */}
+                      {inv.message&&(
+                        <div style={{
+                          fontSize:13,color:"var(--t2)",
+                          background:"rgba(99,60,180,0.05)",
+                          border:"1px solid rgba(99,60,180,0.15)",
+                          borderLeft:"3px solid rgba(99,60,180,0.35)",
+                          borderRadius:8,padding:"10px 14px",
+                          marginBottom:16,lineHeight:1.65,fontStyle:"italic",
+                        }}>
+                          "{inv.message}"
+                        </div>
+                      )}
+
+                      {/* CTA buttons */}
+                      <div style={{display:"flex",gap:10,marginTop:"auto",paddingTop:inv.message?0:8,flexWrap:"wrap"}}>
+                        <button
+                          className="btn-p btn-sm"
+                          style={{
+                            fontSize:13,padding:"10px 22px",fontWeight:700,letterSpacing:0.1,
+                            background:isNew?"linear-gradient(90deg,#5b21b6,#7c3aed)":undefined,
+                            flex:isMobile?"1":"none",
+                          }}
+                          onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes");}}
+                        >
+                          View Recommended Class →
+                        </button>
+                        <button
+                          className="btn-s btn-sm"
+                          style={{fontSize:12,color:"var(--t3)",flex:isMobile?"1":"none"}}
+                          onClick={()=>dismissInvitation(inv.id)}
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {classInvitations.length>3&&(
+            <div style={{marginTop:14,textAlign:"center"}}>
+              <button className="btn-s btn-sm" style={{fontSize:12}} onClick={()=>setDashView("class-invitations")}>
+                View All {classInvitations.length} Recommended Classes →
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Two-column grid ── */}
       <div className="td-grid">
         {/* ── LEFT COLUMN ── */}
@@ -4597,65 +4755,6 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                     );
                   })}
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Class Invitations — always visible */}
-          <div style={{background:"var(--s1)",border:"1px solid rgba(99,60,180,0.18)",borderRadius:14,overflow:"hidden"}}>
-            <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between",background:"linear-gradient(90deg,rgba(99,60,180,0.04),transparent)"}}>
-              <div>
-                <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Recommended Classes</h2>
-                <p style={{fontSize:11,color:"var(--t3)",margin:"2px 0 0"}}>Personally selected for you by SlateCue</p>
-              </div>
-              {classInvitations.length>0&&<span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:6,background:"rgba(99,60,180,0.1)",color:"var(--acc)",textTransform:"uppercase",letterSpacing:0.5}}>{classInvitations.length} new</span>}
-            </div>
-            <div style={{padding:24}}>
-              {invLoading?(
-                <SlateCueLoader size="inline" text="Loading recommendations…"/>
-              ):classInvitations.length===0?(
-                <div style={{textAlign:"center",padding:"28px 0"}}>
-                  <div style={{fontSize:28,marginBottom:8}}>🎓</div>
-                  <p style={{color:"var(--t2)",fontSize:14,margin:0}}>No class recommendations yet.</p>
-                  <p style={{color:"var(--t3)",fontSize:12,margin:"6px 0 0"}}>When SlateCue recommends a class for you, it will appear here.</p>
-                </div>
-              ):(
-                <>
-                  <div style={{display:"flex",flexDirection:"column",gap:14}}>
-                    {classInvitations.slice(0,3).map(inv=>{
-                      const cls=inv.class;
-                      return(
-                        <div key={inv.id} style={{background:"var(--bg)",border:"1px solid rgba(99,60,180,0.12)",borderRadius:10,overflow:"hidden",display:"flex",flexDirection:"column"}}>
-                          {cls?.image_url&&<div style={{height:90,background:`url(${cls.image_url}) center/cover no-repeat`,borderBottom:"1px solid var(--bdr)"}}/>}
-                          <div style={{padding:"14px 16px"}}>
-                            <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:0.8,color:"var(--acc)",marginBottom:6}}>SlateCue recommended this class for you</div>
-                            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:6,marginBottom:4}}>
-                              <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",lineHeight:1.3}}>{cls?.title||"Class Invitation"}</div>
-                              <button onClick={()=>dismissInvitation(inv.id)} title="Dismiss" style={{border:"none",background:"none",color:"var(--t3)",cursor:"pointer",fontSize:18,padding:0,lineHeight:1,flexShrink:0}}>×</button>
-                            </div>
-                            <div style={{fontSize:12,color:"var(--t2)",marginBottom:6,display:"flex",flexWrap:"wrap",gap:"2px 10px"}}>
-                              {cls?.instructor_name&&<span>with <strong>{cls.instructor_name}</strong></span>}
-                              {cls?.category&&<span style={{color:"var(--t3)"}}>· {cls.category}</span>}
-                              {cls?.level&&<span style={{color:"var(--t3)"}}>· {cls.level}</span>}
-                            </div>
-                            {(cls?.sale_price||cls?.price)&&<div style={{fontSize:12,fontWeight:600,color:"var(--t1)",marginBottom:8}}>{cls.sale_price?<><span style={{color:"#e74c3c"}}>{cls.sale_price}</span><span style={{textDecoration:"line-through",marginLeft:5,fontWeight:400,color:"var(--t3)"}}>{cls.price}</span></>:cls.price}</div>}
-                            {inv.message&&<div style={{fontSize:12,color:"var(--t2)",background:"rgba(99,60,180,0.04)",border:"1px solid rgba(99,60,180,0.12)",borderRadius:6,padding:"8px 12px",marginBottom:10,lineHeight:1.6}}>{inv.message}</div>}
-                            <div style={{display:"flex",gap:8,marginTop:4}}>
-                              <button className="btn-p btn-sm" style={{fontSize:11,flex:1}} onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes");}}>View Class →</button>
-                              <button className="btn-s btn-sm" style={{fontSize:11,color:"var(--t3)"}} onClick={()=>dismissInvitation(inv.id)}>Dismiss</button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {classInvitations.length>3&&(
-                    <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                      <span style={{fontSize:12,color:"var(--t3)"}}>{classInvitations.length} invitation{classInvitations.length!==1?"s":""}</span>
-                      <button className="btn-s btn-sm" onClick={()=>setDashView("class-invitations")}>View All →</button>
-                    </div>
-                  )}
-                </>
               )}
             </div>
           </div>
