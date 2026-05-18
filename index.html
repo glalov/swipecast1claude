@@ -10502,11 +10502,28 @@ function AdminClassInvitations({session}){
   const [selectedClass,setSelectedClass]=useState(null);
   const [allClasses,setAllClasses]=useState([]);
   const [message,setMessage]=useState("");
+  const [messageUserEdited,setMessageUserEdited]=useState(false);
   const [busy,setBusy]=useState(false);
   const [formMsg,setFormMsg]=useState("");
   const [invitations,setInvitations]=useState([]);
   const [loading,setLoading]=useState(true);
   const [searchingTalent,setSearchingTalent]=useState(false);
+
+  const buildDefaultMessage=(talent)=>{
+    const first=(talent?.display_name||"").split(" ")[0].trim();
+    const greeting=first?`Hi ${first}`:"Hi";
+    return `${greeting}, we think this class could be a strong fit for your profile. A casting director or teacher may be interested in collaborating with you. You can view the class and decide if it feels right for you.`;
+  };
+
+  // Auto-fill message when talent is selected (unless admin already typed something custom)
+  useEffect(()=>{
+    if(selectedTalent&&!messageUserEdited){
+      setMessage(buildDefaultMessage(selectedTalent));
+    }
+    if(!selectedTalent&&!messageUserEdited){
+      setMessage("");
+    }
+  },[selectedTalent,messageUserEdited]);
 
   useEffect(()=>{(async()=>{
     const{data}=await window.sb.from("classes").select("id,title,instructor_name,category,price,image_url").eq("active",true).order("title");
@@ -10546,22 +10563,32 @@ function AdminClassInvitations({session}){
   const sendInvitation=async()=>{
     if(!selectedTalent){setFormMsg("Please select a talent.");return;}
     if(!selectedClass){setFormMsg("Please select a class.");return;}
+    const finalMessage=message.trim()||buildDefaultMessage(selectedTalent);
     setFormMsg("");setBusy(true);
     try{
       const uid=session?.user?.id;
-      const{error}=await window.sb.from("class_invitations").upsert({
+      // Try insert first; if duplicate key, update the existing row instead
+      const{error}=await window.sb.from("class_invitations").insert({
         talent_user_id:selectedTalent.id,
         class_id:selectedClass.id,
         sent_by_admin_id:uid||null,
-        message:message.trim()||null,
+        message:finalMessage,
         status:"sent",
         viewed_at:null,
         dismissed_at:null,
         updated_at:new Date().toISOString()
-      },{onConflict:"talent_user_id,class_id"});
-      if(error)throw error;
-      setFormMsg("✓ Invitation sent.");
-      setSelectedTalent(null);setSelectedClass(null);setMessage("");
+      });
+      if(error){
+        // Unique constraint violation — already invited
+        if(error.code==="23505"||error.message?.toLowerCase().includes("duplicate")||error.message?.toLowerCase().includes("unique")){
+          setFormMsg("This talent has already been invited to this class. No duplicate was sent.");
+          setBusy(false);return;
+        }
+        throw error;
+      }
+      setFormMsg("✓ Invitation sent to "+((selectedTalent.display_name||selectedTalent.email)||"talent")+".");
+      setSelectedTalent(null);setSelectedClass(null);
+      setMessage("");setMessageUserEdited(false);
       setTalentQuery("");setClassQuery("");setTalentResults([]);
       loadInvitations();
     }catch(e){setFormMsg("Error: "+e.message);}
@@ -10653,7 +10680,7 @@ function AdminClassInvitations({session}){
       {/* Message */}
       <div style={{marginBottom:16}}>
         <label style={{fontSize:12,fontWeight:600,color:"var(--t2)",display:"block",marginBottom:6}}>Personal Message <span style={{fontWeight:400,color:"var(--t3)"}}>(optional)</span></label>
-        <textarea className="input" rows={3} placeholder={selectedTalent?`Hi ${talentFirst(selectedTalent)}, we think this class could be a strong fit for your profile. A casting director or teacher may be interested in collaborating.`:"Hi [Name], we think this class could be a strong fit for your profile."} value={message} onChange={e=>setMessage(e.target.value)} style={{width:"100%",boxSizing:"border-box",resize:"vertical",fontFamily:"inherit"}}/>
+        <textarea className="input" rows={3} placeholder="Select a talent above to auto-fill the message." value={message} onChange={e=>{setMessage(e.target.value);setMessageUserEdited(true);}} style={{width:"100%",boxSizing:"border-box",resize:"vertical",fontFamily:"inherit"}}/>
       </div>
 
       {formMsg&&<div style={{fontSize:13,marginBottom:12,padding:"8px 12px",borderRadius:6,background:formMsg.startsWith("✓")?"rgba(27,135,62,0.08)":"rgba(192,57,43,0.08)",color:formMsg.startsWith("✓")?"var(--grn)":"var(--red)",border:`1px solid ${formMsg.startsWith("✓")?"rgba(27,135,62,0.2)":"rgba(192,57,43,0.2)"}`}}>{formMsg}</div>}
