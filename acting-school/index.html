@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>George Ludlow | Film Acting Studio NYC</title>
+  <meta name="description" content="Train with George Ludlow — Hollywood casting professional behind Alien: Romulus, Wednesday, Percy Jackson, Barbarian & more. Film Acting Intensive $129. NYC.">
+  <meta property="og:title" content="George Ludlow | Film Acting Studio NYC">
+  <meta property="og:description" content="Learn from the casting side of Hollywood. Film Acting Intensive — $129.">
+  <meta property="og:type" content="website">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #C9A84C;
+      --gold-light: #e8c96e;
+      --gold-dark: #9a7a30;
+      --black: #060606;
+      --dark: #0e0e0e;
+      --dark-2: #181818;
+      --dark-3: #222222;
+      --white: #ffffff;
+      --gray: #909090;
+      --gray-light: #c8c8c8;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body: 'Inter', system-ui, sans-serif;
+      --font-hero: 'Bebas Neue', 'Arial Narrow', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--black);
+      color: var(--white);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--dark); }
+    ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      padding: 1.25rem 2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.4s, border-color 0.4s;
+      border-bottom: 1px solid transparent;
+    }
+    nav.scrolled {
+      background: rgba(6,6,6,0.96);
+      backdrop-filter: blur(16px);
+      border-bottom-color: rgba(201,168,76,0.12);
+    }
+    .nav-logo {
+      font-family: var(--font-display); font-size: 1.15rem; font-weight: 700;
+      color: var(--white); text-decoration: none; letter-spacing: 0.04em;
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      color: var(--gray-light); text-decoration: none; font-size: 0.8rem;
+      font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+      transition: color 0.25s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-cta {
+      background: var(--gold) !important; color: var(--black) !important;
+      padding: 0.55rem 1.4rem !important; font-weight: 700 !important;
+      clip-path: polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
+    }
+    .nav-cta:hover { background: var(--gold-light) !important; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: var(--white); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; background: var(--black);
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 60% at 20% 50%, rgba(201,168,76,0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 50% at 80% 20%, rgba(80,80,160,0.05) 0%, transparent 60%),
+        linear-gradient(160deg, #060606 0%, #0e0e18 55%, #060606 100%);
+    }
+    .hero-bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .filmstrip {
+      position: absolute; top: 0; bottom: 0; width: 52px;
+      background: var(--dark-2); opacity: 0.25;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: space-around; padding: 3rem 0;
+    }
+    .filmstrip.right { left: auto; right: 0; }
+    .fs-hole {
+      width: 20px; height: 15px;
+      border: 1.5px solid rgba(255,255,255,0.15); border-radius: 2px;
+      background: var(--black);
+    }
+    .hero-inner {
+      position: relative; z-index: 2;
+      text-align: center; padding: 2rem 1.5rem; max-width: 960px;
+    }
+    .eyebrow-tag {
+      display: inline-flex; align-items: center; gap: 0.9rem;
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.38em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem;
+    }
+    .eyebrow-tag::before, .eyebrow-tag::after {
+      content: ''; width: 36px; height: 1px; background: var(--gold);
+    }
+    .hero-name {
+      font-family: var(--font-hero);
+      font-size: clamp(4.5rem, 13vw, 11rem);
+      line-height: 0.88; letter-spacing: 0.015em;
+      color: var(--white); margin-bottom: 1.25rem;
+    }
+    .hero-name .g { color: var(--gold); }
+    .hero-sub {
+      font-family: var(--font-display); font-style: italic;
+      font-size: clamp(1.15rem, 2.8vw, 1.7rem);
+      color: var(--gray-light); margin-bottom: 0.6rem;
+    }
+    .hero-tag {
+      font-size: 0.82rem; color: var(--gray);
+      letter-spacing: 0.06em; margin-bottom: 2.75rem;
+    }
+    .credit-strip {
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: 0.45rem;
+      font-size: 0.67rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--gray); margin-bottom: 3rem;
+    }
+    .credit-strip strong { color: var(--gray-light); font-weight: 600; }
+    .credit-strip .dot { color: var(--gold); opacity: 0.45; }
+    .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    .btn-primary {
+      background: var(--gold); color: var(--black);
+      padding: 1rem 2.75rem; font-weight: 700; font-size: 0.82rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      text-decoration: none; border: none; cursor: pointer;
+      transition: all 0.3s; display: inline-block;
+      clip-path: polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+    }
+    .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
+
+    .btn-ghost {
+      background: transparent; color: var(--white);
+      padding: 1rem 2.25rem; font-weight: 500; font-size: 0.82rem;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      text-decoration: none; border: 1px solid rgba(255,255,255,0.25);
+      cursor: pointer; transition: all 0.3s; display: inline-block;
+    }
+    .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+    .scroll-cue {
+      position: absolute; bottom: 2.25rem; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+      color: var(--gray); font-size: 0.65rem; letter-spacing: 0.25em;
+      text-transform: uppercase; animation: scrollBounce 2.2s infinite;
+    }
+    .scroll-line { width: 1px; height: 42px; background: linear-gradient(to bottom, var(--gold), transparent); }
+    @keyframes scrollBounce {
+      0%,100% { transform: translateX(-50%) translateY(0); }
+      55% { transform: translateX(-50%) translateY(9px); }
+    }
+
+    /* ── SECTION BASE ── */
+    section { padding: 6rem 2rem; }
+    .inner { max-width: 1200px; margin: 0 auto; }
+
+    .sec-eye {
+      display: flex; align-items: center; gap: 0.85rem;
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.38em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 1rem;
+    }
+    .sec-eye::before { content: ''; width: 28px; height: 1px; background: var(--gold); flex-shrink: 0; }
+
+    .sec-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.9rem, 4.5vw, 3.25rem);
+      font-weight: 700; line-height: 1.1; margin-bottom: 1.25rem;
+    }
+    .sec-sub { font-size: 1rem; color: var(--gray); line-height: 1.85; }
+
+    /* ── CREDITS / POSTERS ── */
+    .credits-sec { background: var(--dark); border-top: 1px solid rgba(201,168,76,0.09); border-bottom: 1px solid rgba(201,168,76,0.09); }
+    .credits-label {
+      text-align: center; font-size: 0.68rem; letter-spacing: 0.38em;
+      text-transform: uppercase; color: var(--gray); margin-bottom: 3rem;
+    }
+
+    .poster-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.1rem;
+    }
+
+    .poster {
+      position: relative; border-radius: 3px; overflow: hidden;
+      aspect-ratio: 2/3; cursor: default; transition: transform 0.4s;
+    }
+    .poster:hover { transform: translateY(-6px) scale(1.02); z-index: 2; }
+
+    .poster-bg {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      transition: transform 0.55s ease;
+    }
+    .poster:hover .poster-bg { transform: scale(1.07); }
+
+    /* Gradient poster backgrounds */
+    .p-alien     { background: linear-gradient(145deg,#071207,#0f2e0f,#050d05); }
+    .p-percy     { background: linear-gradient(160deg,#080f22,#12255a,#071535); }
+    .p-horizon   { background: linear-gradient(145deg,#1e1008,#3d2208,#120a02); }
+    .p-wednesday { background: linear-gradient(145deg,#080808,#151515,#050505); }
+    .p-paleeye   { background: linear-gradient(145deg,#130f09,#211a0f,#0b0805); }
+    .p-menu      { background: linear-gradient(145deg,#140606,#2c0e0e,#0a0303); }
+    .p-barbarian { background: linear-gradient(145deg,#0f0303,#210707,#080101); }
+    .p-bullettrain { background: linear-gradient(145deg,#08080f,#14142a,#050510); }
+
+    /* Decorative poster art via CSS */
+    .poster::before {
+      content: attr(data-icon);
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -60%);
+      font-size: 3.5rem; opacity: 0.12;
+      transition: opacity 0.4s;
+      z-index: 1;
+    }
+    .poster:hover::before { opacity: 0.07; }
+
+    /* Poster top label */
+    .poster-top {
+      position: absolute; top: 0; left: 0; right: 0;
+      padding: 0.6rem 0.75rem;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+      z-index: 3;
+    }
+    .poster-rating {
+      display: inline-flex; align-items: center; gap: 0.25rem;
+      background: rgba(245,197,24,0.9); color: #000;
+      font-size: 0.62rem; font-weight: 800; padding: 0.2rem 0.45rem;
+      border-radius: 2px; letter-spacing: 0.03em;
+    }
+
+    .poster-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top,
+        rgba(0,0,0,0.95) 0%,
+        rgba(0,0,0,0.5) 45%,
+        rgba(0,0,0,0.1) 100%);
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 1rem; z-index: 2;
+    }
+
+    .poster-title {
+      font-family: var(--font-display); font-size: 0.88rem; font-weight: 700;
+      line-height: 1.25; margin-bottom: 0.2rem; color: var(--white);
+    }
+    .poster-year { font-size: 0.65rem; color: var(--gold); letter-spacing: 0.1em; margin-bottom: 0.2rem; }
+    .poster-role { font-size: 0.6rem; color: var(--gray); letter-spacing: 0.06em; text-transform: uppercase; }
+
+    .imdb-row { text-align: center; margin-top: 3rem; }
+    .imdb-btn {
+      display: inline-flex; align-items: center; gap: 0.75rem;
+      background: #F5C518; color: #000; padding: 0.8rem 2rem;
+      font-weight: 800; font-size: 0.85rem; letter-spacing: 0.04em;
+      text-decoration: none; border-radius: 3px; transition: all 0.3s;
+    }
+    .imdb-btn:hover { background: #ffd740; transform: translateY(-2px); }
+    .imdb-wordmark { font-family: 'Arial Black', sans-serif; font-weight: 900; font-size: 1rem; }
+
+    /* ── ABOUT ── */
+    .about-sec { background: var(--black); }
+    .about-grid { display: grid; grid-template-columns: 1fr 1.25fr; gap: 5rem; align-items: center; }
+
+    .photo-wrap { position: relative; }
+    .photo-box {
+      width: 100%; aspect-ratio: 3/4;
+      background: var(--dark-2);
+      border: 1px solid rgba(201,168,76,0.18);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: var(--gray); font-size: 0.82rem; text-align: center; padding: 2rem;
+      position: relative; overflow: hidden;
+    }
+    .photo-box::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at center, rgba(201,168,76,0.04) 0%, transparent 70%);
+    }
+    .photo-placeholder-icon { font-size: 3.5rem; opacity: 0.25; margin-bottom: 0.75rem; }
+    .photo-hint { color: var(--gold); font-size: 0.72rem; margin-top: 0.5rem; opacity: 0.6; }
+    .photo-frame {
+      position: absolute; top: 18px; left: 18px; right: -18px; bottom: -18px;
+      border: 1px solid rgba(201,168,76,0.22); pointer-events: none; z-index: -1;
+    }
+
+    .pull-quote {
+      background: var(--dark-2); border-left: 3px solid var(--gold);
+      padding: 1.25rem 1.5rem; margin: 2rem 0;
+      font-family: var(--font-display); font-style: italic;
+      font-size: 1rem; color: var(--gray-light); line-height: 1.75;
+    }
+
+    .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; margin-top: 2.5rem; }
+    .stat {
+      text-align: center; padding: 1.25rem;
+      border: 1px solid rgba(201,168,76,0.13); background: var(--dark-2);
+    }
+    .stat-n { font-family: var(--font-hero); font-size: 2.75rem; color: var(--gold); line-height: 1; display: block; }
+    .stat-l { font-size: 0.68rem; color: var(--gray); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 0.2rem; }
+
+    /* ── CLASSES ── */
+    .classes-sec { background: var(--dark); }
+    .classes-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3.5rem; gap: 2rem; }
+    .classes-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.35rem; }
+
+    .class-card {
+      background: var(--dark-2);
+      border: 1px solid rgba(255,255,255,0.055);
+      padding: 2.25rem; position: relative; overflow: hidden;
+      transition: all 0.35s;
+    }
+    .class-card::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+      opacity: 0; transition: opacity 0.35s;
+    }
+    .class-card:hover { border-color: rgba(201,168,76,0.22); transform: translateY(-5px); }
+    .class-card:hover::after { opacity: 1; }
+    .class-card.featured { border-color: rgba(201,168,76,0.35); background: linear-gradient(135deg,#161608,#1c1c0b); }
+    .class-card.featured::after { opacity: 1; }
+
+    .class-badge {
+      position: absolute; top: 1.4rem; right: 1.4rem;
+      background: var(--gold); color: var(--black);
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; padding: 0.28rem 0.7rem;
+    }
+
+    .class-icon-wrap { width: 44px; height: 44px; margin-bottom: 1.5rem; color: var(--gold); }
+
+    .class-name { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; margin-bottom: 0.65rem; }
+    .class-desc { font-size: 0.87rem; color: var(--gray); line-height: 1.75; margin-bottom: 1.4rem; }
+
+    .class-list { list-style: none; margin-bottom: 1.75rem; }
+    .class-list li {
+      font-size: 0.83rem; color: var(--gray-light);
+      padding: 0.3rem 0 0.3rem 1.2rem; position: relative;
+    }
+    .class-list li::before { content: '→'; position: absolute; left: 0; color: var(--gold); font-size: 0.72rem; }
+
+    .class-price { display: flex; align-items: baseline; gap: 0.4rem; margin-bottom: 1.5rem; }
+    .price-num { font-family: var(--font-hero); font-size: 2.8rem; line-height: 1; }
+    .price-sub { font-size: 0.78rem; color: var(--gray); }
+
+    /* ── BOOKING ── */
+    .booking-sec { background: var(--black); }
+    .booking-grid { display: grid; grid-template-columns: 1fr 1.05fr; gap: 5rem; align-items: start; }
+
+    .booking-why h3 { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--gold); margin-bottom: 0.45rem; }
+    .booking-why p { font-size: 0.88rem; color: var(--gray); line-height: 1.8; margin-bottom: 2rem; }
+
+    .perks { list-style: none; margin-bottom: 2.25rem; }
+    .perks li {
+      display: flex; align-items: flex-start; gap: 0.9rem;
+      padding: 0.7rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.87rem; color: var(--gray-light);
+    }
+    .perk-dot {
+      width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(201,168,76,0.14);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gold); font-size: 0.55rem; font-weight: 700; margin-top: 2px;
+    }
+
+    /* Form */
+    .form-box { background: var(--dark-2); border: 1px solid rgba(201,168,76,0.14); padding: 2.25rem; }
+    .form-title { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; margin-bottom: 1.75rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.07); }
+
+    .fg { margin-bottom: 1.15rem; }
+    .fl { display: block; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.45rem; }
+    .fi, .fsel, .fta {
+      width: 100%; background: var(--dark-3); border: 1px solid rgba(255,255,255,0.09);
+      color: var(--white); padding: 0.82rem 1rem;
+      font-family: var(--font-body); font-size: 0.88rem;
+      outline: none; transition: border-color 0.3s; appearance: none;
+    }
+    .fi:focus, .fsel:focus, .fta:focus { border-color: var(--gold); }
+    .fsel {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23909090' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 1rem center; cursor: pointer;
+    }
+    .fsel option { background: var(--dark-3); }
+    .fta { min-height: 90px; resize: vertical; }
+    .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    .divider { height: 1px; background: rgba(255,255,255,0.07); margin: 1.4rem 0; }
+
+    .price-summary { background: var(--dark); padding: 1.2rem; margin-bottom: 1.4rem; }
+    .ps-row { display: flex; justify-content: space-between; font-size: 0.83rem; color: var(--gray); padding: 0.25rem 0; }
+    .ps-row.total { border-top: 1px solid rgba(255,255,255,0.1); margin-top: 0.5rem; padding-top: 0.7rem; font-weight: 700; color: var(--white); font-size: 0.95rem; }
+    .ps-row.total span:last-child { color: var(--gold); }
+
+    .btn-book {
+      width: 100%; background: var(--gold); color: var(--black); border: none;
+      padding: 1.05rem; font-family: var(--font-body); font-size: 0.85rem;
+      font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+      cursor: pointer; transition: background 0.3s;
+      display: flex; align-items: center; justify-content: center; gap: 0.65rem;
+    }
+    .btn-book:hover { background: var(--gold-light); }
+    .btn-book:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .secure-note {
+      display: flex; align-items: center; justify-content: center; gap: 0.45rem;
+      font-size: 0.7rem; color: var(--gray); margin-top: 0.9rem; letter-spacing: 0.05em;
+    }
+
+    /* ── TESTIMONIALS ── */
+    .testi-sec { background: var(--dark); }
+    .testi-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.35rem; margin-top: 3.5rem; }
+
+    .testi-card {
+      background: var(--dark-2); border: 1px solid rgba(255,255,255,0.055);
+      padding: 2rem; position: relative;
+    }
+    .tq { position: absolute; top: 1.25rem; right: 1.5rem; font-size: 4rem; color: var(--gold); opacity: 0.13; font-family: Georgia, serif; line-height: 1; }
+    .testi-text { font-family: var(--font-display); font-style: italic; font-size: 0.92rem; color: var(--gray-light); line-height: 1.82; margin-bottom: 1.4rem; }
+    .testi-author { display: flex; align-items: center; gap: 0.9rem; }
+    .testi-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--dark-3); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--gold); font-size: 0.85rem; flex-shrink: 0; }
+    .testi-name { font-weight: 600; font-size: 0.87rem; }
+    .testi-role { font-size: 0.72rem; color: var(--gray); }
+
+    /* ── CONTACT ── */
+    .contact-sec { background: var(--black); text-align: center; }
+    .contact-sec .sec-eye { justify-content: center; }
+    .contact-sec .sec-eye::before { display: none; }
+    .contact-sec .sec-sub { margin: 0 auto 3rem; max-width: 520px; }
+
+    .contact-links { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; }
+    .c-link { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: var(--gray-light); text-decoration: none; transition: color 0.3s; }
+    .c-link:hover { color: var(--gold); }
+    .c-icon { width: 50px; height: 50px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 1.15rem; transition: all 0.3s; }
+    .c-link:hover .c-icon { border-color: var(--gold); background: rgba(201,168,76,0.09); }
+    .c-label { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; }
+
+    /* ── FOOTER ── */
+    footer { background: var(--dark); border-top: 1px solid rgba(201,168,76,0.09); padding: 2.75rem 2rem; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 2rem; flex-wrap: wrap; }
+    .footer-logo { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; }
+    .footer-logo span { color: var(--gold); }
+    .footer-copy { font-size: 0.75rem; color: var(--gray); }
+    .footer-nav { display: flex; gap: 2rem; list-style: none; }
+    .footer-nav a { font-size: 0.75rem; color: var(--gray); text-decoration: none; transition: color 0.3s; }
+    .footer-nav a:hover { color: var(--gold); }
+
+    /* ── SUCCESS MODAL ── */
+    .modal-bg {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(10px); z-index: 9999;
+      display: flex; align-items: center; justify-content: center; padding: 2rem;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .modal-bg.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--dark-2); border: 1px solid rgba(201,168,76,0.28);
+      padding: 3rem; max-width: 460px; width: 100%; text-align: center;
+    }
+    .modal-icon { font-size: 2.75rem; margin-bottom: 0.75rem; }
+    .modal h3 { font-family: var(--font-display); font-size: 1.65rem; margin-bottom: 0.75rem; }
+    .modal p { font-size: 0.88rem; color: var(--gray); line-height: 1.8; margin-bottom: 2rem; }
+
+    /* ── ANIMATIONS ── */
+    .fade { opacity: 0; transform: translateY(28px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .fade.d1 { transition-delay: 0.1s; }
+    .fade.d2 { transition-delay: 0.2s; }
+    .fade.d3 { transition-delay: 0.3s; }
+    .fade.on { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .poster-grid { grid-template-columns: repeat(4,1fr); }
+      .classes-grid { grid-template-columns: 1fr 1fr; }
+      .testi-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      section { padding: 4rem 1.25rem; }
+      nav { padding: 1rem 1.25rem; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .filmstrip { display: none; }
+      .about-grid, .booking-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .photo-frame { display: none; }
+      .stats-row { grid-template-columns: repeat(3,1fr); }
+      .classes-head { flex-direction: column; align-items: flex-start; }
+      .classes-grid { grid-template-columns: 1fr; }
+      .testi-grid { grid-template-columns: 1fr; }
+      .frow { grid-template-columns: 1fr; }
+      .poster-grid { grid-template-columns: repeat(2,1fr); }
+      .footer-inner { flex-direction: column; text-align: center; }
+      .footer-nav { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════ NAV ════════════════════════ -->
+<nav id="nav">
+  <a href="#home" class="nav-logo">George <span>Ludlow</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#credits">Credits</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#classes">Classes</a></li>
+    <li><a href="#booking">Book Now</a></li>
+    <li><a href="#booking" class="nav-cta">Enroll — $129</a></li>
+  </ul>
+  <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+</nav>
+
+<!-- ════════════════════════ HERO ════════════════════════ -->
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+  <div class="filmstrip">
+    <div class="fs-hole"></div><div class="fs-hole"></div><div class="fs-hole"></div>
+    <div class="fs-hole"></div><div class="fs-hole"></div><div class="fs-hole"></div>
+    <div class="fs-hole"></div><div class="fs-hole"></div><div class="fs-hole"></div>
+  </div>
+  <div class="filmstrip right">
+    <div class="fs-hole"></div><div class="fs-hole"></div><div class="fs-hole"></div>
+    <div class="fs-hole"></div><div class="fs-hole"></div><div class="fs-hole"></div>
+    <div class="fs-hole"></div><div class="fs-hole"></div><div class="fs-hole"></div>
+  </div>
+
+  <div class="hero-inner">
+    <div class="eyebrow-tag">Film Acting Studio · NYC</div>
+    <h1 class="hero-name">George <span class="g">Ludlow</span></h1>
+    <p class="hero-sub">Train Like the Industry Trains</p>
+    <p class="hero-tag">Casting Professional &nbsp;·&nbsp; 32+ Major Productions &nbsp;·&nbsp; New York City</p>
+
+    <div class="credit-strip">
+      <strong>Alien: Romulus</strong>
+      <span class="dot">·</span>
+      <strong>Wednesday</strong>
+      <span class="dot">·</span>
+      <strong>Percy Jackson</strong>
+      <span class="dot">·</span>
+      <strong>Bullet Train</strong>
+      <span class="dot">·</span>
+      <strong>Barbarian</strong>
+      <span class="dot">·</span>
+      <strong>The Menu</strong>
+      <span class="dot">·</span>
+      <strong>Horizon</strong>
+    </div>
+
+    <div class="hero-btns">
+      <a href="#booking" class="btn-primary">Enroll Now — $129</a>
+      <a href="#credits" class="btn-ghost">See My Credits</a>
+    </div>
+  </div>
+
+  <div class="scroll-cue">
+    <div class="scroll-line"></div>Scroll
+  </div>
+</section>
+
+<!-- ════════════════════════ CREDITS / POSTERS ════════════════════════ -->
+<section class="credits-sec" id="credits">
+  <div class="inner">
+    <p class="credits-label">Selected production credits — the casting room that built this curriculum</p>
+
+    <div class="poster-grid">
+
+      <!-- Alien: Romulus -->
+      <div class="poster p-alien fade" data-icon="👽">
+        <div class="poster-top">
+          <span class="poster-rating">★ 7.1</span>
+        </div>
+        <div class="poster-overlay">
+          <p class="poster-title">Alien: Romulus</p>
+          <p class="poster-year">2024 · Feature Film</p>
+          <p class="poster-role">Cast</p>
+        </div>
+      </div>
+
+      <!-- Percy Jackson -->
+      <div class="poster p-percy fade d1" data-icon="⚡">
+        <div class="poster-top">
+          <span class="poster-rating">★ 7.0</span>
+        </div>
+        <div class="poster-overlay">
+          <p class="poster-title">Percy Jackson & the Olympians</p>
+          <p class="poster-year">2024 · TV Series</p>
+          <p class="poster-role">Casting Associate</p>
+        </div>
+      </div>
+
+      <!-- Horizon -->
+      <div class="poster p-horizon fade d2" data-icon="🌅">
+        <div class="poster-top">
+          <span class="poster-rating">★ 6.6</span>
+        </div>
+        <div class="poster-overlay">
+          <p class="poster-title">Horizon: An American Saga</p>
+          <p class="poster-year">2024 · Feature Film</p>
+          <p class="poster-role">Casting Associate</p>
+        </div>
+      </div>
+
+      <!-- Wednesday -->
+      <div class="poster p-wednesday fade d3" data-icon="🕷">
+        <div class="poster-top">
+          <span class="poster-rating">★ 8.0</span>
+        </div>
+        <div class="poster-overlay">
+          <p class="poster-title">Wednesday</p>
+          <p class="poster-year">2022 · TV Series</p>
+          <p class="poster-role">Casting Associate</p>
+        </div>
+      </div>
+
+      <!-- The Pale Blue Eye -->
+      <div class="poster p-paleeye fade" data-icon="🔍">
+        <div class="poster-top">
+          <span class="poster-rating">★ 6.6</span>
+        </div>
+        <div class="poster-overlay">
+          <p class="poster-title">The Pale Blue Eye</p>
+          <p class="poster-year">2022 · Feature Film</p>
+          <p class="poster-role">Casting Associate</p>
+        </div>
+      </div>
+
+      <!-- The Menu -->
+      <div class="poster p-menu fade d1" data-icon="🍽">
+        <div class="poster-top">
+          <span class="poster-rating">★ 7.2</span>
+        </div>
+        <div class="poster-overlay">
+          <p class="poster-title">The Menu</p>
+          <p class="poster-year">2022 · Feature Film</p>
+          <p class="poster-role">Casting Associate</p>
+        </div>
+      </div>
+
+      <!-- Barbarian -->
+      <div class="poster p-barbarian fade d2" data-icon="🏚">
+        <div class="poster-top">
+          <span class="poster-rating">★ 7.0</span>
+        </div>
+        <div class="poster-overlay">
+          <p class="poster-title">Barbarian</p>
+          <p class="poster-year">2022 · Feature Film</p>
+          <p class="poster-role">Casting Producer</p>
+        </div>
+      </div>
+
+      <!-- Bullet Train -->
+      <div class="poster p-bullettrain fade d3" data-icon="🚄">
+        <div class="poster-top">
+          <span class="poster-rating">★ 7.3</span>
+        </div>
+        <div class="poster-overlay">
+          <p class="poster-title">Bullet Train</p>
+          <p class="poster-year">2022 · Feature Film</p>
+          <p class="poster-role">Casting Assistant</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="imdb-row fade">
+      <a href="https://www.imdb.com/name/nm13936830/" target="_blank" rel="noopener" class="imdb-btn">
+        <span class="imdb-wordmark">IMDb</span>
+        View All 32+ Credits on IMDb &rarr;
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════ ABOUT ════════════════════════ -->
+<section class="about-sec" id="about">
+  <div class="inner">
+    <div class="about-grid">
+
+      <div class="photo-wrap fade">
+        <div class="photo-box">
+          <div class="photo-placeholder-icon">📷</div>
+          <span>Add your headshot here</span>
+          <span class="photo-hint">Replace with &lt;img src="your-photo.jpg"&gt;</span>
+        </div>
+        <div class="photo-frame"></div>
+      </div>
+
+      <div class="fade d1">
+        <div class="sec-eye">About George</div>
+        <h2 class="sec-title">The Insider Who Teaches You to Win the Room</h2>
+        <p class="sec-sub">
+          With 32+ major productions under his belt — from studio blockbusters to Emmy-watched TV — George Ludlow brings a perspective no standard acting coach can offer: the view from the other side of the casting table.
+        </p>
+        <div class="pull-quote">
+          "I've sat across from actors on Alien: Romulus, Wednesday, Percy Jackson, Barbarian, and dozens more. I built this curriculum around exactly what we look for — and what costs people the job."
+        </div>
+        <p class="sec-sub">
+          Having worked as casting assistant, casting associate, casting coordinator, and casting producer across Netflix, Disney+, HBO, and major studio features, George knows the difference between an actor who is talented and an actor who books. His classes close that gap.
+        </p>
+        <div class="stats-row">
+          <div class="stat fade">
+            <span class="stat-n">32+</span>
+            <span class="stat-l">Productions</span>
+          </div>
+          <div class="stat fade d1">
+            <span class="stat-n">NYC</span>
+            <span class="stat-l">Based</span>
+          </div>
+          <div class="stat fade d2">
+            <span class="stat-n">Film</span>
+            <span class="stat-l">Focused</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════ CLASSES ════════════════════════ -->
+<section class="classes-sec" id="classes">
+  <div class="inner">
+    <div class="classes-head">
+      <div>
+        <div class="sec-eye">Training Programs</div>
+        <h2 class="sec-title">Classes &amp; Workshops</h2>
+      </div>
+      <p class="sec-sub" style="max-width:380px;margin:0">
+        Practical, industry-backed training. No fluff — just what gets actors cast on major productions.
+      </p>
+    </div>
+
+    <div class="classes-grid">
+
+      <!-- Film Intensive (featured) -->
+      <div class="class-card featured fade">
+        <span class="class-badge">Most Popular</span>
+        <div class="class-icon-wrap">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="44" height="44">
+            <rect x="4" y="11" width="40" height="28" rx="2" stroke="currentColor" stroke-width="2"/>
+            <path d="M4 19h40M12 11V7M24 11V7M36 11V7M12 39v4M24 39v4M36 39v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="24" cy="26" r="5" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <h3 class="class-name">Film Acting Intensive</h3>
+        <p class="class-desc">The core curriculum. Learn to perform for the camera — from lens awareness to authentic, castable moments. Built on what casting directors actually watch for.</p>
+        <ul class="class-list">
+          <li>Camera technique &amp; screen presence</li>
+          <li>Cold reading &amp; sides prep</li>
+          <li>Breaking down a film script</li>
+          <li>Audition strategy from a CD's perspective</li>
+          <li>Scene work with immediate feedback</li>
+          <li>Industry Q&amp;A included</li>
+        </ul>
+        <div class="class-price">
+          <span class="price-num">$129</span>
+          <span class="price-sub">/ per session</span>
+        </div>
+        <a href="#booking" class="btn-primary" style="text-decoration:none">Book This Class</a>
+      </div>
+
+      <!-- Private Coaching -->
+      <div class="class-card fade d1">
+        <div class="class-icon-wrap">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="44" height="44">
+            <circle cx="24" cy="15" r="8" stroke="currentColor" stroke-width="2"/>
+            <path d="M8 40c0-8.837 7.163-16 16-16s16 7.163 16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 class="class-name">Private 1-on-1 Coaching</h3>
+        <p class="class-desc">Fully personalized sessions. Whether you're prepping a specific audition, rebuilding your reel, or mapping out a career strategy — George works with you directly.</p>
+        <ul class="class-list">
+          <li>60-minute private session</li>
+          <li>Specific audition material prep</li>
+          <li>Self-tape review &amp; feedback</li>
+          <li>Career consultation</li>
+          <li>Casting director insight</li>
+        </ul>
+        <div class="class-price">
+          <span class="price-num">$199</span>
+          <span class="price-sub">/ 60 min</span>
+        </div>
+        <a href="#booking" class="btn-ghost" style="text-decoration:none;display:inline-block;padding:0.75rem 1.75rem">Book a Session</a>
+      </div>
+
+      <!-- Self-Tape -->
+      <div class="class-card fade d2">
+        <div class="class-icon-wrap">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="44" height="44">
+            <rect x="5" y="13" width="28" height="22" rx="2" stroke="currentColor" stroke-width="2"/>
+            <path d="M33 20l10-6v20l-10-6V20z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <circle cx="19" cy="24" r="4" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <h3 class="class-name">Self-Tape Masterclass</h3>
+        <p class="class-desc">Most roles are cast from self-tapes today. Learn to shoot, perform, and submit tapes that actually compete — using nothing but your phone.</p>
+        <ul class="class-list">
+          <li>Framing, lighting, audio essentials</li>
+          <li>Reader protocols &amp; pacing</li>
+          <li>The 10 self-tape mistakes CDs spot instantly</li>
+          <li>Live tape with same-day feedback</li>
+          <li>Submission strategy</li>
+        </ul>
+        <div class="class-price">
+          <span class="price-num">$129</span>
+          <span class="price-sub">/ per session</span>
+        </div>
+        <a href="#booking" class="btn-ghost" style="text-decoration:none;display:inline-block;padding:0.75rem 1.75rem">Book This Class</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════ BOOKING ════════════════════════ -->
+<section class="booking-sec" id="booking">
+  <div class="inner">
+    <div class="booking-grid">
+
+      <div class="booking-why fade">
+        <div class="sec-eye">Reserve Your Spot</div>
+        <h2 class="sec-title">Book a Session</h2>
+
+        <h3>Why train with George?</h3>
+        <p>Most acting coaches have never been in a casting room. George has — on hundreds of sessions, for some of the most competitive productions in Hollywood. His training is built on what actually gets actors hired.</p>
+
+        <ul class="perks">
+          <li><div class="perk-dot">✓</div>Insider perspective from 32+ major productions</li>
+          <li><div class="perk-dot">✓</div>Small class sizes for maximum individual attention</li>
+          <li><div class="perk-dot">✓</div>NYC-based sessions (location sent upon booking)</li>
+          <li><div class="perk-dot">✓</div>Camera &amp; instant playback available every session</li>
+          <li><div class="perk-dot">✓</div>Secure payment processing via Stripe</li>
+          <li><div class="perk-dot">✓</div>All experience levels welcome</li>
+        </ul>
+
+        <a href="https://www.imdb.com/name/nm13936830/" target="_blank" rel="noopener" class="imdb-btn" style="display:inline-flex">
+          <span class="imdb-wordmark">IMDb</span>
+          Verify George's Credits &rarr;
+        </a>
+      </div>
+
+      <div class="fade d1">
+        <div class="form-box">
+          <h3 class="form-title">Book Your Session</h3>
+
+          <form id="bookingForm" onsubmit="submitBooking(event)">
+            <div class="fg">
+              <label class="fl">Select Class</label>
+              <select class="fsel" id="classSelect" name="class" onchange="updateSummary()">
+                <option value="film-intensive" data-price="129">Film Acting Intensive — $129</option>
+                <option value="private" data-price="199">Private 1-on-1 Coaching — $199</option>
+                <option value="selftape" data-price="129">Self-Tape Masterclass — $129</option>
+              </select>
+            </div>
+
+            <div class="frow">
+              <div class="fg">
+                <label class="fl">Preferred Date</label>
+                <input type="date" class="fi" id="dateField" name="date" required>
+              </div>
+              <div class="fg">
+                <label class="fl">Preferred Time</label>
+                <select class="fsel" name="time">
+                  <option>Morning (10am – 12pm)</option>
+                  <option>Afternoon (1pm – 3pm)</option>
+                  <option>Evening (6pm – 8pm)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="frow">
+              <div class="fg">
+                <label class="fl">First Name</label>
+                <input type="text" class="fi" name="firstName" placeholder="Jane" required>
+              </div>
+              <div class="fg">
+                <label class="fl">Last Name</label>
+                <input type="text" class="fi" name="lastName" placeholder="Smith" required>
+              </div>
+            </div>
+
+            <div class="fg">
+              <label class="fl">Email Address</label>
+              <input type="email" class="fi" name="email" id="emailField" placeholder="jane@example.com" required>
+            </div>
+
+            <div class="fg">
+              <label class="fl">Phone (optional)</label>
+              <input type="tel" class="fi" name="phone" placeholder="+1 (212) 000-0000">
+            </div>
+
+            <div class="fg">
+              <label class="fl">Anything George should know? (optional)</label>
+              <textarea class="fta" name="message" placeholder="Your experience level, the audition you're prepping, specific goals..."></textarea>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="price-summary">
+              <div class="ps-row">
+                <span id="sumClass">Film Acting Intensive</span>
+                <span id="sumPrice">$129</span>
+              </div>
+              <div class="ps-row total">
+                <span>Total Due Today</span>
+                <span id="sumTotal">$129</span>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-book" id="bookBtn">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="1" y="4" width="22" height="16" rx="2"/>
+                <line x1="1" y1="10" x2="23" y2="10"/>
+              </svg>
+              Book &amp; Pay $129
+            </button>
+
+            <p class="secure-note">
+              <svg width="11" height="13" viewBox="0 0 12 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="1" y="6" width="10" height="7" rx="1"/>
+                <path d="M3 6V4a3 3 0 016 0v2"/>
+              </svg>
+              Secured by Stripe &nbsp;·&nbsp; SSL Encrypted &nbsp;·&nbsp; No card stored
+            </p>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════ TESTIMONIALS ════════════════════════ -->
+<section class="testi-sec" id="testimonials">
+  <div class="inner">
+    <div class="sec-eye">Student Reviews</div>
+    <h2 class="sec-title">What Actors Say</h2>
+
+    <div class="testi-grid">
+
+      <div class="testi-card fade">
+        <span class="tq">"</span>
+        <p class="testi-text">George's insight from the casting side completely changed how I walk into an audition room. I booked my first co-star three weeks after his intensive.</p>
+        <div class="testi-author">
+          <div class="testi-avatar">A</div>
+          <div>
+            <div class="testi-name">Alex R.</div>
+            <div class="testi-role">Actor, New York City</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card fade d1">
+        <span class="tq">"</span>
+        <p class="testi-text">Nobody teaches self-taping like someone who's watched thousands of them. The list of what NOT to do alone was worth every dollar.</p>
+        <div class="testi-author">
+          <div class="testi-avatar">M</div>
+          <div>
+            <div class="testi-name">Maya T.</div>
+            <div class="testi-role">Actress &amp; Producer</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card fade d2">
+        <span class="tq">"</span>
+        <p class="testi-text">I've taken a lot of acting classes. George's is the only one that felt like actual industry preparation. He doesn't waste your time with theory.</p>
+        <div class="testi-author">
+          <div class="testi-avatar">J</div>
+          <div>
+            <div class="testi-name">Jordan K.</div>
+            <div class="testi-role">SAG-AFTRA Actor</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════ CONTACT ════════════════════════ -->
+<section class="contact-sec" id="contact">
+  <div class="inner">
+    <div class="sec-eye">Get in Touch</div>
+    <h2 class="sec-title">Questions? Let's Talk.</h2>
+    <p class="sec-sub">Not sure which class is right for your experience level? Reach out directly — George responds personally.</p>
+
+    <div class="contact-links">
+      <a href="mailto:YOUR_EMAIL@example.com" class="c-link">
+        <div class="c-icon">✉</div>
+        <span class="c-label">Email</span>
+      </a>
+      <a href="https://www.imdb.com/name/nm13936830/" target="_blank" rel="noopener" class="c-link">
+        <div class="c-icon" style="background:#F5C518;border-color:#F5C518;color:#000;font-family:'Arial Black',sans-serif;font-weight:900;font-size:0.72rem">IMDb</div>
+        <span class="c-label">IMDb</span>
+      </a>
+      <a href="https://instagram.com/YOUR_HANDLE" target="_blank" rel="noopener" class="c-link">
+        <div class="c-icon">📷</div>
+        <span class="c-label">Instagram</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════ FOOTER ════════════════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">George <span>Ludlow</span> · Film Acting Studio</div>
+    <p class="footer-copy">© 2025 George Ludlow. All rights reserved. New York City.</p>
+    <ul class="footer-nav">
+      <li><a href="#classes">Classes</a></li>
+      <li><a href="#booking">Book Now</a></li>
+      <li><a href="https://www.imdb.com/name/nm13936830/" target="_blank" rel="noopener">IMDb</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </div>
+</footer>
+
+<!-- ════════════════════════ SUCCESS MODAL ════════════════════════ -->
+<div class="modal-bg" id="successModal">
+  <div class="modal">
+    <div class="modal-icon">🎬</div>
+    <h3>You're Enrolled!</h3>
+    <p>Your session is reserved. George will confirm your date and location within 24 hours. Check your inbox for a confirmation email.</p>
+    <button class="btn-primary" onclick="closeModal()" style="border:none;cursor:pointer">Done</button>
+  </div>
+</div>
+
+<!-- ════════════════════════ SCRIPT ════════════════════════ -->
+<script>
+  // ── CONFIGURATION — update these before going live ──────────────
+  // 1. Create a Payment Link in your Stripe Dashboard (dashboard.stripe.com)
+  //    Set the price to $129 for Film Intensive, $199 for Private, etc.
+  //    Then paste the link(s) below.
+  const STRIPE_LINKS = {
+    'film-intensive': 'https://buy.stripe.com/REPLACE_WITH_YOUR_FILM_INTENSIVE_LINK',
+    'private':        'https://buy.stripe.com/REPLACE_WITH_YOUR_PRIVATE_LINK',
+    'selftape':       'https://buy.stripe.com/REPLACE_WITH_YOUR_SELFTAPE_LINK',
+  };
+  // ────────────────────────────────────────────────────────────────
+
+  const CLASS_INFO = {
+    'film-intensive': { name: 'Film Acting Intensive',    price: 129 },
+    'private':        { name: 'Private 1-on-1 Coaching',  price: 199 },
+    'selftape':       { name: 'Self-Tape Masterclass',    price: 129 },
+  };
+
+  // Nav scroll effect
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 70));
+
+  // Hamburger
+  const hb = document.getElementById('hamburger');
+  const nl = document.getElementById('navLinks');
+  hb.addEventListener('click', () => {
+    const open = nl.style.display === 'flex';
+    nl.style.display = open ? 'none' : 'flex';
+    nl.style.flexDirection = 'column';
+    nl.style.position = 'absolute';
+    nl.style.top = '100%'; nl.style.left = '0'; nl.style.right = '0';
+    nl.style.background = 'rgba(6,6,6,0.97)';
+    nl.style.padding = '1.5rem 1.25rem'; nl.style.gap = '1.25rem';
+    nl.style.borderBottom = '1px solid rgba(201,168,76,0.12)';
+  });
+
+  // Set min date to tomorrow
+  const df = document.getElementById('dateField');
+  const tmr = new Date(); tmr.setDate(tmr.getDate() + 1);
+  df.min = tmr.toISOString().split('T')[0];
+
+  // Price summary updater
+  function updateSummary() {
+    const sel = document.getElementById('classSelect').value;
+    const cls = CLASS_INFO[sel];
+    document.getElementById('sumClass').textContent  = cls.name;
+    document.getElementById('sumPrice').textContent  = `$${cls.price}`;
+    document.getElementById('sumTotal').textContent  = `$${cls.price}`;
+    document.getElementById('bookBtn').innerHTML = `
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+      </svg>
+      Book &amp; Pay $${cls.price}
+    `;
+  }
+
+  // Booking submit → redirect to Stripe
+  function submitBooking(e) {
+    e.preventDefault();
+    const sel   = document.getElementById('classSelect').value;
+    const email = document.getElementById('emailField').value;
+    const link  = STRIPE_LINKS[sel];
+    const btn   = document.getElementById('bookBtn');
+
+    if (!link || link.includes('REPLACE_WITH')) {
+      alert('Stripe payment link not configured yet. Add your link in the STRIPE_LINKS object inside the <script> tag.');
+      return;
+    }
+
+    btn.innerHTML = '⏳ Redirecting to secure checkout…';
+    btn.disabled = true;
+
+    const url = new URL(link);
+    if (email) url.searchParams.set('prefilled_email', email);
+
+    setTimeout(() => { window.location.href = url.toString(); }, 700);
+  }
+
+  // Success modal (Stripe redirects back with ?success=true)
+  function closeModal() { document.getElementById('successModal').classList.remove('open'); }
+  document.getElementById('successModal').addEventListener('click', e => { if (e.target.id === 'successModal') closeModal(); });
+  if (new URLSearchParams(location.search).get('success') === 'true') {
+    document.getElementById('successModal').classList.add('open');
+  }
+
+  // Intersection observer fade-in
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); obs.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade').forEach(el => obs.observe(el));
+</script>
+
+</body>
+</html>

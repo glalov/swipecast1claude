@@ -4105,6 +4105,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const [rvLoading,setRvLoading]=useState(true);
   const [savingId,setSavingId]=useState(null);
   const [globalUnreadCount,setGlobalUnreadCount]=useState(0);
+  const [dashView,setDashView]=useState(null); // null | "applications" | "saved"
 
   const fmtDate=(s)=>{if(!s)return"—";const d=new Date(s);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
   const fmtDeadline=(s)=>{if(!s)return null;try{const d=new Date(s);const now=new Date();const diff=Math.ceil((d-now)/(1000*60*60*24));if(diff<0)return{label:"Closed",urgent:false};if(diff===0)return{label:"Closes today",urgent:true};if(diff<=3)return{label:`${diff}d left`,urgent:true};return{label:`${diff}d left`,urgent:false};}catch{return null;}};
@@ -4301,6 +4302,39 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const auditionCount=applications.filter(a=>a.status==="audition_requested").length;
   const profilePct=Math.round((completedCount/profileChecks.length)*100);
 
+  if(dashView==="applications"){return(<div className="td-dash-outer">
+    <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+      <button className="btn-s btn-sm" onClick={()=>setDashView(null)} style={{display:"flex",alignItems:"center",gap:6}}>← Dashboard</button>
+      <div>
+        <h1 style={{fontWeight:800,fontSize:isMobile?22:26,letterSpacing:-0.6,color:"var(--t1)",margin:0}}>All Applications</h1>
+        <p style={{color:"var(--t2)",fontSize:13,margin:"2px 0 0"}}>{applications.length} total application{applications.length!==1?"s":""}</p>
+      </div>
+    </div>
+    <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
+      <div style={{display:"flex",borderBottom:"1px solid var(--bdr)",overflowX:"auto",scrollbarWidth:"none",paddingRight:16}}>
+        {APP_TABS.map(t=>{const cnt=tabCounts[t];return(<button key={t} onClick={()=>setAppsTab(t)} style={{padding:"10px 14px",fontSize:12,fontWeight:600,cursor:"pointer",flexShrink:0,border:"none",background:"none",fontFamily:"inherit",textTransform:"capitalize",whiteSpace:"nowrap",color:appsTab===t?"var(--acc)":"var(--t2)",borderBottom:appsTab===t?"2px solid var(--acc)":"2px solid transparent",transition:"color .15s",display:"flex",alignItems:"center",gap:5}}>{t}{cnt!=null&&cnt>0&&<span style={{fontSize:10,fontWeight:700,padding:"1px 5px",borderRadius:8,background:appsTab===t?"var(--acc)":"var(--s2)",color:appsTab===t?"#fff":"var(--t2)"}}>{cnt}</span>}</button>);})}
+      </div>
+      <div style={{padding:24}}>
+        {appsLoading?(<SlateCueLoader size="inline" text="Loading applications…"/>):appsErr?(<div style={{textAlign:"center",padding:"28px 0"}}><p style={{color:"var(--red)",fontSize:13,marginBottom:12}}>Applications could not load. Please try again.</p><button className="btn-s btn-sm" onClick={loadApps}>Retry</button></div>):filteredApps.length===0?(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:32,marginBottom:10}}>📋</div><p style={{color:"var(--t2)",fontSize:14,marginBottom:16,fontWeight:500}}>{appsTab==="all"?"You don't have any applications here yet.":appsTab==="invites"?"No casting invites yet.":appsTab==="drafts"?"No saved drafts.":appsTab==="submitted"?"No submitted applications.":appsTab==="auditions"?"No audition requests yet.":"No archived applications."}</p>{(appsTab==="all"||appsTab==="submitted")&&<button className="btn-p btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>}</div>):(<div style={{display:"flex",flexDirection:"column",gap:10}}>{filteredApps.map(app=>{const st=STATUS_LABELS[app.status]||{label:app.status,color:"var(--t2)",bg:"var(--s2)"};const dl=app.castings?.deadline?fmtDeadline(app.castings.deadline):null;return(<div key={app.id} style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",padding:"14px 16px",background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:10,gap:12,flexWrap:"wrap",transition:"border-color .15s",width:"100%",boxSizing:"border-box"}}><div style={{flex:1,minWidth:0,overflow:"hidden"}}><div style={{fontWeight:700,fontSize:14,color:"var(--t1)",marginBottom:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{app.castings?.title||"Unknown Project"}</div><div style={{fontSize:12,color:"var(--t2)",display:"flex",flexWrap:"wrap",gap:"4px 10px"}}><span>Role: <strong style={{color:"var(--t1)"}}>{app.roles?.name||"—"}</strong></span>{app.castings?.type&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.type&&<span>{app.castings.type}</span>}{app.castings?.location&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.location&&<span>{app.castings.location}</span>}</div><div style={{fontSize:11,color:"var(--t3)",marginTop:3}}>Submitted {fmtDate(app.created_at)}{dl&&<span style={{marginLeft:8,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>}</div></div><div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",flexShrink:0,maxWidth:isMobile?"100%":"none"}}><span style={{fontSize:11,fontWeight:600,padding:"4px 8px",borderRadius:6,background:st.bg,color:st.color,border:`1px solid ${st.color}33`,whiteSpace:"nowrap"}}>{st.label}</span>{app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px",whiteSpace:"nowrap"}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View →</button>}</div></div>);})}</div>)}
+      </div>
+    </div>
+  </div>);}
+
+  if(dashView==="saved"){return(<div className="td-dash-outer">
+    <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+      <button className="btn-s btn-sm" onClick={()=>setDashView(null)} style={{display:"flex",alignItems:"center",gap:6}}>← Dashboard</button>
+      <div>
+        <h1 style={{fontWeight:800,fontSize:isMobile?22:26,letterSpacing:-0.6,color:"var(--t1)",margin:0}}>Saved Castings</h1>
+        <p style={{color:"var(--t2)",fontSize:13,margin:"2px 0 0"}}>{savedCastings.length} saved</p>
+      </div>
+    </div>
+    <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
+      <div style={{padding:24}}>
+        {savedLoading?(<SlateCueLoader size="inline" text="Loading saved castings…"/>):savedCastings.length===0?(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:32,marginBottom:10}}>🔖</div><p style={{color:"var(--t2)",fontSize:14,marginBottom:16}}>You haven't saved any castings yet.</p><button className="btn-p btn-sm" onClick={()=>{setDashView(null);onNavigate("search");}}>Browse Castings</button></div>):(<div style={{display:"flex",flexDirection:"column",gap:10}}>{savedCastings.map(s=>{const c=s.castings;const dl=c?.deadline?fmtDeadline(c.deadline):null;return(<div key={s.casting_id} style={{padding:"12px 14px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",width:"100%",boxSizing:"border-box"}}><div style={{minWidth:0,flex:1}}><div style={{fontWeight:600,fontSize:13,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c?.title||"Unknown"}</div><div style={{fontSize:11,color:"var(--t3)",marginTop:2}}>{c?.type}{c?.location?` · ${c.location}`:""}{dl?<span style={{marginLeft:6,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>:null}</div></div><div style={{display:"flex",gap:6,flexShrink:0}}><button className="btn-p btn-sm" style={{fontSize:11}} onClick={()=>onViewCastingById?onViewCastingById(s.casting_id):onNavigate("search")}>View</button><button className="btn-s btn-sm" style={{fontSize:11,color:"var(--red)"}} onClick={()=>toggleSave(s.casting_id)}>Remove</button></div></div>);})}</div>)}
+      </div>
+    </div>
+  </div>);}
+
   return(
     <div className="td-dash-outer">
       {/* ── Welcome header ── */}
@@ -4331,29 +4365,14 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         {/* ── LEFT COLUMN ── */}
         <div style={{display:"flex",flexDirection:"column",gap:24,minWidth:0}}>
 
-          {/* Applications panel */}
+          {/* Applications panel — dashboard preview (3 most recent) */}
           <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
             <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Applications</h2>
+              <div>
+                <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Applications</h2>
+                {!appsLoading&&applications.length>0&&<p style={{fontSize:11,color:"var(--t3)",margin:"2px 0 0"}}>Most recent activity</p>}
+              </div>
               <button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>
-            </div>
-            {/* Tab bar */}
-            <div style={{display:"flex",borderBottom:"1px solid var(--bdr)",overflowX:"auto",scrollbarWidth:"none",paddingRight:16}}>
-              {APP_TABS.map(t=>{
-                const cnt=tabCounts[t];
-                return(
-                  <button key={t} onClick={()=>setAppsTab(t)} style={{
-                    padding:"10px 14px",fontSize:12,fontWeight:600,cursor:"pointer",flexShrink:0,
-                    border:"none",background:"none",fontFamily:"inherit",textTransform:"capitalize",whiteSpace:"nowrap",
-                    color:appsTab===t?"var(--acc)":"var(--t2)",
-                    borderBottom:appsTab===t?"2px solid var(--acc)":"2px solid transparent",
-                    transition:"color .15s",display:"flex",alignItems:"center",gap:5
-                  }}>
-                    {t}
-                    {cnt!=null&&cnt>0&&<span style={{fontSize:10,fontWeight:700,padding:"1px 5px",borderRadius:8,background:appsTab===t?"var(--acc)":"var(--s2)",color:appsTab===t?"#fff":"var(--t2)"}}>{cnt}</span>}
-                  </button>
-                );
-              })}
             </div>
             <div style={{padding:24}}>
               {appsLoading?(
@@ -4363,45 +4382,44 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                   <p style={{color:"var(--red)",fontSize:13,marginBottom:12}}>Applications could not load. Please try again.</p>
                   <button className="btn-s btn-sm" onClick={loadApps}>Retry</button>
                 </div>
-              ):filteredApps.length===0?(
+              ):applications.length===0?(
                 <div style={{textAlign:"center",padding:"40px 0"}}>
                   <div style={{fontSize:32,marginBottom:10}}>📋</div>
-                  <p style={{color:"var(--t2)",fontSize:14,marginBottom:16,fontWeight:500}}>
-                    {appsTab==="all"?"You don't have any applications here yet.":
-                     appsTab==="invites"?"No casting invites yet.":
-                     appsTab==="drafts"?"No saved drafts.":
-                     appsTab==="submitted"?"No submitted applications.":
-                     appsTab==="auditions"?"No audition requests yet.":
-                     "No archived applications."}
-                  </p>
-                  {(appsTab==="all"||appsTab==="submitted")&&<button className="btn-p btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>}
+                  <p style={{color:"var(--t2)",fontSize:14,marginBottom:16,fontWeight:500}}>You don't have any applications yet.</p>
+                  <button className="btn-p btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>
                 </div>
               ):(
-                <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                  {filteredApps.map(app=>{
-                    const st=STATUS_LABELS[app.status]||{label:app.status,color:"var(--t2)",bg:"var(--s2)"};
-                    const dl=app.castings?.deadline?fmtDeadline(app.castings.deadline):null;
-                    return(
-                      <div key={app.id} style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",padding:"14px 16px",background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:10,gap:12,flexWrap:"wrap",transition:"border-color .15s",width:"100%",boxSizing:"border-box"}}>
-                        <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
-                          <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",marginBottom:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{app.castings?.title||"Unknown Project"}</div>
-                          <div style={{fontSize:12,color:"var(--t2)",display:"flex",flexWrap:"wrap",gap:"4px 10px"}}>
-                            <span>Role: <strong style={{color:"var(--t1)"}}>{app.roles?.name||"—"}</strong></span>
-                            {app.castings?.type&&<span style={{color:"var(--t3)"}}>·</span>}
-                            {app.castings?.type&&<span>{app.castings.type}</span>}
-                            {app.castings?.location&&<span style={{color:"var(--t3)"}}>·</span>}
-                            {app.castings?.location&&<span>{app.castings.location}</span>}
+                <>
+                  <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                    {applications.slice(0,3).map(app=>{
+                      const st=STATUS_LABELS[app.status]||{label:app.status,color:"var(--t2)",bg:"var(--s2)"};
+                      const dl=app.castings?.deadline?fmtDeadline(app.castings.deadline):null;
+                      return(
+                        <div key={app.id} style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",padding:"14px 16px",background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:10,gap:12,flexWrap:"wrap",transition:"border-color .15s",width:"100%",boxSizing:"border-box"}}>
+                          <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
+                            <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",marginBottom:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{app.castings?.title||"Unknown Project"}</div>
+                            <div style={{fontSize:12,color:"var(--t2)",display:"flex",flexWrap:"wrap",gap:"4px 10px"}}>
+                              <span>Role: <strong style={{color:"var(--t1)"}}>{app.roles?.name||"—"}</strong></span>
+                              {app.castings?.type&&<span style={{color:"var(--t3)"}}>·</span>}
+                              {app.castings?.type&&<span>{app.castings.type}</span>}
+                              {app.castings?.location&&<span style={{color:"var(--t3)"}}>·</span>}
+                              {app.castings?.location&&<span>{app.castings.location}</span>}
+                            </div>
+                            <div style={{fontSize:11,color:"var(--t3)",marginTop:3}}>Submitted {fmtDate(app.created_at)}{dl&&<span style={{marginLeft:8,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>}</div>
                           </div>
-                          <div style={{fontSize:11,color:"var(--t3)",marginTop:3}}>Submitted {fmtDate(app.created_at)}{dl&&<span style={{marginLeft:8,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>}</div>
+                          <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",flexShrink:0,maxWidth:isMobile?"100%":"none"}}>
+                            <span style={{fontSize:11,fontWeight:600,padding:"4px 8px",borderRadius:6,background:st.bg,color:st.color,border:`1px solid ${st.color}33`,whiteSpace:"nowrap"}}>{st.label}</span>
+                            {app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px",whiteSpace:"nowrap"}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View →</button>}
+                          </div>
                         </div>
-                        <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",flexShrink:0,maxWidth:isMobile?"100%":"none"}}>
-                          <span style={{fontSize:11,fontWeight:600,padding:"4px 8px",borderRadius:6,background:st.bg,color:st.color,border:`1px solid ${st.color}33`,whiteSpace:"nowrap"}}>{st.label}</span>
-                          {app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px",whiteSpace:"nowrap"}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View →</button>}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                    <span style={{fontSize:12,color:"var(--t3)"}}>{applications.length} total application{applications.length!==1?"s":""}</span>
+                    <button className="btn-s btn-sm" onClick={()=>{setAppsTab("all");setDashView("applications");}}>View All Applications →</button>
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -4425,26 +4443,32 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                   <p style={{color:"var(--t3)",fontSize:12,margin:"6px 0 0"}}>When a casting director reaches out, it'll appear here.</p>
                 </div>
               ):(
-                <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                  {threads.map(t=>(
-                    <div key={t.otherId} onClick={()=>onNavigate("inbox")} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:10,border:t.unread>0?"1px solid var(--acc)":"1px solid var(--bdr)",background:t.unread>0?"rgba(99,60,180,0.02)":"var(--bg)",cursor:"pointer",borderLeft:t.unread>0?"3px solid var(--acc)":"3px solid transparent",transition:"border-color .15s",width:"100%",boxSizing:"border-box",overflow:"hidden"}}>
-                      <div style={{width:40,height:40,borderRadius:"50%",flexShrink:0,background:"var(--s2)",overflow:"hidden",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"var(--t2)"}}>
-                        {t.profile?.headshot_url?<img src={t.profile.headshot_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:(t.profile?.display_name||t.profile?.company_name||"?")[0]?.toUpperCase()}
-                      </div>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
-                          <span style={{fontWeight:t.unread>0?700:500,fontSize:13,color:"var(--t1)"}}>{t.profile?.display_name||t.profile?.company_name||"Unknown"}</span>
-                          {t.castingTitle&&<span style={{fontSize:10,color:"var(--t3)",background:"var(--s2)",padding:"1px 6px",borderRadius:4,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:160}}>{t.castingTitle}</span>}
+                <>
+                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                    {threads.slice(0,3).map(t=>(
+                      <div key={t.otherId} onClick={()=>onNavigate("inbox")} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:10,border:t.unread>0?"1px solid var(--acc)":"1px solid var(--bdr)",background:t.unread>0?"rgba(99,60,180,0.02)":"var(--bg)",cursor:"pointer",borderLeft:t.unread>0?"3px solid var(--acc)":"3px solid transparent",transition:"border-color .15s",width:"100%",boxSizing:"border-box",overflow:"hidden"}}>
+                        <div style={{width:40,height:40,borderRadius:"50%",flexShrink:0,background:"var(--s2)",overflow:"hidden",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"var(--t2)"}}>
+                          {t.profile?.headshot_url?<img src={t.profile.headshot_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:(t.profile?.display_name||t.profile?.company_name||"?")[0]?.toUpperCase()}
                         </div>
-                        <div style={{fontSize:12,color:"var(--t2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{(t.latest?.body||"").slice(0,72)}{(t.latest?.body||"").length>72?"…":""}</div>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
+                            <span style={{fontWeight:t.unread>0?700:500,fontSize:13,color:"var(--t1)"}}>{t.profile?.display_name||t.profile?.company_name||"Unknown"}</span>
+                            {t.castingTitle&&<span style={{fontSize:10,color:"var(--t3)",background:"var(--s2)",padding:"1px 6px",borderRadius:4,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:160}}>{t.castingTitle}</span>}
+                          </div>
+                          <div style={{fontSize:12,color:"var(--t2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{(t.latest?.body||"").slice(0,72)}{(t.latest?.body||"").length>72?"…":""}</div>
+                        </div>
+                        <div style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
+                          <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap"}}>{fmtDate(t.latest?.created_at)}</span>
+                          {t.unread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800}}>{t.unread}</span>}
+                        </div>
                       </div>
-                      <div style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
-                        <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap"}}>{fmtDate(t.latest?.created_at)}</span>
-                        {t.unread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800}}>{t.unread}</span>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                  <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                    <span style={{fontSize:12,color:"var(--t3)"}}>{threads.length} conversation{threads.length!==1?"s":""}</span>
+                    <button className="btn-s btn-sm" onClick={()=>onNavigate("inbox")}>View All Messages →</button>
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -4501,11 +4525,14 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             </div>
           </div>
 
-          {/* Saved Castings */}
+          {/* Saved Castings — dashboard preview (3 most recent) */}
           <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
             <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Saved Castings</h2>
-              {savedCastings.length>0&&<span style={{fontSize:12,color:"var(--t3)"}}>{savedCastings.length} saved</span>}
+              <div>
+                <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Saved Castings</h2>
+                {!savedLoading&&savedCastings.length>0&&<p style={{fontSize:11,color:"var(--t3)",margin:"2px 0 0"}}>Your bookmarked casting calls</p>}
+              </div>
+              {savedCastings.length>0&&<span style={{fontSize:12,color:"var(--t3)",fontWeight:600}}>{savedCastings.length} saved</span>}
             </div>
             <div style={{padding:24}}>
               {savedLoading?(
@@ -4517,24 +4544,30 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                   <button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>
                 </div>
               ):(
-                <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                  {savedCastings.map(s=>{
-                    const c=s.castings;
-                    const dl=c?.deadline?fmtDeadline(c.deadline):null;
-                    return(
-                      <div key={s.casting_id} style={{padding:"12px 14px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",width:"100%",boxSizing:"border-box"}}>
-                        <div style={{minWidth:0,flex:1}}>
-                          <div style={{fontWeight:600,fontSize:13,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c?.title||"Unknown"}</div>
-                          <div style={{fontSize:11,color:"var(--t3)",marginTop:2}}>{c?.type}{c?.location?` · ${c.location}`:""}{dl?<span style={{marginLeft:6,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>:null}</div>
+                <>
+                  <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                    {savedCastings.slice(0,3).map(s=>{
+                      const c=s.castings;
+                      const dl=c?.deadline?fmtDeadline(c.deadline):null;
+                      return(
+                        <div key={s.casting_id} style={{padding:"12px 14px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",width:"100%",boxSizing:"border-box"}}>
+                          <div style={{minWidth:0,flex:1}}>
+                            <div style={{fontWeight:600,fontSize:13,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c?.title||"Unknown"}</div>
+                            <div style={{fontSize:11,color:"var(--t3)",marginTop:2}}>{c?.type}{c?.location?` · ${c.location}`:""}{dl?<span style={{marginLeft:6,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>:null}</div>
+                          </div>
+                          <div style={{display:"flex",gap:6,flexShrink:0}}>
+                            <button className="btn-p btn-sm" style={{fontSize:11}} onClick={()=>onViewCastingById?onViewCastingById(s.casting_id):onNavigate("search")}>View</button>
+                            <button className="btn-s btn-sm" style={{fontSize:11,color:"var(--red)"}} onClick={()=>toggleSave(s.casting_id)}>Remove</button>
+                          </div>
                         </div>
-                        <div style={{display:"flex",gap:6,flexShrink:0}}>
-                          <button className="btn-p btn-sm" style={{fontSize:11}} onClick={()=>onViewCastingById?onViewCastingById(s.casting_id):onNavigate("search")}>View</button>
-                          <button className="btn-s btn-sm" style={{fontSize:11,color:"var(--red)"}} onClick={()=>toggleSave(s.casting_id)}>Remove</button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                    <span style={{fontSize:12,color:"var(--t3)"}}>{savedCastings.length} saved casting{savedCastings.length!==1?"s":""}</span>
+                    <button className="btn-s btn-sm" onClick={()=>setDashView("saved")}>View All Saved Castings →</button>
+                  </div>
+                </>
               )}
             </div>
           </div>
