@@ -4131,7 +4131,9 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const [rvLoading,setRvLoading]=useState(true);
   const [savingId,setSavingId]=useState(null);
   const [globalUnreadCount,setGlobalUnreadCount]=useState(0);
-  const [dashView,setDashView]=useState(null); // null | "applications" | "saved"
+  const [dashView,setDashView]=useState(null); // null | "applications" | "saved" | "class-invitations"
+  const [classInvitations,setClassInvitations]=useState([]);
+  const [invLoading,setInvLoading]=useState(true);
 
   const fmtDate=(s)=>{if(!s)return"—";const d=new Date(s);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
   const fmtDeadline=(s)=>{if(!s)return null;try{const d=new Date(s);const now=new Date();const diff=Math.ceil((d-now)/(1000*60*60*24));if(diff<0)return{label:"Closed",urgent:false};if(diff===0)return{label:"Closes today",urgent:true};if(diff<=3)return{label:`${diff}d left`,urgent:true};return{label:`${diff}d left`,urgent:false};}catch{return null;}};
@@ -4259,6 +4261,40 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     finally{setRvLoading(false);}
   },[uid]);
 
+  const loadClassInvitations=useCallback(async()=>{
+    if(!uid){setInvLoading(false);return;}
+    try{
+      const{data,error}=await window.sb.from("class_invitations")
+        .select("*,class:class_id(id,title,instructor_name,category,level,price,sale_price,image_url,start_date,format)")
+        .eq("talent_user_id",uid)
+        .neq("status","dismissed")
+        .order("created_at",{ascending:false});
+      if(error)throw error;
+      setClassInvitations(data||[]);
+    }catch(e){console.warn("[talent-dashboard] class-invitations:",e);}
+    finally{setInvLoading(false);}
+  },[uid]);
+
+  const dismissInvitation=useCallback(async(invId)=>{
+    try{
+      await window.sb.from("class_invitations")
+        .update({status:"dismissed",dismissed_at:new Date().toISOString()})
+        .eq("id",invId).eq("talent_user_id",uid);
+      setClassInvitations(prev=>prev.filter(i=>i.id!==invId));
+    }catch(e){console.warn("[dismiss-invitation]",e);}
+  },[uid]);
+
+  const markInvitationViewed=useCallback(async(invId)=>{
+    const inv=classInvitations.find(i=>i.id===invId);
+    if(!inv||["viewed","saved","enrolled"].includes(inv.status))return;
+    try{
+      await window.sb.from("class_invitations")
+        .update({status:"viewed",viewed_at:new Date().toISOString()})
+        .eq("id",invId).eq("talent_user_id",uid);
+      setClassInvitations(prev=>prev.map(i=>i.id===invId?{...i,status:"viewed",viewed_at:new Date().toISOString()}:i));
+    }catch(e){console.warn("[mark-viewed]",e);}
+  },[uid,classInvitations]);
+
   const toggleSave=useCallback(async(castingId,castingData)=>{
     if(!uid||savingId)return;
     setSavingId(castingId);
@@ -4278,7 +4314,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     finally{setSavingId(null);}
   },[uid,savedIds,savingId]);
 
-  useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadRecentlyViewed();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed]);
+  useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadRecentlyViewed();loadClassInvitations();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed,loadClassInvitations]);
 
   const filteredApps=useMemo(()=>{
     if(appsTab==="all")return applications;
@@ -4357,6 +4393,54 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
       <div style={{padding:24}}>
         {savedLoading?(<SlateCueLoader size="inline" text="Loading saved castings…"/>):savedCastings.length===0?(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:32,marginBottom:10}}>🔖</div><p style={{color:"var(--t2)",fontSize:14,marginBottom:16}}>You haven't saved any castings yet.</p><button className="btn-p btn-sm" onClick={()=>{setDashView(null);onNavigate("search");}}>Browse Castings</button></div>):(<div style={{display:"flex",flexDirection:"column",gap:10}}>{savedCastings.map(s=>{const c=s.castings;const dl=c?.deadline?fmtDeadline(c.deadline):null;return(<div key={s.casting_id} style={{padding:"12px 14px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",width:"100%",boxSizing:"border-box"}}><div style={{minWidth:0,flex:1}}><div style={{fontWeight:600,fontSize:13,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c?.title||"Unknown"}</div><div style={{fontSize:11,color:"var(--t3)",marginTop:2}}>{c?.type}{c?.location?` · ${c.location}`:""}{dl?<span style={{marginLeft:6,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>:null}</div></div><div style={{display:"flex",gap:6,flexShrink:0}}><button className="btn-p btn-sm" style={{fontSize:11}} onClick={()=>onViewCastingById?onViewCastingById(s.casting_id):onNavigate("search")}>View</button><button className="btn-s btn-sm" style={{fontSize:11,color:"var(--red)"}} onClick={()=>toggleSave(s.casting_id)}>Remove</button></div></div>);})}</div>)}
+      </div>
+    </div>
+  </div>);}
+
+  if(dashView==="class-invitations"){return(<div className="td-dash-outer">
+    <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+      <button className="btn-s btn-sm" onClick={()=>setDashView(null)} style={{display:"flex",alignItems:"center",gap:6}}>← Dashboard</button>
+      <div>
+        <h1 style={{fontWeight:800,fontSize:isMobile?22:26,letterSpacing:-0.6,color:"var(--t1)",margin:0}}>All Class Invitations</h1>
+        <p style={{color:"var(--t2)",fontSize:13,margin:"2px 0 0"}}>{classInvitations.length} invitation{classInvitations.length!==1?"s":""} from SlateCue</p>
+      </div>
+    </div>
+    <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
+      <div style={{padding:24}}>
+        {invLoading?(<SlateCueLoader size="inline" text="Loading…"/>):classInvitations.length===0?(
+          <div style={{textAlign:"center",padding:"40px 0"}}>
+            <div style={{fontSize:32,marginBottom:10}}>🎓</div>
+            <p style={{color:"var(--t2)",fontSize:14,margin:0}}>No active class invitations.</p>
+          </div>
+        ):(
+          <div style={{display:"flex",flexDirection:"column",gap:16}}>
+            {classInvitations.map(inv=>{
+              const cls=inv.class;
+              return(<div key={inv.id} style={{background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:12,overflow:"hidden"}}>
+                <div style={{display:"flex",gap:0,flexWrap:"wrap"}}>
+                  {cls?.image_url&&<div style={{width:100,minHeight:80,flexShrink:0,background:`url(${cls.image_url}) center/cover no-repeat`,borderRight:"1px solid var(--bdr)"}}/>}
+                  <div style={{flex:1,padding:"16px 18px",minWidth:200}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8,marginBottom:6}}>
+                      <div style={{fontWeight:700,fontSize:15,color:"var(--t1)",lineHeight:1.3}}>{cls?.title||"Class Invitation"}</div>
+                      <button onClick={()=>dismissInvitation(inv.id)} title="Dismiss" style={{border:"none",background:"none",color:"var(--t3)",cursor:"pointer",fontSize:18,padding:0,lineHeight:1,flexShrink:0}}>×</button>
+                    </div>
+                    <div style={{fontSize:12,color:"var(--t2)",marginBottom:4,display:"flex",flexWrap:"wrap",gap:"3px 10px"}}>
+                      {cls?.instructor_name&&<span>with {cls.instructor_name}</span>}
+                      {cls?.category&&<span style={{color:"var(--t3)"}}>· {cls.category}</span>}
+                      {cls?.level&&<span style={{color:"var(--t3)"}}>· {cls.level}</span>}
+                    </div>
+                    {(cls?.sale_price||cls?.price)&&<div style={{fontSize:12,color:"var(--t2)",marginBottom:4}}>{cls.sale_price?<><span style={{color:"#e74c3c",fontWeight:600}}>{cls.sale_price}</span><span style={{textDecoration:"line-through",marginLeft:5,color:"var(--t3)"}}>{cls.price}</span></>:cls.price}</div>}
+                    {inv.message&&<div style={{fontSize:12,color:"var(--t2)",background:"rgba(99,60,180,0.04)",border:"1px solid rgba(99,60,180,0.1)",borderRadius:6,padding:"8px 12px",marginBottom:10,lineHeight:1.5,fontStyle:"italic"}}>"{inv.message}"</div>}
+                    <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
+                      <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes");}}>View Class →</button>
+                      <button className="btn-s btn-sm" style={{fontSize:12,color:"var(--t3)"}} onClick={()=>dismissInvitation(inv.id)}>Dismiss</button>
+                    </div>
+                  </div>
+                </div>
+              </div>);
+            })}
+          </div>
+        )}
       </div>
     </div>
   </div>);}
@@ -4550,6 +4634,57 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               )}
             </div>
           </div>
+
+          {/* Class Invitations — dashboard preview */}
+          {(invLoading||classInvitations.length>0)&&(
+          <div style={{background:"var(--s1)",border:"1px solid rgba(99,60,180,0.18)",borderRadius:14,overflow:"hidden"}}>
+            <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between",background:"linear-gradient(90deg,rgba(99,60,180,0.04),transparent)"}}>
+              <div>
+                <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Recommended Classes</h2>
+                <p style={{fontSize:11,color:"var(--t3)",margin:"2px 0 0"}}>Personally selected for you by SlateCue</p>
+              </div>
+              {classInvitations.length>0&&<span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:6,background:"rgba(99,60,180,0.1)",color:"var(--acc)",textTransform:"uppercase",letterSpacing:0.5}}>{classInvitations.length} new</span>}
+            </div>
+            <div style={{padding:24}}>
+              {invLoading?(
+                <SlateCueLoader size="inline" text="Loading…"/>
+              ):classInvitations.length===0?null:(
+                <>
+                  <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                    {classInvitations.slice(0,3).map(inv=>{
+                      const cls=inv.class;
+                      return(<div key={inv.id} style={{background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:10,overflow:"hidden",display:"flex",flexDirection:"column"}}>
+                        {cls?.image_url&&<div style={{height:80,background:`url(${cls.image_url}) center/cover no-repeat`,borderBottom:"1px solid var(--bdr)"}}/>}
+                        <div style={{padding:"14px 16px"}}>
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:6,marginBottom:4}}>
+                            <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",lineHeight:1.3}}>{cls?.title||"Class Invitation"}</div>
+                            <button onClick={()=>dismissInvitation(inv.id)} title="Dismiss" style={{border:"none",background:"none",color:"var(--t3)",cursor:"pointer",fontSize:16,padding:0,lineHeight:1,flexShrink:0,marginTop:1}}>×</button>
+                          </div>
+                          <div style={{fontSize:11,color:"var(--t2)",marginBottom:4,display:"flex",flexWrap:"wrap",gap:"2px 8px"}}>
+                            {cls?.instructor_name&&<span>with {cls.instructor_name}</span>}
+                            {cls?.category&&<span style={{color:"var(--t3)"}}>· {cls.category}</span>}
+                            {(cls?.sale_price||cls?.price)&&<span style={{color:"var(--t3)"}}>· {cls.sale_price||cls.price}</span>}
+                          </div>
+                          {inv.message&&<div style={{fontSize:11,color:"var(--t2)",background:"rgba(99,60,180,0.04)",border:"1px solid rgba(99,60,180,0.1)",borderRadius:6,padding:"7px 10px",marginBottom:10,lineHeight:1.5,fontStyle:"italic"}}>"{inv.message}"</div>}
+                          <div style={{display:"flex",gap:8,marginTop:8}}>
+                            <button className="btn-p btn-sm" style={{fontSize:11,flex:1}} onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes");}}>View Class →</button>
+                            <button className="btn-s btn-sm" style={{fontSize:11}} onClick={()=>dismissInvitation(inv.id)}>Dismiss</button>
+                          </div>
+                        </div>
+                      </div>);
+                    })}
+                  </div>
+                  {classInvitations.length>3&&(
+                    <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                      <span style={{fontSize:12,color:"var(--t3)"}}>{classInvitations.length} invitation{classInvitations.length!==1?"s":""}</span>
+                      <button className="btn-s btn-sm" onClick={()=>setDashView("class-invitations")}>View All →</button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+          )}
 
           {/* Saved Castings — dashboard preview (3 most recent) */}
           <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
@@ -9047,6 +9182,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       <AdminNavLink current={section} target="castings" label="Castings" onClick={setSection}/>
       <AdminNavLink current={section} target="applications" label="Applications" onClick={setSection}/>
       <AdminNavLink current={section} target="classes" label="Classes" onClick={setSection}/>
+      <AdminNavLink current={section} target="class-invitations" label="Class Invitations" onClick={setSection}/>
       <AdminNavLink current={section} target="reports" label="Reports" onClick={setSection}/>
       <AdminNavLink current={section} target="errors" label="Error log" onClick={setSection}/>
       <AdminNavLink current={section} target="audit" label="Audit log" onClick={setSection}/>
@@ -9068,6 +9204,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="castings"&&<AdminCastings/>}
       {section==="applications"&&<AdminApplications/>}
       {section==="classes"&&<AdminClasses/>}
+      {section==="class-invitations"&&<AdminClassInvitations session={session}/>}
       {section==="reports"&&<AdminReports/>}
       {section==="errors"&&<AdminErrors/>}
       {section==="audit"&&<AdminAudit/>}
@@ -10353,6 +10490,207 @@ function AdminClassBookingRequests({cls,onClose}){
       ))}</div>
     }
     {/* TODO: instructor account review access — currently admin-only */}
+  </>);
+}
+
+// ── Admin: Class Invitations ─────────────────────────────────────────────────
+function AdminClassInvitations({session}){
+  const [talentQuery,setTalentQuery]=useState("");
+  const [talentResults,setTalentResults]=useState([]);
+  const [selectedTalent,setSelectedTalent]=useState(null);
+  const [classQuery,setClassQuery]=useState("");
+  const [selectedClass,setSelectedClass]=useState(null);
+  const [allClasses,setAllClasses]=useState([]);
+  const [message,setMessage]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [formMsg,setFormMsg]=useState("");
+  const [invitations,setInvitations]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [searchingTalent,setSearchingTalent]=useState(false);
+
+  useEffect(()=>{(async()=>{
+    const{data}=await window.sb.from("classes").select("id,title,instructor_name,category,price,image_url").eq("active",true).order("title");
+    setAllClasses(data||[]);
+  })();},[]);
+
+  const loadInvitations=useCallback(async()=>{
+    setLoading(true);
+    const{data,error}=await window.sb.from("class_invitations")
+      .select("*,talent:talent_user_id(display_name,email),class:class_id(title,instructor_name),admin:sent_by_admin_id(display_name)")
+      .order("created_at",{ascending:false}).limit(200);
+    if(error){setFormMsg("Load error: "+error.message);setLoading(false);return;}
+    setInvitations(data||[]);setLoading(false);
+  },[]);
+  useEffect(()=>{loadInvitations();},[loadInvitations]);
+
+  useEffect(()=>{
+    if(!talentQuery.trim()){setTalentResults([]);return;}
+    const t=setTimeout(async()=>{
+      setSearchingTalent(true);
+      const{data}=await window.sb.from("profiles")
+        .select("id,display_name,email,headshot_url")
+        .eq("user_type","talent")
+        .or(`display_name.ilike.%${talentQuery}%,email.ilike.%${talentQuery}%`)
+        .limit(8);
+      setTalentResults(data||[]);setSearchingTalent(false);
+    },300);
+    return()=>clearTimeout(t);
+  },[talentQuery]);
+
+  const filteredClasses=useMemo(()=>{
+    if(!classQuery.trim())return allClasses.slice(0,10);
+    const q=classQuery.toLowerCase();
+    return allClasses.filter(c=>(c.title||"").toLowerCase().includes(q)||(c.instructor_name||"").toLowerCase().includes(q)).slice(0,8);
+  },[allClasses,classQuery]);
+
+  const sendInvitation=async()=>{
+    if(!selectedTalent){setFormMsg("Please select a talent.");return;}
+    if(!selectedClass){setFormMsg("Please select a class.");return;}
+    setFormMsg("");setBusy(true);
+    try{
+      const uid=session?.user?.id;
+      const{error}=await window.sb.from("class_invitations").upsert({
+        talent_user_id:selectedTalent.id,
+        class_id:selectedClass.id,
+        sent_by_admin_id:uid||null,
+        message:message.trim()||null,
+        status:"sent",
+        viewed_at:null,
+        dismissed_at:null,
+        updated_at:new Date().toISOString()
+      },{onConflict:"talent_user_id,class_id"});
+      if(error)throw error;
+      setFormMsg("✓ Invitation sent.");
+      setSelectedTalent(null);setSelectedClass(null);setMessage("");
+      setTalentQuery("");setClassQuery("");setTalentResults([]);
+      loadInvitations();
+    }catch(e){setFormMsg("Error: "+e.message);}
+    finally{setBusy(false);}
+  };
+
+  const fmtDate=(s)=>{if(!s)return"—";const d=new Date(s);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
+  const STATUS_COLORS={sent:{label:"Sent",color:"var(--t2)"},viewed:{label:"Viewed",color:"var(--acc)"},saved:{label:"Saved",color:"#27ae60"},dismissed:{label:"Dismissed",color:"var(--t3)"},enrolled:{label:"Enrolled",color:"#27ae60"}};
+  const talentFirst=(t)=>(t?.display_name||"").split(" ")[0]||"there";
+
+  return(<>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+      <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,margin:0}}>Class Invitations</h1>
+    </div>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:24}}>Send curated class recommendations to talent. They appear in the talent's dashboard as a personal recommendation from SlateCue.</p>
+
+    {/* ── Compose form ── */}
+    <div className="card" style={{padding:24,marginBottom:32}}>
+      <h2 style={{fontWeight:700,fontSize:17,margin:"0 0 18px"}}>Send a Class Invitation</h2>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+
+        {/* Talent selector */}
+        <div>
+          <label style={{fontSize:12,fontWeight:600,color:"var(--t2)",display:"block",marginBottom:6}}>Select Talent</label>
+          {selectedTalent?(
+            <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"var(--s2)",borderRadius:8,border:"1px solid var(--bdr)"}}>
+              <div style={{width:32,height:32,borderRadius:"50%",background:"var(--bg)",overflow:"hidden",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"var(--t2)"}}>
+                {selectedTalent.headshot_url?<img src={selectedTalent.headshot_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:(selectedTalent.display_name||selectedTalent.email||"?")[0]?.toUpperCase()}
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontWeight:600,fontSize:13,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{selectedTalent.display_name||selectedTalent.email}</div>
+                <div style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{selectedTalent.email}</div>
+              </div>
+              <button onClick={()=>{setSelectedTalent(null);setTalentQuery("");}} style={{border:"none",background:"none",color:"var(--t3)",cursor:"pointer",fontSize:18,padding:"0 2px",lineHeight:1,flexShrink:0}}>×</button>
+            </div>
+          ):(
+            <div style={{position:"relative"}}>
+              <input className="input" placeholder="Search by name or email…" value={talentQuery} onChange={e=>setTalentQuery(e.target.value)} style={{width:"100%",boxSizing:"border-box"}}/>
+              {(talentResults.length>0||searchingTalent)&&(
+                <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,right:0,background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:8,zIndex:200,boxShadow:"0 4px 16px rgba(0,0,0,0.12)",overflow:"hidden",maxHeight:260,overflowY:"auto"}}>
+                  {searchingTalent?<div style={{padding:"12px 14px",fontSize:12,color:"var(--t3)"}}>Searching…</div>:
+                    talentResults.map(t=>(
+                      <div key={t.id} onClick={()=>{setSelectedTalent(t);setTalentQuery("");setTalentResults([]);}} style={{padding:"10px 14px",cursor:"pointer",borderBottom:"1px solid var(--bdr)",display:"flex",gap:10,alignItems:"center",transition:"background .1s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--s2)"} onMouseLeave={e=>e.currentTarget.style.background=""}>
+                        <div style={{width:32,height:32,borderRadius:"50%",background:"var(--s2)",overflow:"hidden",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"var(--t2)"}}>
+                          {t.headshot_url?<img src={t.headshot_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:(t.display_name||t.email||"?")[0]?.toUpperCase()}
+                        </div>
+                        <div style={{minWidth:0}}>
+                          <div style={{fontWeight:600,fontSize:13,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{t.display_name||"—"}</div>
+                          <div style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{t.email}</div>
+                        </div>
+                      </div>
+                    ))
+                  }
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Class selector */}
+        <div>
+          <label style={{fontSize:12,fontWeight:600,color:"var(--t2)",display:"block",marginBottom:6}}>Select Class</label>
+          {selectedClass?(
+            <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"var(--s2)",borderRadius:8,border:"1px solid var(--bdr)"}}>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontWeight:600,fontSize:13,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{selectedClass.title}</div>
+                <div style={{fontSize:11,color:"var(--t3)"}}>{selectedClass.instructor_name}{selectedClass.category?` · ${selectedClass.category}`:""}</div>
+              </div>
+              <button onClick={()=>{setSelectedClass(null);setClassQuery("");}} style={{border:"none",background:"none",color:"var(--t3)",cursor:"pointer",fontSize:18,padding:"0 2px",lineHeight:1,flexShrink:0}}>×</button>
+            </div>
+          ):(
+            <div style={{position:"relative"}}>
+              <input className="input" placeholder="Search classes…" value={classQuery} onChange={e=>setClassQuery(e.target.value)} style={{width:"100%",boxSizing:"border-box"}}/>
+              {filteredClasses.length>0&&(
+                <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,right:0,background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:8,zIndex:200,boxShadow:"0 4px 16px rgba(0,0,0,0.12)",overflow:"hidden",maxHeight:260,overflowY:"auto"}}>
+                  {filteredClasses.map(c=>(
+                    <div key={c.id} onClick={()=>{setSelectedClass(c);setClassQuery("");}} style={{padding:"10px 14px",cursor:"pointer",borderBottom:"1px solid var(--bdr)",transition:"background .1s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--s2)"} onMouseLeave={e=>e.currentTarget.style.background=""}>
+                      <div style={{fontWeight:600,fontSize:13}}>{c.title}</div>
+                      <div style={{fontSize:11,color:"var(--t3)"}}>{[c.instructor_name,c.category,c.price].filter(Boolean).join(" · ")}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Message */}
+      <div style={{marginBottom:16}}>
+        <label style={{fontSize:12,fontWeight:600,color:"var(--t2)",display:"block",marginBottom:6}}>Personal Message <span style={{fontWeight:400,color:"var(--t3)"}}>(optional)</span></label>
+        <textarea className="input" rows={3} placeholder={selectedTalent?`Hi ${talentFirst(selectedTalent)}, we think this class could be a strong fit for your profile. A casting director or teacher may be interested in collaborating.`:"Hi [Name], we think this class could be a strong fit for your profile."} value={message} onChange={e=>setMessage(e.target.value)} style={{width:"100%",boxSizing:"border-box",resize:"vertical",fontFamily:"inherit"}}/>
+      </div>
+
+      {formMsg&&<div style={{fontSize:13,marginBottom:12,padding:"8px 12px",borderRadius:6,background:formMsg.startsWith("✓")?"rgba(27,135,62,0.08)":"rgba(192,57,43,0.08)",color:formMsg.startsWith("✓")?"var(--grn)":"var(--red)",border:`1px solid ${formMsg.startsWith("✓")?"rgba(27,135,62,0.2)":"rgba(192,57,43,0.2)"}`}}>{formMsg}</div>}
+      <button className="btn-p" disabled={busy||!selectedTalent||!selectedClass} onClick={sendInvitation} style={{opacity:(!selectedTalent||!selectedClass)?0.55:1}}>{busy?"Sending…":"Send Class Invitation"}</button>
+    </div>
+
+    {/* ── Sent Invitations log ── */}
+    <h2 style={{fontWeight:700,fontSize:18,marginBottom:4}}>Sent Invitations</h2>
+    <p style={{color:"var(--t3)",fontSize:12,marginBottom:16}}>A record of every invitation — including status updates from talent.</p>
+    {loading?<SlateCueLoader size="inline" text="Loading…"/>:invitations.length===0?(
+      <div style={{textAlign:"center",padding:"40px 0",color:"var(--t2)",fontSize:14}}>No invitations sent yet.</div>
+    ):(
+      <div>{invitations.map(inv=>{
+        const st=STATUS_COLORS[inv.status]||{label:inv.status,color:"var(--t2)"};
+        return(<div key={inv.id} className="card" style={{padding:"14px 18px",marginBottom:10}}>
+          <div style={{display:"flex",alignItems:"flex-start",gap:14,flexWrap:"wrap"}}>
+            <div style={{flex:1,minWidth:180}}>
+              <div style={{fontWeight:600,fontSize:14,marginBottom:2}}>
+                {inv.talent?.display_name||"Unknown talent"}
+                <span style={{color:"var(--t3)",fontWeight:400,fontSize:12,marginLeft:6}}>{inv.talent?.email||""}</span>
+              </div>
+              <div style={{fontSize:13,color:"var(--t2)",marginBottom:inv.message?4:0}}>
+                Class: <strong>{inv.class?.title||"—"}</strong>
+                {inv.class?.instructor_name&&<span style={{color:"var(--t3)"}}> · {inv.class.instructor_name}</span>}
+              </div>
+              {inv.message&&<div style={{fontSize:12,color:"var(--t3)",fontStyle:"italic",margin:"4px 0",lineHeight:1.5}}>"{inv.message}"</div>}
+              <div style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Sent {fmtDate(inv.created_at)}{inv.admin?.display_name?` by ${inv.admin.display_name}`:""}</div>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:5,flexShrink:0}}>
+              <span style={{fontSize:11,fontWeight:600,padding:"3px 9px",borderRadius:6,background:"var(--s2)",color:st.color,border:`1px solid ${st.color}33`}}>{st.label}</span>
+              {inv.viewed_at&&<div style={{fontSize:10,color:"var(--t3)"}}>Viewed {fmtDate(inv.viewed_at)}</div>}
+              {inv.dismissed_at&&<div style={{fontSize:10,color:"var(--t3)"}}>Dismissed {fmtDate(inv.dismissed_at)}</div>}
+            </div>
+          </div>
+        </div>);
+      })}</div>
+    )}
   </>);
 }
 
