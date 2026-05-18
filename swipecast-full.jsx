@@ -1125,7 +1125,7 @@ function PageLoader({text}){
 // ═══════════════════════════════════════════
 // FOOTER (shared across all pages)
 // ═══════════════════════════════════════════
-function Footer({onNavigate}){
+function Footer({onNavigate,spacerBg}){
   // Reusable footer link — every link inherits the same hover treatment via .site-footer-link.
   const L=({to,children})=><span className="site-footer-link" onClick={()=>onNavigate(to)}>{children}</span>;
   // Cookie modal lives at App level. We dispatch a custom DOM event rather than
@@ -1146,7 +1146,7 @@ function Footer({onNavigate}){
   // On long pages: 40px spacer + footer (auto collapses to 0 — but the spacer
   // still guarantees the gap).
   return(<>
-    <div className="site-footer-spacer" aria-hidden="true"/>
+    <div className="site-footer-spacer" aria-hidden="true" style={spacerBg?{background:spacerBg}:undefined}/>
     <footer className="site-footer">
       <div className="site-footer-inner">
         <div className="site-footer-grid">
@@ -7328,7 +7328,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       </div>
     </section>}
 
-    <Footer onNavigate={onNavigate}/>
+    <Footer onNavigate={onNavigate} spacerBg={!isLoggedIn?"#1B1C20":undefined}/>
   </>);
 }
 
@@ -11035,8 +11035,6 @@ function App(){
       {/* Cookie preferences modal — opened via the footer "Cookie Preferences" link.
           Mounted at App level so it can sit on top of any page. */}
       <CookieConsentModal open={cookieModalOpen} onClose={()=>setCookieModalOpen(false)}/>
-      {/* ── Build marker — always visible, tiny, bottom of page ── */}
-      <div style={{textAlign:"center",fontSize:10,color:"rgba(128,128,128,0.5)",padding:"4px 0 8px",letterSpacing:0.3,userSelect:"none",pointerEvents:"none"}}>BUILD MOBILE DEBUG 2026-05-17-A</div>
       {/* ── Mobile debug panel — visible when URL contains ?debug ── */}
       {(()=>{
         if(typeof window==="undefined")return null;
