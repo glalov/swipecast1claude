@@ -4439,206 +4439,190 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       {/* ── Recommended Classes hero (class invitations) ── */}
       {!invLoading&&classInvitations.length>0&&(
         <div style={{marginBottom:32}}>
-          <div style={{display:"flex",flexDirection:"column",gap:16}}>
+          <div style={{display:"flex",flexDirection:"column",gap:18}}>
             {classInvitations.slice(0,3).map(inv=>{
               const cls=inv.class;
               const isNew=inv.status==="sent";
-              const hasImage=!!cls?.image_url;
+              const posterImgs=Array.isArray(cls?.instructor_poster_urls)&&cls.instructor_poster_urls.length>0
+                ?cls.instructor_poster_urls.map(p=>p.url||p)
+                :cls?.image_url?[cls.image_url]:[];
+              const hasMedia=posterImgs.length>0;
               return(
                 <div key={inv.id} style={{
-                  borderRadius:20,overflow:"hidden",
-                  background:"linear-gradient(135deg,#0f1020 0%,#1a1230 45%,#221540 100%)",
-                  border:"1px solid rgba(196,169,255,0.28)",
-                  boxShadow:"0 20px 60px rgba(10,8,30,0.55),0 0 0 1px rgba(196,169,255,0.06) inset",
+                  borderRadius:18,overflow:"hidden",
+                  background:"linear-gradient(135deg,#eef4f2 0%,#dce9e6 50%,#f5ead8 100%)",
+                  border:"1px solid rgba(50,80,75,0.16)",
+                  boxShadow:"0 16px 48px rgba(20,35,45,0.13),0 2px 8px rgba(20,35,45,0.07)",
                   position:"relative",
                 }}>
-                  {/* Subtle top glow line */}
-                  <div style={{
-                    position:"absolute",top:0,left:"10%",right:"10%",height:1,
-                    background:"linear-gradient(90deg,transparent,rgba(196,169,255,0.5),transparent)",
-                    pointerEvents:"none",
-                  }}/>
+                  <div style={{display:"flex",flexDirection:isMobile?"column":"row",minHeight:isMobile?0:240}}>
 
-                  <div style={{display:"flex",flexDirection:isMobile?"column":"row"}}>
+                    {/* ── Poster / image panel ── */}
+                    <div style={{
+                      flexShrink:0,
+                      width:isMobile?"100%":270,
+                      minHeight:isMobile?230:240,
+                      position:"relative",
+                      overflow:"hidden",
+                      background:"#c8d8d4",
+                    }}>
+                      {hasMedia?(
+                        posterImgs.length===1?(
+                          <img
+                            src={posterImgs[0]}
+                            alt={cls?.title||"Class poster"}
+                            style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block",position:"absolute",inset:0}}
+                          />
+                        ):(
+                          /* collage: big left + stacked right */
+                          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",height:"100%",gap:2,position:"absolute",inset:0}}>
+                            <img src={posterImgs[0]} alt={cls?.title} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block"}}/>
+                            <div style={{display:"grid",gridTemplateRows:`repeat(${Math.min(posterImgs.length-1,2)},1fr)`,gap:2}}>
+                              {posterImgs.slice(1,3).map((u,i)=>(
+                                <img key={i} src={u} alt={`${cls?.title} ${i+2}`} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block"}}/>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      ):(
+                        <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#c8d8d4,#d8e8e0)"}}>
+                          <span style={{fontSize:48,opacity:0.2}}>🎬</span>
+                        </div>
+                      )}
+                      {/* Right-edge fade into card background on desktop */}
+                      {!isMobile&&(
+                        <div style={{position:"absolute",top:0,bottom:0,right:0,width:48,background:"linear-gradient(90deg,transparent,#dce9e6)",pointerEvents:"none"}}/>
+                      )}
+                      {/* Bottom fade on mobile */}
+                      {isMobile&&(
+                        <div style={{position:"absolute",bottom:0,left:0,right:0,height:48,background:"linear-gradient(transparent,#eef4f2)",pointerEvents:"none"}}/>
+                      )}
+                    </div>
 
-                    {/* Image panel */}
-                    {hasImage?(
-                      <div style={{
-                        flexShrink:0,
-                        width:isMobile?"100%":250,
-                        minHeight:isMobile?220:0,
-                        overflow:"hidden",
-                        position:"relative",
-                      }}>
-                        <img
-                          src={cls.image_url}
-                          alt={cls.title||"Class"}
-                          style={{
-                            width:"100%",
-                            height:isMobile?220:"100%",
-                            objectFit:"cover",
-                            objectPosition:"center top",
-                            display:"block",
-                          }}
-                        />
-                        {!isMobile&&(
-                          <div style={{
-                            position:"absolute",top:0,bottom:0,right:0,width:60,
-                            background:"linear-gradient(90deg,transparent,#1a1230)",
-                          }}/>
-                        )}
-                        {isMobile&&(
-                          <div style={{
-                            position:"absolute",bottom:0,left:0,right:0,height:60,
-                            background:"linear-gradient(transparent,#0f1020)",
-                          }}/>
-                        )}
-                      </div>
-                    ):(
-                      <div style={{
-                        flexShrink:0,
-                        width:isMobile?"100%":220,
-                        minHeight:isMobile?120:0,
-                        background:"linear-gradient(135deg,rgba(99,60,180,0.25),rgba(196,169,255,0.08))",
-                        display:"flex",alignItems:"center",justifyContent:"center",
-                        borderRight:isMobile?"none":"1px solid rgba(196,169,255,0.12)",
-                        borderBottom:isMobile?"1px solid rgba(196,169,255,0.12)":"none",
-                      }}>
-                        <span style={{fontSize:40,opacity:0.3}}>🎬</span>
-                      </div>
-                    )}
-
-                    {/* Content panel */}
+                    {/* ── Content panel ── */}
                     <div style={{
                       flex:1,
-                      padding:isMobile?"20px 20px 24px":"28px 32px 28px 28px",
+                      padding:isMobile?"20px 22px 26px":"28px 28px 28px 24px",
                       display:"flex",flexDirection:"column",minWidth:0,position:"relative",
                     }}>
 
-                      {/* Dismiss button */}
+                      {/* Dismiss */}
                       <button
                         onClick={()=>dismissInvitation(inv.id)}
                         title="Dismiss"
                         style={{
-                          position:"absolute",top:16,right:16,
-                          border:"1px solid rgba(196,169,255,0.18)",
-                          background:"rgba(255,255,255,0.05)",
-                          color:"rgba(196,169,255,0.5)",cursor:"pointer",fontSize:12,
-                          padding:"4px 8px",borderRadius:7,lineHeight:1,
-                          fontFamily:"inherit",transition:"all .15s",
+                          position:"absolute",top:14,right:14,
+                          border:"1px solid rgba(50,80,75,0.2)",
+                          background:"rgba(255,255,255,0.55)",
+                          color:"#6b7c7a",cursor:"pointer",fontSize:12,
+                          padding:"3px 8px",borderRadius:7,lineHeight:1,
+                          fontFamily:"inherit",
                         }}
                       >✕</button>
 
                       {/* Badge */}
-                      <div style={{marginBottom:14}}>
+                      <div style={{marginBottom:12}}>
                         <span style={{
                           display:"inline-flex",alignItems:"center",gap:6,
-                          background:"linear-gradient(90deg,rgba(196,169,255,0.18),rgba(196,169,255,0.1))",
-                          border:"1px solid rgba(196,169,255,0.3)",
-                          color:"#d4b8ff",fontSize:9,fontWeight:800,
-                          letterSpacing:1.4,textTransform:"uppercase",
+                          background:"linear-gradient(90deg,#c8a84b,#e2c46a)",
+                          color:"#2a1f00",fontSize:9,fontWeight:800,
+                          letterSpacing:1.5,textTransform:"uppercase",
                           padding:"5px 12px 5px 10px",borderRadius:20,
+                          boxShadow:"0 2px 10px rgba(180,140,40,0.28)",
                         }}>
-                          <span style={{
-                            width:5,height:5,borderRadius:"50%",
-                            background:"#c4a9ff",display:"inline-block",flexShrink:0,
-                            boxShadow:"0 0 6px #c4a9ff",
-                          }}/>
+                          <span style={{width:5,height:5,borderRadius:"50%",background:"#2a1f00",display:"inline-block",flexShrink:0}}/>
                           {isNew?"New SlateCue Pick":"SlateCue Pick"}
                         </span>
                       </div>
 
-                      {/* Headline */}
-                      <div style={{
-                        fontSize:11,fontWeight:700,color:"rgba(196,169,255,0.65)",
-                        letterSpacing:0.5,textTransform:"uppercase",marginBottom:6,
-                      }}>
+                      {/* Eyebrow */}
+                      <div style={{fontSize:11,fontWeight:700,color:"#4a6b65",letterSpacing:0.6,textTransform:"uppercase",marginBottom:5}}>
                         Recommended for your profile
                       </div>
 
                       {/* Class title */}
                       <div style={{
-                        fontWeight:800,fontSize:isMobile?19:22,
-                        color:"#f0ecff",lineHeight:1.2,letterSpacing:-0.5,
-                        marginBottom:14,paddingRight:36,
+                        fontWeight:800,fontSize:isMobile?18:21,
+                        color:"#152823",lineHeight:1.2,letterSpacing:-0.4,
+                        marginBottom:14,paddingRight:32,
                       }}>
                         {cls?.title||"Class Invitation"}
                       </div>
 
-                      {/* Meta row */}
-                      <div style={{display:"flex",flexWrap:"wrap",gap:"6px 20px",fontSize:12,marginBottom:14}}>
+                      {/* Meta chips */}
+                      <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:16}}>
                         {cls?.instructor_name&&(
-                          <span style={{display:"flex",alignItems:"center",gap:5}}>
-                            <span style={{color:"rgba(196,169,255,0.45)",fontSize:10,fontWeight:700,letterSpacing:0.5,textTransform:"uppercase"}}>Teacher</span>
-                            <strong style={{color:"#e8e0ff",fontWeight:700}}>{cls.instructor_name}</strong>
-                          </span>
+                          <span style={{
+                            background:"rgba(30,65,60,0.1)",border:"1px solid rgba(30,65,60,0.15)",
+                            color:"#1e4140",fontSize:11,fontWeight:600,
+                            padding:"4px 10px",borderRadius:20,
+                          }}>👤 {cls.instructor_name}</span>
                         )}
                         {cls?.level&&(
-                          <span style={{display:"flex",alignItems:"center",gap:5}}>
-                            <span style={{color:"rgba(196,169,255,0.45)",fontSize:10,fontWeight:700,letterSpacing:0.5,textTransform:"uppercase"}}>Level</span>
-                            <span style={{color:"rgba(220,210,255,0.75)"}}>{cls.level}</span>
-                          </span>
+                          <span style={{
+                            background:"rgba(30,65,60,0.1)",border:"1px solid rgba(30,65,60,0.15)",
+                            color:"#1e4140",fontSize:11,fontWeight:600,
+                            padding:"4px 10px",borderRadius:20,
+                          }}>{cls.level}</span>
                         )}
                         {cls?.category&&(
-                          <span style={{display:"flex",alignItems:"center",gap:5}}>
-                            <span style={{color:"rgba(196,169,255,0.45)",fontSize:10,fontWeight:700,letterSpacing:0.5,textTransform:"uppercase"}}>Category</span>
-                            <span style={{color:"rgba(220,210,255,0.75)"}}>{cls.category}</span>
-                          </span>
+                          <span style={{
+                            background:"rgba(30,65,60,0.1)",border:"1px solid rgba(30,65,60,0.15)",
+                            color:"#1e4140",fontSize:11,fontWeight:600,
+                            padding:"4px 10px",borderRadius:20,
+                          }}>{cls.category}</span>
                         )}
                         {(cls?.sale_price||cls?.price)&&(
-                          <span style={{display:"flex",alignItems:"center",gap:5}}>
-                            <span style={{color:"rgba(196,169,255,0.45)",fontSize:10,fontWeight:700,letterSpacing:0.5,textTransform:"uppercase"}}>Price</span>
+                          <span style={{
+                            background:"rgba(180,140,40,0.15)",border:"1px solid rgba(180,140,40,0.25)",
+                            color:"#6b4a00",fontSize:11,fontWeight:700,
+                            padding:"4px 10px",borderRadius:20,
+                          }}>
                             {cls.sale_price
-                              ?<><strong style={{color:"#86efac",fontWeight:700}}>{cls.sale_price}</strong><span style={{textDecoration:"line-through",marginLeft:4,color:"rgba(196,169,255,0.35)",fontSize:11}}>{cls.price}</span></>
-                              :<strong style={{color:"#e8e0ff",fontWeight:700}}>{cls.price}</strong>
+                              ?<>{cls.sale_price} <span style={{textDecoration:"line-through",opacity:0.5,fontWeight:400}}>{cls.price}</span></>
+                              :cls.price
                             }
                           </span>
                         )}
                       </div>
 
-                      {/* Divider */}
-                      <div style={{height:1,background:"rgba(196,169,255,0.12)",marginBottom:14}}/>
-
                       {/* Admin message */}
                       {inv.message&&(
                         <div style={{
-                          fontSize:13,color:"rgba(220,210,255,0.7)",lineHeight:1.7,fontStyle:"italic",
+                          fontSize:13,color:"#2e4a46",lineHeight:1.7,fontStyle:"italic",
                           padding:"12px 16px",marginBottom:18,
-                          background:"rgba(196,169,255,0.06)",
-                          border:"1px solid rgba(196,169,255,0.15)",
-                          borderLeft:"3px solid rgba(196,169,255,0.4)",
-                          borderRadius:"0 10px 10px 0",
+                          background:"rgba(255,255,255,0.55)",
+                          border:"1px solid rgba(50,80,75,0.15)",
+                          borderRadius:10,
                         }}>
                           "{inv.message}"
                         </div>
                       )}
 
-                      {/* CTA buttons */}
+                      {/* CTA */}
                       <div style={{
                         display:"flex",gap:10,marginTop:"auto",
                         flexDirection:isMobile?"column":"row",
-                        flexWrap:"wrap",
                       }}>
                         <button
                           style={{
-                            fontSize:13,padding:"12px 28px",fontWeight:700,letterSpacing:0.2,
-                            background:"linear-gradient(90deg,#c4a9ff,#a78bfa)",
-                            color:"#0f0c1e",border:"none",borderRadius:10,cursor:"pointer",
-                            boxShadow:"0 4px 18px rgba(167,139,250,0.35)",
-                            fontFamily:"inherit",transition:"all .15s",
-                            whiteSpace:"nowrap",flex:isMobile?1:"none",
+                            fontSize:13,padding:"12px 26px",fontWeight:700,letterSpacing:0.1,
+                            background:"linear-gradient(90deg,#1a3d38,#254f49)",
+                            color:"#f0f8f6",border:"none",borderRadius:10,cursor:"pointer",
+                            boxShadow:"0 4px 16px rgba(20,50,45,0.28)",
+                            fontFamily:"inherit",whiteSpace:"nowrap",
+                            flex:isMobile?1:"none",
                           }}
                           onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes");}}
                         >View Recommended Class →</button>
                         <button
                           style={{
                             fontSize:12,padding:"12px 20px",fontWeight:600,
-                            background:"rgba(255,255,255,0.05)",
-                            border:"1px solid rgba(196,169,255,0.2)",
-                            color:"rgba(196,169,255,0.6)",
+                            background:"rgba(255,255,255,0.45)",
+                            border:"1px solid rgba(50,80,75,0.22)",
+                            color:"#3a5a55",
                             borderRadius:10,cursor:"pointer",fontFamily:"inherit",
-                            transition:"all .15s",whiteSpace:"nowrap",
-                            flex:isMobile?1:"none",
+                            whiteSpace:"nowrap",flex:isMobile?1:"none",
                           }}
                           onClick={()=>dismissInvitation(inv.id)}
                         >Not Interested</button>
@@ -4655,10 +4639,9 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <button
                 style={{
                   fontSize:12,padding:"9px 22px",fontWeight:600,
-                  background:"rgba(196,169,255,0.08)",
-                  border:"1px solid rgba(196,169,255,0.2)",
-                  color:"rgba(196,169,255,0.7)",
-                  borderRadius:10,cursor:"pointer",fontFamily:"inherit",
+                  background:"rgba(30,65,60,0.07)",
+                  border:"1px solid rgba(30,65,60,0.18)",
+                  color:"#2e4a46",borderRadius:10,cursor:"pointer",fontFamily:"inherit",
                 }}
                 onClick={()=>setDashView("class-invitations")}
               >
