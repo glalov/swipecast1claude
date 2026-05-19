@@ -8528,9 +8528,10 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
                 const {error}=await window.sb.from("talent_credits").insert(row);
                 if(error)throw error;
               }
+              const wasEditing=!!editingCreditId;
               setCreditForm({category:creditForm.category,production_title:"",role:"",director_or_company:"",location:"",credit_year:"",website_url:""});
               loadCredits();
-              setMsg(editingCreditId?"Credit updated.":"Credit added.");setTimeout(()=>setMsg(""),3000);
+              setMsg(wasEditing?"Credit updated.":"Credit added to your profile.");window.scrollTo({top:0,behavior:"smooth"});setTimeout(()=>setMsg(""),4000);
             }catch(e){showErr(e.message||"Could not save credit.");}
             finally{setCreditsLoading(false);}
           }}>{creditsLoading?"Saving…":editingCreditId?"Update Credit":"Add Credit"}</button>
@@ -8545,14 +8546,14 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
             {dbCredits.filter(c=>c.category===cat).map(c=>(
               <div key={c.id} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,alignItems:"flex-start",padding:"8px 0",borderBottom:"1px solid var(--bdr)"}}>
                 <div>
-                  <div style={{fontSize:13,fontWeight:600}}>{c.credit_year&&<span style={{color:"var(--t3)",fontWeight:400,marginRight:8}}>{c.credit_year}</span>}{c.production_title}{c.role&&<span style={{color:"var(--t2)",fontWeight:400}}> · {c.role}</span>}</div>
+                  <div style={{fontSize:15,fontWeight:700}}>{c.credit_year&&<span style={{color:"var(--t3)",fontWeight:400,fontSize:13,marginRight:8}}>{c.credit_year}</span>}{c.website_url?<a href={c.website_url} target="_blank" rel="noopener noreferrer" style={{color:"var(--t1)",textDecoration:"underline"}}>{c.production_title}</a>:c.production_title}{c.role&&<span style={{color:"var(--t2)",fontWeight:400,fontSize:13}}> · {c.role}</span>}</div>
                   {(c.director_or_company||c.location)&&<div style={{fontSize:11,color:"var(--t3)",marginTop:2}}>{[c.director_or_company,c.location].filter(Boolean).join(" · ")}</div>}
                 </div>
                 <div style={{display:"flex",gap:6,whiteSpace:"nowrap"}}>
                   <button className="btn-s btn-sm" style={{fontSize:11}} onClick={()=>{setEditingCreditId(c.id);setCreditForm({category:c.category,production_title:c.production_title,role:c.role||"",director_or_company:c.director_or_company||"",location:c.location||"",credit_year:c.credit_year||"",website_url:c.website_url||""});window.scrollTo({top:0,behavior:"smooth"});}}>Edit</button>
                   <button className="btn-s btn-sm" style={{fontSize:11,color:"var(--red)"}} onClick={async()=>{
                     if(!window.confirm("Delete this credit?"))return;
-                    try{await window.sb.from("talent_credits").delete().eq("id",c.id);loadCredits();}
+                    try{await window.sb.from("talent_credits").delete().eq("id",c.id);loadCredits();setMsg("Credit removed.");window.scrollTo({top:0,behavior:"smooth"});setTimeout(()=>setMsg(""),4000);}
                     catch(e){showErr(e.message||"Delete failed.");}
                   }}>Delete</button>
                 </div>
@@ -11438,6 +11439,8 @@ function App(){
             {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navigate("dashboard")}>Dashboard</button>:null}
             {/* Talent Dashboard — only for talent user_type */}
             {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navigate("talent-dashboard")}>Dashboard</button>:null}
+            {/* My Profile — talent only */}
+            {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navigate("my-profile")}>My Profile</button>:null}
             {/* Universal Inbox button — visible for every signed-in user_type with live unread badge */}
             <button className="btn-s btn-sm" onClick={()=>navigate("inbox")} style={{position:"relative",display:"inline-flex",alignItems:"center",gap:6}}>
               <span>Inbox</span>
