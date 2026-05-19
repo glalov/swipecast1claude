@@ -1149,3 +1149,30 @@ alter table public.profiles
 
 comment on column public.profiles.account_status is
   'Lifecycle status: active | deactivated | deletion_requested | deleted';
+
+-- ═══════════════════════════════════════════════════════════════
+-- MIGRATION: stripe_membership_integration
+-- Adds Stripe payment tracking to profiles and class_booking_requests.
+-- Already applied via Supabase MCP — included here for documentation.
+-- ═══════════════════════════════════════════════════════════════
+alter table public.profiles
+  add column if not exists membership_status      text not null default 'free',
+  add column if not exists stripe_customer_id     text,
+  add column if not exists stripe_subscription_id text,
+  add column if not exists subscription_status    text,
+  add column if not exists premium_started_at     timestamptz,
+  add column if not exists current_period_end     timestamptz;
+
+create index if not exists profiles_membership_status_idx  on public.profiles(membership_status);
+create index if not exists profiles_stripe_customer_id_idx on public.profiles(stripe_customer_id);
+
+alter table public.class_booking_requests
+  add column if not exists stripe_session_id text,
+  add column if not exists payment_status    text;
+
+comment on column public.profiles.membership_status      is 'free | active';
+comment on column public.profiles.subscription_status    is 'active | trialing | past_due | canceled | unpaid';
+comment on column public.profiles.stripe_customer_id     is 'Stripe customer ID (cus_...)';
+comment on column public.profiles.stripe_subscription_id is 'Stripe subscription ID (sub_...)';
+comment on column public.profiles.premium_started_at     is 'When the user first became Premium';
+comment on column public.profiles.current_period_end     is 'End of current billing period';

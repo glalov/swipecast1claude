@@ -907,6 +907,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
 //     server-side Checkout session; activate_membership is called by webhook.
 function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onReload}){
   const [err,setErr]=useState("");
+  const [busy,setBusy]=useState(false);
   const plan=MEMBERSHIP_PLANS[planKey]||MEMBERSHIP_PLANS.monthly;
   const userType=(myProfile?.user_type||"").toLowerCase();
   const isTalent=userType==="talent";
@@ -925,12 +926,26 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
     </div><Footer onNavigate={onNavigate}/></div>);
   }
 
-  // TODO (Stripe): Replace handleUpgradeClick with a redirect to your Stripe Checkout
-  // session endpoint (POST /api/stripe/checkout) once STRIPE_ACTOR_LINK is configured
-  // and the checkout.session.completed webhook calls activate_membership server-side.
-  // NEVER call activate_membership from the browser — membership_status must only be
-  // set to 'active' after Stripe confirms payment on the server.
-  const handleUpgradeClick=()=>{ setErr("stripe-not-connected"); };
+  const handleUpgradeClick=async()=>{
+    if(busy)return;
+    setBusy(true);setErr("");
+    try{
+      const{data:{session:authSess}}=await window.sb.auth.getSession();
+      if(!authSess){setErr("Please sign in first.");setBusy(false);return;}
+      const supabaseUrl=window.SC_CONFIG?.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co";
+      const res=await fetch(`${supabaseUrl}/functions/v1/stripe-checkout`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":`Bearer ${authSess.access_token}`},
+        body:JSON.stringify({type:"premium",plan_key:planKey}),
+      });
+      const data=await res.json();
+      if(!res.ok)throw new Error(data.error||"Could not start checkout. Please try again.");
+      window.location.href=data.url;
+    }catch(e){
+      setErr(e.message||"Could not start checkout. Please try again.");
+      setBusy(false);
+    }
+  };
 
   return(<div className="page" style={{maxWidth:560,margin:"0 auto"}}>
     <button className="btn-s btn-sm" onClick={()=>onNavigate("membership")} style={{marginBottom:18}}>← Back to plans</button>
@@ -967,13 +982,81 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
         <p style={{fontSize:11,color:"var(--t3)",marginTop:12,lineHeight:1.5}}>Renews automatically. Cancel anytime from your profile. Plus tax where applicable.</p>
       </div>
 
-      {err==="stripe-not-connected"&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"12px 16px",borderRadius:8,fontSize:13,marginBottom:14,textAlign:"center"}}>Premium checkout is not connected yet. Please try again later.</div>}
+      {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"12px 16px",borderRadius:8,fontSize:13,marginBottom:14,textAlign:"center"}}>{err}</div>}
 
-      <button className="btn-p" style={{width:"100%",padding:"16px"}} onClick={handleUpgradeClick}>Upgrade to Premium — {PREMIUM_PRICE}</button>
-      <p style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginTop:12}}>Stripe payment integration coming soon. Your plan will activate automatically after successful payment.</p>
+      <button className="btn-p" style={{width:"100%",padding:"16px",opacity:busy?0.7:1}} disabled={busy} onClick={handleUpgradeClick}>
+        {busy?"Opening Checkout…":`Upgrade to Premium — ${PREMIUM_PRICE}`}
+      </button>
+      <p style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginTop:12}}>You'll be taken to Stripe's secure checkout. Your plan activates automatically after payment.</p>
 
     <Footer onNavigate={onNavigate}/>
   </div>);
+}
+
+// ─── Payment success page — shown when user returns from Stripe with
+//     ?session_id=...&type=premium. Polls for webhook activation (up to 60s).
+function PaymentSuccessPage({session,myProfile,onNavigate,onReload,successType}){
+  const [activating,setActivating]=useState(successType==="premium");
+  const [isPremium,setIsPremium]=useState(myProfile?.membership_status==="active");
+
+  useEffect(()=>{
+    if(successType!=="premium")return;
+    if(myProfile?.membership_status==="active"){setActivating(false);setIsPremium(true);return;}
+    let attempts=0;
+    const maxAttempts=12; // 60s total at 5s intervals
+    const userId=session?.user?.id;
+    if(!userId){setActivating(false);return;}
+    const poll=async()=>{
+      attempts++;
+      try{
+        const{data}=await window.sb.from("profiles").select("membership_status").eq("id",userId).single();
+        if(data?.membership_status==="active"){
+          setIsPremium(true);setActivating(false);
+          if(onReload)onReload();
+          return;
+        }
+      }catch(_){}
+      if(attempts<maxAttempts)setTimeout(poll,5000);
+      else setActivating(false);
+    };
+    const t=setTimeout(poll,2000);
+    return()=>clearTimeout(t);
+  },[]);
+
+  if(successType==="class"){
+    return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}>
+      <div className="check">✓</div>
+      <h3>Payment Confirmed!</h3>
+      <p style={{marginBottom:24,color:"var(--t2)"}}>Your class payment was successful. Check your inbox for booking confirmation details from the instructor.</p>
+      <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+        <button className="btn-p" onClick={()=>onNavigate("classes")}>Back to Classes</button>
+        <button className="btn-s" onClick={()=>onNavigate("inbox")}>View Inbox</button>
+      </div>
+    </div><Footer onNavigate={onNavigate}/></div>);
+  }
+
+  if(activating){
+    return(<div className="page"><div style={{padding:"80px 24px",maxWidth:560,margin:"0 auto",textAlign:"center"}}>
+      <div style={{fontSize:40,marginBottom:18}}>⏳</div>
+      <h3 style={{fontWeight:800,fontSize:24,marginBottom:8}}>Activating your Premium membership…</h3>
+      <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>Payment confirmed. We're activating your account now — this takes just a moment.</p>
+    </div><Footer onNavigate={onNavigate}/></div>);
+  }
+
+  return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}>
+    <div className="check">✓</div>
+    <h3>{isPremium?"Welcome to CastSlate Premium!":"Payment Received"}</h3>
+    <p style={{marginBottom:isPremium?8:16}}>
+      {isPremium
+        ?"Your Premium membership is now active. You have unlimited submissions starting right now."
+        :"Your payment was received. Your Premium membership will activate within a minute — refresh the page if it doesn't appear."}
+    </p>
+    {isPremium&&<p style={{color:"var(--acc)",fontWeight:700,marginBottom:24,fontSize:15}}>Unlimited submissions unlocked ✓</p>}
+    <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+      <button className="btn-p" onClick={()=>onNavigate("search")}>Browse Castings →</button>
+      <button className="btn-s" onClick={()=>onNavigate("my-profile")}>My Profile</button>
+    </div>
+  </div><Footer onNavigate={onNavigate}/></div>);
 }
 
 // ─── Cookie consent helpers + modal. Persists to localStorage so the user's
@@ -1940,6 +2023,34 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
   const [sessionFilter,setSessionFilter]=useState("all");
   const [bookingTarget,setBookingTarget]=useState(null); // {cls,slot,date}
   const [bookedSessions,setBookedSessions]=useState(new Set()); // "slotId_date" keys for booked occurrences
+  const [myBookingRequest,setMyBookingRequest]=useState(null); // approved booking for current class
+  const [classPayBusy,setClassPayBusy]=useState(false);
+  const [classPayErr,setClassPayErr]=useState("");
+
+  const handleClassPayment=async(cls)=>{
+    if(classPayBusy)return;
+    setClassPayBusy(true);setClassPayErr("");
+    try{
+      const{data:{session:authSess}}=await window.sb.auth.getSession();
+      if(!authSess){onNavigate("login");return;}
+      // Parse price string like "$420", "$220 / month" → number
+      const rawPrice=(cls.sale_price||cls.price||"").replace(/[^0-9.]/g,"");
+      const parsedPrice=parseFloat(rawPrice);
+      if(!parsedPrice||parsedPrice<=0)throw new Error("Could not determine class price. Please contact support.");
+      const supabaseUrl=window.SC_CONFIG?.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co";
+      const res=await fetch(`${supabaseUrl}/functions/v1/stripe-checkout`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":`Bearer ${authSess.access_token}`},
+        body:JSON.stringify({type:"class",class_id:String(cls.id),class_title:cls.title,class_price:parsedPrice}),
+      });
+      const data=await res.json();
+      if(!res.ok)throw new Error(data.error||"Could not start checkout. Please try again.");
+      window.location.href=data.url;
+    }catch(e){
+      setClassPayErr(e.message||"Could not start checkout. Please try again.");
+      setClassPayBusy(false);
+    }
+  };
 
   useEffect(()=>{(async()=>{
     try{
@@ -1974,14 +2085,24 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
 
   // Fetch booked session occurrences whenever the user opens a class detail
   useEffect(()=>{
-    if(!viewing){setBookedSessions(new Set());return;}
+    if(!viewing){setBookedSessions(new Set());setMyBookingRequest(null);setClassPayErr("");return;}
     (async()=>{
       const{data}=await window.sb.from("class_booked_sessions")
         .select("time_slot_id,selected_date").eq("class_id",viewing.id);
       const keys=new Set((data||[]).map(r=>`${r.time_slot_id}_${r.selected_date}`));
       setBookedSessions(keys);
     })();
-  },[viewing]);
+    // Load current user's booking request for this class (to show Pay Now if approved)
+    if(session?.user?.id){
+      (async()=>{
+        const{data}=await window.sb.from("class_booking_requests")
+          .select("id,status,payment_status,stripe_session_id")
+          .eq("user_id",session.user.id).eq("class_id",viewing.id)
+          .order("created_at",{ascending:false}).limit(1).maybeSingle();
+        setMyBookingRequest(data||null);
+      })();
+    }
+  },[viewing,session?.user?.id]);
 
   const catMeta=(cat)=>CLASS_CATEGORIES.find(c=>c.id===cat);
 
@@ -2028,6 +2149,21 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
 
     return(<div className="page">
       <button className="btn-s btn-sm mb-20" onClick={()=>{setViewing(null);setSessionFilter("all");window.scrollTo(0,0);}}>← Back to Classes</button>
+      {/* Complete Payment banner — shown when the user has an approved booking and the class has a price */}
+      {myBookingRequest&&myBookingRequest.status==="approved"&&myBookingRequest.payment_status!=="paid"&&(viewing.price||viewing.sale_price)&&(
+        <div style={{marginBottom:20,padding:18,background:"rgba(99,102,241,0.07)",border:"1px solid rgba(99,102,241,0.25)",borderRadius:12}}>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:4}}>Your spot is approved — complete payment to confirm it</div>
+          <div style={{color:"var(--t2)",fontSize:13,marginBottom:12}}>Price: {viewing.sale_price||viewing.price}. Your spot is reserved for 48 hours.</div>
+          {classPayErr&&<div style={{color:"#c0392b",fontSize:13,marginBottom:10}}>{classPayErr}</div>}
+          <button className="btn-p btn-sm" disabled={classPayBusy} onClick={()=>handleClassPayment(viewing)}>{classPayBusy?"Opening Checkout…":"Complete Payment →"}</button>
+        </div>
+      )}
+      {myBookingRequest&&myBookingRequest.payment_status==="paid"&&(
+        <div style={{marginBottom:20,padding:14,background:"rgba(39,174,96,0.08)",border:"1px solid rgba(39,174,96,0.25)",borderRadius:12,display:"flex",alignItems:"center",gap:10}}>
+          <span style={{color:"#27ae60",fontWeight:700}}>✓ Payment confirmed</span>
+          <span style={{color:"var(--t2)",fontSize:13}}>You're enrolled. Check your inbox for details.</span>
+        </div>
+      )}
 
       {/* ── Hero ── */}
       <div style={{maxWidth:900,margin:"0 auto",marginBottom:36}}>
@@ -10559,7 +10695,7 @@ function AdminClassBookingRequests({cls,onClose}){
 
     if(notify){
       const body=newStatus==="approved"
-        ?`Your class booking request has been approved.\n\nClass: ${cls.title}\nInstructor: ${cls.instructor_name||"—"}\nSession: ${req.selected_date||"—"}${req.selected_start_time?" at "+fmtTime(req.selected_start_time):""}\nLocation: ${cls.location_name||"—"}\nPrice: ${cls.price||"—"}\n\nOnline payment is not connected yet. Admin will contact you with payment instructions.\n\nPlease review the details above and complete payment to confirm your spot.`
+        ?`Your class booking request has been approved.\n\nClass: ${cls.title}\nInstructor: ${cls.instructor_name||"—"}\nSession: ${req.selected_date||"—"}${req.selected_start_time?" at "+fmtTime(req.selected_start_time):""}\nLocation: ${cls.location_name||"—"}\nPrice: ${cls.price||"—"}\n\nTo confirm your spot, please complete payment on the Classes page — click the class and use the "Complete Payment" button.\n\nYour spot is reserved for 48 hours pending payment.`
         :`Your class booking request for ${cls.title} has been reviewed.\n\nStatus: ${BOOKING_STATUS_LABELS[newStatus]||newStatus}\n\nIf you have questions, please reply to this message.`;
       const adminId=(await window.sb.auth.getUser()).data?.user?.id;
       if(adminId&&req.user_id){
@@ -10985,6 +11121,7 @@ const PAGE_PATH={
   "faq":"/faq","success-stories":"/success-stories","studios":"/studios",
   "api-info":"/api-info","terms":"/terms","privacy":"/privacy","careers":"/careers",
   "auth-gate":"/auth-gate","account-settings":"/account-settings",
+  "success":"/success",
 };
 const PATH_PAGE=Object.fromEntries(Object.entries(PAGE_PATH).map(([k,v])=>[v,k]));
 function urlToPage(){
@@ -11014,6 +11151,8 @@ function App(){
   // Selected plan key for PlanSummaryPage. Stored at App level so navigating
   // to "plan-summary" doesn't lose the choice if the user refreshes mid-flow.
   const [selectedPlan,setSelectedPlan]=useState(null);
+  // Payment success type — set when returning from Stripe ("premium" | "class")
+  const [paymentSuccessType,setPaymentSuccessType]=useState("premium");
   // ───────────────────────────────────────────────────────────────
   // Shared refresh signal for cross-page data (castings, talent, etc.)
   // Any page that wants to know "something important changed, re-fetch"
@@ -11115,6 +11254,17 @@ function App(){
       setVerificationReturn(true);
       setPage("dashboard");
       try{window.history.replaceState({swipecast:true,page:"dashboard"},"",window.location.pathname);}catch(_){}
+    }
+    // Detect return from Stripe Checkout
+    if(qs.includes("session_id=")&&qs.includes("type=premium")){
+      setPaymentSuccessType("premium");
+      setPage("success");
+      try{window.history.replaceState({swipecast:true,page:"success"},"","/success");}catch(_){}
+    }
+    if(qs.includes("payment=success")&&qs.includes("class_id=")){
+      setPaymentSuccessType("class");
+      setPage("success");
+      try{window.history.replaceState({swipecast:true,page:"success"},"","/success");}catch(_){}
     }
     // Seed browser history with current URL so back-button works after refresh
     try{
@@ -11566,6 +11716,7 @@ function App(){
         {page==="terms"&&<TermsPage onNavigate={navigate}/>}
         {page==="privacy"&&<PrivacyPage onNavigate={navigate}/>}
         {page==="careers"&&<CareersPage onNavigate={navigate}/>}
+        {page==="success"&&<PaymentSuccessPage session={session} myProfile={myProfile} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} successType={paymentSuccessType}/>}
       </main>
       {/* Cookie preferences modal — opened via the footer "Cookie Preferences" link.
           Mounted at App level so it can sit on top of any page. */}
