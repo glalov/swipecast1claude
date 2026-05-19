@@ -2676,8 +2676,7 @@ function PricingPage({onNavigate}){
             <div style={{flex:1}}>
               {["10 headshots","Up to 5 video reel links","Unlimited submissions","Premium profile features"].map(f=>feat(f,"var(--acc)"))}
             </div>
-            {premiumMsg&&<div style={{background:"rgba(192,57,43,0.07)",border:"1px solid rgba(192,57,43,0.22)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:12,marginTop:16,textAlign:"center",lineHeight:1.5}}>Premium checkout is not connected yet. Please try again later.</div>}
-            <button style={{...btnFilled,marginTop:24}} onClick={()=>setPremiumMsg(true)}>Premium Checkout Coming Soon</button>
+            <button style={{...btnFilled,marginTop:24}} onClick={()=>onNavigate("membership")}>Get Premium — $9.99/mo</button>
           </div>
 
           {/* Casting Director */}
@@ -3117,8 +3116,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
               <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--acc)"}}>$9.99/mo</span>
             </div>
             {["10 headshots","Up to 5 video reel links","Unlimited casting submissions","Premium profile features"].map(f=><div key={f} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{f}</div>)}
-            {premiumMsg&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"8px 12px",borderRadius:8,fontSize:12,marginTop:10,textAlign:"center"}}>Premium checkout is not connected yet. Please create a free account for now. You can upgrade later.</div>}
-            <button className="btn-s" style={{width:"100%",marginTop:10,fontSize:12,opacity:0.7,cursor:"default"}} onClick={()=>setPremiumMsg(true)}>Premium Checkout Coming Soon</button>
+            <button className="btn-s" style={{width:"100%",marginTop:10,fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>
           </div>
         </div>
       </div>
@@ -7696,7 +7694,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </section>
 
     <section className="lh-section" style={{padding:"80px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">Pricing</div><div className="section-title">Simple pricing. No surprises.</div>
-      <div className="grid-3">{[{name:"Actor Free",who:"Actors · Models · Performers",price:"$0",period:"no credit card required",features:["Free account","1 headshot","3 submissions per day","Basic actor profile","Browse all castings"],featured:false,cta:"Get Started Free",action:"register-talent"},{name:"Actor Premium",who:"Actors · Models · Performers",price:"$9.99",period:"per month · cancel anytime",features:["10 headshots","Up to 5 video reel links","Unlimited submissions","Premium profile features"],featured:true,cta:"Premium Checkout Coming Soon",action:null},{name:"Casting Director",who:"Casting Directors · Producers",price:"Free",period:"to create an account",features:["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent filters"],featured:false,cta:"Create CD Account",action:"register-cd"}].map(p=>
+      <div className="grid-3">{[{name:"Actor Free",who:"Actors · Models · Performers",price:"$0",period:"no credit card required",features:["Free account","1 headshot","3 submissions per day","Basic actor profile","Browse all castings"],featured:false,cta:"Get Started Free",action:"register-talent"},{name:"Actor Premium",who:"Actors · Models · Performers",price:"$9.99",period:"per month · cancel anytime",features:["10 headshots","Up to 5 video reel links","Unlimited submissions","Premium profile features"],featured:true,cta:"Get Premium — $9.99/mo",action:"membership"},{name:"Casting Director",who:"Casting Directors · Producers",price:"Free",period:"to create an account",features:["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent filters"],featured:false,cta:"Create CD Account",action:"register-cd"}].map(p=>
         <div key={p.name} className="card" style={p.featured?{borderColor:"var(--acc)",background:"linear-gradient(165deg,var(--s1),rgba(26,26,46,.02))",position:"relative"}:{}}>
           {p.featured&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"var(--acc)",color:"var(--bg)",fontSize:10,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:"4px 14px",borderRadius:100,letterSpacing:1}}>RECOMMENDED</div>}
           <h3 style={{fontSize:18,fontWeight:700,marginBottom:4,textAlign:"center"}}>{p.name}</h3><p style={{color:"var(--t2)",fontSize:12,marginBottom:20,textAlign:"center"}}>{p.who}</p>
