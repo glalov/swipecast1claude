@@ -922,12 +922,15 @@ begin
   -- premium members get a very large cap (effectively unlimited)
   v_daily_limit := case when v_membership = 'active' then 2147483647 else 3 end;
 
-  -- count submissions since the start of today (UTC)
+  -- count submissions since the start of today (UTC).
+  -- date_trunc('day', now()) keeps the result as timestamptz so the
+  -- comparison with created_at (also timestamptz) is always UTC-anchored
+  -- regardless of the session timezone.
   select count(*)
     into v_today_count
     from public.applications
    where talent_id  = auth.uid()
-     and created_at >= date_trunc('day', now() at time zone 'utc');
+     and created_at >= date_trunc('day', now());
 
   if v_today_count >= v_daily_limit then
     raise exception 'daily submission limit reached' using errcode = 'P0001';

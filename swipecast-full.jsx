@@ -665,7 +665,7 @@ const MEMBERSHIP_PLANS={
 const FREE_PLAN={headshotsTotal:1,additionalPhotos:0,videos:0,submissionsPerDay:3,castingTypes:2,castingMoodClips:0,castingSupportingPhotos:0};
 const PREMIUM_PLAN={headshotsTotal:10,additionalPhotos:9,videos:5,submissionsPerDay:Infinity,castingTypes:5,castingMoodClips:1,castingSupportingPhotos:3};
 const PREMIUM_PRICE="$9.99/month";
-const UPGRADE_MSG="You've reached the free plan limit. Upgrade to Premium for 10 headshots, up to 5 videos, and unlimited casting submissions.";
+const UPGRADE_MSG="You've used your 3 free submissions for today. Upgrade to Premium for unlimited daily submissions, 10 headshots, up to 5 videos, and more.";
 
 // ─── "Cast Me As" / Casting Fit DNA ─────────────────────────────────────────
 const CASTING_TYPES=[
@@ -3252,8 +3252,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       setMyPhotos(list);
       // count today's submissions for free-actor gate
       if(isTalent&&!isPremium){
-        const today=new Date();today.setHours(0,0,0,0);
-        const {count}=await window.sb.from("applications").select("id",{count:"exact",head:true}).eq("talent_id",s.user.id).gte("created_at",today.toISOString());
+        const todayUtc=new Date();todayUtc.setUTCHours(0,0,0,0);
+        const {count}=await window.sb.from("applications").select("id",{count:"exact",head:true}).eq("talent_id",s.user.id).gte("created_at",todayUtc.toISOString());
         setTodayCount(count||0);
       }
     }
@@ -3346,8 +3346,13 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
         const raw=(error.message||"").toLowerCase();
         const code=(error.code||"").toLowerCase();
         if(raw.includes("daily submission limit")){
-          const lim=isPremium?"unlimited":FREE_PLAN.submissionsPerDay;
-          setApplyErr(`You've reached your daily submission limit (${lim}). ${isPremium?"Contact support.":UPGRADE_MSG}`);
+          if(!isPremium){
+            setApplyRole(null);
+            setTodayCount(FREE_PLAN.submissionsPerDay);
+            setShowUpgradePrompt(true);
+          }else{
+            setApplyErr("You've reached your daily submission limit. Please contact support.");
+          }
         }else if(raw.includes("already submitted")||raw.includes("duplicate")||raw.includes("unique")||code==="23505"){
           setApplyErr("You've already applied to this role.");
           // treat as success locally — the row exists
@@ -3408,9 +3413,10 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     {showUpgradePrompt&&<div className="modal-overlay" onClick={()=>setShowUpgradePrompt(false)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:480,textAlign:"center",padding:"36px 32px"}}>
       <div style={{fontSize:40,marginBottom:16}}>⭐</div>
       <h2 style={{fontSize:22,fontWeight:800,marginBottom:10}}>Daily Limit Reached</h2>
-      <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,marginBottom:24}}>{UPGRADE_MSG}</p>
-      <div style={{display:"flex",gap:12,justifyContent:"center"}}>
-        <button className="btn-p" onClick={()=>{setShowUpgradePrompt(false);onNavigate&&onNavigate("membership");}}>Upgrade to Premium — {PREMIUM_PRICE}</button>
+      <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,marginBottom:8}}>{UPGRADE_MSG}</p>
+      <p style={{color:"var(--t3)",fontSize:12,marginBottom:24}}>Your 3 free submissions reset every day at midnight UTC.</p>
+      <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+        <button className="btn-p" onClick={()=>{setShowUpgradePrompt(false);onNavigate&&onNavigate("membership");}}>View Premium Plans — {PREMIUM_PRICE}</button>
         <button className="btn-s" onClick={()=>setShowUpgradePrompt(false)}>Maybe Later</button>
       </div>
     </div></div>}
