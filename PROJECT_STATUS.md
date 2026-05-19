@@ -224,7 +224,7 @@ Three distinct problems caused uploads to silently fail with no feedback:
 | 1 | `class-media` and `booking-uploads` storage buckets were never created — only RLS policies existed | Every upload attempt immediately failed with "Bucket not found" |
 | 2 | `upsert: false` in storage upload call | Path collision (same timestamp/random suffix) would reject the upload |
 | 3 | Errors called `setMsg()` which updates a banner at the **top** of the 10-section form — invisible when scrolled to the poster section at the bottom | User saw no indication of failure |
-| 4 | `<SlateCueLoader size="inline" text=""/>` inside a small dashed upload slot renders invisibly (tiny spinner, empty label) | User saw no loading indicator during upload |
+| 4 | `<CastSlateLoader size="inline" text=""/>` inside a small dashed upload slot renders invisibly (tiny spinner, empty label) | User saw no loading indicator during upload |
 
 ### Storage bucket changes
 
@@ -245,7 +245,7 @@ RLS policies for `booking-uploads`: owner-folder INSERT/SELECT, admin SELECT all
 
 - Added separate `posterErr` state; error display is now a red alert box rendered **inline inside the poster card**, directly above the poster grid
 - Changed `upsert: false` → `upsert: true` in storage upload call
-- Replaced `<SlateCueLoader size="inline" text=""/>` in the dashed upload slot with `"Uploading…"` text (visible at any screen size)
+- Replaced `<CastSlateLoader size="inline" text=""/>` in the dashed upload slot with `"Uploading…"` text (visible at any screen size)
 - Max-3 enforcement, file-type rejection, and size rejection now all set `posterErr` (not `setMsg`)
 - Successful upload clears `posterErr` and immediately shows the poster thumbnail
 - Remove button still works; reorder arrows still work; all changes persist after Save Changes
@@ -889,7 +889,7 @@ The gate is built and working. To connect a real provider, you need one of:
 - API key: `PERSONA_API_KEY`
 - Inquiry template ID: create an "ID + Selfie" template → get `tmpl_...`
 - Webhook secret: `PERSONA_WEBHOOK_SECRET`
-- Redirect URL: `https://slatecue.com/verify-return` (or your domain)
+- Redirect URL: `https://castslate.com/verify-return` (or your domain)
 - Webhook endpoint: Supabase Edge Function at `/functions/v1/persona-webhook`
 - Edge function should: verify signature → on `inquiry.completed` → call `admin_approve_casting_creator` or `admin_needs_review_casting_creator`
 
@@ -936,7 +936,7 @@ Premium accounts already in the DB stay Premium (their `membership_status='activ
 #### Steps to enable real Premium payments
 
 1. **Create a Stripe account** at https://dashboard.stripe.com
-2. **Create Product** "SlateCue Actor Premium" → recurring price $9.99/month
+2. **Create Product** "CastSlate Actor Premium" → recurring price $9.99/month
 3. **Copy the Price ID** (e.g. `price_1ABC...`) → paste into `STRIPE_ACTOR_PREMIUM_PRICE_ID` in `swipecast-full.jsx`
 4. **Create a server-side checkout endpoint** (Supabase Edge Function or Next.js API route at `POST /api/stripe/checkout`):
    - Accept the user's `auth.uid()` as `client_reference_id`
@@ -986,7 +986,7 @@ Premium accounts already in the DB stay Premium (their `membership_status='activ
 
 The Premium plan upgrade flow (`MembershipPage` → `PlanSummaryPage`) calls `activate_membership` RPC which **does not charge a card yet**. Before launch:
 
-1. **Create a Stripe Product** for "SlateCue Actor Premium" at $9.99/month.
+1. **Create a Stripe Product** for "CastSlate Actor Premium" at $9.99/month.
 2. **Get the Stripe Price ID** (looks like `price_1ABC...`).
 3. **Create a Stripe Checkout session** server-side (Supabase Edge Function or Next.js API route) that:
    - Accepts the user's `auth.uid()` as `client_reference_id`

@@ -127,15 +127,15 @@ const CASTINGS = [
 ];
 const BLOG_POSTS = [
   {id:1,title:"Why the Grid View Is Killing Your Casting",date:"Apr 10, 2026",category:"Industry",excerpt:"Casting directors reviewing 200+ headshots in a grid are making snap judgments in under 2 seconds per face. Here's why that's a problem.",readTime:"5 min"},
-  {id:2,title:"Why SlateCue Costs a Third of What Other Casting Sites Charge",date:"Apr 5, 2026",category:"Talent Tips",excerpt:"Legacy casting sites charge actors $20–$30/month and still can't guarantee your submission gets seen. SlateCue is $9.99/mo with a 7-day free trial — and every headshot is seen, Tinder-style.",readTime:"7 min"},
-  {id:3,title:"SlateCue Launches in New York and Los Angeles",date:"Mar 28, 2026",category:"News",excerpt:"After 6 months in beta, SlateCue is officially live in NYC and LA with over 50,000 registered talent.",readTime:"3 min"},
+  {id:2,title:"Why CastSlate Costs a Third of What Other Casting Sites Charge",date:"Apr 5, 2026",category:"Talent Tips",excerpt:"Legacy casting sites charge actors $20–$30/month and still can't guarantee your submission gets seen. CastSlate is $9.99/mo with a 7-day free trial — and every headshot is seen, Tinder-style.",readTime:"7 min"},
+  {id:3,title:"CastSlate Launches in New York and Los Angeles",date:"Mar 28, 2026",category:"News",excerpt:"After 6 months in beta, CastSlate is officially live in NYC and LA with over 50,000 registered talent.",readTime:"3 min"},
   {id:4,title:"The Actor's Guide to a Killer Headshot",date:"Mar 20, 2026",category:"Talent Tips",excerpt:"Your headshot is your first audition. We talked to 15 casting directors about what makes them swipe right.",readTime:"8 min"},
-  {id:5,title:"Building a Fairer Casting Ecosystem",date:"Mar 12, 2026",category:"Company",excerpt:"Our CEO on why SlateCue replaced the $20-$30/month legacy-site tax with a single $9.99 plan, how we plan to sustain it, and the larger mission.",readTime:"6 min"},
+  {id:5,title:"Building a Fairer Casting Ecosystem",date:"Mar 12, 2026",category:"Company",excerpt:"Our CEO on why CastSlate replaced the $20-$30/month legacy-site tax with a single $9.99 plan, how we plan to sustain it, and the larger mission.",readTime:"6 min"},
   {id:6,title:"Self-Tape 101: Lighting, Framing, and Audio That Actually Books",date:"Mar 4, 2026",category:"Talent Tips",excerpt:"Casting directors see thousands of self-tapes. Here's the bare-minimum setup that separates the ones who get callbacks from the ones who don't.",readTime:"7 min"},
   {id:7,title:"Union vs. Non-Union: What Actually Changes in Your First Year",date:"Feb 24, 2026",category:"Talent Tips",excerpt:"SAG-AFTRA eligibility is one of the most misunderstood turning points in an acting career. Here's the practical breakdown — rates, protections, trade-offs.",readTime:"9 min"},
-  {id:8,title:"The SlateCue Talent Review: How Every Submission Gets Seen",date:"Feb 15, 2026",category:"Industry",excerpt:"A transparent walkthrough of what happens the moment you hit submit — from the CD's review queue to notification timelines to what 'viewed' actually means.",readTime:"5 min"},
+  {id:8,title:"The CastSlate Talent Review: How Every Submission Gets Seen",date:"Feb 15, 2026",category:"Industry",excerpt:"A transparent walkthrough of what happens the moment you hit submit — from the CD's review queue to notification timelines to what 'viewed' actually means.",readTime:"5 min"},
   {id:9,title:"Booking Commercials vs. Booking Film: Two Different Skills",date:"Feb 6, 2026",category:"Talent Tips",excerpt:"Commercial casting is a volume game with specific tells — whereas theatrical casting rewards range and restraint. The prep for each should not be the same.",readTime:"6 min"},
-  {id:10,title:"From Non-Union to Series Regular in 18 Months: A Case Study",date:"Jan 28, 2026",category:"Success Stories",excerpt:"We followed one SlateCue talent from her first submission to her first series regular contract. Here's what worked, what didn't, and what she'd tell her younger self.",readTime:"10 min"},
+  {id:10,title:"From Non-Union to Series Regular in 18 Months: A Case Study",date:"Jan 28, 2026",category:"Success Stories",excerpt:"We followed one CastSlate talent from her first submission to her first series regular contract. Here's what worked, what didn't, and what she'd tell her younger self.",readTime:"10 min"},
   {id:11,title:"Why We Cap Submissions Per Role (And Why CDs Love It)",date:"Jan 18, 2026",category:"Industry",excerpt:"Legacy platforms brag about 800+ submissions per breakdown. We think that's broken. Here's the research behind our per-role submission cap and how it improves outcomes for both sides.",readTime:"6 min"},
   {id:12,title:"Talent Release Forms, NDAs, and What to Actually Sign",date:"Jan 10, 2026",category:"Talent Tips",excerpt:"Three pages of dense legal language before a callback shouldn't be normal. Here's a plain-English guide to the standard paperwork — and the clauses worth pushing back on.",readTime:"8 min"},
   {id:13,title:"How to Submit Stronger Self-Tapes (Without Buying More Gear)",date:"Apr 22, 2026",category:"Talent Tips",excerpt:"The single biggest reason self-tapes don't book isn't the camera — it's the choices. A working casting director walks through what separates a 12-second skip from a callback.",readTime:"7 min"},
@@ -153,9 +153,9 @@ const BLOG_POSTS = [
 ];
 
 const SUCCESS_STORIES = [
-  {name:"Maria Santos",role:"Lead in 'Burning Season'",quote:"I submitted through SlateCue and got a callback within 24 hours. On other platforms, I'd submit and never hear back. The swipe system actually works — they saw me.",img:TALENT[0].img},
-  {name:"David Kim",role:"Series Regular on 'Atlanta Rising'",quote:"I was on three paid platforms for two years with barely any callbacks. First month on SlateCue — booked a series regular.",img:TALENT[3].img},
-  {name:"Aisha Johnson",role:"National Nike Campaign",quote:"As a non-union actor just starting out, paying $20/month for casting sites was rough. Dropping to $9.99 on SlateCue let me put the difference into headshots and classes instead.",img:TALENT[4].img},
+  {name:"Maria Santos",role:"Lead in 'Burning Season'",quote:"I submitted through CastSlate and got a callback within 24 hours. On other platforms, I'd submit and never hear back. The swipe system actually works — they saw me.",img:TALENT[0].img},
+  {name:"David Kim",role:"Series Regular on 'Atlanta Rising'",quote:"I was on three paid platforms for two years with barely any callbacks. First month on CastSlate — booked a series regular.",img:TALENT[3].img},
+  {name:"Aisha Johnson",role:"National Nike Campaign",quote:"As a non-union actor just starting out, paying $20/month for casting sites was rough. Dropping to $9.99 on CastSlate let me put the difference into headshots and classes instead.",img:TALENT[4].img},
 ];
 
 // ═══════════════════════════════════════════
@@ -440,7 +440,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .site-footer-bottom{flex-direction:column;align-items:flex-start;}
 }
 /* ─── Yearly promo stripe — large, premium banner above the main nav on homepage.
-       Navy SlateCue palette + warm cream highlights, capsule-shaped actor image
+       Navy CastSlate palette + warm cream highlights, capsule-shaped actor image
        on the left. Eye-catching headline copy in heavy uppercase. ─── */
 .promo-stripe{
   position:relative;
@@ -765,15 +765,15 @@ function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){
 
   return(<aside className="promo-stripe" role="region" aria-label="Yearly membership offer">
     {/* Cinematic crew/camera scene — Unsplash CDN URL, easy to swap for a
-        SlateCue-branded asset later (just change the src). */}
+        CastSlate-branded asset later (just change the src). */}
     <img className="promo-stripe-img" alt="" loading="lazy"
       src="https://images.unsplash.com/photo-1485846234645-a62644f84728?w=480&h=200&fit=crop&auto=format&q=80"/>
     <div className="promo-stripe-text">
-      <span className="promo-stripe-brand">SLATECUE</span>
+      <span className="promo-stripe-brand">CASTSLATE</span>
       <span className="promo-stripe-divider" aria-hidden="true">|</span>
       <span className="promo-stripe-headline">
         <strong>LIMITED TIME OFFER</strong>
-        <span className="promo-stripe-message">Save {dollarsLabel} ({percentSaved}%) on your first year of SlateCue.</span>
+        <span className="promo-stripe-message">Save {dollarsLabel} ({percentSaved}%) on your first year of CastSlate.</span>
       </span>
     </div>
     <button className="promo-stripe-cta" onClick={handleJoin} aria-label={`Join the yearly plan and save ${percentSaved}%`}>Join Today</button>
@@ -999,7 +999,7 @@ function ReportModal({open,onClose,session,target}){
   return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}>
     <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:520}}>
       <h2 style={{marginBottom:6}}>Report {target?.kind==="profile"?"this profile":"this casting"}</h2>
-      <p style={{color:"var(--t2)",fontSize:13,marginTop:0,marginBottom:18,lineHeight:1.6}}>Reports go to the SlateCue safety team. We review every report and take action when our policies are violated. Your identity is not shared with the reported party.</p>
+      <p style={{color:"var(--t2)",fontSize:13,marginTop:0,marginBottom:18,lineHeight:1.6}}>Reports go to the CastSlate safety team. We review every report and take action when our policies are violated. Your identity is not shared with the reported party.</p>
       {!isAuthed?<>
         <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:14,fontSize:13,color:"var(--t2)",marginBottom:16}}>You need to be signed in to submit a report. This lets us follow up if we need more details.</div>
         <div style={{display:"flex",gap:10}}><button className="btn-s" onClick={onClose} style={{flex:1}}>Close</button></div>
@@ -1073,7 +1073,7 @@ function CookieConsentModal({open,onClose}){
   return(<div className="modal-overlay" onClick={onClose}>
     <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:560}}>
       <h2 style={{marginBottom:6}}>Cookie Preferences</h2>
-      <p style={{color:"var(--t2)",fontSize:13,marginTop:0,marginBottom:18,lineHeight:1.6}}>SlateCue uses cookies to keep your account secure and to understand how the platform is used. Necessary cookies are always on. You can manage the rest below — your choice is saved on this device and you can update it anytime via the Cookie Preferences link in the footer.</p>
+      <p style={{color:"var(--t2)",fontSize:13,marginTop:0,marginBottom:18,lineHeight:1.6}}>CastSlate uses cookies to keep your account secure and to understand how the platform is used. Necessary cookies are always on. You can manage the rest below — your choice is saved on this device and you can update it anytime via the Cookie Preferences link in the footer.</p>
       <div style={{borderTop:"1px solid var(--bdr)"}}>
         <Row locked title="Necessary cookies" desc="Required for core functionality: signing in, keeping your session active, and processing payments. The site cannot work without these." on={true} onChange={()=>{}}/>
         <Row title="Analytics cookies" desc="Help us understand which pages, castings, and features are useful so we can improve the platform. Aggregated and anonymous." on={analytics} onChange={setAnalytics}/>
@@ -1110,16 +1110,16 @@ function LoggedInRedirect({targetForTalent,targetForCd,myProfile,onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE LOADER — shown while auth state resolves for guarded pages
 // ═══════════════════════════════════════════
-// Branded loader — shows the SlateCue logo + subtle spinner.
+// Branded loader — shows the CastSlate logo + subtle spinner.
 // size="page"   → 70vh min-height, large logo, used for full-page / route loads.
 // size="inline" → compact padding, smaller logo, used inside cards, tabs, modals.
-function SlateCueLoader({text="Loading...",size="page"}){
+function CastSlateLoader({text="Loading...",size="page"}){
   const pg=size==="page";
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:"1 1 auto",minHeight:pg?"70vh":"auto",padding:pg?"60px 24px":"28px 24px",gap:pg?18:12}}>
       <div className="logo" style={{fontSize:pg?22:17,gap:pg?10:7,cursor:"default",userSelect:"none"}}>
         <div className="logo-i" style={{width:pg?36:26,height:pg?36:26,fontSize:pg?20:13}}>↔</div>
-        SlateCue
+        CastSlate
       </div>
       <div style={{width:pg?26:18,height:pg?26:18,borderRadius:"50%",border:pg?"3px solid var(--bdr)":"2px solid var(--bdr)",borderTopColor:"var(--acc)",animation:"scSpin 0.8s linear infinite"}}></div>
       {text&&<p style={{color:"var(--t3)",fontSize:pg?13:12,margin:0,fontWeight:500,letterSpacing:"0.2px"}}>{text}</p>}
@@ -1127,7 +1127,7 @@ function SlateCueLoader({text="Loading...",size="page"}){
   );
 }
 function PageLoader({text}){
-  return <SlateCueLoader size="page" text={text||"Loading..."}/>;
+  return <CastSlateLoader size="page" text={text||"Loading..."}/>;
 }
 
 // ═══════════════════════════════════════════
@@ -1159,7 +1159,7 @@ function Footer({onNavigate,spacerBg}){
       <div className="site-footer-inner">
         <div className="site-footer-grid">
           <div className="site-footer-brand">
-            <div className="logo" onClick={()=>onNavigate("home")}><div className="logo-i">↔</div>SlateCue</div>
+            <div className="logo" onClick={()=>onNavigate("home")}><div className="logo-i">↔</div>CastSlate</div>
             <p className="site-footer-blurb">The casting platform built for working actors. Every submission gets seen — guaranteed. Free accounts included — upgrade to Premium ($9.99/mo) for unlimited submissions and more.</p>
           </div>
           <div>
@@ -1195,13 +1195,13 @@ function Footer({onNavigate,spacerBg}){
         </div>
         {/* Social row — matches the link colour treatment, with hover→white */}
         <div className="site-footer-social-row">
-          <Social label="Facebook" href="https://facebook.com/slatecue" d="M22 12.07C22 6.51 17.52 2 12 2S2 6.51 2 12.07c0 5.02 3.66 9.18 8.44 9.93v-7.02H7.9v-2.91h2.54V9.84c0-2.51 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.87h2.78l-.44 2.91h-2.34V22c4.78-.75 8.44-4.91 8.44-9.93Z"/>
-          <Social label="Instagram" href="https://instagram.com/slatecue" d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.81.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.81-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.81-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85c.05-1.17.25-1.81.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41 1.27-.06 1.65-.07 4.85-.07ZM12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63a5.92 5.92 0 0 0-2.13 1.39A5.92 5.92 0 0 0 .63 4.14C.33 4.9.13 5.78.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91.31.79.74 1.46 1.39 2.13a5.92 5.92 0 0 0 2.13 1.39c.76.3 1.64.5 2.91.56C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56.79-.31 1.46-.74 2.13-1.39a5.92 5.92 0 0 0 1.39-2.13c.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91a5.92 5.92 0 0 0-1.39-2.13A5.92 5.92 0 0 0 19.86.63C19.1.33 18.22.13 16.95.07 15.67.01 15.26 0 12 0Zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32ZM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm6.41-11.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88Z"/>
-          <Social label="X" href="https://x.com/slatecue" d="M18.244 2H21.5l-7.49 8.56L22.764 22H15.97l-5.27-6.89L4.66 22H1.4l8.02-9.16L1.236 2H8.2l4.74 6.27L18.244 2Zm-1.144 18h1.79L7.02 4H5.13l11.97 16Z"/>
-          <Social label="LinkedIn" href="https://linkedin.com/company/slatecue" d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM7.12 20.45H3.56V9h3.56v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45C23.21 24 24 23.23 24 22.28V1.72C24 .77 23.21 0 22.22 0Z"/>
+          <Social label="Facebook" href="https://facebook.com/castslate" d="M22 12.07C22 6.51 17.52 2 12 2S2 6.51 2 12.07c0 5.02 3.66 9.18 8.44 9.93v-7.02H7.9v-2.91h2.54V9.84c0-2.51 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.87h2.78l-.44 2.91h-2.34V22c4.78-.75 8.44-4.91 8.44-9.93Z"/>
+          <Social label="Instagram" href="https://instagram.com/castslate" d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.81.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.81-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.81-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85c.05-1.17.25-1.81.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41 1.27-.06 1.65-.07 4.85-.07ZM12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63a5.92 5.92 0 0 0-2.13 1.39A5.92 5.92 0 0 0 .63 4.14C.33 4.9.13 5.78.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91.31.79.74 1.46 1.39 2.13a5.92 5.92 0 0 0 2.13 1.39c.76.3 1.64.5 2.91.56C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56.79-.31 1.46-.74 2.13-1.39a5.92 5.92 0 0 0 1.39-2.13c.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91a5.92 5.92 0 0 0-1.39-2.13A5.92 5.92 0 0 0 19.86.63C19.1.33 18.22.13 16.95.07 15.67.01 15.26 0 12 0Zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32ZM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm6.41-11.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88Z"/>
+          <Social label="X" href="https://x.com/castslate" d="M18.244 2H21.5l-7.49 8.56L22.764 22H15.97l-5.27-6.89L4.66 22H1.4l8.02-9.16L1.236 2H8.2l4.74 6.27L18.244 2Zm-1.144 18h1.79L7.02 4H5.13l11.97 16Z"/>
+          <Social label="LinkedIn" href="https://linkedin.com/company/castslate" d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM7.12 20.45H3.56V9h3.56v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45C23.21 24 24 23.23 24 22.28V1.72C24 .77 23.21 0 22.22 0Z"/>
         </div>
         <div className="site-footer-bottom">
-          <span>© {year} SlateCue. All rights reserved. Casting, finally built for actors.</span>
+          <span>© {year} CastSlate. All rights reserved. Casting, finally built for actors.</span>
           <div className="site-footer-bottom-links">
             <span onClick={()=>onNavigate("privacy")}>Privacy</span>
             <span onClick={()=>onNavigate("terms")}>Terms</span>
@@ -1224,7 +1224,7 @@ function Footer({onNavigate,spacerBg}){
 // webhook AFTER Stripe confirms successful payment.
 //
 // TODO: Create a Stripe account at https://dashboard.stripe.com
-// TODO: Create Product "SlateCue Actor Premium" ($9.99/month recurring)
+// TODO: Create Product "CastSlate Actor Premium" ($9.99/month recurring)
 // TODO: Copy the Price ID → STRIPE_ACTOR_PREMIUM_PRICE_ID below
 // TODO: Set STRIPE_SECRET_KEY in Vercel env vars (never in frontend)
 // TODO: Set STRIPE_WEBHOOK_SECRET in Vercel env vars
@@ -1344,7 +1344,7 @@ function RegisterTalent({onNavigate}){
   if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:24,color:"var(--t2)",fontSize:14}}>Your free profile is ready. Click the link in that email, then log in to browse castings. You'll only need to activate a membership when you're ready to submit for a role.</p><div style={{display:"flex",gap:12,justifyContent:"center"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
   return(
     <div className="page"><div style={{maxWidth:640,margin:"0 auto"}}>
-      <div className="section-label">Join SlateCue — Free</div>
+      <div className="section-label">Join CastSlate — Free</div>
       <h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:8}}>Create Your Talent Profile</h1>
       <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>Free to create — submit to up to 3 castings per day at no cost. Upgrade to Premium ($9.99/month) for unlimited submissions, 10 headshots, and video reels. Already have an account? <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>Log in</span></p>
       <div style={{display:"flex",gap:8,marginBottom:32}}>{[1,2,3].map(s=><div key={s} style={{flex:1,height:4,borderRadius:2,background:s<=step?"var(--acc)":"var(--s3)",transition:"background .3s"}}/>)}</div>
@@ -1393,7 +1393,7 @@ function RegisterTalent({onNavigate}){
         <div className="form-group"><label className="label">Training</label><input className="input" placeholder="e.g. BFA Acting, NYU Tisch · Meisner Technique" value={f.training} onChange={e=>up("training",e.target.value)}/></div>
         <div className="form-group"><label className="label">Special Skills (comma separated)</label><input className="input" placeholder="e.g. Stage Combat, Fluent Spanish, Horseback Riding" value={f.skills} onChange={e=>up("skills",e.target.value)}/></div>
         <div className="form-group"><label className="label">Agent / Manager (optional)</label><input className="input" placeholder="Agency name, or 'Seeking Representation'" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
-        <label className="checkbox-row" style={{marginTop:12}}><input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)}/> I agree to SlateCue's Terms of Service and Privacy Policy</label>
+        <label className="checkbox-row" style={{marginTop:12}}><input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)}/> I agree to CastSlate's Terms of Service and Privacy Policy</label>
         <div style={{display:"flex",gap:12,marginTop:12}}><button className="btn-s" onClick={()=>setStep(2)} disabled={loading}>← Back</button><button className="btn-p" style={{flex:1}} onClick={createAccount} disabled={loading}>{loading?"Creating profile…":"Create Free Account →"}</button></div></>}
 
       {/* Step 4 (Stripe) removed — signup is now free. Membership is activated
@@ -1492,7 +1492,7 @@ function RegisterCD({onNavigate}){
       <div className="form-group"><label className="label">Location</label><input className="input" placeholder="City, State" value={f.location} onChange={e=>up("location",e.target.value)}/></div>
       <div className="form-group"><label className="label">Website or IMDb (optional)</label><input className="input" placeholder="https://" value={f.website} onChange={e=>up("website",e.target.value)}/></div>
       <div style={{background:"var(--s2)",borderRadius:10,padding:16,marginTop:8}}><div style={{display:"flex",alignItems:"center",gap:12}}><div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:24,color:"var(--grn)"}}>FREE</div><div><p style={{fontSize:13,fontWeight:600}}>Free to create your account</p><p style={{fontSize:12,color:"var(--t2)"}}>Casting posts are free — go live after admin approval</p></div></div></div>
-      <label className="checkbox-row" style={{marginTop:16}}><input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)}/> I agree to SlateCue's Terms of Service and Privacy Policy</label>
+      <label className="checkbox-row" style={{marginTop:16}}><input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)}/> I agree to CastSlate's Terms of Service and Privacy Policy</label>
       <button className="btn-p" style={{width:"100%",marginTop:16}} onClick={submit} disabled={loading}>{loading?"Creating account…":"Create Casting Account"}</button>
     </div><Footer onNavigate={onNavigate}/></div>
   );
@@ -1558,7 +1558,7 @@ function LoginPage({onNavigate,onLoggedIn}){
   return(
     <div className="page"><form onSubmit={submit} style={{maxWidth:420,margin:"60px auto 0"}}>
       <div style={{textAlign:"center",marginBottom:32}}>
-        <div className="logo" style={{justifyContent:"center",fontSize:24,marginBottom:12}}><div className="logo-i" style={{width:36,height:36,fontSize:20}}>↔</div>SlateCue</div>
+        <div className="logo" style={{justifyContent:"center",fontSize:24,marginBottom:12}}><div className="logo-i" style={{width:36,height:36,fontSize:20}}>↔</div>CastSlate</div>
         <h2 style={{fontSize:28,fontWeight:800,marginBottom:8}}>{forgot?"Reset Password":"Welcome Back"}</h2>
         <p style={{color:"var(--t2)",fontSize:14}}>{forgot?"Enter your email — we'll send a reset link.":"Log in to your account"}</p>
       </div>
@@ -1631,7 +1631,7 @@ function ResetPasswordPage({onNavigate,session}){
   if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check">✓</div><h3>Password Updated</h3><p style={{marginBottom:24}}>You're all set — your new password is active.</p><button className="btn-p" onClick={()=>onNavigate(session?.user?.email?.toLowerCase()===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase()?"admin":"my-profile")}>Continue →</button></div><Footer onNavigate={onNavigate}/></div>);
   return(<div className="page"><form onSubmit={submit} style={{maxWidth:440,margin:"60px auto 0"}}>
     <div style={{textAlign:"center",marginBottom:32}}>
-      <div className="logo" style={{justifyContent:"center",fontSize:24,marginBottom:12}}><div className="logo-i" style={{width:36,height:36,fontSize:20}}>↔</div>SlateCue</div>
+      <div className="logo" style={{justifyContent:"center",fontSize:24,marginBottom:12}}><div className="logo-i" style={{width:36,height:36,fontSize:20}}>↔</div>CastSlate</div>
       <h2 style={{fontSize:28,fontWeight:800,marginBottom:8}}>Set a New Password</h2>
       <p style={{color:"var(--t2)",fontSize:14}}>Choose a new password for {session?.user?.email||"your account"}.</p>
     </div>
@@ -1648,10 +1648,10 @@ function ResetPasswordPage({onNavigate,session}){
 // ═══════════════════════════════════════════
 function AboutPage({onNavigate}){
   return(<div className="page">
-    <div className="info-hero"><div className="section-label">About</div><h1>Casting Should Be<br/>Fair for Everyone</h1><p>SlateCue was born out of frustration. Actors shouldn't be overcharged just to be seen — and they shouldn't be buried in a grid of 200 headshots either. We built a Tinder-style casting platform where every submission is reviewed one-by-one, and the monthly price is a fraction of what legacy sites charge.</p></div>
+    <div className="info-hero"><div className="section-label">About</div><h1>Casting Should Be<br/>Fair for Everyone</h1><p>CastSlate was born out of frustration. Actors shouldn't be overcharged just to be seen — and they shouldn't be buried in a grid of 200 headshots either. We built a Tinder-style casting platform where every submission is reviewed one-by-one, and the monthly price is a fraction of what legacy sites charge.</p></div>
     <div className="grid-2" style={{maxWidth:800,margin:"0 auto 60px"}}>
       <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>Our Mission</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>Democratize the casting process. Remove financial barriers for talent. Guarantee that every submission gets a real, human look. Build tools that make casting faster, fairer, and more efficient.</p></div>
-      <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>The Problem We Solve</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>Legacy platforms charge actors $15-$30/month — a tax on people working service jobs. Meanwhile, CDs get overwhelmed with grid-view headshots and miss great talent. SlateCue fixes both.</p></div>
+      <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>The Problem We Solve</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>Legacy platforms charge actors $15-$30/month — a tax on people working service jobs. Meanwhile, CDs get overwhelmed with grid-view headshots and miss great talent. CastSlate fixes both.</p></div>
     </div>
     <div style={{maxWidth:800,margin:"0 auto"}}><h2 style={{fontSize:28,fontWeight:800,textAlign:"center",marginBottom:40}}>Leadership</h2>
       <div className="team-grid">{[{n:"Founder & CEO",i:"🎬",r:"Filmmaker and technologist with a passion for breaking down barriers in entertainment."},{n:"Head of Product",i:"💡",r:"Former casting director turned product designer. 15 years in the industry."},{n:"Head of Engineering",i:"⚙️",r:"Full-stack engineer. Previously built matching systems at scale."}].map((t,idx)=><div key={idx} className="team-card"><div className="avatar">{t.i}</div><h4>{t.n}</h4><p>{t.r}</p></div>)}</div>
@@ -1664,20 +1664,20 @@ function AboutPage({onNavigate}){
 // PAGE: BLOG
 // ═══════════════════════════════════════════
 const BLOG_CONTENT={
-  1:"The grid view has been the default interface for casting platforms since they went digital. Open a breakdown, and you see 50, 100, sometimes 200+ headshots arranged in a tidy grid. It looks organized. It feels efficient. But it's destroying the casting process.\n\nCasting directors are human. When presented with a wall of faces, they default to pattern recognition — scanning for what 'looks right' in under two seconds per face. Research on visual attention shows that grid layouts encourage skimming, not evaluating. The result? Great actors with slightly unconventional headshots get overlooked entirely.\n\nSlateCue was designed around a different principle: forced attention. By presenting one headshot at a time and requiring a decision (callback or pass), we ensure every submission gets a genuine look. Our internal data shows that casting directors spend an average of 8.4 seconds per submission on SlateCue, compared to 1.7 seconds on grid-based platforms.\n\nThe swipe mechanic isn't a gimmick — it's a design choice rooted in how human attention actually works. And for talent, it means the playing field is finally level.",
-  2:"If you're an actor, model, or performer, you've probably done the math: $20/month for one casting site, $15/month for another, maybe $30/month for the 'premium' one. That's $780 a year — just for the privilege of submitting to roles.\n\nLet's be honest about what that money buys: access to a database. You upload your headshot, fill out your stats, and hope someone sees you. Most platforms can't even guarantee your submission gets viewed.\n\nSlateCue takes a fundamentally different approach. A single plan — $9.99/month — replaces the stack of overlapping subscriptions. Try it free for 7 days, cancel anytime, no tiered features hidden behind 'premium'. You get unlimited submissions, full profile tools, and — most importantly — a guarantee that every submission you send is seen individually by the casting director.\n\nCasting directors pay $19.99 per casting post on top of that, so the platform is funded by both sides, not one. No seat licenses, no hidden fees, no data-selling.\n\nIf a platform charges actors $30/month and still can't guarantee their submissions get opened, ask yourself: whose interests are they really serving?",
-  3:"After six months in closed beta with 200 casting directors and 12,000 talent profiles, SlateCue is officially live in New York City and Los Angeles.\n\nThe numbers from beta exceeded our expectations. Over 50,000 talent have created profiles. Casting directors reviewed an average of 94% of all submissions (compared to the industry average of roughly 40% on grid-based platforms). And talent reported a 3x higher callback rate than on competing platforms.\n\nLaunch markets were chosen strategically — NYC and LA represent the two largest talent pools in North America and account for over 60% of all professional casting activity.\n\nWhat's next? Chicago, Atlanta, and Vancouver are on the roadmap for Q3 2026, with London and Toronto planned for Q4. We're also rolling out self-tape integration, direct messaging between talent and casting, and audition scheduling tools in the coming months.\n\nTo every actor, model, and performer who signed up during beta: thank you for believing in a better way.",
+  1:"The grid view has been the default interface for casting platforms since they went digital. Open a breakdown, and you see 50, 100, sometimes 200+ headshots arranged in a tidy grid. It looks organized. It feels efficient. But it's destroying the casting process.\n\nCasting directors are human. When presented with a wall of faces, they default to pattern recognition — scanning for what 'looks right' in under two seconds per face. Research on visual attention shows that grid layouts encourage skimming, not evaluating. The result? Great actors with slightly unconventional headshots get overlooked entirely.\n\nCastSlate was designed around a different principle: forced attention. By presenting one headshot at a time and requiring a decision (callback or pass), we ensure every submission gets a genuine look. Our internal data shows that casting directors spend an average of 8.4 seconds per submission on CastSlate, compared to 1.7 seconds on grid-based platforms.\n\nThe swipe mechanic isn't a gimmick — it's a design choice rooted in how human attention actually works. And for talent, it means the playing field is finally level.",
+  2:"If you're an actor, model, or performer, you've probably done the math: $20/month for one casting site, $15/month for another, maybe $30/month for the 'premium' one. That's $780 a year — just for the privilege of submitting to roles.\n\nLet's be honest about what that money buys: access to a database. You upload your headshot, fill out your stats, and hope someone sees you. Most platforms can't even guarantee your submission gets viewed.\n\nCastSlate takes a fundamentally different approach. A single plan — $9.99/month — replaces the stack of overlapping subscriptions. Try it free for 7 days, cancel anytime, no tiered features hidden behind 'premium'. You get unlimited submissions, full profile tools, and — most importantly — a guarantee that every submission you send is seen individually by the casting director.\n\nCasting directors pay $19.99 per casting post on top of that, so the platform is funded by both sides, not one. No seat licenses, no hidden fees, no data-selling.\n\nIf a platform charges actors $30/month and still can't guarantee their submissions get opened, ask yourself: whose interests are they really serving?",
+  3:"After six months in closed beta with 200 casting directors and 12,000 talent profiles, CastSlate is officially live in New York City and Los Angeles.\n\nThe numbers from beta exceeded our expectations. Over 50,000 talent have created profiles. Casting directors reviewed an average of 94% of all submissions (compared to the industry average of roughly 40% on grid-based platforms). And talent reported a 3x higher callback rate than on competing platforms.\n\nLaunch markets were chosen strategically — NYC and LA represent the two largest talent pools in North America and account for over 60% of all professional casting activity.\n\nWhat's next? Chicago, Atlanta, and Vancouver are on the roadmap for Q3 2026, with London and Toronto planned for Q4. We're also rolling out self-tape integration, direct messaging between talent and casting, and audition scheduling tools in the coming months.\n\nTo every actor, model, and performer who signed up during beta: thank you for believing in a better way.",
   4:"We sat down with 15 working casting directors across film, TV, commercial, and theater to ask one question: What makes you swipe right on a headshot?\n\nThe answers were surprisingly consistent. Here's what they told us:\n\n1. Authenticity over glamour. 'I want to see YOU, not a retouched version of you,' said one streaming-network casting director. 'If you show up to the audition looking nothing like your headshot, we both wasted our time.'\n\n2. Eyes tell the story. Almost every CD mentioned eyes first. 'The eyes need to be alive. I'm looking for someone who can act through a still image.'\n\n3. Simple backgrounds. Distracting backgrounds, heavy filters, and artistic crops all got negative reactions. 'Plain gray or white. Maybe a subtle outdoor background. That's it.'\n\n4. Current photos. 'If your headshot is more than two years old, get a new one. People change. Hair changes. Weight changes. I need to know what you look like now.'\n\n5. Resolution matters. Blurry, low-res, or poorly lit headshots were the #1 instant-pass reason cited. Invest in a professional photographer — it's the single best investment in your career.",
-  5:"When we started SlateCue, people asked us the same question: 'Why just $9.99 for talent when competitors charge two and three times that?'\n\nThe answer is simple: the current model is broken. Legacy casting platforms charge actors $15-$30 per month — effectively a tax on people who are often working service jobs between auditions. Meanwhile, those same platforms can't even guarantee a casting director will see your submission.\n\nSlateCue's business model is built differently. Talent pay $9.99/month — about a third of what legacy sites charge — with a 7-day free trial and the ability to cancel anytime. Casting directors pay $19.99 per casting post. No premium tiers. No data selling. No ads. Both sides fund the platform together, which is why we can keep talent pricing this low.\n\nWe believe the cost of casting infrastructure should be shared fairly between the people doing the hiring and the people seeking work — not dumped entirely on one side. A casting director posting a breakdown is making a business decision with a budget behind it; they pay per post. An actor paying $9.99 a month is paying about what a single coffee and bagel costs per week for unlimited, guaranteed-viewed submissions.\n\nOur long-term sustainability comes from volume. As more casting directors and talent use the platform, revenue scales naturally. For larger studios and agencies, we offer custom enterprise pricing with team access, branding, and API integration.\n\nThe mission hasn't changed since day one: make casting fair, make it efficient, and charge a price that working actors can actually afford.",
+  5:"When we started CastSlate, people asked us the same question: 'Why just $9.99 for talent when competitors charge two and three times that?'\n\nThe answer is simple: the current model is broken. Legacy casting platforms charge actors $15-$30 per month — effectively a tax on people who are often working service jobs between auditions. Meanwhile, those same platforms can't even guarantee a casting director will see your submission.\n\nCastSlate's business model is built differently. Talent pay $9.99/month — about a third of what legacy sites charge — with a 7-day free trial and the ability to cancel anytime. Casting directors pay $19.99 per casting post. No premium tiers. No data selling. No ads. Both sides fund the platform together, which is why we can keep talent pricing this low.\n\nWe believe the cost of casting infrastructure should be shared fairly between the people doing the hiring and the people seeking work — not dumped entirely on one side. A casting director posting a breakdown is making a business decision with a budget behind it; they pay per post. An actor paying $9.99 a month is paying about what a single coffee and bagel costs per week for unlimited, guaranteed-viewed submissions.\n\nOur long-term sustainability comes from volume. As more casting directors and talent use the platform, revenue scales naturally. For larger studios and agencies, we offer custom enterprise pricing with team access, branding, and API integration.\n\nThe mission hasn't changed since day one: make casting fair, make it efficient, and charge a price that working actors can actually afford.",
   6:"The self-tape has replaced the in-person pre-read for most roles, and casting directors now watch hundreds of them per breakdown. That means your tape is competing not just on performance — it's competing on watchability. A great performance in a poorly framed, echoey, dim room can get passed on in under ten seconds.\n\nHere is the honest minimum for a tape that won't get cut for technical reasons:\n\nLighting. A single window at 45 degrees to your face during daylight is free and looks better than most ring lights. If you tape at night, invest in one soft key light (around $60) and aim it through a diffusion panel or a white sheet. Avoid overhead lighting — it ages you and kills your eyes.\n\nFraming. Chest-up for most reads. Leave a small amount of headroom, keep your eyes roughly one-third from the top of the frame, and look slightly off-camera toward your reader. Never look directly into the lens unless the breakdown specifies a direct address or commercial.\n\nAudio. This is where most tapes fail. The built-in mic on your phone will pick up every fan, refrigerator, and neighbor. A cheap lavalier mic ($25-40) plugged into your phone is the single biggest upgrade you can make. Record in a carpeted, soft-furnished room. Close the windows.\n\nBackground. Plain neutral wall. Gray, off-white, or a soft blue. No art, no bookshelves, nothing that pulls the eye. Put your reader about four to six feet from the camera, never closer.\n\nSlate. First name, height, location, representation if any. Keep it under ten seconds. No accent, no attitude — just clean information.\n\nDo the technical part badly and your performance doesn't get evaluated. Do it competently and you're back to competing on the thing that actually matters.",
   7:"SAG-AFTRA eligibility is one of the most misunderstood career turning points for actors in the US. The decision to go union isn't just a box to check — it reshapes what roles you can take, how you get paid, and who you can work for.\n\nThe basics. In the US, SAG-AFTRA is the union for actors in film, television, commercials, and most new-media productions. Membership comes with minimum rates, overtime protections, pension and health contributions, residual payments for reused work, and enforceable safety standards on set. Initiation is around $3,000 plus semi-annual dues tied to your earnings.\n\nHow you become eligible. Three common paths: (1) working a union job under a Taft-Hartley waiver, (2) working a certain number of days as a background performer on union productions, or (3) being a member in good standing of an affiliated performers' union for at least one year. Specific requirements change — always check the current SAG-AFTRA eligibility page before making assumptions.\n\nThe trade-off nobody explains clearly. Once you join, you cannot accept non-union work in covered categories. Global Rule One is enforced. For actors in markets with lots of non-union commercial and indie film work, joining early can sharply reduce the number of available jobs during the transitional period. For actors in markets dominated by union productions, joining late costs you thousands in lost residuals and protections.\n\nWhen to join. The honest answer: join when the math works. If the non-union work you're turning down pays less, in total, than the union work you're now eligible for plus the protection value of being union, you're ready. If not, delaying eligibility and continuing to stack non-union credits is a legitimate strategy.\n\nTalk to two or three working actors in your exact market and category before deciding. A national network drama actor in LA and a regional-theater actor in Atlanta face very different calculations.",
-  8:"On most casting platforms, 'submitted' means your photo was added to a database of 400+ others. There is no guarantee anyone looked at it. That's the industry standard we're trying to replace.\n\nHere's what actually happens when you submit on SlateCue.\n\nStep 1: Queueing. The moment you hit submit, your application is added to the casting director's review queue for that specific role. It isn't randomly ranked or hidden behind a 'premium' filter — every submission appears in order.\n\nStep 2: Forced-attention review. The CD reviews submissions one at a time in a swipe-style interface. They see your primary headshot, your cover note, and a compact reel of your stats. They must make a decision — callback, maybe, or pass — before they can see the next submission. This is intentional. It prevents the grid-skim pattern that causes most submissions to get a fraction of a second of attention on other platforms.\n\nStep 3: Status update. Your submission status updates in real time in your dashboard. 'Viewed' means the CD actually reached your card. 'Callback' means they want to see you in the next round. 'Pass' means they've decided you're not right for this role.\n\nStep 4: Notification. If you get a callback or direct message, you'll receive an email and in-app notification within seconds. You're never left wondering.\n\nThe review queue is typically worked through in batches of 30-50 submissions per session, so you may wait hours or a day or two for the 'Viewed' status depending on when the CD sits down to review. But it does get there. Every submission, every time.\n\nThat guarantee is the core of what we're building. It's also why we cap submissions per role — which we'll cover in a separate post.",
+  8:"On most casting platforms, 'submitted' means your photo was added to a database of 400+ others. There is no guarantee anyone looked at it. That's the industry standard we're trying to replace.\n\nHere's what actually happens when you submit on CastSlate.\n\nStep 1: Queueing. The moment you hit submit, your application is added to the casting director's review queue for that specific role. It isn't randomly ranked or hidden behind a 'premium' filter — every submission appears in order.\n\nStep 2: Forced-attention review. The CD reviews submissions one at a time in a swipe-style interface. They see your primary headshot, your cover note, and a compact reel of your stats. They must make a decision — callback, maybe, or pass — before they can see the next submission. This is intentional. It prevents the grid-skim pattern that causes most submissions to get a fraction of a second of attention on other platforms.\n\nStep 3: Status update. Your submission status updates in real time in your dashboard. 'Viewed' means the CD actually reached your card. 'Callback' means they want to see you in the next round. 'Pass' means they've decided you're not right for this role.\n\nStep 4: Notification. If you get a callback or direct message, you'll receive an email and in-app notification within seconds. You're never left wondering.\n\nThe review queue is typically worked through in batches of 30-50 submissions per session, so you may wait hours or a day or two for the 'Viewed' status depending on when the CD sits down to review. But it does get there. Every submission, every time.\n\nThat guarantee is the core of what we're building. It's also why we cap submissions per role — which we'll cover in a separate post.",
   9:"The actor who nails a beer commercial isn't necessarily the actor who nails the lead in a prestige limited series — and vice versa. Booking commercials and booking film/TV are genuinely different skills, and the prep for each should look nothing alike.\n\nCommercial casting rewards these things: specific, readable types; high energy that sustains through multiple takes; the ability to hit a natural-feeling line while staring at a product; a smile that doesn't look forced; and availability for callbacks and shoots on very short notice. Commercial CDs review tapes at speed and look for people who land a clear impression in the first four seconds. The work is a volume game — booking one in ten or one in twenty callbacks is a good rate.\n\nTheatrical (film/TV) casting rewards: restraint, listening, range within a single scene, chemistry with the reader, and an ability to sustain a real emotional life across dialogue. Theatrical CDs want to see you think, not perform. They'll watch a full scene, often twice, and pay attention to the quiet moments.\n\nPrep for commercial auditions. Memorize lightly; stay flexible; know the product cold; think about what the audience should feel, not what you should do. Rehearse smiling while talking without looking fake. Wear a neutral, flattering version of the given type.\n\nPrep for theatrical auditions. Memorize fully; do scene analysis; identify the one moment in the scene where something changes and build toward it; bring a specific point of view. Your wardrobe should hint at the character without costuming them.\n\nIf you're pursuing both — and most working actors do — keep the skills sharp as two separate muscles. A theatrical coach and a commercial coach are almost always two different people, and treating them as interchangeable is why so many actors plateau in one category.",
-  10:"In April 2024, Renata Cruz made her first submission on SlateCue. She had an associate's in theater from a community college in the Bronx, three student-film credits, and a day job at a coffee shop in Morningside Heights. In October 2025, she signed her first series regular contract — a lead role in a one-hour drama on a major streamer.\n\nThis is not a typical case. But it is a real one. With her permission, we pulled eighteen months of her activity and asked her what she thinks worked.\n\nSubmission volume, not spray. Renata averaged six submissions a week across her first year, almost all of them for roles she was actually right for by type and experience level. Not 40 a week — six. Her view rate from casting directors ran above 80 percent on SlateCue, compared to the 35-45 percent she'd been getting on another platform.\n\nOne great self-tape, versioned. She recorded a single strong self-tape of a two-minute monologue in November 2024 and re-recorded it three more times over the next year as her craft sharpened. She used stills and short clips from that tape as her reel. She did not try to build a full reel from paid student work.\n\nFeedback over ego. Twice she reached out to CDs who passed and asked — politely, briefly — what was missing. One answered. That note ('you played the anger, not the fear underneath it') changed her approach to dramatic scenes permanently.\n\nWhat she'd tell her younger self. 'I would have started acting classes with someone specific earlier. I bounced between three teachers in my first year out of school. Finding the right ongoing class with one teacher who saw me weekly for six months was the thing that actually moved me forward. The tape, the platform, the submissions — those matter. But without the class work, I was just recycling the same habits.'\n\nRenata's story isn't a promise. Most talent on SlateCue don't book series regulars in eighteen months. But the mechanics — submit precisely, prepare specifically, and invest in ongoing craft work — are the ones we see consistently across the talent whose careers actually move.",
-  11:"Most legacy casting platforms advertise their best breakdowns as getting 800, 1,200, even 2,000 submissions. That number is presented as a feature. We think it's a bug.\n\nConsider what 2,000 submissions actually means for a casting director. Even at a realistic 10 seconds per headshot, that's more than five hours of review work for a single role. In practice, no one does that. What happens instead is the CD skims in two-second bursts, pattern-matches to whatever felt right in the first fifty, and most of the remaining 1,950 talent are not evaluated in any meaningful sense.\n\nSlateCue caps submissions per role at a number we've calibrated empirically — typically 250, sometimes higher for tentpole breakdowns and lower for niche roles. The number is set so that a casting director can actually review every submission in one or two sittings of focused work, at the 8-10 second per-submission range where real evaluation happens.\n\nCasting directors love this for obvious reasons: they can do the job the way they were trained to do it. What surprised us is how much talent loves it, too. Under the cap, a submission is a commitment. The role genuinely closes when it's full. Talent stop submitting to roles they are not right for — because they can't — and instead focus their limited slots on the breakdowns where they're competitive.\n\nThe market effect has been larger than we expected. Average fit quality per submission (measured by callback rate) is roughly 3x higher on SlateCue than the industry benchmark we can see through our CDs' other-platform data. Talent spend less effort submitting; CDs spend less effort reviewing; both sides see higher signal.\n\nThe cap isn't artificial scarcity — it's the density at which human attention still functions.",
+  10:"In April 2024, Renata Cruz made her first submission on CastSlate. She had an associate's in theater from a community college in the Bronx, three student-film credits, and a day job at a coffee shop in Morningside Heights. In October 2025, she signed her first series regular contract — a lead role in a one-hour drama on a major streamer.\n\nThis is not a typical case. But it is a real one. With her permission, we pulled eighteen months of her activity and asked her what she thinks worked.\n\nSubmission volume, not spray. Renata averaged six submissions a week across her first year, almost all of them for roles she was actually right for by type and experience level. Not 40 a week — six. Her view rate from casting directors ran above 80 percent on CastSlate, compared to the 35-45 percent she'd been getting on another platform.\n\nOne great self-tape, versioned. She recorded a single strong self-tape of a two-minute monologue in November 2024 and re-recorded it three more times over the next year as her craft sharpened. She used stills and short clips from that tape as her reel. She did not try to build a full reel from paid student work.\n\nFeedback over ego. Twice she reached out to CDs who passed and asked — politely, briefly — what was missing. One answered. That note ('you played the anger, not the fear underneath it') changed her approach to dramatic scenes permanently.\n\nWhat she'd tell her younger self. 'I would have started acting classes with someone specific earlier. I bounced between three teachers in my first year out of school. Finding the right ongoing class with one teacher who saw me weekly for six months was the thing that actually moved me forward. The tape, the platform, the submissions — those matter. But without the class work, I was just recycling the same habits.'\n\nRenata's story isn't a promise. Most talent on CastSlate don't book series regulars in eighteen months. But the mechanics — submit precisely, prepare specifically, and invest in ongoing craft work — are the ones we see consistently across the talent whose careers actually move.",
+  11:"Most legacy casting platforms advertise their best breakdowns as getting 800, 1,200, even 2,000 submissions. That number is presented as a feature. We think it's a bug.\n\nConsider what 2,000 submissions actually means for a casting director. Even at a realistic 10 seconds per headshot, that's more than five hours of review work for a single role. In practice, no one does that. What happens instead is the CD skims in two-second bursts, pattern-matches to whatever felt right in the first fifty, and most of the remaining 1,950 talent are not evaluated in any meaningful sense.\n\nCastSlate caps submissions per role at a number we've calibrated empirically — typically 250, sometimes higher for tentpole breakdowns and lower for niche roles. The number is set so that a casting director can actually review every submission in one or two sittings of focused work, at the 8-10 second per-submission range where real evaluation happens.\n\nCasting directors love this for obvious reasons: they can do the job the way they were trained to do it. What surprised us is how much talent loves it, too. Under the cap, a submission is a commitment. The role genuinely closes when it's full. Talent stop submitting to roles they are not right for — because they can't — and instead focus their limited slots on the breakdowns where they're competitive.\n\nThe market effect has been larger than we expected. Average fit quality per submission (measured by callback rate) is roughly 3x higher on CastSlate than the industry benchmark we can see through our CDs' other-platform data. Talent spend less effort submitting; CDs spend less effort reviewing; both sides see higher signal.\n\nThe cap isn't artificial scarcity — it's the density at which human attention still functions.",
   12:"If you're new to the industry, you will eventually be handed a stack of paperwork before a callback or a shoot. Most of it is standard. Some of it is worth pushing back on. A lot of it is written to be intentionally dense.\n\nHere is what the common documents actually do, in plain English.\n\nTalent release form. Grants the production the right to use your likeness and performance in connection with the specific project. Standard and necessary — you can't be in a movie that can't be distributed. Look at two things: the scope (is it limited to this production, or does it cover 'any and all media now known or hereafter devised' in perpetuity, universe-wide? the latter is standard but worth knowing), and the compensation clause (does it reference your agreed-upon rate, or is it 'good and valuable consideration' without a number?). A reputable production always ties the release to a specific, documented rate.\n\nNon-disclosure agreement (NDA). Keeps the plot, script pages, character details, and set conditions confidential. Common for prestige TV, Marvel-type features, and unreleased commercials. Normally fine. Watch for two red flags: NDAs that extend to your basic employment details (you are allowed to say you worked on the show, for your resume), and NDAs that try to apply to conditions on set that could be illegal or unsafe. You can never legally waive the right to report unsafe or illegal conduct to authorities.\n\nCertificate of engagement / deal memo. The working document of the shoot. Spells out rate, dates, hours, per-diem, travel, and credit. This is the one actors most often sign without reading and regret later. Check: daily rate vs. weekly rate, overtime rules (especially the 10-hour turnaround for SAG-AFTRA work), credit format and placement, and whether you're classified as an employee or a 1099 contractor.\n\nArbitration clause. Buried in many release forms. Waives your right to sue in court and sends disputes to private arbitration. This has become a standard legal target for performer-protection advocacy. You can occasionally negotiate a carve-out for wage claims and labor violations. It's worth asking.\n\nWhat to actually do. Read the document. Underline anything you don't understand. For anything above a day-player rate, send it to a representative — an agent, manager, or a performer's union rep. For non-union work at lower rates, community theater companies, SAG-AFTRA Foundation's 'Know Your Rights' sessions, and Volunteer Lawyers for the Arts offer free advice.\n\nNever sign a document under pressure on the day of a shoot. A reputable production sends paperwork days in advance.",
   13:"Most actors think the difference between a self-tape that books and a self-tape that gets passed on is the gear. It almost never is.\n\nThe choices are what separate them.\n\nThe first thing every working casting director scans for is whether the actor in the tape understands the scene. Not the words — the situation. Who they're talking to, what they want from that person, and what is in the way. If those three things are clear in the first ten seconds, the tape stays open. If not, it gets skipped.\n\nThe gear question. A clean phone in landscape, a window for light, a quiet room, and a friend reading off-camera will out-perform a $4,000 setup that's been pointed at a flat performance. Spend on a lavalier mic and a single soft light if you tape often. Beyond that, returns diminish fast.\n\nThe choices that consistently land. Pick a specific person to play the scene with — not 'a friend,' a specific friend the casting describes. Decide on one thing your character wants from them in this scene and play it. Make a choice about how the scene starts (have you just arrived? have you been waiting?) and let that affect your first line. Trust the writer; do not editorialize the dialogue with reaction faces.\n\nThe choices that consistently sink tapes. Telegraphing emotions in the first three seconds. Looking dead-center into the lens. Reading lines without a clear sense of who you're talking to. Performing the words rather than thinking them. Adding tears, screams, or whispers to make a moment 'big.'\n\nA strong self-tape is rarely a performance you'll remember. It's clear, specific, and easy for the casting director to imagine on a real set with real coverage. That's the bar.",
-  14:"From the moment you hit submit on a casting, what actually happens?\n\nWe spent three afternoons sitting with working casting directors as they reviewed real submissions. The pattern is more consistent than most actors realize.\n\nStep one: the queue. Submissions land in the casting director's review queue, ordered by submission time and freshness. Most CDs review in batches once or twice a day rather than continuously throughout the day.\n\nStep two: the review pass. The CD opens the queue and goes through submissions one at a time. On SlateCue, every submission is presented full-screen — not as a thumbnail in a grid. The CD spends an average of 8 to 10 seconds per submission deciding: is this person inside the type the role needs, are they at the experience level the project can support, and would I want to see them on tape?\n\nStep three: the shortlist. Anyone the CD wants to see more of moves to a callback list. From that callback list, the CD requests self-tapes (or in-person callbacks for major-market projects).\n\nStep four: the cut. Self-tapes are reviewed against each other. Sides are usually weighted more heavily than headshots and résumés at this point — a great tape from a less-experienced actor often beats a weaker tape from a more credited one.\n\nWhat changes outcomes the most. Submitting only to roles where you're genuinely inside the type. A short, specific cover note that points to one relevant credit or skill. Not relying on the headshot alone to communicate range. A profile that loads quickly and reads cleanly on a phone (most CDs review on phones).\n\nWhat doesn't change outcomes nearly as much as actors think. The exact wording of the cover note. The exact ordering of credits. Whether you submitted the day the role posted or the day before the deadline.\n\nThe submission process is simpler than the industry treats it as. Be inside the type, communicate cleanly, and trust the work to speak.",
+  14:"From the moment you hit submit on a casting, what actually happens?\n\nWe spent three afternoons sitting with working casting directors as they reviewed real submissions. The pattern is more consistent than most actors realize.\n\nStep one: the queue. Submissions land in the casting director's review queue, ordered by submission time and freshness. Most CDs review in batches once or twice a day rather than continuously throughout the day.\n\nStep two: the review pass. The CD opens the queue and goes through submissions one at a time. On CastSlate, every submission is presented full-screen — not as a thumbnail in a grid. The CD spends an average of 8 to 10 seconds per submission deciding: is this person inside the type the role needs, are they at the experience level the project can support, and would I want to see them on tape?\n\nStep three: the shortlist. Anyone the CD wants to see more of moves to a callback list. From that callback list, the CD requests self-tapes (or in-person callbacks for major-market projects).\n\nStep four: the cut. Self-tapes are reviewed against each other. Sides are usually weighted more heavily than headshots and résumés at this point — a great tape from a less-experienced actor often beats a weaker tape from a more credited one.\n\nWhat changes outcomes the most. Submitting only to roles where you're genuinely inside the type. A short, specific cover note that points to one relevant credit or skill. Not relying on the headshot alone to communicate range. A profile that loads quickly and reads cleanly on a phone (most CDs review on phones).\n\nWhat doesn't change outcomes nearly as much as actors think. The exact wording of the cover note. The exact ordering of credits. Whether you submitted the day the role posted or the day before the deadline.\n\nThe submission process is simpler than the industry treats it as. Be inside the type, communicate cleanly, and trust the work to speak.",
   15:"Profiles that consistently get callbacks have specific traits that have nothing to do with how impressive the credits are.\n\nWe asked nine working CDs to walk through their last 30 callbacks and explain — for each one — what made the profile stand out. Almost no one cited a single specific credit as the reason. Here are the patterns that came up across the sessions.\n\nSpecificity. Profiles with concrete training, specific skills, and a focused bio outperformed broad ones. 'Two-year Meisner conservatory at William Esper, NYC' beats 'extensive training.' 'Conversational Korean and Spanish' beats 'multilingual.' 'Stage combat (SAFD-certified, single sword)' beats 'physical theater.'\n\nRecency. CDs glance at credit dates more than actors realize. A modest credit from this year reads stronger than an impressive one from six years ago. If your most recent credit is older than 18 months, list current class work or a self-produced project to fill the gap.\n\nHonest type. Profiles where the bio, headshot, and credits all describe the same actor were chosen far more often than ones that disagreed. CDs called this 'an internally consistent profile.' If your headshot looks 27 and your bio mentions playing 18, you've created friction the CD has to resolve.\n\nClean media. A current headshot and at least one current piece of footage. The footage doesn't need to be from a major project — a self-tape monologue or a short film clip works — but it needs to show the actor recently and at performance level.\n\nQuiet confidence in the bio. The strongest bios were short, professional, and didn't oversell. 'NYC-based actor. Tisch BFA. Strongest in grounded contemporary drama and dry comedy. Currently in ongoing scene study with [specific teacher].' Three lines. CDs read all of them.\n\nWhat got profiles passed over. Mostly: missing fields, no current footage, generic bios, and credits without years. None of those things require resources. They just require attention to the profile.",
   16:"You taped two weeks ago. The casting director asked for a callback. Now what?\n\nA callback is not a re-audition. It's a continuation of a process where someone — at minimum the CD, often a director or producer — already liked something specific about your first read and wants to see it again, in a slightly different context, with the option to adjust.\n\nWatch your first tape. The single most useful thing you can do is rewatch the original tape carefully, ideally with a coach or trusted scene partner. Identify the two or three moments that landed and that the CD probably responded to. Identify any place you were generic, fast, or pushed. The callback is a chance to keep what worked and refine what didn't.\n\nDon't reinvent. The most common callback mistake is showing up with a completely different read because you're worried the first read was 'too safe.' If the original got you here, the original is the floor — not the ceiling — of what you should bring. Keep the core choices. Deepen them.\n\nBe ready for adjustments. Almost every callback includes a redirect: 'Try it lighter,' 'What if she's already been crying for ten minutes,' 'Bring it down 30 percent.' The CD is checking whether you can take direction. The actors who book are the ones whose adjustment lands cleanly without losing the parts the room already liked.\n\nThe practical prep checklist. Rewatch your tape. Re-read the sides cold (not memorized) once, then memorize. Bring two more specific choices in your back pocket so if asked 'what else can you do' you have something honest to offer. Wear something close to what you wore the first time — same silhouette, similar color family. The room is comparing you to a version of yourself that already worked.\n\nThe room does not need a different version of you. They need to see that you are reliable.",
   17:"After looking at thousands of submissions across our CDs' review sessions, we see the same five mistakes pile up.\n\nMistake one: submitting outside type. The most common, and the one that costs the most. If a role specifies 'Female, 35-45, working-class New England, late-career runaway' and you are 24, you cost the casting director a click and a no, and you train them to skip your name on the next role you might genuinely fit. Type discipline is a career skill.\n\nMistake two: cover notes that read like cover letters. The cover note is two sentences that say something specific about your fit for this role. It is not a paragraph about what acting means to you. 'I worked as a paramedic for three years before pursuing acting full-time — happy to talk through the procedural specifics of the EMT scene' is a strong cover note. 'I'm a passionate, hardworking actor who would love to be considered' is filler the CD will skip.\n\nMistake three: ignoring the deadline. Submissions made days after the deadline land in a queue the CD has often already closed. Submissions made minutes after a role posts get reviewed in the freshest pass. The earlier you submit a role you're right for, the better positioned you are.\n\nMistake four: stale headshots. A headshot from three years ago is your past self, not your current self. CDs notice and assume the rest of the profile is also out of date. Update your headshot every 18 months minimum.\n\nMistake five: spray and pray. Submitting to 40 roles a week dilutes your signal. Six precise submissions a week — to roles you are genuinely right for — outperform forty wide ones over any timeframe longer than a month.\n\nThe pattern under all five: precision over volume.",
@@ -1693,7 +1693,7 @@ const BLOG_CONTENT={
 function BlogPage({onNavigate}){
   const [viewing,setViewing]=useState(null);
   if(viewing){const p=BLOG_POSTS.find(b=>b.id===viewing);return(<div className="page"><button className="btn-s btn-sm mb-20" onClick={()=>setViewing(null)}>← Back to Blog</button><div style={{maxWidth:720,margin:"0 auto"}}><div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:12}}>{p.category}</div><h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:12}}>{p.title}</h1><div style={{color:"var(--t3)",fontSize:13,marginBottom:32}}>{p.date} · {p.readTime} read</div>{(BLOG_CONTENT[p.id]||p.excerpt).split("\n\n").map((para,i)=><p key={i} style={{color:"var(--t2)",fontSize:15,lineHeight:1.8,marginBottom:20}}>{para}</p>)}</div><Footer onNavigate={onNavigate}/></div>);}
-  return(<div className="page"><div className="section-label">Blog</div><h1 className="section-title">SlateCue Journal</h1>
+  return(<div className="page"><div className="section-label">Blog</div><h1 className="section-title">CastSlate Journal</h1>
     <div className="blog-grid">{BLOG_POSTS.map(p=><div key={p.id} className="card blog-card" onClick={()=>setViewing(p.id)}><div className="blog-cat">{p.category}</div><h3>{p.title}</h3><p>{p.excerpt}</p><div className="blog-meta">{p.date} · {p.readTime} read</div></div>)}</div>
     <Footer onNavigate={onNavigate}/></div>);
 }
@@ -1702,11 +1702,11 @@ function BlogPage({onNavigate}){
 // PAGE: FAQ — help-center-style support page, 7 categories with realistic Q&As
 // ═══════════════════════════════════════════
 const FAQ_CATEGORIES=[
-  {id:"getting-started",label:"Getting Started",icon:"🎬",blurb:"Creating your account, first steps, and how SlateCue works.",items:[
-    {q:"What is SlateCue?",a:"SlateCue is a casting platform built for working actors. Free profiles, an active membership only when you're ready to submit, and a swipe-based review system that guarantees every submission gets seen one at a time — not buried in a grid of 200 headshots."},
-    {q:"Is SlateCue actually live?",a:"Yes. The platform is live and active. Casting directors are posting roles, talent are submitting, and conversations are happening in the inbox right now."},
+  {id:"getting-started",label:"Getting Started",icon:"🎬",blurb:"Creating your account, first steps, and how CastSlate works.",items:[
+    {q:"What is CastSlate?",a:"CastSlate is a casting platform built for working actors. Free profiles, an active membership only when you're ready to submit, and a swipe-based review system that guarantees every submission gets seen one at a time — not buried in a grid of 200 headshots."},
+    {q:"Is CastSlate actually live?",a:"Yes. The platform is live and active. Casting directors are posting roles, talent are submitting, and conversations are happening in the inbox right now."},
     {q:"Do I need a membership to create a profile?",a:"No. Profiles are free for everyone. Free actors can submit to up to 3 castings per day. Upgrade to Premium ($9.99/month) for unlimited submissions, 10 headshots, and up to 5 video reel links. Cancel anytime."},
-    {q:"Where is SlateCue available?",a:"Anywhere with a browser. Castings are organised by city, so you'll see roles in your market — but creating a profile and browsing castings works from anywhere."},
+    {q:"Where is CastSlate available?",a:"Anywhere with a browser. Castings are organised by city, so you'll see roles in your market — but creating a profile and browsing castings works from anywhere."},
     {q:"How do I get started as an actor?",a:"Create a free account, upload a headshot, fill out your stats, and add a short bio. Then browse Open Castings and apply. Free accounts can submit to up to 3 castings per day. Upgrade to Premium ($9.99/month) for unlimited submissions, more headshots, and video reels."},
     {q:"How do I get started as a casting director or producer?",a:"Create a free industry account, then click 'Post a Casting' from your dashboard. Submit your casting for free — it goes live after admin approval."}
   ]},
@@ -1731,7 +1731,7 @@ const FAQ_CATEGORIES=[
     {q:"How does the review interface work?",a:"Open a casting from your dashboard, then start reviewing. Each submission is shown one at a time, full-screen on phone or desktop, with the headshot, name, stats, and bio. Swipe right (or click Callback) to add to the callback list. Swipe left to pass."},
     {q:"Can I cap submissions per role?",a:"We cap roles at the level where you can actually review every submission with full attention — typically 250-500 depending on the breakdown. The cap closes the role automatically when reached."},
     {q:"How do I send a callback request?",a:"From your callback list, select the talent you want and click 'Send Callback'. Pick three available time slots, write a short message, and we'll email and inbox-message the actor."},
-    {q:"How do producers and studios use SlateCue?",a:"Independent producers post breakdowns directly. Larger productions and studios use enterprise plans with team access, custom branding, and API integration — contact us through the Studios page."},
+    {q:"How do producers and studios use CastSlate?",a:"Independent producers post breakdowns directly. Larger productions and studios use enterprise plans with team access, custom branding, and API integration — contact us through the Studios page."},
     {q:"What if I need to edit a casting after it's posted?",a:"You can edit the breakdown, role specs, and deadline at any time from the dashboard. Already-submitted talent are notified of any changes that affect their submission."}
   ]},
   {id:"payments",label:"Payments & Membership",icon:"💳",blurb:"Talent membership, casting fees, billing, and cancellations.",items:[
@@ -1739,15 +1739,15 @@ const FAQ_CATEGORIES=[
     {q:"How much does it cost to post a casting?",a:"Casting posts are free. Create a free industry account and submit your casting breakdown. It goes live after admin review and approval."},
     {q:"How do I cancel my membership?",a:"My Profile → Membership → Cancel. Your membership stays active through the end of the current billing period, then doesn't renew. No fees, no friction."},
     {q:"Are payments refundable?",a:"Membership fees are non-refundable except where required by law, but cancelled memberships continue until the end of the period you've already paid for. Casting post fees are non-refundable once the casting is published."},
-    {q:"What payment methods do you accept?",a:"All major credit and debit cards. Payments are processed securely by our payment provider — SlateCue never stores your card details."},
+    {q:"What payment methods do you accept?",a:"All major credit and debit cards. Payments are processed securely by our payment provider — CastSlate never stores your card details."},
     {q:"Can I get a receipt?",a:"Yes. Receipts are emailed automatically after each transaction, and a full billing history is available under My Profile → Membership."}
   ]},
   {id:"safety",label:"Safety & Trust",icon:"🛡️",blurb:"How we handle reports and what the verified badge means.",items:[
-    {q:"What does the 'Verified' badge mean on a caster?",a:"Casters with the green Verified badge have been reviewed by SlateCue admins — typically because they've posted before, are tied to a recognised production, or have provided documentation. Casters without the badge are marked Unverified until that review happens. Treat unverified posts with extra care: confirm details and, when possible, ask for a phone or video conversation before sharing personal information."},
-    {q:"What if a casting feels off?",a:"Click the 'Report' link on any casting page (or any profile). Reports go straight to the SlateCue admin Reports queue, where we review and take action — dismissing false flags, contacting posters for clarification, or removing the casting outright. You can pick a reason (scam, inappropriate content, impersonation, concerns about a minor, etc.) and add details."},
-    {q:"Can minors (under 18) use SlateCue?",a:"Talent under 18 are required to register a parent or legal guardian's email at signup. We don't grant unsupervised platform access to minors, and minors' contact information is never displayed publicly. Casters posting roles for minors should comply with COPPA and applicable state child-performer laws."},
+    {q:"What does the 'Verified' badge mean on a caster?",a:"Casters with the green Verified badge have been reviewed by CastSlate admins — typically because they've posted before, are tied to a recognised production, or have provided documentation. Casters without the badge are marked Unverified until that review happens. Treat unverified posts with extra care: confirm details and, when possible, ask for a phone or video conversation before sharing personal information."},
+    {q:"What if a casting feels off?",a:"Click the 'Report' link on any casting page (or any profile). Reports go straight to the CastSlate admin Reports queue, where we review and take action — dismissing false flags, contacting posters for clarification, or removing the casting outright. You can pick a reason (scam, inappropriate content, impersonation, concerns about a minor, etc.) and add details."},
+    {q:"Can minors (under 18) use CastSlate?",a:"Talent under 18 are required to register a parent or legal guardian's email at signup. We don't grant unsupervised platform access to minors, and minors' contact information is never displayed publicly. Casters posting roles for minors should comply with COPPA and applicable state child-performer laws."},
     {q:"How do you handle fake or scam castings?",a:"Any post can be flagged via the Report link. Admins review the queue and remove posts that violate our standards. Casters who request payment from talent, ask for personal financial information, or don't meet our standards for a legitimate production get suspended or banned — and we keep an internal record so the same actor can't re-register easily."},
-    {q:"What about audition safety?",a:"In-person callbacks should take place at a verified production office or studio. SlateCue is not a substitute for your judgement: if an audition location, timing, or request feels off, don't go. Bring a chaperone where relevant, and report anything suspicious via the Report link or the Contact page."},
+    {q:"What about audition safety?",a:"In-person callbacks should take place at a verified production office or studio. CastSlate is not a substitute for your judgement: if an audition location, timing, or request feels off, don't go. Bring a chaperone where relevant, and report anything suspicious via the Report link or the Contact page."},
     {q:"Are reports actually reviewed?",a:"Yes. Every report lands in the admin Reports tab with the reason, the reporter, and the target (a casting or a profile). Admins can mark reports as Reviewing, Actioned, or Dismissed, with internal notes. The reporter is not shown to the reported party."}
   ]},
   {id:"account",label:"Account & Privacy",icon:"🔐",blurb:"Your data, your settings, and your privacy controls.",items:[
@@ -1965,7 +1965,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
     setBookingTarget({cls,slot,date});
   };
 
-  if(loading)return(<div className="page"><SlateCueLoader text="Loading classes…"/></div>);
+  if(loading)return(<div className="page"><CastSlateLoader text="Loading classes…"/></div>);
   if(err)return(<div className="page" style={{textAlign:"center",padding:"80px 24px"}}><p style={{color:"var(--t2)",marginBottom:16}}>{err}</p><button className="btn-p" onClick={()=>window.location.reload()}>Retry</button><Footer onNavigate={onNavigate}/></div>);
 
   if(viewing){
@@ -2249,7 +2249,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
     <div className="info-hero">
       <div className="section-label">Classes</div>
       <h1>Training That Actually<br/>Moves Your Career.</h1>
-      <p>A curated directory of serious, working-actor classes — in New York and online. Taught by active casting directors, working VO actors, and veteran studio teachers. SlateCue does not run the classes directly; we vet the teachers and help students enroll.</p>
+      <p>A curated directory of serious, working-actor classes — in New York and online. Taught by active casting directors, working VO actors, and veteran studio teachers. CastSlate does not run the classes directly; we vet the teachers and help students enroll.</p>
     </div>
     <div style={{display:"flex",flexWrap:"wrap",gap:8,justifyContent:"center",marginBottom:40}}>
       <button className="btn-s btn-sm" onClick={()=>setFilter("all")} style={filter==="all"?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>All Categories</button>
@@ -2287,7 +2287,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
 
     {visible.length===0&&<p style={{textAlign:"center",color:"var(--t3)",marginTop:40}}>No classes in this category yet — new cohorts are added each month.</p>}
     <div style={{maxWidth:680,margin:"60px auto 0",padding:28,background:"var(--s2)",borderRadius:14,border:"1px solid var(--bdr)",textAlign:"center"}}>
-      <h3 style={{fontSize:20,fontWeight:800,marginBottom:8}}>Teach on SlateCue</h3>
+      <h3 style={{fontSize:20,fontWeight:800,marginBottom:8}}>Teach on CastSlate</h3>
       <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6,marginBottom:18}}>Working casting directors, coaches, and professional actors with five or more years of teaching experience can apply to list a class. We curate carefully.</p>
       <button className="btn-p" onClick={()=>onNavigate("contact")}>Apply to Teach →</button>
     </div>
@@ -2395,7 +2395,7 @@ function BookingRequestModal({target,myProfile,session,onClose,onSubmitted}){
           <button className="btn-p" onClick={handleSubmit} disabled={busy} style={{flex:1}}>{busy?"Submitting…":"Submit Booking Request"}</button>
           <button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
         </div>
-        <p style={{fontSize:11,color:"var(--t3)",marginTop:12,lineHeight:1.5}}>No payment is taken now. If your request is approved, you will receive payment instructions in your SlateCue inbox.</p>
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:12,lineHeight:1.5}}>No payment is taken now. If your request is approved, you will receive payment instructions in your CastSlate inbox.</p>
       </>)}
     </div>
   </div>);
@@ -2416,7 +2416,7 @@ function ContactPage({onNavigate}){
       <div className="form-group"><label className="label">Subject</label><input className="input" placeholder="What's this about?"/></div>
       <div className="form-group"><label className="label">Message</label><textarea className="textarea" placeholder="Tell us more..." style={{minHeight:140}}></textarea></div>
       <button className="btn-p" style={{width:"100%"}} onClick={()=>setSent(true)}>Send Message</button></>}
-    <div className="grid-3" style={{marginTop:48}}>{[["📧","Email","hello@slatecue.com"],["📍","Office","New York, NY"],["📱","Social","@slatecue"]].map(([ic,ti,va])=><div key={ti} style={{textAlign:"center"}}><div style={{fontSize:28,marginBottom:8}}>{ic}</div><h4 style={{fontSize:13,fontWeight:700,marginBottom:2}}>{ti}</h4><p style={{fontSize:12,color:"var(--t2)"}}>{va}</p></div>)}</div>
+    <div className="grid-3" style={{marginTop:48}}>{[["📧","Email","hello@castslate.com"],["📍","Office","New York, NY"],["📱","Social","@castslate"]].map(([ic,ti,va])=><div key={ti} style={{textAlign:"center"}}><div style={{fontSize:28,marginBottom:8}}>{ic}</div><h4 style={{fontSize:13,fontWeight:700,marginBottom:2}}>{ti}</h4><p style={{fontSize:12,color:"var(--t2)"}}>{va}</p></div>)}</div>
   </div><Footer onNavigate={onNavigate}/></div>);
 }
 
@@ -2424,13 +2424,13 @@ function ContactPage({onNavigate}){
 // PAGE: RESOURCES
 // ═══════════════════════════════════════════
 const RESOURCE_CONTENT={
-  "Setting Up Your Profile":["Getting Started","Your profile is your first impression on SlateCue. Here is how to make it count.\n\n**Step 1: Upload a Professional Headshot**\nThis is the single most important element of your profile. Use a current, high-resolution photo (at least 800x1000px) with a clean background. Your face should fill about 60% of the frame. Natural lighting is best.\n\n**Step 2: Fill Out Your Stats Completely**\nCasting directors filter by height, age, gender, ethnicity, and union status. Every field you leave blank is a search you won't appear in. Be accurate — showing up to an audition looking different from your profile wastes everyone's time.\n\n**Step 3: Write a Strong Bio**\nTwo to three sentences that tell a casting director who you are as a performer. Lead with your training, then your strengths, then what you're looking for.\n\n**Step 4: Add Your Credits**\nList your most impressive or recent credits first. Include the role name, project title, project type (film, TV, theater), and year.\n\n**Step 5: List Special Skills**\nBe honest and specific. 'Fluent Spanish' is useful. 'Stage combat certified (SAFD)' books roles."],
-  "How Submissions Work":["Getting Started","SlateCue uses a one-tap submission process designed to be fast for talent and thorough for casting directors.\n\n**Finding Castings**\nBrowse open castings from the main search page. Filter by type (Film, TV, Theater, Commercial, Modeling), location, and union status.\n\n**Submitting**\nWhen you find a role that fits, click 'Apply Now.' Select which headshot to submit and optionally write a cover note.\n\n**What Happens Next**\nYour submission enters the casting director's review queue. On SlateCue, directors review submissions one at a time — your headshot is guaranteed to be seen individually.\n\n**Tracking Your Submissions**\nYour dashboard shows all active submissions with their status. When a casting director adds you to their callback list, you'll receive a notification.\n\n**Tips for Better Submissions**\n- Only submit to roles that genuinely match your type\n- Use a headshot that fits the character breakdown\n- Keep cover notes brief (2-3 sentences max)\n- Submit early — casting directors often start reviewing before the deadline"],
-  "The Swipe System Explained":["Getting Started","The swipe system is what makes SlateCue fundamentally different from every other casting platform.\n\n**The Problem with Grids**\nOn traditional platforms, casting directors see a grid of 50-200+ headshots at once. Research shows they spend an average of 1.7 seconds per face.\n\n**How Swiping Works**\nEach submission is presented one at a time as a full card — headshot, name, stats, and key skills. The casting director must take action: swipe right for callback, swipe left to pass. No skipping.\n\n**Why It Works**\nOur data shows casting directors spend an average of 8.4 seconds per submission on SlateCue — nearly 5x longer than grid-based platforms.\n\n**For Talent**\nEvery submission you send is genuinely seen and evaluated. Whether you're seasoned SAG-AFTRA or a first-time submitter, your headshot gets the same full-screen attention.\n\n**For Casting Directors**\nThe swipe interface is faster than it sounds. Most CDs review 50+ submissions in under 15 minutes, with better callback quality."],
+  "Setting Up Your Profile":["Getting Started","Your profile is your first impression on CastSlate. Here is how to make it count.\n\n**Step 1: Upload a Professional Headshot**\nThis is the single most important element of your profile. Use a current, high-resolution photo (at least 800x1000px) with a clean background. Your face should fill about 60% of the frame. Natural lighting is best.\n\n**Step 2: Fill Out Your Stats Completely**\nCasting directors filter by height, age, gender, ethnicity, and union status. Every field you leave blank is a search you won't appear in. Be accurate — showing up to an audition looking different from your profile wastes everyone's time.\n\n**Step 3: Write a Strong Bio**\nTwo to three sentences that tell a casting director who you are as a performer. Lead with your training, then your strengths, then what you're looking for.\n\n**Step 4: Add Your Credits**\nList your most impressive or recent credits first. Include the role name, project title, project type (film, TV, theater), and year.\n\n**Step 5: List Special Skills**\nBe honest and specific. 'Fluent Spanish' is useful. 'Stage combat certified (SAFD)' books roles."],
+  "How Submissions Work":["Getting Started","CastSlate uses a one-tap submission process designed to be fast for talent and thorough for casting directors.\n\n**Finding Castings**\nBrowse open castings from the main search page. Filter by type (Film, TV, Theater, Commercial, Modeling), location, and union status.\n\n**Submitting**\nWhen you find a role that fits, click 'Apply Now.' Select which headshot to submit and optionally write a cover note.\n\n**What Happens Next**\nYour submission enters the casting director's review queue. On CastSlate, directors review submissions one at a time — your headshot is guaranteed to be seen individually.\n\n**Tracking Your Submissions**\nYour dashboard shows all active submissions with their status. When a casting director adds you to their callback list, you'll receive a notification.\n\n**Tips for Better Submissions**\n- Only submit to roles that genuinely match your type\n- Use a headshot that fits the character breakdown\n- Keep cover notes brief (2-3 sentences max)\n- Submit early — casting directors often start reviewing before the deadline"],
+  "The Swipe System Explained":["Getting Started","The swipe system is what makes CastSlate fundamentally different from every other casting platform.\n\n**The Problem with Grids**\nOn traditional platforms, casting directors see a grid of 50-200+ headshots at once. Research shows they spend an average of 1.7 seconds per face.\n\n**How Swiping Works**\nEach submission is presented one at a time as a full card — headshot, name, stats, and key skills. The casting director must take action: swipe right for callback, swipe left to pass. No skipping.\n\n**Why It Works**\nOur data shows casting directors spend an average of 8.4 seconds per submission on CastSlate — nearly 5x longer than grid-based platforms.\n\n**For Talent**\nEvery submission you send is genuinely seen and evaluated. Whether you're seasoned SAG-AFTRA or a first-time submitter, your headshot gets the same full-screen attention.\n\n**For Casting Directors**\nThe swipe interface is faster than it sounds. Most CDs review 50+ submissions in under 15 minutes, with better callback quality."],
   "Headshot Best Practices":["Optimize Your Profile","We surveyed 15 working casting directors. Here is what they actually look for.\n\n**Authenticity Over Glamour**\nYour headshot should look like you on your best day — not a retouched fantasy. CDs consistently said: 'If you show up looking different from your headshot, we've both wasted our time.'\n\n**Eyes First**\nEvery casting director mentioned eyes. 'The eyes need to be alive. I'm looking for someone who can act through a still image.'\n\n**Keep Backgrounds Simple**\nPlain gray, white, or a subtle outdoor background. Nothing distracting. No heavy filters.\n\n**Current Photos Only**\nIf your headshot is more than two years old, get a new one.\n\n**Technical Requirements**\n- Resolution: at least 800x1000px\n- Format: JPG or PNG\n- Lighting: natural or soft studio lighting\n- Framing: head and shoulders, face filling 60% of frame\n- Expression: neutral to slight smile"],
   "Writing Your Bio":["Optimize Your Profile","Your bio is a 2-3 sentence pitch that helps casting directors understand who you are.\n\n**What to Include**\n- Your training and where you trained\n- Your primary performance strengths\n- What types of roles you're strongest in\n- Any notable achievements\n\n**What to Avoid**\n- Life stories ('I've been acting since I was 3...')\n- Vague statements ('I'm passionate about storytelling')\n- Self-deprecation ('I'm still learning but...')\n\n**Strong Examples**\n'NYC-based actress with 8 years of stage experience. Tisch-trained (Meisner). Strong with intense dramatic material and physical roles. Fluent in Spanish.'\n\n'Versatile character actor with comedy and drama range. Yale Drama MFA. Extensive TV credits including recurring roles.'\n\n**The Formula**\n[Location]-based [type] with [experience level]. [Training]. [Strength/specialty]. [Unique skill or quality]."],
   "Reel Do's and Don'ts":["Optimize Your Profile","Your demo reel is your moving headshot. Here is how to make it work.\n\n**The Dos**\n- Keep it under 2 minutes total\n- Lead with your best, most recent work\n- Show range: include at least 2 different types of scenes\n- Use high-quality footage only\n- Put your name and contact at the beginning and end\n\n**The Don'ts**\n- No montages set to music (CDs skip these immediately)\n- No behind-the-scenes footage\n- No student film footage unless production quality is professional\n- No scenes where you're barely visible\n- No opening animations or long intros\n\n**If You Don't Have Footage**\nCreate a self-tape reel. Pick 2-3 contrasting monologues and record them with professional lighting and audio. A clean self-tape reel beats a poorly produced scene reel.\n\n**Technical Specs**\n- Format: MP4 (H.264)\n- Resolution: 1080p minimum\n- File size: under 100MB"],
-  "Understanding Union Status":["Industry Knowledge","Union status affects which roles you can submit for and how you're paid.\n\n**SAG-AFTRA**\nCovers film, TV, commercials, voiceover, and new media. Members earn minimum rates (scale), receive residuals, and have access to health and pension plans. Joining requires booking a SAG-AFTRA job, being a member of an affiliated union for one year, or accumulating three vouchers as background.\n\n**AEA (Actors' Equity)**\nCovers stage actors and stage managers in professional theater. Members earn minimum weekly salaries based on theater size and contract type.\n\n**Non-Union**\nNo union membership. You can submit to any non-union role and many union roles open to non-union talent. Pay rates vary widely.\n\n**On SlateCue**\nEach casting post specifies its union requirement. Your profile's union status is used for filtering. Be accurate."],
+  "Understanding Union Status":["Industry Knowledge","Union status affects which roles you can submit for and how you're paid.\n\n**SAG-AFTRA**\nCovers film, TV, commercials, voiceover, and new media. Members earn minimum rates (scale), receive residuals, and have access to health and pension plans. Joining requires booking a SAG-AFTRA job, being a member of an affiliated union for one year, or accumulating three vouchers as background.\n\n**AEA (Actors' Equity)**\nCovers stage actors and stage managers in professional theater. Members earn minimum weekly salaries based on theater size and contract type.\n\n**Non-Union**\nNo union membership. You can submit to any non-union role and many union roles open to non-union talent. Pay rates vary widely.\n\n**On CastSlate**\nEach casting post specifies its union requirement. Your profile's union status is used for filtering. Be accurate."],
   "How to Read a Breakdown":["Industry Knowledge","A breakdown is the industry document that describes an open role.\n\n**Project Title & Type**\nWhether it's film, TV, theater, commercial, or modeling. The type affects pay structure and time commitment.\n\n**Production Company**\nWho's making it. Research them — a legitimate company will have credits or an IMDb page.\n\n**Role Description**\nAge range, gender, ethnicity, physical requirements, personality traits. If you're outside the specified range, don't submit.\n\n**Specs**\nShorthand for physical and demographic requirements. 'Female, 25-35, Latina, 5'4\"-5'8\"' means exactly what it says.\n\n**Union Status**\nWhether the production is SAG-AFTRA, AEA, Non-Union, or open to both. Only submit if your status matches.\n\n**Location & Dates**\nWhere the production shoots and when. Make sure you're available.\n\n**Deadline**\nSubmit before it. Many CDs start reviewing early, so earlier is better."],
   "Self-Tape Guidelines":["Industry Knowledge","Self-tapes are now standard in the audition process.\n\n**Framing**\nMedium close-up: head and shoulders. Eyes in the upper third of frame. Shoot in landscape unless asked otherwise.\n\n**Background**\nSolid, neutral color. Blue or gray is standard. Avoid patterns and windows.\n\n**Lighting**\nTwo-point lighting is ideal: key light at 45 degrees, fill light on the other side. Natural window light works if consistent. Avoid overhead lighting.\n\n**Audio**\nThis is where most self-tapes fail. Use a lavalier microphone or record in a quiet, carpeted room. No echo, no background noise.\n\n**Reader**\nHave someone read the other character's lines off-camera. They should be flat and neutral.\n\n**Slating**\nStart with: your name, the role, and your height. Smile. Under 10 seconds.\n\n**File Delivery**\nMP4 format, 1080p, under 100MB. Label: YourName_RoleName_ProjectName."],
   "Submitting Stronger Self-Tapes":["Auditioning & Self-Tapes","Most actors think the difference between a tape that books and a tape that gets passed on is gear. It almost never is. The choices are.\n\n**Pick a specific person**\nNot 'a friend.' A specific person who matches what the script describes. Decide on one thing your character wants from them in this scene and play that.\n\n**Decide on the moment before**\nHave you just arrived? Have you been waiting? What were you doing 30 seconds before the scene starts? Letting that affect your first line is the cheapest, most reliable way to land specificity.\n\n**Trust the writer**\nDo not editorialize the dialogue with reaction faces, sighs, or pauses that aren't on the page. The script is doing more work than actors give it credit for.\n\n**The choices that consistently sink tapes**\nTelegraphing emotion in the first three seconds. Looking dead-center into the lens. Performing the words rather than thinking them. Adding tears, screams, or whispers to make a moment feel 'big.'\n\n**The bar a strong self-tape clears**\nClear, specific, and easy for the casting director to imagine on a real set with real coverage. That's it. It is rarely a performance you'll remember; it's a performance the CD can build a callback around."],
@@ -2449,7 +2449,7 @@ function ResourcesPage({onNavigate}){
   const R=[["Getting Started",[["Setting Up Your Profile","Step-by-step guide to creating a profile that gets callbacks."],["How Submissions Work","Understanding the one-tap apply process."],["The Swipe System Explained","How the swipe mechanic guarantees your headshot gets viewed."]]],["Optimize Your Profile",[["Headshot Best Practices","What CDs actually look for — straight from 15 working casting directors."],["Writing Your Bio","How to describe yourself in a way that gets you in the room."],["Reel Do's and Don'ts","Keep it under 2 minutes. Lead with your best. Cut the montage."]]],["Industry Knowledge",[["Understanding Union Status","SAG-AFTRA, AEA, Non-Union — what it all means for your submissions."],["How to Read a Breakdown","Decoding casting notices so you submit to the right roles."],["Self-Tape Guidelines","Lighting, framing, audio — the technical basics."]]],["Auditioning & Self-Tapes",[["Submitting Stronger Self-Tapes","Why specific choices matter more than gear — and how to land them."],["Preparing for a Callback","Keep what worked. Deepen it. Take direction. Don't reinvent."],["Reading a Casting Notice","The 20-second scan — type, dates, union, pay — that decides if you submit."]]],["For Casting Directors & Producers",[["Running Casting Faster (For Producers)","Tight breakdowns, batched review, decisive callback scheduling. Days, not weeks."],["Casting Unknown Talent for Indies","Cast for the role, not the resume. How to find serious unknown actors safely."],["Reviewing Submissions Like a Pro","One-pass review at full attention, with the habits CDs use to keep signal high."]]],["Communication & Etiquette",[["Communicating Through the Platform","Brief, specific, on-time replies — what professional inbox communication looks like."],["Common Mistakes When Applying","Submitting outside type, cover letters, deadline drift — the five mistakes that sink applications."],["Profile Fields That Actually Matter","A line-by-line look at what CDs use to filter, what's nice, and what's just clutter."]]]];
   if(viewing){const content=RESOURCE_CONTENT[viewing];const cat=content?content[0]:"";const body=content?content[1]:"";return(<div className="page"><button className="btn-s btn-sm mb-20" onClick={()=>setViewing(null)}>← Back to Resources</button><div style={{maxWidth:720,margin:"0 auto"}}><div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:12}}>{cat}</div><h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:32}}>{viewing}</h1>{body.split("\n\n").map((para,i)=><p key={i} style={{color:"var(--t2)",fontSize:15,lineHeight:1.8,marginBottom:20}} dangerouslySetInnerHTML={{__html:para.replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--t1)">$1</strong>')}}/>)}</div><Footer onNavigate={onNavigate}/></div>);}
   return(<div className="page"><div className="section-label">Resources</div><h1 className="section-title">Talent Resource Center</h1>
-    <p style={{color:"var(--t2)",fontSize:15,marginBottom:48,maxWidth:600}}>Everything you need to build your career on SlateCue.</p>
+    <p style={{color:"var(--t2)",fontSize:15,marginBottom:48,maxWidth:600}}>Everything you need to build your career on CastSlate.</p>
     {R.map(([cat,items])=><div key={cat} style={{marginBottom:40}}><h3 style={{fontSize:18,fontWeight:700,marginBottom:16}}>{cat}</h3><div className="grid-3">{items.map(([t,d])=><div key={t} className="card" style={{cursor:"pointer"}} onClick={()=>{setViewing(t);window.scrollTo(0,0);}}><h4 style={{fontSize:15,fontWeight:700,marginBottom:6}}>{t}</h4><p style={{color:"var(--t2)",fontSize:13,lineHeight:1.5}}>{d}</p><span style={{color:"var(--acc)",fontSize:12,fontWeight:600,marginTop:8,display:"inline-block"}}>Read more →</span></div>)}</div></div>)}
     <Footer onNavigate={onNavigate}/></div>);
 }
@@ -2459,7 +2459,7 @@ function ResourcesPage({onNavigate}){
 // ═══════════════════════════════════════════
 function SuccessStoriesPage({onNavigate}){
   return(<div className="page">
-    <div className="info-hero"><div className="section-label">Success Stories</div><h1>Real Talent.<br/>Real Bookings.</h1><p>SlateCue actors are booking roles across film, TV, commercials, and theater.</p></div>
+    <div className="info-hero"><div className="section-label">Success Stories</div><h1>Real Talent.<br/>Real Bookings.</h1><p>CastSlate actors are booking roles across film, TV, commercials, and theater.</p></div>
     <div style={{maxWidth:700,margin:"0 auto",display:"flex",flexDirection:"column",gap:24}}>
       {SUCCESS_STORIES.map((s,i)=><div key={i} className="card story-card"><img src={s.img} alt={s.name}/><div><h4>{s.name}</h4><div className="story-role">{s.role}</div><p>"{s.quote}"</p></div></div>)}
     </div>
@@ -2594,7 +2594,7 @@ function StudiosPage({onNavigate}){
   return(<div className="page">
     <div className="info-hero"><div className="section-label">For Studios</div><h1>Enterprise Casting<br/>at Scale</h1><p>Multi-project, multi-user casting management for studios, networks, and agencies.</p></div>
     <div style={{maxWidth:800,margin:"0 auto"}}>
-      <div className="feature-list">{[["🏢","Multi-User Teams","Add up to 10 team members with role-based permissions."],["🎨","Custom Branding","Your studio logo and colors on every casting post."],["📊","Analytics Dashboard","Track submission volume, response rates, and diversity metrics."],["🔗","API Access","Integrate SlateCue into your production management workflow."],["🛡️","Priority Support","Dedicated account manager plus 24/7 technical support."],["📁","Project Management","Organize castings by production, season, or department."]].map(([ic,ti,de])=>
+      <div className="feature-list">{[["🏢","Multi-User Teams","Add up to 10 team members with role-based permissions."],["🎨","Custom Branding","Your studio logo and colors on every casting post."],["📊","Analytics Dashboard","Track submission volume, response rates, and diversity metrics."],["🔗","API Access","Integrate CastSlate into your production management workflow."],["🛡️","Priority Support","Dedicated account manager plus 24/7 technical support."],["📁","Project Management","Organize castings by production, season, or department."]].map(([ic,ti,de])=>
         <div key={ti} className="feature-item"><div className="feat-icon">{ic}</div><div><h4>{ti}</h4><p>{de}</p></div></div>
       )}</div>
       <div style={{textAlign:"center",marginTop:48}}><button className="btn-p" onClick={()=>onNavigate("contact")}>Contact Sales</button><p style={{color:"var(--t3)",fontSize:12,marginTop:8}}>Custom enterprise pricing tailored to your production needs</p></div>
@@ -2607,7 +2607,7 @@ function StudiosPage({onNavigate}){
 // ═══════════════════════════════════════════
 function ApiPage({onNavigate}){
   return(<div className="page">
-    <div className="info-hero"><div className="section-label">API</div><h1>Build on SlateCue</h1><p>Integrate our talent search and casting pipeline directly into your production tools.</p></div>
+    <div className="info-hero"><div className="section-label">API</div><h1>Build on CastSlate</h1><p>Integrate our talent search and casting pipeline directly into your production tools.</p></div>
     <div style={{maxWidth:800,margin:"0 auto"}}>
       <div className="card mb-32"><h3 style={{fontSize:18,fontWeight:700,marginBottom:16}}>REST API Endpoints</h3>
         <div className="api-code">{`GET    /api/v1/castings          # List active castings
@@ -2637,48 +2637,48 @@ function TermsPage({onNavigate}){
     <h1 className="section-title">Terms of Service</h1>
     <p style={{color:"var(--t3)",fontSize:13,marginBottom:32}}>Last updated: April 14, 2026 · Effective date: April 14, 2026</p>
     <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,padding:24,marginBottom:36,color:"var(--t2)",fontSize:14,lineHeight:1.7}}>
-      <strong style={{color:"var(--t1)"}}>Please read these Terms carefully.</strong> These Terms of Service ("Terms") govern your access to and use of the SlateCue websites, mobile applications, and related services (collectively, the "Service") operated by SlateCue, Inc. ("SlateCue", "we", "our", or "us"). By accessing or using the Service, you agree to be bound by these Terms and our <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>. If you do not agree, do not use the Service.
+      <strong style={{color:"var(--t1)"}}>Please read these Terms carefully.</strong> These Terms of Service ("Terms") govern your access to and use of the CastSlate websites, mobile applications, and related services (collectively, the "Service") operated by CastSlate, Inc. ("CastSlate", "we", "our", or "us"). By accessing or using the Service, you agree to be bound by these Terms and our <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>. If you do not agree, do not use the Service.
     </div>
 
-    <S n="1" t="Acceptance of Terms">By registering for an account, accessing, or using any part of the Service, you acknowledge that you have read, understood, and agree to be bound by these Terms, our Privacy Policy, and any additional terms applicable to specific features. These Terms form a legally binding agreement between you and SlateCue. If you are using the Service on behalf of an entity, you represent that you have authority to bind that entity.</S>
+    <S n="1" t="Acceptance of Terms">By registering for an account, accessing, or using any part of the Service, you acknowledge that you have read, understood, and agree to be bound by these Terms, our Privacy Policy, and any additional terms applicable to specific features. These Terms form a legally binding agreement between you and CastSlate. If you are using the Service on behalf of an entity, you represent that you have authority to bind that entity.</S>
 
-    <S n="2" t="Eligibility">You must be at least 18 years old to create a SlateCue account. Minors between the ages of 13 and 17 may use the Service only through a parent or legal guardian's account, and only with that parent or guardian's express consent and supervision. The Service is not directed to children under the age of 13, and we do not knowingly collect personal information from children under 13. You must also reside in a jurisdiction where use of the Service is lawful.</S>
+    <S n="2" t="Eligibility">You must be at least 18 years old to create a CastSlate account. Minors between the ages of 13 and 17 may use the Service only through a parent or legal guardian's account, and only with that parent or guardian's express consent and supervision. The Service is not directed to children under the age of 13, and we do not knowingly collect personal information from children under 13. You must also reside in a jurisdiction where use of the Service is lawful.</S>
 
-    <S n="3" t="Account Registration">To access most features, you must create an account. You agree to: (a) provide accurate, current, and complete information; (b) maintain the security of your password and accept all risks of unauthorized access; (c) notify SlateCue immediately of any breach of security or unauthorized use; and (d) be responsible for all activities that occur under your account. SlateCue is not liable for any loss or damage arising from your failure to comply with these obligations.</S>
+    <S n="3" t="Account Registration">To access most features, you must create an account. You agree to: (a) provide accurate, current, and complete information; (b) maintain the security of your password and accept all risks of unauthorized access; (c) notify CastSlate immediately of any breach of security or unauthorized use; and (d) be responsible for all activities that occur under your account. CastSlate is not liable for any loss or damage arising from your failure to comply with these obligations.</S>
 
-    <S n="4" t="User Categories">SlateCue offers distinct features for different user types: (a) <strong>Talent</strong> (actors, models, performers) may create profiles, upload media, and submit to castings subject to a monthly subscription fee (with a limited free trial); (b) <strong>Casting Directors and Producers</strong> may post castings, review submissions, and manage callbacks, with fees applicable per casting post; and (c) <strong>Studios and Agencies</strong> may use enterprise features under separate commercial agreements. Each user type is subject to these Terms and any category-specific terms disclosed at the time of enrollment.</S>
+    <S n="4" t="User Categories">CastSlate offers distinct features for different user types: (a) <strong>Talent</strong> (actors, models, performers) may create profiles, upload media, and submit to castings subject to a monthly subscription fee (with a limited free trial); (b) <strong>Casting Directors and Producers</strong> may post castings, review submissions, and manage callbacks, with fees applicable per casting post; and (c) <strong>Studios and Agencies</strong> may use enterprise features under separate commercial agreements. Each user type is subject to these Terms and any category-specific terms disclosed at the time of enrollment.</S>
 
-    <S n="5" t="Fees, Payment, and Subscriptions">Talent accounts are offered on a recurring subscription basis at $9.99 per month following a 7-day free trial; Talent may cancel at any time through their account settings, in which case access will remain until the end of the then-current billing period. Casting Directors pay a fee of $19.99 per casting post, billed at the time of posting. Studio/enterprise pricing is established by separate agreement. All fees are stated in U.S. dollars, are non-refundable except where required by law, and are exclusive of any applicable taxes, which you are responsible for. We may change our fees at any time by posting updated pricing; changes apply to transactions made after the effective date of the change. You authorize SlateCue and its payment processors to charge your payment method for all fees incurred.</S>
+    <S n="5" t="Fees, Payment, and Subscriptions">Talent accounts are offered on a recurring subscription basis at $9.99 per month following a 7-day free trial; Talent may cancel at any time through their account settings, in which case access will remain until the end of the then-current billing period. Casting Directors pay a fee of $19.99 per casting post, billed at the time of posting. Studio/enterprise pricing is established by separate agreement. All fees are stated in U.S. dollars, are non-refundable except where required by law, and are exclusive of any applicable taxes, which you are responsible for. We may change our fees at any time by posting updated pricing; changes apply to transactions made after the effective date of the change. You authorize CastSlate and its payment processors to charge your payment method for all fees incurred.</S>
 
-    <S n="6" t="User Content and License Grant">You retain ownership of all content you submit to the Service, including headshots, reels, resumes, bios, and casting breakdowns ("User Content"). By submitting User Content, you grant SlateCue a worldwide, non-exclusive, royalty-free, sublicensable, and transferable license to host, store, reproduce, display, modify (for formatting), distribute, and use your User Content solely for the purpose of operating, promoting, and improving the Service. You represent and warrant that you own or have the necessary rights to your User Content and that its use does not infringe any third party's rights.</S>
+    <S n="6" t="User Content and License Grant">You retain ownership of all content you submit to the Service, including headshots, reels, resumes, bios, and casting breakdowns ("User Content"). By submitting User Content, you grant CastSlate a worldwide, non-exclusive, royalty-free, sublicensable, and transferable license to host, store, reproduce, display, modify (for formatting), distribute, and use your User Content solely for the purpose of operating, promoting, and improving the Service. You represent and warrant that you own or have the necessary rights to your User Content and that its use does not infringe any third party's rights.</S>
 
     <S n="7" t="Prohibited Conduct">You agree not to: (a) violate any applicable law or regulation; (b) impersonate any person or misrepresent your affiliation; (c) post content that is defamatory, obscene, harassing, discriminatory, or infringing; (d) solicit personal information from minors; (e) use the Service to distribute unsolicited promotional material ("spam"); (f) introduce malware, viruses, or harmful code; (g) use any automated means (bots, scrapers, crawlers) to access or collect data from the Service without our written permission; (h) attempt to gain unauthorized access to any accounts or systems; (i) circumvent any access or usage restrictions; or (j) offer or request sexual services, "pay-to-audition" schemes, or any illegal activity. Violation may result in immediate termination.</S>
 
-    <S n="8" t="Casting Submissions and Auditions">SlateCue is a platform that connects talent with casting opportunities. We do not endorse, verify the legitimacy of, or participate in the selection process for any casting. All negotiations, contracts, auditions, and engagements are solely between talent and the casting party. You are solely responsible for exercising due diligence before responding to any casting, attending any audition, or entering into any agreement. SlateCue is not a talent agency and does not procure employment.</S>
+    <S n="8" t="Casting Submissions and Auditions">CastSlate is a platform that connects talent with casting opportunities. We do not endorse, verify the legitimacy of, or participate in the selection process for any casting. All negotiations, contracts, auditions, and engagements are solely between talent and the casting party. You are solely responsible for exercising due diligence before responding to any casting, attending any audition, or entering into any agreement. CastSlate is not a talent agency and does not procure employment.</S>
 
-    <S n="9" t="Intellectual Property">The Service, including all software, design, text, graphics, logos, the "SlateCue" name and mark, and all other content (excluding User Content), is the property of SlateCue or its licensors and is protected by U.S. and international copyright, trademark, and other intellectual property laws. Except for the limited license to use the Service as expressly permitted in these Terms, no rights are granted to you.</S>
+    <S n="9" t="Intellectual Property">The Service, including all software, design, text, graphics, logos, the "CastSlate" name and mark, and all other content (excluding User Content), is the property of CastSlate or its licensors and is protected by U.S. and international copyright, trademark, and other intellectual property laws. Except for the limited license to use the Service as expressly permitted in these Terms, no rights are granted to you.</S>
 
-    <S n="10" t="DMCA and Copyright Infringement">SlateCue respects intellectual property rights and will respond to notices of alleged copyright infringement in accordance with the Digital Millennium Copyright Act ("DMCA"). If you believe that your copyrighted work has been copied and is accessible on the Service in a way that constitutes infringement, please send a notice to our designated agent at <strong style={{color:"var(--t1)"}}>dmca@slatecue.com</strong> containing the information required by 17 U.S.C. § 512(c)(3). Repeat infringers will have their accounts terminated.</S>
+    <S n="10" t="DMCA and Copyright Infringement">CastSlate respects intellectual property rights and will respond to notices of alleged copyright infringement in accordance with the Digital Millennium Copyright Act ("DMCA"). If you believe that your copyrighted work has been copied and is accessible on the Service in a way that constitutes infringement, please send a notice to our designated agent at <strong style={{color:"var(--t1)"}}>dmca@castslate.com</strong> containing the information required by 17 U.S.C. § 512(c)(3). Repeat infringers will have their accounts terminated.</S>
 
-    <S n="11" t="Third-Party Links and Services">The Service may contain links to or integrations with third-party websites or services. SlateCue does not control and is not responsible for the content, policies, or practices of any third-party service. Your use of third-party services is at your own risk and subject to the terms of those services.</S>
+    <S n="11" t="Third-Party Links and Services">The Service may contain links to or integrations with third-party websites or services. CastSlate does not control and is not responsible for the content, policies, or practices of any third-party service. Your use of third-party services is at your own risk and subject to the terms of those services.</S>
 
-    <S n="12" t="Termination">You may terminate your account at any time by following the instructions in your account settings. SlateCue may suspend or terminate your access to the Service, in whole or in part, at any time and for any reason — including, without limitation, violation of these Terms — with or without prior notice. Upon termination, your right to use the Service ceases immediately, but provisions relating to Intellectual Property, Disclaimers, Limitation of Liability, Indemnification, and Dispute Resolution will survive.</S>
+    <S n="12" t="Termination">You may terminate your account at any time by following the instructions in your account settings. CastSlate may suspend or terminate your access to the Service, in whole or in part, at any time and for any reason — including, without limitation, violation of these Terms — with or without prior notice. Upon termination, your right to use the Service ceases immediately, but provisions relating to Intellectual Property, Disclaimers, Limitation of Liability, Indemnification, and Dispute Resolution will survive.</S>
 
-    <S n="13" t="Disclaimers">THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. SLATECUE MAKES NO WARRANTY THAT THE SERVICE WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE, THAT ANY PARTICULAR CASTING WILL BE LEGITIMATE, OR THAT ANY USE OF THE SERVICE WILL RESULT IN EMPLOYMENT OR COMPENSATION.</S>
+    <S n="13" t="Disclaimers">THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. CASTSLATE MAKES NO WARRANTY THAT THE SERVICE WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE, THAT ANY PARTICULAR CASTING WILL BE LEGITIMATE, OR THAT ANY USE OF THE SERVICE WILL RESULT IN EMPLOYMENT OR COMPENSATION.</S>
 
-    <S n="14" t="Limitation of Liability">TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL SLATECUE, ITS AFFILIATES, OR THEIR OFFICERS, DIRECTORS, EMPLOYEES, OR AGENTS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS, REVENUE, DATA, OR BUSINESS, ARISING OUT OF OR IN CONNECTION WITH THESE TERMS OR THE SERVICE. SLATECUE'S TOTAL LIABILITY FOR ANY CLAIM ARISING OUT OF OR RELATING TO THESE TERMS OR THE SERVICE SHALL NOT EXCEED THE GREATER OF (A) THE AMOUNTS PAID BY YOU TO SLATECUE IN THE TWELVE MONTHS PRECEDING THE CLAIM, OR (B) ONE HUNDRED U.S. DOLLARS ($100).</S>
+    <S n="14" t="Limitation of Liability">TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL CASTSLATE, ITS AFFILIATES, OR THEIR OFFICERS, DIRECTORS, EMPLOYEES, OR AGENTS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS, REVENUE, DATA, OR BUSINESS, ARISING OUT OF OR IN CONNECTION WITH THESE TERMS OR THE SERVICE. CASTSLATE'S TOTAL LIABILITY FOR ANY CLAIM ARISING OUT OF OR RELATING TO THESE TERMS OR THE SERVICE SHALL NOT EXCEED THE GREATER OF (A) THE AMOUNTS PAID BY YOU TO CASTSLATE IN THE TWELVE MONTHS PRECEDING THE CLAIM, OR (B) ONE HUNDRED U.S. DOLLARS ($100).</S>
 
-    <S n="15" t="Indemnification">You agree to defend, indemnify, and hold harmless SlateCue, its affiliates, and their officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable attorneys' fees) arising out of or in any way connected with (a) your access to or use of the Service; (b) your User Content; (c) your violation of these Terms; or (d) your violation of any rights of another.</S>
+    <S n="15" t="Indemnification">You agree to defend, indemnify, and hold harmless CastSlate, its affiliates, and their officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable attorneys' fees) arising out of or in any way connected with (a) your access to or use of the Service; (b) your User Content; (c) your violation of these Terms; or (d) your violation of any rights of another.</S>
 
-    <S n="16" t="Dispute Resolution and Binding Arbitration">Any dispute, claim, or controversy arising out of or relating to these Terms or the Service (a "Dispute") shall be resolved by binding individual arbitration administered by JAMS under its Streamlined Arbitration Rules then in effect. The arbitration shall take place in New York, New York, unless you and SlateCue agree otherwise. <strong style={{color:"var(--t1)"}}>You and SlateCue waive the right to a trial by jury or to participate in a class action.</strong> You may opt out of this arbitration agreement by sending written notice to <strong style={{color:"var(--t1)"}}>legal@slatecue.com</strong> within 30 days of first accepting these Terms.</S>
+    <S n="16" t="Dispute Resolution and Binding Arbitration">Any dispute, claim, or controversy arising out of or relating to these Terms or the Service (a "Dispute") shall be resolved by binding individual arbitration administered by JAMS under its Streamlined Arbitration Rules then in effect. The arbitration shall take place in New York, New York, unless you and CastSlate agree otherwise. <strong style={{color:"var(--t1)"}}>You and CastSlate waive the right to a trial by jury or to participate in a class action.</strong> You may opt out of this arbitration agreement by sending written notice to <strong style={{color:"var(--t1)"}}>legal@castslate.com</strong> within 30 days of first accepting these Terms.</S>
 
     <S n="17" t="Governing Law">These Terms and any dispute arising out of or relating to them or the Service are governed by the laws of the State of New York, without regard to its conflict-of-laws provisions. Subject to Section 16, the state and federal courts located in New York County, New York, shall have exclusive jurisdiction over any action not subject to arbitration.</S>
 
     <S n="18" t="Changes to These Terms">We may modify these Terms from time to time. If we make material changes, we will notify you by email or by posting a notice on the Service at least 14 days before the changes take effect. Your continued use of the Service after the effective date constitutes acceptance of the revised Terms.</S>
 
-    <S n="19" t="Miscellaneous">These Terms constitute the entire agreement between you and SlateCue regarding the Service and supersede all prior agreements. If any provision is held invalid or unenforceable, the remaining provisions shall remain in full force. Our failure to enforce any right or provision is not a waiver of such right or provision. You may not assign these Terms without our prior written consent; we may assign them freely.</S>
+    <S n="19" t="Miscellaneous">These Terms constitute the entire agreement between you and CastSlate regarding the Service and supersede all prior agreements. If any provision is held invalid or unenforceable, the remaining provisions shall remain in full force. Our failure to enforce any right or provision is not a waiver of such right or provision. You may not assign these Terms without our prior written consent; we may assign them freely.</S>
 
-    <S n="20" t="Contact">Questions about these Terms should be sent to <strong style={{color:"var(--t1)"}}>legal@slatecue.com</strong>, or by mail to SlateCue, Inc., 353 W 48th Street, New York, NY 10036, United States.</S>
+    <S n="20" t="Contact">Questions about these Terms should be sent to <strong style={{color:"var(--t1)"}}>legal@castslate.com</strong>, or by mail to CastSlate, Inc., 353 W 48th Street, New York, NY 10036, United States.</S>
 
     <div style={{borderTop:"1px solid var(--bdr)",paddingTop:24,marginTop:24,display:"flex",gap:12}}>
       <button className="btn-s" onClick={()=>onNavigate("privacy")}>Privacy Policy</button>
@@ -2698,7 +2698,7 @@ function PrivacyPage({onNavigate}){
     <h1 className="section-title">Privacy Policy</h1>
     <p style={{color:"var(--t3)",fontSize:13,marginBottom:32}}>Last updated: April 14, 2026 · Effective date: April 14, 2026</p>
     <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,padding:24,marginBottom:36,color:"var(--t2)",fontSize:14,lineHeight:1.7}}>
-      <strong style={{color:"var(--t1)"}}>Your privacy matters to us.</strong> This Privacy Policy describes how SlateCue, Inc. ("SlateCue", "we", "our", or "us") collects, uses, discloses, and protects your information when you use our websites, mobile applications, and related services (the "Service"). By using the Service, you consent to the practices described in this Policy.
+      <strong style={{color:"var(--t1)"}}>Your privacy matters to us.</strong> This Privacy Policy describes how CastSlate, Inc. ("CastSlate", "we", "our", or "us") collects, uses, discloses, and protects your information when you use our websites, mobile applications, and related services (the "Service"). By using the Service, you consent to the practices described in this Policy.
     </div>
 
     <S n="1" t="Scope of This Policy">This Policy applies to all users of the Service, including Talent, Casting Directors, Studios, and website visitors. It does not apply to the practices of third-party services or websites linked to from the Service, which are governed by their own policies.</S>
@@ -2752,14 +2752,14 @@ function PrivacyPage({onNavigate}){
     <S n="5" t="Your Choices">You have several choices regarding your information:
       <B>
         <li>Access, correct, or download your data from your account settings.</li>
-        <li>Delete your account by selecting "Delete Account" in settings or by emailing <strong style={{color:"var(--t1)"}}>privacy@slatecue.com</strong>.</li>
+        <li>Delete your account by selecting "Delete Account" in settings or by emailing <strong style={{color:"var(--t1)"}}>privacy@castslate.com</strong>.</li>
         <li>Opt out of promotional emails via the unsubscribe link in any marketing message.</li>
         <li>Control cookies through your browser settings (see Section 6).</li>
         <li>Control push notifications via your device settings.</li>
       </B>
     </S>
 
-    <S n="6" t="Cookies and Tracking Technologies">We use cookies, pixels, and similar technologies to recognize your device, remember your preferences, analyze usage, and support authentication. We use both first-party cookies (set by SlateCue) and third-party cookies (set by partners such as Google Analytics). You can block or delete cookies through your browser, but doing so may limit functionality. We honor "Global Privacy Control" signals where applicable.</S>
+    <S n="6" t="Cookies and Tracking Technologies">We use cookies, pixels, and similar technologies to recognize your device, remember your preferences, analyze usage, and support authentication. We use both first-party cookies (set by CastSlate) and third-party cookies (set by partners such as Google Analytics). You can block or delete cookies through your browser, but doing so may limit functionality. We honor "Global Privacy Control" signals where applicable.</S>
 
     <S n="7" t="Your Rights Under U.S. State Laws (CCPA / CPRA and Similar)">If you are a resident of California, Virginia, Colorado, Connecticut, Utah, or another U.S. state with comprehensive privacy laws, you have the right to:
       <B>
@@ -2770,26 +2770,26 @@ function PrivacyPage({onNavigate}){
         <li>Opt out of the "sharing" of personal information for targeted advertising.</li>
         <li>Not be subject to discrimination for exercising your rights.</li>
       </B>
-      To exercise these rights, email <strong style={{color:"var(--t1)"}}>privacy@slatecue.com</strong>. We will verify your request and respond within the time required by applicable law (typically 45 days). We do <strong>not</strong> sell personal information as defined by the CCPA.
+      To exercise these rights, email <strong style={{color:"var(--t1)"}}>privacy@castslate.com</strong>. We will verify your request and respond within the time required by applicable law (typically 45 days). We do <strong>not</strong> sell personal information as defined by the CCPA.
     </S>
 
-    <S n="8" t="Your Rights Under the GDPR (EEA, UK, Switzerland)">If you are located in the European Economic Area, the United Kingdom, or Switzerland, you have the right to access, rectify, erase, restrict processing, object to processing, and data portability with respect to your personal data. You may also withdraw any consent you previously provided. Our legal bases for processing are: (a) performance of a contract with you; (b) compliance with a legal obligation; (c) our legitimate interests in operating and improving the Service; and (d) your consent, where required. To exercise your rights, email <strong style={{color:"var(--t1)"}}>privacy@slatecue.com</strong>. You also have the right to lodge a complaint with your local data protection authority.</S>
+    <S n="8" t="Your Rights Under the GDPR (EEA, UK, Switzerland)">If you are located in the European Economic Area, the United Kingdom, or Switzerland, you have the right to access, rectify, erase, restrict processing, object to processing, and data portability with respect to your personal data. You may also withdraw any consent you previously provided. Our legal bases for processing are: (a) performance of a contract with you; (b) compliance with a legal obligation; (c) our legitimate interests in operating and improving the Service; and (d) your consent, where required. To exercise your rights, email <strong style={{color:"var(--t1)"}}>privacy@castslate.com</strong>. You also have the right to lodge a complaint with your local data protection authority.</S>
 
     <S n="9" t="Data Retention">We retain personal information for as long as your account is active and for a reasonable period thereafter as necessary to comply with legal obligations, resolve disputes, enforce agreements, and for legitimate business purposes. When you delete your account, we will delete or anonymize your personal information within 90 days, except where retention is required or permitted by law.</S>
 
     <S n="10" t="Data Security">We implement reasonable administrative, technical, and physical safeguards designed to protect personal information, including encryption in transit (TLS), encryption at rest for sensitive fields, access controls, and periodic security reviews. However, no method of transmission or storage is 100% secure, and we cannot guarantee absolute security. You are responsible for keeping your login credentials confidential.</S>
 
-    <S n="11" t="Children's Privacy">The Service is not directed to children under 13, and we do not knowingly collect personal information from children under 13. If we learn that we have collected personal information from a child under 13 without parental consent, we will delete that information promptly. Parents or guardians who believe we may have collected information about a child may contact us at <strong style={{color:"var(--t1)"}}>privacy@slatecue.com</strong>.</S>
+    <S n="11" t="Children's Privacy">The Service is not directed to children under 13, and we do not knowingly collect personal information from children under 13. If we learn that we have collected personal information from a child under 13 without parental consent, we will delete that information promptly. Parents or guardians who believe we may have collected information about a child may contact us at <strong style={{color:"var(--t1)"}}>privacy@castslate.com</strong>.</S>
 
-    <S n="12" t="International Data Transfers">SlateCue is headquartered in the United States, and we process data there. If you access the Service from outside the United States, your information may be transferred to, stored in, and processed in the United States and other countries where our service providers operate. Where required, we use appropriate safeguards such as the EU Standard Contractual Clauses to protect transferred data.</S>
+    <S n="12" t="International Data Transfers">CastSlate is headquartered in the United States, and we process data there. If you access the Service from outside the United States, your information may be transferred to, stored in, and processed in the United States and other countries where our service providers operate. Where required, we use appropriate safeguards such as the EU Standard Contractual Clauses to protect transferred data.</S>
 
     <S n="13" t="Third-Party Services">The Service may contain links to third-party websites or integrate with third-party services (e.g., payment processors, social login providers). This Policy does not apply to those third parties. We encourage you to review the privacy practices of any third-party service you interact with.</S>
 
-    <S n="14" t="Do Not Track">Some browsers transmit "Do Not Track" signals. Because there is no industry-standard interpretation of these signals, SlateCue does not currently respond to Do Not Track signals but does honor recognized opt-out mechanisms such as the Global Privacy Control.</S>
+    <S n="14" t="Do Not Track">Some browsers transmit "Do Not Track" signals. Because there is no industry-standard interpretation of these signals, CastSlate does not currently respond to Do Not Track signals but does honor recognized opt-out mechanisms such as the Global Privacy Control.</S>
 
     <S n="15" t="Changes to This Policy">We may update this Privacy Policy from time to time. If we make material changes, we will notify you by email or by posting a prominent notice on the Service at least 14 days before the change takes effect. The "Last updated" date at the top of this Policy indicates when it was most recently revised.</S>
 
-    <S n="16" t="Contact Us">If you have questions about this Policy or our privacy practices, or wish to exercise any of your rights, please contact our Data Protection Officer at <strong style={{color:"var(--t1)"}}>privacy@slatecue.com</strong>, or by mail at SlateCue, Inc., Attn: Privacy Team, 353 W 48th Street, New York, NY 10036, United States.</S>
+    <S n="16" t="Contact Us">If you have questions about this Policy or our privacy practices, or wish to exercise any of your rights, please contact our Data Protection Officer at <strong style={{color:"var(--t1)"}}>privacy@castslate.com</strong>, or by mail at CastSlate, Inc., Attn: Privacy Team, 353 W 48th Street, New York, NY 10036, United States.</S>
 
     <div style={{borderTop:"1px solid var(--bdr)",paddingTop:24,marginTop:24,display:"flex",gap:12}}>
       <button className="btn-s" onClick={()=>onNavigate("terms")}>Terms of Service</button>
@@ -3022,7 +3022,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
 
           <div style={{display:"flex",gap:10,alignItems:"flex-start",margin:"16px 0",color:"var(--t2)",fontSize:12,lineHeight:1.55}}>
             <input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)} style={{marginTop:3}}/>
-            <span>I agree to SlateCue's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm I am at least 18 years old.</span>
+            <span>I agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm I am at least 18 years old.</span>
           </div>
 
           <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={handleSignUp} disabled={loading}>{loading?"Creating account…":"Create Free Account & Apply →"}</button>
@@ -3055,7 +3055,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
 
           <button className="btn-p" style={{width:"100%"}} onClick={handleSignIn} disabled={loading}>{loading?"Logging in…":"Log In & Continue to Apply →"}</button>
 
-          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>New to SlateCue? <span onClick={()=>{setMode("signup");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Create a free account</span></p>
+          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>New to CastSlate? <span onClick={()=>{setMode("signup");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Create a free account</span></p>
         </>}
 
         <p style={{textAlign:"center",color:"var(--t3)",fontSize:11,marginTop:24}}><span onClick={onCancel} style={{cursor:"pointer",textDecoration:"underline"}}>← Back to casting</span></p>
@@ -3397,16 +3397,16 @@ function CareersPage({onNavigate}){
   const [dept,setDept]=useState("all");
   const JOBS=[
     {title:"Senior Full-Stack Engineer",dept:"Engineering",loc:"New York, NY / Remote",type:"Full-time",desc:"Build the swipe-based review infrastructure powering millions of casting decisions. Strong TypeScript, React, and Node.js experience required."},
-    {title:"iOS Engineer",dept:"Engineering",loc:"New York, NY / Remote",type:"Full-time",desc:"Own the SlateCue iOS experience — from gesture-driven review flows to video playback performance. Swift, SwiftUI, and AVFoundation."},
+    {title:"iOS Engineer",dept:"Engineering",loc:"New York, NY / Remote",type:"Full-time",desc:"Own the CastSlate iOS experience — from gesture-driven review flows to video playback performance. Swift, SwiftUI, and AVFoundation."},
     {title:"Staff Product Designer",dept:"Design",loc:"New York, NY",type:"Full-time",desc:"Shape how casting directors and talent meet. Systems thinking, strong visual craft, and a portfolio showing shipped consumer products."},
-    {title:"Brand Designer",dept:"Design",loc:"Remote (US)",type:"Full-time",desc:"Own SlateCue's visual identity across web, social, out-of-home, and print. Editorial sensibility and motion skills a plus."},
+    {title:"Brand Designer",dept:"Design",loc:"Remote (US)",type:"Full-time",desc:"Own CastSlate's visual identity across web, social, out-of-home, and print. Editorial sensibility and motion skills a plus."},
     {title:"Product Manager, Talent",dept:"Product",loc:"New York, NY",type:"Full-time",desc:"Lead the talent-side product — profiles, submissions, search, and messaging. Experience with two-sided marketplaces strongly preferred."},
     {title:"Product Manager, Casting",dept:"Product",loc:"New York, NY",type:"Full-time",desc:"Own the casting-director workflow: posting, review, callback management, and billing. Previous SaaS or marketplace PM experience required."},
     {title:"Growth Marketing Lead",dept:"Marketing",loc:"New York, NY",type:"Full-time",desc:"Drive talent acquisition across paid, organic, and partnerships. Metrics-driven operator who can also write. Proven track record scaling consumer marketplaces."},
-    {title:"Content & Social Manager",dept:"Marketing",loc:"Remote (US)",type:"Full-time",desc:"Build the SlateCue editorial voice across Instagram, TikTok, YouTube, and our blog. Deep knowledge of the film and theater community."},
+    {title:"Content & Social Manager",dept:"Marketing",loc:"Remote (US)",type:"Full-time",desc:"Build the CastSlate editorial voice across Instagram, TikTok, YouTube, and our blog. Deep knowledge of the film and theater community."},
     {title:"Sales Executive, Studios",dept:"Sales",loc:"Los Angeles, CA",type:"Full-time",desc:"Close studio and network enterprise deals. Relationships with major studio casting teams and 5+ years of enterprise B2B SaaS sales."},
     {title:"Customer Success Manager",dept:"Operations",loc:"New York, NY",type:"Full-time",desc:"Support casting directors and studios through onboarding and ongoing use. Relentlessly user-focused, calm under pressure."},
-    {title:"Talent Community Specialist",dept:"Operations",loc:"Remote (US)",type:"Full-time",desc:"Build relationships with actors, models, and performers. Run AMAs, workshops, and the SlateCue Talent Council. Acting or agency background welcomed."},
+    {title:"Talent Community Specialist",dept:"Operations",loc:"Remote (US)",type:"Full-time",desc:"Build relationships with actors, models, and performers. Run AMAs, workshops, and the CastSlate Talent Council. Acting or agency background welcomed."},
     {title:"Head of People",dept:"People",loc:"New York, NY",type:"Full-time",desc:"Lead recruiting, L&D, and culture as we scale from 40 to 150 over the next two years. 8+ years in HR leadership at a high-growth company."}
   ];
   const depts=["all","Engineering","Design","Product","Marketing","Sales","Operations","People"];
@@ -3434,10 +3434,10 @@ function CareersPage({onNavigate}){
     <section style={{padding:"60px 40px 40px",maxWidth:1000,margin:"0 auto",textAlign:"center"}}>
       <div className="section-label">Careers</div>
       <h1 style={{fontWeight:800,fontSize:52,lineHeight:1.05,letterSpacing:-2,marginBottom:20,marginTop:8}}>Build the future of casting.</h1>
-      <p style={{color:"var(--t2)",fontSize:17,lineHeight:1.6,maxWidth:620,margin:"0 auto 32px"}}>SlateCue is reimagining how film, TV, theater, and commercial projects find their next stars — by making sure every headshot gets seen. Join us and help put fairness back into the audition process.</p>
+      <p style={{color:"var(--t2)",fontSize:17,lineHeight:1.6,maxWidth:620,margin:"0 auto 32px"}}>CastSlate is reimagining how film, TV, theater, and commercial projects find their next stars — by making sure every headshot gets seen. Join us and help put fairness back into the audition process.</p>
       <div style={{display:"flex",gap:12,justifyContent:"center"}}>
         <button className="btn-p" onClick={()=>document.getElementById('open-roles')?.scrollIntoView({behavior:'smooth'})}>See Open Roles</button>
-        <button className="btn-s" onClick={()=>onNavigate("about")}>About SlateCue</button>
+        <button className="btn-s" onClick={()=>onNavigate("about")}>About CastSlate</button>
       </div>
     </section>
 
@@ -3466,7 +3466,7 @@ function CareersPage({onNavigate}){
     <section style={{maxWidth:1200,margin:"0 auto",padding:"60px 40px",borderTop:"1px solid var(--bdr)"}}>
       <div className="section-label">Benefits</div>
       <h2 className="section-title">Take care of yourself.</h2>
-      <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.6,marginBottom:32,maxWidth:580}}>We want SlateCue to be the best job you've ever had. Here's what that looks like in practice.</p>
+      <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.6,marginBottom:32,maxWidth:580}}>We want CastSlate to be the best job you've ever had. Here's what that looks like in practice.</p>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:20}}>
         {BENEFITS.map(b=>
           <div key={b.t} className="card" style={{padding:24}}>
@@ -3505,12 +3505,12 @@ function CareersPage({onNavigate}){
 
     <section style={{maxWidth:820,margin:"60px auto",padding:"44px",background:"linear-gradient(135deg,rgba(26,26,46,.06),rgba(26,26,46,.02))",border:"1px solid var(--bdr)",borderRadius:16,textAlign:"center"}}>
       <h3 style={{fontWeight:800,fontSize:26,marginBottom:10}}>Don't see your role?</h3>
-      <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6,maxWidth:520,margin:"0 auto 20px"}}>We're always looking for exceptional people. If you'd be a great fit at SlateCue, send us your story — even if we don't have a formal opening that matches your background.</p>
+      <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6,maxWidth:520,margin:"0 auto 20px"}}>We're always looking for exceptional people. If you'd be a great fit at CastSlate, send us your story — even if we don't have a formal opening that matches your background.</p>
       <button className="btn-p" onClick={()=>onNavigate("contact")}>Get in Touch</button>
     </section>
 
     <section style={{maxWidth:1000,margin:"0 auto",padding:"40px 40px 80px",textAlign:"center"}}>
-      <p style={{color:"var(--t3)",fontSize:12,lineHeight:1.7,maxWidth:720,margin:"0 auto"}}>SlateCue is an equal opportunity employer. We celebrate the diversity of voices, backgrounds, and experiences that make creative work great, and we prohibit discrimination or harassment on the basis of race, color, religion, sex, gender identity, sexual orientation, national origin, age, disability, veteran status, or any other legally protected characteristic. We encourage applications from candidates of all backgrounds.</p>
+      <p style={{color:"var(--t3)",fontSize:12,lineHeight:1.7,maxWidth:720,margin:"0 auto"}}>CastSlate is an equal opportunity employer. We celebrate the diversity of voices, backgrounds, and experiences that make creative work great, and we prohibit discrimination or harassment on the basis of race, color, religion, sex, gender identity, sexual orientation, national origin, age, disability, veteran status, or any other legally protected characteristic. We encourage applications from candidates of all backgrounds.</p>
     </section>
 
     <Footer onNavigate={onNavigate}/></div>);
@@ -4026,7 +4026,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       {/* Full-height loading placeholder — only during initial load (no cached data).
           Keeps the footer pinned to the bottom so it never flashes upward. */}
       {loading&&dbCastings.length===0
-        ?<div style={{flex:"1 1 auto",display:"flex",flexDirection:"column",minHeight:"calc(100vh - 260px)"}}><SlateCueLoader text="Loading castings…"/></div>
+        ?<div style={{flex:"1 1 auto",display:"flex",flexDirection:"column",minHeight:"calc(100vh - 260px)"}}><CastSlateLoader text="Loading castings…"/></div>
         /* Full-height error state — only when fetch failed with no cached data to fall back to */
         :!loading&&fetchErr&&dbCastings.length===0
         ?<div style={{flex:"1 1 auto",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"calc(100vh - 260px)",gap:16,textAlign:"center",padding:"0 24px"}}>
@@ -4347,7 +4347,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         {APP_TABS.map(t=>{const cnt=tabCounts[t];return(<button key={t} onClick={()=>setAppsTab(t)} style={{padding:"10px 14px",fontSize:12,fontWeight:600,cursor:"pointer",flexShrink:0,border:"none",background:"none",fontFamily:"inherit",textTransform:"capitalize",whiteSpace:"nowrap",color:appsTab===t?"var(--acc)":"var(--t2)",borderBottom:appsTab===t?"2px solid var(--acc)":"2px solid transparent",transition:"color .15s",display:"flex",alignItems:"center",gap:5}}>{t}{cnt!=null&&cnt>0&&<span style={{fontSize:10,fontWeight:700,padding:"1px 5px",borderRadius:8,background:appsTab===t?"var(--acc)":"var(--s2)",color:appsTab===t?"#fff":"var(--t2)"}}>{cnt}</span>}</button>);})}
       </div>
       <div style={{padding:24}}>
-        {appsLoading?(<SlateCueLoader size="inline" text="Loading applications…"/>):appsErr?(<div style={{textAlign:"center",padding:"28px 0"}}><p style={{color:"var(--red)",fontSize:13,marginBottom:12}}>Applications could not load. Please try again.</p><button className="btn-s btn-sm" onClick={loadApps}>Retry</button></div>):filteredApps.length===0?(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:32,marginBottom:10}}>📋</div><p style={{color:"var(--t2)",fontSize:14,marginBottom:16,fontWeight:500}}>{appsTab==="all"?"You don't have any applications here yet.":appsTab==="invites"?"No casting invites yet.":appsTab==="drafts"?"No saved drafts.":appsTab==="submitted"?"No submitted applications.":appsTab==="auditions"?"No audition requests yet.":"No archived applications."}</p>{(appsTab==="all"||appsTab==="submitted")&&<button className="btn-p btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>}</div>):(<div style={{display:"flex",flexDirection:"column",gap:10}}>{filteredApps.map(app=>{const st=STATUS_LABELS[app.status]||{label:app.status,color:"var(--t2)",bg:"var(--s2)"};const dl=app.castings?.deadline?fmtDeadline(app.castings.deadline):null;return(<div key={app.id} style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",padding:"14px 16px",background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:10,gap:12,flexWrap:"wrap",transition:"border-color .15s",width:"100%",boxSizing:"border-box"}}><div style={{flex:1,minWidth:0,overflow:"hidden"}}><div style={{fontWeight:700,fontSize:14,color:"var(--t1)",marginBottom:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{app.castings?.title||"Unknown Project"}</div><div style={{fontSize:12,color:"var(--t2)",display:"flex",flexWrap:"wrap",gap:"4px 10px"}}><span>Role: <strong style={{color:"var(--t1)"}}>{app.roles?.name||"—"}</strong></span>{app.castings?.type&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.type&&<span>{app.castings.type}</span>}{app.castings?.location&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.location&&<span>{app.castings.location}</span>}</div><div style={{fontSize:11,color:"var(--t3)",marginTop:3}}>Submitted {fmtDate(app.created_at)}{dl&&<span style={{marginLeft:8,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>}</div></div><div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",flexShrink:0,maxWidth:isMobile?"100%":"none"}}><span style={{fontSize:11,fontWeight:600,padding:"4px 8px",borderRadius:6,background:st.bg,color:st.color,border:`1px solid ${st.color}33`,whiteSpace:"nowrap"}}>{st.label}</span>{app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px",whiteSpace:"nowrap"}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View →</button>}</div></div>);})}</div>)}
+        {appsLoading?(<CastSlateLoader size="inline" text="Loading applications…"/>):appsErr?(<div style={{textAlign:"center",padding:"28px 0"}}><p style={{color:"var(--red)",fontSize:13,marginBottom:12}}>Applications could not load. Please try again.</p><button className="btn-s btn-sm" onClick={loadApps}>Retry</button></div>):filteredApps.length===0?(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:32,marginBottom:10}}>📋</div><p style={{color:"var(--t2)",fontSize:14,marginBottom:16,fontWeight:500}}>{appsTab==="all"?"You don't have any applications here yet.":appsTab==="invites"?"No casting invites yet.":appsTab==="drafts"?"No saved drafts.":appsTab==="submitted"?"No submitted applications.":appsTab==="auditions"?"No audition requests yet.":"No archived applications."}</p>{(appsTab==="all"||appsTab==="submitted")&&<button className="btn-p btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>}</div>):(<div style={{display:"flex",flexDirection:"column",gap:10}}>{filteredApps.map(app=>{const st=STATUS_LABELS[app.status]||{label:app.status,color:"var(--t2)",bg:"var(--s2)"};const dl=app.castings?.deadline?fmtDeadline(app.castings.deadline):null;return(<div key={app.id} style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",padding:"14px 16px",background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:10,gap:12,flexWrap:"wrap",transition:"border-color .15s",width:"100%",boxSizing:"border-box"}}><div style={{flex:1,minWidth:0,overflow:"hidden"}}><div style={{fontWeight:700,fontSize:14,color:"var(--t1)",marginBottom:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{app.castings?.title||"Unknown Project"}</div><div style={{fontSize:12,color:"var(--t2)",display:"flex",flexWrap:"wrap",gap:"4px 10px"}}><span>Role: <strong style={{color:"var(--t1)"}}>{app.roles?.name||"—"}</strong></span>{app.castings?.type&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.type&&<span>{app.castings.type}</span>}{app.castings?.location&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.location&&<span>{app.castings.location}</span>}</div><div style={{fontSize:11,color:"var(--t3)",marginTop:3}}>Submitted {fmtDate(app.created_at)}{dl&&<span style={{marginLeft:8,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>}</div></div><div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",flexShrink:0,maxWidth:isMobile?"100%":"none"}}><span style={{fontSize:11,fontWeight:600,padding:"4px 8px",borderRadius:6,background:st.bg,color:st.color,border:`1px solid ${st.color}33`,whiteSpace:"nowrap"}}>{st.label}</span>{app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px",whiteSpace:"nowrap"}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View →</button>}</div></div>);})}</div>)}
       </div>
     </div>
   </div>);}
@@ -4362,7 +4362,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     </div>
     <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
       <div style={{padding:24}}>
-        {savedLoading?(<SlateCueLoader size="inline" text="Loading saved castings…"/>):savedCastings.length===0?(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:32,marginBottom:10}}>🔖</div><p style={{color:"var(--t2)",fontSize:14,marginBottom:16}}>You haven't saved any castings yet.</p><button className="btn-p btn-sm" onClick={()=>{setDashView(null);onNavigate("search");}}>Browse Castings</button></div>):(<div style={{display:"flex",flexDirection:"column",gap:10}}>{savedCastings.map(s=>{const c=s.castings;const dl=c?.deadline?fmtDeadline(c.deadline):null;return(<div key={s.casting_id} style={{padding:"12px 14px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",width:"100%",boxSizing:"border-box"}}><div style={{minWidth:0,flex:1}}><div style={{fontWeight:600,fontSize:13,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c?.title||"Unknown"}</div><div style={{fontSize:11,color:"var(--t3)",marginTop:2}}>{c?.type}{c?.location?` · ${c.location}`:""}{dl?<span style={{marginLeft:6,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>:null}</div></div><div style={{display:"flex",gap:6,flexShrink:0}}><button className="btn-p btn-sm" style={{fontSize:11}} onClick={()=>onViewCastingById?onViewCastingById(s.casting_id):onNavigate("search")}>View</button><button className="btn-s btn-sm" style={{fontSize:11,color:"var(--red)"}} onClick={()=>toggleSave(s.casting_id)}>Remove</button></div></div>);})}</div>)}
+        {savedLoading?(<CastSlateLoader size="inline" text="Loading saved castings…"/>):savedCastings.length===0?(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:32,marginBottom:10}}>🔖</div><p style={{color:"var(--t2)",fontSize:14,marginBottom:16}}>You haven't saved any castings yet.</p><button className="btn-p btn-sm" onClick={()=>{setDashView(null);onNavigate("search");}}>Browse Castings</button></div>):(<div style={{display:"flex",flexDirection:"column",gap:10}}>{savedCastings.map(s=>{const c=s.castings;const dl=c?.deadline?fmtDeadline(c.deadline):null;return(<div key={s.casting_id} style={{padding:"12px 14px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",width:"100%",boxSizing:"border-box"}}><div style={{minWidth:0,flex:1}}><div style={{fontWeight:600,fontSize:13,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c?.title||"Unknown"}</div><div style={{fontSize:11,color:"var(--t3)",marginTop:2}}>{c?.type}{c?.location?` · ${c.location}`:""}{dl?<span style={{marginLeft:6,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>:null}</div></div><div style={{display:"flex",gap:6,flexShrink:0}}><button className="btn-p btn-sm" style={{fontSize:11}} onClick={()=>onViewCastingById?onViewCastingById(s.casting_id):onNavigate("search")}>View</button><button className="btn-s btn-sm" style={{fontSize:11,color:"var(--red)"}} onClick={()=>toggleSave(s.casting_id)}>Remove</button></div></div>);})}</div>)}
       </div>
     </div>
   </div>);}
@@ -4372,12 +4372,12 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       <button className="btn-s btn-sm" onClick={()=>setDashView(null)} style={{display:"flex",alignItems:"center",gap:6}}>← Dashboard</button>
       <div>
         <h1 style={{fontWeight:800,fontSize:isMobile?22:26,letterSpacing:-0.6,color:"var(--t1)",margin:0}}>All Class Invitations</h1>
-        <p style={{color:"var(--t2)",fontSize:13,margin:"2px 0 0"}}>{classInvitations.length} invitation{classInvitations.length!==1?"s":""} from SlateCue</p>
+        <p style={{color:"var(--t2)",fontSize:13,margin:"2px 0 0"}}>{classInvitations.length} invitation{classInvitations.length!==1?"s":""} from CastSlate</p>
       </div>
     </div>
     <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
       <div style={{padding:24}}>
-        {invLoading?(<SlateCueLoader size="inline" text="Loading…"/>):classInvitations.length===0?(
+        {invLoading?(<CastSlateLoader size="inline" text="Loading…"/>):classInvitations.length===0?(
           <div style={{textAlign:"center",padding:"40px 0"}}>
             <div style={{fontSize:32,marginBottom:10}}>🎓</div>
             <p style={{color:"var(--t2)",fontSize:14,margin:0}}>No active class invitations.</p>
@@ -4535,7 +4535,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                           boxShadow:"0 2px 10px rgba(180,140,40,0.28)",
                         }}>
                           <span style={{width:5,height:5,borderRadius:"50%",background:"#2a1f00",display:"inline-block",flexShrink:0}}/>
-                          {isNew?"New SlateCue Pick":"SlateCue Pick"}
+                          {isNew?"New CastSlate Pick":"CastSlate Pick"}
                         </span>
                       </div>
 
@@ -4660,7 +4660,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             </div>
             <div style={{padding:24}}>
               {appsLoading?(
-                <SlateCueLoader size="inline" text="Loading applications…"/>
+                <CastSlateLoader size="inline" text="Loading applications…"/>
               ):appsErr?(
                 <div style={{textAlign:"center",padding:"28px 0"}}>
                   <p style={{color:"var(--red)",fontSize:13,marginBottom:12}}>Applications could not load. Please try again.</p>
@@ -4719,7 +4719,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             </div>
             <div style={{padding:24}}>
               {msgsLoading?(
-                <SlateCueLoader size="inline" text="Loading messages…"/>
+                <CastSlateLoader size="inline" text="Loading messages…"/>
               ):threads.length===0?(
                 <div style={{textAlign:"center",padding:"28px 0"}}>
                   <div style={{fontSize:32,marginBottom:8}}>✉️</div>
@@ -4768,7 +4768,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             </div>
             <div style={{padding:24}}>
               {recsLoading?(
-                <SlateCueLoader size="inline" text="Loading recommendations…"/>
+                <CastSlateLoader size="inline" text="Loading recommendations…"/>
               ):recommended.length===0?(
                 <div style={{textAlign:"center",padding:"28px 0"}}>
                   <p style={{color:"var(--t2)",fontSize:14,margin:"0 0 14px"}}>No matching castings right now.</p>
@@ -4820,7 +4820,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             </div>
             <div style={{padding:24}}>
               {savedLoading?(
-                <SlateCueLoader size="inline" text="Loading saved castings…"/>
+                <CastSlateLoader size="inline" text="Loading saved castings…"/>
               ):savedCastings.length===0?(
                 <div style={{textAlign:"center",padding:"28px 0"}}>
                   <div style={{fontSize:28,marginBottom:8}}>🔖</div>
@@ -4952,7 +4952,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:20}}>
             <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:"0 0 12px 0"}}>Recently Viewed</h3>
             {rvLoading?(
-              <SlateCueLoader size="inline" text="Loading…"/>
+              <CastSlateLoader size="inline" text="Loading…"/>
             ):recentlyViewed.length===0?(
               <>
                 <p style={{color:"var(--t3)",fontSize:13,margin:"0 0 14px"}}>You haven't viewed any casting calls yet.</p>
@@ -5402,7 +5402,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   };
 
   if(!uid)return(<div className="page page-wide"><p>Not logged in.</p></div>);
-  if(loading)return(<div className="page page-wide" style={{justifyContent:"center"}}><SlateCueLoader text="Loading your dashboard…"/></div>);
+  if(loading)return(<div className="page page-wide" style={{justifyContent:"center"}}><CastSlateLoader text="Loading your dashboard…"/></div>);
 
   return(<div className="page page-wide" style={{overflowX:"hidden"}}>
     <div className="flex-between mb-20">
@@ -5619,7 +5619,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
               <button className="btn-p btn-sm" onClick={createList} disabled={!newListName.trim()}>Create</button>
               <button className="btn-s btn-sm" onClick={()=>{setShowNewListInline(false);setNewListName("");}}>Cancel</button>
             </div>}
-            {savedListsLoading?<SlateCueLoader size="inline" text="Loading your lists…"/>:savedLists.length===0?<div className="card" style={{padding:48,textAlign:"center"}}>
+            {savedListsLoading?<CastSlateLoader size="inline" text="Loading your lists…"/>:savedLists.length===0?<div className="card" style={{padding:48,textAlign:"center"}}>
               <p style={{color:"var(--t3)",marginBottom:16}}>No saved lists yet.</p>
               <p style={{color:"var(--t3)",fontSize:13}}>Open any talent profile and click <strong>★ Save to List</strong> to start organizing.</p>
             </div>:<div className="card-flat">{savedLists.map(l=>
@@ -5784,7 +5784,7 @@ function SaveToListModal({cdId,talentId,talentName,onClose}){
     <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:18}}>Add this talent to one of your saved lists, or create a new one. Tap a list to add or remove.</p>
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{err}</div>}
     {done&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.35)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>✓ Saved! Find your lists in your Dashboard under the <strong>Saved Lists</strong> tab.</div>}
-    {loading?<SlateCueLoader size="inline" text="Loading your lists…"/>:<>
+    {loading?<CastSlateLoader size="inline" text="Loading your lists…"/>:<>
       {lists.length===0&&!showCreate&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:14}}>You don't have any lists yet. Create your first one below.</p>}
       {lists.length>0&&<div style={{maxHeight:280,overflowY:"auto",border:"1px solid var(--bdr)",borderRadius:10,marginBottom:12}}>
         {lists.map(l=>{const inList=members.has(l.id);return(
@@ -5854,7 +5854,7 @@ function InviteToProjectModal({cdId,talentId,talentName,onClose}){
       <h2>Invite {talentName}</h2>
       <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:18}}>Pick a casting and (optionally) a role. The talent gets a project invite they can accept or decline from their inbox.</p>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{err}</div>}
-      {loading?<SlateCueLoader size="inline" text="Loading your castings…"/>:castings.length===0?<>
+      {loading?<CastSlateLoader size="inline" text="Loading your castings…"/>:castings.length===0?<>
         <div className="card" style={{padding:18,textAlign:"center",background:"var(--s2)"}}>
           <p style={{color:"var(--t3)",fontSize:13}}>You don't have any open castings yet. Post a casting first, then come back to invite this talent.</p>
         </div>
@@ -6059,7 +6059,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
     const t=(cp.user_type||"").toLowerCase();
     if(t==="cd")return "Casting Director";
     if(t==="talent")return "Actor / Talent";
-    if(t==="admin"||t==="super_admin")return "SlateCue Admin";
+    if(t==="admin"||t==="super_admin")return "CastSlate Admin";
     if(t==="producer")return "Producer";
     if(t==="studio")return "Studio";
     return "Member";
@@ -6139,7 +6139,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
 
       {/* Chronological timeline — oldest top, newest bottom. Day separators on date change. */}
       <div ref={scrollRef} style={{flex:1,overflowY:"auto",padding:"18px 22px",background:"var(--s1)",minHeight:240}}>
-        {thread.length===0?<SlateCueLoader size="inline" text="Loading conversation…"/>:
+        {thread.length===0?<CastSlateLoader size="inline" text="Loading conversation…"/>:
          (() => {
            // Group by day for friendly date separators
            let lastDay="";
@@ -6344,7 +6344,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
       <button className="btn-s btn-sm" onClick={load}>Retry</button>
     </div>}
 
-    {loading&&threads.length===0?<div className="card" style={{padding:0}}><SlateCueLoader size="inline" text="Loading messages…"/></div>:
+    {loading&&threads.length===0?<div className="card" style={{padding:0}}><CastSlateLoader size="inline" text="Loading messages…"/></div>:
      threads.length===0?<div className="card" style={{padding:48,textAlign:"center"}}>
        <h3 style={{fontSize:16,fontWeight:700,marginBottom:6}}>No messages yet</h3>
        <p style={{color:"var(--t3)",fontSize:14,maxWidth:420,margin:"0 auto"}}>{profile?.user_type==="talent"?"When a casting director messages you about a role or invite, it'll show up here.":"When talent applies to one of your castings or replies to your messages, conversations land here."}</p>
@@ -7280,7 +7280,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
     return(<section className="fcs-section">
       <div className="section-label">Featured Castings</div>
       <div className="fcs-card" style={{cursor:"default",display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <SlateCueLoader size="inline" text="Loading active casting calls…"/>
+        <CastSlateLoader size="inline" text="Loading active casting calls…"/>
       </div>
     </section>);
   }
@@ -7524,15 +7524,15 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
 
     {/* ───────── THE GUARANTEE ───────── */}
     <div style={{maxWidth:900,margin:"20px auto 60px",background:"linear-gradient(135deg,rgba(26,26,46,.06),rgba(26,26,46,.02))",border:"1px solid var(--bdr)",borderRadius:20,padding:"48px 44px",textAlign:"center"}}>
-      <div style={{display:"inline-block",background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.5,padding:"4px 12px",borderRadius:100,marginBottom:16,fontFamily:"'DM Sans',sans-serif"}}>THE SLATECUE GUARANTEE</div>
+      <div style={{display:"inline-block",background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.5,padding:"4px 12px",borderRadius:100,marginBottom:16,fontFamily:"'DM Sans',sans-serif"}}>THE CASTSLATE GUARANTEE</div>
       <h3 style={{fontWeight:800,fontSize:30,letterSpacing:-1,marginBottom:14}}>Your headshot gets seen. Period.</h3>
-      <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.65,maxWidth:620,margin:"0 auto"}}>On legacy platforms, your submission is one face in a grid of 80. Directors scan in seconds. On SlateCue, every submission is full-screen. The CD <strong style={{color:"var(--t1)"}}>must</strong> decide: pass or callback. No grids. No skipping. Your shot, actually taken.</p>
+      <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.65,maxWidth:620,margin:"0 auto"}}>On legacy platforms, your submission is one face in a grid of 80. Directors scan in seconds. On CastSlate, every submission is full-screen. The CD <strong style={{color:"var(--t1)"}}>must</strong> decide: pass or callback. No grids. No skipping. Your shot, actually taken.</p>
     </div>
 
     {/* ───────── TESTIMONIALS ───────── */}
     <section style={{padding:"60px 40px 40px",maxWidth:1200,margin:"0 auto"}}>
       <div className="section-label">What people are saying</div>
-      <div className="section-title" style={{marginBottom:40}}>From actors and casting directors using SlateCue.</div>
+      <div className="section-title" style={{marginBottom:40}}>From actors and casting directors using CastSlate.</div>
       <div className="landing-testimonials" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
         {[
           {q:"I got two callbacks in my first week. In three years on other platforms I got one. The difference is someone actually looked at my tape.",n:"Jasmine Okafor",r:"Actor · NYC · SAG-AFTRA",s:5},
@@ -7575,11 +7575,11 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div className="section-title" style={{textAlign:"center",marginBottom:32}}>Everything you want to know.</div>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         {[
-          {q:"How much does SlateCue cost for actors?",a:"Free accounts get 1 headshot and 3 casting submissions per day. Premium is $9.99/month and gives you unlimited submissions, up to 10 headshots, and up to 5 video reel links. No hidden tiers, no per-submission fees."},
-          {q:"How is SlateCue different from legacy casting websites?",a:"On older platforms, your submission lands in a grid where a CD can scan 80 faces in 20 seconds. On SlateCue, every submission is full-screen, one at a time, swipe-style. CDs decide on you individually. No one gets skipped."},
+          {q:"How much does CastSlate cost for actors?",a:"Free accounts get 1 headshot and 3 casting submissions per day. Premium is $9.99/month and gives you unlimited submissions, up to 10 headshots, and up to 5 video reel links. No hidden tiers, no per-submission fees."},
+          {q:"How is CastSlate different from legacy casting websites?",a:"On older platforms, your submission lands in a grid where a CD can scan 80 faces in 20 seconds. On CastSlate, every submission is full-screen, one at a time, swipe-style. CDs decide on you individually. No one gets skipped."},
           {q:"Can minors (under 18) sign up?",a:"Only with a parent or legal guardian managing the account. We require guardian verification and comply with COPPA and state child-performer laws."},
           {q:"Is this SAG-AFTRA friendly?",a:"Yes. SAG-AFTRA, AEA, and non-union castings are all supported. Union status is displayed on every casting post and can be filtered."},
-          {q:"How does SlateCue work?",a:"Create a free profile, browse open castings, and apply. Free accounts can submit to 3 castings per day. Upgrade to Premium ($9.99/month) for unlimited submissions, 10 headshots, and video reels. Casting directors review every submission individually."}
+          {q:"How does CastSlate work?",a:"Create a free profile, browse open castings, and apply. Free accounts can submit to 3 castings per day. Upgrade to Premium ($9.99/month) for unlimited submissions, 10 headshots, and video reels. Casting directors review every submission individually."}
         ].map((f,i)=>
           <div key={i} className="card" style={{padding:0,cursor:"pointer"}} onClick={()=>setOpenFaq(openFaq===i?-1:i)}>
             <div style={{padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:16}}>
@@ -7772,7 +7772,7 @@ function CastingFitDNAEditor({session,isPremium,onNavigate}){
 
   const availableTypes=CASTING_TYPES.filter(t=>!entries.some(e=>e.casting_type===t));
 
-  if(loading)return<div style={{padding:40,textAlign:"center"}}><SlateCueLoader text="Loading Cast Me As…"/></div>;
+  if(loading)return<div style={{padding:40,textAlign:"center"}}><CastSlateLoader text="Loading Cast Me As…"/></div>;
 
   return(<div>
     {/* plan banner */}
@@ -8216,7 +8216,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
         <Footer onNavigate={onNavigate}/>
       </div>);
     }
-    return(<div className="page" style={{justifyContent:"center"}}><SlateCueLoader text="Loading profile…"/><Footer onNavigate={onNavigate}/></div>);
+    return(<div className="page" style={{justifyContent:"center"}}><CastSlateLoader text="Loading profile…"/><Footer onNavigate={onNavigate}/></div>);
   }
   const isCD=["cd","admin","super_admin"].includes(profile.user_type);
   const isPremium=profile.membership_status==="active";
@@ -8670,7 +8670,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
         <span>Couldn't load messages: {inboxErr}</span>
         <button className="btn-s btn-sm" onClick={fetchInbox}>Retry</button>
       </div>}
-      {inbox.length===0?<div>{inboxLoading?<SlateCueLoader size="inline" text="Loading messages…"/>:<p style={{color:"var(--t3)",fontSize:14}}>No messages yet.</p>}</div>:
+      {inbox.length===0?<div>{inboxLoading?<CastSlateLoader size="inline" text="Loading messages…"/>:<p style={{color:"var(--t3)",fontSize:14}}>No messages yet.</p>}</div>:
       inbox.map(m=><div key={m.id} onClick={()=>setOpenMsg(m)} style={{padding:"14px 0",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:12,alignItems:"flex-start",cursor:"pointer",opacity:m.read_at?0.78:1,transition:"background 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--s2)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
         <img src={m.profiles?.headshot_url||"https://placehold.co/44x44/e5e5e5/999?text=?"} style={{width:44,height:44,objectFit:"cover",borderRadius:"50%"}}/>
         <div style={{minWidth:0}}>
@@ -8883,7 +8883,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
   const renderAccount=()=>(
     <div>
       <h2 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:6}}>Account Settings</h2>
-      <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Manage your SlateCue account preferences and information.</p>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Manage your CastSlate account preferences and information.</p>
       <div className="card" style={{marginBottom:16}}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
           <div>
@@ -8991,13 +8991,13 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
   const renderNotifications=()=>(
     <div>
       <h2 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:6}}>Notifications</h2>
-      <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Choose which emails and alerts you receive from SlateCue.</p>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Choose which emails and alerts you receive from CastSlate.</p>
       {msg&&<div style={{background:"rgba(27,135,62,0.08)",border:"1px solid var(--grn)",borderRadius:8,padding:"10px 14px",color:"var(--grn)",fontSize:13,marginBottom:16}}>{msg}</div>}
       {err&&<div style={{background:"rgba(214,59,59,0.08)",border:"1px solid var(--red)",borderRadius:8,padding:"10px 14px",color:"var(--red)",fontSize:13,marginBottom:16}}>{err}</div>}
       <div className="card" style={{marginBottom:16}}>
         <div style={{fontWeight:700,marginBottom:16}}>Email Preferences</div>
         {[
-          {key:"email",label:"Email notifications",desc:"Receive all SlateCue notifications via email"},
+          {key:"email",label:"Email notifications",desc:"Receive all CastSlate notifications via email"},
           {key:"applications",label:"Casting application updates",desc:"Updates on your casting submissions and audition status"},
           {key:"messages",label:"Message notifications",desc:"Alerts when you receive new inbox messages"},
           {key:"marketing",label:"Marketing emails",desc:"News, tips, and featured casting opportunities"},
@@ -9082,7 +9082,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
       <div className="card" style={{background:"var(--s2)",border:"none"}}>
         <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>Data Privacy</div>
         <div style={{color:"var(--t2)",fontSize:13}}>
-          SlateCue does not sell your personal data. Your profile information is visible to other platform users according to your account type.{" "}
+          CastSlate does not sell your personal data. Your profile information is visible to other platform users according to your account type.{" "}
           <span style={{color:"var(--acc)",cursor:"pointer",textDecoration:"underline"}} onClick={()=>onNavigate("privacy")}>View Privacy Policy</span>
         </div>
       </div>
@@ -9176,7 +9176,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
           <div style={{background:"var(--s1)",borderRadius:16,padding:32,maxWidth:480,width:"100%",boxShadow:"0 20px 60px rgba(0,0,0,0.25)"}}>
             <h3 style={{fontSize:18,fontWeight:800,color:"var(--red)",marginBottom:12}}>Permanently delete your account?</h3>
             <p style={{color:"var(--t2)",fontSize:14,marginBottom:16}}>
-              This action cannot be undone. Your profile, applications, and all data will be permanently removed from SlateCue.
+              This action cannot be undone. Your profile, applications, and all data will be permanently removed from CastSlate.
             </p>
             <div style={{background:"rgba(214,59,59,0.06)",border:"1px solid rgba(214,59,59,0.2)",borderRadius:8,padding:"12px 14px",marginBottom:20,fontSize:13,color:"var(--red)",fontWeight:600}}>
               Type <strong>DELETE</strong> in the box below to confirm:
@@ -9375,7 +9375,7 @@ function AdminOverview(){
     }catch(e){setErr(e.message||String(e));}
   })();},[]);
   if(err)return(<div style={{color:"#c0392b",fontSize:13}}>Error loading overview: {err}</div>);
-  if(!stats)return(<SlateCueLoader size="inline" text="Loading overview…"/>);
+  if(!stats)return(<CastSlateLoader size="inline" text="Loading overview…"/>);
   return(<>
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Overview</h1>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:24}}>Platform health at a glance.</p>
@@ -9478,7 +9478,7 @@ function AdminCDVerification(){
         <option value="rejected">Rejected</option>
       </select>
     </div>
-    {loading?<SlateCueLoader size="inline" text="Loading…"/>:
+    {loading?<CastSlateLoader size="inline" text="Loading…"/>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
         {filtered.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No accounts match.</div>}
         {filtered.map(u=>{
@@ -9606,7 +9606,7 @@ function AdminUsers({isSuperAdmin,session}){
         <option value="super_admin">Super admins</option>
       </select>
     </div>
-    {loading?<SlateCueLoader size="inline" text="Loading…"/>:
+    {loading?<CastSlateLoader size="inline" text="Loading…"/>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
         {filtered.map(u=><UserRow key={u.id} u={u} isSuperAdmin={isSuperAdmin} self={u.id===session?.user?.id} busy={busyId===u.id} onSetRole={setRole} onToggleVerified={toggleVerified} onToggleFeatured={toggleFeatured} onToggleSuspended={toggleSuspended} onToggleBanned={toggleBanned} onDelete={doDelete}/>)}
         {filtered.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No users match.</div>}
@@ -9719,7 +9719,7 @@ function AdminCastings(){
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{filtered.length} of {castings.length} listings</p>
     {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
     <input className="input" placeholder="Search title, production, location, CD…" value={q} onChange={e=>setQ(e.target.value)} style={{marginBottom:14}}/>
-    {loading?<SlateCueLoader size="inline" text="Loading…"/>:
+    {loading?<CastSlateLoader size="inline" text="Loading…"/>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
         {filtered.map(c=>{
           const isPending=c.status==="pending_review";
@@ -9831,7 +9831,7 @@ function AdminApplications(){
         <option value="rejected">Rejected</option>
       </select>
     </div>
-    {loading?<SlateCueLoader size="inline" text="Loading…"/>:
+    {loading?<CastSlateLoader size="inline" text="Loading…"/>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
         {filtered.map(a=><div key={a.id} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"center"}}>
           <div>
@@ -9889,7 +9889,7 @@ function AdminReports(){
     <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
       {[["open","Open"],["reviewing","Reviewing"],["actioned","Actioned"],["dismissed","Dismissed"],["all","All"]].map(([k,l])=><button key={k} className="btn-s btn-sm" onClick={()=>setStatusFilter(k)} style={statusFilter===k?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>{l}</button>)}
     </div>
-    {loading?<SlateCueLoader size="inline" text="Loading…"/>:rows.length===0?<div className="card" style={{padding:32,textAlign:"center",color:"var(--t3)"}}>No reports.</div>:
+    {loading?<CastSlateLoader size="inline" text="Loading…"/>:rows.length===0?<div className="card" style={{padding:32,textAlign:"center",color:"var(--t3)"}}>No reports.</div>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
         {rows.map(r=>{
           const target=r.subject_casting?{kind:"casting",label:`Casting: ${r.subject_casting.title}`,detail:[r.subject_casting.prod,r.subject_casting.location].filter(Boolean).join(" · ")}:r.subject_profile?{kind:"profile",label:`Profile: ${r.subject_profile.display_name||r.subject_profile.company_name||r.subject_profile.email}`,detail:r.subject_profile.user_type||""}:{kind:"unknown",label:"Unknown target",detail:""};
@@ -9946,7 +9946,7 @@ function AdminErrors(){
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Error log</h1>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{rows.length} captured front-end errors (most recent first).</p>
     {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
-    {loading?<SlateCueLoader size="inline" text="Loading…"/>:rows.length===0?<div className="card" style={{padding:32,textAlign:"center",color:"var(--t3)"}}>No errors logged.</div>:
+    {loading?<CastSlateLoader size="inline" text="Loading…"/>:rows.length===0?<div className="card" style={{padding:32,textAlign:"center",color:"var(--t3)"}}>No errors logged.</div>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
         {rows.map(r=><div key={r.id} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)"}}>
           <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:4}}>
@@ -9984,7 +9984,7 @@ function AdminAudit(){
   return(<>
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Audit log</h1>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Every admin action is recorded here. Read-only.</p>
-    {loading?<SlateCueLoader size="inline" text="Loading…"/>:
+    {loading?<CastSlateLoader size="inline" text="Loading…"/>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
         {rows.map(r=><div key={r.id} style={{padding:"12px 16px",borderBottom:"1px solid var(--bdr)",fontSize:12,display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"start"}}>
           <div>
@@ -10034,7 +10034,7 @@ function AdminSettings(){
     else{setMsg("Saved.");setSettings(s=>({...s,...form}));}
     setBusy(false);
   };
-  if(loading)return(<SlateCueLoader size="inline" text="Loading settings…"/>);
+  if(loading)return(<CastSlateLoader size="inline" text="Loading settings…"/>);
   return(<>
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Site settings</h1>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Platform-wide toggles. All changes are audit-logged.</p>
@@ -10046,7 +10046,7 @@ function AdminSettings(){
       </div>
       <p style={{color:"var(--t3)",fontSize:12,marginTop:-8,marginBottom:12}}>When on, non-admins see the maintenance message instead of the app. (UI rendering of this flag is optional — the setting is stored and readable by any page.)</p>
       <div className="form-group"><label className="label">Maintenance message</label><textarea className="textarea" value={form.maintenance_message||""} onChange={e=>setForm(f=>({...f,maintenance_message:e.target.value}))} placeholder="We're upgrading things. Be back shortly."/></div>
-      <div className="form-group"><label className="label">Support email</label><input className="input" value={form.support_email||""} onChange={e=>setForm(f=>({...f,support_email:e.target.value}))} placeholder="hello@slatecue.com"/></div>
+      <div className="form-group"><label className="label">Support email</label><input className="input" value={form.support_email||""} onChange={e=>setForm(f=>({...f,support_email:e.target.value}))} placeholder="hello@castslate.com"/></div>
       <div className="form-group"><label className="label">Site-wide announcement (shown on home)</label><input className="input" value={form.announcement||""} onChange={e=>setForm(f=>({...f,announcement:e.target.value}))} placeholder="e.g. New feature: one-tap callbacks"/></div>
       <button className="btn-p" disabled={busy} onClick={save}>{busy?"Saving…":"Save settings"}</button>
     </div>
@@ -10111,7 +10111,7 @@ function AdminClasses(){
     </div>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Manage the classes listed on the public Classes page. Use the arrows to reorder. Star toggles Featured status.</p>
     {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
-    {loading?<SlateCueLoader size="inline" text="Loading classes…"/>:
+    {loading?<CastSlateLoader size="inline" text="Loading classes…"/>:
       <div>{classes.map((cls,idx)=>(
         <div key={cls.id} className="card" style={{padding:16,marginBottom:10,borderLeft:cls.is_featured?"3px solid var(--acc)":"3px solid transparent"}}>
           <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
@@ -10441,7 +10441,7 @@ function AdminManageTimeSlots({cls,onClose}){
     </div>
 
     <h3 style={{fontWeight:700,fontSize:15,marginBottom:12}}>Existing Time Slots</h3>
-    {loading?<SlateCueLoader size="inline" text="Loading slots…"/>:slots.length===0?
+    {loading?<CastSlateLoader size="inline" text="Loading slots…"/>:slots.length===0?
       <p style={{color:"var(--t3)",fontSize:13}}>No time slots yet. Add one above.</p>:
       <div>{slots.map(slot=>{
         const upcoming=upcomingDates(slot.day_of_week,2);
@@ -10558,7 +10558,7 @@ function AdminClassBookingRequests({cls,onClose}){
         <button key={s} className="btn-s btn-sm" onClick={()=>setStatusFilter(s)} style={statusFilter===s?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>{s==="all"?"All":BOOKING_STATUS_LABELS[s]||s}</button>
       ))}
     </div>
-    {loading?<SlateCueLoader size="inline" text="Loading requests…"/>:filtered.length===0?
+    {loading?<CastSlateLoader size="inline" text="Loading requests…"/>:filtered.length===0?
       <p style={{color:"var(--t3)",fontSize:13}}>No booking requests{statusFilter!=="all"?` with status "${statusFilter}"`:""}.</p>:
       <div>{filtered.map(req=>(
         <div key={req.id} className="card" style={{padding:18,marginBottom:12}}>
@@ -10715,7 +10715,7 @@ function AdminClassInvitations({session}){
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
       <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,margin:0}}>Class Invitations</h1>
     </div>
-    <p style={{color:"var(--t2)",fontSize:13,marginBottom:24}}>Send curated class recommendations to talent. They appear in the talent's dashboard as a personal recommendation from SlateCue.</p>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:24}}>Send curated class recommendations to talent. They appear in the talent's dashboard as a personal recommendation from CastSlate.</p>
 
     {/* ── Compose form ── */}
     <div className="card" style={{padding:24,marginBottom:32}}>
@@ -10802,7 +10802,7 @@ function AdminClassInvitations({session}){
     {/* ── Sent Invitations log ── */}
     <h2 style={{fontWeight:700,fontSize:18,marginBottom:4}}>Sent Invitations</h2>
     <p style={{color:"var(--t3)",fontSize:12,marginBottom:16}}>A record of every invitation — including status updates from talent.</p>
-    {loading?<SlateCueLoader size="inline" text="Loading…"/>:invitations.length===0?(
+    {loading?<CastSlateLoader size="inline" text="Loading…"/>:invitations.length===0?(
       <div style={{textAlign:"center",padding:"40px 0",color:"var(--t2)",fontSize:14}}>No invitations sent yet.</div>
     ):(
       <div>{invitations.map(inv=>{
@@ -11424,7 +11424,7 @@ function App(){
           activate. Hidden for CDs/admins/producers/studios and once active. */}
       <ActivateMembershipBanner myProfile={myProfile} onNavigate={navigate}/>
       <nav className="nav">
-        <div className="logo" onClick={()=>navThen("home")}><div className="logo-i">↔</div>SlateCue</div>
+        <div className="logo" onClick={()=>navThen("home")}><div className="logo-i">↔</div>CastSlate</div>
         <div className="nav-links">
           <span className={page==="home"?"act":""} onClick={()=>navigate("home")}>Home</span>
           <span className={page==="search"?"act":""} onClick={()=>navigate("search")}>Browse Castings</span>
