@@ -2082,15 +2082,20 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
     })();
     // Load current user's booking request for this class (to show Pay Now if approved)
     if(session?.user?.id){
-      (async()=>{
+      let cancelled=false;
+      const fetchReq=async()=>{
         const{data}=await window.sb.from("class_booking_requests")
           .select("id,status,payment_status,stripe_session_id")
           .eq("user_id",session.user.id).eq("class_id",viewing.id)
           .order("created_at",{ascending:false}).limit(1).maybeSingle();
-        setMyBookingRequest(data||null);
-      })();
+        if(!cancelled)setMyBookingRequest(data||null);
+      };
+      fetchReq();
+      // Poll every 15s so the payment banner appears if admin approves while this page is open
+      const tid=setInterval(fetchReq,15000);
+      return()=>{cancelled=true;clearInterval(tid);};
     }
-  },[viewing,session?.user?.id]);
+  },[viewing?.id,session?.user?.id]);
 
   const catMeta=(cat)=>CLASS_CATEGORIES.find(c=>c.id===cat);
 
@@ -4516,6 +4521,12 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   },[uid,savedIds,savingId]);
 
   useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadRecentlyViewed();loadClassInvitations();loadSysNotifications();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed,loadClassInvitations,loadSysNotifications]);
+  // Poll invitations + notifications every 30s so approved status appears without a page reload
+  useEffect(()=>{
+    if(!uid)return;
+    const tid=setInterval(()=>{loadClassInvitations();loadSysNotifications();},30000);
+    return()=>clearInterval(tid);
+  },[uid,loadClassInvitations,loadSysNotifications]);
 
   const filteredApps=useMemo(()=>{
     if(appsTab==="all")return applications;
@@ -4688,9 +4699,20 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                     <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",marginBottom:3}}>{n.title}</div>
                     <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}>{n.body}</div>
                     <div style={{fontSize:11,color:"var(--t3)",marginTop:6}}>{new Date(n.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})}</div>
-                    {n.link_url&&(n.type==="booking_approved"||n.type==="class_invitation")&&(
-                      <button className="btn-p btn-sm" style={{marginTop:10,fontSize:12}} onClick={()=>{if(n.related_class_id)onNavigate("classes",{classId:n.related_class_id});else onNavigate("classes");}}>
-                        {n.type==="booking_approved"?"Go to Classes & Pay →":"View Class →"}
+                    {n.type==="booking_approved"&&(
+                      <button className="btn-p btn-sm" style={{marginTop:10,fontSize:12,background:"#1a6b42",borderColor:"#1a6b42"}}
+                        onClick={()=>{
+                          const inv=classInvitations.find(i=>i.status==="approved_pending_payment"&&i.class_id===n.related_class_id);
+                          if(n.related_class_id)onNavigate("classes",{classId:n.related_class_id,invitationId:inv?.id||n.related_invitation_id||null});
+                          else onNavigate("classes");
+                        }}>
+                        Complete Payment →
+                      </button>
+                    )}
+                    {n.type==="class_invitation"&&n.link_url&&(
+                      <button className="btn-p btn-sm" style={{marginTop:10,fontSize:12}}
+                        onClick={()=>{if(n.related_class_id)onNavigate("classes",{classId:n.related_class_id,invitationId:n.related_invitation_id||null});else onNavigate("classes");}}>
+                        View Class →
                       </button>
                     )}
                   </div>
@@ -4706,6 +4728,37 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
 
   return(
     <div className="td-dash-outer">
+
+      {/* ── Payment Required urgent banner — shown when a booking is approved and awaiting payment ── */}
+      {(()=>{
+        const payInv=classInvitations.find(i=>i.status==="approved_pending_payment");
+        if(!payInv)return null;
+        return(
+          <div style={{
+            background:"linear-gradient(90deg,#1a6b42,#1e8050)",
+            borderRadius:14,padding:"18px 22px",marginBottom:28,
+            display:"flex",alignItems:"center",justifyContent:"space-between",gap:14,flexWrap:"wrap",
+            boxShadow:"0 6px 20px rgba(26,107,66,0.3)"
+          }}>
+            <div style={{display:"flex",alignItems:"center",gap:14}}>
+              <span style={{fontSize:28,lineHeight:1,flexShrink:0}}>🎉</span>
+              <div>
+                <div style={{fontWeight:800,fontSize:16,color:"#fff",marginBottom:3}}>Your class booking was approved!</div>
+                <div style={{fontSize:13,color:"rgba(255,255,255,0.85)",lineHeight:1.4}}>
+                  {payInv.class?.title||"Your class"} · Complete payment to confirm your spot before it's released.
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={()=>onNavigate("classes",{classId:payInv.class_id,invitationId:payInv.id})}
+              style={{background:"#fff",color:"#1a6b42",fontWeight:800,fontSize:13,padding:"11px 22px",
+                borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",
+                boxShadow:"0 2px 8px rgba(0,0,0,0.18)",flexShrink:0}}
+            >Complete Payment →</button>
+          </div>
+        );
+      })()}
+
       {/* ── Welcome header ── */}
       <div style={{marginBottom:28}}>
         <div className="section-label">Talent Dashboard</div>
@@ -4716,18 +4769,22 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       {/* ── Quick stats row ── */}
       {(()=>{
         const unreadNotifs=sysNotifications.filter(n=>!n.is_read).length;
+        const hasApprovalNotif=sysNotifications.some(n=>n.type==="booking_approved"&&!n.is_read);
         return(
         <div className="td-stats">
           {[
             {label:"Applications",value:appsLoading?"…":applications.length,sub:"total submitted",accent:false,onClick:null},
             {label:"Audition Requests",value:appsLoading?"…":auditionCount,sub:auditionCount>0?"action needed":"none pending",accent:auditionCount>0,onClick:null},
-            {label:"Notifications",value:sysNotifLoading?"…":unreadNotifs,sub:unreadNotifs>0?"tap to view":"all caught up",accent:unreadNotifs>0,onClick:()=>{setDashView("notifications");markNotificationsRead();}},
+            {label:"Notifications",value:sysNotifLoading?"…":unreadNotifs,
+              sub:hasApprovalNotif?"booking approved — tap to view":unreadNotifs>0?"tap to view":"all caught up",
+              accent:unreadNotifs>0,
+              onClick:()=>{setDashView("notifications");markNotificationsRead();}},
             {label:"Profile",value:isProfileComplete?"Live":`${profilePct}%`,sub:isProfileComplete?"visible to CDs":"complete your profile",accent:!isProfileComplete&&profilePct<60,onClick:null},
           ].map((s,i)=>(
             <div key={i} onClick={s.onClick||undefined} style={{background:"var(--s1)",border:`1px solid ${s.accent?"var(--acc)":"var(--bdr)"}`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:4,cursor:s.onClick?"pointer":"default"}}>
               <div style={{fontSize:11,fontWeight:600,color:s.accent?"var(--acc)":"var(--t3)",textTransform:"uppercase",letterSpacing:0.6}}>{s.label}</div>
               <div style={{fontSize:26,fontWeight:800,color:s.accent?"var(--acc)":"var(--t1)",letterSpacing:-0.5,lineHeight:1}}>{s.value}</div>
-              <div style={{fontSize:11,color:"var(--t3)"}}>{s.sub}</div>
+              <div style={{fontSize:11,color:hasApprovalNotif&&s.label==="Notifications"?"#1a6b42":"var(--t3)",fontWeight:hasApprovalNotif&&s.label==="Notifications"?700:400}}>{s.sub}</div>
             </div>
           ))}
         </div>
@@ -10808,18 +10865,19 @@ function AdminManageTimeSlots({cls,onClose}){
 function AdminAllBookingRequests(){
   const[requests,setRequests]=useState([]);
   const[loading,setLoading]=useState(true);
-  const[msg,setMsg]=useState("");
+  const[loadErr,setLoadErr]=useState("");
+  const[resolveMsg,setResolveMsg]=useState(null); // {ok,text} — persists across reload
   const[busy,setBusy]=useState(null);
   const[expanded,setExpanded]=useState(null);
   const[statusFilter,setStatusFilter]=useState("pending_review");
 
   const reload=useCallback(async()=>{
-    setLoading(true);setMsg("");
+    setLoading(true);setLoadErr("");
     const{data,error}=await window.sb.from("class_booking_requests")
       .select("*,talent:user_id(id,display_name,email,headshot_url),class:class_id(id,title,instructor_name)")
       .order("created_at",{ascending:false})
       .limit(200);
-    if(error){setMsg("Load failed: "+error.message);setLoading(false);return;}
+    if(error){setLoadErr("Load failed: "+error.message);setLoading(false);return;}
     setRequests(data||[]);setLoading(false);
   },[]);
   useEffect(()=>{reload();},[reload]);
@@ -10828,18 +10886,30 @@ function AdminAllBookingRequests(){
   const fmtD=s=>{if(!s)return"";try{return new Date(s).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}catch{return s;}};
 
   const resolveRequest=async(req,decision)=>{
-    setBusy(req.id);setMsg("");
+    setBusy(req.id);setResolveMsg(null);
     try{
       const{data,error}=await window.sb.rpc("resolve_class_booking_request",{p_request_id:req.id,p_decision:decision});
       if(error)throw error;
       if(data?.error)throw new Error(data.error);
-      setMsg(decision==="approved"?"✅ Approved. Talent has been notified and sent a payment link.":"❌ Declined. Talent has been notified.");
-    }catch(e){setMsg("Error: "+e.message);}
-    finally{setBusy(null);reload();}
+      const newStatus=decision==="approved"?"approved":"declined";
+      // Switch filter to show the just-resolved request so it doesn't "disappear"
+      setStatusFilter(newStatus);
+      // Auto-expand the resolved request so admin can see its updated state
+      setExpanded(req.id);
+      setResolveMsg({ok:true,text:decision==="approved"
+        ?"✅ Booking approved. Talent has been notified and will receive a payment link to complete their booking."
+        :"❌ Booking declined. Talent has been notified."
+      });
+    }catch(e){
+      setResolveMsg({ok:false,text:"Error: "+e.message});
+    }finally{
+      setBusy(null);reload(); // reload refreshes data but resolveMsg persists
+    }
   };
 
   const STATUS_COLOR={pending_review:"var(--acc)",approved:"var(--grn)",declined:"#c0392b",rejected:"#c0392b",payment_pending:"#e67e22",paid:"var(--grn)",cancelled:"var(--t3)"};
-  const STATUS_LABEL={pending_review:"Pending Review",approved:"Approved",declined:"Declined",rejected:"Rejected",payment_pending:"Payment Pending",paid:"Paid",cancelled:"Cancelled"};
+  const STATUS_LABEL={pending_review:"Pending Review",approved:"Approved — Awaiting Payment",declined:"Declined",rejected:"Rejected",payment_pending:"Payment Pending",paid:"Paid",cancelled:"Cancelled"};
+  const FILTER_LABEL={pending_review:"Pending Review",all:"All",approved:"Approved",declined:"Declined",payment_pending:"Payment Pending",paid:"Paid",cancelled:"Cancelled"};
   const filtered=statusFilter==="all"?requests:requests.filter(r=>r.status===statusFilter);
   const pendingCount=requests.filter(r=>r.status==="pending_review").length;
 
@@ -10849,19 +10919,43 @@ function AdminAllBookingRequests(){
         <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,margin:0}}>Class Booking Requests</h1>
         {pendingCount>0&&<p style={{color:"var(--acc)",fontSize:13,fontWeight:700,margin:"4px 0 0"}}>{pendingCount} pending review</p>}
       </div>
+      <button className="btn-s btn-sm" onClick={()=>{setResolveMsg(null);reload();}}>↻ Refresh</button>
     </div>
-    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Review all booking requests submitted by talent across all classes. Approve or decline — talent is notified automatically.</p>
-    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"12px 16px",fontSize:13,marginBottom:16,borderLeft:"3px solid var(--acc)"}}>{msg}</div>}
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Review booking requests across all classes. Approve or decline — talent is notified and sent a payment link automatically.</p>
+
+    {/* Persistent resolve result banner — survives reload() */}
+    {resolveMsg&&(
+      <div style={{padding:"14px 18px",borderRadius:10,marginBottom:16,fontWeight:600,fontSize:14,
+        background:resolveMsg.ok?"rgba(39,174,96,0.1)":"rgba(192,57,43,0.08)",
+        border:`1px solid ${resolveMsg.ok?"rgba(39,174,96,0.35)":"rgba(192,57,43,0.3)"}`,
+        color:resolveMsg.ok?"#1a7a42":"#a93226",
+        display:"flex",alignItems:"center",justifyContent:"space-between",gap:12
+      }}>
+        <span>{resolveMsg.text}</span>
+        <button onClick={()=>setResolveMsg(null)} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,lineHeight:1,color:"inherit",opacity:0.6,flexShrink:0}}>×</button>
+      </div>
+    )}
+    {loadErr&&<div style={{background:"rgba(192,57,43,0.08)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,color:"#a93226"}}>{loadErr}</div>}
+
     <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
       {["pending_review","all","approved","declined","payment_pending","paid","cancelled"].map(s=>(
         <button key={s} className="btn-s btn-sm" onClick={()=>setStatusFilter(s)} style={statusFilter===s?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>
-          {s==="all"?"All":STATUS_LABEL[s]||s}
+          {FILTER_LABEL[s]||s}
           {s==="pending_review"&&pendingCount>0&&<span style={{marginLeft:6,background:"rgba(255,255,255,0.9)",color:"var(--acc)",borderRadius:8,fontSize:10,fontWeight:800,padding:"1px 6px"}}>{pendingCount}</span>}
         </button>
       ))}
     </div>
+
     {loading?<CastSlateLoader size="inline" text="Loading booking requests…"/>:
-      filtered.length===0?<p style={{color:"var(--t3)",fontSize:13}}>No booking requests{statusFilter!=="all"?` with status "${STATUS_LABEL[statusFilter]||statusFilter}"`:""} found.</p>:
+      filtered.length===0?(
+        <div style={{textAlign:"center",padding:"40px 0"}}>
+          <div style={{fontSize:32,marginBottom:10}}>{statusFilter==="pending_review"?"✅":"📋"}</div>
+          <p style={{color:"var(--t2)",fontSize:14,margin:0}}>
+            {statusFilter==="pending_review"?"No pending requests — you're all caught up.":`No requests with status "${FILTER_LABEL[statusFilter]||statusFilter}".`}
+          </p>
+          {statusFilter!=="all"&&<button className="btn-s btn-sm" style={{marginTop:12}} onClick={()=>setStatusFilter("all")}>View all requests</button>}
+        </div>
+      ):(
       <div>
         {filtered.map(req=>{
           const talentName=req.talent?.display_name||req.talent?.email||"Unknown";
@@ -10869,9 +10963,13 @@ function AdminAllBookingRequests(){
           const classTitle=req.class?.title||"(unknown class)";
           const slotStr=req.selected_date?`${fmtD(req.selected_date)}${req.selected_start_time?` at ${fmtT(req.selected_start_time)}`:""}`:null;
           const isPending=req.status==="pending_review";
+          const isApproved=req.status==="approved";
           return(
-            <div key={req.id} className="card" style={{padding:20,marginBottom:14,borderLeft:isPending?"3px solid var(--acc)":"3px solid transparent"}}>
+            <div key={req.id} className="card" style={{padding:20,marginBottom:14,
+              borderLeft:isPending?"3px solid var(--acc)":isApproved?"3px solid var(--grn)":"3px solid transparent"
+            }}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"start",gap:14,flexWrap:"wrap"}}>
+                {/* LEFT: talent + class info */}
                 <div style={{flex:1,minWidth:220}}>
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
                     {req.talent?.headshot_url
@@ -10884,40 +10982,78 @@ function AdminAllBookingRequests(){
                     </div>
                   </div>
                   <div style={{fontSize:13,fontWeight:600,marginBottom:3}}>📚 {classTitle}</div>
-                  {req.class?.instructor_name&&<div style={{fontSize:12,color:"var(--t3)",marginBottom:6}}>Instructor: {req.class.instructor_name}</div>}
+                  {req.class?.instructor_name&&<div style={{fontSize:12,color:"var(--t3)",marginBottom:4}}>Instructor: {req.class.instructor_name}</div>}
                   {slotStr&&<div style={{fontSize:13,color:"var(--t2)",marginBottom:4}}>🕐 {slotStr}</div>}
                   <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginTop:6}}>
-                    <span style={{display:"inline-block",fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:5,background:`${STATUS_COLOR[req.status]||"var(--t3)"}22`,color:STATUS_COLOR[req.status]||"var(--t3)"}}>{STATUS_LABEL[req.status]||req.status}</span>
+                    <span style={{display:"inline-block",fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:5,
+                      background:`${STATUS_COLOR[req.status]||"var(--t3)"}22`,color:STATUS_COLOR[req.status]||"var(--t3)"
+                    }}>{STATUS_LABEL[req.status]||req.status}</span>
                     <span style={{fontSize:11,color:"var(--t3)"}}>Submitted {fmtD(req.created_at)}</span>
+                    {req.approved_at&&<span style={{fontSize:11,color:"var(--grn)"}}>Approved {fmtD(req.approved_at)}</span>}
                   </div>
                 </div>
+                {/* RIGHT: actions */}
                 <div style={{display:"flex",flexDirection:"column",gap:8,flexShrink:0,minWidth:160,alignItems:"stretch"}}>
                   {isPending&&(<>
-                    <button className="btn-p btn-sm" disabled={busy===req.id} onClick={()=>resolveRequest(req,"approved")} style={{fontWeight:700}}>{busy===req.id?"…":"✅ Approve"}</button>
-                    <button className="btn-s btn-sm" disabled={busy===req.id} onClick={()=>resolveRequest(req,"declined")} style={{color:"#c0392b",borderColor:"#c0392b"}}>{busy===req.id?"…":"❌ Decline"}</button>
+                    <button className="btn-p btn-sm" disabled={busy===req.id} onClick={()=>resolveRequest(req,"approved")} style={{fontWeight:700}}>
+                      {busy===req.id?"Processing…":"✅ Approve"}
+                    </button>
+                    <button className="btn-s btn-sm" disabled={busy===req.id} onClick={()=>resolveRequest(req,"declined")} style={{color:"#c0392b",borderColor:"#c0392b"}}>
+                      {busy===req.id?"Processing…":"❌ Decline"}
+                    </button>
                   </>)}
-                  <button className="btn-s btn-sm" onClick={()=>setExpanded(expanded===req.id?null:req.id)}>{expanded===req.id?"Hide Details":"View Details"}</button>
+                  <button className="btn-s btn-sm" onClick={()=>setExpanded(expanded===req.id?null:req.id)}>
+                    {expanded===req.id?"Hide Details":"View Details"}
+                  </button>
                 </div>
               </div>
+
+              {/* Expanded details */}
               {expanded===req.id&&(
                 <div style={{marginTop:16,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
                   {req.note&&(
-                    <div style={{marginBottom:12,padding:12,background:"var(--s2)",borderRadius:8}}>
+                    <div style={{marginBottom:14,padding:"12px 14px",background:"var(--s2)",borderRadius:8,borderLeft:"3px solid var(--acc)"}}>
                       <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,color:"var(--t3)",marginBottom:6}}>Message from talent</div>
                       <p style={{fontSize:13,color:"var(--t1)",lineHeight:1.6,margin:0}}>{req.note}</p>
                     </div>
                   )}
                   {req.short_bio&&(
-                    <div style={{marginBottom:12}}>
+                    <div style={{marginBottom:14}}>
                       <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,color:"var(--t3)",marginBottom:4}}>Short bio</div>
                       <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,margin:0}}>{req.short_bio}</p>
                     </div>
                   )}
-                  <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-                    {req.headshot_url&&<a href={req.headshot_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm">View Headshot</a>}
-                    {req.resume_url&&<a href={req.resume_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm">View Resume</a>}
-                    {!req.headshot_url&&!req.resume_url&&<span style={{fontSize:12,color:"var(--t3)"}}>No files uploaded.</span>}
+
+                  {/* Headshot section */}
+                  <div style={{marginBottom:14}}>
+                    <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,color:"var(--t3)",marginBottom:8}}>Submitted headshot</div>
+                    {req.headshot_url?(
+                      <div style={{display:"flex",alignItems:"flex-start",gap:12,flexWrap:"wrap"}}>
+                        <img src={req.headshot_url} alt="submitted headshot" style={{width:80,height:80,objectFit:"cover",borderRadius:8,border:"1px solid var(--bdr)",flexShrink:0}}
+                          onError={e=>{e.target.style.display="none";}}/>
+                        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                          <a href={req.headshot_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm" style={{display:"inline-flex",alignItems:"center",gap:5}}>
+                            Open full size ↗
+                          </a>
+                          <span style={{fontSize:11,color:"var(--t3)"}}>Opens in new tab</span>
+                        </div>
+                      </div>
+                    ):<span style={{fontSize:12,color:"var(--t3)",fontStyle:"italic"}}>No headshot uploaded.</span>}
                   </div>
+
+                  {/* Resume section */}
+                  <div style={{marginBottom:14}}>
+                    <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,color:"var(--t3)",marginBottom:8}}>Submitted resume</div>
+                    {req.resume_url?(
+                      <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+                        <a href={req.resume_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm" style={{display:"inline-flex",alignItems:"center",gap:5}}>
+                          📄 Open / Download Resume ↗
+                        </a>
+                        <span style={{fontSize:11,color:"var(--t3)"}}>PDF — opens in new tab</span>
+                      </div>
+                    ):<span style={{fontSize:12,color:"var(--t3)",fontStyle:"italic"}}>No resume uploaded.</span>}
+                  </div>
+
                   {req.admin_notes&&<div style={{marginTop:10,padding:10,background:"var(--s2)",borderRadius:8,fontSize:12,color:"var(--t2)"}}>Admin notes: {req.admin_notes}</div>}
                 </div>
               )}
@@ -10925,7 +11061,7 @@ function AdminAllBookingRequests(){
           );
         })}
       </div>
-    }
+    )}
   </>);
 }
 
