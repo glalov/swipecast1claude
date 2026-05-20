@@ -1341,6 +1341,7 @@ function RegisterTalent({onNavigate}){
   const [err,setErr]=useState("");
   const [dupEmail,setDupEmail]=useState(false); // true when the email is already registered → show Resend / Login
   const [resentOk,setResentOk]=useState(false);
+  const [resendCooldown,setResendCooldown]=useState(0);
   const submittingRef=useRef(false); // blocks double-click races that fire two signUp calls
   const [f,setF]=useState({first:"",last:"",email:"",password:"",location:"",gender:"",age:"",height:"",weight:"",hair:"",eyes:"",ethnicity:"",union_status:"Non-Union",types:[],bio:"",training:"",skills:"",agent:"",agree:false,guardian_name:"",guardian_email:""});
   const up=(k,v)=>setF(x=>({...x,[k]:v}));
@@ -1348,13 +1349,15 @@ function RegisterTalent({onNavigate}){
   const validStep1=()=>{if(!f.first||!f.last){setErr("Please enter your first and last name.");return false;}if(!f.email||!f.email.includes("@")){setErr("Please enter a valid email address.");return false;}if(!f.password||f.password.length<8){setErr("Password must be at least 8 characters.");return false;}if(!f.location){setErr("Please enter your location.");return false;}setErr("");return true;};
   const withTimeout=(promise,ms=30000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Check your connection and try again.`)),ms))]);
   const resendConfirmation=async()=>{
-    setResentOk(false);
+    setResentOk(false);setErr("");
     try{
       const email=f.email.trim().toLowerCase();
-      const {error}=await window.sb.auth.resend({type:"signup",email,options:{emailRedirectTo:window.location.origin}});
+      const {error}=await window.sb.auth.resend({type:"signup",email,options:{emailRedirectTo:"https://www.castslate.com"}});
       if(error)throw error;
       setResentOk(true);
-    }catch(e){console.warn("[auth] resend failed:",e?.message||e);setErr("Could not resend the verification email. Try logging in instead.");}
+      setResendCooldown(60);
+      const t=setInterval(()=>setResendCooldown(n=>{if(n<=1){clearInterval(t);return 0;}return n-1;}),1000);
+    }catch(e){console.warn("[auth] resend failed:",e?.message||e);setErr("We couldn't resend the confirmation email. Please try again in a minute.");}
   };
   const createAccount=async()=>{
     if(submittingRef.current)return; // prevent double-click race
@@ -1400,7 +1403,7 @@ function RegisterTalent({onNavigate}){
       console.log("[auth] signUp attempt:",email);
       const {data,error}=await withTimeout(window.sb.auth.signUp({
         email,password:f.password,
-        options:{emailRedirectTo:window.location.origin,data:signupMeta}
+        options:{emailRedirectTo:"https://www.castslate.com",data:signupMeta}
       }),30000,"Sign up");
       if(error){
         const em=(error.message||"").toLowerCase();
@@ -1432,7 +1435,7 @@ function RegisterTalent({onNavigate}){
     }catch(e){console.warn("[auth] createAccount caught:",e?.message||e);setErr(e.message||"Something went wrong. Please try again.");window.scrollTo(0,0);}
     finally{setLoading(false);submittingRef.current=false;}
   };
-  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:24,color:"var(--t2)",fontSize:14}}>Your free profile is ready. Click the link in that email, then log in to browse castings. You'll only need to activate a membership when you're ready to submit for a role.</p><div style={{display:"flex",gap:12,justifyContent:"center"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
+  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Your free profile is ready. Click the link in that email, then log in to browse castings. You'll only need to activate a membership when you're ready to submit for a role.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}>✓ Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
   return(
     <div className="page"><div style={{maxWidth:640,margin:"0 auto"}}>
       <div className="section-label">Join CastSlate — Free</div>
@@ -1503,17 +1506,20 @@ function RegisterCD({onNavigate}){
   const [err,setErr]=useState("");
   const [dupEmail,setDupEmail]=useState(false);
   const [resentOk,setResentOk]=useState(false);
+  const [resendCooldown,setResendCooldown]=useState(0);
   const submittingRef=useRef(false);
   const [f,setF]=useState({first:"",last:"",email:"",password:"",company_name:"",company_role:"Casting Director",location:"",website:"",agree:false});
   const up=(k,v)=>setF(x=>({...x,[k]:v}));
   const withTimeout=(promise,ms=30000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Check your connection and try again.`)),ms))]);
   const resendConfirmation=async()=>{
-    setResentOk(false);
+    setResentOk(false);setErr("");
     try{
-      const {error}=await window.sb.auth.resend({type:"signup",email:f.email.trim().toLowerCase(),options:{emailRedirectTo:window.location.origin}});
+      const {error}=await window.sb.auth.resend({type:"signup",email:f.email.trim().toLowerCase(),options:{emailRedirectTo:"https://www.castslate.com"}});
       if(error)throw error;
       setResentOk(true);
-    }catch(e){console.warn("[auth] CD resend failed:",e?.message||e);setErr("Could not resend the verification email. Try logging in instead.");}
+      setResendCooldown(60);
+      const t=setInterval(()=>setResendCooldown(n=>{if(n<=1){clearInterval(t);return 0;}return n-1;}),1000);
+    }catch(e){console.warn("[auth] CD resend failed:",e?.message||e);setErr("We couldn't resend the confirmation email. Please try again in a minute.");}
   };
   const submit=async()=>{
     if(submittingRef.current)return;
@@ -1542,7 +1548,7 @@ function RegisterCD({onNavigate}){
       console.log("[auth] CD signUp attempt:",email);
       const {data,error}=await withTimeout(window.sb.auth.signUp({
         email,password:f.password,
-        options:{emailRedirectTo:window.location.origin,data:signupMeta}
+        options:{emailRedirectTo:"https://www.castslate.com",data:signupMeta}
       }),30000,"Sign up");
       if(error){
         const em=(error.message||"").toLowerCase();
@@ -1569,7 +1575,7 @@ function RegisterCD({onNavigate}){
     }catch(e){console.warn("[auth] CD submit caught:",e?.message||e);setErr(e.message||"Something went wrong. Please try again.");}
     finally{setLoading(false);submittingRef.current=false;}
   };
-  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:24,color:"var(--t2)",fontSize:14}}>Click the link to activate your account. Then log in to post your first casting.</p><div style={{display:"flex",gap:12,justifyContent:"center"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
+  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Click the link to activate your account. Then log in to post your first casting.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}>✓ Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
   return(
     <div className="page"><div style={{maxWidth:640,margin:"0 auto"}}>
       <div className="section-label">For Industry Professionals</div>
@@ -1616,7 +1622,7 @@ function LoginPage({onNavigate,onLoggedIn}){
         dbg().loginStep="reset-email-start";
         console.log("[auth] resetPasswordForEmail:",cleanEmail);
         const {error}=await withTimeout(
-          window.sb.auth.resetPasswordForEmail(cleanEmail,{redirectTo:window.location.origin}),
+          window.sb.auth.resetPasswordForEmail(cleanEmail,{redirectTo:"https://www.castslate.com"}),
           20000,"Password reset"
         );
         if(error)throw error;
@@ -3002,8 +3008,22 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
   const [liEmail,setLiEmail]=useState("");
   const [liPass,setLiPass]=useState("");
   const submittingRef=useRef(false);
+  const [resentOk,setResentOk]=useState(false);
+  const [resendCooldown,setResendCooldown]=useState(0);
+  const [resendErr,setResendErr]=useState("");
   const c=pending?.casting;
   const r=pending?.role;
+
+  const resendSignupEmail=async()=>{
+    setResentOk(false);setResendErr("");
+    try{
+      const {error}=await window.sb.auth.resend({type:"signup",email:suEmail.trim().toLowerCase(),options:{emailRedirectTo:"https://www.castslate.com"}});
+      if(error)throw error;
+      setResentOk(true);
+      setResendCooldown(60);
+      const t=setInterval(()=>setResendCooldown(n=>{if(n<=1){clearInterval(t);return 0;}return n-1;}),1000);
+    }catch(e){console.warn("[auth] gate resend failed:",e?.message||e);setResendErr("We couldn't resend the confirmation email. Please try again in a minute.");}
+  };
 
   const handleSignUp=async()=>{
     if(submittingRef.current)return;
@@ -3018,7 +3038,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
       const {data,error}=await window.sb.auth.signUp({
         email,password:suPass,
         options:{
-          emailRedirectTo:window.location.origin,
+          emailRedirectTo:"https://www.castslate.com",
           data:{user_type:"talent",display_name:(firstName+" "+lastName).trim(),onboarded:false}
         }
       });
@@ -3080,7 +3100,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
     try{
       const {error}=await window.sb.auth.signInWithOAuth({
         provider,
-        options:{redirectTo:window.location.origin}
+        options:{redirectTo:"https://www.castslate.com"}
       });
       if(error){
         try{sessionStorage.removeItem("sc_post_auth_apply");}catch(_){}
@@ -3101,20 +3121,21 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
   };
 
   if(signupDone)return(<div className="page" style={{maxWidth:640,margin:"0 auto"}}>
-    <div style={{background:"#1a1a2e",color:"#f5e8d0",fontFamily:"monospace",fontSize:13,fontWeight:700,padding:"8px 20px",textAlign:"center",letterSpacing:0.5}}>
-      APPLY SIGNUP VERSION 3 - FUNCTIONAL FREE APPLY FLOW
-    </div>
     <div style={{background:"rgba(46,204,113,0.08)",border:"1px solid rgba(46,204,113,0.3)",borderRadius:16,padding:"48px 36px",marginTop:40,textAlign:"center"}}>
       <div style={{fontSize:48,marginBottom:16}}>✓</div>
       <h2 style={{fontSize:24,fontWeight:800,marginBottom:10}}>Check your email to confirm</h2>
-      <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,marginBottom:24}}>We sent a confirmation link to <strong>{suEmail}</strong>.<br/>Click the link in that email, then log in here to continue your application.</p>
+      <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,marginBottom:8}}>We sent a confirmation link to <strong>{suEmail}</strong>.<br/>Click the link in that email, then log in here to continue your application.</p>
+      <p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>
       {c&&<div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:10,padding:"14px 18px",marginBottom:24,textAlign:"left"}}>
         <div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,fontWeight:700,marginBottom:6}}>Saved — you're applying to</div>
         <strong style={{fontSize:14}}>{c.title}</strong>{r&&<span style={{color:"var(--t2)",fontSize:13}}> · {r.name}</span>}
         <p style={{fontSize:12,color:"var(--t3)",marginTop:4}}>After confirming your email and logging in, you'll be taken directly to the application form.</p>
       </div>}
-      <div style={{display:"flex",gap:12,justifyContent:"center"}}>
-        <button className="btn-p" onClick={()=>setMode("login")||setSignupDone(false)}>Log In Now</button>
+      {resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}>✓ Confirmation email sent again. Please check your inbox and spam folder.</div>}
+      {resendErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{resendErr}</div>}
+      <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+        <button className="btn-p" onClick={()=>{setMode("login");setSignupDone(false);}}>Log In Now</button>
+        <button className="btn-s" onClick={resendCooldown>0?undefined:resendSignupEmail} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button>
         <button className="btn-s" onClick={onCancel}>Back to Casting</button>
       </div>
     </div>
@@ -9342,7 +9363,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
               if(!email)return;
               setSaving(true);
               try{
-                const{error}=await window.sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});
+                const{error}=await window.sb.auth.resetPasswordForEmail(email,{redirectTo:"https://www.castslate.com"});
                 if(error)throw error;
                 showMsg("Password reset email sent. Check your inbox.");
               }catch(e){showMsg(e.message||"Failed to send reset email.",true);}
