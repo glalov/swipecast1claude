@@ -1,6 +1,9 @@
+import re, datetime
+
+BUILD_VERSION = datetime.datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+
 jsx_content = open("swipecast-full.jsx", "r").read()
 # Strip the ES module `import` line — Babel standalone in the browser can't resolve imports
-import re
 jsx_content = re.sub(r'^\s*import\s+.*?from\s+["\'][^"\']+["\'];?\s*\n', '', jsx_content, count=1, flags=re.MULTILINE)
 # Replace `export default function App` with plain `function App`
 jsx_content = jsx_content.replace("export default function App", "function App")
@@ -30,6 +33,18 @@ html = f'''<!DOCTYPE html>
     }};
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
+  <!-- BUILD: {BUILD_VERSION} -->
+  <meta name="build-version" content="{BUILD_VERSION}"/>
+  <script>
+    /* Force reload when a new deploy lands; also clears BFCache stale state */
+    (function(){{
+      var B="{BUILD_VERSION}";
+      var prev=localStorage.getItem("sc_bv");
+      localStorage.setItem("sc_bv",B);
+      if(prev&&prev!==B){{window.location.reload();}}
+      window.addEventListener("pageshow",function(e){{if(e.persisted)window.location.reload();}});
+    }})();
+  </script>
 </head>
 <body>
   <div id="root"></div>
@@ -40,4 +55,4 @@ html = f'''<!DOCTYPE html>
 </html>'''
 
 open("index.html", "w").write(html)
-print("Done")
+print(f"Done — BUILD: {BUILD_VERSION}")

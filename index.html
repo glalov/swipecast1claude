@@ -20,6 +20,18 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
+  <!-- BUILD: 2026-05-20-swipe-v2 -->
+  <meta name="build-version" content="2026-05-20-swipe-v2"/>
+  <script>
+    /* Force reload when a new deploy lands; also clears BFCache stale state */
+    (function(){
+      var B="2026-05-20-swipe-v2";
+      var prev=localStorage.getItem("sc_bv");
+      localStorage.setItem("sc_bv",B);
+      if(prev&&prev!==B){window.location.reload();}
+      window.addEventListener("pageshow",function(e){if(e.persisted)window.location.reload();});
+    })();
+  </script>
 </head>
 <body>
   <div id="root"></div>
