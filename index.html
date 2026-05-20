@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 2026-05-20-swipe-v3 -->
-  <meta name="build-version" content="2026-05-20-swipe-v3"/>
+  <!-- BUILD: 2026-05-20-swipe-v4 -->
+  <meta name="build-version" content="2026-05-20-swipe-v4"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="2026-05-20-swipe-v3";
+      var B="2026-05-20-swipe-v4";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -7851,6 +7851,88 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
 // ═══════════════════════════════════════════
 // LANDING PAGE
 // ═══════════════════════════════════════════
+const LANDING_SWIPE_DEMO=[
+  {id:1,name:"Maria Santos",age:28,gender:"Female",height:"5'6\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=800&fit=crop&crop=top&q=90",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
+  {id:2,name:"James Walker",age:34,gender:"Male",height:"6'1\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Improv","Yale Drama MFA","Basketball"]},
+  {id:3,name:"Elena Novak",age:25,gender:"Female",height:"5'9\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&h=800&fit=crop&crop=top&q=90",skills:["Classical Training","Ballet","Soprano"]},
+  {id:4,name:"David Kim",age:31,gender:"Male",height:"5'10\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1552058544-f2b08422138a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Martial Arts","Korean Fluent","Stunt Work"]},
+  {id:5,name:"Aisha Johnson",age:22,gender:"Female",height:"5'8\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=800&fit=crop&crop=top&q=90",skills:["Commercial Print","Runway","British Accent"]},
+  {id:6,name:"Carlos Rivera",age:29,gender:"Male",height:"5'11\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&h=800&fit=crop&crop=top&q=90",skills:["Juilliard Trained","Bilingual Spanish","Capoeira"]},
+  {id:7,name:"Sarah Chen",age:27,gender:"Female",height:"5'4\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=800&fit=crop&crop=top&q=90",skills:["Mandarin Fluent","Figure Skating","Understated Comedy"]},
+  {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1519058082700-08a9c42d4253?w=600&h=800&fit=crop&crop=top&q=90",skills:["Military Background","Boxing","Bass Vocals"]},
+  {id:9,name:"Priya Sharma",age:26,gender:"Female",height:"5'5\"",pos:"center 12%",img:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=800&fit=crop&crop=top&q=90",skills:["Bollywood Dance","Hindi Fluent","Drama Training"]},
+  {id:10,name:"Marcus Reed",age:32,gender:"Male",height:"6'0\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&h=800&fit=crop&crop=top&q=90",skills:["TV Drama","Comedic Timing","Voice Work"]},
+  {id:11,name:"Sofia Laurent",age:30,gender:"Female",height:"5'7\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&h=800&fit=crop&crop=top&q=90",skills:["French Fluent","Classical Theater","Physical Comedy"]},
+  {id:12,name:"Nia Thompson",age:24,gender:"Female",height:"5'6\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&h=800&fit=crop&crop=top&q=90",skills:["Contemporary Dance","SAG-Eligible","Southern Accent"]},
+];
+function LandingSwipe(){
+  const demo=LANDING_SWIPE_DEMO;
+  const total=demo.length;
+  const [idx,setIdx]=useState(0);
+  const [animating,setAnimating]=useState(false);
+  const [flyDir,setFlyDir]=useState(0);
+  const [dx,setDx]=useState(0);
+  const dragging=useRef(false);
+  const startX=useRef(0);
+  const t=demo[Math.min(idx,total-1)];
+  const nt=demo[Math.min(idx+1,total-1)];
+  const done=idx>=total;
+  const ac=dx>50?"yes":dx<-50?"pass":null;
+  function advance(dir){
+    if(animating)return;
+    setAnimating(true);
+    setFlyDir(dir);
+    setDx(0);
+    dragging.current=false;
+    setTimeout(()=>{
+      setIdx(i=>i+1);
+      setFlyDir(0);
+      setAnimating(false);
+    },260);
+  }
+  function reset(){setIdx(0);setAnimating(false);setFlyDir(0);setDx(0);dragging.current=false;}
+  if(done){return(
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:300,minHeight:500,gap:12,textAlign:"center"}}>
+      <div style={{fontSize:48,marginBottom:4}}>🎬</div>
+      <p style={{fontWeight:800,fontSize:18,margin:0}}>You've seen everyone!</p>
+      <p style={{color:"var(--t2)",fontSize:13,margin:"4px 0 12px",maxWidth:220}}>That's how CastSlate works — one actor at a time, no scrolling.</p>
+      <button className="btn-p" style={{padding:"10px 22px",fontSize:13}} onClick={reset}>↺ Start Over</button>
+    </div>
+  );}
+  const cardTransform=flyDir!==0?`translateX(${flyDir*520}px) rotate(${flyDir*20}deg)`:`translateX(${dx}px) rotate(${dx*0.035}deg)`;
+  const cardTransition=animating&&flyDir!==0?"transform .26s cubic-bezier(.4,0,.6,1), opacity .22s":"none";
+  return(
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+      <div style={{position:"relative",width:300,height:450}}>
+        <div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.35,zIndex:1,pointerEvents:"none"}}>
+          <img src={nt.img} alt="" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:nt.pos||"center 8%"}}/>
+        </div>
+        <div className="s-card"
+          style={{transform:cardTransform,transition:cardTransition,zIndex:2,cursor:dragging.current?"grabbing":"grab",touchAction:"none",userSelect:"none"}}
+          onPointerDown={e=>{if(animating)return;e.currentTarget.setPointerCapture(e.pointerId);dragging.current=true;startX.current=e.clientX;}}
+          onPointerMove={e=>{if(!dragging.current||animating)return;setDx(e.clientX-startX.current);}}
+          onPointerUp={e=>{if(!dragging.current)return;const d=e.clientX-startX.current;dragging.current=false;if(d>80)advance(1);else if(d<-80)advance(-1);else setDx(0);}}
+          onPointerCancel={()=>{dragging.current=false;setDx(0);}}>
+          <div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="pass"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>PASS</div>
+          <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="yes"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>CALLBACK ✓</div>
+          <img src={t.img} alt={t.name} draggable="false" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:t.pos||"center 8%"}}/>
+          <div className="s-card-info">
+            <h3 style={{fontSize:17,margin:"0 0 2px"}}>{t.name}</h3>
+            <div className="s-card-meta">{t.age} · {t.gender} · {t.height}</div>
+            <div className="s-card-tags">{t.skills.slice(0,3).map((s,i)=><span key={i}>{s}</span>)}</div>
+          </div>
+        </div>
+      </div>
+      <div style={{fontSize:11,color:"var(--t3)",margin:"10px 0 6px",letterSpacing:.5}}>{idx+1} / {total}</div>
+      <div className="swipe-btns">
+        <button className="sw-btn pass" title="Pass" disabled={animating} onClick={()=>advance(-1)}>✕</button>
+        <button className="sw-btn save" title="Shortlist" disabled={animating} onClick={()=>advance(1)}>★</button>
+        <button className="sw-btn yes" title="Callback" disabled={animating} onClick={()=>advance(1)}>✓</button>
+      </div>
+      <p style={{marginTop:12,fontSize:11,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase"}}>↔ Swipe left/right or tap the buttons</p>
+    </div>
+  );
+}
 function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,myProfile=null}){
   // Logged-in-aware destinations — talents go to My Profile / Browse, CDs and
   // admins go to Dashboard / Browse. Replaces the old "Start My 7-Day Free
@@ -7887,91 +7969,6 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       setWlDone(true);
     }catch(err){setWlErr(err.message||"Couldn't reach the server. Check your connection and try again.");}
     finally{setWlBusy(false);}
-  };
-  const LandingSwipe=()=>{
-    const demo=[
-      {id:1,name:"Maria Santos",age:28,gender:"Female",height:"5'6\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=800&fit=crop&crop=top&q=90",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
-      {id:2,name:"James Walker",age:34,gender:"Male",height:"6'1\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Improv","Yale Drama MFA","Basketball"]},
-      {id:3,name:"Elena Novak",age:25,gender:"Female",height:"5'9\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&h=800&fit=crop&crop=top&q=90",skills:["Classical Training","Ballet","Soprano"]},
-      {id:4,name:"David Kim",age:31,gender:"Male",height:"5'10\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1552058544-f2b08422138a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Martial Arts","Korean Fluent","Stunt Work"]},
-      {id:5,name:"Aisha Johnson",age:22,gender:"Female",height:"5'8\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=800&fit=crop&crop=top&q=90",skills:["Commercial Print","Runway","British Accent"]},
-      {id:6,name:"Carlos Rivera",age:29,gender:"Male",height:"5'11\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&h=800&fit=crop&crop=top&q=90",skills:["Juilliard Trained","Bilingual Spanish","Capoeira"]},
-      {id:7,name:"Sarah Chen",age:27,gender:"Female",height:"5'4\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=800&fit=crop&crop=top&q=90",skills:["Mandarin Fluent","Figure Skating","Understated Comedy"]},
-      {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1519058082700-08a9c42d4253?w=600&h=800&fit=crop&crop=top&q=90",skills:["Military Background","Boxing","Bass Vocals"]},
-      {id:9,name:"Priya Sharma",age:26,gender:"Female",height:"5'5\"",pos:"center 12%",img:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=800&fit=crop&crop=top&q=90",skills:["Bollywood Dance","Hindi Fluent","Drama Training"]},
-      {id:10,name:"Marcus Reed",age:32,gender:"Male",height:"6'0\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&h=800&fit=crop&crop=top&q=90",skills:["TV Drama","Comedic Timing","Voice Work"]},
-      {id:11,name:"Sofia Laurent",age:30,gender:"Female",height:"5'7\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&h=800&fit=crop&crop=top&q=90",skills:["French Fluent","Classical Theater","Physical Comedy"]},
-      {id:12,name:"Nia Thompson",age:24,gender:"Female",height:"5'6\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&h=800&fit=crop&crop=top&q=90",skills:["Contemporary Dance","SAG-Eligible","Southern Accent"]},
-    ];
-    const total=demo.length;
-    const [idx,setIdx]=useState(0);
-    const [done,setDone]=useState(false);
-    const [dx,setDx]=useState(0);
-    const [dr,setDr]=useState(false);
-    const drRef=useRef(false);
-    const [flyDir,setFlyDir]=useState(0);
-    const flyRef=useRef(0);
-    const [noTrans,setNoTrans]=useState(false);
-    const sx=useRef(0);
-    const t=demo[idx];
-    const nt=demo[(idx+1)%total];
-    const ac=dx>50?"yes":dx<-50?"pass":null;
-    const advance=(dir)=>{
-      if(flyRef.current!==0)return;
-      flyRef.current=dir;
-      drRef.current=false;
-      setDr(false);
-      setFlyDir(dir);
-      setTimeout(()=>{
-        setNoTrans(true);
-        setIdx(prev=>{const next=prev+1;if(next>=total){setDone(true);return prev;}return next;});
-        setDx(0);
-        flyRef.current=0;
-        setFlyDir(0);
-        requestAnimationFrame(()=>requestAnimationFrame(()=>setNoTrans(false)));
-      },280);
-    };
-    const reset=()=>{setIdx(0);setDone(false);setDx(0);setFlyDir(0);setNoTrans(false);drRef.current=false;flyRef.current=0;};
-    if(done){return(
-      <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:300,minHeight:500,gap:12,textAlign:"center"}}>
-        <div style={{fontSize:48,marginBottom:4}}>🎬</div>
-        <p style={{fontWeight:800,fontSize:18,margin:0}}>You've seen everyone!</p>
-        <p style={{color:"var(--t2)",fontSize:13,margin:"4px 0 12px",maxWidth:220}}>That's how CastSlate works — one actor at a time, no scrolling.</p>
-        <button className="btn-p" style={{padding:"10px 22px",fontSize:13}} onClick={reset}>↺ Start Over</button>
-      </div>
-    );}
-    const cardTransform=flyDir!==0?`translateX(${flyDir*520}px) rotate(${flyDir*20}deg)`:`translateX(${dx}px) rotate(${dx*.035}deg)`;
-    const cardTransition=dr||noTrans?"none":"transform .28s cubic-bezier(.25,.46,.45,.94), opacity .22s";
-    return(
-      <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
-        <div style={{position:"relative",width:300,height:450}}>
-          <div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.35,zIndex:1,pointerEvents:"none"}}>
-            <img src={nt.img} alt="" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:nt.pos||"center 8%"}}/>
-          </div>
-          <div className="s-card" style={{transform:cardTransform,transition:cardTransition,zIndex:2,cursor:dr?"grabbing":"grab",opacity:flyDir!==0?0:1,touchAction:"none"}}
-            onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);drRef.current=true;setDr(true);sx.current=e.clientX;}}
-            onPointerMove={e=>{if(drRef.current)setDx(e.clientX-sx.current);}}
-            onPointerUp={e=>{const d=e.clientX-sx.current;drRef.current=false;setDr(false);if(d>80)advance(1);else if(d<-80)advance(-1);else setDx(0);}}
-            onPointerCancel={()=>{drRef.current=false;setDr(false);setDx(0);}}>
-            <div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="pass"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>PASS</div>
-            <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="yes"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>CALLBACK ✓</div>
-            <img src={t.img} alt={t.name} draggable="false" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:t.pos||"center 8%"}}/>
-            <div className="s-card-info">
-              <h3 style={{fontSize:17,margin:"0 0 2px"}}>{t.name}</h3>
-              <div className="s-card-meta">{t.age} · {t.gender} · {t.height}</div>
-              <div className="s-card-tags">{t.skills.slice(0,3).map((s,i)=><span key={i}>{s}</span>)}</div>
-            </div>
-          </div>
-        </div>
-        <div style={{fontSize:11,color:"var(--t3)",margin:"10px 0 6px",letterSpacing:.5}}>{idx+1} / {total}</div>
-        <div className="swipe-btns">
-          <button className="sw-btn pass" title="Pass" onClick={()=>advance(-1)}>✕</button>
-          <button className="sw-btn save" title="Shortlist" onClick={()=>advance(1)}>★</button>
-          <button className="sw-btn yes" title="Callback" onClick={()=>advance(1)}>✓</button>
-        </div>
-        <p style={{marginTop:12,fontSize:11,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase"}}>↔ Swipe left/right or tap the buttons</p>
-      </div>
-    );
   };
 
   return(<>
