@@ -918,8 +918,12 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
       <button className="btn-p" onClick={()=>onNavigate("login")}>Sign in</button>
     </div><Footer onNavigate={onNavigate}/></div>);
   }
-  // Guard: profile not yet loaded — don't flash the wrong account-type message
-  if(!myProfile){
+  // Guard: show loading until BOTH profile AND user_type are confirmed.
+  // Checking only !myProfile is insufficient — user_type can briefly be
+  // null/undefined even when myProfile is an object (e.g. after BFCache
+  // restore or a mid-fetch auth event). Never infer account type from an
+  // empty string; always wait for an explicit value.
+  if(!myProfile || !myProfile.user_type){
     return(<div className="page page-wide" style={{minHeight:"60vh",display:"flex",alignItems:"center",justifyContent:"center"}}><CastSlateLoader text="Loading your plan…"/></div>);
   }
   if(!isTalent){
@@ -11308,12 +11312,16 @@ function App(){
     // so the correct page is always shown after a BFCache restore.
     const onPageShow=(e)=>{
       if(!e.persisted)return;
+      // BFCache restore: re-sync route from the URL
       const p=urlToPage();
       const slug=urlToCastingSlug();
       setPage(p);
       if(p!=="profile")setViewingProfile(null);
       if(p==="casting-detail"){if(slug){const c=CASTINGS.find(x=>x.slug===slug);if(c)setViewingCasting(c);}}
       else setViewingCasting(null);
+      // BFCache restore: clear stale profile so we never briefly show the
+      // wrong account-type page. The profile-recovery effect will re-fetch it.
+      setMyProfile(null);
     };
     window.addEventListener("pageshow",onPageShow);
     // ─── Lightweight client-error logger. Captures uncaught JS errors and
@@ -11700,7 +11708,7 @@ function App(){
         {page==="register-cd"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterCD onNavigate={navigate}/>)}
         {page==="login"&&<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn}/>}
         {page==="membership"&&<MembershipPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}}/>}
-        {page==="plan-summary"&&<PlanSummaryPage session={session} myProfile={myProfile} planKey={selectedPlan||"monthly"} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} onActivated={(returnInfo)=>{
+        {page==="plan-summary"&&(!authReady?<PageLoader text="Loading your plan…"/>:<PlanSummaryPage session={session} myProfile={myProfile} planKey={selectedPlan||"monthly"} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} onActivated={(returnInfo)=>{
           // Came from a casting they tried to apply to — bounce back to that casting.
           if(returnInfo?.casting){
             setPrevPage("home");
@@ -11709,7 +11717,7 @@ function App(){
             setPage("casting-detail");
             pushHist("casting-detail",{slug:returnInfo.casting?.slug});
           }
-        }}/>}
+        }}/>)}
         {page==="reset-password"&&<ResetPasswordPage onNavigate={navigate} session={session}/>}
         {page==="about"&&<AboutPage onNavigate={navigate}/>}
         {page==="blog"&&<BlogPage onNavigate={navigate}/>}
