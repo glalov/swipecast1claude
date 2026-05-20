@@ -892,6 +892,10 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
       <button className="btn-p" onClick={()=>onNavigate("login")}>Sign in</button>
     </div><Footer onNavigate={onNavigate}/></div>);
   }
+  // Guard: profile not yet loaded — don't flash the wrong account-type message
+  if(!myProfile){
+    return(<div className="page page-wide" style={{minHeight:"60vh",display:"flex",alignItems:"center",justifyContent:"center"}}><CastSlateLoader text="Loading your plan…"/></div>);
+  }
   if(!isTalent){
     return(<div className="page page-wide"><div className="card" style={{padding:48,textAlign:"center"}}>
       <h2 style={{fontSize:20,marginBottom:8}}>Industry accounts don't need a membership</h2>
@@ -959,7 +963,7 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"12px 16px",borderRadius:8,fontSize:13,marginBottom:14,textAlign:"center"}}>{err}</div>}
 
       <button className="btn-p" style={{width:"100%",padding:"16px",opacity:busy?0.7:1}} disabled={busy} onClick={handleUpgradeClick}>
-        {busy?"Opening Checkout…":`Upgrade to Premium — ${PREMIUM_PRICE}`}
+        {busy?"Opening Checkout…":plan.months===1?`Continue to Checkout — $${plan.monthly.toFixed(2)}/month`:`Continue to Checkout — $${plan.total.toFixed(2)} today`}
       </button>
       <p style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginTop:12}}>You'll be taken to Stripe's secure checkout. Your plan activates automatically after payment.</p>
 
