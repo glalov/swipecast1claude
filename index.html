@@ -11709,6 +11709,14 @@ function App(){
     return()=>window.removeEventListener("sc:open-cookies",handler);
   },[]);
   const isLoggedIn=!!session;
+  // ── Stable nav values ──────────────────────────────────────────────────────
+  // myProfile is temporarily null during BFCache restore, auth transitions, and
+  // profile re-fetches. Use localStorage-cached values as an instant fallback so
+  // Dashboard / My Profile buttons never flicker or vanish for logged-in talent.
+  const _lsGet=(k)=>{try{return localStorage.getItem(k);}catch(_){return null;}};
+  const effectiveUserType=myProfile?.user_type||(isLoggedIn?_lsGet("sc_user_type"):null);
+  const effectiveDisplayName=myProfile?.display_name||(isLoggedIn?_lsGet("sc_display_name"):null);
+  // ──────────────────────────────────────────────────────────────────────────
   // Admin derived from the PROFILE row (authoritative, server-enforced via RLS + RPCs).
   // SC_CONFIG.ADMIN_EMAIL is kept only as a *fallback* so the owner can still reach
   // the panel even if the profile row hasn't loaded yet. DB will reject any write
@@ -11742,7 +11750,12 @@ function App(){
         }catch(e){console.warn("[auth] backfill RPC failed:",e?.message||e);}
       }
       _dbg().loginStep="profile-fetch-done";_dbg().lastFetchTs=Date.now();
-      setMyProfile(data||null);return data||null;
+      setMyProfile(data||null);
+      // Cache user_type + display_name so the nav never flickers while profile re-fetches
+      // (BFCache restore, auth transition, tab restore all call setMyProfile(null) first).
+      if(data?.user_type){try{localStorage.setItem("sc_user_type",data.user_type);}catch(_){}}
+      if(data?.display_name){try{localStorage.setItem("sc_display_name",data.display_name);}catch(_){}}
+      return data||null;
     }catch(e){
       _dbg().loginStep="profile-fetch-threw";_dbg().lastError="loadProfile threw: "+(e?.message||String(e));
       console.warn("[auth] loadProfile threw:",e?.message||e);setMyProfile(null);return null;
@@ -12001,27 +12014,40 @@ function App(){
     return()=>{cancelled=true;clearInterval(tid);};
   },[isAdmin,session?.user?.id]);
 
-  // Talent dashboard badge — counts unread booking_approved system notifications.
-  // Sourced from system_notifications (DB-backed) so marking them read on dashboard
-  // open permanently clears the badge across page reloads and devices.
+  // Talent dashboard badge — counts unread booking_approved system notifications
+  // that arrived AFTER the talent last opened the dashboard.
+  //
+  // Two-layer clearing strategy so the badge never "comes back":
+  //   1. DB layer: mark_system_notifications_read writes is_read=true to Supabase.
+  //   2. Client gate: localStorage sc_dash_opened_ts timestamp — any notification
+  //      whose created_at <= that timestamp is ignored even if the DB write failed.
+  //      This prevents the badge reappearing on focus/poll when the network is flaky.
   useEffect(()=>{
     const uid=session?.user?.id;
-    if(!uid||myProfile?.user_type!=="talent"){setTalentDashBadge(0);return;}
+    if(!uid||effectiveUserType!=="talent"){setTalentDashBadge(0);return;}
     let cancelled=false;
     const fetchBadge=async()=>{
       try{
         const{data}=await window.sb.rpc("get_my_system_notifications",{p_limit:50});
         if(cancelled)return;
-        const count=(Array.isArray(data)?data:[]).filter(n=>n.type==="booking_approved"&&!n.is_read).length;
+        // Client-side gate: only count notifications newer than last dashboard open.
+        const lastOpened=parseInt((()=>{try{return localStorage.getItem("sc_dash_opened_ts")||"0";}catch(_){return"0";}})(),10)||0;
+        const count=(Array.isArray(data)?data:[]).filter(n=>{
+          if(n.type!=="booking_approved")return false;
+          if(n.is_read)return false; // DB already marked read — never count
+          if(lastOpened===0)return true; // never opened dashboard — show all unread
+          const createdAt=n.created_at?new Date(n.created_at).getTime():0;
+          return createdAt>lastOpened; // only count notifications newer than last open
+        }).length;
         setTalentDashBadge(count);
       }catch(_){}
     };
     fetchBadge();
     const tid=setInterval(fetchBadge,60000);
-    const onFocus=()=>fetchBadge();
-    window.addEventListener("focus",onFocus);
-    return()=>{cancelled=true;clearInterval(tid);window.removeEventListener("focus",onFocus);};
-  },[session?.user?.id,myProfile?.user_type]);
+    // Focus poll intentionally omitted — focus fires very frequently and was
+    // the main cause of the badge "bouncing back" before the DB write settled.
+    return()=>{cancelled=true;clearInterval(tid);};
+  },[session?.user?.id,effectiveUserType]);
 
   // Profile recovery: when the tab becomes visible again or the window regains focus,
   // if we have a live session but myProfile is null (can happen after long inactivity
@@ -12113,6 +12139,8 @@ function App(){
     // Optimistic local sign-out so UI unfreezes instantly even if network is slow.
     setMyProfile(null);
     setSession(null);
+    // Clear per-user nav cache and badge timestamp so a fresh login starts clean.
+    try{localStorage.removeItem("sc_user_type");localStorage.removeItem("sc_display_name");localStorage.removeItem("sc_dash_opened_ts");}catch(_){}
     navigate("home");
     try{
       await Promise.race([
@@ -12172,17 +12200,17 @@ function App(){
           {!authReady?null:isLoggedIn?<>
             {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navigate("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)",display:"inline-flex",alignItems:"center",gap:6}}>Admin{adminPendingBookings>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800,lineHeight:1.4}}>{adminPendingBookings}</span>}</button>}
             {/* CD / Admin Dashboard */}
-            {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navigate("dashboard")}>Dashboard</button>:null}
+            {["cd","admin","super_admin"].includes(effectiveUserType)?<button className="btn-s btn-sm" onClick={()=>navigate("dashboard")}>Dashboard</button>:null}
             {/* Talent Dashboard — only for talent user_type */}
-            {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>{if(talentDashBadge>0){setTalentDashBadge(0);window.sb.rpc("mark_system_notifications_read",{p_notification_ids:null}).catch(()=>{});}navigate("talent-dashboard");}} style={{display:"inline-flex",alignItems:"center",gap:6}}>Dashboard{talentDashBadge>0&&<span style={{background:"var(--grn,#27ae60)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800,minWidth:20,textAlign:"center",lineHeight:1.2}}>{talentDashBadge>9?"9+":talentDashBadge}</span>}</button>:null}
+            {effectiveUserType==="talent"?<button className="btn-s btn-sm" onClick={()=>{if(talentDashBadge>0){setTalentDashBadge(0);try{localStorage.setItem("sc_dash_opened_ts",Date.now().toString());}catch(_){}window.sb.rpc("mark_system_notifications_read",{p_notification_ids:null}).catch(()=>{});}navigate("talent-dashboard");}} style={{display:"inline-flex",alignItems:"center",gap:6}}>Dashboard{talentDashBadge>0&&<span style={{background:"var(--grn,#27ae60)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800,minWidth:20,textAlign:"center",lineHeight:1.2}}>{talentDashBadge>9?"9+":talentDashBadge}</span>}</button>:null}
             {/* My Profile — talent only */}
-            {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navigate("my-profile")}>My Profile</button>:null}
+            {effectiveUserType==="talent"?<button className="btn-s btn-sm" onClick={()=>navigate("my-profile")}>My Profile</button>:null}
             {/* Universal Inbox button — visible for every signed-in user_type with live unread badge */}
             <button className="btn-s btn-sm" onClick={()=>navigate("inbox")} style={{position:"relative",display:"inline-flex",alignItems:"center",gap:6}}>
               <span>Inbox</span>
               {globalUnread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800,minWidth:20,textAlign:"center",lineHeight:1.2}}>{globalUnread>99?"99+":globalUnread}</span>}
             </button>
-            <button className="btn-s btn-sm" onClick={()=>navigate("account-settings")} title="Account Settings">{myProfile?.display_name?.split(" ")[0]||"Account"} ⚙</button>
+            <button className="btn-s btn-sm" onClick={()=>navigate("account-settings")} title="Account Settings">{(effectiveDisplayName||"").split(" ")[0]||"Account"} ⚙</button>
             <button className="btn-p btn-sm" onClick={signOut}>Sign out</button>
           </>:<>
             <button className="btn-s btn-sm" onClick={()=>navigate("register-talent")}>Join</button>
@@ -12210,8 +12238,8 @@ function App(){
           <div style={{borderTop:"1px solid var(--bdr)",marginTop:12,paddingTop:12,display:"flex",flexDirection:"column",gap:8}}>
             {!authReady?null:isLoggedIn?<>
               {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navThen("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:6}}>Admin{adminPendingBookings>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800,lineHeight:1.4}}>{adminPendingBookings}</span>}</button>}
-              {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navThen("dashboard")}>Dashboard</button>:null}
-              {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>{if(talentDashBadge>0){setTalentDashBadge(0);window.sb.rpc("mark_system_notifications_read",{p_notification_ids:null}).catch(()=>{});}navThen("talent-dashboard");}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Dashboard{talentDashBadge>0&&<span style={{background:"var(--grn,#27ae60)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800}}>{talentDashBadge>9?"9+":talentDashBadge}</span>}</button>:null}
+              {["cd","admin","super_admin"].includes(effectiveUserType)?<button className="btn-s btn-sm" onClick={()=>navThen("dashboard")}>Dashboard</button>:null}
+              {effectiveUserType==="talent"?<button className="btn-s btn-sm" onClick={()=>{if(talentDashBadge>0){setTalentDashBadge(0);try{localStorage.setItem("sc_dash_opened_ts",Date.now().toString());}catch(_){}window.sb.rpc("mark_system_notifications_read",{p_notification_ids:null}).catch(()=>{});}navThen("talent-dashboard");}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Dashboard{talentDashBadge>0&&<span style={{background:"var(--grn,#27ae60)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800}}>{talentDashBadge>9?"9+":talentDashBadge}</span>}</button>:null}
               <button className="btn-s btn-sm" onClick={()=>navThen("inbox")} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Inbox{globalUnread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800}}>{globalUnread>99?"99+":globalUnread}</span>}</button>
               <button className="btn-s btn-sm" onClick={()=>navThen("my-profile")}>My Profile</button>
               <button className="btn-s btn-sm" onClick={()=>navThen("account-settings")}>Account Settings</button>
