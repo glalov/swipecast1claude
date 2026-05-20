@@ -9589,23 +9589,41 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
 // ═══════════════════════════════════════════
 function AdminPage({session,profile,isSuperAdmin,onNavigate}){
   const [section,setSection]=useState("overview");
+  const [pendingBookingCount,setPendingBookingCount]=useState(0);
   const role=profile?.user_type||"(unknown)";
+
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const{count}=await window.sb.from("class_booking_requests")
+          .select("id",{count:"exact",head:true}).eq("status","pending_review");
+        setPendingBookingCount(count||0);
+      }catch(e){console.warn("[admin-booking-count]",e);}
+    })();
+  },[]);
+
+  const goToSection=(s)=>{
+    setSection(s);
+    if(s==="booking-requests")setPendingBookingCount(0);
+  };
+
   return(<div className="page page-wide admin-shell" style={{display:"grid",gridTemplateColumns:"220px 1fr",gap:28,alignItems:"start"}}>
     <aside className="admin-sidebar" style={{position:"sticky",top:24,background:"var(--s2)",borderRadius:14,padding:18,border:"1px solid var(--bdr)"}}>
       <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,color:"var(--acc)",marginBottom:6}}>{isSuperAdmin?"SUPER ADMIN":"ADMIN"}</div>
       <div style={{fontSize:13,fontWeight:700,marginBottom:2,wordBreak:"break-word"}}>{profile?.display_name||session?.user?.email||"—"}</div>
       <div style={{fontSize:11,color:"var(--t3)",marginBottom:18,wordBreak:"break-word"}}>{session?.user?.email}</div>
-      <AdminNavLink current={section} target="overview" label="Overview" onClick={setSection}/>
-      <AdminNavLink current={section} target="users" label="Users" onClick={setSection}/>
-      <AdminNavLink current={section} target="cd-verification" label="CD Verification" onClick={setSection}/>
-      <AdminNavLink current={section} target="castings" label="Castings" onClick={setSection}/>
-      <AdminNavLink current={section} target="applications" label="Applications" onClick={setSection}/>
-      <AdminNavLink current={section} target="classes" label="Classes" onClick={setSection}/>
-      <AdminNavLink current={section} target="class-invitations" label="Class Invitations" onClick={setSection}/>
-      <AdminNavLink current={section} target="reports" label="Reports" onClick={setSection}/>
-      <AdminNavLink current={section} target="errors" label="Error log" onClick={setSection}/>
-      <AdminNavLink current={section} target="audit" label="Audit log" onClick={setSection}/>
-      <AdminNavLink current={section} target="settings" label="Site settings" onClick={setSection}/>
+      <AdminNavLink current={section} target="overview" label="Overview" onClick={goToSection}/>
+      <AdminNavLink current={section} target="users" label="Users" onClick={goToSection}/>
+      <AdminNavLink current={section} target="cd-verification" label="CD Verification" onClick={goToSection}/>
+      <AdminNavLink current={section} target="castings" label="Castings" onClick={goToSection}/>
+      <AdminNavLink current={section} target="applications" label="Applications" onClick={goToSection}/>
+      <AdminNavLink current={section} target="classes" label="Classes" onClick={goToSection}/>
+      <AdminNavLink current={section} target="class-invitations" label="Class Invitations" onClick={goToSection}/>
+      <AdminNavLink current={section} target="booking-requests" label="Class Booking Requests" badge={pendingBookingCount} onClick={goToSection}/>
+      <AdminNavLink current={section} target="reports" label="Reports" onClick={goToSection}/>
+      <AdminNavLink current={section} target="errors" label="Error log" onClick={goToSection}/>
+      <AdminNavLink current={section} target="audit" label="Audit log" onClick={goToSection}/>
+      <AdminNavLink current={section} target="settings" label="Site settings" onClick={goToSection}/>
       {/* Direct jump to the CD dashboard — admins inherit CD capabilities, so they post + review
           submissions from there using the exact same interface as regular casting directors. */}
       <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
@@ -9617,13 +9635,14 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       </div>
     </aside>
     <div>
-      {section==="overview"&&<AdminOverview/>}
+      {section==="overview"&&<AdminOverview onGoToBookingRequests={()=>goToSection("booking-requests")}/>}
       {section==="users"&&<AdminUsers isSuperAdmin={isSuperAdmin} session={session}/>}
       {section==="cd-verification"&&<AdminCDVerification/>}
       {section==="castings"&&<AdminCastings/>}
       {section==="applications"&&<AdminApplications/>}
       {section==="classes"&&<AdminClasses/>}
       {section==="class-invitations"&&<AdminClassInvitations session={session}/>}
+      {section==="booking-requests"&&<AdminAllBookingRequests/>}
       {section==="reports"&&<AdminReports/>}
       {section==="errors"&&<AdminErrors/>}
       {section==="audit"&&<AdminAudit/>}
@@ -9632,26 +9651,32 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
     </div>
   </div>);
 }
-function AdminNavLink({current,target,label,onClick}){
+function AdminNavLink({current,target,label,onClick,badge}){
   const active=current===target;
-  return(<button onClick={()=>onClick(target)} style={{display:"block",width:"100%",textAlign:"left",padding:"9px 12px",borderRadius:8,border:"none",background:active?"var(--acc)":"transparent",color:active?"#fff":"var(--t1)",fontSize:13,fontWeight:active?700:500,cursor:"pointer",marginBottom:4,fontFamily:"inherit"}}>{label}</button>);
+  return(<button onClick={()=>onClick(target)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",textAlign:"left",padding:"9px 12px",borderRadius:8,border:"none",background:active?"var(--acc)":"transparent",color:active?"#fff":"var(--t1)",fontSize:13,fontWeight:active?700:500,cursor:"pointer",marginBottom:4,fontFamily:"inherit"}}>
+    <span>{label}</span>
+    {badge>0&&<span style={{background:active?"rgba(255,255,255,0.3)":"var(--acc)",color:"#fff",borderRadius:10,fontSize:11,fontWeight:700,padding:"1px 7px",minWidth:20,textAlign:"center",lineHeight:"18px"}}>{badge}</span>}
+  </button>);
 }
 
 // ─── Overview: counts + recent audit activity
-function AdminOverview(){
+function AdminOverview({onGoToBookingRequests}){
   const [stats,setStats]=useState(null);
   const [audit,setAudit]=useState([]);
+  const [pendingBookings,setPendingBookings]=useState(null);
   const [err,setErr]=useState("");
   useEffect(()=>{(async()=>{
     try{
-      const [p,c,a,au]=await Promise.all([
+      const [p,c,a,au,br]=await Promise.all([
         window.sb.from("profiles").select("user_type,banned,suspended,verified,featured,verification_status,can_post_castings",{count:"exact"}).limit(5000),
         window.sb.from("castings").select("status,featured",{count:"exact"}).limit(5000),
         window.sb.from("applications").select("status",{count:"exact"}).limit(10000),
-        window.sb.from("audit_logs").select("*").order("created_at",{ascending:false}).limit(10)
+        window.sb.from("audit_logs").select("*").order("created_at",{ascending:false}).limit(10),
+        window.sb.from("class_booking_requests").select("id,status",{count:"exact"}).eq("status","pending_review").limit(5)
       ]);
       if(p.error||c.error||a.error||au.error){setErr((p.error||c.error||a.error||au.error).message);return;}
       const pu=p.data||[],cu=c.data||[],au2=a.data||[];
+      setPendingBookings(br.count||0);
       setStats({
         users:pu.length,
         talent:pu.filter(x=>x.user_type==="talent").length,
@@ -9701,6 +9726,20 @@ function AdminOverview(){
       <StatTile num={stats.selected} label="Selected"/>
       <StatTile num={stats.rejected} label="Rejected"/>
     </div>
+    {pendingBookings!==null&&pendingBookings>0&&(
+      <div className="card" style={{padding:20,marginBottom:20,borderLeft:"4px solid var(--acc)",background:"rgba(99,102,241,0.04)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+          <div>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+              <span style={{fontSize:22,lineHeight:1}}>📬</span>
+              <h3 style={{fontSize:17,fontWeight:800,margin:0,color:"var(--acc)"}}>{pendingBookings} pending class booking request{pendingBookings!==1?"s":""}</h3>
+            </div>
+            <p style={{color:"var(--t2)",fontSize:13,margin:0}}>Talent has submitted booking requests that need your review. Approve or decline each request to move the flow forward.</p>
+          </div>
+          <button className="btn-p btn-sm" onClick={onGoToBookingRequests} style={{flexShrink:0}}>Review Booking Requests →</button>
+        </div>
+      </div>
+    )}
     <div className="card" style={{padding:20}}>
       <h3 style={{fontSize:15,fontWeight:700,marginBottom:14}}>Recent admin activity</h3>
       {audit.length===0?<p style={{color:"var(--t3)",fontSize:13}}>No actions logged yet.</p>:
@@ -10765,6 +10804,132 @@ function AdminManageTimeSlots({cls,onClose}){
 }
 
 // ── Admin: Class Booking Requests ────────────────────────────────
+// ── Admin: All Class Booking Requests (global view) ───────────────
+function AdminAllBookingRequests(){
+  const[requests,setRequests]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const[msg,setMsg]=useState("");
+  const[busy,setBusy]=useState(null);
+  const[expanded,setExpanded]=useState(null);
+  const[statusFilter,setStatusFilter]=useState("pending_review");
+
+  const reload=useCallback(async()=>{
+    setLoading(true);setMsg("");
+    const{data,error}=await window.sb.from("class_booking_requests")
+      .select("*,talent:user_id(id,display_name,email,headshot_url),class:class_id(id,title,instructor_name)")
+      .order("created_at",{ascending:false})
+      .limit(200);
+    if(error){setMsg("Load failed: "+error.message);setLoading(false);return;}
+    setRequests(data||[]);setLoading(false);
+  },[]);
+  useEffect(()=>{reload();},[reload]);
+
+  const fmtT=t=>{if(!t)return"";const[h,m]=t.split(":");const hr=parseInt(h,10);return`${hr%12||12}:${m} ${hr<12?"AM":"PM"}`;};
+  const fmtD=s=>{if(!s)return"";try{return new Date(s).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}catch{return s;}};
+
+  const resolveRequest=async(req,decision)=>{
+    setBusy(req.id);setMsg("");
+    try{
+      const{data,error}=await window.sb.rpc("resolve_class_booking_request",{p_request_id:req.id,p_decision:decision});
+      if(error)throw error;
+      if(data?.error)throw new Error(data.error);
+      setMsg(decision==="approved"?"✅ Approved. Talent has been notified and sent a payment link.":"❌ Declined. Talent has been notified.");
+    }catch(e){setMsg("Error: "+e.message);}
+    finally{setBusy(null);reload();}
+  };
+
+  const STATUS_COLOR={pending_review:"var(--acc)",approved:"var(--grn)",declined:"#c0392b",rejected:"#c0392b",payment_pending:"#e67e22",paid:"var(--grn)",cancelled:"var(--t3)"};
+  const STATUS_LABEL={pending_review:"Pending Review",approved:"Approved",declined:"Declined",rejected:"Rejected",payment_pending:"Payment Pending",paid:"Paid",cancelled:"Cancelled"};
+  const filtered=statusFilter==="all"?requests:requests.filter(r=>r.status===statusFilter);
+  const pendingCount=requests.filter(r=>r.status==="pending_review").length;
+
+  return(<>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",marginBottom:6}}>
+      <div>
+        <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,margin:0}}>Class Booking Requests</h1>
+        {pendingCount>0&&<p style={{color:"var(--acc)",fontSize:13,fontWeight:700,margin:"4px 0 0"}}>{pendingCount} pending review</p>}
+      </div>
+    </div>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Review all booking requests submitted by talent across all classes. Approve or decline — talent is notified automatically.</p>
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"12px 16px",fontSize:13,marginBottom:16,borderLeft:"3px solid var(--acc)"}}>{msg}</div>}
+    <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
+      {["pending_review","all","approved","declined","payment_pending","paid","cancelled"].map(s=>(
+        <button key={s} className="btn-s btn-sm" onClick={()=>setStatusFilter(s)} style={statusFilter===s?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>
+          {s==="all"?"All":STATUS_LABEL[s]||s}
+          {s==="pending_review"&&pendingCount>0&&<span style={{marginLeft:6,background:"rgba(255,255,255,0.9)",color:"var(--acc)",borderRadius:8,fontSize:10,fontWeight:800,padding:"1px 6px"}}>{pendingCount}</span>}
+        </button>
+      ))}
+    </div>
+    {loading?<CastSlateLoader size="inline" text="Loading booking requests…"/>:
+      filtered.length===0?<p style={{color:"var(--t3)",fontSize:13}}>No booking requests{statusFilter!=="all"?` with status "${STATUS_LABEL[statusFilter]||statusFilter}"`:""} found.</p>:
+      <div>
+        {filtered.map(req=>{
+          const talentName=req.talent?.display_name||req.talent?.email||"Unknown";
+          const talentEmail=req.talent?.email||"";
+          const classTitle=req.class?.title||"(unknown class)";
+          const slotStr=req.selected_date?`${fmtD(req.selected_date)}${req.selected_start_time?` at ${fmtT(req.selected_start_time)}`:""}`:null;
+          const isPending=req.status==="pending_review";
+          return(
+            <div key={req.id} className="card" style={{padding:20,marginBottom:14,borderLeft:isPending?"3px solid var(--acc)":"3px solid transparent"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"start",gap:14,flexWrap:"wrap"}}>
+                <div style={{flex:1,minWidth:220}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+                    {req.talent?.headshot_url
+                      ?<img src={req.talent.headshot_url} alt="headshot" style={{width:48,height:48,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
+                      :<div style={{width:48,height:48,borderRadius:"50%",background:"var(--s2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>👤</div>
+                    }
+                    <div>
+                      <div style={{fontWeight:700,fontSize:15}}>{talentName}</div>
+                      <div style={{fontSize:12,color:"var(--t2)"}}>{talentEmail}</div>
+                    </div>
+                  </div>
+                  <div style={{fontSize:13,fontWeight:600,marginBottom:3}}>📚 {classTitle}</div>
+                  {req.class?.instructor_name&&<div style={{fontSize:12,color:"var(--t3)",marginBottom:6}}>Instructor: {req.class.instructor_name}</div>}
+                  {slotStr&&<div style={{fontSize:13,color:"var(--t2)",marginBottom:4}}>🕐 {slotStr}</div>}
+                  <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginTop:6}}>
+                    <span style={{display:"inline-block",fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:5,background:`${STATUS_COLOR[req.status]||"var(--t3)"}22`,color:STATUS_COLOR[req.status]||"var(--t3)"}}>{STATUS_LABEL[req.status]||req.status}</span>
+                    <span style={{fontSize:11,color:"var(--t3)"}}>Submitted {fmtD(req.created_at)}</span>
+                  </div>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:8,flexShrink:0,minWidth:160,alignItems:"stretch"}}>
+                  {isPending&&(<>
+                    <button className="btn-p btn-sm" disabled={busy===req.id} onClick={()=>resolveRequest(req,"approved")} style={{fontWeight:700}}>{busy===req.id?"…":"✅ Approve"}</button>
+                    <button className="btn-s btn-sm" disabled={busy===req.id} onClick={()=>resolveRequest(req,"declined")} style={{color:"#c0392b",borderColor:"#c0392b"}}>{busy===req.id?"…":"❌ Decline"}</button>
+                  </>)}
+                  <button className="btn-s btn-sm" onClick={()=>setExpanded(expanded===req.id?null:req.id)}>{expanded===req.id?"Hide Details":"View Details"}</button>
+                </div>
+              </div>
+              {expanded===req.id&&(
+                <div style={{marginTop:16,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
+                  {req.note&&(
+                    <div style={{marginBottom:12,padding:12,background:"var(--s2)",borderRadius:8}}>
+                      <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,color:"var(--t3)",marginBottom:6}}>Message from talent</div>
+                      <p style={{fontSize:13,color:"var(--t1)",lineHeight:1.6,margin:0}}>{req.note}</p>
+                    </div>
+                  )}
+                  {req.short_bio&&(
+                    <div style={{marginBottom:12}}>
+                      <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,color:"var(--t3)",marginBottom:4}}>Short bio</div>
+                      <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,margin:0}}>{req.short_bio}</p>
+                    </div>
+                  )}
+                  <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+                    {req.headshot_url&&<a href={req.headshot_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm">View Headshot</a>}
+                    {req.resume_url&&<a href={req.resume_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm">View Resume</a>}
+                    {!req.headshot_url&&!req.resume_url&&<span style={{fontSize:12,color:"var(--t3)"}}>No files uploaded.</span>}
+                  </div>
+                  {req.admin_notes&&<div style={{marginTop:10,padding:10,background:"var(--s2)",borderRadius:8,fontSize:12,color:"var(--t2)"}}>Admin notes: {req.admin_notes}</div>}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    }
+  </>);
+}
+
+// ── Admin: Class Booking Requests (per-class view) ────────────────
 const BOOKING_STATUS_LABELS={pending_review:"Pending Review",approved:"Approved",declined:"Declined",rejected:"Rejected",payment_pending:"Payment Pending",paid:"Paid",cancelled:"Cancelled"};
 function AdminClassBookingRequests({cls,onClose}){
   const[requests,setRequests]=useState([]);
@@ -11313,6 +11478,7 @@ function App(){
   //     (talent, CD, producer, studio, admin). One subscription per session lives
   //     here so every page sees the same number; no per-page polling drift.
   const [globalUnread,setGlobalUnread]=useState(0);
+  const [adminPendingBookings,setAdminPendingBookings]=useState(0);
   // Cookie consent modal — opened from the Footer "Cookie Preferences" link.
   // Lives at App level so it can render over any page. Footer dispatches a
   // custom DOM event ("sc:open-cookies") rather than threading a callback
@@ -11613,6 +11779,22 @@ function App(){
     };
   },[session?.user?.id]);
 
+  // Admin: poll pending class booking requests count for the live badge on the Admin nav button.
+  useEffect(()=>{
+    if(!isAdmin||!session?.user?.id)return;
+    let cancelled=false;
+    const fetch=async()=>{
+      try{
+        const{count}=await window.sb.from("class_booking_requests")
+          .select("id",{count:"exact",head:true}).eq("status","pending_review");
+        if(!cancelled)setAdminPendingBookings(count||0);
+      }catch(_){}
+    };
+    fetch();
+    const tid=setInterval(fetch,60000);
+    return()=>{cancelled=true;clearInterval(tid);};
+  },[isAdmin,session?.user?.id]);
+
   // Profile recovery: when the tab becomes visible again or the window regains focus,
   // if we have a live session but myProfile is null (can happen after long inactivity
   // where the initial loadProfile call timed out or failed), silently re-fetch.
@@ -11760,7 +11942,7 @@ function App(){
         </div>
         <div className="nav-actions" style={{display:"flex",gap:10,alignItems:"center"}}>
           {!authReady?null:isLoggedIn?<>
-            {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navigate("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)"}}>Admin</button>}
+            {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navigate("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)",display:"inline-flex",alignItems:"center",gap:6}}>Admin{adminPendingBookings>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800,lineHeight:1.4}}>{adminPendingBookings}</span>}</button>}
             {/* CD / Admin Dashboard */}
             {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navigate("dashboard")}>Dashboard</button>:null}
             {/* Talent Dashboard — only for talent user_type */}
@@ -11799,7 +11981,7 @@ function App(){
           </div>
           <div style={{borderTop:"1px solid var(--bdr)",marginTop:12,paddingTop:12,display:"flex",flexDirection:"column",gap:8}}>
             {!authReady?null:isLoggedIn?<>
-              {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navThen("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)"}}>Admin</button>}
+              {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navThen("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:6}}>Admin{adminPendingBookings>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800,lineHeight:1.4}}>{adminPendingBookings}</span>}</button>}
               {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navThen("dashboard")}>Dashboard</button>:null}
               {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navThen("talent-dashboard")}>Dashboard</button>:null}
               <button className="btn-s btn-sm" onClick={()=>navThen("inbox")} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Inbox{globalUnread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800}}>{globalUnread>99?"99+":globalUnread}</span>}</button>
