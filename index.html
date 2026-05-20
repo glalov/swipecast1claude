@@ -7876,8 +7876,86 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     }catch(err){setWlErr(err.message||"Couldn't reach the server. Check your connection and try again.");}
     finally{setWlBusy(false);}
   };
-  const LandingSwipe=()=>{const [idx,setIdx]=useState(0);const [dx,setDx]=useState(0);const [dr,setDr]=useState(false);const sx=useRef(0);const t=TALENT[idx];const nt=TALENT[(idx+1)%TALENT.length];const ac=dx>60?"yes":dx<-60?"pass":null;const sw=()=>{setTimeout(()=>{setIdx(i=>(i+1)%TALENT.length);setDx(0);},300);};
-    return(<div style={{display:"flex",flexDirection:"column",alignItems:"center"}}><div style={{position:"relative",width:300,height:420}}><div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.4,zIndex:1}}><img src={nt.img} alt=""/></div><div className="s-card" style={{transform:`translateX(${dx}px) rotate(${dx*.04}deg)`,transition:dr?"none":"transform .4s cubic-bezier(.34,1.56,.64,1)",zIndex:2,cursor:dr?"grabbing":"grab"}} onPointerDown={e=>{setDr(true);sx.current=e.clientX;}} onPointerMove={e=>{if(dr)setDx(e.clientX-sx.current);}} onPointerUp={()=>{setDr(false);if(dx>100)sw();else if(dx<-100)sw();else setDx(0);}}><div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="pass"?1:0}}>PASS</div><div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="yes"?1:0}}>CALLBACK ✓</div><img src={t.img} alt={t.name} draggable="false"/><div className="s-card-info"><h3 style={{fontSize:17}}>{t.name}</h3><div className="s-card-meta">{t.age} · {t.gender} · {t.height}</div><div className="s-card-tags">{t.skills.slice(0,2).map((s,i)=><span key={i}>{s}</span>)}</div></div></div></div><div className="swipe-btns" style={{marginTop:16}}><button className="sw-btn pass" onClick={sw}>✕</button><button className="sw-btn save">★</button><button className="sw-btn yes" onClick={sw}>✓</button></div><p style={{marginTop:14,fontSize:11,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase"}}>↔ Try it — swipe or tap</p></div>);};
+  const LandingSwipe=()=>{
+    const demo=[
+      {id:1,name:"Maria Santos",age:28,gender:"Female",height:"5'6\"",img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&h=750&fit=crop&crop=faces&q=85",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
+      {id:2,name:"James Walker",age:34,gender:"Male",height:"6'1\"",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=750&fit=crop&crop=faces&q=85",skills:["Improv","Yale Drama MFA","Basketball"]},
+      {id:3,name:"Elena Novak",age:25,gender:"Female",height:"5'9\"",img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&h=750&fit=crop&crop=faces&q=85",skills:["Classical Training","Ballet","Soprano"]},
+      {id:4,name:"David Kim",age:31,gender:"Male",height:"5'10\"",img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop&crop=faces&q=85",skills:["Martial Arts","Korean Fluent","Stunt Work"]},
+      {id:5,name:"Aisha Johnson",age:22,gender:"Female",height:"5'8\"",img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&h=750&fit=crop&crop=faces&q=85",skills:["Commercial Print","Runway","British Accent"]},
+      {id:6,name:"Carlos Rivera",age:29,gender:"Male",height:"5'11\"",img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&h=750&fit=crop&crop=faces&q=85",skills:["Juilliard Trained","Bilingual Spanish","Capoeira"]},
+      {id:7,name:"Sarah Chen",age:27,gender:"Female",height:"5'4\"",img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=600&h=750&fit=crop&crop=faces&q=85",skills:["Mandarin Fluent","Figure Skating","Understated Comedy"]},
+      {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&h=750&fit=crop&crop=faces&q=85",skills:["Military Background","Boxing","Bass Vocals"]},
+      {id:9,name:"Priya Sharma",age:26,gender:"Female",height:"5'5\"",img:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=750&fit=crop&crop=faces&q=85",skills:["Bollywood Dance","Hindi Fluent","Drama Training"]},
+      {id:10,name:"Marcus Reed",age:32,gender:"Male",height:"6'0\"",img:"https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=600&h=750&fit=crop&crop=faces&q=85",skills:["TV Drama","Comedic Timing","Voice Work"]},
+      {id:11,name:"Sofia Laurent",age:30,gender:"Female",height:"5'7\"",img:"https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&h=750&fit=crop&crop=faces&q=85",skills:["French Fluent","Classical Theater","Physical Comedy"]},
+    ];
+    const total=demo.length;
+    const [idx,setIdx]=useState(0);
+    const [done,setDone]=useState(false);
+    const [dx,setDx]=useState(0);
+    const [dr,setDr]=useState(false);
+    const [flyDir,setFlyDir]=useState(0);
+    const [noTrans,setNoTrans]=useState(false);
+    const sx=useRef(0);
+    const t=demo[idx];
+    const nt=demo[(idx+1)%total];
+    const ac=dx>50?"yes":dx<-50?"pass":null;
+    const advance=(dir)=>{
+      if(flyDir!==0)return;
+      setDr(false);
+      setFlyDir(dir);
+      setTimeout(()=>{
+        setNoTrans(true);
+        const next=idx+1;
+        if(next>=total){setDone(true);}else{setIdx(next);}
+        setDx(0);
+        setFlyDir(0);
+        requestAnimationFrame(()=>requestAnimationFrame(()=>setNoTrans(false)));
+      },280);
+    };
+    const reset=()=>{setIdx(0);setDone(false);setDx(0);setFlyDir(0);setNoTrans(false);};
+    if(done){return(
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:300,minHeight:490,gap:12,textAlign:"center"}}>
+        <div style={{fontSize:48,marginBottom:4}}>🎬</div>
+        <p style={{fontWeight:800,fontSize:18,margin:0}}>You've seen everyone!</p>
+        <p style={{color:"var(--t2)",fontSize:13,margin:"4px 0 12px",maxWidth:220}}>That's how CastSlate works — one actor at a time, no scrolling.</p>
+        <button className="btn-p" style={{padding:"10px 22px",fontSize:13}} onClick={reset}>↺ Start Over</button>
+      </div>
+    );}
+    const cardTransform=flyDir!==0?`translateX(${flyDir*500}px) rotate(${flyDir*18}deg)`:`translateX(${dx}px) rotate(${dx*.04}deg)`;
+    const cardTransition=dr||noTrans?"none":"transform .3s cubic-bezier(.25,.46,.45,.94), opacity .25s";
+    return(
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+        <div style={{position:"relative",width:300,height:430}}>
+          <div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.35,zIndex:1,pointerEvents:"none"}}>
+            <img src={nt.img} alt="" style={{width:"100%",height:"62%",objectFit:"cover",objectPosition:"center 15%"}}/>
+          </div>
+          <div className="s-card" style={{transform:cardTransform,transition:cardTransition,zIndex:2,cursor:dr?"grabbing":"grab",opacity:flyDir!==0?0:1}}
+            onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);setDr(true);sx.current=e.clientX;}}
+            onPointerMove={e=>{if(dr)setDx(e.clientX-sx.current);}}
+            onPointerUp={()=>{setDr(false);if(dx>100)advance(1);else if(dx<-100)advance(-1);else setDx(0);}}
+            onPointerCancel={()=>{setDr(false);setDx(0);}}>
+            <div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="pass"?Math.min(1,Math.abs(dx)/80):0,transition:"opacity .1s"}}>PASS</div>
+            <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="yes"?Math.min(1,Math.abs(dx)/80):0,transition:"opacity .1s"}}>CALLBACK ✓</div>
+            <img src={t.img} alt={t.name} draggable="false" style={{width:"100%",height:"62%",objectFit:"cover",objectPosition:"center 15%"}}/>
+            <div className="s-card-info">
+              <h3 style={{fontSize:17,margin:"0 0 2px"}}>{t.name}</h3>
+              <div className="s-card-meta">{t.age} · {t.gender} · {t.height}</div>
+              <div className="s-card-tags">{t.skills.slice(0,3).map((s,i)=><span key={i}>{s}</span>)}</div>
+            </div>
+          </div>
+        </div>
+        <div style={{fontSize:11,color:"var(--t3)",margin:"10px 0 6px",letterSpacing:.5}}>{idx+1} / {total}</div>
+        <div className="swipe-btns">
+          <button className="sw-btn pass" title="Pass" onClick={()=>advance(-1)}>✕</button>
+          <button className="sw-btn save" title="Save">★</button>
+          <button className="sw-btn yes" title="Shortlist" onClick={()=>advance(1)}>✓</button>
+        </div>
+        <p style={{marginTop:12,fontSize:11,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase"}}>↔ Try it — swipe or tap</p>
+      </div>
+    );
+  };
 
   return(<>
     {/* ───────── HERO ───────── */}
