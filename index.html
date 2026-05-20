@@ -2041,6 +2041,23 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
   const [classPayBusy,setClassPayBusy]=useState(false);
   const [classPayErr,setClassPayErr]=useState("");
 
+  // Reset the checkout button when the user returns from Stripe via back/cancel.
+  // BFCache restore fires pageshow with persisted=true; focus and visibilitychange
+  // cover other return paths (tab-switch, iOS Safari back swipe, etc.).
+  useEffect(()=>{
+    const reset=()=>{setClassPayBusy(false);setClassPayErr("");};
+    const onPageShow=e=>{if(e.persisted)reset();};
+    const onVis=()=>{if(document.visibilityState==="visible")reset();};
+    window.addEventListener("pageshow",onPageShow);
+    window.addEventListener("focus",reset);
+    document.addEventListener("visibilitychange",onVis);
+    return()=>{
+      window.removeEventListener("pageshow",onPageShow);
+      window.removeEventListener("focus",reset);
+      document.removeEventListener("visibilitychange",onVis);
+    };
+  },[]);
+
   const handleClassPayment=async(cls)=>{
     if(classPayBusy)return;
     setClassPayBusy(true);setClassPayErr("");
@@ -11984,23 +12001,24 @@ function App(){
     return()=>{cancelled=true;clearInterval(tid);};
   },[isAdmin,session?.user?.id]);
 
-  // Talent dashboard badge — counts approved_pending_payment class invitations so the
-  // Dashboard nav button shows a badge even when the talent is on another page.
+  // Talent dashboard badge — counts unread booking_approved system notifications.
+  // Sourced from system_notifications (DB-backed) so marking them read on dashboard
+  // open permanently clears the badge across page reloads and devices.
   useEffect(()=>{
     const uid=session?.user?.id;
     if(!uid||myProfile?.user_type!=="talent"){setTalentDashBadge(0);return;}
     let cancelled=false;
-    const fetch=async()=>{
+    const fetchBadge=async()=>{
       try{
-        const{data}=await window.sb.rpc("get_my_class_invitations");
+        const{data}=await window.sb.rpc("get_my_system_notifications",{p_limit:50});
         if(cancelled)return;
-        const count=(Array.isArray(data)?data:[]).filter(i=>i.status==="approved_pending_payment").length;
+        const count=(Array.isArray(data)?data:[]).filter(n=>n.type==="booking_approved"&&!n.is_read).length;
         setTalentDashBadge(count);
       }catch(_){}
     };
-    fetch();
-    const tid=setInterval(fetch,60000);
-    const onFocus=()=>fetch();
+    fetchBadge();
+    const tid=setInterval(fetchBadge,60000);
+    const onFocus=()=>fetchBadge();
     window.addEventListener("focus",onFocus);
     return()=>{cancelled=true;clearInterval(tid);window.removeEventListener("focus",onFocus);};
   },[session?.user?.id,myProfile?.user_type]);
@@ -12156,7 +12174,7 @@ function App(){
             {/* CD / Admin Dashboard */}
             {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navigate("dashboard")}>Dashboard</button>:null}
             {/* Talent Dashboard — only for talent user_type */}
-            {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navigate("talent-dashboard")} style={{display:"inline-flex",alignItems:"center",gap:6}}>Dashboard{talentDashBadge>0&&<span style={{background:"var(--grn,#27ae60)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800,minWidth:20,textAlign:"center",lineHeight:1.2}}>{talentDashBadge>9?"9+":talentDashBadge}</span>}</button>:null}
+            {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>{if(talentDashBadge>0){setTalentDashBadge(0);window.sb.rpc("mark_system_notifications_read",{p_notification_ids:null}).catch(()=>{});}navigate("talent-dashboard");}} style={{display:"inline-flex",alignItems:"center",gap:6}}>Dashboard{talentDashBadge>0&&<span style={{background:"var(--grn,#27ae60)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800,minWidth:20,textAlign:"center",lineHeight:1.2}}>{talentDashBadge>9?"9+":talentDashBadge}</span>}</button>:null}
             {/* My Profile — talent only */}
             {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navigate("my-profile")}>My Profile</button>:null}
             {/* Universal Inbox button — visible for every signed-in user_type with live unread badge */}
@@ -12193,7 +12211,7 @@ function App(){
             {!authReady?null:isLoggedIn?<>
               {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navThen("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:6}}>Admin{adminPendingBookings>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800,lineHeight:1.4}}>{adminPendingBookings}</span>}</button>}
               {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navThen("dashboard")}>Dashboard</button>:null}
-              {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navThen("talent-dashboard")} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Dashboard{talentDashBadge>0&&<span style={{background:"var(--grn,#27ae60)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800}}>{talentDashBadge>9?"9+":talentDashBadge}</span>}</button>:null}
+              {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>{if(talentDashBadge>0){setTalentDashBadge(0);window.sb.rpc("mark_system_notifications_read",{p_notification_ids:null}).catch(()=>{});}navThen("talent-dashboard");}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Dashboard{talentDashBadge>0&&<span style={{background:"var(--grn,#27ae60)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800}}>{talentDashBadge>9?"9+":talentDashBadge}</span>}</button>:null}
               <button className="btn-s btn-sm" onClick={()=>navThen("inbox")} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Inbox{globalUnread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800}}>{globalUnread>99?"99+":globalUnread}</span>}</button>
               <button className="btn-s btn-sm" onClick={()=>navThen("my-profile")}>My Profile</button>
               <button className="btn-s btn-sm" onClick={()=>navThen("account-settings")}>Account Settings</button>
