@@ -1992,7 +1992,7 @@ function useViewportWidth(){
   return w;
 }
 
-function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClassOpened}){
+function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClassOpened,invitationId}){
   const vpw=useViewportWidth();
   const isMobile=vpw<768;
   const isNarrow=vpw<560;
@@ -2023,7 +2023,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
       const res=await fetch(`${supabaseUrl}/functions/v1/stripe-checkout`,{
         method:"POST",
         headers:{"Content-Type":"application/json","Authorization":`Bearer ${authSess.access_token}`},
-        body:JSON.stringify({type:"class",class_id:String(cls.id),class_title:cls.title,class_price:parsedPrice}),
+        body:JSON.stringify({type:"class",class_id:String(cls.id),class_title:cls.title,class_price:parsedPrice,booking_request_id:myBookingRequest?.id||null}),
       });
       const data=await res.json();
       if(!res.ok)throw new Error(data.error||"Could not start checkout. Please try again.");
@@ -2088,10 +2088,10 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
 
   const catMeta=(cat)=>CLASS_CATEGORIES.find(c=>c.id===cat);
 
-  const handleRequestBooking=(cls,slot,date)=>{
+  const handleRequestBooking=(cls,slot,date,invId=null)=>{
     if(!isLoggedIn){onNavigate("login");return;}
     if(myProfile?.user_type!=="talent"){alert("Only talent/actor profiles can request class bookings.");return;}
-    setBookingTarget({cls,slot,date});
+    setBookingTarget({cls,slot,date,invitationId:invId||invitationId||null});
   };
 
   if(loading)return(<div className="page"><CastSlateLoader text="Loading classes…"/></div>);
@@ -2443,7 +2443,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
 // MODAL: BOOKING REQUEST (talent → class)
 // ═══════════════════════════════════════════
 function BookingRequestModal({target,myProfile,session,onClose,onSubmitted}){
-  const{cls,slot,date}=target;
+  const{cls,slot,date,invitationId}=target;
   const[form,setForm]=useState({short_bio:myProfile?.bio||"",note:""});
   const[headshotFile,setHeadshotFile]=useState(null);
   const[headshotPreview,setHeadshotPreview]=useState(myProfile?.headshot_url||null);
@@ -2452,8 +2452,25 @@ function BookingRequestModal({target,myProfile,session,onClose,onSubmitted}){
   const[busy,setBusy]=useState(false);
   const[err,setErr]=useState("");
   const[done,setDone]=useState(false);
+  const[existingRequest,setExistingRequest]=useState(null);
+  const[checkingExisting,setCheckingExisting]=useState(true);
   const up=(k,v)=>setForm(f=>({...f,[k]:v}));
   const dateStr=date.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+
+  // Check whether talent already has an active (non-cancelled/declined) request for this class
+  useEffect(()=>{
+    if(!session?.user?.id){setCheckingExisting(false);return;}
+    (async()=>{
+      try{
+        const{data}=await window.sb.from("class_booking_requests")
+          .select("id,status")
+          .eq("user_id",session.user.id).eq("class_id",cls.id)
+          .not("status","in","(declined,cancelled)")
+          .order("created_at",{ascending:false}).limit(1).maybeSingle();
+        setExistingRequest(data||null);
+      }catch(_){}finally{setCheckingExisting(false);}
+    })();
+  },[session?.user?.id,cls.id]);
 
   const onHsChange=(e)=>{const f=e.target.files[0];if(!f)return;setHeadshotFile(f);setUseExistingHs(false);setHeadshotPreview(URL.createObjectURL(f));};
 
@@ -2480,27 +2497,52 @@ function BookingRequestModal({target,myProfile,session,onClose,onSubmitted}){
         const ext=resumeFile.name.split(".").pop();
         resume_url=await uploadFile(resumeFile,"booking-uploads",`${uid}/resumes/cls-${cls.id}-${Date.now()}.${ext}`);
       }
-      const{error}=await window.sb.from("class_booking_requests").insert({
-        class_id:cls.id,time_slot_id:slot?.id||null,user_id:uid,
-        selected_date:date.toISOString().split("T")[0],
-        selected_start_time:slot?.start_time||null,selected_end_time:slot?.end_time||null,
-        headshot_url,resume_url,short_bio:form.short_bio.trim(),
-        note:form.note.trim()||null,status:"pending_review"
+      // Atomic RPC: inserts request, updates invitation status, notifies admin
+      const{data,error}=await window.sb.rpc("submit_class_booking_request",{
+        p_class_id:cls.id,
+        p_invitation_id:invitationId||null,
+        p_time_slot_id:slot?.id||null,
+        p_selected_date:date.toISOString().split("T")[0],
+        p_selected_start_time:slot?.start_time||null,
+        p_selected_end_time:slot?.end_time||null,
+        p_headshot_url:headshot_url||null,
+        p_resume_url:resume_url||null,
+        p_short_bio:form.short_bio.trim(),
+        p_note:form.note.trim()||null,
       });
       if(error)throw error;
+      if(data?.error)throw new Error(data.error);
       setDone(true);
     }catch(e){setErr(e.message||"Booking request could not be submitted. Please try again.");}
     finally{setBusy(false);}
   };
 
+  const EXISTING_STATUS_LABELS={pending_review:"Pending review",approved:"Approved — awaiting payment",paid:"Confirmed — paid"};
+
+  if(checkingExisting){
+    return(<div className="modal-overlay"><div className="modal" style={{maxWidth:480,textAlign:"center",padding:40}}><CastSlateLoader size="inline" text="Checking…"/></div></div>);
+  }
+
   return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}>
     <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:560,maxHeight:"90vh",overflowY:"auto"}}>
-      {done?(<div style={{padding:24,textAlign:"center"}}>
-        <div className="check">✓</div>
-        <h3 style={{marginTop:8}}>Request Submitted</h3>
-        <p style={{color:"var(--t2)",fontSize:14,marginTop:8,marginBottom:20}}>Your booking request has been submitted for review. If approved, you'll receive a message in your inbox with payment details.</p>
-        <button className="btn-p" onClick={onSubmitted}>Done</button>
-      </div>):(<>
+      {existingRequest&&!done?(
+        <div style={{padding:28,textAlign:"center"}}>
+          <div style={{fontSize:40,marginBottom:12}}>📋</div>
+          <h3 style={{marginBottom:8}}>Request Already Submitted</h3>
+          <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6,marginBottom:6}}>
+            You have an existing booking request for <strong>{cls.title}</strong> with status: <strong>{EXISTING_STATUS_LABELS[existingRequest.status]||existingRequest.status}</strong>.
+          </p>
+          <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>You'll be notified when CastSlate reviews it. You cannot submit another request for the same class while one is active.</p>
+          <button className="btn-p" onClick={onClose}>Close</button>
+        </div>
+      ):done?(
+        <div style={{padding:28,textAlign:"center"}}>
+          <div className="check">✓</div>
+          <h3 style={{marginTop:8}}>Booking Request Sent</h3>
+          <p style={{color:"var(--t2)",fontSize:14,marginTop:8,marginBottom:20}}>Your booking request has been submitted. You'll be notified after CastSlate reviews it.</p>
+          <button className="btn-p" onClick={onSubmitted}>Done</button>
+        </div>
+      ):(<>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"start",marginBottom:16}}>
           <h3 style={{fontWeight:800,fontSize:18}}>Request Booking</h3>
           <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",fontSize:22,color:"var(--t3)",lineHeight:1}}>×</button>
@@ -2539,7 +2581,7 @@ function BookingRequestModal({target,myProfile,session,onClose,onSubmitted}){
           <button className="btn-p" onClick={handleSubmit} disabled={busy} style={{flex:1}}>{busy?"Submitting…":"Submit Booking Request"}</button>
           <button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
         </div>
-        <p style={{fontSize:11,color:"var(--t3)",marginTop:12,lineHeight:1.5}}>No payment is taken now. If your request is approved, you will receive payment instructions in your CastSlate inbox.</p>
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:12,lineHeight:1.5}}>No payment is taken now. If your request is approved, you will be notified by CastSlate with payment instructions.</p>
       </>)}
     </div>
   </div>);
@@ -4257,9 +4299,11 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const [rvLoading,setRvLoading]=useState(true);
   const [savingId,setSavingId]=useState(null);
   const [globalUnreadCount,setGlobalUnreadCount]=useState(0);
-  const [dashView,setDashView]=useState(null); // null | "applications" | "saved" | "class-invitations"
+  const [dashView,setDashView]=useState(null); // null | "applications" | "saved" | "class-invitations" | "notifications"
   const [classInvitations,setClassInvitations]=useState([]);
   const [invLoading,setInvLoading]=useState(true);
+  const [sysNotifications,setSysNotifications]=useState([]);
+  const [sysNotifLoading,setSysNotifLoading]=useState(true);
 
   const fmtDate=(s)=>{if(!s)return"—";const d=new Date(s);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
   const fmtDeadline=(s)=>{if(!s)return null;try{const d=new Date(s);const now=new Date();const diff=Math.ceil((d-now)/(1000*60*60*24));if(diff<0)return{label:"Closed",urgent:false};if(diff===0)return{label:"Closes today",urgent:true};if(diff<=3)return{label:`${diff}d left`,urgent:true};return{label:`${diff}d left`,urgent:false};}catch{return null;}};
@@ -4397,6 +4441,23 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     finally{setInvLoading(false);}
   },[uid]);
 
+  const loadSysNotifications=useCallback(async()=>{
+    if(!uid){setSysNotifLoading(false);return;}
+    try{
+      const{data,error}=await window.sb.rpc("get_my_system_notifications",{p_limit:30});
+      if(error)throw error;
+      setSysNotifications(Array.isArray(data)?data:(data?[data]:[]));
+    }catch(e){console.warn("[talent-dashboard] sys-notifications:",e);}
+    finally{setSysNotifLoading(false);}
+  },[uid]);
+
+  const markNotificationsRead=useCallback(async(ids=null)=>{
+    setSysNotifications(prev=>prev.map(n=>(!ids||ids.includes(n.id))?{...n,is_read:true}:n));
+    try{
+      await window.sb.rpc("mark_system_notifications_read",{p_notification_ids:ids||null});
+    }catch(e){console.warn("[mark-notif-read]",e);}
+  },[]);
+
   const dismissInvitation=useCallback(async(invId)=>{
     setClassInvitations(prev=>prev.filter(i=>i.id!==invId)); // optimistic
     try{
@@ -4406,7 +4467,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
 
   const markInvitationViewed=useCallback(async(invId)=>{
     const inv=classInvitations.find(i=>i.id===invId);
-    if(!inv||["viewed","saved","enrolled"].includes(inv.status))return;
+    // Only mark "viewed" if still in initial sent state — don't overwrite booking flow statuses
+    if(!inv||inv.status!=="sent")return;
     setClassInvitations(prev=>prev.map(i=>i.id===invId?{...i,status:"viewed"}:i)); // optimistic
     try{
       await window.sb.rpc("update_class_invitation_status",{p_invitation_id:invId,p_status:"viewed"});
@@ -4432,7 +4494,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     finally{setSavingId(null);}
   },[uid,savedIds,savingId]);
 
-  useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadRecentlyViewed();loadClassInvitations();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed,loadClassInvitations]);
+  useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadRecentlyViewed();loadClassInvitations();loadSysNotifications();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed,loadClassInvitations,loadSysNotifications]);
 
   const filteredApps=useMemo(()=>{
     if(appsTab==="all")return applications;
@@ -4549,9 +4611,25 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                     </div>
                     {(cls?.sale_price||cls?.price)&&<div style={{fontSize:12,color:"var(--t2)",marginBottom:4}}>{cls.sale_price?<><span style={{color:"#e74c3c",fontWeight:600}}>{cls.sale_price}</span><span style={{textDecoration:"line-through",marginLeft:5,color:"var(--t3)"}}>{cls.price}</span></>:cls.price}</div>}
                     {inv.message&&<div style={{fontSize:12,color:"var(--t2)",background:"rgba(99,60,180,0.04)",border:"1px solid rgba(99,60,180,0.1)",borderRadius:6,padding:"8px 12px",marginBottom:10,lineHeight:1.5,fontStyle:"italic"}}>"{inv.message}"</div>}
-                    <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
-                      <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes");}}>View Class →</button>
-                      <button className="btn-s btn-sm" style={{fontSize:12,color:"var(--t3)"}} onClick={()=>dismissInvitation(inv.id)}>Dismiss</button>
+                    <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap",alignItems:"center"}}>
+                      {inv.status==="booking_requested"?(
+                        <span style={{fontSize:12,fontWeight:600,color:"var(--acc)",padding:"4px 10px",background:"rgba(99,60,180,0.07)",borderRadius:6,border:"1px solid rgba(99,60,180,0.15)"}}>⏳ Request pending review</span>
+                      ):inv.status==="approved_pending_payment"?(
+                        <>
+                          <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes",{classId:inv.class_id,invitationId:inv.id});}}>Complete Payment →</button>
+                          <span style={{fontSize:11,color:"#c0392b",fontWeight:600}}>Payment required</span>
+                        </>
+                      ):inv.status==="declined"?(
+                        <>
+                          <span style={{fontSize:12,color:"#c0392b",fontWeight:600}}>Not approved</span>
+                          <button className="btn-s btn-sm" style={{fontSize:12,color:"var(--t3)"}} onClick={()=>dismissInvitation(inv.id)}>Dismiss</button>
+                        </>
+                      ):(
+                        <>
+                          <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes",{classId:inv.class_id,invitationId:inv.id});}}>View Class →</button>
+                          <button className="btn-s btn-sm" style={{fontSize:12,color:"var(--t3)"}} onClick={()=>dismissInvitation(inv.id)}>Dismiss</button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -4563,30 +4641,77 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     </div>
   </div>);}
 
+  if(dashView==="notifications"){
+    const NOTIF_TYPE_ICONS={class_invitation:"🎓",booking_request_received:"📬",booking_approved:"✅",booking_declined:"❌"};
+    return(<div className="td-dash-outer">
+      <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+        <button className="btn-s btn-sm" onClick={()=>setDashView(null)} style={{display:"flex",alignItems:"center",gap:6}}>← Dashboard</button>
+        <div>
+          <h1 style={{fontWeight:800,fontSize:isMobile?22:26,letterSpacing:-0.6,color:"var(--t1)",margin:0}}>Notifications</h1>
+          <p style={{color:"var(--t2)",fontSize:13,margin:"2px 0 0"}}>{sysNotifications.length} notification{sysNotifications.length!==1?"s":""}</p>
+        </div>
+      </div>
+      <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
+        <div style={{padding:24}}>
+          {sysNotifLoading?(<CastSlateLoader size="inline" text="Loading…"/>):sysNotifications.length===0?(
+            <div style={{textAlign:"center",padding:"40px 0"}}>
+              <div style={{fontSize:32,marginBottom:10}}>🔔</div>
+              <p style={{color:"var(--t2)",fontSize:14,margin:0}}>No notifications yet.</p>
+            </div>
+          ):(
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {sysNotifications.map(n=>(
+                <div key={n.id} style={{padding:"14px 16px",borderRadius:10,border:`1px solid ${n.is_read?"var(--bdr)":"var(--acc)33"}`,background:n.is_read?"var(--bg)":"rgba(99,60,180,0.04)",display:"flex",gap:12,alignItems:"flex-start"}}>
+                  <div style={{fontSize:22,flexShrink:0,lineHeight:1.2}}>{NOTIF_TYPE_ICONS[n.type]||"🔔"}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",marginBottom:3}}>{n.title}</div>
+                    <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}>{n.body}</div>
+                    <div style={{fontSize:11,color:"var(--t3)",marginTop:6}}>{new Date(n.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})}</div>
+                    {n.link_url&&(n.type==="booking_approved"||n.type==="class_invitation")&&(
+                      <button className="btn-p btn-sm" style={{marginTop:10,fontSize:12}} onClick={()=>{if(n.related_class_id)onNavigate("classes",{classId:n.related_class_id});else onNavigate("classes");}}>
+                        {n.type==="booking_approved"?"Go to Classes & Pay →":"View Class →"}
+                      </button>
+                    )}
+                  </div>
+                  {!n.is_read&&<div style={{width:8,height:8,borderRadius:"50%",background:"var(--acc)",flexShrink:0,marginTop:4}}/>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>);
+  }
+
   return(
     <div className="td-dash-outer">
       {/* ── Welcome header ── */}
       <div style={{marginBottom:28}}>
         <div className="section-label">Talent Dashboard</div>
-        <h1 style={{fontWeight:800,fontSize:isMobile?22:30,letterSpacing:-0.8,color:"var(--t1)",marginBottom:6,margin:"0 0 6px",wordBreak:"break-word"}}>Welcome back, {firstName}. <span style={{fontSize:11,fontWeight:700,background:"rgba(26,26,46,0.08)",color:"var(--acc)",padding:"2px 8px",borderRadius:6,verticalAlign:"middle",marginLeft:4}}>DASHBOARD MOBILE FIX TEST - TALENT</span></h1>
+        <h1 style={{fontWeight:800,fontSize:isMobile?22:30,letterSpacing:-0.8,color:"var(--t1)",marginBottom:6,margin:"0 0 6px",wordBreak:"break-word"}}>Welcome back, {firstName}.</h1>
         <p style={{color:"var(--t2)",fontSize:15,margin:0}}>Here are the latest updates for your acting profile.</p>
       </div>
 
       {/* ── Quick stats row ── */}
-      <div className="td-stats">
-        {[
-          {label:"Applications",value:appsLoading?"…":applications.length,sub:"total submitted",accent:false},
-          {label:"Audition Requests",value:appsLoading?"…":auditionCount,sub:auditionCount>0?"action needed":"none pending",accent:auditionCount>0},
-          {label:"Unread Messages",value:msgsLoading?"…":globalUnreadCount,sub:globalUnreadCount>0?"open inbox":"all caught up",accent:globalUnreadCount>0},
-          {label:"Profile",value:isProfileComplete?"Live":`${profilePct}%`,sub:isProfileComplete?"visible to CDs":"complete your profile",accent:!isProfileComplete&&profilePct<60},
-        ].map((s,i)=>(
-          <div key={i} style={{background:"var(--s1)",border:`1px solid ${s.accent?"var(--acc)":"var(--bdr)"}`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:4}}>
-            <div style={{fontSize:11,fontWeight:600,color:s.accent?"var(--acc)":"var(--t3)",textTransform:"uppercase",letterSpacing:0.6}}>{s.label}</div>
-            <div style={{fontSize:26,fontWeight:800,color:s.accent?"var(--acc)":"var(--t1)",letterSpacing:-0.5,lineHeight:1}}>{s.value}</div>
-            <div style={{fontSize:11,color:"var(--t3)"}}>{s.sub}</div>
-          </div>
-        ))}
-      </div>
+      {(()=>{
+        const unreadNotifs=sysNotifications.filter(n=>!n.is_read).length;
+        return(
+        <div className="td-stats">
+          {[
+            {label:"Applications",value:appsLoading?"…":applications.length,sub:"total submitted",accent:false,onClick:null},
+            {label:"Audition Requests",value:appsLoading?"…":auditionCount,sub:auditionCount>0?"action needed":"none pending",accent:auditionCount>0,onClick:null},
+            {label:"Notifications",value:sysNotifLoading?"…":unreadNotifs,sub:unreadNotifs>0?"tap to view":"all caught up",accent:unreadNotifs>0,onClick:()=>{setDashView("notifications");markNotificationsRead();}},
+            {label:"Profile",value:isProfileComplete?"Live":`${profilePct}%`,sub:isProfileComplete?"visible to CDs":"complete your profile",accent:!isProfileComplete&&profilePct<60,onClick:null},
+          ].map((s,i)=>(
+            <div key={i} onClick={s.onClick||undefined} style={{background:"var(--s1)",border:`1px solid ${s.accent?"var(--acc)":"var(--bdr)"}`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:4,cursor:s.onClick?"pointer":"default"}}>
+              <div style={{fontSize:11,fontWeight:600,color:s.accent?"var(--acc)":"var(--t3)",textTransform:"uppercase",letterSpacing:0.6}}>{s.label}</div>
+              <div style={{fontSize:26,fontWeight:800,color:s.accent?"var(--acc)":"var(--t1)",letterSpacing:-0.5,lineHeight:1}}>{s.value}</div>
+              <div style={{fontSize:11,color:"var(--t3)"}}>{s.sub}</div>
+            </div>
+          ))}
+        </div>
+        );
+      })()}
 
       {/* ── Recommended Classes hero (class invitations) ── */}
       {!invLoading&&classInvitations.length>0&&(
@@ -4739,33 +4864,40 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                         </div>
                       )}
 
-                      {/* CTA */}
-                      <div style={{
-                        display:"flex",gap:10,marginTop:"auto",
-                        flexDirection:isMobile?"column":"row",
-                      }}>
-                        <button
-                          style={{
-                            fontSize:13,padding:"12px 26px",fontWeight:700,letterSpacing:0.1,
-                            background:"linear-gradient(90deg,#1a3d38,#254f49)",
-                            color:"#f0f8f6",border:"none",borderRadius:10,cursor:"pointer",
-                            boxShadow:"0 4px 16px rgba(20,50,45,0.28)",
-                            fontFamily:"inherit",whiteSpace:"nowrap",
-                            flex:isMobile?1:"none",
-                          }}
-                          onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes",{classId:inv.class_id});}}
-                        >View Recommended Class →</button>
-                        <button
-                          style={{
-                            fontSize:12,padding:"12px 20px",fontWeight:600,
-                            background:"rgba(255,255,255,0.45)",
-                            border:"1px solid rgba(50,80,75,0.22)",
-                            color:"#3a5a55",
-                            borderRadius:10,cursor:"pointer",fontFamily:"inherit",
-                            whiteSpace:"nowrap",flex:isMobile?1:"none",
-                          }}
-                          onClick={()=>dismissInvitation(inv.id)}
-                        >Not Interested</button>
+                      {/* CTA — changes based on invitation/booking status */}
+                      <div style={{display:"flex",gap:10,marginTop:"auto",flexDirection:isMobile?"column":"row",flexWrap:"wrap"}}>
+                        {inv.status==="booking_requested"?(
+                          <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                            <span style={{display:"inline-flex",alignItems:"center",gap:7,fontSize:12,fontWeight:700,color:"#2e5f58",background:"rgba(30,65,60,0.09)",border:"1px solid rgba(30,65,60,0.2)",borderRadius:8,padding:"8px 14px"}}>
+                              ⏳ Booking request pending CastSlate review
+                            </span>
+                            <span style={{fontSize:11,color:"#4a6b65"}}>You'll be notified once a decision is made.</span>
+                          </div>
+                        ):inv.status==="approved_pending_payment"?(
+                          <>
+                            <button
+                              style={{fontSize:13,padding:"12px 26px",fontWeight:700,background:"linear-gradient(90deg,#1a3d38,#254f49)",color:"#f0f8f6",border:"none",borderRadius:10,cursor:"pointer",boxShadow:"0 4px 16px rgba(20,50,45,0.28)",fontFamily:"inherit",whiteSpace:"nowrap",flex:isMobile?1:"none"}}
+                              onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes",{classId:inv.class_id,invitationId:inv.id});}}
+                            >Complete Payment →</button>
+                            <span style={{fontSize:11,color:"#c0392b",alignSelf:"center",fontWeight:600}}>Payment required to confirm your spot</span>
+                          </>
+                        ):inv.status==="declined"?(
+                          <>
+                            <span style={{fontSize:12,color:"#c0392b",fontWeight:600,padding:"8px 0"}}>This booking request was not approved.</span>
+                            <button style={{fontSize:12,padding:"10px 18px",fontWeight:600,background:"rgba(255,255,255,0.45)",border:"1px solid rgba(50,80,75,0.22)",color:"#3a5a55",borderRadius:10,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}} onClick={()=>dismissInvitation(inv.id)}>Dismiss</button>
+                          </>
+                        ):(
+                          <>
+                            <button
+                              style={{fontSize:13,padding:"12px 26px",fontWeight:700,background:"linear-gradient(90deg,#1a3d38,#254f49)",color:"#f0f8f6",border:"none",borderRadius:10,cursor:"pointer",boxShadow:"0 4px 16px rgba(20,50,45,0.28)",fontFamily:"inherit",whiteSpace:"nowrap",flex:isMobile?1:"none"}}
+                              onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes",{classId:inv.class_id,invitationId:inv.id});}}
+                            >View Recommended Class →</button>
+                            <button
+                              style={{fontSize:12,padding:"12px 20px",fontWeight:600,background:"rgba(255,255,255,0.45)",border:"1px solid rgba(50,80,75,0.22)",color:"#3a5a55",borderRadius:10,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",flex:isMobile?1:"none"}}
+                              onClick={()=>dismissInvitation(inv.id)}
+                            >Not Interested</button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -10612,7 +10744,7 @@ function AdminManageTimeSlots({cls,onClose}){
 }
 
 // ── Admin: Class Booking Requests ────────────────────────────────
-const BOOKING_STATUS_LABELS={pending_review:"Pending Review",approved:"Approved",rejected:"Rejected",payment_pending:"Payment Pending",paid:"Paid",cancelled:"Cancelled"};
+const BOOKING_STATUS_LABELS={pending_review:"Pending Review",approved:"Approved",declined:"Declined",rejected:"Rejected",payment_pending:"Payment Pending",paid:"Paid",cancelled:"Cancelled"};
 function AdminClassBookingRequests({cls,onClose}){
   const[requests,setRequests]=useState([]);
   const[bookedKeys,setBookedKeys]=useState(new Set()); // "slotId_date" for booked sessions
@@ -10639,61 +10771,48 @@ function AdminClassBookingRequests({cls,onClose}){
   useEffect(()=>{reload();},[reload]);
 
   const BLOCKING_STATUSES=["approved","payment_pending","paid","confirmed"];
-  const RELEASING_STATUSES=["cancelled","rejected"];
+  const RELEASING_STATUSES=["cancelled","rejected","declined"];
 
-  const setStatus=async(req,newStatus,notify=false)=>{
+  // Approve or decline via RPC (handles slot reservation, invitation sync, talent notification atomically)
+  const resolveRequest=async(req,decision)=>{
     setBusy(req.id);setMsg("");
-
-    // Approve: check for existing booking first, then reserve the slot
-    if(newStatus==="approved"&&req.time_slot_id&&req.selected_date){
-      const{data:existing}=await window.sb.from("class_booked_sessions")
-        .select("id").eq("time_slot_id",req.time_slot_id).eq("selected_date",req.selected_date).maybeSingle();
-      if(existing){
-        setMsg("This time slot is already booked. Cannot approve.");
-        setBusy(null);return;
-      }
-      const adminId=(await window.sb.auth.getUser()).data?.user?.id;
-      const{error:bErr}=await window.sb.from("class_booked_sessions").insert({
-        class_id:req.class_id,time_slot_id:req.time_slot_id,
-        booking_request_id:req.id,selected_date:req.selected_date,
-        selected_start_time:req.selected_start_time||null,
-        selected_end_time:req.selected_end_time||null,
-        booked_by:adminId||null
+    try{
+      const{data,error}=await window.sb.rpc("resolve_class_booking_request",{
+        p_request_id:req.id,
+        p_decision:decision,
       });
-      if(bErr){
-        // unique constraint violation = race condition, someone else just booked it
-        setMsg("This time slot was just booked by another approval. Cannot approve.");
-        setBusy(null);return;
-      }
-    }
+      if(error)throw error;
+      if(data?.error)throw new Error(data.error);
+      setMsg(decision==="approved"
+        ?"Booking approved. Payment link notification sent to talent."
+        :"Booking declined. Talent notified.");
+    }catch(e){setMsg("Error: "+e.message);}
+    finally{setBusy(null);reload();}
+  };
 
-    // Cancel/reject: release the slot if it was previously reserved
+  // Manual status change for non-approve/decline transitions (paid, cancelled, etc.)
+  const setStatus=async(req,newStatus)=>{
+    // Route approve/decline through the RPC
+    if(newStatus==="approved")return resolveRequest(req,"approved");
+    if(newStatus==="declined")return resolveRequest(req,"declined");
+
+    setBusy(req.id);setMsg("");
+    // Release slot when manually cancelling a previously approved/paid request
     if(RELEASING_STATUSES.includes(newStatus)&&BLOCKING_STATUSES.includes(req.status)&&req.time_slot_id&&req.selected_date){
       await window.sb.from("class_booked_sessions")
-        .delete().eq("time_slot_id",req.time_slot_id).eq("selected_date",req.selected_date);
+        .delete().eq("time_slot_id",req.time_slot_id).eq("selected_date",req.selected_date)
+        .eq("booking_request_id",req.id);
     }
-
-    const upd={status:newStatus};
-    if(newStatus==="approved"){upd.approved_at=new Date().toISOString();}
+    const upd={status:newStatus,updated_at:new Date().toISOString()};
     if(newStatus==="rejected"){upd.rejected_at=new Date().toISOString();}
     const{error}=await window.sb.from("class_booking_requests").update(upd).eq("id",req.id);
     if(error){setMsg("Update failed: "+error.message);setBusy(null);return;}
-
-    if(notify){
-      const body=newStatus==="approved"
-        ?`Your class booking request has been approved.\n\nClass: ${cls.title}\nInstructor: ${cls.instructor_name||"—"}\nSession: ${req.selected_date||"—"}${req.selected_start_time?" at "+fmtTime(req.selected_start_time):""}\nLocation: ${cls.location_name||"—"}\nPrice: ${cls.price||"—"}\n\nTo confirm your spot, please complete payment on the Classes page — click the class and use the "Complete Payment" button.\n\nYour spot is reserved for 48 hours pending payment.`
-        :`Your class booking request for ${cls.title} has been reviewed.\n\nStatus: ${BOOKING_STATUS_LABELS[newStatus]||newStatus}\n\nIf you have questions, please reply to this message.`;
-      const adminId=(await window.sb.auth.getUser()).data?.user?.id;
-      if(adminId&&req.user_id){
-        await window.sb.from("messages").insert({from_id:adminId,to_id:req.user_id,body});
-      }
-    }
-    setMsg("Status updated"+(notify?" and message sent":"")+".");
+    setMsg("Status updated.");
     setBusy(null);reload();
   };
 
   const filtered=statusFilter==="all"?requests:requests.filter(r=>r.status===statusFilter);
-  const statusColor={pending_review:"var(--acc)",approved:"var(--grn)",rejected:"#c0392b",payment_pending:"#e67e22",paid:"var(--grn)",cancelled:"var(--t3)"};
+  const statusColor={pending_review:"var(--acc)",approved:"var(--grn)",declined:"#c0392b",rejected:"#c0392b",payment_pending:"#e67e22",paid:"var(--grn)",cancelled:"var(--t3)"};
 
   return(<>
     <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
@@ -10702,7 +10821,7 @@ function AdminClassBookingRequests({cls,onClose}){
     </div>
     {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
     <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
-      {["all","pending_review","approved","rejected","payment_pending","paid","cancelled"].map(s=>(
+      {["all","pending_review","approved","declined","rejected","payment_pending","paid","cancelled"].map(s=>(
         <button key={s} className="btn-s btn-sm" onClick={()=>setStatusFilter(s)} style={statusFilter===s?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>{s==="all"?"All":BOOKING_STATUS_LABELS[s]||s}</button>
       ))}
     </div>
@@ -10732,12 +10851,12 @@ function AdminClassBookingRequests({cls,onClose}){
                 const slotTaken=req.time_slot_id&&req.selected_date&&bookedKeys.has(`${req.time_slot_id}_${req.selected_date}`);
                 return(<>
                   {slotTaken&&<span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:4,background:"rgba(192,57,43,0.1)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>Slot taken</span>}
-                  <button className="btn-p btn-sm" disabled={busy===req.id||slotTaken} title={slotTaken?"This date/time is already booked":""} onClick={()=>setStatus(req,"approved",true)}>{busy===req.id?"…":"Approve & Notify"}</button>
-                  <button className="btn-s btn-sm" style={{color:"#c0392b",borderColor:"#c0392b"}} disabled={busy===req.id} onClick={()=>setStatus(req,"rejected",true)}>{busy===req.id?"…":"Reject & Notify"}</button>
+                  <button className="btn-p btn-sm" disabled={busy===req.id||slotTaken} title={slotTaken?"This date/time is already booked":""} onClick={()=>resolveRequest(req,"approved")}>{busy===req.id?"…":"Approve & Notify"}</button>
+                  <button className="btn-s btn-sm" style={{color:"#c0392b",borderColor:"#c0392b"}} disabled={busy===req.id} onClick={()=>resolveRequest(req,"declined")}>{busy===req.id?"…":"Decline & Notify"}</button>
                 </>);
               })()}
-              {req.status==="approved"&&<button className="btn-s btn-sm" disabled={busy===req.id} onClick={()=>setStatus(req,"paid",false)}>Mark Paid</button>}
-              <select className="select" style={{fontSize:12,padding:"5px 8px",height:"auto"}} value={req.status} onChange={e=>setStatus(req,e.target.value,false)} disabled={busy===req.id}>
+              {req.status==="approved"&&<button className="btn-s btn-sm" disabled={busy===req.id} onClick={()=>setStatus(req,"paid")}>Mark Paid</button>}
+              <select className="select" style={{fontSize:12,padding:"5px 8px",height:"auto"}} value={req.status} onChange={e=>setStatus(req,e.target.value)} disabled={busy===req.id}>
                 {Object.entries(BOOKING_STATUS_LABELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}
               </select>
             </div>
@@ -10856,7 +10975,17 @@ function AdminClassInvitations({session}){
   };
 
   const fmtDate=(s)=>{if(!s)return"—";const d=new Date(s);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
-  const STATUS_COLORS={sent:{label:"Sent",color:"var(--t2)"},viewed:{label:"Viewed",color:"var(--acc)"},saved:{label:"Saved",color:"#27ae60"},dismissed:{label:"Dismissed",color:"var(--t3)"},enrolled:{label:"Enrolled",color:"#27ae60"}};
+  const STATUS_COLORS={
+    sent:{label:"Sent",color:"var(--t2)"},
+    viewed:{label:"Viewed",color:"var(--acc)"},
+    saved:{label:"Saved",color:"#27ae60"},
+    dismissed:{label:"Dismissed",color:"var(--t3)"},
+    enrolled:{label:"Enrolled",color:"#27ae60"},
+    booking_requested:{label:"Booking Requested",color:"#e67e22"},
+    approved_pending_payment:{label:"Approved — Awaiting Payment",color:"#2563eb"},
+    declined:{label:"Declined",color:"#c0392b"},
+    paid:{label:"Paid / Confirmed",color:"#27ae60"},
+  };
   const talentFirst=(t)=>(t?.display_name||"").split(" ")[0]||"there";
 
   return(<>
@@ -10968,11 +11097,20 @@ function AdminClassInvitations({session}){
               </div>
               {inv.message&&<div style={{fontSize:12,color:"var(--t3)",fontStyle:"italic",margin:"4px 0",lineHeight:1.5}}>"{inv.message}"</div>}
               <div style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Sent {fmtDate(inv.created_at)}{inv.admin?.display_name?` by ${inv.admin.display_name}`:""}</div>
+              {inv.booking_request&&(
+                <div style={{fontSize:11,marginTop:6,padding:"6px 10px",borderRadius:6,background:"var(--s2)",border:"1px solid var(--bdr)"}}>
+                  <span style={{fontWeight:600}}>Booking request: </span>
+                  <span style={{color:(STATUS_COLORS[inv.booking_request.status]||{color:"var(--t2)"}).color}}>{BOOKING_STATUS_LABELS[inv.booking_request.status]||inv.booking_request.status}</span>
+                  {inv.booking_request.selected_date&&<span style={{color:"var(--t3)"}}> · {inv.booking_request.selected_date}</span>}
+                  <span style={{color:"var(--t3)"}}> · Submitted {fmtDate(inv.booking_request.created_at)}</span>
+                </div>
+              )}
             </div>
             <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:5,flexShrink:0}}>
               <span style={{fontSize:11,fontWeight:600,padding:"3px 9px",borderRadius:6,background:"var(--s2)",color:st.color,border:`1px solid ${st.color}33`}}>{st.label}</span>
               {inv.viewed_at&&<div style={{fontSize:10,color:"var(--t3)"}}>Viewed {fmtDate(inv.viewed_at)}</div>}
               {inv.dismissed_at&&<div style={{fontSize:10,color:"var(--t3)"}}>Dismissed {fmtDate(inv.dismissed_at)}</div>}
+              {inv.booking_requested_at&&<div style={{fontSize:10,color:"#e67e22",fontWeight:600}}>Requested {fmtDate(inv.booking_requested_at)}</div>}
             </div>
           </div>
         </div>);
@@ -11134,6 +11272,7 @@ function App(){
   const [authReady,setAuthReady]=useState(false);
   const [pendingApply,setPendingApply]=useState(null);
   const [openClassId,setOpenClassId]=useState(null);
+  const [openClassInvitationId,setOpenClassInvitationId]=useState(null);
   // Selected plan key for PlanSummaryPage. Stored at App level so navigating
   // to "plan-summary" doesn't lose the choice if the user refreshes mid-flow.
   const [selectedPlan,setSelectedPlan]=useState(null);
@@ -11483,8 +11622,8 @@ function App(){
     else if(p==="talent-dashboard"){setPage("talent-dashboard");}
     else setPage(p);
     // Deep-link into a specific class detail
-    if(p==="classes"&&opts.classId){setOpenClassId(opts.classId);}
-    else if(p!=="classes"){setOpenClassId(null);}
+    if(p==="classes"&&opts.classId){setOpenClassId(opts.classId);setOpenClassInvitationId(opts.invitationId||null);}
+    else if(p!=="classes"){setOpenClassId(null);setOpenClassInvitationId(null);}
     // Clear detail state on any nav that isn't a drilldown
     if(p!=="profile"&&p!=="casting-detail"&&p!=="auth-gate"){setViewingProfile(null);setViewingCasting(null);}
     pushHist(target);
@@ -11695,7 +11834,7 @@ function App(){
         {page==="reset-password"&&<ResetPasswordPage onNavigate={navigate} session={session}/>}
         {page==="about"&&<AboutPage onNavigate={navigate}/>}
         {page==="blog"&&<BlogPage onNavigate={navigate}/>}
-        {page==="classes"&&<ClassesPage onNavigate={navigate} session={session} myProfile={myProfile} isLoggedIn={isLoggedIn} openClassId={openClassId} onClassOpened={()=>setOpenClassId(null)}/>}
+        {page==="classes"&&<ClassesPage onNavigate={navigate} session={session} myProfile={myProfile} isLoggedIn={isLoggedIn} openClassId={openClassId} onClassOpened={()=>{setOpenClassId(null);setOpenClassInvitationId(null);}} invitationId={openClassInvitationId}/>}
         {page==="contact"&&<ContactPage onNavigate={navigate}/>}
         {page==="resources"&&<ResourcesPage onNavigate={navigate}/>}
         {page==="faq"&&<FaqPage onNavigate={navigate}/>}
