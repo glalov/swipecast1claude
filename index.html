@@ -2170,11 +2170,37 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
       <button className="btn-s btn-sm mb-20" onClick={()=>{setViewing(null);setSessionFilter("all");window.scrollTo(0,0);}}>← Back to Classes</button>
       {/* Complete Payment banner — shown when the user has an approved booking and the class has a price */}
       {myBookingRequest&&myBookingRequest.status==="approved"&&myBookingRequest.payment_status!=="paid"&&(viewing.price||viewing.sale_price)&&(
-        <div style={{marginBottom:20,padding:18,background:"rgba(99,102,241,0.07)",border:"1px solid rgba(99,102,241,0.25)",borderRadius:12}}>
-          <div style={{fontWeight:700,fontSize:15,marginBottom:4}}>Your spot is approved — complete payment to confirm it</div>
-          <div style={{color:"var(--t2)",fontSize:13,marginBottom:12}}>Price: {viewing.sale_price||viewing.price}. Your spot is reserved for 48 hours.</div>
-          {classPayErr&&<div style={{color:"#c0392b",fontSize:13,marginBottom:10}}>{classPayErr}</div>}
-          <button className="btn-p btn-sm" disabled={classPayBusy} onClick={()=>handleClassPayment(viewing)}>{classPayBusy?"Opening Checkout…":"Complete Payment →"}</button>
+        <div style={{
+          marginBottom:24,
+          background:"linear-gradient(120deg,#1a6b42 0%,#1e8050 60%,#22935c 100%)",
+          borderRadius:16,
+          padding:"22px 24px",
+          boxShadow:"0 8px 28px rgba(26,107,66,0.28)",
+          display:"flex",flexDirection:"column",gap:0
+        }}>
+          <div style={{display:"flex",alignItems:"flex-start",gap:14,marginBottom:14}}>
+            <span style={{fontSize:32,lineHeight:1,flexShrink:0,marginTop:2}}>🎉</span>
+            <div>
+              <div style={{fontWeight:800,fontSize:17,color:"#fff",marginBottom:5,lineHeight:1.2}}>Your class booking was approved</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,0.88)",lineHeight:1.5,marginBottom:8}}>
+                Your spot for <span style={{fontWeight:700}}>"{viewing.title}"</span> is reserved for 48 hours. Complete payment to confirm your booking.
+              </div>
+              <div style={{display:"flex",gap:16,flexWrap:"wrap"}}>
+                <span style={{fontSize:12,color:"rgba(255,255,255,0.7)",background:"rgba(0,0,0,0.18)",borderRadius:6,padding:"3px 10px",fontWeight:600}}>Price: {viewing.sale_price||viewing.price}</span>
+                <span style={{fontSize:12,color:"rgba(255,255,255,0.7)",background:"rgba(0,0,0,0.18)",borderRadius:6,padding:"3px 10px",fontWeight:600}}>Status: Approved — payment required</span>
+              </div>
+            </div>
+          </div>
+          {classPayErr&&<div style={{color:"#ffe0e0",fontSize:13,marginBottom:10,paddingLeft:46}}>{classPayErr}</div>}
+          <div style={{paddingLeft:46}}>
+            <button
+              disabled={classPayBusy}
+              onClick={()=>handleClassPayment(viewing)}
+              style={{background:"#fff",color:"#1a6b42",fontWeight:800,fontSize:14,padding:"12px 26px",
+                borderRadius:10,border:"none",cursor:classPayBusy?"not-allowed":"pointer",fontFamily:"inherit",
+                boxShadow:"0 2px 10px rgba(0,0,0,0.18)",opacity:classPayBusy?0.7:1,whiteSpace:"nowrap"}}
+            >{classPayBusy?"Opening Checkout…":"Complete Payment →"}</button>
+          </div>
         </div>
       )}
       {myBookingRequest&&myBookingRequest.payment_status==="paid"&&(
@@ -11641,6 +11667,7 @@ function App(){
   //     here so every page sees the same number; no per-page polling drift.
   const [globalUnread,setGlobalUnread]=useState(0);
   const [adminPendingBookings,setAdminPendingBookings]=useState(0);
+  const [talentDashBadge,setTalentDashBadge]=useState(0);
   // Cookie consent modal — opened from the Footer "Cookie Preferences" link.
   // Lives at App level so it can render over any page. Footer dispatches a
   // custom DOM event ("sc:open-cookies") rather than threading a callback
@@ -11957,6 +11984,27 @@ function App(){
     return()=>{cancelled=true;clearInterval(tid);};
   },[isAdmin,session?.user?.id]);
 
+  // Talent dashboard badge — counts approved_pending_payment class invitations so the
+  // Dashboard nav button shows a badge even when the talent is on another page.
+  useEffect(()=>{
+    const uid=session?.user?.id;
+    if(!uid||myProfile?.user_type!=="talent"){setTalentDashBadge(0);return;}
+    let cancelled=false;
+    const fetch=async()=>{
+      try{
+        const{data}=await window.sb.rpc("get_my_class_invitations");
+        if(cancelled)return;
+        const count=(Array.isArray(data)?data:[]).filter(i=>i.status==="approved_pending_payment").length;
+        setTalentDashBadge(count);
+      }catch(_){}
+    };
+    fetch();
+    const tid=setInterval(fetch,60000);
+    const onFocus=()=>fetch();
+    window.addEventListener("focus",onFocus);
+    return()=>{cancelled=true;clearInterval(tid);window.removeEventListener("focus",onFocus);};
+  },[session?.user?.id,myProfile?.user_type]);
+
   // Profile recovery: when the tab becomes visible again or the window regains focus,
   // if we have a live session but myProfile is null (can happen after long inactivity
   // where the initial loadProfile call timed out or failed), silently re-fetch.
@@ -12108,7 +12156,7 @@ function App(){
             {/* CD / Admin Dashboard */}
             {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navigate("dashboard")}>Dashboard</button>:null}
             {/* Talent Dashboard — only for talent user_type */}
-            {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navigate("talent-dashboard")}>Dashboard</button>:null}
+            {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navigate("talent-dashboard")} style={{display:"inline-flex",alignItems:"center",gap:6}}>Dashboard{talentDashBadge>0&&<span style={{background:"var(--grn,#27ae60)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800,minWidth:20,textAlign:"center",lineHeight:1.2}}>{talentDashBadge>9?"9+":talentDashBadge}</span>}</button>:null}
             {/* My Profile — talent only */}
             {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navigate("my-profile")}>My Profile</button>:null}
             {/* Universal Inbox button — visible for every signed-in user_type with live unread badge */}
@@ -12145,7 +12193,7 @@ function App(){
             {!authReady?null:isLoggedIn?<>
               {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navThen("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:6}}>Admin{adminPendingBookings>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800,lineHeight:1.4}}>{adminPendingBookings}</span>}</button>}
               {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navThen("dashboard")}>Dashboard</button>:null}
-              {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navThen("talent-dashboard")}>Dashboard</button>:null}
+              {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navThen("talent-dashboard")} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Dashboard{talentDashBadge>0&&<span style={{background:"var(--grn,#27ae60)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800}}>{talentDashBadge>9?"9+":talentDashBadge}</span>}</button>:null}
               <button className="btn-s btn-sm" onClick={()=>navThen("inbox")} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Inbox{globalUnread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800}}>{globalUnread>99?"99+":globalUnread}</span>}</button>
               <button className="btn-s btn-sm" onClick={()=>navThen("my-profile")}>My Profile</button>
               <button className="btn-s btn-sm" onClick={()=>navThen("account-settings")}>Account Settings</button>
