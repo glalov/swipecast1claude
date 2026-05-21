@@ -4205,6 +4205,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
 
   const handleSocialAuth=async(provider)=>{
     setErr("");
+    if(mode==="signup"&&!agreed){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
     // Save pending apply before redirect — it survives the OAuth round-trip
     if(pending){
       try{sessionStorage.setItem("sc_post_auth_apply",JSON.stringify({casting:pending.casting,role:pending.role}));}catch(_){}

@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260521-231850 -->
-  <meta name="build-version" content="20260521-231850"/>
+  <!-- BUILD: 20260521-231930 -->
+  <meta name="build-version" content="20260521-231930"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260521-231850";
+      var B="20260521-231930";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -4243,6 +4243,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
 
   const handleSocialAuth=async(provider)=>{
     setErr("");
+    if(mode==="signup"&&!agreed){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
     // Save pending apply before redirect — it survives the OAuth round-trip
     if(pending){
       try{sessionStorage.setItem("sc_post_auth_apply",JSON.stringify({casting:pending.casting,role:pending.role}));}catch(_){}
