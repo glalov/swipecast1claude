@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260521-231930 -->
-  <meta name="build-version" content="20260521-231930"/>
+  <!-- BUILD: 20260521-232729 -->
+  <meta name="build-version" content="20260521-232729"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260521-231930";
+      var B="20260521-232729";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -2577,12 +2577,52 @@ function RegisterTalent({onNavigate}){
     }catch(e){console.warn("[auth] createAccount caught:",e?.message||e);setErr(e.message||"Something went wrong. Please try again.");window.scrollTo(0,0);}
     finally{setLoading(false);submittingRef.current=false;}
   };
+  const handleSocialAuth=async(provider)=>{
+    setErr("");
+    if(!f.agree){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
+    try{
+      const {error}=await window.sb.auth.signInWithOAuth({
+        provider,
+        options:{redirectTo:"https://www.castslate.com",...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
+      });
+      if(error){
+        const name=provider.charAt(0).toUpperCase()+provider.slice(1);
+        const em=(error.message||"").toLowerCase();
+        if(em.includes("provider")&&(em.includes("not enabled")||em.includes("not supported")||em.includes("disabled"))){
+          setErr(`${name} sign-up is not connected yet.`);
+        }else{setErr(`${name} sign-in failed: ${error.message}`);}
+      }
+    }catch(e){
+      const name=provider.charAt(0).toUpperCase()+provider.slice(1);
+      setErr(`${name} sign-up is not connected yet.`);
+    }
+  };
   if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Your free profile is ready. Click the link in that email, then log in to browse castings. You'll only need to activate a membership when you're ready to submit for a role.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}>✓ Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
   return(
     <div className="page"><div style={{maxWidth:640,margin:"0 auto"}}>
       <div className="section-label">{tr('reg.t.title')}</div>
       <h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:8}}>{tr('reg.t.title')}</h1>
       <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>{tr('reg.t.subtitle')} <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>{tr('reg.t.logIn')}</span></p>
+      {step===1&&<>
+        {/* Social sign-up options */}
+        <div style={{marginBottom:24}}>
+          <div style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:14,color:"var(--t2)",fontSize:12,lineHeight:1.55}}>
+            <input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)} style={{marginTop:3}}/>
+            <span>I agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span></span>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:12}}>
+            {[["🔵","Continue with Google","google"],["","Continue with Apple","apple"],["📘","Continue with Facebook","facebook"]].map(([ic,label,provider])=>(
+              <button key={label} type="button" className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={()=>handleSocialAuth(provider)}>
+                <span>{ic}</span>{label}
+              </button>
+            ))}
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
+            <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
+          </div>
+        </div>
+      </>}
+
       <div style={{display:"flex",gap:8,marginBottom:32}}>{[1,2,3].map(s=><div key={s} style={{flex:1,height:4,borderRadius:2,background:s<=step?"var(--acc)":"var(--s3)",transition:"background .3s"}}/>)}</div>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}>✓ Verification email re-sent — check your inbox.</div>}</div>}
 
@@ -2717,12 +2757,49 @@ function RegisterCD({onNavigate}){
     }catch(e){console.warn("[auth] CD submit caught:",e?.message||e);setErr(e.message||"Something went wrong. Please try again.");}
     finally{setLoading(false);submittingRef.current=false;}
   };
+  const handleSocialAuth=async(provider)=>{
+    setErr("");
+    if(!f.agree){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
+    try{
+      const {error}=await window.sb.auth.signInWithOAuth({
+        provider,
+        options:{redirectTo:"https://www.castslate.com",...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
+      });
+      if(error){
+        const name=provider.charAt(0).toUpperCase()+provider.slice(1);
+        const em=(error.message||"").toLowerCase();
+        if(em.includes("provider")&&(em.includes("not enabled")||em.includes("not supported")||em.includes("disabled"))){
+          setErr(`${name} sign-up is not connected yet.`);
+        }else{setErr(`${name} sign-in failed: ${error.message}`);}
+      }
+    }catch(e){
+      const name=provider.charAt(0).toUpperCase()+provider.slice(1);
+      setErr(`${name} sign-up is not connected yet.`);
+    }
+  };
   if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Click the link to activate your account. Then log in to post your first casting.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}>✓ Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
   return(
     <div className="page"><div style={{maxWidth:640,margin:"0 auto"}}>
       <div className="section-label">{tr('reg.cd.title')}</div>
       <h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:8}}>{tr('reg.cd.title')}</h1>
-      <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>{tr('reg.cd.subtitle')} <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>{tr('reg.t.logIn')}</span></p>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>{tr('reg.cd.subtitle')} <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>{tr('reg.t.logIn')}</span></p>
+      {/* Social sign-up options */}
+      <div style={{marginBottom:24}}>
+        <div style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:14,color:"var(--t2)",fontSize:12,lineHeight:1.55}}>
+          <input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)} style={{marginTop:3}}/>
+          <span>I agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span></span>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:12}}>
+          {[["🔵","Continue with Google","google"],["","Continue with Apple","apple"],["📘","Continue with Facebook","facebook"]].map(([ic,label,provider])=>(
+            <button key={label} type="button" className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={()=>handleSocialAuth(provider)}>
+              <span>{ic}</span>{label}
+            </button>
+          ))}
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
+          <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
+        </div>
+      </div>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}>✓ Verification email re-sent — check your inbox.</div>}</div>}
       <div className="form-row"><div className="form-group"><label className="label">{tr('reg.cd.firstName')}</label><input className="input" placeholder={tr('reg.cd.firstName')} value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.cd.lastName')}</label><input className="input" placeholder={tr('reg.cd.lastName')} value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
       <div className="form-group"><label className="label">{tr('reg.cd.email')}</label><input className="input" type="email" placeholder="you@company.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
@@ -2794,6 +2871,25 @@ function LoginPage({onNavigate,onLoggedIn}){
       setErr(msg);
     }finally{setLoading(false);submittingRef.current=false;}
   };
+  const handleSocialAuth=async(provider)=>{
+    setErr("");
+    try{
+      const {error}=await window.sb.auth.signInWithOAuth({
+        provider,
+        options:{redirectTo:"https://www.castslate.com",...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
+      });
+      if(error){
+        const name=provider.charAt(0).toUpperCase()+provider.slice(1);
+        const em=(error.message||"").toLowerCase();
+        if(em.includes("provider")&&(em.includes("not enabled")||em.includes("not supported")||em.includes("disabled"))){
+          setErr(`${name} login is not connected yet.`);
+        }else{setErr(`${name} sign-in failed: ${error.message}`);}
+      }
+    }catch(e){
+      const name=provider.charAt(0).toUpperCase()+provider.slice(1);
+      setErr(`${name} login is not connected yet.`);
+    }
+  };
   if(sentReset)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check">✓</div><h3>{t('login.checkEmail')}</h3><p>{t('login.resetSent')} <strong>{email}</strong>.</p><button className="btn-s" style={{marginTop:24}} onClick={()=>{setForgot(false);setSentReset(false);}}>{t('login.backToLoginBtn')}</button></div><Footer onNavigate={onNavigate}/></div>);
   return(
     <div className="page"><form onSubmit={submit} style={{maxWidth:420,margin:"60px auto 0"}}>
@@ -2802,6 +2898,18 @@ function LoginPage({onNavigate,onLoggedIn}){
         <h2 style={{fontSize:28,fontWeight:800,marginBottom:8}}>{forgot?t('login.resetPwd'):t('login.welcome')}</h2>
         <p style={{color:"var(--t2)",fontSize:14}}>{forgot?t('login.resetSubtitle'):t('login.subtitle')}</p>
       </div>
+      {!forgot&&<>
+        <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
+          {[["🔵","Continue with Google","google"],["","Continue with Apple","apple"],["📘","Continue with Facebook","facebook"]].map(([ic,label,provider])=>(
+            <button key={label} type="button" className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={()=>handleSocialAuth(provider)}>
+              <span>{ic}</span>{label}
+            </button>
+          ))}
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
+          <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or log in with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
+        </div>
+      </>}
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
       <div className="form-group"><label className="label">{t('login.email')}</label><input className="input" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email"/></div>
       {!forgot&&<div className="form-group"><label className="label">{t('login.password')}</label><input className="input" type="password" placeholder="Your password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password"/></div>}
