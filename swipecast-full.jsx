@@ -1358,9 +1358,12 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .site-footer-social{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#9A9BA5;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);text-decoration:none;transition:color .18s ease,background .18s ease,transform .18s ease,border-color .18s ease;}
 .site-footer-social:hover{color:#fff;background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.16);transform:translateY(-2px);}
 .site-footer-bottom{border-top:1px solid rgba(255,255,255,0.08);padding-top:22px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:11.5px;color:#6F7078;}
-.site-footer-bottom-links{display:flex;gap:18px;flex-wrap:wrap;}
+.site-footer-bottom-links{display:flex;gap:18px;flex-wrap:wrap;align-items:center;}
 .site-footer-bottom-links span{cursor:pointer;transition:color .18s ease;}
 .site-footer-bottom-links span:hover{color:#fff;}
+.lang-toggle-btn{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.35);border-radius:100px;padding:7px 16px;font-size:12.5px;color:#fff;cursor:pointer;font-weight:700;letter-spacing:0.3px;transition:background .2s,border-color .2s,color .2s;line-height:1;font-family:inherit;flex-shrink:0;white-space:nowrap;}
+.lang-toggle-btn:hover{background:rgba(214,175,87,0.18);border-color:#D6AF57;color:#D6AF57;}
+.lang-toggle-btn svg{flex-shrink:0;}
 @media (max-width:900px){
   .site-footer-grid{grid-template-columns:1fr 1fr;gap:32px;}
   .site-footer-brand{grid-column:1/-1;}
@@ -2238,19 +2241,17 @@ function Footer({onNavigate,spacerBg}){
         </div>
         <div className="site-footer-bottom">
           <span>{t('footer.copyright').replace('{year}', year)}</span>
-          <div className="site-footer-bottom-links" style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
+          <div className="site-footer-bottom-links">
             <span onClick={()=>onNavigate("privacy")}>{t('footer.privacyLink')}</span>
             <span onClick={()=>onNavigate("terms")}>{t('footer.termsLink')}</span>
             <span onClick={()=>onNavigate("contact")}>{t('footer.contactLink')}</span>
             <span onClick={openCookies}>{t('footer.cookiePrefs')}</span>
-            {/* ── Language toggle — elegant pill, per-user preference ── */}
+            {/* ── Language toggle — prominent pill, always visible ── */}
             <button
+              className="lang-toggle-btn"
               onClick={()=>setLang(l=>l==='en'?'es':'en')}
-              aria-label={lang==='en'?'Switch to Spanish':'Switch to English'}
-              style={{display:"inline-flex",alignItems:"center",gap:5,background:"transparent",border:"1px solid rgba(255,255,255,0.18)",borderRadius:100,padding:"5px 13px",fontSize:11,color:"rgba(255,255,255,0.55)",cursor:"pointer",fontWeight:600,letterSpacing:0.4,transition:"border-color .2s,color .2s",lineHeight:1,flexShrink:0}}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--acc)";e.currentTarget.style.color="var(--acc)";}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.18)";e.currentTarget.style.color="rgba(255,255,255,0.55)";}}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              aria-label={lang==='en'?'Switch to Spanish':'Switch to English'}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
               </svg>
