@@ -4212,7 +4212,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
     try{
       const {error}=await window.sb.auth.signInWithOAuth({
         provider,
-        options:{redirectTo:"https://www.castslate.com"}
+        options:{redirectTo:"https://www.castslate.com",...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
       });
       if(error){
         try{sessionStorage.removeItem("sc_post_auth_apply");}catch(_){}
