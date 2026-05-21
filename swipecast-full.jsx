@@ -181,6 +181,78 @@ const TRANSLATIONS = {
     'type.film':'Film','type.tv':'TV','type.commercial':'Commercial','type.theater':'Theater',
     'type.broadway':'Broadway','type.shortFilm':'Short Film','type.modeling':'Modeling',
     'type.indieFilm':'Indie Film','type.webSeries':'Web Series',
+    // Classes extended
+    'classes.backToClasses':'← Back to Classes','classes.availableSessions':'Available Sessions',
+    'classes.noSessionsMatch':'No sessions match this filter.','classes.fullyBooked':'Fully Booked',
+    'classes.requestBooking':'Request Booking','classes.viewClass':'View Class',
+    'classes.quickView':'Quick View →','classes.allCategories':'All Categories',
+    'classes.starts':'Starts:','classes.paymentApproved':'Your spot is approved — complete payment to confirm it',
+    'classes.completePayment':'Complete Payment →','classes.openingCheckout':'Opening Checkout…',
+    'classes.paymentConfirmed':'✓ Payment confirmed','classes.enrolled':"You're enrolled. Check your inbox for details.",
+    'classes.signInToBook':'Log in or create a talent profile to request a class booking.',
+    'classes.contactToEnroll':'Contact to Enroll →','classes.browseDown':'Browse Sessions ↓',
+    'classes.filterAll':'All','classes.filterOnline':'Online','classes.filterInPerson':'In-Person',
+    'classes.filterMorning':'Morning','classes.filterAfternoon':'Afternoon','classes.filterEvening':'Evening',
+    'classes.selectedCredits':'Selected Credits','classes.featured':'Featured','classes.sale':'Sale',
+    'classes.with':'with','classes.enrollDesc':'Interested? Enrollment is handled directly by the teaching studio. Email us and we\'ll connect you with the instructor and confirm a seat.',
+    'classes.heroTitle':'Training That Actually Moves Your Career.',
+    'classes.heroDesc':'A curated directory of serious, working-actor classes — in New York and online. Taught by active casting directors, working VO actors, and veteran studio teachers. CastSlate does not run the classes directly; we vet the teachers and help students enroll.',
+    // Pricing extended
+    'pricing.startFree':'Start free. Upgrade only when you need more submissions, media, and visibility.',
+    'pricing.actorFree':'Actor Free','pricing.actorPremium':'Actor Premium',
+    'pricing.castingDir':'Casting Director','pricing.actorsModels':'Actors · Models · Performers',
+    'pricing.castingProducers':'Casting Directors · Producers',
+    'pricing.noCreditCard':'No credit card required','pricing.perMonthCancel':'per month · cancel anytime',
+    'pricing.toCreate':'to create an account','pricing.recommended':'Recommended',
+    'pricing.postingFees':'Posting fees finalized before launch. Account creation is always free.',
+    'pricing.getStartedFree':'Get Started Free','pricing.getPremium':'Get Premium — $9.99/mo',
+    'pricing.createCD':'Create CD Account','pricing.comparison':'Actor Plan Comparison',
+    'pricing.feature':'Feature','pricing.freeLabel':'Free','pricing.unlimitedLabel':'Unlimited',
+    // Talent dashboard extended
+    'td.applicationsLabel':'Applications','td.auditionRequests':'Audition Requests',
+    'td.notifications':'Notifications','td.profileLabel':'Profile',
+    'td.actionNeeded':'action needed','td.nonePending':'none pending',
+    'td.allCaughtUp':'all caught up','td.tapToView':'tap to view',
+    'td.totalSubmitted':'total submitted','td.visibleToCDs':'visible to CDs',
+    'td.completeProfile':'complete your profile','td.live':'Live',
+    'td.welcomeBack':'Welcome back, {name}.','td.latestUpdates':'Here are the latest updates for your acting profile.',
+    'td.classInvitations':'All Class Invitations','td.notificationsTitle':'Notifications',
+    'td.backToDash':'← Dashboard','td.bookingApproved':'Your class booking was approved!',
+    'td.completePay':'Complete Payment →','td.notNow':'Not Interested',
+    'td.viewClass':'View Recommended Class →','td.bookingPending':'Booking request pending CastSlate review',
+    'td.paymentRequired':'Payment required to confirm your spot','td.notApproved':'This booking request was not approved.',
+    'td.dismiss':'Dismiss','td.recommendedFor':'Recommended for your profile',
+    // Inbox extended
+    'inbox.unread':'unread','inbox.searchPlaceholder':'Search messages…',
+    'inbox.refresh':'↻ Refresh','inbox.loadError':"Couldn't load inbox:",
+    'inbox.signInTitle':'Sign in to see your inbox',
+    'inbox.signInDesc':'Messages between you and casting directors, producers, and talent live here.',
+    'inbox.emptyTalent':"When a casting director messages you about a role or invite, it'll show up here.",
+    'inbox.emptyCD':"When talent applies to one of your castings or replies to your messages, conversations land here.",
+    'inbox.you':'You: ','inbox.message':'message',
+    // Profile page
+    'profile.tabs.profile':'Profile','profile.tabs.credits':'Credits','profile.tabs.media':'Media',
+    'profile.tabs.inbox':'Inbox','profile.tabs.applications':'Applications',
+    'profile.displayName':'Display Name','profile.saveChanges':'Save Changes','profile.saving':'Saving…',
+    'profile.uploadHeadshot':'Upload New Headshot','profile.additionalPhotos':'Additional Photos',
+    'profile.videoLinks':'Video Reel Links','profile.socialLinks':'Social Links',
+    'profile.addCredit':'Add Credit','profile.editCredit':'Edit Credit','profile.deleteCredit':'Delete',
+    'profile.creditCategory':'Category','profile.production':'Production Title',
+    'profile.creditRole':'Role','profile.director':'Director / Company',
+    'profile.creditLocation':'Location','profile.creditYear':'Year',
+    'profile.website':'Website','profile.saveCredit':'Save Credit','profile.cancel':'Cancel',
+    'profile.noCredits':'No credits added yet.','profile.noMedia':'No video media yet.',
+    'profile.noInbox':'No messages yet.',
+    // Settings page
+    'settings.sections.account':'Account Settings','settings.sections.subscription':'Subscription Info',
+    'settings.sections.billing':'Payment & Billing','settings.sections.notifications':'Notifications',
+    'settings.sections.privacy':'Privacy & Security','settings.sections.deactivation':'Deactivation & Deletion',
+    'settings.emailNotifs':'Email Notifications','settings.newApplications':'New application updates',
+    'settings.newMessages':'New message alerts','settings.marketingEmails':'Marketing & product updates',
+    'settings.savePrefs':'Save Preferences','settings.deactivate':'Deactivate Account',
+    'settings.reactivate':'Reactivate Account','settings.deleteAccount':'Delete Account',
+    'settings.deleteConfirm':'Type DELETE to confirm','settings.confirmDelete':'Confirm Delete',
+    'settings.cancelBtn':'Cancel',
   },
   es: {
     // Common
@@ -351,6 +423,78 @@ const TRANSLATIONS = {
     'type.film':'Película','type.tv':'Serie de TV','type.commercial':'Comercial','type.theater':'Teatro',
     'type.broadway':'Broadway','type.shortFilm':'Cortometraje','type.modeling':'Modelaje',
     'type.indieFilm':'Película independiente','type.webSeries':'Serie web',
+    // Classes extended
+    'classes.backToClasses':'← Volver a clases','classes.availableSessions':'Sesiones disponibles',
+    'classes.noSessionsMatch':'Ninguna sesión coincide con este filtro.','classes.fullyBooked':'Completamente reservado',
+    'classes.requestBooking':'Solicitar reserva','classes.viewClass':'Ver clase',
+    'classes.quickView':'Vista rápida →','classes.allCategories':'Todas las categorías',
+    'classes.starts':'Inicia:','classes.paymentApproved':'Tu lugar está aprobado — completa el pago para confirmarlo',
+    'classes.completePayment':'Completar pago →','classes.openingCheckout':'Abriendo pago…',
+    'classes.paymentConfirmed':'✓ Pago confirmado','classes.enrolled':'Estás inscrito. Revisa tu bandeja de entrada para más detalles.',
+    'classes.signInToBook':'Inicia sesión o crea un perfil de talento para solicitar una reserva.',
+    'classes.contactToEnroll':'Contactar para inscribirse →','classes.browseDown':'Ver sesiones ↓',
+    'classes.filterAll':'Todos','classes.filterOnline':'En línea','classes.filterInPerson':'Presencial',
+    'classes.filterMorning':'Mañana','classes.filterAfternoon':'Tarde','classes.filterEvening':'Noche',
+    'classes.selectedCredits':'Créditos seleccionados','classes.featured':'Destacada','classes.sale':'Oferta',
+    'classes.with':'con','classes.enrollDesc':'¿Interesado? La inscripción se gestiona directamente con el estudio docente. Escríbenos y te conectaremos con el instructor para confirmar tu lugar.',
+    'classes.heroTitle':'Formación que realmente impulsa tu carrera.',
+    'classes.heroDesc':'Un directorio curado de clases serias para actores en activo — en Nueva York y en línea. Impartidas por directores de casting activos, actores de doblaje en ejercicio y maestros veteranos de estudio. CastSlate no gestiona las clases directamente; evaluamos a los profesores y ayudamos a los estudiantes a inscribirse.',
+    // Pricing extended
+    'pricing.startFree':'Empieza gratis. Mejora solo cuando necesites más postulaciones, medios y visibilidad.',
+    'pricing.actorFree':'Actor Gratuito','pricing.actorPremium':'Actor Premium',
+    'pricing.castingDir':'Director de Casting','pricing.actorsModels':'Actores · Modelos · Intérpretes',
+    'pricing.castingProducers':'Directores de casting · Productores',
+    'pricing.noCreditCard':'Sin tarjeta de crédito','pricing.perMonthCancel':'por mes · cancela cuando quieras',
+    'pricing.toCreate':'para crear una cuenta','pricing.recommended':'Recomendado',
+    'pricing.postingFees':'Las tarifas de publicación se fijarán antes del lanzamiento. La creación de cuenta es siempre gratuita.',
+    'pricing.getStartedFree':'Comenzar gratis','pricing.getPremium':'Obtener Premium — $9.99/mes',
+    'pricing.createCD':'Crear cuenta de CD','pricing.comparison':'Comparación de planes para actores',
+    'pricing.feature':'Función','pricing.freeLabel':'Gratis','pricing.unlimitedLabel':'Ilimitado',
+    // Talent dashboard extended
+    'td.applicationsLabel':'Postulaciones','td.auditionRequests':'Solicitudes de audición',
+    'td.notifications':'Notificaciones','td.profileLabel':'Perfil',
+    'td.actionNeeded':'acción requerida','td.nonePending':'ninguna pendiente',
+    'td.allCaughtUp':'todo al día','td.tapToView':'toca para ver',
+    'td.totalSubmitted':'postulaciones totales','td.visibleToCDs':'visible para directores',
+    'td.completeProfile':'completa tu perfil','td.live':'En línea',
+    'td.welcomeBack':'Bienvenido/a de nuevo, {name}.','td.latestUpdates':'Aquí están las últimas novedades de tu perfil de actor.',
+    'td.classInvitations':'Todas las invitaciones a clases','td.notificationsTitle':'Notificaciones',
+    'td.backToDash':'← Panel','td.bookingApproved':'¡Tu reserva de clase fue aprobada!',
+    'td.completePay':'Completar pago →','td.notNow':'No me interesa',
+    'td.viewClass':'Ver clase recomendada →','td.bookingPending':'Solicitud de reserva pendiente de revisión',
+    'td.paymentRequired':'Pago requerido para confirmar tu lugar','td.notApproved':'Esta solicitud de reserva no fue aprobada.',
+    'td.dismiss':'Descartar','td.recommendedFor':'Recomendado para tu perfil',
+    // Inbox extended
+    'inbox.unread':'no leídos','inbox.searchPlaceholder':'Buscar mensajes…',
+    'inbox.refresh':'↻ Actualizar','inbox.loadError':'No se pudo cargar la bandeja:',
+    'inbox.signInTitle':'Inicia sesión para ver tu bandeja',
+    'inbox.signInDesc':'Los mensajes entre tú y directores de casting, productores y talento están aquí.',
+    'inbox.emptyTalent':'Cuando un director de casting te escriba sobre un papel o invitación, aparecerá aquí.',
+    'inbox.emptyCD':'Cuando el talento postule a una de tus convocatorias o responda tus mensajes, las conversaciones llegarán aquí.',
+    'inbox.you':'Tú: ','inbox.message':'mensaje',
+    // Profile page
+    'profile.tabs.profile':'Perfil','profile.tabs.credits':'Créditos','profile.tabs.media':'Medios',
+    'profile.tabs.inbox':'Bandeja','profile.tabs.applications':'Postulaciones',
+    'profile.displayName':'Nombre para mostrar','profile.saveChanges':'Guardar cambios','profile.saving':'Guardando…',
+    'profile.uploadHeadshot':'Subir nueva fotografía','profile.additionalPhotos':'Fotos adicionales',
+    'profile.videoLinks':'Enlaces a videoclips','profile.socialLinks':'Redes sociales',
+    'profile.addCredit':'Añadir crédito','profile.editCredit':'Editar crédito','profile.deleteCredit':'Eliminar',
+    'profile.creditCategory':'Categoría','profile.production':'Título de producción',
+    'profile.creditRole':'Papel','profile.director':'Director / Empresa',
+    'profile.creditLocation':'Ubicación','profile.creditYear':'Año',
+    'profile.website':'Sitio web','profile.saveCredit':'Guardar crédito','profile.cancel':'Cancelar',
+    'profile.noCredits':'Ningún crédito añadido aún.','profile.noMedia':'Sin videos aún.',
+    'profile.noInbox':'Ningún mensaje aún.',
+    // Settings page
+    'settings.sections.account':'Configuración de cuenta','settings.sections.subscription':'Información de suscripción',
+    'settings.sections.billing':'Pago y facturación','settings.sections.notifications':'Notificaciones',
+    'settings.sections.privacy':'Privacidad y seguridad','settings.sections.deactivation':'Desactivación y eliminación',
+    'settings.emailNotifs':'Notificaciones por correo','settings.newApplications':'Actualizaciones de nuevas postulaciones',
+    'settings.newMessages':'Alertas de nuevos mensajes','settings.marketingEmails':'Marketing y novedades del producto',
+    'settings.savePrefs':'Guardar preferencias','settings.deactivate':'Desactivar cuenta',
+    'settings.reactivate':'Reactivar cuenta','settings.deleteAccount':'Eliminar cuenta',
+    'settings.deleteConfirm':'Escribe DELETE para confirmar','settings.confirmDelete':'Confirmar eliminación',
+    'settings.cancelBtn':'Cancelar',
   }
 };
 
@@ -3083,12 +3227,12 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
     ).sort((a,b)=>a.date-b.date);
 
     const SESSION_FILTERS=[
-      {id:"all",label:"All"},
-      {id:"online",label:"Online"},
-      {id:"in-person",label:"In-Person"},
-      {id:"morning",label:"Morning"},
-      {id:"afternoon",label:"Afternoon"},
-      {id:"evening",label:"Evening"},
+      {id:"all",label:t('classes.filterAll')},
+      {id:"online",label:t('classes.filterOnline')},
+      {id:"in-person",label:t('classes.filterInPerson')},
+      {id:"morning",label:t('classes.filterMorning')},
+      {id:"afternoon",label:t('classes.filterAfternoon')},
+      {id:"evening",label:t('classes.filterEvening')},
     ];
 
     const filteredSessions=allSessions.filter(({slot})=>{
@@ -3103,20 +3247,20 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
     const locationLabel=isOnlineClass?"Online":(viewing.location_city_state||viewing.location_name||"In-Person");
 
     return(<div className="page">
-      <button className="btn-s btn-sm mb-20" onClick={()=>{setViewing(null);setSessionFilter("all");window.scrollTo(0,0);}}>← Back to Classes</button>
+      <button className="btn-s btn-sm mb-20" onClick={()=>{setViewing(null);setSessionFilter("all");window.scrollTo(0,0);}}>{t('classes.backToClasses')}</button>
       {/* Complete Payment banner — shown when the user has an approved booking and the class has a price */}
       {myBookingRequest&&myBookingRequest.status==="approved"&&myBookingRequest.payment_status!=="paid"&&(viewing.price||viewing.sale_price)&&(
         <div style={{marginBottom:20,padding:18,background:"rgba(99,102,241,0.07)",border:"1px solid rgba(99,102,241,0.25)",borderRadius:12}}>
-          <div style={{fontWeight:700,fontSize:15,marginBottom:4}}>Your spot is approved — complete payment to confirm it</div>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:4}}>{t('classes.paymentApproved')}</div>
           <div style={{color:"var(--t2)",fontSize:13,marginBottom:12}}>Price: {viewing.sale_price||viewing.price}. Your spot is reserved for 48 hours.</div>
           {classPayErr&&<div style={{color:"#c0392b",fontSize:13,marginBottom:10}}>{classPayErr}</div>}
-          <button className="btn-p btn-sm" disabled={classPayBusy} onClick={()=>handleClassPayment(viewing)}>{classPayBusy?"Opening Checkout…":"Complete Payment →"}</button>
+          <button className="btn-p btn-sm" disabled={classPayBusy} onClick={()=>handleClassPayment(viewing)}>{classPayBusy?t('classes.openingCheckout'):t('classes.completePayment')}</button>
         </div>
       )}
       {myBookingRequest&&myBookingRequest.payment_status==="paid"&&(
         <div style={{marginBottom:20,padding:14,background:"rgba(39,174,96,0.08)",border:"1px solid rgba(39,174,96,0.25)",borderRadius:12,display:"flex",alignItems:"center",gap:10}}>
-          <span style={{color:"#27ae60",fontWeight:700}}>✓ Payment confirmed</span>
-          <span style={{color:"var(--t2)",fontSize:13}}>You're enrolled. Check your inbox for details.</span>
+          <span style={{color:"#27ae60",fontWeight:700}}>{t('classes.paymentConfirmed')}</span>
+          <span style={{color:"var(--t2)",fontSize:13}}>{t('classes.enrolled')}</span>
         </div>
       )}
 
@@ -3130,7 +3274,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
               <div className="cls-detail-hero" style={{position:"absolute",bottom:0,left:0,right:0,padding:isNarrow?"18px 16px":"28px 32px",lineHeight:"normal"}}>
                 {cm&&<div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"rgba(255,255,255,0.6)",marginBottom:8}}>{cm.name}</div>}
                 <h1 style={{fontWeight:800,fontSize:30,letterSpacing:"-0.8px",marginBottom:6,color:"#fff",lineHeight:1.2}}>{viewing.title}</h1>
-                {viewing.instructor_name&&<div style={{color:"rgba(255,255,255,0.75)",fontSize:14,marginBottom:14}}>with {viewing.instructor_name}</div>}
+                {viewing.instructor_name&&<div style={{color:"rgba(255,255,255,0.75)",fontSize:14,marginBottom:14}}>{t('classes.with')} {viewing.instructor_name}</div>}
                 <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
                   {hasSale?(
                     <><span style={{fontSize:22,fontWeight:800,color:"#fff"}}>{viewing.sale_price}</span><span style={{fontSize:15,color:"rgba(255,255,255,0.45)",textDecoration:"line-through"}}>{viewing.price}</span></>
@@ -3138,7 +3282,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
                     viewing.price&&<span style={{fontSize:22,fontWeight:800,color:"#fff"}}>{viewing.price}</span>
                   )}
                   {viewing.level&&<span style={{fontSize:12,padding:"3px 10px",borderRadius:20,background:"rgba(255,255,255,0.18)",color:"rgba(255,255,255,0.9)",border:"1px solid rgba(255,255,255,0.28)",fontWeight:600}}>{viewing.level}</span>}
-                  {clsSlots.length>0&&<button className="btn-p btn-sm" style={{marginLeft:4}} onClick={()=>document.getElementById("sessions-section")?.scrollIntoView({behavior:"smooth"})}>Browse Sessions ↓</button>}
+                  {clsSlots.length>0&&<button className="btn-p btn-sm" style={{marginLeft:4}} onClick={()=>document.getElementById("sessions-section")?.scrollIntoView({behavior:"smooth"})}>{t('classes.browseDown')}</button>}
                 </div>
               </div>
             </div>
@@ -3147,14 +3291,14 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
           <div className="cls-detail-no-media" style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:16,padding:isNarrow?"24px 16px":"36px 32px",marginBottom:0}}>
             {cm&&<div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:8}}>{cm.name}</div>}
             <h1 style={{fontWeight:800,fontSize:30,letterSpacing:"-0.8px",marginBottom:6,lineHeight:1.2}}>{viewing.title}</h1>
-            {viewing.instructor_name&&<div style={{color:"var(--t2)",fontSize:14,marginBottom:14}}>with {viewing.instructor_name}</div>}
+            {viewing.instructor_name&&<div style={{color:"var(--t2)",fontSize:14,marginBottom:14}}>{t('classes.with')} {viewing.instructor_name}</div>}
             <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
               {hasSale?(
                 <><span style={{fontSize:22,fontWeight:800,color:"var(--acc)"}}>{viewing.sale_price}</span><span style={{fontSize:15,color:"var(--t3)",textDecoration:"line-through"}}>{viewing.price}</span></>
               ):(
                 viewing.price&&<span style={{fontSize:22,fontWeight:800}}>{viewing.price}</span>
               )}
-              {clsSlots.length>0&&<button className="btn-p btn-sm" onClick={()=>document.getElementById("sessions-section")?.scrollIntoView({behavior:"smooth"})}>Browse Sessions ↓</button>}
+              {clsSlots.length>0&&<button className="btn-p btn-sm" onClick={()=>document.getElementById("sessions-section")?.scrollIntoView({behavior:"smooth"})}>{t('classes.browseDown')}</button>}
             </div>
           </div>
         )}
@@ -3166,7 +3310,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
           </div>
           {viewing.instructor_name&&(
             <div className="card" style={{padding:20}}>
-              <div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:12}}>Instructor</div>
+              <div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:12}}>{t('classes.instructor')}</div>
               {viewing.instructor_photo_url&&<img src={viewing.instructor_photo_url} alt={viewing.instructor_name} style={{width:52,height:52,borderRadius:"50%",objectFit:"cover",marginBottom:10,display:"block"}}/>}
               <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>{viewing.instructor_name}</div>
               {viewing.instructor_bio&&<div style={{color:"var(--t2)",fontSize:12,lineHeight:1.55,marginBottom:8}}>{viewing.instructor_bio}</div>}
@@ -3178,7 +3322,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
         {/* Selected Instructor Credits */}
         {Array.isArray(viewing.instructor_poster_urls)&&viewing.instructor_poster_urls.length>0&&(
           <div style={{marginTop:32}}>
-            <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:14}}>Selected Credits</div>
+            <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:14}}>{t('classes.selectedCredits')}</div>
             <div className="cls-credits-grid" style={{gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)"}}>
               {viewing.instructor_poster_urls.map((p,i)=>(
                 <div key={i} style={{borderRadius:10,overflow:"hidden",lineHeight:0,boxShadow:"0 4px 16px rgba(0,0,0,0.15)"}}>
@@ -3194,7 +3338,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
       {clsSlots.length>0&&(
         <div id="sessions-section" style={{maxWidth:900,margin:"0 auto",paddingTop:8,paddingBottom:40}}>
           <div style={{marginBottom:20}}>
-            <h2 style={{fontSize:20,fontWeight:800,letterSpacing:"-0.4px",margin:"0 0 14px"}}>Available Sessions</h2>
+            <h2 style={{fontSize:20,fontWeight:800,letterSpacing:"-0.4px",margin:"0 0 14px"}}>{t('classes.availableSessions')}</h2>
             <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
               {SESSION_FILTERS.map(f=>(
                 <button key={f.id} className="btn-s btn-sm"
@@ -3206,7 +3350,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
 
           {filteredSessions.length===0?(
             <div style={{padding:32,background:"var(--s2)",borderRadius:12,border:"1px solid var(--bdr)",textAlign:"center"}}>
-              <p style={{color:"var(--t2)",fontSize:14,margin:0}}>No sessions match this filter.</p>
+              <p style={{color:"var(--t2)",fontSize:14,margin:0}}>{t('classes.noSessionsMatch')}</p>
             </div>
           ):(()=>{
             // Group sessions by date
@@ -3245,9 +3389,9 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
                                 ):(viewing.price||"")}
                               </div>
                               {isBooked?(
-                                <div className="slot-btn" style={{fontSize:11,fontWeight:700,padding:"6px 12px",borderRadius:8,background:"rgba(192,57,43,0.07)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.18)",flexShrink:0,whiteSpace:"nowrap"}}>Fully Booked</div>
+                                <div className="slot-btn" style={{fontSize:11,fontWeight:700,padding:"6px 12px",borderRadius:8,background:"rgba(192,57,43,0.07)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.18)",flexShrink:0,whiteSpace:"nowrap"}}>{t('classes.fullyBooked')}</div>
                               ):(
-                                <button className="btn-p btn-sm slot-btn" style={{whiteSpace:"nowrap",flexShrink:0}} onClick={()=>handleRequestBooking(viewing,slot,date)}>Request Booking</button>
+                                <button className="btn-p btn-sm slot-btn" style={{whiteSpace:"nowrap",flexShrink:0}} onClick={()=>handleRequestBooking(viewing,slot,date)}>{t('classes.requestBooking')}</button>
                               )}
                             </div>
                           </React.Fragment>
@@ -3263,9 +3407,9 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
           {viewing.online_note&&<div style={{marginTop:18,padding:14,background:"var(--s2)",borderRadius:10,border:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)",lineHeight:1.6}}>{viewing.online_note}</div>}
           {!isLoggedIn&&(
             <div style={{marginTop:18,padding:18,background:"var(--s2)",borderRadius:10,border:"1px solid var(--bdr)",textAlign:"center"}}>
-              <p style={{fontSize:13,color:"var(--t2)",marginBottom:12}}>Log in or create a talent profile to request a class booking.</p>
-              <button className="btn-p btn-sm" onClick={()=>onNavigate("login")}>Sign In</button>
-              {" "}<button className="btn-s btn-sm" onClick={()=>onNavigate("register-talent")}>Create Profile</button>
+              <p style={{fontSize:13,color:"var(--t2)",marginBottom:12}}>{t('classes.signInToBook')}</p>
+              <button className="btn-p btn-sm" onClick={()=>onNavigate("login")}>{t('nav.signIn')}</button>
+              {" "}<button className="btn-s btn-sm" onClick={()=>onNavigate("register-talent")}>{t('footer.createProfile')}</button>
             </div>
           )}
         </div>
@@ -3274,8 +3418,8 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
       {clsSlots.length===0&&(
         <div style={{maxWidth:900,margin:"0 auto",paddingBottom:40}}>
           <div style={{padding:24,background:"var(--s2)",borderRadius:12,border:"1px solid var(--bdr)"}}>
-            <p style={{fontSize:14,color:"var(--t2)",lineHeight:1.65,marginBottom:12}}>Interested? Enrollment is handled directly by the teaching studio. Email us and we'll connect you with the instructor and confirm a seat.</p>
-            <button className="btn-p" onClick={()=>onNavigate("contact")}>Contact to Enroll →</button>
+            <p style={{fontSize:14,color:"var(--t2)",lineHeight:1.65,marginBottom:12}}>{t('classes.enrollDesc')}</p>
+            <button className="btn-p" onClick={()=>onNavigate("contact")}>{t('classes.contactToEnroll')}</button>
           </div>
         </div>
       )}
@@ -3312,10 +3456,10 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
         <div className="cls-card-img">
           <ClassPosterCollage posters={cls.instructor_poster_urls} imageUrl={cls.image_url} title={cls.title}/>
           {isFeatured&&(
-            <div style={{position:"absolute",top:10,left:10,background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:0.8,textTransform:"uppercase",padding:"3px 8px",borderRadius:20,lineHeight:1.4}}>Featured</div>
+            <div style={{position:"absolute",top:10,left:10,background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:0.8,textTransform:"uppercase",padding:"3px 8px",borderRadius:20,lineHeight:1.4}}>{t('classes.featured')}</div>
           )}
           {hasSale&&(
-            <div style={{position:"absolute",bottom:10,left:10,background:"#e74c3c",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:0.6,padding:"3px 8px",borderRadius:20,lineHeight:1.4}}>Sale</div>
+            <div style={{position:"absolute",bottom:10,left:10,background:"#e74c3c",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:0.6,padding:"3px 8px",borderRadius:20,lineHeight:1.4}}>{t('classes.sale')}</div>
           )}
         </div>
 
@@ -3323,7 +3467,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
         <div style={{flex:1,padding:"18px 20px",display:"flex",flexDirection:"column",justifyContent:"center",minWidth:0}}>
           {displayDate&&(
             <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:5}}>
-              Starts: {displayDate}
+              {t('classes.starts')} {displayDate}
               {next&&clsSlots[0]&&<span style={{marginLeft:6,fontWeight:500}}>· {fmtTime(clsSlots[0].start_time)}</span>}
             </div>
           )}
@@ -3351,11 +3495,11 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
         <div className="cls-card-action">
           <button className="btn-p btn-sm" style={{whiteSpace:"nowrap"}}
             onClick={e=>{e.stopPropagation();setViewing(cls);window.scrollTo(0,0);}}>
-            View Class
+            {t('classes.viewClass')}
           </button>
           <button className="btn-s btn-sm" style={{whiteSpace:"nowrap"}}
             onClick={e=>{e.stopPropagation();setViewing(cls);window.scrollTo(0,0);}}>
-            Quick View →
+            {t('classes.quickView')}
           </button>
         </div>
       </div>
@@ -3365,11 +3509,11 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
   return(<div className="page">
     <div className="info-hero">
       <div className="section-label">{t('classes.title')}</div>
-      <h1>Training That Actually<br/>Moves Your Career.</h1>
-      <p>A curated directory of serious, working-actor classes — in New York and online. Taught by active casting directors, working VO actors, and veteran studio teachers. CastSlate does not run the classes directly; we vet the teachers and help students enroll.</p>
+      <h1>{t('classes.heroTitle')}</h1>
+      <p>{t('classes.heroDesc')}</p>
     </div>
     <div style={{display:"flex",flexWrap:"wrap",gap:8,justifyContent:"center",marginBottom:40}}>
-      <button className="btn-s btn-sm" onClick={()=>setFilter("all")} style={filter==="all"?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>All Categories</button>
+      <button className="btn-s btn-sm" onClick={()=>setFilter("all")} style={filter==="all"?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>{t('classes.allCategories')}</button>
       {CLASS_CATEGORIES.map(cat=><button key={cat.id} className="btn-s btn-sm" onClick={()=>setFilter(cat.id)} style={filter===cat.id?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>{cat.name}</button>)}
     </div>
 
@@ -3660,7 +3804,7 @@ function PricingPage({onNavigate}){
       <div style={{textAlign:"center",padding:"60px 20px 40px",maxWidth:640,margin:"0 auto"}}>
         <div className="section-label">{t('pricing.title')}</div>
         <h1 style={{fontSize:38,fontWeight:800,letterSpacing:-1.5,lineHeight:1.15,marginBottom:14,color:"var(--t1)"}}>{t('pricing.subtitle')}</h1>
-        <p style={{color:"var(--t3)",fontSize:15,lineHeight:1.65,maxWidth:500,margin:"0 auto"}}>Start free. Upgrade only when you need more submissions, media, and visibility.</p>
+        <p style={{color:"var(--t3)",fontSize:15,lineHeight:1.65,maxWidth:500,margin:"0 auto"}}>{t('pricing.startFree')}</p>
       </div>
 
       {/* ── Cards ── */}
@@ -3671,54 +3815,54 @@ function PricingPage({onNavigate}){
           <div style={card}>
             <div style={{height:28}}/>
             <div style={{marginBottom:18}}>
-              <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.3,color:"var(--t3)",marginBottom:3}}>Actor Free</div>
-              <div style={{fontSize:12,color:"var(--t3)"}}>Actors · Models · Performers</div>
+              <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.3,color:"var(--t3)",marginBottom:3}}>{t('pricing.actorFree')}</div>
+              <div style={{fontSize:12,color:"var(--t3)"}}>{t('pricing.actorsModels')}</div>
             </div>
             <div style={{paddingBottom:20,marginBottom:20,borderBottom:"1px solid #ede8e0"}}>
               <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:40,color:"var(--t1)",letterSpacing:-1.5,lineHeight:1}}>$0</div>
-              <div style={{fontSize:12,color:"var(--t3)",marginTop:5}}>No credit card required</div>
+              <div style={{fontSize:12,color:"var(--t3)",marginTop:5}}>{t('pricing.noCreditCard')}</div>
             </div>
             <div style={{flex:1}}>
-              {["Free account","1 headshot","3 submissions per day","Basic actor profile","Browse all castings"].map(f=>feat(f,"var(--grn)"))}
+              {[t('pricing.freeLabel')+' account','1 headshot','3 submissions per day','Basic actor profile','Browse all castings'].map(f=>feat(f,"var(--grn)"))}
             </div>
-            <button style={{...btnOutline,marginTop:24}} onClick={()=>onNavigate("register-talent")}>Get Started Free</button>
+            <button style={{...btnOutline,marginTop:24}} onClick={()=>onNavigate("register-talent")}>{t('pricing.getStartedFree')}</button>
           </div>
 
           {/* Actor Premium */}
           <div style={{...card,border:"2px solid var(--acc)",boxShadow:"0 8px 36px rgba(0,0,0,0.14)",transform:isMobile?"none":"translateY(-10px)"}}>
             <div style={{height:28,display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <span style={{background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",padding:"3px 16px",borderRadius:100,whiteSpace:"nowrap"}}>Recommended</span>
+              <span style={{background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",padding:"3px 16px",borderRadius:100,whiteSpace:"nowrap"}}>{t('pricing.recommended')}</span>
             </div>
             <div style={{marginBottom:18,marginTop:10}}>
-              <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.3,color:"var(--acc)",marginBottom:3}}>Actor Premium</div>
-              <div style={{fontSize:12,color:"var(--t3)"}}>Actors · Models · Performers</div>
+              <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.3,color:"var(--acc)",marginBottom:3}}>{t('pricing.actorPremium')}</div>
+              <div style={{fontSize:12,color:"var(--t3)"}}>{t('pricing.actorsModels')}</div>
             </div>
             <div style={{paddingBottom:20,marginBottom:20,borderBottom:"1px solid #ede8e0"}}>
               <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:40,color:"var(--acc)",letterSpacing:-1.5,lineHeight:1}}>$9.99</div>
-              <div style={{fontSize:12,color:"var(--t3)",marginTop:5}}>per month · cancel anytime</div>
+              <div style={{fontSize:12,color:"var(--t3)",marginTop:5}}>{t('pricing.perMonthCancel')}</div>
             </div>
             <div style={{flex:1}}>
-              {["10 headshots","Up to 5 video reel links","Unlimited submissions","Premium profile features"].map(f=>feat(f,"var(--acc)"))}
+              {['10 headshots','Up to 5 video reel links',t('pricing.unlimitedLabel')+' submissions','Premium profile features'].map(f=>feat(f,"var(--acc)"))}
             </div>
-            <button style={{...btnFilled,marginTop:24}} onClick={()=>onNavigate("membership")}>Get Premium — $9.99/mo</button>
+            <button style={{...btnFilled,marginTop:24}} onClick={()=>onNavigate("membership")}>{t('pricing.getPremium')}</button>
           </div>
 
           {/* Casting Director */}
           <div style={card}>
             <div style={{height:28}}/>
             <div style={{marginBottom:18}}>
-              <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.3,color:"var(--t3)",marginBottom:3}}>Casting Director</div>
-              <div style={{fontSize:12,color:"var(--t3)"}}>Casting Directors · Producers</div>
+              <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.3,color:"var(--t3)",marginBottom:3}}>{t('pricing.castingDir')}</div>
+              <div style={{fontSize:12,color:"var(--t3)"}}>{t('pricing.castingProducers')}</div>
             </div>
             <div style={{paddingBottom:20,marginBottom:20,borderBottom:"1px solid #ede8e0"}}>
-              <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:40,color:"var(--t1)",letterSpacing:-1.5,lineHeight:1}}>Free</div>
-              <div style={{fontSize:12,color:"var(--t3)",marginTop:5}}>to create an account</div>
+              <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:40,color:"var(--t1)",letterSpacing:-1.5,lineHeight:1}}>{t('pricing.freeLabel')}</div>
+              <div style={{fontSize:12,color:"var(--t3)",marginTop:5}}>{t('pricing.toCreate')}</div>
             </div>
             <div style={{flex:1}}>
-              {["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent filters"].map(f=>feat(f,"var(--grn)"))}
-              <div style={{fontSize:11,color:"var(--t3)",marginTop:14,lineHeight:1.6}}>Posting fees finalized before launch. Account creation is always free.</div>
+              {[t('pricing.freeLabel')+' account creation','Verified creators can post castings','Swipe-based talent review','Advanced talent filters'].map(f=>feat(f,"var(--grn)"))}
+              <div style={{fontSize:11,color:"var(--t3)",marginTop:14,lineHeight:1.6}}>{t('pricing.postingFees')}</div>
             </div>
-            <button style={{...btnOutline,marginTop:24}} onClick={()=>onNavigate("register-cd")}>Create CD Account</button>
+            <button style={{...btnOutline,marginTop:24}} onClick={()=>onNavigate("register-cd")}>{t('pricing.createCD')}</button>
           </div>
 
         </div>
@@ -3727,17 +3871,17 @@ function PricingPage({onNavigate}){
       {/* ── Comparison table ── */}
       <div style={{maxWidth:740,margin:"0 auto 40px",padding:"0 20px"}}>
         <div className="card" style={{padding:"24px 28px"}}>
-          <h4 style={{fontSize:14,fontWeight:700,marginBottom:16}}>Actor Plan Comparison</h4>
+          <h4 style={{fontSize:14,fontWeight:700,marginBottom:16}}>{t('pricing.comparison')}</h4>
           <div style={{display:"grid",gridTemplateColumns:isMobile?"2fr 1fr 1fr":"1fr 1fr 1fr",gap:isMobile?4:8,padding:"8px 0",borderBottom:"2px solid var(--bdr)",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)"}}>
-            <span>Feature</span><span style={{textAlign:"center"}}>Free</span><span style={{textAlign:"center",color:"var(--acc)"}}>Premium</span>
+            <span>{t('pricing.feature')}</span><span style={{textAlign:"center"}}>{t('pricing.freeLabel')}</span><span style={{textAlign:"center",color:"var(--acc)"}}>Premium</span>
           </div>
-          {featureRow("Casting submissions / day","3","Unlimited")}
+          {featureRow("Casting submissions / day","3",t('pricing.unlimitedLabel'))}
           {featureRow("Headshots","1","Up to 10")}
           {featureRow("Video reel links","None","Up to 5")}
           {featureRow("Browse castings","✓","✓")}
           {featureRow("Basic actor profile","✓","✓")}
           {featureRow("Premium profile features","—","✓")}
-          {featureRow("Price","Free",PREMIUM_PRICE)}
+          {featureRow("Price",t('pricing.freeLabel'),PREMIUM_PRICE)}
         </div>
       </div>
 
