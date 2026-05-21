@@ -8028,6 +8028,28 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       </div>
     </section>
 
+    {/* ───────── iOS APP TEASER ───────── */}
+    <div style={{background:"linear-gradient(160deg,#12121f 0%,#1a1a2e 60%,#14151f 100%)",borderTop:"1px solid rgba(255,255,255,.05)",padding:"72px 40px",textAlign:"center"}}>
+      <div style={{maxWidth:580,margin:"0 auto"}}>
+        <div style={{marginBottom:22,opacity:.55}}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="5" y="2" width="14" height="20" rx="3"/>
+            <circle cx="12" cy="17.5" r=".8" fill="rgba(255,255,255,.9)" stroke="none"/>
+          </svg>
+        </div>
+        <div style={{display:"inline-flex",alignItems:"center",gap:7,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.10)",color:"rgba(255,255,255,.5)",fontSize:10,fontWeight:700,letterSpacing:1.4,padding:"5px 14px",borderRadius:100,marginBottom:20,fontFamily:"'DM Sans',sans-serif",textTransform:"uppercase"}}>
+          <span style={{width:5,height:5,borderRadius:"50%",background:"rgba(255,255,255,.35)",flexShrink:0}}/>
+          iOS App Coming Soon
+        </div>
+        <h3 style={{color:"#fff",fontWeight:800,fontSize:30,letterSpacing:-1,lineHeight:1.13,marginBottom:14}}>CastSlate for iPhone is coming soon.</h3>
+        <p style={{color:"rgba(255,255,255,.42)",fontSize:14,lineHeight:1.75,maxWidth:440,margin:"0 auto 24px"}}>Browse castings, manage your profile, receive invitations, and connect with opportunities from anywhere. Soon available for free on the Apple App Store.</p>
+        <div style={{display:"inline-flex",alignItems:"center",gap:8,border:"1px solid rgba(255,255,255,.10)",borderRadius:10,padding:"10px 18px",cursor:"default"}}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="rgba(255,255,255,.45)" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          <span style={{color:"rgba(255,255,255,.38)",fontSize:12,fontWeight:600,letterSpacing:.2}}>Coming soon to the App Store</span>
+        </div>
+      </div>
+    </div>
+
     {/* ───────── FINAL CTA — only for anonymous visitors. The platform is live;
                 the call to action is to start using it now, not to join a waitlist. ───────── */}
     {!isLoggedIn&&<section className="lh-cta" style={{padding:"80px 40px",background:"linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)",color:"#fff",textAlign:"center"}}>
