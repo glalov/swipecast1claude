@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260521-swipe15 -->
-  <meta name="build-version" content="20260521-swipe15"/>
+  <!-- BUILD: 20260521-231021 -->
+  <meta name="build-version" content="20260521-231021"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260521-swipe15";
+      var B="20260521-231021";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -2484,23 +2484,8 @@ function RegisterTalent({onNavigate}){
   const [dupEmail,setDupEmail]=useState(false); // true when the email is already registered → show Resend / Login
   const [resentOk,setResentOk]=useState(false);
   const [resendCooldown,setResendCooldown]=useState(0);
-  const [socialAgreed,setSocialAgreed]=useState(false);
   const submittingRef=useRef(false); // blocks double-click races that fire two signUp calls
   const [f,setF]=useState({first:"",last:"",email:"",password:"",location:"",gender:"",age:"",height:"",weight:"",hair:"",eyes:"",ethnicity:"",union_status:"Non-Union",types:[],bio:"",training:"",skills:"",agent:"",agree:false,guardian_name:"",guardian_email:""});
-  const handleSocialAuth=async(provider)=>{
-    setErr("");
-    if(!socialAgreed){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
-    try{
-      const {error}=await window.sb.auth.signInWithOAuth({provider,options:{redirectTo:"https://www.castslate.com"}});
-      if(error){
-        const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-        setErr(`${name} sign-in is not configured yet. Please use email signup below.`);
-      }
-    }catch(e){
-      const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-      setErr(`${name} sign-in is not configured yet. Please use email signup below.`);
-    }
-  };
   const up=(k,v)=>setF(x=>({...x,[k]:v}));
   const toggleType=t=>setF(x=>({...x,types:x.types.includes(t)?x.types.filter(y=>y!==t):[...x.types,t]}));
   const validStep1=()=>{if(!f.first||!f.last){setErr("Please enter your first and last name.");return false;}if(!f.email||!f.email.includes("@")){setErr("Please enter a valid email address.");return false;}if(!f.password||f.password.length<8){setErr("Password must be at least 8 characters.");return false;}if(!f.location){setErr("Please enter your location.");return false;}setErr("");return true;};
@@ -2601,25 +2586,7 @@ function RegisterTalent({onNavigate}){
       <div style={{display:"flex",gap:8,marginBottom:32}}>{[1,2,3].map(s=><div key={s} style={{flex:1,height:4,borderRadius:2,background:s<=step?"var(--acc)":"var(--s3)",transition:"background .3s"}}/>)}</div>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}>✓ Verification email re-sent — check your inbox.</div>}</div>}
 
-      {step===1&&<>
-        {/* Social OAuth — shown only on step 1 */}
-        <div style={{marginBottom:24}}>
-          <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:12}}>
-            {[["🔵","Continue with Google","google"],["","Continue with Apple","apple"],["📘","Continue with Facebook","facebook"]].map(([ic,label,provider])=>(
-              <button key={label} className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={()=>handleSocialAuth(provider)}>
-                <span>{ic}</span>{label}
-              </button>
-            ))}
-          </div>
-          <div style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:16,color:"var(--t2)",fontSize:12,lineHeight:1.55}}>
-            <input type="checkbox" checked={socialAgreed} onChange={e=>setSocialAgreed(e.target.checked)} style={{marginTop:3,flexShrink:0}}/>
-            <span>I agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm I am at least 18 years old.</span>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:12,color:"var(--t3)",fontSize:12}}>
-            <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
-          </div>
-        </div>
-        <h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>1 / 3 — {tr('reg.t.step1')}</h3>
+      {step===1&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>1 / 3 — {tr('reg.t.step1')}</h3>
         <div className="form-row"><div className="form-group"><label className="label">{tr('reg.t.firstName')}</label><input className="input" placeholder={tr('reg.t.firstName')} value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.t.lastName')}</label><input className="input" placeholder={tr('reg.t.lastName')} value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
         <div className="form-group"><label className="label">{tr('reg.t.email')}</label><input className="input" type="email" placeholder="you@email.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
         <div className="form-group"><label className="label">{tr('reg.t.password')}</label><input className="input" type="password" placeholder={tr('reg.t.password')} value={f.password} onChange={e=>up("password",e.target.value)}/></div>
@@ -2682,23 +2649,8 @@ function RegisterCD({onNavigate}){
   const [dupEmail,setDupEmail]=useState(false);
   const [resentOk,setResentOk]=useState(false);
   const [resendCooldown,setResendCooldown]=useState(0);
-  const [socialAgreed,setSocialAgreed]=useState(false);
   const submittingRef=useRef(false);
   const [f,setF]=useState({first:"",last:"",email:"",password:"",company_name:"",company_role:"Casting Director",location:"",website:"",agree:false});
-  const handleSocialAuth=async(provider)=>{
-    setErr("");
-    if(!socialAgreed){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
-    try{
-      const {error}=await window.sb.auth.signInWithOAuth({provider,options:{redirectTo:"https://www.castslate.com"}});
-      if(error){
-        const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-        setErr(`${name} sign-in is not configured yet. Please use email signup below.`);
-      }
-    }catch(e){
-      const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-      setErr(`${name} sign-in is not configured yet. Please use email signup below.`);
-    }
-  };
   const up=(k,v)=>setF(x=>({...x,[k]:v}));
   const withTimeout=(promise,ms=30000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Check your connection and try again.`)),ms))]);
   const resendConfirmation=async()=>{
@@ -2772,23 +2724,6 @@ function RegisterCD({onNavigate}){
       <h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:8}}>{tr('reg.cd.title')}</h1>
       <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>{tr('reg.cd.subtitle')} <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>{tr('reg.t.logIn')}</span></p>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}>✓ Verification email re-sent — check your inbox.</div>}</div>}
-      <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:12,padding:"16px 18px",marginBottom:24}}>
-        <p style={{fontSize:13,color:"var(--t2)",marginBottom:0}}>Industry accounts are <strong style={{color:"var(--t1)"}}>free to create</strong>. You only pay when posting a casting, if posting fees apply.</p>
-      </div>
-      <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:12}}>
-        {[["🔵","Continue with Google","google"],["","Continue with Apple","apple"],["📘","Continue with Facebook","facebook"]].map(([ic,label,provider])=>(
-          <button key={label} className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={()=>handleSocialAuth(provider)}>
-            <span>{ic}</span>{label}
-          </button>
-        ))}
-      </div>
-      <div style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:16,color:"var(--t2)",fontSize:12,lineHeight:1.55}}>
-        <input type="checkbox" checked={socialAgreed} onChange={e=>setSocialAgreed(e.target.checked)} style={{marginTop:3,flexShrink:0}}/>
-        <span>I agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm I am at least 18 years old.</span>
-      </div>
-      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24,color:"var(--t3)",fontSize:12}}>
-        <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
-      </div>
       <div className="form-row"><div className="form-group"><label className="label">{tr('reg.cd.firstName')}</label><input className="input" placeholder={tr('reg.cd.firstName')} value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.cd.lastName')}</label><input className="input" placeholder={tr('reg.cd.lastName')} value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
       <div className="form-group"><label className="label">{tr('reg.cd.email')}</label><input className="input" type="email" placeholder="you@company.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
       <div className="form-group"><label className="label">{tr('reg.cd.password')}</label><input className="input" type="password" placeholder={tr('reg.cd.password')} value={f.password} onChange={e=>up("password",e.target.value)}/></div>
@@ -4308,7 +4243,6 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
 
   const handleSocialAuth=async(provider)=>{
     setErr("");
-    if(!agreed){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
     // Save pending apply before redirect — it survives the OAuth round-trip
     if(pending){
       try{sessionStorage.setItem("sc_post_auth_apply",JSON.stringify({casting:pending.casting,role:pending.role}));}catch(_){}
@@ -9067,7 +9001,6 @@ function LandingSwipe(){
         </div>
       </div>
       <div style={{fontSize:11,color:"var(--t3)",margin:"10px 0 6px",letterSpacing:.5}}>{idx+1} / {total}</div>
-      <div style={{fontSize:10,color:"#e66",fontWeight:700,letterSpacing:1,marginBottom:4}}>SWIPE DEMO v15</div>
       <div className="swipe-btns">
         <button className="sw-btn pass" title="Pass" disabled={animating} onClick={()=>advance(-1)}>✕</button>
         <button className="sw-btn save" title="Shortlist" disabled={animating} onClick={()=>advance(1)}>★</button>
