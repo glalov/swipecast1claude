@@ -1743,18 +1743,18 @@ html,body{overflow-x:hidden;}
 @media(max-width:860px){.ios-teaser-phone-col{display:none !important;}}
 
 /* ── Landing: Single cinematic feature image section ── */
-.cinema-feature{max-width:1200px;margin:0 auto 72px;padding:0 clamp(16px,4vw,40px);}
-.cinema-feature-inner{display:grid;grid-template-columns:1fr 1.8fr;gap:48px;align-items:center;}
-.cinema-feature-copy .cf-label{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--t3);font-weight:700;font-family:'DM Sans',sans-serif;margin:0 0 14px;}
-.cinema-feature-copy h2{font-weight:800;font-size:clamp(22px,3vw,30px);letter-spacing:-0.8px;line-height:1.2;margin:0 0 16px;}
-.cinema-feature-copy p{color:var(--t2);font-size:15px;line-height:1.65;margin:0;}
-.cinema-feature-img{border-radius:18px;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,0.13);aspect-ratio:16/9;background:var(--s3);}
-.cinema-feature-img img{width:100%;height:100%;object-fit:cover;display:block;}
-@media(max-width:820px){
-  .cinema-feature-inner{grid-template-columns:1fr;gap:28px;}
-  .cinema-feature-copy{text-align:center;}
-}
-@media(max-width:480px){
+.cinema-feature{max-width:1100px;margin:0 auto 80px;padding:0 clamp(16px,4vw,40px);}
+.cinema-feature-inner{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,0.08);overflow:hidden;display:grid;grid-template-columns:1fr 1fr;min-height:420px;}
+.cinema-feature-img{overflow:hidden;min-height:320px;}
+.cinema-feature-img img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;}
+.cinema-feature-copy{padding:44px 40px;display:flex;flex-direction:column;justify-content:center;gap:14px;}
+.cinema-feature-copy .cf-label{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--acc);font-weight:700;font-family:'DM Sans',sans-serif;margin:0;}
+.cinema-feature-copy h2{font-weight:800;font-size:clamp(22px,2.8vw,30px);letter-spacing:-0.8px;line-height:1.15;margin:0;}
+.cinema-feature-copy p{color:var(--t2);font-size:14px;line-height:1.7;margin:0;}
+@media(max-width:720px){
+  .cinema-feature-inner{grid-template-columns:1fr;}
+  .cinema-feature-img{aspect-ratio:3/2;min-height:unset;}
+  .cinema-feature-copy{padding:28px 24px;}
   .cinema-feature{margin-bottom:48px;}
 }
 
@@ -9256,16 +9256,27 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     {/* ───────── STATS ───────── */}
     <div style={{display:"flex",justifyContent:"center",gap:"clamp(32px,6vw,80px)",padding:"56px 40px",maxWidth:1200,margin:"0 auto",flexWrap:"wrap"}}>{[["100%","Of submissions reviewed"],["$9.99","/mo · cheapest in casting"],["3.2×","Faster to callback"],["72hr","Avg. response time"]].map(([n,l])=><div key={l} style={{textAlign:"center"}}><div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:42,color:"var(--acc)",letterSpacing:-1}}>{n}</div><div style={{color:"var(--t2)",fontSize:12,marginTop:4,letterSpacing:0.3}}>{l}</div></div>)}</div>
 
-    {/* ───────── CINEMATIC FEATURE IMAGE ───────── */}
+    {/* ───────── CINEMATIC FEATURE CARD ───────── */}
     <div className="cinema-feature">
       <div className="cinema-feature-inner">
+        <div className="cinema-feature-img">
+          <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=900&q=85" alt="Cinematographer filming actors on a modern film set" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+        </div>
         <div className="cinema-feature-copy">
           <p className="cf-label">The work behind every casting</p>
-          <h2>From rehearsal rooms to film sets.</h2>
-          <p>CastSlate is built around real actors, real submissions, and real opportunities. Every casting on this platform starts with someone who showed up, did the work, and got seen.</p>
-        </div>
-        <div className="cinema-feature-img">
-          <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=1200&q=85" alt="Actors on a film set during production" loading="lazy" onError={e=>{e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+          <h2>From set to submission.</h2>
+          <p>CastSlate is built around real actors, real work, and real casting decisions. Every profile is reviewed visually, one actor at a time.</p>
+          <div className="hiw-card-steps">
+            {[["1","Create your actor profile."],["2","Submit to roles."],["3","Get reviewed full-screen."]].map(([n,t])=>(
+              <div key={n} className="hiw-card-step">
+                <span className="hiw-step-num">{n}</span>
+                <span><strong style={{color:"var(--t1)"}}>Step {n}:</strong> {t}</span>
+              </div>
+            ))}
+          </div>
+          <div>
+            <button className="btn-p" style={{padding:"13px 22px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Create My Free Profile →</button>
+          </div>
         </div>
       </div>
     </div>
