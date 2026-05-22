@@ -1261,6 +1261,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .btn-s{background:transparent;color:var(--t1);border:1px solid var(--bdr);padding:10px 22px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;}
 .btn-s:hover{border-color:var(--t2);background:var(--s1);}
 .btn-sm{padding:8px 16px;font-size:12px;border-radius:6px;}
+.social-btn-dark{background:#1a1a2e;color:#fff;border:none;padding:12px 20px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;letter-spacing:0.1px;}
+.social-btn-dark:hover{background:#2d2d44;transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,26,46,0.18);}
 .page{max-width:1200px;margin:0 auto;padding:40px 40px 0;width:100%;display:flex;flex-direction:column;flex:1 1 auto;min-height:calc(100vh - 80px);}
 .page-wide{max-width:1400px;}
 .section-label{font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:12px;}
@@ -2560,40 +2562,59 @@ function RegisterTalent({onNavigate}){
     }
   };
   if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Your free profile is ready. Click the link in that email, then log in to browse castings. You'll only need to activate a membership when you're ready to submit for a role.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}>✓ Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
-  return(
-    <div className="page"><div style={{maxWidth:640,margin:"0 auto"}}>
-      <div className="section-label">{tr('reg.t.title')}</div>
-      <h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:8}}>{tr('reg.t.title')}</h1>
-      <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>{tr('reg.t.subtitle')} <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>{tr('reg.t.logIn')}</span></p>
-      {step===1&&<>
-        {/* Social sign-up options */}
-        <div style={{marginBottom:24}}>
-          <div style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:14,color:"var(--t2)",fontSize:12,lineHeight:1.55}}>
-            <input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)} style={{marginTop:3}}/>
-            <span>I agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span></span>
+  if(step===1)return(
+    <div className="page" style={{maxWidth:960}}>
+      <div className="auth-gate-grid">
+        {/* LEFT: plan context */}
+        <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16,padding:"32px 28px",position:"sticky",top:100}}>
+          <div className="section-label" style={{marginBottom:8}}>Get started free</div>
+          <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginBottom:10,lineHeight:1.15}}>Create your free actor profile.</h2>
+          <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:20}}>Creating an actor account is <strong style={{color:"var(--t1)"}}>free</strong>. Upgrade to Premium later for more uploads and unlimited submissions.</p>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <div style={{border:"2px solid var(--grn)",borderRadius:12,padding:"14px 16px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><span style={{fontWeight:800,fontSize:14}}>Free Account</span><span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--grn)"}}>$0</span></div>
+              {["1 headshot","3 casting submissions per day","Browse all castings","Basic actor profile"].map(feat=><div key={feat} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{feat}</div>)}
+              <div style={{marginTop:10,fontSize:11,color:"var(--t3)",fontStyle:"italic"}}>↑ Use the form on the right to create your free account</div>
+            </div>
+            <div style={{border:"1px solid var(--bdr)",borderRadius:12,padding:"14px 16px",opacity:0.85}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><span style={{fontWeight:800,fontSize:14}}>Actor Premium</span><span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--acc)"}}>$9.99/mo</span></div>
+              {["10 headshots","Up to 5 video reel links","Unlimited casting submissions","Premium profile features"].map(feat=><div key={feat} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{feat}</div>)}
+              <button className="btn-s" style={{width:"100%",marginTop:10,fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>
+            </div>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:12}}>
-            {[["🔵","Continue with Google","google"],["","Continue with Apple","apple"],["📘","Continue with Facebook","facebook"]].map(([ic,label,provider])=>(
-              <button key={label} type="button" className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={()=>handleSocialAuth(provider)}>
-                <span>{ic}</span>{label}
-              </button>
-            ))}
+        </div>
+        {/* RIGHT: form */}
+        <div>
+          <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:6}}>Create your free actor account</h2>
+          <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>Takes about 60 seconds. No payment required.</p>
+          <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
+            <button type="button" className="social-btn-dark" onClick={()=>handleSocialAuth("google")}><svg viewBox="0 0 24 24" width="18" height="18" style={{flexShrink:0}}><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+            <button type="button" className="social-btn-dark" onClick={()=>handleSocialAuth("apple")}><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style={{flexShrink:0}}><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>Continue with Apple</button>
+            <button type="button" className="social-btn-dark" style={{background:"#1877F2"}} onClick={()=>handleSocialAuth("facebook")}><svg viewBox="0 0 24 24" width="18" height="18" fill="white" style={{flexShrink:0}}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Continue with Facebook</button>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
             <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
           </div>
+          {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}>✓ Verification email re-sent — check your inbox.</div>}</div>}
+          <div className="form-row"><div className="form-group"><label className="label">{tr('reg.t.firstName')}</label><input className="input" placeholder={tr('reg.t.firstName')} value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.t.lastName')}</label><input className="input" placeholder={tr('reg.t.lastName')} value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
+          <div className="form-group"><label className="label">{tr('reg.t.email')}</label><input className="input" type="email" placeholder="you@email.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
+          <div className="form-group"><label className="label">{tr('reg.t.password')}</label><input className="input" type="password" placeholder={tr('reg.t.password')} value={f.password} onChange={e=>up("password",e.target.value)}/></div>
+          <div className="form-group"><label className="label">{tr('reg.t.location')}</label><select className="select" style={{width:"100%"}} value={f.location} onChange={e=>up("location",e.target.value)}><option value="">Select your state</option>{US_STATES.map(s=><option key={s} value={s}>{s}</option>)}</select></div>
+          <div style={{display:"flex",gap:10,alignItems:"flex-start",margin:"16px 0",color:"var(--t2)",fontSize:12,lineHeight:1.55}}>
+            <input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)} style={{marginTop:3,flexShrink:0}}/>
+            <span>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</span>
+          </div>
+          <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={()=>{if(validStep1())setStep(2);}}>{tr('reg.t.next')}</button>
+          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>onNavigate("login")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
         </div>
-      </>}
-
+      </div>
+      <Footer onNavigate={onNavigate}/>
+    </div>
+  );
+  return(
+    <div className="page"><div style={{maxWidth:640,margin:"0 auto"}}>
       <div style={{display:"flex",gap:8,marginBottom:32}}>{[1,2,3].map(s=><div key={s} style={{flex:1,height:4,borderRadius:2,background:s<=step?"var(--acc)":"var(--s3)",transition:"background .3s"}}/>)}</div>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}>✓ Verification email re-sent — check your inbox.</div>}</div>}
-
-      {step===1&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>1 / 3 — {tr('reg.t.step1')}</h3>
-        <div className="form-row"><div className="form-group"><label className="label">{tr('reg.t.firstName')}</label><input className="input" placeholder={tr('reg.t.firstName')} value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.t.lastName')}</label><input className="input" placeholder={tr('reg.t.lastName')} value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
-        <div className="form-group"><label className="label">{tr('reg.t.email')}</label><input className="input" type="email" placeholder="you@email.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
-        <div className="form-group"><label className="label">{tr('reg.t.password')}</label><input className="input" type="password" placeholder={tr('reg.t.password')} value={f.password} onChange={e=>up("password",e.target.value)}/></div>
-        <div className="form-group"><label className="label">{tr('reg.t.location')}</label><select className="select" style={{width:"100%"}} value={f.location} onChange={e=>up("location",e.target.value)}><option value="">Select your state</option>{US_STATES.map(s=><option key={s} value={s}>{s}</option>)}</select></div>
-        <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={()=>{if(validStep1())setStep(2);}}>{tr('reg.t.next')}</button></>}
 
       {step===2&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>2 / 3 — {tr('reg.t.step2')}</h3>
         <div className="form-row"><div className="form-group"><label className="label">{tr('reg.t.gender')}</label><select className="select" style={{width:"100%"}} value={f.gender} onChange={e=>up("gender",e.target.value)}><option value="">Select</option><option>Female</option><option>Male</option><option>Non-Binary</option><option>Other</option></select></div><div className="form-group"><label className="label">{tr('reg.t.age')}</label><input className="input" type="number" placeholder={tr('reg.t.age')} value={f.age} onChange={e=>up("age",e.target.value)}/></div></div>
@@ -2630,7 +2651,7 @@ function RegisterTalent({onNavigate}){
         <div className="form-group"><label className="label">{tr('reg.t.training')}</label><input className="input" placeholder="e.g. BFA Acting, NYU Tisch" value={f.training} onChange={e=>up("training",e.target.value)}/></div>
         <div className="form-group"><label className="label">{tr('reg.t.skills')}</label><input className="input" placeholder="e.g. Stage Combat, Fluent Spanish" value={f.skills} onChange={e=>up("skills",e.target.value)}/></div>
         <div className="form-group"><label className="label">{tr('reg.t.agent')}</label><input className="input" placeholder="Agency name" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
-        <label className="checkbox-row" style={{marginTop:12}}><input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)}/> I agree to CastSlate's Terms of Service and Privacy Policy</label>
+        <label className="checkbox-row" style={{marginTop:12,alignItems:"flex-start"}}><input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)} style={{marginTop:2,flexShrink:0}}/> <span>By continuing, you agree that you have read and agree to CastSlate's Terms of Service and Privacy Policy, and confirm that you are currently at least 18 years old.</span></label>
         <div style={{display:"flex",gap:12,marginTop:12}}><button className="btn-s" onClick={()=>setStep(2)} disabled={loading}>{tr('reg.t.back')}</button><button className="btn-p" style={{flex:1}} onClick={createAccount} disabled={loading}>{loading?tr('reg.t.creating'):tr('reg.t.createAccount')}</button></div></>}
 
       {/* Step 4 (Stripe) removed — signup is now free. Membership is activated
@@ -2741,38 +2762,50 @@ function RegisterCD({onNavigate}){
   };
   if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Click the link to activate your account. Then log in to post your first casting.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}>✓ Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
   return(
-    <div className="page"><div style={{maxWidth:640,margin:"0 auto"}}>
-      <div className="section-label">{tr('reg.cd.title')}</div>
-      <h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:8}}>{tr('reg.cd.title')}</h1>
-      <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>{tr('reg.cd.subtitle')} <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>{tr('reg.t.logIn')}</span></p>
-      {/* Social sign-up options */}
-      <div style={{marginBottom:24}}>
-        <div style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:14,color:"var(--t2)",fontSize:12,lineHeight:1.55}}>
-          <input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)} style={{marginTop:3}}/>
-          <span>I agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span></span>
+    <div className="page" style={{maxWidth:960}}>
+      <div className="auth-gate-grid">
+        {/* LEFT: context panel */}
+        <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16,padding:"32px 28px",position:"sticky",top:100}}>
+          <div className="section-label" style={{marginBottom:8}}>Industry account</div>
+          <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginBottom:10,lineHeight:1.15}}>Post castings, find great talent.</h2>
+          <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:20}}>Industry accounts are <strong style={{color:"var(--t1)"}}>free</strong> to create. Post your first casting and go live after a quick admin review.</p>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <div style={{border:"2px solid var(--grn)",borderRadius:12,padding:"14px 16px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><span style={{fontWeight:800,fontSize:14}}>Industry Account</span><span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--grn)"}}>FREE</span></div>
+              {["Post castings for free","Swipe-based talent review","Advanced talent filters","Verified industry badge"].map(feat=><div key={feat} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{feat}</div>)}
+              <div style={{marginTop:10,fontSize:11,color:"var(--t3)",fontStyle:"italic"}}>No membership fee required for industry accounts</div>
+            </div>
+          </div>
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:12}}>
-          {[["🔵","Continue with Google","google"],["","Continue with Apple","apple"],["📘","Continue with Facebook","facebook"]].map(([ic,label,provider])=>(
-            <button key={label} type="button" className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={()=>handleSocialAuth(provider)}>
-              <span>{ic}</span>{label}
-            </button>
-          ))}
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
-          <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
+        {/* RIGHT: form */}
+        <div>
+          <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:6}}>Create your industry account</h2>
+          <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>Takes about 60 seconds. No payment required.</p>
+          <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
+            <button type="button" className="social-btn-dark" onClick={()=>handleSocialAuth("google")}><svg viewBox="0 0 24 24" width="18" height="18" style={{flexShrink:0}}><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+            <button type="button" className="social-btn-dark" onClick={()=>handleSocialAuth("apple")}><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style={{flexShrink:0}}><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>Continue with Apple</button>
+            <button type="button" className="social-btn-dark" style={{background:"#1877F2"}} onClick={()=>handleSocialAuth("facebook")}><svg viewBox="0 0 24 24" width="18" height="18" fill="white" style={{flexShrink:0}}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Continue with Facebook</button>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
+            <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
+          </div>
+          {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}>✓ Verification email re-sent — check your inbox.</div>}</div>}
+          <div className="form-row"><div className="form-group"><label className="label">{tr('reg.cd.firstName')}</label><input className="input" placeholder={tr('reg.cd.firstName')} value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.cd.lastName')}</label><input className="input" placeholder={tr('reg.cd.lastName')} value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
+          <div className="form-group"><label className="label">{tr('reg.cd.email')}</label><input className="input" type="email" placeholder="you@company.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
+          <div className="form-group"><label className="label">{tr('reg.cd.password')}</label><input className="input" type="password" placeholder={tr('reg.cd.password')} value={f.password} onChange={e=>up("password",e.target.value)}/></div>
+          <div className="form-row"><div className="form-group"><label className="label">{tr('reg.cd.companyName')}</label><input className="input" placeholder={tr('reg.cd.companyName')} value={f.company_name} onChange={e=>up("company_name",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.cd.role')}</label><select className="select" style={{width:"100%"}} value={f.company_role} onChange={e=>up("company_role",e.target.value)}><option>Casting Director</option><option>Producer</option><option>Director</option><option>Casting Associate</option><option>Talent Manager</option><option>Studio Executive</option></select></div></div>
+          <div className="form-group"><label className="label">{tr('reg.cd.location')}</label><input className="input" placeholder="City, State" value={f.location} onChange={e=>up("location",e.target.value)}/></div>
+          <div className="form-group"><label className="label">{tr('reg.cd.website')}</label><input className="input" placeholder="https://" value={f.website} onChange={e=>up("website",e.target.value)}/></div>
+          <div style={{display:"flex",gap:10,alignItems:"flex-start",margin:"16px 0",color:"var(--t2)",fontSize:12,lineHeight:1.55}}>
+            <input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)} style={{marginTop:3,flexShrink:0}}/>
+            <span>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</span>
+          </div>
+          <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={submit} disabled={loading}>{loading?tr('reg.cd.creating'):tr('reg.cd.createAccount')}</button>
+          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>onNavigate("login")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
         </div>
       </div>
-      {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}>✓ Verification email re-sent — check your inbox.</div>}</div>}
-      <div className="form-row"><div className="form-group"><label className="label">{tr('reg.cd.firstName')}</label><input className="input" placeholder={tr('reg.cd.firstName')} value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.cd.lastName')}</label><input className="input" placeholder={tr('reg.cd.lastName')} value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
-      <div className="form-group"><label className="label">{tr('reg.cd.email')}</label><input className="input" type="email" placeholder="you@company.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
-      <div className="form-group"><label className="label">{tr('reg.cd.password')}</label><input className="input" type="password" placeholder={tr('reg.cd.password')} value={f.password} onChange={e=>up("password",e.target.value)}/></div>
-      <div className="form-row"><div className="form-group"><label className="label">{tr('reg.cd.companyName')}</label><input className="input" placeholder={tr('reg.cd.companyName')} value={f.company_name} onChange={e=>up("company_name",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.cd.role')}</label><select className="select" style={{width:"100%"}} value={f.company_role} onChange={e=>up("company_role",e.target.value)}><option>Casting Director</option><option>Producer</option><option>Director</option><option>Casting Associate</option><option>Talent Manager</option><option>Studio Executive</option></select></div></div>
-      <div className="form-group"><label className="label">{tr('reg.cd.location')}</label><input className="input" placeholder="City, State" value={f.location} onChange={e=>up("location",e.target.value)}/></div>
-      <div className="form-group"><label className="label">{tr('reg.cd.website')}</label><input className="input" placeholder="https://" value={f.website} onChange={e=>up("website",e.target.value)}/></div>
-      <div style={{background:"var(--s2)",borderRadius:10,padding:16,marginTop:8}}><div style={{display:"flex",alignItems:"center",gap:12}}><div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:24,color:"var(--grn)"}}>FREE</div><div><p style={{fontSize:13,fontWeight:600}}>Free to create your account</p><p style={{fontSize:12,color:"var(--t2)"}}>Casting posts are free — go live after admin approval</p></div></div></div>
-      <label className="checkbox-row" style={{marginTop:16}}><input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)}/> I agree to CastSlate's Terms of Service and Privacy Policy</label>
-      <button className="btn-p" style={{width:"100%",marginTop:16}} onClick={submit} disabled={loading}>{loading?tr('reg.cd.creating'):tr('reg.cd.createAccount')}</button>
-    </div><Footer onNavigate={onNavigate}/></div>
+      <Footer onNavigate={onNavigate}/>
+    </div>
   );
 }
 
@@ -3874,7 +3907,7 @@ function SuccessStoriesPage({onNavigate}){
     <div style={{maxWidth:700,margin:"0 auto",display:"flex",flexDirection:"column",gap:24}}>
       {SUCCESS_STORIES.map((s,i)=><div key={i} className="card story-card"><img src={s.img} alt={s.name}/><div><h4>{s.name}</h4><div className="story-role">{s.role}</div><p>"{s.quote}"</p></div></div>)}
     </div>
-    <div style={{textAlign:"center",marginTop:48}}><p style={{color:"var(--t2)",fontSize:15,marginBottom:16}}>Ready to write your own success story?</p><button className="btn-p" onClick={()=>onNavigate("register-talent")}>Create My Free Profile →</button></div>
+    <div style={{textAlign:"center",marginTop:48}}><p style={{color:"var(--t2)",fontSize:15,marginBottom:16}}>Ready to write your own success story?</p><button className="btn-p" onClick={()=>onNavigate("auth-gate")}>Create My Free Profile →</button></div>
     <Footer onNavigate={onNavigate}/></div>);
 }
 
@@ -4363,14 +4396,11 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
     <Footer onNavigate={onNavigate}/></div>);
 
   return(<div className="page" style={{maxWidth:960}}>
-    <div style={{background:"#1a1a2e",color:"#f5e8d0",fontFamily:"monospace",fontSize:13,fontWeight:700,padding:"8px 20px",textAlign:"center",letterSpacing:0.5,marginBottom:0}}>
-      APPLY SIGNUP VERSION 3 - FUNCTIONAL FREE APPLY FLOW
-    </div>
     <div className="auth-gate-grid">
       {/* LEFT: Context panel */}
       <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16,padding:"32px 28px",position:"sticky",top:100}}>
-        <div className="section-label" style={{marginBottom:8}}>Almost there</div>
-        <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginBottom:10,lineHeight:1.15}}>Create a free account to apply.</h2>
+        <div className="section-label" style={{marginBottom:8}}>{c?"Almost there":"Get started"}</div>
+        <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginBottom:10,lineHeight:1.15}}>{c?"Create a free account to apply.":"Create your free actor profile."}</h2>
         <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:20}}>Creating an actor account is <strong style={{color:"var(--t1)"}}>free</strong>. You can upgrade to Premium later for more uploads and unlimited submissions.</p>
 
         {c&&<div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,padding:"18px 20px",marginBottom:20}}>
@@ -4426,11 +4456,9 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
 
           {/* Social OAuth buttons */}
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
-            {[["🔵","Continue with Google","google"],["","Continue with Apple","apple"],["📘","Continue with Facebook","facebook"]].map(([ic,label,provider])=>(
-              <button key={label} className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={()=>handleSocialAuth(provider)}>
-                <span>{ic}</span>{label}
-              </button>
-            ))}
+            <button className="social-btn-dark" onClick={()=>handleSocialAuth("google")}><svg viewBox="0 0 24 24" width="18" height="18" style={{flexShrink:0}}><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+            <button className="social-btn-dark" onClick={()=>handleSocialAuth("apple")}><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style={{flexShrink:0}}><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>Continue with Apple</button>
+            <button className="social-btn-dark" style={{background:"#1877F2"}} onClick={()=>handleSocialAuth("facebook")}><svg viewBox="0 0 24 24" width="18" height="18" fill="white" style={{flexShrink:0}}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Continue with Facebook</button>
           </div>
 
           <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
@@ -4451,20 +4479,18 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
             <span>I agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm I am at least 18 years old.</span>
           </div>
 
-          <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={handleSignUp} disabled={loading}>{loading?"Creating account…":"Create Free Account & Apply →"}</button>
+          <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={handleSignUp} disabled={loading}>{loading?"Creating account…":c?"Create Free Account & Apply →":"Create Free Account →"}</button>
 
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>{setMode("login");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
         </>:<>
           <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:8}}>Welcome back</h2>
-          <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>Log in to continue your application.</p>
+          <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>{c?"Log in to continue your application.":"Log in to your CastSlate account."}</p>
 
           {/* Social OAuth buttons */}
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
-            {[["🔵","Continue with Google","google"],["","Continue with Apple","apple"],["📘","Continue with Facebook","facebook"]].map(([ic,label,provider])=>(
-              <button key={label} className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={()=>handleSocialAuth(provider)}>
-                <span>{ic}</span>{label}
-              </button>
-            ))}
+            <button className="social-btn-dark" onClick={()=>handleSocialAuth("google")}><svg viewBox="0 0 24 24" width="18" height="18" style={{flexShrink:0}}><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+            <button className="social-btn-dark" onClick={()=>handleSocialAuth("apple")}><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style={{flexShrink:0}}><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>Continue with Apple</button>
+            <button className="social-btn-dark" style={{background:"#1877F2"}} onClick={()=>handleSocialAuth("facebook")}><svg viewBox="0 0 24 24" width="18" height="18" fill="white" style={{flexShrink:0}}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Continue with Facebook</button>
           </div>
 
           <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
@@ -4479,12 +4505,12 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
             <span style={{color:"var(--blu)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>Forgot password?</span>
           </div>
 
-          <button className="btn-p" style={{width:"100%"}} onClick={handleSignIn} disabled={loading}>{loading?"Logging in…":"Log In & Continue to Apply →"}</button>
+          <button className="btn-p" style={{width:"100%"}} onClick={handleSignIn} disabled={loading}>{loading?"Logging in…":c?"Log In & Continue to Apply →":"Log In →"}</button>
 
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>New to CastSlate? <span onClick={()=>{setMode("signup");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Create a free account</span></p>
         </>}
 
-        <p style={{textAlign:"center",color:"var(--t3)",fontSize:11,marginTop:24}}><span onClick={onCancel} style={{cursor:"pointer",textDecoration:"underline"}}>← Back to casting</span></p>
+        {onCancel&&<p style={{textAlign:"center",color:"var(--t3)",fontSize:11,marginTop:24}}><span onClick={onCancel} style={{cursor:"pointer",textDecoration:"underline"}}>{c?"← Back to casting":"← Back"}</span></p>}
       </div>
     </div>
     <Footer onNavigate={onNavigate}/></div>);
@@ -9232,7 +9258,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </section>
 
     <section className="lh-section" style={{padding:"80px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">Pricing</div><div className="section-title">Simple pricing. No surprises.</div>
-      <div className="grid-3">{[{name:"Actor Free",who:"Actors · Models · Performers",price:"$0",period:"no credit card required",features:["Free account","1 headshot","3 submissions per day","Basic actor profile","Browse all castings"],featured:false,cta:"Get Started Free",action:"register-talent"},{name:"Actor Premium",who:"Actors · Models · Performers",price:"$9.99",period:"per month · cancel anytime",features:["10 headshots","Up to 5 video reel links","Unlimited submissions","Premium profile features"],featured:true,cta:"Get Premium — $9.99/mo",action:"membership"},{name:"Casting Director",who:"Casting Directors · Producers",price:"Free",period:"to create an account",features:["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent filters"],featured:false,cta:"Create CD Account",action:"register-cd"}].map(p=>
+      <div className="grid-3">{[{name:"Actor Free",who:"Actors · Models · Performers",price:"$0",period:"no credit card required",features:["Free account","1 headshot","3 submissions per day","Basic actor profile","Browse all castings"],featured:false,cta:"Get Started Free",action:"auth-gate"},{name:"Actor Premium",who:"Actors · Models · Performers",price:"$9.99",period:"per month · cancel anytime",features:["10 headshots","Up to 5 video reel links","Unlimited submissions","Premium profile features"],featured:true,cta:"Get Premium — $9.99/mo",action:"membership"},{name:"Casting Director",who:"Casting Directors · Producers",price:"Free",period:"to create an account",features:["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent filters"],featured:false,cta:"Create CD Account",action:"register-cd"}].map(p=>
         <div key={p.name} className="card" style={p.featured?{borderColor:"var(--acc)",background:"linear-gradient(165deg,var(--s1),rgba(26,26,46,.02))",position:"relative"}:{}}>
           {p.featured&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"var(--acc)",color:"var(--bg)",fontSize:10,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:"4px 14px",borderRadius:100,letterSpacing:1}}>RECOMMENDED</div>}
           <h3 style={{fontSize:18,fontWeight:700,marginBottom:4,textAlign:"center"}}>{p.name}</h3><p style={{color:"var(--t2)",fontSize:12,marginBottom:20,textAlign:"center"}}>{p.who}</p>
@@ -9353,7 +9379,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         <h2 style={{fontSize:42,fontWeight:800,letterSpacing:-1.5,lineHeight:1.1,marginBottom:16,color:"#fff"}}>Start applying today.<br/>Get cast.</h2>
         <p style={{fontSize:16,lineHeight:1.6,color:"rgba(255,255,255,0.75)",marginBottom:32,maxWidth:500,margin:"0 auto 32px"}}>Create your profile for free and start browsing open castings right now. Activate a $9.99/month membership when you're ready to submit — cancel anytime.</p>
         <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-          <button onClick={()=>onNavigate("register-talent")} style={{padding:"14px 28px",borderRadius:100,border:"none",background:"#fff",color:"#1a1a2e",fontSize:14,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>Create My Profile →</button>
+          <button onClick={()=>onNavigate("auth-gate")} style={{padding:"14px 28px",borderRadius:100,border:"none",background:"#fff",color:"#1a1a2e",fontSize:14,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>Create My Profile →</button>
           <button onClick={()=>onNavigate("search")} style={{padding:"14px 28px",borderRadius:100,border:"1px solid rgba(255,255,255,0.3)",background:"transparent",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",letterSpacing:0.3}}>Browse Castings</button>
           <button onClick={()=>onNavigate("register-cd")} style={{padding:"14px 28px",borderRadius:100,border:"1px solid rgba(255,255,255,0.3)",background:"transparent",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",letterSpacing:0.3}}>Post a Casting</button>
         </div>
@@ -13520,7 +13546,7 @@ function App(){
             <button className="btn-s btn-sm" onClick={()=>navigate("account-settings")} title={navT('nav.accountSettings')}>{myProfile?.display_name?.split(" ")[0]||navT('nav.accountSettings').split(" ")[0]} ⚙</button>
             <button className="btn-p btn-sm" onClick={signOut}>{navT('nav.signOut')}</button>
           </>:<>
-            <button className="btn-s btn-sm" onClick={()=>navigate("register-talent")}>{navT('nav.join')}</button>
+            <button className="btn-s btn-sm" onClick={()=>navigate("auth-gate")}>{navT('nav.join')}</button>
             <button className="btn-s btn-sm" onClick={()=>navigate("register-cd")}>{navT('nav.postJob')}</button>
             <button className="btn-p btn-sm" onClick={()=>navigate("login")}>{navT('nav.signIn')}</button>
           </>}
@@ -13552,7 +13578,7 @@ function App(){
               <button className="btn-s btn-sm" onClick={()=>navThen("account-settings")}>{navT('nav.accountSettings')}</button>
               <button className="btn-p btn-sm" onClick={doSignOut}>{navT('nav.signOut')}</button>
             </>:<>
-              <button className="btn-s btn-sm" onClick={()=>navThen("register-talent")}>{navT('nav.joinAsTalent')}</button>
+              <button className="btn-s btn-sm" onClick={()=>navThen("auth-gate")}>{navT('nav.joinAsTalent')}</button>
               <button className="btn-s btn-sm" onClick={()=>navThen("register-cd")}>{navT('nav.postJob')}</button>
               <button className="btn-p btn-sm" onClick={()=>navThen("login")}>{navT('nav.signIn')}</button>
             </>}
