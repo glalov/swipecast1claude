@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260522-155142 -->
-  <meta name="build-version" content="20260522-155142"/>
+  <!-- BUILD: 20260522-160249 -->
+  <meta name="build-version" content="20260522-160249"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260522-155142";
+      var B="20260522-160249";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -1796,11 +1796,11 @@ html,body{overflow-x:hidden;}
   .cinema-feature{margin-bottom:48px;}
 }
 
-/* ── Landing: Cinematic full-width divider between sections ── */
-.cinema-divider{position:relative;height:220px;overflow:hidden;margin:0;}
-.cinema-divider img{width:100%;height:100%;object-fit:cover;object-position:center 35%;display:block;filter:brightness(0.5) saturate(0.8);}
-.cinema-divider-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:0 24px;text-align:center;}
-@media(max-width:600px){.cinema-divider{height:170px;}}
+/* ── Landing: How It Works cinematic banner ── */
+.hiw-banner{max-width:1200px;margin:0 auto 80px;padding:0 clamp(16px,4vw,40px);text-align:center;}
+.hiw-banner-img{border-radius:18px;overflow:hidden;box-shadow:0 16px 56px rgba(0,0,0,0.12);aspect-ratio:21/9;background:var(--s3);margin-top:40px;}
+.hiw-banner-img img{width:100%;height:100%;object-fit:cover;display:block;}
+@media(max-width:600px){.hiw-banner-img{aspect-ratio:4/3;margin-top:28px;}.hiw-banner{margin-bottom:48px;}}
 `;
 
 // ─── Membership plans. Single source of truth — used by MembershipPage,
@@ -9327,12 +9327,13 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       </div>
     </section>
 
-    {/* ───────── CINEMATIC DIVIDER ───────── */}
-    <div className="cinema-divider">
-      <img src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1400&q=80" alt="Cinema audience — actors being seen" loading="lazy" onError={e=>{e.currentTarget.parentNode.style.display="none";}}/>
-      <div className="cinema-divider-inner">
-        <p style={{color:"rgba(255,255,255,0.55)",fontSize:10,letterSpacing:2.2,textTransform:"uppercase",margin:0,fontWeight:700,fontFamily:"'DM Sans',sans-serif"}}>How It Works</p>
-        <p style={{color:"#fff",fontSize:28,fontWeight:800,letterSpacing:-0.8,margin:0,lineHeight:1.15}}>One actor at a time.<br/>Every time.</p>
+    {/* ───────── HOW IT WORKS BANNER ───────── */}
+    <div className="hiw-banner">
+      <p style={{fontSize:10,letterSpacing:1.8,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,margin:"0 0 14px",fontFamily:"'DM Sans',sans-serif"}}>How It Works</p>
+      <h2 style={{fontWeight:800,fontSize:"clamp(26px,4vw,40px)",letterSpacing:-1.2,lineHeight:1.1,margin:"0 0 16px"}}>One actor at a time.<br/>Every time.</h2>
+      <p style={{color:"var(--t2)",fontSize:16,lineHeight:1.65,maxWidth:560,margin:"0 auto"}}>CastSlate helps casting teams review talent visually, clearly, and without losing actors inside endless lists.</p>
+      <div className="hiw-banner-img">
+        <img src="https://images.unsplash.com/photo-1524712245354-2c4e5e7121c0?w=1600&q=85" alt="Film production on set — actors and crew at work" loading="lazy" onError={e=>{e.currentTarget.parentNode.style.background="var(--s3)";}}/>
       </div>
     </div>
 
