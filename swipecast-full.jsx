@@ -1758,11 +1758,21 @@ html,body{overflow-x:hidden;}
   .cinema-feature{margin-bottom:48px;}
 }
 
-/* ── Landing: How It Works cinematic banner ── */
-.hiw-banner{max-width:1200px;margin:0 auto 80px;padding:0 clamp(16px,4vw,40px);text-align:center;}
-.hiw-banner-img{border-radius:18px;overflow:hidden;box-shadow:0 16px 56px rgba(0,0,0,0.12);aspect-ratio:21/9;background:var(--s3);margin-top:40px;}
-.hiw-banner-img img{width:100%;height:100%;object-fit:cover;display:block;}
-@media(max-width:600px){.hiw-banner-img{aspect-ratio:4/3;margin-top:28px;}.hiw-banner{margin-bottom:48px;}}
+/* ── Landing: How It Works card (Mandy-style: image left, text right) ── */
+.hiw-card{max-width:1100px;margin:0 auto 80px;padding:0 clamp(16px,4vw,40px);}
+.hiw-card-inner{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,0.08);overflow:hidden;display:grid;grid-template-columns:1fr 1fr;min-height:420px;}
+.hiw-card-img{overflow:hidden;min-height:320px;}
+.hiw-card-img img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;}
+.hiw-card-body{padding:44px 40px;display:flex;flex-direction:column;justify-content:center;gap:14px;}
+.hiw-card-steps{display:flex;flex-direction:column;gap:10px;margin:4px 0;}
+.hiw-card-step{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--t2);line-height:1.5;}
+.hiw-step-num{width:22px;height:22px;min-width:22px;border-radius:50%;background:var(--acc);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;margin-top:2px;}
+@media(max-width:720px){
+  .hiw-card-inner{grid-template-columns:1fr;}
+  .hiw-card-img{aspect-ratio:3/2;min-height:unset;}
+  .hiw-card-body{padding:28px 24px;}
+  .hiw-card{margin-bottom:48px;}
+}
 `;
 
 // ─── Membership plans. Single source of truth — used by MembershipPage,
@@ -9289,13 +9299,28 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       </div>
     </section>
 
-    {/* ───────── HOW IT WORKS BANNER ───────── */}
-    <div className="hiw-banner">
-      <p style={{fontSize:10,letterSpacing:1.8,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,margin:"0 0 14px",fontFamily:"'DM Sans',sans-serif"}}>How It Works</p>
-      <h2 style={{fontWeight:800,fontSize:"clamp(26px,4vw,40px)",letterSpacing:-1.2,lineHeight:1.1,margin:"0 0 16px"}}>One actor at a time.<br/>Every time.</h2>
-      <p style={{color:"var(--t2)",fontSize:16,lineHeight:1.65,maxWidth:560,margin:"0 auto"}}>CastSlate helps casting teams review talent visually, clearly, and without losing actors inside endless lists.</p>
-      <div className="hiw-banner-img">
-        <img src="https://images.unsplash.com/photo-1524712245354-2c4e5e7121c0?w=1600&q=85" alt="Film production on set — actors and crew at work" loading="lazy" onError={e=>{e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+    {/* ───────── HOW IT WORKS CARD ───────── */}
+    <div className="hiw-card">
+      <div className="hiw-card-inner">
+        <div className="hiw-card-img">
+          <img src="https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=900&q=85" alt="Actors and crew working on a film set" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+        </div>
+        <div className="hiw-card-body">
+          <p style={{fontSize:10,letterSpacing:1.8,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,margin:0,fontFamily:"'DM Sans',sans-serif"}}>How It Works</p>
+          <h2 style={{fontWeight:800,fontSize:"clamp(22px,2.8vw,30px)",letterSpacing:-0.8,lineHeight:1.15,margin:0}}>Get seen, one actor at a time.</h2>
+          <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,margin:0}}>CastSlate gives actors a cleaner way to be reviewed. Casting teams see full-screen profiles, review submissions visually, and move faster from profile to callback.</p>
+          <div className="hiw-card-steps">
+            {[["1","Create your actor profile."],["2","Submit to roles."],["3","Get reviewed full-screen."]].map(([n,t])=>(
+              <div key={n} className="hiw-card-step">
+                <span className="hiw-step-num">{n}</span>
+                <span><strong style={{color:"var(--t1)"}}>Step {n}:</strong> {t}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{marginTop:4}}>
+            <button className="btn-p" style={{padding:"13px 22px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Create My Free Profile →</button>
+          </div>
+        </div>
       </div>
     </div>
 
