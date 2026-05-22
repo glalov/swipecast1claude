@@ -9260,7 +9260,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="cinema-feature">
       <div className="cinema-feature-inner">
         <div className="cinema-feature-img">
-          <img src="https://images.unsplash.com/photo-1632187981988-40f3cbaeef5e?w=900&q=85" alt="Film crew filming an actor on a professional movie set" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+          <img src="https://images.unsplash.com/photo-1605501492805-f5699f0718d5?w=900&q=85" alt="Cinematographer operating cinema camera on a film set with crew and actors" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
         </div>
         <div className="cinema-feature-copy">
           <p className="cf-label">The work behind every casting</p>
