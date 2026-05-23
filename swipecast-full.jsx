@@ -6712,17 +6712,18 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     // unmounted mid-fill. The early-return loader at line ~4147 only fires when loading===true.
     if(!firstLoadDone.current)setLoading(true);
     try{
-      const {data:cs,error:csErr}=await window.sb.from("castings").select("*,roles(id,name,description,gender,age_range,ethnicity)").eq("cd_id",uid).order("created_at",{ascending:false});
+      // Use SECURITY DEFINER RPCs — these enforce cd_id = auth.uid() at the
+      // PostgreSQL level, so ownership cannot be bypassed by client-side state.
+      const {data:castingsJson,error:csErr}=await window.sb.rpc("get_my_cd_castings");
       if(csErr)throw csErr;
-      const castings=cs||[];
+      const castings=Array.isArray(castingsJson)?castingsJson:(castingsJson||[]);
       const ids=castings.map(c=>c.id);
       let counts={};let total=0;let pending=0;let selected=0;let hold=0;let sel=[];
       if(ids.length){
-        const {data:apps,error:appErr}=await window.sb.from("applications")
-          .select("id,casting_id,role_id,status,talent_id,cover_note,selected_photo_url,created_at,reviewed_at,profiles(*),roles(id,name)")
-          .in("casting_id",ids);
+        const {data:appsJson,error:appErr}=await window.sb.rpc("get_cd_applications",{p_casting_ids:ids});
         if(appErr)throw appErr;
-        (apps||[]).forEach(a=>{
+        const apps=Array.isArray(appsJson)?appsJson:(appsJson||[]);
+        apps.forEach(a=>{
           counts[a.casting_id]=(counts[a.casting_id]||0)+1;
           total++;
           if(a.status==='pending')pending++;
@@ -7051,7 +7052,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       <div style={{minWidth:0,flex:1,overflow:"hidden"}}>
         <div className="section-label">{t('cd.title')}</div>
         <h2 className="section-title" style={{marginBottom:0,wordBreak:"break-word"}}>{myProfile?.display_name||"Casting Director"}</h2>
-        <span style={{fontSize:11,fontWeight:700,background:"rgba(26,26,46,0.08)",color:"var(--acc)",padding:"2px 8px",borderRadius:6,display:"inline-block",marginTop:4}}>DASHBOARD MOBILE FIX TEST - CD</span>
+        {myProfile?.verification_status==="verified"&&<span style={{fontSize:11,fontWeight:700,background:"rgba(46,204,113,0.12)",color:"var(--grn,#27ae60)",padding:"2px 8px",borderRadius:6,display:"inline-block",marginTop:4}}>Verified</span>}
       </div>
       <button className="btn-p" style={{flexShrink:0,whiteSpace:"nowrap"}} onClick={()=>setShowNew(true)}>+ New Casting</button>
     </div>
@@ -13701,7 +13702,7 @@ function App(){
         {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
         {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
         {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}><p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p><button className="btn-p btn-sm" onClick={()=>{setProfileRetryErr("");loadProfile(session.user.id);}}>Retry</button></div>:<PageLoader/>):<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>)}
-        {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}><p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p><button className="btn-p btn-sm" onClick={()=>{setProfileRetryErr("");loadProfile(session.user.id);}}>Retry</button></div>:<PageLoader/>):isLoggedIn&&myProfile?.user_type==="talent"?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>:<div style={{minHeight:"60vh"}}/>)}
+        {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&(myProfile?.user_type==="talent"||!myProfile)?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>:<div style={{minHeight:"60vh"}}/>)}
         {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
         {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}><p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p><button className="btn-p btn-sm" onClick={()=>{setProfileRetryErr("");loadProfile(session.user.id);}}>Retry</button></div>:<PageLoader/>):isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onViewProfile={viewProfile}/>:null)}
         {page==="account-settings"&&(!authReady?<PageLoader/>:isLoggedIn?<AccountSettingsPage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onSignOut={signOut} isSuperAdmin={isSuperAdmin}/>:<div style={{minHeight:"60vh"}}/>)}
