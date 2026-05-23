@@ -2776,11 +2776,13 @@ function RegisterCD({onNavigate}){
     setErr("");
     if(!f.agree){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
     try{
+      localStorage.setItem("swipecast_pending_type","cd");
       const {error}=await window.sb.auth.signInWithOAuth({
         provider,
         options:{redirectTo:"https://www.castslate.com",...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
       });
       if(error){
+        localStorage.removeItem("swipecast_pending_type");
         const name=provider.charAt(0).toUpperCase()+provider.slice(1);
         const em=(error.message||"").toLowerCase();
         if(em.includes("provider")&&(em.includes("not enabled")||em.includes("not supported")||em.includes("disabled"))){
@@ -2788,6 +2790,7 @@ function RegisterCD({onNavigate}){
         }else{setErr(`${name} sign-in failed: ${error.message}`);}
       }
     }catch(e){
+      localStorage.removeItem("swipecast_pending_type");
       const name=provider.charAt(0).toUpperCase()+provider.slice(1);
       setErr(`${name} sign-up is not connected yet.`);
     }
@@ -13212,6 +13215,20 @@ function App(){
           if(!re.error&&re.data)data=re.data;
         }catch(e){console.warn("[auth] backfill RPC failed:",e?.message||e);}
       }
+      // If the user arrived via the RegisterCD OAuth flow, upgrade their type to 'cd'.
+      // We only do this for brand-new profiles (onboarded!==true) to avoid changing
+      // an existing talent account that reuses the same Google login.
+      const pendingType=localStorage.getItem("swipecast_pending_type");
+      if(pendingType==="cd"&&data&&data.user_type!=="cd"&&data.onboarded!==true){
+        localStorage.removeItem("swipecast_pending_type");
+        try{
+          await window.sb.from("profiles").update({user_type:"cd"}).eq("id",uid);
+          const re2=await window.sb.from("profiles").select("*").eq("id",uid).maybeSingle();
+          if(!re2.error&&re2.data)data=re2.data;
+        }catch(e){console.warn("[auth] pending type upgrade failed:",e?.message||e);}
+      }else if(pendingType){
+        localStorage.removeItem("swipecast_pending_type");
+      }
       _dbg().loginStep="profile-fetch-done";_dbg().lastFetchTs=Date.now();
       setMyProfile(data||null);return data||null;
     }catch(e){
@@ -13623,7 +13640,7 @@ function App(){
           {!authReady?null:isLoggedIn?<>
             {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navigate("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)",display:"inline-flex",alignItems:"center",gap:6}}>{navT('nav.admin')}{adminPendingBookings>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800,lineHeight:1.4}}>{adminPendingBookings}</span>}</button>}
             {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navigate("dashboard")}>{navT('nav.dashboard')}</button>:null}
-            {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navigate("talent-dashboard")}>{navT('nav.dashboard')}</button>:null}
+            {(myProfile?.user_type==="talent"||!myProfile)?<button className="btn-s btn-sm" onClick={()=>navigate("talent-dashboard")}>{navT('nav.dashboard')}</button>:null}
             {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navigate("my-profile")}>{navT('nav.myProfile')}</button>:null}
             <button className="btn-s btn-sm" onClick={()=>navigate("inbox")} style={{position:"relative",display:"inline-flex",alignItems:"center",gap:6}}>
               <span>{navT('nav.inbox')}</span>
@@ -13658,7 +13675,7 @@ function App(){
             {!authReady?null:isLoggedIn?<>
               {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navThen("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:6}}>{navT('nav.admin')}{adminPendingBookings>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800,lineHeight:1.4}}>{adminPendingBookings}</span>}</button>}
               {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navThen("dashboard")}>{navT('nav.dashboard')}</button>:null}
-              {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navThen("talent-dashboard")}>{navT('nav.dashboard')}</button>:null}
+              {(myProfile?.user_type==="talent"||!myProfile)?<button className="btn-s btn-sm" onClick={()=>navThen("talent-dashboard")}>{navT('nav.dashboard')}</button>:null}
               <button className="btn-s btn-sm" onClick={()=>navThen("inbox")} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>{navT('nav.inbox')}{globalUnread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800}}>{globalUnread>99?"99+":globalUnread}</span>}</button>
               <button className="btn-s btn-sm" onClick={()=>navThen("my-profile")}>{navT('nav.myProfile')}</button>
               <button className="btn-s btn-sm" onClick={()=>navThen("account-settings")}>{navT('nav.accountSettings')}</button>
