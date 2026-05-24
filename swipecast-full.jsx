@@ -2577,20 +2577,28 @@ function RegisterTalent({onNavigate}){
     setErr("");
     if(!f.agree){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
     try{
-      const {error}=await window.sb.auth.signInWithOAuth({
+      const {data,error}=await window.sb.auth.signInWithOAuth({
         provider,
-        options:{redirectTo:"https://www.castslate.com",...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
+        options:{redirectTo:"https://www.castslate.com",skipBrowserRedirect:true,...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
       });
       if(error){
         const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-        const em=(error.message||"").toLowerCase();
-        if(em.includes("provider")&&(em.includes("not enabled")||em.includes("not supported")||em.includes("disabled"))){
-          setErr(`${name} sign-up is not connected yet.`);
-        }else{setErr(`${name} sign-in failed: ${error.message}`);}
+        setErr(`${name} sign-in failed: ${error.message}`);return;
       }
+      if(!data?.url){setErr("Could not start sign-in. Please try again.");return;}
+      try{
+        const ac=new AbortController();const tid=setTimeout(()=>ac.abort(),6000);
+        const probe=await fetch(data.url,{redirect:"manual",signal:ac.signal});
+        clearTimeout(tid);
+        if(probe.status>=400){
+          const name=provider.charAt(0).toUpperCase()+provider.slice(1);
+          setErr(`${name} sign-in is not available right now. Please use email to sign up.`);return;
+        }
+      }catch(_){}
+      window.location.href=data.url;
     }catch(e){
       const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-      setErr(`${name} sign-up is not connected yet.`);
+      setErr(`${name} sign-up failed. Please try again.`);
     }
   };
   if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Your free profile is ready. Click the link in that email, then log in to browse castings. You'll only need to activate a membership when you're ready to submit for a role.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}>✓ Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
@@ -2776,23 +2784,29 @@ function RegisterCD({onNavigate}){
     setErr("");
     if(!f.agree){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
     try{
-      localStorage.setItem("swipecast_pending_type","cd");
-      const {error}=await window.sb.auth.signInWithOAuth({
+      const {data,error}=await window.sb.auth.signInWithOAuth({
         provider,
-        options:{redirectTo:"https://www.castslate.com",...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
+        options:{redirectTo:"https://www.castslate.com",skipBrowserRedirect:true,...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
       });
       if(error){
-        localStorage.removeItem("swipecast_pending_type");
         const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-        const em=(error.message||"").toLowerCase();
-        if(em.includes("provider")&&(em.includes("not enabled")||em.includes("not supported")||em.includes("disabled"))){
-          setErr(`${name} sign-up is not connected yet.`);
-        }else{setErr(`${name} sign-in failed: ${error.message}`);}
+        setErr(`${name} sign-in failed: ${error.message}`);return;
       }
+      if(!data?.url){setErr("Could not start sign-in. Please try again.");return;}
+      try{
+        const ac=new AbortController();const tid=setTimeout(()=>ac.abort(),6000);
+        const probe=await fetch(data.url,{redirect:"manual",signal:ac.signal});
+        clearTimeout(tid);
+        if(probe.status>=400){
+          const name=provider.charAt(0).toUpperCase()+provider.slice(1);
+          setErr(`${name} sign-in is not available right now. Please use email to sign up.`);return;
+        }
+      }catch(_){}
+      localStorage.setItem("swipecast_pending_type","cd");
+      window.location.href=data.url;
     }catch(e){
-      localStorage.removeItem("swipecast_pending_type");
       const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-      setErr(`${name} sign-up is not connected yet.`);
+      setErr(`${name} sign-up failed. Please try again.`);
     }
   };
   if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Click the link to activate your account. Then log in to post your first casting.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}>✓ Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
@@ -2904,20 +2918,28 @@ function LoginPage({onNavigate,onLoggedIn}){
   const handleSocialAuth=async(provider)=>{
     setErr("");
     try{
-      const {error}=await window.sb.auth.signInWithOAuth({
+      const {data,error}=await window.sb.auth.signInWithOAuth({
         provider,
-        options:{redirectTo:"https://www.castslate.com",...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
+        options:{redirectTo:"https://www.castslate.com",skipBrowserRedirect:true,...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
       });
       if(error){
         const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-        const em=(error.message||"").toLowerCase();
-        if(em.includes("provider")&&(em.includes("not enabled")||em.includes("not supported")||em.includes("disabled"))){
-          setErr(`${name} login is not connected yet.`);
-        }else{setErr(`${name} sign-in failed: ${error.message}`);}
+        setErr(`${name} sign-in failed: ${error.message}`);return;
       }
+      if(!data?.url){setErr("Could not start sign-in. Please try again.");return;}
+      try{
+        const ac=new AbortController();const tid=setTimeout(()=>ac.abort(),6000);
+        const probe=await fetch(data.url,{redirect:"manual",signal:ac.signal});
+        clearTimeout(tid);
+        if(probe.status>=400){
+          const name=provider.charAt(0).toUpperCase()+provider.slice(1);
+          setErr(`${name} sign-in is not available right now. Please use your email and password.`);return;
+        }
+      }catch(_){}
+      window.location.href=data.url;
     }catch(e){
       const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-      setErr(`${name} login is not connected yet.`);
+      setErr(`${name} sign-in failed. Please try again.`);
     }
   };
   if(sentReset)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check">✓</div><h3>{t('login.checkEmail')}</h3><p>{t('login.resetSent')} <strong>{email}</strong>.</p><button className="btn-s" style={{marginTop:24}} onClick={()=>{setForgot(false);setSentReset(false);}}>{t('login.backToLoginBtn')}</button></div><Footer onNavigate={onNavigate}/></div>);
@@ -4382,30 +4404,34 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
   const handleSocialAuth=async(provider)=>{
     setErr("");
     if(mode==="signup"&&!agreed){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
-    // Save pending apply before redirect — it survives the OAuth round-trip
-    if(pending){
-      try{sessionStorage.setItem("sc_post_auth_apply",JSON.stringify({casting:pending.casting,role:pending.role}));}catch(_){}
-    }
     try{
-      const {error}=await window.sb.auth.signInWithOAuth({
+      const {data,error}=await window.sb.auth.signInWithOAuth({
         provider,
-        options:{redirectTo:"https://www.castslate.com",...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
+        options:{redirectTo:"https://www.castslate.com",skipBrowserRedirect:true,...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
       });
       if(error){
-        try{sessionStorage.removeItem("sc_post_auth_apply");}catch(_){}
         const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-        const em=(error.message||"").toLowerCase();
-        if(em.includes("provider")&&(em.includes("not enabled")||em.includes("not supported")||em.includes("disabled"))){
-          setErr(`${name} sign-up is not connected yet. Admin must enable ${name} OAuth in Supabase.`);
-        }else{
-          setErr(`${name} sign-in failed: ${error.message}`);
-        }
+        setErr(`${name} sign-in failed: ${error.message}`);return;
       }
-      // On success the browser redirects away — nothing more to do here
+      if(!data?.url){setErr("Could not start sign-in. Please try again.");return;}
+      try{
+        const ac=new AbortController();const tid=setTimeout(()=>ac.abort(),6000);
+        const probe=await fetch(data.url,{redirect:"manual",signal:ac.signal});
+        clearTimeout(tid);
+        if(probe.status>=400){
+          const name=provider.charAt(0).toUpperCase()+provider.slice(1);
+          setErr(`${name} sign-in is not available right now. Please use email to continue.`);return;
+        }
+      }catch(_){}
+      // Save pending apply before redirect — it survives the OAuth round-trip
+      if(pending){
+        try{sessionStorage.setItem("sc_post_auth_apply",JSON.stringify({casting:pending.casting,role:pending.role}));}catch(_){}
+      }
+      window.location.href=data.url;
     }catch(e){
       try{sessionStorage.removeItem("sc_post_auth_apply");}catch(_){}
       const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-      setErr(`${name} sign-up is not connected yet. Admin must enable ${name} OAuth in Supabase.`);
+      setErr(`${name} sign-in failed. Please try again.`);
     }
   };
 
