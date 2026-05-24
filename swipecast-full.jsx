@@ -1673,12 +1673,12 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .partners-marquee{position:relative;overflow:hidden;width:100%;padding:6px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);}
 .partners-track{display:flex;gap:clamp(14px,1.6vw,22px);align-items:center;width:max-content;animation:partnersSlide 48s linear infinite;will-change:transform;}
 .partners-marquee:hover .partners-track{animation-play-state:paused;}
-.partners-tile{flex-shrink:0;height:56px;display:flex;align-items:center;justify-content:center;padding:0 20px;}
-.partners-wordmark{font-family:'DM Sans',sans-serif;font-weight:800;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t1);opacity:.45;white-space:nowrap;transition:opacity .25s ease;user-select:none;}
-.partners-tile:hover .partners-wordmark{opacity:.75;}
+.partners-tile{flex-shrink:0;height:64px;display:flex;align-items:center;justify-content:center;padding:0 28px;}
+.partners-tile img{max-height:36px;max-width:140px;object-fit:contain;display:block;opacity:.5;transition:opacity .25s ease;filter:grayscale(1) brightness(0);}
+.partners-tile:hover img{opacity:.8;}
 @keyframes partnersSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
 @media (prefers-reduced-motion: reduce){.partners-track{animation:none;}}
-@media (max-width:768px){.partners-tile{height:44px;padding:0 14px;}.partners-wordmark{font-size:12px;letter-spacing:1px;}}
+@media (max-width:768px){.partners-tile{height:50px;padding:0 18px;}.partners-tile img{max-height:26px;max-width:110px;}}
 /* ─── Talent Dashboard responsive grid ─── */
 .td-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
@@ -9252,7 +9252,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             const doubled=[...PARTNERS,...PARTNERS];
             return doubled.map((p,i)=>(
               <div key={`${p.name}-${i}`} className="partners-tile" title={p.name} aria-label={p.name}>
-                <span className="partners-wordmark">{p.name}</span>
+                <img src={p.src} alt={p.name} loading="eager" decoding="async" draggable="false" crossOrigin="anonymous"/>
               </div>
             ));
           })()}
