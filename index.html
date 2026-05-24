@@ -1503,6 +1503,14 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 }
 .mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:150;backdrop-filter:blur(4px);}
 .mobile-menu-inner{background:var(--s1);border-bottom:1px solid var(--bdr);padding:18px 18px 22px;max-width:100%;animation:mmSlide .18s ease-out;box-shadow:0 10px 40px rgba(0,0,0,.12);}
+.join-dropdown{position:relative;display:inline-flex;}
+@keyframes ddFadeIn{from{opacity:0;transform:translateX(-50%) translateY(-6px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+.join-dd-menu{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--bdr);border-radius:12px;box-shadow:0 8px 32px rgba(26,26,46,0.14);padding:6px;min-width:250px;z-index:300;animation:ddFadeIn .15s ease;}
+.join-dd-item{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;}
+.join-dd-item:hover{background:var(--s1);}
+.join-dd-icon{width:34px;height:34px;border-radius:8px;background:var(--s1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;line-height:1;}
+.join-dd-title{display:block;font-size:13px;font-weight:700;color:var(--t1);margin-bottom:2px;}
+.join-dd-desc{display:block;font-size:11px;color:var(--t2);line-height:1.45;}
 @keyframes mmSlide{from{transform:translateY(-12px);opacity:0;}to{transform:translateY(0);opacity:1;}}
 @keyframes scSpin{to{transform:rotate(360deg);}}
 .mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;}
@@ -13625,8 +13633,16 @@ function App(){
   },[page,myProfile?.user_type]);
 
   const [menuOpen,setMenuOpen]=useState(false);
-  const navThen=useCallback((p)=>{setMenuOpen(false);navigate(p);},[navigate]);
-  const doSignOut=useCallback(()=>{setMenuOpen(false);signOut();},[signOut]);
+  const [joinOpen,setJoinOpen]=useState(false);
+  const joinRef=useRef(null);
+  useEffect(()=>{
+    if(!joinOpen)return;
+    const h=(e)=>{if(joinRef.current&&!joinRef.current.contains(e.target))setJoinOpen(false);};
+    document.addEventListener("mousedown",h);
+    return()=>document.removeEventListener("mousedown",h);
+  },[joinOpen]);
+  const navThen=useCallback((p)=>{setMenuOpen(false);setJoinOpen(false);navigate(p);},[navigate]);
+  const doSignOut=useCallback(()=>{setMenuOpen(false);setJoinOpen(false);signOut();},[signOut]);
 
   const navT=(key)=>(TRANSLATIONS[lang]&&TRANSLATIONS[lang][key])||TRANSLATIONS.en[key]||key;
   return(
@@ -13665,7 +13681,22 @@ function App(){
             <button className="btn-s btn-sm" onClick={()=>navigate("account-settings")} title={navT('nav.accountSettings')}>{myProfile?.display_name?.split(" ")[0]||navT('nav.accountSettings').split(" ")[0]} ⚙</button>
             <button className="btn-p btn-sm" onClick={signOut}>{navT('nav.signOut')}</button>
           </>:<>
-            <button className={`${["auth-gate","register-talent"].includes(page)?"btn-p":"btn-s"} btn-sm`} onClick={()=>navigate("auth-gate")}>{navT('nav.join')}</button>
+            <div className="join-dropdown" ref={joinRef}>
+              <button className={`${["auth-gate","register-talent"].includes(page)||joinOpen?"btn-p":"btn-s"} btn-sm`} onClick={()=>setJoinOpen(o=>!o)} style={{display:"inline-flex",alignItems:"center",gap:5}}>
+                {navT('nav.join')}
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor" style={{transition:"transform .2s",transform:joinOpen?"rotate(180deg)":"rotate(0deg)"}}><path d="M0 0l5 6 5-6z"/></svg>
+              </button>
+              {joinOpen&&<div className="join-dd-menu">
+                <button className="join-dd-item" onClick={()=>{setJoinOpen(false);navigate("auth-gate");}}>
+                  <div className="join-dd-icon">🎭</div>
+                  <div><span className="join-dd-title">I'm Talent</span><span className="join-dd-desc">Build your actor profile and start submitting.</span></div>
+                </button>
+                <button className="join-dd-item" onClick={()=>{setJoinOpen(false);navigate("register-cd");}}>
+                  <div className="join-dd-icon">🎬</div>
+                  <div><span className="join-dd-title">I'm Hiring</span><span className="join-dd-desc">Post casting calls and review submissions.</span></div>
+                </button>
+              </div>}
+            </div>
             <button className={`${page==="register-cd"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navigate("register-cd")}>{navT('nav.postJob')}</button>
             <button className={`${page==="login"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navigate("login")}>{navT('nav.signIn')}</button>
           </>}
@@ -13697,8 +13728,11 @@ function App(){
               <button className="btn-s btn-sm" onClick={()=>navThen("account-settings")}>{navT('nav.accountSettings')}</button>
               <button className="btn-p btn-sm" onClick={doSignOut}>{navT('nav.signOut')}</button>
             </>:<>
-              <button className={`${["auth-gate","register-talent"].includes(page)?"btn-p":"btn-s"} btn-sm`} onClick={()=>navThen("auth-gate")}>{navT('nav.joinAsTalent')}</button>
-              <button className={`${page==="register-cd"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navThen("register-cd")}>{navT('nav.postJob')}</button>
+              <div style={{display:"flex",flexDirection:"column",gap:4,borderBottom:"1px solid var(--bdr)",paddingBottom:8,marginBottom:4}}>
+                <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:.8,color:"var(--t3)",padding:"2px 4px"}}>Join as</div>
+                <button className={`${["auth-gate","register-talent"].includes(page)?"btn-p":"btn-s"} btn-sm`} style={{display:"flex",alignItems:"center",gap:8,justifyContent:"flex-start"}} onClick={()=>navThen("auth-gate")}>🎭 I'm Talent</button>
+                <button className={`${page==="register-cd"?"btn-p":"btn-s"} btn-sm`} style={{display:"flex",alignItems:"center",gap:8,justifyContent:"flex-start"}} onClick={()=>navThen("register-cd")}>🎬 I'm Hiring</button>
+              </div>
               <button className={`${page==="login"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navThen("login")}>{navT('nav.signIn')}</button>
             </>}
           </div>
