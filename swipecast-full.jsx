@@ -1673,12 +1673,12 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .partners-marquee{position:relative;overflow:hidden;width:100%;padding:6px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);}
 .partners-track{display:flex;gap:clamp(14px,1.6vw,22px);align-items:center;width:max-content;animation:partnersSlide 48s linear infinite;will-change:transform;}
 .partners-marquee:hover .partners-track{animation-play-state:paused;}
-.partners-tile{flex-shrink:0;min-width:130px;height:60px;display:flex;align-items:center;justify-content:center;padding:0 10px;}
-.partners-tile img{max-height:40px;max-width:130px;object-fit:contain;display:block;opacity:.5;transition:opacity .25s ease;filter:grayscale(1) brightness(0);}
-.partners-tile:hover img{opacity:.75;filter:grayscale(1) brightness(0);}
+.partners-tile{flex-shrink:0;height:56px;display:flex;align-items:center;justify-content:center;padding:0 20px;}
+.partners-wordmark{font-family:'DM Sans',sans-serif;font-weight:800;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t1);opacity:.45;white-space:nowrap;transition:opacity .25s ease;user-select:none;}
+.partners-tile:hover .partners-wordmark{opacity:.75;}
 @keyframes partnersSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
 @media (prefers-reduced-motion: reduce){.partners-track{animation:none;}}
-@media (max-width:768px){.partners-tile{min-width:110px;height:48px;padding:0 8px;}.partners-tile img{max-height:32px;max-width:110px;}}
+@media (max-width:768px){.partners-tile{height:44px;padding:0 14px;}.partners-wordmark{font-size:12px;letter-spacing:1px;}}
 /* ─── Talent Dashboard responsive grid ─── */
 .td-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
@@ -9251,24 +9251,8 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             // Duplicate so the marquee keyframe (translateX -50%) loops seamlessly without a visible jump.
             const doubled=[...PARTNERS,...PARTNERS];
             return doubled.map((p,i)=>(
-              <div key={`${p.name}-${i}`} className="partners-tile" title={p.name} role="img" aria-label={p.name}>
-                <img
-                  src={p.src}
-                  alt={p.name}
-                  loading="lazy"
-                  decoding="async"
-                  draggable="false"
-                  onError={e=>{
-                    // If a logo URL ever 404s, swap to a clean text wordmark so the row never breaks.
-                    if(e.currentTarget.dataset.fallback)return;
-                    e.currentTarget.dataset.fallback="1";
-                    e.currentTarget.style.display="none";
-                    const span=document.createElement("span");
-                    span.textContent=p.name.toUpperCase();
-                    span.style.cssText="font-family:'DM Sans',sans-serif;font-weight:800;font-size:14px;letter-spacing:1px;color:var(--t1);opacity:.78;";
-                    e.currentTarget.parentNode.appendChild(span);
-                  }}
-                />
+              <div key={`${p.name}-${i}`} className="partners-tile" title={p.name} aria-label={p.name}>
+                <span className="partners-wordmark">{p.name}</span>
               </div>
             ));
           })()}
@@ -9277,7 +9261,6 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </div>
 
     {/* ───────── FEATURED CASTINGS SLIDER — pulls live from public.castings (same as Browse Castings) ───────── */}
-    <div style={{textAlign:"center",padding:"4px 16px 0",fontSize:11,fontWeight:700,color:"var(--acc)"}}>MOBILE HOME FIX TEST</div>
     <FeaturedCastingsSlider onViewCasting={onViewCasting} onNavigate={onNavigate} castingsVersion={castingsVersion}/>
 
     {/* ───────── STATS ───────── */}
@@ -11117,7 +11100,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     <div className="page page-wide" style={{padding:isMobile?"20px 16px 60px":"40px 40px 80px"}}>
       <div style={{maxWidth:960,margin:"0 auto"}}>
         <div style={{marginBottom:28}}>
-          <h1 style={{fontSize:isMobile?22:28,fontWeight:900,color:"var(--t1)",marginBottom:4}}>Account Settings <span style={{fontSize:11,fontWeight:700,background:"rgba(26,26,46,0.08)",color:"var(--acc)",padding:"2px 8px",borderRadius:6,verticalAlign:"middle",marginLeft:6}}>MOBILE SETTINGS FIX TEST</span></h1>
+          <h1 style={{fontSize:isMobile?22:28,fontWeight:900,color:"var(--t1)",marginBottom:4}}>Account Settings</h1>
           <p style={{color:"var(--t2)",fontSize:14}}>{profile?.display_name||session?.user?.email}</p>
         </div>
         <div className="account-settings-layout" style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"220px 1fr",gap:isMobile?16:28,alignItems:"start"}}>
