@@ -1788,7 +1788,7 @@ html,body{overflow-x:hidden;}
 @media(max-width:860px){.ios-teaser-phone-col{display:none !important;}}
 
 /* ── Landing: Single cinematic feature image section ── */
-.cinema-feature{max-width:1100px;margin:0 auto 80px;padding:0 clamp(16px,4vw,40px);}
+.cinema-feature{max-width:1100px;margin:0 auto 52px;padding:0 clamp(16px,4vw,40px);}
 .cinema-feature-inner{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,0.08);overflow:hidden;display:grid;grid-template-columns:1fr 1fr;min-height:420px;}
 .cinema-feature-img{overflow:hidden;min-height:320px;}
 .cinema-feature-img img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;}
@@ -1804,7 +1804,7 @@ html,body{overflow-x:hidden;}
 }
 
 /* ── Landing: How It Works card (Mandy-style: image left, text right) ── */
-.hiw-card{max-width:1100px;margin:0 auto 80px;padding:0 clamp(16px,4vw,40px);}
+.hiw-card{max-width:1100px;margin:0 auto 48px;padding:0 clamp(16px,4vw,40px);}
 .hiw-card-inner{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,0.08);overflow:hidden;display:grid;grid-template-columns:1fr 1fr;min-height:420px;}
 .hiw-card-img{overflow:hidden;min-height:320px;}
 .hiw-card-img img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;}
@@ -9360,7 +9360,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       </div>
     </div>
 
-    <section className="lh-section" style={{padding:"80px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">How It Works</div>
+    <section className="lh-section" style={{padding:"56px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">How It Works</div>
       <div className="tabs"><button className={`tab ${hTab==="talent"?"active":""}`} onClick={()=>setHTab("talent")}>For Talent</button><button className={`tab ${hTab==="caster"?"active":""}`} onClick={()=>setHTab("caster")}>For Casting Directors</button></div>
       <div className="section-title" style={{marginTop:8}}>{hTab==="talent"?"Your talent deserves to be seen.":"Cast smarter. See everyone."}</div>
       <div className="grid-3">{(hTab==="talent"?[["01","Create Your Profile","Upload headshots, resume, and stats. Free accounts get 1 headshot and 3 submissions/day. Upgrade to Premium for $9.99/mo."],["02","Submit to Castings","Browse open casting calls for film, TV, theater, commercials, and modeling. One-tap apply."],["03","Get Seen. Guaranteed.","Every casting director swipes through your headshot individually. No grid views. No skipping."]]:
@@ -9368,7 +9368,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         <div key={n} className="card"><div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:44,color:"var(--acc)",opacity:.3,marginBottom:12}}>{n}</div><h3 style={{fontSize:17,fontWeight:700,marginBottom:10}}>{t}</h3><p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6}}>{d}</p></div>)}</div>
     </section>
 
-    <section className="lh-section" style={{padding:"80px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">Pricing</div><div className="section-title">Simple pricing. No surprises.</div>
+    <section className="lh-section" style={{padding:"60px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">Pricing</div><div className="section-title">Simple pricing. No surprises.</div>
       <div className="grid-3">{[{name:"Actor Free",who:"Actors · Models · Performers",price:"$0",period:"no credit card required",features:["Free account","1 headshot","3 submissions per day","Basic actor profile","Browse all castings"],featured:false,cta:"Get Started Free",action:"auth-gate"},{name:"Actor Premium",who:"Actors · Models · Performers",price:"$9.99",period:"per month · cancel anytime",features:["10 headshots","Up to 5 video reel links","Unlimited submissions","Premium profile features"],featured:true,cta:"Get Premium — $9.99/mo",action:"membership"},{name:"Casting Director",who:"Casting Directors · Producers",price:"Free",period:"to create an account",features:["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent filters"],featured:false,cta:"Create CD Account",action:"register-cd"}].map(p=>
         <div key={p.name} className="card" style={p.featured?{borderColor:"var(--acc)",background:"linear-gradient(165deg,var(--s1),rgba(26,26,46,.02))",position:"relative"}:{}}>
           {p.featured&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"var(--acc)",color:"var(--bg)",fontSize:10,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:"4px 14px",borderRadius:100,letterSpacing:1}}>RECOMMENDED</div>}
