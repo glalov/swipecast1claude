@@ -9273,9 +9273,9 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           <img src="https://images.unsplash.com/photo-1605501492805-f5699f0718d5?w=900&q=85" alt="Cinematographer operating cinema camera on a film set with crew and actors" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
         </div>
         <div className="cinema-feature-copy">
-          <p className="cf-label">The work behind every casting</p>
-          <h2>From set to submission.</h2>
-          <p>CastSlate is built around real actors, real work, and real casting decisions. Every profile is reviewed visually, one actor at a time.</p>
+          <p className="cf-label">The actor journey</p>
+          <h2>From submission to set.</h2>
+          <p>CastSlate helps actors move from profile submission to real casting consideration. Casting teams review actors visually, one profile at a time, so every headshot has a real chance to be seen.</p>
           <div className="hiw-card-steps">
             {[["1","Create your actor profile."],["2","Submit to roles."],["3","Get reviewed full-screen."]].map(([n,t])=>(
               <div key={n} className="hiw-card-step">
@@ -9324,14 +9324,14 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="hiw-card">
       <div className="hiw-card-inner">
         <div className="hiw-card-img">
-          <img src="https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=900&q=85" alt="Actors and crew working on a film set" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+          <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=900&q=85" alt="Casting director and production team reviewing actor profiles and headshots" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
         </div>
         <div className="hiw-card-body">
-          <p style={{fontSize:10,letterSpacing:1.8,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,margin:0,fontFamily:"'DM Sans',sans-serif"}}>How It Works</p>
-          <h2 style={{fontWeight:800,fontSize:"clamp(22px,2.8vw,30px)",letterSpacing:-0.8,lineHeight:1.15,margin:0}}>Get seen, one actor at a time.</h2>
-          <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,margin:0}}>CastSlate gives actors a cleaner way to be reviewed. Casting teams see full-screen profiles, review submissions visually, and move faster from profile to callback.</p>
+          <p style={{fontSize:10,letterSpacing:1.8,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,margin:0,fontFamily:"'DM Sans',sans-serif"}}>For Casting Directors</p>
+          <h2 style={{fontWeight:800,fontSize:"clamp(22px,2.8vw,30px)",letterSpacing:-0.8,lineHeight:1.15,margin:0}}>Casting teams review one actor at a time.</h2>
+          <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,margin:0}}>Instead of burying actors in crowded thumbnail grids, CastSlate presents each profile clearly — headshots, credits, skills, resume, and reels organized for faster decisions.</p>
           <div className="hiw-card-steps">
-            {[["1","Create your actor profile."],["2","Submit to roles."],["3","Get reviewed full-screen."]].map(([n,t])=>(
+            {[["1","Review full-screen profiles."],["2","Compare actors visually."],["3","Shortlist and message faster."]].map(([n,t])=>(
               <div key={n} className="hiw-card-step">
                 <span className="hiw-step-num">{n}</span>
                 <span><strong style={{color:"var(--t1)"}}>Step {n}:</strong> {t}</span>
@@ -9339,7 +9339,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             ))}
           </div>
           <div style={{marginTop:4}}>
-            <button className="btn-p" style={{padding:"13px 22px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Create My Free Profile →</button>
+            <button className="btn-p" style={{padding:"13px 22px",fontSize:14}} onClick={()=>onNavigate("register-cd")}>Create CD Account →</button>
           </div>
         </div>
       </div>
