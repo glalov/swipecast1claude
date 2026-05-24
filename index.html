@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260524-192918 -->
-  <meta name="build-version" content="20260524-192918"/>
+  <!-- BUILD: 20260524-193538 -->
+  <meta name="build-version" content="20260524-193538"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260524-192918";
+      var B="20260524-193538";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -2526,7 +2526,7 @@ function RegisterTalent({onNavigate}){
   const [resentOk,setResentOk]=useState(false);
   const [resendCooldown,setResendCooldown]=useState(0);
   const submittingRef=useRef(false); // blocks double-click races that fire two signUp calls
-  const [f,setF]=useState({first:"",last:"",email:"",password:"",location:"",gender:"",age:"",height:"",weight:"",hair:"",eyes:"",ethnicity:"",union_status:"Non-Union",types:[],bio:"",training:"",skills:"",agent:"",agree:false,guardian_name:"",guardian_email:""});
+  const [f,setF]=useState({first:"",last:"",email:"",password:"",location:"",gender:"",age:"",height:"",weight:"",hair:"",eyes:"",ethnicity:"",union_status:"Non-Union",types:[],bio:"",training:"",skills:"",agent:"",guardian_name:"",guardian_email:""});
   const up=(k,v)=>setF(x=>({...x,[k]:v}));
   const toggleType=t=>setF(x=>({...x,types:x.types.includes(t)?x.types.filter(y=>y!==t):[...x.types,t]}));
   const validStep1=()=>{if(!f.first||!f.last){setErr("Please enter your first and last name.");return false;}if(!f.email||!f.email.includes("@")){setErr("Please enter a valid email address.");return false;}if(!f.password||f.password.length<8){setErr("Password must be at least 8 characters.");return false;}if(!f.location){setErr("Please enter your location.");return false;}setErr("");return true;};
@@ -2544,7 +2544,6 @@ function RegisterTalent({onNavigate}){
   };
   const createAccount=async()=>{
     if(submittingRef.current)return; // prevent double-click race
-    if(!f.agree){setErr("Please agree to the Terms of Service and Privacy Policy.");window.scrollTo(0,0);return;}
     submittingRef.current=true;
     setErr("");setDupEmail(false);setResentOk(false);setLoading(true);
     try{
@@ -2620,7 +2619,6 @@ function RegisterTalent({onNavigate}){
   };
   const handleSocialAuth=async(provider)=>{
     setErr("");
-    if(!f.agree){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
     try{
       const {data,error}=await window.sb.auth.signInWithOAuth({
         provider,
@@ -2682,10 +2680,7 @@ function RegisterTalent({onNavigate}){
           <div className="form-group"><label className="label">{tr('reg.t.email')}</label><input className="input" type="email" placeholder="you@email.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
           <div className="form-group"><label className="label">{tr('reg.t.password')}</label><input className="input" type="password" placeholder={tr('reg.t.password')} value={f.password} onChange={e=>up("password",e.target.value)}/></div>
           <div className="form-group"><label className="label">{tr('reg.t.location')}</label><select className="select" style={{width:"100%"}} value={f.location} onChange={e=>up("location",e.target.value)}><option value="">Select your state</option>{US_STATES.map(s=><option key={s} value={s}>{s}</option>)}</select></div>
-          <div style={{display:"flex",gap:10,alignItems:"flex-start",margin:"16px 0",color:"var(--t2)",fontSize:12,lineHeight:1.55}}>
-            <input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)} style={{marginTop:3,flexShrink:0}}/>
-            <span>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</span>
-          </div>
+          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,lineHeight:1.55,margin:"16px 0"}}>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</p>
           <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={()=>{if(validStep1())setStep(2);}}>{tr('reg.t.next')}</button>
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>onNavigate("login")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
         </div>
@@ -2733,7 +2728,7 @@ function RegisterTalent({onNavigate}){
         <div className="form-group"><label className="label">{tr('reg.t.training')}</label><input className="input" placeholder="e.g. BFA Acting, NYU Tisch" value={f.training} onChange={e=>up("training",e.target.value)}/></div>
         <div className="form-group"><label className="label">{tr('reg.t.skills')}</label><input className="input" placeholder="e.g. Stage Combat, Fluent Spanish" value={f.skills} onChange={e=>up("skills",e.target.value)}/></div>
         <div className="form-group"><label className="label">{tr('reg.t.agent')}</label><input className="input" placeholder="Agency name" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
-        <label className="checkbox-row" style={{marginTop:12,alignItems:"flex-start"}}><input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)} style={{marginTop:2,flexShrink:0}}/> <span>By continuing, you agree that you have read and agree to CastSlate's Terms of Service and Privacy Policy, and confirm that you are currently at least 18 years old.</span></label>
+        <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,lineHeight:1.55,margin:"16px 0"}}>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</p>
         <div style={{display:"flex",gap:12,marginTop:12}}><button className="btn-s" onClick={()=>setStep(2)} disabled={loading}>{tr('reg.t.back')}</button><button className="btn-p" style={{flex:1}} onClick={createAccount} disabled={loading}>{loading?tr('reg.t.creating'):tr('reg.t.createAccount')}</button></div></>}
 
       {/* Step 4 (Stripe) removed — signup is now free. Membership is activated
@@ -2755,7 +2750,7 @@ function RegisterCD({onNavigate}){
   const [resentOk,setResentOk]=useState(false);
   const [resendCooldown,setResendCooldown]=useState(0);
   const submittingRef=useRef(false);
-  const [f,setF]=useState({first:"",last:"",email:"",password:"",company_name:"",company_role:"Casting Director",location:"",website:"",agree:false});
+  const [f,setF]=useState({first:"",last:"",email:"",password:"",company_name:"",company_role:"Casting Director",location:"",website:""});
   const up=(k,v)=>setF(x=>({...x,[k]:v}));
   const withTimeout=(promise,ms=30000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Check your connection and try again.`)),ms))]);
   const resendConfirmation=async()=>{
@@ -2775,7 +2770,6 @@ function RegisterCD({onNavigate}){
     if(!f.email||!f.email.includes("@")){setErr("Please enter a valid email.");return;}
     if(!f.password||f.password.length<8){setErr("Password must be at least 8 characters.");return;}
     if(!f.company_name){setErr("Please enter your company or production.");return;}
-    if(!f.agree){setErr("Please agree to the Terms of Service and Privacy Policy.");return;}
     submittingRef.current=true;setLoading(true);
     try{
       const display_name=(f.first+" "+f.last).trim();
@@ -2824,7 +2818,6 @@ function RegisterCD({onNavigate}){
   };
   const handleSocialAuth=async(provider)=>{
     setErr("");
-    if(!f.agree){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
     try{
       const {data,error}=await window.sb.auth.signInWithOAuth({
         provider,
@@ -2884,10 +2877,7 @@ function RegisterCD({onNavigate}){
           <div className="form-row"><div className="form-group"><label className="label">{tr('reg.cd.companyName')}</label><input className="input" placeholder={tr('reg.cd.companyName')} value={f.company_name} onChange={e=>up("company_name",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.cd.role')}</label><select className="select" style={{width:"100%"}} value={f.company_role} onChange={e=>up("company_role",e.target.value)}><option>Casting Director</option><option>Producer</option><option>Director</option><option>Casting Associate</option><option>Talent Manager</option><option>Studio Executive</option></select></div></div>
           <div className="form-group"><label className="label">{tr('reg.cd.location')}</label><input className="input" placeholder="City, State" value={f.location} onChange={e=>up("location",e.target.value)}/></div>
           <div className="form-group"><label className="label">{tr('reg.cd.website')}</label><input className="input" placeholder="https://" value={f.website} onChange={e=>up("website",e.target.value)}/></div>
-          <div style={{display:"flex",gap:10,alignItems:"flex-start",margin:"16px 0",color:"var(--t2)",fontSize:12,lineHeight:1.55}}>
-            <input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)} style={{marginTop:3,flexShrink:0}}/>
-            <span>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</span>
-          </div>
+          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,lineHeight:1.55,margin:"16px 0"}}>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</p>
           <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={submit} disabled={loading}>{loading?tr('reg.cd.creating'):tr('reg.cd.createAccount')}</button>
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>onNavigate("login")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
         </div>
@@ -3001,6 +2991,7 @@ function LoginPage({onNavigate,onLoggedIn}){
       <div className="form-group"><label className="label">{t('login.email')}</label><input className="input" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email"/></div>
       {!forgot&&<div className="form-group"><label className="label">{t('login.password')}</label><input className="input" type="password" placeholder="Your password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password"/></div>}
       {!forgot&&<div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",marginBottom:20}}><span style={{color:"var(--acc)",fontSize:13,cursor:"pointer"}} onClick={()=>{setForgot(true);setErr("");}}>{t('login.forgotPwd')}</span></div>}
+      {!forgot&&<p style={{textAlign:"center",color:"var(--t3)",fontSize:12,lineHeight:1.55,margin:"0 0 16px"}}>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</p>}
       <button type="submit" className="btn-p" style={{width:"100%"}} disabled={loading}>{loading?(forgot?t('login.sending'):t('login.loggingIn')):(forgot?t('login.sendReset'):t('login.logIn'))}</button>
       {forgot&&<button type="button" className="btn-s" style={{width:"100%",marginTop:8}} onClick={()=>{setForgot(false);setErr("");}}>{t('login.backToLogin')}</button>}
       <div style={{textAlign:"center",marginTop:24,fontSize:13,color:"var(--t2)"}}>
@@ -4348,7 +4339,6 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
   const [lastName,setLastName]=useState("");
   const [suEmail,setSuEmail]=useState("");
   const [suPass,setSuPass]=useState("");
-  const [agreed,setAgreed]=useState(false);
   // login form fields
   const [liEmail,setLiEmail]=useState("");
   const [liPass,setLiPass]=useState("");
@@ -4376,7 +4366,6 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
     if(!firstName.trim()||!lastName.trim()){setErr("Please enter your first and last name.");return;}
     if(!suEmail||!suEmail.includes("@")){setErr("Please enter a valid email address.");return;}
     if(!suPass||suPass.length<8){setErr("Password must be at least 8 characters.");return;}
-    if(!agreed){setErr("Please agree to the Terms of Service and Privacy Policy.");return;}
     submittingRef.current=true;setLoading(true);
     try{
       const email=suEmail.trim().toLowerCase();
@@ -4438,7 +4427,6 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
 
   const handleSocialAuth=async(provider)=>{
     setErr("");
-    if(mode==="signup"&&!agreed){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
     try{
       const {data,error}=await window.sb.auth.signInWithOAuth({
         provider,
@@ -4567,10 +4555,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
           <div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com" value={suEmail} onChange={e=>setSuEmail(e.target.value)}/></div>
           <div className="form-group"><label className="label">Password</label><input className="input" type="password" placeholder="At least 8 characters" value={suPass} onChange={e=>setSuPass(e.target.value)}/></div>
 
-          <div style={{display:"flex",gap:10,alignItems:"flex-start",margin:"16px 0",color:"var(--t2)",fontSize:12,lineHeight:1.55}}>
-            <input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)} style={{marginTop:3,flexShrink:0}}/>
-            <span>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</span>
-          </div>
+          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,lineHeight:1.55,margin:"16px 0"}}>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</p>
 
           <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={handleSignUp} disabled={loading}>{loading?"Creating account…":c?"Create Free Account & Apply →":"Create Free Account →"}</button>
 
