@@ -1982,11 +1982,39 @@ function ActivateMembershipBanner({myProfile,onNavigate}){
 //     their current plan + expiry instead of plan options.
 function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
   if(!session?.user){
-    return(<div className="page page-wide"><div className="card" style={{padding:48,textAlign:"center"}}>
-      <h2 style={{fontSize:20,marginBottom:8}}>Sign in to manage your membership</h2>
-      <p style={{color:"var(--t3)",marginBottom:18}}>Sign in to manage your membership.</p>
-      <button className="btn-p" onClick={()=>onNavigate("login")}>Sign in</button>
-    </div><Footer onNavigate={onNavigate}/></div>);
+    return(<div className="page page-wide">
+      <div className="section-label">Membership</div>
+      <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1.2,marginBottom:8}}>Pick your plan.</h1>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>
+        Free actors can submit to {FREE_PLAN.submissionsPerDay} castings per day and upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, 10 headshots, and up to 5 video links.
+      </p>
+      <div className="grid-3" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18,maxWidth:1100,margin:"0 auto"}}>
+        {Object.values(MEMBERSHIP_PLANS).map(p=>{
+          const featured=p.key==="yearly";
+          return(<div key={p.key} className="card" style={{padding:28,position:"relative",border:featured?"2px solid var(--acc)":"1px solid var(--bdr)"}}>
+            {featured&&<div style={{position:"absolute",top:-12,left:24,background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.2,padding:"4px 10px",borderRadius:100,fontFamily:"'DM Sans',sans-serif"}}>BEST VALUE</div>}
+            <h3 style={{fontSize:16,fontWeight:800,marginBottom:6}}>{p.label}</h3>
+            <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:6}}>
+              <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:38,letterSpacing:-1.2,color:featured?"var(--acc)":"var(--t1)"}}>${p.monthly.toFixed(2)}</span>
+              <span style={{fontSize:13,color:"var(--t2)"}}>/month</span>
+            </div>
+            <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>{p.note}</p>
+            <ul style={{listStyle:"none",padding:0,margin:"0 0 22px",display:"flex",flexDirection:"column",gap:6}}>
+              <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Unlimited submissions</li>
+              <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>10 headshots</li>
+              <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Up to 5 video reel links</li>
+              <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Cancel anytime</li>
+            </ul>
+            <div style={{borderTop:"1px solid var(--bdr)",paddingTop:14,marginBottom:14,fontSize:12,color:"var(--t3)"}}>Total billed: <strong style={{color:"var(--t1)"}}>${p.total.toFixed(2)}</strong>{p.months>1?` for ${p.months} months`:" today"}</div>
+            <button className={featured?"btn-p":"btn-s"} style={{width:"100%"}} onClick={()=>onNavigate("login")}>Sign in to subscribe →</button>
+          </div>);
+        })}
+      </div>
+      <div style={{textAlign:"center",marginTop:28,fontSize:13,color:"var(--t3)"}}>
+        No account yet?{" "}<span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("register-talent")}>Create a free account →</span>
+      </div>
+      <Footer onNavigate={onNavigate}/>
+    </div>);
   }
   const userType=(myProfile?.user_type||"").toLowerCase();
   const isTalent=userType==="talent";
