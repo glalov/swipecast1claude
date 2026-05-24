@@ -9247,7 +9247,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="cinema-feature">
       <div className="cinema-feature-inner">
         <div className="cinema-feature-img">
-          <img src="https://images.unsplash.com/photo-1605501492805-f5699f0718d5?w=900&q=85" alt="Cinematographer operating cinema camera on a film set with crew and actors" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+          <img src="https://images.pexels.com/photos/3062539/pexels-photo-3062539.jpeg?auto=compress&cs=tinysrgb&w=900&q=85" alt="Film crew filming an actress on an outdoor movie set with cinema camera" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
         </div>
         <div className="cinema-feature-copy">
           <p className="cf-label">The actor journey</p>
