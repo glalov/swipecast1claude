@@ -1673,12 +1673,12 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .partners-marquee{position:relative;overflow:hidden;width:100%;padding:6px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);}
 .partners-track{display:flex;gap:clamp(14px,1.6vw,22px);align-items:center;width:max-content;animation:partnersSlide 48s linear infinite;will-change:transform;}
 .partners-marquee:hover .partners-track{animation-play-state:paused;}
-.partners-tile{flex-shrink:0;min-width:120px;height:56px;display:flex;align-items:center;justify-content:center;padding:0 8px;}
-.partners-tile img{max-height:32px;max-width:120px;object-fit:contain;display:block;opacity:.45;transition:opacity .25s ease;filter:grayscale(1) brightness(0);}
-.partners-tile:hover img{opacity:.7;filter:grayscale(1) brightness(0);}
+.partners-tile{flex-shrink:0;min-width:130px;height:60px;display:flex;align-items:center;justify-content:center;padding:0 10px;}
+.partners-tile img{max-height:40px;max-width:130px;object-fit:contain;display:block;opacity:.5;transition:opacity .25s ease;filter:grayscale(1) brightness(0);}
+.partners-tile:hover img{opacity:.75;filter:grayscale(1) brightness(0);}
 @keyframes partnersSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
 @media (prefers-reduced-motion: reduce){.partners-track{animation:none;}}
-@media (max-width:768px){.partners-tile{min-width:100px;height:44px;padding:0 6px;}.partners-tile img{max-height:26px;max-width:90px;}}
+@media (max-width:768px){.partners-tile{min-width:110px;height:48px;padding:0 8px;}.partners-tile img{max-height:32px;max-width:110px;}}
 /* ─── Talent Dashboard responsive grid ─── */
 .td-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
@@ -9237,18 +9237,16 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             // Real brand SVG logos from Wikimedia Commons (Special:FilePath redirects to canonical asset).
             // Each entry: name (alt text + fallback wordmark) and URL of the SVG.
             const PARTNERS=[
-              {name:"Netflix",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Netflix_2015_logo.svg"},
-              {name:"Disney",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Disney_wordmark.svg"},
-              {name:"HBO Max",src:"https://commons.wikimedia.org/wiki/Special:FilePath/HBO_Max_Logo.svg"},
-              {name:"Hulu",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Hulu_Logo.svg"},
-              {name:"Amazon Studios",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Amazon_Studios_logo.svg"},
-              {name:"Apple TV+",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Apple_TV_Plus_Logo.svg"},
-              {name:"A24",src:"https://commons.wikimedia.org/wiki/Special:FilePath/A24_logo.svg"},
-              {name:"Warner Bros.",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Warner_Bros._logo.svg"},
-              {name:"Universal Pictures",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Universal_Pictures_logo.svg"},
-              {name:"Paramount Pictures",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Paramount_Pictures_logo.svg"},
-              {name:"Sony Pictures",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Sony_Pictures_logo.svg"},
-              {name:"Lionsgate",src:"https://commons.wikimedia.org/wiki/Special:FilePath/Lionsgate_Studios_logo.svg"}
+              {name:"Netflix",src:"https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg"},
+              {name:"Disney",src:"https://upload.wikimedia.org/wikipedia/commons/a/a4/Disney_wordmark.svg"},
+              {name:"Hulu",src:"https://upload.wikimedia.org/wikipedia/commons/f/f9/Hulu_logo_%282018%29.svg"},
+              {name:"Amazon Studios",src:"https://upload.wikimedia.org/wikipedia/commons/3/32/Amazon_Studios_logo.svg"},
+              {name:"Apple TV+",src:"https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg"},
+              {name:"YouTube",src:"https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg"},
+              {name:"Universal Pictures",src:"https://upload.wikimedia.org/wikipedia/commons/b/b6/Universal_Pictures_logo.svg"},
+              {name:"Paramount Pictures",src:"https://upload.wikimedia.org/wikipedia/commons/a/ab/Paramount_Pictures_2002_logo.svg"},
+              {name:"Sony Pictures",src:"https://upload.wikimedia.org/wikipedia/commons/d/d7/Sony_Pictures_logo.svg"},
+              {name:"Lionsgate",src:"https://upload.wikimedia.org/wikipedia/commons/a/ad/Lionsgate_Studios_logo.svg"}
             ];
             // Duplicate so the marquee keyframe (translateX -50%) loops seamlessly without a visible jump.
             const doubled=[...PARTNERS,...PARTNERS];
