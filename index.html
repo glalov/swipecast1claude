@@ -2947,7 +2947,7 @@ function LoginPage({onNavigate,onLoggedIn}){
   };
   if(sentReset)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check">✓</div><h3>{t('login.checkEmail')}</h3><p>{t('login.resetSent')} <strong>{email}</strong>.</p><button className="btn-s" style={{marginTop:24}} onClick={()=>{setForgot(false);setSentReset(false);}}>{t('login.backToLoginBtn')}</button></div><Footer onNavigate={onNavigate}/></div>);
   return(
-    <div className="page"><form onSubmit={submit} style={{maxWidth:420,margin:"60px auto 0"}}>
+    <div className="page"><form onSubmit={submit} style={{maxWidth:480,width:"100%",margin:"60px auto 0"}}>
       <div style={{textAlign:"center",marginBottom:32}}>
         <div className="logo" style={{justifyContent:"center",fontSize:24,marginBottom:12}}><div className="logo-i" style={{width:36,height:36,fontSize:20}}>↔</div>CastSlate</div>
         <h2 style={{fontSize:28,fontWeight:800,marginBottom:8}}>{forgot?t('login.resetPwd'):t('login.welcome')}</h2>
@@ -13665,8 +13665,8 @@ function App(){
             <button className="btn-s btn-sm" onClick={()=>navigate("account-settings")} title={navT('nav.accountSettings')}>{myProfile?.display_name?.split(" ")[0]||navT('nav.accountSettings').split(" ")[0]} ⚙</button>
             <button className="btn-p btn-sm" onClick={signOut}>{navT('nav.signOut')}</button>
           </>:<>
-            <button className={`${["auth-gate","register-talent","register-cd"].includes(page)?"btn-p":"btn-s"} btn-sm`} onClick={()=>navigate("auth-gate")}>{navT('nav.join')}</button>
-            <button className="btn-s btn-sm" onClick={()=>navigate("register-cd")}>{navT('nav.postJob')}</button>
+            <button className={`${["auth-gate","register-talent"].includes(page)?"btn-p":"btn-s"} btn-sm`} onClick={()=>navigate("auth-gate")}>{navT('nav.join')}</button>
+            <button className={`${page==="register-cd"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navigate("register-cd")}>{navT('nav.postJob')}</button>
             <button className={`${page==="login"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navigate("login")}>{navT('nav.signIn')}</button>
           </>}
         </div>
@@ -13697,8 +13697,8 @@ function App(){
               <button className="btn-s btn-sm" onClick={()=>navThen("account-settings")}>{navT('nav.accountSettings')}</button>
               <button className="btn-p btn-sm" onClick={doSignOut}>{navT('nav.signOut')}</button>
             </>:<>
-              <button className={`${["auth-gate","register-talent","register-cd"].includes(page)?"btn-p":"btn-s"} btn-sm`} onClick={()=>navThen("auth-gate")}>{navT('nav.joinAsTalent')}</button>
-              <button className="btn-s btn-sm" onClick={()=>navThen("register-cd")}>{navT('nav.postJob')}</button>
+              <button className={`${["auth-gate","register-talent"].includes(page)?"btn-p":"btn-s"} btn-sm`} onClick={()=>navThen("auth-gate")}>{navT('nav.joinAsTalent')}</button>
+              <button className={`${page==="register-cd"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navThen("register-cd")}>{navT('nav.postJob')}</button>
               <button className={`${page==="login"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navThen("login")}>{navT('nav.signIn')}</button>
             </>}
           </div>
