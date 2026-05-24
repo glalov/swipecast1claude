@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260524-192103 -->
-  <meta name="build-version" content="20260524-192103"/>
+  <!-- BUILD: 20260524-192625 -->
+  <meta name="build-version" content="20260524-192625"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260524-192103";
+      var B="20260524-192625";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -1504,6 +1504,14 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:150;backdrop-filter:blur(4px);}
 .mobile-menu-inner{background:var(--s1);border-bottom:1px solid var(--bdr);padding:18px 18px 22px;max-width:100%;animation:mmSlide .18s ease-out;box-shadow:0 10px 40px rgba(0,0,0,.12);}
 @keyframes mmSlide{from{transform:translateY(-12px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.join-dropdown{position:relative;display:inline-flex;}
+@keyframes ddFadeIn{from{opacity:0;transform:translateX(-50%) translateY(-6px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+.join-dd-menu{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--bdr);border-radius:12px;box-shadow:0 8px 32px rgba(26,26,46,0.14);padding:6px;min-width:260px;z-index:300;animation:ddFadeIn .15s ease;}
+.join-dd-item{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;}
+.join-dd-item:hover{background:var(--s1);}
+.join-dd-icon{width:34px;height:34px;border-radius:8px;background:var(--s1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;line-height:1;}
+.join-dd-title{display:block;font-size:13px;font-weight:700;color:var(--t1);margin-bottom:2px;}
+.join-dd-desc{display:block;font-size:11px;color:var(--t2);line-height:1.45;}
 @keyframes scSpin{to{transform:rotate(360deg);}}
 .mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;}
 .mm-link:last-child{border-bottom:none;}
@@ -2666,8 +2674,7 @@ function RegisterTalent({onNavigate}){
           <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>Takes about 60 seconds. No payment required.</p>
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
             <button type="button" className="social-btn-dark" onClick={()=>handleSocialAuth("google")}><svg viewBox="0 0 24 24" width="18" height="18" style={{flexShrink:0}}><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
-            <button type="button" className="social-btn-dark" onClick={()=>handleSocialAuth("apple")}><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style={{flexShrink:0}}><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>Continue with Apple</button>
-            <button type="button" className="social-btn-dark" style={{background:"#1877F2"}} onClick={()=>handleSocialAuth("facebook")}><svg viewBox="0 0 24 24" width="18" height="18" fill="white" style={{flexShrink:0}}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Continue with Facebook</button>
+              <button type="button" className="social-btn-dark" style={{background:"#1877F2"}} onClick={()=>handleSocialAuth("facebook")}><svg viewBox="0 0 24 24" width="18" height="18" fill="white" style={{flexShrink:0}}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Continue with Facebook</button>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
             <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
@@ -2869,8 +2876,7 @@ function RegisterCD({onNavigate}){
           <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>Takes about 60 seconds. No payment required.</p>
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
             <button type="button" className="social-btn-dark" onClick={()=>handleSocialAuth("google")}><svg viewBox="0 0 24 24" width="18" height="18" style={{flexShrink:0}}><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
-            <button type="button" className="social-btn-dark" onClick={()=>handleSocialAuth("apple")}><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style={{flexShrink:0}}><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>Continue with Apple</button>
-            <button type="button" className="social-btn-dark" style={{background:"#1877F2"}} onClick={()=>handleSocialAuth("facebook")}><svg viewBox="0 0 24 24" width="18" height="18" fill="white" style={{flexShrink:0}}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Continue with Facebook</button>
+              <button type="button" className="social-btn-dark" style={{background:"#1877F2"}} onClick={()=>handleSocialAuth("facebook")}><svg viewBox="0 0 24 24" width="18" height="18" fill="white" style={{flexShrink:0}}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Continue with Facebook</button>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
             <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
@@ -2990,7 +2996,6 @@ function LoginPage({onNavigate,onLoggedIn}){
       {!forgot&&<>
         <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
           <button type="button" className="social-btn-dark" onClick={()=>handleSocialAuth("google")}><svg viewBox="0 0 24 24" width="18" height="18" style={{flexShrink:0}}><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
-          <button type="button" className="social-btn-dark" onClick={()=>handleSocialAuth("apple")}><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style={{flexShrink:0}}><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>Continue with Apple</button>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
           <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or log in with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
@@ -4552,7 +4557,6 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
           {/* Social OAuth buttons */}
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
             <button className="social-btn-dark" onClick={()=>handleSocialAuth("google")}><svg viewBox="0 0 24 24" width="18" height="18" style={{flexShrink:0}}><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
-            <button className="social-btn-dark" onClick={()=>handleSocialAuth("apple")}><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style={{flexShrink:0}}><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>Continue with Apple</button>
             <button className="social-btn-dark" style={{background:"#1877F2"}} onClick={()=>handleSocialAuth("facebook")}><svg viewBox="0 0 24 24" width="18" height="18" fill="white" style={{flexShrink:0}}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Continue with Facebook</button>
           </div>
 
@@ -4584,7 +4588,6 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
           {/* Social OAuth buttons */}
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
             <button className="social-btn-dark" onClick={()=>handleSocialAuth("google")}><svg viewBox="0 0 24 24" width="18" height="18" style={{flexShrink:0}}><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
-            <button className="social-btn-dark" onClick={()=>handleSocialAuth("apple")}><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style={{flexShrink:0}}><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>Continue with Apple</button>
             <button className="social-btn-dark" style={{background:"#1877F2"}} onClick={()=>handleSocialAuth("facebook")}><svg viewBox="0 0 24 24" width="18" height="18" fill="white" style={{flexShrink:0}}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Continue with Facebook</button>
           </div>
 
@@ -13651,8 +13654,16 @@ function App(){
   },[page,myProfile?.user_type]);
 
   const [menuOpen,setMenuOpen]=useState(false);
-  const navThen=useCallback((p)=>{setMenuOpen(false);navigate(p);},[navigate]);
-  const doSignOut=useCallback(()=>{setMenuOpen(false);signOut();},[signOut]);
+  const [joinOpen,setJoinOpen]=useState(false);
+  const joinRef=useRef(null);
+  useEffect(()=>{
+    if(!joinOpen)return;
+    const h=(e)=>{if(joinRef.current&&!joinRef.current.contains(e.target))setJoinOpen(false);};
+    document.addEventListener("mousedown",h);
+    return()=>document.removeEventListener("mousedown",h);
+  },[joinOpen]);
+  const navThen=useCallback((p)=>{setMenuOpen(false);setJoinOpen(false);navigate(p);},[navigate]);
+  const doSignOut=useCallback(()=>{setMenuOpen(false);setJoinOpen(false);signOut();},[signOut]);
 
   const navT=(key)=>(TRANSLATIONS[lang]&&TRANSLATIONS[lang][key])||TRANSLATIONS.en[key]||key;
   return(
@@ -13691,7 +13702,22 @@ function App(){
             <button className="btn-s btn-sm" onClick={()=>navigate("account-settings")} title={navT('nav.accountSettings')}>{myProfile?.display_name?.split(" ")[0]||navT('nav.accountSettings').split(" ")[0]} ⚙</button>
             <button className="btn-p btn-sm" onClick={signOut}>{navT('nav.signOut')}</button>
           </>:<>
-            <button className={`${["auth-gate","register-talent"].includes(page)?"btn-p":"btn-s"} btn-sm`} onClick={()=>navigate("auth-gate")}>{navT('nav.join')}</button>
+            <div className="join-dropdown" ref={joinRef}>
+              <button className={`${["auth-gate","register-talent"].includes(page)||joinOpen?"btn-p":"btn-s"} btn-sm`} onClick={()=>setJoinOpen(o=>!o)} style={{display:"inline-flex",alignItems:"center",gap:5}}>
+                {navT('nav.join')}
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor" style={{transition:"transform .2s",transform:joinOpen?"rotate(180deg)":"rotate(0deg)"}}><path d="M0 0l5 6 5-6z"/></svg>
+              </button>
+              {joinOpen&&<div className="join-dd-menu">
+                <button className="join-dd-item" onClick={()=>{setJoinOpen(false);navigate("auth-gate");}}>
+                  <div className="join-dd-icon">🎭</div>
+                  <div><span className="join-dd-title">Join as Talent</span><span className="join-dd-desc">Create your actor profile and start submitting.</span></div>
+                </button>
+                <button className="join-dd-item" onClick={()=>{setJoinOpen(false);navigate("register-cd");}}>
+                  <div className="join-dd-icon">🎬</div>
+                  <div><span className="join-dd-title">Join as Employer</span><span className="join-dd-desc">Post casting calls and review submissions.</span></div>
+                </button>
+              </div>}
+            </div>
             <button className={`${page==="register-cd"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navigate("register-cd")}>{navT('nav.postJob')}</button>
             <button className={`${page==="login"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navigate("login")}>{navT('nav.signIn')}</button>
           </>}
@@ -13723,8 +13749,11 @@ function App(){
               <button className="btn-s btn-sm" onClick={()=>navThen("account-settings")}>{navT('nav.accountSettings')}</button>
               <button className="btn-p btn-sm" onClick={doSignOut}>{navT('nav.signOut')}</button>
             </>:<>
-              <button className={`${["auth-gate","register-talent"].includes(page)?"btn-p":"btn-s"} btn-sm`} onClick={()=>navThen("auth-gate")}>{navT('nav.joinAsTalent')}</button>
-              <button className={`${page==="register-cd"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navThen("register-cd")}>{navT('nav.postJob')}</button>
+              <div style={{display:"flex",flexDirection:"column",gap:4,borderBottom:"1px solid var(--bdr)",paddingBottom:8,marginBottom:4}}>
+                <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:.8,color:"var(--t3)",padding:"2px 4px"}}>Join as</div>
+                <button className={`${["auth-gate","register-talent"].includes(page)?"btn-p":"btn-s"} btn-sm`} style={{display:"flex",alignItems:"center",gap:8,justifyContent:"flex-start"}} onClick={()=>navThen("auth-gate")}>🎭 Join as Talent</button>
+                <button className={`${page==="register-cd"?"btn-p":"btn-s"} btn-sm`} style={{display:"flex",alignItems:"center",gap:8,justifyContent:"flex-start"}} onClick={()=>navThen("register-cd")}>🎬 Join as Employer</button>
+              </div>
               <button className={`${page==="login"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navThen("login")}>{navT('nav.signIn')}</button>
             </>}
           </div>
