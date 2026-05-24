@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260524-175429 -->
-  <meta name="build-version" content="20260524-175429"/>
+  <!-- BUILD: 20260524-140248 -->
+  <meta name="build-version" content="20260524-140248"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260524-175429";
+      var B="20260524-140248";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -1503,6 +1503,14 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 }
 .mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:150;backdrop-filter:blur(4px);}
 .mobile-menu-inner{background:var(--s1);border-bottom:1px solid var(--bdr);padding:18px 18px 22px;max-width:100%;animation:mmSlide .18s ease-out;box-shadow:0 10px 40px rgba(0,0,0,.12);}
+.join-dropdown{position:relative;display:inline-flex;}
+@keyframes ddFadeIn{from{opacity:0;transform:translateX(-50%) translateY(-6px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+.join-dd-menu{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--bdr);border-radius:12px;box-shadow:0 8px 32px rgba(26,26,46,0.14);padding:6px;min-width:250px;z-index:300;animation:ddFadeIn .15s ease;}
+.join-dd-item{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;}
+.join-dd-item:hover{background:var(--s1);}
+.join-dd-icon{width:34px;height:34px;border-radius:8px;background:var(--s1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;line-height:1;}
+.join-dd-title{display:block;font-size:13px;font-weight:700;color:var(--t1);margin-bottom:2px;}
+.join-dd-desc{display:block;font-size:11px;color:var(--t2);line-height:1.45;}
 @keyframes mmSlide{from{transform:translateY(-12px);opacity:0;}to{transform:translateY(0);opacity:1;}}
 @keyframes scSpin{to{transform:rotate(360deg);}}
 .mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;}
@@ -2537,7 +2545,6 @@ function RegisterTalent({onNavigate}){
   };
   const createAccount=async()=>{
     if(submittingRef.current)return; // prevent double-click race
-    if(!f.agree){setErr("Please agree to the Terms of Service and Privacy Policy.");window.scrollTo(0,0);return;}
     submittingRef.current=true;
     setErr("");setDupEmail(false);setResentOk(false);setLoading(true);
     try{
@@ -2613,30 +2620,21 @@ function RegisterTalent({onNavigate}){
   };
   const handleSocialAuth=async(provider)=>{
     setErr("");
-    if(!f.agree){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
     try{
-      const {data,error}=await window.sb.auth.signInWithOAuth({
+      const {error}=await window.sb.auth.signInWithOAuth({
         provider,
-        options:{redirectTo:"https://www.castslate.com",skipBrowserRedirect:true,...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
+        options:{redirectTo:"https://www.castslate.com",...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
       });
       if(error){
         const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-        setErr(`${name} sign-in failed: ${error.message}`);return;
+        const em=(error.message||"").toLowerCase();
+        if(em.includes("provider")&&(em.includes("not enabled")||em.includes("not supported")||em.includes("disabled"))){
+          setErr(`${name} sign-up is not connected yet.`);
+        }else{setErr(`${name} sign-in failed: ${error.message}`);}
       }
-      if(!data?.url){setErr("Could not start sign-in. Please try again.");return;}
-      try{
-        const ac=new AbortController();const tid=setTimeout(()=>ac.abort(),6000);
-        const probe=await fetch(data.url,{redirect:"manual",signal:ac.signal});
-        clearTimeout(tid);
-        if(probe.status>=400){
-          const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-          setErr(`${name} sign-in is not available right now. Please use email to sign up.`);return;
-        }
-      }catch(_){}
-      window.location.href=data.url;
     }catch(e){
       const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-      setErr(`${name} sign-up failed. Please try again.`);
+      setErr(`${name} sign-up is not connected yet.`);
     }
   };
   if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Your free profile is ready. Click the link in that email, then log in to browse castings. You'll only need to activate a membership when you're ready to submit for a role.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}>✓ Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
@@ -2668,8 +2666,8 @@ function RegisterTalent({onNavigate}){
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
             <button type="button" className="social-btn-dark" onClick={()=>handleSocialAuth("google")}><svg viewBox="0 0 24 24" width="18" height="18" style={{flexShrink:0}}><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
             <button type="button" className="social-btn-dark" onClick={()=>handleSocialAuth("apple")}><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style={{flexShrink:0}}><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>Continue with Apple</button>
-            <button type="button" className="social-btn-dark" style={{background:"#1877F2"}} onClick={()=>handleSocialAuth("facebook")}><svg viewBox="0 0 24 24" width="18" height="18" fill="white" style={{flexShrink:0}}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Continue with Facebook</button>
           </div>
+          <p style={{textAlign:"center",color:"var(--t3)",fontSize:11,lineHeight:1.6,margin:"12px 0 4px"}}>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</p>
           <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
             <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
           </div>
@@ -2678,10 +2676,6 @@ function RegisterTalent({onNavigate}){
           <div className="form-group"><label className="label">{tr('reg.t.email')}</label><input className="input" type="email" placeholder="you@email.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
           <div className="form-group"><label className="label">{tr('reg.t.password')}</label><input className="input" type="password" placeholder={tr('reg.t.password')} value={f.password} onChange={e=>up("password",e.target.value)}/></div>
           <div className="form-group"><label className="label">{tr('reg.t.location')}</label><select className="select" style={{width:"100%"}} value={f.location} onChange={e=>up("location",e.target.value)}><option value="">Select your state</option>{US_STATES.map(s=><option key={s} value={s}>{s}</option>)}</select></div>
-          <div style={{display:"flex",gap:10,alignItems:"flex-start",margin:"16px 0",color:"var(--t2)",fontSize:12,lineHeight:1.55}}>
-            <input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)} style={{marginTop:3,flexShrink:0}}/>
-            <span>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</span>
-          </div>
           <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={()=>{if(validStep1())setStep(2);}}>{tr('reg.t.next')}</button>
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>onNavigate("login")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
         </div>
@@ -2729,7 +2723,6 @@ function RegisterTalent({onNavigate}){
         <div className="form-group"><label className="label">{tr('reg.t.training')}</label><input className="input" placeholder="e.g. BFA Acting, NYU Tisch" value={f.training} onChange={e=>up("training",e.target.value)}/></div>
         <div className="form-group"><label className="label">{tr('reg.t.skills')}</label><input className="input" placeholder="e.g. Stage Combat, Fluent Spanish" value={f.skills} onChange={e=>up("skills",e.target.value)}/></div>
         <div className="form-group"><label className="label">{tr('reg.t.agent')}</label><input className="input" placeholder="Agency name" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
-        <label className="checkbox-row" style={{marginTop:12,alignItems:"flex-start"}}><input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)} style={{marginTop:2,flexShrink:0}}/> <span>By continuing, you agree that you have read and agree to CastSlate's Terms of Service and Privacy Policy, and confirm that you are currently at least 18 years old.</span></label>
         <div style={{display:"flex",gap:12,marginTop:12}}><button className="btn-s" onClick={()=>setStep(2)} disabled={loading}>{tr('reg.t.back')}</button><button className="btn-p" style={{flex:1}} onClick={createAccount} disabled={loading}>{loading?tr('reg.t.creating'):tr('reg.t.createAccount')}</button></div></>}
 
       {/* Step 4 (Stripe) removed — signup is now free. Membership is activated
@@ -2771,7 +2764,6 @@ function RegisterCD({onNavigate}){
     if(!f.email||!f.email.includes("@")){setErr("Please enter a valid email.");return;}
     if(!f.password||f.password.length<8){setErr("Password must be at least 8 characters.");return;}
     if(!f.company_name){setErr("Please enter your company or production.");return;}
-    if(!f.agree){setErr("Please agree to the Terms of Service and Privacy Policy.");return;}
     submittingRef.current=true;setLoading(true);
     try{
       const display_name=(f.first+" "+f.last).trim();
@@ -2820,31 +2812,24 @@ function RegisterCD({onNavigate}){
   };
   const handleSocialAuth=async(provider)=>{
     setErr("");
-    if(!f.agree){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
     try{
-      const {data,error}=await window.sb.auth.signInWithOAuth({
+      localStorage.setItem("swipecast_pending_type","cd");
+      const {error}=await window.sb.auth.signInWithOAuth({
         provider,
-        options:{redirectTo:"https://www.castslate.com",skipBrowserRedirect:true,...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
+        options:{redirectTo:"https://www.castslate.com",...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
       });
       if(error){
+        localStorage.removeItem("swipecast_pending_type");
         const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-        setErr(`${name} sign-in failed: ${error.message}`);return;
+        const em=(error.message||"").toLowerCase();
+        if(em.includes("provider")&&(em.includes("not enabled")||em.includes("not supported")||em.includes("disabled"))){
+          setErr(`${name} sign-up is not connected yet.`);
+        }else{setErr(`${name} sign-in failed: ${error.message}`);}
       }
-      if(!data?.url){setErr("Could not start sign-in. Please try again.");return;}
-      try{
-        const ac=new AbortController();const tid=setTimeout(()=>ac.abort(),6000);
-        const probe=await fetch(data.url,{redirect:"manual",signal:ac.signal});
-        clearTimeout(tid);
-        if(probe.status>=400){
-          const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-          setErr(`${name} sign-in is not available right now. Please use email to sign up.`);return;
-        }
-      }catch(_){}
-      localStorage.setItem("swipecast_pending_type","cd");
-      window.location.href=data.url;
     }catch(e){
+      localStorage.removeItem("swipecast_pending_type");
       const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-      setErr(`${name} sign-up failed. Please try again.`);
+      setErr(`${name} sign-up is not connected yet.`);
     }
   };
   if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Click the link to activate your account. Then log in to post your first casting.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}>✓ Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
@@ -2871,8 +2856,8 @@ function RegisterCD({onNavigate}){
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
             <button type="button" className="social-btn-dark" onClick={()=>handleSocialAuth("google")}><svg viewBox="0 0 24 24" width="18" height="18" style={{flexShrink:0}}><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
             <button type="button" className="social-btn-dark" onClick={()=>handleSocialAuth("apple")}><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style={{flexShrink:0}}><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>Continue with Apple</button>
-            <button type="button" className="social-btn-dark" style={{background:"#1877F2"}} onClick={()=>handleSocialAuth("facebook")}><svg viewBox="0 0 24 24" width="18" height="18" fill="white" style={{flexShrink:0}}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Continue with Facebook</button>
           </div>
+          <p style={{textAlign:"center",color:"var(--t3)",fontSize:11,lineHeight:1.6,margin:"12px 0 4px"}}>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</p>
           <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
             <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
           </div>
@@ -2883,10 +2868,6 @@ function RegisterCD({onNavigate}){
           <div className="form-row"><div className="form-group"><label className="label">{tr('reg.cd.companyName')}</label><input className="input" placeholder={tr('reg.cd.companyName')} value={f.company_name} onChange={e=>up("company_name",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.cd.role')}</label><select className="select" style={{width:"100%"}} value={f.company_role} onChange={e=>up("company_role",e.target.value)}><option>Casting Director</option><option>Producer</option><option>Director</option><option>Casting Associate</option><option>Talent Manager</option><option>Studio Executive</option></select></div></div>
           <div className="form-group"><label className="label">{tr('reg.cd.location')}</label><input className="input" placeholder="City, State" value={f.location} onChange={e=>up("location",e.target.value)}/></div>
           <div className="form-group"><label className="label">{tr('reg.cd.website')}</label><input className="input" placeholder="https://" value={f.website} onChange={e=>up("website",e.target.value)}/></div>
-          <div style={{display:"flex",gap:10,alignItems:"flex-start",margin:"16px 0",color:"var(--t2)",fontSize:12,lineHeight:1.55}}>
-            <input type="checkbox" checked={f.agree} onChange={e=>up("agree",e.target.checked)} style={{marginTop:3,flexShrink:0}}/>
-            <span>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</span>
-          </div>
           <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={submit} disabled={loading}>{loading?tr('reg.cd.creating'):tr('reg.cd.createAccount')}</button>
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>onNavigate("login")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
         </div>
@@ -2956,33 +2937,25 @@ function LoginPage({onNavigate,onLoggedIn}){
   const handleSocialAuth=async(provider)=>{
     setErr("");
     try{
-      const {data,error}=await window.sb.auth.signInWithOAuth({
+      const {error}=await window.sb.auth.signInWithOAuth({
         provider,
-        options:{redirectTo:"https://www.castslate.com",skipBrowserRedirect:true,...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
+        options:{redirectTo:"https://www.castslate.com",...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
       });
       if(error){
         const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-        setErr(`${name} sign-in failed: ${error.message}`);return;
+        const em=(error.message||"").toLowerCase();
+        if(em.includes("provider")&&(em.includes("not enabled")||em.includes("not supported")||em.includes("disabled"))){
+          setErr(`${name} login is not connected yet.`);
+        }else{setErr(`${name} sign-in failed: ${error.message}`);}
       }
-      if(!data?.url){setErr("Could not start sign-in. Please try again.");return;}
-      try{
-        const ac=new AbortController();const tid=setTimeout(()=>ac.abort(),6000);
-        const probe=await fetch(data.url,{redirect:"manual",signal:ac.signal});
-        clearTimeout(tid);
-        if(probe.status>=400){
-          const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-          setErr(`${name} sign-in is not available right now. Please use your email and password.`);return;
-        }
-      }catch(_){}
-      window.location.href=data.url;
     }catch(e){
       const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-      setErr(`${name} sign-in failed. Please try again.`);
+      setErr(`${name} login is not connected yet.`);
     }
   };
   if(sentReset)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check">✓</div><h3>{t('login.checkEmail')}</h3><p>{t('login.resetSent')} <strong>{email}</strong>.</p><button className="btn-s" style={{marginTop:24}} onClick={()=>{setForgot(false);setSentReset(false);}}>{t('login.backToLoginBtn')}</button></div><Footer onNavigate={onNavigate}/></div>);
   return(
-    <div className="page"><form onSubmit={submit} style={{maxWidth:420,margin:"60px auto 0"}}>
+    <div className="page"><form onSubmit={submit} style={{maxWidth:480,width:"100%",margin:"60px auto 0"}}>
       <div style={{textAlign:"center",marginBottom:32}}>
         <div className="logo" style={{justifyContent:"center",fontSize:24,marginBottom:12}}><div className="logo-i" style={{width:36,height:36,fontSize:20}}>↔</div>CastSlate</div>
         <h2 style={{fontSize:28,fontWeight:800,marginBottom:8}}>{forgot?t('login.resetPwd'):t('login.welcome')}</h2>
@@ -2990,11 +2963,8 @@ function LoginPage({onNavigate,onLoggedIn}){
       </div>
       {!forgot&&<>
         <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
-          {[["🔵","Continue with Google","google"],["","Continue with Apple","apple"],["📘","Continue with Facebook","facebook"]].map(([ic,label,provider])=>(
-            <button key={label} type="button" className="btn-s" style={{width:"100%",justifyContent:"center",display:"flex",gap:10}} onClick={()=>handleSocialAuth(provider)}>
-              <span>{ic}</span>{label}
-            </button>
-          ))}
+          <button type="button" className="social-btn-dark" onClick={()=>handleSocialAuth("google")}><svg viewBox="0 0 24 24" width="18" height="18" style={{flexShrink:0}}><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+          <button type="button" className="social-btn-dark" onClick={()=>handleSocialAuth("apple")}><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style={{flexShrink:0}}><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>Continue with Apple</button>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
           <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or log in with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
@@ -4379,7 +4349,6 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
     if(!firstName.trim()||!lastName.trim()){setErr("Please enter your first and last name.");return;}
     if(!suEmail||!suEmail.includes("@")){setErr("Please enter a valid email address.");return;}
     if(!suPass||suPass.length<8){setErr("Password must be at least 8 characters.");return;}
-    if(!agreed){setErr("Please agree to the Terms of Service and Privacy Policy.");return;}
     submittingRef.current=true;setLoading(true);
     try{
       const email=suEmail.trim().toLowerCase();
@@ -4441,35 +4410,30 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
 
   const handleSocialAuth=async(provider)=>{
     setErr("");
-    if(mode==="signup"&&!agreed){setErr("Please accept the Terms of Service and Privacy Policy to continue.");return;}
+    // Save pending apply before redirect — it survives the OAuth round-trip
+    if(pending){
+      try{sessionStorage.setItem("sc_post_auth_apply",JSON.stringify({casting:pending.casting,role:pending.role}));}catch(_){}
+    }
     try{
-      const {data,error}=await window.sb.auth.signInWithOAuth({
+      const {error}=await window.sb.auth.signInWithOAuth({
         provider,
-        options:{redirectTo:"https://www.castslate.com",skipBrowserRedirect:true,...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
+        options:{redirectTo:"https://www.castslate.com",...(provider==="google"?{queryParams:{prompt:"select_account"}}:{})}
       });
       if(error){
+        try{sessionStorage.removeItem("sc_post_auth_apply");}catch(_){}
         const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-        setErr(`${name} sign-in failed: ${error.message}`);return;
-      }
-      if(!data?.url){setErr("Could not start sign-in. Please try again.");return;}
-      try{
-        const ac=new AbortController();const tid=setTimeout(()=>ac.abort(),6000);
-        const probe=await fetch(data.url,{redirect:"manual",signal:ac.signal});
-        clearTimeout(tid);
-        if(probe.status>=400){
-          const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-          setErr(`${name} sign-in is not available right now. Please use email to continue.`);return;
+        const em=(error.message||"").toLowerCase();
+        if(em.includes("provider")&&(em.includes("not enabled")||em.includes("not supported")||em.includes("disabled"))){
+          setErr(`${name} sign-up is not connected yet. Admin must enable ${name} OAuth in Supabase.`);
+        }else{
+          setErr(`${name} sign-in failed: ${error.message}`);
         }
-      }catch(_){}
-      // Save pending apply before redirect — it survives the OAuth round-trip
-      if(pending){
-        try{sessionStorage.setItem("sc_post_auth_apply",JSON.stringify({casting:pending.casting,role:pending.role}));}catch(_){}
       }
-      window.location.href=data.url;
+      // On success the browser redirects away — nothing more to do here
     }catch(e){
       try{sessionStorage.removeItem("sc_post_auth_apply");}catch(_){}
       const name=provider.charAt(0).toUpperCase()+provider.slice(1);
-      setErr(`${name} sign-in failed. Please try again.`);
+      setErr(`${name} sign-up is not connected yet. Admin must enable ${name} OAuth in Supabase.`);
     }
   };
 
@@ -4557,8 +4521,9 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
             <button className="social-btn-dark" onClick={()=>handleSocialAuth("google")}><svg viewBox="0 0 24 24" width="18" height="18" style={{flexShrink:0}}><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
             <button className="social-btn-dark" onClick={()=>handleSocialAuth("apple")}><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style={{flexShrink:0}}><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>Continue with Apple</button>
-            <button className="social-btn-dark" style={{background:"#1877F2"}} onClick={()=>handleSocialAuth("facebook")}><svg viewBox="0 0 24 24" width="18" height="18" fill="white" style={{flexShrink:0}}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Continue with Facebook</button>
           </div>
+
+          <p style={{textAlign:"center",color:"var(--t3)",fontSize:11,lineHeight:1.6,margin:"12px 0 4px"}}>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</p>
 
           <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
             <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
@@ -4573,11 +4538,6 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
           <div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com" value={suEmail} onChange={e=>setSuEmail(e.target.value)}/></div>
           <div className="form-group"><label className="label">Password</label><input className="input" type="password" placeholder="At least 8 characters" value={suPass} onChange={e=>setSuPass(e.target.value)}/></div>
 
-          <div style={{display:"flex",gap:10,alignItems:"flex-start",margin:"16px 0",color:"var(--t2)",fontSize:12,lineHeight:1.55}}>
-            <input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)} style={{marginTop:3,flexShrink:0}}/>
-            <span>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</span>
-          </div>
-
           <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={handleSignUp} disabled={loading}>{loading?"Creating account…":c?"Create Free Account & Apply →":"Create Free Account →"}</button>
 
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>{setMode("login");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
@@ -4589,7 +4549,6 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
             <button className="social-btn-dark" onClick={()=>handleSocialAuth("google")}><svg viewBox="0 0 24 24" width="18" height="18" style={{flexShrink:0}}><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
             <button className="social-btn-dark" onClick={()=>handleSocialAuth("apple")}><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style={{flexShrink:0}}><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>Continue with Apple</button>
-            <button className="social-btn-dark" style={{background:"#1877F2"}} onClick={()=>handleSocialAuth("facebook")}><svg viewBox="0 0 24 24" width="18" height="18" fill="white" style={{flexShrink:0}}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Continue with Facebook</button>
           </div>
 
           <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
@@ -13674,8 +13633,16 @@ function App(){
   },[page,myProfile?.user_type]);
 
   const [menuOpen,setMenuOpen]=useState(false);
-  const navThen=useCallback((p)=>{setMenuOpen(false);navigate(p);},[navigate]);
-  const doSignOut=useCallback(()=>{setMenuOpen(false);signOut();},[signOut]);
+  const [joinOpen,setJoinOpen]=useState(false);
+  const joinRef=useRef(null);
+  useEffect(()=>{
+    if(!joinOpen)return;
+    const h=(e)=>{if(joinRef.current&&!joinRef.current.contains(e.target))setJoinOpen(false);};
+    document.addEventListener("mousedown",h);
+    return()=>document.removeEventListener("mousedown",h);
+  },[joinOpen]);
+  const navThen=useCallback((p)=>{setMenuOpen(false);setJoinOpen(false);navigate(p);},[navigate]);
+  const doSignOut=useCallback(()=>{setMenuOpen(false);setJoinOpen(false);signOut();},[signOut]);
 
   const navT=(key)=>(TRANSLATIONS[lang]&&TRANSLATIONS[lang][key])||TRANSLATIONS.en[key]||key;
   return(
@@ -13714,9 +13681,24 @@ function App(){
             <button className="btn-s btn-sm" onClick={()=>navigate("account-settings")} title={navT('nav.accountSettings')}>{myProfile?.display_name?.split(" ")[0]||navT('nav.accountSettings').split(" ")[0]} ⚙</button>
             <button className="btn-p btn-sm" onClick={signOut}>{navT('nav.signOut')}</button>
           </>:<>
-            <button className="btn-s btn-sm" onClick={()=>navigate("auth-gate")}>{navT('nav.join')}</button>
-            <button className="btn-s btn-sm" onClick={()=>navigate("register-cd")}>{navT('nav.postJob')}</button>
-            <button className="btn-p btn-sm" onClick={()=>navigate("login")}>{navT('nav.signIn')}</button>
+            <div className="join-dropdown" ref={joinRef}>
+              <button className={`${["auth-gate","register-talent"].includes(page)||joinOpen?"btn-p":"btn-s"} btn-sm`} onClick={()=>setJoinOpen(o=>!o)} style={{display:"inline-flex",alignItems:"center",gap:5}}>
+                {navT('nav.join')}
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor" style={{transition:"transform .2s",transform:joinOpen?"rotate(180deg)":"rotate(0deg)"}}><path d="M0 0l5 6 5-6z"/></svg>
+              </button>
+              {joinOpen&&<div className="join-dd-menu">
+                <button className="join-dd-item" onClick={()=>{setJoinOpen(false);navigate("auth-gate");}}>
+                  <div className="join-dd-icon">🎭</div>
+                  <div><span className="join-dd-title">I'm Talent</span><span className="join-dd-desc">Build your actor profile and start submitting.</span></div>
+                </button>
+                <button className="join-dd-item" onClick={()=>{setJoinOpen(false);navigate("register-cd");}}>
+                  <div className="join-dd-icon">🎬</div>
+                  <div><span className="join-dd-title">I'm Hiring</span><span className="join-dd-desc">Post casting calls and review submissions.</span></div>
+                </button>
+              </div>}
+            </div>
+            <button className={`${page==="register-cd"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navigate("register-cd")}>{navT('nav.postJob')}</button>
+            <button className={`${page==="login"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navigate("login")}>{navT('nav.signIn')}</button>
           </>}
         </div>
         <button className="nav-burger" aria-label="Menu" onClick={()=>setMenuOpen(o=>!o)} style={{display:"none",background:"none",border:"1px solid var(--bdr)",borderRadius:8,width:40,height:40,cursor:"pointer",alignItems:"center",justifyContent:"center",padding:0}}>
@@ -13746,9 +13728,12 @@ function App(){
               <button className="btn-s btn-sm" onClick={()=>navThen("account-settings")}>{navT('nav.accountSettings')}</button>
               <button className="btn-p btn-sm" onClick={doSignOut}>{navT('nav.signOut')}</button>
             </>:<>
-              <button className="btn-s btn-sm" onClick={()=>navThen("auth-gate")}>{navT('nav.joinAsTalent')}</button>
-              <button className="btn-s btn-sm" onClick={()=>navThen("register-cd")}>{navT('nav.postJob')}</button>
-              <button className="btn-p btn-sm" onClick={()=>navThen("login")}>{navT('nav.signIn')}</button>
+              <div style={{display:"flex",flexDirection:"column",gap:4,borderBottom:"1px solid var(--bdr)",paddingBottom:8,marginBottom:4}}>
+                <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:.8,color:"var(--t3)",padding:"2px 4px"}}>Join as</div>
+                <button className={`${["auth-gate","register-talent"].includes(page)?"btn-p":"btn-s"} btn-sm`} style={{display:"flex",alignItems:"center",gap:8,justifyContent:"flex-start"}} onClick={()=>navThen("auth-gate")}>🎭 I'm Talent</button>
+                <button className={`${page==="register-cd"?"btn-p":"btn-s"} btn-sm`} style={{display:"flex",alignItems:"center",gap:8,justifyContent:"flex-start"}} onClick={()=>navThen("register-cd")}>🎬 I'm Hiring</button>
+              </div>
+              <button className={`${page==="login"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navThen("login")}>{navT('nav.signIn')}</button>
             </>}
           </div>
         </div>
