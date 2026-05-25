@@ -5263,18 +5263,40 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     ...uploadedVideos.map(v=>({kind:"upload",...v})),
     ...(!uploadedVideos.length&&reelUrlRaw&&!reelIsExternal?[{kind:"reel",url:reelUrlRaw,title:"Demo Reel"}]:[]),
   ];
-  const extraVideos=allVideoItems.slice(2);
   const hasVid=allVideoItems.length>0;
-  // Showcase: first 2 videos + first 2 additional photos for the Backstage-style grid
-  const showcaseVideos=allVideoItems.slice(0,2);
-  const showcasePhotos=freshAdditional.slice(0,2);
-  const showcaseTiles=[
-    ...showcaseVideos.map(v=>({...v,_tile:"video"})),
-    ...showcasePhotos.map(u=>({_tile:"photo",url:u})),
-  ].slice(0,4);
+  // Build showcase tiles using saved showcase_order if available, else default ordering
+  const savedShowcaseOrder=freshProfile?.showcase_order;
+  let showcaseTiles=[];
+  let extraMedia=[];
+  if(savedShowcaseOrder&&savedShowcaseOrder.length>0){
+    const _tvMap={};allVideoItems.forEach(v=>{if(v.id)_tvMap[v.id]=v;});
+    const _tpSet=new Set(freshAdditional);
+    const orderedAll=savedShowcaseOrder.map(item=>{
+      if(item.type==="photo"&&_tpSet.has(item.id))return{_tile:"photo",url:item.id};
+      if(item.type==="video"&&_tvMap[item.id])return{..._tvMap[item.id],_tile:"video"};
+      return null;
+    }).filter(Boolean);
+    const orderedPhotoIds=new Set(savedShowcaseOrder.filter(i=>i.type==="photo").map(i=>i.id));
+    const orderedVideoIds=new Set(savedShowcaseOrder.filter(i=>i.type==="video").map(i=>i.id));
+    const unorderedVideos=allVideoItems.filter(v=>v.id&&!orderedVideoIds.has(v.id)).map(v=>({...v,_tile:"video"}));
+    const unorderedPhotos=freshAdditional.filter(u=>!orderedPhotoIds.has(u)).map(u=>({_tile:"photo",url:u}));
+    const allItems=[...orderedAll,...unorderedVideos,...unorderedPhotos];
+    showcaseTiles=allItems.slice(0,4);
+    extraMedia=allItems.slice(4);
+  }else{
+    const showcaseVideos=allVideoItems.slice(0,2);
+    const showcasePhotos=freshAdditional.slice(0,2);
+    showcaseTiles=[
+      ...showcaseVideos.map(v=>({...v,_tile:"video"})),
+      ...showcasePhotos.map(u=>({_tile:"photo",url:u})),
+    ].slice(0,4);
+    extraMedia=[
+      ...allVideoItems.slice(2).map(v=>({...v,_tile:"video"})),
+      ...freshAdditional.slice(showcasePhotos.length).map(u=>({_tile:"photo",url:u})),
+    ];
+  }
   const hasShowcase=showcaseTiles.length>0;
-  const extraPhotos=freshAdditional.slice(showcasePhotos.length);
-  const hasExtraMedia=extraVideos.length>0||extraPhotos.length>0;
+  const hasExtraMedia=extraMedia.length>0;
 
   const sectionHead=(title,extra)=>(
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
@@ -5404,27 +5426,26 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
             style={{width:"100%",padding:"14px 18px",background:"#111",border:"none",borderRadius:8,fontSize:13,fontWeight:700,color:"#fff",cursor:"pointer",textAlign:"center",letterSpacing:"0.04em",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 1px 4px rgba(0,0,0,0.18)"}}>
             {showAllMedia
               ?<>&#9650;&nbsp; View Less</>
-              :<>&#9660;&nbsp; View More Media{(extraVideos.length+extraPhotos.length)>0?` (${extraVideos.length+extraPhotos.length})`:""}</>}
+              :<>&#9660;&nbsp; View More Media{extraMedia.length>0?` (${extraMedia.length})`:""}</>}
           </button>
           {showAllMedia&&(
             <div style={{marginTop:10,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:8}}>
-              {extraVideos.map((v,i)=>(
-                <div key={v.id||i} style={{position:"relative",background:"#111",borderRadius:8,overflow:"hidden",cursor:"pointer",border:"1px solid var(--bdr)"}}
-                  onClick={()=>setVideoModal({url:v.url,title:v.title})}>
-                  <video src={v.url} preload="metadata" muted playsInline
+              {extraMedia.map((item,i)=>(
+                item._tile==="video"
+                ?<div key={item.id||i} style={{position:"relative",background:"#111",borderRadius:8,overflow:"hidden",cursor:"pointer",border:"1px solid var(--bdr)"}}
+                  onClick={()=>setVideoModal({url:item.url,title:item.title})}>
+                  <video src={item.url} preload="metadata" muted playsInline
                     style={{width:"100%",aspectRatio:"16/9",objectFit:"cover",display:"block",pointerEvents:"none"}}/>
                   <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.38)"}}>
                     <div style={{width:40,height:40,borderRadius:"50%",background:"rgba(255,255,255,0.92)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>
                       <div style={{width:0,height:0,borderTop:"9px solid transparent",borderBottom:"9px solid transparent",borderLeft:"16px solid #111",marginLeft:4}}/>
                     </div>
-                    {v.title&&<div style={{marginTop:7,fontSize:11,color:"#fff",fontWeight:600,padding:"2px 10px",background:"rgba(0,0,0,0.6)",borderRadius:4,maxWidth:"85%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v.title}</div>}
+                    {item.title&&<div style={{marginTop:7,fontSize:11,color:"#fff",fontWeight:600,padding:"2px 10px",background:"rgba(0,0,0,0.6)",borderRadius:4,maxWidth:"85%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.title}</div>}
                   </div>
                 </div>
-              ))}
-              {extraPhotos.map((u,i)=>(
-                <div key={i} style={{cursor:"zoom-in",overflow:"hidden",borderRadius:8,background:"#111",position:"relative"}}
-                  onClick={()=>setLightboxImg(u)}>
-                  <img src={u} alt={`Photo ${i+1}`}
+                :<div key={i} style={{cursor:"zoom-in",overflow:"hidden",borderRadius:8,background:"#111",position:"relative"}}
+                  onClick={()=>setLightboxImg(item.url)}>
+                  <img src={item.url} alt={`Photo ${i+1}`}
                     style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",objectPosition:"center",display:"block"}}
                     loading="lazy"/>
                 </div>
@@ -10079,6 +10100,9 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
   const [creditsLoading,setCreditsLoading]=useState(false);
   const [mediaItems,setMediaItems]=useState([]);         // profile_media video rows
   const [videoUploading,setVideoUploading]=useState(false);
+  const [showcaseOrder,setShowcaseOrder]=useState([]);   // [{type:"photo",id:url}|{type:"video",id:mediaId}]
+  const [showcaseDragIdx,setShowcaseDragIdx]=useState(null);
+  const [showcaseSaving,setShowcaseSaving]=useState(false);
   const [openMsg,setOpenMsg]=useState(null);   // currently-opened inbox thread
   const [inboxErr,setInboxErr]=useState("");   // surfaced fetch error
   const [inboxLoading,setInboxLoading]=useState(false);
@@ -10113,6 +10137,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
       }));
       // Filter the main headshot out of additional_photos to prevent duplication in the gallery.
       const ap=(profile.additional_photos||[]).filter(u=>u&&u!==profile.headshot_url);setPhotos(ap);
+      setShowcaseOrder(profile.showcase_order||[]);
       const vl=profile.video_links||[];
       const slots=["","","","",""];vl.forEach((v,i)=>{if(i<5)slots[i]=v;});setVideos(slots);
       setSocialLinks(profile.social_links&&typeof profile.social_links==="object"?profile.social_links:{});
@@ -10137,6 +10162,18 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
       setMediaItems(data||[]);
     }catch(_){}
   },[session?.user?.id]);
+  const saveShowcaseOrder=async(orderArr)=>{
+    setShowcaseSaving(true);
+    try{
+      const {error}=await window.sb.from("profiles").update({showcase_order:orderArr}).eq("id",session.user.id);
+      if(error)throw error;
+      setShowcaseOrder(orderArr);
+      setMsg("Showcase order saved.");
+      onReload&&onReload();
+      setTimeout(()=>setMsg(""),3000);
+    }catch(e){showErr(e.message||"Could not save order.");}
+    finally{setShowcaseSaving(false);}
+  };
   // ─── Fetch inbox — extracted so it can be re-run after reply, delete, or polling tick.
   //     Errors are surfaced to the UI instead of being silently swallowed (was the
   //     "messages disappeared" bug). Existing data is preserved on a transient failure.
@@ -10355,6 +10392,26 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
   const allPhotos=[profile.headshot_url,...photos].filter(Boolean);
   const maxAdditional=planLimits.additionalPhotos;  // 0 for free, 12 for premium
   const maxVideos=planLimits.videos;                 // 0 for free, 5 for premium
+  // ── Showcase Order tab: build merged list of all media in the saved order ──
+  const _scPhotoSet=new Set(photos);
+  const _scVideoMap={};mediaItems.forEach(v=>{_scVideoMap[v.id]=v;});
+  const _scOrderedItems=(showcaseOrder||[]).map(item=>{
+    if(item.type==="photo"&&_scPhotoSet.has(item.id))return{type:"photo",id:item.id,url:item.id};
+    if(item.type==="video"&&_scVideoMap[item.id])return{type:"video",id:item.id,..._scVideoMap[item.id]};
+    return null;
+  }).filter(Boolean);
+  const _scOrderedPhotoIds=new Set(_scOrderedItems.filter(i=>i.type==="photo").map(i=>i.id));
+  const _scOrderedVideoIds=new Set(_scOrderedItems.filter(i=>i.type==="video").map(i=>i.id));
+  const _scNewPhotos=photos.filter(u=>!_scOrderedPhotoIds.has(u)).map(u=>({type:"photo",id:u,url:u}));
+  const _scNewVideos=mediaItems.filter(v=>!_scOrderedVideoIds.has(v.id)).map(v=>({type:"video",id:v.id,...v}));
+  const showcaseCombined=[..._scOrderedItems,..._scNewPhotos,..._scNewVideos];
+  const reorderShowcase=(fromIdx,toIdx)=>{
+    if(fromIdx===toIdx)return;
+    const items=[...showcaseCombined];
+    const [moved]=items.splice(fromIdx,1);
+    items.splice(toIdx,0,moved);
+    setShowcaseOrder(items.map(item=>({type:item.type,id:item.id})));
+  };
   return(<div className="page page-wide">
     {msg&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.3)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{msg}</div>}
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
@@ -10411,6 +10468,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
       <button className={`tab ${tab==="profile"?"active":""}`} onClick={()=>setTab("profile")}>Edit Profile</button>
       {!isCD&&<button className={`tab ${tab==="photos"?"active":""}`} onClick={()=>setTab("photos")}>{isPremium?`Gallery Photos (${photos.length}/${maxAdditional})`:`Photos (${allPhotos.length}/1)`}</button>}
       {!isCD&&<button className={`tab ${tab==="videos"?"active":""}`} onClick={()=>setTab("videos")}>Videos ({mediaItems.length}/{maxVideos||"—"}{!isPremium?" · Premium":""})</button>}
+      {!isCD&&<button className={`tab ${tab==="showcase"?"active":""}`} onClick={()=>setTab("showcase")}>Showcase Order</button>}
       {!isCD&&<button className={`tab ${tab==="skills"?"active":""}`} onClick={()=>setTab("skills")}>Skills ({selectedSkills.length})</button>}
       {!isCD&&<button className={`tab ${tab==="credits"?"active":""}`} onClick={()=>setTab("credits")}>Credits ({dbCredits.length})</button>}
       {!isCD&&<button className={`tab ${tab==="social"?"active":""}`} onClick={()=>setTab("social")}>Social Links</button>}
@@ -10587,7 +10645,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
       )}
       {isPremium&&(
         <div style={{padding:"10px 14px",background:"#111",border:"1px solid #333",borderRadius:8,fontSize:12,color:"#fff",marginTop:8}}>
-          ★ <strong>Showcase tip:</strong> Your first 2 additional photos appear in the showcase grid on your public profile. Drag to reorder — casting directors see them in that order.
+          ★ <strong>Showcase tip:</strong> Go to the <strong>Showcase Order</strong> tab to arrange which photos and videos appear first on your public profile.
         </div>
       )}
     </>}
@@ -10606,7 +10664,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
         <>
           <p style={{fontSize:12,color:"var(--t3)",marginBottom:8}}>Upload up to {maxVideos} videos (MP4, MOV, WebM · max 100 MB each). They appear on your public profile.</p>
           <div style={{marginBottom:16,padding:"10px 14px",background:"#111",border:"1px solid #333",borderRadius:8,fontSize:12,color:"#fff"}}>
-            ★ <strong>Showcase tip:</strong> Your first 2 uploaded videos appear prominently in the showcase grid on your public profile. Upload your best reel first.
+            ★ <strong>Showcase tip:</strong> Go to the <strong>Showcase Order</strong> tab to arrange which videos and photos appear first on your public profile.
           </div>
           {/* Existing uploaded videos */}
           {mediaItems.length>0&&<div style={{marginBottom:16,display:"grid",gap:10}}>
@@ -10660,6 +10718,106 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
         </>
       )}
     </div>}
+
+    {/* ── SHOWCASE ORDER TAB ── */}
+    {tab==="showcase"&&!isCD&&<>
+      <div style={{marginBottom:14,padding:"14px 18px",background:"#111",border:"1px solid #333",borderRadius:10,color:"#fff"}}>
+        <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>Arrange how casting directors see your media.</div>
+        <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.6}}>Drag tiles into the order you want. The first 4 appear in the main showcase grid on your public profile. Everything else appears under "View More Media." Your main headshot is always shown first and is set separately via "Change Headshot."</div>
+      </div>
+      {/* Locked headshot */}
+      {profile.headshot_url&&(
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--t3)",marginBottom:8}}>Main Headshot — Always shown first (not draggable)</div>
+          <div style={{display:"inline-block",position:"relative",width:100}}>
+            <img src={profile.headshot_url} alt="Main headshot" style={{width:100,aspectRatio:"3/4",objectFit:"cover",borderRadius:8,display:"block",border:"2px solid var(--acc)"}}/>
+            <div style={{position:"absolute",top:4,left:4,background:"var(--acc)",color:"#fff",fontSize:9,fontWeight:700,padding:"2px 6px",borderRadius:4,letterSpacing:"0.05em"}}>MAIN</div>
+          </div>
+        </div>
+      )}
+      {showcaseCombined.length===0?(
+        <div style={{textAlign:"center",padding:"40px 24px",color:"var(--t3)",fontSize:13}}>
+          {isPremium
+            ?"No gallery photos or videos yet. Upload some in the Photos and Videos tabs."
+            :"Upgrade to Premium to upload gallery photos and videos, then arrange them here."}
+          {!isPremium&&<div style={{marginTop:14}}><button className="btn-p btn-sm" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium</button></div>}
+        </div>
+      ):(
+        <>
+          {/* Top Showcase section */}
+          <div style={{marginBottom:8}}>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--acc)",marginBottom:10}}>Top Showcase — First 4 appear in the public profile grid</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:10}}>
+              {showcaseCombined.slice(0,4).map((item,i)=>(
+                <div key={item.id||i}
+                  draggable
+                  onDragStart={()=>setShowcaseDragIdx(i)}
+                  onDragOver={e=>e.preventDefault()}
+                  onDrop={()=>{reorderShowcase(showcaseDragIdx,i);setShowcaseDragIdx(null);}}
+                  onDragEnd={()=>setShowcaseDragIdx(null)}
+                  style={{position:"relative",cursor:"grab",borderRadius:8,overflow:"hidden",border:`2px solid ${showcaseDragIdx===i?"var(--acc)":"#333"}`,background:"#111",opacity:showcaseDragIdx===i?0.5:1,transition:"opacity 0.15s"}}>
+                  {item.type==="video"
+                    ?<>
+                      <video src={item.url} preload="metadata" muted playsInline style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",display:"block",pointerEvents:"none"}}/>
+                      <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.35)"}}>
+                        <div style={{width:28,height:28,borderRadius:"50%",background:"rgba(255,255,255,0.9)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                          <div style={{width:0,height:0,borderTop:"6px solid transparent",borderBottom:"6px solid transparent",borderLeft:"11px solid #111",marginLeft:3}}/>
+                        </div>
+                      </div>
+                    </>
+                    :<img src={item.url} alt="" style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",display:"block"}}/>
+                  }
+                  <div style={{position:"absolute",top:4,left:4,background:"rgba(0,0,0,0.72)",color:"#fff",fontSize:9,fontWeight:700,padding:"2px 6px",borderRadius:4}}>{i+1}</div>
+                  {item.type==="video"&&<div style={{position:"absolute",bottom:4,right:4,background:"rgba(0,0,0,0.72)",color:"#fff",fontSize:8,fontWeight:700,padding:"2px 5px",borderRadius:3,letterSpacing:"0.04em"}}>VIDEO</div>}
+                  <div style={{position:"absolute",top:4,right:4,color:"rgba(255,255,255,0.5)",fontSize:13,lineHeight:1}}>⠿</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* View More section */}
+          {showcaseCombined.length>4&&(
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--t3)",marginBottom:10,paddingTop:12,borderTop:"1px solid var(--bdr)"}}>View More Media — Remaining items (drag to reorder or move above)</div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:10}}>
+                {showcaseCombined.slice(4).map((item,j)=>{
+                  const i=j+4;
+                  return(
+                    <div key={item.id||i}
+                      draggable
+                      onDragStart={()=>setShowcaseDragIdx(i)}
+                      onDragOver={e=>e.preventDefault()}
+                      onDrop={()=>{reorderShowcase(showcaseDragIdx,i);setShowcaseDragIdx(null);}}
+                      onDragEnd={()=>setShowcaseDragIdx(null)}
+                      style={{position:"relative",cursor:"grab",borderRadius:8,overflow:"hidden",border:`2px solid ${showcaseDragIdx===i?"var(--acc)":"var(--bdr)"}`,background:"#111",opacity:showcaseDragIdx===i?0.5:1,transition:"opacity 0.15s"}}>
+                      {item.type==="video"
+                        ?<>
+                          <video src={item.url} preload="metadata" muted playsInline style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",display:"block",pointerEvents:"none"}}/>
+                          <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.35)"}}>
+                            <div style={{width:28,height:28,borderRadius:"50%",background:"rgba(255,255,255,0.9)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                              <div style={{width:0,height:0,borderTop:"6px solid transparent",borderBottom:"6px solid transparent",borderLeft:"11px solid #111",marginLeft:3}}/>
+                            </div>
+                          </div>
+                        </>
+                        :<img src={item.url} alt="" style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",display:"block"}}/>
+                      }
+                      <div style={{position:"absolute",top:4,left:4,background:"rgba(0,0,0,0.72)",color:"#fff",fontSize:9,fontWeight:700,padding:"2px 6px",borderRadius:4}}>{i+1}</div>
+                      {item.type==="video"&&<div style={{position:"absolute",bottom:4,right:4,background:"rgba(0,0,0,0.72)",color:"#fff",fontSize:8,fontWeight:700,padding:"2px 5px",borderRadius:3,letterSpacing:"0.04em"}}>VIDEO</div>}
+                      <div style={{position:"absolute",top:4,right:4,color:"rgba(255,255,255,0.5)",fontSize:13,lineHeight:1}}>⠿</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+            <button className="btn-p" onClick={()=>saveShowcaseOrder(showcaseCombined.map(item=>({type:item.type,id:item.id})))} disabled={showcaseSaving} style={{padding:"12px 28px"}}>
+              {showcaseSaving?"Saving…":"Save Showcase Order"}
+            </button>
+            <span style={{fontSize:12,color:"var(--t3)"}}>Drag items to reorder, then click Save.</span>
+          </div>
+        </>
+      )}
+    </>}
 
     {/* ── SKILLS TAB ── */}
     {tab==="skills"&&!isCD&&<div className="card" style={{padding:24}}>
