@@ -5195,7 +5195,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
 
   // Build gallery from fresh profile data when available so new/deleted photos reflect immediately.
   const freshHeadshot=freshProfile?.headshot_url||talent.img;
-  const freshAdditional=Array.isArray(freshProfile?.additional_photos)?freshProfile.additional_photos:(talent.additional_photos||[]);
+  // Filter headshot out of additional_photos to prevent duplication in gallery/showcase
+  const freshAdditional=(Array.isArray(freshProfile?.additional_photos)?freshProfile.additional_photos:(talent.additional_photos||[])).filter(u=>u&&u!==freshHeadshot);
   const _galSeen=new Set();const gallery=[];
   [talent._selectedPhoto,freshHeadshot,...freshAdditional].forEach(u=>{if(u&&!_galSeen.has(u)){_galSeen.add(u);gallery.push(u);}});
   if(!gallery.length)gallery.push(talent.img||"");
@@ -5287,9 +5288,9 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
 
   return(<div className="page">
     {isOwnProfile&&(
-      <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:"10px 16px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
-        <div style={{fontSize:13,color:"var(--t2)",fontWeight:600}}>Previewing your public profile — this is how casting directors see you.</div>
-        <button className="btn-s btn-sm" onClick={onBack}>← Back to Edit Profile</button>
+      <div style={{background:"#111",border:"1px solid #333",borderRadius:10,padding:"10px 16px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
+        <div style={{fontSize:13,color:"#fff",fontWeight:600}}>👁 Previewing your public profile — this is how casting directors see you.</div>
+        <button style={{background:"#fff",color:"#111",border:"none",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}} onClick={onBack}>← Back to Edit Profile</button>
       </div>
     )}
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:16,flexWrap:"wrap"}}>
@@ -5349,8 +5350,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
       {allVideoItems.length>2&&(
         <div style={{marginTop:8}}>
           <button onClick={()=>setShowAllMedia(v=>!v)}
-            style={{width:"100%",padding:"8px 14px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:8,fontSize:13,fontWeight:600,color:"var(--t1)",cursor:"pointer",textAlign:"center"}}>
-            {showAllMedia?`▲ Hide additional videos`:`▼ View all videos (${allVideoItems.length} total)`}
+            style={{width:"100%",padding:"10px 14px",background:"#111",border:"1px solid #333",borderRadius:8,fontSize:13,fontWeight:700,color:"#fff",cursor:"pointer",textAlign:"center",letterSpacing:"0.02em"}}>
+            {showAllMedia?`▲ Hide additional videos`:`▼ View all ${allVideoItems.length} videos`}
           </button>
           {showAllMedia&&(
             <div style={{marginTop:8,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:10}}>
@@ -9982,6 +9983,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
   const [invites,setInvites]=useState([]);   // received project_invites (talent only)
   const [inviteBusy,setInviteBusy]=useState({}); // {invite_id: bool}
   const [photos,setPhotos]=useState([]);     // additional_photos array
+  const [dragPhotoIdx,setDragPhotoIdx]=useState(null);
+  const [photoOrderDirty,setPhotoOrderDirty]=useState(false);
   // Cropper state: {file, target: "headshot"|"additional", aspect, label}
   const [cropState,setCropState]=useState(null);
   const [videos,setVideos]=useState(["","","","",""]);  // 5 video link slots (legacy)
@@ -10212,6 +10215,18 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
     await window.sb.from("profiles").update({additional_photos:newPhotos}).eq("id",session.user.id);
     setPhotos(newPhotos);onReload&&onReload();
   };
+  const reorderPhotos=(fromIdx,toIdx)=>{
+    if(fromIdx===toIdx)return;
+    const arr=[...photos];
+    const [item]=arr.splice(fromIdx,1);
+    arr.splice(toIdx,0,item);
+    setPhotos(arr);setPhotoOrderDirty(true);
+  };
+  const savePhotoOrder=async()=>{
+    await window.sb.from("profiles").update({additional_photos:photos}).eq("id",session.user.id);
+    setPhotoOrderDirty(false);onReload&&onReload();
+    setMsg("Photo order saved.");setTimeout(()=>setMsg(""),3000);
+  };
   const uploadResume=async(file)=>{
     if(!file)return;
     const ext=(file.name.split(".").pop()||"pdf").toLowerCase();
@@ -10306,7 +10321,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
 
     {/* ── PREVIEW BUTTON (talent only) ── */}
     {!isCD&&onViewProfile&&<div style={{marginBottom:16,display:"flex",justifyContent:"flex-end"}}>
-      <button className="btn-s btn-sm" onClick={()=>onViewProfile({id:session.user.id,name:profile.display_name||"",display_name:profile.display_name||"",img:profile.headshot_url||"",type:"Talent"})}>View Public Profile →</button>
+      <button style={{background:"#111",color:"#fff",border:"1px solid #333",borderRadius:7,padding:"8px 18px",fontSize:13,fontWeight:700,cursor:"pointer",letterSpacing:"0.02em"}} onClick={()=>onViewProfile({id:session.user.id,name:profile.display_name||"",display_name:profile.display_name||"",img:profile.headshot_url||"",type:"Talent"})}>👁 View Public Profile →</button>
     </div>}
 
     {/* ── TABS ── */}
@@ -10452,8 +10467,15 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
                 <div style={{position:"absolute",bottom:0,left:0,right:0,background:"rgba(0,0,0,0.6)",color:"#fff",fontSize:10,fontWeight:700,padding:"4px 8px",textAlign:"center",letterSpacing:1}}>MAIN</div>
               </div>
             )}
-            {photos.map((url,i)=>(
-              <div key={i} style={{position:"relative",borderRadius:8,overflow:"hidden",border:"1px solid var(--bdr)"}}>
+            {photos.filter(url=>url!==profile.headshot_url).map((url,i)=>(
+              <div key={url}
+                draggable={isPremium}
+                onDragStart={()=>setDragPhotoIdx(i)}
+                onDragOver={e=>{e.preventDefault();}}
+                onDrop={e=>{e.preventDefault();if(dragPhotoIdx!==null)reorderPhotos(dragPhotoIdx,i);setDragPhotoIdx(null);}}
+                onDragEnd={()=>setDragPhotoIdx(null)}
+                style={{position:"relative",borderRadius:8,overflow:"hidden",border:dragPhotoIdx===i?"2px dashed var(--acc)":"1px solid var(--bdr)",cursor:isPremium?"grab":"default",opacity:dragPhotoIdx===i?0.5:1}}>
+                {isPremium&&<div style={{position:"absolute",top:4,left:4,background:"rgba(0,0,0,0.55)",color:"#fff",fontSize:9,fontWeight:700,borderRadius:4,padding:"2px 6px",letterSpacing:1,pointerEvents:"none"}}>#{i+1}</div>}
                 <img src={url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",display:"block"}}/>
                 <button onClick={()=>removePhoto(url)} style={{position:"absolute",top:4,right:4,background:"rgba(0,0,0,0.6)",border:"none",color:"#fff",borderRadius:"50%",width:22,height:22,cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
               </div>
@@ -10467,6 +10489,11 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
             ))}
           </div>
         )}
+        {isPremium&&photoOrderDirty&&(
+          <div style={{marginTop:12,display:"flex",justifyContent:"flex-end"}}>
+            <button style={{background:"#111",color:"#fff",border:"1px solid #333",borderRadius:7,padding:"8px 18px",fontSize:13,fontWeight:700,cursor:"pointer"}} onClick={savePhotoOrder}>Save Order</button>
+          </div>
+        )}
       </div>
 
       {/* Free plan info + upgrade CTA */}
@@ -10477,8 +10504,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
         </div>
       )}
       {isPremium&&(
-        <div style={{padding:"10px 14px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:8,fontSize:12,color:"var(--t2)"}}>
-          <strong>Showcase tip:</strong> Your first 2 additional photos appear in the showcase grid on your public profile. The order above controls what casting directors see first.
+        <div style={{padding:"10px 14px",background:"#111",border:"1px solid #333",borderRadius:8,fontSize:12,color:"#fff",marginTop:8}}>
+          ★ <strong>Showcase tip:</strong> Your first 2 additional photos appear in the showcase grid on your public profile. Drag to reorder — casting directors see them in that order.
         </div>
       )}
     </>}
@@ -10496,8 +10523,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
       ):(
         <>
           <p style={{fontSize:12,color:"var(--t3)",marginBottom:8}}>Upload up to {maxVideos} videos (MP4, MOV, WebM · max 100 MB each). They appear on your public profile.</p>
-          <div style={{marginBottom:16,padding:"8px 12px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:8,fontSize:12,color:"var(--t2)"}}>
-            <strong>Showcase tip:</strong> Your first 2 uploaded videos appear prominently in the showcase grid on your public profile. Upload your best reel first.
+          <div style={{marginBottom:16,padding:"10px 14px",background:"#111",border:"1px solid #333",borderRadius:8,fontSize:12,color:"#fff"}}>
+            ★ <strong>Showcase tip:</strong> Your first 2 uploaded videos appear prominently in the showcase grid on your public profile. Upload your best reel first.
           </div>
           {/* Existing uploaded videos */}
           {mediaItems.length>0&&<div style={{marginBottom:16,display:"grid",gap:10}}>
