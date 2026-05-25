@@ -11300,7 +11300,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
     </aside>
     <div>
       {section==="overview"&&<AdminOverview onGoToBookingRequests={()=>goToSection("booking-requests")}/>}
-      {section==="users"&&<AdminUsers isSuperAdmin={isSuperAdmin} session={session}/>}
+      {section==="users"&&<AdminUsers isSuperAdmin={isSuperAdmin} session={session} myProfile={profile}/>}
       {section==="cd-verification"&&<AdminCDVerification/>}
       {section==="castings"&&<AdminCastings/>}
       {section==="applications"&&<AdminApplications/>}
@@ -11541,7 +11541,7 @@ function AdminCDVerification(){
 }
 
 // ─── Users: search + filter + role/suspend/ban/verify/feature/delete
-function AdminUsers({isSuperAdmin,session}){
+function AdminUsers({isSuperAdmin,session,myProfile}){
   const [users,setUsers]=useState([]);
   const [q,setQ]=useState("");
   const [typeFilter,setTypeFilter]=useState("all");
@@ -11550,6 +11550,7 @@ function AdminUsers({isSuperAdmin,session}){
   const [msgType,setMsgType]=useState("info");
   const [busyId,setBusyId]=useState(null);
   const [reasonPrompt,setReasonPrompt]=useState(null);
+  const [viewingProfile,setViewingProfile]=useState(null);
   const reload=useCallback(async()=>{
     setLoading(true);
     const {data,error}=await window.sb.from("profiles").select("*,verification_status,identity_verified,background_check_status,can_post_castings,verification_submitted_at,verification_approved_at,verification_rejected_at,verification_notes,verification_provider").order("created_at",{ascending:false}).limit(1000);
@@ -11596,6 +11597,32 @@ function AdminUsers({isSuperAdmin,session}){
     const needle=q.toLowerCase();
     return [u.display_name,u.email,u.location,u.company_name].some(x=>x&&x.toLowerCase().includes(needle));
   });
+  if(viewingProfile){
+    const isCd=(viewingProfile.user_type==="cd"||viewingProfile.user_type==="admin"||viewingProfile.user_type==="super_admin");
+    if(isCd){
+      return <AdminCDProfileView u={viewingProfile} session={session} myProfile={myProfile} onBack={()=>setViewingProfile(null)}/>;
+    }
+    // Build the talent profile object TalentProfile expects
+    const additional=Array.isArray(viewingProfile.additional_photos)?viewingProfile.additional_photos:[];
+    const mainPhoto=viewingProfile.headshot_url||"";
+    const seen=new Set();const allPhotos=[];
+    [mainPhoto,...additional].forEach(url=>{if(url&&!seen.has(url)){seen.add(url);allPhotos.push(url);}});
+    const talentObj={
+      ...viewingProfile,
+      id:viewingProfile.id,
+      name:viewingProfile.display_name||viewingProfile.email||"Unknown",
+      display_name:viewingProfile.display_name||viewingProfile.email||"Unknown",
+      img:mainPhoto||"https://placehold.co/400x500/e5e5e5/999?text=No+Headshot",
+      type:"Talent",
+      union:viewingProfile.union_status||"Non-Union",
+      skills:Array.isArray(viewingProfile.skills)?viewingProfile.skills:[],
+      additional_photos:additional,
+      video_links:Array.isArray(viewingProfile.video_links)?viewingProfile.video_links:[],
+      credits:viewingProfile.credits||"",
+      _allPhotos:allPhotos,
+    };
+    return <TalentProfile talent={talentObj} onBack={()=>setViewingProfile(null)} onNavigate={()=>{}} session={session} myProfile={myProfile}/>;
+  }
   return(<>
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Users</h1>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{filtered.length} of {users.length} users{typeFilter==="all"?"":` · ${typeFilter}`}</p>
@@ -11612,7 +11639,7 @@ function AdminUsers({isSuperAdmin,session}){
     </div>
     {loading?<CastSlateLoader size="inline" text="Loading…"/>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
-        {filtered.map(u=><UserRow key={u.id} u={u} isSuperAdmin={isSuperAdmin} self={u.id===session?.user?.id} busy={busyId===u.id} onSetRole={setRole} onToggleVerified={toggleVerified} onToggleFeatured={toggleFeatured} onToggleSuspended={toggleSuspended} onToggleBanned={toggleBanned} onDelete={doDelete}/>)}
+        {filtered.map(u=><UserRow key={u.id} u={u} isSuperAdmin={isSuperAdmin} self={u.id===session?.user?.id} busy={busyId===u.id} onSetRole={setRole} onToggleVerified={toggleVerified} onToggleSuspended={toggleSuspended} onToggleBanned={toggleBanned} onDelete={doDelete} onViewProfile={setViewingProfile}/>)}
         {filtered.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No users match.</div>}
       </div>
     }
@@ -11624,7 +11651,7 @@ function AdminUsers({isSuperAdmin,session}){
     }}/>}
   </>);
 }
-function UserRow({u,isSuperAdmin,self,busy,onSetRole,onToggleVerified,onToggleFeatured,onToggleSuspended,onToggleBanned,onDelete}){
+function UserRow({u,isSuperAdmin,self,busy,onSetRole,onToggleVerified,onToggleSuspended,onToggleBanned,onDelete,onViewProfile}){
   const canEditRole=isSuperAdmin||(u.user_type!=="super_admin"&&u.user_type!=="admin");
   const canDelete=isSuperAdmin&&!self&&u.user_type!=="super_admin";
   const statusBadges=[];
@@ -11651,7 +11678,7 @@ function UserRow({u,isSuperAdmin,self,busy,onSetRole,onToggleVerified,onToggleFe
         {isSuperAdmin&&<option value="super_admin">super_admin</option>}
       </select>
       <button className="btn-s btn-sm" disabled={busy} onClick={()=>onToggleVerified(u)}>{u.verified?"Unverify":"Verify"}</button>
-      <button className="btn-s btn-sm" disabled={busy} onClick={()=>onToggleFeatured(u)}>{u.featured?"Unfeature":"Feature"}</button>
+      <button className="btn-s btn-sm" disabled={busy} onClick={()=>onViewProfile&&onViewProfile(u)}>View Profile</button>
       <button className="btn-s btn-sm" disabled={busy} onClick={()=>onToggleSuspended(u)}>{u.suspended?"Unsuspend":"Suspend"}</button>
       <button className="btn-s btn-sm" disabled={busy} style={{color:"#c0392b",borderColor:"#e8c6c6"}} onClick={()=>onToggleBanned(u)}>{u.banned?"Unban":"Ban"}</button>
       {canDelete&&<button className="btn-s btn-sm" disabled={busy} style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} onClick={()=>onDelete(u)}>Delete</button>}
@@ -11670,6 +11697,66 @@ function ReasonModal({title,cta,onCancel,onSubmit}){
       <button className="btn-s" onClick={onCancel} disabled={busy}>Cancel</button>
     </div>
   </div></div>);
+}
+
+// ─── Admin view of a CD/employer profile
+function AdminCDProfileView({u,session,myProfile,onBack}){
+  const [castings,setCastings]=useState([]);
+  const [loadingCastings,setLoadingCastings]=useState(true);
+  useEffect(()=>{
+    if(!u?.id)return;
+    (async()=>{
+      setLoadingCastings(true);
+      const {data}=await window.sb.from("castings").select("id,title,type,location,deadline,status,created_at").eq("cd_id",u.id).order("created_at",{ascending:false}).limit(50);
+      setCastings(data||[]);setLoadingCastings(false);
+    })();
+  },[u?.id]);
+  const isCdType=(u.user_type==="cd"||u.user_type==="admin"||u.user_type==="super_admin");
+  const vsLabel={not_started:"Not started",pending:"Pending review",verified:"Verified",rejected:"Rejected",needs_review:"Needs review"}[u.verification_status]||"—";
+  const vsColor={not_started:"#c88900",pending:"#2980b9",verified:"#1d7b44",rejected:"#c0392b",needs_review:"#8e44ad"}[u.verification_status]||"var(--t3)";
+  return(
+    <div>
+      <button className="btn-s btn-sm" style={{marginBottom:20}} onClick={onBack}>← Back to Users</button>
+      <div className="card" style={{padding:"28px 32px",marginBottom:20}}>
+        <div style={{display:"flex",gap:20,alignItems:"flex-start",flexWrap:"wrap"}}>
+          {u.headshot_url?<img src={u.headshot_url} alt="" style={{width:80,height:80,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>:
+            <div style={{width:80,height:80,borderRadius:"50%",background:"var(--s3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,fontWeight:700,color:"var(--acc)",flexShrink:0}}>{(u.display_name||u.email||"?")[0].toUpperCase()}</div>}
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:4}}>
+              <h2 style={{fontWeight:800,fontSize:22,margin:0}}>{u.display_name||"—"}</h2>
+              <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:4,background:"var(--s3)",color:"var(--t2)",textTransform:"uppercase"}}>{u.user_type}</span>
+              {u.verified&&<span style={{fontSize:11,fontWeight:700,color:"#1d7b44"}}>✓ Verified</span>}
+              {u.can_post_castings&&<span style={{fontSize:11,fontWeight:700,color:"#1d7b44"}}>✓ Can Post</span>}
+            </div>
+            <div style={{fontSize:13,color:"var(--t3)",marginBottom:8}}>{u.email}{u.location?` · ${u.location}`:""}{u.company_name?` · ${u.company_name}`:""}</div>
+            {isCdType&&<div style={{fontSize:12,marginBottom:4}}><span style={{color:"var(--t3)"}}>ID verification: </span><span style={{fontWeight:700,color:vsColor}}>{vsLabel}</span></div>}
+            {u.bio&&<p style={{fontSize:13,color:"var(--t2)",marginTop:8,lineHeight:1.6,margin:0}}>{u.bio}</p>}
+          </div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12,marginTop:20,paddingTop:20,borderTop:"1px solid var(--bdr)"}}>
+          {[["Account type",u.user_type||"—"],["Member since",u.created_at?new Date(u.created_at).toLocaleDateString():"—"],["Union",u.union_status||"—"],["IMDb / site",u.imdb_url||u.website_url||"—"],["Agent",u.agent||"—"]].map(([label,val])=>(
+            <div key={label}><div style={{fontSize:10,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",fontWeight:700,marginBottom:2}}>{label}</div><div style={{fontSize:13,fontWeight:600}}>{val}</div></div>
+          ))}
+        </div>
+      </div>
+      <div className="card" style={{padding:"20px 24px"}}>
+        <h3 style={{fontWeight:700,fontSize:16,marginBottom:14}}>Posted Castings ({loadingCastings?"…":castings.length})</h3>
+        {loadingCastings?<CastSlateLoader size="inline" text="Loading…"/>:castings.length===0?<p style={{color:"var(--t3)",fontSize:13}}>No castings posted.</p>:
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {castings.map(c=>(
+              <div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:"1px solid var(--bdr)"}}>
+                <div>
+                  <div style={{fontWeight:600,fontSize:14}}>{c.title}</div>
+                  <div style={{fontSize:12,color:"var(--t3)"}}>{c.type}{c.location?` · ${c.location}`:""}{c.deadline?` · Due ${new Date(c.deadline).toLocaleDateString()}`:""}</div>
+                </div>
+                <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:4,background:c.status==="open"?"rgba(46,204,113,0.12)":"var(--s3)",color:c.status==="open"?"#1d7b44":"var(--t3)",textTransform:"uppercase"}}>{c.status||"open"}</span>
+              </div>
+            ))}
+          </div>
+        }
+      </div>
+    </div>
+  );
 }
 
 // ─── Castings: feature/close/reopen/edit/delete, still uses existing EditCastingModal
