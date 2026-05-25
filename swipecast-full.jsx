@@ -5508,18 +5508,6 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
       <p style={{fontSize:14,color:"var(--t1)",lineHeight:1.6}}>{trainingText}</p>
     </div>}
 
-    {/* ── FULL PHOTO GALLERY ── additional photos only (headshot is the main showcase image) */}
-    {freshAdditional.length>0&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
-      {sectionHead("Photos")}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:8}}>
-        {freshAdditional.map((u,i)=>(
-          <div key={i} style={{position:"relative",cursor:"zoom-in"}} onClick={()=>setGalleryLightbox({photos:freshAdditional,idx:i})}>
-            <img src={u} alt={`Photo ${i+1}`} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:8,display:"block",border:"1px solid var(--bdr)"}}/>
-          </div>
-        ))}
-      </div>
-    </div>}
-
     {/* ── CAST ME AS ── */}
     {talentDbId&&<CastMeAsSection talentId={talentDbId}/>}
 

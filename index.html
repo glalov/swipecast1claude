@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260525-223143 -->
-  <meta name="build-version" content="20260525-223143"/>
+  <!-- BUILD: 20260525-223527 -->
+  <meta name="build-version" content="20260525-223527"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260525-223143";
+      var B="20260525-223527";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -5544,18 +5544,6 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     {trainingText&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       {sectionHead("Training")}
       <p style={{fontSize:14,color:"var(--t1)",lineHeight:1.6}}>{trainingText}</p>
-    </div>}
-
-    {/* ── FULL PHOTO GALLERY ── additional photos only (headshot is the main showcase image) */}
-    {freshAdditional.length>0&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
-      {sectionHead("Photos")}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:8}}>
-        {freshAdditional.map((u,i)=>(
-          <div key={i} style={{position:"relative",cursor:"zoom-in"}} onClick={()=>setGalleryLightbox({photos:freshAdditional,idx:i})}>
-            <img src={u} alt={`Photo ${i+1}`} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:8,display:"block",border:"1px solid var(--bdr)"}}/>
-          </div>
-        ))}
-      </div>
     </div>}
 
     {/* ── CAST ME AS ── */}
