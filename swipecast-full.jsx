@@ -1943,75 +1943,67 @@ function ActivateMembershipBanner({myProfile,onNavigate}){
 //     stay on-brand. Already-active members see a different card explaining
 //     their current plan + expiry instead of plan options.
 function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
-  if(!session?.user){
+  // Only show "industry doesn't need a membership" when we KNOW the user is CD/industry.
+  // Never gate on a null/loading profile — default to showing talent plans.
+  const userType=(myProfile?.user_type||"").toLowerCase();
+  const INDUSTRY_TYPES=["cd","casting_director","employer","industry","super_admin","admin"];
+  const isConfirmedIndustry=session?.user&&myProfile?.user_type&&INDUSTRY_TYPES.includes(userType);
+  const isTalent=userType==="talent";
+  const isActive=myProfile?.membership_status==="active";
+  const currentPlan=isActive?MEMBERSHIP_PLANS[myProfile?.plan_type||"monthly"]:null;
+
+  // Confirmed industry/CD user — they don't need a membership
+  if(isConfirmedIndustry&&!isActive){
     return(<div className="page page-wide">
       <div className="section-label">Membership</div>
-      <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1.2,marginBottom:8}}>Pick your plan.</h1>
-      <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>
-        Free actors can submit to {FREE_PLAN.submissionsPerDay} castings per day and upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, 10 headshots, and up to 5 video links.
-      </p>
-      <div className="grid-3" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18,maxWidth:1100,margin:"0 auto"}}>
-        {Object.values(MEMBERSHIP_PLANS).map(p=>{
-          const featured=p.key==="yearly";
-          return(<div key={p.key} className="card" style={{padding:28,position:"relative",border:featured?"2px solid var(--acc)":"1px solid var(--bdr)"}}>
-            {featured&&<div style={{position:"absolute",top:-12,left:24,background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.2,padding:"4px 10px",borderRadius:100,fontFamily:"'DM Sans',sans-serif"}}>BEST VALUE</div>}
-            <h3 style={{fontSize:16,fontWeight:800,marginBottom:6}}>{p.label}</h3>
-            <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:6}}>
-              <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:38,letterSpacing:-1.2,color:featured?"var(--acc)":"var(--t1)"}}>${p.monthly.toFixed(2)}</span>
-              <span style={{fontSize:13,color:"var(--t2)"}}>/month</span>
-            </div>
-            <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>{p.note}</p>
-            <ul style={{listStyle:"none",padding:0,margin:"0 0 22px",display:"flex",flexDirection:"column",gap:6}}>
-              <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Unlimited submissions</li>
-              <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>10 headshots</li>
-              <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Up to 5 video reel links</li>
-              <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Cancel anytime</li>
-            </ul>
-            <div style={{borderTop:"1px solid var(--bdr)",paddingTop:14,marginBottom:14,fontSize:12,color:"var(--t3)"}}>Total billed: <strong style={{color:"var(--t1)"}}>${p.total.toFixed(2)}</strong>{p.months>1?` for ${p.months} months`:" today"}</div>
-            <button className={featured?"btn-p":"btn-s"} style={{width:"100%"}} onClick={()=>{try{sessionStorage.setItem("sc_pending_plan",p.key);}catch(_){}onNavigate("login");}}>Sign in to subscribe →</button>
-          </div>);
-        })}
-      </div>
-      <div style={{textAlign:"center",marginTop:28,fontSize:13,color:"var(--t3)"}}>
-        No account yet?{" "}<span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("register-talent")}>Create a free account →</span>
+      <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1.2,marginBottom:8}}>No membership needed.</h1>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>Casting Director and Industry Professional accounts are free — you only pay when you post a casting.</p>
+      <div className="card" style={{padding:32,textAlign:"center",maxWidth:560,margin:"0 auto"}}>
+        <h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>You don't need a membership.</h3>
+        <p style={{color:"var(--t3)",fontSize:14,marginBottom:18}}>Industry accounts are free — head to your dashboard and post a casting when you're ready.</p>
+        <button className="btn-p" onClick={()=>onNavigate("dashboard")}>Open Dashboard →</button>
       </div>
       <Footer onNavigate={onNavigate}/>
     </div>);
   }
-  if(session?.user&&(!myProfile||!myProfile.user_type)){
-    return(<div className="page page-wide" style={{minHeight:"60vh",display:"flex",alignItems:"center",justifyContent:"center"}}><CastSlateLoader text="Loading your membership…"/></div>);
+
+  // Active membership — show status card
+  if(session?.user&&isActive&&currentPlan){
+    return(<div className="page page-wide">
+      <div className="section-label">Membership</div>
+      <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1.2,marginBottom:8}}>You're all set.</h1>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>Your {currentPlan.label} is active{myProfile?.membership_end_date?` until ${new Date(myProfile.membership_end_date).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}`:""}. You can submit to castings without restriction.</p>
+      <div className="card" style={{padding:32,maxWidth:560,margin:"0 auto"}}>
+        <div style={{display:"inline-block",background:"rgba(46,204,113,0.15)",color:"#1d7b44",fontSize:11,fontWeight:800,letterSpacing:1.2,padding:"4px 12px",borderRadius:100,marginBottom:14}}>ACTIVE</div>
+        <h3 style={{fontSize:20,fontWeight:800,marginBottom:6}}>{currentPlan.label}</h3>
+        <p style={{color:"var(--t2)",fontSize:14,marginBottom:14}}>${currentPlan.monthly.toFixed(2)}/month · {currentPlan.note}</p>
+        {myProfile?.membership_start_date&&<p style={{fontSize:12,color:"var(--t3)"}}>Started {new Date(myProfile.membership_start_date).toLocaleDateString()}</p>}
+        {myProfile?.membership_end_date&&<p style={{fontSize:12,color:"var(--t3)"}}>Renews {new Date(myProfile.membership_end_date).toLocaleDateString()}</p>}
+        <button className="btn-p" style={{marginTop:18}} onClick={()=>onNavigate("search")}>Browse Castings →</button>
+      </div>
+      <Footer onNavigate={onNavigate}/>
+    </div>);
   }
-  const userType=(myProfile?.user_type||"").toLowerCase();
-  const isTalent=userType==="talent";
-  const isActive=myProfile?.membership_status==="active";
-  const currentPlan=isActive?MEMBERSHIP_PLANS[myProfile?.plan_type||"monthly"]:null;
+
+  // All other cases: logged-out visitor, talent user, or user with no/loading profile.
+  // Always show the 3 actor plans. Button text differs: logged-in users can pick directly,
+  // logged-out users are sent to sign in first (with plan saved to sessionStorage).
+  const planCardButton=(p)=>{
+    if(session?.user){
+      // Logged-in non-industry user — proceed directly to plan summary
+      return(<button className={p.key==="yearly"?"btn-p":"btn-s"} style={{width:"100%"}} onClick={()=>onPickPlan(p.key)}>Select Plan →</button>);
+    }
+    // Logged-out — save plan, send to login
+    return(<button className={p.key==="yearly"?"btn-p":"btn-s"} style={{width:"100%"}} onClick={()=>{try{sessionStorage.setItem("sc_pending_plan",p.key);}catch(_){}onNavigate("login");}}>Sign in to subscribe →</button>);
+  };
+
   return(<div className="page page-wide">
     <div className="section-label">Membership</div>
-    <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1.2,marginBottom:8}}>{isActive?"You're all set.":"Pick your plan."}</h1>
+    <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1.2,marginBottom:8}}>Pick your plan.</h1>
     <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>
-      {isActive
-        ?`Your ${currentPlan?.label||"membership"} is active${myProfile?.membership_end_date?` until ${new Date(myProfile.membership_end_date).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}`:""}. You can submit to castings without restriction.`
-        :isTalent
-          ?`Free actors can submit to ${FREE_PLAN.submissionsPerDay} castings per day and upload ${FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium (${PREMIUM_PRICE}) for unlimited submissions, 10 headshots, and up to 5 video links.`
-          :"Casting Director and Industry Professional accounts are free — you only pay when you post a casting. No membership required."}
+      Free actors can submit to {FREE_PLAN.submissionsPerDay} castings per day and upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, 10 headshots, and up to 5 video links.
     </p>
-
-    {!isTalent&&!isActive&&<div className="card" style={{padding:32,textAlign:"center",maxWidth:560,margin:"0 auto"}}>
-      <h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>You don't need a membership.</h3>
-      <p style={{color:"var(--t3)",fontSize:14,marginBottom:18}}>Industry accounts are free — head to your dashboard and post a casting when you're ready.</p>
-      <button className="btn-p" onClick={()=>onNavigate("dashboard")}>Open Dashboard →</button>
-    </div>}
-
-    {isTalent&&isActive&&currentPlan&&<div className="card" style={{padding:32,maxWidth:560,margin:"0 auto"}}>
-      <div style={{display:"inline-block",background:"rgba(46,204,113,0.15)",color:"#1d7b44",fontSize:11,fontWeight:800,letterSpacing:1.2,padding:"4px 12px",borderRadius:100,marginBottom:14}}>ACTIVE</div>
-      <h3 style={{fontSize:20,fontWeight:800,marginBottom:6}}>{currentPlan.label}</h3>
-      <p style={{color:"var(--t2)",fontSize:14,marginBottom:14}}>${currentPlan.monthly.toFixed(2)}/month · {currentPlan.note}</p>
-      {myProfile?.membership_start_date&&<p style={{fontSize:12,color:"var(--t3)"}}>Started {new Date(myProfile.membership_start_date).toLocaleDateString()}</p>}
-      {myProfile?.membership_end_date&&<p style={{fontSize:12,color:"var(--t3)"}}>Renews {new Date(myProfile.membership_end_date).toLocaleDateString()}</p>}
-      <button className="btn-p" style={{marginTop:18}} onClick={()=>onNavigate("search")}>Browse Castings →</button>
-    </div>}
-
-    {isTalent&&!isActive&&<div className="grid-3" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18,maxWidth:1100,margin:"0 auto"}}>
+    <div className="grid-3" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18,maxWidth:1100,margin:"0 auto"}}>
       {Object.values(MEMBERSHIP_PLANS).map(p=>{
         const featured=p.key==="yearly";
         return(<div key={p.key} className="card" style={{padding:28,position:"relative",border:featured?"2px solid var(--acc)":"1px solid var(--bdr)"}}>
@@ -2029,11 +2021,13 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
             <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Cancel anytime</li>
           </ul>
           <div style={{borderTop:"1px solid var(--bdr)",paddingTop:14,marginBottom:14,fontSize:12,color:"var(--t3)"}}>Total billed: <strong style={{color:"var(--t1)"}}>${p.total.toFixed(2)}</strong>{p.months>1?` for ${p.months} months`:" today"}</div>
-          <button className={featured?"btn-p":"btn-s"} style={{width:"100%"}} onClick={()=>onPickPlan(p.key)}>Select Plan →</button>
+          {planCardButton(p)}
         </div>);
       })}
+    </div>
+    {!session?.user&&<div style={{textAlign:"center",marginTop:28,fontSize:13,color:"var(--t3)"}}>
+      No account yet?{" "}<span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("register-talent")}>Create a free account →</span>
     </div>}
-
     <Footer onNavigate={onNavigate}/>
   </div>);
 }
@@ -2044,20 +2038,12 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
 function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onReload}){
   const [err,setErr]=useState("");
   const [busy,setBusy]=useState(false);
-  const [profileTimedOut,setProfileTimedOut]=useState(false);
   const plan=MEMBERSHIP_PLANS[planKey]||null;
   const userType=(myProfile?.user_type||"").toLowerCase();
-  const isTalent=userType==="talent";
+  const INDUSTRY_TYPES=["cd","casting_director","employer","industry","super_admin","admin"];
+  const isConfirmedIndustry=myProfile?.user_type&&INDUSTRY_TYPES.includes(userType);
 
-  // Timeout: if profile doesn't load within 6s, show recovery UI instead of spinning forever
-  React.useEffect(()=>{
-    if(!myProfile||!myProfile.user_type){
-      const tid=setTimeout(()=>setProfileTimedOut(true),6000);
-      return()=>clearTimeout(tid);
-    }
-    setProfileTimedOut(false);
-  },[myProfile?.user_type]);
-
+  // Not signed in
   if(!session?.user){
     return(<div className="page page-wide"><div className="card" style={{padding:48,textAlign:"center"}}>
       <h2 style={{fontSize:20,marginBottom:8}}>Sign in to activate your membership</h2>
@@ -2065,7 +2051,7 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
     </div><Footer onNavigate={onNavigate}/></div>);
   }
 
-  // If no plan was selected (e.g. page refresh after OAuth consumed the pending plan), send back immediately
+  // No plan selected (page refresh / OAuth flow already consumed pending plan)
   if(!plan){
     return(<div className="page page-wide"><div className="card" style={{padding:48,textAlign:"center"}}>
       <h2 style={{fontSize:20,marginBottom:8}}>Please choose your plan</h2>
@@ -2074,28 +2060,17 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
     </div><Footer onNavigate={onNavigate}/></div>);
   }
 
-  // Guard: show loading until BOTH profile AND user_type are confirmed.
-  // Checking only !myProfile is insufficient — user_type can briefly be
-  // null/undefined even when myProfile is an object (e.g. after BFCache
-  // restore or a mid-fetch auth event). Never infer account type from an
-  // empty string; always wait for an explicit value.
-  if(!myProfile || !myProfile.user_type){
-    if(profileTimedOut){
-      return(<div className="page page-wide"><div className="card" style={{padding:48,textAlign:"center"}}>
-        <h2 style={{fontSize:20,marginBottom:8}}>Please choose your plan</h2>
-        <p style={{color:"var(--t3)",fontSize:14,marginBottom:18}}>We couldn't load your account details. Please select your plan again.</p>
-        <button className="btn-p" onClick={()=>onNavigate("membership")}>View Plans →</button>
-      </div><Footer onNavigate={onNavigate}/></div>);
-    }
-    return(<div className="page page-wide" style={{minHeight:"60vh",display:"flex",alignItems:"center",justifyContent:"center"}}><CastSlateLoader text="Loading your plan…"/></div>);
-  }
-  if(!isTalent){
+  // Only block confirmed CD/industry users — never block null/loading profiles
+  if(isConfirmedIndustry){
     return(<div className="page page-wide"><div className="card" style={{padding:48,textAlign:"center"}}>
       <h2 style={{fontSize:20,marginBottom:8}}>Industry accounts don't need a membership</h2>
       <p style={{color:"var(--t3)",fontSize:14,marginBottom:18}}>You only pay when you post a casting.</p>
       <button className="btn-p" onClick={()=>onNavigate("dashboard")}>Open Dashboard →</button>
     </div><Footer onNavigate={onNavigate}/></div>);
   }
+
+  // For all other cases (talent, or profile null/loading) — proceed to checkout
+  // A user arriving here explicitly chose a plan, so we treat them as talent.
 
   const handleUpgradeClick=async()=>{
     if(busy)return;
