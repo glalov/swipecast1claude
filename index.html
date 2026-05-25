@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260525-182148 -->
-  <meta name="build-version" content="20260525-182148"/>
+  <!-- BUILD: 20260525-190400 -->
+  <meta name="build-version" content="20260525-190400"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260525-182148";
+      var B="20260525-190400";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -13495,6 +13495,29 @@ function App(){
         _dbg().loginStep="profile-fetch-error";_dbg().lastError="loadProfile: "+error.message;
         console.warn("[auth] loadProfile error:",error.message);setMyProfile(null);return null;
       }
+      // No row found (trigger may not have fired on signup) — auto-create a minimal profile
+      // so the user can immediately access their profile page.
+      if(!data){
+        console.warn("[auth] profile row missing for uid:",uid,"— auto-creating");
+        try{
+          const {data:ud}=await window.sb.auth.getUser();
+          const userEmail=ud?.user?.email||"";
+          const pendingT=sessionStorage.getItem("swipecast_pending_type")||"talent";
+          const {data:created,error:insErr}=await window.sb.from("profiles").insert({
+            id:uid,email:userEmail,
+            user_type:["talent","cd","admin","super_admin"].includes(pendingT)?pendingT:"talent",
+            display_name:userEmail.split("@")[0]||"New User",
+            visible:true,suspended:false
+          }).select().maybeSingle();
+          if(!insErr&&created){data=created;}
+          else{
+            // Row may already exist but RLS hid it (race); retry fetch once
+            const retry=await window.sb.from("profiles").select("*").eq("id",uid).maybeSingle();
+            if(!retry.error&&retry.data)data=retry.data;
+            else{console.warn("[auth] profile auto-create failed:",insErr?.message||insErr);setMyProfile(null);return null;}
+          }
+        }catch(e){console.warn("[auth] profile auto-create threw:",e?.message||e);setMyProfile(null);return null;}
+      }
       if(data&&data.onboarded!==true&&!data.location&&!data.bio&&!data.company_name){
         try{
           await window.sb.rpc("apply_signup_metadata_to_profile");
@@ -13887,6 +13910,7 @@ function App(){
 
   // If authReady and logged in but profile still null (load failed), attempt one automatic re-fetch.
   const [profileRetryErr,setProfileRetryErr]=useState("");
+  const [profileRetrying,setProfileRetrying]=useState(false);
   useEffect(()=>{
     if(!authReady||!session?.user?.id||myProfile)return;
     const tid=setTimeout(async()=>{
@@ -13895,6 +13919,15 @@ function App(){
     },1500);
     return()=>clearTimeout(tid);
   },[authReady,session?.user?.id,myProfile,loadProfile]);
+  // Retry handler — clears error, re-fetches, re-sets error if still failing
+  const doRetryProfile=useCallback(async()=>{
+    if(profileRetrying)return;
+    setProfileRetryErr("");setProfileRetrying(true);
+    try{
+      const result=await loadProfile(session?.user?.id);
+      if(!result)setProfileRetryErr("Profile could not load. Check your connection and try again.");
+    }finally{setProfileRetrying(false);}
+  },[session?.user?.id,loadProfile,profileRetrying]);
 
   // If a talent user lands on /dashboard (CD dashboard), redirect them to their Talent Dashboard.
   // This handles direct URL loads, post-login routing, and nav button presses that call navigate("dashboard").
@@ -14023,10 +14056,10 @@ function App(){
           </div>}
         {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
         {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
-        {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}><p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p><button className="btn-p btn-sm" onClick={()=>{setProfileRetryErr("");loadProfile(session.user.id);}}>Retry</button></div>:<PageLoader/>):<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>)}
+        {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>)}
         {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&(myProfile?.user_type==="talent"||!myProfile)?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>:<div style={{minHeight:"60vh"}}/>)}
         {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
-        {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}><p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p><button className="btn-p btn-sm" onClick={()=>{setProfileRetryErr("");loadProfile(session.user.id);}}>Retry</button></div>:<PageLoader/>):isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onViewProfile={viewProfile}/>:null)}
+        {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onViewProfile={viewProfile}/>:null)}
         {page==="account-settings"&&(!authReady?<PageLoader/>:isLoggedIn?<AccountSettingsPage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onSignOut={signOut} isSuperAdmin={isSuperAdmin}/>:<div style={{minHeight:"60vh"}}/>)}
         {page==="inbox"&&(!authReady?<PageLoader/>:<InboxPage session={session} profile={myProfile} onNavigate={navigate} onViewProfile={viewProfile}/>)}
         {page==="admin"&&(!authReady?<PageLoader/>:isLoggedIn&&isAdmin?<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>:<div style={{minHeight:"60vh"}}/>)}
