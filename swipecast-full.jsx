@@ -2853,7 +2853,7 @@ function RegisterCD({onNavigate}){
           setErr(`${name} sign-in is not available right now. Please use email to sign up.`);return;
         }
       }catch(_){}
-      localStorage.setItem("swipecast_pending_type","cd");
+      sessionStorage.setItem("swipecast_pending_type","cd");
       window.location.href=data.url;
     }catch(e){
       const name=provider.charAt(0).toUpperCase()+provider.slice(1);
@@ -13302,16 +13302,16 @@ function App(){
       // If the user arrived via the RegisterCD OAuth flow, upgrade their type to 'cd'.
       // We only do this for brand-new profiles (onboarded!==true) to avoid changing
       // an existing talent account that reuses the same Google login.
-      const pendingType=localStorage.getItem("swipecast_pending_type");
+      const pendingType=sessionStorage.getItem("swipecast_pending_type");
       if(pendingType==="cd"&&data&&data.user_type!=="cd"&&data.onboarded!==true){
-        localStorage.removeItem("swipecast_pending_type");
+        sessionStorage.removeItem("swipecast_pending_type");
         try{
           await window.sb.from("profiles").update({user_type:"cd"}).eq("id",uid);
           const re2=await window.sb.from("profiles").select("*").eq("id",uid).maybeSingle();
           if(!re2.error&&re2.data)data=re2.data;
         }catch(e){console.warn("[auth] pending type upgrade failed:",e?.message||e);}
       }else if(pendingType){
-        localStorage.removeItem("swipecast_pending_type");
+        sessionStorage.removeItem("swipecast_pending_type");
       }
       _dbg().loginStep="profile-fetch-done";_dbg().lastFetchTs=Date.now();
       setMyProfile(data||null);return data||null;
