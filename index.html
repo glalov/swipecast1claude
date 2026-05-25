@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260525-024204 -->
-  <meta name="build-version" content="20260525-024204"/>
+  <!-- BUILD: 20260525-024852 -->
+  <meta name="build-version" content="20260525-024852"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260525-024204";
+      var B="20260525-024852";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -5116,6 +5116,31 @@ function CareersPage({onNavigate}){
     <Footer onNavigate={onNavigate}/></div>);
 }
 
+// ─────────────────────────────────────────
+// SmartVideo: adapts container to video orientation after metadata loads
+// Portrait videos get a narrow centered card; landscape gets full-width 16:9.
+function SmartVideo({src,title}){
+  const [orient,setOrient]=useState(null); // null=unknown, "portrait", "landscape"
+  const handleMeta=e=>{
+    const v=e.target;
+    setOrient(v.videoHeight>v.videoWidth?"portrait":"landscape");
+  };
+  const wrapStyle=orient==="portrait"
+    ?{maxWidth:300,margin:"0 auto",background:"#000",borderRadius:8,overflow:"hidden"}
+    :{width:"100%",background:"#000",borderRadius:8,overflow:"hidden"};
+  const vidStyle=orient==="portrait"
+    ?{width:"100%",height:"auto",display:"block"}
+    :{width:"100%",aspectRatio:"16/9",objectFit:"contain",display:"block"};
+  return(
+    <div style={{borderRadius:8,overflow:"hidden",background:"#111"}}>
+      <div style={wrapStyle}>
+        <video src={src} controls preload="metadata" onLoadedMetadata={handleMeta} style={vidStyle}/>
+      </div>
+      {title&&<div style={{padding:"5px 10px",fontSize:11,color:"var(--t2)",fontWeight:600,background:"var(--s2)"}}>{title}</div>}
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════
 // PAGE: TALENT PROFILE VIEW
 // ═══════════════════════════════════════════
@@ -5213,12 +5238,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   const renderPanelVideo=(v,i)=>{
     if(v.kind==="upload"||v.kind==="reel"){
       return(
-        <div key={v.id||i} style={{borderRadius:8,overflow:"hidden",background:"#000",display:"flex",flexDirection:"column",alignItems:"center"}}>
-          <div style={{width:"100%",display:"flex",justifyContent:"center",background:"#000"}}>
-            <video src={v.url} controls preload="metadata" style={{maxWidth:"100%",maxHeight:360,width:"auto",height:"auto",display:"block"}}/>
-          </div>
-          {v.title&&<div style={{padding:"5px 10px",fontSize:11,color:"var(--t2)",fontWeight:600,background:"var(--s2)",width:"100%"}}>{v.title}</div>}
-        </div>
+        <SmartVideo key={v.id||i} src={v.url} title={v.title}/>
       );
     }
     return(
@@ -10362,10 +10382,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
             {mediaItems.map((item,i)=>(
               <div key={item.id} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:10,alignItems:"center",background:"var(--s2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--bdr)"}}>
                 <div style={{minWidth:0}}>
-                  <div style={{background:"#000",borderRadius:6,marginBottom:4,display:"flex",justifyContent:"center",overflow:"hidden"}}>
-                    <video src={item.url} controls preload="metadata" style={{maxHeight:200,maxWidth:"100%",width:"auto",height:"auto",display:"block"}}/>
-                  </div>
-                  <div style={{fontSize:12,fontWeight:600,color:"var(--t1)"}}>{item.title||`Video ${i+1}`}</div>
+                  <SmartVideo src={item.url} title={item.title||`Video ${i+1}`}/>
                 </div>
                 <button onClick={async()=>{
                   if(!window.confirm("Delete this video?"))return;
