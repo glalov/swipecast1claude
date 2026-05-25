@@ -8229,6 +8229,7 @@ function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm}){
   const [busy,setBusy]=useState(false);
   const containerRef=useRef(null);
   const dragRef=useRef(null);
+  const saveBtnRef=useRef(null); // for Enter-key triggering
 
   useEffect(()=>{
     if(!file)return;
@@ -8240,6 +8241,16 @@ function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm}){
     im.src=url;
     return()=>{try{URL.revokeObjectURL(url);}catch(_){}};
   },[file]);
+
+  // Keyboard: Enter = click save button, Escape = cancel
+  useEffect(()=>{
+    const onKey=(e)=>{
+      if(e.key==="Enter"){e.preventDefault();saveBtnRef.current&&saveBtnRef.current.click();}
+      if(e.key==="Escape"){onClose();}
+    };
+    window.addEventListener("keydown",onKey);
+    return()=>window.removeEventListener("keydown",onKey);
+  },[onClose]);
 
   const onPointerDown=(e)=>{
     e.preventDefault();
@@ -8327,8 +8338,9 @@ function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm}){
           <input type="range" min="1" max="4" step="0.02" value={zoom} onChange={e=>setZoom(parseFloat(e.target.value))} style={{flex:1}}/>
           <button type="button" className="btn-s btn-sm" onClick={()=>{setZoom(1);setPan({x:0,y:0});}}>Reset</button>
         </div>
-        <div style={{display:"flex",gap:10,marginTop:18}}>
-          <button className="btn-p" style={{flex:1}} onClick={confirm} disabled={busy}>{busy?"Saving…":"Save Crop & Upload"}</button>
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:14,textAlign:"center"}}>Tip: Press <kbd style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:4,padding:"1px 6px",fontSize:10}}>Enter</kbd> to save · <kbd style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:4,padding:"1px 6px",fontSize:10}}>Esc</kbd> to cancel</p>
+        <div style={{display:"flex",gap:10,marginTop:12}}>
+          <button ref={saveBtnRef} className="btn-p" style={{flex:1}} onClick={confirm} disabled={busy}>{busy?"Saving…":"✓ Save & Upload"}</button>
           <button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
         </div>
       </>}
@@ -10388,30 +10400,87 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
 
     {/* ── PHOTOS TAB ── */}
     {tab==="photos"&&!isCD&&<>
-      {!isPremium&&<div style={{background:"rgba(26,26,46,0.06)",border:"1px solid var(--bdr)",borderRadius:10,padding:"14px 18px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
-        <span style={{fontSize:13,color:"var(--t2)"}}>⭐ <strong>Free Plan:</strong> 1 headshot only. Upgrade to Premium for up to 10 headshots.</span>
-        <button className="btn-s btn-sm" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade — {PREMIUM_PRICE}</button>
-      </div>}
       <div className="card" style={{padding:24,marginBottom:16}}>
-        <div className="flex-between" style={{marginBottom:16}}>
-          <div><h3 style={{fontSize:15,fontWeight:700,marginBottom:2}}>Photo Gallery</h3><p style={{fontSize:12,color:"var(--t3)"}}>{allPhotos.length} of {maxTotalPhotos} photo{maxTotalPhotos===1?"":"s"} · Your headshot is always first</p></div>
-          {isPremium&&allPhotos.length<maxTotalPhotos&&<label className="btn-p btn-sm" style={{cursor:"pointer"}}>{uploading?"Uploading…":"+ Add Photo"}<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"additional",aspect:0.75,label:"Crop Photo"});e.target.value="";}}/></label>}
+        <div className="flex-between" style={{marginBottom:16,flexWrap:"wrap",gap:12}}>
+          <div>
+            <h3 style={{fontSize:15,fontWeight:700,marginBottom:2}}>Photo Gallery</h3>
+            <p style={{fontSize:12,color:"var(--t3)"}}>
+              {isPremium
+                ?`${allPhotos.length} of ${maxTotalPhotos} photos · Your headshot is always first`
+                :`${allPhotos.length} of 1 headshot included on Free Plan`}
+            </p>
+          </div>
+          {/* Free user: headshot upload button (their 1 allowed photo) */}
+          {!isPremium&&!profile.headshot_url&&(
+            <label className="btn-p btn-sm" style={{cursor:"pointer",display:"inline-flex",alignItems:"center",gap:6}}>
+              {uploading?"Uploading…":"📷 Upload Headshot"}
+              <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/>
+            </label>
+          )}
+          {!isPremium&&profile.headshot_url&&(
+            <label className="btn-s btn-sm" style={{cursor:"pointer",display:"inline-flex",alignItems:"center",gap:6}}>
+              {uploading?"Uploading…":"Change Headshot"}
+              <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/>
+            </label>
+          )}
+          {/* Premium user: add photo button */}
+          {isPremium&&allPhotos.length<maxTotalPhotos&&(
+            <label className="btn-p btn-sm" style={{cursor:"pointer"}}>
+              {uploading?"Uploading…":"+ Add Photo"}
+              <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"additional",aspect:0.75,label:"Crop Photo"});e.target.value="";}}/>
+            </label>
+          )}
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:12}}>
-          {profile.headshot_url&&<div style={{position:"relative",borderRadius:8,overflow:"hidden",border:"2px solid var(--acc)"}}>
-            <img src={profile.headshot_url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",display:"block"}}/>
-            <div style={{position:"absolute",bottom:0,left:0,right:0,background:"rgba(0,0,0,0.6)",color:"#fff",fontSize:10,fontWeight:700,padding:"4px 8px",textAlign:"center",letterSpacing:1}}>MAIN</div>
-          </div>}
-          {photos.map((url,i)=><div key={i} style={{position:"relative",borderRadius:8,overflow:"hidden",border:"1px solid var(--bdr)"}}>
-            <img src={url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",display:"block"}}/>
-            <button onClick={()=>removePhoto(url)} style={{position:"absolute",top:4,right:4,background:"rgba(0,0,0,0.6)",border:"none",color:"#fff",borderRadius:"50%",width:22,height:22,cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
-          </div>)}
-          {isPremium&&allPhotos.length<maxTotalPhotos&&Array.from({length:Math.min(2,maxTotalPhotos-allPhotos.length)}).map((_,i)=><label key={`empty-${i}`} style={{aspectRatio:"3/4",background:"var(--s2)",borderRadius:8,border:"1px dashed var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexDirection:"column",gap:6,color:"var(--t3)",fontSize:12}}>+ Add<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"additional",aspect:0.75,label:"Crop Photo"});e.target.value="";}}/></label>)}
+
+        {/* Free user with no headshot: prominent upload area */}
+        {!isPremium&&!profile.headshot_url&&(
+          <label style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,padding:"40px 24px",background:"var(--s2)",borderRadius:10,border:"2px dashed var(--bdr)",cursor:"pointer",textAlign:"center",color:"var(--t2)"}}>
+            <div style={{fontSize:40}}>📷</div>
+            <div style={{fontWeight:700,fontSize:15,color:"var(--t1)"}}>Upload Your Headshot</div>
+            <div style={{fontSize:13}}>Your headshot is the first thing casting directors see. Click to upload.</div>
+            <span className="btn-p btn-sm" style={{pointerEvents:"none",marginTop:4}}>{uploading?"Uploading…":"Choose Photo"}</span>
+            <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/>
+          </label>
+        )}
+
+        {/* Photo grid (shown when there are photos) */}
+        {allPhotos.length>0&&(
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:12}}>
+            {profile.headshot_url&&(
+              <div style={{position:"relative",borderRadius:8,overflow:"hidden",border:"2px solid var(--acc)"}}>
+                <img src={profile.headshot_url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",display:"block"}}/>
+                <div style={{position:"absolute",bottom:0,left:0,right:0,background:"rgba(0,0,0,0.6)",color:"#fff",fontSize:10,fontWeight:700,padding:"4px 8px",textAlign:"center",letterSpacing:1}}>MAIN</div>
+              </div>
+            )}
+            {photos.map((url,i)=>(
+              <div key={i} style={{position:"relative",borderRadius:8,overflow:"hidden",border:"1px solid var(--bdr)"}}>
+                <img src={url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",display:"block"}}/>
+                <button onClick={()=>removePhoto(url)} style={{position:"absolute",top:4,right:4,background:"rgba(0,0,0,0.6)",border:"none",color:"#fff",borderRadius:"50%",width:22,height:22,cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+              </div>
+            ))}
+            {/* Premium: empty add-photo slots */}
+            {isPremium&&allPhotos.length<maxTotalPhotos&&Array.from({length:Math.min(2,maxTotalPhotos-allPhotos.length)}).map((_,i)=>(
+              <label key={`empty-${i}`} style={{aspectRatio:"3/4",background:"var(--s2)",borderRadius:8,border:"1px dashed var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexDirection:"column",gap:6,color:"var(--t3)",fontSize:12}}>
+                + Add
+                <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"additional",aspect:0.75,label:"Crop Photo"});e.target.value="";}}/>
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Free plan info + upgrade CTA */}
+      {!isPremium&&(
+        <div style={{padding:"14px 18px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+          <span style={{fontSize:13,color:"var(--t2)"}}>Free Plan: 1 headshot included. Upgrade to Premium for up to 10 headshots.</span>
+          <button className="btn-s btn-sm" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade — {PREMIUM_PRICE}</button>
         </div>
-      </div>
-      <div style={{marginTop:10,padding:"10px 14px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:8,fontSize:12,color:"var(--t2)"}}>
-        <strong>Showcase tip:</strong> Your first 2 additional photos appear in the showcase grid on your public profile. The order above controls what casting directors see first.
-      </div>
+      )}
+      {isPremium&&(
+        <div style={{padding:"10px 14px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:8,fontSize:12,color:"var(--t2)"}}>
+          <strong>Showcase tip:</strong> Your first 2 additional photos appear in the showcase grid on your public profile. The order above controls what casting directors see first.
+        </div>
+      )}
     </>}
 
     {/* ── VIDEOS TAB ── real uploads */}
