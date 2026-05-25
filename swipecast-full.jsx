@@ -4013,11 +4013,24 @@ function SuccessStoriesPage({onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE: PRICING
 // ═══════════════════════════════════════════
-function PricingPage({onNavigate}){
+function PricingPage({session,myProfile,onNavigate,onPickPlan}){
   const t=useT();
   const vpw=useViewportWidth();
   const isMobile=vpw<768;
   const [premiumMsg,setPremiumMsg]=React.useState(false);
+
+  // Logged-in users go straight to the membership page which branches correctly:
+  //   free talent     → 3 paid plan cards
+  //   premium talent  → "You're all set"
+  //   CD / industry   → "No membership needed"
+  // We do this in an effect so we don't call onNavigate during render.
+  React.useEffect(()=>{
+    if(session?.user&&myProfile){onNavigate("membership");}
+  },[session?.user?.id,myProfile?.user_type]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Suppress the public page for logged-in users (avoid flash while effect fires)
+  if(session?.user&&myProfile)return null;
+  // Profile still loading for a logged-in user — show a brief spinner
+  if(session?.user&&!myProfile)return(<div className="page" style={{minHeight:"60vh",display:"flex",alignItems:"center",justifyContent:"center"}}><CastSlateLoader text="Loading…"/></div>);
 
   const feat=(f,accent)=>(
     <div key={f} style={{display:"flex",gap:9,alignItems:"flex-start",padding:"7px 0",fontSize:13,color:"var(--t2)",lineHeight:1.4}}>
@@ -13854,7 +13867,7 @@ function App(){
         {page==="resources"&&<ResourcesPage onNavigate={navigate}/>}
         {page==="faq"&&<FaqPage onNavigate={navigate}/>}
         {page==="success-stories"&&<SuccessStoriesPage onNavigate={navigate}/>}
-        {page==="pricing"&&<PricingPage onNavigate={navigate}/>}
+        {page==="pricing"&&<PricingPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}}/>}
         {page==="studios"&&<StudiosPage onNavigate={navigate}/>}
         {page==="api-info"&&<ApiPage onNavigate={navigate}/>}
         {page==="terms"&&<TermsPage onNavigate={navigate}/>}
