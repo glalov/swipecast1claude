@@ -2,9 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "swipecast",
+      "name": "CastSlate Dev",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["serve.py"],
+      "runtimeArgs": ["-m", "http.server", "8000"],
+      "cwd": "/Users/georgi/Desktop/swipecast claude",
       "port": 8000
     }
   ]
