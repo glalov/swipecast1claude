@@ -5236,10 +5236,18 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     ["Plays",freshProfile?.age_range||talent.age_range],
   ].filter(([,v])=>v);
 
+  const isOwnProfile=talent?.id&&talent.id===session?.user?.id;
+
   return(<div className="page">
+    {isOwnProfile&&(
+      <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:"10px 16px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
+        <div style={{fontSize:13,color:"var(--t2)",fontWeight:600}}>Previewing your public profile — this is how casting directors see you.</div>
+        <button className="btn-s btn-sm" onClick={onBack}>← Back to Edit Profile</button>
+      </div>
+    )}
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:16,flexWrap:"wrap"}}>
-      <button className="btn-s btn-sm" onClick={onBack}>← Back</button>
-      {talent?.id&&talent.id!==session?.user?.id&&<button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this profile">⚑ Report</button>}
+      {!isOwnProfile&&<button className="btn-s btn-sm" onClick={onBack}>← Back</button>}
+      {!isOwnProfile&&talent?.id&&<button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this profile">⚑ Report</button>}
     </div>
     <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={talent?.id?{kind:"profile",id:talent.id}:null}/>
 
@@ -10210,6 +10218,11 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
         <div style={{fontSize:11,color:"var(--t3)"}}>Member since {new Date(profile.created_at).toLocaleDateString()} · {session?.user?.email}</div>
       </div>
     </div>
+
+    {/* ── PREVIEW BUTTON (talent only) ── */}
+    {!isCD&&onViewProfile&&<div style={{marginBottom:16,display:"flex",justifyContent:"flex-end"}}>
+      <button className="btn-s btn-sm" onClick={()=>onViewProfile({id:session.user.id,name:profile.display_name||"",display_name:profile.display_name||"",img:profile.headshot_url||"",type:"Talent"})}>View Public Profile →</button>
+    </div>}
 
     {/* ── TABS ── */}
     <div className="tabs" style={{marginBottom:24}}>
