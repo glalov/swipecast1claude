@@ -2082,9 +2082,19 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
 function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onReload}){
   const [err,setErr]=useState("");
   const [busy,setBusy]=useState(false);
-  const plan=MEMBERSHIP_PLANS[planKey]||MEMBERSHIP_PLANS.monthly;
+  const [profileTimedOut,setProfileTimedOut]=useState(false);
+  const plan=MEMBERSHIP_PLANS[planKey]||null;
   const userType=(myProfile?.user_type||"").toLowerCase();
   const isTalent=userType==="talent";
+
+  // Timeout: if profile doesn't load within 6s, show recovery UI instead of spinning forever
+  React.useEffect(()=>{
+    if(!myProfile||!myProfile.user_type){
+      const tid=setTimeout(()=>setProfileTimedOut(true),6000);
+      return()=>clearTimeout(tid);
+    }
+    setProfileTimedOut(false);
+  },[myProfile?.user_type]);
 
   if(!session?.user){
     return(<div className="page page-wide"><div className="card" style={{padding:48,textAlign:"center"}}>
@@ -2092,12 +2102,29 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
       <button className="btn-p" onClick={()=>onNavigate("login")}>Sign in</button>
     </div><Footer onNavigate={onNavigate}/></div>);
   }
+
+  // If no plan was selected (e.g. page refresh after OAuth consumed the pending plan), send back immediately
+  if(!plan){
+    return(<div className="page page-wide"><div className="card" style={{padding:48,textAlign:"center"}}>
+      <h2 style={{fontSize:20,marginBottom:8}}>Please choose your plan</h2>
+      <p style={{color:"var(--t3)",fontSize:14,marginBottom:18}}>No plan was selected. Please pick one of the options below.</p>
+      <button className="btn-p" onClick={()=>onNavigate("membership")}>View Plans →</button>
+    </div><Footer onNavigate={onNavigate}/></div>);
+  }
+
   // Guard: show loading until BOTH profile AND user_type are confirmed.
   // Checking only !myProfile is insufficient — user_type can briefly be
   // null/undefined even when myProfile is an object (e.g. after BFCache
   // restore or a mid-fetch auth event). Never infer account type from an
   // empty string; always wait for an explicit value.
   if(!myProfile || !myProfile.user_type){
+    if(profileTimedOut){
+      return(<div className="page page-wide"><div className="card" style={{padding:48,textAlign:"center"}}>
+        <h2 style={{fontSize:20,marginBottom:8}}>Please choose your plan</h2>
+        <p style={{color:"var(--t3)",fontSize:14,marginBottom:18}}>We couldn't load your account details. Please select your plan again.</p>
+        <button className="btn-p" onClick={()=>onNavigate("membership")}>View Plans →</button>
+      </div><Footer onNavigate={onNavigate}/></div>);
+    }
     return(<div className="page page-wide" style={{minHeight:"60vh",display:"flex",alignItems:"center",justifyContent:"center"}}><CastSlateLoader text="Loading your plan…"/></div>);
   }
   if(!isTalent){
