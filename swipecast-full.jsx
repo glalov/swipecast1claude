@@ -5116,27 +5116,19 @@ function SmartVideo({src,title}){
   );
 }
 
-// ShowcaseVideoTile — compact video tile for the 2×2 showcase grid.
-// Shows a poster frame with a play icon; clicking activates the native player.
-function ShowcaseVideoTile({v,borderStyle}){
-  const [active,setActive]=useState(false);
-  const ref=useRef(null);
-  const borderCSS=borderStyle||"none";
-  const play=()=>{setActive(true);ref.current&&ref.current.play();};
+// ShowcaseVideoTile — fixed 3:4 portrait aspect ratio tile; clicking opens full-screen modal.
+function ShowcaseVideoTile({v,onOpen}){
   return(
-    <div style={{position:"relative",overflow:"hidden",background:"#111",cursor:active?"default":"pointer",borderBottom:"1px solid rgba(255,255,255,0.08)"}}
-      onClick={!active?play:undefined}>
-      <video ref={ref} src={v.url} preload="metadata" controls={active} playsInline
-        style={{width:"100%",height:"100%",objectFit:"cover",display:"block",minHeight:180}}
-        onEnded={()=>setActive(false)}/>
-      {!active&&(
-        <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.38)"}}>
-          <div style={{width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.92)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>
-            <div style={{width:0,height:0,borderTop:"10px solid transparent",borderBottom:"10px solid transparent",borderLeft:"18px solid #111",marginLeft:4}}/>
-          </div>
-          {v.title&&<div style={{marginTop:8,fontSize:11,color:"#fff",fontWeight:600,padding:"2px 10px",background:"rgba(0,0,0,0.55)",borderRadius:4,maxWidth:"85%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v.title}</div>}
+    <div style={{position:"relative",overflow:"hidden",background:"#111",cursor:"pointer",borderRadius:8,aspectRatio:"3/4"}}
+      onClick={()=>onOpen&&onOpen(v)}>
+      <video src={v.url} preload="metadata" playsInline muted
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",display:"block",pointerEvents:"none"}}/>
+      <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.38)"}}>
+        <div style={{width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.92)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>
+          <div style={{width:0,height:0,borderTop:"10px solid transparent",borderBottom:"10px solid transparent",borderLeft:"18px solid #111",marginLeft:4}}/>
         </div>
-      )}
+        {v.title&&<div style={{marginTop:8,fontSize:11,color:"#fff",fontWeight:600,padding:"2px 10px",background:"rgba(0,0,0,0.55)",borderRadius:4,maxWidth:"85%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v.title}</div>}
+      </div>
     </div>
   );
 }
@@ -5157,6 +5149,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   const [showAllMedia,setShowAllMedia]=useState(false);
   const [lightboxImg,setLightboxImg]=useState(null);
   const [galleryLightbox,setGalleryLightbox]=useState(null); // {photos:[...], idx:0}
+  const [videoModal,setVideoModal]=useState(null); // {url, title}
 
   useEffect(()=>{
     if(!talentDbId){setDbCredits([]);return;}
@@ -5232,11 +5225,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     ...uploadedVideos.map(v=>({kind:"upload",...v})),
     ...(!uploadedVideos.length&&reelUrlRaw&&!reelIsExternal?[{kind:"reel",url:reelUrlRaw,title:"Demo Reel"}]:[]),
   ];
-  const panelVideos=allVideoItems.slice(0,2);
   const extraVideos=allVideoItems.slice(2);
-  const hasMoreVideos=extraVideos.length>0;
   const hasVid=allVideoItems.length>0;
-  const hasRightPanel=hasVid||gallery.length>1;
   // Showcase: first 2 videos + first 2 additional photos for the Backstage-style grid
   const showcaseVideos=allVideoItems.slice(0,2);
   const showcasePhotos=freshAdditional.slice(0,2);
@@ -5245,19 +5235,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     ...showcasePhotos.map(u=>({_tile:"photo",url:u})),
   ].slice(0,4);
   const hasShowcase=showcaseTiles.length>0;
-
-  const renderPanelVideo=(v,i)=>{
-    if(v.kind==="upload"||v.kind==="reel"){
-      return(
-        <SmartVideo key={v.id||i} src={v.url} title={v.title}/>
-      );
-    }
-    return(
-      <div key={i} style={{borderRadius:8,overflow:"hidden",position:"relative",paddingBottom:"56.25%",background:"#000"}}>
-        <iframe src={v.embed} frameBorder="0" allowFullScreen style={{position:"absolute",top:0,left:0,width:"100%",height:"100%"}}/>
-      </div>
-    );
-  };
+  const extraPhotos=freshAdditional.slice(showcasePhotos.length);
+  const hasExtraMedia=extraVideos.length>0||extraPhotos.length>0;
 
   const sectionHead=(title,extra)=>(
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
@@ -5315,7 +5294,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
       </div>
     )}
     {galleryLightbox&&(
-      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center"}}
+      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.93)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center"}}
         onClick={()=>setGalleryLightbox(null)}>
         <img src={galleryLightbox.photos[galleryLightbox.idx]} alt="" style={{maxWidth:"90vw",maxHeight:"88vh",objectFit:"contain",borderRadius:10,boxShadow:"0 8px 40px rgba(0,0,0,0.7)"}}/>
         <button onClick={e=>{e.stopPropagation();setGalleryLightbox(null);}} style={{position:"absolute",top:18,right:22,background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>
@@ -5326,49 +5305,92 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
         </>}
       </div>
     )}
+    {/* Full-screen video modal */}
+    {videoModal&&(
+      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.96)",zIndex:9999,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:16}}
+        onClick={()=>setVideoModal(null)}>
+        <button onClick={e=>{e.stopPropagation();setVideoModal(null);}} style={{position:"absolute",top:18,right:22,background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,zIndex:1}}>×</button>
+        <video src={videoModal.url} autoPlay controls playsInline
+          style={{maxWidth:"92vw",maxHeight:"85vh",borderRadius:10,boxShadow:"0 8px 40px rgba(0,0,0,0.7)",background:"#000",outline:"none"}}
+          onClick={e=>e.stopPropagation()}/>
+        {videoModal.title&&<div style={{color:"rgba(255,255,255,0.7)",marginTop:10,fontSize:13,fontWeight:600}}>{videoModal.title}</div>}
+      </div>
+    )}
     <div style={{marginBottom:16}}>
-      <div className="talent-profile-media-grid" style={{display:"grid",gridTemplateColumns:(!isMobile&&hasShowcase)?"3fr 2fr":"1fr",borderRadius:12,overflow:"hidden",border:"1px solid var(--bdr)",minHeight:isMobile?200:360}}>
+      {/* Backstage-style showcase: equal 1fr/1fr columns so tiles are consistent portrait
+          cards (3:4) that drive container height — headshot fills that same height. */}
+      <div className="talent-profile-media-grid" style={{
+        display:"grid",
+        gridTemplateColumns:(!isMobile&&hasShowcase)?"1fr 1fr":"1fr",
+        gap:"8px",
+        background:"var(--bg)",
+        borderRadius:12,
+        overflow:"hidden"
+      }}>
         {/* Left: large main headshot */}
-        <div style={{position:"relative",background:"#111",overflow:"hidden",cursor:"zoom-in"}} onClick={()=>setLightboxImg(freshHeadshot||talent.img||"")}>
+        <div style={{position:"relative",background:"#111",overflow:"hidden",cursor:"zoom-in",borderRadius:8,minHeight:isMobile?240:0}} onClick={()=>setLightboxImg(freshHeadshot||talent.img||"")}>
           <img
             src={freshHeadshot||talent.img||"https://placehold.co/400x600/e5e5e5/999?text=No+Headshot"}
             alt={talent.name}
-            style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block",minHeight:isMobile?220:360}}
+            style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block",minHeight:isMobile?240:0}}
           />
           {talent._selectedPhoto&&talent._selectedPhoto!==freshHeadshot&&(
             <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"6px 10px",background:"rgba(0,0,0,0.55)",fontSize:10,color:"#fff",textAlign:"center"}}>↑ Chosen for this submission</div>
           )}
         </div>
 
-        {/* Right: 2×2 grid of tiles — videos (top) then photos (bottom) */}
+        {/* Right: 2×2 grid — no gridTemplateRows, each tile has aspectRatio 3:4 so they
+            size themselves and stack cleanly without stretching */}
         {hasShowcase&&(
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gridTemplateRows:"1fr 1fr",borderLeft:"1px solid var(--bdr)",background:"#0a0a0a"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",background:"var(--bg)",alignContent:"start"}}>
             {showcaseTiles.map((tile,i)=>(
               tile._tile==="video"
-              ?<ShowcaseVideoTile key={tile.id||i} v={tile} borderStyle={i===0?"none 0 1px 0":""}/>
-              :<div key={i} style={{position:"relative",overflow:"hidden",background:"#111",cursor:"zoom-in",borderBottom:i<2?"1px solid rgba(255,255,255,0.08)":"none",borderLeft:i%2===1?"1px solid rgba(255,255,255,0.08)":"none"}}
+              ?<ShowcaseVideoTile key={tile.id||i} v={tile} onOpen={setVideoModal}/>
+              :<div key={i} style={{position:"relative",overflow:"hidden",background:"#111",cursor:"zoom-in",borderRadius:8,aspectRatio:"3/4"}}
                 onClick={()=>setLightboxImg(tile.url)}>
-                <img src={tile.url} alt={`Photo ${i+1}`} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block",minHeight:isMobile?110:180}}/>
+                <img src={tile.url} alt={`Photo ${i+1}`} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center",display:"block"}}/>
               </div>
             ))}
-            {/* Fill empty slots with placeholder to maintain grid shape */}
+            {/* Empty slots invisible (match gap bg) so they don't look like black boxes */}
             {Array.from({length:Math.max(0,4-showcaseTiles.length)}).map((_,i)=>(
-              <div key={`empty-${i}`} style={{background:"#0a0a0a",borderBottom:i<(2-showcaseTiles.length)?"1px solid rgba(255,255,255,0.08)":"none",borderLeft:i%2===1?"1px solid rgba(255,255,255,0.08)":"none"}}/>
+              <div key={`empty-${i}`} style={{aspectRatio:"3/4",background:"var(--bg)"}}/>
             ))}
           </div>
         )}
       </div>
 
-      {/* Extra media (beyond the 2 showcase videos) */}
-      {allVideoItems.length>2&&(
+      {/* View More Media / View Less */}
+      {hasExtraMedia&&(
         <div style={{marginTop:8}}>
           <button onClick={()=>setShowAllMedia(v=>!v)}
-            style={{width:"100%",padding:"10px 14px",background:"#111",border:"1px solid #333",borderRadius:8,fontSize:13,fontWeight:700,color:"#fff",cursor:"pointer",textAlign:"center",letterSpacing:"0.02em"}}>
-            {showAllMedia?`▲ Hide additional videos`:`▼ View all ${allVideoItems.length} videos`}
+            style={{width:"100%",padding:"14px 18px",background:"#111",border:"none",borderRadius:8,fontSize:13,fontWeight:700,color:"#fff",cursor:"pointer",textAlign:"center",letterSpacing:"0.04em",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 1px 4px rgba(0,0,0,0.18)"}}>
+            {showAllMedia
+              ?<>&#9650;&nbsp; View Less</>
+              :<>&#9660;&nbsp; View More Media{(extraVideos.length+extraPhotos.length)>0?` (${extraVideos.length+extraPhotos.length})`:""}</>}
           </button>
           {showAllMedia&&(
-            <div style={{marginTop:8,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:10}}>
-              {extraVideos.map((v,i)=>renderPanelVideo(v,i))}
+            <div style={{marginTop:10,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:8}}>
+              {extraVideos.map((v,i)=>(
+                <div key={v.id||i} style={{position:"relative",background:"#111",borderRadius:8,overflow:"hidden",cursor:"pointer",border:"1px solid var(--bdr)"}}
+                  onClick={()=>setVideoModal({url:v.url,title:v.title})}>
+                  <video src={v.url} preload="metadata" muted playsInline
+                    style={{width:"100%",aspectRatio:"16/9",objectFit:"cover",display:"block",pointerEvents:"none"}}/>
+                  <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.38)"}}>
+                    <div style={{width:40,height:40,borderRadius:"50%",background:"rgba(255,255,255,0.92)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>
+                      <div style={{width:0,height:0,borderTop:"9px solid transparent",borderBottom:"9px solid transparent",borderLeft:"16px solid #111",marginLeft:4}}/>
+                    </div>
+                    {v.title&&<div style={{marginTop:7,fontSize:11,color:"#fff",fontWeight:600,padding:"2px 10px",background:"rgba(0,0,0,0.6)",borderRadius:4,maxWidth:"85%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v.title}</div>}
+                  </div>
+                </div>
+              ))}
+              {extraPhotos.map((u,i)=>(
+                <div key={i} style={{cursor:"zoom-in",overflow:"hidden",borderRadius:8,background:"#111",position:"relative"}}
+                  onClick={()=>setLightboxImg(u)}>
+                  <img src={u} alt={`Photo ${i+1}`}
+                    style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",objectPosition:"center",display:"block"}}
+                    loading="lazy"/>
+                </div>
+              ))}
             </div>
           )}
         </div>
