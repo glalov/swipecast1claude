@@ -9926,7 +9926,7 @@ function CastingFitDNAEditor({session,isPremium,onNavigate}){
 function CastMeAsSection({talentId}){
   const [entries,setEntries]=useState([]);
   const [loading,setLoading]=useState(true);
-  const [playingId,setPlayingId]=useState(null);
+  const [videoModal,setVideoModal]=useState(null); // {url}
   const [lightbox,setLightbox]=useState(null); // {photos:[...], idx:0}
 
   useEffect(()=>{
@@ -9945,6 +9945,16 @@ function CastMeAsSection({talentId}){
   if(loading||entries.length===0)return null;
 
   return(<div className="card mt-20">
+    {/* Full-screen video modal */}
+    {videoModal&&(
+      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.96)",zIndex:9999,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:16}}
+        onClick={()=>setVideoModal(null)}>
+        <button onClick={e=>{e.stopPropagation();setVideoModal(null);}} style={{position:"absolute",top:18,right:22,background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,zIndex:1}}>×</button>
+        <video src={videoModal.url} autoPlay controls playsInline
+          style={{maxWidth:"92vw",maxHeight:"85vh",borderRadius:10,boxShadow:"0 8px 40px rgba(0,0,0,0.7)",background:"#000",outline:"none"}}
+          onClick={e=>e.stopPropagation()}/>
+      </div>
+    )}
     {/* Cast Me As lightbox */}
     {lightbox&&(
       <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center"}}
@@ -9964,7 +9974,6 @@ function CastMeAsSection({talentId}){
       {entries.map(entry=>{
         const photos=Array.isArray(entry.supporting_photo_urls)?entry.supporting_photo_urls.filter(Boolean):[];
         const hasClip=!!entry.mood_clip_url;
-        const isPlaying=playingId===entry.id;
         return(<div key={entry.id} style={{border:"1px solid var(--bdr)",borderRadius:12,overflow:"hidden",background:"var(--s1)",display:"flex",flexDirection:"column"}}>
           {/* header */}
           <div style={{padding:"14px 16px 10px",borderBottom:"1px solid var(--bdr)"}}>
@@ -9973,17 +9982,13 @@ function CastMeAsSection({talentId}){
             {entry.role_note&&<p style={{fontSize:13,color:"var(--t2)",lineHeight:1.5,margin:0,fontStyle:"italic"}}>"{entry.role_note}"</p>}
           </div>
 
-          {/* mood clip */}
-          {hasClip&&<div style={{background:"#000",position:"relative"}}>
-            {isPlaying
-              ?<video src={entry.mood_clip_url} controls autoPlay muted playsInline style={{width:"100%",maxHeight:200,display:"block",objectFit:"cover"}} onEnded={()=>setPlayingId(null)}/>
-              :<div style={{position:"relative",cursor:"pointer"}} onClick={()=>setPlayingId(entry.id)}>
-                  <video src={`${entry.mood_clip_url}#t=0.1`} muted playsInline style={{width:"100%",maxHeight:200,display:"block",objectFit:"cover",opacity:0.7}}/>
-                  <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                    <div style={{width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>▶</div>
-                  </div>
-                  <div style={{position:"absolute",bottom:8,right:10,background:"rgba(0,0,0,0.6)",color:"#fff",fontSize:10,padding:"2px 7px",borderRadius:4,fontWeight:600}}>clip</div>
-                </div>}
+          {/* mood clip — click opens full-screen modal */}
+          {hasClip&&<div style={{background:"#000",position:"relative",cursor:"pointer"}} onClick={()=>setVideoModal({url:entry.mood_clip_url})}>
+            <video src={`${entry.mood_clip_url}#t=0.1`} muted playsInline style={{width:"100%",maxHeight:200,display:"block",objectFit:"cover",opacity:0.7,pointerEvents:"none"}}/>
+            <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <div style={{width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>▶</div>
+            </div>
+            <div style={{position:"absolute",bottom:8,right:10,background:"rgba(0,0,0,0.6)",color:"#fff",fontSize:10,padding:"2px 7px",borderRadius:4,fontWeight:600}}>clip</div>
           </div>}
 
           {/* supporting photos — larger, clickable */}
