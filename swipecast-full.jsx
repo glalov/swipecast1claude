@@ -1968,7 +1968,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
               <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Cancel anytime</li>
             </ul>
             <div style={{borderTop:"1px solid var(--bdr)",paddingTop:14,marginBottom:14,fontSize:12,color:"var(--t3)"}}>Total billed: <strong style={{color:"var(--t1)"}}>${p.total.toFixed(2)}</strong>{p.months>1?` for ${p.months} months`:" today"}</div>
-            <button className={featured?"btn-p":"btn-s"} style={{width:"100%"}} onClick={()=>onNavigate("login")}>Sign in to subscribe →</button>
+            <button className={featured?"btn-p":"btn-s"} style={{width:"100%"}} onClick={()=>{try{sessionStorage.setItem("sc_pending_plan",p.key);}catch(_){}onNavigate("login");}}>Sign in to subscribe →</button>
           </div>);
         })}
       </div>
@@ -1977,6 +1977,9 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
       </div>
       <Footer onNavigate={onNavigate}/>
     </div>);
+  }
+  if(session?.user&&(!myProfile||!myProfile.user_type)){
+    return(<div className="page page-wide" style={{minHeight:"60vh",display:"flex",alignItems:"center",justifyContent:"center"}}><CastSlateLoader text="Loading your membership…"/></div>);
   }
   const userType=(myProfile?.user_type||"").toLowerCase();
   const isTalent=userType==="talent";
@@ -13401,6 +13404,16 @@ function App(){
                     setPage("casting-detail");
                     pushHist("casting-detail",{slug:pa.casting?.slug});
                   }
+                }
+              }catch(_){}
+              // Restore a pending premium plan selection (saved before redirecting to login)
+              try{
+                const pp=sessionStorage.getItem("sc_pending_plan");
+                if(pp&&MEMBERSHIP_PLANS[pp]){
+                  sessionStorage.removeItem("sc_pending_plan");
+                  setSelectedPlan(pp);
+                  setPage("plan-summary");
+                  pushHist("plan-summary");
                 }
               }catch(_){}
             }
