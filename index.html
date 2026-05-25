@@ -2615,6 +2615,17 @@ function RegisterTalent({onNavigate}){
       // confirmation link before the trigger has run (extremely rare race),
       // the RPC will pick this up on first authenticated load as a backstop.
       try{localStorage.setItem(`sc_signup_meta_${email}`,JSON.stringify(signupMeta));}catch(_){}
+      // Pre-check: query auth.users via RPC before calling signUp.
+      // Supabase v2 can silently resend a confirmation email to an existing
+      // confirmed address instead of returning an error — this catches it first.
+      try{
+        const {data:emailTaken}=await window.sb.rpc("check_email_exists",{p_email:email});
+        if(emailTaken===true){
+          setDupEmail(true);
+          setErr("An account with this email already exists. If you never received the verification email, resend it below — otherwise log in.");
+          window.scrollTo(0,0);setLoading(false);submittingRef.current=false;return;
+        }
+      }catch(_){}// RPC failure → fall through; signUp itself has error handling
       console.log("[auth] signUp attempt:",email);
       const {data,error}=await withTimeout(window.sb.auth.signUp({
         email,password:f.password,
@@ -2819,6 +2830,16 @@ function RegisterCD({onNavigate}){
         onboarded:true
       };
       try{localStorage.setItem(`sc_signup_meta_${email}`,JSON.stringify(signupMeta));}catch(_){}
+      // Pre-check: query auth.users before calling signUp to prevent Supabase
+      // v2 from silently sending a confirmation email to an existing address.
+      try{
+        const {data:emailTaken}=await window.sb.rpc("check_email_exists",{p_email:email});
+        if(emailTaken===true){
+          setDupEmail(true);
+          setErr("An account with this email already exists. If you never received the verification email, resend it below — otherwise log in.");
+          window.scrollTo(0,0);setLoading(false);submittingRef.current=false;return;
+        }
+      }catch(_){}
       console.log("[auth] CD signUp attempt:",email);
       const {data,error}=await withTimeout(window.sb.auth.signUp({
         email,password:f.password,
@@ -4402,6 +4423,16 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
     submittingRef.current=true;setLoading(true);
     try{
       const email=suEmail.trim().toLowerCase();
+      // Pre-check: query auth.users before calling signUp to prevent Supabase v2
+      // from silently resending a confirmation email to an existing address.
+      try{
+        const {data:emailTaken}=await window.sb.rpc("check_email_exists",{p_email:email});
+        if(emailTaken===true){
+          setErr("An account with this email already exists. Please log in instead.");
+          setLiEmail(email);setMode("login");
+          setLoading(false);submittingRef.current=false;return;
+        }
+      }catch(_){}
       const {data,error}=await window.sb.auth.signUp({
         email,password:suPass,
         options:{
@@ -4413,11 +4444,13 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
         const em=(error.message||"").toLowerCase();
         if(em.includes("already")||em.includes("exist")||em.includes("registered")){
           setErr("An account with this email already exists. Please log in instead.");
+          setLiEmail(email);setMode("login");
         }else{setErr(error.message||"Sign up failed. Please try again.");}
         return;
       }
       if(data?.user&&Array.isArray(data.user.identities)&&data.user.identities.length===0){
-        setErr("An account with this email already exists. Please log in instead.");return;
+        setErr("An account with this email already exists. Please log in instead.");
+        setLiEmail(email);setMode("login");return;
       }
       // Save pending apply so it survives email confirmation + page reload
       if(pending){
