@@ -10029,7 +10029,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
         body_type:profile.body_type||"",age_range:profile.age_range||"",
         talent_types:Array.isArray(profile.talent_types)?profile.talent_types:[]
       }));
-      const ap=profile.additional_photos||[];setPhotos(ap);
+      // Filter the main headshot out of additional_photos to prevent duplication in the gallery.
+      const ap=(profile.additional_photos||[]).filter(u=>u&&u!==profile.headshot_url);setPhotos(ap);
       const vl=profile.video_links||[];
       const slots=["","","","",""];vl.forEach((v,i)=>{if(i<5)slots[i]=v;});setVideos(slots);
       setSocialLinks(profile.social_links&&typeof profile.social_links==="object"?profile.social_links:{});

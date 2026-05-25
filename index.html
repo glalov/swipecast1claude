@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260525-210157 -->
-  <meta name="build-version" content="20260525-210157"/>
+  <!-- BUILD: 20260525-210722 -->
+  <meta name="build-version" content="20260525-210722"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260525-210157";
+      var B="20260525-210722";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -10067,7 +10067,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
         body_type:profile.body_type||"",age_range:profile.age_range||"",
         talent_types:Array.isArray(profile.talent_types)?profile.talent_types:[]
       }));
-      const ap=profile.additional_photos||[];setPhotos(ap);
+      // Filter the main headshot out of additional_photos to prevent duplication in the gallery.
+      const ap=(profile.additional_photos||[]).filter(u=>u&&u!==profile.headshot_url);setPhotos(ap);
       const vl=profile.video_links||[];
       const slots=["","","","",""];vl.forEach((v,i)=>{if(i<5)slots[i]=v;});setVideos(slots);
       setSocialLinks(profile.social_links&&typeof profile.social_links==="object"?profile.social_links:{});
