@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260525-173625 -->
-  <meta name="build-version" content="20260525-173625"/>
+  <!-- BUILD: 20260525-175101 -->
+  <meta name="build-version" content="20260525-175101"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260525-173625";
+      var B="20260525-175101";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -5158,10 +5158,10 @@ function SmartVideo({src,title}){
 // Clicking opens a full-screen video modal via onOpen callback.
 function ShowcaseVideoTile({v,onOpen}){
   return(
-    <div style={{position:"relative",overflow:"hidden",background:"#111",cursor:"pointer",display:"flex",alignItems:"stretch"}}
+    <div style={{position:"relative",overflow:"hidden",background:"#111",cursor:"pointer",borderRadius:8}}
       onClick={()=>onOpen&&onOpen(v)}>
       <video src={v.url} preload="metadata" playsInline muted
-        style={{width:"100%",height:"100%",objectFit:"cover",display:"block",minHeight:180,pointerEvents:"none"}}/>
+        style={{width:"100%",height:"100%",objectFit:"cover",display:"block",minHeight:170,pointerEvents:"none"}}/>
       <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.38)"}}>
         <div style={{width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.92)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>
           <div style={{width:0,height:0,borderTop:"10px solid transparent",borderBottom:"10px solid transparent",borderLeft:"18px solid #111",marginLeft:4}}/>
@@ -5379,37 +5379,38 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
       <div className="talent-profile-media-grid" style={{
         display:"grid",
         gridTemplateColumns:(!isMobile&&hasShowcase)?"3fr 2fr":"1fr",
-        gap:"3px",
-        background:"var(--bdr)",
-        borderRadius:10,
+        gap:"8px",
+        background:"var(--bg)",
+        borderRadius:12,
         overflow:"hidden",
-        minHeight:isMobile?200:360
+        minHeight:isMobile?200:380,
+        padding:"0"
       }}>
         {/* Left: large main headshot */}
-        <div style={{position:"relative",background:"#111",overflow:"hidden",cursor:"zoom-in"}} onClick={()=>setLightboxImg(freshHeadshot||talent.img||"")}>
+        <div style={{position:"relative",background:"#111",overflow:"hidden",cursor:"zoom-in",borderRadius:8}} onClick={()=>setLightboxImg(freshHeadshot||talent.img||"")}>
           <img
             src={freshHeadshot||talent.img||"https://placehold.co/400x600/e5e5e5/999?text=No+Headshot"}
             alt={talent.name}
-            style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block",minHeight:isMobile?220:360}}
+            style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block",minHeight:isMobile?220:380}}
           />
           {talent._selectedPhoto&&talent._selectedPhoto!==freshHeadshot&&(
             <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"6px 10px",background:"rgba(0,0,0,0.55)",fontSize:10,color:"#fff",textAlign:"center"}}>↑ Chosen for this submission</div>
           )}
         </div>
 
-        {/* Right: 2×2 grid of tiles — videos then photos, small gaps between */}
+        {/* Right: 2×2 grid of tiles — videos then photos, clean card-style with matching gaps */}
         {hasShowcase&&(
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gridTemplateRows:"1fr 1fr",gap:"3px",background:"var(--bdr)"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gridTemplateRows:"1fr 1fr",gap:"8px",background:"var(--bg)"}}>
             {showcaseTiles.map((tile,i)=>(
               tile._tile==="video"
               ?<ShowcaseVideoTile key={tile.id||i} v={tile} onOpen={setVideoModal}/>
-              :<div key={i} style={{position:"relative",overflow:"hidden",background:"#111",cursor:"zoom-in"}}
+              :<div key={i} style={{position:"relative",overflow:"hidden",background:"#111",cursor:"zoom-in",borderRadius:8}}
                 onClick={()=>setLightboxImg(tile.url)}>
-                <img src={tile.url} alt={`Photo ${i+1}`} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block",minHeight:isMobile?110:180}}/>
+                <img src={tile.url} alt={`Photo ${i+1}`} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center",display:"block",minHeight:isMobile?110:170}}/>
               </div>
             ))}
             {Array.from({length:Math.max(0,4-showcaseTiles.length)}).map((_,i)=>(
-              <div key={`empty-${i}`} style={{background:"#111"}}/>
+              <div key={`empty-${i}`} style={{background:"#111",borderRadius:8}}/>
             ))}
           </div>
         )}
@@ -5419,10 +5420,10 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
       {hasExtraMedia&&(
         <div style={{marginTop:8}}>
           <button onClick={()=>setShowAllMedia(v=>!v)}
-            style={{width:"100%",padding:"11px 14px",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:8,fontSize:13,fontWeight:700,color:"var(--t1)",cursor:"pointer",textAlign:"center",letterSpacing:"0.02em",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            style={{width:"100%",padding:"14px 18px",background:"#111",border:"none",borderRadius:8,fontSize:13,fontWeight:700,color:"#fff",cursor:"pointer",textAlign:"center",letterSpacing:"0.04em",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 1px 4px rgba(0,0,0,0.18)"}}>
             {showAllMedia
-              ?<>&#9650; View Less</>
-              :<>&#9660; View More Media{(extraVideos.length+extraPhotos.length)>0?` (${extraVideos.length+extraPhotos.length})`:""}</>}
+              ?<>&#9650;&nbsp; View Less</>
+              :<>&#9660;&nbsp; View More Media{(extraVideos.length+extraPhotos.length)>0?` (${extraVideos.length+extraPhotos.length})`:""}</>}
           </button>
           {showAllMedia&&(
             <div style={{marginTop:10,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:8}}>
@@ -5440,9 +5441,11 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
                 </div>
               ))}
               {extraPhotos.map((u,i)=>(
-                <div key={i} style={{cursor:"zoom-in",overflow:"hidden",borderRadius:8,border:"1px solid var(--bdr)",background:"#111"}}
+                <div key={i} style={{cursor:"zoom-in",overflow:"hidden",borderRadius:8,background:"#111",position:"relative"}}
                   onClick={()=>setLightboxImg(u)}>
-                  <img src={u} alt={`Photo ${i+1}`} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",objectPosition:"center top",display:"block"}}/>
+                  <img src={u} alt={`Photo ${i+1}`}
+                    style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",objectPosition:"center",display:"block"}}
+                    loading="lazy"/>
                 </div>
               ))}
             </div>
