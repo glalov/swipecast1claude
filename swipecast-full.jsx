@@ -5175,9 +5175,11 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   const renderPanelVideo=(v,i)=>{
     if(v.kind==="upload"||v.kind==="reel"){
       return(
-        <div key={v.id||i} style={{borderRadius:8,overflow:"hidden",background:"#000"}}>
-          <video src={v.url} controls preload="metadata" style={{width:"100%",aspectRatio:"16/9",objectFit:"cover",display:"block"}}/>
-          {v.title&&<div style={{padding:"5px 10px",fontSize:11,color:"var(--t2)",fontWeight:600,background:"var(--s2)"}}>{v.title}</div>}
+        <div key={v.id||i} style={{borderRadius:8,overflow:"hidden",background:"#000",display:"flex",flexDirection:"column",alignItems:"center"}}>
+          <div style={{width:"100%",display:"flex",justifyContent:"center",background:"#000"}}>
+            <video src={v.url} controls preload="metadata" style={{maxWidth:"100%",maxHeight:360,width:"auto",height:"auto",display:"block"}}/>
+          </div>
+          {v.title&&<div style={{padding:"5px 10px",fontSize:11,color:"var(--t2)",fontWeight:600,background:"var(--s2)",width:"100%"}}>{v.title}</div>}
         </div>
       );
     }
@@ -10322,7 +10324,9 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
             {mediaItems.map((item,i)=>(
               <div key={item.id} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:10,alignItems:"center",background:"var(--s2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--bdr)"}}>
                 <div style={{minWidth:0}}>
-                  <video src={item.url} controls preload="metadata" style={{width:"100%",maxHeight:160,borderRadius:6,background:"#000",display:"block",marginBottom:4}}/>
+                  <div style={{background:"#000",borderRadius:6,marginBottom:4,display:"flex",justifyContent:"center",overflow:"hidden"}}>
+                    <video src={item.url} controls preload="metadata" style={{maxHeight:200,maxWidth:"100%",width:"auto",height:"auto",display:"block"}}/>
+                  </div>
                   <div style={{fontSize:12,fontWeight:600,color:"var(--t1)"}}>{item.title||`Video ${i+1}`}</div>
                 </div>
                 <button onClick={async()=>{
