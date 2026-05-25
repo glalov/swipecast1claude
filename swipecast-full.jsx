@@ -5156,6 +5156,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   const [freshProfile,setFreshProfile]=useState(null);
   const [showAllMedia,setShowAllMedia]=useState(false);
   const [lightboxImg,setLightboxImg]=useState(null);
+  const [galleryLightbox,setGalleryLightbox]=useState(null); // {photos:[...], idx:0}
 
   useEffect(()=>{
     if(!talentDbId){setDbCredits([]);return;}
@@ -5311,6 +5312,18 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
         onClick={()=>setLightboxImg(null)}>
         <img src={lightboxImg} alt="" style={{maxWidth:"92vw",maxHeight:"90vh",objectFit:"contain",borderRadius:10,boxShadow:"0 8px 40px rgba(0,0,0,0.7)"}}/>
         <button onClick={e=>{e.stopPropagation();setLightboxImg(null);}} style={{position:"absolute",top:18,right:22,background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>
+      </div>
+    )}
+    {galleryLightbox&&(
+      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center"}}
+        onClick={()=>setGalleryLightbox(null)}>
+        <img src={galleryLightbox.photos[galleryLightbox.idx]} alt="" style={{maxWidth:"90vw",maxHeight:"88vh",objectFit:"contain",borderRadius:10,boxShadow:"0 8px 40px rgba(0,0,0,0.7)"}}/>
+        <button onClick={e=>{e.stopPropagation();setGalleryLightbox(null);}} style={{position:"absolute",top:18,right:22,background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>
+        {galleryLightbox.photos.length>1&&<>
+          <button onClick={e=>{e.stopPropagation();setGalleryLightbox(x=>({...x,idx:(x.idx-1+x.photos.length)%x.photos.length}));}} style={{position:"absolute",left:16,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:44,height:44,fontSize:24,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>‹</button>
+          <button onClick={e=>{e.stopPropagation();setGalleryLightbox(x=>({...x,idx:(x.idx+1)%x.photos.length}));}} style={{position:"absolute",right:70,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:44,height:44,fontSize:24,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>›</button>
+          <div style={{position:"absolute",bottom:18,left:"50%",transform:"translateX(-50%)",color:"rgba(255,255,255,0.5)",fontSize:12}}>{galleryLightbox.idx+1} / {galleryLightbox.photos.length}</div>
+        </>}
       </div>
     )}
     <div style={{marginBottom:16}}>
@@ -5473,14 +5486,13 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
       <p style={{fontSize:14,color:"var(--t1)",lineHeight:1.6}}>{trainingText}</p>
     </div>}
 
-    {/* ── FULL PHOTO GALLERY ── show all photos when more than 1 exists */}
-    {gallery.length>1&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
+    {/* ── FULL PHOTO GALLERY ── additional photos only (headshot is the main showcase image) */}
+    {freshAdditional.length>0&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       {sectionHead("Photos")}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:8}}>
-        {gallery.map((u,i)=>(
-          <div key={i} style={{position:"relative"}}>
+        {freshAdditional.map((u,i)=>(
+          <div key={i} style={{position:"relative",cursor:"zoom-in"}} onClick={()=>setGalleryLightbox({photos:freshAdditional,idx:i})}>
             <img src={u} alt={`Photo ${i+1}`} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:8,display:"block",border:"1px solid var(--bdr)"}}/>
-            {i===0&&talent._selectedPhoto&&talent._selectedPhoto===u&&<span style={{position:"absolute",bottom:5,left:5,fontSize:9,fontWeight:700,background:"rgba(0,0,0,0.55)",color:"#fff",padding:"2px 5px",borderRadius:4,letterSpacing:0.5}}>SUBMISSION PHOTO</span>}
           </div>
         ))}
       </div>
@@ -9905,6 +9917,7 @@ function CastMeAsSection({talentId}){
   const [entries,setEntries]=useState([]);
   const [loading,setLoading]=useState(true);
   const [playingId,setPlayingId]=useState(null);
+  const [lightbox,setLightbox]=useState(null); // {photos:[...], idx:0}
 
   useEffect(()=>{
     if(!talentId)return;
@@ -9922,6 +9935,19 @@ function CastMeAsSection({talentId}){
   if(loading||entries.length===0)return null;
 
   return(<div className="card mt-20">
+    {/* Cast Me As lightbox */}
+    {lightbox&&(
+      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center"}}
+        onClick={()=>setLightbox(null)}>
+        <img src={lightbox.photos[lightbox.idx]} alt="" style={{maxWidth:"90vw",maxHeight:"88vh",objectFit:"contain",borderRadius:10,boxShadow:"0 8px 40px rgba(0,0,0,0.7)"}}/>
+        <button onClick={e=>{e.stopPropagation();setLightbox(null);}} style={{position:"absolute",top:18,right:22,background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>
+        {lightbox.photos.length>1&&<>
+          <button onClick={e=>{e.stopPropagation();setLightbox(x=>({...x,idx:(x.idx-1+x.photos.length)%x.photos.length}));}} style={{position:"absolute",left:16,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>‹</button>
+          <button onClick={e=>{e.stopPropagation();setLightbox(x=>({...x,idx:(x.idx+1)%x.photos.length}));}} style={{position:"absolute",right:70,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>›</button>
+        </>}
+        <div style={{position:"absolute",bottom:18,left:"50%",transform:"translateX(-50%)",color:"rgba(255,255,255,0.5)",fontSize:12}}>{lightbox.idx+1} / {lightbox.photos.length}</div>
+      </div>
+    )}
     <h3 style={{fontSize:18,fontWeight:700,marginBottom:4}}>Cast Me As</h3>
     <p style={{fontSize:13,color:"var(--t3)",marginBottom:20}}>Casting identity — the energies and archetypes this actor plays best.</p>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:16}}>
@@ -9950,9 +9976,12 @@ function CastMeAsSection({talentId}){
                 </div>}
           </div>}
 
-          {/* supporting photos */}
-          {photos.length>0&&<div style={{display:"flex",gap:4,padding:"8px 10px",background:"var(--s2)"}}>
-            {photos.map((u,i)=><img key={i} src={u} alt="" style={{width:56,height:70,objectFit:"cover",borderRadius:6,border:"1px solid var(--bdr)"}}/>)}
+          {/* supporting photos — larger, clickable */}
+          {photos.length>0&&<div style={{display:"flex",gap:6,padding:"10px 12px",background:"var(--s2)",flexWrap:"wrap"}}>
+            {photos.map((u,i)=>(
+              <img key={i} src={u} alt="" onClick={()=>setLightbox({photos,idx:i})}
+                style={{width:88,height:110,objectFit:"cover",borderRadius:8,border:"1px solid var(--bdr)",cursor:"zoom-in",flexShrink:0}}/>
+            ))}
           </div>}
 
           {/* footer tags */}
