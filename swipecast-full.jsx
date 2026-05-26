@@ -2018,6 +2018,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
             <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Unlimited submissions</li>
             <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Unlimited photos &amp; gallery media</li>
             <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Unlimited video uploads</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Personalized profile improvement suggestions</li>
             <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Cancel anytime</li>
           </ul>
           <div style={{borderTop:"1px solid var(--bdr)",paddingTop:14,marginBottom:14,fontSize:12,color:"var(--t3)"}}>Total billed: <strong style={{color:"var(--t1)"}}>${p.total.toFixed(2)}</strong>{p.months>1?` for ${p.months} months`:" today"}</div>
@@ -2667,7 +2668,7 @@ function RegisterTalent({onNavigate}){
             </div>
             <div style={{border:"1px solid var(--bdr)",borderRadius:12,padding:"14px 16px",opacity:0.85}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><span style={{fontWeight:800,fontSize:14}}>Actor Premium</span><span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--acc)"}}>$9.99/mo</span></div>
-              {["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited casting submissions","Premium profile features"].map(feat=><div key={feat} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{feat}</div>)}
+              {["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited casting submissions","Premium profile features","Profile improvement suggestions"].map(feat=><div key={feat} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{feat}</div>)}
               <button className="btn-s" style={{width:"100%",marginTop:10,fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>
             </div>
           </div>
@@ -4095,7 +4096,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan}){
               <div style={{fontSize:12,color:"var(--t3)",marginTop:5}}>{t('pricing.perMonthCancel')}</div>
             </div>
             <div style={{flex:1}}>
-              {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Premium profile features'].map(f=>feat(f,"var(--acc)"))}
+              {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Premium profile features','Personalized profile improvement suggestions'].map(f=>feat(f,"var(--acc)"))}
             </div>
             <button style={{...btnFilled,marginTop:24}} onClick={()=>onNavigate("membership")}>{t('pricing.getPremium')}</button>
           </div>
@@ -4134,6 +4135,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan}){
           {featureRow("Browse castings","✓","✓")}
           {featureRow("Basic actor profile","✓","✓")}
           {featureRow("Premium profile features","—","✓")}
+          {featureRow("Profile improvement suggestions","—","✓")}
           {featureRow("Price",t('pricing.freeLabel'),PREMIUM_PRICE)}
         </div>
       </div>
@@ -4562,7 +4564,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
               <span style={{fontWeight:800,fontSize:14}}>Actor Premium</span>
               <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--acc)"}}>$9.99/mo</span>
             </div>
-            {["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited casting submissions","Premium profile features"].map(f=><div key={f} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{f}</div>)}
+            {["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited casting submissions","Premium profile features","Profile improvement suggestions"].map(f=><div key={f} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{f}</div>)}
             <button className="btn-s" style={{width:"100%",marginTop:10,fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>
           </div>
         </div>
@@ -5794,6 +5796,133 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
     <Footer onNavigate={onNavigate}/></div>);
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// PREMIUM FEATURE: Profile Improvement Suggestions
+// Computes what's missing and returns a completion % + ordered suggestion list.
+// ─────────────────────────────────────────────────────────────────────────────
+function computeProfileSuggestions(profile, dbCredits, mediaItems){
+  const ap=Array.isArray(profile?.additional_photos)?profile.additional_photos.filter(Boolean):[];
+  const vl=Array.isArray(profile?.video_links)?profile.video_links.filter(Boolean):[];
+  const hasVideos=(mediaItems&&mediaItems.length>0)||vl.length>0;
+  const hasCredits=(dbCredits&&dbCredits.length>0)||!!(profile?.credits?.trim());
+  const hasSkills=Array.isArray(profile?.skills)&&profile.skills.length>0;
+  const hasStats=!!(profile?.height&&profile?.hair&&profile?.eyes&&profile?.age_range);
+  const hasResume=!!(profile?.resume_url);
+  const photoCount=ap.length+(profile?.headshot_url?1:0);
+
+  const totalChecks=10;
+  const done=[
+    !!profile?.headshot_url,
+    !!(profile?.bio?.trim()),
+    hasCredits,
+    hasVideos,
+    photoCount>=3,
+    !!profile?.location,
+    hasStats,
+    hasSkills,
+    !!(profile?.training?.trim()),
+    hasResume,
+  ].filter(Boolean).length;
+  const pct=Math.round((done/totalChecks)*100);
+
+  const suggestions=[];
+  if(!profile?.headshot_url)suggestions.push({p:"High",text:"Add a main headshot — your most important profile element",tab:"photos",btn:"Add Headshot"});
+  if(!(profile?.bio?.trim()))suggestions.push({p:"High",text:"Write your bio — casting directors read this first",tab:"profile",btn:"Write Bio"});
+  if(!hasCredits)suggestions.push({p:"High",text:"Add credits so casting directors can see your experience",tab:"credits",btn:"Add Credits"});
+  if(!hasVideos)suggestions.push({p:"High",text:"Upload a reel so casting directors can see you on camera",tab:"videos",btn:"Upload Video"});
+  if(photoCount<3)suggestions.push({p:"Medium",text:"Add more gallery photos with different looks and angles",tab:"photos",btn:"Add Photos"});
+  if(!profile?.location)suggestions.push({p:"Medium",text:"Add your location — casting directors often filter by area",tab:"profile",btn:"Add Location"});
+  if(!hasStats){const m=[!profile?.height&&"height",!profile?.hair&&"hair color",!profile?.eyes&&"eye color",!profile?.age_range&&"age range"].filter(Boolean);suggestions.push({p:"Medium",text:`Complete casting details: ${m.join(", ")}`,tab:"profile",btn:"Add Details"});}
+  if(!hasSkills)suggestions.push({p:"Low",text:"Add special skills — accents, instruments, sports, and more",tab:"skills",btn:"Add Skills"});
+  if(!profile?.training?.trim())suggestions.push({p:"Low",text:"Add your training — acting schools, coaches, and techniques",tab:"profile",btn:"Add Training"});
+  if(!profile?.agent?.trim())suggestions.push({p:"Low",text:"Add representation info if you have an agent or manager",tab:"profile",btn:"Add Representation"});
+  if(!hasResume)suggestions.push({p:"Low",text:"Upload your resume for casting directors to download",tab:"profile",btn:"Upload Resume"});
+  if(photoCount>=3&&profile?.headshot_url&&ap.length>=2)suggestions.push({p:"Low",text:"Reorder your Showcase so your strongest material appears first",tab:"showcase",btn:"Arrange Showcase"});
+  return{pct,suggestions};
+}
+
+const PRIORITY_STYLES={
+  High:{bg:"rgba(220,38,38,0.07)",color:"#b91c1c",border:"rgba(220,38,38,0.2)"},
+  Medium:{bg:"rgba(217,119,6,0.07)",color:"#b45309",border:"rgba(217,119,6,0.2)"},
+  Low:{bg:"rgba(99,60,180,0.06)",color:"var(--acc)",border:"rgba(99,60,180,0.15)"},
+};
+
+function ProfileImprovementCard({profile,isPremium,onNavigate,dbCredits,mediaItems,onGoToTab}){
+  const vpw=useViewportWidth();
+  const isMobile=vpw<768;
+  const {pct,suggestions}=computeProfileSuggestions(profile,dbCredits,mediaItems);
+  const allDone=suggestions.length===0;
+
+  const handleAction=(tab)=>{
+    if(onGoToTab){onGoToTab(tab);}
+    else{onNavigate("my-profile");}
+  };
+
+  if(!isPremium){
+    return(
+      <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:20,position:"relative",overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+          <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:0}}>Improve Your Profile</h3>
+          <span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:6,background:"rgba(99,60,180,0.12)",color:"var(--acc)",textTransform:"uppercase",letterSpacing:0.6}}>Premium</span>
+        </div>
+        <p style={{fontSize:13,color:"var(--t2)",margin:"0 0 14px",lineHeight:1.55}}>Get personalized suggestions on how to improve your profile so casting directors can review your work more easily.</p>
+        <div style={{filter:"blur(2px)",pointerEvents:"none",userSelect:"none",marginBottom:12}}>
+          {[["High","Add a stronger main headshot"],["Medium","Add more gallery photos with different looks"],["Low","Add your special skills"]].map(([p,text])=>(
+            <div key={p} style={{display:"flex",alignItems:"flex-start",gap:8,padding:"8px 0",borderBottom:"1px solid var(--bdr)"}}>
+              <span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:5,background:PRIORITY_STYLES[p].bg,color:PRIORITY_STYLES[p].color,border:`1px solid ${PRIORITY_STYLES[p].border}`,whiteSpace:"nowrap",marginTop:1,flexShrink:0}}>{p}</span>
+              <span style={{fontSize:13,color:"var(--t2)",lineHeight:1.45}}>{text}</span>
+            </div>
+          ))}
+        </div>
+        <button className="btn-p btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium to unlock suggestions →</button>
+      </div>
+    );
+  }
+
+  return(
+    <div style={{background:"linear-gradient(135deg,rgba(99,60,180,0.05),rgba(99,60,180,0.01))",border:"1px solid rgba(99,60,180,0.18)",borderRadius:14,padding:20}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+        <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:0}}>Improve Your Profile</h3>
+        <span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:6,background:"rgba(99,60,180,0.12)",color:"var(--acc)",textTransform:"uppercase",letterSpacing:0.6}}>Premium</span>
+      </div>
+      <div style={{marginBottom:14}}>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"var(--t2)",marginBottom:6}}>
+          <span>Your profile is {pct}% complete</span>
+          <span style={{color:pct>=80?"var(--grn)":pct>=50?"#d97706":"var(--red)",fontWeight:700}}>{pct}%</span>
+        </div>
+        <div style={{height:6,background:"var(--s2)",borderRadius:3,overflow:"hidden"}}>
+          <div style={{width:`${pct}%`,height:"100%",background:pct>=80?"var(--grn)":pct>=50?"#d97706":"var(--red)",borderRadius:3,transition:"width .4s"}}/>
+        </div>
+      </div>
+      {allDone?(
+        <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"rgba(27,135,62,0.06)",border:"1px solid rgba(27,135,62,0.2)",borderRadius:8}}>
+          <span style={{fontSize:18}}>✓</span>
+          <div>
+            <div style={{fontWeight:700,fontSize:13,color:"var(--t1)",marginBottom:2}}>Your profile is in great shape.</div>
+            <div style={{fontSize:12,color:"var(--t2)"}}>It contains all the key information casting directors look for.</div>
+          </div>
+        </div>
+      ):(
+        <>
+          <p style={{fontSize:12,color:"var(--t3)",margin:"0 0 10px",lineHeight:1.5}}>These improvements will help casting directors review your work more easily.</p>
+          <div style={{display:"flex",flexDirection:"column",gap:0}}>
+            {suggestions.slice(0,isMobile?4:6).map((s,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:10,padding:"9px 0",borderBottom:i<Math.min(suggestions.length,isMobile?4:6)-1?"1px solid var(--bdr)":"none",flexWrap:"wrap"}}>
+                <div style={{display:"flex",alignItems:"flex-start",gap:7,flex:1,minWidth:0}}>
+                  <span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:5,background:PRIORITY_STYLES[s.p].bg,color:PRIORITY_STYLES[s.p].color,border:`1px solid ${PRIORITY_STYLES[s.p].border}`,whiteSpace:"nowrap",marginTop:2,flexShrink:0}}>{s.p}</span>
+                  <span style={{fontSize:12,color:"var(--t2)",lineHeight:1.5}}>{s.text}</span>
+                </div>
+                <button className="btn-s btn-sm" style={{fontSize:11,padding:"3px 10px",whiteSpace:"nowrap",flexShrink:0}} onClick={()=>handleAction(s.tab)}>{s.btn}</button>
+              </div>
+            ))}
+          </div>
+          {suggestions.length>(isMobile?4:6)&&<div style={{fontSize:12,color:"var(--t3)",marginTop:8,textAlign:"center"}}>+{suggestions.length-(isMobile?4:6)} more suggestions — <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate("my-profile")}>view all on My Profile</span></div>}
+        </>
+      )}
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════
 // ═══════════════════════════════════════════
 // PAGE: TALENT DASHBOARD — actor/talent accounts
@@ -6779,7 +6908,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <>
                 <p style={{fontSize:13,color:"var(--t2)",margin:"0 0 12px",fontWeight:500}}>Actor Premium</p>
                 <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:4}}>
-                  {["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited submissions"].map((f,i)=>(
+                  {["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited submissions","Profile improvement suggestions"].map((f,i)=>(
                     <div key={i} style={{display:"flex",alignItems:"center",gap:7,fontSize:12,color:"var(--t2)"}}>
                       <span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}
                     </div>
@@ -6800,6 +6929,15 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               </>
             )}
           </div>
+
+          {/* Profile Improvement Suggestions (Premium feature) */}
+          <ProfileImprovementCard
+            profile={myProfile}
+            isPremium={isPremium}
+            onNavigate={onNavigate}
+            dbCredits={null}
+            mediaItems={null}
+          />
 
           {/* Recently Viewed Castings */}
           <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:20}}>
@@ -9554,7 +9692,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </section>
 
     <section className="lh-section" style={{padding:"60px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">Pricing</div><div className="section-title">Simple pricing. No surprises.</div>
-      <div className="grid-3">{[{name:"Actor Free",who:"Actors · Models · Performers",price:"$0",period:"no credit card required",features:["Free account","1 headshot","3 submissions per day","Basic actor profile","Browse all castings"],featured:false,cta:"Get Started Free",action:"auth-gate"},{name:"Actor Premium",who:"Actors · Models · Performers",price:"$9.99",period:"per month · cancel anytime",features:["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited submissions","Premium profile features"],featured:true,cta:"Get Premium — $9.99/mo",action:"membership"},{name:"Casting Director",who:"Casting Directors · Producers",price:"Free",period:"to create an account",features:["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent filters"],featured:false,cta:"Create CD Account",action:"register-cd"}].map(p=>
+      <div className="grid-3">{[{name:"Actor Free",who:"Actors · Models · Performers",price:"$0",period:"no credit card required",features:["Free account","1 headshot","3 submissions per day","Basic actor profile","Browse all castings"],featured:false,cta:"Get Started Free",action:"auth-gate"},{name:"Actor Premium",who:"Actors · Models · Performers",price:"$9.99",period:"per month · cancel anytime",features:["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited submissions","Premium profile features","Profile improvement suggestions"],featured:true,cta:"Get Premium — $9.99/mo",action:"membership"},{name:"Casting Director",who:"Casting Directors · Producers",price:"Free",period:"to create an account",features:["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent filters"],featured:false,cta:"Create CD Account",action:"register-cd"}].map(p=>
         <div key={p.name} className="card" style={p.featured?{borderColor:"var(--acc)",background:"linear-gradient(165deg,var(--s1),rgba(26,26,46,.02))",position:"relative"}:{}}>
           {p.featured&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"var(--acc)",color:"var(--bg)",fontSize:10,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:"4px 14px",borderRadius:100,letterSpacing:1}}>RECOMMENDED</div>}
           <h3 style={{fontSize:18,fontWeight:700,marginBottom:4,textAlign:"center"}}>{p.name}</h3><p style={{color:"var(--t2)",fontSize:12,marginBottom:20,textAlign:"center"}}>{p.who}</p>
@@ -10433,6 +10571,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
       {!isCD&&<button className={`tab ${tab==="social"?"active":""}`} onClick={()=>setTab("social")}>Social Links</button>}
       {!isCD&&<button className={`tab ${tab==="applications"?"active":""}`} onClick={()=>setTab("applications")}>Applications ({myApps.length})</button>}
       {!isCD&&<button className={`tab ${tab==="cast-me-as"?"active":""}`} onClick={()=>setTab("cast-me-as")}>Cast Me As</button>}
+      {!isCD&&<button className={`tab ${tab==="improve"?"active":""}`} onClick={()=>setTab("improve")}>Improve Profile</button>}
       <button className={`tab ${tab==="messages"?"active":""}`} onClick={()=>setTab("messages")}>Inbox {(inbox.filter(m=>!m.read_at).length+invites.filter(i=>i.status==="pending").length)>0?<span className="tag tag-acc" style={{marginLeft:6,fontSize:10}}>{inbox.filter(m=>!m.read_at).length+invites.filter(i=>i.status==="pending").length}</span>:null}</button>
     </div>
 
@@ -10949,6 +11088,22 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
         <p style={{fontSize:13,color:"var(--t3)",lineHeight:1.6}}>Choose the archetypes and energies you're best cast as. These appear as visual cards on your public profile so casting directors can instantly see your range. Free plan: up to {FREE_PLAN.castingTypes} types. Premium: unlimited types with mood clips and supporting photos.</p>
       </div>
       <CastingFitDNAEditor session={session} isPremium={isPremium} onNavigate={onNavigate}/>
+    </div>}
+
+    {/* ── IMPROVE PROFILE TAB ── */}
+    {tab==="improve"&&!isCD&&<div style={{maxWidth:680}}>
+      <div style={{marginBottom:16}}>
+        <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Improve Your Profile</h3>
+        <p style={{fontSize:13,color:"var(--t3)",lineHeight:1.6}}>Personalized suggestions based on what's missing from your profile. A more complete profile is easier for casting directors to review.</p>
+      </div>
+      <ProfileImprovementCard
+        profile={profile}
+        isPremium={isPremium}
+        onNavigate={onNavigate}
+        dbCredits={dbCredits}
+        mediaItems={mediaItems}
+        onGoToTab={setTab}
+      />
     </div>}
 
     {/* ── MESSAGES TAB ── */}
