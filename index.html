@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260526-230511 -->
-  <meta name="build-version" content="20260526-230511"/>
+  <!-- BUILD: 20260526-233202 -->
+  <meta name="build-version" content="20260526-233202"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260526-230511";
+      var B="20260526-233202";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -4685,12 +4685,12 @@ function CastingImageCarousel({images=[],title=""}){
   const go=(n)=>setIdx(i=>((i+n)+images.length)%images.length);
   const multi=images.length>1;
   return(
-    <div style={{position:"relative",marginBottom:28,borderRadius:12,overflow:"hidden",background:"var(--s2)"}}>
+    <div style={{position:"relative",marginBottom:28,borderRadius:12,overflow:"hidden",background:"var(--bg)"}}>
       <img
         key={clampedIdx}
         src={images[clampedIdx]}
         alt={title?`${title} — image ${clampedIdx+1}`:"Casting poster"}
-        style={{width:"100%",maxHeight:520,objectFit:"contain",display:"block",background:"var(--s2)"}}
+        style={{width:"100%",maxHeight:520,objectFit:"contain",display:"block",background:"var(--bg)"}}
       />
       {multi&&<>
         <button onClick={()=>go(-1)} aria-label="Previous image"
@@ -7561,9 +7561,9 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     // The full profile view (one click away) fetches live uploaded videos from profile_media.
     return(<>
       <div className="sw-counter">{counts.pending} pending · reviewing {Math.min(si+1,pendingList.length)} of {pendingList.length} · Role: {app.roles?.name||activeRole?.name||"—"}</div>
-      <div className="swipe-card-wrap">
+      <div className="swipe-card-wrap" style={fsMode?{width:"min(560px,90vw)",height:"min(760px,78vh)"}:{}}>
         {nextApp&&<div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.4,zIndex:1}}>
-          <img src={nimg} alt=""/><div className="s-card-info"><h3>{nt.display_name||"Applicant"}</h3></div>
+          <img src={nimg} alt="" style={fsMode?{height:"65%"}:{}}/><div className="s-card-info"><h3>{nt.display_name||"Applicant"}</h3></div>
         </div>}
         <div className="s-card"
           style={{transform:`translate(${dx}px, ${Math.min(dy,0)}px) rotate(${dx*.035}deg)`,transition:dr?"none":"transform .35s cubic-bezier(.34,1.56,.64,1)",zIndex:2,cursor:dr?"grabbing":"grab"}}
@@ -7573,16 +7573,16 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           <div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="reject"?1:0}}>REJECT</div>
           <div className="sw-overlay" style={{color:"#c88900",opacity:ac==="hold"?1:0}}>HOLD</div>
           <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="select"?1:0}}>SELECT ✓</div>
-          <img src={img} alt={t.display_name} draggable="false"/>
-          <div className="s-card-info">
-            <h3>{t.display_name||"Applicant"}</h3>
-            <div className="s-card-meta">{[t.age,t.gender,t.height,t.location].filter(Boolean).join(" · ")||"—"}</div>
+          <img src={img} alt={t.display_name} draggable="false" style={fsMode?{height:"65%"}:{}}/>
+          <div className="s-card-info" style={fsMode?{padding:"16px 22px"}:{}}>
+            <h3 style={fsMode?{fontSize:22,marginBottom:5}:{}}>{t.display_name||"Applicant"}</h3>
+            <div className="s-card-meta" style={fsMode?{fontSize:14,marginBottom:10}:{}}>{[t.age,t.gender,t.height,t.location].filter(Boolean).join(" · ")||"—"}</div>
             <div className="s-card-tags">
               {(t.skills||[]).slice(0,3).map((s,i)=><span key={i}>{s}</span>)}
               {t.union_status&&<span style={{background:"rgba(26,26,46,.08)",color:"var(--acc)"}}>{t.union_status}</span>}
             </div>
-            {credits&&<p style={{marginTop:8,fontSize:12,color:"var(--t2)"}}>{credits.slice(0,140)}{credits.length>140?"…":""}</p>}
-            {app.cover_note&&<p style={{marginTop:8,fontSize:12,color:"var(--t2)",fontStyle:"italic"}}>"{String(app.cover_note).slice(0,160)}{String(app.cover_note).length>160?"…":""}"</p>}
+            {credits&&<p style={{marginTop:8,fontSize:fsMode?13:12,color:"var(--t2)"}}>{credits.slice(0,fsMode?200:140)}{credits.length>(fsMode?200:140)?"…":""}</p>}
+            {app.cover_note&&<p style={{marginTop:8,fontSize:fsMode?13:12,color:"var(--t2)",fontStyle:"italic"}}>"{String(app.cover_note).slice(0,fsMode?220:160)}{String(app.cover_note).length>(fsMode?220:160)?"…":""}"</p>}
           </div>
         </div>
       </div>
@@ -7667,12 +7667,12 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           <div className="success-msg"><div className="check">✓</div><h3>All Caught Up</h3><p>No pending submissions for this role. Check Selected, Hold, or Rejected to see your decisions.</p></div>:
           <div className={fsMode?"":"swipe-layout"} style={fsMode?{position:"fixed",inset:0,zIndex:9100,background:"var(--bg)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start",overflowY:"auto",padding:"60px 24px 32px"}:{}}>
             {fsMode&&<button onClick={()=>setFsMode(false)} style={{position:"fixed",top:12,right:12,zIndex:9101,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:8,padding:"8px 16px",fontSize:13,fontWeight:700,cursor:"pointer",color:"var(--t1)",display:"flex",alignItems:"center",gap:6,boxShadow:"0 2px 8px rgba(0,0,0,0.12)"}}>⊡ Exit Full Screen</button>}
-            <div className="swipe-area" style={fsMode?{width:"100%",maxWidth:500}:{}}>
+            <div className="swipe-area" style={fsMode?{width:"100%",maxWidth:720}:{}}>
               <ReviewCard key={(fsMode?"fs:":"") + (pendingList[si]?.id||si)}/>
-              <div className="swipe-btns">
-                <button className="sw-btn pass" onClick={()=>decide('reject')} title="Reject (swipe left)">✕</button>
-                <button className="sw-btn save" style={{background:"rgba(200,137,0,0.15)",color:"#c88900"}} onClick={()=>decide('hold')} title="Hold (swipe up)">⏸</button>
-                <button className="sw-btn yes" onClick={()=>decide('select')} title="Select (swipe right)">✓</button>
+              <div className="swipe-btns" style={fsMode?{gap:24,marginTop:8}:{}}>
+                <button className="sw-btn pass" onClick={()=>decide('reject')} title="Reject (swipe left)" style={fsMode?{width:68,height:68,fontSize:26}:{}}>✕</button>
+                <button className="sw-btn save" style={fsMode?{background:"rgba(200,137,0,0.15)",color:"#c88900",width:68,height:68,fontSize:26}:{background:"rgba(200,137,0,0.15)",color:"#c88900"}} onClick={()=>decide('hold')} title="Hold (swipe up)">⏸</button>
+                <button className="sw-btn yes" onClick={()=>decide('select')} title="Select (swipe right)" style={fsMode?{width:68,height:68,fontSize:26}:{}}>✓</button>
               </div>
               <div style={{textAlign:"center",marginTop:12,display:"flex",gap:10,justifyContent:"center",alignItems:"center",flexWrap:"wrap"}}>
                 <button className="btn-s btn-sm" onClick={()=>pendingList[si]&&setCdProfileOverlay(buildTalentView(pendingList[si]))}>View full profile</button>
