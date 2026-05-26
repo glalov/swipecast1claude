@@ -4637,6 +4637,55 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
 // ═══════════════════════════════════════════
 // PAGE: CASTING DETAIL
 // ═══════════════════════════════════════════
+// ─── Casting image carousel — used on CastingDetailPage and anywhere a casting
+//     poster is displayed. Handles 1–5 images; single image shows with no controls.
+//     object-fit:contain so vertical and horizontal posters never get cropped.
+function CastingImageCarousel({images=[],title=""}){
+  const [idx,setIdx]=useState(0);
+  const clampedIdx=Math.min(idx,Math.max(0,images.length-1));
+  if(!images.length)return null;
+  const go=(n)=>setIdx(i=>((i+n)+images.length)%images.length);
+  const multi=images.length>1;
+  return(
+    <div style={{position:"relative",marginBottom:28,borderRadius:12,overflow:"hidden",background:"var(--s2)"}}>
+      <img
+        key={clampedIdx}
+        src={images[clampedIdx]}
+        alt={title?`${title} — image ${clampedIdx+1}`:"Casting poster"}
+        style={{width:"100%",maxHeight:520,objectFit:"contain",display:"block",background:"var(--s2)"}}
+      />
+      {multi&&<>
+        <button onClick={()=>go(-1)} aria-label="Previous image"
+          style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",background:"rgba(0,0,0,0.52)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:22,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,zIndex:1}}>‹</button>
+        <button onClick={()=>go(1)} aria-label="Next image"
+          style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:"rgba(0,0,0,0.52)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:22,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,zIndex:1}}>›</button>
+        <div style={{position:"absolute",bottom:10,left:0,right:0,display:"flex",justifyContent:"center",gap:7,zIndex:1}}>
+          {images.map((_,i)=>(
+            <div key={i} onClick={()=>setIdx(i)}
+              style={{width:8,height:8,borderRadius:"50%",background:i===clampedIdx?"#fff":"rgba(255,255,255,0.38)",cursor:"pointer",transition:"all .15s",flexShrink:0}}/>
+          ))}
+        </div>
+        <div style={{position:"absolute",top:10,right:12,background:"rgba(0,0,0,0.48)",color:"#fff",fontSize:11,fontWeight:700,padding:"3px 9px",borderRadius:99,zIndex:1}}>{clampedIdx+1}/{images.length}</div>
+      </>}
+    </div>
+  );
+}
+
+// Helper: build the ordered images array from a casting object.
+// Merges casting_images (new multi-image field) with casting_image_url (legacy single-image).
+function getCastingImages(casting){
+  const seen=new Set();const imgs=[];
+  const add=(u)=>{if(u&&typeof u==="string"&&u.trim()&&!seen.has(u)){seen.add(u);imgs.push(u);}};
+  if(Array.isArray(casting?.casting_images)){
+    casting.casting_images.forEach(item=>{
+      if(item&&typeof item==="object")add(item.url||item);
+      else if(typeof item==="string")add(item);
+    });
+  }
+  add(casting?.casting_image_url);
+  return imgs;
+}
+
 function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session,autoApplyRole,onAutoApplyConsumed}){
   const t=useT();
   const {lang}=useLanguage();
@@ -4872,9 +4921,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       {cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
     </div>
 
-    {c.casting_image_url&&<div style={{marginBottom:28,borderRadius:12,overflow:"hidden",maxHeight:340,background:"var(--s2)"}}>
-      <img src={c.casting_image_url} alt={c.title+" poster"} style={{width:"100%",maxHeight:340,objectFit:"cover",display:"block"}}/>
-    </div>}
+    <CastingImageCarousel images={getCastingImages(c)} title={c.title}/>
 
     <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,padding:"20px 24px",marginBottom:32,display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"14px 28px"}}>
       <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.union')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.union}</div></div>
@@ -5716,6 +5763,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         featured:c.featured===true,
         casting_image_url:c.casting_image_url||null,
         casting_image_path:c.casting_image_path||null,
+        casting_images:Array.isArray(c.casting_images)?c.casting_images:[],
         casting_website_url:c.casting_website_url||null,
         creator_verified:c.profiles?.identity_verified===true&&c.profiles?.can_post_castings===true&&c.profiles?.verification_status==="verified",
         profiles:c.profiles||null,
@@ -7129,6 +7177,14 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   // the early-return loader which unmounts the whole tree including NewCastingModal,
   // wiping any in-progress casting draft.
   const firstLoadDone=useRef(false);
+  // ─── In-place talent profile overlay (Issues #2 & #3): opens TalentProfile as a
+  //     fixed full-screen overlay WITHIN the CDDashboard so the dashboard state
+  //     (active casting, active role, swipe index, folder tab) is never lost.
+  //     Browser Back/Forward work because we push/pop a matching history entry.
+  const [cdProfileOverlay,setCdProfileOverlay]=useState(null); // talent obj or null
+  const cdProfileHistRef=useRef(false);                        // did we push a history entry?
+  // ─── Full-screen swipe focus mode (Issue #1): hides sidebar & fills viewport.
+  const [fsMode,setFsMode]=useState(false);
 
   const uid=session?.user?.id;
 
@@ -7229,6 +7285,25 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       clearInterval(tid);
     };
   },[uid,loadCdCastings]);
+
+  // ─── Profile overlay history management ─────────────────────────────────────
+  //     When the overlay opens, push a history entry so the browser Back button
+  //     closes the overlay instead of navigating away from /dashboard.
+  //     When the overlay closes via the back button, pop the entry we pushed.
+  useEffect(()=>{
+    if(!cdProfileOverlay)return;
+    cdProfileHistRef.current=true;
+    try{window.history.pushState({swipecast:true,page:"dashboard",cdProfileOverlay:true},"","/dashboard");}catch(_){}
+    const onPop=()=>{if(cdProfileHistRef.current){cdProfileHistRef.current=false;setCdProfileOverlay(null);}};
+    window.addEventListener("popstate",onPop);
+    return()=>window.removeEventListener("popstate",onPop);
+  },[cdProfileOverlay]);
+
+  // Close the overlay; if we pushed a history entry, pop it to keep the stack clean.
+  const closeCdProfileOverlay=()=>{
+    if(cdProfileHistRef.current){cdProfileHistRef.current=false;setCdProfileOverlay(null);try{window.history.back();}catch(_){}}
+    else setCdProfileOverlay(null);
+  };
 
   // ─── Load saved talent lists + members. Runs whenever the CD opens that tab or
   //     after they add/remove a list / member.
@@ -7482,11 +7557,11 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     const img=a.selected_photo_url||t.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?";
     const statusTag=a.status==='selected'?'tag-grn':a.status==='hold'?'tag-acc':a.status==='rejected'?'tag-red':'';
     return(<div className="card" style={{padding:14,display:"flex",gap:12,alignItems:"stretch",overflow:"hidden",width:"100%",boxSizing:"border-box"}}>
-      <img src={img} alt="" style={{width:72,height:90,objectFit:"cover",borderRadius:8,cursor:"pointer",flexShrink:0}} onClick={()=>onViewProfile(buildTalentView(a))}/>
+      <img src={img} alt="" style={{width:72,height:90,objectFit:"cover",borderRadius:8,cursor:"pointer",flexShrink:0}} onClick={()=>setCdProfileOverlay(buildTalentView(a))}/>
       <div style={{flex:1,display:"flex",flexDirection:"column",gap:4,minWidth:0}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
           <div style={{minWidth:0,flex:1}}>
-            <h4 style={{fontSize:15,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}} onClick={()=>onViewProfile(buildTalentView(a))}>{t.display_name||"Applicant"}</h4>
+            <h4 style={{fontSize:15,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}} onClick={()=>setCdProfileOverlay(buildTalentView(a))}>{t.display_name||"Applicant"}</h4>
             <p style={{fontSize:12,color:"var(--t2)"}}>{[t.age,t.gender,t.location,t.union_status].filter(Boolean).join(" · ")||"—"}</p>
           </div>
           <span className={"badge "+statusTag} style={{fontSize:10,textTransform:"uppercase",flexShrink:0}}>{a.status}</span>
@@ -7552,26 +7627,28 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           <div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No submissions for this role yet.</p></div>:
          counts.pending===0?
           <div className="success-msg"><div className="check">✓</div><h3>All Caught Up</h3><p>No pending submissions for this role. Check Selected, Hold, or Rejected to see your decisions.</p></div>:
-          <div className="swipe-layout">
-            <div className="swipe-area">
-              <ReviewCard key={pendingList[si]?.id||si}/>
+          <div className={fsMode?"":"swipe-layout"} style={fsMode?{position:"fixed",inset:0,zIndex:9100,background:"var(--bg)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start",overflowY:"auto",padding:"60px 24px 32px"}:{}}>
+            {fsMode&&<button onClick={()=>setFsMode(false)} style={{position:"fixed",top:12,right:12,zIndex:9101,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:8,padding:"8px 16px",fontSize:13,fontWeight:700,cursor:"pointer",color:"var(--t1)",display:"flex",alignItems:"center",gap:6,boxShadow:"0 2px 8px rgba(0,0,0,0.12)"}}>⊡ Exit Full Screen</button>}
+            <div className="swipe-area" style={fsMode?{width:"100%",maxWidth:500}:{}}>
+              <ReviewCard key={(fsMode?"fs:":"") + (pendingList[si]?.id||si)}/>
               <div className="swipe-btns">
                 <button className="sw-btn pass" onClick={()=>decide('reject')} title="Reject (swipe left)">✕</button>
                 <button className="sw-btn save" style={{background:"rgba(200,137,0,0.15)",color:"#c88900"}} onClick={()=>decide('hold')} title="Hold (swipe up)">⏸</button>
                 <button className="sw-btn yes" onClick={()=>decide('select')} title="Select (swipe right)">✓</button>
               </div>
               <div style={{textAlign:"center",marginTop:12,display:"flex",gap:10,justifyContent:"center",alignItems:"center",flexWrap:"wrap"}}>
-                <button className="btn-s btn-sm" onClick={()=>pendingList[si]&&onViewProfile(buildTalentView(pendingList[si]))}>View full profile</button>
+                <button className="btn-s btn-sm" onClick={()=>pendingList[si]&&setCdProfileOverlay(buildTalentView(pendingList[si]))}>View full profile</button>
+                <button className="btn-s btn-sm" onClick={()=>setFsMode(v=>!v)} title={fsMode?"Return to normal view":"Review actors in distraction-free full screen"}>{fsMode?"⊡ Normal View":"⛶ Full Screen"}</button>
                 {lastUndo&&<button className="btn-s btn-sm" onClick={undo}>↩ Undo — {lastUndo.name} ({lastUndo.newStatus})</button>}
               </div>
               <p style={{textAlign:"center",fontSize:11,color:"var(--t3)",marginTop:8}}>Swipe left = reject · swipe up = hold · swipe right = select</p>
             </div>
-            <div className="cb-sidebar">
+            {!fsMode&&<div className="cb-sidebar">
               <h3>Selected <span className="tag tag-grn">{counts.selected}</span></h3>
               {counts.selected===0?<div className="cb-empty">Swipe right or press ✓ to shortlist.</div>:
               submissions.filter(s=>s.status==='selected').slice(0,10).map((a,i)=>
                 <div key={a.id||i} className="cb-item" style={{flexDirection:"column",alignItems:"stretch"}}>
-                  <div style={{display:"flex",gap:10,alignItems:"center",cursor:"pointer"}} onClick={()=>onViewProfile(buildTalentView(a))}>
+                  <div style={{display:"flex",gap:10,alignItems:"center",cursor:"pointer"}} onClick={()=>setCdProfileOverlay(buildTalentView(a))}>
                     <img src={a.selected_photo_url||a.profiles?.headshot_url||"https://placehold.co/80x100/e5e5e5/999?text=?"} alt={a.profiles?.display_name||""} style={{width:52,height:66,objectFit:"cover",borderRadius:6}}/>
                     <div className="cb-item-info" style={{flex:1}}><h4>{a.profiles?.display_name||"Applicant"}</h4><p>{[a.profiles?.age,a.profiles?.gender,a.profiles?.location].filter(Boolean).join(" · ")}</p></div>
                   </div>
@@ -7579,7 +7656,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
                     <button className="btn-p btn-sm" style={{flex:1,fontSize:11,padding:"6px 10px"}} onClick={()=>setMsgApp(a)}>💬 Message</button>
                   </div>
                 </div>)}
-            </div>
+            </div>}
           </div>}
       </>:<>
         {/* Search + sort for non-pending folders */}
@@ -7668,7 +7745,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         })}</div>:
         tab==="allSelected"?
           (allSelected.length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No selected talent yet. Review your pending submissions to build your shortlist.</p></div>:
-          <div className="results-grid">{allSelected.map((a,i)=>{const p=a.profiles||{};return(<div key={a.id||i} className="talent-thumb" onClick={()=>onViewProfile(buildTalentView(a))}><img src={a.selected_photo_url||p.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?"} alt={p.display_name||""}/><div className="talent-thumb-info"><h4>{p.display_name||"Applicant"}</h4><p>{[p.age,p.location].filter(Boolean).join(" · ")}</p></div></div>);})}</div>):
+          <div className="results-grid">{allSelected.map((a,i)=>{const p=a.profiles||{};return(<div key={a.id||i} className="talent-thumb" onClick={()=>setCdProfileOverlay(buildTalentView(a))}><img src={a.selected_photo_url||p.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?"} alt={p.display_name||""}/><div className="talent-thumb-info"><h4>{p.display_name||"Applicant"}</h4><p>{[p.age,p.location].filter(Boolean).join(" · ")}</p></div></div>);})}</div>):
         // ─── Saved Lists tab: index of lists, then drill-down to members ───
         <>
           {savedListsErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{savedListsErr}</div>}
@@ -7695,9 +7772,9 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
                 _db:true
               };
               return(<div key={m.talent_id} className="talent-thumb" style={{position:"relative"}}>
-                <img src={tv.img} alt={tv.name} onClick={()=>onViewProfile(tv)} style={{cursor:"pointer"}}/>
+                <img src={tv.img} alt={tv.name} onClick={()=>setCdProfileOverlay(tv)} style={{cursor:"pointer"}}/>
                 <div className="talent-thumb-info">
-                  <h4 onClick={()=>onViewProfile(tv)} style={{cursor:"pointer"}}>{tv.name}</h4>
+                  <h4 onClick={()=>setCdProfileOverlay(tv)} style={{cursor:"pointer"}}>{tv.name}</h4>
                   <p>{[p.age,p.gender,p.location].filter(Boolean).join(" · ")||"—"}</p>
                   <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
                     <button className="btn-p btn-sm" style={{fontSize:11,padding:"6px 10px"}} onClick={()=>setComposeDmTo({id:m.talent_id,name:tv.name})}>💬 Message</button>
@@ -7739,6 +7816,12 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           </>}
         </>}
     </>}
+
+    {/* ─── Issue #2 & #3: in-place full-profile overlay — CDDashboard stays mounted,
+         preserving all swiper/role/tab state. Browser Back closes the overlay. ─── */}
+    {cdProfileOverlay&&<div style={{position:"fixed",inset:0,zIndex:9050,background:"var(--bg)",overflowY:"auto"}}>
+      <TalentProfile talent={cdProfileOverlay} onBack={closeCdProfileOverlay} onNavigate={onNavigate} session={session} myProfile={myProfile}/>
+    </div>}
 
     {editCasting&&<CreatorEditCastingModal casting={editCasting} uid={uid} myProfile={myProfile} onClose={()=>setEditCasting(null)} onSaved={(updated)=>{setEditCasting(null);if(updated&&updated.id){setMyCastings(p=>p.map(c=>c.id===updated.id?{...c,...updated}:c));}setReloadTick(t=>t+1);if(bumpCastings)bumpCastings();}}/>}
     {showNew&&<NewCastingModal onClose={()=>setShowNew(false)} onPosted={(inserted)=>{
@@ -8841,8 +8924,14 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     deadline:casting.deadline||"",tagline:casting.tagline||"",synopsis:casting.synopsis||"",
     casting_website_url:casting.casting_website_url||"",
   });
-  const [castingImageUrl,setCastingImageUrl]=useState(casting.casting_image_url||"");
-  const [castingImagePath,setCastingImagePath]=useState(casting.casting_image_path||"");
+  const MAX_IMAGES=5;
+  const [castingImages,setCastingImages]=useState(()=>{
+    if(Array.isArray(casting.casting_images)&&casting.casting_images.length){
+      return casting.casting_images.map(item=>typeof item==="object"&&item.url?item:{url:item,path:""});
+    }
+    if(casting.casting_image_url)return [{url:casting.casting_image_url,path:casting.casting_image_path||""}];
+    return [];
+  });
   const [roles,setRoles]=useState(()=>(casting.roles||[]).map(r=>({
     id:r.id,name:r.name||"",description:r.description||"",gender:r.gender||"Any",
     age_range:r.age_range||"",ethnicity:r.ethnicity||"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",
@@ -8852,18 +8941,27 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
   const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:""}]);
   const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
 
-  const uploadImage=async(file)=>{
-    if(!file)return;
-    if(file.size>5*1024*1024){setErr("Image must be 5 MB or smaller.");return;}
-    const ext=file.name.split(".").pop().toLowerCase();
-    if(!["jpg","jpeg","png","webp"].includes(ext)){setErr("Only jpg, jpeg, png, webp images allowed.");return;}
+  const uploadImage=async(files)=>{
+    const fileList=files instanceof FileList?Array.from(files):[files].filter(Boolean);
+    const remaining=MAX_IMAGES-castingImages.length;
+    const toUpload=fileList.slice(0,remaining);
+    if(!toUpload.length){setErr(`You can upload up to ${MAX_IMAGES} images.`);return;}
+    for(const file of toUpload){
+      if(file.size>5*1024*1024){setErr("Each image must be 5 MB or smaller.");return;}
+      const ext=file.name.split(".").pop().toLowerCase();
+      if(!["jpg","jpeg","png","webp"].includes(ext)){setErr("Only jpg, jpeg, png, webp images allowed.");return;}
+    }
     setUploadingImg(true);setErr("");
     try{
-      const path=`${uid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
-      const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true});
-      if(upErr)throw upErr;
-      const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
-      setCastingImageUrl(publicUrl);setCastingImagePath(path);
+      const uploaded=[];
+      for(const file of toUpload){
+        const path=`${uid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true});
+        if(upErr)throw upErr;
+        const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
+        uploaded.push({url:publicUrl,path});
+      }
+      setCastingImages(prev=>[...prev,...uploaded].slice(0,MAX_IMAGES));
     }catch(e){setErr("Image upload failed: "+e.message);}
     finally{setUploadingImg(false);}
   };
@@ -8892,7 +8990,8 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
         pay:f.pay||null,union_status:f.union||null,deadline:f.deadline||null,
         tagline:f.tagline||null,synopsis:f.synopsis||null,
         casting_website_url:f.casting_website_url.trim()||null,
-        casting_image_url:castingImageUrl||null,casting_image_path:castingImagePath||null,
+        casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,
+        casting_images:castingImages,
         status:newStatus,updated_at:new Date().toISOString(),
       };
       const{error:cErr}=await window.sb.from("castings").update(patch).eq("id",casting.id);
@@ -8957,11 +9056,21 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     </div>
 
     <div className="form-group">
-      <label className="label">Casting Image / Poster</label>
-      {castingImageUrl&&<div style={{marginBottom:10}}><img src={castingImageUrl} alt="Casting image" style={{maxWidth:"100%",maxHeight:200,borderRadius:8,objectFit:"cover"}}/><button type="button" onClick={()=>{setCastingImageUrl("");setCastingImagePath("");}} style={{display:"block",marginTop:6,fontSize:11,color:"#c0392b",background:"none",border:"none",cursor:"pointer",padding:0}}>✕ Remove image</button></div>}
-      <input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={e=>uploadImage(e.target.files?.[0])} disabled={uploadingImg} style={{fontSize:13}}/>
-      {uploadingImg&&<p style={{fontSize:12,color:"var(--acc)",marginTop:4}}>Uploading…</p>}
-      <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>jpg, jpeg, png, webp · 5 MB max. Shown on your casting detail page.</p>
+      <label className="label">Casting Images / Posters <span style={{fontWeight:400,color:"var(--t3)"}}>(up to {MAX_IMAGES})</span></label>
+      {castingImages.length>0&&<div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>
+        {castingImages.map((img,i)=>(
+          <div key={i} style={{position:"relative",width:90,flexShrink:0}}>
+            <img src={img.url} alt={`Image ${i+1}`} style={{width:90,height:110,objectFit:"contain",borderRadius:8,background:"var(--s2)",display:"block",border:"1px solid var(--bdr)"}}/>
+            <div style={{position:"absolute",top:3,right:3,background:"rgba(0,0,0,0.55)",borderRadius:99,width:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,color:"#fff",lineHeight:1}} onClick={()=>setCastingImages(p=>p.filter((_,j)=>j!==i))}>✕</div>
+            {i===0&&<div style={{position:"absolute",bottom:3,left:0,right:0,textAlign:"center",fontSize:9,fontWeight:700,color:"#fff",background:"rgba(0,0,0,0.5)",borderRadius:4,padding:"1px 0"}}>COVER</div>}
+          </div>
+        ))}
+      </div>}
+      {castingImages.length<MAX_IMAGES&&<>
+        <input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" multiple onChange={e=>uploadImage(e.target.files)} disabled={uploadingImg} style={{fontSize:13}}/>
+        {uploadingImg&&<p style={{fontSize:12,color:"var(--acc)",marginTop:4}}>Uploading…</p>}
+      </>}
+      <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Up to {MAX_IMAGES} images · jpg, jpeg, png, webp · 5 MB each. First image is the cover. Vertical &amp; horizontal posters shown in full.</p>
     </div>
 
     <div style={{borderTop:"1px solid var(--bdr)",paddingTop:20,marginTop:4}}>
@@ -9009,8 +9118,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   // Initialize form from localStorage draft so a remount (e.g. background refresh) restores what the user typed.
   const [f,setF]=useState(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(p?.f?.title!==undefined)return p.f;}}catch(_){}return BLANK_F;});
   const [roles,setRoles]=useState(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(Array.isArray(p?.roles)&&p.roles.length)return p.roles;}}catch(_){}return[BLANK_ROLE];});
-  const [castingImageUrl,setCastingImageUrl]=useState("");
-  const [castingImagePath,setCastingImagePath]=useState("");
+  const [castingImages,setCastingImages]=useState([]); // [{url,path}] up to 5
   const [uploadingImg,setUploadingImg]=useState(false);
   const [inserted,setInserted]=useState(null);
   const [verifyMsg,setVerifyMsg]=useState("");
@@ -9131,18 +9239,28 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   // Common pay presets shown as one-tap chips beside the pay field
   const PAY_PRESETS=["$100/day","$150/day","$200/day","$20/hour","$50/hour","Unpaid","Deferred","Negotiable","SAG Scale"];
 
-  const uploadImage=async(file)=>{
-    if(!file)return;
-    if(file.size>5*1024*1024){setErr("Image must be 5 MB or smaller.");return;}
-    const ext=file.name.split(".").pop().toLowerCase();
-    if(!["jpg","jpeg","png","webp"].includes(ext)){setErr("Only jpg, jpeg, png, webp images allowed.");return;}
+  const MAX_IMAGES=5;
+  const uploadImage=async(files)=>{
+    const fileList=files instanceof FileList?Array.from(files):[files].filter(Boolean);
+    const remaining=MAX_IMAGES-castingImages.length;
+    const toUpload=fileList.slice(0,remaining);
+    if(!toUpload.length){setErr(`You can upload up to ${MAX_IMAGES} images.`);return;}
+    for(const file of toUpload){
+      if(file.size>5*1024*1024){setErr("Each image must be 5 MB or smaller.");return;}
+      const ext=file.name.split(".").pop().toLowerCase();
+      if(!["jpg","jpeg","png","webp"].includes(ext)){setErr("Only jpg, jpeg, png, webp images allowed.");return;}
+    }
     setUploadingImg(true);setErr("");
     try{
-      const path=`${uid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
-      const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true});
-      if(upErr)throw upErr;
-      const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
-      setCastingImageUrl(publicUrl);setCastingImagePath(path);
+      const uploaded=[];
+      for(const file of toUpload){
+        const path=`${uid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true});
+        if(upErr)throw upErr;
+        const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
+        uploaded.push({url:publicUrl,path});
+      }
+      setCastingImages(prev=>[...prev,...uploaded].slice(0,MAX_IMAGES));
     }catch(e){setErr("Image upload failed: "+e.message);}
     finally{setUploadingImg(false);}
   };
@@ -9155,7 +9273,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
     if(f.casting_website_url.trim()&&!/^https?:\/\//i.test(f.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
     setBusy(true);
     try{
-      const payload={cd_id:uid,title:f.title.trim(),type:f.type,prod:f.prod||null,tagline:f.tagline||null,synopsis:f.synopsis||null,location:f.location||null,pay:f.pay||null,union_status:f.union,deadline:f.deadline||null,status:"pending_review",published:false,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImageUrl||null,casting_image_path:castingImagePath||null};
+      const payload={cd_id:uid,title:f.title.trim(),type:f.type,prod:f.prod||null,tagline:f.tagline||null,synopsis:f.synopsis||null,location:f.location||null,pay:f.pay||null,union_status:f.union,deadline:f.deadline||null,status:"pending_review",published:false,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages};
       const {data:casting,error:cErr}=await window.sb.from("castings").insert(payload).select().single();
       if(cErr)throw cErr;
       const rolePayload=roles.filter(r=>r.name.trim()).map(r=>{
@@ -9215,11 +9333,21 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
       </div>
 
       <div className="form-group">
-        <label className="label">Casting Image / Poster</label>
-        {castingImageUrl&&<div style={{marginBottom:10}}><img src={castingImageUrl} alt="Casting image" style={{maxWidth:"100%",maxHeight:180,borderRadius:8,objectFit:"cover"}}/><button type="button" onClick={()=>{setCastingImageUrl("");setCastingImagePath("");}} style={{display:"block",marginTop:6,fontSize:11,color:"#c0392b",background:"none",border:"none",cursor:"pointer",padding:0}}>✕ Remove image</button></div>}
-        <input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={e=>uploadImage(e.target.files?.[0])} disabled={uploadingImg} style={{fontSize:13}}/>
-        {uploadingImg&&<p style={{fontSize:12,color:"var(--acc)",marginTop:4}}>Uploading…</p>}
-        <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Optional. jpg, jpeg, png, webp · 5 MB max.</p>
+        <label className="label">Casting Images / Posters <span style={{fontWeight:400,color:"var(--t3)"}}>(up to {MAX_IMAGES})</span></label>
+        {castingImages.length>0&&<div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>
+          {castingImages.map((img,i)=>(
+            <div key={i} style={{position:"relative",width:90,flexShrink:0}}>
+              <img src={img.url} alt={`Image ${i+1}`} style={{width:90,height:110,objectFit:"contain",borderRadius:8,background:"var(--s2)",display:"block",border:"1px solid var(--bdr)"}}/>
+              <div style={{position:"absolute",top:3,right:3,background:"rgba(0,0,0,0.55)",borderRadius:99,width:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,color:"#fff",lineHeight:1}} onClick={()=>setCastingImages(p=>p.filter((_,j)=>j!==i))}>✕</div>
+              {i===0&&<div style={{position:"absolute",bottom:3,left:0,right:0,textAlign:"center",fontSize:9,fontWeight:700,color:"#fff",background:"rgba(0,0,0,0.5)",borderRadius:4,padding:"1px 0"}}>COVER</div>}
+            </div>
+          ))}
+        </div>}
+        {castingImages.length<MAX_IMAGES&&<>
+          <input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" multiple onChange={e=>uploadImage(e.target.files)} disabled={uploadingImg} style={{fontSize:13}}/>
+          {uploadingImg&&<p style={{fontSize:12,color:"var(--acc)",marginTop:4}}>Uploading…</p>}
+        </>}
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Optional. Up to {MAX_IMAGES} images · jpg, jpeg, png, webp · 5 MB each. First image is the cover. Vertical &amp; horizontal posters shown in full.</p>
       </div>
 
       <div style={{borderTop:"1px solid var(--bdr)",paddingTop:20,marginTop:20}}>
@@ -9288,7 +9416,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("FCS timed out after 10s")),10000);});
       const {data,error}=await Promise.race([
         window.sb.from("castings")
-          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq("status","open").eq("published",true)
           .order("featured",{ascending:false})
           .order("created_at",{ascending:false})
@@ -9319,6 +9447,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         _cd:c.profiles||null,
         casting_image_url:c.casting_image_url||null,
         casting_image_path:c.casting_image_path||null,
+        casting_images:Array.isArray(c.casting_images)?c.casting_images:[],
         casting_website_url:c.casting_website_url||null,
         roles:(c.roles||[]).map(r=>({
           id:r.id||null,
@@ -13765,26 +13894,39 @@ function EditCastingModal({casting,onClose,onSaved}){
     deadline:casting.deadline||"",tagline:casting.tagline||"",synopsis:casting.synopsis||"",
     casting_website_url:casting.casting_website_url||"",
   });
-  const [castingImageUrl,setCastingImageUrl]=useState(casting.casting_image_url||"");
-  const [castingImagePath,setCastingImagePath]=useState(casting.casting_image_path||"");
+  const ADMIN_MAX_IMAGES=5;
+  const [castingImages,setCastingImages]=useState(()=>{
+    if(Array.isArray(casting.casting_images)&&casting.casting_images.length){
+      return casting.casting_images.map(item=>typeof item==="object"&&item.url?item:{url:item,path:""});
+    }
+    if(casting.casting_image_url)return [{url:casting.casting_image_url,path:casting.casting_image_path||""}];
+    return [];
+  });
   const [roles,setRoles]=useState(()=>(casting.roles||[]).map(r=>({id:r.id,name:r.name||"",description:r.description||"",gender:r.gender||"Any",age_range:r.age_range||"",ethnicity:r.ethnicity||"Any"})));
   const setField=(k,v)=>setF(p=>({...p,[k]:v}));
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
   const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any"}]);
   const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
-  const uploadImage=async(file)=>{
-    if(!file)return;
-    if(file.size>5*1024*1024){setErr("Image must be 5 MB or smaller.");return;}
-    const ext=file.name.split(".").pop().toLowerCase();
-    if(!["jpg","jpeg","png","webp"].includes(ext)){setErr("Only jpg, jpeg, png, webp images allowed.");return;}
+  const uploadImage=async(files)=>{
+    const fileList=files instanceof FileList?Array.from(files):[files].filter(Boolean);
+    const toUpload=fileList.slice(0,ADMIN_MAX_IMAGES-castingImages.length);
+    if(!toUpload.length){setErr(`Max ${ADMIN_MAX_IMAGES} images.`);return;}
+    for(const file of toUpload){
+      if(file.size>5*1024*1024){setErr("Image must be 5 MB or smaller.");return;}
+      const ext=file.name.split(".").pop().toLowerCase();
+      if(!["jpg","jpeg","png","webp"].includes(ext)){setErr("Only jpg, jpeg, png, webp images allowed.");return;}
+    }
     setUploadingImg(true);setErr("");
     try{
-      // Admin uploads go into a shared "admin" folder
-      const path=`admin/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
-      const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true});
-      if(upErr)throw upErr;
-      const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
-      setCastingImageUrl(publicUrl);setCastingImagePath(path);
+      const uploaded=[];
+      for(const file of toUpload){
+        const path=`admin/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true});
+        if(upErr)throw upErr;
+        const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
+        uploaded.push({url:publicUrl,path});
+      }
+      setCastingImages(prev=>[...prev,...uploaded].slice(0,ADMIN_MAX_IMAGES));
     }catch(e){setErr("Image upload failed: "+e.message);}
     finally{setUploadingImg(false);}
   };
@@ -13794,7 +13936,7 @@ function EditCastingModal({casting,onClose,onSaved}){
     if(f.casting_website_url.trim()&&!/^https?:\/\//i.test(f.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
     setBusy(true);
     try{
-      const patch={title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,pay:f.pay||null,union_status:f.union_status||null,deadline:f.deadline||null,tagline:f.tagline||null,synopsis:f.synopsis||null,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImageUrl||null,casting_image_path:castingImagePath||null};
+      const patch={title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,pay:f.pay||null,union_status:f.union_status||null,deadline:f.deadline||null,tagline:f.tagline||null,synopsis:f.synopsis||null,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages};
       const {error:cErr}=await window.sb.from("castings").update(patch).eq("id",casting.id);
       if(cErr)throw cErr;
       // Diff roles: update existing, insert new, delete removed
@@ -13840,10 +13982,19 @@ function EditCastingModal({casting,onClose,onSaved}){
     <div className="form-group"><label className="label">Synopsis</label><textarea className="textarea" value={f.synopsis} onChange={e=>setField("synopsis",e.target.value)}></textarea></div>
     <div className="form-group"><label className="label">Casting Website / Project Link</label><input className="input" value={f.casting_website_url} onChange={e=>setField("casting_website_url",e.target.value)} placeholder="https://example.com"/></div>
     <div className="form-group">
-      <label className="label">Casting Image / Poster</label>
-      {castingImageUrl&&<div style={{marginBottom:8}}><img src={castingImageUrl} alt="" style={{maxWidth:"100%",maxHeight:160,borderRadius:8,objectFit:"cover"}}/><button type="button" onClick={()=>{setCastingImageUrl("");setCastingImagePath("");}} style={{display:"block",marginTop:4,fontSize:11,color:"#c0392b",background:"none",border:"none",cursor:"pointer",padding:0}}>✕ Remove</button></div>}
-      <input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={e=>uploadImage(e.target.files?.[0])} disabled={uploadingImg} style={{fontSize:13}}/>
-      {uploadingImg&&<p style={{fontSize:12,color:"var(--acc)",marginTop:4}}>Uploading…</p>}
+      <label className="label">Casting Images / Posters <span style={{fontWeight:400,color:"var(--t3)"}}>(up to {ADMIN_MAX_IMAGES})</span></label>
+      {castingImages.length>0&&<div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
+        {castingImages.map((img,i)=>(
+          <div key={i} style={{position:"relative",width:80,flexShrink:0}}>
+            <img src={img.url} alt={`Image ${i+1}`} style={{width:80,height:100,objectFit:"contain",borderRadius:8,background:"var(--s2)",display:"block",border:"1px solid var(--bdr)"}}/>
+            <div style={{position:"absolute",top:3,right:3,background:"rgba(0,0,0,0.55)",borderRadius:99,width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:11,color:"#fff",lineHeight:1}} onClick={()=>setCastingImages(p=>p.filter((_,j)=>j!==i))}>✕</div>
+          </div>
+        ))}
+      </div>}
+      {castingImages.length<ADMIN_MAX_IMAGES&&<>
+        <input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" multiple onChange={e=>uploadImage(e.target.files)} disabled={uploadingImg} style={{fontSize:13}}/>
+        {uploadingImg&&<p style={{fontSize:12,color:"var(--acc)",marginTop:4}}>Uploading…</p>}
+      </>}
     </div>
 
     <div style={{borderTop:"1px solid var(--bdr)",paddingTop:20,marginTop:12}}>
@@ -14410,7 +14561,7 @@ function App(){
     if(!castingId)return;
     try{
       const{data,error}=await window.sb.from("castings")
-        .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+        .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
         .eq("id",castingId).maybeSingle();
       if(error||!data)return;
       const c={
@@ -14422,6 +14573,7 @@ function App(){
         cd_id:data.cd_id,profiles:data.profiles||null,_cd:data.profiles||null,
         casting_image_url:data.casting_image_url||null,
         casting_image_path:data.casting_image_path||null,
+        casting_images:Array.isArray(data.casting_images)?data.casting_images:[],
         casting_website_url:data.casting_website_url||null,
         roles:(data.roles||[]).map(r=>({
           id:r.id||null,name:r.name||"",desc:r.description||"",type:"Supporting",
