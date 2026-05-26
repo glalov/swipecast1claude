@@ -5610,6 +5610,39 @@ function castingTypeLabel(t){if(!t)return"";if(t==="Commercials & Branded Conten
 // ═══════════════════════════════════════════
 // PAGE: SEARCH / BROWSE
 // ═══════════════════════════════════════════
+function CastingGatePage({casting,onCreateProfile,onLogin,onBack}){
+  const [mounted,setMounted]=useState(false);
+  useEffect(()=>{const t=setTimeout(()=>setMounted(true),30);return()=>clearTimeout(t);},[]);
+  return(
+    <div style={{minHeight:"calc(100vh - 80px)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 20px",background:"var(--bg)"}}>
+      <div style={{maxWidth:480,width:"100%",opacity:mounted?1:0,transform:mounted?"none":"translateY(10px)",transition:"opacity 0.2s ease,transform 0.2s ease"}}>
+        {casting&&(
+          <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:12,padding:"16px 20px",marginBottom:20}}>
+            <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap"}}>
+              {casting.featured&&<span className="badge" style={{background:"rgba(99,60,180,0.10)",color:"#5b3ecb",border:"1px solid rgba(99,60,180,0.22)"}}>★ Featured</span>}
+              {casting.type&&<span className="badge" style={{background:"var(--s3)",color:"var(--t2)"}}>{casting.type}</span>}
+              {casting.union&&<span className="badge" style={{background:"var(--s3)",color:"var(--t2)"}}>{casting.union}</span>}
+            </div>
+            <h3 style={{fontSize:17,fontWeight:800,color:"var(--t1)",margin:"0 0 4px"}}>{casting.title}</h3>
+            {(casting.prod||casting.tagline)&&<p style={{color:"var(--t2)",fontSize:13,margin:0}}>{casting.prod||casting.tagline}</p>}
+          </div>
+        )}
+        <div className="card" style={{textAlign:"center",padding:"36px 28px"}}>
+          <div style={{fontSize:40,marginBottom:16,lineHeight:1}}>🎭</div>
+          <h2 style={{fontSize:21,fontWeight:800,color:"var(--t1)",marginBottom:12,lineHeight:1.35}}>Create your free actor profile to view full project details.</h2>
+          <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,margin:"0 auto 28px",maxWidth:360}}>CastSlate keeps full role information available to real actor profiles so casting pages stay cleaner, safer, and easier to manage.</p>
+          <button className="btn-p" style={{width:"100%",marginBottom:12,fontSize:15,padding:"13px 20px",fontWeight:700}} onClick={onCreateProfile}>Create Free Actor Profile</button>
+          <button className="btn-s" style={{width:"100%",fontSize:15,padding:"13px 20px"}} onClick={onLogin}>Log In</button>
+          <p style={{color:"var(--t3)",fontSize:12,marginTop:20,marginBottom:0}}>Free accounts can browse castings and submit up to 3 times per day.</p>
+        </div>
+        <div style={{textAlign:"center",marginTop:16}}>
+          <button className="btn-s btn-sm" onClick={onBack}>← Back to Browse Castings</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,castingsVersion=0,session,myProfile}){
   const t=useT();
   const {lang}=useLanguage();
@@ -13846,7 +13879,7 @@ const PAGE_PATH={
   "classes":"/classes","contact":"/contact","resources":"/resources",
   "faq":"/faq","success-stories":"/success-stories","studios":"/studios",
   "api-info":"/api-info","terms":"/terms","privacy":"/privacy","careers":"/careers",
-  "auth-gate":"/auth-gate","account-settings":"/account-settings",
+  "auth-gate":"/auth-gate","casting-gate":"/browse-castings","account-settings":"/account-settings",
   "success":"/success",
 };
 const PATH_PAGE=Object.fromEntries(Object.entries(PAGE_PATH).map(([k,v])=>[v,k]));
@@ -14352,11 +14385,26 @@ function App(){
     if(p==="classes"&&opts.classId){setOpenClassId(opts.classId);setOpenClassInvitationId(opts.invitationId||null);}
     else if(p!=="classes"){setOpenClassId(null);setOpenClassInvitationId(null);}
     // Clear detail state on any nav that isn't a drilldown
-    if(p!=="profile"&&p!=="casting-detail"&&p!=="auth-gate"){setViewingProfile(null);setViewingCasting(null);}
+    if(p!=="profile"&&p!=="casting-detail"&&p!=="auth-gate"&&p!=="casting-gate"){setViewingProfile(null);setViewingCasting(null);}
     pushHist(target);
   },[]);
   const viewProfile=(t)=>{setPrevPage(page);setViewingProfile(t);setPage("profile");pushHist("profile");};
   const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");pushHist("auth-gate");};
+  const handleViewCasting=(c,from)=>{
+    window.scrollTo(0,0);
+    if(!isLoggedIn){
+      setPendingApply({casting:c,role:null});
+      setViewingCasting(c);
+      setPrevPage(from||page);
+      setPage("casting-gate");
+      pushHist("casting-gate");
+      return;
+    }
+    setPrevPage(from||page);
+    setViewingCasting(c);
+    setPage("casting-detail");
+    pushHist("casting-detail",{slug:c.slug});
+  };
   const clearPendingApply=useCallback(()=>setPendingApply(null),[]);
   const viewCastingById=useCallback(async(castingId)=>{
     if(!castingId)return;
@@ -14385,7 +14433,7 @@ function App(){
       pushHist("casting-detail",{id:castingId});
     }catch(e){console.warn("[viewCastingById]",e);}
   },[page]);
-  const completeAuth=()=>{if(pendingApply){const c=pendingApply.casting;setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c?.slug});}else{setPage("home");pushHist("home");}};
+  const completeAuth=()=>{if(pendingApply){const c=pendingApply.casting;const r=pendingApply.role;setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c?.slug});if(!r)setPendingApply(null);}else{setPage("search");pushHist("search");}};
   const onLoggedIn=async(user)=>{
     // onAuthStateChange SIGNED_IN will populate myProfile in parallel — do NOT call
     // loadProfile here too (that created a double-fetch race). Fetch a minimal row
@@ -14557,14 +14605,15 @@ function App(){
       {/* Stable route content wrapper — always holds at least viewport height so the
           footer never jumps upward during route transitions or while data loads. */}
       <main style={{flex:"1 1 auto",display:"flex",flexDirection:"column",minHeight:"100vh"}}>
-        {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("home");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c.slug});}}/>}
+        {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"home")}/>}
         {/* SearchPage is pre-mounted on home page too so it's already loaded when the
             user clicks Browse Castings — prevents the fresh-mount loading flash. */}
-        {(page==="home"||page==="search"||page==="casting-detail")&&
+        {(page==="home"||page==="search"||page==="casting-detail"||page==="casting-gate")&&
           <div style={{display:page==="search"?"flex":"none",flexDirection:"column",flex:"1 1 auto",minHeight:"calc(100vh - 80px)"}} aria-hidden={page!=="search"}>
-            <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>{setPrevPage("search");setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c.slug});}}/>
+            <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")}/>
           </div>}
         {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
+        {page==="casting-gate"&&viewingCasting&&<CastingGatePage casting={viewingCasting} onCreateProfile={()=>{setPage("auth-gate");pushHist("auth-gate");}} onLogin={()=>navigate("login")} onBack={()=>{setPendingApply(null);navigate(prevPage==="home"?"home":"search");}}/>}
         {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
         {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>)}
         {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&(myProfile?.user_type==="talent"||!myProfile)?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>:<div style={{minHeight:"60vh"}}/>)}
