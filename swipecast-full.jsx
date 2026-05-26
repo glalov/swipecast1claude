@@ -4647,12 +4647,12 @@ function CastingImageCarousel({images=[],title=""}){
   const go=(n)=>setIdx(i=>((i+n)+images.length)%images.length);
   const multi=images.length>1;
   return(
-    <div style={{position:"relative",marginBottom:28,borderRadius:12,overflow:"hidden",background:"var(--bg)"}}>
+    <div style={{position:"relative",marginBottom:28,borderRadius:12,overflow:"hidden"}}>
       <img
         key={clampedIdx}
         src={images[clampedIdx]}
         alt={title?`${title} — image ${clampedIdx+1}`:"Casting poster"}
-        style={{width:"100%",maxHeight:520,objectFit:"contain",display:"block",background:"var(--bg)"}}
+        style={{width:"100%",height:"auto",display:"block",borderRadius:12}}
       />
       {multi&&<>
         <button onClick={()=>go(-1)} aria-label="Previous image"

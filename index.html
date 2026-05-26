@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260526-233202 -->
-  <meta name="build-version" content="20260526-233202"/>
+  <!-- BUILD: 20260526-234513 -->
+  <meta name="build-version" content="20260526-234513"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260526-233202";
+      var B="20260526-234513";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -4685,12 +4685,12 @@ function CastingImageCarousel({images=[],title=""}){
   const go=(n)=>setIdx(i=>((i+n)+images.length)%images.length);
   const multi=images.length>1;
   return(
-    <div style={{position:"relative",marginBottom:28,borderRadius:12,overflow:"hidden",background:"var(--bg)"}}>
+    <div style={{position:"relative",marginBottom:28,borderRadius:12,overflow:"hidden"}}>
       <img
         key={clampedIdx}
         src={images[clampedIdx]}
         alt={title?`${title} — image ${clampedIdx+1}`:"Casting poster"}
-        style={{width:"100%",maxHeight:520,objectFit:"contain",display:"block",background:"var(--bg)"}}
+        style={{width:"100%",height:"auto",display:"block",borderRadius:12}}
       />
       {multi&&<>
         <button onClick={()=>go(-1)} aria-label="Previous image"
