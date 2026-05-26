@@ -5956,6 +5956,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const [invLoading,setInvLoading]=useState(true);
   const [sysNotifications,setSysNotifications]=useState([]);
   const [sysNotifLoading,setSysNotifLoading]=useState(true);
+  const [dashDbCredits,setDashDbCredits]=useState([]);
 
   const fmtDate=(s)=>{if(!s)return"—";const d=new Date(s);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
   const fmtDeadline=(s)=>{if(!s)return null;try{const d=new Date(s);const now=new Date();const diff=Math.ceil((d-now)/(1000*60*60*24));if(diff<0)return{label:"Closed",urgent:false};if(diff===0)return{label:"Closes today",urgent:true};if(diff<=3)return{label:`${diff}d left`,urgent:true};return{label:`${diff}d left`,urgent:false};}catch{return null;}};
@@ -6103,6 +6104,14 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     finally{setSysNotifLoading(false);}
   },[uid]);
 
+  const loadDashCredits=useCallback(async()=>{
+    if(!uid)return;
+    try{
+      const{data}=await window.sb.from("talent_credits").select("id").eq("user_id",uid).limit(50);
+      setDashDbCredits(data||[]);
+    }catch(e){console.warn("[talent-dashboard] credits:",e);}
+  },[uid]);
+
   const markNotificationsRead=useCallback(async(ids=null)=>{
     setSysNotifications(prev=>prev.map(n=>(!ids||ids.includes(n.id))?{...n,is_read:true}:n));
     try{
@@ -6146,7 +6155,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     finally{setSavingId(null);}
   },[uid,savedIds,savingId]);
 
-  useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadRecentlyViewed();loadClassInvitations();loadSysNotifications();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed,loadClassInvitations,loadSysNotifications]);
+  useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadRecentlyViewed();loadClassInvitations();loadSysNotifications();loadDashCredits();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed,loadClassInvitations,loadSysNotifications,loadDashCredits]);
   // Poll invitations + notifications every 30s so approved status appears without a page reload
   useEffect(()=>{
     if(!uid)return;
@@ -6167,7 +6176,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     {label:"Add bio",done:!!(myProfile?.bio?.trim())},
     {label:"Add location",done:!!myProfile?.location},
     {label:"Add age range",done:!!myProfile?.age_range},
-    {label:"Add credits / experience",done:!!(myProfile?.credits?.trim())},
+    {label:"Add credits / experience",done:dashDbCredits.length>0||!!(myProfile?.credits?.trim())},
     {label:"Add reel / video link",done:isPremium&&(myProfile?.video_links||[]).some(v=>v),premium:true},
   ];
   const completedCount=profileChecks.filter(c=>c.done).length;
@@ -6177,7 +6186,9 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const additionalPhotos=Array.isArray(myProfile?.additional_photos)?myProfile.additional_photos.filter(Boolean):[];
   const totalPhotos=isPremium?additionalPhotos.length:headshotCount;
   const videoLinks=Array.isArray(myProfile?.video_links)?myProfile.video_links.filter(Boolean):[];
-  const hasResume=!!(myProfile?.credits?.trim());
+  const hasResumeFile=!!(myProfile?.resume_url);
+  const hasCredits=dashDbCredits.length>0||!!(myProfile?.credits?.trim());
+  const hasResume=hasResumeFile||hasCredits;
 
   const STATUS_LABELS={
     pending:{label:"Submitted",color:"var(--t2)",bg:"var(--s2)"},
@@ -6885,7 +6896,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 {label:"Photos",val:isPremium?`${totalPhotos} uploaded`:`${totalPhotos} / 1`,ok:totalPhotos>0,warn:false},
                 {label:"Videos",val:isPremium?`${videoLinks.length} uploaded`:"Not included",note:!isPremium?"Upgrade":null,ok:isPremium&&videoLinks.length>0,warn:false},
                 {label:"Documents",val:"—",warn:false},
-                {label:"Resume / Credits",val:hasResume?"Uploaded":"Missing",ok:hasResume,warn:!hasResume},
+                {label:"Resume / Credits",val:hasResumeFile&&hasCredits?"Resume & Credits":hasResumeFile?"Resume uploaded":hasCredits?"Credits added":"Missing",ok:hasResume,warn:!hasResume},
               ].map((row,i,arr)=>(
                 <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:13,padding:"11px 14px",background:i%2===0?"var(--s1)":"var(--bg)",borderBottom:i<arr.length-1?"1px solid var(--bdr)":"none"}}>
                   <span style={{color:"var(--t2)",fontWeight:500}}>{row.label}</span>
@@ -6935,7 +6946,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             profile={myProfile}
             isPremium={isPremium}
             onNavigate={onNavigate}
-            dbCredits={null}
+            dbCredits={dashDbCredits}
             mediaItems={null}
           />
 
