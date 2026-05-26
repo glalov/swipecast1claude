@@ -5542,6 +5542,69 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     <Footer onNavigate={onNavigate}/></div>);
 }
 
+function generatePublicSlug(name){
+  return(name||"").toLowerCase().replace(/[^a-z0-9\s]/g,"").trim().replace(/\s+/g,"-").replace(/-+/g,"-").slice(0,50)||"talent";
+}
+
+// ─── Public profile page rendered at /talent/:slug ───────────────────────────
+function PublicTalentProfilePage({slug,onNavigate,session,myProfile}){
+  const [talent,setTalent]=useState(null);
+  const [loading,setLoading]=useState(true);
+  const [notFound,setNotFound]=useState(false);
+  useEffect(()=>{
+    if(!slug){setNotFound(true);setLoading(false);return;}
+    (async()=>{
+      try{
+        const {data}=await window.sb.from("profiles")
+          .select("*").eq("public_slug",slug).eq("visible",true).maybeSingle();
+        if(data){
+          setTalent({
+            id:data.id,name:data.display_name||"",display_name:data.display_name||"",
+            img:data.headshot_url||"",type:"Talent",
+            additional_photos:data.additional_photos||[],
+            skills:data.skills||[],social_links:data.social_links||{},
+            instagram:data.instagram||"",credits:data.credits||"",
+            bio:data.bio,location:data.location,union_status:data.union_status,
+            height:data.height,weight:data.weight,hair:data.hair,eyes:data.eyes,
+            age:data.age,gender:data.gender,ethnicity:data.ethnicity,
+            training:data.training,resume_url:data.resume_url,
+            agent:data.agent||data.representation,reel_url:data.reel_url,
+          });
+        }else{setNotFound(true);}
+      }catch(_){setNotFound(true);}
+      setLoading(false);
+    })();
+  },[slug]);
+  if(loading)return <PageLoader/>;
+  if(notFound||!talent)return(
+    <div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12,padding:24}}>
+      <div style={{fontSize:48}}>🎭</div>
+      <h2 style={{fontSize:20,fontWeight:700}}>Profile Not Found</h2>
+      <p style={{color:"var(--t3)",fontSize:14,textAlign:"center"}}>This profile link may be invalid or the profile is no longer available.</p>
+      <button className="btn-p btn-sm" onClick={()=>onNavigate("home")}>Back to Home</button>
+    </div>
+  );
+  return <TalentProfile talent={talent} onBack={()=>window.history.back()} onNavigate={onNavigate} session={session} myProfile={myProfile}/>;
+}
+
+// ─── Copy-link + view buttons shown on MyProfilePage ─────────────────────────
+function PublicProfileButtons({slug}){
+  const [copied,setCopied]=useState(false);
+  if(!slug)return(<button style={{background:"var(--s2)",color:"var(--t3)",border:"1px solid var(--bdr)",borderRadius:7,padding:"8px 14px",fontSize:12,fontWeight:600,cursor:"default"}} disabled>Setting up profile URL…</button>);
+  const url=`${window.location.origin}/talent/${encodeURIComponent(slug)}`;
+  const copy=()=>{
+    try{navigator.clipboard.writeText(url).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);}).catch(()=>{fallbackCopy();});}
+    catch(_){fallbackCopy();}
+    function fallbackCopy(){try{const t=document.createElement("textarea");t.value=url;document.body.appendChild(t);t.select();document.execCommand("copy");document.body.removeChild(t);setCopied(true);setTimeout(()=>setCopied(false),2500);}catch(_){}}
+  };
+  return(<>
+    <button style={{background:"var(--s2)",color:"var(--t2)",border:"1px solid var(--bdr)",borderRadius:7,padding:"8px 14px",fontSize:12,fontWeight:600,cursor:"pointer",transition:"color .15s"}} onClick={copy}>
+      {copied?"✓ Link copied!":"📋 Copy Profile Link"}
+    </button>
+    <button style={{background:"#111",color:"#fff",border:"1px solid #333",borderRadius:7,padding:"8px 18px",fontSize:13,fontWeight:700,cursor:"pointer",letterSpacing:"0.02em"}} onClick={()=>window.open(`/talent/${encodeURIComponent(slug)}`,"_blank")}>👁 View Public Profile →</button>
+  </>);
+}
+
 function castingTypeLabel(t){if(!t)return"";if(t==="Commercials & Branded Content")return"Commercial";if(t==="Film & Television")return"Film & TV";return t;}
 
 // ═══════════════════════════════════════════
@@ -10566,9 +10629,9 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
       </div>
     </div>
 
-    {/* ── PREVIEW BUTTON (talent only) ── */}
-    {!isCD&&onViewProfile&&<div style={{marginBottom:16,display:"flex",justifyContent:"flex-end"}}>
-      <button style={{background:"#111",color:"#fff",border:"1px solid #333",borderRadius:7,padding:"8px 18px",fontSize:13,fontWeight:700,cursor:"pointer",letterSpacing:"0.02em"}} onClick={()=>onViewProfile({id:session.user.id,name:profile.display_name||"",display_name:profile.display_name||"",img:profile.headshot_url||"",type:"Talent"})}>👁 View Public Profile →</button>
+    {/* ── PUBLIC PROFILE BUTTONS (talent only) ── */}
+    {!isCD&&<div style={{marginBottom:16,display:"flex",justifyContent:"flex-end",gap:8,alignItems:"center"}}>
+      <PublicProfileButtons slug={profile.public_slug}/>
     </div>}
 
     {/* ── TABS ── */}
@@ -13790,10 +13853,15 @@ const PATH_PAGE=Object.fromEntries(Object.entries(PAGE_PATH).map(([k,v])=>[v,k])
 function urlToPage(){
   const path=window.location.pathname;
   if(/^\/casting\//.test(path))return"casting-detail";
+  if(/^\/talent\//.test(path))return"talent-public";
   return PATH_PAGE[path]||"home";
 }
 function urlToCastingSlug(){
   const m=window.location.pathname.match(/^\/casting\/(.+)$/);
+  return m?decodeURIComponent(m[1]):null;
+}
+function urlToTalentSlug(){
+  const m=window.location.pathname.match(/^\/talent\/(.+)$/);
   return m?decodeURIComponent(m[1]):null;
 }
 
@@ -13820,6 +13888,7 @@ function App(){
   },[]);
   const [viewingProfile,setViewingProfile]=useState(null);
   const [viewingCasting,setViewingCasting]=useState(()=>{const slug=urlToCastingSlug();return slug?(CASTINGS.find(c=>c.slug===slug)||null):null;});
+  const [viewingTalentSlug,setViewingTalentSlug]=useState(()=>urlToTalentSlug());
   const [prevPage,setPrevPage]=useState("home");
   const [session,setSession]=useState(null);
   const [myProfile,setMyProfile]=useState(null);
@@ -13960,6 +14029,19 @@ function App(){
         sessionStorage.removeItem("swipecast_pending_type");
       }
       _dbg().loginStep="profile-fetch-done";_dbg().lastFetchTs=Date.now();
+      // Auto-generate public_slug for talent accounts that don't have one yet
+      if(data&&data.user_type==="talent"&&!data.public_slug){
+        try{
+          const base=generatePublicSlug(data.display_name||"talent");
+          const idFrag=(uid||"").replace(/-/g,"").slice(0,8);
+          const {error:e1}=await window.sb.from("profiles").update({public_slug:base}).eq("id",uid).is("public_slug",null);
+          if(e1){
+            // Unique constraint hit — append ID fragment for guaranteed uniqueness
+            await window.sb.from("profiles").update({public_slug:`${base}-${idFrag}`}).eq("id",uid).is("public_slug",null);
+            data={...data,public_slug:`${base}-${idFrag}`};
+          }else{data={...data,public_slug:base};}
+        }catch(_){}
+      }
       setMyProfile(data||null);return data||null;
     }catch(e){
       _dbg().loginStep="profile-fetch-threw";_dbg().lastError="loadProfile threw: "+(e?.message||String(e));
@@ -14006,8 +14088,10 @@ function App(){
     try{
       const curPage=urlToPage();
       const slug=urlToCastingSlug();
+      const tslug=urlToTalentSlug();
       const st={swipecast:true,page:curPage};
       if(slug)st.castingSlug=slug;
+      if(tslug)st.talentSlug=tslug;
       if(!window.history.state||!window.history.state.swipecast){
         window.history.replaceState(st,"",window.location.pathname||"/");
       }
@@ -14022,12 +14106,16 @@ function App(){
         if(p!=="profile")setViewingProfile(null);
         if(p!=="casting-detail"){setViewingCasting(null);}
         else if(st.castingSlug){const c=CASTINGS.find(x=>x.slug===st.castingSlug);if(c)setViewingCasting(c);}
+        if(p==="talent-public"&&st.talentSlug)setViewingTalentSlug(st.talentSlug);
+        else if(p!=="talent-public")setViewingTalentSlug(null);
       }else{
         const p=urlToPage();
         setPage(p);
         setViewingProfile(null);
         if(p!=="casting-detail"){setViewingCasting(null);}
         else{const slug=urlToCastingSlug();if(slug){const c=CASTINGS.find(x=>x.slug===slug);if(c)setViewingCasting(c);}}
+        if(p==="talent-public"){setViewingTalentSlug(urlToTalentSlug());}
+        else setViewingTalentSlug(null);
       }
     };
     window.addEventListener("popstate",onPop);
@@ -14043,6 +14131,8 @@ function App(){
       if(p!=="profile")setViewingProfile(null);
       if(p==="casting-detail"){if(slug){const c=CASTINGS.find(x=>x.slug===slug);if(c)setViewingCasting(c);}}
       else setViewingCasting(null);
+      if(p==="talent-public"){setViewingTalentSlug(urlToTalentSlug());}
+      else setViewingTalentSlug(null);
       // BFCache restore: clear stale profile so we never briefly show the
       // wrong account-type page. The profile-recovery effect will re-fetch it.
       setMyProfile(null);
@@ -14248,7 +14338,7 @@ function App(){
     };
   },[session?.user?.id,!!myProfile,authReady,loadProfile]);
 
-  const pushHist=(p,opts={})=>{try{let url=PAGE_PATH[p]||"/";const st={swipecast:true,page:p,...opts};if(p==="casting-detail"&&opts.slug){url=`/casting/${encodeURIComponent(opts.slug)}`;st.castingSlug=opts.slug;}else if(p==="casting-detail"&&opts.id){url=`/casting/${encodeURIComponent(opts.id)}`;}window.history.pushState(st,"",url);}catch(e){}};
+  const pushHist=(p,opts={})=>{try{let url=PAGE_PATH[p]||"/";const st={swipecast:true,page:p,...opts};if(p==="casting-detail"&&opts.slug){url=`/casting/${encodeURIComponent(opts.slug)}`;st.castingSlug=opts.slug;}else if(p==="casting-detail"&&opts.id){url=`/casting/${encodeURIComponent(opts.id)}`;}else if(p==="talent-public"&&opts.slug){url=`/talent/${encodeURIComponent(opts.slug)}`;st.talentSlug=opts.slug;}window.history.pushState(st,"",url);}catch(e){}};
   const navigate=useCallback((p,opts={})=>{
     window.scrollTo(0,0);
     let target=p;
@@ -14479,6 +14569,7 @@ function App(){
         {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>)}
         {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&(myProfile?.user_type==="talent"||!myProfile)?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>:<div style={{minHeight:"60vh"}}/>)}
         {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
+        {page==="talent-public"&&viewingTalentSlug&&<PublicTalentProfilePage slug={viewingTalentSlug} onNavigate={navigate} session={session} myProfile={myProfile}/>}
         {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onViewProfile={viewProfile}/>:null)}
         {page==="account-settings"&&(!authReady?<PageLoader/>:isLoggedIn?<AccountSettingsPage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onSignOut={signOut} isSuperAdmin={isSuperAdmin}/>:<div style={{minHeight:"60vh"}}/>)}
         {page==="inbox"&&(!authReady?<PageLoader/>:<InboxPage session={session} profile={myProfile} onNavigate={navigate} onViewProfile={viewProfile}/>)}

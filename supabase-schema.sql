@@ -57,6 +57,9 @@ create table if not exists public.profiles (
   instagram text,
   phone text,
 
+  -- Public profile URL slug (e.g. "lory-becky" → /talent/lory-becky)
+  public_slug text unique,
+
   -- Lifecycle
   onboarded boolean default false,
   visible boolean default true,

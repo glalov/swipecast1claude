@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "CastSlate Dev",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8000"],
+      "runtimeExecutable": "/usr/bin/ruby",
+      "runtimeArgs": ["-run", "-ehttpd", "/Users/georgi/Desktop/swipecast claude", "-p8000"],
       "cwd": "/Users/georgi/Desktop/swipecast claude",
       "port": 8000
     }
