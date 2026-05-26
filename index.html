@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260525-223932 -->
-  <meta name="build-version" content="20260525-223932"/>
+  <!-- BUILD: 20260526-001747 -->
+  <meta name="build-version" content="20260526-001747"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260525-223932";
+      var B="20260526-001747";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -1832,9 +1832,9 @@ const MEMBERSHIP_PLANS={
 // ─── Actor plan limits — single source of truth used by profile upload, casting
 //     submission gate, and the pricing page.
 const FREE_PLAN={headshotsTotal:1,additionalPhotos:0,videos:0,submissionsPerDay:3,castingTypes:2,castingMoodClips:0,castingSupportingPhotos:0};
-const PREMIUM_PLAN={headshotsTotal:13,additionalPhotos:12,videos:5,submissionsPerDay:Infinity,castingTypes:5,castingMoodClips:1,castingSupportingPhotos:3};
+const PREMIUM_PLAN={headshotsTotal:Infinity,additionalPhotos:Infinity,videos:Infinity,submissionsPerDay:Infinity,castingTypes:Infinity,castingMoodClips:1,castingSupportingPhotos:3};
 const PREMIUM_PRICE="$9.99/month";
-const UPGRADE_MSG="You've used your 3 free submissions for today. Upgrade to Premium for unlimited daily submissions, 1 main headshot + 12 gallery photos, up to 5 videos, and more.";
+const UPGRADE_MSG="You've used your 3 free submissions for today. Upgrade to Premium for unlimited daily submissions, unlimited photos, unlimited videos, and more.";
 
 // ─── "Cast Me As" / Casting Fit DNA ─────────────────────────────────────────
 const CASTING_TYPES=[
@@ -2039,7 +2039,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
     <div className="section-label">Membership</div>
     <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1.2,marginBottom:8}}>Pick your plan.</h1>
     <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>
-      Free actors can submit to {FREE_PLAN.submissionsPerDay} castings per day and upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, 1 main headshot + 12 gallery photos, and up to 5 video links.
+      Free actors can submit to {FREE_PLAN.submissionsPerDay} castings per day and upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, unlimited photos, and unlimited video uploads.
     </p>
     <div className="grid-3" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18,maxWidth:1100,margin:"0 auto"}}>
       {Object.values(MEMBERSHIP_PLANS).map(p=>{
@@ -2054,8 +2054,8 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
           <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>{p.note}</p>
           <ul style={{listStyle:"none",padding:0,margin:"0 0 22px",display:"flex",flexDirection:"column",gap:6}}>
             <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Unlimited submissions</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>1 main headshot + 12 gallery photos</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Up to 5 video reel links</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Unlimited photos &amp; gallery media</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Unlimited video uploads</li>
             <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Cancel anytime</li>
           </ul>
           <div style={{borderTop:"1px solid var(--bdr)",paddingTop:14,marginBottom:14,fontSize:12,color:"var(--t3)"}}>Total billed: <strong style={{color:"var(--t1)"}}>${p.total.toFixed(2)}</strong>{p.months>1?` for ${p.months} months`:" today"}</div>
@@ -2705,7 +2705,7 @@ function RegisterTalent({onNavigate}){
             </div>
             <div style={{border:"1px solid var(--bdr)",borderRadius:12,padding:"14px 16px",opacity:0.85}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><span style={{fontWeight:800,fontSize:14}}>Actor Premium</span><span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--acc)"}}>$9.99/mo</span></div>
-              {["1 main headshot + 12 gallery photos","Up to 5 video reel links","Unlimited casting submissions","Premium profile features"].map(feat=><div key={feat} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{feat}</div>)}
+              {["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited casting submissions","Premium profile features"].map(feat=><div key={feat} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{feat}</div>)}
               <button className="btn-s" style={{width:"100%",marginTop:10,fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>
             </div>
           </div>
@@ -3185,15 +3185,15 @@ const FAQ_CATEGORIES=[
   {id:"getting-started",label:"Getting Started",icon:"🎬",blurb:"Creating your account, first steps, and how CastSlate works.",items:[
     {q:"What is CastSlate?",a:"CastSlate is a casting platform built for working actors. Free profiles, an active membership only when you're ready to submit, and a swipe-based review system that guarantees every submission gets seen one at a time — not buried in a grid of 200 headshots."},
     {q:"Is CastSlate actually live?",a:"Yes. The platform is live and active. Casting directors are posting roles, talent are submitting, and conversations are happening in the inbox right now."},
-    {q:"Do I need a membership to create a profile?",a:"No. Profiles are free for everyone. Free actors can submit to up to 3 castings per day. Upgrade to Premium ($9.99/month) for unlimited submissions, 1 main headshot + 12 gallery photos, and up to 5 video reel links. Cancel anytime."},
+    {q:"Do I need a membership to create a profile?",a:"No. Profiles are free for everyone. Free actors can submit to up to 3 castings per day. Upgrade to Premium ($9.99/month) for unlimited submissions and unlimited media uploads. Cancel anytime."},
     {q:"Where is CastSlate available?",a:"Anywhere with a browser. Castings are organised by city, so you'll see roles in your market — but creating a profile and browsing castings works from anywhere."},
-    {q:"How do I get started as an actor?",a:"Create a free account, upload a headshot, fill out your stats, and add a short bio. Then browse Open Castings and apply. Free accounts can submit to up to 3 castings per day. Upgrade to Premium ($9.99/month) for unlimited submissions, more headshots, and video reels."},
+    {q:"How do I get started as an actor?",a:"Create a free account, upload a headshot, fill out your stats, and add a short bio. Then browse Open Castings and apply. Free accounts can submit to up to 3 castings per day. Upgrade to Premium ($9.99/month) for unlimited submissions and unlimited media uploads."},
     {q:"How do I get started as a casting director or producer?",a:"Create a free industry account, then click 'Post a Casting' from your dashboard. Submit your casting for free — it goes live after admin approval."}
   ]},
   {id:"talent-profiles",label:"Talent Profiles",icon:"👤",blurb:"Headshots, stats, bio, reel — building a profile that gets callbacks.",items:[
     {q:"What should I put in my talent profile?",a:"A current headshot (within the last 18 months), accurate stats, a 2-3 sentence bio with your training and strongest types, your three most recent credits with years, and one current piece of footage. Special skills only if you can perform them on demand."},
     {q:"What size should my headshot be?",a:"At least 800×1000 pixels, JPG or PNG, with your face filling about 60% of the frame. Natural or soft studio lighting and a simple background read best."},
-    {q:"Can I have multiple headshots?",a:"Free accounts include 1 headshot. Premium accounts ($9.99/month) include 1 main headshot plus up to 12 gallery photos, and up to 5 video reel links. Your main headshot is separate from the gallery. You choose which photo to attach to each submission."},
+    {q:"Can I have multiple headshots?",a:"Free accounts include 1 headshot. Premium accounts ($9.99/month) include a main headshot plus unlimited gallery photos and unlimited video uploads. Your main headshot is separate from the gallery. You choose which photo to attach to each submission."},
     {q:"What goes in the bio?",a:"Two to three sentences. Lead with your training, then your strongest types, then any genuine differentiator. Avoid generic 'I love acting' lines — CDs skip past them."},
     {q:"How do I add my reel?",a:"Edit your profile and paste a YouTube or Vimeo URL into the Reel field. We embed it automatically. Keep reels under two minutes and lead with your strongest, most recent work."},
     {q:"How do I update my profile later?",a:"My Profile → Edit Profile. Changes save instantly. Casting directors see your latest version on every submission, including ones you've already sent."}
@@ -3215,7 +3215,7 @@ const FAQ_CATEGORIES=[
     {q:"What if I need to edit a casting after it's posted?",a:"You can edit the breakdown, role specs, and deadline at any time from the dashboard. Already-submitted talent are notified of any changes that affect their submission."}
   ]},
   {id:"payments",label:"Payments & Membership",icon:"💳",blurb:"Talent membership, casting fees, billing, and cancellations.",items:[
-    {q:"How much does the talent membership cost?",a:"Actor accounts are free — you can create a profile and submit to up to 3 castings per day at no cost. Premium is $9.99/month and gives you unlimited submissions, 1 main headshot + up to 12 gallery photos, and up to 5 video reel links."},
+    {q:"How much does the talent membership cost?",a:"Actor accounts are free — you can create a profile and submit to up to 3 castings per day at no cost. Premium is $9.99/month and gives you unlimited submissions and unlimited media uploads — photos, videos, and Cast Me As clips."},
     {q:"How much does it cost to post a casting?",a:"Casting posts are free. Create a free industry account and submit your casting breakdown. It goes live after admin review and approval."},
     {q:"How do I cancel my membership?",a:"My Profile → Membership → Cancel. Your membership stays active through the end of the current billing period, then doesn't renew. No fees, no friction."},
     {q:"Are payments refundable?",a:"Membership fees are non-refundable except where required by law, but cancelled memberships continue until the end of the period you've already paid for. Casting post fees are non-refundable once the casting is published."},
@@ -4133,7 +4133,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan}){
               <div style={{fontSize:12,color:"var(--t3)",marginTop:5}}>{t('pricing.perMonthCancel')}</div>
             </div>
             <div style={{flex:1}}>
-              {['1 main headshot + 12 gallery photos','Up to 5 video reel links',t('pricing.unlimitedLabel')+' submissions','Premium profile features'].map(f=>feat(f,"var(--acc)"))}
+              {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Premium profile features'].map(f=>feat(f,"var(--acc)"))}
             </div>
             <button style={{...btnFilled,marginTop:24}} onClick={()=>onNavigate("membership")}>{t('pricing.getPremium')}</button>
           </div>
@@ -4600,7 +4600,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
               <span style={{fontWeight:800,fontSize:14}}>Actor Premium</span>
               <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--acc)"}}>$9.99/mo</span>
             </div>
-            {["1 main headshot + 12 gallery photos","Up to 5 video reel links","Unlimited casting submissions","Premium profile features"].map(f=><div key={f} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{f}</div>)}
+            {["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited casting submissions","Premium profile features"].map(f=><div key={f} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{f}</div>)}
             <button className="btn-s" style={{width:"100%",marginTop:10,fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>
           </div>
         </div>
@@ -6085,9 +6085,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const headshotCount=myProfile?.headshot_url?1:0;
   const additionalPhotos=Array.isArray(myProfile?.additional_photos)?myProfile.additional_photos.filter(Boolean):[];
   const totalPhotos=isPremium?additionalPhotos.length:headshotCount;
-  const photoLimit=isPremium?PREMIUM_PLAN.additionalPhotos:FREE_PLAN.headshotsTotal;
   const videoLinks=Array.isArray(myProfile?.video_links)?myProfile.video_links.filter(Boolean):[];
-  const videoLimit=isPremium?PREMIUM_PLAN.videos:FREE_PLAN.videos;
   const hasResume=!!(myProfile?.credits?.trim());
 
   const STATUS_LABELS={
@@ -6793,8 +6791,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:"0 0 14px 0"}}>Media Locker</h3>
             <div style={{display:"flex",flexDirection:"column",gap:0,marginBottom:16,border:"1px solid var(--bdr)",borderRadius:8,overflow:"hidden"}}>
               {[
-                {label:"Photos",val:`${totalPhotos} / ${photoLimit}`,ok:totalPhotos>0,warn:totalPhotos>=photoLimit&&totalPhotos>0},
-                {label:"Videos",val:isPremium?`${videoLinks.length} / ${videoLimit}`:"Not included",note:!isPremium?"Upgrade":null,ok:isPremium&&videoLinks.length>0,warn:false},
+                {label:"Photos",val:isPremium?`${totalPhotos} uploaded`:`${totalPhotos} / 1`,ok:totalPhotos>0,warn:false},
+                {label:"Videos",val:isPremium?`${videoLinks.length} uploaded`:"Not included",note:!isPremium?"Upgrade":null,ok:isPremium&&videoLinks.length>0,warn:false},
                 {label:"Documents",val:"—",warn:false},
                 {label:"Resume / Credits",val:hasResume?"Uploaded":"Missing",ok:hasResume,warn:!hasResume},
               ].map((row,i,arr)=>(
@@ -6819,7 +6817,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <>
                 <p style={{fontSize:13,color:"var(--t2)",margin:"0 0 12px",fontWeight:500}}>Actor Premium</p>
                 <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:4}}>
-                  {[`1 main headshot + up to ${PREMIUM_PLAN.additionalPhotos} gallery photos`,`Up to ${PREMIUM_PLAN.videos} video reel links`,"Unlimited submissions"].map((f,i)=>(
+                  {["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited submissions"].map((f,i)=>(
                     <div key={i} style={{display:"flex",alignItems:"center",gap:7,fontSize:12,color:"var(--t2)"}}>
                       <span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}
                     </div>
@@ -9594,7 +9592,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </section>
 
     <section className="lh-section" style={{padding:"60px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">Pricing</div><div className="section-title">Simple pricing. No surprises.</div>
-      <div className="grid-3">{[{name:"Actor Free",who:"Actors · Models · Performers",price:"$0",period:"no credit card required",features:["Free account","1 headshot","3 submissions per day","Basic actor profile","Browse all castings"],featured:false,cta:"Get Started Free",action:"auth-gate"},{name:"Actor Premium",who:"Actors · Models · Performers",price:"$9.99",period:"per month · cancel anytime",features:["1 main headshot + 12 gallery photos","Up to 5 video reel links","Unlimited submissions","Premium profile features"],featured:true,cta:"Get Premium — $9.99/mo",action:"membership"},{name:"Casting Director",who:"Casting Directors · Producers",price:"Free",period:"to create an account",features:["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent filters"],featured:false,cta:"Create CD Account",action:"register-cd"}].map(p=>
+      <div className="grid-3">{[{name:"Actor Free",who:"Actors · Models · Performers",price:"$0",period:"no credit card required",features:["Free account","1 headshot","3 submissions per day","Basic actor profile","Browse all castings"],featured:false,cta:"Get Started Free",action:"auth-gate"},{name:"Actor Premium",who:"Actors · Models · Performers",price:"$9.99",period:"per month · cancel anytime",features:["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited submissions","Premium profile features"],featured:true,cta:"Get Premium — $9.99/mo",action:"membership"},{name:"Casting Director",who:"Casting Directors · Producers",price:"Free",period:"to create an account",features:["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent filters"],featured:false,cta:"Create CD Account",action:"register-cd"}].map(p=>
         <div key={p.name} className="card" style={p.featured?{borderColor:"var(--acc)",background:"linear-gradient(165deg,var(--s1),rgba(26,26,46,.02))",position:"relative"}:{}}>
           {p.featured&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"var(--acc)",color:"var(--bg)",fontSize:10,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:"4px 14px",borderRadius:100,letterSpacing:1}}>RECOMMENDED</div>}
           <h3 style={{fontSize:18,fontWeight:700,marginBottom:4,textAlign:"center"}}>{p.name}</h3><p style={{color:"var(--t2)",fontSize:12,marginBottom:20,textAlign:"center"}}>{p.who}</p>
@@ -9609,11 +9607,11 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div className="section-title" style={{textAlign:"center",marginBottom:32}}>Everything you want to know.</div>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         {[
-          {q:"How much does CastSlate cost for actors?",a:"Free accounts get 1 headshot and 3 casting submissions per day. Premium is $9.99/month and gives you unlimited submissions, 1 main headshot + up to 12 gallery photos, and up to 5 video reel links. No hidden tiers, no per-submission fees."},
+          {q:"How much does CastSlate cost for actors?",a:"Free accounts get 1 headshot and 3 casting submissions per day. Premium is $9.99/month and gives you unlimited submissions and unlimited media uploads — photos, videos, and Cast Me As clips. No hidden tiers, no per-submission fees."},
           {q:"How is CastSlate different from legacy casting websites?",a:"On older platforms, your submission lands in a grid where a CD can scan 80 faces in 20 seconds. On CastSlate, every submission is full-screen, one at a time, swipe-style. CDs decide on you individually. No one gets skipped."},
           {q:"Can minors (under 18) sign up?",a:"Only with a parent or legal guardian managing the account. We require guardian verification and comply with COPPA and state child-performer laws."},
           {q:"Is this SAG-AFTRA friendly?",a:"Yes. SAG-AFTRA, AEA, and non-union castings are all supported. Union status is displayed on every casting post and can be filtered."},
-          {q:"How does CastSlate work?",a:"Create a free profile, browse open castings, and apply. Free accounts can submit to 3 castings per day. Upgrade to Premium ($9.99/month) for unlimited submissions, 1 main headshot + 12 gallery photos, and video reels. Casting directors review every submission individually."}
+          {q:"How does CastSlate work?",a:"Create a free profile, browse open castings, and apply. Free accounts can submit to 3 castings per day. Upgrade to Premium ($9.99/month) for unlimited submissions and unlimited media uploads. Casting directors review every submission individually."}
         ].map((f,i)=>
           <div key={i} className="card" style={{padding:0,cursor:"pointer"}} onClick={()=>setOpenFaq(openFaq===i?-1:i)}>
             <div style={{padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:16}}>
@@ -9772,8 +9770,8 @@ function CastingFitDNAEditor({session,isPremium,onNavigate}){
   // ── add type ───────────────────────────────────────────────────────────────
   const addEntry=async()=>{
     if(!addType){setErr("Please choose a casting type.");return;}
-    if(entries.length>=maxTypes){
-      setErr(`${isPremium?"Premium plan":"Free plan"} limit is ${maxTypes} casting types.${!isPremium?" Upgrade to Premium for up to 5.":""}`);
+    if(!isPremium&&entries.length>=maxTypes){
+      setErr(`Free plan limit is ${maxTypes} casting types. Upgrade to Premium for unlimited.`);
       return;
     }
     if(entries.some(e=>e.casting_type===addType)){setErr("You already have that casting type.");return;}
@@ -9894,7 +9892,7 @@ function CastingFitDNAEditor({session,isPremium,onNavigate}){
     <div style={{background:isPremium?"rgba(99,60,180,0.07)":"rgba(26,26,46,0.06)",border:"1px solid var(--bdr)",borderRadius:10,padding:"14px 18px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
       <span style={{fontSize:13,color:"var(--t2)"}}>
         {isPremium
-          ?<>⭐ <strong>Premium:</strong> up to {PREMIUM_PLAN.castingTypes} casting types · 1 mood clip + {PREMIUM_PLAN.castingSupportingPhotos} photos per type</>
+          ?<>⭐ <strong>Premium:</strong> unlimited casting types · 1 mood clip + {PREMIUM_PLAN.castingSupportingPhotos} supporting photos per type</>
           :<>Free Plan: up to {FREE_PLAN.castingTypes} casting types · no clips or photos. <strong>Upgrade for full Cast Me As.</strong></>}
       </span>
       {!isPremium&&<button className="btn-s btn-sm" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade — {PREMIUM_PRICE}</button>}
@@ -9909,14 +9907,14 @@ function CastingFitDNAEditor({session,isPremium,onNavigate}){
       </select>
       <button className="btn-p btn-sm" onClick={addEntry} disabled={!addType}>+ Add</button>
     </div>}
-    {entries.length>=maxTypes&&<div style={{fontSize:13,color:"var(--t3)",marginBottom:16}}>
-      You've added the maximum {maxTypes} casting types for your plan.{!isPremium&&<> <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium</span> for up to 5.</>}
+    {!isPremium&&entries.length>=maxTypes&&<div style={{fontSize:13,color:"var(--t3)",marginBottom:16}}>
+      You've added the maximum {maxTypes} casting types for your free plan. <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium</span> for unlimited.
     </div>}
 
     {entries.length===0&&<div className="card" style={{padding:40,textAlign:"center",color:"var(--t3)"}}>
       <p style={{fontSize:22,marginBottom:8}}>🎭</p>
       <p style={{fontWeight:700,marginBottom:4}}>No casting types yet</p>
-      <p style={{fontSize:13}}>Choose up to {maxTypes} types that describe what you're best cast as.</p>
+      <p style={{fontSize:13}}>{isPremium?"Add unlimited casting types that describe what you're best cast as.":"Choose up to "+maxTypes+" types that describe what you're best cast as."}</p>
     </div>}
 
     {/* entry cards */}
@@ -10315,8 +10313,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
     if(!file)return;
     const _premium=profile?.membership_status==="active";
     if(!_premium){setErr(UPGRADE_MSG);return;}
-    const _maxAdditional=PREMIUM_PLAN.additionalPhotos; // 12
-    if(photos.length>=_maxAdditional){setErr(`Maximum ${PREMIUM_PLAN.additionalPhotos} gallery photos allowed on Premium.`);return;}
+    // Premium: no gallery photo quantity cap
     setUploading(true);setErr("");
     try{
       const ext=(file.name&&file.name.split(".").pop()||"jpg").toLowerCase();
@@ -10390,8 +10387,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
   const isPremium=profile.membership_status==="active";
   const planLimits=isPremium?PREMIUM_PLAN:FREE_PLAN;
   const allPhotos=[profile.headshot_url,...photos].filter(Boolean);
-  const maxAdditional=planLimits.additionalPhotos;  // 0 for free, 12 for premium
-  const maxVideos=planLimits.videos;                 // 0 for free, 5 for premium
+  const maxAdditional=planLimits.additionalPhotos;  // 0 for free, Infinity for premium
+  const maxVideos=planLimits.videos;                 // 0 for free, Infinity for premium
   // ── Showcase Order tab: build merged list of all media in the saved order ──
   const _scPhotoSet=new Set(photos);
   const _scVideoMap={};mediaItems.forEach(v=>{_scVideoMap[v.id]=v;});
@@ -10466,8 +10463,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
     {/* ── TABS ── */}
     <div className="tabs" style={{marginBottom:24}}>
       <button className={`tab ${tab==="profile"?"active":""}`} onClick={()=>setTab("profile")}>Edit Profile</button>
-      {!isCD&&<button className={`tab ${tab==="photos"?"active":""}`} onClick={()=>setTab("photos")}>{isPremium?`Gallery Photos (${photos.length}/${maxAdditional})`:`Photos (${allPhotos.length}/1)`}</button>}
-      {!isCD&&<button className={`tab ${tab==="videos"?"active":""}`} onClick={()=>setTab("videos")}>Videos ({mediaItems.length}/{maxVideos||"—"}{!isPremium?" · Premium":""})</button>}
+      {!isCD&&<button className={`tab ${tab==="photos"?"active":""}`} onClick={()=>setTab("photos")}>{isPremium?`Gallery Photos (${photos.length})`:`Photos (${allPhotos.length}/1)`}</button>}
+      {!isCD&&<button className={`tab ${tab==="videos"?"active":""}`} onClick={()=>setTab("videos")}>Videos ({mediaItems.length}{!isPremium?" · Premium":""})</button>}
       {!isCD&&<button className={`tab ${tab==="showcase"?"active":""}`} onClick={()=>setTab("showcase")}>Showcase Order</button>}
       {!isCD&&<button className={`tab ${tab==="skills"?"active":""}`} onClick={()=>setTab("skills")}>Skills ({selectedSkills.length})</button>}
       {!isCD&&<button className={`tab ${tab==="credits"?"active":""}`} onClick={()=>setTab("credits")}>Credits ({dbCredits.length})</button>}
@@ -10561,7 +10558,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
             <h3 style={{fontSize:15,fontWeight:700,marginBottom:2}}>Photo Gallery</h3>
             <p style={{fontSize:12,color:"var(--t3)"}}>
               {isPremium
-                ?`${photos.length} of ${maxAdditional} gallery photos · Main headshot is separate`
+                ?`${photos.length} gallery photo${photos.length!==1?"s":""} · Main headshot is separate`
                 :`${allPhotos.length} of 1 headshot included on Free Plan`}
             </p>
           </div>
@@ -10639,7 +10636,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
       {/* Free plan info + upgrade CTA */}
       {!isPremium&&(
         <div style={{padding:"14px 18px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
-          <span style={{fontSize:13,color:"var(--t2)"}}>Free Plan: 1 headshot included. Upgrade to Premium for 1 main headshot + 12 gallery photos.</span>
+          <span style={{fontSize:13,color:"var(--t2)"}}>Free Plan: 1 headshot included. Upgrade to Premium for unlimited gallery photos and videos.</span>
           <button className="btn-s btn-sm" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade — {PREMIUM_PRICE}</button>
         </div>
       )}
@@ -10657,12 +10654,12 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
         <div style={{textAlign:"center",padding:"40px 24px"}}>
           <div style={{fontSize:36,marginBottom:12}}>🎬</div>
           <h4 style={{fontSize:16,fontWeight:700,marginBottom:8}}>Premium Feature</h4>
-          <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.7,marginBottom:20,maxWidth:360,margin:"0 auto 20px"}}>Upgrade to Premium to upload up to {PREMIUM_PLAN.videos} videos. Videos are stored and played directly on your profile.</p>
+          <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.7,marginBottom:20,maxWidth:360,margin:"0 auto 20px"}}>Upgrade to Premium to upload unlimited videos. Videos are stored and played directly on your profile.</p>
           <button className="btn-p" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium — {PREMIUM_PRICE}</button>
         </div>
       ):(
         <>
-          <p style={{fontSize:12,color:"var(--t3)",marginBottom:8}}>Upload up to {maxVideos} videos (MP4, MOV, WebM · max 100 MB each). They appear on your public profile.</p>
+          <p style={{fontSize:12,color:"var(--t3)",marginBottom:8}}>Upload videos (MP4, MOV, WebM · max 100 MB each). They appear on your public profile.</p>
           <div style={{marginBottom:16,padding:"10px 14px",background:"#111",border:"1px solid #333",borderRadius:8,fontSize:12,color:"#fff"}}>
             ★ <strong>Showcase tip:</strong> Go to the <strong>Showcase Order</strong> tab to arrange which videos and photos appear first on your public profile.
           </div>
@@ -10685,8 +10682,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
             ))}
           </div>}
           {/* Upload new video */}
-          {mediaItems.length<maxVideos&&<>
-            <div style={{marginBottom:10}}>
+          <div style={{marginBottom:10}}>
               <label className="label">Video Title (optional)</label>
               <input id="video-title-input" className="input" placeholder="e.g. Drama Reel 2025" style={{marginBottom:8}}/>
             </div>
@@ -10713,8 +10709,6 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
                 finally{setVideoUploading(false);e.target.value="";}
               }}/>
             </label>
-          </>}
-          {mediaItems.length>=maxVideos&&<p style={{fontSize:12,color:"var(--t3)"}}>You've reached the {maxVideos}-video limit on your plan.</p>}
         </>
       )}
     </div>}
@@ -10990,7 +10984,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
     {tab==="cast-me-as"&&!isCD&&<div className="card" style={{padding:24}}>
       <div style={{marginBottom:16}}>
         <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Cast Me As — Casting Fit DNA</h3>
-        <p style={{fontSize:13,color:"var(--t3)",lineHeight:1.6}}>Choose the archetypes and energies you're best cast as. These appear as visual cards on your public profile so casting directors can instantly see your range. Free plan: up to {FREE_PLAN.castingTypes} types. Premium: up to {PREMIUM_PLAN.castingTypes} types with mood clips and supporting photos.</p>
+        <p style={{fontSize:13,color:"var(--t3)",lineHeight:1.6}}>Choose the archetypes and energies you're best cast as. These appear as visual cards on your public profile so casting directors can instantly see your range. Free plan: up to {FREE_PLAN.castingTypes} types. Premium: unlimited types with mood clips and supporting photos.</p>
       </div>
       <CastingFitDNAEditor session={session} isPremium={isPremium} onNavigate={onNavigate}/>
     </div>}
