@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260526-234513 -->
-  <meta name="build-version" content="20260526-234513"/>
+  <!-- BUILD: 20260527-000226 -->
+  <meta name="build-version" content="20260527-000226"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260526-234513";
+      var B="20260527-000226";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -7589,36 +7589,42 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     </>);
   };
 
-  // ─── Folder card (non-pending list item w/ move-between-folder buttons)
+  // ─── Folder card — vertical style matching the swiper card aesthetic
   const FolderCard=({a})=>{
-    const t=a.profiles||{};
-    const img=a.selected_photo_url||t.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?";
-    const statusTag=a.status==='selected'?'tag-grn':a.status==='hold'?'tag-acc':a.status==='rejected'?'tag-red':'';
-    return(<div className="card" style={{padding:14,display:"flex",gap:12,alignItems:"stretch",overflow:"hidden",width:"100%",boxSizing:"border-box"}}>
-      <img src={img} alt="" style={{width:72,height:90,objectFit:"cover",borderRadius:8,cursor:"pointer",flexShrink:0}} onClick={()=>setCdProfileOverlay(buildTalentView(a))}/>
-      <div style={{flex:1,display:"flex",flexDirection:"column",gap:4,minWidth:0}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
-          <div style={{minWidth:0,flex:1}}>
-            <h4 style={{fontSize:15,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}} onClick={()=>setCdProfileOverlay(buildTalentView(a))}>{t.display_name||"Applicant"}</h4>
-            <p style={{fontSize:12,color:"var(--t2)"}}>{[t.age,t.gender,t.location,t.union_status].filter(Boolean).join(" · ")||"—"}</p>
-          </div>
-          <span className={"badge "+statusTag} style={{fontSize:10,textTransform:"uppercase",flexShrink:0}}>{a.status}</span>
+    const tp=a.profiles||{};
+    const img=a.selected_photo_url||tp.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?";
+    const statusColor=a.status==='selected'?{bg:"rgba(46,204,113,0.15)",color:"#1d7b44"}:a.status==='hold'?{bg:"rgba(200,137,0,0.13)",color:"#c88900"}:a.status==='rejected'?{bg:"rgba(192,57,43,0.12)",color:"#c0392b"}:{bg:"var(--s2)",color:"var(--t2)"};
+    return(
+      <div style={{display:"flex",flexDirection:"column",borderRadius:16,overflow:"hidden",background:"var(--s1)",border:"1px solid var(--bdr)",boxShadow:"0 4px 16px rgba(0,0,0,0.06)"}}>
+        {/* Headshot */}
+        <div style={{position:"relative",aspectRatio:"3/4",overflow:"hidden",background:"var(--s2)",cursor:"pointer"}} onClick={()=>setCdProfileOverlay(buildTalentView(a))}>
+          <img src={img} alt={tp.display_name||""} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} draggable="false"/>
+          <span style={{position:"absolute",top:10,right:10,fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:.8,padding:"3px 8px",borderRadius:99,background:statusColor.bg,color:statusColor.color}}>{a.status}</span>
         </div>
-        {a.cover_note&&<p style={{fontSize:12,color:"var(--t3)",fontStyle:"italic",marginTop:2}}>"{String(a.cover_note).slice(0,120)}{String(a.cover_note).length>120?"…":""}"</p>}
-        <div style={{display:"flex",gap:6,marginTop:"auto",flexWrap:"wrap"}}>
-          {a.status!=='selected'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"6px 10px"}} onClick={()=>moveTo(a.id,'select')}>→ Select</button>}
-          {a.status!=='hold'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"6px 10px"}} onClick={()=>moveTo(a.id,'hold')}>→ Hold</button>}
-          {a.status!=='rejected'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"6px 10px"}} onClick={()=>moveTo(a.id,'reject')}>→ Reject</button>}
-          {a.status==='selected'&&<button className="btn-p btn-sm" style={{fontSize:11,padding:"6px 10px",marginLeft:"auto"}} onClick={()=>setMsgApp(a)}>💬 Message</button>}
+        {/* Info */}
+        <div style={{padding:"12px 14px 14px",display:"flex",flexDirection:"column",gap:3,flex:1}}>
+          <h4 style={{fontSize:15,fontWeight:800,cursor:"pointer",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",margin:0}} onClick={()=>setCdProfileOverlay(buildTalentView(a))}>{tp.display_name||"Applicant"}</h4>
+          <p style={{fontSize:12,color:"var(--t2)",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{[tp.age,tp.gender,tp.location,tp.union_status].filter(Boolean).join(" · ")||"—"}</p>
+          {(tp.skills||[]).length>0&&<div style={{display:"flex",gap:4,flexWrap:"wrap",marginTop:2}}>
+            {(tp.skills||[]).slice(0,3).map((s,i)=><span key={i} style={{background:"var(--s2)",padding:"2px 7px",borderRadius:5,fontSize:10,color:"var(--t2)"}}>{s}</span>)}
+          </div>}
+          {a.cover_note&&<p style={{fontSize:11,color:"var(--t3)",fontStyle:"italic",margin:"4px 0 0",overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>"{a.cover_note}"</p>}
+          {/* Action buttons */}
+          <div style={{display:"flex",gap:5,marginTop:10,flexWrap:"wrap",alignItems:"center"}}>
+            {a.status!=='selected'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"5px 9px"}} onClick={()=>moveTo(a.id,'select')}>→ Select</button>}
+            {a.status!=='hold'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"5px 9px"}} onClick={()=>moveTo(a.id,'hold')}>→ Hold</button>}
+            {a.status!=='rejected'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"5px 9px"}} onClick={()=>moveTo(a.id,'reject')}>→ Reject</button>}
+            {a.status==='selected'&&<button className="btn-p btn-sm" style={{fontSize:11,padding:"5px 9px",marginLeft:"auto"}} onClick={()=>setMsgApp(a)}>💬 Message</button>}
+          </div>
         </div>
       </div>
-    </div>);
+    );
   };
 
   if(!uid)return(<div className="page page-wide"><p>Not logged in.</p></div>);
   if(loading)return(<div className="page page-wide" style={{justifyContent:"center"}}><CastSlateLoader text="Loading your dashboard…"/></div>);
 
-  return(<div className="page page-wide" style={{overflowX:"hidden"}}>
+  return(<div className="page page-wide">
     <div className="flex-between mb-20">
       <div style={{minWidth:0,flex:1,overflow:"hidden"}}>
         <div className="section-label">{t('cd.title')}</div>
