@@ -10449,8 +10449,7 @@ function CastingFitDNAEditor({session,isPremium,onNavigate}){
 function CastMeAsSection({talentId}){
   const [entries,setEntries]=useState([]);
   const [loading,setLoading]=useState(true);
-  const [videoModal,setVideoModal]=useState(null); // {url}
-  const [lightbox,setLightbox]=useState(null); // {photos:[...], idx:0}
+  const [mediaViewer,setMediaViewer]=useState(null); // {items:[{type,url}], idx}
 
   useEffect(()=>{
     if(!talentId)return;
@@ -10468,29 +10467,7 @@ function CastMeAsSection({talentId}){
   if(loading||entries.length===0)return null;
 
   return(<div className="card mt-20">
-    {/* Full-screen video modal */}
-    {videoModal&&(
-      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.96)",zIndex:9999,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:16}}
-        onClick={()=>setVideoModal(null)}>
-        <button onClick={e=>{e.stopPropagation();setVideoModal(null);}} style={{position:"absolute",top:18,right:22,background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,zIndex:1}}>×</button>
-        <video src={videoModal.url} autoPlay controls playsInline
-          style={{maxWidth:"92vw",maxHeight:"85vh",borderRadius:10,boxShadow:"0 8px 40px rgba(0,0,0,0.7)",background:"#000",outline:"none"}}
-          onClick={e=>e.stopPropagation()}/>
-      </div>
-    )}
-    {/* Cast Me As lightbox */}
-    {lightbox&&(
-      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center"}}
-        onClick={()=>setLightbox(null)}>
-        <img src={lightbox.photos[lightbox.idx]} alt="" style={{maxWidth:"90vw",maxHeight:"88vh",objectFit:"contain",borderRadius:10,boxShadow:"0 8px 40px rgba(0,0,0,0.7)"}}/>
-        <button onClick={e=>{e.stopPropagation();setLightbox(null);}} style={{position:"absolute",top:18,right:22,background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>
-        {lightbox.photos.length>1&&<>
-          <button onClick={e=>{e.stopPropagation();setLightbox(x=>({...x,idx:(x.idx-1+x.photos.length)%x.photos.length}));}} style={{position:"absolute",left:16,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>‹</button>
-          <button onClick={e=>{e.stopPropagation();setLightbox(x=>({...x,idx:(x.idx+1)%x.photos.length}));}} style={{position:"absolute",right:70,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>›</button>
-        </>}
-        <div style={{position:"absolute",bottom:18,left:"50%",transform:"translateX(-50%)",color:"rgba(255,255,255,0.5)",fontSize:12}}>{lightbox.idx+1} / {lightbox.photos.length}</div>
-      </div>
-    )}
+    {mediaViewer&&<MediaViewer items={mediaViewer.items} startIdx={mediaViewer.idx} onClose={()=>setMediaViewer(null)}/>}
     <h3 style={{fontSize:18,fontWeight:700,marginBottom:4}}>Cast Me As</h3>
     <p style={{fontSize:13,color:"var(--t3)",marginBottom:20}}>Casting identity — the energies and archetypes this actor plays best.</p>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:16}}>
@@ -10506,7 +10483,10 @@ function CastMeAsSection({talentId}){
           </div>
 
           {/* mood clip — click opens full-screen modal */}
-          {hasClip&&<div style={{background:"#000",position:"relative",cursor:"pointer"}} onClick={()=>setVideoModal({url:entry.mood_clip_url})}>
+          {hasClip&&<div style={{background:"#000",position:"relative",cursor:"pointer"}} onClick={()=>{
+              const items=[{type:"video",url:entry.mood_clip_url},...photos.map(u=>({type:"photo",url:u}))];
+              setMediaViewer({items,idx:0});
+            }}>
             <video src={`${entry.mood_clip_url}#t=0.1`} muted playsInline style={{width:"100%",maxHeight:200,display:"block",objectFit:"cover",opacity:0.7,pointerEvents:"none"}}/>
             <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
               <div style={{width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>▶</div>
@@ -10517,7 +10497,11 @@ function CastMeAsSection({talentId}){
           {/* supporting photos — larger, clickable */}
           {photos.length>0&&<div style={{display:"flex",gap:6,padding:"10px 12px",background:"var(--s2)",flexWrap:"wrap"}}>
             {photos.map((u,i)=>(
-              <img key={i} src={u} alt="" onClick={()=>setLightbox({photos,idx:i})}
+              <img key={i} src={u} alt="" onClick={()=>{
+                const items=[...(hasClip?[{type:"video",url:entry.mood_clip_url}]:[]),...photos.map(p=>({type:"photo",url:p}))];
+                const idx=hasClip?i+1:i;
+                setMediaViewer({items,idx});
+              }}
                 style={{width:88,height:110,objectFit:"cover",borderRadius:8,border:"1px solid var(--bdr)",cursor:"zoom-in",flexShrink:0}}/>
             ))}
           </div>}
