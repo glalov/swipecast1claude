@@ -5205,15 +5205,19 @@ function MediaViewer({items,startIdx,onClose}){
       <button onClick={e=>{e.stopPropagation();onClose();}}
         style={{position:"absolute",top:14,right:18,background:"rgba(255,255,255,0.13)",border:"none",borderRadius:"50%",width:46,height:46,fontSize:24,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2,backdropFilter:"blur(4px)"}}>×</button>
 
-      {/* Media — key on idx so video restarts; animClass drives slide */}
+      {/* Media — key on idx so video restarts; animClass drives slide.
+          Both photo and video fill the full 90vw×86vh viewport box and use
+          object-fit:contain so content is maximised without distortion.
+          Portrait content gets pillar-boxed; landscape gets letter-boxed —
+          the dark overlay behind acts as natural black bars. */}
       <div key={idx} className={animClass}
-        style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10,zIndex:1}}
+        style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,zIndex:1}}
         onClick={e=>e.stopPropagation()}>
         {item.type==="photo"
-          ?<img src={item.url} alt={item.title||""} style={{maxWidth:"90vw",maxHeight:"86vh",width:"auto",height:"auto",objectFit:"contain",borderRadius:8,boxShadow:"0 8px 40px rgba(0,0,0,0.7)",display:"block"}}/>
-          :<video src={item.url} autoPlay controls playsInline style={{maxWidth:"90vw",maxHeight:"86vh",width:"auto",height:"auto",borderRadius:8,boxShadow:"0 8px 40px rgba(0,0,0,0.5)",background:"#000",outline:"none",display:"block"}}/>
+          ?<img src={item.url} alt={item.title||""} style={{width:"90vw",height:"86vh",objectFit:"contain",borderRadius:8,display:"block"}}/>
+          :<video src={item.url} autoPlay controls playsInline style={{width:"90vw",height:"86vh",objectFit:"contain",borderRadius:8,background:"#000",outline:"none",display:"block"}}/>
         }
-        {item.title&&<div style={{color:"rgba(255,255,255,0.75)",fontSize:13,fontWeight:600,background:"rgba(0,0,0,0.5)",padding:"3px 14px",borderRadius:6,maxWidth:"80vw",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.title}</div>}
+        {item.title&&<div style={{color:"rgba(255,255,255,0.75)",fontSize:12,fontWeight:600,background:"rgba(0,0,0,0.55)",padding:"3px 14px",borderRadius:6,maxWidth:"80vw",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.title}</div>}
       </div>
 
       {/* Left arrow */}
