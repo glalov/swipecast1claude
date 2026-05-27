@@ -1720,16 +1720,14 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 }
 /* ─── Industry partners marquee — infinite horizontal scroll of real studio logos ─── */
 .partners-marquee{position:relative;overflow:hidden;width:100%;padding:6px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);}
-.partners-track{display:flex;gap:0;align-items:center;width:max-content;animation:partnersSlide 48s linear infinite;will-change:transform;}
+.partners-track{display:flex;align-items:center;width:max-content;animation:partnersSlide 48s linear infinite;will-change:transform;}
 .partners-marquee:hover .partners-track{animation-play-state:paused;}
-.partners-tile{flex-shrink:0;height:72px;display:flex;align-items:center;justify-content:center;padding:0 40px;}
-.partners-tile img{max-height:44px;max-width:160px;object-fit:contain;display:block;opacity:.5;transition:opacity .25s ease;filter:grayscale(1) brightness(0);}
+.partners-tile{flex-shrink:0;width:190px;height:72px;display:flex;align-items:center;justify-content:center;}
+.partners-tile img{max-height:44px;max-width:150px;height:44px;width:auto;object-fit:contain;display:block;opacity:.5;transition:opacity .25s ease;filter:grayscale(1) brightness(0);}
 .partners-tile:hover img{opacity:.8;}
-.partners-text-logo{font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:26px;color:#000;opacity:.5;transition:opacity .25s ease;letter-spacing:-0.5px;line-height:1;display:block;}
-.partners-tile:hover .partners-text-logo{opacity:.8;}
 @keyframes partnersSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
 @media (prefers-reduced-motion: reduce){.partners-track{animation:none;}}
-@media (max-width:768px){.partners-tile{height:56px;padding:0 24px;}.partners-tile img{max-height:30px;max-width:120px;}.partners-text-logo{font-size:20px;}}
+@media (max-width:768px){.partners-tile{width:148px;height:56px;}.partners-tile img{max-height:30px;max-width:110px;height:30px;}}
 /* ─── Talent Dashboard responsive grid ─── */
 .td-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
@@ -9867,7 +9865,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
               {name:"Apple TV+",src:"https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg"},
               {name:"YouTube",src:"https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg"},
               {name:"Universal Pictures",src:"https://upload.wikimedia.org/wikipedia/commons/b/b6/Universal_Pictures_logo.svg"},
-              {name:"A24",text:true},
+              {name:"A24",src:"https://upload.wikimedia.org/wikipedia/commons/b/b7/A24_logo.svg"},
               {name:"Sony Pictures",src:"https://upload.wikimedia.org/wikipedia/commons/d/d7/Sony_Pictures_logo.svg"},
               {name:"Lionsgate",src:"https://upload.wikimedia.org/wikipedia/commons/a/ad/Lionsgate_Studios_logo.svg"}
             ];
@@ -9875,10 +9873,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             const doubled=[...PARTNERS,...PARTNERS];
             return doubled.map((p,i)=>(
               <div key={`${p.name}-${i}`} className="partners-tile" title={p.name} aria-label={p.name}>
-                {p.text
-                  ? <span className="partners-text-logo">{p.name}</span>
-                  : <img src={p.src} alt={p.name} loading="eager" decoding="async" draggable="false" crossOrigin="anonymous"/>
-                }
+                <img src={p.src} alt={p.name} loading="eager" decoding="async" draggable="false" crossOrigin="anonymous"/>
               </div>
             ));
           })()}
