@@ -1312,6 +1312,9 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .credit-meta{font-size:13px;color:#666;}
 @media(max-width:640px){.credit-row{display:block;padding:12px 0;}.credit-year{font-size:12px;color:var(--t3);margin-bottom:2px;}.credit-title{font-size:14px;font-weight:700;margin-bottom:2px;}.credit-role{font-size:13px;color:#444;margin-bottom:2px;}.credit-meta{font-size:12px;color:#666;}}
 .swipe-layout{display:grid;grid-template-columns:1fr 380px;gap:32px;min-height:70vh;width:100%;}
+.folder-cards-grid{display:grid;gap:12px;grid-template-columns:repeat(4,1fr);}
+@media(max-width:900px){.folder-cards-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.folder-cards-grid{grid-template-columns:1fr;}}
 .swipe-area{display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .swipe-card-wrap{position:relative;width:340px;height:480px;margin-bottom:20px;}
 .s-card{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:18px;overflow:hidden;background:var(--s1);border:1px solid var(--bdr);user-select:none;touch-action:none;box-shadow:0 8px 30px rgba(0,0,0,0.08);}
@@ -7679,7 +7682,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           <div className="card" style={{textAlign:"center",padding:48}}>
             <p style={{color:"var(--t3)"}}>No submissions in {folder}{search?" matching that search":""}.</p>
           </div>:
-          <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"repeat(auto-fill,minmax(min(340px,100%),1fr))",gap:12}}>
+          <div className="folder-cards-grid">
             {folderList.map(a=><FolderCard key={a.id} a={a}/>)}
           </div>}
       </>}
