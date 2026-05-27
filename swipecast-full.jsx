@@ -4715,6 +4715,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const [cdProfile,setCdProfile]=useState(null); // CD's profile for verification badges
   const [isSaved,setIsSaved]=useState(false);
   const [savingCasting,setSavingCasting]=useState(false);
+  const [copyLinkOk,setCopyLinkOk]=useState(false);
   const submittingRef=useRef(false);
   const withTimeout=(promise,ms=20000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Please try again.`)),ms))]);
   const isDbCasting=!!(casting&&casting.id&&typeof casting.id==="string"&&casting.id.length>20);
@@ -4887,6 +4888,10 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           onClick={handleToggleSave}
           style={{fontSize:12,padding:"5px 12px",borderRadius:7,border:`1px solid ${isSaved?"var(--acc)":"var(--bdr)"}`,background:isSaved?"rgba(99,60,180,0.08)":"var(--s2)",color:isSaved?"var(--acc)":"var(--t2)",cursor:savingCasting?"not-allowed":"pointer",fontFamily:"inherit",fontWeight:600,transition:"all .15s"}}
         >{savingCasting?"…":isSaved?"✓ Saved":"🔖 Save"}</button>}
+        {isDbCasting&&casting?.slug&&<button
+          onClick={()=>{const url=`${window.location.origin}/casting/${encodeURIComponent(casting.slug)}`;try{navigator.clipboard.writeText(url).then(()=>{setCopyLinkOk(true);setTimeout(()=>setCopyLinkOk(false),2200);});}catch(_){};}}
+          style={{fontSize:12,padding:"5px 12px",borderRadius:7,border:"1px solid var(--bdr)",background:"var(--s2)",color:copyLinkOk?"var(--acc)":"var(--t2)",cursor:"pointer",fontFamily:"inherit",fontWeight:600,transition:"all .15s",whiteSpace:"nowrap"}}
+        >{copyLinkOk?"✓ Casting link copied":"⎘ Copy Link"}</button>}
         <button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this casting">⚑ Report</button>
       </div>
     </div>
@@ -5751,6 +5756,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       if(error)throw error;
       const mapped=(cs||[]).map(c=>({
         id:c.id,
+        slug:c.slug||null,
         cd_id:c.cd_id||null,
         title:c.title,
         type:c.type||"Film",
@@ -9482,7 +9488,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("FCS timed out after 10s")),10000);});
       const {data,error}=await Promise.race([
         window.sb.from("castings")
-          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq("status","open").eq("published",true)
           .order("featured",{ascending:false})
           .order("created_at",{ascending:false})
@@ -9495,6 +9501,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       // Map to the shape CastingDetailPage / SearchPage already understand
       const mapped=(data||[]).map(c=>({
         id:c.id,
+        slug:c.slug||null,
         title:c.title,
         type:c.type||"Film",
         prod:c.prod||"",
@@ -14619,7 +14626,8 @@ function App(){
       if(opts.talentSlug){url=`/talent/${encodeURIComponent(opts.talentSlug)}`;st.talentSlug=opts.talentSlug;}
       else{url=window.location.pathname||"/";}
     }
-    else if(p==="casting-gate"){url="/browse-castings";}  // gate is not its own page
+    else if(p==="casting-gate"&&opts.slug){url=`/casting/${encodeURIComponent(opts.slug)}`;st.castingSlug=opts.slug;}
+    else if(p==="casting-gate"){url="/browse-castings";}  // fallback: no slug known
     window.history.pushState(st,"",url);
   }catch(e){}};
   const navigate=useCallback((p,opts={})=>{
@@ -14642,29 +14650,30 @@ function App(){
   const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");pushHist("auth-gate");};
   const handleViewCasting=(c,from)=>{
     window.scrollTo(0,0);
+    const castingSlug=c.slug||String(c.id);
     if(!isLoggedIn){
       setPendingApply({casting:c,role:null});
       setViewingCasting(c);
       setPrevPage(from||page);
       setPage("casting-gate");
-      pushHist("casting-gate");
+      pushHist("casting-gate",{slug:castingSlug});
       return;
     }
     setPrevPage(from||page);
     setViewingCasting(c);
     setPage("casting-detail");
-    pushHist("casting-detail",{slug:c.slug});
+    pushHist("casting-detail",{slug:castingSlug});
   };
   const clearPendingApply=useCallback(()=>setPendingApply(null),[]);
   const viewCastingById=useCallback(async(castingId)=>{
     if(!castingId)return;
     try{
       const{data,error}=await window.sb.from("castings")
-        .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
         .eq("id",castingId).maybeSingle();
       if(error||!data)return;
       const c={
-        id:data.id,title:data.title,type:data.type||"Film",prod:data.prod||"",
+        id:data.id,slug:data.slug||null,title:data.title,type:data.type||"Film",prod:data.prod||"",
         tagline:data.tagline||"",synopsis:data.synopsis||"",desc:data.synopsis||data.tagline||"",
         location:data.location||"",pay:data.pay||"",rate:data.pay||"",
         deadline:data.deadline||"",union:data.union_status||"",submissions:0,
@@ -14681,10 +14690,10 @@ function App(){
         })),
       };
       setPrevPage(page);setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");
-      pushHist("casting-detail",{id:castingId});
+      pushHist("casting-detail",{slug:data.slug||castingId});
     }catch(e){console.warn("[viewCastingById]",e);}
   },[page]);
-  const completeAuth=()=>{if(pendingApply){const c=pendingApply.casting;const r=pendingApply.role;setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c?.slug});if(!r)setPendingApply(null);}else{setPage("search");pushHist("search");}};
+  const completeAuth=()=>{if(pendingApply){const c=pendingApply.casting;const r=pendingApply.role;setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c?.slug||String(c?.id)});if(!r)setPendingApply(null);}else{setPage("search");pushHist("search");}};
   const onLoggedIn=async(user)=>{
     // onAuthStateChange SIGNED_IN will populate myProfile in parallel — do NOT call
     // loadProfile here too (that created a double-fetch race). Fetch a minimal row
@@ -14768,10 +14777,12 @@ function App(){
     let cancelled=false;
     (async()=>{
       try{
-        const field=isNaN(Number(slug))?"slug":"id";
+        // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx — use as "id", else use as "slug"
+        const isUUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+        const field=isUUID?"id":"slug";
         const {data,error}=await window.sb.from("castings")
           .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
-          .eq(field,field==="id"?Number(slug):slug).maybeSingle();
+          .eq(field,slug).maybeSingle();
         if(cancelled||error||!data)return;
         const c={
           id:data.id,slug:data.slug||slug,title:data.title,type:data.type||"Film",

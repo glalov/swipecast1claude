@@ -102,6 +102,7 @@ create table if not exists public.castings (
   id uuid primary key default gen_random_uuid(),
   cd_id uuid not null references public.profiles(id) on delete cascade,
   title text not null,
+  slug text unique,               -- URL-safe slug, auto-generated from title + id prefix
   type text,
   prod text,
   tagline text,
@@ -119,6 +120,7 @@ create table if not exists public.castings (
 create index if not exists castings_cd_id_idx on public.castings(cd_id);
 create index if not exists castings_status_idx on public.castings(status);
 create index if not exists castings_type_idx on public.castings(type);
+create index if not exists castings_slug_idx on public.castings(slug);
 
 -- ═══════════════════════════════
 -- ROLES (a casting has many roles)
