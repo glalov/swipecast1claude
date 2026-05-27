@@ -14360,7 +14360,9 @@ function App(){
       if(slug)st.castingSlug=slug;
       if(tslug)st.talentSlug=tslug;
       if(!window.history.state||!window.history.state.swipecast){
-        window.history.replaceState(st,"",window.location.pathname||"/");
+        // Preserve hash (e.g. /admin#users, /dashboard#c=123) when seeding initial state
+        const fullUrl=(window.location.pathname||"/")+window.location.search+window.location.hash;
+        window.history.replaceState(st,"",fullUrl);
       }
     }catch(e){}
     // Back/forward button handler — restore page from history state or URL
