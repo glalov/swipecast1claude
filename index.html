@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260527-195523 -->
-  <meta name="build-version" content="20260527-195523"/>
+  <!-- BUILD: 20260527-201846 -->
+  <meta name="build-version" content="20260527-201846"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260527-195523";
+      var B="20260527-201846";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -4764,10 +4764,20 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
     };
   },[]);
 
-  // Attach stream to preview video element whenever it changes
+  // Attach live stream to the preview video element.
+  // Must cover BOTH "preview" and "recording" phases because each phase
+  // returns different JSX — React unmounts/remounts the <video> element
+  // when phase switches, clearing srcObject. Without this, the recording
+  // screen is black even though the stream is still active.
   React.useEffect(()=>{
-    if(phase==="preview"&&previewVidRef.current&&streamRef.current){
-      previewVidRef.current.srcObject=streamRef.current;
+    if((phase==="preview"||phase==="recording")&&streamRef.current){
+      const el=previewVidRef.current;
+      if(el){
+        el.srcObject=streamRef.current;
+        // Explicit play() is required on Safari/iOS — autoPlay attribute
+        // alone is not always respected when srcObject is set programmatically.
+        el.play().catch(()=>{});
+      }
     }
   },[phase]);
 
@@ -5004,6 +5014,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const [selectedPhoto,setSelectedPhoto]=useState("");
   const [showReport,setShowReport]=useState(false);
   const [videoNoteUrl,setVideoNoteUrl]=useState("");
+  const videoNoteUrlRef=useRef(""); // ref mirror so submitApp always reads freshest value
   const [showVideoRecorder,setShowVideoRecorder]=useState(false);
   const [showUpgradePrompt,setShowUpgradePrompt]=useState(false);
   const [todayCount,setTodayCount]=useState(0); // free actor's submission count today
@@ -5024,7 +5035,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       setShowUpgradePrompt(true);
       return;
     }
-    setApplyRole({...r,idx:i});setCoverNote("");setApplyErr("");setApplyOk(false);setSelectedPhoto(myPhotos[0]||"");setVideoNoteUrl("");setShowVideoRecorder(false);
+    setApplyRole({...r,idx:i});setCoverNote("");setApplyErr("");setApplyOk(false);setSelectedPhoto(myPhotos[0]||"");setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(false);
   };
   useEffect(()=>{(async()=>{
     if(!isLoggedIn||!casting)return;
@@ -5122,7 +5133,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       // 50/24h cap and per-role uniqueness check are enforced server-side
       // and cannot be bypassed by direct insert.
       const {error}=await withTimeout(
-        window.sb.rpc("submit_application",{p_casting:casting.id,p_role:roleId,p_cover:coverNote||null,p_photo:selectedPhoto||null,p_video_url:videoNoteUrl||null}),
+        window.sb.rpc("submit_application",{p_casting:casting.id,p_role:roleId,p_cover:coverNote||null,p_photo:selectedPhoto||null,p_video_url:videoNoteUrlRef.current||null}),
         20000,
         "Submission"
       );
@@ -5317,15 +5328,15 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                 <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:"var(--t1)"}}>✓ Video note attached</div>
                 <video src={videoNoteUrl} controls playsInline style={{width:"100%",borderRadius:8,background:"#000",maxHeight:160,objectFit:"contain",display:"block",marginBottom:10}}/>
                 <div style={{display:"flex",gap:8}}>
-                  <button className="btn-s btn-sm" style={{fontSize:11}} onClick={()=>{setVideoNoteUrl("");setShowVideoRecorder(true);}}>↺ Re-record</button>
-                  <button className="btn-s btn-sm" style={{fontSize:11,color:"#c0392b"}} onClick={()=>{setVideoNoteUrl("");setShowVideoRecorder(false);}}>🗑 Remove Video</button>
+                  <button className="btn-s btn-sm" style={{fontSize:11}} onClick={()=>{setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(true);}}>↺ Re-record</button>
+                  <button className="btn-s btn-sm" style={{fontSize:11,color:"#c0392b"}} onClick={()=>{setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(false);}}>🗑 Remove Video</button>
                 </div>
               </div>
             ):showVideoRecorder?(
               <VideoRecorder
                 session={session}
                 roleId={realRoleIds[applyRole?.idx]||applyRole?.name||"role"}
-                onVideoReady={url=>{setVideoNoteUrl(url);setShowVideoRecorder(false);}}
+                onVideoReady={url=>{setVideoNoteUrl(url);videoNoteUrlRef.current=url;setShowVideoRecorder(false);}}
                 onClose={()=>setShowVideoRecorder(false)}
               />
             ):(
@@ -7984,12 +7995,15 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             </div>
             {credits&&<p style={{marginTop:8,fontSize:fsMode?13:12,color:"var(--t2)"}}>{credits.slice(0,fsMode?200:140)}{credits.length>(fsMode?200:140)?"…":""}</p>}
             {app.cover_note&&<p style={{marginTop:8,fontSize:fsMode?13:12,color:"var(--t2)",fontStyle:"italic"}}>"{String(app.cover_note).slice(0,fsMode?220:160)}{String(app.cover_note).length>(fsMode?220:160)?"…":""}"</p>}
-            {app.video_note_url&&<button
-              onPointerDown={e=>e.stopPropagation()}
-              onClick={e=>{e.stopPropagation();setAppVideoViewer({url:app.video_note_url,name:t.display_name||"Applicant"});}}
-              style={{marginTop:10,display:"flex",alignItems:"center",gap:6,fontSize:fsMode?13:11,fontWeight:700,padding:"6px 12px",borderRadius:8,border:"1px solid var(--acc)",background:"rgba(99,60,180,0.08)",color:"var(--acc)",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center"}}>
-              ▶ Application Video Note
-            </button>}
+            {app.video_note_url&&<div style={{marginTop:10,background:"rgba(99,60,180,0.08)",border:"1px solid rgba(99,60,180,0.25)",borderRadius:10,padding:"8px 12px"}}>
+              <div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:6}}>🎥 Video Note Included</div>
+              <button
+                onPointerDown={e=>e.stopPropagation()}
+                onClick={e=>{e.stopPropagation();setAppVideoViewer({url:app.video_note_url,name:t.display_name||"Applicant"});}}
+                style={{display:"flex",alignItems:"center",gap:6,fontSize:fsMode?13:12,fontWeight:700,padding:"7px 14px",borderRadius:8,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center"}}>
+                ▶ Play Video Note
+              </button>
+            </div>}
           </div>
         </div>
       </div>
@@ -8016,7 +8030,10 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             {(tp.skills||[]).slice(0,3).map((s,i)=><span key={i} style={{background:"var(--s2)",padding:"2px 7px",borderRadius:5,fontSize:10,color:"var(--t2)"}}>{s}</span>)}
           </div>}
           {a.cover_note&&<p style={{fontSize:11,color:"var(--t3)",fontStyle:"italic",margin:"4px 0 0",overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>"{a.cover_note}"</p>}
-          {a.video_note_url&&<button style={{marginTop:6,display:"flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,padding:"5px 10px",borderRadius:7,border:"1px solid var(--acc)",background:"rgba(99,60,180,0.07)",color:"var(--acc)",cursor:"pointer",fontFamily:"inherit"}} onClick={()=>setAppVideoViewer({url:a.video_note_url,name:tp.display_name||"Applicant"})}>▶ Application Video Note</button>}
+          {a.video_note_url&&<div style={{marginTop:8,background:"rgba(99,60,180,0.07)",border:"1px solid rgba(99,60,180,0.22)",borderRadius:9,padding:"7px 10px"}}>
+            <div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:5}}>🎥 Video Note Included</div>
+            <button style={{display:"flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,padding:"6px 12px",borderRadius:7,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center"}} onClick={()=>setAppVideoViewer({url:a.video_note_url,name:tp.display_name||"Applicant"})}>▶ Play Video Note</button>
+          </div>}
           {/* Action buttons */}
           <div style={{display:"flex",gap:5,marginTop:10,flexWrap:"wrap",alignItems:"center"}}>
             {a.status!=='selected'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"5px 9px"}} onClick={()=>moveTo(a.id,'select')}>→ Select</button>}

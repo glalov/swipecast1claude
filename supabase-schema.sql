@@ -956,7 +956,10 @@ begin
 end;
 $$;
 
-grant execute on function public.submit_application(uuid, uuid, text, text) to authenticated;
+-- The old 4-arg overload was dropped (2026-05-27) to eliminate PostgreSQL
+-- ambiguity that caused PostgREST to call the wrong overload when p_video_url
+-- was passed. Only the 5-arg version below is active:
+--   drop function public.submit_application(uuid, uuid, text, text);
 grant execute on function public.submit_application(uuid, uuid, text, text, text) to authenticated;
 
 -- ════════════════════════════════════════════════════════════════════
