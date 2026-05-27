@@ -9827,7 +9827,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
               {name:"Apple TV+",src:"https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg"},
               {name:"YouTube",src:"https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg"},
               {name:"Universal Pictures",src:"https://upload.wikimedia.org/wikipedia/commons/b/b6/Universal_Pictures_logo.svg"},
-              {name:"A24",src:"https://upload.wikimedia.org/wikipedia/commons/5/5b/A24_logo.svg"},
+              {name:"A24",src:"data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2090%2036'%3E%3Ctext%20x%3D'2'%20y%3D'28'%20font-family%3D'Arial%20Black%2CHelvetica%20Neue%2CArial%2Csans-serif'%20font-weight%3D'900'%20font-size%3D'30'%20fill%3D'black'%3EA24%3C%2Ftext%3E%3C%2Fsvg%3E"},
               {name:"Sony Pictures",src:"https://upload.wikimedia.org/wikipedia/commons/d/d7/Sony_Pictures_logo.svg"},
               {name:"Lionsgate",src:"https://upload.wikimedia.org/wikipedia/commons/a/ad/Lionsgate_Studios_logo.svg"}
             ];
