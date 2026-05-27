@@ -1783,6 +1783,10 @@ html,body{overflow-x:hidden;}
   .hiw-card-body{padding:28px 24px;}
   .hiw-card{margin-bottom:48px;}
 }
+@keyframes mv-slide-left{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
+@keyframes mv-slide-right{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:translateX(0)}}
+.mv-in-left{animation:mv-slide-left 0.22s ease}
+.mv-in-right{animation:mv-slide-right 0.22s ease}
 `;
 
 // ─── Membership plans. Single source of truth — used by MembershipPage,
@@ -5149,6 +5153,81 @@ function CareersPage({onNavigate}){
 }
 
 // ─────────────────────────────────────────
+// MediaViewer — unified full-screen lightbox for photos + videos
+// items: [{type:"photo"|"video", url, title?}]
+// startIdx: which item to open first
+function MediaViewer({items,startIdx,onClose}){
+  const [idx,setIdx]=useState(startIdx||0);
+  const [animClass,setAnimClass]=useState("");
+  const touchStartX=useRef(null);
+  const animRef=useRef(null);
+
+  const go=useCallback((dir)=>{
+    const cls=dir>0?"mv-in-left":"mv-in-right";
+    setAnimClass("");
+    // allow repaint then apply class
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        setIdx(x=>(x+dir+items.length)%items.length);
+        setAnimClass(cls);
+      });
+    });
+  },[items.length]);
+
+  useEffect(()=>{
+    const onKey=(e)=>{
+      if(e.key==="Escape")onClose();
+      if(e.key==="ArrowLeft")go(-1);
+      if(e.key==="ArrowRight")go(1);
+    };
+    window.addEventListener("keydown",onKey);
+    return()=>window.removeEventListener("keydown",onKey);
+  },[go,onClose]);
+
+  const item=items[Math.min(idx,items.length-1)];
+  if(!item)return null;
+
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.95)",zIndex:9000,display:"flex",alignItems:"center",justifyContent:"center",userSelect:"none"}}
+      onClick={onClose}
+      onTouchStart={e=>{touchStartX.current=e.touches[0].clientX;}}
+      onTouchEnd={e=>{
+        if(touchStartX.current===null)return;
+        const dx=e.changedTouches[0].clientX-touchStartX.current;
+        touchStartX.current=null;
+        if(Math.abs(dx)>50)go(dx<0?1:-1);
+      }}>
+
+      {/* Counter */}
+      {items.length>1&&<div style={{position:"absolute",top:20,left:24,color:"rgba(255,255,255,0.5)",fontSize:12,fontWeight:700,letterSpacing:1,zIndex:2}}>{idx+1}&nbsp;/&nbsp;{items.length}</div>}
+
+      {/* Close */}
+      <button onClick={e=>{e.stopPropagation();onClose();}}
+        style={{position:"absolute",top:14,right:18,background:"rgba(255,255,255,0.13)",border:"none",borderRadius:"50%",width:46,height:46,fontSize:24,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2,backdropFilter:"blur(4px)"}}>×</button>
+
+      {/* Media — key on idx so video restarts; animClass drives slide */}
+      <div key={idx} className={animClass}
+        style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10,maxWidth:"92vw",maxHeight:"88vh",zIndex:1}}
+        onClick={e=>e.stopPropagation()}>
+        {item.type==="photo"
+          ?<img src={item.url} alt={item.title||""} style={{maxWidth:"88vw",maxHeight:"82vh",objectFit:"contain",borderRadius:8,boxShadow:"0 8px 40px rgba(0,0,0,0.7)",display:"block"}}/>
+          :<video src={item.url} autoPlay controls playsInline style={{maxWidth:"88vw",maxHeight:"82vh",borderRadius:8,boxShadow:"0 8px 40px rgba(0,0,0,0.5)",background:"#000",outline:"none",display:"block"}}/>
+        }
+        {item.title&&<div style={{color:"rgba(255,255,255,0.75)",fontSize:13,fontWeight:600,background:"rgba(0,0,0,0.5)",padding:"3px 14px",borderRadius:6,maxWidth:"80vw",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.title}</div>}
+      </div>
+
+      {/* Left arrow */}
+      {items.length>1&&<button onClick={e=>{e.stopPropagation();go(-1);}}
+        style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.13)",border:"none",borderRadius:"50%",width:54,height:54,fontSize:34,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2,backdropFilter:"blur(4px)",lineHeight:1}}>&#8249;</button>}
+
+      {/* Right arrow */}
+      {items.length>1&&<button onClick={e=>{e.stopPropagation();go(1);}}
+        style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.13)",border:"none",borderRadius:"50%",width:54,height:54,fontSize:34,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2,backdropFilter:"blur(4px)",lineHeight:1}}>&#8250;</button>}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────
 // SmartVideo: adapts container to video orientation after metadata loads
 // Portrait videos get a narrow centered card; landscape gets full-width 16:9.
 function SmartVideo({src,title}){
@@ -5206,9 +5285,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   const [uploadedVideos,setUploadedVideos]=useState([]);
   const [freshProfile,setFreshProfile]=useState(null);
   const [showAllMedia,setShowAllMedia]=useState(false);
-  const [lightboxImg,setLightboxImg]=useState(null);
-  const [galleryLightbox,setGalleryLightbox]=useState(null); // {photos:[...], idx:0}
-  const [videoModal,setVideoModal]=useState(null); // {url, title}
+  const [mediaViewer,setMediaViewer]=useState(null); // {items:[{type,url,title?}], idx}
 
   useEffect(()=>{
     if(!talentDbId){setDbCredits([]);return;}
@@ -5319,6 +5396,15 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   const hasShowcase=showcaseTiles.length>0;
   const hasExtraMedia=extraMedia.length>0;
 
+  // Unified ordered items list for the full-screen MediaViewer
+  // Order: headshot → showcase tiles (L→R, top→bottom) → extra media
+  const _allViewerItems=[
+    {type:"photo",url:freshHeadshot||talent.img},
+    ...showcaseTiles.map(t=>t._tile==="video"?{type:"video",url:t.url,title:t.title||null}:{type:"photo",url:t.url}),
+    ...extraMedia.map(t=>t._tile==="video"?{type:"video",url:t.url,title:t.title||null}:{type:"photo",url:t.url}),
+  ].filter(m=>m.url);
+  const openMedia=(idx)=>setMediaViewer({items:_allViewerItems,idx:Math.max(0,idx)});
+
   const sectionHead=(title,extra)=>(
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
       <div style={{fontSize:13,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--t3)"}}>{title}</div>
@@ -5367,36 +5453,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     </div>}
 
     {/* ── MEDIA SHOWCASE: Backstage-style 1 large headshot + 2×2 tile grid ── */}
-    {lightboxImg&&(
-      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",cursor:"zoom-out"}}
-        onClick={()=>setLightboxImg(null)}>
-        <img src={lightboxImg} alt="" style={{maxWidth:"92vw",maxHeight:"90vh",objectFit:"contain",borderRadius:10,boxShadow:"0 8px 40px rgba(0,0,0,0.7)"}}/>
-        <button onClick={e=>{e.stopPropagation();setLightboxImg(null);}} style={{position:"absolute",top:18,right:22,background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>
-      </div>
-    )}
-    {galleryLightbox&&(
-      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.93)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center"}}
-        onClick={()=>setGalleryLightbox(null)}>
-        <img src={galleryLightbox.photos[galleryLightbox.idx]} alt="" style={{maxWidth:"90vw",maxHeight:"88vh",objectFit:"contain",borderRadius:10,boxShadow:"0 8px 40px rgba(0,0,0,0.7)"}}/>
-        <button onClick={e=>{e.stopPropagation();setGalleryLightbox(null);}} style={{position:"absolute",top:18,right:22,background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>
-        {galleryLightbox.photos.length>1&&<>
-          <button onClick={e=>{e.stopPropagation();setGalleryLightbox(x=>({...x,idx:(x.idx-1+x.photos.length)%x.photos.length}));}} style={{position:"absolute",left:16,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:44,height:44,fontSize:24,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>‹</button>
-          <button onClick={e=>{e.stopPropagation();setGalleryLightbox(x=>({...x,idx:(x.idx+1)%x.photos.length}));}} style={{position:"absolute",right:70,top:"50%",transform:"translateY(-50%)",background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:44,height:44,fontSize:24,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>›</button>
-          <div style={{position:"absolute",bottom:18,left:"50%",transform:"translateX(-50%)",color:"rgba(255,255,255,0.5)",fontSize:12}}>{galleryLightbox.idx+1} / {galleryLightbox.photos.length}</div>
-        </>}
-      </div>
-    )}
-    {/* Full-screen video modal */}
-    {videoModal&&(
-      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.96)",zIndex:9999,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:16}}
-        onClick={()=>setVideoModal(null)}>
-        <button onClick={e=>{e.stopPropagation();setVideoModal(null);}} style={{position:"absolute",top:18,right:22,background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",width:40,height:40,fontSize:20,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,zIndex:1}}>×</button>
-        <video src={videoModal.url} autoPlay controls playsInline
-          style={{maxWidth:"92vw",maxHeight:"85vh",borderRadius:10,boxShadow:"0 8px 40px rgba(0,0,0,0.7)",background:"#000",outline:"none"}}
-          onClick={e=>e.stopPropagation()}/>
-        {videoModal.title&&<div style={{color:"rgba(255,255,255,0.7)",marginTop:10,fontSize:13,fontWeight:600}}>{videoModal.title}</div>}
-      </div>
-    )}
+    {mediaViewer&&<MediaViewer items={mediaViewer.items} startIdx={mediaViewer.idx} onClose={()=>setMediaViewer(null)}/>}
     <div style={{marginBottom:16}}>
       {/* Backstage-style showcase: equal 1fr/1fr columns so tiles are consistent portrait
           cards (3:4) that drive container height — headshot fills that same height. */}
@@ -5408,8 +5465,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
         borderRadius:12,
         overflow:"hidden"
       }}>
-        {/* Left: large main headshot */}
-        <div style={{position:"relative",background:"#111",overflow:"hidden",cursor:"zoom-in",borderRadius:8,minHeight:isMobile?240:0}} onClick={()=>setLightboxImg(freshHeadshot||talent.img||"")}>
+        {/* Left: large main headshot — idx 0 in unified viewer */}
+        <div style={{position:"relative",background:"#111",overflow:"hidden",cursor:"zoom-in",borderRadius:8,minHeight:isMobile?240:0}} onClick={()=>openMedia(0)}>
           <img
             src={freshHeadshot||talent.img||"https://placehold.co/400x600/e5e5e5/999?text=No+Headshot"}
             alt={talent.name}
@@ -5420,19 +5477,18 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
           )}
         </div>
 
-        {/* Right: 2×2 grid — no gridTemplateRows, each tile has aspectRatio 3:4 so they
-            size themselves and stack cleanly without stretching */}
+        {/* Right: 2×2 grid — showcase tiles at idx 1…showcaseTiles.length */}
         {hasShowcase&&(
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",background:"var(--bg)",alignContent:"start"}}>
             {showcaseTiles.map((tile,i)=>(
               tile._tile==="video"
-              ?<ShowcaseVideoTile key={tile.id||i} v={tile} onOpen={setVideoModal}/>
+              ?<ShowcaseVideoTile key={tile.id||i} v={tile} onOpen={()=>openMedia(1+i)}/>
               :<div key={i} style={{position:"relative",overflow:"hidden",background:"#111",cursor:"zoom-in",borderRadius:8,aspectRatio:"3/4"}}
-                onClick={()=>setLightboxImg(tile.url)}>
+                onClick={()=>openMedia(1+i)}>
                 <img src={tile.url} alt={`Photo ${i+1}`} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center",display:"block"}}/>
               </div>
             ))}
-            {/* Empty slots invisible (match gap bg) so they don't look like black boxes */}
+            {/* Empty slots invisible so they don't look like black boxes */}
             {Array.from({length:Math.max(0,4-showcaseTiles.length)}).map((_,i)=>(
               <div key={`empty-${i}`} style={{aspectRatio:"3/4",background:"var(--bg)"}}/>
             ))}
@@ -5440,7 +5496,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
         )}
       </div>
 
-      {/* View More Media / View Less */}
+      {/* View More Media / View Less — extra tiles at idx 1+showcaseTiles.length… */}
       {hasExtraMedia&&(
         <div style={{marginTop:8}}>
           <button onClick={()=>setShowAllMedia(v=>!v)}
@@ -5454,7 +5510,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
               {extraMedia.map((item,i)=>(
                 item._tile==="video"
                 ?<div key={item.id||i} style={{position:"relative",background:"#111",borderRadius:8,overflow:"hidden",cursor:"pointer",border:"1px solid var(--bdr)",aspectRatio:"3/4"}}
-                  onClick={()=>setVideoModal({url:item.url,title:item.title})}>
+                  onClick={()=>openMedia(1+showcaseTiles.length+i)}>
                   <video src={`${item.url}#t=0.1`} preload="metadata" muted playsInline
                     style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",display:"block",pointerEvents:"none"}}/>
                   <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.38)"}}>
@@ -5465,7 +5521,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
                   </div>
                 </div>
                 :<div key={i} style={{cursor:"zoom-in",overflow:"hidden",borderRadius:8,background:"#111",position:"relative"}}
-                  onClick={()=>setLightboxImg(item.url)}>
+                  onClick={()=>openMedia(1+showcaseTiles.length+i)}>
                   <img src={item.url} alt={`Photo ${i+1}`}
                     style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",objectPosition:"center",display:"block"}}
                     loading="lazy"/>
