@@ -5701,7 +5701,7 @@ function CastingGatePage({casting,onCreateProfile,onLogin,onBack}){
 function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,castingsVersion=0,session,myProfile}){
   const t=useT();
   const {lang}=useLanguage();
-  const [mode,setMode]=useState(userType==="cd"?"talent":"castings");
+  const [mode,setMode]=useState("castings"); // always open castings, talent directory removed
   const [q,setQ]=useState("");
   const [f,setF]=useState({gender:"",ethnicity:"",location:"",union:"",type:"",castingType:""});
   // TODO(casting-filter): castingType filter — when set, load user_ids from
@@ -5882,13 +5882,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const fc=allCastings.filter(c=>{if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&c.type!==f.type)return false;if(f.location&&!c.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;});
   return(<div className="page page-wide">
     <div className="section-label">{t('search.title')}</div>
-    <div className="tabs"><button className={`tab ${mode==="castings"?"active":""}`} onClick={()=>setMode("castings")}>{t('search.openCastings')}</button><button className={`tab ${mode==="talent"?"active":""}`} onClick={()=>setMode("talent")}>{t('search.talentDir')}</button></div>
-    <div className="search-bar"><input className="input" placeholder={mode==="talent"?t('search.placeholderTalent'):t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/><button className="btn-p">{t('search.searchBtn')}</button></div>
-    {mode==="talent"?<>
-      <div className="filter-row"><select className="select" value={f.gender} onChange={e=>setF(x=>({...x,gender:e.target.value}))}><option value="">{t('search.allGenders')}</option><option>Male</option><option>Female</option><option>Non-Binary</option></select><select className="select" value={f.ethnicity} onChange={e=>setF(x=>({...x,ethnicity:e.target.value}))}><option value="">{t('search.allEthnicities')}</option><option value="Black">Black</option><option value="Latin">Latino/Latina</option><option value="Asian">Asian</option><option value="European">European</option></select><select className="select" value={f.location} onChange={e=>setF(x=>({...x,location:e.target.value}))}><option value="">{t('search.allLocations')}</option><option value="New York">New York</option><option value="Los Angeles">Los Angeles</option><option value="Atlanta">Atlanta</option><option value="Chicago">Chicago</option><option value="Miami">Miami</option></select><select className="select" value={f.union} onChange={e=>setF(x=>({...x,union:e.target.value}))}><option value="">{t('search.allUnion')}</option><option>SAG-AFTRA</option><option>AEA</option><option>Non-Union</option></select><select className="select" value={f.castingType} onChange={e=>setF(x=>({...x,castingType:e.target.value}))}><option value="">{t('search.castMeAs')}</option>{CASTING_TYPES.map(ct=><option key={ct} value={ct}>{ct}</option>)}</select></div>
-      <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{ft.length} {t('search.results')}{f.castingType&&<span style={{color:"var(--acc)",marginLeft:8,fontSize:12}}>· {t('search.filteredBy')} {f.castingType}</span>}</p>
-      <div className="results-grid">{ft.map(p=><div key={p.id} className="talent-thumb" onClick={()=>onViewProfile(p)}><img src={p.img} alt={p.name}/><div className="talent-thumb-info"><h4>{p.name}</h4><p>{p.age} · {p.gender} · {p.location}</p><div style={{marginTop:6}}><span className="tag" style={{fontSize:10}}>{p.union||"Non-Union"}</span></div></div></div>)}</div>
-    </>:<>
+    <div className="search-bar"><input className="input" placeholder={t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/><button className="btn-p">{t('search.searchBtn')}</button></div>
+    <>
       {/* Full-height loading placeholder — only during initial load (no cached data).
           Keeps the footer pinned to the bottom so it never flashes upward. */}
       {loading&&dbCastings.length===0
@@ -5944,7 +5939,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               <button className="btn-s btn-sm" disabled={pg===tp} onClick={()=>{setPg(p=>Math.min(tp,p+1));window.scrollTo(0,0);}} style={{opacity:pg===tp?0.4:1}}>{t('search.nextPage')}</button>
             </div>);})()}
         </>}
-    </>}
+    </>
     {applyTo&&<div className="modal-overlay" onClick={()=>setApplyTo(null)}><div className="modal" onClick={e=>e.stopPropagation()}><h2>{t('search.submitForRole')}</h2><div style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:20}}><h4 style={{fontSize:14,fontWeight:700}}>{applyTo.title}</h4><p style={{color:"var(--t2)",fontSize:12,marginTop:2}}>{applyTo.prod} · {applyTo.location}</p></div><div className="form-group"><label className="label">{t('search.coverNote')}</label><textarea className="textarea" placeholder={t('search.coverNotePlaceholder')}></textarea></div><div className="form-group"><label className="label">{t('search.whichHeadshot')}</label><div style={{display:"flex",gap:10,marginTop:8}}><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"2px solid var(--acc)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t2)",textAlign:"center",padding:4}}>{t('search.primary')}</div><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t3)",textAlign:"center",padding:4,cursor:"pointer"}}>{t('search.addPhoto')}</div></div></div><div style={{display:"flex",gap:12,marginTop:24}}><button className="btn-p" style={{flex:1}} onClick={()=>{setApplied(p=>new Set([...p,applyTo.id]));setApplyTo(null);}}>{t('search.submitApp')}</button><button className="btn-s" onClick={()=>setApplyTo(null)}>{t('cancel')}</button></div></div></div>}
     <Footer onNavigate={onNavigate}/></div>);
 }
