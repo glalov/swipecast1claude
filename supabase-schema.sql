@@ -404,6 +404,7 @@ alter table public.profiles     add column if not exists video_links    text[] d
 alter table public.applications add column if not exists selected_photo_url text;
 alter table public.applications add column if not exists audition_at    timestamptz;
 alter table public.applications add column if not exists audition_note  text;
+alter table public.applications add column if not exists video_note_url text;
 
 -- Re-apply the profiles select policy so existing installs pick up the new
 -- "CD can see profiles of applicants to their castings" clause.
@@ -899,10 +900,11 @@ create policy roles_insert on public.roles
 -- ════════════════════════════════════════════════════════════════════
 
 create or replace function public.submit_application(
-  p_casting uuid,
-  p_role    uuid,
-  p_cover   text default null,
-  p_photo   text default null
+  p_casting   uuid,
+  p_role      uuid,
+  p_cover     text default null,
+  p_photo     text default null,
+  p_video_url text default null
 )
 returns void
 language plpgsql
@@ -949,12 +951,13 @@ begin
     raise exception 'already submitted to this role' using errcode = '23505';
   end if;
 
-  insert into public.applications (casting_id, role_id, talent_id, cover_note, selected_photo_url)
-  values (p_casting, p_role, auth.uid(), p_cover, p_photo);
+  insert into public.applications (casting_id, role_id, talent_id, cover_note, selected_photo_url, video_note_url)
+  values (p_casting, p_role, auth.uid(), p_cover, p_photo, p_video_url);
 end;
 $$;
 
 grant execute on function public.submit_application(uuid, uuid, text, text) to authenticated;
+grant execute on function public.submit_application(uuid, uuid, text, text, text) to authenticated;
 
 -- ════════════════════════════════════════════════════════════════════
 -- MIGRATION 2026-05-10 — casting_creator_verification

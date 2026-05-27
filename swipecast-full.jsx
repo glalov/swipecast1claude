@@ -4693,6 +4693,257 @@ function getCastingImages(casting){
   return imgs;
 }
 
+// ═══════════════════════════════════════════
+// VIDEO RECORDER — inline camera capture for role applications
+// Props:
+//   session      — Supabase session (for uid + storage upload)
+//   roleId       — used to name the uploaded file
+//   onVideoReady(url) — called once upload succeeds
+//   onClose      — called when the user chooses "Delete Video" or cancels
+// ═══════════════════════════════════════════
+function VideoRecorder({session,roleId,onVideoReady,onClose}){
+  const MAX_SEC=30;
+  // phase: idle | requesting | preview | recording | recorded | uploading | denied | no-camera
+  const [phase,setPhase]=React.useState("idle");
+  const [elapsed,setElapsed]=React.useState(0);
+  const [uploadPct,setUploadPct]=React.useState(0);
+  const [errMsg,setErrMsg]=React.useState("");
+  const streamRef=React.useRef(null);
+  const mrRef=React.useRef(null);
+  const chunksRef=React.useRef([]);
+  const blobRef=React.useRef(null);
+  const objUrlRef=React.useRef(null);
+  const timerRef=React.useRef(null);
+  const previewVidRef=React.useRef(null);
+  const playbackVidRef=React.useRef(null);
+
+  // Cleanup on unmount
+  React.useEffect(()=>{
+    return()=>{
+      stopStream();
+      if(objUrlRef.current)URL.revokeObjectURL(objUrlRef.current);
+      clearInterval(timerRef.current);
+    };
+  },[]);
+
+  // Attach stream to preview video element whenever it changes
+  React.useEffect(()=>{
+    if(phase==="preview"&&previewVidRef.current&&streamRef.current){
+      previewVidRef.current.srcObject=streamRef.current;
+    }
+  },[phase]);
+
+  // Attach playback blob to video element after recording
+  React.useEffect(()=>{
+    if(phase==="recorded"&&playbackVidRef.current&&objUrlRef.current){
+      playbackVidRef.current.src=objUrlRef.current;
+    }
+  },[phase]);
+
+  const stopStream=()=>{
+    if(streamRef.current){streamRef.current.getTracks().forEach(t=>t.stop());streamRef.current=null;}
+  };
+
+  const startCamera=async()=>{
+    setPhase("requesting");setErrMsg("");
+    if(!navigator.mediaDevices?.getUserMedia){
+      setPhase("no-camera");return;
+    }
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}},audio:true});
+      streamRef.current=stream;
+      setPhase("preview");
+    }catch(e){
+      const name=(e?.name||"").toLowerCase();
+      if(name==="notallowederror"||name==="permissiondeniederror"){setPhase("denied");}
+      else if(name==="notfounderror"||name==="devicesnotfounderror"){setPhase("no-camera");}
+      else{setErrMsg("Could not access camera: "+(e?.message||"unknown error"));setPhase("idle");}
+    }
+  };
+
+  const startRecording=()=>{
+    if(!streamRef.current)return;
+    chunksRef.current=[];
+    const mimeType=["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm","video/mp4"].find(t=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||"";
+    const mr=new MediaRecorder(streamRef.current,mimeType?{mimeType}:{});
+    mrRef.current=mr;
+    mr.ondataavailable=e=>{if(e.data?.size>0)chunksRef.current.push(e.data);};
+    mr.onstop=()=>{
+      const blob=new Blob(chunksRef.current,{type:mimeType||"video/webm"});
+      blobRef.current=blob;
+      if(objUrlRef.current)URL.revokeObjectURL(objUrlRef.current);
+      objUrlRef.current=URL.createObjectURL(blob);
+      stopStream();
+      clearInterval(timerRef.current);
+      setPhase("recorded");
+    };
+    mr.start(1000);
+    setElapsed(0);
+    setPhase("recording");
+    timerRef.current=setInterval(()=>{
+      setElapsed(p=>{
+        if(p+1>=MAX_SEC){stopRecording();return MAX_SEC;}
+        return p+1;
+      });
+    },1000);
+  };
+
+  const stopRecording=()=>{
+    clearInterval(timerRef.current);
+    if(mrRef.current&&mrRef.current.state!=="inactive"){mrRef.current.stop();}
+  };
+
+  const reRecord=async()=>{
+    if(objUrlRef.current){URL.revokeObjectURL(objUrlRef.current);objUrlRef.current=null;}
+    blobRef.current=null;chunksRef.current=[];
+    setElapsed(0);setErrMsg("");
+    setPhase("requesting");
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}},audio:true});
+      streamRef.current=stream;
+      setPhase("preview");
+    }catch(e){
+      setPhase("denied");
+    }
+  };
+
+  const uploadAndUse=async()=>{
+    if(!blobRef.current){return;}
+    const uid=session?.user?.id;
+    if(!uid){setErrMsg("Session expired. Please log in again.");return;}
+    setPhase("uploading");setUploadPct(0);setErrMsg("");
+    try{
+      const ext=blobRef.current.type.includes("mp4")?"mp4":"webm";
+      const safePart=(roleId||"app").replace(/[^a-z0-9]/gi,"-");
+      const path=`${uid}/application-videos/${safePart}-${Date.now()}.${ext}`;
+      // Simulate progress ticks while upload is in-flight
+      let pct=0;
+      const tick=setInterval(()=>{pct=Math.min(pct+8,90);setUploadPct(pct);},300);
+      const{error:upErr}=await window.sb.storage.from("talent-media").upload(path,blobRef.current,{upsert:false,contentType:blobRef.current.type});
+      clearInterval(tick);
+      if(upErr)throw upErr;
+      setUploadPct(100);
+      const{data:{publicUrl}}=window.sb.storage.from("talent-media").getPublicUrl(path);
+      onVideoReady(publicUrl);
+    }catch(e){
+      setErrMsg("Upload failed: "+(e?.message||"unknown error. Please try again."));
+      setPhase("recorded");
+    }
+  };
+
+  const deleteVideo=()=>{
+    stopStream();
+    if(objUrlRef.current){URL.revokeObjectURL(objUrlRef.current);objUrlRef.current=null;}
+    blobRef.current=null;chunksRef.current=[];
+    clearInterval(timerRef.current);
+    onClose();
+  };
+
+  const fmtTime=s=>`${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+  const remaining=MAX_SEC-elapsed;
+
+  const box={background:"var(--s2)",borderRadius:12,padding:16,marginBottom:0};
+
+  if(phase==="idle"){
+    return(
+      <div style={box}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
+          <div>
+            <div style={{fontWeight:700,fontSize:14,marginBottom:3}}>Record Video Note</div>
+            <div style={{fontSize:12,color:"var(--t3)"}}>Optional. Record up to 30 seconds for this role.</div>
+          </div>
+          <button className="btn-s btn-sm" onClick={startCamera} style={{flexShrink:0,whiteSpace:"nowrap"}}>🎥 Open Camera</button>
+        </div>
+        {errMsg&&<div style={{marginTop:10,fontSize:12,color:"#c0392b"}}>{errMsg}</div>}
+      </div>
+    );
+  }
+  if(phase==="requesting"){
+    return<div style={{...box,textAlign:"center",padding:"24px 16px",color:"var(--t2)",fontSize:13}}>Requesting camera access…</div>;
+  }
+  if(phase==="denied"){
+    return(
+      <div style={{...box,background:"rgba(255,100,100,0.08)",border:"1px solid rgba(255,100,100,0.2)"}}>
+        <div style={{fontWeight:700,fontSize:13,marginBottom:4,color:"#c0392b"}}>Camera access was denied.</div>
+        <div style={{fontSize:12,color:"var(--t2)"}}>You can still apply with your photo and message.</div>
+        <button className="btn-s btn-sm" style={{marginTop:10,fontSize:11}} onClick={onClose}>Dismiss</button>
+      </div>
+    );
+  }
+  if(phase==="no-camera"){
+    return(
+      <div style={{...box,background:"rgba(100,100,100,0.07)"}}>
+        <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>No camera found.</div>
+        <div style={{fontSize:12,color:"var(--t2)"}}>You can still apply with your photo and message.</div>
+        <button className="btn-s btn-sm" style={{marginTop:10,fontSize:11}} onClick={onClose}>Dismiss</button>
+      </div>
+    );
+  }
+  if(phase==="preview"){
+    return(
+      <div style={box}>
+        <div style={{fontSize:13,fontWeight:700,marginBottom:10}}>Camera Preview</div>
+        <div style={{position:"relative",borderRadius:8,overflow:"hidden",background:"#000",aspectRatio:"16/9",marginBottom:12}}>
+          <video ref={previewVidRef} autoPlay playsInline muted style={{width:"100%",height:"100%",objectFit:"cover",display:"block",transform:"scaleX(-1)"}}/>
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <button className="btn-p btn-sm" style={{flex:1,background:"#c0392b",borderColor:"#c0392b"}} onClick={startRecording}>⏺ Start Recording</button>
+          <button className="btn-s btn-sm" onClick={deleteVideo}>Cancel</button>
+        </div>
+      </div>
+    );
+  }
+  if(phase==="recording"){
+    return(
+      <div style={box}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <span style={{width:10,height:10,borderRadius:"50%",background:"#c0392b",display:"inline-block",animation:"pulse 1s infinite"}}/>
+            <span style={{fontWeight:700,fontSize:13,color:"#c0392b"}}>Recording</span>
+          </div>
+          <span style={{fontWeight:800,fontSize:15,fontVariantNumeric:"tabular-nums",color:remaining<=5?"#c0392b":"var(--t1)"}}>{fmtTime(elapsed)} / {fmtTime(MAX_SEC)}</span>
+        </div>
+        <div style={{height:4,borderRadius:2,background:"var(--bdr)",overflow:"hidden",marginBottom:12}}>
+          <div style={{height:"100%",borderRadius:2,background:"#c0392b",width:`${(elapsed/MAX_SEC)*100}%`,transition:"width .9s linear"}}/>
+        </div>
+        <div style={{position:"relative",borderRadius:8,overflow:"hidden",background:"#000",aspectRatio:"16/9",marginBottom:12}}>
+          <video ref={previewVidRef} autoPlay playsInline muted style={{width:"100%",height:"100%",objectFit:"cover",display:"block",transform:"scaleX(-1)"}}/>
+        </div>
+        <button className="btn-s btn-sm" style={{width:"100%"}} onClick={stopRecording}>⏹ Stop Recording</button>
+      </div>
+    );
+  }
+  if(phase==="recorded"){
+    return(
+      <div style={box}>
+        <div style={{fontSize:13,fontWeight:700,marginBottom:4}}>Preview your video before submitting.</div>
+        <div style={{fontSize:11,color:"var(--t3)",marginBottom:10}}>Duration: {fmtTime(elapsed)}</div>
+        <div style={{borderRadius:8,overflow:"hidden",background:"#000",aspectRatio:"16/9",marginBottom:12}}>
+          <video ref={playbackVidRef} controls playsInline style={{width:"100%",height:"100%",objectFit:"contain",display:"block"}}/>
+        </div>
+        {errMsg&&<div style={{fontSize:12,color:"#c0392b",marginBottom:8}}>{errMsg}</div>}
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          <button className="btn-p btn-sm" style={{flex:1}} onClick={uploadAndUse}>✓ Use This Video</button>
+          <button className="btn-s btn-sm" onClick={reRecord}>↺ Re-record</button>
+          <button className="btn-s btn-sm" style={{color:"#c0392b"}} onClick={deleteVideo}>🗑 Delete</button>
+        </div>
+      </div>
+    );
+  }
+  if(phase==="uploading"){
+    return(
+      <div style={{...box,textAlign:"center",padding:"24px 16px"}}>
+        <div style={{fontSize:13,fontWeight:700,marginBottom:10,color:"var(--t1)"}}>Uploading video…</div>
+        <div style={{height:6,borderRadius:3,background:"var(--bdr)",overflow:"hidden",maxWidth:280,margin:"0 auto"}}>
+          <div style={{height:"100%",borderRadius:3,background:"var(--acc)",width:`${uploadPct}%`,transition:"width .3s ease"}}/>
+        </div>
+        <div style={{fontSize:12,color:"var(--t3)",marginTop:8}}>{uploadPct}%</div>
+      </div>
+    );
+  }
+  return null;
+}
+
 function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session,autoApplyRole,onAutoApplyConsumed}){
   const t=useT();
   const {lang}=useLanguage();
@@ -4714,6 +4965,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const [myPhotos,setMyPhotos]=useState([]);
   const [selectedPhoto,setSelectedPhoto]=useState("");
   const [showReport,setShowReport]=useState(false);
+  const [videoNoteUrl,setVideoNoteUrl]=useState("");
+  const [showVideoRecorder,setShowVideoRecorder]=useState(false);
   const [showUpgradePrompt,setShowUpgradePrompt]=useState(false);
   const [todayCount,setTodayCount]=useState(0); // free actor's submission count today
   const [cdProfile,setCdProfile]=useState(null); // CD's profile for verification badges
@@ -4733,7 +4986,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       setShowUpgradePrompt(true);
       return;
     }
-    setApplyRole({...r,idx:i});setCoverNote("");setApplyErr("");setApplyOk(false);setSelectedPhoto(myPhotos[0]||"");
+    setApplyRole({...r,idx:i});setCoverNote("");setApplyErr("");setApplyOk(false);setSelectedPhoto(myPhotos[0]||"");setVideoNoteUrl("");setShowVideoRecorder(false);
   };
   useEffect(()=>{(async()=>{
     if(!isLoggedIn||!casting)return;
@@ -4831,7 +5084,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       // 50/24h cap and per-role uniqueness check are enforced server-side
       // and cannot be bypassed by direct insert.
       const {error}=await withTimeout(
-        window.sb.rpc("submit_application",{p_casting:casting.id,p_role:roleId,p_cover:coverNote||null,p_photo:selectedPhoto||null}),
+        window.sb.rpc("submit_application",{p_casting:casting.id,p_role:roleId,p_cover:coverNote||null,p_photo:selectedPhoto||null,p_video_url:videoNoteUrl||null}),
         20000,
         "Submission"
       );
@@ -5018,6 +5271,29 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
               </div>}
           </div>
           <div className="form-group"><label className="label">{t('search.coverNote')}</label><textarea className="textarea" placeholder={t('search.coverNotePlaceholder')} value={coverNote} onChange={e=>setCoverNote(e.target.value)}></textarea></div>
+          {/* Video Note section */}
+          <div className="form-group" style={{marginBottom:0}}>
+            <label className="label" style={{marginBottom:8,display:"block"}}>Video Note <span style={{fontWeight:400,color:"var(--t3)",fontSize:11}}>(optional)</span></label>
+            {videoNoteUrl?(
+              <div style={{background:"var(--s2)",borderRadius:12,padding:14}}>
+                <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:"var(--t1)"}}>✓ Video note attached</div>
+                <video src={videoNoteUrl} controls playsInline style={{width:"100%",borderRadius:8,background:"#000",maxHeight:160,objectFit:"contain",display:"block",marginBottom:10}}/>
+                <div style={{display:"flex",gap:8}}>
+                  <button className="btn-s btn-sm" style={{fontSize:11}} onClick={()=>{setVideoNoteUrl("");setShowVideoRecorder(true);}}>↺ Re-record</button>
+                  <button className="btn-s btn-sm" style={{fontSize:11,color:"#c0392b"}} onClick={()=>{setVideoNoteUrl("");setShowVideoRecorder(false);}}>🗑 Remove Video</button>
+                </div>
+              </div>
+            ):showVideoRecorder?(
+              <VideoRecorder
+                session={session}
+                roleId={realRoleIds[applyRole?.idx]||applyRole?.name||"role"}
+                onVideoReady={url=>{setVideoNoteUrl(url);setShowVideoRecorder(false);}}
+                onClose={()=>setShowVideoRecorder(false)}
+              />
+            ):(
+              <button className="btn-s btn-sm" style={{fontSize:12,display:"flex",alignItems:"center",gap:6}} onClick={()=>setShowVideoRecorder(true)}>🎥 Record Video Note</button>
+            )}
+          </div>
           <div style={{display:"flex",gap:12,marginTop:24}}><button className="btn-p" style={{flex:1}} onClick={submitApp} disabled={submitting}>{submitting?t('status.submitting'):t('search.submitApp')}</button><button className="btn-s" onClick={()=>setApplyRole(null)} disabled={submitting}>{t('cancel')}</button></div>
         </>
       }
@@ -7251,6 +7527,8 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   const cdProfileHistRef=useRef(false);                        // did we push a history entry?
   // ─── Full-screen swipe focus mode (Issue #1): hides sidebar & fills viewport.
   const [fsMode,setFsMode]=useState(false);
+  // ─── Application video note viewer
+  const [appVideoViewer,setAppVideoViewer]=useState(null); // {url, name} or null
 
   // ─── URL hash state helpers — encode/decode active casting, role, folder, and tab
   //     so refresh and direct URL access restore the correct sub-page within the dashboard.
@@ -7668,6 +7946,12 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             </div>
             {credits&&<p style={{marginTop:8,fontSize:fsMode?13:12,color:"var(--t2)"}}>{credits.slice(0,fsMode?200:140)}{credits.length>(fsMode?200:140)?"…":""}</p>}
             {app.cover_note&&<p style={{marginTop:8,fontSize:fsMode?13:12,color:"var(--t2)",fontStyle:"italic"}}>"{String(app.cover_note).slice(0,fsMode?220:160)}{String(app.cover_note).length>(fsMode?220:160)?"…":""}"</p>}
+            {app.video_note_url&&<button
+              onPointerDown={e=>e.stopPropagation()}
+              onClick={e=>{e.stopPropagation();setAppVideoViewer({url:app.video_note_url,name:t.display_name||"Applicant"});}}
+              style={{marginTop:10,display:"flex",alignItems:"center",gap:6,fontSize:fsMode?13:11,fontWeight:700,padding:"6px 12px",borderRadius:8,border:"1px solid var(--acc)",background:"rgba(99,60,180,0.08)",color:"var(--acc)",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center"}}>
+              ▶ Application Video Note
+            </button>}
           </div>
         </div>
       </div>
@@ -7694,6 +7978,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             {(tp.skills||[]).slice(0,3).map((s,i)=><span key={i} style={{background:"var(--s2)",padding:"2px 7px",borderRadius:5,fontSize:10,color:"var(--t2)"}}>{s}</span>)}
           </div>}
           {a.cover_note&&<p style={{fontSize:11,color:"var(--t3)",fontStyle:"italic",margin:"4px 0 0",overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>"{a.cover_note}"</p>}
+          {a.video_note_url&&<button style={{marginTop:6,display:"flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,padding:"5px 10px",borderRadius:7,border:"1px solid var(--acc)",background:"rgba(99,60,180,0.07)",color:"var(--acc)",cursor:"pointer",fontFamily:"inherit"}} onClick={()=>setAppVideoViewer({url:a.video_note_url,name:tp.display_name||"Applicant"})}>▶ Application Video Note</button>}
           {/* Action buttons */}
           <div style={{display:"flex",gap:5,marginTop:10,flexWrap:"wrap",alignItems:"center"}}>
             {a.status!=='selected'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"5px 9px"}} onClick={()=>moveTo(a.id,'select')}>→ Select</button>}
@@ -7950,6 +8235,20 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
          preserving all swiper/role/tab state. Browser Back closes the overlay. ─── */}
     {cdProfileOverlay&&<div style={{position:"fixed",inset:0,zIndex:9050,background:"var(--bg)",overflowY:"auto"}}>
       <TalentProfile talent={cdProfileOverlay} onBack={closeCdProfileOverlay} onNavigate={onNavigate} session={session} myProfile={myProfile}/>
+    </div>}
+
+    {appVideoViewer&&<div style={{position:"fixed",inset:0,zIndex:9100,background:"rgba(0,0,0,0.95)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}} onClick={()=>setAppVideoViewer(null)}>
+      <div style={{position:"absolute",top:16,right:16,display:"flex",alignItems:"center",gap:12}}>
+        <div style={{color:"#fff",fontSize:13,fontWeight:600,opacity:.7}}>{appVideoViewer.name} — Application Video Note</div>
+        <button onClick={()=>setAppVideoViewer(null)} style={{background:"rgba(255,255,255,0.12)",border:"none",color:"#fff",fontSize:22,width:40,height:40,borderRadius:"50%",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+      </div>
+      <video
+        src={appVideoViewer.url}
+        controls
+        playsInline
+        onClick={e=>e.stopPropagation()}
+        style={{maxWidth:"90vw",maxHeight:"82vh",objectFit:"contain",borderRadius:10,background:"#000"}}
+      />
     </div>}
 
     {editCasting&&<CreatorEditCastingModal casting={editCasting} uid={uid} myProfile={myProfile} onClose={()=>setEditCasting(null)} onSaved={(updated)=>{setEditCasting(null);if(updated&&updated.id){setMyCastings(p=>p.map(c=>c.id===updated.id?{...c,...updated}:c));}setReloadTick(t=>t+1);if(bumpCastings)bumpCastings();}}/>}
