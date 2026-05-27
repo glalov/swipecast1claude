@@ -5207,11 +5207,11 @@ function MediaViewer({items,startIdx,onClose}){
 
       {/* Media — key on idx so video restarts; animClass drives slide */}
       <div key={idx} className={animClass}
-        style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10,maxWidth:"92vw",maxHeight:"88vh",zIndex:1}}
+        style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10,zIndex:1}}
         onClick={e=>e.stopPropagation()}>
         {item.type==="photo"
-          ?<img src={item.url} alt={item.title||""} style={{maxWidth:"88vw",maxHeight:"82vh",objectFit:"contain",borderRadius:8,boxShadow:"0 8px 40px rgba(0,0,0,0.7)",display:"block"}}/>
-          :<video src={item.url} autoPlay controls playsInline style={{maxWidth:"88vw",maxHeight:"82vh",borderRadius:8,boxShadow:"0 8px 40px rgba(0,0,0,0.5)",background:"#000",outline:"none",display:"block"}}/>
+          ?<img src={item.url} alt={item.title||""} style={{maxWidth:"90vw",maxHeight:"86vh",width:"auto",height:"auto",objectFit:"contain",borderRadius:8,boxShadow:"0 8px 40px rgba(0,0,0,0.7)",display:"block"}}/>
+          :<video src={item.url} autoPlay controls playsInline style={{maxWidth:"90vw",maxHeight:"86vh",width:"auto",height:"auto",borderRadius:8,boxShadow:"0 8px 40px rgba(0,0,0,0.5)",background:"#000",outline:"none",display:"block"}}/>
         }
         {item.title&&<div style={{color:"rgba(255,255,255,0.75)",fontSize:13,fontWeight:600,background:"rgba(0,0,0,0.5)",padding:"3px 14px",borderRadius:6,maxWidth:"80vw",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.title}</div>}
       </div>
