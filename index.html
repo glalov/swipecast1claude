@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260527-203458 -->
-  <meta name="build-version" content="20260527-203458"/>
+  <!-- BUILD: 20260527-205345 -->
+  <meta name="build-version" content="20260527-205345"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260527-203458";
+      var B="20260527-205345";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -4746,38 +4746,47 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
   const [elapsed,setElapsed]=React.useState(0);
   const [uploadPct,setUploadPct]=React.useState(0);
   const [errMsg,setErrMsg]=React.useState("");
-  // playbackUrl is stored in STATE (not a ref) so it binds directly to <video src>
-  // in JSX — no useEffect timing race, no possibility of null ref on mount.
-  const [playbackUrl,setPlaybackUrl]=React.useState(null);
+  const [blobInfo,setBlobInfo]=React.useState(""); // visible debug: shows blob size+type in UI
 
   const streamRef=React.useRef(null);
   const mrRef=React.useRef(null);
   const chunksRef=React.useRef([]);
   const blobRef=React.useRef(null);
+  // blobUrlRef stores the blob URL as a plain ref (not state).
+  // It is set synchronously inside mr.onstop BEFORE setPhase("recorded") fires,
+  // so when the playback <video> element mounts the callback ref can read it immediately.
+  const blobUrlRef=React.useRef(null);
   const timerRef=React.useRef(null);
-  // liveVidRef is ONLY used for the live camera stream (preview + recording phases).
-  // The recorded playback video uses src={playbackUrl} directly in JSX — no ref needed.
   const liveVidRef=React.useRef(null);
 
-  // Cleanup on unmount
+  // Callback ref for the playback <video> element.
+  // React calls this with the DOM node when the element mounts and with null when
+  // it unmounts. Because blobUrlRef.current is set before setPhase("recorded"),
+  // the node.src assignment is guaranteed to happen with a valid URL.
+  const playbackVidRef=React.useCallback(node=>{
+    if(node&&blobUrlRef.current){
+      console.log("[VR] playbackVidRef mount, setting src=",blobUrlRef.current);
+      node.src=blobUrlRef.current;
+      node.load();
+    }
+  },[]); // eslint-disable-line
+
+  // Cleanup on unmount — stop camera + revoke blob URL
   React.useEffect(()=>{
     return()=>{
       stopStream();
       clearInterval(timerRef.current);
-      // revoke any dangling blob URL
-      setPlaybackUrl(prev=>{if(prev)URL.revokeObjectURL(prev);return null;});
+      if(blobUrlRef.current){URL.revokeObjectURL(blobUrlRef.current);blobUrlRef.current=null;}
     };
-  },[]);// eslint-disable-line
+  },[]); // eslint-disable-line
 
   // Attach live camera stream to the preview video element.
-  // Covers both "preview" and "recording" because each phase remounts the
-  // <video> element (different JSX branch), so srcObject must be re-set.
-  // explicit play() call handles Safari/iOS where autoPlay + srcObject alone
-  // is not always honoured.
+  // Must cover both "preview" and "recording" phases because phase change
+  // remounts the <video> element (different JSX branch), clearing srcObject.
   React.useEffect(()=>{
-    if((phase==="preview"||phase==="recording")&&streamRef.current){
-      const el=liveVidRef.current;
-      if(el){el.srcObject=streamRef.current;el.play().catch(()=>{});}
+    if((phase==="preview"||phase==="recording")&&streamRef.current&&liveVidRef.current){
+      liveVidRef.current.srcObject=streamRef.current;
+      liveVidRef.current.play().catch(err=>console.log("[VR] livePlay err:",err.name));
     }
   },[phase]);
 
@@ -4793,6 +4802,7 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
       streamRef.current=stream;
       setPhase("preview");
     }catch(e){
+      console.log("[VR] getUserMedia error:",e.name,e.message);
       const n=(e?.name||"").toLowerCase();
       if(n==="notallowederror"||n==="permissiondeniederror")setPhase("denied");
       else if(n==="notfounderror"||n==="devicesnotfounderror")setPhase("no-camera");
@@ -4803,40 +4813,55 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
   const startRecording=()=>{
     if(!streamRef.current)return;
     chunksRef.current=[];
-    // Pick the best MIME type the browser actually supports.
-    // Use mr.mimeType (the type the browser chose) for the Blob — NOT our
-    // requested type — so the Blob header matches the actual encoded data.
     const preferred=["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm","video/mp4"];
-    const requested=(typeof MediaRecorder!=="undefined"&&MediaRecorder.isTypeSupported)
-      ?preferred.find(t=>MediaRecorder.isTypeSupported(t))||""
-      :"";
-    const mr=new MediaRecorder(streamRef.current,requested?{mimeType:requested}:{});
-    const actualType=mr.mimeType||"video/webm"; // real type the browser is using
+    const supported=(typeof MediaRecorder!=="undefined"&&MediaRecorder.isTypeSupported)
+      ?preferred.filter(t=>MediaRecorder.isTypeSupported(t)):[];
+    const mimeType=supported[0]||"";
+    console.log("[VR] startRecording supported=",supported,"using=",mimeType||"(browser default)");
+    // Do NOT pass {} as second arg — some browsers treat it differently from no second arg
+    const mr=mimeType?new MediaRecorder(streamRef.current,{mimeType}):new MediaRecorder(streamRef.current);
+    console.log("[VR] mr created, mr.mimeType=",mr.mimeType,"mr.state=",mr.state);
     mrRef.current=mr;
-    mr.ondataavailable=e=>{if(e.data&&e.data.size>0)chunksRef.current.push(e.data);};
+    mr.ondataavailable=e=>{
+      console.log("[VR] ondataavailable size=",e.data?.size||0);
+      if(e.data&&e.data.size>0)chunksRef.current.push(e.data);
+    };
     mr.onstop=()=>{
+      console.log("[VR] onstop fired, chunks=",chunksRef.current.length);
       clearInterval(timerRef.current);
       if(chunksRef.current.length===0){
-        // No data captured — camera track may have silently failed
+        console.warn("[VR] no chunks — recording produced no data");
         setErrMsg("Recording produced no data. Please try again.");
         setPhase("preview");
         return;
       }
-      const blob=new Blob(chunksRef.current,{type:actualType});
+      // Read mr.mimeType here (after recording) — some browsers only finalise it after start()
+      const type=mr.mimeType||"video/webm";
+      const totalBytes=chunksRef.current.reduce((s,c)=>s+c.size,0);
+      const blob=new Blob(chunksRef.current,{type});
+      console.log("[VR] blob created: size=",blob.size,"type=",blob.type,"chunks=",chunksRef.current.length,"totalChunkBytes=",totalBytes);
       blobRef.current=blob;
-      // Revoke previous playback URL, create new one, and store in STATE.
-      // Using state (not a ref) means React binds it directly to <video src>
-      // in JSX — no useEffect needed, no timing race.
-      setPlaybackUrl(prev=>{if(prev)URL.revokeObjectURL(prev);return URL.createObjectURL(blob);});
+      // Set blobUrlRef BEFORE setPhase("recorded") so the playback video callback
+      // ref can read it the moment the element mounts.
+      if(blobUrlRef.current)URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current=URL.createObjectURL(blob);
+      console.log("[VR] blobUrl set=",blobUrlRef.current);
+      setBlobInfo(blob.size+" bytes · "+blob.type);
       stopStream();
       setPhase("recorded");
     };
-    mr.start(250); // 250ms timeslice: more frequent chunks, reduces risk of 0-chunk edge case
+    mr.start(250);
+    console.log("[VR] mr.start(250) called");
     setElapsed(0);
     setPhase("recording");
     timerRef.current=setInterval(()=>{
       setElapsed(p=>{
-        if(p+1>=MAX_SEC){stopRecording();return MAX_SEC;}
+        if(p+1>=MAX_SEC){
+          // Use setTimeout to avoid calling stopRecording() inside a state updater
+          // (state updaters must be pure functions in React 18)
+          setTimeout(()=>stopRecording(),0);
+          return MAX_SEC;
+        }
         return p+1;
       });
     },1000);
@@ -4844,50 +4869,57 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
 
   const stopRecording=()=>{
     clearInterval(timerRef.current);
+    console.log("[VR] stopRecording, mr.state=",mrRef.current?.state);
     if(mrRef.current&&mrRef.current.state!=="inactive")mrRef.current.stop();
   };
 
   const reRecord=async()=>{
-    setPlaybackUrl(prev=>{if(prev)URL.revokeObjectURL(prev);return null;});
+    if(blobUrlRef.current){URL.revokeObjectURL(blobUrlRef.current);blobUrlRef.current=null;}
     blobRef.current=null;chunksRef.current=[];
-    setElapsed(0);setErrMsg("");
+    setElapsed(0);setErrMsg("");setBlobInfo("");
     await openCamera();
   };
 
   const uploadAndUse=async()=>{
-    if(!blobRef.current||blobRef.current.size===0){
+    const blob=blobRef.current;
+    console.log("[VR] uploadAndUse: blob=",blob?.size,"type=",blob?.type);
+    if(!blob||blob.size===0){
       setErrMsg("No recording found. Please record again.");return;
     }
     const uid=session?.user?.id;
+    console.log("[VR] uid=",uid);
     if(!uid){setErrMsg("Session expired. Please log in again.");return;}
     setPhase("uploading");setUploadPct(0);setErrMsg("");
     try{
-      const t=blobRef.current.type||"video/webm";
-      const ext=t.includes("mp4")?"mp4":"webm";
+      const type=blob.type||"video/webm";
+      const ext=type.includes("mp4")?"mp4":type.includes("ogg")?"ogg":"webm";
       const safePart=(roleId||"app").replace(/[^a-z0-9]/gi,"-");
       const path=`${uid}/application-videos/${safePart}-${Date.now()}.${ext}`;
+      console.log("[VR] uploading path=",path,"size=",blob.size,"contentType=",type);
       let pct=0;
       const tick=setInterval(()=>{pct=Math.min(pct+8,90);setUploadPct(pct);},300);
-      const{error:upErr}=await window.sb.storage.from("talent-media").upload(path,blobRef.current,{
-        upsert:true, // allow overwrite in case of retry
-        contentType:t
+      const{data:upData,error:upErr}=await window.sb.storage.from("talent-media").upload(path,blob,{
+        upsert:true,
+        contentType:type
       });
       clearInterval(tick);
+      console.log("[VR] upload done: data=",upData,"error=",upErr);
       if(upErr)throw upErr;
       setUploadPct(100);
       const{data:{publicUrl}}=window.sb.storage.from("talent-media").getPublicUrl(path);
+      console.log("[VR] publicUrl=",publicUrl);
       if(!publicUrl)throw new Error("Could not get public URL for uploaded video.");
       onVideoReady(publicUrl);
     }catch(e){
+      console.error("[VR] upload failed:",e);
       setErrMsg("Upload failed: "+(e?.message||"unknown error. Please try again."));
       setPhase("recorded");
     }
   };
 
   const deleteVideo=()=>{
-    stopStream();
-    clearInterval(timerRef.current);
-    setPlaybackUrl(prev=>{if(prev)URL.revokeObjectURL(prev);return null;});
+    stopStream();clearInterval(timerRef.current);
+    if(blobUrlRef.current){URL.revokeObjectURL(blobUrlRef.current);blobUrlRef.current=null;}
     blobRef.current=null;chunksRef.current=[];
     onClose();
   };
@@ -4934,7 +4966,7 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
   if(phase==="preview"){
     return(
       <div style={box}>
-        <div style={{fontSize:13,fontWeight:700,marginBottom:10}}>Camera Preview — you should see yourself below</div>
+        <div style={{fontSize:13,fontWeight:700,marginBottom:10}}>Camera Preview</div>
         <div style={{position:"relative",borderRadius:8,overflow:"hidden",background:"#111",aspectRatio:"16/9",marginBottom:12}}>
           <video ref={liveVidRef} autoPlay playsInline muted style={{width:"100%",height:"100%",objectFit:"cover",display:"block",transform:"scaleX(-1)"}}/>
         </div>
@@ -4968,12 +5000,13 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
   if(phase==="recorded"){
     return(
       <div style={box}>
-        <div style={{fontSize:13,fontWeight:700,marginBottom:4}}>Preview your video before submitting.</div>
-        <div style={{fontSize:11,color:"var(--t3)",marginBottom:10}}>Duration: {fmtTime(elapsed)}</div>
+        <div style={{fontSize:13,fontWeight:700,marginBottom:4}}>Preview your recording</div>
+        <div style={{fontSize:11,color:"var(--t3)",marginBottom:10}}>Duration: {fmtTime(elapsed)}{blobInfo?" · "+blobInfo:""}</div>
         <div style={{borderRadius:8,overflow:"hidden",background:"#111",aspectRatio:"16/9",marginBottom:12}}>
-          {/* src bound directly from state — no useEffect, no ref, no timing race */}
+          {/* callback ref: fires when element mounts, reads blobUrlRef which was set
+              synchronously in onstop before setPhase("recorded") — no timing race */}
           <video
-            src={playbackUrl||undefined}
+            ref={playbackVidRef}
             controls
             playsInline
             preload="auto"
@@ -5143,6 +5176,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       // Goes through public.submit_application (SECURITY DEFINER) so the
       // 50/24h cap and per-role uniqueness check are enforced server-side
       // and cannot be bypassed by direct insert.
+      console.log("[apply] video_note_url being submitted:",videoNoteUrlRef.current||"(none)");
       const {error}=await withTimeout(
         window.sb.rpc("submit_application",{p_casting:casting.id,p_role:roleId,p_cover:coverNote||null,p_photo:selectedPhoto||null,p_video_url:videoNoteUrlRef.current||null}),
         20000,
@@ -5347,7 +5381,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
               <VideoRecorder
                 session={session}
                 roleId={realRoleIds[applyRole?.idx]||applyRole?.name||"role"}
-                onVideoReady={url=>{setVideoNoteUrl(url);videoNoteUrlRef.current=url;setShowVideoRecorder(false);}}
+                onVideoReady={url=>{console.log("[apply] onVideoReady url=",url);setVideoNoteUrl(url);videoNoteUrlRef.current=url;setShowVideoRecorder(false);}}
                 onClose={()=>setShowVideoRecorder(false)}
               />
             ):(
