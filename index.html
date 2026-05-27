@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260527-190247 -->
-  <meta name="build-version" content="20260527-190247"/>
+  <!-- BUILD: 20260527-191243 -->
+  <meta name="build-version" content="20260527-191243"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260527-190247";
+      var B="20260527-191243";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -5212,12 +5212,14 @@ function SmartVideo({src,title}){
 }
 
 // ShowcaseVideoTile — fixed 3:4 portrait aspect ratio tile; clicking opens full-screen modal.
+// Uses #t=0.1 so the browser seeks to the first real frame and shows a thumbnail.
+// objectFit:"contain" lets portrait AND landscape videos display without cropping.
 function ShowcaseVideoTile({v,onOpen}){
   return(
     <div style={{position:"relative",overflow:"hidden",background:"#111",cursor:"pointer",borderRadius:8,aspectRatio:"3/4"}}
       onClick={()=>onOpen&&onOpen(v)}>
-      <video src={v.url} preload="metadata" playsInline muted
-        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",display:"block",pointerEvents:"none"}}/>
+      <video src={`${v.url}#t=0.1`} preload="metadata" playsInline muted
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",display:"block",pointerEvents:"none"}}/>
       <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.38)"}}>
         <div style={{width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.92)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>
           <div style={{width:0,height:0,borderTop:"10px solid transparent",borderBottom:"10px solid transparent",borderLeft:"18px solid #111",marginLeft:4}}/>
@@ -5489,10 +5491,10 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
             <div style={{marginTop:10,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:8}}>
               {extraMedia.map((item,i)=>(
                 item._tile==="video"
-                ?<div key={item.id||i} style={{position:"relative",background:"#111",borderRadius:8,overflow:"hidden",cursor:"pointer",border:"1px solid var(--bdr)"}}
+                ?<div key={item.id||i} style={{position:"relative",background:"#111",borderRadius:8,overflow:"hidden",cursor:"pointer",border:"1px solid var(--bdr)",aspectRatio:"3/4"}}
                   onClick={()=>setVideoModal({url:item.url,title:item.title})}>
-                  <video src={item.url} preload="metadata" muted playsInline
-                    style={{width:"100%",aspectRatio:"16/9",objectFit:"cover",display:"block",pointerEvents:"none"}}/>
+                  <video src={`${item.url}#t=0.1`} preload="metadata" muted playsInline
+                    style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",display:"block",pointerEvents:"none"}}/>
                   <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.38)"}}>
                     <div style={{width:40,height:40,borderRadius:"50%",background:"rgba(255,255,255,0.92)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>
                       <div style={{width:0,height:0,borderTop:"9px solid transparent",borderBottom:"9px solid transparent",borderLeft:"16px solid #111",marginLeft:4}}/>
