@@ -7189,6 +7189,20 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   // ─── Full-screen swipe focus mode (Issue #1): hides sidebar & fills viewport.
   const [fsMode,setFsMode]=useState(false);
 
+  // ─── URL hash state helpers — encode/decode active casting, role, folder, and tab
+  //     so refresh and direct URL access restore the correct sub-page within the dashboard.
+  //     Format: /dashboard#c=<castingId>&r=<roleId>&f=<folder>&t=<tab>
+  function parseDashHash(){
+    try{
+      const h=window.location.hash.replace(/^#/,"");
+      if(!h)return{};
+      const p=Object.fromEntries(h.split("&").map(s=>s.split("=")));
+      return{castingId:p.c||null,roleId:p.r||null,folder:p.f||null,tab:p.t||null};
+    }catch(_){return{};}
+  }
+  const [_hashInit]=useState(()=>parseDashHash()); // read ONCE on mount
+  const hashInitRef=useRef(_hashInit);              // stable ref for data-load callback
+
   const uid=session?.user?.id;
 
   // Builds the rich-profile object TalentProfile expects, from a DB `applications` row.
@@ -7261,6 +7275,49 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   },[uid]);
 
   useEffect(()=>{loadCdCastings();},[loadCdCastings,reloadTick,castingsVersion]);
+
+  // ─── Restore sub-page state from URL hash after the first data load completes.
+  //     This runs when myCastings populates and there's a hash from a prior navigation
+  //     or a page refresh. We only restore once (via hashInitRef consumption).
+  useEffect(()=>{
+    const h=hashInitRef.current;
+    if(!h||!myCastings.length)return;
+    if(!h.castingId&&!h.tab)return; // nothing to restore
+    hashInitRef.current={}; // consume — don't restore twice
+    if(h.tab&&h.tab!=="castings"){setTab(h.tab);return;}
+    if(h.castingId){
+      const c=myCastings.find(x=>String(x.id)===String(h.castingId));
+      if(!c)return;
+      // Restore the casting + role using the same async functions the UI uses
+      openReview(c).then(()=>{
+        if(!h.roleId)return;
+        const role=(c.roles||[]).find(r=>String(r.id)===String(h.roleId));
+        if(!role)return;
+        // openRole resets folder to "pending"; restore desired folder after it completes
+        openRole(role).then(()=>{
+          if(h.folder&&h.folder!=="pending")setFolder(h.folder);
+        }).catch(()=>{});
+      }).catch(()=>{});
+    }
+  },[myCastings]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Write current sub-page state into the URL hash so refresh restores it.
+  //     Uses replaceState (not pushState) to avoid polluting the Back stack.
+  useEffect(()=>{
+    try{
+      const parts=[];
+      if(active)parts.push(`c=${active.id}`);
+      if(activeRole)parts.push(`r=${activeRole.id}`);
+      if(folder&&folder!=="pending")parts.push(`f=${folder}`);
+      if(tab&&tab!=="castings")parts.push(`t=${tab}`);
+      const hash=parts.length?`#${parts.join("&")}`:window.location.pathname;
+      window.history.replaceState(
+        window.history.state||{swipecast:true,page:"dashboard"},
+        "",
+        "/dashboard"+(parts.length?`#${parts.join("&")}`:"")
+      );
+    }catch(_){}
+  },[active,activeRole,folder,tab]);
 
   const toggleCastingStatus=async(casting,newStatus)=>{
     setClosingId(casting.id);
@@ -12009,7 +12066,11 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
 // the frontend only *triggers* actions. Permissions are enforced server-side.
 // ═══════════════════════════════════════════
 function AdminPage({session,profile,isSuperAdmin,onNavigate}){
-  const [section,setSection]=useState("overview");
+  // Read initial section from URL hash (e.g. /admin#users)
+  const [section,setSection]=useState(()=>{
+    try{const h=window.location.hash.replace(/^#/,"");if(h)return h;}catch(_){}
+    return"overview";
+  });
   const [pendingBookingCount,setPendingBookingCount]=useState(0);
   const role=profile?.user_type||"(unknown)";
 
@@ -12022,6 +12083,17 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       }catch(e){console.warn("[admin-booking-count]",e);}
     })();
   },[]);
+
+  // Persist active section in URL hash so refresh restores the same admin section
+  useEffect(()=>{
+    try{
+      window.history.replaceState(
+        window.history.state||{swipecast:true,page:"admin"},
+        "",
+        "/admin"+(section&&section!=="overview"?`#${section}`:"")
+      );
+    }catch(_){}
+  },[section]);
 
   const goToSection=(s)=>{
     setSection(s);
@@ -14039,8 +14111,10 @@ const PAGE_PATH={
   "classes":"/classes","contact":"/contact","resources":"/resources",
   "faq":"/faq","success-stories":"/success-stories","studios":"/studios",
   "api-info":"/api-info","terms":"/terms","privacy":"/privacy","careers":"/careers",
-  "auth-gate":"/auth-gate","casting-gate":"/browse-castings","account-settings":"/account-settings",
+  "auth-gate":"/auth-gate","account-settings":"/account-settings",
   "success":"/success",
+  // casting-gate is an overlay state, NOT a standalone URL — it must not
+  // appear here or it would overwrite "search" in PATH_PAGE for /browse-castings
 };
 const PATH_PAGE=Object.fromEntries(Object.entries(PAGE_PATH).map(([k,v])=>[v,k]));
 function urlToPage(){
@@ -14531,7 +14605,21 @@ function App(){
     };
   },[session?.user?.id,!!myProfile,authReady,loadProfile]);
 
-  const pushHist=(p,opts={})=>{try{let url=PAGE_PATH[p]||"/";const st={swipecast:true,page:p,...opts};if(p==="casting-detail"&&opts.slug){url=`/casting/${encodeURIComponent(opts.slug)}`;st.castingSlug=opts.slug;}else if(p==="casting-detail"&&opts.id){url=`/casting/${encodeURIComponent(opts.id)}`;}else if(p==="talent-public"&&opts.slug){url=`/talent/${encodeURIComponent(opts.slug)}`;st.talentSlug=opts.slug;}window.history.pushState(st,"",url);}catch(e){}};
+  const pushHist=(p,opts={})=>{try{
+    // Default: use the page's canonical URL, or keep the current URL (never fall back to "/")
+    let url=PAGE_PATH[p]||window.location.pathname||"/";
+    const st={swipecast:true,page:p,...opts};
+    if(p==="casting-detail"&&opts.slug){url=`/casting/${encodeURIComponent(opts.slug)}`;st.castingSlug=opts.slug;}
+    else if(p==="casting-detail"&&opts.id){url=`/casting/${encodeURIComponent(opts.id)}`;}
+    else if(p==="talent-public"&&opts.slug){url=`/talent/${encodeURIComponent(opts.slug)}`;st.talentSlug=opts.slug;}
+    else if(p==="profile"){
+      // Profile overlay: use talent's public URL if available, else keep current URL
+      if(opts.talentSlug){url=`/talent/${encodeURIComponent(opts.talentSlug)}`;st.talentSlug=opts.talentSlug;}
+      else{url=window.location.pathname||"/";}
+    }
+    else if(p==="casting-gate"){url="/browse-castings";}  // gate is not its own page
+    window.history.pushState(st,"",url);
+  }catch(e){}};
   const navigate=useCallback((p,opts={})=>{
     window.scrollTo(0,0);
     let target=p;
@@ -14548,7 +14636,7 @@ function App(){
     if(p!=="profile"&&p!=="casting-detail"&&p!=="auth-gate"&&p!=="casting-gate"){setViewingProfile(null);setViewingCasting(null);}
     pushHist(target);
   },[]);
-  const viewProfile=(t)=>{setPrevPage(page);setViewingProfile(t);setPage("profile");pushHist("profile");};
+  const viewProfile=(t)=>{setPrevPage(page);setViewingProfile(t);setPage("profile");pushHist("profile",t?.public_slug?{talentSlug:t.public_slug}:{});};
   const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");pushHist("auth-gate");};
   const handleViewCasting=(c,from)=>{
     window.scrollTo(0,0);
@@ -14605,7 +14693,15 @@ function App(){
       const email=(data?.email||user.email||"").toLowerCase();
       const fallbackOwner=email&&email===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase();
       const isAd=data?.user_type==="admin"||data?.user_type==="super_admin"||fallbackOwner;
-      if(isAd)navigate("admin");
+      // Check if there's a saved returnTo destination (e.g. user tried to access a protected page)
+      let returnTo=null;
+      try{returnTo=sessionStorage.getItem("sc_return_to");if(returnTo)sessionStorage.removeItem("sc_return_to");}catch(_){}
+      if(returnTo&&returnTo!=="/"&&!returnTo.startsWith("/login")){
+        // Navigate to the saved URL (the router will read it via urlToPage on the next render)
+        try{window.history.replaceState({swipecast:true,page:urlToPage()/*will re-derive below*/},"",returnTo);}catch(_){}
+        const rpage=urlToPage();
+        setPage(rpage);
+      }else if(isAd)navigate("admin");
       else if(data?.user_type==="cd")navigate("dashboard");
       else if(pendingApply)completeAuth();
       else navigate("my-profile");
@@ -14656,6 +14752,58 @@ function App(){
       try{window.history.replaceState({swipecast:true,page:"talent-dashboard"},"","/talent-dashboard");}catch(_){}
     }
   },[page,myProfile?.user_type]);
+
+  // When page is "casting-detail" but viewingCasting is null (direct URL load like /casting/slug-or-id),
+  // try to find it in static CASTINGS first, then fetch from the database.
+  useEffect(()=>{
+    if(page!=="casting-detail"||viewingCasting)return;
+    const slug=urlToCastingSlug();
+    if(!slug)return;
+    // Try static array first (slugs and numeric IDs)
+    const found=CASTINGS.find(c=>c.slug===slug||String(c.id)===slug);
+    if(found){setViewingCasting(found);return;}
+    // Not in static array — fetch from DB
+    let cancelled=false;
+    (async()=>{
+      try{
+        const field=isNaN(Number(slug))?"slug":"id";
+        const {data,error}=await window.sb.from("castings")
+          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .eq(field,field==="id"?Number(slug):slug).maybeSingle();
+        if(cancelled||error||!data)return;
+        const c={
+          id:data.id,slug:data.slug||slug,title:data.title,type:data.type||"Film",
+          prod:data.prod||"",tagline:data.tagline||"",synopsis:data.synopsis||"",
+          desc:data.synopsis||data.tagline||"",location:data.location||"",
+          pay:data.pay||"",rate:data.pay||"",deadline:data.deadline||"",
+          union:data.union_status||"",submissions:0,featured:data.featured===true,
+          cd_id:data.cd_id,profiles:data.profiles||null,_cd:data.profiles||null,
+          casting_image_url:data.casting_image_url||null,
+          casting_image_path:data.casting_image_path||null,
+          casting_images:Array.isArray(data.casting_images)?data.casting_images:[],
+          casting_website_url:data.casting_website_url||null,
+          roles:(data.roles||[]).map(r=>({
+            id:r.id||null,name:r.name||"",desc:r.description||"",type:"Supporting",
+            ageRange:r.age_range||"",gender:r.gender||"Any",
+            ethnicity:r.ethnicity||"Any",pay:r.pay||"",
+          })),
+        };
+        setViewingCasting(c);
+      }catch(e){console.warn("[router] casting fetch failed:",e?.message||e);}
+    })();
+    return()=>{cancelled=true;};
+  },[page,viewingCasting]);
+
+  // Auth guard: when auth is ready and user is NOT logged in, redirect protected pages to login
+  // instead of rendering a blank screen. Stores the intended destination for post-login redirect.
+  const PROTECTED_PAGES=["my-profile","dashboard","talent-dashboard","inbox","account-settings","admin","plan-summary"];
+  useEffect(()=>{
+    if(!authReady||isLoggedIn)return;
+    if(!PROTECTED_PAGES.includes(page))return;
+    // Save the current URL so we can return after login
+    try{sessionStorage.setItem("sc_return_to",window.location.pathname+window.location.search+window.location.hash);}catch(_){}
+    navigate("login");
+  },[authReady,isLoggedIn,page]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [menuOpen,setMenuOpen]=useState(false);
   const [joinOpen,setJoinOpen]=useState(false);
@@ -14773,17 +14921,19 @@ function App(){
           <div style={{display:page==="search"?"flex":"none",flexDirection:"column",flex:"1 1 auto",minHeight:"calc(100vh - 80px)"}} aria-hidden={page!=="search"}>
             <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")}/>
           </div>}
-        {page==="casting-detail"&&viewingCasting&&<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>}
+        {page==="casting-detail"&&(viewingCasting
+          ?<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>
+          :<PageLoader/>)}
         {page==="casting-gate"&&viewingCasting&&<CastingGatePage casting={viewingCasting} onCreateProfile={()=>{setPage("auth-gate");pushHist("auth-gate");}} onLogin={()=>navigate("login")} onBack={()=>{setPendingApply(null);navigate(prevPage==="home"?"home":"search");}}/>}
         {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
-        {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>)}
-        {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&(myProfile?.user_type==="talent"||!myProfile)?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>:<div style={{minHeight:"60vh"}}/>)}
+        {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):isLoggedIn?<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>:<PageLoader/>)}
+        {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&(myProfile?.user_type==="talent"||!myProfile)?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>:isLoggedIn?<PageLoader/>:<PageLoader/>)}
         {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
         {page==="talent-public"&&viewingTalentSlug&&<PublicTalentProfilePage slug={viewingTalentSlug} onNavigate={navigate} session={session} myProfile={myProfile}/>}
-        {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onViewProfile={viewProfile}/>:null)}
-        {page==="account-settings"&&(!authReady?<PageLoader/>:isLoggedIn?<AccountSettingsPage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onSignOut={signOut} isSuperAdmin={isSuperAdmin}/>:<div style={{minHeight:"60vh"}}/>)}
-        {page==="inbox"&&(!authReady?<PageLoader/>:<InboxPage session={session} profile={myProfile} onNavigate={navigate} onViewProfile={viewProfile}/>)}
-        {page==="admin"&&(!authReady?<PageLoader/>:isLoggedIn&&isAdmin?<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>:<div style={{minHeight:"60vh"}}/>)}
+        {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onViewProfile={viewProfile}/>:<PageLoader/>)}
+        {page==="account-settings"&&(!authReady?<PageLoader/>:isLoggedIn?<AccountSettingsPage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onSignOut={signOut} isSuperAdmin={isSuperAdmin}/>:<PageLoader/>)}
+        {page==="inbox"&&(!authReady?<PageLoader/>:isLoggedIn?<InboxPage session={session} profile={myProfile} onNavigate={navigate} onViewProfile={viewProfile}/>:<PageLoader/>)}
+        {page==="admin"&&(!authReady?<PageLoader/>:isLoggedIn&&isAdmin?<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>:isLoggedIn?<PageLoader/>:<PageLoader/>)}
         {/* Registration pages are guarded — a logged-in user with an existing
             profile (any user_type) is redirected to the page that makes sense for
             them. Talents go to My Profile, CDs/Producers/Admins go to the
