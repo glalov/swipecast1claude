@@ -4708,45 +4708,38 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
   const [elapsed,setElapsed]=React.useState(0);
   const [uploadPct,setUploadPct]=React.useState(0);
   const [errMsg,setErrMsg]=React.useState("");
+  // playbackUrl is stored in STATE (not a ref) so it binds directly to <video src>
+  // in JSX — no useEffect timing race, no possibility of null ref on mount.
+  const [playbackUrl,setPlaybackUrl]=React.useState(null);
+
   const streamRef=React.useRef(null);
   const mrRef=React.useRef(null);
   const chunksRef=React.useRef([]);
   const blobRef=React.useRef(null);
-  const objUrlRef=React.useRef(null);
   const timerRef=React.useRef(null);
-  const previewVidRef=React.useRef(null);
-  const playbackVidRef=React.useRef(null);
+  // liveVidRef is ONLY used for the live camera stream (preview + recording phases).
+  // The recorded playback video uses src={playbackUrl} directly in JSX — no ref needed.
+  const liveVidRef=React.useRef(null);
 
   // Cleanup on unmount
   React.useEffect(()=>{
     return()=>{
       stopStream();
-      if(objUrlRef.current)URL.revokeObjectURL(objUrlRef.current);
       clearInterval(timerRef.current);
+      // revoke any dangling blob URL
+      setPlaybackUrl(prev=>{if(prev)URL.revokeObjectURL(prev);return null;});
     };
-  },[]);
+  },[]);// eslint-disable-line
 
-  // Attach live stream to the preview video element.
-  // Must cover BOTH "preview" and "recording" phases because each phase
-  // returns different JSX — React unmounts/remounts the <video> element
-  // when phase switches, clearing srcObject. Without this, the recording
-  // screen is black even though the stream is still active.
+  // Attach live camera stream to the preview video element.
+  // Covers both "preview" and "recording" because each phase remounts the
+  // <video> element (different JSX branch), so srcObject must be re-set.
+  // explicit play() call handles Safari/iOS where autoPlay + srcObject alone
+  // is not always honoured.
   React.useEffect(()=>{
     if((phase==="preview"||phase==="recording")&&streamRef.current){
-      const el=previewVidRef.current;
-      if(el){
-        el.srcObject=streamRef.current;
-        // Explicit play() is required on Safari/iOS — autoPlay attribute
-        // alone is not always respected when srcObject is set programmatically.
-        el.play().catch(()=>{});
-      }
-    }
-  },[phase]);
-
-  // Attach playback blob to video element after recording
-  React.useEffect(()=>{
-    if(phase==="recorded"&&playbackVidRef.current&&objUrlRef.current){
-      playbackVidRef.current.src=objUrlRef.current;
+      const el=liveVidRef.current;
+      if(el){el.srcObject=streamRef.current;el.play().catch(()=>{});}
     }
   },[phase]);
 
@@ -4754,19 +4747,17 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
     if(streamRef.current){streamRef.current.getTracks().forEach(t=>t.stop());streamRef.current=null;}
   };
 
-  const startCamera=async()=>{
+  const openCamera=async()=>{
     setPhase("requesting");setErrMsg("");
-    if(!navigator.mediaDevices?.getUserMedia){
-      setPhase("no-camera");return;
-    }
+    if(!navigator.mediaDevices?.getUserMedia){setPhase("no-camera");return;}
     try{
       const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}},audio:true});
       streamRef.current=stream;
       setPhase("preview");
     }catch(e){
-      const name=(e?.name||"").toLowerCase();
-      if(name==="notallowederror"||name==="permissiondeniederror"){setPhase("denied");}
-      else if(name==="notfounderror"||name==="devicesnotfounderror"){setPhase("no-camera");}
+      const n=(e?.name||"").toLowerCase();
+      if(n==="notallowederror"||n==="permissiondeniederror")setPhase("denied");
+      else if(n==="notfounderror"||n==="devicesnotfounderror")setPhase("no-camera");
       else{setErrMsg("Could not access camera: "+(e?.message||"unknown error"));setPhase("idle");}
     }
   };
@@ -4774,20 +4765,35 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
   const startRecording=()=>{
     if(!streamRef.current)return;
     chunksRef.current=[];
-    const mimeType=["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm","video/mp4"].find(t=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||"";
-    const mr=new MediaRecorder(streamRef.current,mimeType?{mimeType}:{});
+    // Pick the best MIME type the browser actually supports.
+    // Use mr.mimeType (the type the browser chose) for the Blob — NOT our
+    // requested type — so the Blob header matches the actual encoded data.
+    const preferred=["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm","video/mp4"];
+    const requested=(typeof MediaRecorder!=="undefined"&&MediaRecorder.isTypeSupported)
+      ?preferred.find(t=>MediaRecorder.isTypeSupported(t))||""
+      :"";
+    const mr=new MediaRecorder(streamRef.current,requested?{mimeType:requested}:{});
+    const actualType=mr.mimeType||"video/webm"; // real type the browser is using
     mrRef.current=mr;
-    mr.ondataavailable=e=>{if(e.data?.size>0)chunksRef.current.push(e.data);};
+    mr.ondataavailable=e=>{if(e.data&&e.data.size>0)chunksRef.current.push(e.data);};
     mr.onstop=()=>{
-      const blob=new Blob(chunksRef.current,{type:mimeType||"video/webm"});
-      blobRef.current=blob;
-      if(objUrlRef.current)URL.revokeObjectURL(objUrlRef.current);
-      objUrlRef.current=URL.createObjectURL(blob);
-      stopStream();
       clearInterval(timerRef.current);
+      if(chunksRef.current.length===0){
+        // No data captured — camera track may have silently failed
+        setErrMsg("Recording produced no data. Please try again.");
+        setPhase("preview");
+        return;
+      }
+      const blob=new Blob(chunksRef.current,{type:actualType});
+      blobRef.current=blob;
+      // Revoke previous playback URL, create new one, and store in STATE.
+      // Using state (not a ref) means React binds it directly to <video src>
+      // in JSX — no useEffect needed, no timing race.
+      setPlaybackUrl(prev=>{if(prev)URL.revokeObjectURL(prev);return URL.createObjectURL(blob);});
+      stopStream();
       setPhase("recorded");
     };
-    mr.start(1000);
+    mr.start(250); // 250ms timeslice: more frequent chunks, reduces risk of 0-chunk edge case
     setElapsed(0);
     setPhase("recording");
     timerRef.current=setInterval(()=>{
@@ -4800,40 +4806,39 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
 
   const stopRecording=()=>{
     clearInterval(timerRef.current);
-    if(mrRef.current&&mrRef.current.state!=="inactive"){mrRef.current.stop();}
+    if(mrRef.current&&mrRef.current.state!=="inactive")mrRef.current.stop();
   };
 
   const reRecord=async()=>{
-    if(objUrlRef.current){URL.revokeObjectURL(objUrlRef.current);objUrlRef.current=null;}
+    setPlaybackUrl(prev=>{if(prev)URL.revokeObjectURL(prev);return null;});
     blobRef.current=null;chunksRef.current=[];
     setElapsed(0);setErrMsg("");
-    setPhase("requesting");
-    try{
-      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}},audio:true});
-      streamRef.current=stream;
-      setPhase("preview");
-    }catch(e){
-      setPhase("denied");
-    }
+    await openCamera();
   };
 
   const uploadAndUse=async()=>{
-    if(!blobRef.current){return;}
+    if(!blobRef.current||blobRef.current.size===0){
+      setErrMsg("No recording found. Please record again.");return;
+    }
     const uid=session?.user?.id;
     if(!uid){setErrMsg("Session expired. Please log in again.");return;}
     setPhase("uploading");setUploadPct(0);setErrMsg("");
     try{
-      const ext=blobRef.current.type.includes("mp4")?"mp4":"webm";
+      const t=blobRef.current.type||"video/webm";
+      const ext=t.includes("mp4")?"mp4":"webm";
       const safePart=(roleId||"app").replace(/[^a-z0-9]/gi,"-");
       const path=`${uid}/application-videos/${safePart}-${Date.now()}.${ext}`;
-      // Simulate progress ticks while upload is in-flight
       let pct=0;
       const tick=setInterval(()=>{pct=Math.min(pct+8,90);setUploadPct(pct);},300);
-      const{error:upErr}=await window.sb.storage.from("talent-media").upload(path,blobRef.current,{upsert:false,contentType:blobRef.current.type});
+      const{error:upErr}=await window.sb.storage.from("talent-media").upload(path,blobRef.current,{
+        upsert:true, // allow overwrite in case of retry
+        contentType:t
+      });
       clearInterval(tick);
       if(upErr)throw upErr;
       setUploadPct(100);
       const{data:{publicUrl}}=window.sb.storage.from("talent-media").getPublicUrl(path);
+      if(!publicUrl)throw new Error("Could not get public URL for uploaded video.");
       onVideoReady(publicUrl);
     }catch(e){
       setErrMsg("Upload failed: "+(e?.message||"unknown error. Please try again."));
@@ -4843,15 +4848,14 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
 
   const deleteVideo=()=>{
     stopStream();
-    if(objUrlRef.current){URL.revokeObjectURL(objUrlRef.current);objUrlRef.current=null;}
-    blobRef.current=null;chunksRef.current=[];
     clearInterval(timerRef.current);
+    setPlaybackUrl(prev=>{if(prev)URL.revokeObjectURL(prev);return null;});
+    blobRef.current=null;chunksRef.current=[];
     onClose();
   };
 
   const fmtTime=s=>`${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
   const remaining=MAX_SEC-elapsed;
-
   const box={background:"var(--s2)",borderRadius:12,padding:16,marginBottom:0};
 
   if(phase==="idle"){
@@ -4862,7 +4866,7 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
             <div style={{fontWeight:700,fontSize:14,marginBottom:3}}>Record Video Note</div>
             <div style={{fontSize:12,color:"var(--t3)"}}>Optional. Record up to 30 seconds for this role.</div>
           </div>
-          <button className="btn-s btn-sm" onClick={startCamera} style={{flexShrink:0,whiteSpace:"nowrap"}}>🎥 Open Camera</button>
+          <button className="btn-s btn-sm" onClick={openCamera} style={{flexShrink:0,whiteSpace:"nowrap"}}>🎥 Open Camera</button>
         </div>
         {errMsg&&<div style={{marginTop:10,fontSize:12,color:"#c0392b"}}>{errMsg}</div>}
       </div>
@@ -4892,9 +4896,9 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
   if(phase==="preview"){
     return(
       <div style={box}>
-        <div style={{fontSize:13,fontWeight:700,marginBottom:10}}>Camera Preview</div>
-        <div style={{position:"relative",borderRadius:8,overflow:"hidden",background:"#000",aspectRatio:"16/9",marginBottom:12}}>
-          <video ref={previewVidRef} autoPlay playsInline muted style={{width:"100%",height:"100%",objectFit:"cover",display:"block",transform:"scaleX(-1)"}}/>
+        <div style={{fontSize:13,fontWeight:700,marginBottom:10}}>Camera Preview — you should see yourself below</div>
+        <div style={{position:"relative",borderRadius:8,overflow:"hidden",background:"#111",aspectRatio:"16/9",marginBottom:12}}>
+          <video ref={liveVidRef} autoPlay playsInline muted style={{width:"100%",height:"100%",objectFit:"cover",display:"block",transform:"scaleX(-1)"}}/>
         </div>
         <div style={{display:"flex",gap:8}}>
           <button className="btn-p btn-sm" style={{flex:1,background:"#c0392b",borderColor:"#c0392b"}} onClick={startRecording}>⏺ Start Recording</button>
@@ -4908,7 +4912,7 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
       <div style={box}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <span style={{width:10,height:10,borderRadius:"50%",background:"#c0392b",display:"inline-block",animation:"pulse 1s infinite"}}/>
+            <span style={{width:10,height:10,borderRadius:"50%",background:"#c0392b",display:"inline-block"}}/>
             <span style={{fontWeight:700,fontSize:13,color:"#c0392b"}}>Recording</span>
           </div>
           <span style={{fontWeight:800,fontSize:15,fontVariantNumeric:"tabular-nums",color:remaining<=5?"#c0392b":"var(--t1)"}}>{fmtTime(elapsed)} / {fmtTime(MAX_SEC)}</span>
@@ -4916,8 +4920,8 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
         <div style={{height:4,borderRadius:2,background:"var(--bdr)",overflow:"hidden",marginBottom:12}}>
           <div style={{height:"100%",borderRadius:2,background:"#c0392b",width:`${(elapsed/MAX_SEC)*100}%`,transition:"width .9s linear"}}/>
         </div>
-        <div style={{position:"relative",borderRadius:8,overflow:"hidden",background:"#000",aspectRatio:"16/9",marginBottom:12}}>
-          <video ref={previewVidRef} autoPlay playsInline muted style={{width:"100%",height:"100%",objectFit:"cover",display:"block",transform:"scaleX(-1)"}}/>
+        <div style={{position:"relative",borderRadius:8,overflow:"hidden",background:"#111",aspectRatio:"16/9",marginBottom:12}}>
+          <video ref={liveVidRef} autoPlay playsInline muted style={{width:"100%",height:"100%",objectFit:"cover",display:"block",transform:"scaleX(-1)"}}/>
         </div>
         <button className="btn-s btn-sm" style={{width:"100%"}} onClick={stopRecording}>⏹ Stop Recording</button>
       </div>
@@ -4928,8 +4932,15 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
       <div style={box}>
         <div style={{fontSize:13,fontWeight:700,marginBottom:4}}>Preview your video before submitting.</div>
         <div style={{fontSize:11,color:"var(--t3)",marginBottom:10}}>Duration: {fmtTime(elapsed)}</div>
-        <div style={{borderRadius:8,overflow:"hidden",background:"#000",aspectRatio:"16/9",marginBottom:12}}>
-          <video ref={playbackVidRef} controls playsInline style={{width:"100%",height:"100%",objectFit:"contain",display:"block"}}/>
+        <div style={{borderRadius:8,overflow:"hidden",background:"#111",aspectRatio:"16/9",marginBottom:12}}>
+          {/* src bound directly from state — no useEffect, no ref, no timing race */}
+          <video
+            src={playbackUrl||undefined}
+            controls
+            playsInline
+            preload="auto"
+            style={{width:"100%",height:"100%",objectFit:"contain",display:"block"}}
+          />
         </div>
         {errMsg&&<div style={{fontSize:12,color:"#c0392b",marginBottom:8}}>{errMsg}</div>}
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
