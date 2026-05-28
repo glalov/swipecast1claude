@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260528-025948 -->
-  <meta name="build-version" content="20260528-025948"/>
+  <!-- BUILD: 20260528-164652 -->
+  <meta name="build-version" content="20260528-164652"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260528-025948";
+      var B="20260528-164652";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -9680,6 +9680,17 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
   const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",sides_text:"",direction_notes:"",slate_instructions:"",video_length_limit:120,audition_deadline:"",wardrobe_notes:"",submission_type:"both",allow_multiple_takes:true,_showAudInstr:false}]);
   const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
+  const lastRoleRef=useRef(null);
+  const prevRolesLen=useRef(roles.length);
+  useEffect(()=>{
+    if(roles.length>prevRolesLen.current){
+      requestAnimationFrame(()=>{
+        lastRoleRef.current?.scrollIntoView({behavior:"smooth",block:"start"});
+        lastRoleRef.current?.querySelector('input')?.focus();
+      });
+    }
+    prevRolesLen.current=roles.length;
+  },[roles.length]);
 
   const uploadImage=async(files)=>{
     const fileList=files instanceof FileList?Array.from(files):[files].filter(Boolean);
@@ -9815,7 +9826,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
 
     <div style={{borderTop:"1px solid var(--bdr)",paddingTop:20,marginTop:4}}>
       <div className="flex-between" style={{marginBottom:12}}><h3 style={{fontSize:16,fontWeight:700}}>Roles</h3><button className="btn-s btn-sm" onClick={addRole} type="button">+ Add Role</button></div>
-      {roles.map((r,i)=><div key={r.id||`new-${i}`} style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:12}}>
+      {roles.map((r,i)=>{const isLast=i===roles.length-1;return(<div key={r.id||`new-${i}`} ref={isLast?lastRoleRef:null} style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:12}}>
         <div className="flex-between" style={{marginBottom:10}}><strong style={{fontSize:13}}>Role {i+1} {r.id?"":<span style={{color:"var(--acc)",fontSize:11}}>(new)</span>}</strong>{(roles.length>1||r.id===null)&&<button onClick={()=>removeRole(i)} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12}}>✕ Remove</button>}</div>
         <div className="form-group" style={{marginBottom:10}}><label className="label">Role Name *</label><input className="input" value={r.name} onChange={e=>setRole(i,"name",e.target.value)} placeholder="e.g. Sarah — Lead"/></div>
         <div className="form-row">
@@ -9864,7 +9875,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
               <div className="form-group" style={{marginTop:10,marginBottom:0}}><label className="label">Wardrobe / Framing Notes <span style={{fontWeight:400,color:"var(--t3)",fontSize:11}}>(optional)</span></label><input className="input" value={r.wardrobe_notes||""} onChange={e=>setRole(i,"wardrobe_notes",e.target.value)} placeholder="e.g. Dress simply, no logos. Neutral background preferred."/></div>
             </>}
           </div>
-      </div>)}
+      </div>);})}
     </div>
 
     <div style={{display:"flex",gap:12,marginTop:24,paddingTop:16,borderTop:"1px solid var(--bdr)",flexWrap:"wrap"}}>
@@ -14901,6 +14912,7 @@ function App(){
   // ───────────────────────────────────────────────────────────────
   const [castingsVersion,setCastingsVersion]=useState(0);
   const bumpCastings=useCallback(()=>setCastingsVersion(v=>v+1),[]);
+  const [dashboardKey,setDashboardKey]=useState(0);
   // ─── Global unread message count — drives the Inbox nav badge for ALL profile types
   //     (talent, CD, producer, studio, admin). One subscription per session lives
   //     here so every page sees the same number; no per-page polling drift.
@@ -15352,7 +15364,7 @@ function App(){
     if(p==="search-talent"){setUserType("talent");setPage("search");target="search";}
     else if(p==="search-cd"){setUserType("cd");setPage("search");target="search";}
     else if(p==="search"){setUserType("talent");setPage("search");}
-    else if(p==="dashboard"){setUserType("cd");setPage("dashboard");}
+    else if(p==="dashboard"){setUserType("cd");setPage("dashboard");setDashboardKey(k=>k+1);}
     else if(p==="talent-dashboard"){setPage("talent-dashboard");}
     else setPage(p);
     // Deep-link into a specific class detail
@@ -15655,7 +15667,7 @@ function App(){
           :<PageLoader/>)}
         {page==="casting-gate"&&viewingCasting&&<CastingGatePage casting={viewingCasting} onCreateProfile={()=>{setPage("auth-gate");pushHist("auth-gate");}} onLogin={()=>navigate("login")} onBack={()=>{setPendingApply(null);navigate(prevPage==="home"?"home":"search");}}/>}
         {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
-        {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):isLoggedIn?<CDDashboard onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>:<PageLoader/>)}
+        {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):isLoggedIn?<CDDashboard key={dashboardKey} onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>:<PageLoader/>)}
         {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&(myProfile?.user_type==="talent"||!myProfile)?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>:isLoggedIn?<PageLoader/>:<PageLoader/>)}
         {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
         {page==="talent-public"&&viewingTalentSlug&&<PublicTalentProfilePage slug={viewingTalentSlug} onNavigate={navigate} session={session} myProfile={myProfile}/>}
