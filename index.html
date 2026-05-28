@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260528-005147 -->
-  <meta name="build-version" content="20260528-005147"/>
+  <!-- BUILD: 20260528-010654 -->
+  <meta name="build-version" content="20260528-010654"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260528-005147";
+      var B="20260528-010654";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -1354,10 +1354,10 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media(max-width:900px){.folder-cards-grid{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:560px){.folder-cards-grid{grid-template-columns:1fr;}}
 .swipe-area{display:flex;flex-direction:column;align-items:center;justify-content:center;}
-.swipe-card-wrap{position:relative;width:340px;height:480px;margin-bottom:20px;}
+.swipe-card-wrap{position:relative;width:340px;height:530px;margin-bottom:20px;}
 .s-card{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:18px;overflow:hidden;background:var(--s1);border:1px solid var(--bdr);user-select:none;touch-action:none;box-shadow:0 8px 30px rgba(0,0,0,0.08);}
-.s-card img{width:100%;height:62%;object-fit:cover;pointer-events:none;}
-.s-card-info{padding:14px 18px;}
+.s-card img{width:100%;height:56%;object-fit:cover;pointer-events:none;}
+.s-card-info{padding:14px 18px;overflow-y:auto;max-height:44%;}
 .s-card-info h3{font-size:18px;font-weight:700;margin-bottom:3px;}
 .s-card-meta{color:var(--t2);font-size:12px;margin-bottom:8px;}
 .s-card-tags{display:flex;gap:5px;flex-wrap:wrap;}
@@ -5384,9 +5384,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             {videoNoteUrl?(
               <div style={{background:"var(--s2)",borderRadius:12,padding:14}}>
                 <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:"var(--t1)"}}>✓ Video note attached</div>
-                <div style={{background:"#000",borderRadius:8,marginBottom:10,display:"flex",alignItems:"center",justifyContent:"center",minHeight:100,maxHeight:240,overflow:"hidden"}}>
-                  <video src={videoNoteUrl} controls playsInline style={{maxWidth:"100%",maxHeight:240,width:"auto",height:"auto",display:"block",objectFit:"contain"}}/>
-                </div>
+                <video src={videoNoteUrl} controls playsInline style={{display:"block",maxWidth:"100%",maxHeight:220,width:"auto",height:"auto",borderRadius:8,background:"var(--s3)",marginBottom:10}}/>
                 <div style={{display:"flex",gap:8}}>
                   <button className="btn-s btn-sm" style={{fontSize:11}} onClick={()=>{setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(true);}}>↺ Re-record</button>
                   <button className="btn-s btn-sm" style={{fontSize:11,color:"#c0392b"}} onClick={()=>{setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(false);}}>🗑 Remove Video</button>
