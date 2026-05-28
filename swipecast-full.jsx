@@ -8318,8 +8318,8 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
                   <button className="sw-btn yes" onClick={()=>decide('select')} title="Select (swipe right)" style={fsMode?{width:68,height:68,fontSize:26}:{}}>✓</button>
                 </div>
                 <div style={{textAlign:"center",marginTop:12,display:"flex",gap:10,justifyContent:"center",alignItems:"center",flexWrap:"wrap"}}>
-                  <button className="btn-s btn-sm" onClick={()=>pendingList[si]&&setCdProfileOverlay(buildTalentView(pendingList[si]))}>View full profile</button>
-                  <button className="btn-s btn-sm" onClick={()=>setFsMode(v=>!v)} title={fsMode?"Return to normal view":"Review actors in distraction-free full screen"}>{fsMode?"⊡ Normal View":"⛶ Full Screen"}</button>
+                  <button className="btn-s btn-sm" onClick={()=>{if(!pendingList[si])return;if(fsMode)setFsMode(false);setCdProfileOverlay(buildTalentView(pendingList[si]));}} >View full profile</button>
+                  <button className="btn-s btn-sm" onClick={()=>{const next=!fsMode;setFsMode(next);if(!next)setCdProfileOverlay(null);}} title={fsMode?"Return to normal view":"Review actors in distraction-free full screen"}>{fsMode?"⊡ Normal View":"⛶ Full Screen"}</button>
                   {lastUndo&&<button className="btn-s btn-sm" onClick={undo}>↩ Undo — {lastUndo.name} ({lastUndo.newStatus})</button>}
                 </div>
                 <p style={{textAlign:"center",fontSize:11,color:"var(--t3)",marginTop:8}}>Swipe left = reject · swipe up = hold · swipe right = select</p>
