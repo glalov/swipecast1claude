@@ -7688,6 +7688,10 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   // the early-return loader which unmounts the whole tree including NewCastingModal,
   // wiping any in-progress casting draft.
   const firstLoadDone=useRef(false);
+  // Tracks whether the Edit Casting modal is open so background refreshes skip
+  // re-fetching while the CD is actively editing (would close or reset the form).
+  const editModalOpenRef=useRef(false);
+  useEffect(()=>{editModalOpenRef.current=!!editCasting;},[editCasting]);
   // ─── In-place talent profile overlay (Issues #2 & #3): opens TalentProfile as a
   //     fixed full-screen overlay WITHIN the CDDashboard so the dashboard state
   //     (active casting, active role, swipe index, folder tab) is never lost.
@@ -7751,6 +7755,9 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   const [cdLoadErr,setCdLoadErr]=useState("");
   const loadCdCastings=useCallback(async()=>{
     if(!uid){setLoading(false);return;}
+    // Skip background refreshes entirely while the Edit Casting modal is open.
+    // Any realtime/polling/focus-triggered fetch would stomp on unsaved role fields.
+    if(firstLoadDone.current&&editModalOpenRef.current)return;
     // Only show the full-page loader on the very first data fetch. Background refreshes
     // (60s polling, focus, realtime bumps) run silently so the NewCastingModal is never
     // unmounted mid-fill. The early-return loader at line ~4147 only fires when loading===true.
@@ -8230,7 +8237,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   };
 
   if(!uid)return(<div className="page page-wide"><p>Not logged in.</p></div>);
-  if(loading)return(<div className="page page-wide" style={{justifyContent:"center"}}><CastSlateLoader text="Loading your dashboard…"/></div>);
+  if(loading&&!editModalOpenRef.current)return(<div className="page page-wide" style={{justifyContent:"center"}}><CastSlateLoader text="Loading your dashboard…"/></div>);
 
   return(<div className="page page-wide">
     <div className="flex-between mb-20">
@@ -9751,7 +9758,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
   const isRejected=casting.status==="rejected";
   const isPending=casting.status==="pending_review";
   const isLive=casting.status==="open";
-  return(<div className="modal-overlay" onClick={()=>!busy&&!uploadingImg&&onClose()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"90vh",overflowY:"auto"}}>
+  return(<div className="modal-overlay" onClick={()=>!busy&&!uploadingImg&&!roles.some(r=>r._uploadingPdf)&&onClose()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"90vh",overflowY:"auto"}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4}}>
       <h2 style={{marginBottom:0}}>Edit Casting</h2>
       <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
