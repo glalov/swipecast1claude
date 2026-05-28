@@ -13468,7 +13468,7 @@ function AdminCastings(){
   const [busy,setBusy]=useState(null); // casting id + action key currently in flight
   const reload=useCallback(async()=>{
     setLoading(true);
-    const {data,error}=await window.sb.from("castings").select("*,profiles:cd_id(display_name,email,company_name),roles(id,name,description,gender,age_range,ethnicity)").order("created_at",{ascending:false}).limit(1000);
+    const {data,error}=await window.sb.from("castings").select("*,profiles:cd_id(display_name,email,company_name),roles(id,name,description,gender,age_range,ethnicity,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,submission_type,allow_multiple_takes)").order("created_at",{ascending:false}).limit(1000);
     if(error)setMsg("Load failed: "+error.message);
     setCastings(data||[]);setLoading(false);
   },[]);
@@ -14852,11 +14852,33 @@ function EditCastingModal({casting,onClose,onSaved}){
     if(casting.casting_image_url)return [{url:casting.casting_image_url,path:casting.casting_image_path||""}];
     return [];
   });
-  const [roles,setRoles]=useState(()=>(casting.roles||[]).map(r=>({id:r.id,name:r.name||"",description:r.description||"",gender:r.gender||"Any",age_range:r.age_range||"",ethnicity:r.ethnicity||"Any"})));
+  const [roles,setRoles]=useState(()=>(casting.roles||[]).map(r=>({
+    id:r.id,name:r.name||"",description:r.description||"",gender:r.gender||"Any",
+    age_range:r.age_range||"",ethnicity:r.ethnicity||"Any",
+    sides_pdf_url:r.sides_pdf_url||"",direction_notes:r.direction_notes||"",
+    slate_instructions:r.slate_instructions||"",video_length_limit:r.video_length_limit||120,
+    audition_deadline:r.audition_deadline||"",wardrobe_notes:r.wardrobe_notes||"",
+    submission_type:r.submission_type||"both",allow_multiple_takes:r.allow_multiple_takes!==false,
+    _showAudInstr:!!(r.sides_pdf_url||r.direction_notes||r.slate_instructions||r.wardrobe_notes),
+    _uploadingPdf:false,
+  })));
   const setField=(k,v)=>setF(p=>({...p,[k]:v}));
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
-  const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any"}]);
+  const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",submission_type:"both",allow_multiple_takes:true,_showAudInstr:false,_uploadingPdf:false}]);
   const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
+  const uploadPdf=async(file,roleIdx)=>{
+    if(!file)return;
+    if(file.type!=="application/pdf"&&!file.name.toLowerCase().endsWith(".pdf")){setErr("Only PDF files are allowed for audition sides.");return;}
+    setRole(roleIdx,"_uploadingPdf",true);setErr("");
+    try{
+      const path=`admin/sides/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+      const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true,contentType:"application/pdf"});
+      if(upErr)throw upErr;
+      const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
+      setRole(roleIdx,"sides_pdf_url",publicUrl);
+    }catch(e){setErr("PDF upload failed: "+e.message);}
+    finally{setRole(roleIdx,"_uploadingPdf",false);}
+  };
   const uploadImage=async(files)=>{
     const fileList=files instanceof FileList?Array.from(files):[files].filter(Boolean);
     const toUpload=fileList.slice(0,ADMIN_MAX_IMAGES-castingImages.length);
@@ -14899,7 +14921,7 @@ function EditCastingModal({casting,onClose,onSaved}){
       }
       for(const r of roles){
         if(!r.name.trim())continue;
-        const rp={name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:r.age_range||null,ethnicity:r.ethnicity||null};
+        const rp={name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:r.age_range||null,ethnicity:r.ethnicity||null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,submission_type:r.submission_type||"both",allow_multiple_takes:r.allow_multiple_takes!==false};
         if(r.id){
           const {error:uErr}=await window.sb.from("roles").update(rp).eq("id",r.id);
           if(uErr)throw uErr;
@@ -14958,6 +14980,54 @@ function EditCastingModal({casting,onClose,onSaved}){
         </div>
         <div className="form-group" style={{marginTop:10,marginBottom:0}}><label className="label">Ethnicity</label><input className="input" value={r.ethnicity} onChange={e=>setRole(i,"ethnicity",e.target.value)}/></div>
         <div className="form-group" style={{marginTop:10,marginBottom:0}}><label className="label">Role Description</label><textarea className="textarea" value={r.description} onChange={e=>setRole(i,"description",e.target.value)}/></div>
+        <div style={{marginTop:14,borderTop:"1px solid var(--bdr)",paddingTop:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",marginBottom:r._showAudInstr?12:0}} onClick={()=>setRole(i,"_showAudInstr",!r._showAudInstr)}>
+            <span style={{fontSize:12,fontWeight:700,color:"var(--t2)",display:"flex",alignItems:"center",gap:6}}>🎬 Audition Instructions</span>
+            <span style={{fontSize:11,color:"var(--acc)",fontWeight:600}}>{r._showAudInstr?"Hide ▲":"Set Instructions ▼"}</span>
+          </div>
+          {r._showAudInstr&&<>
+            <div className="form-group" style={{marginBottom:10}}>
+              <label className="label">Audition Sides / Scene <span style={{fontWeight:400,color:"var(--t3)",fontSize:11}}>(PDF only)</span></label>
+              {r.sides_pdf_url?(
+                <div style={{display:"flex",alignItems:"center",gap:8,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:8,padding:"10px 12px"}}>
+                  <span style={{fontSize:20}}>📄</span>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:13,fontWeight:600,color:"var(--t1)",marginBottom:2}}>Sides PDF attached</div>
+                    <a href={r.sides_pdf_url} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:"var(--acc)"}}>View PDF →</a>
+                  </div>
+                  <button type="button" onClick={()=>setRole(i,"sides_pdf_url","")} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12,fontWeight:700,padding:"4px 8px"}}>✕ Remove</button>
+                </div>
+              ):(
+                <label style={{cursor:r._uploadingPdf?"default":"pointer",display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:8,border:"2px dashed var(--bdr)",background:"var(--s2)",color:r._uploadingPdf?"var(--t3)":"var(--t2)",fontWeight:600,fontSize:13}}>
+                  {r._uploadingPdf?"Uploading PDF…":"📎 Attach PDF Sides"}
+                  <input type="file" accept=".pdf,application/pdf" style={{display:"none"}} disabled={r._uploadingPdf} onChange={e=>{const f=e.target.files?.[0];if(f)uploadPdf(f,i);e.target.value="";}}/>
+                </label>
+              )}
+            </div>
+            <div className="form-group" style={{marginBottom:10}}><label className="label">Performance Direction / Tone Notes</label><textarea className="textarea" style={{minHeight:70}} value={r.direction_notes||""} onChange={e=>setRole(i,"direction_notes",e.target.value)} placeholder="e.g. Keep it grounded. No comedy. Internal pressure, not external…"/></div>
+            <div className="form-row">
+              <div><label className="label">Slate Instructions</label><input className="input" value={r.slate_instructions||""} onChange={e=>setRole(i,"slate_instructions",e.target.value)} placeholder="e.g. State your name, age, and agency"/></div>
+              <div><label className="label">Video Length Limit</label>
+                <select className="select" style={{width:"100%"}} value={r.video_length_limit||60} onChange={e=>setRole(i,"video_length_limit",parseInt(e.target.value))}>
+                  <option value={60}>1 minute</option><option value={90}>90 seconds</option><option value={120}>2 minutes</option><option value={180}>3 minutes</option><option value={300}>5 minutes</option>
+                </select>
+              </div>
+            </div>
+            <div className="form-row" style={{marginTop:10}}>
+              <div><label className="label">Submission Type</label>
+                <select className="select" style={{width:"100%"}} value={r.submission_type||"both"} onChange={e=>setRole(i,"submission_type",e.target.value)}>
+                  <option value="both">Record or Upload (either)</option><option value="record">Record in browser only</option><option value="upload">Upload file only</option>
+                </select>
+              </div>
+              <div><label className="label">Takes</label>
+                <select className="select" style={{width:"100%"}} value={String(r.allow_multiple_takes!==false)} onChange={e=>setRole(i,"allow_multiple_takes",e.target.value==="true")}>
+                  <option value="true">Multiple takes allowed</option><option value="false">One take only</option>
+                </select>
+              </div>
+            </div>
+            <div className="form-group" style={{marginTop:10,marginBottom:0}}><label className="label">Wardrobe / Framing Notes <span style={{fontWeight:400,color:"var(--t3)",fontSize:11}}>(optional)</span></label><input className="input" value={r.wardrobe_notes||""} onChange={e=>setRole(i,"wardrobe_notes",e.target.value)} placeholder="e.g. Dress simply, no logos. Neutral background preferred."/></div>
+          </>}
+        </div>
       </div>)}
     </div>
 
