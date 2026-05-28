@@ -14838,6 +14838,10 @@ function EditCastingModal({casting,onClose,onSaved}){
   const [err,setErr]=useState("");
   const [busy,setBusy]=useState(false);
   const [uploadingImg,setUploadingImg]=useState(false);
+  const [adminUid,setAdminUid]=useState(null);
+  useEffect(()=>{
+    window.sb.auth.getSession().then(({data})=>{setAdminUid(data?.session?.user?.id||null);});
+  },[]);
   const [f,setF]=useState({
     title:casting.title||"",prod:casting.prod||"",type:casting.type||"Film",
     location:casting.location||"",pay:casting.pay||"",union_status:casting.union_status||"Non-Union",
@@ -14871,7 +14875,11 @@ function EditCastingModal({casting,onClose,onSaved}){
     if(file.type!=="application/pdf"&&!file.name.toLowerCase().endsWith(".pdf")){setErr("Only PDF files are allowed for audition sides.");return;}
     setRole(roleIdx,"_uploadingPdf",true);setErr("");
     try{
-      const path=`admin/sides/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+      // Use the authenticated user's UID as the path prefix so storage RLS policies accept the upload
+      const {data:sessionData}=await window.sb.auth.getSession();
+      const uid=sessionData?.session?.user?.id;
+      if(!uid)throw new Error("Not authenticated — please reload and try again.");
+      const path=`${uid}/sides/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
       const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true,contentType:"application/pdf"});
       if(upErr)throw upErr;
       const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
@@ -14891,8 +14899,10 @@ function EditCastingModal({casting,onClose,onSaved}){
     setUploadingImg(true);setErr("");
     try{
       const uploaded=[];
+      const {data:sessionData}=await window.sb.auth.getSession();
+      const uploadUid=sessionData?.session?.user?.id||"admin";
       for(const file of toUpload){
-        const path=`admin/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+        const path=`${uploadUid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
         const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true});
         if(upErr)throw upErr;
         const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
