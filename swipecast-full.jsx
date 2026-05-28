@@ -4972,17 +4972,21 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
       <div style={box}>
         <div style={{fontSize:13,fontWeight:700,marginBottom:4}}>Preview your recording</div>
         <div style={{fontSize:11,color:"var(--t3)",marginBottom:10}}>Duration: {fmtTime(elapsed)}{blobInfo?" · "+blobInfo:""}</div>
-        <div style={{borderRadius:8,overflow:"hidden",background:"#111",aspectRatio:"16/9",marginBottom:12}}>
+        <div style={{borderRadius:8,overflow:"hidden",background:"#111",marginBottom:12,display:"flex",alignItems:"center",justifyContent:"center",minHeight:160}}>
           <video
+            key={playbackSrc}
             ref={playbackVidRef}
             src={playbackSrc||undefined}
+            autoPlay
+            muted
             controls
             playsInline
             preload="auto"
             onError={e=>console.error("[VR] video error:",e.target.error?.code,e.target.error?.message)}
-            style={{width:"100%",height:"100%",objectFit:"contain",display:"block"}}
+            style={{maxWidth:"100%",maxHeight:320,width:"auto",height:"auto",display:"block",borderRadius:8}}
           />
         </div>
+        <div style={{fontSize:11,color:"var(--t3)",marginBottom:6,textAlign:"center"}}>Preview is muted — audio will be included when uploaded.</div>
         {errMsg&&<div style={{fontSize:12,color:"#c0392b",marginBottom:8}}>{errMsg}</div>}
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           <button className="btn-p btn-sm" style={{flex:1}} onClick={uploadAndUse}>✓ Use This Video</button>
@@ -5342,7 +5346,9 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             {videoNoteUrl?(
               <div style={{background:"var(--s2)",borderRadius:12,padding:14}}>
                 <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:"var(--t1)"}}>✓ Video note attached</div>
-                <video src={videoNoteUrl} controls playsInline style={{width:"100%",borderRadius:8,background:"#000",maxHeight:160,objectFit:"contain",display:"block",marginBottom:10}}/>
+                <div style={{background:"#000",borderRadius:8,marginBottom:10,display:"flex",alignItems:"center",justifyContent:"center",minHeight:100,maxHeight:240,overflow:"hidden"}}>
+                  <video src={videoNoteUrl} controls playsInline style={{maxWidth:"100%",maxHeight:240,width:"auto",height:"auto",display:"block",objectFit:"contain"}}/>
+                </div>
                 <div style={{display:"flex",gap:8}}>
                   <button className="btn-s btn-sm" style={{fontSize:11}} onClick={()=>{setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(true);}}>↺ Re-record</button>
                   <button className="btn-s btn-sm" style={{fontSize:11,color:"#c0392b"}} onClick={()=>{setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(false);}}>🗑 Remove Video</button>
