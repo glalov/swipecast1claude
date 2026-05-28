@@ -8684,6 +8684,7 @@ function MessageModal({app,fromId,castingTitle,onClose,onSent}){
       if(full){
         const {error}=await window.sb.from("messages").insert({from_id:fromId,to_id:app.talent_id,application_id:app.id,body:full});
         if(error)throw error;
+        fireMessageNotification(app.talent_id);
       }
       if(auditionAt){
         const {error:e2}=await window.sb.from("applications").update({audition_at:new Date(auditionAt).toISOString(),audition_note:auditionNote||null}).eq("id",app.id);
@@ -8844,6 +8845,7 @@ function InviteToProjectModal({cdId,talentId,talentName,onClose}){
       try{
         const body=`📩 You've been invited to audition for ${pickedCasting.title}${pickedRole?` · ${pickedRole.name}`:""}.${note.trim()?`\n\n"${note.trim()}"`:""}`;
         await window.sb.from("messages").insert({from_id:cdId,to_id:talentId,application_id:null,body});
+        fireMessageNotification(talentId);
       }catch(_){/* non-fatal */}
       setSent(true);
       setTimeout(()=>onClose(),1100);
@@ -8888,6 +8890,16 @@ function InviteToProjectModal({cdId,talentId,talentName,onClose}){
   </div></div>);
 }
 
+// ─── Fire-and-forget notification after a message insert. Never blocks the send,
+// never throws. The edge function checks the recipient's preferences server-side.
+function fireMessageNotification(toUserId,fromName){
+  try{
+    window.sb.functions.invoke("send-notification-email",{
+      body:{to_user_id:toUserId,type:"inbox_message",from_name:fromName||undefined}
+    }).catch(e=>console.warn("[notify]",e?.message||e));
+  }catch(_){}
+}
+
 // ─── General-purpose direct message (not tied to an application). CD-side use mostly,
 // but the same modal works for talent → CD too. Writes to public.messages with application_id=null.
 function ComposeDMModal({fromId,toId,toName,onClose}){
@@ -8903,6 +8915,7 @@ function ComposeDMModal({fromId,toId,toName,onClose}){
     try{
       const {error}=await window.sb.from("messages").insert({from_id:fromId,to_id:toId,application_id:null,body:body.trim()});
       if(error)throw error;
+      fireMessageNotification(toId);
       setSent(true);
       setTimeout(()=>onClose(),900);
     }catch(e){setErr(e.message||"Could not send.");}
@@ -9079,6 +9092,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
         .select("id,from_id,to_id,body,created_at,read_at,application_id,conversation_id")
         .single();
       if(error)throw error;
+      fireMessageNotification(counterpartyId);
       setReply("");
       setThread(p=>p.some(m=>m.id===data.id)?p:[...p,data]);
       if(typeof onReplied==="function")onReplied(data);
@@ -11532,6 +11546,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
       if(nextStatus==="accepted"){
         try{
           await window.sb.from("messages").insert({from_id:session.user.id,to_id:inv.cd_id,application_id:null,body:`✓ I've accepted your invite to ${inv.castings?.title||"the project"}${inv.roles?.name?` (${inv.roles.name})`:""}. Looking forward to it — let me know the next steps.`});
+          fireMessageNotification(inv.cd_id);
         }catch(_){}
       }
     }catch(e){
@@ -12404,7 +12419,9 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     email:profile?.notification_email!==false,
     applications:profile?.notification_applications!==false,
     messages:profile?.notification_messages!==false,
-    marketing:profile?.notification_marketing===true
+    marketing:profile?.notification_marketing===true,
+    sms:profile?.notification_sms===true,
+    phone:profile?.phone||""
   });
   const uid=session?.user?.id;
   const role=profile?.user_type||"talent";
@@ -12417,7 +12434,9 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
         email:profile.notification_email!==false,
         applications:profile.notification_applications!==false,
         messages:profile.notification_messages!==false,
-        marketing:profile.notification_marketing===true
+        marketing:profile.notification_marketing===true,
+        sms:profile.notification_sms===true,
+        phone:profile.phone||""
       });
     }
   },[profile?.id]);
@@ -12498,13 +12517,24 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
   // ── Save notification preferences ────────────────────────────
   const saveNotifications=async()=>{
     if(!uid)return;
+    // Validate phone if SMS is being enabled
+    const rawPhone=(notifState.phone||"").trim();
+    if(notifState.sms&&rawPhone){
+      const digits=rawPhone.replace(/\D/g,"");
+      if(digits.length<7||digits.length>15){
+        showMsg("Please enter a valid phone number before enabling SMS notifications.",true);
+        return;
+      }
+    }
     setSaving(true);
     try{
       const{error}=await window.sb.from("profiles").update({
         notification_email:notifState.email,
         notification_applications:notifState.applications,
         notification_messages:notifState.messages,
-        notification_marketing:notifState.marketing
+        notification_marketing:notifState.marketing,
+        notification_sms:notifState.sms,
+        phone:rawPhone||null
       }).eq("id",uid);
       if(error)throw error;
       await onReload();
@@ -12655,9 +12685,9 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
       <div className="card" style={{marginBottom:16}}>
         <div style={{fontWeight:700,marginBottom:16}}>Email Preferences</div>
         {[
-          {key:"email",label:"Email notifications",desc:"Receive all CastSlate notifications via email"},
+          {key:"email",label:"Email notifications",desc:"Master toggle — turns off all CastSlate email alerts"},
           {key:"applications",label:"Casting application updates",desc:"Updates on your casting submissions and audition status"},
-          {key:"messages",label:"Message notifications",desc:"Alerts when you receive new inbox messages"},
+          {key:"messages",label:"Message notifications",desc:"Email alert when you receive a new inbox message"},
           {key:"marketing",label:"Marketing emails",desc:"News, tips, and featured casting opportunities"},
         ].map(({key,label,desc})=>(
           <label key={key} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"12px 0",borderBottom:"1px solid var(--bdr)",cursor:"pointer"}}>
@@ -12670,13 +12700,33 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
           </label>
         ))}
       </div>
+      <div className="card" style={{marginBottom:16}}>
+        <div style={{fontWeight:700,marginBottom:4}}>SMS / Text Notifications</div>
+        <p style={{color:"var(--t2)",fontSize:12,marginBottom:16,lineHeight:1.5}}>Receive a text message when someone sends you a new inbox message. Requires a valid phone number and your explicit opt-in.</p>
+        <div className="form-group" style={{marginBottom:14}}>
+          <label className="label">Phone Number</label>
+          <input className="input" type="tel" placeholder="+1 555 000 0000" value={notifState.phone}
+            onChange={e=>setNotifState(s=>({...s,phone:e.target.value}))}
+            style={{maxWidth:280}}/>
+          <div style={{color:"var(--t3)",fontSize:11,marginTop:4}}>Include country code (e.g. +1 for US). Used only for SMS notifications — never shared publicly.</div>
+        </div>
+        <label style={{display:"flex",alignItems:"flex-start",gap:12,padding:"12px 0",borderTop:"1px solid var(--bdr)",cursor:"pointer"}}>
+          <input type="checkbox" checked={notifState.sms} onChange={e=>setNotifState(s=>({...s,sms:e.target.checked}))}
+            style={{accentColor:"var(--acc)",width:17,height:17,marginTop:1,flexShrink:0}}/>
+          <div>
+            <div style={{fontWeight:600,fontSize:14}}>SMS message notifications</div>
+            <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>Text me when I receive a new inbox message</div>
+          </div>
+        </label>
+        {notifState.sms&&(
+          <div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",marginTop:8,fontSize:12,color:"var(--t3)",lineHeight:1.6}}>
+            By enabling SMS notifications, you agree to receive CastSlate text alerts about account activity. Message and data rates may apply. You can turn this off at any time by unchecking the box above and saving.
+          </div>
+        )}
+      </div>
       <button className="btn-p btn-sm" disabled={saving} onClick={saveNotifications}>
         {saving?"Saving…":"Save Preferences"}
       </button>
-      <div style={{marginTop:16,fontSize:12,color:"var(--t3)"}}>
-        {/* TODO: Wire to actual email provider (Resend/SendGrid) to honor these preferences server-side */}
-        Note: Preference storage is ready. Actual email delivery respects these settings once the email provider is configured.
-      </div>
     </div>
   );
 

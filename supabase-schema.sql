@@ -1159,10 +1159,13 @@ alter table public.profiles
   add column if not exists notification_email      boolean     not null default true,
   add column if not exists notification_applications boolean   not null default true,
   add column if not exists notification_messages   boolean     not null default true,
-  add column if not exists notification_marketing  boolean     not null default false;
+  add column if not exists notification_marketing  boolean     not null default false,
+  add column if not exists notification_sms        boolean     not null default false;
 
 comment on column public.profiles.account_status is
   'Lifecycle status: active | deactivated | deletion_requested | deleted';
+comment on column public.profiles.notification_sms is
+  'Whether the user has opted in to SMS/text notifications — requires phone number and explicit consent';
 
 -- ═══════════════════════════════════════════════════════════════
 -- MIGRATION: stripe_membership_integration
