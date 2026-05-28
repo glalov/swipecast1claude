@@ -7949,8 +7949,9 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       if(st&&st.cdProfileOverlay)return;
       const h=parseDashHash();
       if(!h.castingId){
-        // Back to castings list
+        // Back to castings list (or a top-level tab like allSelected/savedLists)
         setActive(null);setActiveRole(null);setSi(0);setReloadTick(t=>t+1);
+        setTab(h.tab||"castings");
       }else{
         const c=myCastings.find(x=>String(x.id)===String(h.castingId));
         if(!c)return;
@@ -8484,8 +8485,8 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     </>:<>
       <div className="tabs">
         <button className={`tab ${tab==="castings"?"active":""}`} onClick={()=>setTab("castings")}>{t('cd.myCastings')}</button>
-        <button className={`tab ${tab==="allSelected"?"active":""}`} onClick={()=>setTab("allSelected")}>All Selected <span style={{opacity:.6}}>({allSelected.length})</span></button>
-        <button className={`tab ${tab==="savedLists"?"active":""}`} onClick={()=>{setTab("savedLists");setActiveList(null);}}>Saved Lists <span style={{opacity:.6}}>({savedLists.length})</span></button>
+        <button className={`tab ${tab==="allSelected"?"active":""}`} onClick={()=>{setTab("allSelected");try{window.history.pushState({swipecast:true,page:"dashboard",dashTab:"allSelected"},"","/dashboard#t=allSelected");}catch(_){}}}>All Selected <span style={{opacity:.6}}>({allSelected.length})</span></button>
+        <button className={`tab ${tab==="savedLists"?"active":""}`} onClick={()=>{setTab("savedLists");setActiveList(null);try{window.history.pushState({swipecast:true,page:"dashboard",dashTab:"savedLists"},"","/dashboard#t=savedLists");}catch(_){}}}>Saved Lists <span style={{opacity:.6}}>({savedLists.length})</span></button>
         <button className={`tab ${tab==="inbox"?"active":""}`} onClick={()=>onNavigate("inbox")}>Inbox →</button>
       </div>
       {cdLoadErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
