@@ -5345,7 +5345,9 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             {videoNoteUrl?(
               <div style={{background:"var(--s2)",borderRadius:12,padding:14}}>
                 <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:"var(--t1)"}}>✓ Video note attached</div>
-                <video src={videoNoteUrl} controls playsInline style={{display:"block",width:"100%",maxHeight:220,objectFit:"contain",borderRadius:8,background:"var(--s2)",marginBottom:10}}/>
+                <div style={{borderRadius:8,overflow:"hidden",marginBottom:10}}>
+                  <video src={videoNoteUrl} controls playsInline style={{display:"block",width:"100%",maxHeight:220,objectFit:"contain",background:"#000"}}/>
+                </div>
                 <div style={{display:"flex",gap:8}}>
                   <button className="btn-s btn-sm" style={{fontSize:11}} onClick={()=>{setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(true);}}>↺ Re-record</button>
                   <button className="btn-s btn-sm" style={{fontSize:11,color:"#c0392b"}} onClick={()=>{setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(false);}}>🗑 Remove Video</button>
