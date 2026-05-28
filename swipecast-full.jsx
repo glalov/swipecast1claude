@@ -4709,29 +4709,19 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
   const [uploadPct,setUploadPct]=React.useState(0);
   const [errMsg,setErrMsg]=React.useState("");
   const [blobInfo,setBlobInfo]=React.useState(""); // visible debug: shows blob size+type in UI
+  // playbackSrc is React STATE — set in onstop batched with setPhase("recorded").
+  // React 18 createRoot batches both updates into one render, so when the "recorded"
+  // phase JSX mounts the video element already has src={playbackSrc} set declaratively.
+  const [playbackSrc,setPlaybackSrc]=React.useState("");
 
   const streamRef=React.useRef(null);
   const mrRef=React.useRef(null);
   const chunksRef=React.useRef([]);
   const blobRef=React.useRef(null);
-  // blobUrlRef stores the blob URL as a plain ref (not state).
-  // It is set synchronously inside mr.onstop BEFORE setPhase("recorded") fires,
-  // so when the playback <video> element mounts the callback ref can read it immediately.
-  const blobUrlRef=React.useRef(null);
+  const blobUrlRef=React.useRef(null); // plain ref mirror of playbackSrc for imperative backup
   const timerRef=React.useRef(null);
   const liveVidRef=React.useRef(null);
-
-  // Callback ref for the playback <video> element.
-  // React calls this with the DOM node when the element mounts and with null when
-  // it unmounts. Because blobUrlRef.current is set before setPhase("recorded"),
-  // the node.src assignment is guaranteed to happen with a valid URL.
-  const playbackVidRef=React.useCallback(node=>{
-    if(node&&blobUrlRef.current){
-      console.log("[VR] playbackVidRef mount, setting src=",blobUrlRef.current);
-      node.src=blobUrlRef.current;
-      node.load();
-    }
-  },[]); // eslint-disable-line
+  const playbackVidRef=React.useRef(null); // regular ref to the playback <video> element
 
   // Cleanup on unmount — stop camera + revoke blob URL
   React.useEffect(()=>{
@@ -4755,6 +4745,23 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
   const stopStream=()=>{
     if(streamRef.current){streamRef.current.getTracks().forEach(t=>t.stop());streamRef.current=null;}
   };
+
+  // Belt-and-suspenders: after phase changes to "recorded", ensure the playback
+  // video element has its src set. The declarative src={playbackSrc} handles it
+  // in the same batched render, but this effect covers any edge case where the
+  // DOM element mounts before the React prop is applied.
+  React.useEffect(()=>{
+    if(phase==="recorded"&&playbackVidRef.current&&blobUrlRef.current){
+      const el=playbackVidRef.current;
+      console.log("[VR] recorded-effect: el.src=",el.src,"blobUrl=",blobUrlRef.current);
+      if(!el.src||el.src!==blobUrlRef.current){
+        el.src=blobUrlRef.current;
+        el.load();
+        console.log("[VR] recorded-effect: set src imperatively");
+      }
+      el.play().catch(e=>console.log("[VR] autoplay blocked:",e.name));
+    }
+  },[phase]); // eslint-disable-line
 
   const openCamera=async()=>{
     setPhase("requesting");setErrMsg("");
@@ -4808,6 +4815,7 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
       if(blobUrlRef.current)URL.revokeObjectURL(blobUrlRef.current);
       blobUrlRef.current=URL.createObjectURL(blob);
       console.log("[VR] blobUrl set=",blobUrlRef.current);
+      setPlaybackSrc(blobUrlRef.current);
       setBlobInfo(blob.size+" bytes · "+blob.type);
       stopStream();
       setPhase("recorded");
@@ -4838,7 +4846,7 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
   const reRecord=async()=>{
     if(blobUrlRef.current){URL.revokeObjectURL(blobUrlRef.current);blobUrlRef.current=null;}
     blobRef.current=null;chunksRef.current=[];
-    setElapsed(0);setErrMsg("");setBlobInfo("");
+    setElapsed(0);setErrMsg("");setBlobInfo("");setPlaybackSrc("");
     await openCamera();
   };
 
@@ -4965,13 +4973,13 @@ function VideoRecorder({session,roleId,onVideoReady,onClose}){
         <div style={{fontSize:13,fontWeight:700,marginBottom:4}}>Preview your recording</div>
         <div style={{fontSize:11,color:"var(--t3)",marginBottom:10}}>Duration: {fmtTime(elapsed)}{blobInfo?" · "+blobInfo:""}</div>
         <div style={{borderRadius:8,overflow:"hidden",background:"#111",aspectRatio:"16/9",marginBottom:12}}>
-          {/* callback ref: fires when element mounts, reads blobUrlRef which was set
-              synchronously in onstop before setPhase("recorded") — no timing race */}
           <video
             ref={playbackVidRef}
+            src={playbackSrc||undefined}
             controls
             playsInline
             preload="auto"
+            onError={e=>console.error("[VR] video error:",e.target.error?.code,e.target.error?.message)}
             style={{width:"100%",height:"100%",objectFit:"contain",display:"block"}}
           />
         </div>
@@ -5134,6 +5142,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       const roleId=realRoleIds[applyRole.idx];
       if(!roleId){setApplyErr("This role is no longer available. Please refresh the page and try again.");return;}
       if(myPhotos.length>0&&!selectedPhoto){setApplyErr("Please pick a photo to submit with your application.");return;}
+      if(showVideoRecorder&&!videoNoteUrlRef.current){setApplyErr("You've recorded a video. Please click '✓ Use This Video' to attach it, or '🗑 Delete' to remove it before submitting.");return;}
       console.log("[apply] submitting role:",roleId,"casting:",casting.id,"talent:",s.user.id);
       // Goes through public.submit_application (SECURITY DEFINER) so the
       // 50/24h cap and per-role uniqueness check are enforced server-side
