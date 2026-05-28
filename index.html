@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260528-200929 -->
-  <meta name="build-version" content="20260528-200929"/>
+  <!-- BUILD: 20260528-203752 -->
+  <meta name="build-version" content="20260528-203752"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260528-200929";
+      var B="20260528-203752";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -7897,12 +7897,12 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       const c=myCastings.find(x=>String(x.id)===String(h.castingId));
       if(!c)return;
       // Restore the casting + role using the same async functions the UI uses
-      openReview(c).then(()=>{
+      openReview(c,{skipHistory:true}).then(()=>{
         if(!h.roleId)return;
         const role=(c.roles||[]).find(r=>String(r.id)===String(h.roleId));
         if(!role)return;
         // openRole resets folder to "pending"; restore desired folder after it completes
-        openRole(role).then(()=>{
+        openRole(role,{skipHistory:true,castingId:c.id}).then(()=>{
           if(h.folder&&h.folder!=="pending")setFolder(h.folder);
         }).catch(()=>{});
       }).catch(()=>{});
@@ -7972,6 +7972,44 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     if(cdProfileHistRef.current){cdProfileHistRef.current=false;setCdProfileOverlay(null);try{window.history.back();}catch(_){}}
     else setCdProfileOverlay(null);
   };
+
+  // ─── Back/Forward navigation within the CDDashboard sub-pages ─────────────
+  //     When the user presses Back/Forward inside the dashboard stack, restore
+  //     active casting/role from the URL hash so the correct sub-page appears.
+  useEffect(()=>{
+    const onDashPop=(e)=>{
+      const st=e.state;
+      // If navigating away from dashboard entirely, let the outer handler take over.
+      if(st&&st.swipecast&&st.page!=="dashboard")return;
+      const newPath=(window.location.pathname||"/").replace(/^\/+|\/+$/g,"")||"home";
+      if(newPath!=="dashboard")return;
+      // Don't interfere with the profile overlay's own history entry.
+      if(st&&st.cdProfileOverlay)return;
+      const h=parseDashHash();
+      if(!h.castingId){
+        // Back to castings list
+        setActive(null);setActiveRole(null);setSi(0);setReloadTick(t=>t+1);
+      }else{
+        const c=myCastings.find(x=>String(x.id)===String(h.castingId));
+        if(!c)return;
+        if(!h.roleId){
+          // Back/Forward to project roles list
+          openReview(c,{skipHistory:true}).catch(()=>{});
+        }else{
+          // Forward to role submissions view
+          const role=(c.roles||[]).find(r=>String(r.id)===String(h.roleId));
+          if(!role)return;
+          openReview(c,{skipHistory:true}).then(()=>{
+            openRole(role,{skipHistory:true,castingId:c.id}).then(()=>{
+              if(h.folder&&h.folder!=="pending")setFolder(h.folder);
+            }).catch(()=>{});
+          }).catch(()=>{});
+        }
+      }
+    };
+    window.addEventListener("popstate",onDashPop);
+    return()=>window.removeEventListener("popstate",onDashPop);
+  },[myCastings]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Load saved talent lists + members. Runs whenever the CD opens that tab or
   //     after they add/remove a list / member.
@@ -8056,8 +8094,11 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   };
 
   // ─── Open a casting — load per-role counts (total + pending)
-  const openReview=async(casting)=>{
+  const openReview=async(casting,{skipHistory=false}={})=>{
     setActive(casting);setActiveRole(null);setSi(0);
+    if(!skipHistory){
+      try{window.history.pushState({swipecast:true,page:"dashboard",dashCastingId:String(casting.id)},"",`/dashboard#c=${casting.id}`);}catch(_){}
+    }
     const roleIds=(casting.roles||[]).map(r=>r.id);
     if(!roleIds.length){setRoleCounts({});setRolePending({});return;}
     const {data,error}=await window.sb.from("applications").select("role_id,status").eq("casting_id",casting.id);
@@ -8071,8 +8112,14 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   };
 
   // ─── Open a role — load all submissions, reset review state
-  const openRole=async(role)=>{
+  const openRole=async(role,{skipHistory=false,castingId=null}={})=>{
     setActiveRole(role);setSi(0);setFolder("pending");setSearch("");setSortBy("newest");setLastUndo(null);setSavingErr("");setAuditionFeedMode(false);
+    if(!skipHistory){
+      const cid=castingId||active?.id;
+      if(cid){
+        try{window.history.pushState({swipecast:true,page:"dashboard",dashCastingId:String(cid),dashRoleId:String(role.id)},"",`/dashboard#c=${cid}&r=${role.id}`);}catch(_){}
+      }
+    }
     const {data,error}=await window.sb.from("applications")
       .select("*,profiles(*),roles(id,name)").eq("role_id",role.id).order("created_at",{ascending:false});
     if(error)console.warn("[review] openRole error:",error.message);
@@ -8354,7 +8401,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     {active&&activeRole?<>
       {/* ─── Per-role review: folder tabs + swipe deck (pending) or list (hold/selected/rejected) ─── */}
       <div style={{display:"flex",gap:10,alignItems:"center",marginBottom:20,flexWrap:"wrap"}}>
-        <button className="btn-s btn-sm" onClick={()=>{setActiveRole(null);setSi(0);setAuditionFeedMode(false);setReloadTick(t=>t+1);openReview(active);}}>← Back to Roles</button>
+        <button className="btn-s btn-sm" onClick={()=>window.history.back()}>← Back to Roles</button>
         {submissions.length>0&&<button
           className={auditionFeedMode?"btn-p btn-sm":"btn-s btn-sm"}
           onClick={()=>setAuditionFeedMode(v=>!v)}
@@ -8461,7 +8508,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       </>}
     </>:active?<>
       {/* ─── Casting → roles list ─── */}
-      <button className="btn-s btn-sm mb-20" onClick={()=>{setActive(null);setReloadTick(t=>t+1);}}>← Back to Castings</button>
+      <button className="btn-s btn-sm mb-20" onClick={()=>window.history.back()}>← Back to Castings</button>
       <div style={{marginBottom:16}}><h3 style={{fontSize:22,fontWeight:800}}>{active.title}</h3><p style={{color:"var(--t2)",fontSize:13}}>{active.prod||"—"} · {active.location||"—"} · Pick a role to review its submissions</p></div>
       {(active.roles||[]).length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No roles in this casting.</p></div>:
       <div className="card-flat">{active.roles.map(r=>
