@@ -3852,6 +3852,16 @@ function BookingRequestModal({target,myProfile,session,onClose,onSubmitted}){
     setBusy(true);setErr("");
     try{
       const uid=session.user.id;
+      // Final server-side duplicate check right before submitting (guards against
+      // race conditions where the modal was opened before a prior request landed)
+      const{data:dupCheck}=await window.sb.from("class_booking_requests")
+        .select("id,status").eq("user_id",uid).eq("class_id",cls.id)
+        .not("status","in","(declined,cancelled)").limit(1).maybeSingle();
+      if(dupCheck){
+        setExistingRequest(dupCheck);
+        setBusy(false);
+        return;
+      }
       let headshot_url=useExistingHs?myProfile.headshot_url:null;
       if(headshotFile){
         const ext=headshotFile.name.split(".").pop();
