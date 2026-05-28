@@ -1190,3 +1190,30 @@ comment on column public.profiles.stripe_customer_id     is 'Stripe customer ID 
 comment on column public.profiles.stripe_subscription_id is 'Stripe subscription ID (sub_...)';
 comment on column public.profiles.premium_started_at     is 'When the user first became Premium';
 comment on column public.profiles.current_period_end     is 'End of current billing period';
+
+-- ════════════════════════════════════════════════════════════════════
+-- MIGRATION 2026-05-27 — audition_instructions
+-- Adds per-role audition instructions so CDs can specify exactly how
+-- they want talent to audition. Talent submit a video audition rather
+-- than a generic headshot-only application.
+-- Safe to re-run: all ADD COLUMN IF NOT EXISTS.
+-- ════════════════════════════════════════════════════════════════════
+alter table public.roles
+  add column if not exists sides_text           text,
+  add column if not exists direction_notes      text,
+  add column if not exists slate_instructions   text,
+  add column if not exists video_length_limit   int default 120,
+  add column if not exists audition_deadline    date,
+  add column if not exists wardrobe_notes       text,
+  add column if not exists submission_type      text not null default 'both'
+    check (submission_type in ('upload','record','both')),
+  add column if not exists allow_multiple_takes boolean not null default true;
+
+comment on column public.roles.sides_text           is 'Scene or sides text for the audition';
+comment on column public.roles.direction_notes      is 'Performance direction and tone notes for the CD';
+comment on column public.roles.slate_instructions   is 'How to slate at the start of the audition video';
+comment on column public.roles.video_length_limit   is 'Maximum audition video length in seconds (default 120)';
+comment on column public.roles.audition_deadline    is 'Optional role-specific submission deadline';
+comment on column public.roles.wardrobe_notes       is 'Optional wardrobe and framing guidance';
+comment on column public.roles.submission_type      is 'upload | record | both — which submission methods are allowed';
+comment on column public.roles.allow_multiple_takes is 'Whether talent may re-record and submit a better take';
