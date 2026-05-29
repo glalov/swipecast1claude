@@ -35,6 +35,7 @@ const corsHeaders = {
 interface NotifyRequest {
   to_user_id: string;
   type: "inbox_message" | "class_invitation";
+  from_id?: string;
   from_name?: string;
   class_title?: string;
 }
@@ -149,7 +150,7 @@ serve(async (req) => {
     });
 
   try {
-    const { to_user_id, type, from_name, class_title } = (await req.json()) as NotifyRequest;
+    const { to_user_id, type, from_id, from_name: rawFromName, class_title } = (await req.json()) as NotifyRequest;
 
     if (!to_user_id || !type) {
       return json({ error: "Missing to_user_id or type" }, 400);
@@ -157,7 +158,7 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-    // Load profile: display_name, notification prefs, phone
+    // Load recipient profile: display_name, notification prefs, phone
     const { data: profile, error: profileErr } = await supabase
       .from("profiles")
       .select("display_name, notification_email, notification_messages, notification_marketing, notification_sms, phone")
@@ -166,6 +167,19 @@ serve(async (req) => {
 
     if (profileErr || !profile) {
       return json({ error: "User profile not found" }, 404);
+    }
+
+    // Resolve sender display name: prefer explicit from_name, then look up from_id
+    let resolvedFromName = rawFromName?.trim() || undefined;
+    if (!resolvedFromName && from_id) {
+      const { data: senderProfile } = await supabase
+        .from("profiles")
+        .select("display_name, company_name")
+        .eq("id", from_id)
+        .maybeSingle();
+      if (senderProfile) {
+        resolvedFromName = (senderProfile.display_name || senderProfile.company_name || "").trim() || undefined;
+      }
     }
 
     const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
@@ -191,7 +205,7 @@ serve(async (req) => {
             ? "New message on CastSlate"
             : "CastSlate selected a class for you";
           const html = type === "inbox_message"
-            ? inboxMessageHtml(firstName, from_name)
+            ? inboxMessageHtml(firstName, resolvedFromName)
             : classInvitationHtml(firstName, class_title?.trim() || "a class");
 
           const resendRes = await fetch("https://api.resend.com/emails", {
@@ -223,7 +237,7 @@ serve(async (req) => {
 
     if (smsEnabled && validPhone && type === "inbox_message") {
       const normalizedPhone = rawPhone.startsWith("+") ? rawPhone : `+1${rawPhone.replace(/\D/g, "")}`;
-      const smsBody = `CastSlate: You received a new message${from_name ? ` from ${from_name}` : ""}. Open your inbox: ${APP_URL}/inbox`;
+      const smsBody = `CastSlate: You received a new message${resolvedFromName ? ` from ${resolvedFromName}` : ""}. Open your inbox: ${APP_URL}/inbox`;
       const smsResult = await sendSms(normalizedPhone, smsBody);
       results.sms = smsResult.ok ? "sent" : `error:${smsResult.error}`;
     } else if (smsEnabled && !validPhone && type === "inbox_message") {

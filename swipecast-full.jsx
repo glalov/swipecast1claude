@@ -8684,7 +8684,7 @@ function MessageModal({app,fromId,castingTitle,onClose,onSent}){
       if(full){
         const {error}=await window.sb.from("messages").insert({from_id:fromId,to_id:app.talent_id,application_id:app.id,body:full});
         if(error)throw error;
-        fireMessageNotification(app.talent_id);
+        fireMessageNotification(app.talent_id,fromId);
       }
       if(auditionAt){
         const {error:e2}=await window.sb.from("applications").update({audition_at:new Date(auditionAt).toISOString(),audition_note:auditionNote||null}).eq("id",app.id);
@@ -8845,7 +8845,7 @@ function InviteToProjectModal({cdId,talentId,talentName,onClose}){
       try{
         const body=`📩 You've been invited to audition for ${pickedCasting.title}${pickedRole?` · ${pickedRole.name}`:""}.${note.trim()?`\n\n"${note.trim()}"`:""}`;
         await window.sb.from("messages").insert({from_id:cdId,to_id:talentId,application_id:null,body});
-        fireMessageNotification(talentId);
+        fireMessageNotification(talentId,cdId);
       }catch(_){/* non-fatal */}
       setSent(true);
       setTimeout(()=>onClose(),1100);
@@ -8892,10 +8892,10 @@ function InviteToProjectModal({cdId,talentId,talentName,onClose}){
 
 // ─── Fire-and-forget notification after a message insert. Never blocks the send,
 // never throws. The edge function checks the recipient's preferences server-side.
-function fireMessageNotification(toUserId,fromName){
+function fireMessageNotification(toUserId,fromId,fromName){
   try{
     window.sb.functions.invoke("send-notification-email",{
-      body:{to_user_id:toUserId,type:"inbox_message",from_name:fromName||undefined}
+      body:{to_user_id:toUserId,type:"inbox_message",from_id:fromId||undefined,from_name:fromName||undefined}
     }).catch(e=>console.warn("[notify]",e?.message||e));
   }catch(_){}
 }
@@ -8915,7 +8915,7 @@ function ComposeDMModal({fromId,toId,toName,onClose}){
     try{
       const {error}=await window.sb.from("messages").insert({from_id:fromId,to_id:toId,application_id:null,body:body.trim()});
       if(error)throw error;
-      fireMessageNotification(toId);
+      fireMessageNotification(toId,fromId);
       setSent(true);
       setTimeout(()=>onClose(),900);
     }catch(e){setErr(e.message||"Could not send.");}
@@ -9092,7 +9092,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
         .select("id,from_id,to_id,body,created_at,read_at,application_id,conversation_id")
         .single();
       if(error)throw error;
-      fireMessageNotification(counterpartyId);
+      fireMessageNotification(counterpartyId,sessionUid);
       setReply("");
       setThread(p=>p.some(m=>m.id===data.id)?p:[...p,data]);
       if(typeof onReplied==="function")onReplied(data);
@@ -11546,7 +11546,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
       if(nextStatus==="accepted"){
         try{
           await window.sb.from("messages").insert({from_id:session.user.id,to_id:inv.cd_id,application_id:null,body:`✓ I've accepted your invite to ${inv.castings?.title||"the project"}${inv.roles?.name?` (${inv.roles.name})`:""}. Looking forward to it — let me know the next steps.`});
-          fireMessageNotification(inv.cd_id);
+          fireMessageNotification(inv.cd_id,session.user.id);
         }catch(_){}
       }
     }catch(e){
