@@ -8093,25 +8093,6 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   const [msgApp,setMsgApp]=useState(null);
   const [openThreadSeed,setOpenThreadSeed]=useState(null); // {from_id,to_id,application_id,profiles} — opens existing thread
 
-  // When the CD clicks "Message" on a talent card, check for an existing conversation
-  // first. If one exists, open MessageThreadModal directly. Otherwise open the new-
-  // message compose form (MessageModal). conversation_id is a generated DB column:
-  // smaller_uuid|larger_uuid, order-agnostic.
-  const handleMsgClick=useCallback(async(app)=>{
-    if(!uid||!app?.talent_id)return;
-    const a=uid<app.talent_id?`${uid}|${app.talent_id}`:`${app.talent_id}|${uid}`;
-    try{
-      const{data}=await window.sb.from("messages").select("id").eq("conversation_id",a).limit(1);
-      if(data&&data.length>0){
-        // Existing thread — open it directly
-        setOpenThreadSeed({from_id:uid,to_id:app.talent_id,application_id:app.id,profiles:app.profiles||{}});
-      }else{
-        // No thread yet — open compose form
-        setMsgApp(app);
-      }
-    }catch(_){setMsgApp(app);}
-  },[uid]);
-
   // Saved-lists tab state — loaded on demand and refreshed when the CD adds/removes
   const [savedLists,setSavedLists]=useState([]);     // [{id,name,members:[{talent_id,profile}]}]
   const [savedListsLoading,setSavedListsLoading]=useState(false);
@@ -8165,6 +8146,23 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   const hashInitRef=useRef(_hashInit);              // stable ref for data-load callback
 
   const uid=session?.user?.id;
+
+  // When the CD clicks "Message" on a talent card, check for an existing conversation
+  // first. If one exists, open MessageThreadModal directly. Otherwise open the new-
+  // message compose form (MessageModal). conversation_id is a generated DB column:
+  // smaller_uuid|larger_uuid, order-agnostic. Must be defined after uid.
+  const handleMsgClick=useCallback(async(app)=>{
+    if(!uid||!app?.talent_id)return;
+    const convId=uid<app.talent_id?`${uid}|${app.talent_id}`:`${app.talent_id}|${uid}`;
+    try{
+      const{data}=await window.sb.from("messages").select("id").eq("conversation_id",convId).limit(1);
+      if(data&&data.length>0){
+        setOpenThreadSeed({from_id:uid,to_id:app.talent_id,application_id:app.id,profiles:app.profiles||{}});
+      }else{
+        setMsgApp(app);
+      }
+    }catch(_){setMsgApp(app);}
+  },[uid]);
 
   // Builds the rich-profile object TalentProfile expects, from a DB `applications` row.
   const buildTalentView=(a)=>{
