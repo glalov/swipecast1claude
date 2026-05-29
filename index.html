@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260529-233849 -->
-  <meta name="build-version" content="20260529-233849"/>
+  <!-- BUILD: 20260529-234825 -->
+  <meta name="build-version" content="20260529-234825"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260529-233849";
+      var B="20260529-234825";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -75,18 +75,42 @@
   </div>
   <div id="root"></div>
   <script>
-    /* Hide loading screen once React has rendered; show error on crash */
+    /* ── Runtime error infrastructure ───────────────────────────────────────
+       Errors BEFORE React mounts  →  show full crash screen (fatal).
+       Errors AFTER  React mounts  →  ErrorBoundary catches them in-section;
+                                       the global handler only logs + collects.
+       window.__CS_REACT_MOUNTED is set to true by App's first useEffect.
+    ──────────────────────────────────────────────────────────────────────── */
     window.__CS_LOADING_STARTED = Date.now();
+    window.__CS_REACT_MOUNTED   = false;
+    window.__SC_ERR             = [];   // collects all errors for ?debug panel
+
     window.__CS_HIDE_LOADING = function(){
       var el = document.getElementById('cs-loading');
       if(el){ el.classList.add('hide'); setTimeout(function(){el.style.display='none';},350); }
     };
+
+    /* Uncaught JS errors (syntax, TDZ, undefined, bad JSX eval) */
     window.addEventListener('error', function(e){
-      document.getElementById('cs-loading').style.display='none';
-      document.getElementById('cs-error').style.display='flex';
-      console.error('CS fatal:', e.message, e.filename, e.lineno);
+      var msg = (e.message||'unknown') + ' (' + (e.filename||'?') + ':' + (e.lineno||0) + ')';
+      window.__SC_ERR.push({type:'error', msg:msg, ts:new Date().toISOString()});
+      console.error('[CS error]', msg);
+      /* Only show crash screen if React hasn't mounted yet (pre-mount fatal) */
+      if(!window.__CS_REACT_MOUNTED){
+        document.getElementById('cs-loading').style.display='none';
+        document.getElementById('cs-error').style.display='flex';
+      }
     });
-    /* Safety timeout — if React hasn't rendered in 30s, show error */
+
+    /* Unhandled promise rejections (async data fetches, Supabase calls, etc.) */
+    window.addEventListener('unhandledrejection', function(e){
+      var msg = (e.reason && e.reason.message) ? e.reason.message : String(e.reason||'unknown rejection');
+      window.__SC_ERR.push({type:'rejection', msg:msg, ts:new Date().toISOString()});
+      console.error('[CS unhandled rejection]', msg);
+      /* Never show crash screen for async rejections — ErrorBoundary handles render errors */
+    });
+
+    /* Safety timeout — if React hasn't rendered in 30s show error */
     setTimeout(function(){
       var root = document.getElementById('root');
       if(!root || !root.firstChild){
@@ -97,6 +121,64 @@
   </script>
   <script type="text/babel" data-presets="react">
 const { useState, useRef, useCallback, useEffect, useMemo, createContext, useContext } = React;
+
+// ═══════════════════════════════════════════
+// ERROR BOUNDARY — catches render errors in any wrapped subtree and shows
+// a friendly fallback instead of crashing the whole app.
+// Must be a class component (React requirement for error boundaries).
+// Usage: <ErrorBoundary label="CD Dashboard" onReset={()=>navigate("home")}>
+//           <CDDashboard .../>
+//        </ErrorBoundary>
+// ═══════════════════════════════════════════
+class ErrorBoundary extends React.Component {
+  constructor(props){
+    super(props);
+    this.state={hasError:false,error:null};
+  }
+  static getDerivedStateFromError(error){
+    return{hasError:true,error};
+  }
+  componentDidCatch(error,info){
+    const label=this.props.label||"section";
+    console.error(`[CS ErrorBoundary: ${label}]`,error.message,info.componentStack);
+    // Collect into a global list so the ?debug panel can surface it
+    try{
+      window.__SC_ERR=window.__SC_ERR||[];
+      window.__SC_ERR.push({label,msg:error.message,stack:info.componentStack,ts:new Date().toISOString()});
+    }catch(_){}
+  }
+  render(){
+    if(this.state.hasError){
+      const{label,onReset}=this.props;
+      const showDebug=typeof window!=="undefined"&&(window.location.search.includes("debug")||window.location.hash.includes("debug"));
+      return(
+        <div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:"40px 24px",textAlign:"center"}}>
+          <div style={{fontSize:40,lineHeight:1}}>⚠️</div>
+          <h2 style={{fontSize:20,fontWeight:800,margin:0}}>
+            {label?`${label} ran into a problem`:"Something went wrong"}
+          </h2>
+          <p style={{color:"var(--t2)",fontSize:14,maxWidth:440,lineHeight:1.65,margin:0}}>
+            This section could not be displayed. The rest of the site is still working.<br/>
+            Please refresh the page or go back to the dashboard.
+          </p>
+          <div style={{display:"flex",gap:12,flexWrap:"wrap",justifyContent:"center"}}>
+            <button className="btn-p" onClick={()=>window.location.reload()}>↻ Refresh</button>
+            {onReset&&<button className="btn-s" onClick={()=>{this.setState({hasError:false,error:null});onReset();}}>← Back to Dashboard</button>}
+          </div>
+          {showDebug&&this.state.error&&(
+            <details style={{marginTop:8,fontSize:11,color:"var(--t3)",maxWidth:600,textAlign:"left"}}>
+              <summary style={{cursor:"pointer",fontWeight:600}}>Error details (debug)</summary>
+              <pre style={{whiteSpace:"pre-wrap",wordBreak:"break-all",marginTop:8,background:"var(--s2)",padding:12,borderRadius:8}}>
+                {String(this.state.error)}
+              </pre>
+            </details>
+          )}
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // ═══════════════════════════════════════════
 // LANGUAGE / i18n SYSTEM
@@ -15732,9 +15814,12 @@ function App(){
   const [verificationReturn,setVerificationReturn]=useState(false);
   // Mobile debug panel tick — forces re-render so the panel reflects live window.__SC_DBG
   const [_dbgTick,_setDbgTick]=useState(0);
-  // Hide loading screen as soon as App mounts (Babel compiled OK, React is running)
+  // Hide loading screen as soon as App mounts (Babel compiled OK, React is running).
+  // Also signals the global error handler that React is live — errors after this
+  // point are handled by ErrorBoundary and should NOT show the full crash screen.
   useEffect(()=>{
     if(typeof window.__CS_HIDE_LOADING==='function') window.__CS_HIDE_LOADING();
+    window.__CS_REACT_MOUNTED=true;
   },[]);
   useEffect(()=>{
     const d=window.__SC_DBG=window.__SC_DBG||{};
@@ -16469,21 +16554,55 @@ function App(){
             user clicks Browse Castings — prevents the fresh-mount loading flash. */}
         {(page==="home"||page==="search"||page==="casting-detail"||page==="casting-gate")&&
           <div style={{display:page==="search"?"flex":"none",flexDirection:"column",flex:"1 1 auto",minHeight:"calc(100vh - 80px)"}} aria-hidden={page!=="search"}>
-            <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")}/>
+            <ErrorBoundary label="Search" onReset={()=>navigate("home")}>
+              <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")}/>
+            </ErrorBoundary>
           </div>}
         {page==="casting-detail"&&(viewingCasting
-          ?<CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>
+          ?<ErrorBoundary key={viewingCasting.id} label="Casting Page" onReset={()=>navigate("search")}>
+              <CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>
+            </ErrorBoundary>
           :<PageLoader/>)}
         {page==="casting-gate"&&viewingCasting&&<CastingGatePage casting={viewingCasting} onCreateProfile={()=>{setPage("auth-gate");pushHist("auth-gate");}} onLogin={()=>navigate("login")} onBack={()=>{setPendingApply(null);navigate(prevPage==="home"?"home":"search");}}/>}
         {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
-        {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):isLoggedIn?<CDDashboard key={dashboardKey} onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>:<PageLoader/>)}
-        {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&(myProfile?.user_type==="talent"||!myProfile)?<TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>:isLoggedIn?<PageLoader/>:<PageLoader/>)}
-        {page==="profile"&&viewingProfile&&<TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>}
-        {page==="talent-public"&&viewingTalentSlug&&<PublicTalentProfilePage slug={viewingTalentSlug} onNavigate={navigate} session={session} myProfile={myProfile}/>}
-        {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):isLoggedIn?<MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onViewProfile={viewProfile}/>:<PageLoader/>)}
-        {page==="account-settings"&&(!authReady?<PageLoader/>:isLoggedIn?<AccountSettingsPage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onSignOut={signOut} isSuperAdmin={isSuperAdmin}/>:<PageLoader/>)}
-        {page==="inbox"&&(!authReady?<PageLoader/>:isLoggedIn?<InboxPage session={session} profile={myProfile} onNavigate={navigate} onViewProfile={viewProfile}/>:<PageLoader/>)}
-        {page==="admin"&&(!authReady?<PageLoader/>:isLoggedIn&&isAdmin?<AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>:isLoggedIn?<PageLoader/>:<PageLoader/>)}
+        {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):isLoggedIn?
+          <ErrorBoundary key={dashboardKey} label="CD Dashboard" onReset={()=>navigate("home")}>
+            <CDDashboard key={dashboardKey} onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>
+          </ErrorBoundary>
+          :<PageLoader/>)}
+        {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&(myProfile?.user_type==="talent"||!myProfile)?
+          <ErrorBoundary label="Talent Dashboard" onReset={()=>navigate("home")}>
+            <TalentDashboard session={session} myProfile={myProfile} onNavigate={navigate} onViewCastingById={viewCastingById} castingsVersion={castingsVersion}/>
+          </ErrorBoundary>
+          :isLoggedIn?<PageLoader/>:<PageLoader/>)}
+        {page==="profile"&&viewingProfile&&
+          <ErrorBoundary label="Talent Profile" onReset={()=>navigate("search")}>
+            <TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>
+          </ErrorBoundary>}
+        {page==="talent-public"&&viewingTalentSlug&&
+          <ErrorBoundary label="Public Profile" onReset={()=>navigate("search")}>
+            <PublicTalentProfilePage slug={viewingTalentSlug} onNavigate={navigate} session={session} myProfile={myProfile}/>
+          </ErrorBoundary>}
+        {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):isLoggedIn?
+          <ErrorBoundary label="My Profile" onReset={()=>navigate("home")}>
+            <MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onViewProfile={viewProfile}/>
+          </ErrorBoundary>
+          :<PageLoader/>)}
+        {page==="account-settings"&&(!authReady?<PageLoader/>:isLoggedIn?
+          <ErrorBoundary label="Account Settings" onReset={()=>navigate("my-profile")}>
+            <AccountSettingsPage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onSignOut={signOut} isSuperAdmin={isSuperAdmin}/>
+          </ErrorBoundary>
+          :<PageLoader/>)}
+        {page==="inbox"&&(!authReady?<PageLoader/>:isLoggedIn?
+          <ErrorBoundary label="Inbox" onReset={()=>navigate("home")}>
+            <InboxPage session={session} profile={myProfile} onNavigate={navigate} onViewProfile={viewProfile}/>
+          </ErrorBoundary>
+          :<PageLoader/>)}
+        {page==="admin"&&(!authReady?<PageLoader/>:isLoggedIn&&isAdmin?
+          <ErrorBoundary label="Admin" onReset={()=>navigate("home")}>
+            <AdminPage session={session} profile={myProfile} isSuperAdmin={isSuperAdmin} onNavigate={navigate}/>
+          </ErrorBoundary>
+          :isLoggedIn?<PageLoader/>:<PageLoader/>)}
         {/* Registration pages are guarded — a logged-in user with an existing
             profile (any user_type) is redirected to the page that makes sense for
             them. Talents go to My Profile, CDs/Producers/Admins go to the

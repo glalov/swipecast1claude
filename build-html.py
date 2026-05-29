@@ -48,9 +48,10 @@ html = f'''<!DOCTYPE html>
   <style>
     @keyframes cs-spin{{to{{transform:rotate(360deg)}}}}
     #cs-loading{{
-      position:fixed;inset:0;background:#1B1C20;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:18px;z-index:99999;transition:opacity .3s;
+      position:fixed;top:0;right:0;bottom:0;left:0;background:#1B1C20;
+      display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;
+      -webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
+      gap:18px;z-index:99999;-webkit-transition:opacity .3s;transition:opacity .3s;
     }}
     #cs-loading.hide{{opacity:0;pointer-events:none;}}
     #cs-loading .spinner{{
@@ -62,8 +63,9 @@ html = f'''<!DOCTYPE html>
     #cs-loading .label{{color:rgba(255,255,255,0.45);font-size:13px;font-family:-apple-system,sans-serif;letter-spacing:.3px;}}
     #cs-loading .logo{{color:#fff;font-size:22px;font-weight:800;font-family:-apple-system,sans-serif;letter-spacing:-0.5px;}}
     #cs-error{{
-      display:none;position:fixed;inset:0;background:#1B1C20;
-      align-items:center;justify-content:center;flex-direction:column;
+      display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:#1B1C20;
+      -webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
+      -webkit-flex-direction:column;flex-direction:column;
       gap:12px;padding:32px;text-align:center;z-index:99999;
     }}
     #cs-error .err-title{{color:#fff;font-size:18px;font-weight:700;font-family:-apple-system,sans-serif;}}
@@ -86,18 +88,42 @@ html = f'''<!DOCTYPE html>
   </div>
   <div id="root"></div>
   <script>
-    /* Hide loading screen once React has rendered; show error on crash */
+    /* ── Runtime error infrastructure ───────────────────────────────────────
+       Errors BEFORE React mounts  →  show full crash screen (fatal).
+       Errors AFTER  React mounts  →  ErrorBoundary catches them in-section;
+                                       the global handler only logs + collects.
+       window.__CS_REACT_MOUNTED is set to true by App's first useEffect.
+    ──────────────────────────────────────────────────────────────────────── */
     window.__CS_LOADING_STARTED = Date.now();
+    window.__CS_REACT_MOUNTED   = false;
+    window.__SC_ERR             = [];   // collects all errors for ?debug panel
+
     window.__CS_HIDE_LOADING = function(){{
       var el = document.getElementById('cs-loading');
       if(el){{ el.classList.add('hide'); setTimeout(function(){{el.style.display='none';}},350); }}
     }};
+
+    /* Uncaught JS errors (syntax, TDZ, undefined, bad JSX eval) */
     window.addEventListener('error', function(e){{
-      document.getElementById('cs-loading').style.display='none';
-      document.getElementById('cs-error').style.display='flex';
-      console.error('CS fatal:', e.message, e.filename, e.lineno);
+      var msg = (e.message||'unknown') + ' (' + (e.filename||'?') + ':' + (e.lineno||0) + ')';
+      window.__SC_ERR.push({{type:'error', msg:msg, ts:new Date().toISOString()}});
+      console.error('[CS error]', msg);
+      /* Only show crash screen if React hasn't mounted yet (pre-mount fatal) */
+      if(!window.__CS_REACT_MOUNTED){{
+        document.getElementById('cs-loading').style.display='none';
+        document.getElementById('cs-error').style.display='flex';
+      }}
     }});
-    /* Safety timeout — if React hasn't rendered in 30s, show error */
+
+    /* Unhandled promise rejections (async data fetches, Supabase calls, etc.) */
+    window.addEventListener('unhandledrejection', function(e){{
+      var msg = (e.reason && e.reason.message) ? e.reason.message : String(e.reason||'unknown rejection');
+      window.__SC_ERR.push({{type:'rejection', msg:msg, ts:new Date().toISOString()}});
+      console.error('[CS unhandled rejection]', msg);
+      /* Never show crash screen for async rejections — ErrorBoundary handles render errors */
+    }});
+
+    /* Safety timeout — if React hasn't rendered in 30s show error */
     setTimeout(function(){{
       var root = document.getElementById('root');
       if(!root || !root.firstChild){{
