@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260529-171421 -->
-  <meta name="build-version" content="20260529-171421"/>
+  <!-- BUILD: 20260529-201657 -->
+  <meta name="build-version" content="20260529-201657"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260529-171421";
+      var B="20260529-201657";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -5117,6 +5117,299 @@ function VideoRecorder({session,roleId,onVideoReady,onClose,maxSec}){
   return null;
 }
 
+// ─── AuditionModal — full self-tape audition flow for roles with PDF sides
+// Practice mode: unlimited, never saved to DB.
+// Official takes: up to official_takes_allowed, saved to audition_takes table.
+// Submit: either selected best take or all takes, via submit_audition RPC.
+function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,onClose,onSubmitted}){
+  const {useState:S,useEffect:E,useRef:R}=React;
+  const maxTakes=instr?.official_takes_allowed||2;
+  const submissionMode=instr?.submission_mode||'best_take';
+  const maxSec=instr?.video_length_limit||60;
+
+  const [officialTakes,setOfficialTakes]=S([]); // [{id,take_number,video_url,duration_seconds}]
+  const [submissionId,setSubmissionId]=S(null);
+  const [selectedTakeId,setSelectedTakeId]=S(null);
+  const [showPractice,setShowPractice]=S(false);
+  const [showOfficialRecorder,setShowOfficialRecorder]=S(false);
+  const [confirmingTake,setConfirmingTake]=S(false);
+  const [savingTake,setSavingTake]=S(false);
+  const [submitting,setSubmitting]=S(false);
+  const [submitted,setSubmitted]=S(false);
+  const [err,setErr]=S('');
+  const [selectedPhoto,setSelectedPhoto]=S(myPhotos[0]||'');
+  const [coverNote,setCoverNote]=S('');
+  const submittingRef=R(false);
+
+  // On mount: recover in-progress draft submission (reload-safe)
+  E(()=>{
+    if(!session?.user?.id||!roleId||!isDbCasting)return;
+    (async()=>{
+      const{data}=await window.sb.from('audition_submissions')
+        .select('id,submission_mode,audition_takes(id,take_number,video_url,duration_seconds)')
+        .eq('role_id',roleId).eq('talent_user_id',session.user.id).eq('status','draft').maybeSingle();
+      if(data){
+        setSubmissionId(data.id);
+        const takes=(data.audition_takes||[]).sort((a,b)=>a.take_number-b.take_number);
+        setOfficialTakes(takes);
+        if(takes.length>0)setSelectedTakeId(takes[takes.length-1].id);
+      }
+    })();
+  },[]);// eslint-disable-line
+
+  const fmtLen=(s)=>{if(!s)return'';if(s<60)return`${s}s`;if(s%60===0)return`${s/60} min`;return`${Math.floor(s/60)}m ${s%60}s`;};
+
+  const ensureSubmission=async()=>{
+    if(submissionId)return submissionId;
+    const{data,error}=await window.sb.from('audition_submissions').insert({
+      casting_id:casting.id,role_id:roleId,talent_user_id:session.user.id,submission_mode:submissionMode,status:'draft'
+    }).select('id').single();
+    if(error)throw error;
+    setSubmissionId(data.id);
+    return data.id;
+  };
+
+  const onOfficialTakeReady=async(videoUrl)=>{
+    setSavingTake(true);setErr('');
+    try{
+      const sid=await ensureSubmission();
+      const takeNumber=officialTakes.length+1;
+      const{data,error}=await window.sb.from('audition_takes').insert({
+        audition_submission_id:sid,take_number:takeNumber,video_url:videoUrl,submitted:false
+      }).select('id').single();
+      if(error)throw error;
+      const newTake={id:data.id,take_number:takeNumber,video_url:videoUrl,duration_seconds:0};
+      setOfficialTakes(p=>[...p,newTake]);
+      setSelectedTakeId(data.id);
+      setShowOfficialRecorder(false);
+    }catch(e){setErr('Failed to save take: '+e.message);}
+    finally{setSavingTake(false);}
+  };
+
+  const submitAudition=async()=>{
+    if(submittingRef.current)return;
+    if(officialTakes.length===0){setErr('Please record at least one official take.');return;}
+    if(submissionMode==='best_take'&&!selectedTakeId){setErr('Please select a take to submit.');return;}
+    submittingRef.current=true;setSubmitting(true);setErr('');
+    try{
+      const{data:{session:s}}=await window.sb.auth.getSession();
+      if(!s?.user){setErr('Session expired. Please log in again.');return;}
+      const sid=await ensureSubmission();
+      const{error}=await window.sb.rpc('submit_audition',{
+        p_casting:casting.id,p_role:roleId,p_photo:selectedPhoto||null,
+        p_cover:coverNote||null,p_submission_id:sid,
+        p_selected_take_id:submissionMode==='best_take'?selectedTakeId:null,
+        p_all_takes:submissionMode==='all_takes'
+      });
+      if(error){
+        const raw=(error.message||'').toLowerCase();
+        if(raw.includes('daily submission limit'))setErr('Daily submission limit reached. Upgrade to Premium for unlimited submissions.');
+        else if(raw.includes('already submitted'))setErr("You've already submitted an audition for this role.");
+        else setErr(error.message||'Submission failed. Please try again.');
+        return;
+      }
+      setSubmitted(true);onSubmitted?.();
+    }catch(e){setErr(e.message||'Submission failed. Please try again.');}
+    finally{submittingRef.current=false;setSubmitting(false);}
+  };
+
+  // ── Success screen
+  if(submitted){return(
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:460,textAlign:'center',padding:'40px 32px'}}>
+        <div style={{width:72,height:72,borderRadius:'50%',background:'rgba(80,200,120,0.15)',color:'#27ae60',display:'flex',alignItems:'center',justifyContent:'center',fontSize:36,margin:'0 auto 20px'}}>✓</div>
+        <h2 style={{marginBottom:8,fontSize:22}}>Audition Submitted</h2>
+        <p style={{color:'var(--t2)',fontSize:14,lineHeight:1.65,marginBottom:24}}>Your audition for <strong>{role.name}</strong> has been submitted to the casting director.</p>
+        <button className="btn-p" onClick={onClose}>Done</button>
+      </div>
+    </div>
+  );}
+
+  // ── Practice recorder
+  if(showPractice){return(
+    <div className="modal-overlay">
+      <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:560}}>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
+          <span style={{fontSize:20}}>🎭</span>
+          <div>
+            <h3 style={{margin:0,fontSize:17,fontWeight:800}}>Practice Mode</h3>
+            <p style={{margin:0,fontSize:12,color:'var(--t3)'}}>Not saved. Not submitted. Rehearse as many times as you like.</p>
+          </div>
+        </div>
+        <VideoRecorder session={session} roleId={`practice-${roleId}`} maxSec={maxSec}
+          onVideoReady={()=>setShowPractice(false)} onClose={()=>setShowPractice(false)}/>
+        <button className="btn-s btn-sm" style={{marginTop:12,width:'100%'}} onClick={()=>setShowPractice(false)}>← Back to Audition</button>
+      </div>
+    </div>
+  );}
+
+  // ── Official take confirmation
+  if(confirmingTake){
+    const takeNum=officialTakes.length+1;
+    return(
+      <div className="modal-overlay" onClick={()=>setConfirmingTake(false)}>
+        <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:420,textAlign:'center',padding:'32px 28px'}}>
+          <div style={{fontSize:40,marginBottom:16}}>⏺</div>
+          <h3 style={{fontSize:20,fontWeight:800,marginBottom:10}}>Start Official Take {takeNum}?</h3>
+          <p style={{color:'var(--t2)',fontSize:14,lineHeight:1.65,marginBottom:8}}>
+            Once you start, this counts as Take {takeNum} of {maxTakes}. The recording saves automatically when you stop.
+          </p>
+          <p style={{color:'var(--t3)',fontSize:12,marginBottom:24}}>
+            {maxTakes-(takeNum-1)} take{maxTakes-(takeNum-1)!==1?'s':''} remaining (including this one).
+          </p>
+          <div style={{display:'flex',gap:12,justifyContent:'center'}}>
+            <button className="btn-p" style={{background:'#c0392b',borderColor:'#c0392b'}} onClick={()=>{setConfirmingTake(false);setShowOfficialRecorder(true);}}>⏺ Start Take {takeNum}</button>
+            <button className="btn-s" onClick={()=>setConfirmingTake(false)}>Cancel</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Official take recorder
+  if(showOfficialRecorder){
+    const takeNum=officialTakes.length+1;
+    return(
+      <div className="modal-overlay">
+        <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:560}}>
+          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
+            <span style={{width:10,height:10,borderRadius:'50%',background:'#c0392b',display:'inline-block'}}/>
+            <div>
+              <h3 style={{margin:0,fontSize:17,fontWeight:800}}>Official Take {takeNum}</h3>
+              <p style={{margin:0,fontSize:12,color:'var(--t3)'}}>Max {fmtLen(maxSec)} · {maxTakes-officialTakes.length} take{maxTakes-officialTakes.length!==1?'s':''} left after this</p>
+            </div>
+          </div>
+          {savingTake
+            ?<div style={{textAlign:'center',padding:'28px',color:'var(--t2)',fontSize:13,fontWeight:600}}>Saving take {takeNum}…</div>
+            :<VideoRecorder session={session} roleId={`audition-${roleId}-t${takeNum}`} maxSec={maxSec}
+                onVideoReady={onOfficialTakeReady} onClose={()=>setShowOfficialRecorder(false)}/>
+          }
+          {err&&<div style={{marginTop:10,fontSize:12,color:'#c0392b'}}>{err}</div>}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Main audition view
+  const takesLeft=maxTakes-officialTakes.length;
+  const canSubmit=officialTakes.length>0&&(submissionMode==='all_takes'||selectedTakeId);
+
+  return(
+    <div className="modal-overlay" onClick={()=>!submitting&&onClose()}>
+      <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:620,maxHeight:'92vh',overflowY:'auto'}}>
+        {/* Header */}
+        <div style={{marginBottom:4,display:'flex',alignItems:'center',gap:8}}>
+          <span style={{fontSize:20}}>🎬</span>
+          <h2 style={{margin:0,fontSize:20,fontWeight:800}}>Audition for {role.name}</h2>
+        </div>
+        <p style={{color:'var(--t3)',fontSize:12,marginBottom:20}}>{casting.title} · {casting.prod}</p>
+
+        {/* Audition Instructions panel */}
+        <div style={{background:'rgba(99,60,180,0.05)',border:'1px solid rgba(99,60,180,0.18)',borderRadius:12,padding:'16px 18px',marginBottom:20}}>
+          <div style={{fontSize:11,fontWeight:800,textTransform:'uppercase',letterSpacing:1.2,color:'var(--acc)',marginBottom:12}}>Audition Instructions</div>
+          {instr.sides_pdf_url&&<div style={{marginBottom:12}}>
+            <div style={{fontSize:11,fontWeight:700,color:'var(--t2)',marginBottom:6,textTransform:'uppercase',letterSpacing:.8}}>Sides</div>
+            <a href={instr.sides_pdf_url} target="_blank" rel="noopener noreferrer" style={{display:'inline-flex',alignItems:'center',gap:8,padding:'10px 14px',borderRadius:8,border:'1px solid rgba(99,60,180,0.3)',background:'rgba(99,60,180,0.06)',color:'var(--acc)',fontWeight:700,fontSize:13,textDecoration:'none'}}>
+              <span style={{fontSize:18}}>📄</span> Open / Download Sides PDF
+            </a>
+          </div>}
+          {instr.direction_notes&&<div style={{marginBottom:10}}>
+            <div style={{fontSize:11,fontWeight:700,color:'var(--t2)',marginBottom:4,textTransform:'uppercase',letterSpacing:.8}}>Performance Direction</div>
+            <p style={{fontSize:13,color:'var(--t1)',lineHeight:1.65,margin:0}}>{instr.direction_notes}</p>
+          </div>}
+          <div style={{display:'flex',gap:16,flexWrap:'wrap',marginTop:instr.direction_notes?10:0}}>
+            {instr.slate_instructions&&<div><span style={{fontSize:10,fontWeight:700,color:'var(--t3)',textTransform:'uppercase',letterSpacing:.8}}>Slate: </span><span style={{fontSize:13,color:'var(--t2)'}}>{instr.slate_instructions}</span></div>}
+            {instr.video_length_limit&&<div><span style={{fontSize:10,fontWeight:700,color:'var(--t3)',textTransform:'uppercase',letterSpacing:.8}}>Max: </span><span style={{fontSize:13,color:'var(--t2)'}}>{fmtLen(instr.video_length_limit)}</span></div>}
+            <div><span style={{fontSize:10,fontWeight:700,color:'var(--t3)',textTransform:'uppercase',letterSpacing:.8}}>Takes: </span><span style={{fontSize:13,color:'var(--t2)'}}>Up to {maxTakes}</span></div>
+            <div><span style={{fontSize:10,fontWeight:700,color:'var(--t3)',textTransform:'uppercase',letterSpacing:.8}}>Submit: </span><span style={{fontSize:13,color:'var(--t2)'}}>{submissionMode==='all_takes'?'All recorded takes':'Best take only'}</span></div>
+          </div>
+          {instr.wardrobe_notes&&<div style={{marginTop:10,paddingTop:10,borderTop:'1px solid rgba(99,60,180,0.15)'}}>
+            <span style={{fontSize:10,fontWeight:700,color:'var(--t3)',textTransform:'uppercase',letterSpacing:.8}}>Wardrobe/Framing: </span>
+            <span style={{fontSize:13,color:'var(--t2)'}}>{instr.wardrobe_notes}</span>
+          </div>}
+        </div>
+
+        {/* Recorded takes list */}
+        {officialTakes.length>0&&<div style={{marginBottom:20}}>
+          <div style={{fontSize:12,fontWeight:700,color:'var(--t1)',marginBottom:10}}>
+            Your Takes ({officialTakes.length}/{maxTakes})
+            {submissionMode==='best_take'&&<span style={{fontSize:11,fontWeight:400,color:'var(--t3)',marginLeft:8}}>— select the take you want to submit</span>}
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            {officialTakes.map(take=>(
+              <div key={take.id} style={{background:'var(--s2)',borderRadius:10,padding:12,border:submissionMode==='best_take'&&selectedTakeId===take.id?'2px solid var(--acc)':'2px solid transparent',transition:'border-color .15s'}}>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+                  <span style={{fontWeight:700,fontSize:13,color:'var(--t1)'}}>Take {take.take_number}</span>
+                  {submissionMode==='best_take'&&(
+                    <button className={selectedTakeId===take.id?'btn-p btn-sm':'btn-s btn-sm'} style={{fontSize:11}}
+                      onClick={()=>setSelectedTakeId(take.id)}>
+                      {selectedTakeId===take.id?'✓ Selected for Submission':'Select This Take'}
+                    </button>
+                  )}
+                  {submissionMode==='all_takes'&&<span style={{fontSize:11,color:'var(--acc)',fontWeight:600}}>✓ Will be submitted</span>}
+                </div>
+                <div style={{borderRadius:8,overflow:'hidden'}}>
+                  <video src={take.video_url} controls playsInline style={{display:'block',width:'100%',maxHeight:200,objectFit:'contain',background:'#000'}}/>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>}
+
+        {/* Recording controls */}
+        <div style={{background:'var(--s2)',borderRadius:12,padding:14,marginBottom:20}}>
+          <div style={{fontSize:12,fontWeight:700,color:'var(--t1)',marginBottom:8}}>
+            {takesLeft>0?`${takesLeft} official take${takesLeft!==1?'s':''} remaining`:'All official takes recorded'}
+          </div>
+          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+            {takesLeft>0&&(
+              <button className="btn-p btn-sm" style={{background:'#c0392b',borderColor:'#c0392b'}}
+                onClick={()=>setConfirmingTake(true)}>
+                ⏺ Start Official Take {officialTakes.length+1}
+              </button>
+            )}
+            <button className="btn-s btn-sm" onClick={()=>setShowPractice(true)}>🎭 Practice Mode</button>
+          </div>
+          <p style={{fontSize:11,color:'var(--t3)',marginTop:8,marginBottom:0}}>Practice recordings are never saved or submitted to the casting director.</p>
+        </div>
+
+        {/* Photo + cover note (shown once at least one take exists) */}
+        {officialTakes.length>0&&<>
+          {myPhotos.length>0&&<div className="form-group" style={{marginBottom:14}}>
+            <label className="label">Your Headshot</label>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(72px,1fr))',gap:6}}>
+              {myPhotos.map((u,pi)=>(
+                <div key={pi} onClick={()=>setSelectedPhoto(u)} style={{cursor:'pointer',aspectRatio:'4/5',borderRadius:7,overflow:'hidden',border:selectedPhoto===u?'3px solid var(--acc)':'3px solid transparent',transition:'all .15s'}}>
+                  <img src={u} alt="" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/>
+                </div>
+              ))}
+            </div>
+          </div>}
+          <div className="form-group" style={{marginBottom:14}}>
+            <label className="label">Cover Note <span style={{fontWeight:400,color:'var(--t3)',fontSize:11}}>(optional)</span></label>
+            <textarea className="textarea" style={{minHeight:70}} value={coverNote} onChange={e=>setCoverNote(e.target.value)} placeholder="Tell the casting director why you're right for this role…"/>
+          </div>
+        </>}
+
+        {/* Error */}
+        {err&&<div style={{background:'rgba(255,100,100,0.1)',border:'1px solid rgba(255,100,100,0.3)',color:'#c0392b',padding:'10px 14px',borderRadius:8,fontSize:13,marginBottom:14}}>{err}</div>}
+
+        {/* Submit + Cancel */}
+        <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+          <button className="btn-p" style={{flex:1,opacity:canSubmit&&!submitting?1:0.5}}
+            disabled={!canSubmit||submitting} onClick={submitAudition}>
+            {submitting?'Submitting…':
+             officialTakes.length===0?'Record a take to submit':
+             submissionMode==='best_take'?(selectedTakeId?'Submit Selected Take':'Select a take first'):
+             `Submit All ${officialTakes.length} Take${officialTakes.length!==1?'s':''}`}
+          </button>
+          <button className="btn-s" onClick={onClose} disabled={submitting}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session,autoApplyRole,onAutoApplyConsumed}){
   const t=useT();
   const {lang}=useLanguage();
@@ -5151,6 +5444,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const [showSendMenu,setShowSendMenu]=useState(false);
   const sendMenuRef=useRef(null);
   const submittingRef=useRef(false);
+  const [auditionRole,setAuditionRole]=useState(null); // {role, roleId, instr} when AuditionModal open
   const withTimeout=(promise,ms=20000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Please try again.`)),ms))]);
   const isDbCasting=!!(casting&&casting.id&&typeof casting.id==="string"&&casting.id.length>20);
   const isTalent=(myProfile?.user_type||"").toLowerCase()==="talent";
@@ -5161,6 +5455,13 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     // Free actors hit their 3/day cap → show upgrade prompt instead of apply modal.
     if(isTalent&&!isPremium&&todayCount>=FREE_PLAN.submissionsPerDay){
       setShowUpgradePrompt(true);
+      return;
+    }
+    const roleId=realRoleIds[i];
+    const instr=roleId?roleInstructions[roleId]:null;
+    // Roles with PDF sides use the full AuditionModal (official takes, practice mode, etc.)
+    if(isDbCasting&&instr&&instr.sides_pdf_url){
+      setAuditionRole({role:{...r,idx:i},roleId,instr});
       return;
     }
     setApplyRole({...r,idx:i});setCoverNote("");setApplyErr("");setApplyOk(false);setSelectedPhoto(myPhotos[0]||"");setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(false);
@@ -5182,11 +5483,11 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       }
     }
     if(isDbCasting){
-      const {data:roles}=await window.sb.from("roles").select("id,name,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,submission_type,allow_multiple_takes").eq("casting_id",casting.id);
+      const {data:roles}=await window.sb.from("roles").select("id,name,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,submission_type,allow_multiple_takes,official_takes_allowed,submission_mode").eq("casting_id",casting.id);
       const map={};const instrMap={};
       (roles||[]).forEach((r,idx)=>{
         map[idx]=r.id;
-        instrMap[r.id]={sides_pdf_url:r.sides_pdf_url||"",direction_notes:r.direction_notes||"",slate_instructions:r.slate_instructions||"",video_length_limit:r.video_length_limit||120,audition_deadline:r.audition_deadline||"",wardrobe_notes:r.wardrobe_notes||"",submission_type:r.submission_type||"both",allow_multiple_takes:r.allow_multiple_takes!==false};
+        instrMap[r.id]={sides_pdf_url:r.sides_pdf_url||"",direction_notes:r.direction_notes||"",slate_instructions:r.slate_instructions||"",video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||"",wardrobe_notes:r.wardrobe_notes||"",submission_type:r.submission_type||"both",allow_multiple_takes:r.allow_multiple_takes!==false,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"};
       });
       setRealRoleIds(map);
       setRoleInstructions(instrMap);
@@ -5487,8 +5788,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
               <div style={{display:"flex",gap:16,flexWrap:"wrap",marginTop:instr.direction_notes?8:0}}>
                 {instr.slate_instructions&&<div style={{minWidth:0}}><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Slate: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.slate_instructions}</span></div>}
                 {instr.video_length_limit&&<div><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Max Length: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.video_length_limit<60?`${instr.video_length_limit}s`:instr.video_length_limit%60===0?`${instr.video_length_limit/60} min`:`${Math.floor(instr.video_length_limit/60)}m ${instr.video_length_limit%60}s`}</span></div>}
-                {instr.submission_type&&instr.submission_type!=="both"&&<div><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Format: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.submission_type==="record"?"Record in browser":"Upload video file"}</span></div>}
-                {instr.allow_multiple_takes===false&&<div><span style={{fontSize:10,fontWeight:700,color:"#c88900",textTransform:"uppercase",letterSpacing:.8}}>⚡ One take only</span></div>}
+                {instr.official_takes_allowed&&<div><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Takes: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.official_takes_allowed===1?"1 take only":`Up to ${instr.official_takes_allowed} takes`}</span></div>}
+                {instr.submission_mode&&<div><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Submit: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.submission_mode==="all_takes"?"All takes":"Best take only"}</span></div>}
               </div>
               {instr.wardrobe_notes&&<div style={{marginTop:10,paddingTop:10,borderTop:"1px solid var(--bdr)"}}>
                 <span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Wardrobe / Framing: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.wardrobe_notes}</span>
@@ -5541,7 +5842,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
               <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
                 {instr.slate_instructions&&<div><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Slate: </span><span style={{fontSize:12,color:"var(--t2)"}}>{instr.slate_instructions}</span></div>}
                 {instr.video_length_limit&&<div><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Max: </span><span style={{fontSize:12,color:"var(--t2)"}}>{instr.video_length_limit<60?`${instr.video_length_limit}s`:instr.video_length_limit%60===0?`${instr.video_length_limit/60} min`:`${Math.floor(instr.video_length_limit/60)}m ${instr.video_length_limit%60}s`}</span></div>}
-                {instr.allow_multiple_takes===false&&<div style={{color:"#c88900",fontSize:12,fontWeight:700}}>⚡ One take only</div>}
+                {instr.official_takes_allowed===1&&<div style={{color:"#c88900",fontSize:12,fontWeight:700}}>⚡ One take only</div>}
               </div>
               {instr.wardrobe_notes&&<div style={{marginTop:8,paddingTop:8,borderTop:"1px solid rgba(99,60,180,0.15)"}}>
                 <span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Wardrobe/Framing: </span>
@@ -5625,6 +5926,19 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
         }
       </div></div>);
     })()}
+
+    {/* AuditionModal — for roles with PDF sides (official takes system) */}
+    {auditionRole&&<AuditionModal
+      casting={casting}
+      role={auditionRole.role}
+      roleId={auditionRole.roleId}
+      instr={auditionRole.instr}
+      session={session}
+      myPhotos={myPhotos}
+      isDbCasting={isDbCasting}
+      onClose={()=>setAuditionRole(null)}
+      onSubmitted={()=>{setApplied(p=>new Set([...p,auditionRole.role.idx]));setTodayCount(n=>n+1);}}
+    />}
 
     <Footer onNavigate={onNavigate}/></div>);
 }
@@ -8192,7 +8506,8 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       }
     }
     const {data,error}=await window.sb.from("applications")
-      .select("*,profiles(*),roles(id,name)").eq("role_id",role.id).order("created_at",{ascending:false});
+      .select("*,profiles(*),roles(id,name),audition_submissions(id,selected_take_id,submission_mode,audition_takes(id,take_number,video_url,duration_seconds))")
+      .eq("role_id",role.id).order("created_at",{ascending:false});
     if(error)console.warn("[review] openRole error:",error.message);
     // Safety: if a profile row wasn't returned (RLS), leave a stub so the card still renders.
     const subs=(data||[]).map(a=>a.profiles?a:{...a,profiles:{id:a.talent_id,display_name:"Anonymous Applicant",headshot_url:null,skills:[],additional_photos:[],video_links:[]}});
@@ -8331,7 +8646,9 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             </div>
             {credits&&<p style={{marginTop:8,fontSize:fsMode?13:12,color:"var(--t2)"}}>{credits.slice(0,fsMode?200:140)}{credits.length>(fsMode?200:140)?"…":""}</p>}
             {app.cover_note&&<p style={{marginTop:8,fontSize:fsMode?13:12,color:"var(--t2)",fontStyle:"italic"}}>"{String(app.cover_note).slice(0,fsMode?220:160)}{String(app.cover_note).length>(fsMode?220:160)?"…":""}"</p>}
-            {app.video_note_url&&<div style={{marginTop:10,background:"rgba(99,60,180,0.08)",border:"1px solid rgba(99,60,180,0.25)",borderRadius:10,padding:"8px 12px"}}>
+            {/* Audition takes (official self-tape system) */}
+            {(()=>{const sub=app.audition_submissions;if(!sub)return null;const allTakes=(sub.audition_takes||[]).sort((a,b)=>a.take_number-b.take_number);const displayTakes=sub.submission_mode==='best_take'&&sub.selected_take_id?allTakes.filter(t=>t.id===sub.selected_take_id):allTakes;if(!displayTakes.length)return null;return(<div style={{marginTop:10,background:"rgba(99,60,180,0.08)",border:"1px solid rgba(99,60,180,0.25)",borderRadius:10,padding:"8px 12px"}}><div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:6}}>🎬 Audition Take{displayTakes.length>1?'s':''}</div>{displayTakes.map(tk=>(<button key={tk.id} onPointerDown={e=>e.stopPropagation()} onClick={e=>{e.stopPropagation();setAppVideoViewer({url:tk.video_url,name:t.display_name||"Applicant",takeLabel:`Take ${tk.take_number}`});}} style={{display:"flex",alignItems:"center",gap:6,fontSize:fsMode?13:12,fontWeight:700,padding:"6px 12px",borderRadius:8,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center",marginBottom:4}}>▶ Watch Take {tk.take_number}</button>))}</div>);})()}
+            {!app.audition_submissions&&app.video_note_url&&<div style={{marginTop:10,background:"rgba(99,60,180,0.08)",border:"1px solid rgba(99,60,180,0.25)",borderRadius:10,padding:"8px 12px"}}>
               <div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:6}}>🎥 Video Note Included</div>
               <button
                 onPointerDown={e=>e.stopPropagation()}
@@ -8366,7 +8683,9 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             {(tp.skills||[]).slice(0,3).map((s,i)=><span key={i} style={{background:"var(--s2)",padding:"2px 7px",borderRadius:5,fontSize:10,color:"var(--t2)"}}>{s}</span>)}
           </div>}
           {a.cover_note&&<p style={{fontSize:11,color:"var(--t3)",fontStyle:"italic",margin:"4px 0 0",overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>"{a.cover_note}"</p>}
-          {a.video_note_url&&<div style={{marginTop:8,background:"rgba(99,60,180,0.07)",border:"1px solid rgba(99,60,180,0.22)",borderRadius:9,padding:"7px 10px"}}>
+          {/* Audition takes */}
+          {(()=>{const sub=a.audition_submissions;if(!sub)return null;const allTakes=(sub.audition_takes||[]).sort((a,b)=>a.take_number-b.take_number);const displayTakes=sub.submission_mode==='best_take'&&sub.selected_take_id?allTakes.filter(t=>t.id===sub.selected_take_id):allTakes;if(!displayTakes.length)return null;return(<div style={{marginTop:8,background:"rgba(99,60,180,0.07)",border:"1px solid rgba(99,60,180,0.22)",borderRadius:9,padding:"7px 10px"}}><div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:5}}>🎬 Audition Take{displayTakes.length>1?'s':''}</div>{displayTakes.map(tk=>(<button key={tk.id} style={{display:"flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,padding:"5px 10px",borderRadius:7,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center",marginBottom:3}} onClick={()=>setAppVideoViewer({url:tk.video_url,name:tp.display_name||"Applicant",takeLabel:`Take ${tk.take_number}`})}>▶ Watch Take {tk.take_number}</button>))}</div>);})()}
+          {!a.audition_submissions&&a.video_note_url&&<div style={{marginTop:8,background:"rgba(99,60,180,0.07)",border:"1px solid rgba(99,60,180,0.22)",borderRadius:9,padding:"7px 10px"}}>
             <div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:5}}>🎥 Video Note Included</div>
             <button style={{display:"flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,padding:"6px 12px",borderRadius:7,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center"}} onClick={()=>setAppVideoViewer({url:a.video_note_url,name:tp.display_name||"Applicant"})}>▶ Play Video Note</button>
           </div>}
@@ -8404,7 +8723,10 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         </div>
 
         {/* Audition Video — the whole point */}
-        <div style={{background:"#000",position:"relative"}}>
+        {/* Audition takes — official self-tape system */}
+        {(()=>{const sub=a.audition_submissions;if(!sub)return null;const allTakes=(sub.audition_takes||[]).sort((x,y)=>x.take_number-y.take_number);const displayTakes=sub.submission_mode==='best_take'&&sub.selected_take_id?allTakes.filter(t=>t.id===sub.selected_take_id):allTakes;if(!displayTakes.length)return null;return displayTakes.map((tk,ti)=>(<div key={tk.id} style={{background:"#000",position:"relative",borderTop:ti>0?"1px solid #111":"none"}}><div style={{padding:"6px 14px",background:"rgba(99,60,180,0.8)",fontSize:11,fontWeight:700,color:"#fff",letterSpacing:.5}}>Take {tk.take_number}{displayTakes.length>1?` · ${ti+1}/${displayTakes.length}`:""}</div><video key={tk.id} src={tk.video_url} controls playsInline preload="metadata" style={{display:"block",width:"100%",maxHeight:320,objectFit:"contain",background:"#000"}}/></div>));})()}
+        {/* Legacy video note (pre-audition-system) */}
+        {!a.audition_submissions&&<div style={{background:"#000",position:"relative"}}>
           {a.video_note_url?(
             <video
               key={a.id}
@@ -8417,7 +8739,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           ):(
             <div style={{padding:"32px 20px",textAlign:"center",background:"var(--s2)",color:"var(--t3)",fontSize:13}}>No audition video submitted</div>
           )}
-        </div>
+        </div>}
 
         {/* Cover note */}
         {a.cover_note&&<div style={{padding:"10px 18px",borderTop:"1px solid var(--bdr)",background:"var(--s2)"}}>
@@ -8725,7 +9047,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
 
     {appVideoViewer&&<div style={{position:"fixed",inset:0,zIndex:9100,background:"rgba(0,0,0,0.95)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}} onClick={()=>setAppVideoViewer(null)}>
       <div style={{position:"absolute",top:16,right:16,display:"flex",alignItems:"center",gap:12}}>
-        <div style={{color:"#fff",fontSize:13,fontWeight:600,opacity:.7}}>{appVideoViewer.name} — Application Video Note</div>
+        <div style={{color:"#fff",fontSize:13,fontWeight:600,opacity:.7}}>{appVideoViewer.name}{appVideoViewer.takeLabel?` — ${appVideoViewer.takeLabel}`:" — Video Note"}</div>
         <button onClick={()=>setAppVideoViewer(null)} style={{background:"rgba(255,255,255,0.12)",border:"none",color:"#fff",fontSize:22,width:40,height:40,borderRadius:"50%",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
       </div>
       <video
@@ -9866,14 +10188,14 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     id:r.id,name:r.name||"",description:r.description||"",gender:r.gender||"Any",
     age_range:r.age_range||"",ethnicity:r.ethnicity||"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",
     sides_pdf_url:r.sides_pdf_url||"",direction_notes:r.direction_notes||"",slate_instructions:r.slate_instructions||"",
-    video_length_limit:r.video_length_limit||120,audition_deadline:r.audition_deadline||"",
-    wardrobe_notes:r.wardrobe_notes||"",submission_type:r.submission_type||"both",
-    allow_multiple_takes:r.allow_multiple_takes!==false,_showAudInstr:!!(r.sides_pdf_url||r.direction_notes||r.slate_instructions||r.wardrobe_notes),
+    video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||"",
+    wardrobe_notes:r.wardrobe_notes||"",official_takes_allowed:r.official_takes_allowed||2,
+    submission_mode:r.submission_mode||"best_take",_showAudInstr:!!(r.sides_pdf_url||r.direction_notes||r.slate_instructions||r.wardrobe_notes),
     _uploadingPdf:false,
   })));
   const setField=(k,v)=>setF(p=>({...p,[k]:v}));
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
-  const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",submission_type:"both",allow_multiple_takes:true,_showAudInstr:false,_uploadingPdf:false}]);
+  const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false}]);
   const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
   const uploadPdf=async(file,roleIdx)=>{
     if(!file)return;
@@ -9965,12 +10287,12 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
         let ageRange=r.age_range||"";
         if(r.age_preset==="Custom range")ageRange=[r.age_min,r.age_max].filter(Boolean).join("-");
         else if(r.age_preset&&r.age_preset!=="Any age")ageRange=r.age_preset;
-        const rp={name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:ageRange||null,ethnicity:(r.ethnicity&&r.ethnicity!=="Any ethnicity")?r.ethnicity:null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,submission_type:r.submission_type||"both",allow_multiple_takes:r.allow_multiple_takes!==false};
+        const rp={name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:ageRange||null,ethnicity:(r.ethnicity&&r.ethnicity!=="Any ethnicity")?r.ethnicity:null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"};
         if(r.id){const{error:uErr}=await window.sb.from("roles").update(rp).eq("id",r.id);if(uErr)throw uErr;}
         else{const{error:iErr}=await window.sb.from("roles").insert({...rp,casting_id:casting.id});if(iErr)throw iErr;}
       }
       // Re-fetch roles from DB so onSaved carries fresh IDs and all audition fields persist correctly
-      const{data:freshRoles}=await window.sb.from("roles").select("id,name,description,gender,age_range,ethnicity,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,submission_type,allow_multiple_takes").eq("casting_id",casting.id);
+      const{data:freshRoles}=await window.sb.from("roles").select("id,name,description,gender,age_range,ethnicity,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,official_takes_allowed,submission_mode").eq("casting_id",casting.id);
       onSaved({...casting,...patch,roles:freshRoles||[]});
     }catch(e){setErr(e.message||"Save failed.");}finally{setBusy(false);}
   };
@@ -10082,19 +10404,19 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
                 <div><label className="label">Slate Instructions</label><input className="input" value={r.slate_instructions||""} onChange={e=>setRole(i,"slate_instructions",e.target.value)} placeholder="e.g. State your name, age, and agency"/></div>
                 <div><label className="label">Video Length Limit</label>
                   <select className="select" style={{width:"100%"}} value={r.video_length_limit||60} onChange={e=>setRole(i,"video_length_limit",parseInt(e.target.value))}>
-                    <option value={60}>1 minute</option><option value={90}>90 seconds</option><option value={120}>2 minutes</option><option value={180}>3 minutes</option><option value={300}>5 minutes</option>
+                    <option value={30}>30 seconds</option><option value={60}>1 minute</option><option value={120}>2 minutes</option><option value={180}>3 minutes</option>
                   </select>
                 </div>
               </div>
               <div className="form-row" style={{marginTop:10}}>
-                <div><label className="label">Submission Type</label>
-                  <select className="select" style={{width:"100%"}} value={r.submission_type||"both"} onChange={e=>setRole(i,"submission_type",e.target.value)}>
-                    <option value="both">Record or Upload (either)</option><option value="record">Record in browser only</option><option value="upload">Upload file only</option>
+                <div><label className="label">Official Takes Allowed</label>
+                  <select className="select" style={{width:"100%"}} value={r.official_takes_allowed||2} onChange={e=>setRole(i,"official_takes_allowed",parseInt(e.target.value))}>
+                    <option value={1}>1 take only</option><option value={2}>Up to 2 takes</option><option value={3}>Up to 3 takes</option>
                   </select>
                 </div>
-                <div><label className="label">Takes</label>
-                  <select className="select" style={{width:"100%"}} value={String(r.allow_multiple_takes!==false)} onChange={e=>setRole(i,"allow_multiple_takes",e.target.value==="true")}>
-                    <option value="true">Multiple takes allowed</option><option value="false">One take only</option>
+                <div><label className="label">Submission Mode</label>
+                  <select className="select" style={{width:"100%"}} value={r.submission_mode||"best_take"} onChange={e=>setRole(i,"submission_mode",e.target.value)}>
+                    <option value="best_take">Actor submits best take only</option><option value="all_takes">Actor submits all recorded takes</option>
                   </select>
                 </div>
               </div>
@@ -10123,7 +10445,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   const [busy,setBusy]=useState(false);
   const DRAFT_KEY="sc_new_casting_draft";
   const BLANK_F={title:"",prod:"",type:"Film & TV",location:"",pay:"",union:"SAG-AFTRA",deadline:"",tagline:"",synopsis:"",casting_website_url:""};
-  const BLANK_ROLE={name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",submission_type:"both",allow_multiple_takes:true,_showAudInstr:false,_uploadingPdf:false};
+  const BLANK_ROLE={name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false};
   // Initialize form from localStorage draft so a remount (e.g. background refresh) restores what the user typed.
   const [f,setF]=useState(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(p?.f?.title!==undefined)return p.f;}}catch(_){}return BLANK_F;});
   const [roles,setRoles]=useState(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(Array.isArray(p?.roles)&&p.roles.length)return p.roles;}}catch(_){}return[BLANK_ROLE];});
@@ -10305,7 +10627,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
         }else if(r.age_preset&&r.age_preset!=="Any age"){
           ageRange=r.age_preset;
         }
-        return {casting_id:casting.id,name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:ageRange||null,ethnicity:(r.ethnicity&&r.ethnicity!=="Any ethnicity")?r.ethnicity:null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,submission_type:r.submission_type||"both",allow_multiple_takes:r.allow_multiple_takes!==false};
+        return {casting_id:casting.id,name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:ageRange||null,ethnicity:(r.ethnicity&&r.ethnicity!=="Any ethnicity")?r.ethnicity:null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"};
       });
       let insertedRoles=[];
       if(rolePayload.length){
@@ -10426,19 +10748,19 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
                 <div><label className="label">Slate Instructions</label><input className="input" value={r.slate_instructions||""} onChange={e=>setRole(i,"slate_instructions",e.target.value)} placeholder="e.g. State your name, age, and agency"/></div>
                 <div><label className="label">Video Length Limit</label>
                   <select className="select" style={{width:"100%"}} value={r.video_length_limit||60} onChange={e=>setRole(i,"video_length_limit",parseInt(e.target.value))}>
-                    <option value={60}>1 minute</option><option value={90}>90 seconds</option><option value={120}>2 minutes</option><option value={180}>3 minutes</option><option value={300}>5 minutes</option>
+                    <option value={30}>30 seconds</option><option value={60}>1 minute</option><option value={120}>2 minutes</option><option value={180}>3 minutes</option>
                   </select>
                 </div>
               </div>
               <div className="form-row" style={{marginTop:10}}>
-                <div><label className="label">Submission Type</label>
-                  <select className="select" style={{width:"100%"}} value={r.submission_type||"both"} onChange={e=>setRole(i,"submission_type",e.target.value)}>
-                    <option value="both">Record or Upload (either)</option><option value="record">Record in browser only</option><option value="upload">Upload file only</option>
+                <div><label className="label">Official Takes Allowed</label>
+                  <select className="select" style={{width:"100%"}} value={r.official_takes_allowed||2} onChange={e=>setRole(i,"official_takes_allowed",parseInt(e.target.value))}>
+                    <option value={1}>1 take only</option><option value={2}>Up to 2 takes</option><option value={3}>Up to 3 takes</option>
                   </select>
                 </div>
-                <div><label className="label">Takes</label>
-                  <select className="select" style={{width:"100%"}} value={String(r.allow_multiple_takes!==false)} onChange={e=>setRole(i,"allow_multiple_takes",e.target.value==="true")}>
-                    <option value="true">Multiple takes allowed</option><option value="false">One take only</option>
+                <div><label className="label">Submission Mode</label>
+                  <select className="select" style={{width:"100%"}} value={r.submission_mode||"best_take"} onChange={e=>setRole(i,"submission_mode",e.target.value)}>
+                    <option value="best_take">Actor submits best take only</option><option value="all_takes">Actor submits all recorded takes</option>
                   </select>
                 </div>
               </div>
@@ -13626,7 +13948,7 @@ function AdminCastings(){
   const [busy,setBusy]=useState(null); // casting id + action key currently in flight
   const reload=useCallback(async()=>{
     setLoading(true);
-    const {data,error}=await window.sb.from("castings").select("*,profiles:cd_id(display_name,email,company_name),roles(id,name,description,gender,age_range,ethnicity,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,submission_type,allow_multiple_takes)").order("created_at",{ascending:false}).limit(1000);
+    const {data,error}=await window.sb.from("castings").select("*,profiles:cd_id(display_name,email,company_name),roles(id,name,description,gender,age_range,ethnicity,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,official_takes_allowed,submission_mode)").order("created_at",{ascending:false}).limit(1000);
     if(error)setMsg("Load failed: "+error.message);
     setCastings(data||[]);setLoading(false);
   },[]);
@@ -15018,15 +15340,15 @@ function EditCastingModal({casting,onClose,onSaved}){
     id:r.id,name:r.name||"",description:r.description||"",gender:r.gender||"Any",
     age_range:r.age_range||"",ethnicity:r.ethnicity||"Any",
     sides_pdf_url:r.sides_pdf_url||"",direction_notes:r.direction_notes||"",
-    slate_instructions:r.slate_instructions||"",video_length_limit:r.video_length_limit||120,
+    slate_instructions:r.slate_instructions||"",video_length_limit:r.video_length_limit||60,
     audition_deadline:r.audition_deadline||"",wardrobe_notes:r.wardrobe_notes||"",
-    submission_type:r.submission_type||"both",allow_multiple_takes:r.allow_multiple_takes!==false,
+    official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take",
     _showAudInstr:!!(r.sides_pdf_url||r.direction_notes||r.slate_instructions||r.wardrobe_notes),
     _uploadingPdf:false,
   })));
   const setField=(k,v)=>setF(p=>({...p,[k]:v}));
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
-  const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",submission_type:"both",allow_multiple_takes:true,_showAudInstr:false,_uploadingPdf:false}]);
+  const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false}]);
   const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
   const uploadPdf=async(file,roleIdx)=>{
     if(!file)return;
@@ -15089,7 +15411,7 @@ function EditCastingModal({casting,onClose,onSaved}){
       }
       for(const r of roles){
         if(!r.name.trim())continue;
-        const rp={name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:r.age_range||null,ethnicity:r.ethnicity||null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,submission_type:r.submission_type||"both",allow_multiple_takes:r.allow_multiple_takes!==false};
+        const rp={name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:r.age_range||null,ethnicity:r.ethnicity||null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"};
         if(r.id){
           const {error:uErr}=await window.sb.from("roles").update(rp).eq("id",r.id);
           if(uErr)throw uErr;
@@ -15177,19 +15499,19 @@ function EditCastingModal({casting,onClose,onSaved}){
               <div><label className="label">Slate Instructions</label><input className="input" value={r.slate_instructions||""} onChange={e=>setRole(i,"slate_instructions",e.target.value)} placeholder="e.g. State your name, age, and agency"/></div>
               <div><label className="label">Video Length Limit</label>
                 <select className="select" style={{width:"100%"}} value={r.video_length_limit||60} onChange={e=>setRole(i,"video_length_limit",parseInt(e.target.value))}>
-                  <option value={60}>1 minute</option><option value={90}>90 seconds</option><option value={120}>2 minutes</option><option value={180}>3 minutes</option><option value={300}>5 minutes</option>
+                  <option value={30}>30 seconds</option><option value={60}>1 minute</option><option value={120}>2 minutes</option><option value={180}>3 minutes</option>
                 </select>
               </div>
             </div>
             <div className="form-row" style={{marginTop:10}}>
-              <div><label className="label">Submission Type</label>
-                <select className="select" style={{width:"100%"}} value={r.submission_type||"both"} onChange={e=>setRole(i,"submission_type",e.target.value)}>
-                  <option value="both">Record or Upload (either)</option><option value="record">Record in browser only</option><option value="upload">Upload file only</option>
+              <div><label className="label">Official Takes Allowed</label>
+                <select className="select" style={{width:"100%"}} value={r.official_takes_allowed||2} onChange={e=>setRole(i,"official_takes_allowed",parseInt(e.target.value))}>
+                  <option value={1}>1 take only</option><option value={2}>Up to 2 takes</option><option value={3}>Up to 3 takes</option>
                 </select>
               </div>
-              <div><label className="label">Takes</label>
-                <select className="select" style={{width:"100%"}} value={String(r.allow_multiple_takes!==false)} onChange={e=>setRole(i,"allow_multiple_takes",e.target.value==="true")}>
-                  <option value="true">Multiple takes allowed</option><option value="false">One take only</option>
+              <div><label className="label">Submission Mode</label>
+                <select className="select" style={{width:"100%"}} value={r.submission_mode||"best_take"} onChange={e=>setRole(i,"submission_mode",e.target.value)}>
+                  <option value="best_take">Actor submits best take only</option><option value="all_takes">Actor submits all recorded takes</option>
                 </select>
               </div>
             </div>
