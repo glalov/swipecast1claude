@@ -15202,6 +15202,10 @@ function App(){
   const [verificationReturn,setVerificationReturn]=useState(false);
   // Mobile debug panel tick — forces re-render so the panel reflects live window.__SC_DBG
   const [_dbgTick,_setDbgTick]=useState(0);
+  // Hide loading screen as soon as App mounts (Babel compiled OK, React is running)
+  useEffect(()=>{
+    if(typeof window.__CS_HIDE_LOADING==='function') window.__CS_HIDE_LOADING();
+  },[]);
   useEffect(()=>{
     const d=window.__SC_DBG=window.__SC_DBG||{};
     try{localStorage.setItem("__sc_t","1");localStorage.removeItem("__sc_t");d.ls=true;}catch(e){d.ls=false;}
