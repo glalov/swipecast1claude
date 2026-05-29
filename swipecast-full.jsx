@@ -8091,6 +8091,27 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   const [allSelected,setAllSelected]=useState([]); // cross-casting "everyone I selected"
   const [reloadTick,setReloadTick]=useState(0);
   const [msgApp,setMsgApp]=useState(null);
+  const [openThreadSeed,setOpenThreadSeed]=useState(null); // {from_id,to_id,application_id,profiles} — opens existing thread
+
+  // When the CD clicks "Message" on a talent card, check for an existing conversation
+  // first. If one exists, open MessageThreadModal directly. Otherwise open the new-
+  // message compose form (MessageModal). conversation_id is a generated DB column:
+  // smaller_uuid|larger_uuid, order-agnostic.
+  const handleMsgClick=useCallback(async(app)=>{
+    if(!uid||!app?.talent_id)return;
+    const a=uid<app.talent_id?`${uid}|${app.talent_id}`:`${app.talent_id}|${uid}`;
+    try{
+      const{data}=await window.sb.from("messages").select("id").eq("conversation_id",a).limit(1);
+      if(data&&data.length>0){
+        // Existing thread — open it directly
+        setOpenThreadSeed({from_id:uid,to_id:app.talent_id,application_id:app.id,profiles:app.profiles||{}});
+      }else{
+        // No thread yet — open compose form
+        setMsgApp(app);
+      }
+    }catch(_){setMsgApp(app);}
+  },[uid]);
+
   // Saved-lists tab state — loaded on demand and refreshed when the CD adds/removes
   const [savedLists,setSavedLists]=useState([]);     // [{id,name,members:[{talent_id,profile}]}]
   const [savedListsLoading,setSavedListsLoading]=useState(false);
@@ -8677,7 +8698,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             {a.status!=='selected'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"5px 9px"}} onClick={()=>moveTo(a.id,'select')}>→ Select</button>}
             {a.status!=='hold'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"5px 9px"}} onClick={()=>moveTo(a.id,'hold')}>→ Hold</button>}
             {a.status!=='rejected'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"5px 9px"}} onClick={()=>moveTo(a.id,'reject')}>→ Reject</button>}
-            {a.status==='selected'&&<button className="btn-p btn-sm" style={{fontSize:11,padding:"5px 9px",marginLeft:"auto"}} onClick={()=>setMsgApp(a)}>💬 Message</button>}
+            {a.status==='selected'&&<button className="btn-p btn-sm" style={{fontSize:11,padding:"5px 9px",marginLeft:"auto"}} onClick={()=>handleMsgClick(a)}>💬 Message</button>}
           </div>
         </div>
       </div>
@@ -8808,7 +8829,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
                 idx={i}
                 total={submissions.length}
                 onDecide={(action,app)=>decide(action,app)}
-                onMessage={(app)=>setMsgApp(app)}
+                onMessage={(app)=>handleMsgClick(app)}
                 onViewProfile={(app)=>setCdProfileOverlay(buildTalentView(app))}
               />
             ))}
@@ -8857,7 +8878,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
                       <div className="cb-item-info" style={{flex:1}}><h4>{a.profiles?.display_name||"Applicant"}</h4><p>{[a.profiles?.age,a.profiles?.gender,a.profiles?.location].filter(Boolean).join(" · ")}</p></div>
                     </div>
                     <div style={{display:"flex",gap:6,marginTop:8}}>
-                      <button className="btn-p btn-sm" style={{flex:1,fontSize:11,padding:"6px 10px"}} onClick={()=>setMsgApp(a)}>💬 Message</button>
+                      <button className="btn-p btn-sm" style={{flex:1,fontSize:11,padding:"6px 10px"}} onClick={()=>handleMsgClick(a)}>💬 Message</button>
                     </div>
                   </div>)}
               </div>}
@@ -9059,6 +9080,16 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         if(bumpCastings)bumpCastings();     // global: SearchPage + realtime consumers
       }} uid={uid} myProfile={myProfile}/>}
     {msgApp&&<MessageModal app={msgApp} fromId={uid} castingTitle={active?.title||""} onClose={()=>setMsgApp(null)} onSent={()=>setMsgApp(null)}/>}
+    {openThreadSeed&&<MessageThreadModal
+      message={openThreadSeed}
+      sessionUid={uid}
+      sessionUserType="cd"
+      onViewProfile={cdProfileOverlay?undefined:((p)=>setCdProfileOverlay(p))}
+      onClose={()=>setOpenThreadSeed(null)}
+      onRead={()=>{}}
+      onDeleted={()=>setOpenThreadSeed(null)}
+      onReplied={()=>{}}
+    />}
     {composeDmTo&&<ComposeDMModal fromId={uid} toId={composeDmTo.id} toName={composeDmTo.name} onClose={()=>setComposeDmTo(null)}/>}
 
     <Footer onNavigate={onNavigate}/></div>);
