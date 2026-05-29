@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260529-201657 -->
-  <meta name="build-version" content="20260529-201657"/>
+  <!-- BUILD: 20260529-222442 -->
+  <meta name="build-version" content="20260529-222442"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260529-201657";
+      var B="20260529-222442";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -4809,7 +4809,7 @@ function getCastingImages(casting){
 //   onVideoReady(url) — called once upload succeeds
 //   onClose      — called when the user chooses "Delete Video" or cancels
 // ═══════════════════════════════════════════
-function VideoRecorder({session,roleId,onVideoReady,onClose,maxSec}){
+function VideoRecorder({session,roleId,onVideoReady,onClose,maxSec,primaryLabel,hideReRecord}){
   const MAX_SEC=maxSec||30;
   // phase: idle | requesting | preview | recording | recorded | uploading | denied | no-camera
   const [phase,setPhase]=React.useState("idle");
@@ -5096,9 +5096,9 @@ function VideoRecorder({session,roleId,onVideoReady,onClose,maxSec}){
         </div>
         {errMsg&&<div style={{fontSize:12,color:"#c0392b",marginBottom:8}}>{errMsg}</div>}
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          <button className="btn-p btn-sm" style={{flex:1}} onClick={uploadAndUse}>✓ Use This Video</button>
-          <button className="btn-s btn-sm" onClick={reRecord}>↺ Re-record</button>
-          <button className="btn-s btn-sm" style={{color:"#c0392b"}} onClick={deleteVideo}>🗑 Delete</button>
+          <button className="btn-p btn-sm" style={{flex:1}} onClick={uploadAndUse}>{primaryLabel||"✓ Use This Video"}</button>
+          {!hideReRecord&&<button className="btn-s btn-sm" onClick={reRecord}>↺ Re-record</button>}
+          <button className="btn-s btn-sm" style={{color:"#c0392b"}} onClick={deleteVideo}>{hideReRecord?"🗑 Discard Take":"🗑 Delete"}</button>
         </div>
       </div>
     );
@@ -5118,22 +5118,24 @@ function VideoRecorder({session,roleId,onVideoReady,onClose,maxSec}){
 }
 
 // ─── AuditionModal — full self-tape audition flow for roles with PDF sides
-// Practice mode: unlimited, never saved to DB.
-// Official takes: up to official_takes_allowed, saved to audition_takes table.
-// Submit: either selected best take or all takes, via submit_audition RPC.
+// Practice mode: unlimited re-recording, no DB saves.
+// Official takes: 1–3 takes, each saved to audition_takes immediately after recording.
+// Reload-safe: recovers in-progress draft submission on mount.
+// Submit: selected best take (best_take mode) or all takes (all_takes mode).
 function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,onClose,onSubmitted}){
   const {useState:S,useEffect:E,useRef:R}=React;
   const maxTakes=instr?.official_takes_allowed||2;
   const submissionMode=instr?.submission_mode||'best_take';
   const maxSec=instr?.video_length_limit||60;
 
-  const [officialTakes,setOfficialTakes]=S([]); // [{id,take_number,video_url,duration_seconds}]
+  const [officialTakes,setOfficialTakes]=S([]); // [{id,take_number,video_url}]
   const [submissionId,setSubmissionId]=S(null);
   const [selectedTakeId,setSelectedTakeId]=S(null);
   const [showPractice,setShowPractice]=S(false);
   const [showOfficialRecorder,setShowOfficialRecorder]=S(false);
   const [confirmingTake,setConfirmingTake]=S(false);
   const [savingTake,setSavingTake]=S(false);
+  const [savedNotice,setSavedNotice]=S(0); // take_number of most recently saved take (0=none)
   const [submitting,setSubmitting]=S(false);
   const [submitted,setSubmitted]=S(false);
   const [err,setErr]=S('');
@@ -5141,12 +5143,12 @@ function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,o
   const [coverNote,setCoverNote]=S('');
   const submittingRef=R(false);
 
-  // On mount: recover in-progress draft submission (reload-safe)
+  // On mount: recover in-progress draft (reload-safe)
   E(()=>{
     if(!session?.user?.id||!roleId||!isDbCasting)return;
     (async()=>{
       const{data}=await window.sb.from('audition_submissions')
-        .select('id,submission_mode,audition_takes(id,take_number,video_url,duration_seconds)')
+        .select('id,submission_mode,audition_takes(id,take_number,video_url)')
         .eq('role_id',roleId).eq('talent_user_id',session.user.id).eq('status','draft').maybeSingle();
       if(data){
         setSubmissionId(data.id);
@@ -5169,6 +5171,7 @@ function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,o
     return data.id;
   };
 
+  // Called by VideoRecorder when take upload completes — saves take row to DB
   const onOfficialTakeReady=async(videoUrl)=>{
     setSavingTake(true);setErr('');
     try{
@@ -5178,17 +5181,20 @@ function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,o
         audition_submission_id:sid,take_number:takeNumber,video_url:videoUrl,submitted:false
       }).select('id').single();
       if(error)throw error;
-      const newTake={id:data.id,take_number:takeNumber,video_url:videoUrl,duration_seconds:0};
+      const newTake={id:data.id,take_number:takeNumber,video_url:videoUrl};
       setOfficialTakes(p=>[...p,newTake]);
-      setSelectedTakeId(data.id);
+      setSelectedTakeId(data.id); // auto-select the take just saved
       setShowOfficialRecorder(false);
+      // Brief "Take N Saved" notice
+      setSavedNotice(takeNumber);
+      setTimeout(()=>setSavedNotice(0),3000);
     }catch(e){setErr('Failed to save take: '+e.message);}
     finally{setSavingTake(false);}
   };
 
   const submitAudition=async()=>{
     if(submittingRef.current)return;
-    if(officialTakes.length===0){setErr('Please record at least one official take.');return;}
+    if(officialTakes.length===0){setErr('Please record at least one official take first.');return;}
     if(submissionMode==='best_take'&&!selectedTakeId){setErr('Please select a take to submit.');return;}
     submittingRef.current=true;setSubmitting(true);setErr('');
     try{
@@ -5225,40 +5231,45 @@ function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,o
     </div>
   );}
 
-  // ── Practice recorder
+  // ── Practice recorder — unlimited re-recording, nothing saved to DB
   if(showPractice){return(
     <div className="modal-overlay">
       <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:560}}>
-        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
-          <span style={{fontSize:20}}>🎭</span>
-          <div>
-            <h3 style={{margin:0,fontSize:17,fontWeight:800}}>Practice Mode</h3>
-            <p style={{margin:0,fontSize:12,color:'var(--t3)'}}>Not saved. Not submitted. Rehearse as many times as you like.</p>
-          </div>
+        <div style={{background:'rgba(99,60,180,0.08)',border:'1px solid rgba(99,60,180,0.2)',borderRadius:10,padding:'12px 16px',marginBottom:16}}>
+          <div style={{fontWeight:800,fontSize:14,color:'var(--acc)',marginBottom:3}}>🎭 Practice Mode</div>
+          <div style={{fontSize:12,color:'var(--t2)',lineHeight:1.5}}>Re-record as many times as you like. <strong>Practice recordings are not saved or sent to casting.</strong></div>
         </div>
         <VideoRecorder session={session} roleId={`practice-${roleId}`} maxSec={maxSec}
+          primaryLabel="✓ Done — Back to Audition"
           onVideoReady={()=>setShowPractice(false)} onClose={()=>setShowPractice(false)}/>
         <button className="btn-s btn-sm" style={{marginTop:12,width:'100%'}} onClick={()=>setShowPractice(false)}>← Back to Audition</button>
       </div>
     </div>
   );}
 
-  // ── Official take confirmation
+  // ── Official take confirmation dialog
   if(confirmingTake){
     const takeNum=officialTakes.length+1;
+    const takesAfter=maxTakes-takeNum;
     return(
       <div className="modal-overlay" onClick={()=>setConfirmingTake(false)}>
         <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:420,textAlign:'center',padding:'32px 28px'}}>
           <div style={{fontSize:40,marginBottom:16}}>⏺</div>
-          <h3 style={{fontSize:20,fontWeight:800,marginBottom:10}}>Start Official Take {takeNum}?</h3>
-          <p style={{color:'var(--t2)',fontSize:14,lineHeight:1.65,marginBottom:8}}>
-            Once you start, this counts as Take {takeNum} of {maxTakes}. The recording saves automatically when you stop.
+          <h3 style={{fontSize:20,fontWeight:800,marginBottom:12}}>Start Official Take {takeNum}?</h3>
+          <p style={{color:'var(--t2)',fontSize:14,lineHeight:1.7,marginBottom:8}}>
+            Once you start, this will count as Official Take {takeNum} of {maxTakes}. You can preview it after recording. If you save this take, it will be added to your audition.
           </p>
-          <p style={{color:'var(--t3)',fontSize:12,marginBottom:24}}>
-            {maxTakes-(takeNum-1)} take{maxTakes-(takeNum-1)!==1?'s':''} remaining (including this one).
-          </p>
+          {takesAfter>0&&<p style={{color:'var(--t3)',fontSize:12,marginBottom:24}}>
+            You will still have {takesAfter} take{takesAfter!==1?'s':''} left after this one.
+          </p>}
+          {takesAfter===0&&<p style={{color:'#c88900',fontSize:12,fontWeight:600,marginBottom:24}}>
+            This is your final take.
+          </p>}
           <div style={{display:'flex',gap:12,justifyContent:'center'}}>
-            <button className="btn-p" style={{background:'#c0392b',borderColor:'#c0392b'}} onClick={()=>{setConfirmingTake(false);setShowOfficialRecorder(true);}}>⏺ Start Take {takeNum}</button>
+            <button className="btn-p" style={{background:'#c0392b',borderColor:'#c0392b'}}
+              onClick={()=>{setConfirmingTake(false);setShowOfficialRecorder(true);}}>
+              ⏺ Start Official Take {takeNum}
+            </button>
             <button className="btn-s" onClick={()=>setConfirmingTake(false)}>Cancel</button>
           </div>
         </div>
@@ -5266,22 +5277,24 @@ function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,o
     );
   }
 
-  // ── Official take recorder
+  // ── Official take recorder — no re-record, "Save This Take" button
   if(showOfficialRecorder){
     const takeNum=officialTakes.length+1;
     return(
       <div className="modal-overlay">
         <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:560}}>
-          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
-            <span style={{width:10,height:10,borderRadius:'50%',background:'#c0392b',display:'inline-block'}}/>
-            <div>
-              <h3 style={{margin:0,fontSize:17,fontWeight:800}}>Official Take {takeNum}</h3>
-              <p style={{margin:0,fontSize:12,color:'var(--t3)'}}>Max {fmtLen(maxSec)} · {maxTakes-officialTakes.length} take{maxTakes-officialTakes.length!==1?'s':''} left after this</p>
-            </div>
+          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:4}}>
+            <span style={{width:10,height:10,borderRadius:'50%',background:'#c0392b',display:'inline-block',flexShrink:0}}/>
+            <h3 style={{margin:0,fontSize:17,fontWeight:800}}>Official Take {takeNum} of {maxTakes}</h3>
           </div>
+          <p style={{fontSize:12,color:'var(--t3)',marginBottom:14,marginLeft:20}}>Max {fmtLen(maxSec)} · Record, preview, then save. No re-recording after saving.</p>
           {savingTake
-            ?<div style={{textAlign:'center',padding:'28px',color:'var(--t2)',fontSize:13,fontWeight:600}}>Saving take {takeNum}…</div>
+            ?<div style={{textAlign:'center',padding:'32px',fontSize:14,fontWeight:600,color:'var(--t2)'}}>
+               Saving Take {takeNum}…
+             </div>
             :<VideoRecorder session={session} roleId={`audition-${roleId}-t${takeNum}`} maxSec={maxSec}
+                primaryLabel={`💾 Save This Take (Take ${takeNum})`}
+                hideReRecord={true}
                 onVideoReady={onOfficialTakeReady} onClose={()=>setShowOfficialRecorder(false)}/>
           }
           {err&&<div style={{marginTop:10,fontSize:12,color:'#c0392b'}}>{err}</div>}
@@ -5292,17 +5305,32 @@ function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,o
 
   // ── Main audition view
   const takesLeft=maxTakes-officialTakes.length;
+  const allTakesRecorded=takesLeft===0;
   const canSubmit=officialTakes.length>0&&(submissionMode==='all_takes'||selectedTakeId);
+
+  const submitLabel=()=>{
+    if(submitting)return'Submitting…';
+    if(officialTakes.length===0)return'Record your first take to continue';
+    if(submissionMode==='best_take')return selectedTakeId?'Submit Selected Take →':'Select a take to submit';
+    return`Submit All ${officialTakes.length} Take${officialTakes.length!==1?'s':''} →`;
+  };
 
   return(
     <div className="modal-overlay" onClick={()=>!submitting&&onClose()}>
       <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:620,maxHeight:'92vh',overflowY:'auto'}}>
+
         {/* Header */}
         <div style={{marginBottom:4,display:'flex',alignItems:'center',gap:8}}>
           <span style={{fontSize:20}}>🎬</span>
           <h2 style={{margin:0,fontSize:20,fontWeight:800}}>Audition for {role.name}</h2>
         </div>
         <p style={{color:'var(--t3)',fontSize:12,marginBottom:20}}>{casting.title} · {casting.prod}</p>
+
+        {/* "Take N Saved" success notice */}
+        {savedNotice>0&&<div style={{background:'rgba(46,204,113,0.12)',border:'1px solid rgba(46,204,113,0.3)',borderRadius:10,padding:'10px 16px',marginBottom:16,display:'flex',alignItems:'center',gap:8}}>
+          <span style={{fontSize:18}}>✅</span>
+          <span style={{fontWeight:700,fontSize:13,color:'#1d7b44'}}>Take {savedNotice} saved to your audition.</span>
+        </div>}
 
         {/* Audition Instructions panel */}
         <div style={{background:'rgba(99,60,180,0.05)',border:'1px solid rgba(99,60,180,0.18)',borderRadius:12,padding:'16px 18px',marginBottom:20}}>
@@ -5320,7 +5348,7 @@ function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,o
           <div style={{display:'flex',gap:16,flexWrap:'wrap',marginTop:instr.direction_notes?10:0}}>
             {instr.slate_instructions&&<div><span style={{fontSize:10,fontWeight:700,color:'var(--t3)',textTransform:'uppercase',letterSpacing:.8}}>Slate: </span><span style={{fontSize:13,color:'var(--t2)'}}>{instr.slate_instructions}</span></div>}
             {instr.video_length_limit&&<div><span style={{fontSize:10,fontWeight:700,color:'var(--t3)',textTransform:'uppercase',letterSpacing:.8}}>Max: </span><span style={{fontSize:13,color:'var(--t2)'}}>{fmtLen(instr.video_length_limit)}</span></div>}
-            <div><span style={{fontSize:10,fontWeight:700,color:'var(--t3)',textTransform:'uppercase',letterSpacing:.8}}>Takes: </span><span style={{fontSize:13,color:'var(--t2)'}}>Up to {maxTakes}</span></div>
+            <div><span style={{fontSize:10,fontWeight:700,color:'var(--t3)',textTransform:'uppercase',letterSpacing:.8}}>Takes: </span><span style={{fontSize:13,color:'var(--t2)'}}>{maxTakes===1?'1 take only':`Up to ${maxTakes}`}</span></div>
             <div><span style={{fontSize:10,fontWeight:700,color:'var(--t3)',textTransform:'uppercase',letterSpacing:.8}}>Submit: </span><span style={{fontSize:13,color:'var(--t2)'}}>{submissionMode==='all_takes'?'All recorded takes':'Best take only'}</span></div>
           </div>
           {instr.wardrobe_notes&&<div style={{marginTop:10,paddingTop:10,borderTop:'1px solid rgba(99,60,180,0.15)'}}>
@@ -5329,51 +5357,75 @@ function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,o
           </div>}
         </div>
 
-        {/* Recorded takes list */}
-        {officialTakes.length>0&&<div style={{marginBottom:20}}>
-          <div style={{fontSize:12,fontWeight:700,color:'var(--t1)',marginBottom:10}}>
-            Your Takes ({officialTakes.length}/{maxTakes})
-            {submissionMode==='best_take'&&<span style={{fontSize:11,fontWeight:400,color:'var(--t3)',marginLeft:8}}>— select the take you want to submit</span>}
+        {/* Takes status — all slots, recorded or not */}
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:12,fontWeight:700,color:'var(--t1)',marginBottom:10,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <span>Your Takes ({officialTakes.length}/{maxTakes})</span>
+            {submissionMode==='best_take'&&officialTakes.length>0&&<span style={{fontSize:11,fontWeight:400,color:'var(--t3)'}}>Select the take to submit</span>}
+            {submissionMode==='all_takes'&&officialTakes.length>0&&<span style={{fontSize:11,fontWeight:400,color:'var(--acc)'}}>All takes will be submitted</span>}
           </div>
-          <div style={{display:'flex',flexDirection:'column',gap:10}}>
-            {officialTakes.map(take=>(
-              <div key={take.id} style={{background:'var(--s2)',borderRadius:10,padding:12,border:submissionMode==='best_take'&&selectedTakeId===take.id?'2px solid var(--acc)':'2px solid transparent',transition:'border-color .15s'}}>
-                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
-                  <span style={{fontWeight:700,fontSize:13,color:'var(--t1)'}}>Take {take.take_number}</span>
-                  {submissionMode==='best_take'&&(
-                    <button className={selectedTakeId===take.id?'btn-p btn-sm':'btn-s btn-sm'} style={{fontSize:11}}
-                      onClick={()=>setSelectedTakeId(take.id)}>
-                      {selectedTakeId===take.id?'✓ Selected for Submission':'Select This Take'}
-                    </button>
-                  )}
-                  {submissionMode==='all_takes'&&<span style={{fontSize:11,color:'var(--acc)',fontWeight:600}}>✓ Will be submitted</span>}
-                </div>
-                <div style={{borderRadius:8,overflow:'hidden'}}>
-                  <video src={take.video_url} controls playsInline style={{display:'block',width:'100%',maxHeight:200,objectFit:'contain',background:'#000'}}/>
-                </div>
-              </div>
-            ))}
+          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            {Array.from({length:maxTakes},(_,i)=>{
+              const takeNum=i+1;
+              const take=officialTakes.find(t=>t.take_number===takeNum);
+              if(take){
+                const isSelected=selectedTakeId===take.id;
+                return(
+                  <div key={takeNum} style={{background:'var(--s2)',borderRadius:10,padding:12,border:submissionMode==='best_take'&&isSelected?'2px solid var(--acc)':'2px solid transparent',transition:'border-color .15s'}}>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <span style={{fontWeight:700,fontSize:13,color:'var(--t1)'}}>Take {takeNum}</span>
+                        <span style={{fontSize:11,fontWeight:700,color:'#27ae60',background:'rgba(46,204,113,0.12)',padding:'2px 8px',borderRadius:99}}>✓ Saved</span>
+                      </div>
+                      {submissionMode==='best_take'&&(
+                        <button className={isSelected?'btn-p btn-sm':'btn-s btn-sm'} style={{fontSize:11}}
+                          onClick={()=>setSelectedTakeId(take.id)}>
+                          {isSelected?'✓ Selected':'Select This Take'}
+                        </button>
+                      )}
+                      {submissionMode==='all_takes'&&<span style={{fontSize:11,color:'var(--acc)',fontWeight:600}}>Will be submitted</span>}
+                    </div>
+                    <div style={{borderRadius:8,overflow:'hidden'}}>
+                      <video src={take.video_url} controls playsInline style={{display:'block',width:'100%',maxHeight:200,objectFit:'contain',background:'#000'}}/>
+                    </div>
+                  </div>
+                );
+              }else{
+                return(
+                  <div key={takeNum} style={{background:'var(--s1)',border:'1px dashed var(--bdr)',borderRadius:10,padding:'12px 14px',display:'flex',alignItems:'center',gap:10}}>
+                    <span style={{fontSize:13,fontWeight:700,color:'var(--t2)'}}>Take {takeNum}</span>
+                    <span style={{fontSize:12,color:'var(--t3)'}}>Not recorded yet</span>
+                  </div>
+                );
+              }
+            })}
           </div>
-        </div>}
-
-        {/* Recording controls */}
-        <div style={{background:'var(--s2)',borderRadius:12,padding:14,marginBottom:20}}>
-          <div style={{fontSize:12,fontWeight:700,color:'var(--t1)',marginBottom:8}}>
-            {takesLeft>0?`${takesLeft} official take${takesLeft!==1?'s':''} remaining`:'All official takes recorded'}
-          </div>
-          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-            {takesLeft>0&&(
-              <button className="btn-p btn-sm" style={{background:'#c0392b',borderColor:'#c0392b'}}
-                onClick={()=>setConfirmingTake(true)}>
-                ⏺ Start Official Take {officialTakes.length+1}
-              </button>
-            )}
-            <button className="btn-s btn-sm" onClick={()=>setShowPractice(true)}>🎭 Practice Mode</button>
-          </div>
-          <p style={{fontSize:11,color:'var(--t3)',marginTop:8,marginBottom:0}}>Practice recordings are never saved or submitted to the casting director.</p>
         </div>
 
-        {/* Photo + cover note (shown once at least one take exists) */}
+        {/* Recording + practice controls */}
+        <div style={{background:'var(--s2)',borderRadius:12,padding:14,marginBottom:20}}>
+          {!allTakesRecorded&&<>
+            <div style={{fontSize:12,fontWeight:700,color:'var(--t1)',marginBottom:8}}>
+              {takesLeft} official take{takesLeft!==1?'s':''} remaining
+            </div>
+            <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:10}}>
+              <button className="btn-p btn-sm" style={{background:'#c0392b',borderColor:'#c0392b'}}
+                onClick={()=>setConfirmingTake(true)}>
+                ⏺ {officialTakes.length===0?`Start Official Take 1`:`Record Take ${officialTakes.length+1}`}
+              </button>
+              <button className="btn-s btn-sm" onClick={()=>setShowPractice(true)}>🎭 Practice Mode</button>
+            </div>
+          </>}
+          {allTakesRecorded&&<div style={{marginBottom:10}}>
+            <div style={{fontSize:12,fontWeight:700,color:'#1d7b44',marginBottom:6}}>✓ All {maxTakes} take{maxTakes!==1?'s':''} recorded</div>
+            <button className="btn-s btn-sm" onClick={()=>setShowPractice(true)}>🎭 Practice Mode</button>
+          </div>}
+          <p style={{fontSize:11,color:'var(--t3)',marginBottom:0}}>
+            Practice recordings are <strong>not saved</strong> and <strong>not sent to casting</strong>. Rehearse as many times as you like.
+          </p>
+        </div>
+
+        {/* Headshot + cover note (shown once at least one take exists) */}
         {officialTakes.length>0&&<>
           {myPhotos.length>0&&<div className="form-group" style={{marginBottom:14}}>
             <label className="label">Your Headshot</label>
@@ -5394,14 +5446,11 @@ function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,o
         {/* Error */}
         {err&&<div style={{background:'rgba(255,100,100,0.1)',border:'1px solid rgba(255,100,100,0.3)',color:'#c0392b',padding:'10px 14px',borderRadius:8,fontSize:13,marginBottom:14}}>{err}</div>}
 
-        {/* Submit + Cancel */}
+        {/* Submit row */}
         <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
-          <button className="btn-p" style={{flex:1,opacity:canSubmit&&!submitting?1:0.5}}
+          <button className="btn-p" style={{flex:1,opacity:canSubmit&&!submitting?1:0.45}}
             disabled={!canSubmit||submitting} onClick={submitAudition}>
-            {submitting?'Submitting…':
-             officialTakes.length===0?'Record a take to submit':
-             submissionMode==='best_take'?(selectedTakeId?'Submit Selected Take':'Select a take first'):
-             `Submit All ${officialTakes.length} Take${officialTakes.length!==1?'s':''}`}
+            {submitLabel()}
           </button>
           <button className="btn-s" onClick={onClose} disabled={submitting}>Cancel</button>
         </div>
@@ -8505,13 +8554,33 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         try{window.history.pushState({swipecast:true,page:"dashboard",dashCastingId:String(cid),dashRoleId:String(role.id)},"",`/dashboard#c=${cid}&r=${role.id}`);}catch(_){}
       }
     }
+    // Step 1: Load applications without nested audition join.
+    // The nested join (audition_submissions → audition_takes) can fail if PostgREST's
+    // schema cache hasn't caught up, causing data=null and an empty review view.
+    // We use a two-step approach: load apps first, enrich with audition data separately.
     const {data,error}=await window.sb.from("applications")
-      .select("*,profiles(*),roles(id,name),audition_submissions(id,selected_take_id,submission_mode,audition_takes(id,take_number,video_url,duration_seconds))")
+      .select("*,profiles(*),roles(id,name)")
       .eq("role_id",role.id).order("created_at",{ascending:false});
     if(error)console.warn("[review] openRole error:",error.message);
-    // Safety: if a profile row wasn't returned (RLS), leave a stub so the card still renders.
-    const subs=(data||[]).map(a=>a.profiles?a:{...a,profiles:{id:a.talent_id,display_name:"Anonymous Applicant",headshot_url:null,skills:[],additional_photos:[],video_links:[]}});
-    setSubmissions(subs);
+    const stub={id:null,display_name:"Anonymous Applicant",headshot_url:null,skills:[],additional_photos:[],video_links:[]};
+    let subs=(data||[]).map(a=>a.profiles?a:{...a,profiles:{...stub,id:a.talent_id}});
+    setSubmissions(subs); // show immediately so CD is not left waiting
+
+    // Step 2: Load audition submissions + takes for any apps that have them.
+    const audSubIds=subs.filter(a=>a.audition_submission_id).map(a=>a.audition_submission_id);
+    if(audSubIds.length>0){
+      const{data:subData,error:subErr}=await window.sb.from("audition_submissions")
+        .select("id,selected_take_id,submission_mode,audition_takes(id,take_number,video_url,duration_seconds)")
+        .in("id",audSubIds);
+      if(subErr)console.warn("[review] audition_submissions load error:",subErr.message);
+      if(subData&&subData.length>0){
+        const subMap={};
+        subData.forEach(s=>{subMap[s.id]=s;});
+        setSubmissions(p=>p.map(a=>a.audition_submission_id
+          ?{...a,audition_submissions:subMap[a.audition_submission_id]||null}
+          :a));
+      }
+    }
   };
 
   // ─── Decide: reject / hold / select (optimistic with rollback)
