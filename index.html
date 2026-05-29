@@ -20,12 +20,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260529-222442 -->
-  <meta name="build-version" content="20260529-222442"/>
+  <!-- BUILD: 20260529-224355 -->
+  <meta name="build-version" content="20260529-224355"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260529-222442";
+      var B="20260529-224355";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -8554,10 +8554,8 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         try{window.history.pushState({swipecast:true,page:"dashboard",dashCastingId:String(cid),dashRoleId:String(role.id)},"",`/dashboard#c=${cid}&r=${role.id}`);}catch(_){}
       }
     }
-    // Step 1: Load applications without nested audition join.
-    // The nested join (audition_submissions → audition_takes) can fail if PostgREST's
-    // schema cache hasn't caught up, causing data=null and an empty review view.
-    // We use a two-step approach: load apps first, enrich with audition data separately.
+    // Step 1: Load applications (no nested joins — PostgREST schema cache can silently
+    // return empty arrays for newly-created FK relationships).
     const {data,error}=await window.sb.from("applications")
       .select("*,profiles(*),roles(id,name)")
       .eq("role_id",role.id).order("created_at",{ascending:false});
@@ -8566,16 +8564,30 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     let subs=(data||[]).map(a=>a.profiles?a:{...a,profiles:{...stub,id:a.talent_id}});
     setSubmissions(subs); // show immediately so CD is not left waiting
 
-    // Step 2: Load audition submissions + takes for any apps that have them.
+    // Step 2: Load audition_submissions flat (no nested takes join).
     const audSubIds=subs.filter(a=>a.audition_submission_id).map(a=>a.audition_submission_id);
     if(audSubIds.length>0){
-      const{data:subData,error:subErr}=await window.sb.from("audition_submissions")
-        .select("id,selected_take_id,submission_mode,audition_takes(id,take_number,video_url,duration_seconds)")
-        .in("id",audSubIds);
+      const[{data:subData,error:subErr},{data:takesData,error:takesErr}]=await Promise.all([
+        window.sb.from("audition_submissions")
+          .select("id,selected_take_id,submission_mode")
+          .in("id",audSubIds),
+        // Step 3: Load audition_takes directly — avoids the nested join entirely.
+        window.sb.from("audition_takes")
+          .select("id,audition_submission_id,take_number,video_url,duration_seconds")
+          .in("audition_submission_id",audSubIds)
+          .order("take_number",{ascending:true}),
+      ]);
       if(subErr)console.warn("[review] audition_submissions load error:",subErr.message);
+      if(takesErr)console.warn("[review] audition_takes load error:",takesErr.message);
       if(subData&&subData.length>0){
+        // Group takes by submission id, then attach to submission object.
+        const takesMap={};
+        (takesData||[]).forEach(t=>{
+          if(!takesMap[t.audition_submission_id])takesMap[t.audition_submission_id]=[];
+          takesMap[t.audition_submission_id].push(t);
+        });
         const subMap={};
-        subData.forEach(s=>{subMap[s.id]=s;});
+        subData.forEach(s=>{subMap[s.id]={...s,audition_takes:takesMap[s.id]||[]};});
         setSubmissions(p=>p.map(a=>a.audition_submission_id
           ?{...a,audition_submissions:subMap[a.audition_submission_id]||null}
           :a));
