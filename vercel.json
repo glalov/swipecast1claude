@@ -4,7 +4,7 @@
   "outputDirectory": ".",
   "framework": null,
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!favicon\\.ico|favicon\\.svg|apple-touch-icon\\.png|robots\\.txt).*)", "destination": "/index.html" }
   ],
   "headers": [
     {
