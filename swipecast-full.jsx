@@ -92,6 +92,7 @@ const TRANSLATIONS = {
     'footer.createProfile':'Create Profile','footer.browse':'Browse Castings','footer.classes':'Classes',
     'footer.resources':'Resources','footer.successStories':'Success Stories',
     'footer.postCasting':'Post a Casting','footer.pricing':'Pricing',
+    'footer.payTalent':'Pay Talent',
     'footer.forStudios':'For Studios','footer.apiAccess':'API Access',
     'footer.about':'About','footer.blog':'Blog','footer.careers':'Careers','footer.contact':'Contact',
     'footer.faq':'FAQ','footer.helpCenter':'Help Center','footer.terms':'Terms of Use',
@@ -334,6 +335,7 @@ const TRANSLATIONS = {
     'footer.createProfile':'Crear perfil','footer.browse':'Convocatorias','footer.classes':'Clases',
     'footer.resources':'Recursos','footer.successStories':'Historias de éxito',
     'footer.postCasting':'Publicar convocatoria','footer.pricing':'Precios',
+    'footer.payTalent':'Pagar Talento',
     'footer.forStudios':'Para estudios','footer.apiAccess':'Acceso API',
     'footer.about':'Acerca de','footer.blog':'Blog','footer.careers':'Empleos','footer.contact':'Contacto',
     'footer.faq':'Preguntas frecuentes','footer.helpCenter':'Centro de ayuda','footer.terms':'Términos de uso',
@@ -2501,6 +2503,7 @@ function Footer({onNavigate,spacerBg}){
             <h4 className="site-footer-heading">{t('footer.industry')}</h4>
             <L to="register-cd">{t('footer.postCasting')}</L>
             <L to="pricing">{t('footer.pricing')}</L>
+            <L to="pay-talent">{t('footer.payTalent')}</L>
             <L to="studios">{t('footer.forStudios')}</L>
             <L to="api-info">{t('footer.apiAccess')}</L>
           </div>
@@ -4266,6 +4269,102 @@ POST   /api/v1/callbacks         # Add talent to callbacks`}</div></div>
       <div style={{textAlign:"center"}}><p style={{color:"var(--t2)",fontSize:14,marginBottom:16}}>API access is available with Studio enterprise plans</p><div style={{display:"flex",gap:12,justifyContent:"center"}}><button className="btn-p" onClick={()=>onNavigate("register-cd")}>Get Started</button><button className="btn-s" onClick={()=>onNavigate("contact")}>Contact Sales</button></div></div>
     </div>
     <Footer onNavigate={onNavigate}/></div>);
+}
+
+// ═══════════════════════════════════════════
+// PAGE: PAY TALENT (Coming Soon / Early Access)
+// ═══════════════════════════════════════════
+function PayTalentPage({onNavigate}){
+  const features=[
+    {icon:"⚡","title":"Fast Talent Payments","desc":"Send payments to booked actors after a shoot, rehearsal, callback, or completed production milestone — without chasing anyone down."},
+    {icon:"🎬","title":"Built for Productions","desc":"Keep payment details connected to the casting, role, project, and talent profile instead of scattered across emails and spreadsheets."},
+    {icon:"🔒","title":"Secure Payout Setup","desc":"Talent can complete payout onboarding securely through a trusted payment provider before receiving funds. CastSlate never stores bank details."},
+    {icon:"📋","title":"Cleaner Records","desc":"Productions keep a clear record of who was booked, what was paid, and when payment was completed — all in one place."},
+  ];
+  const steps=[
+    {n:1,title:"Book the actor","desc":"Select the talent attached to a casting, role, or project inside CastSlate."},
+    {n:2,title:"Enter payment details","desc":"Add the payment amount, project name, role, and optional notes."},
+    {n:3,title:"Talent completes payout setup","desc":"The actor securely connects their payout information through the payment provider."},
+    {n:4,title:"Send payment","desc":"The production sends payment and both sides can see the payment status in real time."},
+    {n:5,title:"Keep everything organized","desc":"Payment records stay attached to the project for easier tracking and reporting."},
+  ];
+  return(
+    <div className="page">
+      {/* ── Hero ── */}
+      <section style={{background:"var(--s1)",borderBottom:"1px solid var(--bdr)",padding:"80px 40px 72px",textAlign:"center"}}>
+        <div style={{maxWidth:700,margin:"0 auto"}}>
+          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--acc)",color:"#fff",fontSize:11,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",padding:"6px 14px",borderRadius:100,marginBottom:24}}>Coming Soon — Request Early Access</div>
+          <h1 style={{fontWeight:900,fontSize:"clamp(32px,5vw,54px)",letterSpacing:"-2px",lineHeight:1.1,marginBottom:20}}>Pay talent without<br/>chasing paperwork.</h1>
+          <p style={{color:"var(--t2)",fontSize:16,lineHeight:1.7,marginBottom:36,maxWidth:560,margin:"0 auto 36px"}}>CastSlate Pay is being built to help casting teams and productions send secure payments to actors directly through the platform — keeping bookings, submissions, and payment records in one place.</p>
+          <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+            <button className="btn-p" style={{fontSize:15,padding:"14px 28px"}} onClick={()=>onNavigate("contact")}>Request Early Access</button>
+            <button className="btn-s" style={{fontSize:15,padding:"14px 28px"}} onClick={()=>onNavigate("register-cd")}>Post a Casting</button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Subheading ── */}
+      <section style={{padding:"56px 40px 0",maxWidth:760,margin:"0 auto",textAlign:"center"}}>
+        <div className="section-label">CastSlate Pay</div>
+        <h2 style={{fontWeight:800,fontSize:"clamp(22px,3vw,32px)",letterSpacing:"-1px",marginBottom:16}}>A simpler way for productions to send secure payments to actors</h2>
+        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.7}}>After a booking, rehearsal, shoot, or completed project — stop managing payments in spreadsheets and email threads. CastSlate Pay will connect the payment directly to the casting record.</p>
+      </section>
+
+      {/* ── Feature Cards ── */}
+      <section style={{padding:"56px 40px",maxWidth:1100,margin:"0 auto"}}>
+        <div className="grid-2" style={{gap:20}}>
+          {features.map(f=>(
+            <div key={f.title} className="card" style={{padding:28}}>
+              <div style={{fontSize:28,marginBottom:12}}>{f.icon}</div>
+              <h3 style={{fontWeight:700,fontSize:17,marginBottom:8}}>{f.title}</h3>
+              <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65}}>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── How It Works ── */}
+      <section style={{padding:"0 40px 72px",maxWidth:860,margin:"0 auto"}}>
+        <div className="section-label" style={{textAlign:"center",marginBottom:8}}>How It Works</div>
+        <h2 style={{fontWeight:800,fontSize:"clamp(22px,3vw,30px)",letterSpacing:"-1px",textAlign:"center",marginBottom:48}}>From booking to payment in five steps</h2>
+        <div style={{display:"flex",flexDirection:"column",gap:0}}>
+          {steps.map((s,i)=>(
+            <div key={s.n} style={{display:"flex",gap:24,alignItems:"flex-start",paddingBottom:i<steps.length-1?36:0}}>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}}>
+                <div style={{width:40,height:40,borderRadius:"50%",background:"var(--acc)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:16,flexShrink:0}}>{s.n}</div>
+                {i<steps.length-1&&<div style={{width:2,flex:1,minHeight:28,background:"var(--bdr)",marginTop:8}}/>}
+              </div>
+              <div style={{paddingTop:6,paddingBottom:i<steps.length-1?0:0}}>
+                <h3 style={{fontWeight:700,fontSize:16,marginBottom:4}}>{s.title}</h3>
+                <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65}}>{s.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Stripe Note ── */}
+      <section style={{background:"var(--s1)",borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)",padding:"48px 40px"}}>
+        <div style={{maxWidth:680,margin:"0 auto",textAlign:"center"}}>
+          <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,color:"var(--t3)",marginBottom:12}}>How we'll handle payments</div>
+          <h3 style={{fontWeight:800,fontSize:20,marginBottom:12}}>Powered by Stripe Connect</h3>
+          <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7}}>When CastSlate Pay launches, payments will be processed through Stripe Connect. Talent will complete a secure onboarding flow with Stripe directly — CastSlate never holds or stores banking information. Stripe handles identity verification, compliance, and payout delivery.</p>
+        </div>
+      </section>
+
+      {/* ── Bottom CTA ── */}
+      <section style={{padding:"72px 40px",maxWidth:640,margin:"0 auto",textAlign:"center"}}>
+        <h2 style={{fontWeight:800,fontSize:"clamp(22px,3vw,32px)",letterSpacing:"-1px",marginBottom:16}}>Be the first to know when it launches.</h2>
+        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.7,marginBottom:32}}>Leave your details and we'll reach out as soon as CastSlate Pay is ready for productions to try.</p>
+        <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+          <button className="btn-p" style={{fontSize:15,padding:"14px 28px"}} onClick={()=>onNavigate("contact")}>Request Early Access</button>
+          <button className="btn-s" style={{fontSize:15,padding:"14px 28px"}} onClick={()=>onNavigate("home")}>Back to Home</button>
+        </div>
+      </section>
+
+      <Footer onNavigate={onNavigate}/>
+    </div>
+  );
 }
 
 // ═══════════════════════════════════════════
@@ -15619,6 +15718,7 @@ const PAGE_PATH={
   "faq":"/faq","success-stories":"/success-stories","studios":"/studios",
   "api-info":"/api-info","terms":"/terms","privacy":"/privacy","careers":"/careers",
   "auth-gate":"/auth-gate","account-settings":"/account-settings",
+  "pay-talent":"/pay-talent",
   "success":"/success",
   // casting-gate is an overlay state, NOT a standalone URL — it must not
   // appear here or it would overwrite "search" in PATH_PAGE for /browse-castings
@@ -16522,6 +16622,7 @@ function App(){
         {page==="terms"&&<TermsPage onNavigate={navigate}/>}
         {page==="privacy"&&<PrivacyPage onNavigate={navigate}/>}
         {page==="careers"&&<CareersPage onNavigate={navigate}/>}
+        {page==="pay-talent"&&<PayTalentPage onNavigate={navigate}/>}
         {page==="success"&&<PaymentSuccessPage session={session} myProfile={myProfile} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} successType={paymentSuccessType}/>}
       </main>
       {/* Cookie preferences modal — opened via the footer "Cookie Preferences" link.
