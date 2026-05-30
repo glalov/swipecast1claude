@@ -4324,10 +4324,43 @@ function PayTalentPage({onNavigate}){
 
   return(
     <div className="page">
+      <style>{`
+        @media(max-width:900px){
+          .pt-hero-section{padding:48px 24px!important}
+          .pt-hero-grid{grid-template-columns:1fr!important;gap:36px!important}
+          .pt-hero-cards{gap:10px!important}
+          .pt-intro-section{padding:40px 24px 0!important}
+          .pt-features-section{padding:32px 24px 48px!important}
+          .pt-hiw-section{padding:48px 24px!important}
+          .pt-stripe-section{padding:48px 24px!important}
+          .pt-stripe-grid{grid-template-columns:1fr!important;gap:28px!important}
+          .pt-cta-section{padding:56px 24px!important}
+          .pt-strip-header{padding:0 24px!important}
+          .pt-strip-scroll{padding-left:24px!important;padding-right:24px!important}
+        }
+        @media(max-width:640px){
+          .pt-hero-section{padding:36px 16px!important}
+          .pt-hero-grid{gap:24px!important}
+          .pt-hero-cards{gap:8px!important}
+          .pt-hero-card{aspect-ratio:1/1!important}
+          .pt-intro-section{padding:28px 16px 0!important}
+          .pt-features-section{padding:20px 16px 32px!important}
+          .pt-hiw-section{padding:36px 16px!important}
+          .pt-stripe-section{padding:36px 16px!important}
+          .pt-cta-section{padding:44px 16px!important}
+          .pt-strip-header{padding:0 16px!important}
+          .pt-strip-scroll{padding-left:16px!important;padding-right:16px!important;gap:10px!important}
+        }
+        @media(max-width:400px){
+          .pt-hero-section{padding:28px 14px!important}
+          .pt-hero-card{aspect-ratio:4/5!important}
+          .pt-hero-grid{gap:20px!important}
+        }
+      `}</style>
 
       {/* ── Hero: two-column ── */}
-      <section style={{background:"var(--s1)",borderBottom:"1px solid var(--bdr)",padding:"72px 40px"}}>
-        <div style={{maxWidth:1160,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:64,alignItems:"center"}}>
+      <section className="pt-hero-section" style={{background:"var(--s1)",borderBottom:"1px solid var(--bdr)",padding:"72px 40px"}}>
+        <div className="pt-hero-grid" style={{maxWidth:1160,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:64,alignItems:"center"}}>
           {/* Left: copy */}
           <div>
             <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--acc)",color:"#fff",fontSize:11,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",padding:"6px 14px",borderRadius:100,marginBottom:24}}>Coming Soon — Request Early Access</div>
@@ -4340,9 +4373,9 @@ function PayTalentPage({onNavigate}){
             <StripeConnectBadge/>
           </div>
           {/* Right: 2×2 talent cards */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+          <div className="pt-hero-cards" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             {heroProfiles.map(p=>(
-              <div key={p.name} style={{borderRadius:14,overflow:"hidden",position:"relative",aspectRatio:"3/4",boxShadow:"0 4px 20px rgba(0,0,0,0.18)"}}>
+              <div key={p.name} className="pt-hero-card" style={{borderRadius:14,overflow:"hidden",position:"relative",aspectRatio:"3/4",boxShadow:"0 4px 20px rgba(0,0,0,0.18)"}}>
                 <img src={p.img} alt={p.name} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
                 <div style={{position:"absolute",inset:0,background:"linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.15) 55%, transparent 100%)"}}/>
                 <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"14px 14px 12px"}}>
@@ -4356,17 +4389,15 @@ function PayTalentPage({onNavigate}){
             ))}
           </div>
         </div>
-        {/* Mobile: stack columns */}
-        <style>{`@media(max-width:768px){.pay-talent-hero-grid{grid-template-columns:1fr!important}}`}</style>
       </section>
 
       {/* ── Talent strip ── */}
-      <section style={{borderBottom:"1px solid var(--bdr)",padding:"36px 0",overflow:"hidden"}}>
-        <div style={{padding:"0 40px",marginBottom:16}}>
+      <section className="pt-strip-section" style={{borderBottom:"1px solid var(--bdr)",padding:"36px 0"}}>
+        <div className="pt-strip-header" style={{padding:"0 40px",marginBottom:16}}>
           <div className="section-label">Talent on CastSlate</div>
           <p style={{color:"var(--t2)",fontSize:13,marginTop:2}}>Actors and models waiting to be booked — and paid — on time.</p>
         </div>
-        <div style={{display:"flex",gap:16,paddingLeft:40,paddingRight:40,overflowX:"auto",scrollbarWidth:"none"}}>
+        <div className="pt-strip-scroll" style={{display:"flex",gap:16,paddingLeft:40,paddingRight:40,overflowX:"auto",scrollbarWidth:"none",WebkitOverflowScrolling:"touch"}}>
           {stripProfiles.map((p,i)=>(
             <div key={i} style={{flexShrink:0,width:120,textAlign:"center"}}>
               <div style={{width:90,height:90,borderRadius:"50%",overflow:"hidden",margin:"0 auto 8px",border:"2px solid var(--bdr)",boxShadow:"0 2px 8px rgba(0,0,0,0.12)"}}>
@@ -4383,14 +4414,14 @@ function PayTalentPage({onNavigate}){
       </section>
 
       {/* ── Intro text ── */}
-      <section style={{padding:"56px 40px 0",maxWidth:740,margin:"0 auto",textAlign:"center"}}>
+      <section className="pt-intro-section" style={{padding:"56px 40px 0",maxWidth:740,margin:"0 auto",textAlign:"center"}}>
         <div className="section-label">CastSlate Pay</div>
         <h2 style={{fontWeight:800,fontSize:"clamp(22px,3vw,32px)",letterSpacing:"-1px",marginBottom:14}}>A simpler way to pay the people you cast</h2>
         <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75}}>After a booking, rehearsal, shoot, or completed project — stop managing payments in spreadsheets and email threads. CastSlate Pay connects the payment directly to the casting record.</p>
       </section>
 
       {/* ── Feature cards ── */}
-      <section style={{padding:"40px 40px 64px",maxWidth:1100,margin:"0 auto"}}>
+      <section className="pt-features-section" style={{padding:"40px 40px 64px",maxWidth:1100,margin:"0 auto"}}>
         <div className="grid-2" style={{gap:16}}>
           {features.map(f=>(
             <div key={f.title} className="card" style={{padding:28}}>
@@ -4403,7 +4434,7 @@ function PayTalentPage({onNavigate}){
       </section>
 
       {/* ── How It Works ── */}
-      <section style={{background:"var(--s1)",borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)",padding:"64px 40px"}}>
+      <section className="pt-hiw-section" style={{background:"var(--s1)",borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)",padding:"64px 40px"}}>
         <div style={{maxWidth:860,margin:"0 auto"}}>
           <div className="section-label" style={{textAlign:"center",marginBottom:8}}>How It Works</div>
           <h2 style={{fontWeight:800,fontSize:"clamp(22px,3vw,30px)",letterSpacing:"-1px",textAlign:"center",marginBottom:52}}>From booking to payment in five steps</h2>
@@ -4436,8 +4467,8 @@ function PayTalentPage({onNavigate}){
       </section>
 
       {/* ── Stripe Connect section ── */}
-      <section style={{padding:"72px 40px"}}>
-        <div style={{maxWidth:760,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:56,alignItems:"center"}}>
+      <section className="pt-stripe-section" style={{padding:"72px 40px"}}>
+        <div className="pt-stripe-grid" style={{maxWidth:760,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:56,alignItems:"center"}}>
           <div>
             <div className="section-label" style={{marginBottom:12}}>Payment Infrastructure</div>
             <h2 style={{fontWeight:800,fontSize:"clamp(22px,3vw,30px)",letterSpacing:"-1px",marginBottom:16}}>Powered by Stripe Connect</h2>
@@ -4474,7 +4505,7 @@ function PayTalentPage({onNavigate}){
       </section>
 
       {/* ── Bottom CTA ── */}
-      <section style={{background:"var(--s1)",borderTop:"1px solid var(--bdr)",padding:"80px 40px",textAlign:"center"}}>
+      <section className="pt-cta-section" style={{background:"var(--s1)",borderTop:"1px solid var(--bdr)",padding:"80px 40px",textAlign:"center"}}>
         <div style={{maxWidth:560,margin:"0 auto"}}>
           <h2 style={{fontWeight:900,fontSize:"clamp(24px,3vw,36px)",letterSpacing:"-1.5px",marginBottom:16}}>Be the first to know when it launches.</h2>
           <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,marginBottom:32}}>Leave your details and we'll reach out as soon as CastSlate Pay is ready for productions to try.</p>
