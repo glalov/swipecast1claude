@@ -21,6 +21,9 @@ html = f'''<!DOCTYPE html>
   <meta property="og:title" content="CastSlate — Casting, finally built for actors."/>
   <meta property="og:description" content="Every headshot seen. Guaranteed. Join the casting platform built for working actors."/>
   <meta property="og:type" content="website"/>
+  <link rel="icon" href="/favicon.ico" sizes="any"/>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
