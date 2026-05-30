@@ -2500,7 +2500,6 @@ function Footer({onNavigate,spacerBg}){
             <L to="actor-toolkit">{t('footer.actorToolkit')}</L>
             <L to="classes">{t('footer.classes')}</L>
             <L to="resources">{t('footer.resources')}</L>
-            <L to="success-stories">{t('footer.successStories')}</L>
           </div>
           <div>
             <h4 className="site-footer-heading">{t('footer.industry')}</h4>
@@ -2508,7 +2507,6 @@ function Footer({onNavigate,spacerBg}){
             <L to="pricing">{t('footer.pricing')}</L>
             <L to="pay-talent">{t('footer.payTalent')}</L>
             <L to="studios">{t('footer.forStudios')}</L>
-            <L to="api-info">{t('footer.apiAccess')}</L>
           </div>
           <div>
             <h4 className="site-footer-heading">{t('footer.company')}</h4>
