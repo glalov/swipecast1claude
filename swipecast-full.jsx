@@ -1460,8 +1460,9 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .cb-sidebar{max-height:300px;}
   .results-grid{grid-template-columns:1fr 1fr;gap:12px;}
   .grid-2,.grid-3,.blog-grid,.team-grid,.feature-list,.form-row,.dash-stats{grid-template-columns:1fr;}
+  .grid-3{display:flex !important;flex-direction:column !important;width:100% !important;max-width:100% !important;overflow:visible !important;}
   .page{padding:24px 16px 0;}
-  .page.page-wide{padding:24px 16px 60px;}
+  .page.page-wide{padding:24px 16px 120px;}
   .search-bar,.filter-row{flex-direction:column;}
   .info-hero{padding:48px 20px 40px;}
   .info-hero h1{font-size:32px;}
@@ -1500,6 +1501,9 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .account-settings-sidebar{position:static !important;top:auto !important;}
   /* Pricing cards → single column */
   .pricing-cards-grid{grid-template-columns:1fr !important;transform:none !important;max-width:420px !important;margin-left:auto !important;margin-right:auto !important;}
+  /* Footer safe-area: extend dark bg into iPhone bottom bar zone */
+  .site-footer-spacer{background:#1B1C20 !important;}
+  .site-footer{padding-bottom:max(28px,env(safe-area-inset-bottom)) !important;}
   /* Profile hero → single column */
   .my-profile-hero{grid-template-columns:1fr !important;gap:16px !important;}
   .my-profile-hero-photo{max-width:200px !important;margin:0 auto !important;}
@@ -2068,7 +2072,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
     <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>
       Free actors can submit to {FREE_PLAN.submissionsPerDay} castings per day and upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, unlimited photos, and unlimited video uploads.
     </p>
-    <div className="grid-3" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18,maxWidth:1100,margin:"0 auto"}}>
+    <div className="grid-3" style={{gap:18,maxWidth:1100,margin:"0 auto"}}>
       {Object.values(MEMBERSHIP_PLANS).map(p=>{
         const featured=p.key==="yearly";
         return(<div key={p.key} className="card" style={{padding:28,position:"relative",border:featured?"2px solid var(--acc)":"1px solid var(--bdr)"}}>
