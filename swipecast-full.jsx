@@ -4275,20 +4275,20 @@ POST   /api/v1/callbacks         # Add talent to callbacks`}</div></div>
 // PAGE: PAY TALENT (Coming Soon / Early Access)
 // ═══════════════════════════════════════════
 function PayTalentPage({onNavigate}){
-  // Headshots reusing Unsplash URLs already in the TALENT data array
+  // All photos are unique to this page — none shared with the landing swipe demo or any other section
   const heroProfiles=[
-    {name:"Maria Santos",role:"Actor · SAG-AFTRA",img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&q=80",amount:"$1,200",paid:true},
-    {name:"James Walker",role:"Actor · SAG-AFTRA",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&q=80",amount:"$850",paid:true},
-    {name:"Aisha Johnson",role:"Model · Non-Union",img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=500&q=80",amount:"$2,400",paid:false},
-    {name:"Carlos Rivera",role:"Actor · SAG-AFTRA",img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&q=80",amount:"$3,200",paid:true},
+    {name:"Nadia Osei",role:"Actor · SAG-AFTRA",img:"https://images.unsplash.com/photo-1521119989659-a83eee488004?w=500&q=80",amount:"$1,200",paid:true},
+    {name:"Tobias Grant",role:"Actor · AEA",img:"https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=500&q=80",amount:"$850",paid:true},
+    {name:"Suki Park",role:"Model · SAG-AFTRA",img:"https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=500&q=80",amount:"$2,400",paid:false},
+    {name:"Rafael Moreno",role:"Actor · SAG-AFTRA",img:"https://images.unsplash.com/photo-1541101767792-f9b2b1c4f127?w=500&q=80",amount:"$3,200",paid:true},
   ];
   const stripProfiles=[
-    {name:"Elena Novak",role:"AEA",img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80"},
-    {name:"David Kim",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80"},
-    {name:"Sarah Chen",role:"ACTRA",img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&q=80"},
-    {name:"Tyrone Matthews",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&q=80"},
-    {name:"Maria Santos",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80"},
-    {name:"Carlos Rivera",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80"},
+    {name:"DeShawn Brooks",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&q=80"},
+    {name:"Camille Rousseau",role:"AEA",img:"https://images.unsplash.com/photo-1558222218-b8a892701e19?w=300&q=80"},
+    {name:"Priya Kapoor",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?w=300&q=80"},
+    {name:"Marcus Webb",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1463453091185-61582044d556?w=300&q=80"},
+    {name:"Lena Fischer",role:"Non-Union",img:"https://images.unsplash.com/photo-1548142813-c348350df52b?w=300&q=80"},
+    {name:"Jordan Banks",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=300&q=80"},
   ];
   const features=[
     {icon:"⚡",color:"#f59e0b",bg:"#fef3c7",title:"Fast Talent Payments",desc:"Send payments to booked actors after a shoot, rehearsal, callback, or completed production milestone — without chasing anyone down."},
@@ -4297,9 +4297,9 @@ function PayTalentPage({onNavigate}){
     {icon:"📋",color:"#8b5cf6",bg:"#ede9fe",title:"Cleaner Records",desc:"Productions keep a clear record of who was booked, what was paid, and when — all in one place, attached to the project."},
   ];
   const steps=[
-    {n:1,title:"Book the actor",desc:"Select the talent attached to a casting, role, or project inside CastSlate.",img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&q=80"},
+    {n:1,title:"Book the actor",desc:"Select the talent attached to a casting, role, or project inside CastSlate.",img:"https://images.unsplash.com/photo-1521119989659-a83eee488004?w=120&q=80"},
     {n:2,title:"Enter payment details",desc:"Add the payment amount, project name, role, and optional notes.",img:null},
-    {n:3,title:"Talent completes payout setup",desc:"The actor securely connects their payout information directly with Stripe — CastSlate never touches banking details.",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=120&q=80"},
+    {n:3,title:"Talent completes payout setup",desc:"The actor securely connects their payout information directly with Stripe — CastSlate never touches banking details.",img:"https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=120&q=80"},
     {n:4,title:"Send payment",desc:"The production sends payment and both sides can see the payment status in real time.",img:null},
     {n:5,title:"Everything stays organized",desc:"Payment records stay attached to the project for easier tracking, records, and reporting.",img:null},
   ];
