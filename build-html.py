@@ -21,9 +21,9 @@ html = f'''<!DOCTYPE html>
   <meta property="og:title" content="CastSlate — Casting, finally built for actors."/>
   <meta property="og:description" content="Every headshot seen. Guaranteed. Join the casting platform built for working actors."/>
   <meta property="og:type" content="website"/>
-  <link rel="icon" href="/favicon.ico" sizes="any"/>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='white'/%3E%3Cpolygon points='13,8 4,16 13,24' fill='black'/%3E%3Cpolygon points='19,8 28,16 19,24' fill='black'/%3E%3C/svg%3E"/>
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+  <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2"/>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
