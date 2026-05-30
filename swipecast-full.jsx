@@ -3165,8 +3165,12 @@ function AboutPage({onNavigate}){
       <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>Our Mission</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>Democratize the casting process. Remove financial barriers for talent. Guarantee that every submission gets a real, human look. Build tools that make casting faster, fairer, and more efficient.</p></div>
       <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>The Problem We Solve</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>Legacy platforms charge actors $15-$30/month — a tax on people working service jobs. Meanwhile, CDs get overwhelmed with grid-view headshots and miss great talent. CastSlate fixes both.</p></div>
     </div>
-    <div style={{maxWidth:800,margin:"0 auto"}}><h2 style={{fontSize:28,fontWeight:800,textAlign:"center",marginBottom:40}}>Leadership</h2>
-      <div className="team-grid">{[{n:"Founder & CEO",i:"🎬",r:"Filmmaker and technologist with a passion for breaking down barriers in entertainment."},{n:"Head of Product",i:"💡",r:"Former casting director turned product designer. 15 years in the industry."},{n:"Head of Engineering",i:"⚙️",r:"Full-stack engineer. Previously built matching systems at scale."}].map((t,idx)=><div key={idx} className="team-card"><div className="avatar">{t.i}</div><h4>{t.n}</h4><p>{t.r}</p></div>)}</div>
+    <div style={{maxWidth:900,margin:"0 auto"}}>
+      <div style={{textAlign:"center",marginBottom:40}}>
+        <h2 style={{fontSize:28,fontWeight:800,marginBottom:12}}>Built by an Industry Collective</h2>
+        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.65,maxWidth:620,margin:"0 auto"}}>CastSlate was founded from the shared experience of filmmakers, producers, casting directors, actors, and product builders who believe casting should be faster, fairer, and more transparent.</p>
+      </div>
+      <div className="team-grid">{[{n:"Filmmakers",i:"🎬",r:"Built by people who understand production pressure, tight deadlines, and the need to find the right performer without wasting time."},{n:"Casting Professionals",i:"🎭",r:"Shaped by people who know the casting process from the inside and believe every submission deserves a real human look."},{n:"Product Builders",i:"⚙️",r:"Designed by technologists focused on making casting cleaner, faster, and easier to use for both actors and casting teams."}].map((t,idx)=><div key={idx} className="team-card"><div className="avatar">{t.i}</div><h4>{t.n}</h4><p>{t.r}</p></div>)}</div>
     </div>
     <Footer onNavigate={onNavigate}/>
   </div>);
