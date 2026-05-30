@@ -447,8 +447,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .account-settings-sidebar{position:static !important;top:auto !important;}
   /* Pricing cards → single column */
   .pricing-cards-grid{grid-template-columns:1fr !important;transform:none !important;max-width:420px !important;margin-left:auto !important;margin-right:auto !important;}
-  /* Footer safe-area: extend dark bg into iPhone bottom bar zone */
-  .site-footer-spacer{background:#1B1C20 !important;}
+  /* Footer safe-area: dark bg fills iPhone bottom safe zone, no white stripe */
+  html{background:#1B1C20 !important;}
   .site-footer{padding-bottom:max(28px,env(safe-area-inset-bottom)) !important;}
   /* Profile hero → single column */
   .my-profile-hero{grid-template-columns:1fr !important;gap:16px !important;}
