@@ -1,16 +1,103 @@
-import re, datetime
+import re, datetime, subprocess, os, sys, tempfile, shutil
 
 BUILD_VERSION = datetime.datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+JSC = "/System/Library/Frameworks/JavaScriptCore.framework/Versions/Current/Helpers/jsc"
+BABEL_CACHE = os.path.expanduser("~/.castslate_babel_standalone.js")
 
-jsx_content = open("swipecast-full.jsx", "r").read()
-# Strip the ES module `import` line — Babel standalone in the browser can't resolve imports
-jsx_content = re.sub(r'^\s*import\s+.*?from\s+["\'][^"\']+["\'];?\s*\n', '', jsx_content, count=1, flags=re.MULTILINE)
-# Replace `export default function App` with plain `function App`
-jsx_content = jsx_content.replace("export default function App", "function App")
-# swipecast-full.jsx already starts with the React hooks destructure — do NOT prepend again.
-# Render the App at the end
-jsx_content += "\nReactDOM.createRoot(document.getElementById('root')).render(<App />);\n"
+# ── Download Babel standalone if not cached ──────────────────────────────────
+def ensure_babel():
+    if os.path.exists(BABEL_CACHE) and os.path.getsize(BABEL_CACHE) > 2_000_000:
+        return True
+    print("  Downloading Babel standalone (~3MB, cached for future builds)…")
+    try:
+        r = subprocess.run(
+            ["curl", "-s", "--max-time", "60",
+             "https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js",
+             "-o", BABEL_CACHE],
+            capture_output=True, timeout=70
+        )
+        return r.returncode == 0 and os.path.getsize(BABEL_CACHE) > 2_000_000
+    except Exception as e:
+        print(f"  WARNING: Could not download Babel: {e}")
+        return False
 
+# ── Compile JSX → plain JS using jsc + Babel ─────────────────────────────────
+def compile_jsx(jsx_source):
+    if not os.path.exists(JSC):
+        return None, "jsc not found"
+    if not ensure_babel():
+        return None, "Babel standalone unavailable"
+
+    # Write JSX to a temp file (avoids shell quoting issues)
+    tmp_jsx = tempfile.NamedTemporaryFile(suffix=".jsx", delete=False, mode="w", encoding="utf-8")
+    tmp_jsx.write(jsx_source)
+    tmp_jsx.close()
+
+    # Build the JSC compile script
+    shim = """
+var globalThis=this,global=this,window=this;
+var process={env:{NODE_ENV:'production'},version:'v18.0.0'};
+var console={log:function(){},warn:function(){},error:function(){},debug:function(){},info:function(){},trace:function(){}};
+var performance={now:function(){return 0;}};
+"""
+    compile_script = shim + open(BABEL_CACHE, encoding="utf-8").read() + f"""
+var src = readFile({repr(tmp_jsx.name)});
+try {{
+  var result = Babel.transform(src, {{
+    presets: ['react'],
+    plugins: [['transform-react-jsx', {{runtime:'classic'}}]]
+  }});
+  print(result.code);
+}} catch(e) {{
+  print('BABEL_ERROR:' + e.message);
+}}
+"""
+    tmp_script = tempfile.NamedTemporaryFile(suffix=".js", delete=False, mode="w", encoding="utf-8")
+    tmp_script.write(compile_script)
+    tmp_script.close()
+
+    try:
+        result = subprocess.run(
+            [JSC, tmp_script.name],
+            capture_output=True, text=True, timeout=120
+        )
+        output = result.stdout
+        if output.startswith("BABEL_ERROR:"):
+            return None, output[len("BABEL_ERROR:"):].strip()
+        if not output.strip():
+            return None, f"jsc produced no output (stderr: {result.stderr[:200]})"
+        return output, None
+    except subprocess.TimeoutExpired:
+        return None, "Babel compilation timed out (>120s)"
+    except Exception as e:
+        return None, str(e)
+    finally:
+        os.unlink(tmp_jsx.name)
+        os.unlink(tmp_script.name)
+
+
+# ── Prepare JSX source ────────────────────────────────────────────────────────
+jsx_raw = open("swipecast-full.jsx", "r", encoding="utf-8").read()
+jsx_raw = re.sub(r'^\s*import\s+.*?from\s+["\'][^"\']+["\'];?\s*\n', '', jsx_raw, count=1, flags=re.MULTILINE)
+jsx_raw = jsx_raw.replace("export default function App", "function App")
+jsx_raw += "\nReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App, null));\n"
+
+# ── Try to compile at build time ─────────────────────────────────────────────
+print("  Compiling JSX…")
+compiled_js, compile_err = compile_jsx(jsx_raw)
+
+if compiled_js:
+    print(f"  ✓ JSX pre-compiled ({len(compiled_js):,} chars) — no runtime Babel needed")
+    USE_BABEL_RUNTIME = False
+    app_script_block = f'  <script>\n{compiled_js}\n  </script>'
+else:
+    print(f"  ⚠ Build-time compilation failed ({compile_err}) — falling back to runtime Babel")
+    USE_BABEL_RUNTIME = True
+    app_script_block = f'  <script type="text/babel" data-presets="react">\n{jsx_raw}\n  </script>'
+
+babel_cdn = '  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>' if USE_BABEL_RUNTIME else ''
+
+# ── Generate index.html ───────────────────────────────────────────────────────
 html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,14 +114,34 @@ html = f'''<!DOCTYPE html>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+{babel_cdn}
   <script>
     window.SC_CONFIG = {{
       SUPABASE_URL: "https://mvqhqbjjvgkftninjcby.supabase.co",
       SUPABASE_ANON_KEY: "sb_publishable_J8nl68IlCex_G9sjNQX1kQ_vsb7AzNc",
       ADMIN_EMAIL: "officecasting01@gmail.com"
     }};
-    window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
+    /* Guard against CDN failure — createClient is a no-op stub if Supabase didn't load */
+    try {{
+      window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
+    }} catch(e) {{
+      console.error("[CastSlate] Supabase CDN failed to load:", e.message);
+      window.sb = {{
+        from: function(){{ return {{select:function(){{return Promise.resolve({{data:[],error:new Error("Supabase unavailable")}});}},insert:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}},update:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}},delete:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}},eq:function(){{return this;}},neq:function(){{return this;}},single:function(){{return this;}},maybeSingle:function(){{return Promise.resolve({{data:null,error:null}});}},order:function(){{return this;}},limit:function(){{return this;}},in:function(){{return this;}},contains:function(){{return this;}},ilike:function(){{return this;}},is:function(){{return this;}},or:function(){{return this;}},count:function(){{return this;}},head:function(){{return this;}}}}}},
+        auth: {{
+          getSession:function(){{return Promise.resolve({{data:{{session:null}},error:null}});}},
+          getUser:function(){{return Promise.resolve({{data:{{user:null}},error:null}});}},
+          signInWithPassword:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}},
+          signUp:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}},
+          signOut:function(){{return Promise.resolve({{error:null}});}},
+          onAuthStateChange:function(cb){{return {{data:{{subscription:{{unsubscribe:function(){{}}}}}}}};}},
+          updateUser:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}}
+        }},
+        functions: {{ invoke: function(){{ return Promise.resolve({{data:null,error:null}}); }} }},
+        channel: function(){{ return {{on:function(){{return this;}},subscribe:function(){{return this;}},unsubscribe:function(){{}}}}; }},
+        removeChannel: function(){{}}
+      }};
+    }}
   </script>
   <!-- BUILD: {BUILD_VERSION} -->
   <meta name="build-version" content="{BUILD_VERSION}"/>
@@ -73,7 +180,8 @@ html = f'''<!DOCTYPE html>
       gap:12px;padding:32px;text-align:center;z-index:99999;
     }}
     #cs-error .err-title{{color:#fff;font-size:18px;font-weight:700;font-family:-apple-system,sans-serif;}}
-    #cs-error .err-msg{{color:rgba(255,255,255,0.5);font-size:13px;font-family:-apple-system,sans-serif;line-height:1.6;}}
+    #cs-error .err-msg{{color:rgba(255,255,255,0.5);font-size:13px;font-family:-apple-system,sans-serif;line-height:1.6;max-width:480px;}}
+    #cs-error .err-detail{{color:#888;font-size:11px;font-family:monospace;margin-top:10px;padding:10px;background:rgba(255,255,255,0.05);border-radius:6px;text-align:left;max-width:480px;max-height:120px;overflow-y:auto;word-break:break-all;display:none;}}
     #cs-error button{{background:#6366f1;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:-apple-system,sans-serif;margin-top:8px;}}
   </style>
 </head>
@@ -87,63 +195,75 @@ html = f'''<!DOCTYPE html>
     <div class="spinner"></div>
     <div class="label">Loading…</div>
   </div>
-  <!-- Error screen — shown if something goes wrong -->
+  <!-- Error screen — shown if something goes wrong before React mounts -->
   <div id="cs-error">
+    <div class="logo" style="color:#fff;font-size:20px;font-weight:800;font-family:-apple-system,sans-serif;display:-webkit-flex;display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+      <div style="width:32px;height:32px;background:#6366f1;border-radius:7px;display:-webkit-flex;display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="18" height="18"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg></div>
+      CastSlate
+    </div>
     <div class="err-title">Something went wrong</div>
     <div class="err-msg">CastSlate couldn't start. Please try refreshing the page.</div>
+    <div class="err-detail" id="cs-err-detail"></div>
     <button onclick="window.location.reload()">Reload</button>
   </div>
   <div id="root"></div>
   <script>
-    /* ── Runtime error infrastructure ───────────────────────────────────────
-       Errors BEFORE React mounts  →  show full crash screen (fatal).
-       Errors AFTER  React mounts  →  ErrorBoundary catches them in-section;
-                                       the global handler only logs + collects.
+    /* ── Runtime error infrastructure ────────────────────────────────────────
+       Errors BEFORE React mounts → show full crash screen.
+       Errors AFTER  React mounts → ErrorBoundary catches them per-section.
        window.__CS_REACT_MOUNTED is set to true by App's first useEffect.
     ──────────────────────────────────────────────────────────────────────── */
     window.__CS_LOADING_STARTED = Date.now();
     window.__CS_REACT_MOUNTED   = false;
-    window.__SC_ERR             = [];   // collects all errors for ?debug panel
+    window.__SC_ERR             = [];
+    window.__CS_PRE_COMPILED    = {str(not USE_BABEL_RUNTIME).lower()};
 
     window.__CS_HIDE_LOADING = function(){{
       var el = document.getElementById('cs-loading');
       if(el){{ el.classList.add('hide'); setTimeout(function(){{el.style.display='none';}},350); }}
     }};
 
-    /* Uncaught JS errors (syntax, TDZ, undefined, bad JSX eval) */
+    var showDebug = (window.location.search||'').indexOf('debug')!==-1;
+
+    function csShowCrash(msg){{
+      document.getElementById('cs-loading').style.display='none';
+      document.getElementById('cs-error').style.display='flex';
+      if(showDebug && msg){{
+        var d=document.getElementById('cs-err-detail');
+        if(d){{d.style.display='block';d.textContent=msg;}}
+      }}
+    }}
+
+    /* Uncaught JS errors — show crash screen if React hasn't mounted yet */
     window.addEventListener('error', function(e){{
-      var msg = (e.message||'unknown') + ' (' + (e.filename||'?') + ':' + (e.lineno||0) + ')';
+      var msg = (e.message||'unknown') + '\\n' + (e.filename||'?') + ':' + (e.lineno||0);
       window.__SC_ERR.push({{type:'error', msg:msg, ts:new Date().toISOString()}});
       console.error('[CS error]', msg);
-      /* Only show crash screen if React hasn't mounted yet (pre-mount fatal) */
-      if(!window.__CS_REACT_MOUNTED){{
-        document.getElementById('cs-loading').style.display='none';
-        document.getElementById('cs-error').style.display='flex';
-      }}
+      if(!window.__CS_REACT_MOUNTED) csShowCrash(msg);
     }});
 
-    /* Unhandled promise rejections (async data fetches, Supabase calls, etc.) */
+    /* Unhandled promise rejections */
     window.addEventListener('unhandledrejection', function(e){{
       var msg = (e.reason && e.reason.message) ? e.reason.message : String(e.reason||'unknown rejection');
       window.__SC_ERR.push({{type:'rejection', msg:msg, ts:new Date().toISOString()}});
       console.error('[CS unhandled rejection]', msg);
-      /* Never show crash screen for async rejections — ErrorBoundary handles render errors */
+      /* Do NOT show crash screen for async rejections post-mount */
+      if(!window.__CS_REACT_MOUNTED) csShowCrash('Unhandled rejection: ' + msg);
     }});
 
-    /* Safety timeout — if React hasn't rendered in 30s show error */
+    /* Safety timeout — 90s for slow mobile connections */
     setTimeout(function(){{
-      var root = document.getElementById('root');
-      if(!root || !root.firstChild){{
-        document.getElementById('cs-loading').style.display='none';
-        document.getElementById('cs-error').style.display='flex';
+      if(!window.__CS_REACT_MOUNTED){{
+        var elapsed = Math.round((Date.now()-window.__CS_LOADING_STARTED)/1000);
+        var errList = window.__SC_ERR.map(function(e){{return e.msg;}}).join('\\n');
+        csShowCrash('Startup timeout after '+elapsed+'s.\\n'+(errList||'No JS errors captured. May be a network issue.'));
       }}
-    }}, 30000);
+    }}, 90000);
   </script>
-  <script type="text/babel" data-presets="react">
-{jsx_content}
-  </script>
+  {app_script_block}
 </body>
 </html>'''
 
-open("index.html", "w").write(html)
-print(f"Done — BUILD: {BUILD_VERSION}")
+open("index.html", "w", encoding="utf-8").write(html)
+mode = "pre-compiled JS" if not USE_BABEL_RUNTIME else "runtime Babel (fallback)"
+print(f"Done — BUILD: {BUILD_VERSION} [{mode}]")
