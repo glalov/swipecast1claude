@@ -14161,6 +14161,599 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
 }
 
 // ═══════════════════════════════════════════
+// ADMIN: CASTING GENERATOR
+// Platform-led casting drafts posted by CastSlate.
+// Drafts appear here for admin review before publishing.
+// ═══════════════════════════════════════════
+
+// ── Generation data: city weights, listing types, copy templates ──
+const ACG = (()=>{
+  const CITIES=[
+    {name:"New York, NY",short:"NYC",w:40},
+    {name:"Los Angeles, CA",short:"LA",w:40},
+    {name:"Chicago, IL",short:"Chicago",w:10},
+    {name:"Boston, MA",short:"Boston",w:10}
+  ];
+  function pickCity(){
+    let r=Math.random()*100;
+    for(const c of CITIES){r-=c.w;if(r<=0)return c;}
+    return CITIES[0];
+  }
+  function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+  function pickN(arr,n){
+    const a=[...arr];const out=[];
+    for(let i=0;i<Math.min(n,a.length);i++){
+      const idx=Math.floor(Math.random()*a.length);
+      out.push(a.splice(idx,1)[0]);
+    }
+    return out;
+  }
+  function expiresAt(months){
+    const d=new Date();d.setMonth(d.getMonth()+months);return d.toISOString();
+  }
+  const POSTED_BY=["CastSlate Talent Team","CastSlate Creator Network","Independent Creator Network"];
+  const UNION="Union and non-union welcome";
+  const PAY_VARIES="Varies by project. Some opportunities may be unpaid, while others may offer stipend, copy, credit, meals, or paid day rates depending on the creator and project.";
+  const PAY_SHOWCASE="No pay. Selected submissions may be featured in CastSlate showcase materials or considered for future creator opportunities.";
+  const PAY_VOICEOVER="Varies. Some opportunities are paid (session fee or buyout); others offer credit only. Rate disclosed per project.";
+  const BASE_REQ="Submit headshot, acting resume (optional), and a brief intro video or reel. Include your current city and availability window.";
+  const TYPES=[
+    {
+      type:"Open Talent Pool",
+      postedBy:"CastSlate Talent Team",
+      title:(c)=>pick([`${c.short} Open Actor Talent Pool`,`General Actor Roster — ${c.short}`,`${c.name} Talent Pool — All Types`]),
+      synopsis:(c)=>`CastSlate is building a roster of ${c.name}-based actors for platform-led casting opportunities, creator projects, and independent productions. Selected actors may be contacted for future self-tape requests, short film opportunities, and commercial-style projects posted through the platform.\n\nThis is a talent pool submission — not an audition for a single confirmed project.`,
+      roles:`Actors ages 18–65, all genders, all ethnicities. Strong performance background in any style — drama, naturalistic, comedy, or experimental — welcome.`,
+      pay:PAY_VARIES,union:UNION,req:BASE_REQ,months:pick([1,2,3])
+    },
+    {
+      type:"Indie Short Film Talent Pool",
+      postedBy:"CastSlate Creator Network",
+      title:(c)=>pick([`${c.short} Indie Short Film Talent Pool`,`Short Film Actor Roster — ${c.short}`,`${c.name} Independent Short Film Pool`]),
+      synopsis:(c)=>`CastSlate is curating a roster of ${c.name}-based actors for upcoming short films, micro-budget productions, and creator-led narrative projects. Accepted actors may be considered for auditions, self-tape requests, and direct invitations as independent filmmakers post opportunities through the platform.`,
+      roles:`Actors ages 18–65, all genders, all ethnicities. Strong naturalistic acting style preferred. Drama, comedy, and character-driven roles. Student and emerging filmmaker projects welcome.`,
+      pay:PAY_VARIES,union:UNION,req:BASE_REQ,months:pick([1,2])
+    },
+    {
+      type:"Self-Tape Showcase",
+      postedBy:"CastSlate Talent Team",
+      title:(c)=>pick([`Self-Tape Showcase — ${c.short}`,`Actor Self-Tape Showcase Submissions`,`${c.short} Self-Tape Performance Showcase`]),
+      synopsis:(c)=>`CastSlate is accepting self-tape submissions from ${c.name}-based actors for an upcoming showcase. Selected tapes may be featured in CastSlate's curated actor showcase, shared with platform casting directors, and used to help connect talent with creator opportunities.\n\nThis is a visibility opportunity — not a specific paid project.`,
+      roles:`Actors of all types, 18–65, any background. Submit a 60–90 second self-tape scene of your choice: monologue, scripted scene, or improvised scenario.`,
+      pay:PAY_SHOWCASE,union:UNION,req:"Submit headshot and a self-tape (60–90 seconds). Scene of your choice — monologue, scripted, or improvised.",months:1
+    },
+    {
+      type:"Actor Profile Review Opportunity",
+      postedBy:"CastSlate Talent Team",
+      title:(c)=>pick([`Actor Profile Review — ${c.short}`,`${c.short} Actor Profile Spotlight`,`Profile Review Opportunity — ${c.short}`]),
+      synopsis:(c)=>`CastSlate's talent team is reviewing ${c.name}-based actor profiles for inclusion in featured talent collections shared with platform casting directors and creators. Actors with complete profiles — headshot, reel, bio, location — may be highlighted in category spotlights.\n\nThis is a profile review, not an audition.`,
+      roles:`Actors of all types, 18–70, all genders, all ethnicities. All experience levels welcome.`,
+      pay:"No pay. Selected actors may be included in CastSlate featured talent emails and collections distributed to casting directors on the platform.",
+      union:UNION,req:"Ensure your CastSlate profile is complete: headshot, bio, location, and reel or intro video.",months:1
+    },
+    {
+      type:"Commercial Talent Pool",
+      postedBy:"CastSlate Creator Network",
+      title:(c)=>pick([`${c.short} Commercial Actor Roster`,`Commercial Talent Pool — ${c.short}`,`${c.name} Commercial-Style Actor Pool`]),
+      synopsis:(c)=>`CastSlate is building a roster of ${c.name}-based actors for commercial-style projects, branded content, and product-focused creator productions. Accepted actors may be considered for spec commercials, social media campaigns, and day-rate commercial bookings.\n\nOpportunities range from paid day-rate projects to low-budget spec work depending on creator scope.`,
+      roles:`Actors ages 18–60, all genders, all ethnicities. Friendly, camera-confident presence. Prior commercial or on-camera experience is a plus but not required.`,
+      pay:PAY_VARIES,union:UNION,req:"Submit headshot, brief intro video or reel, and shirt size (for wardrobe reference).",months:pick([2,3])
+    },
+    {
+      type:"Music Video Talent Pool",
+      postedBy:"CastSlate Creator Network",
+      title:(c)=>pick([`Music Video Performer Roster — ${c.short}`,`${c.short} Music Video Talent Pool`,`${c.name} Music Video Actor Pool`]),
+      synopsis:(c)=>`CastSlate is building a roster of ${c.name}-based performers and actors for music video productions, visual album segments, and creator-led music content. Accepted performers may be considered for featured roles, ensemble scenes, and concept-driven short-form video projects.`,
+      roles:`Performers and actors ages 18–45, all genders, all ethnicities. Strong physical presence and movement comfort preferred. Dance or movement background is a plus.`,
+      pay:PAY_VARIES,union:UNION,req:"Submit headshot or digital photo, short intro or movement reel, and current city.",months:pick([1,2])
+    },
+    {
+      type:"Podcast Guest / On-Camera Segment Pool",
+      postedBy:"CastSlate Creator Network",
+      title:(c)=>pick([`On-Camera Podcast Guest Pool — ${c.short}`,`${c.short} Podcast & Interview Talent Roster`,`Creator Podcast Guest Pool — ${c.name}`]),
+      synopsis:(c)=>`CastSlate is curating a roster of ${c.name}-based actors and creatives for on-camera podcast appearances, interview segments, and creator-produced long-form content. Selected guests may be invited to appear on creator shows distributed through YouTube, Instagram, or podcast networks.\n\nNo performance experience required — thoughtful, conversational presence valued.`,
+      roles:`Actors and creatives ages 18–65, all genders. Must be comfortable speaking on camera, discussing craft, and engaging in unscripted conversation.`,
+      pay:PAY_VARIES,union:"All welcome",req:"Submit headshot, brief bio, and a short paragraph about your background and interests.",months:pick([1,2])
+    },
+    {
+      type:"Experimental Film Roster",
+      postedBy:"CastSlate Creator Network",
+      title:(c)=>pick([`Experimental Film Actor Roster — ${c.short}`,`${c.short} Experimental & Avant-Garde Film Pool`,`Experimental Performance Roster — ${c.name}`]),
+      synopsis:(c)=>`CastSlate is building a roster of ${c.name}-based actors for experimental films, visual art projects, and avant-garde productions. Accepted actors may be considered for non-traditional narratives, unconventional character work, and collaboration with independent and emerging filmmakers.`,
+      roles:`Actors ages 18–65, all genders, all backgrounds. Comfort with physical, abstract, or non-verbal performance welcomed. Prior experimental film experience preferred but not required.`,
+      pay:PAY_VARIES,union:UNION,req:BASE_REQ,months:pick([2,3])
+    },
+    {
+      type:"Horror Short Talent Pool",
+      postedBy:"CastSlate Creator Network",
+      title:(c)=>pick([`Horror Short Film Talent Pool — ${c.short}`,`${c.short} Horror Actor Roster`,`${c.name} Horror Short Film Pool`]),
+      synopsis:(c)=>`CastSlate is curating a roster of ${c.name}-based actors for upcoming horror short films, psychological thrillers, and genre projects posted through the platform. Accepted actors may be contacted for auditions and self-tape requests by independent horror filmmakers.\n\nProjects range from micro-budget student films to funded short productions.`,
+      roles:`Actors ages 18–55, all genders, all ethnicities. Comfort with intense dramatic material, physical performance, and genre-specific direction preferred.`,
+      pay:PAY_VARIES,union:UNION,req:"Submit headshot, acting resume (optional), and a reel or 60-second dramatic self-tape.",months:pick([1,2])
+    },
+    {
+      type:"Comedy Sketch Talent Pool",
+      postedBy:"CastSlate Creator Network",
+      title:(c)=>pick([`Comedy Sketch Actor Pool — ${c.short}`,`${c.short} Sketch Comedy Talent Roster`,`${c.name} Comedy Sketch Performance Pool`]),
+      synopsis:(c)=>`CastSlate is building a roster of ${c.name}-based comedy actors for sketch productions, short-form comedic content, and creator-produced comedy series. Accepted actors may be contacted for self-tapes and day-of shoots by independent comedy producers using the platform.`,
+      roles:`Comedy performers and actors, ages 18–60, all genders, all backgrounds. Improv or sketch comedy background preferred. Strong physical comedy and character work welcome.`,
+      pay:PAY_VARIES,union:UNION,req:"Submit headshot and a 60-second comedic self-tape or clip from prior comedy work.",months:pick([1,2])
+    },
+    {
+      type:"Theater Workshop Submissions",
+      postedBy:"CastSlate Talent Team",
+      title:(c)=>pick([`${c.short} Theater Workshop Submissions`,`Stage Actor Workshop Pool — ${c.short}`,`${c.name} Theater & Workshop Roster`]),
+      synopsis:(c)=>`CastSlate is accepting submissions from ${c.name}-based stage actors for theater workshops, new play readings, and performance development projects facilitated through the platform. Selected actors may be invited to participate in workshop productions and developmental readings.\n\nThese are workshop opportunities, not full productions.`,
+      roles:`Stage actors ages 18–70, all genders, all ethnicities. Prior stage experience preferred. Strong text work, physical presence, and collaboration skills valued.`,
+      pay:"Stipend or rehearsal pay may be offered for some workshops. Others are unpaid developmental opportunities.",
+      union:UNION,req:"Submit headshot, theater resume, and a monologue video (60–120 seconds).",months:pick([2,3])
+    },
+    {
+      type:"Voiceover Roster",
+      postedBy:"CastSlate Talent Team",
+      title:(c)=>pick([`${c.short} Voiceover Actor Roster`,`Voiceover Talent Pool — ${c.short}`,`${c.name} VO & Narration Talent Pool`]),
+      synopsis:(c)=>`CastSlate is building a voiceover and narration roster of ${c.name}-based voice actors for commercial, documentary, animation, and audiobook projects posted through the platform. Accepted talent may be contacted for paid session work, spec projects, and creator-produced audio content.`,
+      roles:`Voice actors and narrators, ages 18–70, all genders. Range and character voice variety preferred. Home studio capability (quiet space, basic microphone) required.`,
+      pay:PAY_VOICEOVER,union:UNION,req:"Submit a voiceover demo reel (60–90 seconds minimum). Include headshot and brief bio.",months:pick([2,3])
+    },
+    {
+      type:"Creator Collaboration Pool",
+      postedBy:"Independent Creator Network",
+      title:(c)=>pick([`Creator Collaboration Pool — ${c.short}`,`${c.short} Indie Creator Actor Pool`,`${c.name} Creator Collaboration Roster`]),
+      synopsis:(c)=>`CastSlate is curating a roster of ${c.name}-based actors open to collaborating directly with independent creators, emerging filmmakers, and content producers. Accepted actors may be connected with creators for collaborative short films, micro-budget productions, and platform-based projects.\n\nCreators reach out directly — projects vary widely in scope, style, and compensation.`,
+      roles:`Actors of all types, 18–65, all genders, all ethnicities. Open to low-budget and spec work in exchange for quality footage, copy, and credit.`,
+      pay:PAY_VARIES,union:"Non-union and early-career union members welcome",req:"Submit headshot, reel or self-tape clip, and a brief statement about the types of projects you want to collaborate on.",months:pick([1,2,3])
+    }
+  ];
+  function generateOne(adminUserId){
+    const city=pickCity();
+    const tpl=pick(TYPES);
+    const exMonths=tpl.months;
+    const titleStr=tpl.title(city);
+    return {
+      cd_id:adminUserId,
+      title:titleStr,
+      type:tpl.type,
+      prod:tpl.postedBy,
+      posted_by_label:tpl.postedBy,
+      synopsis:tpl.synopsis(city),
+      location:city.name,
+      pay:tpl.pay,
+      union_status:tpl.union,
+      status:"draft",
+      published:false,
+      is_admin_created:true,
+      submission_requirements:tpl.req,
+      expires_at:expiresAt(exMonths),
+      // roles inserted separately after casting is created
+      _roleDesc:tpl.roles,
+      _roleType:tpl.type
+    };
+  }
+  function generateBatch(adminUserId){
+    const count=3+Math.floor(Math.random()*2); // 3 or 4
+    const used=new Set();
+    const out=[];
+    let attempts=0;
+    while(out.length<count&&attempts<30){
+      attempts++;
+      const item=generateOne(adminUserId);
+      const key=item.type+"|"+item.location;
+      if(!used.has(key)){used.add(key);out.push(item);}
+    }
+    return out;
+  }
+  return{generateBatch};
+})();
+
+function AdminCastingGenerator({session}){
+  const adminId=session?.user?.id;
+  const [genEnabled,setGenEnabled]=useState(false);
+  const [lastRun,setLastRun]=useState(null);
+  const [listings,setListings]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [generating,setGenerating]=useState(false);
+  const [togglingEnabled,setTogglingEnabled]=useState(false);
+  const [msg,setMsg]=useState("");
+  const [statusFilter,setStatusFilter]=useState("all");
+  const [sourceFilter,setSourceFilter]=useState("all");
+  const [editDraft,setEditDraft]=useState(null);
+  const [busy,setBusy]=useState(null);
+
+  const showMsg=(m,dur=4000)=>{setMsg(m);if(dur)setTimeout(()=>setMsg(m2=>m2===m?"":m2),dur);};
+
+  const loadAll=useCallback(async()=>{
+    setLoading(true);
+    const [{data:ss},{data:cs,error:ce}]=await Promise.all([
+      window.sb.from("site_settings").select("casting_generator_enabled,casting_generator_last_run").eq("id",1).maybeSingle(),
+      window.sb.from("castings").select("id,title,type,prod,posted_by_label,location,pay,union_status,status,published,is_admin_created,expires_at,submission_requirements,synopsis,created_at,updated_at,deadline,featured").order("created_at",{ascending:false}).limit(2000)
+    ]);
+    if(ss){setGenEnabled(!!ss.casting_generator_enabled);setLastRun(ss.casting_generator_last_run);}
+    if(ce)showMsg("Failed to load castings: "+ce.message);
+    setListings(cs||[]);
+    setLoading(false);
+  },[]);
+
+  useEffect(()=>{loadAll();},[loadAll]);
+
+  const toggleGenerator=async(val)=>{
+    setTogglingEnabled(true);
+    const {error}=await window.sb.rpc("admin_set_casting_generator_enabled",{p_enabled:val});
+    setTogglingEnabled(false);
+    if(error){showMsg("Failed: "+error.message);return;}
+    setGenEnabled(val);
+    showMsg(val?"Generator enabled. Drafts will be generated on your next visit.":"Generator stopped. Existing published listings remain active.");
+  };
+
+  const generateDrafts=async()=>{
+    if(!adminId){showMsg("No admin session — reload and try again.");return;}
+    setGenerating(true);setMsg("");
+    try{
+      const batch=ACG.generateBatch(adminId);
+      let ok=0;let fail=0;
+      for(const item of batch){
+        const roleDesc=item._roleDesc;
+        const roleType=item._roleType;
+        delete item._roleDesc;delete item._roleType;
+        const {data:cData,error:cErr}=await window.sb.from("castings").insert(item).select("id").single();
+        if(cErr){fail++;console.warn("[ACG] insert failed",cErr);continue;}
+        // Insert a single role representing the general talent pool spec
+        await window.sb.from("roles").insert({
+          casting_id:cData.id,
+          name:roleType+" Submissions",
+          description:roleDesc,
+          gender:"All genders",
+          age_range:"18–65",
+          ethnicity:"All ethnicities"
+        });
+        ok++;
+      }
+      // Record today's run date
+      await window.sb.rpc("admin_record_casting_generator_run");
+      showMsg(`Generated ${ok} draft listing${ok!==1?"s":""}.${fail?` (${fail} failed)`:""}`,6000);
+      loadAll();
+    }catch(e){showMsg("Generation error: "+e.message);}
+    setGenerating(false);
+  };
+
+  const publishListing=async(c)=>{
+    const key=c.id+":pub";setBusy(key);
+    const {error}=await window.sb.from("castings").update({status:"open",published:true,updated_at:new Date().toISOString()}).eq("id",c.id);
+    setBusy(null);
+    if(error){showMsg("Publish failed: "+error.message);return;}
+    showMsg("Listing published and live.");loadAll();
+  };
+
+  const archiveListing=async(c)=>{
+    const key=c.id+":archive";setBusy(key);
+    const {error}=await window.sb.from("castings").update({status:"closed",published:false,updated_at:new Date().toISOString()}).eq("id",c.id);
+    setBusy(null);
+    if(error){showMsg("Archive failed: "+error.message);return;}
+    showMsg("Listing archived.");loadAll();
+  };
+
+  const deleteListing=async(c)=>{
+    if(!confirm(`DELETE "${c.title}"?\n\nThis permanently removes the listing. This cannot be undone.`))return;
+    const key=c.id+":del";setBusy(key);
+    const {error}=await window.sb.from("castings").delete().eq("id",c.id);
+    setBusy(null);
+    if(error){showMsg("Delete failed: "+error.message);return;}
+    showMsg("Listing deleted.");loadAll();
+  };
+
+  const regenerateListing=async(c)=>{
+    if(!confirm(`Regenerate "${c.title}"?\n\nThis will replace the title, description, roles, location, and compensation with a freshly generated draft. Your manual edits will be lost.`))return;
+    if(!adminId)return;
+    const key=c.id+":regen";setBusy(key);
+    const batch=ACG.generateBatch(adminId);
+    const fresh=batch[0];
+    const roleDesc=fresh._roleDesc;const roleType=fresh._roleType;
+    delete fresh._roleDesc;delete fresh._roleType;
+    const {error}=await window.sb.from("castings").update({
+      title:fresh.title,type:fresh.type,prod:fresh.prod,posted_by_label:fresh.posted_by_label,
+      synopsis:fresh.synopsis,location:fresh.location,pay:fresh.pay,union_status:fresh.union_status,
+      submission_requirements:fresh.submission_requirements,expires_at:fresh.expires_at,
+      status:"draft",published:false,updated_at:new Date().toISOString()
+    }).eq("id",c.id);
+    if(!error){
+      // Replace roles
+      await window.sb.from("roles").delete().eq("casting_id",c.id);
+      await window.sb.from("roles").insert({casting_id:c.id,name:roleType+" Submissions",description:roleDesc,gender:"All genders",age_range:"18–65",ethnicity:"All ethnicities"});
+    }
+    setBusy(null);
+    if(error){showMsg("Regenerate failed: "+error.message);return;}
+    showMsg("Listing regenerated.");loadAll();
+  };
+
+  const saveDraft=async(updated)=>{
+    const {error}=await window.sb.from("castings").update({
+      title:updated.title,type:updated.type,prod:updated.posted_by_label,posted_by_label:updated.posted_by_label,
+      synopsis:updated.synopsis,location:updated.location,pay:updated.pay,union_status:updated.union_status,
+      submission_requirements:updated.submission_requirements,expires_at:updated.expires_at,
+      updated_at:new Date().toISOString()
+    }).eq("id",updated.id);
+    if(error){showMsg("Save failed: "+error.message);return;}
+    showMsg("Draft saved.");setEditDraft(null);loadAll();
+  };
+
+  // Derived status: treat open+expires_at<now as "expired"
+  const effectiveStatus=(c)=>{
+    if(c.expires_at&&new Date(c.expires_at)<new Date()&&c.status==="open")return"expired";
+    return c.status;
+  };
+
+  const today=new Date().toISOString().slice(0,10);
+  const todayGenerated=lastRun===today;
+
+  const filtered=listings.filter(c=>{
+    const src=c.is_admin_created?"admin":"creator";
+    if(sourceFilter!=="all"&&src!==sourceFilter)return false;
+    const es=effectiveStatus(c);
+    if(statusFilter==="active")return es==="open";
+    if(statusFilter==="draft")return es==="draft"||es==="pending_review";
+    if(statusFilter==="expired")return es==="expired";
+    if(statusFilter==="published")return es==="open";
+    return true;
+  });
+
+  const draftCount=listings.filter(c=>c.is_admin_created&&effectiveStatus(c)==="draft").length;
+  const activeCount=listings.filter(c=>effectiveStatus(c)==="open").length;
+  const expiredCount=listings.filter(c=>effectiveStatus(c)==="expired").length;
+  const adminCount=listings.filter(c=>c.is_admin_created).length;
+
+  const STATUS_COLOR={open:"#1d7b44",draft:"#c88900",closed:"var(--t3)",archived:"var(--t3)",pending_review:"#c88900",expired:"#c0392b"};
+  const STATUS_LABEL={open:"ACTIVE",draft:"DRAFT",closed:"CLOSED",archived:"ARCHIVED",pending_review:"PENDING",expired:"EXPIRED"};
+
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Admin Casting Generator</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Generate platform-led casting opportunities posted by CastSlate. Drafts appear here for review before going live. Nothing auto-publishes.</p>
+
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,borderLeft:"3px solid var(--acc)"}}>{msg}</div>}
+
+    {/* Generator controls card */}
+    <div className="card" style={{padding:20,marginBottom:20}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
+        <div>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:2}}>Admin Casting Generator</div>
+          <div style={{fontSize:12,color:"var(--t3)"}}>
+            {genEnabled
+              ?(<span style={{color:"#1d7b44",fontWeight:600}}>● ON — Drafts can be generated and will appear here for review.</span>)
+              :(<span style={{color:"#c0392b",fontWeight:600}}>● OFF — No new drafts will be generated.</span>)}
+          </div>
+          {lastRun&&<div style={{fontSize:11,color:"var(--t3)",marginTop:3}}>Last generated: {lastRun}</div>}
+        </div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+          <button
+            className="btn-s btn-sm"
+            disabled={togglingEnabled}
+            onClick={()=>toggleGenerator(!genEnabled)}
+            style={{fontWeight:700,minWidth:80}}
+          >{togglingEnabled?"…":genEnabled?"Turn OFF":"Turn ON"}</button>
+          {genEnabled&&<button
+            className="btn-s btn-sm"
+            style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}}
+            disabled={togglingEnabled}
+            onClick={()=>toggleGenerator(false)}
+          >Stop Generator</button>}
+        </div>
+      </div>
+
+      <div style={{marginTop:16,paddingTop:16,borderTop:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+        <div>
+          <div style={{fontWeight:600,fontSize:13,marginBottom:2}}>Generate Drafts Now</div>
+          <div style={{fontSize:12,color:"var(--t3)"}}>
+            {todayGenerated
+              ?"Today's drafts have already been generated. You can generate more if needed."
+              :"Today's drafts have not been generated yet."}
+            {" "}Generates 3–4 varied draft listings for review.
+          </div>
+        </div>
+        <button
+          className="btn-p"
+          disabled={generating||!adminId}
+          onClick={generateDrafts}
+          style={{whiteSpace:"nowrap"}}
+        >{generating?"Generating…":"Generate Drafts Now"}</button>
+      </div>
+
+      {/* Stats row */}
+      <div style={{marginTop:16,paddingTop:16,borderTop:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}}>
+        {[
+          {label:"Drafts pending",val:draftCount,color:"#c88900"},
+          {label:"Active / live",val:activeCount,color:"#1d7b44"},
+          {label:"Expired",val:expiredCount,color:"#c0392b"},
+          {label:"Admin-created",val:adminCount,color:"var(--acc)"}
+        ].map(s=>(
+          <div key={s.label} style={{textAlign:"center",background:"var(--bg)",borderRadius:10,padding:"10px 8px"}}>
+            <div style={{fontSize:22,fontWeight:800,color:s.color}}>{s.val}</div>
+            <div style={{fontSize:11,color:"var(--t3)",marginTop:2}}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* ── Filters ── */}
+    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14,alignItems:"center",justifyContent:"space-between"}}>
+      <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+        {[["all","All"],["draft","Drafts"],["active","Active"],["expired","Expired"]].map(([v,l])=>(
+          <button key={v} onClick={()=>setStatusFilter(v)}
+            style={{padding:"7px 13px",borderRadius:20,border:"1px solid var(--bdr)",background:statusFilter===v?"var(--acc)":"transparent",color:statusFilter===v?"#fff":"var(--t2)",fontSize:12,fontWeight:statusFilter===v?700:500,cursor:"pointer",fontFamily:"inherit"}}>
+            {l}
+          </button>
+        ))}
+      </div>
+      <div style={{display:"flex",gap:4}}>
+        {[["all","All Sources"],["admin","Admin-created"],["creator","Creator-posted"]].map(([v,l])=>(
+          <button key={v} onClick={()=>setSourceFilter(v)}
+            style={{padding:"7px 13px",borderRadius:20,border:"1px solid var(--bdr)",background:sourceFilter===v?"var(--s2)":"transparent",color:sourceFilter===v?"var(--t1)":"var(--t3)",fontSize:12,fontWeight:sourceFilter===v?600:400,cursor:"pointer",fontFamily:"inherit"}}>
+            {l}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    {/* ── Listing count ── */}
+    <p style={{color:"var(--t3)",fontSize:12,marginBottom:10}}>{filtered.length} of {listings.length} listings</p>
+
+    {/* ── Listings ── */}
+    {loading?<CastSlateLoader size="inline" text="Loading listings…"/>:
+      <div className="card" style={{padding:0,overflow:"hidden"}}>
+        {filtered.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No listings match the current filters.</div>}
+        {filtered.map(c=>{
+          const es=effectiveStatus(c);
+          const sc=STATUS_COLOR[es]||"var(--t2)";
+          const sl=STATUS_LABEL[es]||es.toUpperCase();
+          const isDraft=es==="draft"||es==="pending_review";
+          const isExpired=es==="expired";
+          const isActive=es==="open";
+          const expDate=c.expires_at?new Date(c.expires_at).toLocaleDateString():null;
+          return(<div key={c.id} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"start",borderLeft:isDraft?"3px solid #c88900":isExpired?"3px solid #c0392b":isActive?"3px solid #1d7b44":"3px solid transparent",opacity:isExpired||es==="closed"?0.7:1}}>
+            <div>
+              <div style={{fontWeight:600,fontSize:14,marginBottom:3}}>
+                {c.title}
+                {c.is_admin_created&&<span style={{marginLeft:6,fontSize:9,fontWeight:700,background:"rgba(var(--acc-rgb,100,149,237),0.15)",color:"var(--acc)",borderRadius:4,padding:"1px 5px"}}>PLATFORM</span>}
+                <span style={{marginLeft:6,fontSize:10,fontWeight:700,color:sc,background:sc+"1a",borderRadius:99,padding:"2px 7px"}}>{sl}</span>
+              </div>
+              <div style={{fontSize:12,color:"var(--t3)",lineHeight:1.6}}>
+                <span>{c.type||"—"}</span>
+                <span style={{margin:"0 5px"}}>·</span>
+                <span>{c.location||"—"}</span>
+                <span style={{margin:"0 5px"}}>·</span>
+                <span>Posted by: <strong style={{color:"var(--t2)"}}>{c.posted_by_label||c.prod||"—"}</strong></span>
+                {expDate&&<><span style={{margin:"0 5px"}}>·</span><span style={{color:isExpired?"#c0392b":"var(--t3)"}}>Expires {expDate}</span></>}
+                <span style={{margin:"0 5px"}}>·</span>
+                <span>Created {new Date(c.created_at).toLocaleDateString()}</span>
+              </div>
+              {c.pay&&<div style={{fontSize:12,color:"var(--t2)",marginTop:2,maxWidth:520,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}><em>{c.pay.slice(0,100)}{c.pay.length>100?"…":""}</em></div>}
+            </div>
+            <div style={{display:"flex",gap:5,flexWrap:"wrap",justifyContent:"flex-end",minWidth:200}}>
+              {isDraft&&<>
+                <button className="btn-s btn-sm" onClick={()=>setEditDraft(c)}>Edit</button>
+                <button className="btn-s btn-sm" style={{color:"#fff",background:"#1d7b44",borderColor:"#1d7b44"}} disabled={busy===c.id+":pub"} onClick={()=>publishListing(c)}>{busy===c.id+":pub"?"…":"✓ Publish"}</button>
+                <button className="btn-s btn-sm" disabled={busy===c.id+":regen"} onClick={()=>regenerateListing(c)}>{busy===c.id+":regen"?"…":"↺ Regen"}</button>
+                <button className="btn-s btn-sm" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} disabled={busy===c.id+":del"} onClick={()=>deleteListing(c)}>{busy===c.id+":del"?"…":"Delete"}</button>
+              </>}
+              {isActive&&<>
+                <button className="btn-s btn-sm" onClick={()=>setEditDraft(c)}>Edit</button>
+                <button className="btn-s btn-sm" disabled={busy===c.id+":archive"} onClick={()=>archiveListing(c)}>{busy===c.id+":archive"?"…":"Archive"}</button>
+                <button className="btn-s btn-sm" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} disabled={busy===c.id+":del"} onClick={()=>deleteListing(c)}>{busy===c.id+":del"?"…":"Delete"}</button>
+              </>}
+              {(isExpired||es==="closed"||es==="archived")&&<>
+                <button className="btn-s btn-sm" disabled={busy===c.id+":del"} onClick={()=>deleteListing(c)} style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}}>{busy===c.id+":del"?"…":"Delete"}</button>
+              </>}
+            </div>
+          </div>);
+        })}
+      </div>
+    }
+
+    {/* ── Edit / Review Modal ── */}
+    {editDraft&&<AdminCastingEditModal listing={editDraft} onClose={()=>setEditDraft(null)} onSave={saveDraft} onPublish={publishListing}/>}
+  </>);
+}
+
+function AdminCastingEditModal({listing,onClose,onSave,onPublish}){
+  const [form,setForm]=useState({
+    id:listing.id,
+    title:listing.title||"",
+    type:listing.type||"",
+    posted_by_label:listing.posted_by_label||listing.prod||"CastSlate Talent Team",
+    synopsis:listing.synopsis||"",
+    location:listing.location||"",
+    pay:listing.pay||"",
+    union_status:listing.union_status||"",
+    submission_requirements:listing.submission_requirements||"",
+    expires_at:listing.expires_at?new Date(listing.expires_at).toISOString().slice(0,10):"",
+    status:listing.status||"draft"
+  });
+  const [busy,setBusy]=useState(false);
+  const set=(k,v)=>setForm(f=>({...f,[k]:v}));
+  const handleSave=async()=>{
+    setBusy(true);
+    await onSave({...form,expires_at:form.expires_at?new Date(form.expires_at).toISOString():null});
+    setBusy(false);
+  };
+  const handlePublish=async()=>{
+    setBusy(true);
+    await onSave({...form,expires_at:form.expires_at?new Date(form.expires_at).toISOString():null});
+    await onPublish({id:form.id});
+    setBusy(false);
+  };
+  const isDraft=listing.status==="draft"||listing.status==="pending_review";
+  return(<div className="modal-overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:680,maxHeight:"92vh",overflowY:"auto"}}>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18}}>
+      <h2 style={{marginBottom:0,fontSize:20}}>{isDraft?"Review & Edit Draft":"Edit Listing"}</h2>
+      <button onClick={onClose} style={{background:"none",border:"none",fontSize:18,cursor:"pointer",color:"var(--t3)",fontFamily:"inherit"}}>✕</button>
+    </div>
+
+    <div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:12,color:"var(--t2)",marginBottom:16,lineHeight:1.6}}>
+      <strong style={{color:"var(--t1)"}}>Platform listing.</strong> This was generated by the Admin Casting Generator. Review all fields carefully before publishing. Do not claim a specific third-party production exists unless you have confirmed it manually.
+    </div>
+
+    <div className="form-group"><label className="label">Title</label>
+      <input className="input" value={form.title} onChange={e=>set("title",e.target.value)}/></div>
+
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+      <div className="form-group"><label className="label">Category / Type</label>
+        <select className="select" value={form.type} onChange={e=>set("type",e.target.value)}>
+          {["Open Talent Pool","Indie Short Film Talent Pool","Self-Tape Showcase","Actor Profile Review Opportunity","Commercial Talent Pool","Music Video Talent Pool","Podcast Guest / On-Camera Segment Pool","Experimental Film Roster","Horror Short Talent Pool","Comedy Sketch Talent Pool","Theater Workshop Submissions","Voiceover Roster","Creator Collaboration Pool"].map(t=><option key={t} value={t}>{t}</option>)}
+        </select></div>
+
+      <div className="form-group"><label className="label">Posted By (public)</label>
+        <select className="select" value={form.posted_by_label} onChange={e=>set("posted_by_label",e.target.value)}>
+          <option value="CastSlate Talent Team">CastSlate Talent Team</option>
+          <option value="CastSlate Creator Network">CastSlate Creator Network</option>
+          <option value="Independent Creator Network">Independent Creator Network</option>
+        </select></div>
+    </div>
+
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+      <div className="form-group"><label className="label">City / Location</label>
+        <select className="select" value={form.location} onChange={e=>set("location",e.target.value)}>
+          <option value="New York, NY">New York, NY</option>
+          <option value="Los Angeles, CA">Los Angeles, CA</option>
+          <option value="Chicago, IL">Chicago, IL</option>
+          <option value="Boston, MA">Boston, MA</option>
+          <option value="">(other)</option>
+        </select>
+        {!["New York, NY","Los Angeles, CA","Chicago, IL","Boston, MA",""].includes(form.location)&&
+          <input className="input" style={{marginTop:6}} value={form.location} onChange={e=>set("location",e.target.value)} placeholder="Custom location"/>}</div>
+
+      <div className="form-group"><label className="label">Union Status</label>
+        <input className="input" value={form.union_status} onChange={e=>set("union_status",e.target.value)}/></div>
+    </div>
+
+    <div className="form-group"><label className="label">Description</label>
+      <textarea className="textarea" rows={5} value={form.synopsis} onChange={e=>set("synopsis",e.target.value)} style={{resize:"vertical"}}/></div>
+
+    <div className="form-group"><label className="label">Compensation</label>
+      <textarea className="textarea" rows={3} value={form.pay} onChange={e=>set("pay",e.target.value)} style={{resize:"vertical"}}/>
+      <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Use honest language. Do not promise payment unless it is confirmed.</p></div>
+
+    <div className="form-group"><label className="label">Submission Requirements</label>
+      <textarea className="textarea" rows={3} value={form.submission_requirements} onChange={e=>set("submission_requirements",e.target.value)} style={{resize:"vertical"}}/></div>
+
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+      <div className="form-group"><label className="label">Expiration Date</label>
+        <input className="input" type="date" value={form.expires_at} onChange={e=>set("expires_at",e.target.value)}/>
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Leave blank or set 1–3 months out. Expired listings are hidden from active castings.</p></div>
+
+      <div className="form-group"><label className="label">Status</label>
+        <div style={{padding:"10px 14px",background:"var(--s2)",borderRadius:8,fontSize:13,color:"var(--t2)"}}>
+          Current: <strong style={{color:"var(--t1)"}}>{listing.status==="open"?"Active / Live":"Draft"}</strong>
+          {listing.status==="draft"&&<div style={{fontSize:11,marginTop:4}}>Use "Publish" below to make this listing live.</div>}
+        </div></div>
+    </div>
+
+    <div style={{display:"flex",gap:10,marginTop:20,paddingTop:16,borderTop:"1px solid var(--bdr)",flexWrap:"wrap"}}>
+      {isDraft&&<button className="btn-p" style={{background:"#1d7b44",borderColor:"#1d7b44"}} disabled={busy} onClick={handlePublish}>{busy?"…":"Save & Publish"}</button>}
+      <button className="btn-s" disabled={busy} onClick={handleSave}>{busy?"Saving…":"Save Draft"}</button>
+      <button className="btn-s" style={{marginLeft:"auto"}} onClick={onClose}>Cancel</button>
+    </div>
+  </div></div>);
+}
+
+// ═══════════════════════════════════════════
 // ═══════════════════════════════════════════
 // ADMIN PANEL — sidebar-navigated, RPC-backed, audit-logged
 // Full oversight. All writes go through SECURITY DEFINER RPCs on the DB side —
@@ -14218,6 +14811,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       <AdminNavLink current={section} target="errors" label="Error log" onClick={goToSection}/>
       <AdminNavLink current={section} target="audit" label="Audit log" onClick={goToSection}/>
       <AdminNavLink current={section} target="settings" label="Site settings" onClick={goToSection}/>
+      {isSuperAdmin&&<AdminNavLink current={section} target="casting-generator" label="Casting Generator" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="legal-pages" label="Legal Pages" onClick={goToSection}/>}
       {/* Direct jump to the CD dashboard — admins inherit CD capabilities, so they post + review
           submissions from there using the exact same interface as regular casting directors. */}
@@ -14242,6 +14836,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="errors"&&<AdminErrors/>}
       {section==="audit"&&<AdminAudit/>}
       {section==="settings"&&<AdminSettings/>}
+      {section==="casting-generator"&&isSuperAdmin&&<AdminCastingGenerator session={session}/>}
       {section==="legal-pages"&&isSuperAdmin&&<AdminLegalPages/>}
       <div style={{marginTop:40}}><Footer onNavigate={onNavigate}/></div>
     </div>

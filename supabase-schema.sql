@@ -1261,3 +1261,59 @@ begin
 end; $$;
 
 grant execute on function public.admin_upsert_legal_page(text, text, text) to authenticated;
+
+-- ════════════════════════════════════════════════════════════════════
+-- MIGRATION: admin_casting_generator
+-- Adds admin-created casting support: is_admin_created flag, expiry,
+-- posted_by_label, submission_requirements, and generator settings.
+-- ════════════════════════════════════════════════════════════════════
+
+-- Extend castings table with admin-creation metadata
+alter table public.castings
+  add column if not exists is_admin_created       boolean      not null default false,
+  add column if not exists expires_at             timestamptz,
+  add column if not exists posted_by_label        text,
+  add column if not exists submission_requirements text;
+
+create index if not exists castings_is_admin_created_idx on public.castings(is_admin_created);
+create index if not exists castings_expires_at_idx       on public.castings(expires_at);
+
+-- Extend site_settings with generator config
+alter table public.site_settings
+  add column if not exists casting_generator_enabled  boolean not null default false,
+  add column if not exists casting_generator_last_run date;
+
+-- Also extend the status check to include pending_review (already used in the app)
+alter table public.castings drop constraint if exists castings_status_check;
+alter table public.castings add constraint castings_status_check
+  check (status in ('draft','open','closed','archived','pending_review'));
+
+-- RPC: toggle generator on/off
+create or replace function public.admin_set_casting_generator_enabled(p_enabled boolean)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then
+    raise exception 'not authorized' using errcode = '42501';
+  end if;
+  update public.site_settings
+    set casting_generator_enabled = p_enabled, updated_at = now()
+  where id = 1;
+  perform public._audit(
+    'set_casting_generator_enabled','site_settings','1',null,
+    jsonb_build_object('casting_generator_enabled',p_enabled),null
+  );
+end; $$;
+grant execute on function public.admin_set_casting_generator_enabled(boolean) to authenticated;
+
+-- RPC: record that drafts were generated (stamps today's date)
+create or replace function public.admin_record_casting_generator_run()
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then
+    raise exception 'not authorized' using errcode = '42501';
+  end if;
+  update public.site_settings
+    set casting_generator_last_run = current_date, updated_at = now()
+  where id = 1;
+end; $$;
+grant execute on function public.admin_record_casting_generator_run() to authenticated;
