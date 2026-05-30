@@ -93,6 +93,7 @@ const TRANSLATIONS = {
     'footer.resources':'Resources','footer.successStories':'Success Stories',
     'footer.postCasting':'Post a Casting','footer.pricing':'Pricing',
     'footer.payTalent':'Pay Talent',
+    'footer.actorToolkit':'Actor Toolkit',
     'footer.forStudios':'For Studios','footer.apiAccess':'API Access',
     'footer.about':'About','footer.blog':'Blog','footer.careers':'Careers','footer.contact':'Contact',
     'footer.faq':'FAQ','footer.helpCenter':'Help Center','footer.terms':'Terms of Use',
@@ -336,6 +337,7 @@ const TRANSLATIONS = {
     'footer.resources':'Recursos','footer.successStories':'Historias de éxito',
     'footer.postCasting':'Publicar convocatoria','footer.pricing':'Precios',
     'footer.payTalent':'Pagar Talento',
+    'footer.actorToolkit':'Kit del Actor',
     'footer.forStudios':'Para estudios','footer.apiAccess':'Acceso API',
     'footer.about':'Acerca de','footer.blog':'Blog','footer.careers':'Empleos','footer.contact':'Contacto',
     'footer.faq':'Preguntas frecuentes','footer.helpCenter':'Centro de ayuda','footer.terms':'Términos de uso',
@@ -2495,6 +2497,7 @@ function Footer({onNavigate,spacerBg}){
             <h4 className="site-footer-heading">{t('footer.talent')}</h4>
             <L to="register-talent">{t('footer.createProfile')}</L>
             <L to="search">{t('footer.browse')}</L>
+            <L to="actor-toolkit">{t('footer.actorToolkit')}</L>
             <L to="classes">{t('footer.classes')}</L>
             <L to="resources">{t('footer.resources')}</L>
             <L to="success-stories">{t('footer.successStories')}</L>
@@ -4514,6 +4517,374 @@ function PayTalentPage({onNavigate}){
             <button className="btn-s" style={{fontSize:15,padding:"14px 28px"}} onClick={()=>onNavigate("register-cd")}>Post a Casting</button>
           </div>
           <div style={{display:"flex",justifyContent:"center"}}><StripeConnectBadge/></div>
+        </div>
+      </section>
+
+      <Footer onNavigate={onNavigate}/>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════
+// PAGE: ACTOR TOOLKIT
+// ═══════════════════════════════════════════
+function ActorToolkitPage({onNavigate}){
+  const selfTapeCards=[
+    {n:1,icon:"🎥",title:"Framing",desc:"Use a medium close-up unless the casting instructions say otherwise. Keep your eyes visible and avoid cutting off the top of your head."},
+    {n:2,icon:"💡",title:"Lighting",desc:"Face a soft light source. Avoid strong shadows, colored lights, or bright windows behind you."},
+    {n:3,icon:"🎙️",title:"Sound",desc:"Record in a quiet room. Clear sound matters more than cinematic lighting."},
+    {n:4,icon:"🖼️",title:"Background",desc:"Use a simple wall or clean space behind you. The focus should stay on your performance."},
+    {n:5,icon:"📁",title:"File Quality",desc:"Make sure the video plays correctly before submitting. Do not send broken links, private links, or huge files that are hard to open."},
+    {n:6,icon:"📋",title:"Instructions",desc:"Follow the casting instructions exactly. If they ask for one take, send one take. If they ask for a slate, include a slate. Revolutionary concept, apparently."},
+  ];
+  const submitCards=[
+    {icon:"📖",title:"Read the full breakdown",desc:"Check role details, shoot dates, location, pay status, union status, and required skills."},
+    {icon:"🎯",title:"Match the role",desc:"Submit when you genuinely fit the role, not just because the project looks interesting."},
+    {icon:"🗂️",title:"Use the right materials",desc:"Send the headshot, reel, or self-tape that best fits the role."},
+    {icon:"📅",title:"Be available",desc:"Do not submit if you already know you cannot make the shoot date or callback window."},
+    {icon:"✉️",title:"Keep it professional",desc:"Short notes are fine. Long desperate messages are not strategy. They are digital confetti."},
+  ];
+  const resourceCards=[
+    {icon:"🎭",title:"Plays & Monologues",desc:"Find material from published plays, theater books, and trusted acting resources."},
+    {icon:"🎬",title:"Scene Study",desc:"Choose scenes that fit your age range, voice, and emotional truth without feeling overdone."},
+    {icon:"🧠",title:"Character Work",desc:"Look for material that gives you a clear situation, objective, relationship, and emotional shift."},
+  ];
+  const beforeCheckItems=[
+    "My headshot looks like me now",
+    "My resume is current",
+    "My reel or clips work",
+    "My profile details are accurate",
+    "I fit the role description",
+    "I am available for the listed dates",
+    "I followed all submission instructions",
+    "My self-tape file or link works",
+    "My message is short and professional",
+  ];
+  const profileCheckItems=[
+    "Professional headshot","Current resume","Reel or video clips","Slate video",
+    "Accurate location","Union status","Age range","Height",
+    "Special skills","Languages","Availability","Contact method",
+  ];
+  const beginnerCards=[
+    {icon:"📸",title:"Start with one strong headshot",desc:"A clean, current headshot is more useful than ten confusing photos."},
+    {icon:"📝",title:"Add experience honestly",desc:"Student films, theater, classes, workshops, background work, and independent projects can all help show your path."},
+    {icon:"📈",title:"Build as you go",desc:"Update your profile as you get new footage, credits, training, and better materials."},
+  ];
+
+  return(
+    <div className="page">
+      <style>{`
+        @media(max-width:900px){
+          .atk-hero-grid{grid-template-columns:1fr!important;gap:40px!important}
+          .atk-hero-img{max-height:360px!important;border-radius:16px!important}
+          .atk-checklist-grid{grid-template-columns:1fr!important;gap:32px!important}
+          .atk-selftape-grid{grid-template-columns:1fr 1fr!important}
+          .atk-headshot-grid{grid-template-columns:1fr!important;gap:32px!important}
+          .atk-submit-grid{grid-template-columns:1fr 1fr!important}
+          .atk-resources-grid{grid-template-columns:1fr 1fr!important}
+          .atk-before-grid{grid-template-columns:1fr!important;gap:32px!important}
+          .atk-beginner-grid{grid-template-columns:1fr 1fr!important}
+          .atk-section-pad{padding:56px 24px!important}
+          .atk-hero-pad{padding:56px 24px!important}
+          .atk-cta-section{padding:64px 24px!important}
+        }
+        @media(max-width:640px){
+          .atk-hero-grid{gap:28px!important}
+          .atk-selftape-grid{grid-template-columns:1fr!important}
+          .atk-submit-grid{grid-template-columns:1fr!important}
+          .atk-resources-grid{grid-template-columns:1fr!important}
+          .atk-beginner-grid{grid-template-columns:1fr!important}
+          .atk-section-pad{padding:40px 16px!important}
+          .atk-hero-pad{padding:40px 16px!important}
+          .atk-cta-section{padding:48px 16px!important}
+          .atk-checklist-items{grid-template-columns:1fr 1fr!important}
+          .atk-hero-btns{flex-direction:column!important}
+          .atk-before-checks{grid-template-columns:1fr!important}
+          .atk-headshot-goodavoid{grid-template-columns:1fr!important;gap:12px!important}
+        }
+        @media(max-width:400px){
+          .atk-checklist-items{grid-template-columns:1fr!important}
+        }
+        .atk-check-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr);}
+        .atk-check-item:last-child{border-bottom:none;}
+        .atk-check-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--acc);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;}
+        .atk-step-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:24px;transition:box-shadow .2s,border-color .2s;}
+        .atk-step-card:hover{border-color:var(--acc);box-shadow:0 4px 20px rgba(26,26,46,0.07);}
+        .atk-resource-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:26px;transition:box-shadow .2s,border-color .2s;}
+        .atk-resource-card:hover{border-color:var(--acc);box-shadow:0 4px 20px rgba(26,26,46,0.07);}
+        .atk-before-check{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--s1);border:1px solid var(--bdr);border-radius:8px;font-size:13.5px;color:var(--t1);font-weight:500;}
+        .atk-before-check svg{flex-shrink:0;}
+      `}</style>
+
+      {/* ─── HERO ─────────────────────────────────────── */}
+      <section className="atk-hero-pad" style={{background:"var(--s1)",borderBottom:"1px solid var(--bdr)",padding:"76px 40px"}}>
+        <div className="atk-hero-grid" style={{maxWidth:1160,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:72,alignItems:"center"}}>
+          {/* Left: copy */}
+          <div>
+            <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(99,91,255,0.1)",color:"var(--acc)",fontSize:11,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",padding:"6px 14px",borderRadius:100,marginBottom:24}}>Actor Toolkit</div>
+            <h1 style={{fontWeight:900,fontSize:"clamp(30px,4vw,52px)",letterSpacing:"-2px",lineHeight:1.08,marginBottom:20}}>Tools for actors who want to submit better.</h1>
+            <p style={{color:"var(--t2)",fontSize:16,lineHeight:1.75,marginBottom:14}}>Practical tools to help actors build stronger profiles, submit smarter, and make every casting opportunity easier to review.</p>
+            <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.75,marginBottom:32}}>From profile setup to self-tape basics, the Actor Toolkit gives performers a simple place to check their materials before sending a submission.</p>
+            <div className="atk-hero-btns" style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+              <button className="btn-p" style={{fontSize:15,padding:"13px 26px"}} onClick={()=>onNavigate("register-talent")}>Create My Free Profile</button>
+              <button className="btn-s" style={{fontSize:15,padding:"13px 26px"}} onClick={()=>onNavigate("search")}>Browse Castings</button>
+            </div>
+          </div>
+          {/* Right: image */}
+          <div style={{position:"relative"}}>
+            <div className="atk-hero-img" style={{borderRadius:20,overflow:"hidden",boxShadow:"0 8px 40px rgba(0,0,0,0.14)",maxHeight:480,position:"relative"}}>
+              <img src="https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?w=900&q=80" alt="Actor reviewing materials" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.45) 0%,transparent 60%)"}}/>
+              <div style={{position:"absolute",bottom:20,left:20,right:20}}>
+                <div style={{background:"rgba(255,255,255,0.12)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:12,padding:"14px 18px",display:"flex",alignItems:"center",gap:14}}>
+                  <div style={{width:38,height:38,borderRadius:9,background:"var(--acc)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>✓</div>
+                  <div>
+                    <div style={{color:"#fff",fontWeight:700,fontSize:13,marginBottom:2}}>Profile Checklist Complete</div>
+                    <div style={{color:"rgba(255,255,255,0.72)",fontSize:11.5}}>12 of 12 items filled in · Ready to submit</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Floating stat pill */}
+            <div style={{position:"absolute",top:-16,right:-16,background:"#fff",border:"1px solid var(--bdr)",borderRadius:12,padding:"10px 16px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)",display:"flex",alignItems:"center",gap:8,whiteSpace:"nowrap"}}>
+              <span style={{fontSize:18}}>🎬</span>
+              <div>
+                <div style={{fontWeight:800,fontSize:13,color:"var(--t1)"}}>7 Sections</div>
+                <div style={{fontSize:11,color:"var(--t3)"}}>Practical tools</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── SECTION 1: PROFILE CHECKLIST ──────────────── */}
+      <section className="atk-section-pad" style={{padding:"80px 40px",borderBottom:"1px solid var(--bdr)"}}>
+        <div className="atk-checklist-grid" style={{maxWidth:1160,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:72,alignItems:"center"}}>
+          {/* Left: content */}
+          <div>
+            <div className="section-label">Section 1</div>
+            <h2 style={{fontWeight:800,fontSize:"clamp(24px,3vw,36px)",letterSpacing:"-1.2px",marginBottom:16}}>Profile Checklist</h2>
+            <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,marginBottom:32}}>A strong actor profile should make it easy for casting teams to understand who you are, what you can play, and how to contact or book you.</p>
+            <div className="atk-checklist-items" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"2px 16px",marginBottom:24}}>
+              {profileCheckItems.map(item=>(
+                <div key={item} className="atk-check-item">
+                  <div className="atk-check-dot">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="var(--acc)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </div>
+                  <span style={{fontSize:13.5,color:"var(--t1)",fontWeight:500,lineHeight:1.4}}>{item}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{background:"rgba(99,91,255,0.06)",border:"1px solid rgba(99,91,255,0.15)",borderRadius:10,padding:"14px 18px",fontSize:13,color:"var(--t2)",lineHeight:1.65}}>
+              <strong style={{color:"var(--t1)"}}>Keep your profile current.</strong> Outdated headshots, missing reels, or old resumes can make casting teams skip over you even when you are right for the role.
+            </div>
+          </div>
+          {/* Right: image */}
+          <div style={{borderRadius:18,overflow:"hidden",boxShadow:"0 6px 32px rgba(0,0,0,0.13)",aspectRatio:"4/5",maxHeight:520}}>
+            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=700&q=80" alt="Professional actor headshot style" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── SECTION 2: SELF-TAPE BASICS ───────────────── */}
+      <section className="atk-section-pad" style={{background:"var(--s1)",borderBottom:"1px solid var(--bdr)",padding:"80px 40px"}}>
+        <div style={{maxWidth:1160,margin:"0 auto"}}>
+          {/* Header + image banner */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:32,alignItems:"flex-end",marginBottom:48}}>
+            <div>
+              <div className="section-label">Section 2</div>
+              <h2 style={{fontWeight:800,fontSize:"clamp(24px,3vw,36px)",letterSpacing:"-1.2px",marginBottom:12}}>Self-Tape Basics</h2>
+              <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,maxWidth:600}}>A self-tape does not need to look expensive. It needs to be clear, watchable, and easy to review.</p>
+            </div>
+            <div style={{flexShrink:0,width:180,height:110,borderRadius:14,overflow:"hidden",boxShadow:"0 4px 18px rgba(0,0,0,0.14)"}}>
+              <img src="https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=400&q=80" alt="Self-tape recording setup" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+            </div>
+          </div>
+          <div className="atk-selftape-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16}}>
+            {selfTapeCards.map(c=>(
+              <div key={c.n} className="atk-step-card">
+                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+                  <div style={{width:36,height:36,borderRadius:9,background:"var(--bg)",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{c.icon}</div>
+                  <span style={{fontSize:11,fontWeight:700,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase"}}>{String(c.n).padStart(2,"0")}</span>
+                </div>
+                <h3 style={{fontWeight:700,fontSize:15,marginBottom:7}}>{c.title}</h3>
+                <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.65,margin:0}}>{c.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── SECTION 3: HEADSHOT GUIDE ──────────────────── */}
+      <section className="atk-section-pad" style={{padding:"80px 40px",borderBottom:"1px solid var(--bdr)"}}>
+        <div className="atk-headshot-grid" style={{maxWidth:1160,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:72,alignItems:"center"}}>
+          {/* Left: image */}
+          <div style={{position:"relative"}}>
+            <div style={{borderRadius:18,overflow:"hidden",boxShadow:"0 6px 32px rgba(0,0,0,0.13)",aspectRatio:"3/4",maxHeight:520}}>
+              <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=700&q=80" alt="Professional actor headshot" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+            </div>
+            <div style={{position:"absolute",bottom:-20,right:-20,background:"#fff",border:"1px solid var(--bdr)",borderRadius:14,padding:"14px 18px",boxShadow:"0 4px 20px rgba(0,0,0,0.1)"}}>
+              <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,color:"var(--t3)",marginBottom:4}}>Casting Tip</div>
+              <div style={{fontSize:13,fontWeight:600,color:"var(--t1)",maxWidth:180}}>Your headshot is the first thing they see.</div>
+            </div>
+          </div>
+          {/* Right: content */}
+          <div>
+            <div className="section-label">Section 3</div>
+            <h2 style={{fontWeight:800,fontSize:"clamp(24px,3vw,36px)",letterSpacing:"-1.2px",marginBottom:16}}>Headshot Guide</h2>
+            <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,marginBottom:24}}>Your headshot should look like you right now, not like a mysterious cousin from four hairstyles ago.</p>
+            <ul style={{listStyle:"none",padding:0,margin:"0 0 28px 0"}}>
+              {["Use a clear, recent photo","Make sure your face is visible","Avoid heavy filters","Avoid sunglasses, hats, or distracting props","Use natural expression and clean lighting","Upload different looks only if they show believable casting types","Do not use blurry selfies or full-body photos as your main headshot"].map(item=>(
+                <li key={item} style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:9,fontSize:13.5,color:"var(--t2)",lineHeight:1.55}}>
+                  <span style={{color:"var(--acc)",fontWeight:800,flexShrink:0,marginTop:1}}>✓</span>{item}
+                </li>
+              ))}
+            </ul>
+            <div className="atk-headshot-goodavoid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+              <div style={{background:"rgba(16,185,129,0.07)",border:"1px solid rgba(16,185,129,0.2)",borderRadius:12,padding:"16px 18px"}}>
+                <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.2,color:"#10b981",marginBottom:8}}>✓ Good</div>
+                <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,margin:0}}>Clear face, natural light, current look, professional crop.</p>
+              </div>
+              <div style={{background:"rgba(239,68,68,0.07)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:12,padding:"16px 18px"}}>
+                <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.2,color:"#ef4444",marginBottom:8}}>✗ Avoid</div>
+                <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,margin:0}}>Blurry selfies, heavy filters, old photos, group shots, full-body images as main headshots.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── SECTION 4: SUBMISSION STRATEGY ────────────── */}
+      <section className="atk-section-pad" style={{background:"var(--s1)",borderBottom:"1px solid var(--bdr)",padding:"80px 40px"}}>
+        <div style={{maxWidth:1160,margin:"0 auto"}}>
+          {/* Image banner */}
+          <div style={{borderRadius:18,overflow:"hidden",height:220,marginBottom:48,position:"relative",boxShadow:"0 4px 24px rgba(0,0,0,0.12)"}}>
+            <img src="https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=1200&q=80" alt="Actor reviewing casting submissions" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(to right,rgba(0,0,0,0.65) 0%,rgba(0,0,0,0.2) 70%,transparent 100%)"}}/>
+            <div style={{position:"absolute",top:0,bottom:0,left:0,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 40px"}}>
+              <div className="section-label" style={{color:"rgba(255,255,255,0.7)"}}>Section 4</div>
+              <h2 style={{fontWeight:800,fontSize:"clamp(22px,3vw,34px)",letterSpacing:"-1px",color:"#fff",marginBottom:8}}>Submit Smarter</h2>
+              <p style={{color:"rgba(255,255,255,0.75)",fontSize:14,lineHeight:1.65,maxWidth:440}}>Submitting to every role does not make you more visible. It makes your profile look unfocused.</p>
+            </div>
+          </div>
+          <div className="atk-submit-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16}}>
+            {submitCards.map(c=>(
+              <div key={c.title} className="atk-step-card">
+                <div style={{fontSize:26,marginBottom:12}}>{c.icon}</div>
+                <h3 style={{fontWeight:700,fontSize:15,marginBottom:7}}>{c.title}</h3>
+                <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.65,margin:0}}>{c.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── SECTION 5: MONOLOGUES & ACTING MATERIALS ───── */}
+      <section className="atk-section-pad" style={{padding:"80px 40px",borderBottom:"1px solid var(--bdr)"}}>
+        <div style={{maxWidth:1160,margin:"0 auto"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:32,alignItems:"flex-end",marginBottom:48}}>
+            <div>
+              <div className="section-label">Section 5</div>
+              <h2 style={{fontWeight:800,fontSize:"clamp(24px,3vw,36px)",letterSpacing:"-1.2px",marginBottom:12}}>Monologues & Acting Materials</h2>
+              <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,maxWidth:600}}>Actors need strong material. CastSlate can point performers toward plays, monologues, scenes, and books that help them prepare.</p>
+            </div>
+            <div style={{flexShrink:0,width:180,height:110,borderRadius:14,overflow:"hidden",boxShadow:"0 4px 18px rgba(0,0,0,0.12)"}}>
+              <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=80" alt="Acting books and scripts" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+            </div>
+          </div>
+          <div className="atk-resources-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16,marginBottom:16}}>
+            {resourceCards.map(c=>(
+              <div key={c.title} className="atk-resource-card">
+                <div style={{fontSize:28,marginBottom:14}}>{c.icon}</div>
+                <h3 style={{fontWeight:700,fontSize:15,marginBottom:8}}>{c.title}</h3>
+                <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.65,margin:0}}>{c.desc}</p>
+              </div>
+            ))}
+          </div>
+          {/* Drama Book Shop link card */}
+          <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:"24px 28px",display:"flex",alignItems:"center",gap:20,flexWrap:"wrap"}}>
+            <div style={{width:44,height:44,borderRadius:11,background:"rgba(99,91,255,0.1)",border:"1px solid rgba(99,91,255,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>📚</div>
+            <div style={{flex:1,minWidth:200}}>
+              <h3 style={{fontWeight:700,fontSize:15,marginBottom:4}}>The Drama Book Shop</h3>
+              <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.65,margin:0}}>A long-running New York theater bookstore where actors can find plays, monologues, scripts, and acting books.</p>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:8,flexShrink:0}}>
+              <a href="https://www.dramabookshop.com" target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,color:"var(--acc)",fontWeight:700,fontSize:13.5,textDecoration:"none",padding:"10px 18px",borderRadius:8,border:"1px solid rgba(99,91,255,0.25)",background:"rgba(99,91,255,0.06)",transition:"background .18s,border-color .18s"}} onMouseOver={e=>{e.currentTarget.style.background="rgba(99,91,255,0.12)";e.currentTarget.style.borderColor="var(--acc)";}} onMouseOut={e=>{e.currentTarget.style.background="rgba(99,91,255,0.06)";e.currentTarget.style.borderColor="rgba(99,91,255,0.25)";}}>
+                Visit Drama Book Shop
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 9.5l7-7M9.5 9.5V2.5H2.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </a>
+            </div>
+          </div>
+          <p style={{fontSize:11.5,color:"var(--t3)",marginTop:10,textAlign:"right"}}>Independent resource. CastSlate is not affiliated with The Drama Book Shop.</p>
+        </div>
+      </section>
+
+      {/* ─── SECTION 6: BEFORE YOU APPLY ───────────────── */}
+      <section className="atk-section-pad" style={{background:"var(--s1)",borderBottom:"1px solid var(--bdr)",padding:"80px 40px"}}>
+        <div style={{maxWidth:1160,margin:"0 auto"}}>
+          <div className="atk-before-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:72,alignItems:"center",marginBottom:48}}>
+            {/* Left: checklist */}
+            <div>
+              <div className="section-label">Section 6</div>
+              <h2 style={{fontWeight:800,fontSize:"clamp(24px,3vw,36px)",letterSpacing:"-1.2px",marginBottom:16}}>Before You Apply</h2>
+              <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,marginBottom:28}}>Use this quick check before submitting to a casting.</p>
+              <div className="atk-before-checks" style={{display:"grid",gridTemplateColumns:"1fr",gap:8}}>
+                {beforeCheckItems.map(item=>(
+                  <div key={item} className="atk-before-check">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--acc)" strokeWidth="1.5"/><path d="M5 8l2.2 2.2L11 5.5" stroke="var(--acc)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Right: image */}
+            <div style={{borderRadius:18,overflow:"hidden",boxShadow:"0 6px 32px rgba(0,0,0,0.12)",aspectRatio:"4/5",maxHeight:520}}>
+              <img src="https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=700&q=80" alt="Actor reviewing checklist before submission" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+            </div>
+          </div>
+          {/* CTA */}
+          <div style={{borderTop:"1px solid var(--bdr)",paddingTop:40,textAlign:"center"}}>
+            <p style={{fontWeight:700,fontSize:17,color:"var(--t1)",marginBottom:18}}>Ready to submit?</p>
+            <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+              <button className="btn-p" style={{fontSize:14,padding:"12px 24px"}} onClick={()=>onNavigate("search")}>Browse Castings</button>
+              <button className="btn-s" style={{fontSize:14,padding:"12px 24px"}} onClick={()=>onNavigate("my-profile")}>Update My Profile</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── SECTION 7: NEW TO CASTING ──────────────────── */}
+      <section className="atk-section-pad" style={{padding:"80px 40px",borderBottom:"1px solid var(--bdr)"}}>
+        <div style={{maxWidth:1160,margin:"0 auto"}}>
+          <div style={{textAlign:"center",marginBottom:52}}>
+            <div className="section-label">Section 7</div>
+            <h2 style={{fontWeight:800,fontSize:"clamp(24px,3vw,36px)",letterSpacing:"-1.2px",marginBottom:14}}>New to Casting? Start Here.</h2>
+            <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,maxWidth:560,margin:"0 auto"}}>You do not need a perfect resume to begin. You need clear materials, honest details, and a profile that makes it easy for casting teams to understand where you fit.</p>
+          </div>
+          <div className="atk-beginner-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:24}}>
+            {beginnerCards.map((c,i)=>(
+              <div key={c.title} style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16,padding:"32px 28px",textAlign:"center",boxShadow:"0 2px 12px rgba(0,0,0,0.04)",position:"relative",overflow:"hidden"}}>
+                <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:`hsl(${[260,220,180][i]},70%,60%)`}}/>
+                <div style={{width:56,height:56,borderRadius:16,background:`hsla(${[260,220,180][i]},70%,60%,0.12)`,border:`1px solid hsla(${[260,220,180][i]},70%,60%,0.25)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,margin:"0 auto 18px"}}>{c.icon}</div>
+                <h3 style={{fontWeight:700,fontSize:16,marginBottom:10}}>{c.title}</h3>
+                <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.65,margin:0}}>{c.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FINAL CTA ──────────────────────────────────── */}
+      <section className="atk-cta-section" style={{background:"var(--s1)",borderTop:"1px solid var(--bdr)",padding:"88px 40px",textAlign:"center"}}>
+        <div style={{maxWidth:580,margin:"0 auto"}}>
+          <div style={{width:60,height:60,borderRadius:16,background:"var(--acc)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,margin:"0 auto 24px",boxShadow:"0 4px 18px rgba(99,91,255,0.35)"}}>🎬</div>
+          <h2 style={{fontWeight:900,fontSize:"clamp(24px,3vw,40px)",letterSpacing:"-1.8px",marginBottom:18,lineHeight:1.1}}>Build a profile casting teams can actually review.</h2>
+          <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,marginBottom:36}}>CastSlate helps actors organize their materials, submit to roles, and show casting teams the information they need without the usual clutter.</p>
+          <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:16}}>
+            <button className="btn-p" style={{fontSize:15,padding:"14px 30px"}} onClick={()=>onNavigate("register-talent")}>Create My Free Profile</button>
+            <button className="btn-s" style={{fontSize:15,padding:"14px 30px"}} onClick={()=>onNavigate("search")}>Browse Castings</button>
+          </div>
+          <p style={{fontSize:12,color:"var(--t3)"}}>Free account included. No credit card required.</p>
         </div>
       </section>
 
@@ -15874,6 +16245,7 @@ const PAGE_PATH={
   "api-info":"/api-info","terms":"/terms","privacy":"/privacy","careers":"/careers",
   "auth-gate":"/auth-gate","account-settings":"/account-settings",
   "pay-talent":"/pay-talent",
+  "actor-toolkit":"/actor-toolkit",
   "success":"/success",
   // casting-gate is an overlay state, NOT a standalone URL — it must not
   // appear here or it would overwrite "search" in PATH_PAGE for /browse-castings
@@ -16778,6 +17150,7 @@ function App(){
         {page==="privacy"&&<PrivacyPage onNavigate={navigate}/>}
         {page==="careers"&&<CareersPage onNavigate={navigate}/>}
         {page==="pay-talent"&&<PayTalentPage onNavigate={navigate}/>}
+        {page==="actor-toolkit"&&<ActorToolkitPage onNavigate={navigate}/>}
         {page==="success"&&<PaymentSuccessPage session={session} myProfile={myProfile} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} successType={paymentSuccessType}/>}
       </main>
       {/* Cookie preferences modal — opened via the footer "Cookie Preferences" link.
