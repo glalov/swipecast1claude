@@ -4275,90 +4275,214 @@ POST   /api/v1/callbacks         # Add talent to callbacks`}</div></div>
 // PAGE: PAY TALENT (Coming Soon / Early Access)
 // ═══════════════════════════════════════════
 function PayTalentPage({onNavigate}){
+  // Headshots reusing Unsplash URLs already in the TALENT data array
+  const heroProfiles=[
+    {name:"Maria Santos",role:"Actor · SAG-AFTRA",img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&q=80",amount:"$1,200",paid:true},
+    {name:"James Walker",role:"Actor · SAG-AFTRA",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&q=80",amount:"$850",paid:true},
+    {name:"Aisha Johnson",role:"Model · Non-Union",img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=500&q=80",amount:"$2,400",paid:false},
+    {name:"Carlos Rivera",role:"Actor · SAG-AFTRA",img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&q=80",amount:"$3,200",paid:true},
+  ];
+  const stripProfiles=[
+    {name:"Elena Novak",role:"AEA",img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80"},
+    {name:"David Kim",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80"},
+    {name:"Sarah Chen",role:"ACTRA",img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&q=80"},
+    {name:"Tyrone Matthews",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&q=80"},
+    {name:"Maria Santos",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80"},
+    {name:"Carlos Rivera",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80"},
+  ];
   const features=[
-    {icon:"⚡","title":"Fast Talent Payments","desc":"Send payments to booked actors after a shoot, rehearsal, callback, or completed production milestone — without chasing anyone down."},
-    {icon:"🎬","title":"Built for Productions","desc":"Keep payment details connected to the casting, role, project, and talent profile instead of scattered across emails and spreadsheets."},
-    {icon:"🔒","title":"Secure Payout Setup","desc":"Talent can complete payout onboarding securely through a trusted payment provider before receiving funds. CastSlate never stores bank details."},
-    {icon:"📋","title":"Cleaner Records","desc":"Productions keep a clear record of who was booked, what was paid, and when payment was completed — all in one place."},
+    {icon:"⚡",color:"#f59e0b",bg:"#fef3c7",title:"Fast Talent Payments",desc:"Send payments to booked actors after a shoot, rehearsal, callback, or completed production milestone — without chasing anyone down."},
+    {icon:"🎬",color:"#3b82f6",bg:"#dbeafe",title:"Built for Productions",desc:"Keep payment details connected to the casting, role, project, and talent profile instead of scattered across emails and spreadsheets."},
+    {icon:"🔒",color:"#10b981",bg:"#d1fae5",title:"Secure Payout Setup",desc:"Talent completes payout onboarding securely through Stripe directly. CastSlate never holds or stores banking information."},
+    {icon:"📋",color:"#8b5cf6",bg:"#ede9fe",title:"Cleaner Records",desc:"Productions keep a clear record of who was booked, what was paid, and when — all in one place, attached to the project."},
   ];
   const steps=[
-    {n:1,title:"Book the actor","desc":"Select the talent attached to a casting, role, or project inside CastSlate."},
-    {n:2,title:"Enter payment details","desc":"Add the payment amount, project name, role, and optional notes."},
-    {n:3,title:"Talent completes payout setup","desc":"The actor securely connects their payout information through the payment provider."},
-    {n:4,title:"Send payment","desc":"The production sends payment and both sides can see the payment status in real time."},
-    {n:5,title:"Keep everything organized","desc":"Payment records stay attached to the project for easier tracking and reporting."},
+    {n:1,title:"Book the actor",desc:"Select the talent attached to a casting, role, or project inside CastSlate.",img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&q=80"},
+    {n:2,title:"Enter payment details",desc:"Add the payment amount, project name, role, and optional notes.",img:null},
+    {n:3,title:"Talent completes payout setup",desc:"The actor securely connects their payout information directly with Stripe — CastSlate never touches banking details.",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=120&q=80"},
+    {n:4,title:"Send payment",desc:"The production sends payment and both sides can see the payment status in real time.",img:null},
+    {n:5,title:"Everything stays organized",desc:"Payment records stay attached to the project for easier tracking, records, and reporting.",img:null},
   ];
+
+  // Inline Stripe S mark SVG — Stripe's brand color #635BFF
+  const StripeMark=()=>(
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="36" height="36" rx="8" fill="#635BFF"/>
+      <path d="M18.4 12.3c-1.3 0-2.1.5-2.1 1.4 0 .9.7 1.4 2.6 1.9 3.1.7 4.8 1.9 4.8 4.5 0 2.7-2 4.4-5.5 4.4-1.9 0-3.8-.6-5.2-1.7l1-1.8c1.2.9 2.7 1.5 4.2 1.5 1.6 0 2.6-.7 2.6-1.8 0-1.1-.8-1.6-2.7-2.1-3-.8-4.7-2-4.7-4.4 0-2.5 1.9-4.1 4.9-4.1 1.7 0 3.3.5 4.5 1.4l-1 1.8c-1-.8-2.3-1-3.4-1z" fill="white"/>
+    </svg>
+  );
+
+  const StripeConnectBadge=({size="normal"})=>(
+    <div style={{display:"inline-flex",alignItems:"center",gap:12,background:"var(--s1)",border:"1px solid var(--bdr)",padding:size==="large"?"18px 24px":"12px 18px",borderRadius:12,boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
+      <StripeMark/>
+      <div>
+        <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,color:"var(--t3)",marginBottom:2}}>Payments via</div>
+        <div style={{fontSize:size==="large"?17:14,fontWeight:800,color:"var(--t1)",letterSpacing:"-0.3px"}}>Stripe Connect</div>
+      </div>
+    </div>
+  );
+
   return(
     <div className="page">
-      {/* ── Hero ── */}
-      <section style={{background:"var(--s1)",borderBottom:"1px solid var(--bdr)",padding:"80px 40px 72px",textAlign:"center"}}>
-        <div style={{maxWidth:700,margin:"0 auto"}}>
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--acc)",color:"#fff",fontSize:11,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",padding:"6px 14px",borderRadius:100,marginBottom:24}}>Coming Soon — Request Early Access</div>
-          <h1 style={{fontWeight:900,fontSize:"clamp(32px,5vw,54px)",letterSpacing:"-2px",lineHeight:1.1,marginBottom:20}}>Pay talent without<br/>chasing paperwork.</h1>
-          <p style={{color:"var(--t2)",fontSize:16,lineHeight:1.7,marginBottom:36,maxWidth:560,margin:"0 auto 36px"}}>CastSlate Pay is being built to help casting teams and productions send secure payments to actors directly through the platform — keeping bookings, submissions, and payment records in one place.</p>
-          <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-            <button className="btn-p" style={{fontSize:15,padding:"14px 28px"}} onClick={()=>onNavigate("contact")}>Request Early Access</button>
-            <button className="btn-s" style={{fontSize:15,padding:"14px 28px"}} onClick={()=>onNavigate("register-cd")}>Post a Casting</button>
+
+      {/* ── Hero: two-column ── */}
+      <section style={{background:"var(--s1)",borderBottom:"1px solid var(--bdr)",padding:"72px 40px"}}>
+        <div style={{maxWidth:1160,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:64,alignItems:"center"}}>
+          {/* Left: copy */}
+          <div>
+            <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--acc)",color:"#fff",fontSize:11,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",padding:"6px 14px",borderRadius:100,marginBottom:24}}>Coming Soon — Request Early Access</div>
+            <h1 style={{fontWeight:900,fontSize:"clamp(30px,4vw,52px)",letterSpacing:"-2px",lineHeight:1.08,marginBottom:20}}>Pay talent without chasing paperwork.</h1>
+            <p style={{color:"var(--t2)",fontSize:16,lineHeight:1.75,marginBottom:32}}>CastSlate Pay is being built so productions can send secure payments to actors directly through the platform — keeping bookings, submissions, and payment records in one place.</p>
+            <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:28}}>
+              <button className="btn-p" style={{fontSize:15,padding:"13px 26px"}} onClick={()=>onNavigate("contact")}>Request Early Access</button>
+              <button className="btn-s" style={{fontSize:15,padding:"13px 26px"}} onClick={()=>onNavigate("register-cd")}>Post a Casting</button>
+            </div>
+            <StripeConnectBadge/>
+          </div>
+          {/* Right: 2×2 talent cards */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            {heroProfiles.map(p=>(
+              <div key={p.name} style={{borderRadius:14,overflow:"hidden",position:"relative",aspectRatio:"3/4",boxShadow:"0 4px 20px rgba(0,0,0,0.18)"}}>
+                <img src={p.img} alt={p.name} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+                <div style={{position:"absolute",inset:0,background:"linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.15) 55%, transparent 100%)"}}/>
+                <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"14px 14px 12px"}}>
+                  <div style={{color:"#fff",fontWeight:700,fontSize:13,marginBottom:2}}>{p.name}</div>
+                  <div style={{color:"rgba(255,255,255,0.7)",fontSize:11,marginBottom:7}}>{p.role}</div>
+                  <div style={{display:"inline-flex",alignItems:"center",gap:5,background:p.paid?"rgba(16,185,129,0.92)":"rgba(245,158,11,0.92)",color:"#fff",fontSize:11,fontWeight:700,padding:"3px 9px",borderRadius:100}}>
+                    {p.paid?"✓ Paid":"⏳ Pending"} {p.amount}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Mobile: stack columns */}
+        <style>{`@media(max-width:768px){.pay-talent-hero-grid{grid-template-columns:1fr!important}}`}</style>
+      </section>
+
+      {/* ── Talent strip ── */}
+      <section style={{borderBottom:"1px solid var(--bdr)",padding:"36px 0",overflow:"hidden"}}>
+        <div style={{padding:"0 40px",marginBottom:16}}>
+          <div className="section-label">Talent on CastSlate</div>
+          <p style={{color:"var(--t2)",fontSize:13,marginTop:2}}>Actors and models waiting to be booked — and paid — on time.</p>
+        </div>
+        <div style={{display:"flex",gap:16,paddingLeft:40,paddingRight:40,overflowX:"auto",scrollbarWidth:"none"}}>
+          {stripProfiles.map((p,i)=>(
+            <div key={i} style={{flexShrink:0,width:120,textAlign:"center"}}>
+              <div style={{width:90,height:90,borderRadius:"50%",overflow:"hidden",margin:"0 auto 8px",border:"2px solid var(--bdr)",boxShadow:"0 2px 8px rgba(0,0,0,0.12)"}}>
+                <img src={p.img} alt={p.name} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+              </div>
+              <div style={{fontWeight:700,fontSize:12,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.name}</div>
+              <div style={{fontSize:11,color:"var(--t3)"}}>{p.role}</div>
+            </div>
+          ))}
+          <div style={{flexShrink:0,width:90,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <button className="btn-s btn-sm" onClick={()=>onNavigate("search")} style={{whiteSpace:"nowrap",fontSize:11}}>Browse all →</button>
           </div>
         </div>
       </section>
 
-      {/* ── Subheading ── */}
-      <section style={{padding:"56px 40px 0",maxWidth:760,margin:"0 auto",textAlign:"center"}}>
+      {/* ── Intro text ── */}
+      <section style={{padding:"56px 40px 0",maxWidth:740,margin:"0 auto",textAlign:"center"}}>
         <div className="section-label">CastSlate Pay</div>
-        <h2 style={{fontWeight:800,fontSize:"clamp(22px,3vw,32px)",letterSpacing:"-1px",marginBottom:16}}>A simpler way for productions to send secure payments to actors</h2>
-        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.7}}>After a booking, rehearsal, shoot, or completed project — stop managing payments in spreadsheets and email threads. CastSlate Pay will connect the payment directly to the casting record.</p>
+        <h2 style={{fontWeight:800,fontSize:"clamp(22px,3vw,32px)",letterSpacing:"-1px",marginBottom:14}}>A simpler way to pay the people you cast</h2>
+        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75}}>After a booking, rehearsal, shoot, or completed project — stop managing payments in spreadsheets and email threads. CastSlate Pay connects the payment directly to the casting record.</p>
       </section>
 
-      {/* ── Feature Cards ── */}
-      <section style={{padding:"56px 40px",maxWidth:1100,margin:"0 auto"}}>
-        <div className="grid-2" style={{gap:20}}>
+      {/* ── Feature cards ── */}
+      <section style={{padding:"40px 40px 64px",maxWidth:1100,margin:"0 auto"}}>
+        <div className="grid-2" style={{gap:16}}>
           {features.map(f=>(
             <div key={f.title} className="card" style={{padding:28}}>
-              <div style={{fontSize:28,marginBottom:12}}>{f.icon}</div>
-              <h3 style={{fontWeight:700,fontSize:17,marginBottom:8}}>{f.title}</h3>
-              <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65}}>{f.desc}</p>
+              <div style={{width:44,height:44,borderRadius:10,background:f.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,marginBottom:14}}>{f.icon}</div>
+              <h3 style={{fontWeight:700,fontSize:16,marginBottom:7}}>{f.title}</h3>
+              <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.65}}>{f.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── How It Works ── */}
-      <section style={{padding:"0 40px 72px",maxWidth:860,margin:"0 auto"}}>
-        <div className="section-label" style={{textAlign:"center",marginBottom:8}}>How It Works</div>
-        <h2 style={{fontWeight:800,fontSize:"clamp(22px,3vw,30px)",letterSpacing:"-1px",textAlign:"center",marginBottom:48}}>From booking to payment in five steps</h2>
-        <div style={{display:"flex",flexDirection:"column",gap:0}}>
-          {steps.map((s,i)=>(
-            <div key={s.n} style={{display:"flex",gap:24,alignItems:"flex-start",paddingBottom:i<steps.length-1?36:0}}>
-              <div style={{display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}}>
-                <div style={{width:40,height:40,borderRadius:"50%",background:"var(--acc)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:16,flexShrink:0}}>{s.n}</div>
-                {i<steps.length-1&&<div style={{width:2,flex:1,minHeight:28,background:"var(--bdr)",marginTop:8}}/>}
+      <section style={{background:"var(--s1)",borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)",padding:"64px 40px"}}>
+        <div style={{maxWidth:860,margin:"0 auto"}}>
+          <div className="section-label" style={{textAlign:"center",marginBottom:8}}>How It Works</div>
+          <h2 style={{fontWeight:800,fontSize:"clamp(22px,3vw,30px)",letterSpacing:"-1px",textAlign:"center",marginBottom:52}}>From booking to payment in five steps</h2>
+          <div style={{display:"flex",flexDirection:"column",gap:0}}>
+            {steps.map((s,i)=>(
+              <div key={s.n} style={{display:"flex",gap:24,alignItems:"flex-start",paddingBottom:i<steps.length-1?40:0}}>
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}}>
+                  <div style={{width:44,height:44,borderRadius:"50%",background:"var(--acc)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:16,flexShrink:0,boxShadow:"0 4px 12px rgba(99,91,255,0.3)"}}>{s.n}</div>
+                  {i<steps.length-1&&<div style={{width:2,flex:1,minHeight:32,background:"var(--bdr)",marginTop:8}}/>}
+                </div>
+                <div style={{paddingTop:8,flex:1}}>
+                  <h3 style={{fontWeight:700,fontSize:15,marginBottom:4}}>{s.title}</h3>
+                  <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.65,marginBottom:s.img?12:0}}>{s.desc}</p>
+                  {s.img&&(
+                    <div style={{display:"flex",gap:8,marginTop:8}}>
+                      <div style={{width:52,height:52,borderRadius:10,overflow:"hidden",border:"2px solid var(--bdr)",flexShrink:0}}>
+                        <img src={s.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                      </div>
+                      <div style={{width:52,height:52,borderRadius:10,overflow:"hidden",border:"2px solid var(--bdr)",flexShrink:0}}>
+                        <img src={stripProfiles[1].img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                      </div>
+                      <div style={{width:52,height:52,borderRadius:10,border:"2px dashed var(--bdr)",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t3)",fontSize:20}}>+</div>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div style={{paddingTop:6,paddingBottom:i<steps.length-1?0:0}}>
-                <h3 style={{fontWeight:700,fontSize:16,marginBottom:4}}>{s.title}</h3>
-                <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65}}>{s.desc}</p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ── Stripe Note ── */}
-      <section style={{background:"var(--s1)",borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)",padding:"48px 40px"}}>
-        <div style={{maxWidth:680,margin:"0 auto",textAlign:"center"}}>
-          <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,color:"var(--t3)",marginBottom:12}}>How we'll handle payments</div>
-          <h3 style={{fontWeight:800,fontSize:20,marginBottom:12}}>Powered by Stripe Connect</h3>
-          <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7}}>When CastSlate Pay launches, payments will be processed through Stripe Connect. Talent will complete a secure onboarding flow with Stripe directly — CastSlate never holds or stores banking information. Stripe handles identity verification, compliance, and payout delivery.</p>
+      {/* ── Stripe Connect section ── */}
+      <section style={{padding:"72px 40px"}}>
+        <div style={{maxWidth:760,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:56,alignItems:"center"}}>
+          <div>
+            <div className="section-label" style={{marginBottom:12}}>Payment Infrastructure</div>
+            <h2 style={{fontWeight:800,fontSize:"clamp(22px,3vw,30px)",letterSpacing:"-1px",marginBottom:16}}>Powered by Stripe Connect</h2>
+            <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.75,marginBottom:20}}>When CastSlate Pay launches, every payment flows through Stripe Connect — the same infrastructure used by Lyft, Shopify, and thousands of other platforms to pay their users.</p>
+            <ul style={{listStyle:"none",padding:0,margin:0}}>
+              {[["✓","Talent onboards directly with Stripe — CastSlate never stores bank details"],["✓","Stripe handles identity verification and payout compliance"],["✓","Funds go straight to the talent's connected account"],["✓","Both parties see payment status in real time"]].map(([ic,txt])=>(
+                <li key={txt} style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:10,color:"var(--t2)",fontSize:13.5,lineHeight:1.6}}>
+                  <span style={{color:"#10b981",fontWeight:800,flexShrink:0,marginTop:1}}>{ic}</span>{txt}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:16,alignItems:"flex-start"}}>
+            <StripeConnectBadge size="large"/>
+            <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:24,width:"100%"}}>
+              <div style={{fontSize:12,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:14}}>Simulated Payment</div>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16,paddingBottom:16,borderBottom:"1px solid var(--bdr)"}}>
+                <div style={{width:44,height:44,borderRadius:10,overflow:"hidden",flexShrink:0}}>
+                  <img src={heroProfiles[0].img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                </div>
+                <div>
+                  <div style={{fontWeight:700,fontSize:14}}>{heroProfiles[0].name}</div>
+                  <div style={{color:"var(--t3)",fontSize:12}}>Midnight Lens · Lead</div>
+                </div>
+                <div style={{marginLeft:"auto",fontWeight:800,fontSize:16}}>$1,200</div>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"var(--t2)",marginBottom:6}}><span>Session fee</span><span>$1,000.00</span></div>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"var(--t2)",marginBottom:14}}><span>Residuals</span><span>$200.00</span></div>
+              <button style={{width:"100%",padding:"12px",borderRadius:8,background:"#635BFF",color:"#fff",fontWeight:700,fontSize:14,border:"none",cursor:"default",letterSpacing:"-0.2px"}}>Send Payment via Stripe →</button>
+              <div style={{textAlign:"center",fontSize:11,color:"var(--t3)",marginTop:10}}>This feature is coming soon — request early access below</div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ── Bottom CTA ── */}
-      <section style={{padding:"72px 40px",maxWidth:640,margin:"0 auto",textAlign:"center"}}>
-        <h2 style={{fontWeight:800,fontSize:"clamp(22px,3vw,32px)",letterSpacing:"-1px",marginBottom:16}}>Be the first to know when it launches.</h2>
-        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.7,marginBottom:32}}>Leave your details and we'll reach out as soon as CastSlate Pay is ready for productions to try.</p>
-        <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-          <button className="btn-p" style={{fontSize:15,padding:"14px 28px"}} onClick={()=>onNavigate("contact")}>Request Early Access</button>
-          <button className="btn-s" style={{fontSize:15,padding:"14px 28px"}} onClick={()=>onNavigate("home")}>Back to Home</button>
+      <section style={{background:"var(--s1)",borderTop:"1px solid var(--bdr)",padding:"80px 40px",textAlign:"center"}}>
+        <div style={{maxWidth:560,margin:"0 auto"}}>
+          <h2 style={{fontWeight:900,fontSize:"clamp(24px,3vw,36px)",letterSpacing:"-1.5px",marginBottom:16}}>Be the first to know when it launches.</h2>
+          <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,marginBottom:32}}>Leave your details and we'll reach out as soon as CastSlate Pay is ready for productions to try.</p>
+          <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:20}}>
+            <button className="btn-p" style={{fontSize:15,padding:"14px 28px"}} onClick={()=>onNavigate("contact")}>Request Early Access</button>
+            <button className="btn-s" style={{fontSize:15,padding:"14px 28px"}} onClick={()=>onNavigate("register-cd")}>Post a Casting</button>
+          </div>
+          <div style={{display:"flex",justifyContent:"center"}}><StripeConnectBadge/></div>
         </div>
       </section>
 
