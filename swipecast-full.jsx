@@ -4894,7 +4894,33 @@ function ActorToolkitPage({onNavigate}){
 // PAGE: TERMS OF SERVICE
 // ═══════════════════════════════════════════
 function TermsPage({onNavigate}){
+  const [dbPage,setDbPage]=useState(null);
+  const [loadErr,setLoadErr]=useState(false);
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data,error}=await window.sb.from("legal_pages").select("title,content,updated_at").eq("slug","terms-of-use").maybeSingle();
+        if(!error&&data)setDbPage(data);
+        else if(error)setLoadErr(true);
+      }catch(_){setLoadErr(true);}
+    })();
+  },[]);
   const S=({n,t,children})=><section style={{marginBottom:32}}><h3 style={{fontSize:18,fontWeight:700,marginBottom:10,color:"var(--t1)"}}>{n}. {t}</h3><div style={{color:"var(--t2)",fontSize:14,lineHeight:1.75}}>{children}</div></section>;
+  const fmtDate=(iso)=>{try{return new Date(iso).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});}catch(_){return iso;}};
+  if(dbPage===null&&!loadErr)return(<div className="page" style={{maxWidth:860}}><CastSlateLoader size="inline" text="Loading…"/></div>);
+  if(dbPage){
+    return(<div className="page" style={{maxWidth:860}}>
+      <div className="section-label">Legal</div>
+      <h1 className="section-title">{dbPage.title||"Terms of Service"}</h1>
+      <p style={{color:"var(--t3)",fontSize:13,marginBottom:32}}>Last updated: {fmtDate(dbPage.updated_at)}</p>
+      <div dangerouslySetInnerHTML={{__html:dbPage.content}}/>
+      <div style={{borderTop:"1px solid var(--bdr)",paddingTop:24,marginTop:24,display:"flex",gap:12}}>
+        <button className="btn-s" onClick={()=>onNavigate("privacy")}>Privacy Policy</button>
+        <button className="btn-s" onClick={()=>onNavigate("contact")}>Contact Legal</button>
+      </div>
+      <Footer onNavigate={onNavigate}/>
+    </div>);
+  }
   return(<div className="page" style={{maxWidth:860}}>
     <div className="section-label">Legal</div>
     <h1 className="section-title">Terms of Service</h1>
@@ -4954,8 +4980,34 @@ function TermsPage({onNavigate}){
 // PAGE: PRIVACY POLICY
 // ═══════════════════════════════════════════
 function PrivacyPage({onNavigate}){
+  const [dbPage,setDbPage]=useState(null);
+  const [loadErr,setLoadErr]=useState(false);
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data,error}=await window.sb.from("legal_pages").select("title,content,updated_at").eq("slug","privacy-policy").maybeSingle();
+        if(!error&&data)setDbPage(data);
+        else if(error)setLoadErr(true);
+      }catch(_){setLoadErr(true);}
+    })();
+  },[]);
   const S=({n,t,children})=><section style={{marginBottom:32}}><h3 style={{fontSize:18,fontWeight:700,marginBottom:10,color:"var(--t1)"}}>{n}. {t}</h3><div style={{color:"var(--t2)",fontSize:14,lineHeight:1.75}}>{children}</div></section>;
   const B=({children})=><ul style={{margin:"10px 0 10px 20px",color:"var(--t2)",fontSize:14,lineHeight:1.75}}>{children}</ul>;
+  const fmtDate=(iso)=>{try{return new Date(iso).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});}catch(_){return iso;}};
+  if(dbPage===null&&!loadErr)return(<div className="page" style={{maxWidth:860}}><CastSlateLoader size="inline" text="Loading…"/></div>);
+  if(dbPage){
+    return(<div className="page" style={{maxWidth:860}}>
+      <div className="section-label">Legal</div>
+      <h1 className="section-title">{dbPage.title||"Privacy Policy"}</h1>
+      <p style={{color:"var(--t3)",fontSize:13,marginBottom:32}}>Last updated: {fmtDate(dbPage.updated_at)}</p>
+      <div dangerouslySetInnerHTML={{__html:dbPage.content}}/>
+      <div style={{borderTop:"1px solid var(--bdr)",paddingTop:24,marginTop:24,display:"flex",gap:12}}>
+        <button className="btn-s" onClick={()=>onNavigate("terms")}>Terms of Service</button>
+        <button className="btn-s" onClick={()=>onNavigate("contact")}>Contact Privacy Team</button>
+      </div>
+      <Footer onNavigate={onNavigate}/>
+    </div>);
+  }
   return(<div className="page" style={{maxWidth:860}}>
     <div className="section-label">Legal</div>
     <h1 className="section-title">Privacy Policy</h1>
@@ -14166,6 +14218,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       <AdminNavLink current={section} target="errors" label="Error log" onClick={goToSection}/>
       <AdminNavLink current={section} target="audit" label="Audit log" onClick={goToSection}/>
       <AdminNavLink current={section} target="settings" label="Site settings" onClick={goToSection}/>
+      {isSuperAdmin&&<AdminNavLink current={section} target="legal-pages" label="Legal Pages" onClick={goToSection}/>}
       {/* Direct jump to the CD dashboard — admins inherit CD capabilities, so they post + review
           submissions from there using the exact same interface as regular casting directors. */}
       <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
@@ -14189,6 +14242,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="errors"&&<AdminErrors/>}
       {section==="audit"&&<AdminAudit/>}
       {section==="settings"&&<AdminSettings/>}
+      {section==="legal-pages"&&isSuperAdmin&&<AdminLegalPages/>}
       <div style={{marginTop:40}}><Footer onNavigate={onNavigate}/></div>
     </div>
   </div>);
@@ -15018,6 +15072,166 @@ function AdminSettings(){
       <div className="form-group"><label className="label">Support email</label><input className="input" value={form.support_email||""} onChange={e=>setForm(f=>({...f,support_email:e.target.value}))} placeholder="hello@castslate.com"/></div>
       <div className="form-group"><label className="label">Site-wide announcement (shown on home)</label><input className="input" value={form.announcement||""} onChange={e=>setForm(f=>({...f,announcement:e.target.value}))} placeholder="e.g. New feature: one-tap callbacks"/></div>
       <button className="btn-p" disabled={busy} onClick={save}>{busy?"Saving…":"Save settings"}</button>
+    </div>
+  </>);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN: LEGAL PAGES EDITOR
+// ═══════════════════════════════════════════════════════════════
+function AdminLegalPages(){
+  const SLUGS={
+    "privacy-policy":{label:"Privacy Policy",previewPage:"privacy"},
+    "terms-of-use":{label:"Terms of Use",previewPage:"terms"}
+  };
+  const [activeTab,setActiveTab]=useState("privacy-policy");
+  const [pages,setPages]=useState({"privacy-policy":null,"terms-of-use":null});
+  const [drafts,setDrafts]=useState({"privacy-policy":{title:"",content:""},"terms-of-use":{title:"",content:""}});
+  const [originals,setOriginals]=useState({"privacy-policy":{title:"",content:""},"terms-of-use":{title:"",content:""}});
+  const [loading,setLoading]=useState(true);
+  const [saving,setSaving]=useState(false);
+  const [status,setStatus]=useState(""); // "saving"|"saved"|"error:..."
+  const [dirty,setDirty]=useState({"privacy-policy":false,"terms-of-use":false});
+
+  useEffect(()=>{
+    (async()=>{
+      setLoading(true);
+      const {data,error}=await window.sb.from("legal_pages").select("*").in("slug",["privacy-policy","terms-of-use"]);
+      if(error){setStatus("error:Failed to load: "+error.message);setLoading(false);return;}
+      const newPages={};const newDrafts={};const newOriginals={};
+      (data||[]).forEach(row=>{
+        newPages[row.slug]=row;
+        newDrafts[row.slug]={title:row.title,content:row.content};
+        newOriginals[row.slug]={title:row.title,content:row.content};
+      });
+      setPages(p=>({...p,...newPages}));
+      setDrafts(d=>({...d,...newDrafts}));
+      setOriginals(o=>({...o,...newOriginals}));
+      setLoading(false);
+    })();
+  },[]);
+
+  const updateDraft=(slug,field,val)=>{
+    setDrafts(d=>({...d,[slug]:{...d[slug],[field]:val}}));
+    setDirty(d=>({...d,[slug]:true}));
+    setStatus("");
+  };
+
+  const save=async(slug)=>{
+    setSaving(true);setStatus("saving");
+    const {error}=await window.sb.rpc("admin_upsert_legal_page",{
+      p_slug:slug,
+      p_title:drafts[slug].title,
+      p_content:drafts[slug].content
+    });
+    if(error){setStatus("error:"+error.message);setSaving(false);return;}
+    const now=new Date().toISOString();
+    setPages(p=>({...p,[slug]:{...p[slug],title:drafts[slug].title,content:drafts[slug].content,updated_at:now}}));
+    setOriginals(o=>({...o,[slug]:{title:drafts[slug].title,content:drafts[slug].content}}));
+    setDirty(d=>({...d,[slug]:false}));
+    setStatus("saved:"+slug);
+    setSaving(false);
+    setTimeout(()=>setStatus(s=>s==="saved:"+slug?"":s),4000);
+  };
+
+  const reset=(slug)=>{
+    setDrafts(d=>({...d,[slug]:{...originals[slug]}}));
+    setDirty(d=>({...d,[slug]:false}));
+    setStatus("");
+  };
+
+  const formatDate=(iso)=>{
+    if(!iso)return"—";
+    try{return new Date(iso).toLocaleString("en-US",{month:"short",day:"numeric",year:"numeric",hour:"2-digit",minute:"2-digit"});}
+    catch(_){return iso;}
+  };
+
+  if(loading)return(<CastSlateLoader size="inline" text="Loading legal pages…"/>);
+
+  const slug=activeTab;
+  const page=pages[slug];
+  const draft=drafts[slug];
+  const isDirty=dirty[slug];
+  const isSaved=status==="saved:"+slug;
+  const isErr=status.startsWith("error:");
+  const isSaving=status==="saving";
+
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Legal Pages</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Edit the live Privacy Policy and Terms of Use pages. Changes take effect immediately after saving.</p>
+
+    {/* Tabs */}
+    <div style={{display:"flex",gap:6,marginBottom:24,borderBottom:"1px solid var(--bdr)",paddingBottom:0}}>
+      {Object.entries(SLUGS).map(([s,{label}])=>(
+        <button key={s} onClick={()=>{setActiveTab(s);setStatus("");}}
+          style={{padding:"10px 18px",border:"none",borderBottom:activeTab===s?"2px solid var(--acc)":"2px solid transparent",background:"transparent",color:activeTab===s?"var(--acc)":"var(--t2)",fontWeight:activeTab===s?700:500,fontSize:14,cursor:"pointer",fontFamily:"inherit",marginBottom:-1,transition:"color 0.15s"}}>
+          {label}{dirty[s]&&<span style={{marginLeft:6,color:"var(--acc)",fontSize:11,fontWeight:700}}>●</span>}
+        </button>
+      ))}
+    </div>
+
+    {/* Status banner */}
+    {isSaved&&<div style={{background:"#1a7a3a",color:"#fff",borderRadius:8,padding:"10px 16px",fontSize:13,fontWeight:600,marginBottom:16,display:"flex",alignItems:"center",gap:8}}>
+      ✓ Saved. This page is now updated on the live website.
+    </div>}
+    {isErr&&<div style={{background:"#7a1a1a",color:"#fff",borderRadius:8,padding:"10px 16px",fontSize:13,marginBottom:16}}>
+      {status.slice(6)}
+    </div>}
+
+    <div className="card" style={{padding:24}}>
+      {/* Last updated */}
+      <div style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>
+        Last updated: <strong style={{color:"var(--t2)"}}>{formatDate(page?.updated_at)}</strong>
+      </div>
+
+      {/* Title field */}
+      <div className="form-group" style={{marginBottom:16}}>
+        <label className="label">Page title</label>
+        <input className="input" value={draft.title||""} onChange={e=>updateDraft(slug,"title",e.target.value)} placeholder="e.g. Privacy Policy"/>
+      </div>
+
+      {/* Content editor */}
+      <div className="form-group" style={{marginBottom:20}}>
+        <label className="label" style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span>Page content <span style={{fontWeight:400,color:"var(--t3)"}}>(HTML)</span></span>
+          <span style={{fontSize:11,color:"var(--t3)",fontWeight:400}}>{(draft.content||"").length.toLocaleString()} chars</span>
+        </label>
+        <textarea
+          className="textarea"
+          value={draft.content||""}
+          onChange={e=>updateDraft(slug,"content",e.target.value)}
+          style={{minHeight:420,fontFamily:"'SF Mono','Fira Code',monospace",fontSize:12,lineHeight:1.6,resize:"vertical"}}
+          spellCheck={false}
+        />
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Edit raw HTML. Use inline styles with CSS variables (e.g. <code style={{background:"var(--s2)",padding:"1px 4px",borderRadius:3}}>color:var(--t1)</code>) to match the app design.</p>
+      </div>
+
+      {/* Action buttons */}
+      <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
+        <button
+          className="btn-p"
+          disabled={saving||!isDirty}
+          onClick={()=>save(slug)}
+          style={{minWidth:130}}
+        >
+          {isSaving?"Saving…":"Save Changes"}
+        </button>
+        <button
+          className="btn-s"
+          disabled={saving||!isDirty}
+          onClick={()=>reset(slug)}
+        >
+          Reset
+        </button>
+        <a
+          href={"/"+SLUGS[slug].previewPage}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{marginLeft:"auto",fontSize:13,color:"var(--acc)",textDecoration:"none",fontWeight:600,padding:"8px 14px",border:"1px solid var(--acc)",borderRadius:8,background:"transparent",cursor:"pointer",whiteSpace:"nowrap"}}
+        >
+          Preview Live Page ↗
+        </a>
+      </div>
     </div>
   </>);
 }

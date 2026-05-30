@@ -1220,3 +1220,44 @@ comment on column public.roles.audition_deadline    is 'Optional role-specific s
 comment on column public.roles.wardrobe_notes       is 'Optional wardrobe and framing guidance';
 comment on column public.roles.submission_type      is 'upload | record | both — which submission methods are allowed';
 comment on column public.roles.allow_multiple_takes is 'Whether talent may re-record and submit a better take';
+
+-- ════════════════════════════════════════════════════════════════════
+-- MIGRATION: legal_pages_cms
+-- CMS table for editable Privacy Policy and Terms of Use pages.
+-- Super admins edit content from Admin → Legal Pages.
+-- Public pages fetch and render stored HTML content.
+-- ════════════════════════════════════════════════════════════════════
+
+create table if not exists public.legal_pages (
+  id          serial primary key,
+  slug        text not null unique,
+  title       text not null,
+  content     text not null,
+  updated_at  timestamptz not null default now(),
+  updated_by  uuid references auth.users(id) on delete set null
+);
+
+alter table public.legal_pages enable row level security;
+
+create policy "legal_pages_public_read"
+  on public.legal_pages for select using (true);
+
+create policy "legal_pages_admin_write"
+  on public.legal_pages for all
+  using (public.is_super_admin()) with check (public.is_super_admin());
+
+create or replace function public.admin_upsert_legal_page(
+  p_slug text, p_title text, p_content text
+) returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_super_admin() then
+    raise exception 'not authorized' using errcode = '42501';
+  end if;
+  insert into public.legal_pages (slug, title, content, updated_at, updated_by)
+  values (p_slug, p_title, p_content, now(), auth.uid())
+  on conflict (slug) do update
+    set title = excluded.title, content = excluded.content,
+        updated_at = now(), updated_by = auth.uid();
+end; $$;
+
+grant execute on function public.admin_upsert_legal_page(text, text, text) to authenticated;
