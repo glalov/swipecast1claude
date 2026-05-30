@@ -8,9 +8,9 @@
   <meta property="og:title" content="CastSlate — Casting, finally built for actors."/>
   <meta property="og:description" content="Every headshot seen. Guaranteed. Join the casting platform built for working actors."/>
   <meta property="og:type" content="website"/>
-  <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2"/>
+  <link rel="icon" href="/favicon.ico?v=3" sizes="any"/>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3"/>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -23,12 +23,12 @@
     };
     window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
   </script>
-  <!-- BUILD: 20260530-001215 -->
-  <meta name="build-version" content="20260530-001215"/>
+  <!-- BUILD: 20260530-002048 -->
+  <meta name="build-version" content="20260530-002048"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260530-001215";
+      var B="20260530-002048";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -51,7 +51,8 @@
       animation:cs-spin .8s linear infinite;
     }
     #cs-loading .label{color:rgba(255,255,255,0.45);font-size:13px;font-family:-apple-system,sans-serif;letter-spacing:.3px;}
-    #cs-loading .logo{color:#fff;font-size:22px;font-weight:800;font-family:-apple-system,sans-serif;letter-spacing:-0.5px;}
+    #cs-loading .logo{color:#fff;font-size:22px;font-weight:800;font-family:-apple-system,sans-serif;letter-spacing:-0.5px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:10px;}
+    #cs-loading .logo-i{width:36px;height:36px;background:#6366f1;border-radius:8px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;}
     #cs-error{
       display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:#1B1C20;
       -webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
@@ -66,7 +67,10 @@
 <body>
   <!-- Loading indicator — shown until React mounts -->
   <div id="cs-loading">
-    <div class="logo">CastSlate</div>
+    <div class="logo">
+      <div class="logo-i"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg></div>
+      CastSlate
+    </div>
     <div class="spinner"></div>
     <div class="label">Loading…</div>
   </div>
