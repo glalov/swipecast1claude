@@ -11973,7 +11973,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div className="section-title" style={{marginBottom:40}}>From actors and casting directors using CastSlate.</div>
       <div className="landing-testimonials" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
         {[
-          {q:"I got two callbacks in my first week. In three years on other platforms I got one. The difference is someone actually looked at my tape.",n:"Jasmine Okafor",r:"Actor · NYC · SAG-AFTRA",s:5,img:"https://images.unsplash.com/photo-1531384441138-2736e62e0919?w=120&q=80"},
+          {q:"I got two callbacks in my first week. In three years on other platforms I got one. The difference is someone actually looked at my tape.",n:"Jasmine Okafor",r:"Actor · NYC · SAG-AFTRA",s:5,img:"https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=120&q=80"},
           {q:"I cast a supporting lead in 11 days from a 340-person pool. The swipe flow is the first honest thing the casting industry has built in a decade.",n:"David Carolan",r:"Casting Director · Commercials",s:5,img:"https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=120&q=80"},
           {q:"No subscription to submit. No 'featured upgrade.' Just the role, the breakdown, and my tape. Wildly refreshing.",n:"Marcus Rivera",r:"Actor · LA · Non-Union",s:5,img:"https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=120&q=80"}
         ].map((t,i)=>
