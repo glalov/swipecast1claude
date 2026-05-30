@@ -4633,7 +4633,7 @@ function ActorToolkitPage({onNavigate}){
           {/* Right: image */}
           <div style={{position:"relative"}}>
             <div className="atk-hero-img" style={{borderRadius:20,overflow:"hidden",boxShadow:"0 8px 40px rgba(0,0,0,0.14)",maxHeight:480,position:"relative"}}>
-              <img src="https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?w=900&q=80" alt="Actor reviewing materials" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+              <img src="https://images.unsplash.com/photo-1455390582262-044cdead277a?w=900&q=80" alt="Actor reviewing script and materials" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
               <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.45) 0%,transparent 60%)"}}/>
               <div style={{position:"absolute",bottom:20,left:20,right:20}}>
                 <div style={{background:"rgba(255,255,255,0.12)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:12,padding:"14px 18px",display:"flex",alignItems:"center",gap:14}}>
@@ -4681,7 +4681,7 @@ function ActorToolkitPage({onNavigate}){
           </div>
           {/* Right: image */}
           <div style={{borderRadius:18,overflow:"hidden",boxShadow:"0 6px 32px rgba(0,0,0,0.13)",aspectRatio:"4/5",maxHeight:520}}>
-            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=700&q=80" alt="Professional actor headshot style" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=700&q=80" alt="Professional actor headshot style" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
           </div>
         </div>
       </section>
@@ -4721,7 +4721,7 @@ function ActorToolkitPage({onNavigate}){
           {/* Left: image */}
           <div style={{position:"relative"}}>
             <div style={{borderRadius:18,overflow:"hidden",boxShadow:"0 6px 32px rgba(0,0,0,0.13)",aspectRatio:"3/4",maxHeight:520}}>
-              <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=700&q=80" alt="Professional actor headshot" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+              <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=700&q=80" alt="Professional actor headshot" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
             </div>
             <div style={{position:"absolute",bottom:-20,right:-20,background:"#fff",border:"1px solid var(--bdr)",borderRadius:14,padding:"14px 18px",boxShadow:"0 4px 20px rgba(0,0,0,0.1)"}}>
               <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,color:"var(--t3)",marginBottom:4}}>Casting Tip</div>
@@ -4759,7 +4759,7 @@ function ActorToolkitPage({onNavigate}){
         <div style={{maxWidth:1160,margin:"0 auto"}}>
           {/* Image banner */}
           <div style={{borderRadius:18,overflow:"hidden",height:220,marginBottom:48,position:"relative",boxShadow:"0 4px 24px rgba(0,0,0,0.12)"}}>
-            <img src="https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=1200&q=80" alt="Actor reviewing casting submissions" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+            <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&q=80" alt="Actor reviewing audition materials at desk" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
             <div style={{position:"absolute",inset:0,background:"linear-gradient(to right,rgba(0,0,0,0.65) 0%,rgba(0,0,0,0.2) 70%,transparent 100%)"}}/>
             <div style={{position:"absolute",top:0,bottom:0,left:0,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 40px"}}>
               <div className="section-label" style={{color:"rgba(255,255,255,0.7)"}}>Section 4</div>
@@ -4809,9 +4809,8 @@ function ActorToolkitPage({onNavigate}){
               <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.65,margin:0}}>A long-running New York theater bookstore where actors can find plays, monologues, scripts, and acting books.</p>
             </div>
             <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:8,flexShrink:0}}>
-              <a href="https://www.dramabookshop.com" target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,color:"var(--acc)",fontWeight:700,fontSize:13.5,textDecoration:"none",padding:"10px 18px",borderRadius:8,border:"1px solid rgba(99,91,255,0.25)",background:"rgba(99,91,255,0.06)",transition:"background .18s,border-color .18s"}} onMouseOver={e=>{e.currentTarget.style.background="rgba(99,91,255,0.12)";e.currentTarget.style.borderColor="var(--acc)";}} onMouseOut={e=>{e.currentTarget.style.background="rgba(99,91,255,0.06)";e.currentTarget.style.borderColor="rgba(99,91,255,0.25)";}}>
-                Visit Drama Book Shop
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 9.5l7-7M9.5 9.5V2.5H2.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <a href="https://www.dramabookshop.com" target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,color:"#fff",fontWeight:700,fontSize:13.5,textDecoration:"none",padding:"10px 18px",borderRadius:8,border:"none",background:"#2563eb",transition:"background .18s,box-shadow .18s",boxShadow:"0 2px 8px rgba(37,99,235,0.3)"}} onMouseOver={e=>{e.currentTarget.style.background="#1d4ed8";e.currentTarget.style.boxShadow="0 4px 14px rgba(37,99,235,0.4)";}} onMouseOut={e=>{e.currentTarget.style.background="#2563eb";e.currentTarget.style.boxShadow="0 2px 8px rgba(37,99,235,0.3)";}}>
+                Visit Drama Book Shop →
               </a>
             </div>
           </div>
