@@ -4275,17 +4275,17 @@ POST   /api/v1/callbacks         # Add talent to callbacks`}</div></div>
 // PAGE: PAY TALENT (Coming Soon / Early Access)
 // ═══════════════════════════════════════════
 function PayTalentPage({onNavigate}){
-  // All photos are unique to this page — none shared with the landing swipe demo or any other section
+  // All photos unique to this page — none shared with landing swipe demo or other sections
   const heroProfiles=[
-    {name:"Nadia Osei",role:"Actor · SAG-AFTRA",img:"https://images.unsplash.com/photo-1521119989659-a83eee488004?w=500&q=80",amount:"$1,200",paid:true},
+    {name:"Nathan Osei",role:"Actor · SAG-AFTRA",img:"https://images.unsplash.com/photo-1521119989659-a83eee488004?w=500&q=80",amount:"$1,200",paid:true},
     {name:"Tobias Grant",role:"Actor · AEA",img:"https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=500&q=80",amount:"$850",paid:true},
     {name:"Suki Park",role:"Model · SAG-AFTRA",img:"https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=500&q=80",amount:"$2,400",paid:false},
-    {name:"Rafael Moreno",role:"Actor · SAG-AFTRA",img:"https://images.unsplash.com/photo-1541101767792-f9b2b1c4f127?w=500&q=80",amount:"$3,200",paid:true},
+    {name:"Sofia Moreno",role:"Actor · SAG-AFTRA",img:"https://images.unsplash.com/photo-1541101767792-f9b2b1c4f127?w=500&q=80",amount:"$3,200",paid:true},
   ];
   const stripProfiles=[
-    {name:"DeShawn Brooks",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&q=80"},
-    {name:"Camille Rousseau",role:"AEA",img:"https://images.unsplash.com/photo-1558222218-b8a892701e19?w=300&q=80"},
-    {name:"Priya Kapoor",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?w=300&q=80"},
+    {name:"Brandon Cole",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&q=80"},
+    {name:"Camille Rousseau",role:"AEA",img:"https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=300&q=80"},
+    {name:"Priya Kapoor",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1614289371518-722f2615943d?w=300&q=80"},
     {name:"Marcus Webb",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1463453091185-61582044d556?w=300&q=80"},
     {name:"Lena Fischer",role:"Non-Union",img:"https://images.unsplash.com/photo-1548142813-c348350df52b?w=300&q=80"},
     {name:"Jordan Banks",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=300&q=80"},
@@ -4377,7 +4377,7 @@ function PayTalentPage({onNavigate}){
             </div>
           ))}
           <div style={{flexShrink:0,width:90,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <button className="btn-s btn-sm" onClick={()=>onNavigate("search")} style={{whiteSpace:"nowrap",fontSize:11}}>Browse all →</button>
+            <button className="btn-s btn-sm" onClick={()=>onNavigate("search")} style={{whiteSpace:"nowrap",fontSize:11}}>Browse Castings →</button>
           </div>
         </div>
       </section>
