@@ -4633,7 +4633,7 @@ function ActorToolkitPage({onNavigate}){
           {/* Right: image */}
           <div style={{position:"relative"}}>
             <div className="atk-hero-img" style={{borderRadius:20,overflow:"hidden",boxShadow:"0 8px 40px rgba(0,0,0,0.14)",maxHeight:480,position:"relative"}}>
-              <img src="https://images.unsplash.com/photo-1455390582262-044cdead277a?w=900&q=80" alt="Actor reviewing script and materials" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+              <img src="https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=900&q=80" alt="Actor reviewing script and materials at desk" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
               <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.45) 0%,transparent 60%)"}}/>
               <div style={{position:"absolute",bottom:20,left:20,right:20}}>
                 <div style={{background:"rgba(255,255,255,0.12)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:12,padding:"14px 18px",display:"flex",alignItems:"center",gap:14}}>
@@ -4681,7 +4681,7 @@ function ActorToolkitPage({onNavigate}){
           </div>
           {/* Right: image */}
           <div style={{borderRadius:18,overflow:"hidden",boxShadow:"0 6px 32px rgba(0,0,0,0.13)",aspectRatio:"4/5",maxHeight:520}}>
-            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=700&q=80" alt="Professional actor headshot style" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+            <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=700&q=80" alt="Professional actor headshot style" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
           </div>
         </div>
       </section>
@@ -4721,7 +4721,7 @@ function ActorToolkitPage({onNavigate}){
           {/* Left: image */}
           <div style={{position:"relative"}}>
             <div style={{borderRadius:18,overflow:"hidden",boxShadow:"0 6px 32px rgba(0,0,0,0.13)",aspectRatio:"3/4",maxHeight:520}}>
-              <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=700&q=80" alt="Professional actor headshot" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+              <img src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=700&q=80" alt="Professional actor headshot" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
             </div>
             <div style={{position:"absolute",bottom:-20,right:-20,background:"#fff",border:"1px solid var(--bdr)",borderRadius:14,padding:"14px 18px",boxShadow:"0 4px 20px rgba(0,0,0,0.1)"}}>
               <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,color:"var(--t3)",marginBottom:4}}>Casting Tip</div>
