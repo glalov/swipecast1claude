@@ -14325,6 +14325,7 @@ const ACG = (()=>{
       is_admin_created:true,
       submission_requirements:tpl.req,
       expires_at:expiresAt(exMonths),
+      deadline:new Date(expiresAt(exMonths)).toISOString().slice(0,10),
       // roles inserted separately after casting is created
       _roleDesc:tpl.roles,
       _roleType:tpl.type
@@ -14418,7 +14419,8 @@ function AdminCastingGenerator({session}){
 
   const publishListing=async(c)=>{
     const key=c.id+":pub";setBusy(key);
-    const {error}=await window.sb.from("castings").update({status:"open",published:true,updated_at:new Date().toISOString()}).eq("id",c.id);
+    const deadlineVal=c.expires_at?new Date(c.expires_at).toISOString().slice(0,10):null;
+    const {error}=await window.sb.from("castings").update({status:"open",published:true,deadline:deadlineVal,updated_at:new Date().toISOString()}).eq("id",c.id);
     setBusy(null);
     if(error){showMsg("Publish failed: "+error.message);return;}
     showMsg("Listing published and live.");loadAll();
@@ -14470,6 +14472,7 @@ function AdminCastingGenerator({session}){
       title:updated.title,type:updated.type,prod:updated.posted_by_label,posted_by_label:updated.posted_by_label,
       synopsis:updated.synopsis,location:updated.location,pay:updated.pay,union_status:updated.union_status,
       submission_requirements:updated.submission_requirements,expires_at:updated.expires_at,
+      deadline:updated.expires_at?new Date(updated.expires_at).toISOString().slice(0,10):null,
       updated_at:new Date().toISOString()
     }).eq("id",updated.id);
     if(error){showMsg("Save failed: "+error.message);return;}
