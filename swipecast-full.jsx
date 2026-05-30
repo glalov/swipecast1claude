@@ -11973,15 +11973,15 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div className="section-title" style={{marginBottom:40}}>From actors and casting directors using CastSlate.</div>
       <div className="landing-testimonials" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
         {[
-          {q:"I got two callbacks in my first week. In three years on other platforms I got one. The difference is someone actually looked at my tape.",n:"Jasmine Okafor",r:"Actor · NYC · SAG-AFTRA",s:5,img:"https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=120&q=80"},
-          {q:"I cast a supporting lead in 11 days from a 340-person pool. The swipe flow is the first honest thing the casting industry has built in a decade.",n:"David Carolan",r:"Casting Director · Commercials",s:5,img:"https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=120&q=80"},
-          {q:"No subscription to submit. No 'featured upgrade.' Just the role, the breakdown, and my tape. Wildly refreshing.",n:"Marcus Rivera",r:"Actor · LA · Non-Union",s:5,img:"https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=120&q=80"}
+          {q:"I got two callbacks in my first week. In three years on other platforms I got one. The difference is someone actually looked at my tape.",n:"Jasmine Okafor",r:"Actor · NYC · SAG-AFTRA",s:5,img:"https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=120&q=80",imgPos:"center 20%"},
+          {q:"I cast a supporting lead in 11 days from a 340-person pool. The swipe flow is the first honest thing the casting industry has built in a decade.",n:"David Carolan",r:"Casting Director · Commercials",s:5,img:"https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=120&q=80",imgPos:"center 15%"},
+          {q:"No subscription to submit. No 'featured upgrade.' Just the role, the breakdown, and my tape. Wildly refreshing.",n:"Marcus Rivera",r:"Actor · LA · Non-Union",s:5,img:"https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=120&q=80",imgPos:"center 10%"}
         ].map((t,i)=>
-          <div key={i} className="card" style={{padding:28}}>
+          <div key={i} className="card" style={{padding:28,display:"flex",flexDirection:"column"}}>
             <div style={{color:"var(--acc)",fontSize:14,letterSpacing:1,marginBottom:14}}>{"★".repeat(t.s)}</div>
-            <p style={{fontSize:14,lineHeight:1.65,color:"var(--t1)",marginBottom:20,fontWeight:500}}>"{t.q}"</p>
+            <p style={{fontSize:14,lineHeight:1.65,color:"var(--t1)",marginBottom:20,fontWeight:500,flex:1}}>"{t.q}"</p>
             <div style={{display:"flex",alignItems:"center",gap:12,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
-              <img src={t.img} alt={t.n} style={{width:40,height:40,borderRadius:"50%",objectFit:"cover",objectPosition:"center top",flexShrink:0,border:"1px solid var(--bdr)"}}/>
+              <img src={t.img} alt={t.n} style={{width:40,height:40,borderRadius:"50%",objectFit:"cover",objectPosition:t.imgPos,flexShrink:0,border:"1px solid var(--bdr)"}}/>
               <div><div style={{fontSize:13,fontWeight:700}}>{t.n}</div><div style={{fontSize:11,color:"var(--t3)"}}>{t.r}</div></div>
             </div>
           </div>
