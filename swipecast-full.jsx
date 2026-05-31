@@ -7202,7 +7202,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     {skills.length>0&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       {sectionHead("Skills")}
       <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-        {skills.map((s,i)=><span key={i} style={{padding:"4px 13px",background:"#F1EFE8",border:"1px solid #DDD8CC",borderRadius:20,fontSize:12.5,color:"#171724",fontWeight:500,letterSpacing:"0.01em",lineHeight:"1.6"}}>{s}</span>)}
+        {skills.map((s,i)=><span key={i} style={{padding:"5px 14px",background:"#EDE8DC",border:"1px solid #C9C3B2",borderRadius:20,fontSize:12.5,color:"#1A1A2E",fontWeight:600,letterSpacing:"0.02em",boxShadow:"0 1px 2px rgba(0,0,0,0.06)",display:"inline-block"}}>{s}</span>)}
       </div>
     </div>}
 
