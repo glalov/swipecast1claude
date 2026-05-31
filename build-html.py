@@ -260,6 +260,7 @@ html = f'''<!DOCTYPE html>
         <li><a href="/classes" style="color:#6366f1;font-weight:600;">Acting Classes</a></li>
         <li><a href="/resources" style="color:#6366f1;font-weight:600;">Resources</a></li>
         <li><a href="/pay-talent" style="color:#6366f1;font-weight:600;">Pay Talent</a></li>
+        <li><a href="/manager-mode" style="color:#6366f1;font-weight:600;">Manager Mode</a></li>
         <li><a href="/about" style="color:#6366f1;font-weight:600;">About</a></li>
         <li><a href="/blog" style="color:#6366f1;font-weight:600;">Blog</a></li>
         <li><a href="/contact" style="color:#6366f1;font-weight:600;">Contact</a></li>

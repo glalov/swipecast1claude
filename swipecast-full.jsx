@@ -85,7 +85,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Sign in','nav.accountSettings':'Account Settings',
     'nav.resources':'Resources','nav.successStories':'Success Stories',
     'nav.about':'About','nav.contact':'Contact','nav.joinAsTalent':'Join as Talent',
-    'nav.joinAsCD':'Join as Casting Director',
+    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode',
     // Footer
     'footer.blurb':'The casting platform built for working actors. Every submission gets seen — guaranteed. Free accounts included — upgrade to Premium ($9.99/mo) for unlimited submissions and more.',
     'footer.talent':'Talent','footer.industry':'Industry','footer.company':'Company','footer.support':'Support',
@@ -94,6 +94,7 @@ const TRANSLATIONS = {
     'footer.postCasting':'Post a Casting','footer.pricing':'Pricing',
     'footer.payTalent':'Pay Talent',
     'footer.actorToolkit':'Actor Toolkit',
+    'footer.managerMode':'Manager Mode',
     'footer.forStudios':'For Studios','footer.apiAccess':'API Access',
     'footer.about':'About','footer.blog':'Blog','footer.careers':'Careers','footer.contact':'Contact',
     'footer.faq':'FAQ','footer.helpCenter':'Help Center','footer.terms':'Terms of Use',
@@ -329,7 +330,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Iniciar sesión','nav.accountSettings':'Configuración de cuenta',
     'nav.resources':'Recursos','nav.successStories':'Historias de éxito',
     'nav.about':'Acerca de','nav.contact':'Contacto','nav.joinAsTalent':'Unirse como Talento',
-    'nav.joinAsCD':'Unirse como Director de Casting',
+    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager',
     // Footer
     'footer.blurb':'La plataforma de casting diseñada para actores que trabajan. Cada postulación es vista — garantizado. Cuentas gratuitas incluidas — mejora a Premium ($9.99/mes) para postulaciones ilimitadas y más.',
     'footer.talent':'Talento','footer.industry':'Industria','footer.company':'Empresa','footer.support':'Soporte',
@@ -2498,6 +2499,7 @@ function Footer({onNavigate,spacerBg}){
             <L to="register-talent">{t('footer.createProfile')}</L>
             <L to="search">{t('footer.browse')}</L>
             <L to="actor-toolkit">{t('footer.actorToolkit')}</L>
+            <L to="manager-mode">{t('footer.managerMode')}</L>
             <L to="classes">{t('footer.classes')}</L>
             <L to="resources">{t('footer.resources')}</L>
           </div>
@@ -4230,6 +4232,166 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan}){
       <Footer onNavigate={onNavigate}/>
     </div>
   );
+}
+
+// ═══════════════════════════════════════════
+// PAGE: MANAGER MODE
+// ═══════════════════════════════════════════
+function ManagerModePage({onNavigate}){
+  const InboxMockup=({mobile})=>(
+    <div style={{background:mobile?"#fff":"#fff",border:"1px solid #E2E2E7",borderRadius:mobile?16:20,overflow:"hidden",boxShadow:mobile?"0 8px 32px rgba(26,26,46,0.10)":"0 16px 48px rgba(26,26,46,0.12)",width:mobile?260:480,maxWidth:"100%"}}>
+      {/* Top bar */}
+      <div style={{background:"#1A1A2E",padding:mobile?"10px 14px":"14px 20px",display:"flex",alignItems:"center",gap:8}}>
+        <div style={{display:"flex",gap:5}}><div style={{width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,0.2)"}}/><div style={{width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,0.2)"}}/><div style={{width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,0.2)"}}/></div>
+        <div style={{flex:1,textAlign:"center",fontSize:mobile?9:11,color:"rgba(255,255,255,0.5)",letterSpacing:0.5}}>Inbox — Cast Slate</div>
+      </div>
+      {/* Inbox header */}
+      <div style={{padding:mobile?"10px 14px":"14px 20px",borderBottom:"1px solid #E2E2E7",background:"#F7F7F8",display:"flex",alignItems:"center",gap:8}}>
+        <div style={{width:mobile?28:34,height:mobile?28:34,borderRadius:"50%",background:"#1A1A2E",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          <span style={{color:"#fff",fontWeight:800,fontSize:mobile?10:13}}>CS</span>
+        </div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:mobile?9:11,fontWeight:700,color:"#1A1A2E",letterSpacing:0.2}}>Cast Slate Career Team</div>
+          <div style={{fontSize:mobile?8:10,color:"#5A5A72",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>Your Weekly Actor Check-In</div>
+        </div>
+        <div style={{fontSize:mobile?7:9,color:"#8E8EA0",flexShrink:0}}>Today</div>
+      </div>
+      {/* Message body */}
+      <div style={{padding:mobile?"10px 14px":"18px 20px"}}>
+        <div style={{fontSize:mobile?9:12,color:"#1A1A2E",lineHeight:1.6,marginBottom:mobile?8:12}}>Hi Maria, your profile is moving in the right direction. Your main headshot gives a clear first impression, but your profile could become stronger with a short slate video.</div>
+        {[["What you're doing well","Your headshot feels clear and professional.","#1B873E","rgba(27,135,62,0.07)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.07)"],["Casting lane to focus on","Young professional / commercial friend","#2563EB","rgba(37,99,235,0.07)"],["Your task this week","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.05)"]].map(([label,val,col,bg])=>(
+          <div key={label} style={{background:bg,border:`1px solid ${col}22`,borderRadius:mobile?6:8,padding:mobile?"5px 8px":"8px 12px",marginBottom:mobile?4:6}}>
+            <div style={{fontSize:mobile?7:9,fontWeight:700,color:col,letterSpacing:0.5,textTransform:"uppercase",marginBottom:2}}>{label}</div>
+            <div style={{fontSize:mobile?8:11,color:"#1A1A2E",fontWeight:500,lineHeight:1.4}}>{val}</div>
+          </div>
+        ))}
+        <div style={{marginTop:mobile?8:12}}>
+          <div style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:mobile?8:10,fontWeight:700,padding:mobile?"5px 10px":"7px 14px",borderRadius:100,cursor:"pointer",letterSpacing:0.3}}>Complete This Week's Task</div>
+        </div>
+        <div style={{marginTop:mobile?5:8,fontSize:mobile?7:9,color:"#8E8EA0",fontStyle:"italic"}}>Replies are not available for this message.</div>
+      </div>
+    </div>
+  );
+
+  return(<div className="page">
+    {/* ─── HERO ─── */}
+    <section style={{background:"linear-gradient(160deg,#1A1A2E 0%,#16213e 60%,#0f3460 100%)",color:"#fff",padding:"80px 40px 72px",textAlign:"center",position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 20% 50%,rgba(99,102,241,0.12) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(37,99,235,0.10) 0%,transparent 60%)",pointerEvents:"none"}}/>
+      <div style={{maxWidth:760,margin:"0 auto",position:"relative"}}>
+        <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",padding:"6px 16px",borderRadius:100,fontSize:11,color:"rgba(255,255,255,0.85)",fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:28}}>
+          <span style={{width:6,height:6,borderRadius:"50%",background:"#6EE7B7",boxShadow:"0 0 8px #6EE7B7"}}/>Premium Feature
+        </div>
+        <h1 style={{fontWeight:800,fontSize:"clamp(32px,5vw,56px)",lineHeight:1.08,letterSpacing:-2,marginBottom:20,color:"#fff"}}>Cast Slate becomes your talent manager<br/>before you have a talent manager.</h1>
+        <p style={{fontSize:"clamp(15px,2.2vw,20px)",lineHeight:1.6,color:"rgba(255,255,255,0.78)",marginBottom:36,maxWidth:620,margin:"0 auto 36px"}}>Cast Slate doesn't just help actors find auditions. It helps actors become more castable.</p>
+        <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+          <button className="btn-p" style={{padding:"14px 28px",fontSize:14,background:"#fff",color:"#1A1A2E",borderRadius:100,fontWeight:800,letterSpacing:0.3,border:"none",cursor:"pointer"}} onClick={()=>onNavigate("membership")}>Unlock Manager Mode</button>
+          <button style={{padding:"14px 28px",fontSize:14,background:"transparent",color:"rgba(255,255,255,0.85)",borderRadius:100,fontWeight:700,letterSpacing:0.3,border:"1px solid rgba(255,255,255,0.3)",cursor:"pointer"}} onClick={()=>onNavigate("pricing")}>See Premium Plans</button>
+        </div>
+      </div>
+    </section>
+
+    {/* ─── WHAT IS MANAGER MODE ─── */}
+    <section style={{padding:"72px 40px 60px",maxWidth:800,margin:"0 auto",textAlign:"center"}}>
+      <div className="section-label">What Is Manager Mode?</div>
+      <h2 style={{fontWeight:800,fontSize:"clamp(26px,3.5vw,38px)",letterSpacing:-1.2,marginBottom:20,lineHeight:1.1}}>A private weekly career check-in,<br/>delivered inside your Cast Slate inbox.</h2>
+      <p style={{color:"var(--t2)",fontSize:"clamp(14px,1.8vw,17px)",lineHeight:1.7,maxWidth:640,margin:"0 auto"}}>Manager Mode is a premium feature that sends you a weekly private Cast Slate career check-in inside your inbox. Each week, you receive one focused note with a clear step to improve your profile — designed to help you build a stronger actor presence over time, at a pace that's actually manageable.</p>
+    </section>
+
+    {/* ─── HOW IT HELPS ─── */}
+    <section style={{padding:"0 40px 72px",maxWidth:1100,margin:"0 auto"}}>
+      <div style={{textAlign:"center",marginBottom:40}}>
+        <div className="section-label">How Manager Mode Helps You</div>
+        <h2 style={{fontWeight:800,fontSize:"clamp(24px,3vw,34px)",letterSpacing:-1,lineHeight:1.1}}>One step at a time. Every week.</h2>
+      </div>
+      <div className="grid-2" style={{gap:20}}>
+        {[
+          {icon:"📬",title:"Weekly Career Check-Ins",body:"Receive a private weekly Cast Slate note with one clear step to improve your profile. No noise. No overwhelm. One thing you can actually do this week."},
+          {icon:"🖼",title:"Profile Improvement Guidance",body:"Get suggestions on your headshots, slate video, bio, resume, reel, skills, and overall profile presentation so casting directors see your best self."},
+          {icon:"🎯",title:"Casting Lane Suggestions",body:"See which role types may fit your current profile so you can submit more strategically and focus your energy where you're most likely to connect."},
+          {icon:"✅",title:"One Task Per Week",body:"Manager Mode gives you one focused task each week instead of overwhelming you with a long checklist — because progress happens one step at a time."}
+        ].map(({icon,title,body})=>(
+          <div key={title} className="card" style={{padding:28,display:"flex",flexDirection:"column",gap:14}}>
+            <div style={{fontSize:30,lineHeight:1}}>{icon}</div>
+            <h3 style={{fontWeight:700,fontSize:17,letterSpacing:-0.4,margin:0}}>{title}</h3>
+            <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,margin:0}}>{body}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {/* ─── SAMPLE CHECK-IN ─── */}
+    <section style={{padding:"0 40px 80px",maxWidth:1100,margin:"0 auto"}}>
+      <div style={{textAlign:"center",marginBottom:48}}>
+        <div className="section-label">Sample Weekly Check-In</div>
+        <h2 style={{fontWeight:800,fontSize:"clamp(24px,3vw,34px)",letterSpacing:-1,lineHeight:1.1}}>See what lands in your inbox.</h2>
+        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.6,maxWidth:520,margin:"12px auto 0"}}>Each week, your Cast Slate career note arrives with personalized profile improvement guidance and one focused task.</p>
+      </div>
+      <div style={{display:"flex",justifyContent:"center",alignItems:"flex-start",gap:32,flexWrap:"wrap"}}>
+        {/* Desktop mockup */}
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
+          <InboxMockup mobile={false}/>
+          <span style={{fontSize:11,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase",fontWeight:600}}>Desktop</span>
+        </div>
+        {/* Mobile mockup */}
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12,marginTop:32}}>
+          <div style={{background:"#1A1A2E",borderRadius:28,padding:"10px 8px",boxShadow:"0 20px 60px rgba(26,26,46,0.25)",border:"2px solid #2D2D44"}}>
+            <div style={{background:"#000",borderRadius:20,overflow:"hidden"}}>
+              <InboxMockup mobile={true}/>
+            </div>
+          </div>
+          <span style={{fontSize:11,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase",fontWeight:600}}>Mobile</span>
+        </div>
+      </div>
+      {/* Actor profile mockup */}
+      <div style={{maxWidth:680,margin:"48px auto 0",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:20,padding:28,display:"flex",gap:24,alignItems:"flex-start",flexWrap:"wrap"}}>
+        <div style={{width:80,height:80,borderRadius:14,background:"linear-gradient(135deg,#1A1A2E,#2D2D44)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          <span style={{color:"rgba(255,255,255,0.6)",fontSize:28}}>🎭</span>
+        </div>
+        <div style={{flex:1,minWidth:200}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+            <h4 style={{fontSize:16,fontWeight:700,margin:0}}>Maria Chen</h4>
+            <div style={{background:"rgba(27,135,62,0.1)",border:"1px solid rgba(27,135,62,0.3)",color:"var(--grn)",fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:100,letterSpacing:0.5}}>PREMIUM</div>
+          </div>
+          <p style={{color:"var(--t2)",fontSize:13,margin:"0 0 14px",lineHeight:1.4}}>Actor · New York · Commercial · Young Professional</p>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {[{label:"Headshot",ok:true},{label:"Slate Video",ok:false},{label:"Bio",ok:true},{label:"Resume",ok:true},{label:"Skills",ok:true}].map(({label,ok})=>(
+              <div key={label} style={{display:"flex",alignItems:"center",gap:4,background:ok?"rgba(27,135,62,0.07)":"rgba(214,59,59,0.07)",border:`1px solid ${ok?"rgba(27,135,62,0.2)":"rgba(214,59,59,0.2)"}`,borderRadius:6,padding:"3px 8px",fontSize:11,color:ok?"var(--grn)":"var(--red)",fontWeight:600}}>
+                <span>{ok?"✓":"!"}</span>{label}
+              </div>
+            ))}
+          </div>
+          <p style={{fontSize:12,color:"var(--t3)",marginTop:10,fontStyle:"italic"}}>Manager Mode improvement note: "Add a slate video to significantly increase profile strength."</p>
+        </div>
+      </div>
+    </section>
+
+    {/* ─── INCLUDED WITH PREMIUM ─── */}
+    <section style={{padding:"0 40px 80px",maxWidth:800,margin:"0 auto"}}>
+      <div style={{background:"linear-gradient(145deg,#1A1A2E,#16213e)",borderRadius:24,padding:"52px 48px",textAlign:"center",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 50% 0%,rgba(99,102,241,0.15) 0%,transparent 60%)",pointerEvents:"none"}}/>
+        <div style={{position:"relative"}}>
+          <div style={{display:"inline-block",background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"rgba(255,255,255,0.85)",fontSize:10,fontWeight:800,letterSpacing:2,padding:"5px 14px",borderRadius:100,marginBottom:20,textTransform:"uppercase"}}>Included With Premium</div>
+          <h2 style={{fontWeight:800,fontSize:"clamp(24px,3vw,36px)",letterSpacing:-1,lineHeight:1.1,marginBottom:16,color:"#fff"}}>Manager Mode is included with<br/>Cast Slate Premium.</h2>
+          <p style={{fontSize:"clamp(14px,1.8vw,16px)",lineHeight:1.7,color:"rgba(255,255,255,0.72)",maxWidth:560,margin:"0 auto 32px"}}>Premium members receive weekly Cast Slate career check-ins, profile improvement notes, casting lane suggestions, and focused weekly tasks designed to help them build a stronger actor profile over time.</p>
+          <div style={{display:"flex",justifyContent:"center",gap:16,flexWrap:"wrap",marginBottom:32}}>
+            {["Weekly career check-ins","Profile improvement notes","Casting lane suggestions","One focused task/week"].map(f=>(
+              <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:13,color:"rgba(255,255,255,0.8)"}}>
+                <span style={{color:"#6EE7B7",fontWeight:800}}>✓</span>{f}
+              </div>
+            ))}
+          </div>
+          <button style={{padding:"14px 32px",borderRadius:100,background:"#fff",color:"#1A1A2E",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3}} onClick={()=>onNavigate("membership")}>Upgrade to Premium</button>
+        </div>
+      </div>
+    </section>
+
+    {/* ─── TRUST / LEGAL ─── */}
+    <section style={{padding:"0 40px 72px",maxWidth:720,margin:"0 auto",textAlign:"center"}}>
+      <p style={{fontSize:13,color:"var(--t3)",lineHeight:1.7}}>Manager Mode is designed to help improve your profile and may help you present yourself more clearly to casting directors. It helps actors become more castable and is designed to help you focus your weekly profile improvement. Cast Slate does not guarantee bookings, callbacks, representation, or auditions.</p>
+    </section>
+
+    <Footer onNavigate={onNavigate}/>
+  </div>);
 }
 
 // ═══════════════════════════════════════════
@@ -12525,6 +12687,46 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       </div>
     </div>
 
+    {/* ───────── MANAGER MODE TEASER ───────── */}
+    <section style={{padding:"72px 40px",background:"linear-gradient(160deg,#1A1A2E 0%,#16213e 60%,#0f3460 100%)",color:"#fff",position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 80% 50%,rgba(99,102,241,0.13) 0%,transparent 60%)",pointerEvents:"none"}}/>
+      <div style={{maxWidth:1100,margin:"0 auto",position:"relative",display:"flex",alignItems:"center",gap:"clamp(32px,5vw,72px)",flexWrap:"wrap"}}>
+        <div style={{flex:"1 1 320px",minWidth:280}}>
+          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",padding:"5px 14px",borderRadius:100,fontSize:11,color:"rgba(255,255,255,0.85)",fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:20}}>
+            <span style={{width:6,height:6,borderRadius:"50%",background:"#6EE7B7",boxShadow:"0 0 8px #6EE7B7"}}/>New — Manager Mode
+          </div>
+          <h2 style={{fontWeight:800,fontSize:"clamp(26px,4vw,42px)",lineHeight:1.1,letterSpacing:-1.5,marginBottom:16,color:"#fff"}}>Cast Slate becomes your talent manager before you have a talent manager.</h2>
+          <p style={{fontSize:"clamp(14px,1.8vw,17px)",lineHeight:1.65,color:"rgba(255,255,255,0.72)",marginBottom:28,maxWidth:500}}>A weekly private career check-in inside your inbox. One focused task. Profile improvement guidance. Casting lane suggestions. Designed to help you become more castable — week by week.</p>
+          <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+            <button style={{padding:"13px 24px",borderRadius:100,background:"#fff",color:"#1A1A2E",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3}} onClick={()=>onNavigate("manager-mode")}>Learn About Manager Mode →</button>
+          </div>
+          <div style={{display:"flex",gap:20,marginTop:20,flexWrap:"wrap"}}>
+            {["Weekly career check-ins","Profile improvement guidance","One focused task per week"].map(f=>(
+              <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"rgba(255,255,255,0.65)"}}>
+                <span style={{color:"#6EE7B7",fontWeight:800}}>✓</span>{f}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{flex:"0 0 auto",display:"flex",justifyContent:"center"}}>
+          <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:20,padding:20,backdropFilter:"blur(10px)",minWidth:280,maxWidth:340}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14,paddingBottom:14,borderBottom:"1px solid rgba(255,255,255,0.1)"}}>
+              <div style={{width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"#fff",fontWeight:800,fontSize:12}}>CS</span></div>
+              <div><div style={{fontSize:12,fontWeight:700,color:"#fff"}}>Cast Slate Career Team</div><div style={{fontSize:11,color:"rgba(255,255,255,0.5)"}}>Your Weekly Actor Check-In</div></div>
+            </div>
+            <p style={{fontSize:13,color:"rgba(255,255,255,0.75)",lineHeight:1.6,marginBottom:14}}>"Hi Maria, your profile is moving in the right direction. Your main headshot gives a clear first impression, but adding a slate video would make your profile significantly stronger."</p>
+            {[["Casting lane","Young professional / commercial friend"],["This week's task","Record a 7-second slate video."]].map(([lbl,val])=>(
+              <div key={lbl} style={{background:"rgba(255,255,255,0.05)",borderRadius:8,padding:"7px 10px",marginBottom:6}}>
+                <div style={{fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.45)",letterSpacing:0.8,textTransform:"uppercase",marginBottom:2}}>{lbl}</div>
+                <div style={{fontSize:12,color:"rgba(255,255,255,0.85)",fontWeight:500}}>{val}</div>
+              </div>
+            ))}
+            <div style={{marginTop:12,display:"inline-block",background:"rgba(255,255,255,0.15)",color:"rgba(255,255,255,0.9)",fontSize:11,fontWeight:700,padding:"6px 14px",borderRadius:100,letterSpacing:0.3,border:"1px solid rgba(255,255,255,0.2)"}}>Complete This Week's Task →</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     {/* ───────── FINAL CTA — only for anonymous visitors. The platform is live;
                 the call to action is to start using it now, not to join a waitlist. ───────── */}
     {!isLoggedIn&&<section className="lh-cta" style={{padding:"80px 40px",background:"linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)",color:"#fff",textAlign:"center"}}>
@@ -18717,6 +18919,7 @@ const PAGE_PATH={
   "auth-gate":"/auth-gate","account-settings":"/account-settings",
   "pay-talent":"/pay-talent",
   "actor-toolkit":"/actor-toolkit",
+  "manager-mode":"/manager-mode",
   "success":"/success",
   "unsubscribed":"/unsubscribed",
   // casting-gate is an overlay state, NOT a standalone URL — it must not
@@ -18741,6 +18944,7 @@ const PAGE_SEO={
   "terms":{title:"Terms of Use | CastSlate",desc:"CastSlate Terms of Use — the rules and guidelines for using the CastSlate casting platform."},
   "privacy":{title:"Privacy Policy | CastSlate",desc:"CastSlate Privacy Policy — how we collect, use, and protect your personal information."},
   "studios":{title:"For Studios | CastSlate",desc:"CastSlate for studios and production companies. Post castings, review talent, and hire fast."},
+  "manager-mode":{title:"Manager Mode | CastSlate",desc:"Cast Slate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."},
   "login":{title:"Sign In | CastSlate",desc:"Sign in to your CastSlate account to browse castings, manage your profile, and submit to roles."},
   "register-talent":{title:"Create Actor Profile | CastSlate",desc:"Create your free CastSlate actor profile. Get seen by casting directors for film, TV, theater, and commercial roles."},
   "register-cd":{title:"Post a Casting | CastSlate",desc:"Post your casting call on CastSlate and review actor submissions one at a time. Start for free."},
@@ -19533,6 +19737,7 @@ function App(){
           <span className={page==="search"?"act":""} onClick={()=>navigate("search")}>{navT('nav.browse')}</span>
           <span className={page==="classes"?"act":""} onClick={()=>navigate("classes")}>{navT('nav.classes')}</span>
           <span className={page==="pricing"?"act":""} onClick={()=>navigate("pricing")}>{navT('nav.pricing')}</span>
+          <span className={page==="manager-mode"?"act":""} onClick={()=>navigate("manager-mode")}>{navT('nav.managerMode')}</span>
           <span className={page==="blog"?"act":""} onClick={()=>navigate("blog")}>{navT('nav.blog')}</span>
         </div>
         <div className="nav-actions" style={{display:"flex",gap:10,alignItems:"center"}}>
@@ -19579,6 +19784,7 @@ function App(){
             <button className="mm-link" onClick={()=>navThen("search")}>{navT('nav.browse')}</button>
             <button className="mm-link" onClick={()=>navThen("classes")}>{navT('nav.classes')}</button>
             <button className="mm-link" onClick={()=>navThen("pricing")}>{navT('nav.pricing')}</button>
+            <button className="mm-link" onClick={()=>navThen("manager-mode")}>{navT('nav.managerMode')}</button>
             <button className="mm-link" onClick={()=>navThen("blog")}>{navT('nav.blog')}</button>
             <button className="mm-link" onClick={()=>navThen("resources")}>{navT('nav.resources')}</button>
             <button className="mm-link" onClick={()=>navThen("success-stories")}>{navT('nav.successStories')}</button>
@@ -19690,6 +19896,7 @@ function App(){
         {page==="faq"&&<FaqPage onNavigate={navigate}/>}
         {page==="success-stories"&&<SuccessStoriesPage onNavigate={navigate}/>}
         {page==="pricing"&&<PricingPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}}/>}
+        {page==="manager-mode"&&<ManagerModePage onNavigate={navigate}/>}
         {page==="studios"&&<StudiosPage onNavigate={navigate}/>}
         {page==="api-info"&&<ApiPage onNavigate={navigate}/>}
         {page==="terms"&&<TermsPage onNavigate={navigate}/>}
