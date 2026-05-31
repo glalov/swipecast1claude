@@ -17480,6 +17480,39 @@ function EditCastingModal({casting,onClose,onSaved}){
 // ═══════════════════════════════════════════
 // URL ↔ PAGE ROUTING HELPERS
 // ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// UNSUBSCRIBED CONFIRMATION PAGE
+// ═══════════════════════════════════════════════════════════════
+function UnsubscribedPage({onNavigate}){
+  return(
+    <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"32px 16px"}}>
+      <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16,padding:"44px 40px",maxWidth:460,width:"100%",textAlign:"center",boxShadow:"0 2px 24px rgba(0,0,0,0.08)"}}>
+        {/* Logo */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,marginBottom:28}}>
+          <div style={{width:34,height:34,background:"#6366f1",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="18" height="18"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#ffffff"/></svg>
+          </div>
+          <span style={{fontSize:18,fontWeight:800,color:"var(--t1)",letterSpacing:-0.4}}>CastSlate</span>
+        </div>
+        {/* Check icon */}
+        <div style={{width:56,height:56,background:"rgba(22,163,74,0.1)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </div>
+        <h1 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:12,letterSpacing:-0.3}}>You're unsubscribed</h1>
+        <p style={{fontSize:15,color:"var(--t2)",lineHeight:1.7,marginBottom:28}}>
+          You won't receive casting match emails from CastSlate anymore. You can re-enable recommendations anytime in your account settings.
+        </p>
+        <button className="btn-p" onClick={()=>onNavigate("account-settings")} style={{marginBottom:20}}>
+          Manage Preferences
+        </button>
+        <p style={{fontSize:12,color:"var(--t3)",lineHeight:1.6}}>
+          Changed your mind? Go to Account Settings → Casting Email Preferences to turn emails back on.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 const PAGE_PATH={
   "home":"/","search":"/browse-castings","pricing":"/pricing",
   "dashboard":"/dashboard","talent-dashboard":"/talent-dashboard","admin":"/admin","my-profile":"/my-profile",
@@ -17493,6 +17526,7 @@ const PAGE_PATH={
   "pay-talent":"/pay-talent",
   "actor-toolkit":"/actor-toolkit",
   "success":"/success",
+  "unsubscribed":"/unsubscribed",
   // casting-gate is an overlay state, NOT a standalone URL — it must not
   // appear here or it would overwrite "search" in PATH_PAGE for /browse-castings
 };
@@ -18398,6 +18432,7 @@ function App(){
         {page==="pay-talent"&&<PayTalentPage onNavigate={navigate}/>}
         {page==="actor-toolkit"&&<ActorToolkitPage onNavigate={navigate}/>}
         {page==="success"&&<PaymentSuccessPage session={session} myProfile={myProfile} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} successType={paymentSuccessType}/>}
+        {page==="unsubscribed"&&<UnsubscribedPage onNavigate={navigate}/>}
       </main>
       {/* Cookie preferences modal — opened via the footer "Cookie Preferences" link.
           Mounted at App level so it can sit on top of any page. */}
