@@ -1317,3 +1317,81 @@ begin
   where id = 1;
 end; $$;
 grant execute on function public.admin_record_casting_generator_run() to authenticated;
+
+-- ═══════════════════════════════════════════════════════════════
+-- EMAIL DIGEST SYSTEM
+-- ═══════════════════════════════════════════════════════════════
+
+-- Talent casting email preferences (one row per user)
+create table if not exists public.email_preferences (
+  id                      uuid        primary key default gen_random_uuid(),
+  user_id                 uuid        not null references auth.users(id) on delete cascade,
+  casting_digest_enabled  boolean     not null default true,
+  frequency               text        not null default 'daily'
+                                      check (frequency in ('daily','every_other_day','weekly','off')),
+  preferred_cities        text[]      not null default '{}',
+  preferred_project_types text[]      not null default '{}',
+  paid_only               boolean     not null default false,
+  union_preference        text        not null default 'any'
+                                      check (union_preference in ('union','non_union','any')),
+  last_sent_at            timestamptz,
+  unsubscribed_at         timestamptz,
+  created_at              timestamptz not null default now(),
+  updated_at              timestamptz not null default now(),
+  constraint email_preferences_user_id_key unique (user_id)
+);
+
+-- Email digest send log
+create table if not exists public.email_digest_logs (
+  id                   uuid        primary key default gen_random_uuid(),
+  user_id              uuid        not null references auth.users(id) on delete cascade,
+  sent_at              timestamptz not null default now(),
+  project_ids_included uuid[]      not null default '{}',
+  status               text        not null default 'sent'
+                                   check (status in ('sent','failed','skipped')),
+  provider_message_id  text,
+  error_message        text
+);
+
+-- Prevents sending the same casting to the same user twice
+create table if not exists public.user_casting_email_history (
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  casting_id uuid not null references public.castings(id) on delete cascade,
+  emailed_at timestamptz not null default now(),
+  primary key (user_id, casting_id)
+);
+
+-- Extend site_settings with email digest admin controls
+alter table public.site_settings
+  add column if not exists digest_emails_enabled boolean not null default true,
+  add column if not exists digest_min_projects   integer not null default 5,
+  add column if not exists digest_send_hour      integer not null default 7,
+  add column if not exists digest_paused         boolean not null default false;
+
+-- ── RLS ────────────────────────────────────────────────────────
+
+alter table public.email_preferences          enable row level security;
+alter table public.email_digest_logs          enable row level security;
+alter table public.user_casting_email_history enable row level security;
+
+-- Users can read + write their own preferences
+create policy "email_prefs: own select"
+  on public.email_preferences for select using (user_id = auth.uid());
+create policy "email_prefs: own insert"
+  on public.email_preferences for insert with check (user_id = auth.uid());
+create policy "email_prefs: own update"
+  on public.email_preferences for update using (user_id = auth.uid());
+
+-- Admins can read all digest logs
+create policy "digest_logs: admin select"
+  on public.email_digest_logs for select using (public.is_admin());
+
+-- Users can see their own casting email history
+create policy "casting_email_history: own select"
+  on public.user_casting_email_history for select using (user_id = auth.uid());
+
+-- Indexes for performance
+create index if not exists email_preferences_user_id_idx on public.email_preferences (user_id);
+create index if not exists email_digest_logs_user_id_idx on public.email_digest_logs (user_id);
+create index if not exists email_digest_logs_sent_at_idx on public.email_digest_logs (sent_at desc);
+create index if not exists user_casting_email_history_user_idx on public.user_casting_email_history (user_id);

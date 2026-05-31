@@ -13595,8 +13595,19 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     sms:profile?.notification_sms===true,
     phone:profile?.phone||""
   });
+  const [emailPref,setEmailPref]=useState({
+    casting_digest_enabled:true,
+    frequency:"daily",
+    preferred_cities:[],
+    preferred_project_types:[],
+    paid_only:false,
+    union_preference:"any",
+    cityInput:"",
+    loaded:false
+  });
   const uid=session?.user?.id;
   const role=profile?.user_type||"talent";
+  const isTalent=["talent","actor"].includes(role);
   const isAdminRole=["admin","super_admin"].includes(role);
 
   // Re-sync notification state when profile loads
@@ -13613,6 +13624,28 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     }
   },[profile?.id]);
 
+  // Load casting email preferences
+  useEffect(()=>{
+    if(!uid)return;
+    (async()=>{
+      const{data}=await window.sb.from("email_preferences").select("*").eq("user_id",uid).maybeSingle();
+      if(data){
+        setEmailPref(p=>({
+          ...p,
+          casting_digest_enabled:data.casting_digest_enabled!==false,
+          frequency:data.frequency||"daily",
+          preferred_cities:data.preferred_cities||[],
+          preferred_project_types:data.preferred_project_types||[],
+          paid_only:!!data.paid_only,
+          union_preference:data.union_preference||"any",
+          loaded:true
+        }));
+      }else{
+        setEmailPref(p=>({...p,loaded:true}));
+      }
+    })();
+  },[uid]);
+
   const showMsg=(m,isErr=false)=>{
     if(isErr)setErr(m);else setMsg(m);
     setTimeout(()=>{setMsg("");setErr("");},5000);
@@ -13623,6 +13656,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     {key:"subscription",label:"Subscription Info",icon:"💳"},
     {key:"billing",label:"Payment & Billing",icon:"🏦"},
     {key:"notifications",label:"Notifications",icon:"🔔"},
+    ...(isTalent?[{key:"casting-emails",label:"Casting Email Preferences",icon:"🎬"}]:[]),
     {key:"privacy",label:"Privacy & Security",icon:"🔒"},
     {key:"deactivation",label:"Deactivation & Deletion",icon:"⚠️"},
   ];
@@ -13711,6 +13745,26 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
       if(error)throw error;
       await onReload();
       showMsg("Notification preferences saved.");
+    }catch(e){showMsg(e.message||"Save failed.",true);}
+    finally{setSaving(false);}
+  };
+
+  const saveCastingEmailPrefs=async()=>{
+    if(!uid)return;
+    setSaving(true);
+    try{
+      const{error}=await window.sb.from("email_preferences").upsert({
+        user_id:uid,
+        casting_digest_enabled:emailPref.casting_digest_enabled,
+        frequency:emailPref.frequency,
+        preferred_cities:emailPref.preferred_cities,
+        preferred_project_types:emailPref.preferred_project_types,
+        paid_only:emailPref.paid_only,
+        union_preference:emailPref.union_preference,
+        updated_at:new Date().toISOString()
+      },{onConflict:"user_id"});
+      if(error)throw error;
+      showMsg("Casting email preferences saved.");
     }catch(e){showMsg(e.message||"Save failed.",true);}
     finally{setSaving(false);}
   };
@@ -13902,6 +13956,147 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     </div>
   );
 
+  const PROJECT_TYPES_OPTIONS=["Film","TV","Commercial","Theater","Short Film","Modeling","Indie Film","Web Series","Broadway","Music Video","Voiceover"];
+
+  const renderCastingEmails=()=>{
+    const toggleProjectType=(t)=>setEmailPref(p=>({
+      ...p,
+      preferred_project_types:p.preferred_project_types.includes(t)
+        ?p.preferred_project_types.filter(x=>x!==t)
+        :[...p.preferred_project_types,t]
+    }));
+    const addCity=()=>{
+      const c=(emailPref.cityInput||"").trim();
+      if(!c||emailPref.preferred_cities.includes(c))return;
+      setEmailPref(p=>({...p,preferred_cities:[...p.preferred_cities,c],cityInput:""}));
+    };
+    const removeCity=(c)=>setEmailPref(p=>({...p,preferred_cities:p.preferred_cities.filter(x=>x!==c)}));
+
+    return(
+    <div>
+      <h2 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:6}}>Casting Email Preferences</h2>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Customize when and how CastSlate emails you about new casting matches.</p>
+      {msg&&<div style={{background:"rgba(27,135,62,0.08)",border:"1px solid var(--grn)",borderRadius:8,padding:"10px 14px",color:"var(--grn)",fontSize:13,marginBottom:16}}>{msg}</div>}
+      {err&&<div style={{background:"rgba(214,59,59,0.08)",border:"1px solid var(--red)",borderRadius:8,padding:"10px 14px",color:"var(--red)",fontSize:13,marginBottom:16}}>{err}</div>}
+
+      {/* Master toggle */}
+      <div className="card" style={{marginBottom:16}}>
+        <label style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer"}}>
+          <input type="checkbox" checked={emailPref.casting_digest_enabled}
+            onChange={e=>setEmailPref(p=>({...p,casting_digest_enabled:e.target.checked}))}
+            style={{accentColor:"var(--acc)",width:17,height:17,marginTop:2,flexShrink:0}}/>
+          <div>
+            <div style={{fontWeight:700,fontSize:15}}>Send me casting matches</div>
+            <div style={{color:"var(--t2)",fontSize:13,marginTop:3}}>Receive a digest email when new castings match your profile. You'll only be emailed when there are real, active matches — no filler.</div>
+          </div>
+        </label>
+      </div>
+
+      {emailPref.casting_digest_enabled&&(<>
+        {/* Frequency */}
+        <div className="card" style={{marginBottom:16}}>
+          <div style={{fontWeight:700,marginBottom:12}}>Email Frequency</div>
+          {[
+            {val:"daily",label:"Daily",desc:"Get matches as they come in, up to once per day"},
+            {val:"every_other_day",label:"Every Other Day",desc:"A digest every two days — less noise, still current"},
+            {val:"weekly",label:"Weekly",desc:"One digest per week with your best matches"},
+            {val:"off",label:"Off",desc:"Pause match emails without changing other settings"},
+          ].map(({val,label,desc})=>(
+            <label key={val} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"10px 0",borderBottom:"1px solid var(--bdr)",cursor:"pointer"}}>
+              <input type="radio" name="digest-freq" value={val} checked={emailPref.frequency===val}
+                onChange={()=>setEmailPref(p=>({...p,frequency:val}))}
+                style={{accentColor:"var(--acc)",width:16,height:16,marginTop:2,flexShrink:0}}/>
+              <div>
+                <div style={{fontWeight:600,fontSize:14}}>{label}</div>
+                <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>{desc}</div>
+              </div>
+            </label>
+          ))}
+        </div>
+
+        {/* Preferred cities */}
+        <div className="card" style={{marginBottom:16}}>
+          <div style={{fontWeight:700,marginBottom:4}}>Preferred Cities / Locations</div>
+          <p style={{color:"var(--t2)",fontSize:12,marginBottom:12}}>We'll prioritize castings in these cities. Leave empty to receive matches from all locations.</p>
+          <div style={{display:"flex",gap:8,marginBottom:12}}>
+            <input className="input" placeholder="e.g. New York, NY" value={emailPref.cityInput||""}
+              onChange={e=>setEmailPref(p=>({...p,cityInput:e.target.value}))}
+              onKeyDown={e=>e.key==="Enter"&&addCity()}
+              style={{flex:1}}/>
+            <button className="btn-s btn-sm" onClick={addCity}>Add</button>
+          </div>
+          {emailPref.preferred_cities.length>0&&(
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {emailPref.preferred_cities.map(c=>(
+                <span key={c} style={{background:"var(--s2)",border:"1px solid var(--bdr)",padding:"4px 10px",borderRadius:20,fontSize:12,fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
+                  {c}
+                  <span onClick={()=>removeCity(c)} style={{cursor:"pointer",color:"var(--t3)",lineHeight:1,fontSize:14}}>×</span>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Project types */}
+        <div className="card" style={{marginBottom:16}}>
+          <div style={{fontWeight:700,marginBottom:4}}>Project Types</div>
+          <p style={{color:"var(--t2)",fontSize:12,marginBottom:12}}>Filter to only the project types you're interested in. Select all that apply — or none to receive every type.</p>
+          <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
+            {PROJECT_TYPES_OPTIONS.map(t=>{
+              const on=emailPref.preferred_project_types.includes(t);
+              return(
+                <button key={t} onClick={()=>toggleProjectType(t)}
+                  style={{padding:"6px 13px",borderRadius:20,border:`1px solid ${on?"var(--acc)":"var(--bdr)"}`,
+                    background:on?"rgba(107,62,203,0.08)":"transparent",
+                    color:on?"var(--acc)":"var(--t2)",fontSize:12,fontWeight:on?700:500,cursor:"pointer",fontFamily:"inherit"}}>
+                  {t}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="card" style={{marginBottom:16}}>
+          <div style={{fontWeight:700,marginBottom:14}}>Filters</div>
+          <div className="form-group" style={{marginBottom:14}}>
+            <label className="label">Union preference</label>
+            <select className="input" value={emailPref.union_preference}
+              onChange={e=>setEmailPref(p=>({...p,union_preference:e.target.value}))}
+              style={{maxWidth:260}}>
+              <option value="any">Any (union + non-union)</option>
+              <option value="union">Union only (SAG-AFTRA, AEA)</option>
+              <option value="non_union">Non-union only</option>
+            </select>
+          </div>
+          <label style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer"}}>
+            <input type="checkbox" checked={emailPref.paid_only}
+              onChange={e=>setEmailPref(p=>({...p,paid_only:e.target.checked}))}
+              style={{accentColor:"var(--acc)",width:16,height:16,marginTop:2,flexShrink:0}}/>
+            <div>
+              <div style={{fontWeight:600,fontSize:14}}>Paid projects only</div>
+              <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>Only include castings that list compensation</div>
+            </div>
+          </label>
+        </div>
+      </>)}
+
+      <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+        <button className="btn-p btn-sm" disabled={saving} onClick={saveCastingEmailPrefs}>
+          {saving?"Saving…":"Save Preferences"}
+        </button>
+        {!emailPref.casting_digest_enabled&&(
+          <div style={{background:"rgba(214,59,59,0.07)",borderRadius:7,padding:"6px 12px",fontSize:12,color:"var(--red)"}}>
+            Casting match emails are off. Enable above to receive matches.
+          </div>
+        )}
+      </div>
+      <div style={{marginTop:20,padding:"12px 16px",background:"var(--s2)",borderRadius:8,fontSize:12,color:"var(--t3)",lineHeight:1.7}}>
+        You can also unsubscribe from any digest email using the unsubscribe link in the email footer. To manage all notification settings, visit the <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>setSection("notifications")}>Notifications</span> section.
+      </div>
+    </div>
+  );};
+
   const renderPrivacy=()=>(
     <div>
       <h2 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:6}}>Privacy & Security</h2>
@@ -14084,6 +14279,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     if(section==="subscription")return renderSubscription();
     if(section==="billing")return renderBilling();
     if(section==="notifications")return renderNotifications();
+    if(section==="casting-emails")return renderCastingEmails();
     if(section==="privacy")return renderPrivacy();
     if(section==="deactivation")return renderDeactivation();
     return null;
@@ -14816,6 +15012,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       <AdminNavLink current={section} target="settings" label="Site settings" onClick={goToSection}/>
       {isSuperAdmin&&<AdminNavLink current={section} target="casting-generator" label="Casting Generator" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="legal-pages" label="Legal Pages" onClick={goToSection}/>}
+      {isSuperAdmin&&<AdminNavLink current={section} target="email-digests" label="Email Digests" onClick={goToSection}/>}
       {/* Direct jump to the CD dashboard — admins inherit CD capabilities, so they post + review
           submissions from there using the exact same interface as regular casting directors. */}
       <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
@@ -14841,6 +15038,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="settings"&&<AdminSettings/>}
       {section==="casting-generator"&&isSuperAdmin&&<AdminCastingGenerator session={session}/>}
       {section==="legal-pages"&&isSuperAdmin&&<AdminLegalPages/>}
+      {section==="email-digests"&&isSuperAdmin&&<AdminEmailDigests/>}
       <div style={{marginTop:40}}><Footer onNavigate={onNavigate}/></div>
     </div>
   </div>);
@@ -15830,6 +16028,245 @@ function AdminLegalPages(){
           Preview Live Page ↗
         </a>
       </div>
+    </div>
+  </>);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN: EMAIL DIGESTS
+// ═══════════════════════════════════════════════════════════════
+function AdminEmailDigests(){
+  const[settings,setSettings]=useState(null);
+  const[logs,setLogs]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const[msg,setMsg]=useState("");
+  const[busy,setBusy]=useState(false);
+  const[testEmail,setTestEmail]=useState("");
+  const[form,setForm]=useState({
+    digest_emails_enabled:true,
+    digest_min_projects:5,
+    digest_send_hour:7,
+    digest_paused:false
+  });
+  const[logStats,setLogStats]=useState({total:0,sent:0,failed:0});
+
+  const loadAll=async()=>{
+    setLoading(true);
+    const[sRes,lRes]=await Promise.all([
+      window.sb.from("site_settings").select("digest_emails_enabled,digest_min_projects,digest_send_hour,digest_paused").eq("id",1).maybeSingle(),
+      window.sb.from("email_digest_logs").select("*").order("sent_at",{ascending:false}).limit(100)
+    ]);
+    if(sRes.data){
+      const s=sRes.data;
+      setSettings(s);
+      setForm({
+        digest_emails_enabled:s.digest_emails_enabled!==false,
+        digest_min_projects:s.digest_min_projects||5,
+        digest_send_hour:s.digest_send_hour??7,
+        digest_paused:!!s.digest_paused
+      });
+    }
+    const ls=lRes.data||[];
+    setLogs(ls);
+    setLogStats({
+      total:ls.length,
+      sent:ls.filter(l=>l.status==="sent").length,
+      failed:ls.filter(l=>l.status==="failed").length
+    });
+    setLoading(false);
+  };
+
+  useEffect(()=>{loadAll();},[]);
+
+  const showFeedback=(m)=>{setMsg(m);setTimeout(()=>setMsg(""),5000);};
+
+  const saveSettings=async()=>{
+    setBusy(true);setMsg("");
+    const{error}=await window.sb.from("site_settings").update({
+      digest_emails_enabled:form.digest_emails_enabled,
+      digest_min_projects:form.digest_min_projects,
+      digest_send_hour:form.digest_send_hour,
+      digest_paused:form.digest_paused,
+      updated_at:new Date().toISOString()
+    }).eq("id",1);
+    if(error)showFeedback("Save failed: "+error.message);
+    else showFeedback("Settings saved.");
+    setBusy(false);
+  };
+
+  const sendTest=async()=>{
+    if(!testEmail){showFeedback("Enter a test email address.");return;}
+    setBusy(true);setMsg("");
+    try{
+      const{data,error}=await window.sb.functions.invoke("process-digest-queue",{
+        body:{action:"test",to_email:testEmail}
+      });
+      if(error)showFeedback("Test failed: "+error.message);
+      else showFeedback("Test email sent to "+testEmail+".");
+    }catch(e){showFeedback("Error: "+e.message);}
+    setBusy(false);
+  };
+
+  const runNow=async()=>{
+    if(!window.confirm("Process all eligible users and send matching digest emails now?"))return;
+    setBusy(true);setMsg("");
+    try{
+      const{data,error}=await window.sb.functions.invoke("process-digest-queue",{
+        body:{action:"run"}
+      });
+      if(error)showFeedback("Run failed: "+error.message);
+      else showFeedback(`Done — ${data?.sent||0} emails sent, ${data?.skipped||0} skipped out of ${data?.total_users||0} users.`);
+      loadAll();
+    }catch(e){showFeedback("Error: "+e.message);}
+    setBusy(false);
+  };
+
+  const fmt=(iso)=>{
+    if(!iso)return"—";
+    try{return new Date(iso).toLocaleString("en-US",{month:"short",day:"numeric",year:"numeric",hour:"2-digit",minute:"2-digit"});}
+    catch(_){return iso;}
+  };
+
+  if(loading)return(<CastSlateLoader size="inline" text="Loading email digest settings…"/>);
+
+  const statusColor={sent:"var(--grn)",failed:"var(--red)",skipped:"var(--t3)"};
+  const statusBg={sent:"rgba(27,135,62,0.08)",failed:"rgba(214,59,59,0.08)",skipped:"rgba(141,141,160,0.08)"};
+
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Email Digests</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Manage automated casting match emails sent to talent users. Powered by Resend.</p>
+
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,borderLeft:"3px solid var(--acc)"}}>{msg}</div>}
+
+    {/* Status badge */}
+    <div style={{display:"flex",gap:10,marginBottom:20,flexWrap:"wrap"}}>
+      <span style={{padding:"5px 14px",borderRadius:20,fontSize:12,fontWeight:700,
+        background:form.digest_emails_enabled&&!form.digest_paused?"rgba(27,135,62,0.1)":"rgba(214,59,59,0.1)",
+        color:form.digest_emails_enabled&&!form.digest_paused?"var(--grn)":"var(--red)"}}>
+        {form.digest_paused?"⏸ PAUSED":form.digest_emails_enabled?"● ACTIVE":"○ DISABLED"}
+      </span>
+    </div>
+
+    {/* Settings card */}
+    <div className="card" style={{padding:24,marginBottom:16}}>
+      <div style={{fontWeight:700,fontSize:16,marginBottom:16}}>Global Settings</div>
+      <div style={{display:"flex",flexDirection:"column",gap:14}}>
+        <label style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer"}}>
+          <input type="checkbox" checked={form.digest_emails_enabled}
+            onChange={e=>setForm(f=>({...f,digest_emails_enabled:e.target.checked}))}
+            style={{accentColor:"var(--acc)",width:16,height:16,marginTop:2}}/>
+          <div>
+            <div style={{fontWeight:600,fontSize:14}}>Enable casting digest emails</div>
+            <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>When off, no digest emails will be sent to any user</div>
+          </div>
+        </label>
+        <label style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer"}}>
+          <input type="checkbox" checked={form.digest_paused}
+            onChange={e=>setForm(f=>({...f,digest_paused:e.target.checked}))}
+            style={{accentColor:"#e85454",width:16,height:16,marginTop:2}}/>
+          <div>
+            <div style={{fontWeight:600,fontSize:14,color:form.digest_paused?"var(--red)":"inherit"}}>Pause all digests</div>
+            <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>Emergency stop — pauses queue without disabling the feature globally</div>
+          </div>
+        </label>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+          <div className="form-group">
+            <label className="label">Minimum matches to trigger send</label>
+            <input className="input" type="number" min={1} max={50} value={form.digest_min_projects}
+              onChange={e=>setForm(f=>({...f,digest_min_projects:parseInt(e.target.value)||5}))}/>
+            <div style={{color:"var(--t3)",fontSize:11,marginTop:3}}>Default: 5. Users won't get an email unless this many new matches exist.</div>
+          </div>
+          <div className="form-group">
+            <label className="label">Default send hour (UTC)</label>
+            <select className="input" value={form.digest_send_hour}
+              onChange={e=>setForm(f=>({...f,digest_send_hour:parseInt(e.target.value)}))}>
+              {Array.from({length:24},(_,i)=>(
+                <option key={i} value={i}>{i===0?"12:00 AM (midnight)":i<12?`${i}:00 AM`:i===12?"12:00 PM (noon)":`${i-12}:00 PM`} UTC</option>
+              ))}
+            </select>
+            <div style={{color:"var(--t3)",fontSize:11,marginTop:3}}>Informational — used by cron job. Default: 7 AM UTC.</div>
+          </div>
+        </div>
+      </div>
+      <button className="btn-p btn-sm" style={{marginTop:18}} disabled={busy} onClick={saveSettings}>
+        {busy?"Saving…":"Save Settings"}
+      </button>
+    </div>
+
+    {/* Manual controls */}
+    <div className="card" style={{padding:24,marginBottom:16}}>
+      <div style={{fontWeight:700,fontSize:16,marginBottom:14}}>Manual Controls</div>
+      <div style={{display:"flex",gap:12,alignItems:"flex-end",flexWrap:"wrap",marginBottom:12}}>
+        <button className="btn-p btn-sm" disabled={busy||form.digest_paused}
+          onClick={runNow}
+          style={{opacity:form.digest_paused?0.5:1}}
+          title={form.digest_paused?"Unpause digests first":undefined}>
+          {busy?"Processing…":"Run Digest Now"}
+        </button>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <input className="input" type="email" placeholder="test@example.com"
+            value={testEmail} onChange={e=>setTestEmail(e.target.value)}
+            onKeyDown={e=>e.key==="Enter"&&sendTest()}
+            style={{width:220}}/>
+          <button className="btn-s btn-sm" disabled={busy} onClick={sendTest}>Send Test</button>
+        </div>
+      </div>
+      <div style={{color:"var(--t3)",fontSize:12}}>
+        "Run Digest Now" immediately processes all eligible users. "Send Test" emails a preview digest to the address you enter above.
+      </div>
+    </div>
+
+    {/* Stats */}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:16}}>
+      {[
+        {label:"Total Logged",val:logStats.total,color:"var(--acc)"},
+        {label:"Sent Successfully",val:logStats.sent,color:"var(--grn)"},
+        {label:"Failed",val:logStats.failed,color:"var(--red)"}
+      ].map(({label,val,color})=>(
+        <div key={label} className="card" style={{padding:18,textAlign:"center"}}>
+          <div style={{fontSize:30,fontWeight:800,color,lineHeight:1}}>{val}</div>
+          <div style={{fontSize:11,color:"var(--t2)",marginTop:6}}>{label}</div>
+        </div>
+      ))}
+    </div>
+
+    {/* Logs table */}
+    <div className="card" style={{padding:24}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        <div style={{fontWeight:700,fontSize:16}}>Recent Digest Logs</div>
+        <button className="btn-s btn-sm" onClick={loadAll}>Refresh</button>
+      </div>
+      {logs.length===0?(
+        <div style={{color:"var(--t3)",fontSize:13,padding:"28px 0",textAlign:"center"}}>No digest logs yet. Run the digest to start generating logs.</div>
+      ):(
+        <div style={{overflowX:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+            <thead>
+              <tr style={{borderBottom:"2px solid var(--bdr)"}}>
+                {["Sent At","User ID","Projects","Status","Provider ID","Error"].map(h=>(
+                  <th key={h} style={{textAlign:"left",padding:"8px 10px",fontWeight:700,color:"var(--t2)",whiteSpace:"nowrap"}}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {logs.map(log=>(
+                <tr key={log.id} style={{borderBottom:"1px solid var(--bdr)"}}>
+                  <td style={{padding:"10px 10px",whiteSpace:"nowrap",fontSize:12}}>{fmt(log.sent_at)}</td>
+                  <td style={{padding:"10px 10px",fontFamily:"monospace",fontSize:11,color:"var(--t3)"}}>{(log.user_id||"").slice(0,12)}…</td>
+                  <td style={{padding:"10px 10px",textAlign:"center"}}>{log.project_ids_included?.length||0}</td>
+                  <td style={{padding:"10px 10px"}}>
+                    <span style={{background:statusBg[log.status]||"transparent",color:statusColor[log.status]||"var(--t1)",padding:"2px 8px",borderRadius:5,fontSize:11,fontWeight:700,textTransform:"uppercase"}}>
+                      {log.status}
+                    </span>
+                  </td>
+                  <td style={{padding:"10px 10px",fontFamily:"monospace",fontSize:11,color:"var(--t3)",maxWidth:140,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{log.provider_message_id||"—"}</td>
+                  <td style={{padding:"10px 10px",fontSize:11,color:"var(--red)",maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{log.error_message||"—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   </>);
 }
