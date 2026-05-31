@@ -107,6 +107,7 @@ html = f'''<!DOCTYPE html>
   <meta name="description" content="CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."/>
   <meta name="robots" content="index, follow"/>
   <meta name="theme-color" content="#6366f1"/>
+  <meta name="google-site-verification" content="yMDmFzYmFlDLSIqxjBMRSD-Lzmsk57k9rr2UZUdjBbM"/>
   <link rel="canonical" href="https://www.castslate.com/"/>
   <!-- Open Graph -->
   <meta property="og:site_name" content="CastSlate"/>
