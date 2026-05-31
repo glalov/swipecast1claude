@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Private areas — authenticated users only
+Disallow: /admin
+Disallow: /super-admin
+Disallow: /dashboard
+Disallow: /talent-dashboard
+Disallow: /my-profile
+Disallow: /inbox
+Disallow: /account-settings
+Disallow: /membership
+Disallow: /plan-summary
+Disallow: /success
+Disallow: /auth-gate
+
+Sitemap: https://www.castslate.com/sitemap.xml

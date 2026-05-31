@@ -103,14 +103,38 @@ html = f'''<!DOCTYPE html>
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CastSlate — Casting, finally built for actors.</title>
-  <meta name="description" content="CastSlate is the casting platform where every submission gets seen. Free forever for actors. Trusted by CDs across film, TV, theater, and commercials."/>
-  <meta property="og:title" content="CastSlate — Casting, finally built for actors."/>
-  <meta property="og:description" content="Every headshot seen. Guaranteed. Join the casting platform built for working actors."/>
+  <title>CastSlate | Casting, Finally Built for Actors</title>
+  <meta name="description" content="CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."/>
+  <meta name="robots" content="index, follow"/>
+  <meta name="theme-color" content="#6366f1"/>
+  <link rel="canonical" href="https://www.castslate.com/"/>
+  <!-- Open Graph -->
+  <meta property="og:site_name" content="CastSlate"/>
   <meta property="og:type" content="website"/>
+  <meta property="og:title" content="CastSlate | Casting, Finally Built for Actors"/>
+  <meta property="og:description" content="A modern casting platform where actors get seen and casting teams review talent one profile at a time. Free accounts included."/>
+  <meta property="og:url" content="https://www.castslate.com/"/>
+  <meta property="og:image" content="https://www.castslate.com/og-image.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:alt" content="CastSlate — Casting, finally built for actors"/>
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="CastSlate | Casting, Finally Built for Actors"/>
+  <meta name="twitter:description" content="A modern casting platform where actors get seen and casting teams review talent one profile at a time."/>
+  <meta name="twitter:image" content="https://www.castslate.com/og-image.png"/>
+  <!-- Favicon -->
   <link rel="icon" href="/favicon.ico?v=3" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3"/>
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3"/>
+  <!-- Structured Data: WebSite -->
+  <script type="application/ld+json">
+  {{"@context":"https://schema.org","@type":"WebSite","name":"CastSlate","alternateName":["Cast Slate","CastSlate Casting"],"url":"https://www.castslate.com"}}
+  </script>
+  <!-- Structured Data: Organization -->
+  <script type="application/ld+json">
+  {{"@context":"https://schema.org","@type":"Organization","name":"CastSlate","url":"https://www.castslate.com","logo":"https://www.castslate.com/og-image.png","sameAs":[]}}
+  </script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>

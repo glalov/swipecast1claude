@@ -4,7 +4,7 @@
   "outputDirectory": ".",
   "framework": null,
   "rewrites": [
-    { "source": "/((?!favicon\\.ico|favicon\\.svg|apple-touch-icon\\.png|robots\\.txt).*)", "destination": "/index.html" }
+    { "source": "/((?!favicon\\.ico|favicon\\.svg|favicon-32x32\\.png|apple-touch-icon\\.png|og-image\\.png|robots\\.txt|sitemap\\.xml).*)", "destination": "/index.html" }
   ],
   "headers": [
     {

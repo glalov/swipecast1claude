@@ -17530,6 +17530,64 @@ const PAGE_PATH={
   // casting-gate is an overlay state, NOT a standalone URL — it must not
   // appear here or it would overwrite "search" in PATH_PAGE for /browse-castings
 };
+
+// SEO metadata per page — title + description updated dynamically on navigation
+const PAGE_SEO={
+  "home":{title:"CastSlate | Casting, Finally Built for Actors",desc:"CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."},
+  "search":{title:"Browse Castings | CastSlate",desc:"Browse open casting calls for film, TV, theater, and commercials. Submit your actor profile to roles that match your look and skills."},
+  "pricing":{title:"Pricing | CastSlate",desc:"CastSlate is free forever for actors. Upgrade to Premium at $9.99/mo for unlimited submissions. See all plans and what's included."},
+  "classes":{title:"Acting Classes | CastSlate",desc:"Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."},
+  "actor-toolkit":{title:"Actor Toolkit | CastSlate",desc:"Free tools, guides, and resources for working actors — headshot advice, self-tape setup, audition prep, and more."},
+  "resources":{title:"Resources | CastSlate",desc:"Guides and resources for actors and casting directors on the CastSlate platform."},
+  "pay-talent":{title:"Pay Talent | CastSlate",desc:"Fast, secure talent payments for casting directors and producers. Pay actors directly through CastSlate."},
+  "about":{title:"About | CastSlate",desc:"CastSlate is a modern casting platform built for working actors and the industry professionals who discover them."},
+  "blog":{title:"Blog | CastSlate",desc:"Casting industry news, actor tips, and platform updates from the CastSlate team."},
+  "careers":{title:"Careers | CastSlate",desc:"Join the team building the future of casting. Open roles at CastSlate."},
+  "contact":{title:"Contact | CastSlate",desc:"Get in touch with the CastSlate team. We're here to help actors, casting directors, and production companies."},
+  "faq":{title:"FAQ | CastSlate",desc:"Frequently asked questions about CastSlate — how it works, account types, submissions, and pricing."},
+  "success-stories":{title:"Success Stories | CastSlate",desc:"Real actors, real results. Read how CastSlate members booked roles through the platform."},
+  "terms":{title:"Terms of Use | CastSlate",desc:"CastSlate Terms of Use — the rules and guidelines for using the CastSlate casting platform."},
+  "privacy":{title:"Privacy Policy | CastSlate",desc:"CastSlate Privacy Policy — how we collect, use, and protect your personal information."},
+  "studios":{title:"For Studios | CastSlate",desc:"CastSlate for studios and production companies. Post castings, review talent, and hire fast."},
+  "login":{title:"Sign In | CastSlate",desc:"Sign in to your CastSlate account to browse castings, manage your profile, and submit to roles."},
+  "register-talent":{title:"Create Actor Profile | CastSlate",desc:"Create your free CastSlate actor profile. Get seen by casting directors for film, TV, theater, and commercial roles."},
+  "register-cd":{title:"Post a Casting | CastSlate",desc:"Post your casting call on CastSlate and review actor submissions one at a time. Start for free."},
+};
+
+function setPageSEO(page,opts){
+  const seo=PAGE_SEO[page];
+  let title=seo?seo.title:"CastSlate | Casting, Finally Built for Actors";
+  let desc=seo?seo.desc:"CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time.";
+  let url="https://www.castslate.com"+(PAGE_PATH[page]||"/");
+
+  if(page==="casting-detail"&&opts?.title){
+    title=`${opts.title} | CastSlate`;
+    desc=`Apply to ${opts.title} on CastSlate. ${opts.prod?`Produced by ${opts.prod}. `:""}${opts.type?`${opts.type} casting call. `:""}Submit your actor profile.`;
+    url=`https://www.castslate.com/casting/${encodeURIComponent(opts.slug||"")}`;
+  }else if(page==="talent-public"&&opts?.name){
+    title=`${opts.name} | Actor Profile | CastSlate`;
+    desc=`View ${opts.name}'s actor profile on CastSlate.`;
+    url=`https://www.castslate.com/talent/${encodeURIComponent(opts.slug||"")}`;
+  }
+
+  try{
+    document.title=title;
+    let m=document.querySelector('meta[name="description"]');
+    if(m)m.setAttribute("content",desc);
+    let og=document.querySelector('meta[property="og:title"]');
+    if(og)og.setAttribute("content",title);
+    let ogd=document.querySelector('meta[property="og:description"]');
+    if(ogd)ogd.setAttribute("content",desc);
+    let ogu=document.querySelector('meta[property="og:url"]');
+    if(ogu)ogu.setAttribute("content",url);
+    let twt=document.querySelector('meta[name="twitter:title"]');
+    if(twt)twt.setAttribute("content",title);
+    let twd=document.querySelector('meta[name="twitter:description"]');
+    if(twd)twd.setAttribute("content",desc);
+    let canon=document.querySelector('link[rel="canonical"]');
+    if(canon)canon.setAttribute("href",url);
+  }catch(_){}
+}
 const PATH_PAGE=Object.fromEntries(Object.entries(PAGE_PATH).map(([k,v])=>[v,k]));
 function urlToPage(){
   const path=window.location.pathname;
@@ -17613,6 +17671,8 @@ function App(){
   useEffect(()=>{
     if(typeof window.__CS_HIDE_LOADING==='function') window.__CS_HIDE_LOADING();
     window.__CS_REACT_MOUNTED=true;
+    // Set initial SEO based on the URL the user landed on
+    setPageSEO(urlToPage());
   },[]);
   useEffect(()=>{
     const d=window.__SC_DBG=window.__SC_DBG||{};
@@ -18059,6 +18119,7 @@ function App(){
     else if(p!=="classes"){setOpenClassId(null);setOpenClassInvitationId(null);}
     // Clear detail state on any nav that isn't a drilldown
     if(p!=="profile"&&p!=="casting-detail"&&p!=="auth-gate"&&p!=="casting-gate"){setViewingProfile(null);setViewingCasting(null);}
+    setPageSEO(target,opts);
     pushHist(target);
   },[]);
   const viewProfile=(t)=>{setPrevPage(page);setViewingProfile(t);setPage("profile");pushHist("profile",t?.public_slug?{talentSlug:t.public_slug}:{});};
@@ -18077,6 +18138,7 @@ function App(){
     setPrevPage(from||page);
     setViewingCasting(c);
     setPage("casting-detail");
+    setPageSEO("casting-detail",{title:c.title,prod:c.prod,type:c.type,slug:castingSlug});
     pushHist("casting-detail",{slug:castingSlug});
   };
   const clearPendingApply=useCallback(()=>setPendingApply(null),[]);
