@@ -10879,7 +10879,8 @@ function CheckInViewModal({message,onClose,onNavigate,onRead}){
         .eq("message_id",message.id);
     }catch(_){}
     setTaskDone(true);
-    const actionNav={slate:"my-profile",photos:"my-profile",bio:"my-profile",skills:"my-profile",resume:"my-profile",media:"my-profile",profile:"my-profile",castings:"castings"};
+    // "search" is the correct page key for Browse Castings
+    const actionNav={slate:"my-profile",photos:"my-profile",bio:"my-profile",skills:"my-profile",resume:"my-profile",media:"my-profile",profile:"my-profile",castings:"search"};
     setTimeout(()=>{onClose();if(typeof onNavigate==="function")onNavigate(actionNav[action]||"my-profile");},1000);
   };
 
