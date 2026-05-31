@@ -1854,6 +1854,25 @@ html,body{overflow-x:hidden;}
 @keyframes mv-slide-right{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:translateX(0)}}
 .mv-in-left{animation:mv-slide-left 0.22s ease}
 .mv-in-right{animation:mv-slide-right 0.22s ease}
+/* ─── Manager Mode responsive helpers ─── */
+.mm-show-desktop{display:flex;}
+.mm-hide-desktop{display:none;}
+.mm-inbox-wrap{width:100%;max-width:460px;flex-shrink:1;min-width:0;}
+.mm-card-outer{width:100%;overflow:hidden;}
+@media(max-width:860px){
+  .mm-show-desktop{display:none !important;}
+  .mm-hide-desktop{display:flex !important;}
+  .mm-inbox-wrap{max-width:100% !important;}
+  .mm-section-pad{padding-left:16px !important;padding-right:16px !important;}
+  .mm-hero-row{flex-direction:column !important;}
+  .mm-bcard-row{flex-direction:column !important;align-items:center !important;}
+  .mm-bcard-text{min-width:0 !important;width:100% !important;}
+  .mm-events-row{flex-direction:column !important;}
+  .mm-checkin-row{flex-direction:column !important;align-items:stretch !important;}
+}
+@media(max-width:560px){
+  .mm-card-outer{border-radius:14px !important;}
+}
 `;
 
 // ─── Membership plans. Single source of truth — used by MembershipPage,
@@ -4235,7 +4254,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan}){
 }
 
 // ═══════════════════════════════════════════
-// PAGE: MANAGER MODE
+// PAGE: MANAGER MODE  (responsive-fixed)
 // ═══════════════════════════════════════════
 function ManagerModePage({onNavigate,session,myProfile}){
   const isPremium=myProfile?.membership_status==="active";
@@ -4277,7 +4296,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
     const fs=(d,m)=>mobile?m:d;
     const pd=(d,m)=>mobile?m:d;
     return(
-      <div style={{background:"#fff",border:"1px solid #E2E2E7",borderRadius:mobile?16:20,overflow:"hidden",boxShadow:mobile?"0 8px 28px rgba(26,26,46,0.12)":"0 20px 56px rgba(26,26,46,0.15)",width:mobile?264:460,maxWidth:"100%",flexShrink:0}}>
+      <div style={{background:"#fff",border:"1px solid #E2E2E7",borderRadius:mobile?16:20,overflow:"hidden",boxShadow:mobile?"0 8px 28px rgba(26,26,46,0.12)":"0 20px 56px rgba(26,26,46,0.15)",width:"100%",maxWidth:mobile?264:460,minWidth:0,flexShrink:1}}>
         <div style={{background:"#1A1A2E",padding:pd("13px 18px","9px 13px"),display:"flex",alignItems:"center",gap:8}}>
           <div style={{display:"flex",gap:5,flexShrink:0}}>
             {["rgba(255,90,80,0.7)","rgba(255,190,0,0.7)","rgba(40,200,100,0.7)"].map((c,i)=><div key={i} style={{width:mobile?7:8,height:mobile?7:8,borderRadius:"50%",background:c}}/>)}
@@ -4325,8 +4344,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
     {/* ══════ HERO ══════ */}
     <section style={{background:"linear-gradient(155deg,#0D0D1A 0%,#1A1A2E 40%,#0f2347 100%)",color:"#fff",padding:"clamp(56px,8vw,96px) clamp(16px,5vw,60px) clamp(48px,7vw,80px)",position:"relative",overflow:"hidden"}}>
       <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 15% 60%,rgba(99,102,241,0.18) 0%,transparent 55%),radial-gradient(ellipse at 85% 15%,rgba(37,99,235,0.14) 0%,transparent 50%),radial-gradient(ellipse at 50% 100%,rgba(110,231,183,0.06) 0%,transparent 50%)",pointerEvents:"none"}}/>
-      <div style={{maxWidth:1160,margin:"0 auto",position:"relative",display:"flex",alignItems:"center",gap:"clamp(32px,5vw,72px)",flexWrap:"wrap"}}>
-        <div style={{flex:"1 1 340px",minWidth:280}}>
+      <div className="mm-hero-row" style={{maxWidth:1160,margin:"0 auto",position:"relative",display:"flex",alignItems:"center",gap:"clamp(32px,5vw,72px)",flexWrap:"wrap"}}>
+        <div style={{flex:"1 1 300px",minWidth:0,width:"100%"}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:24}}>
             <CSLogo size={38}/>
             <div>
@@ -4351,8 +4370,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
             ))}
           </div>
         </div>
-        <div style={{flex:"0 0 auto",display:"flex",justifyContent:"center",width:"100%",maxWidth:480}}>
-          <div style={{position:"relative"}}>
+        <div className="mm-show-desktop mm-inbox-wrap" style={{justifyContent:"center",flex:"1 1 300px",minWidth:0}}>
+          <div style={{position:"relative",width:"100%"}}>
             <div style={{position:"absolute",inset:-1,background:"linear-gradient(135deg,rgba(110,231,183,0.3),rgba(99,102,241,0.2),transparent 60%)",borderRadius:22,filter:"blur(1px)"}}/>
             <InboxMockup mobile={false}/>
           </div>
@@ -4362,11 +4381,11 @@ function ManagerModePage({onNavigate,session,myProfile}){
 
     {/* ══════ PERSONAL ATTENTION ══════ */}
     <section style={{padding:"clamp(48px,7vw,80px) clamp(16px,5vw,40px)",background:"var(--s1)",borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)"}}>
-      <div style={{maxWidth:900,margin:"0 auto",display:"flex",alignItems:"center",gap:"clamp(24px,4vw,56px)",flexWrap:"wrap",justifyContent:"center",textAlign:"center"}}>
-        <div style={{flex:"0 0 auto",width:64,height:64,borderRadius:16,background:"#1A1A2E",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 8px 24px rgba(26,26,46,0.18)",flexShrink:0}}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg>
+      <div style={{maxWidth:900,margin:"0 auto",display:"flex",alignItems:"center",gap:"clamp(20px,4vw,48px)",flexWrap:"wrap",justifyContent:"center"}}>
+        <div style={{flexShrink:0,width:56,height:56,borderRadius:14,background:"#1A1A2E",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 8px 24px rgba(26,26,46,0.18)"}}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg>
         </div>
-        <div style={{flex:"1 1 300px",minWidth:260,textAlign:"left"}}>
+        <div style={{flex:"1 1 260px",minWidth:0,textAlign:"left"}}>
           <h3 style={{fontWeight:800,fontSize:"clamp(18px,2.5vw,26px)",letterSpacing:-0.8,marginBottom:10,lineHeight:1.2}}>Your profile doesn't sit in a pile.</h3>
           <p style={{color:"var(--t2)",fontSize:"clamp(14px,1.6vw,16px)",lineHeight:1.7,margin:0}}>Manager Mode is designed to give your profile focused, personal attention. Each week, a Cast Slate career check-in is prepared for your inbox — reflecting your specific profile, your actual gaps, and one concrete step forward. This is not a generic newsletter. It is written for you, about your profile, every single week.</p>
         </div>
@@ -4405,17 +4424,17 @@ function ManagerModePage({onNavigate,session,myProfile}){
         <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.65,maxWidth:520,margin:"14px auto 0"}}>Every week, your private Cast Slate career note arrives with personalized guidance and one focused task — written specifically for your profile.</p>
       </div>
 
-      {/* Split: Desktop mockup + actor profile */}
-      <div style={{display:"flex",alignItems:"flex-start",gap:"clamp(24px,4vw,52px)",flexWrap:"wrap",justifyContent:"center",marginBottom:48}}>
-        {/* Desktop inbox */}
-        <div style={{flex:"0 0 auto",display:"flex",flexDirection:"column",alignItems:"center",gap:12,maxWidth:"100%"}}>
+      {/* Split: Desktop mockup + mobile mockup — responsive */}
+      <div className="mm-checkin-row" style={{display:"flex",alignItems:"flex-start",gap:"clamp(20px,4vw,48px)",flexWrap:"wrap",justifyContent:"center",marginBottom:48,width:"100%",boxSizing:"border-box"}}>
+        {/* Desktop inbox — hidden on narrow screens */}
+        <div className="mm-show-desktop" style={{flexDirection:"column",alignItems:"center",gap:12,flex:"1 1 320px",minWidth:0,maxWidth:480}}>
           <InboxMockup mobile={false}/>
           <span style={{fontSize:11,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase",fontWeight:600}}>Desktop inbox view</span>
         </div>
 
-        {/* Mobile frame */}
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
-          <div style={{background:"#1A1A2E",borderRadius:32,padding:"12px 10px 16px",boxShadow:"0 24px 64px rgba(26,26,46,0.30)",border:"2px solid #2D2D44",flexShrink:0}}>
+        {/* Mobile frame — always visible */}
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12,flexShrink:0}}>
+          <div style={{background:"#1A1A2E",borderRadius:32,padding:"12px 10px 16px",boxShadow:"0 24px 64px rgba(26,26,46,0.30)",border:"2px solid #2D2D44"}}>
             <div style={{width:40,height:4,background:"rgba(255,255,255,0.2)",borderRadius:100,margin:"0 auto 10px"}}/>
             <div style={{background:"#000",borderRadius:22,overflow:"hidden"}}>
               <InboxMockup mobile={true}/>
@@ -4426,7 +4445,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
       </div>
 
       {/* Actor profile card with real photo */}
-      <div style={{maxWidth:700,margin:"0 auto",background:"#fff",border:"1px solid var(--bdr)",borderRadius:20,overflow:"hidden",boxShadow:"0 8px 32px rgba(26,26,46,0.07)"}}>
+      <div className="mm-card-outer" style={{maxWidth:700,margin:"0 auto",background:"#fff",border:"1px solid var(--bdr)",borderRadius:20,overflow:"hidden",boxShadow:"0 8px 32px rgba(26,26,46,0.07)"}}>
         <div style={{background:"linear-gradient(135deg,#1A1A2E,#16213e)",padding:"14px 20px",display:"flex",alignItems:"center",gap:8}}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="16" height="16"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg>
           <span style={{color:"rgba(255,255,255,0.7)",fontSize:12,fontWeight:600,letterSpacing:0.3}}>Cast Slate — Manager Mode Profile View</span>
@@ -4465,7 +4484,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
         <h2 style={{fontWeight:800,fontSize:"clamp(24px,3.2vw,38px)",letterSpacing:-1.2,lineHeight:1.08}}>Get out of your apartment.<br/>Get in the room.</h2>
         <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.65,maxWidth:560,margin:"14px auto 0"}}>Manager Mode also suggests in-person industry events in New York and Los Angeles — because the industry still runs on real-world relationships. Mixers, showcases, workshops, and networking nights where you can meet agents, managers, casting directors, producers, and fellow actors face to face.</p>
       </div>
-      <div className="grid-2" style={{gap:20,maxWidth:900,margin:"0 auto"}}>
+      <div className="grid-2 mm-card-outer" style={{gap:20,maxWidth:900,margin:"0 auto"}}>
         {[
           {city:"New York",flag:"🗽",color:"#1A1A2E",accent:"rgba(99,102,241,0.08)",border:"rgba(99,102,241,0.2)",events:["Industry mixers & networking nights","Actor showcases & casting showcases","SAG-AFTRA member events","Workshop series with working CDs","Off-Broadway opening night events","Commercial acting intensives"]},
           {city:"Los Angeles",flag:"🌴",color:"#0f2347",accent:"rgba(37,99,235,0.07)",border:"rgba(37,99,235,0.2)",events:["Film festival industry parties","Pilot season prep events","Agent & manager meet-and-greets","TV studio open calls & showcases","Commercial union member events","Industry workshop weekends"]}
@@ -4500,10 +4519,10 @@ function ManagerModePage({onNavigate,session,myProfile}){
       <div style={{maxWidth:1140,margin:"0 auto"}}>
         <div style={{background:"linear-gradient(160deg,#0D0D1A 0%,#1A1A2E 50%,#0f2347 100%)",borderRadius:24,padding:"clamp(36px,5vw,64px) clamp(20px,4vw,56px)",position:"relative",overflow:"hidden"}}>
           <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 70% 20%,rgba(99,102,241,0.18) 0%,transparent 55%),radial-gradient(ellipse at 20% 80%,rgba(37,99,235,0.12) 0%,transparent 50%)",pointerEvents:"none"}}/>
-          <div style={{position:"relative",display:"flex",alignItems:"center",gap:"clamp(28px,5vw,64px)",flexWrap:"wrap"}}>
+          <div className="mm-bcard-row" style={{position:"relative",display:"flex",alignItems:"center",gap:"clamp(28px,5vw,64px)",flexWrap:"wrap"}}>
 
             {/* Left: Text content */}
-            <div style={{flex:"1 1 300px",minWidth:260}}>
+            <div className="mm-bcard-text" style={{flex:"1 1 280px",minWidth:0}}>
               <div style={{display:"inline-flex",alignItems:"center",gap:7,background:"rgba(110,231,183,0.1)",border:"1px solid rgba(110,231,183,0.25)",padding:"5px 14px",borderRadius:100,fontSize:11,color:"#6EE7B7",fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",marginBottom:22}}>
                 <span style={{width:5,height:5,borderRadius:"50%",background:"#6EE7B7",boxShadow:"0 0 8px #6EE7B7"}}/>Premium Benefit
               </div>
@@ -4533,9 +4552,9 @@ function ManagerModePage({onNavigate,session,myProfile}){
             </div>
 
             {/* Right: Business card visual */}
-            <div style={{flex:"0 0 auto",display:"flex",flexDirection:"column",alignItems:"center",gap:16}}>
+            <div style={{flex:"1 1 280px",minWidth:0,display:"flex",flexDirection:"column",alignItems:"center",gap:16,maxWidth:360}}>
               {/* The card */}
-              <div style={{width:"clamp(260px,35vw,320px)",background:"#fff",borderRadius:18,overflow:"hidden",boxShadow:"0 24px 72px rgba(0,0,0,0.5),0 8px 24px rgba(0,0,0,0.3)",position:"relative",flexShrink:0}}>
+              <div style={{width:"100%",maxWidth:320,background:"#fff",borderRadius:18,overflow:"hidden",boxShadow:"0 24px 72px rgba(0,0,0,0.5),0 8px 24px rgba(0,0,0,0.3)",position:"relative"}}>
                 {/* Card top accent bar */}
                 <div style={{height:6,background:"linear-gradient(90deg,#1A1A2E,#2563EB,#1A1A2E)"}}/>
                 <div style={{padding:"clamp(16px,3vw,22px)"}}>
@@ -4592,8 +4611,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
     </section>
 
     {/* ══════ INCLUDED WITH PREMIUM ══════ */}
-    <section style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,80px)",maxWidth:860,margin:"0 auto"}}>
-      <div style={{background:"linear-gradient(145deg,#1A1A2E,#16213e)",borderRadius:24,padding:"clamp(36px,5vw,56px) clamp(24px,4vw,52px)",textAlign:"center",position:"relative",overflow:"hidden"}}>
+    <section style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,80px)",maxWidth:860,margin:"0 auto",boxSizing:"border-box"}}>
+      <div style={{background:"linear-gradient(145deg,#1A1A2E,#16213e)",borderRadius:20,padding:"clamp(28px,5vw,56px) clamp(18px,4vw,48px)",textAlign:"center",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 50% 0%,rgba(99,102,241,0.18) 0%,transparent 60%)",pointerEvents:"none"}}/>
         <div style={{position:"relative"}}>
           <div style={{display:"flex",justifyContent:"center",marginBottom:20}}>
