@@ -7202,7 +7202,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     {skills.length>0&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       {sectionHead("Skills")}
       <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-        {skills.map((s,i)=><span key={i} style={{padding:"5px 12px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:20,fontSize:13,color:"var(--t1)",fontWeight:500}}>{s}</span>)}
+        {skills.map((s,i)=><span key={i} style={{padding:"4px 13px",background:"#F1EFE8",border:"1px solid #DDD8CC",borderRadius:20,fontSize:12.5,color:"#171724",fontWeight:500,letterSpacing:"0.01em",lineHeight:"1.6"}}>{s}</span>)}
       </div>
     </div>}
 
@@ -9449,7 +9449,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           <h4 style={{fontSize:15,fontWeight:800,cursor:"pointer",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",margin:0}} onClick={()=>setCdProfileOverlay(buildTalentView(a))}>{tp.display_name||"Applicant"}</h4>
           <p style={{fontSize:12,color:"var(--t2)",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{[tp.age,tp.gender,tp.location,tp.union_status].filter(Boolean).join(" · ")||"—"}</p>
           {(tp.skills||[]).length>0&&<div style={{display:"flex",gap:4,flexWrap:"wrap",marginTop:2}}>
-            {(tp.skills||[]).slice(0,3).map((s,i)=><span key={i} style={{background:"var(--s2)",padding:"2px 7px",borderRadius:5,fontSize:10,color:"var(--t2)"}}>{s}</span>)}
+            {(tp.skills||[]).slice(0,3).map((s,i)=><span key={i} style={{background:"#F1EFE8",border:"1px solid #DDD8CC",padding:"2px 7px",borderRadius:10,fontSize:10,color:"#171724",fontWeight:500}}>{s}</span>)}
           </div>}
           {a.cover_note&&<p style={{fontSize:11,color:"var(--t3)",fontStyle:"italic",margin:"4px 0 0",overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>"{a.cover_note}"</p>}
           {/* Audition takes */}
@@ -9517,7 +9517,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
 
         {/* Skills */}
         {(tp.skills||[]).length>0&&<div style={{padding:"8px 18px",display:"flex",gap:5,flexWrap:"wrap",borderTop:"1px solid var(--bdr)"}}>
-          {(tp.skills||[]).slice(0,5).map((s,i)=><span key={i} style={{fontSize:11,padding:"2px 8px",borderRadius:5,background:"var(--s2)",color:"var(--t2)"}}>{s}</span>)}
+          {(tp.skills||[]).slice(0,5).map((s,i)=><span key={i} style={{fontSize:11,padding:"2px 9px",borderRadius:10,background:"#F1EFE8",border:"1px solid #DDD8CC",color:"#171724",fontWeight:500}}>{s}</span>)}
         </div>}
 
         {/* Decision buttons */}
