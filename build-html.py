@@ -136,6 +136,10 @@ html = f'''<!DOCTYPE html>
   <script type="application/ld+json">
   {{"@context":"https://schema.org","@type":"Organization","name":"CastSlate","url":"https://www.castslate.com","logo":"https://www.castslate.com/og-image.png","sameAs":[]}}
   </script>
+  <!-- Structured Data: WebApplication -->
+  <script type="application/ld+json">
+  {{"@context":"https://schema.org","@type":"WebApplication","name":"CastSlate","url":"https://www.castslate.com","applicationCategory":"EntertainmentApplication","operatingSystem":"Web","offers":{{"@type":"Offer","price":"0","priceCurrency":"USD","description":"Free actor account. Premium at $9.99/month."}},"description":"A modern casting platform where actors submit to roles and casting directors review talent one profile at a time."}}
+  </script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -232,6 +236,39 @@ html = f'''<!DOCTYPE html>
     <button onclick="window.location.reload()">Reload</button>
   </div>
   <div id="root"></div>
+  <!-- Crawlable fallback for search engines that don't execute JavaScript -->
+  <noscript>
+    <div style="font-family:sans-serif;max-width:800px;margin:40px auto;padding:0 24px;color:#1B1C20;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px;">
+        <div style="width:40px;height:40px;background:#6366f1;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg>
+        </div>
+        <strong style="font-size:22px;font-weight:800;letter-spacing:-0.5px;">CastSlate</strong>
+      </div>
+      <h1 style="font-size:28px;font-weight:800;margin:0 0 12px;">Casting, finally built for actors.</h1>
+      <p style="font-size:16px;line-height:1.7;margin:0 0 24px;color:#444;">
+        CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time.
+        Free forever for actors. Premium at $9.99/month for unlimited submissions.
+        Used by actors, casting directors, filmmakers, and production companies for film, TV, theater, and commercial casting calls and auditions.
+      </p>
+      <h2 style="font-size:18px;font-weight:700;margin:0 0 12px;">Quick Links</h2>
+      <ul style="list-style:none;padding:0;margin:0 0 24px;display:flex;flex-wrap:wrap;gap:12px;">
+        <li><a href="/browse-castings" style="color:#6366f1;font-weight:600;">Browse Castings</a></li>
+        <li><a href="/pricing" style="color:#6366f1;font-weight:600;">Pricing</a></li>
+        <li><a href="/actor-toolkit" style="color:#6366f1;font-weight:600;">Actor Toolkit</a></li>
+        <li><a href="/classes" style="color:#6366f1;font-weight:600;">Acting Classes</a></li>
+        <li><a href="/resources" style="color:#6366f1;font-weight:600;">Resources</a></li>
+        <li><a href="/pay-talent" style="color:#6366f1;font-weight:600;">Pay Talent</a></li>
+        <li><a href="/about" style="color:#6366f1;font-weight:600;">About</a></li>
+        <li><a href="/blog" style="color:#6366f1;font-weight:600;">Blog</a></li>
+        <li><a href="/contact" style="color:#6366f1;font-weight:600;">Contact</a></li>
+        <li><a href="/faq" style="color:#6366f1;font-weight:600;">FAQ</a></li>
+        <li><a href="/terms" style="color:#6366f1;font-weight:600;">Terms of Use</a></li>
+        <li><a href="/privacy" style="color:#6366f1;font-weight:600;">Privacy Policy</a></li>
+      </ul>
+      <p style="font-size:13px;color:#888;">JavaScript is required to use CastSlate. Please enable JavaScript in your browser.</p>
+    </div>
+  </noscript>
   <script>
     /* ── Runtime error infrastructure ────────────────────────────────────────
        Errors BEFORE React mounts → show full crash screen.
