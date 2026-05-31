@@ -1395,3 +1395,60 @@ create index if not exists email_preferences_user_id_idx on public.email_prefere
 create index if not exists email_digest_logs_user_id_idx on public.email_digest_logs (user_id);
 create index if not exists email_digest_logs_sent_at_idx on public.email_digest_logs (sent_at desc);
 create index if not exists user_casting_email_history_user_idx on public.user_casting_email_history (user_id);
+
+-- ═══════════════════════════════════════════════════════════════
+-- WEEKLY ACTOR CHECK-INS (v1)
+-- Automatic one-way weekly career notes delivered to talent inbox.
+-- No reply allowed. One per talent per week. Safe, branded content.
+-- ═══════════════════════════════════════════════════════════════
+
+-- message_type column on messages table (distinguishes system/check-in from direct)
+alter table public.messages
+  add column if not exists message_type text not null default 'direct',
+  add column if not exists checkin_week date;
+
+-- Log of sent weekly check-ins: one row per (talent, week); unique prevents duplicates
+create table if not exists public.weekly_checkin_logs (
+  id                 uuid primary key default gen_random_uuid(),
+  talent_id          uuid not null references public.profiles(id) on delete cascade,
+  message_id         uuid references public.messages(id) on delete set null,
+  week_start         date not null,
+  status             text not null default 'sent' check (status in ('sent','read','task_completed')),
+  task_action        text,
+  sent_at            timestamptz default now(),
+  read_at            timestamptz,
+  task_completed_at  timestamptz,
+  constraint weekly_checkin_logs_one_per_week unique (talent_id, week_start)
+);
+
+create index if not exists weekly_checkin_logs_talent_idx  on public.weekly_checkin_logs (talent_id);
+create index if not exists weekly_checkin_logs_week_idx    on public.weekly_checkin_logs (week_start desc);
+
+alter table public.weekly_checkin_logs enable row level security;
+
+drop policy if exists "checkin_logs: own select"     on public.weekly_checkin_logs;
+drop policy if exists "checkin_logs: admin insert"   on public.weekly_checkin_logs;
+drop policy if exists "checkin_logs: own update"     on public.weekly_checkin_logs;
+drop policy if exists "checkin_logs: admin select"   on public.weekly_checkin_logs;
+
+create policy "checkin_logs: own select"
+  on public.weekly_checkin_logs for select
+  using (talent_id = auth.uid() or public.is_admin());
+
+create policy "checkin_logs: admin insert"
+  on public.weekly_checkin_logs for insert
+  with check (public.is_admin());
+
+create policy "checkin_logs: own update"
+  on public.weekly_checkin_logs for update
+  using (talent_id = auth.uid() or public.is_admin());
+
+-- Admin settings for weekly check-ins (stored in the singleton site_settings row)
+alter table public.site_settings
+  add column if not exists checkin_enabled           boolean not null default true,
+  add column if not exists checkin_send_day          integer not null default 1,
+  add column if not exists checkin_send_hour         integer not null default 9,
+  add column if not exists checkin_test_mode         boolean not null default false,
+  add column if not exists checkin_paused            boolean not null default false,
+  add column if not exists checkin_last_run_at       timestamptz,
+  add column if not exists checkin_paused_user_ids   jsonb not null default '[]'::jsonb;

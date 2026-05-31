@@ -10242,7 +10242,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
     (async()=>{
       try{
         const {data,error}=await window.sb.from("messages")
-          .select("id,from_id,to_id,body,created_at,read_at,application_id,conversation_id,profiles:from_id(id,display_name,company_name,headshot_url,user_type)")
+          .select("id,from_id,to_id,body,created_at,read_at,application_id,conversation_id,message_type,checkin_week,profiles:from_id(id,display_name,company_name,headshot_url,user_type)")
           .eq("conversation_id",conversationId)
           .order("created_at",{ascending:true})
           .limit(500);
@@ -10484,6 +10484,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
   const [messages,setMessages]=useState([]);    // raw flat list of all messages I'm in
   const [counterparties,setCounterparties]=useState({}); // id -> profile snapshot
   const [openMsg,setOpenMsg]=useState(null);
+  const [openCheckin,setOpenCheckin]=useState(null); // for weekly_actor_checkin messages
   const [loading,setLoading]=useState(true);
   const [err,setErr]=useState("");
   const [search,setSearch]=useState("");
@@ -10496,7 +10497,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
     setLoading(true);
     try{
       const {data,error}=await window.sb.from("messages")
-        .select("id,from_id,to_id,body,created_at,read_at,application_id")
+        .select("id,from_id,to_id,body,created_at,read_at,application_id,message_type,checkin_week")
         .or(`from_id.eq.${uid},to_id.eq.${uid}`)
         .order("created_at",{ascending:false})
         .limit(500);
@@ -10543,11 +10544,18 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
     };
   },[uid,load]);
 
-  // ─── Thread grouping. Key = counterparty user_id. Each thread keeps the latest
-  //     message, total count, and unread count (messages addressed to me, unread).
+  // ─── Separate check-in messages from regular messages
+  const checkins=useMemo(()=>{
+    return messages
+      .filter(m=>m.message_type==="weekly_actor_checkin"&&m.to_id===uid)
+      .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  },[messages,uid]);
+
+  // ─── Thread grouping. Key = counterparty user_id. Check-in messages excluded.
   const threads=useMemo(()=>{
     const map=new Map();
     messages.forEach(m=>{
+      if(m.message_type==="weekly_actor_checkin")return; // handled separately
       const other=m.from_id===uid?m.to_id:m.from_id;
       if(!other)return;
       const t=map.get(other)||{otherId:other,latest:null,unread:0,total:0,messages:[]};
@@ -10557,11 +10565,11 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
       if(!t.latest||new Date(m.created_at)>new Date(t.latest.created_at))t.latest=m;
       map.set(other,t);
     });
-    // Sort threads by most-recent activity
     return Array.from(map.values()).sort((a,b)=>new Date(b.latest?.created_at||0)-new Date(a.latest?.created_at||0));
   },[messages,uid]);
 
-  const totalUnread=threads.reduce((n,t)=>n+t.unread,0);
+  const checkinUnread=checkins.filter(m=>!m.read_at).length;
+  const totalUnread=threads.reduce((n,t)=>n+t.unread,0)+checkinUnread;
   const filtered=threads.filter(t=>{
     if(!search.trim())return true;
     const p=counterparties[t.otherId]||{};
@@ -10625,11 +10633,56 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
       <button className="btn-s btn-sm" onClick={load}>Retry</button>
     </div>}
 
-    {loading&&threads.length===0?<div className="card" style={{padding:0}}><CastSlateLoader size="inline" text="Loading messages…"/></div>:
-     threads.length===0?<div className="card" style={{padding:48,textAlign:"center"}}>
+    {/* ── Weekly career notes panel (talent only) ── */}
+    {profile?.user_type==="talent"&&checkins.length>0&&(()=>{
+      const latest=checkins[0];
+      const isUnread=!latest.read_at;
+      let preview="Your weekly Cast Slate career note is ready.";
+      try{const c=JSON.parse(latest.body);if(c.task)preview=c.task;}catch(_){}
+      const dt=new Date(latest.created_at);
+      const dateLabel=dt.toLocaleDateString(undefined,{month:"short",day:"numeric"});
+      return(
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:10,letterSpacing:1.2,textTransform:"uppercase",fontWeight:700,color:"var(--acc)",marginBottom:6}}>Weekly Career Note</div>
+          <div className="card" style={{padding:0,overflow:"hidden",border:"1px solid var(--acc)",borderRadius:12}}>
+            <div onClick={()=>setOpenCheckin(latest)} style={{display:"grid",gridTemplateColumns:"auto 1fr auto",gap:14,padding:"16px 22px",cursor:"pointer",alignItems:"center",background:isUnread?"rgba(26,26,200,0.04)":"transparent",transition:"background 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--s2)"} onMouseLeave={e=>e.currentTarget.style.background=isUnread?"rgba(26,26,200,0.04)":"transparent"}>
+              <div style={{position:"relative"}}>
+                <div style={{width:52,height:52,borderRadius:"50%",background:"linear-gradient(135deg,var(--acc),#1a1a6e)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>📋</div>
+                {isUnread&&<span style={{position:"absolute",top:-2,right:-2,background:"var(--acc)",color:"#fff",borderRadius:"50%",minWidth:20,height:20,padding:"0 5px",fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid var(--s1)"}}>1</span>}
+              </div>
+              <div style={{minWidth:0}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:3}}>
+                  <strong style={{fontSize:14,fontWeight:isUnread?800:700}}>Cast Slate Career Team</strong>
+                  <span className="tag" style={{fontSize:9,background:"rgba(26,26,200,0.08)",color:"var(--acc)",fontWeight:700}}>WEEKLY CHECK-IN</span>
+                  {checkins.length>1&&<span style={{fontSize:11,color:"var(--t3)"}}>· {checkins.length} notes</span>}
+                </div>
+                <div style={{fontSize:13,color:isUnread?"var(--t1)":"var(--t2)",fontWeight:isUnread?500:400,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{preview}</div>
+              </div>
+              <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap",alignSelf:"flex-start"}}>{dateLabel}</span>
+            </div>
+            {checkins.length>1&&<div style={{borderTop:"1px solid var(--bdr)",padding:"8px 22px",background:"var(--s2)"}}>
+              <div style={{fontSize:11,color:"var(--t3)"}}>Previous notes</div>
+              {checkins.slice(1,4).map(m=>{
+                let prevPreview="Weekly career note";
+                try{const c=JSON.parse(m.body);if(c.task)prevPreview=c.task;}catch(_){}
+                const prevDt=new Date(m.created_at);
+                return(<div key={m.id} onClick={()=>setOpenCheckin(m)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"6px 0",cursor:"pointer",gap:12,borderTop:"1px solid var(--bdr)"}}>
+                  <span style={{fontSize:12,color:"var(--t2)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{prevPreview}</span>
+                  <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap"}}>{prevDt.toLocaleDateString(undefined,{month:"short",day:"numeric"})}</span>
+                  {!m.read_at&&<span style={{width:7,height:7,borderRadius:"50%",background:"var(--acc)",flexShrink:0}}/>}
+                </div>);
+              })}
+            </div>}
+          </div>
+        </div>
+      );
+    })()}
+
+    {loading&&threads.length===0&&checkins.length===0?<div className="card" style={{padding:0}}><CastSlateLoader size="inline" text="Loading messages…"/></div>:
+     threads.length===0&&checkins.length===0?<div className="card" style={{padding:48,textAlign:"center"}}>
        <h3 style={{fontSize:16,fontWeight:700,marginBottom:6}}>{t('inbox.noMessages')}</h3>
        <p style={{color:"var(--t3)",fontSize:14,maxWidth:420,margin:"0 auto"}}>{profile?.user_type==="talent"?"When a casting director messages you about a role or invite, it'll show up here.":"When talent applies to one of your castings or replies to your messages, conversations land here."}</p>
-     </div>:
+     </div>:threads.length===0?null:
      <div className="card" style={{padding:0,overflow:"hidden"}}>
        {filtered.map(t=>{
          const cp=counterparties[t.otherId]||{};
@@ -10655,7 +10708,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
            <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap",alignSelf:"flex-start"}}>{dateLabel}</span>
          </div>);
        })}
-       {filtered.length===0&&<div style={{padding:30,textAlign:"center",color:"var(--t3)",fontSize:13}}>No threads match "{search}".</div>}
+       {filtered.length===0&&threads.length>0&&<div style={{padding:30,textAlign:"center",color:"var(--t3)",fontSize:13}}>No threads match "{search}".</div>}
      </div>
     }
 
@@ -10665,7 +10718,6 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
       sessionUserType={profile?.user_type}
       onViewProfile={onViewProfile}
       onClose={()=>setOpenMsg(null)}
-      // Bulk mark-read: modal hands us every newly-read message id in one call.
       onRead={(ids)=>{
         const stamp=new Date().toISOString();
         const idSet=new Set(Array.isArray(ids)?ids:[ids]);
@@ -10673,14 +10725,206 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
       }}
       onDeleted={(id)=>{setMessages(p=>p.filter(m=>m.id!==id));setTimeout(load,300);}}
       onReplied={(newRow)=>{
-        // Optimistic append so the thread list reflects the new outgoing message instantly
         if(newRow)setMessages(p=>p.some(m=>m.id===newRow.id)?p:[{...newRow},...p]);
         setTimeout(load,300);
       }}
     />}
 
+    {openCheckin&&<CheckInViewModal
+      message={openCheckin}
+      onClose={()=>{setOpenCheckin(null);load();}}
+      onNavigate={onNavigate}
+      onRead={(id)=>{setMessages(p=>p.map(m=>m.id===id?{...m,read_at:new Date().toISOString()}:m));}}
+    />}
+
     <Footer onNavigate={onNavigate}/>
   </div>);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WEEKLY ACTOR CHECK-IN SYSTEM
+// Generates one-way branded career notes for talent — no reply allowed.
+// ═══════════════════════════════════════════════════════════════
+
+function generateWeeklyCheckInContent(profile){
+  const hasHeadshot=!!(profile?.headshot_url);
+  const hasBio=!!(profile?.bio&&profile.bio.trim().length>40);
+  const hasSkills=!!(Array.isArray(profile?.skills)&&profile.skills.length>=2);
+  const hasResume=!!(profile?.resume_url);
+  const hasReel=!!(profile?.reel_url||(Array.isArray(profile?.video_links)&&profile.video_links.length>0));
+  const hasPhotos=!!(Array.isArray(profile?.additional_photos)&&profile.additional_photos.length>=2);
+  const completed=[hasHeadshot,hasBio,hasSkills,hasResume,hasReel].filter(Boolean).length;
+
+  if(completed<2){
+    return{
+      note:"Your Cast Slate profile is still in the early stage. The best move this week is to complete your basic profile so casting directors can understand who you are and what roles may fit you.",
+      doing_well:"You've started your profile, which is the first step.",
+      needs_attention:"Your profile needs more material before it can make a strong first impression.",
+      casting_lane:"General background and open-call roles",
+      task:"Complete your basic profile information.",
+      cta_label:"Complete My Profile",
+      cta_action:"profile"
+    };
+  }
+
+  let needs_attention,task,cta_action,cta_label="Complete This Week's Task";
+
+  if(!hasReel){
+    needs_attention="Your profile doesn't yet include a reel or video clip. A short, well-lit performance clip — even 30 to 60 seconds — gives casting directors a direct sense of your work before they look further.";
+    task="Add a short video clip or reel link to your profile this week.";
+    cta_action="media";
+  }else if(!hasResume){
+    needs_attention="Your profile is missing a resume. A concise, formatted resume helps casting directors quickly confirm your experience and training at a glance.";
+    task="Upload your acting resume to your profile.";
+    cta_action="resume";
+  }else if(!hasSkills){
+    needs_attention="Your skills section could use more detail. Specific skills and training help your profile appear in more relevant searches.";
+    task="Add your top skills and any special abilities to your profile.";
+    cta_action="skills";
+  }else if(!hasBio){
+    needs_attention="Your bio section is brief. A well-written bio gives casting directors context about your background, training, and what you bring to a project.";
+    task="Write or expand your actor bio. Two to three focused sentences is enough.";
+    cta_action="bio";
+  }else if(!hasPhotos){
+    needs_attention="Additional photos would strengthen your profile. More shots — including a full-length or natural lifestyle photo — help casting directors picture you in a wider range of contexts.";
+    task="Add at least one additional photo to your profile, such as a full-body or natural lifestyle shot.";
+    cta_action="photos";
+  }else{
+    needs_attention="Your profile is in solid shape. The next step is staying active — submitting to castings that match your type keeps your name visible to casting directors who are actively reviewing talent.";
+    task="Review the current casting calls and submit to any roles that match your type and experience.";
+    cta_action="castings";
+    cta_label="Browse Casting Calls";
+  }
+
+  let doing_well;
+  if(hasReel){
+    doing_well="Your profile includes a video clip, which is one of the first things casting directors look for when evaluating talent on the platform.";
+  }else if(hasHeadshot&&hasBio){
+    doing_well="You have a headshot and a bio in place, which gives casting directors a solid first impression of who you are and what you bring.";
+  }else if(hasHeadshot){
+    doing_well="Your headshot is in place. A clear, professional photo is the first thing casting directors see, and yours makes a good first impression.";
+  }else if(hasBio){
+    doing_well="You have a bio in place, which helps casting directors understand your background and approach before they look at your other materials.";
+  }else{
+    doing_well="You've filled in your core profile details, which puts you ahead of many accounts that leave key sections blank.";
+  }
+
+  let note;
+  if(completed>=4){
+    note="Based on your current Cast Slate profile, your materials are in good shape. Your next step is putting that profile to work — casting directors review talent who are active on the platform more regularly than those who are not.";
+  }else if(completed===3){
+    note="Your Cast Slate profile is moving in the right direction. You have some strong materials in place, and one or two additions this week could make a meaningful difference in how casting directors respond to your profile.";
+  }else{
+    note="Here is your career note for this week. Based on your current Cast Slate profile, there are a few targeted steps that could strengthen how your profile reads to casting directors.";
+  }
+
+  const union=(profile?.union_status||"").toLowerCase();
+  let casting_lane;
+  if(hasReel&&hasResume){
+    casting_lane=union.includes("sag")||union.includes("aftra")?"SAG-AFTRA productions — film and television drama":"Independent film and television drama";
+  }else if(hasReel){
+    casting_lane="Short film, student projects, and emerging director work";
+  }else if(hasResume&&hasBio){
+    casting_lane="Theater, stage productions, and film with open submissions";
+  }else{
+    casting_lane="Commercial, branded content, and open-call roles";
+  }
+
+  return{note,doing_well,needs_attention,casting_lane,task,cta_label,cta_action};
+}
+
+// ─── CheckInSection helper
+function CheckInSection({icon,title,body,accent}){
+  if(!body)return null;
+  return(
+    <div style={{marginBottom:18}}>
+      <div style={{fontSize:10,letterSpacing:1.2,textTransform:"uppercase",fontWeight:700,color:accent||"var(--t3)",marginBottom:5}}>{icon} {title}</div>
+      <div style={{fontSize:14,lineHeight:1.75,color:"var(--t1)"}}>{body}</div>
+    </div>
+  );
+}
+
+// ─── CheckInViewModal — one-way, no reply, structured career note display
+function CheckInViewModal({message,onClose,onNavigate,onRead}){
+  const [taskDone,setTaskDone]=useState(false);
+  const uid=message?.to_id;
+
+  // Mark read on open
+  useEffect(()=>{
+    if(!message||message.read_at)return;
+    (async()=>{
+      try{
+        await window.sb.from("messages").update({read_at:new Date().toISOString()}).eq("id",message.id);
+        // Update log status to 'read'
+        await window.sb.from("weekly_checkin_logs").update({status:"read",read_at:new Date().toISOString()}).eq("message_id",message.id).eq("status","sent");
+        if(typeof onRead==="function")onRead(message.id);
+      }catch(_){}
+    })();
+  },[message?.id]);
+
+  if(!message)return null;
+
+  let content={};
+  try{content=JSON.parse(message.body);}catch(_){content={note:message.body};}
+
+  const weekDate=message.checkin_week?new Date(message.checkin_week+"T12:00:00"):new Date(message.created_at);
+  const weekLabel="Week of "+weekDate.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+
+  const handleCTA=async()=>{
+    const action=content.cta_action||"profile";
+    // Mark task completed
+    try{
+      await window.sb.from("weekly_checkin_logs")
+        .update({status:"task_completed",task_completed_at:new Date().toISOString()})
+        .eq("message_id",message.id);
+    }catch(_){}
+    setTaskDone(true);
+    const actionNav={slate:"my-profile",photos:"my-profile",bio:"my-profile",skills:"my-profile",resume:"my-profile",media:"my-profile",profile:"my-profile",castings:"castings"};
+    setTimeout(()=>{onClose();if(typeof onNavigate==="function")onNavigate(actionNav[action]||"my-profile");},1000);
+  };
+
+  return(
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:580,maxHeight:"92vh",display:"flex",flexDirection:"column",padding:0,overflow:"hidden"}}>
+        {/* Header */}
+        <div style={{display:"flex",alignItems:"center",gap:14,padding:"18px 22px",borderBottom:"1px solid var(--bdr)",flexShrink:0}}>
+          <button className="btn-s btn-sm" onClick={onClose}>←</button>
+          <div style={{width:44,height:44,borderRadius:"50%",background:"linear-gradient(135deg,var(--acc),#1a1a6e)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>📋</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontWeight:800,fontSize:15,letterSpacing:"-0.2px"}}>Cast Slate Career Team</div>
+            <div style={{fontSize:10,letterSpacing:1,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,marginTop:2}}>WEEKLY CAREER NOTE</div>
+          </div>
+          <div style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap"}}>{weekLabel}</div>
+        </div>
+
+        {/* Body */}
+        <div style={{flex:1,overflowY:"auto",padding:"24px 26px"}}>
+          <div style={{fontWeight:800,fontSize:20,letterSpacing:"-0.5px",marginBottom:2}}>Your Weekly Actor Check-In</div>
+          <div style={{fontSize:12,color:"var(--t3)",marginBottom:24,letterSpacing:0.2}}>{weekLabel} · Cast Slate Career Team</div>
+
+          <CheckInSection icon="📝" title="This week's note" body={content.note}/>
+          <CheckInSection icon="✓" title="What you're doing well" body={content.doing_well} accent="var(--grn)"/>
+          <CheckInSection icon="→" title="What needs attention" body={content.needs_attention}/>
+          <CheckInSection icon="🎬" title="Casting lane to focus on" body={content.casting_lane} accent="var(--acc)"/>
+
+          <div style={{background:"var(--s2)",borderRadius:12,padding:"16px 18px",marginBottom:20,border:"1px solid var(--bdr)"}}>
+            <div style={{fontSize:10,letterSpacing:1.2,textTransform:"uppercase",fontWeight:700,color:"var(--acc)",marginBottom:6}}>Your task this week</div>
+            <div style={{fontSize:14,lineHeight:1.65,color:"var(--t1)",fontWeight:500}}>{content.task||"Complete your profile this week."}</div>
+          </div>
+
+          {taskDone
+            ?<div style={{textAlign:"center",padding:"16px 0",color:"var(--grn)",fontWeight:700,fontSize:14,letterSpacing:0.2}}>Task completed. Your profile is stronger this week.</div>
+            :<button className="btn-p" style={{width:"100%",padding:"14px",fontSize:15,fontWeight:700}} onClick={handleCTA}>{content.cta_label||"Complete This Week's Task"}</button>
+          }
+        </div>
+
+        {/* No-reply footer */}
+        <div style={{borderTop:"1px solid var(--bdr)",padding:"12px 22px",background:"var(--s2)",flexShrink:0,textAlign:"center"}}>
+          <p style={{fontSize:11,color:"var(--t3)",margin:0,lineHeight:1.6}}>This is your weekly Cast Slate career note. Replies are not available for this message.</p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ─── New Casting creation modal — writes to castings + roles tables
@@ -15459,6 +15703,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {isSuperAdmin&&<AdminNavLink current={section} target="casting-generator" label="Casting Generator" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="legal-pages" label="Legal Pages" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="email-digests" label="Email Digests" onClick={goToSection}/>}
+      {isSuperAdmin&&<AdminNavLink current={section} target="weekly-checkins" label="Weekly Check-Ins" onClick={goToSection}/>}
       {/* Direct jump to the CD dashboard — admins inherit CD capabilities, so they post + review
           submissions from there using the exact same interface as regular casting directors. */}
       <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
@@ -15485,6 +15730,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="casting-generator"&&isSuperAdmin&&<AdminCastingGenerator session={session}/>}
       {section==="legal-pages"&&isSuperAdmin&&<AdminLegalPages/>}
       {section==="email-digests"&&isSuperAdmin&&<AdminEmailDigests/>}
+      {section==="weekly-checkins"&&isSuperAdmin&&<AdminWeeklyCheckIns session={session}/>}
       <div style={{marginTop:40}}><Footer onNavigate={onNavigate}/></div>
     </div>
   </div>);
@@ -16845,6 +17091,373 @@ function AdminEmailDigests(){
           </table>
         </div>
       )}
+    </div>
+  </>);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN: WEEKLY ACTOR CHECK-INS
+// Settings panel + manual send trigger for the automatic weekly
+// career note system. No approval queue — send everything, restrict what it says.
+// ═══════════════════════════════════════════════════════════════
+function AdminWeeklyCheckIns({session}){
+  const[settings,setSettings]=useState(null);
+  const[logs,setLogs]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const[msg,setMsg]=useState("");
+  const[busy,setBusy]=useState(false);
+  const[sendProgress,setSendProgress]=useState(null);
+  const[pauseSearch,setPauseSearch]=useState("");
+  const[pauseResult,setPauseResult]=useState(null);
+  const[form,setForm]=useState({
+    checkin_enabled:true,
+    checkin_send_day:1,
+    checkin_send_hour:9,
+    checkin_test_mode:false,
+    checkin_paused:false
+  });
+
+  const loadAll=async()=>{
+    setLoading(true);
+    const[sRes,lRes]=await Promise.all([
+      window.sb.from("site_settings").select("checkin_enabled,checkin_send_day,checkin_send_hour,checkin_test_mode,checkin_paused,checkin_last_run_at,checkin_paused_user_ids").eq("id",1).maybeSingle(),
+      window.sb.from("weekly_checkin_logs").select("id,talent_id,week_start,status,sent_at,task_action,profiles:talent_id(display_name,headshot_url)").order("sent_at",{ascending:false}).limit(200)
+    ]);
+    if(sRes.data){
+      const s=sRes.data;
+      setSettings(s);
+      setForm({
+        checkin_enabled:s.checkin_enabled!==false,
+        checkin_send_day:s.checkin_send_day??1,
+        checkin_send_hour:s.checkin_send_hour??9,
+        checkin_test_mode:!!s.checkin_test_mode,
+        checkin_paused:!!s.checkin_paused
+      });
+    }
+    setLogs(lRes.data||[]);
+    setLoading(false);
+  };
+
+  useEffect(()=>{loadAll();},[]);
+
+  const showMsg=(m)=>{setMsg(m);setTimeout(()=>setMsg(""),6000);};
+
+  const saveSettings=async()=>{
+    setBusy(true);setMsg("");
+    const{error}=await window.sb.from("site_settings").update({
+      checkin_enabled:form.checkin_enabled,
+      checkin_send_day:form.checkin_send_day,
+      checkin_send_hour:form.checkin_send_hour,
+      checkin_test_mode:form.checkin_test_mode,
+      checkin_paused:form.checkin_paused,
+      updated_at:new Date().toISOString()
+    }).eq("id",1);
+    if(error)showMsg("Save failed: "+error.message);
+    else showMsg("Settings saved.");
+    setBusy(false);
+  };
+
+  const getWeekStart=()=>{
+    const d=new Date();
+    const day=d.getDay(); // 0=Sun,1=Mon,...
+    const diff=d.getDate()-day+(day===0?-6:1); // Monday
+    const mon=new Date(d.setDate(diff));
+    return mon.toISOString().slice(0,10);
+  };
+
+  const runSendNow=async()=>{
+    if(!window.confirm("Send weekly check-ins now to all eligible talent accounts that haven't received one this week?"))return;
+    setBusy(true);setMsg("");setSendProgress("Loading talent accounts…");
+    try{
+      const weekStart=getWeekStart();
+      // Get settings for paused users
+      const{data:ss}=await window.sb.from("site_settings").select("checkin_paused_user_ids").eq("id",1).maybeSingle();
+      const pausedIds=new Set(Array.isArray(ss?.checkin_paused_user_ids)?ss.checkin_paused_user_ids:[]);
+
+      // Already sent this week
+      const{data:alreadySent}=await window.sb.from("weekly_checkin_logs").select("talent_id").eq("week_start",weekStart);
+      const sentSet=new Set((alreadySent||[]).map(r=>r.talent_id));
+
+      // All active talent
+      setSendProgress("Loading talent profiles…");
+      const{data:talents,error:tErr}=await window.sb.from("profiles")
+        .select("id,display_name,user_type,account_status,banned,suspended,headshot_url,bio,skills,resume_url,reel_url,video_links,additional_photos,union_status")
+        .eq("user_type","talent")
+        .eq("account_status","active")
+        .neq("banned",true)
+        .neq("suspended",true)
+        .limit(5000);
+      if(tErr)throw tErr;
+
+      const eligible=(talents||[]).filter(p=>!sentSet.has(p.id)&&!pausedIds.has(p.id));
+      if(eligible.length===0){showMsg("No eligible talent to send to this week.");setSendProgress(null);setBusy(false);return;}
+
+      setSendProgress(`Sending to ${eligible.length} talent accounts…`);
+      let sent=0,skipped=0,failed=0;
+      const adminId=session?.user?.id;
+      const batchSize=20;
+
+      for(let i=0;i<eligible.length;i+=batchSize){
+        const batch=eligible.slice(i,i+batchSize);
+        setSendProgress(`Sending… ${Math.min(i+batchSize,eligible.length)} / ${eligible.length}`);
+        await Promise.all(batch.map(async(talent)=>{
+          try{
+            const content=generateWeeklyCheckInContent(talent);
+            const body=JSON.stringify(content);
+            const checkinDate=weekStart;
+            // Insert message
+            const{data:msgData,error:msgErr}=await window.sb.from("messages").insert({
+              from_id:adminId,
+              to_id:talent.id,
+              body,
+              message_type:"weekly_actor_checkin",
+              checkin_week:checkinDate
+            }).select("id").single();
+            if(msgErr)throw msgErr;
+            // Log it
+            await window.sb.from("weekly_checkin_logs").insert({
+              talent_id:talent.id,
+              message_id:msgData.id,
+              week_start:checkinDate,
+              status:"sent",
+              task_action:content.cta_action
+            });
+            sent++;
+          }catch(e){
+            console.warn("[checkin] failed for",talent.id,e.message);
+            failed++;
+          }
+        }));
+        // Brief yield between batches
+        await new Promise(r=>setTimeout(r,100));
+      }
+
+      // Update last run timestamp
+      await window.sb.from("site_settings").update({checkin_last_run_at:new Date().toISOString()}).eq("id",1);
+      showMsg(`Done — ${sent} check-ins sent, ${failed} failed, ${skipped} skipped.`);
+      setSendProgress(null);
+      loadAll();
+    }catch(e){
+      showMsg("Error: "+e.message);
+      setSendProgress(null);
+    }
+    setBusy(false);
+  };
+
+  const sendTestCheckin=async()=>{
+    if(!session?.user?.id){showMsg("No session.");return;}
+    setBusy(true);setMsg("");
+    try{
+      const weekStart=getWeekStart();
+      // Use a generic test profile
+      const testProfile={headshot_url:null,bio:"",skills:[],resume_url:null,reel_url:null,video_links:[],additional_photos:[],union_status:""};
+      const content=generateWeeklyCheckInContent(testProfile);
+      const body=JSON.stringify(content);
+      const{error}=await window.sb.from("messages").insert({
+        from_id:session.user.id,
+        to_id:session.user.id,
+        body,
+        message_type:"weekly_actor_checkin",
+        checkin_week:weekStart
+      });
+      if(error)throw error;
+      showMsg("Test check-in sent to your own inbox.");
+    }catch(e){showMsg("Error: "+e.message);}
+    setBusy(false);
+  };
+
+  const searchPauseUser=async()=>{
+    if(!pauseSearch.trim()){return;}
+    try{
+      const{data}=await window.sb.from("profiles")
+        .select("id,display_name,user_type,headshot_url")
+        .eq("user_type","talent")
+        .ilike("display_name",`%${pauseSearch.trim()}%`)
+        .limit(5);
+      setPauseResult(data||[]);
+    }catch(e){setPauseResult([]);}
+  };
+
+  const togglePauseUser=async(userId,currentlyPaused)=>{
+    try{
+      const{data:ss}=await window.sb.from("site_settings").select("checkin_paused_user_ids").eq("id",1).maybeSingle();
+      let ids=Array.isArray(ss?.checkin_paused_user_ids)?[...ss.checkin_paused_user_ids]:[];
+      if(currentlyPaused){ids=ids.filter(id=>id!==userId);}
+      else if(!ids.includes(userId)){ids.push(userId);}
+      const{error}=await window.sb.from("site_settings").update({checkin_paused_user_ids:ids}).eq("id",1);
+      if(error)throw error;
+      showMsg(currentlyPaused?"Check-ins resumed for this user.":"Check-ins paused for this user.");
+      setSettings(s=>({...s,checkin_paused_user_ids:ids}));
+    }catch(e){showMsg("Error: "+e.message);}
+  };
+
+  const fmt=(iso)=>{
+    if(!iso)return"—";
+    try{return new Date(iso).toLocaleString("en-US",{month:"short",day:"numeric",year:"numeric",hour:"2-digit",minute:"2-digit"});}catch(_){return iso;}
+  };
+
+  const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const isActive=form.checkin_enabled&&!form.checkin_paused;
+  const statusColor=isActive?"var(--grn)":"var(--red)";
+  const statusBg=isActive?"rgba(27,135,62,0.08)":"rgba(214,59,59,0.08)";
+  const statusLabel=form.checkin_paused?"⏸ PAUSED":form.checkin_enabled?"● ACTIVE":"○ DISABLED";
+
+  const sentCount=logs.filter(l=>l.status==="sent").length;
+  const readCount=logs.filter(l=>l.status==="read").length;
+  const doneCount=logs.filter(l=>l.status==="task_completed").length;
+
+  if(loading)return(<CastSlateLoader size="inline" text="Loading weekly check-in settings…"/>);
+
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Weekly Actor Check-Ins</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Automatic weekly career notes delivered to every active talent inbox. One per actor per week. No reply. No admin approval needed.</p>
+
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,borderLeft:"3px solid var(--acc)"}}>{msg}</div>}
+    {sendProgress&&<div style={{background:"rgba(26,26,200,0.07)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,borderLeft:"3px solid var(--acc)",fontWeight:600}}>{sendProgress}</div>}
+
+    {/* Status badges */}
+    <div style={{display:"flex",gap:10,marginBottom:20,flexWrap:"wrap",alignItems:"center"}}>
+      <span style={{padding:"5px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:statusBg,color:statusColor}}>{statusLabel}</span>
+      {settings?.checkin_last_run_at&&<span style={{fontSize:12,color:"var(--t3)"}}>Last run: {fmt(settings.checkin_last_run_at)}</span>}
+      {form.checkin_test_mode&&<span style={{padding:"5px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:"rgba(200,120,0,0.08)",color:"#b36b00"}}>🧪 TEST MODE</span>}
+    </div>
+
+    {/* Stats row */}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:20}}>
+      {[["Total Sent",logs.length],["Read",readCount],["Task Completed",doneCount]].map(([label,val])=>(
+        <div key={label} className="card" style={{padding:"14px 18px",textAlign:"center"}}>
+          <div style={{fontSize:26,fontWeight:800,color:"var(--acc)"}}>{val}</div>
+          <div style={{fontSize:11,color:"var(--t3)",marginTop:2,fontWeight:600,textTransform:"uppercase",letterSpacing:0.8}}>{label}</div>
+        </div>
+      ))}
+    </div>
+
+    {/* Settings card */}
+    <div className="card" style={{padding:24,marginBottom:16}}>
+      <div style={{fontWeight:700,fontSize:16,marginBottom:16}}>Global Settings</div>
+      <div style={{display:"flex",flexDirection:"column",gap:14}}>
+        <label style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer"}}>
+          <input type="checkbox" checked={form.checkin_enabled} onChange={e=>setForm(f=>({...f,checkin_enabled:e.target.checked}))} style={{accentColor:"var(--acc)",width:16,height:16,marginTop:2}}/>
+          <div>
+            <div style={{fontWeight:600,fontSize:14}}>Weekly Actor Check-In: ON</div>
+            <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>When off, no weekly check-ins will be sent to any talent account</div>
+          </div>
+        </label>
+        <label style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer"}}>
+          <input type="checkbox" checked={form.checkin_paused} onChange={e=>setForm(f=>({...f,checkin_paused:e.target.checked}))} style={{accentColor:"#e85454",width:16,height:16,marginTop:2}}/>
+          <div>
+            <div style={{fontWeight:600,fontSize:14,color:form.checkin_paused?"var(--red)":"inherit"}}>Pause all check-ins</div>
+            <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>Emergency stop — pauses sends without disabling the feature</div>
+          </div>
+        </label>
+        <label style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer"}}>
+          <input type="checkbox" checked={form.checkin_test_mode} onChange={e=>setForm(f=>({...f,checkin_test_mode:e.target.checked}))} style={{accentColor:"#b36b00",width:16,height:16,marginTop:2}}/>
+          <div>
+            <div style={{fontWeight:600,fontSize:14}}>Test mode</div>
+            <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>When enabled, "Send Now" will only send to admin/test accounts</div>
+          </div>
+        </label>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+          <div className="form-group">
+            <label className="label">Send day</label>
+            <select className="input" value={form.checkin_send_day} onChange={e=>setForm(f=>({...f,checkin_send_day:parseInt(e.target.value)}))}>
+              {DAYS.map((d,i)=><option key={i} value={i}>{d}</option>)}
+            </select>
+            <div style={{color:"var(--t3)",fontSize:11,marginTop:3}}>Informational for cron. Default: Monday.</div>
+          </div>
+          <div className="form-group">
+            <label className="label">Send time (UTC)</label>
+            <select className="input" value={form.checkin_send_hour} onChange={e=>setForm(f=>({...f,checkin_send_hour:parseInt(e.target.value)}))}>
+              {Array.from({length:24},(_,i)=>(
+                <option key={i} value={i}>{i===0?"12:00 AM":i<12?`${i}:00 AM`:i===12?"12:00 PM":`${i-12}:00 PM`} UTC</option>
+              ))}
+            </select>
+            <div style={{color:"var(--t3)",fontSize:11,marginTop:3}}>Default: 9 AM UTC.</div>
+          </div>
+        </div>
+      </div>
+      <button className="btn-p btn-sm" style={{marginTop:18}} disabled={busy} onClick={saveSettings}>{busy?"Saving…":"Save Settings"}</button>
+    </div>
+
+    {/* Manual send + test */}
+    <div className="card" style={{padding:24,marginBottom:16}}>
+      <div style={{fontWeight:700,fontSize:16,marginBottom:12}}>Send Controls</div>
+      <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+        <button className="btn-p btn-sm" disabled={busy||!form.checkin_enabled||form.checkin_paused} onClick={runSendNow} style={{background:"var(--acc)"}}>
+          {busy?"Sending…":"▶ Send Now"}
+        </button>
+        <button className="btn-s btn-sm" disabled={busy} onClick={sendTestCheckin}>
+          Send Test Check-In to My Inbox
+        </button>
+      </div>
+      <p style={{fontSize:12,color:"var(--t3)",marginTop:10}}>
+        "Send Now" sends to all active talent who have not received a check-in this week. Safe to run multiple times — duplicates are blocked by a unique constraint.
+      </p>
+    </div>
+
+    {/* Pause specific user */}
+    <div className="card" style={{padding:24,marginBottom:16}}>
+      <div style={{fontWeight:700,fontSize:16,marginBottom:12}}>Pause Check-Ins for Specific User</div>
+      <div style={{display:"flex",gap:10}}>
+        <input className="input" placeholder="Search talent by name…" value={pauseSearch} onChange={e=>setPauseSearch(e.target.value)} onKeyDown={e=>e.key==="Enter"&&searchPauseUser()} style={{flex:1}}/>
+        <button className="btn-s btn-sm" onClick={searchPauseUser} disabled={busy}>Search</button>
+      </div>
+      {pauseResult&&<div style={{marginTop:12}}>
+        {pauseResult.length===0&&<div style={{color:"var(--t3)",fontSize:13}}>No talent found.</div>}
+        {pauseResult.map(p=>{
+          const isPaused=Array.isArray(settings?.checkin_paused_user_ids)&&settings.checkin_paused_user_ids.includes(p.id);
+          return(<div key={p.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:"1px solid var(--bdr)"}}>
+            <img src={p.headshot_url||"https://placehold.co/36x36/e5e5e5/999?text=?"} alt="" style={{width:36,height:36,borderRadius:"50%",objectFit:"cover"}}/>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontWeight:600,fontSize:13}}>{p.display_name||"Unknown"}</div>
+              {isPaused&&<div style={{fontSize:11,color:"var(--red)",fontWeight:600}}>Check-ins paused</div>}
+            </div>
+            <button className={isPaused?"btn-p btn-sm":"btn-s btn-sm"} style={isPaused?{background:"var(--grn)"}:{}} onClick={()=>togglePauseUser(p.id,isPaused)} disabled={busy}>
+              {isPaused?"Resume":"Pause"}
+            </button>
+          </div>);
+        })}
+      </div>}
+    </div>
+
+    {/* History */}
+    <div className="card" style={{padding:24}}>
+      <div style={{fontWeight:700,fontSize:16,marginBottom:12}}>Sent Check-In History</div>
+      {logs.length===0?<div style={{color:"var(--t3)",fontSize:13}}>No check-ins sent yet.</div>:
+      <div style={{overflowX:"auto"}}>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+          <thead>
+            <tr style={{borderBottom:"2px solid var(--bdr)"}}>
+              {["Talent","Week","Sent","Status","Task"].map(h=>(
+                <th key={h} style={{textAlign:"left",padding:"8px 10px",fontWeight:700,color:"var(--t2)",fontSize:11,textTransform:"uppercase",letterSpacing:0.6,whiteSpace:"nowrap"}}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {logs.slice(0,100).map(l=>{
+              const name=l.profiles?.display_name||l.talent_id?.slice(0,8);
+              const sColor={sent:"var(--t2)",read:"var(--acc)",task_completed:"var(--grn)"};
+              const sBg={sent:"transparent",read:"rgba(26,26,200,0.06)",task_completed:"rgba(27,135,62,0.06)"};
+              return(<tr key={l.id} style={{borderBottom:"1px solid var(--bdr)",background:sBg[l.status]||"transparent"}}>
+                <td style={{padding:"10px 10px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <img src={l.profiles?.headshot_url||"https://placehold.co/28x28/e5e5e5/999?text=?"} alt="" style={{width:28,height:28,borderRadius:"50%",objectFit:"cover"}}/>
+                    <span style={{fontWeight:600}}>{name}</span>
+                  </div>
+                </td>
+                <td style={{padding:"10px 10px",color:"var(--t2)"}}>{l.week_start||"—"}</td>
+                <td style={{padding:"10px 10px",color:"var(--t3)",whiteSpace:"nowrap"}}>{fmt(l.sent_at)}</td>
+                <td style={{padding:"10px 10px"}}>
+                  <span style={{padding:"3px 8px",borderRadius:10,fontSize:10,fontWeight:700,background:sBg[l.status]||"transparent",color:sColor[l.status]||"var(--t2)",textTransform:"uppercase",letterSpacing:0.5}}>
+                    {l.status==="task_completed"?"✓ Completed":l.status}
+                  </span>
+                </td>
+                <td style={{padding:"10px 10px",color:"var(--t3)"}}>{l.task_action||"—"}</td>
+              </tr>);
+            })}
+          </tbody>
+        </table>
+      </div>}
     </div>
   </>);
 }
