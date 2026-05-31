@@ -6416,7 +6416,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.union')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.union}</div></div>
       <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.location')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.location}</div></div>
       <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.pay')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.rate||c.pay}</div></div>
-      <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.deadline')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.deadline}</div></div>
+      <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.deadline')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{fmtCastingDate(c.deadline)||"—"}</div></div>
       {c.shoots&&<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.shoots')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.shoots}</div></div>}
       {c.rehearsal&&<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.rehearsal')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.rehearsal}</div></div>}
       {c.auditionFormat&&<div style={{gridColumn:"1 / -1"}}><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.auditionFormat')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.auditionFormat}</div></div>}
@@ -7368,6 +7368,17 @@ function CastingGatePage({casting,onCreateProfile,onLogin,onBack}){
   );
 }
 
+function fmtCastingDate(val){
+  if(!val)return"";
+  try{
+    // Supabase date columns return "YYYY-MM-DD"; timestamps return full ISO. Both work with new Date().
+    // Force noon UTC to avoid off-by-one from local timezone offsets on YYYY-MM-DD strings.
+    const d=val.length===10?new Date(val+"T12:00:00Z"):new Date(val);
+    if(isNaN(d))return String(val);
+    return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"UTC"});
+  }catch{return String(val);}
+}
+
 function matchesLocationFilter(castingLoc,selectedFilter){
   const loc=(castingLoc||"").toLowerCase().trim();
   const sel=(selectedFilter||"").toLowerCase().trim();
@@ -7453,7 +7464,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         location:c.location||"",
         pay:c.pay||"",
         rate:c.pay||"",
-        deadline:c.deadline||"",
+        deadline:c.deadline||(c.expires_at?c.expires_at.slice(0,10):""),
         union:c.union_status||"",
         featured:c.featured===true,
         casting_image_url:c.casting_image_url||null,
@@ -7609,7 +7620,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                   <div style={{display:"flex",gap:20,flexWrap:"wrap",fontSize:12,color:"var(--t2)"}}>
                     <span><strong style={{color:"var(--t1)"}}>{t('search.filterLocation')}</strong> · {c.location}</span>
                     <span><strong style={{color:"var(--t1)"}}>{t('search.pay')}</strong> · {c.pay}</span>
-                    <span><strong style={{color:"var(--t1)"}}>{t('search.deadline')}</strong> · {c.deadline}</span>
+                    {(c.deadline)&&<span><strong style={{color:"var(--t1)"}}>{t('search.deadline')}</strong> · {fmtCastingDate(c.deadline)}</span>}
                   </div>
                 </div>
                 <div className="casting-card-row-side" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",minWidth:140}}>
@@ -11578,7 +11589,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("FCS timed out after 10s")),10000);});
       const {data,error}=await Promise.race([
         window.sb.from("castings")
-          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq("status","open").eq("published",true)
           .order("featured",{ascending:false})
           .order("created_at",{ascending:false})
@@ -11601,7 +11612,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         location:c.location||"",
         pay:c.pay||"",
         rate:c.pay||"",
-        deadline:c.deadline||"",
+        deadline:c.deadline||(c.expires_at?c.expires_at.slice(0,10):""),
         union:c.union_status||"",
         featured:c.featured===true,
         submissions:0,
@@ -18412,14 +18423,14 @@ function App(){
     if(!castingId)return;
     try{
       const{data,error}=await window.sb.from("castings")
-        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
         .eq("id",castingId).maybeSingle();
       if(error||!data)return;
       const c={
         id:data.id,slug:data.slug||null,title:data.title,type:data.type||"Film",prod:data.prod||"",
         tagline:data.tagline||"",synopsis:data.synopsis||"",desc:data.synopsis||data.tagline||"",
         location:data.location||"",pay:data.pay||"",rate:data.pay||"",
-        deadline:data.deadline||"",union:data.union_status||"",submissions:0,
+        deadline:data.deadline||(data.expires_at?data.expires_at.slice(0,10):""),union:data.union_status||"",submissions:0,
         featured:data.featured===true,
         cd_id:data.cd_id,profiles:data.profiles||null,_cd:data.profiles||null,
         casting_image_url:data.casting_image_url||null,
@@ -18524,14 +18535,14 @@ function App(){
         const isUUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
         const field=isUUID?"id":"slug";
         const {data,error}=await window.sb.from("castings")
-          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq(field,slug).maybeSingle();
         if(cancelled||error||!data)return;
         const c={
           id:data.id,slug:data.slug||slug,title:data.title,type:data.type||"Film",
           prod:data.prod||"",tagline:data.tagline||"",synopsis:data.synopsis||"",
           desc:data.synopsis||data.tagline||"",location:data.location||"",
-          pay:data.pay||"",rate:data.pay||"",deadline:data.deadline||"",
+          pay:data.pay||"",rate:data.pay||"",deadline:data.deadline||(data.expires_at?data.expires_at.slice(0,10):""),
           union:data.union_status||"",submissions:0,featured:data.featured===true,
           cd_id:data.cd_id,profiles:data.profiles||null,_cd:data.profiles||null,
           casting_image_url:data.casting_image_url||null,
