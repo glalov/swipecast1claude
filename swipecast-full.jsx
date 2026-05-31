@@ -7368,6 +7368,22 @@ function CastingGatePage({casting,onCreateProfile,onLogin,onBack}){
   );
 }
 
+function matchesLocationFilter(castingLoc,selectedFilter){
+  const loc=(castingLoc||"").toLowerCase().trim();
+  const sel=(selectedFilter||"").toLowerCase().trim();
+  if(!sel)return true;
+  if(loc.includes(sel))return true;
+  const NY_TERMS=["new york","new york, ny","new york,ny","nyc","n.y.c","manhattan","brooklyn","queens","the bronx","bronx","staten island","long island","yonkers","westchester","jersey city","hoboken","newark","north jersey","new jersey","nj","nassau","suffolk","harlem","astoria","flushing","the heights","washington heights","upper east","upper west","midtown","downtown","tribeca","soho","noho","lower east","east village","west village","chelsea","flatiron","gramercy","murray hill","hell's kitchen","lincoln center","inwood","riverdale","soundview","fordham","jamaica","corona","elmhurst","ridgewood","bay ridge","bensonhurst","park slope","williamsburg","bushwick","bedford","crown heights","flatbush","east new york","rockaway","fresh meadows","bayside","forest hills","rego park","sunnyside","woodside","jackson heights","maspeth","north bergen","weehawken","union city","bayonne"];
+  const LA_TERMS=["los angeles","los angeles, ca","los angeles,ca","la","l.a.","hollywood","west hollywood","weho","burbank","glendale","pasadena","santa monica","culver city","studio city","north hollywood","noho","long beach","compton","inglewood","torrance","hawthorne","el segundo","manhattan beach","hermosa beach","redondo beach","venice","marina del rey","playa vista","playa del rey","westwood","brentwood","bel air","beverly hills","west la","koreatown","echo park","silver lake","los feliz","atwater village","eagle rock","highland park","monterey park","alhambra","arcadia","san gabriel","the valley","sherman oaks","encino","van nuys","reseda","chatsworth","thousand oaks","calabasas","malibu","pomona","ontario","rancho cucamonga","san bernardino"];
+  if(sel==="new york"||sel==="new york, ny"){
+    return NY_TERMS.some(t=>loc.includes(t));
+  }
+  if(sel==="los angeles"||sel==="los angeles, ca"){
+    return LA_TERMS.some(t=>loc.includes(t));
+  }
+  return loc.includes(sel);
+}
+
 function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,castingsVersion=0,session,myProfile}){
   const t=useT();
   const {lang}=useLanguage();
@@ -7549,7 +7565,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const allCastings=dbCastings.length>0?dbCastings:[];
   const allTalent=dbTalent.length>0?dbTalent:[];
   const ft=allTalent.filter(t=>{if(q&&!t.name.toLowerCase().includes(q.toLowerCase())&&!t.skills.join(" ").toLowerCase().includes(q.toLowerCase()))return false;if(f.gender&&t.gender!==f.gender)return false;if(f.ethnicity&&!t.ethnicity.toLowerCase().includes(f.ethnicity.toLowerCase()))return false;if(f.location&&!t.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&t.union!==f.union)return false;if(castingTypeIds!==null&&!castingTypeIds.has(t.id))return false;return true;});
-  const fc=allCastings.filter(c=>{if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&c.type!==f.type)return false;if(f.location&&!c.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;});
+  const fc=allCastings.filter(c=>{if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&c.type!==f.type)return false;if(f.location&&!matchesLocationFilter(c.location,f.location))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;});
   return(<div className="page page-wide">
     <div className="section-label">{t('search.title')}</div>
     <div className="search-bar"><input className="input" placeholder={t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/><button className="btn-p">{t('search.searchBtn')}</button></div>
@@ -14370,165 +14386,353 @@ const ACG = (()=>{
     {name:"Chicago, IL",short:"Chicago",w:10},
     {name:"Boston, MA",short:"Boston",w:10}
   ];
-  function pickCity(){
-    let r=Math.random()*100;
-    for(const c of CITIES){r-=c.w;if(r<=0)return c;}
-    return CITIES[0];
-  }
+  function pickCity(){let r=Math.random()*100;for(const c of CITIES){r-=c.w;if(r<=0)return c;}return CITIES[0];}
   function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
-  function pickN(arr,n){
-    const a=[...arr];const out=[];
-    for(let i=0;i<Math.min(n,a.length);i++){
-      const idx=Math.floor(Math.random()*a.length);
-      out.push(a.splice(idx,1)[0]);
-    }
-    return out;
-  }
-  function expiresAt(months){
-    const d=new Date();d.setMonth(d.getMonth()+months);return d.toISOString();
-  }
-  const POSTED_BY=["CastSlate Talent Team","CastSlate Creator Network","Independent Creator Network"];
+  function expiresAt(months){const d=new Date();d.setMonth(d.getMonth()+months);return d.toISOString();}
+
   const UNION="Union and non-union welcome";
-  const PAY_VARIES="Varies by project. Some opportunities may be unpaid, while others may offer stipend, copy, credit, meals, or paid day rates depending on the creator and project.";
-  const PAY_SHOWCASE="No pay. Selected submissions may be featured in CastSlate showcase materials or considered for future creator opportunities.";
-  const PAY_VOICEOVER="Varies. Some opportunities are paid (session fee or buyout); others offer credit only. Rate disclosed per project.";
-  const BASE_REQ="Submit headshot, acting resume (optional), and a brief intro video or reel. Include your current city and availability window.";
+  const PAY_VARIES="Varies by project. Compensation depends on the creator and scope — some opportunities are unpaid with copy/credit, others offer a day rate, stipend, or meals.";
+  const PAY_VARIES_B="Rate varies. Some projects pay $100–$400/day; others offer copy, credit, and meals only. Compensation confirmed per booking.";
+  const PAY_VARIES_C="Unpaid to low-paid. These are micro-budget productions — most offer copy, IMDb credit, and a meal. Some offer a modest stipend.";
+  const PAY_SHOWCASE="No pay. Selected submissions may be featured in CastSlate showcase emails or considered for future opportunities on the platform.";
+  const PAY_VOICEOVER_A="Varies. Paid session work (flat fee or buyout) for some projects; credit-only for others. Rate disclosed per project before booking.";
+  const PAY_VOICEOVER_B="$50–$300 for most paid session projects. Some educational or spec content is credit-only. All rates disclosed up front.";
+  const PAY_THEATER="Most workshop sessions are unpaid or offer a small stipend ($25–$75/day). Some funded workshops offer rehearsal pay. Details shared per project.";
+  const PAY_COMMERCIAL="Day rates range from $150–$600 for paid commercial projects. Spec and student commercial work may be copy/credit only.";
+
   const TYPES=[
     {
       type:"Open Talent Pool",
       postedBy:"CastSlate Talent Team",
-      title:(c)=>pick([`${c.short} Open Actor Talent Pool`,`General Actor Roster — ${c.short}`,`${c.name} Talent Pool — All Types`]),
-      synopsis:(c)=>`CastSlate is building a roster of ${c.name}-based actors for platform-led casting opportunities, creator projects, and independent productions. Selected actors may be contacted for future self-tape requests, short film opportunities, and commercial-style projects posted through the platform.\n\nThis is a talent pool submission — not an audition for a single confirmed project.`,
-      roles:`Actors ages 18–65, all genders, all ethnicities. Strong performance background in any style — drama, naturalistic, comedy, or experimental — welcome.`,
-      pay:PAY_VARIES,union:UNION,req:BASE_REQ,months:pick([1,2,3])
+      titles:(c)=>[`${c.short} Open Actor Talent Pool`,`General Actor Roster — ${c.short}`,`${c.name} Talent Pool — All Types`,`${c.short} Performer Database — Open Submissions`],
+      synopses:(c)=>[
+        `We're building a ${c.name}-based pool of performers for upcoming creator-led short-form projects, branded content, and independent productions. Not auditioning for one project — this is an ongoing roster that creators and filmmakers pull from when they're ready to cast.\n\nAll types, all experience levels.`,
+        `Looking for ${c.name}-based actors who want to be considered for a range of opportunities: indie films, commercial work, creator projects, and platform bookings. You submit once — we reach out when something fits.\n\nOpen call. No prior credits required.`,
+        `Open call for performers based in ${c.name} available for short-notice auditions, self-tapes, and day-player bookings. This talent pool feeds directly into casting requests from creators on the platform.\n\nThere's no single production attached to this listing. It's a standing roster.`,
+        `For ${c.name}-based actors who are actively available and want to stay on our radar. We pull from this pool first when creators post last-minute needs — small roles, day work, self-tapes, and featured spots.`
+      ],
+      pays:[PAY_VARIES,PAY_VARIES_B],
+      union:UNION,
+      reqs:[
+        "Submit headshot, acting resume (optional), and a reel or 60-second intro clip. Include your current city and availability.",
+        "Headshot + brief intro video or self-tape (under 90 seconds). Resume optional. Let us know what types of projects you're open to.",
+        "Current headshot and a short reel or self-tape clip. Note your city, union status, and any scheduling constraints."
+      ],
+      months:()=>pick([1,2,3]),
+      roles:()=>[
+        {name:"Lead Actor",description:"Primary character roles in short-form narrative and commercial projects. Drama, comedy, or naturalistic.",gender:"All genders",age_range:"20–45",ethnicity:"All ethnicities",pay:""},
+        {name:"Supporting Actor",description:"Supporting and character roles across a range of project types. Strong scene work and listen-and-respond ability.",gender:"All genders",age_range:"18–60",ethnicity:"All ethnicities",pay:""},
+        {name:"Featured Background / Day Player",description:"Atmosphere and featured background for film, commercial, and creator content. On-camera comfort required.",gender:"All genders",age_range:"18–65",ethnicity:"All ethnicities",pay:""}
+      ]
     },
     {
       type:"Indie Short Film Talent Pool",
       postedBy:"CastSlate Creator Network",
-      title:(c)=>pick([`${c.short} Indie Short Film Talent Pool`,`Short Film Actor Roster — ${c.short}`,`${c.name} Independent Short Film Pool`]),
-      synopsis:(c)=>`CastSlate is curating a roster of ${c.name}-based actors for upcoming short films, micro-budget productions, and creator-led narrative projects. Accepted actors may be considered for auditions, self-tape requests, and direct invitations as independent filmmakers post opportunities through the platform.`,
-      roles:`Actors ages 18–65, all genders, all ethnicities. Strong naturalistic acting style preferred. Drama, comedy, and character-driven roles. Student and emerging filmmaker projects welcome.`,
-      pay:PAY_VARIES,union:UNION,req:BASE_REQ,months:pick([1,2])
+      titles:(c)=>[`${c.short} Indie Short Film Talent Pool`,`Short Film Actor Roster — ${c.short}`,`${c.name} Independent Short Film Pool`,`${c.short} Short Film Submissions — Ongoing`],
+      synopses:(c)=>[
+        `Collecting submissions from ${c.name}-based actors for upcoming micro-budget short films and creator-led narrative projects. Filmmakers using the platform browse this pool first when they're casting.\n\nMost projects are 1–3 shoot days. Strong scene work matters more than credits.`,
+        `For actors who like working with emerging filmmakers. This pool feeds short film productions, student thesis films, and independent narrative projects from ${c.name}-based creators.\n\nExpect naturalistic direction, small crews, and a lot of creative room.`,
+        `We're matching ${c.name}-based actors with independent short film projects. Creators post their castings and pull from this roster for direct invitations — skipping the cold submission process.\n\nAll experience levels. Character-driven material.`,
+        `Short film roster for ${c.name}. We focus on naturalistic, grounded performances — character-driven drama, quiet tension, and real-feeling scenes. If you're comfortable with that style of work, this is the right pool.`
+      ],
+      pays:[PAY_VARIES_C,PAY_VARIES],
+      union:UNION,
+      reqs:[
+        "Headshot, acting resume (optional), and a reel or dramatic self-tape (60–90 seconds). Include your city and shoot availability.",
+        "Submit headshot and a short self-tape — a scene, monologue, or cold-read clip. Resume optional but helpful.",
+        "Headshot and reel. If you don't have a reel, a 60-second self-tape scene works. Include your current city."
+      ],
+      months:()=>pick([1,2]),
+      roles:()=>[
+        {name:"Lead",description:"Central character in short narrative films. Grounded, emotionally available performance style. Drama and character-driven material.",gender:"All genders",age_range:pick(["18–35","22–40","25–45"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Supporting / Character Role",description:"Scene partners, foils, and supporting characters. Strong presence in limited screen time.",gender:"All genders",age_range:pick(["25–55","30–60","20–50"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Featured Background",description:"Atmosphere with presence — coffee shops, party scenes, street backgrounds with real-feeling behavior.",gender:"All genders",age_range:"18–45",ethnicity:"All ethnicities",pay:""}
+      ]
     },
     {
       type:"Self-Tape Showcase",
       postedBy:"CastSlate Talent Team",
-      title:(c)=>pick([`Self-Tape Showcase — ${c.short}`,`Actor Self-Tape Showcase Submissions`,`${c.short} Self-Tape Performance Showcase`]),
-      synopsis:(c)=>`CastSlate is accepting self-tape submissions from ${c.name}-based actors for an upcoming showcase. Selected tapes may be featured in CastSlate's curated actor showcase, shared with platform casting directors, and used to help connect talent with creator opportunities.\n\nThis is a visibility opportunity — not a specific paid project.`,
-      roles:`Actors of all types, 18–65, any background. Submit a 60–90 second self-tape scene of your choice: monologue, scripted scene, or improvised scenario.`,
-      pay:PAY_SHOWCASE,union:UNION,req:"Submit headshot and a self-tape (60–90 seconds). Scene of your choice — monologue, scripted, or improvised.",months:1
+      titles:(c)=>[`Self-Tape Showcase — ${c.short}`,`Actor Self-Tape Showcase Submissions`,`${c.short} Self-Tape Performance Showcase`,`${c.name} Curated Self-Tape Collection`],
+      synopses:(c)=>[
+        `Accepting self-tape submissions from ${c.name}-based actors for CastSlate's curated actor showcase. Selected tapes get featured in platform emails, shared with casting directors on the platform, and used to connect talent with upcoming opportunities.\n\nThis is a visibility play, not an audition for a single paid project.`,
+        `We curate a rotating showcase of self-tapes from ${c.name}-based actors and send it to casting directors and creators on the platform. If you've got a strong 60–90 second tape, submit it here.\n\nScene of your choice — monologue, scripted scene, or improvised.`,
+        `Got a strong self-tape? We're collecting submissions from performers in ${c.name} for a monthly showcase distributed to casting directors using the platform.\n\nOne take. Under 90 seconds. Whatever shows your range best.`
+      ],
+      pays:[PAY_SHOWCASE],
+      union:UNION,
+      reqs:[
+        "Submit headshot and a self-tape (60–90 seconds). Scene of your choice — monologue, scripted scene, or improvised.",
+        "One self-tape, 60–90 seconds. Monologue or scripted scene. Include headshot. Keep it clean — no special effects or heavy music.",
+        "Headshot + self-tape under 2 minutes. Show range. No elaborate production required — a well-lit, quiet single take is ideal."
+      ],
+      months:()=>1,
+      roles:()=>[
+        {name:"Dramatic Performer",description:"Grounded, emotionally truthful self-tape. Monologue or scene — 60–90 seconds. Any genre.",gender:"All genders",age_range:"18–45",ethnicity:"All ethnicities",pay:""},
+        {name:"Comedy / Light Material",description:"Comedic tone, character work, or a moment that shows timing and presence. 60–90 seconds.",gender:"All genders",age_range:"18–50",ethnicity:"All ethnicities",pay:""},
+        {name:"Character / Featured Type",description:"Distinctive presence, character voice, or a type that stands out. Don't cast yourself against type — show what you actually do best.",gender:"All genders",age_range:"30–65",ethnicity:"All ethnicities",pay:""}
+      ]
     },
     {
       type:"Actor Profile Review Opportunity",
       postedBy:"CastSlate Talent Team",
-      title:(c)=>pick([`Actor Profile Review — ${c.short}`,`${c.short} Actor Profile Spotlight`,`Profile Review Opportunity — ${c.short}`]),
-      synopsis:(c)=>`CastSlate's talent team is reviewing ${c.name}-based actor profiles for inclusion in featured talent collections shared with platform casting directors and creators. Actors with complete profiles — headshot, reel, bio, location — may be highlighted in category spotlights.\n\nThis is a profile review, not an audition.`,
-      roles:`Actors of all types, 18–70, all genders, all ethnicities. All experience levels welcome.`,
-      pay:"No pay. Selected actors may be included in CastSlate featured talent emails and collections distributed to casting directors on the platform.",
-      union:UNION,req:"Ensure your CastSlate profile is complete: headshot, bio, location, and reel or intro video.",months:1
+      titles:(c)=>[`Actor Profile Review — ${c.short}`,`${c.short} Actor Profile Spotlight`,`Profile Review Opportunity — ${c.short}`,`Featured Talent Review — ${c.name}`],
+      synopses:(c)=>[
+        `We're reviewing ${c.name}-based actor profiles for inclusion in featured talent collections shared with casting directors on the platform. Actors with complete profiles — headshot, reel, bio, location — may be highlighted.\n\nThis is a profile review, not an audition for a specific project.`,
+        `CastSlate's talent team reviews complete actor profiles from ${c.name} for spotlight features distributed to platform casting directors. A complete profile gets seen. An incomplete one doesn't.\n\nIf your profile has a headshot, bio, reel, and location, you're already eligible.`,
+        `We're putting together a featured talent email for ${c.name}-based actors. If your profile is complete — headshot, real bio, updated location, a reel or self-tape — submit here and we'll review it.\n\nFeatured actors get shared directly with casting directors using the platform.`
+      ],
+      pays:["No pay. Selected actors may be included in CastSlate featured talent emails sent to casting directors on the platform.","No pay. This is a visibility feature — selected profiles are shared with casting directors and creators in your market."],
+      union:UNION,
+      reqs:[
+        "Make sure your CastSlate profile is complete: headshot, bio, location, and reel or intro video. Submit through this listing to flag your profile for review.",
+        "Profile must include: current headshot, bio, city, and at least one media item (reel, self-tape, or intro clip). Submit here to be included in the review round.",
+        "Complete profile required — headshot, bio, location, and media. Incomplete profiles won't be considered."
+      ],
+      months:()=>1,
+      roles:()=>[
+        {name:"Lead Type / Series Lead",description:"Actors who carry a scene or project. Strong presence, clear type, active career.",gender:"All genders",age_range:"22–45",ethnicity:"All ethnicities",pay:""},
+        {name:"Character Actor / Supporting Type",description:"Distinct physical presence, character range, or a memorable supporting quality. 35+ often fits here.",gender:"All genders",age_range:"30–65",ethnicity:"All ethnicities",pay:""},
+        {name:"All Types — Open Submission",description:"Open review for any experience level. If your profile is complete and your reel shows something real, submit.",gender:"All genders",age_range:"18+",ethnicity:"All ethnicities",pay:""}
+      ]
     },
     {
       type:"Commercial Talent Pool",
       postedBy:"CastSlate Creator Network",
-      title:(c)=>pick([`${c.short} Commercial Actor Roster`,`Commercial Talent Pool — ${c.short}`,`${c.name} Commercial-Style Actor Pool`]),
-      synopsis:(c)=>`CastSlate is building a roster of ${c.name}-based actors for commercial-style projects, branded content, and product-focused creator productions. Accepted actors may be considered for spec commercials, social media campaigns, and day-rate commercial bookings.\n\nOpportunities range from paid day-rate projects to low-budget spec work depending on creator scope.`,
-      roles:`Actors ages 18–60, all genders, all ethnicities. Friendly, camera-confident presence. Prior commercial or on-camera experience is a plus but not required.`,
-      pay:PAY_VARIES,union:UNION,req:"Submit headshot, brief intro video or reel, and shirt size (for wardrobe reference).",months:pick([2,3])
+      titles:(c)=>[`${c.short} Commercial Actor Roster`,`Commercial Talent Pool — ${c.short}`,`${c.name} Commercial-Style Actor Pool`,`${c.short} On-Camera Commercial Submissions`],
+      synopses:(c)=>[
+        `Building a ${c.name}-based roster for commercial-style projects, branded content, and product-focused creator work. Day rates, spec spots, and social media campaigns — creators on the platform pull from this pool when casting.\n\nFriendly, camera-confident, and punctual. That's the main ask.`,
+        `We're collecting submissions from ${c.name}-based actors for commercial and branded content bookings. Most work here is 1–2 day shoots — product spots, lifestyle content, and creator-produced brand campaigns.\n\nCamera-confident presence matters. Acting credits are a bonus, not a requirement.`,
+        `Commercial actor roster for ${c.name}. Creators and small production companies use this pool to cast direct — lifestyle, product, B-roll, and on-camera spokesperson work.\n\nStrong, natural on-camera energy is the main requirement. All types welcome.`
+      ],
+      pays:[PAY_COMMERCIAL,PAY_VARIES_B],
+      union:UNION,
+      reqs:[
+        "Submit headshot, brief intro video or reel, and shirt size (for wardrobe purposes). Include your city and general availability.",
+        "Headshot + a short on-camera intro or reel clip (under 60 seconds). Note your shirt size, city, and any commercial credits.",
+        "Current headshot, intro reel or self-tape, and your shirt/dress size. Commercial credits a plus but not required."
+      ],
+      months:()=>pick([2,3]),
+      roles:()=>[
+        {name:"Spokesperson / Lead",description:"On-camera spokesperson for product demos, brand launches, and direct-address commercial content. Natural, confident energy.",gender:"All genders",age_range:pick(["25–45","28–50","22–42"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Lifestyle Character",description:"Family members, coworkers, friends — realistic lifestyle scenarios. Warm, relatable, believable.",gender:"All genders",age_range:pick(["22–55","25–50","30–55"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Background / Group Member",description:"Coffee shop regulars, crowd scenes, background with presence. Must be comfortable on a commercial set.",gender:"All genders",age_range:"18–35",ethnicity:"All ethnicities",pay:""}
+      ]
     },
     {
       type:"Music Video Talent Pool",
       postedBy:"CastSlate Creator Network",
-      title:(c)=>pick([`Music Video Performer Roster — ${c.short}`,`${c.short} Music Video Talent Pool`,`${c.name} Music Video Actor Pool`]),
-      synopsis:(c)=>`CastSlate is building a roster of ${c.name}-based performers and actors for music video productions, visual album segments, and creator-led music content. Accepted performers may be considered for featured roles, ensemble scenes, and concept-driven short-form video projects.`,
-      roles:`Performers and actors ages 18–45, all genders, all ethnicities. Strong physical presence and movement comfort preferred. Dance or movement background is a plus.`,
-      pay:PAY_VARIES,union:UNION,req:"Submit headshot or digital photo, short intro or movement reel, and current city.",months:pick([1,2])
+      titles:(c)=>[`Music Video Performer Roster — ${c.short}`,`${c.short} Music Video Talent Pool`,`${c.name} Music Video Actor Pool`,`${c.short} Visual Content Performer Roster`],
+      synopses:(c)=>[
+        `Putting together a ${c.name}-based roster for music video productions, visual album segments, and short-form creator music content. Featured roles, ensemble scenes, concept-driven work — creators on the platform pull from this pool when they're casting.\n\nMovement-comfortable performers preferred. Dance background is a plus, not a requirement.`,
+        `We're collecting submissions from ${c.name}-based performers for music video bookings. Shoots are usually 1–2 days. Roles range from featured concept characters to background ensemble members.\n\nStrong physical presence and comfort in front of cameras. No lip-sync or dance experience required unless specified.`,
+        `Music video roster for ${c.name}-based performers. Independent artists and video directors use this pool to cast featured roles, party scenes, visual storylines, and concept-based characters.\n\nAny body type, any background. Looking for presence on camera.`
+      ],
+      pays:[PAY_VARIES,"Varies. Featured roles often pay a day rate ($150–$350). Background and ensemble may be credit-only or offer a small stipend."],
+      union:UNION,
+      reqs:[
+        "Submit headshot or full-body photo, a short intro or movement reel, and your current city. Note any dance or movement experience.",
+        "Photo (headshot or full-body) + short reel or clip showing movement, energy, or personality. Dance background a plus.",
+        "Current photo and a brief self-tape or clip. Show presence — not necessarily dance, just physical confidence on camera."
+      ],
+      months:()=>pick([1,2]),
+      roles:()=>[
+        {name:"Featured Performer",description:"On-screen character in the visual concept — a partner, antagonist, or central figure. Acts to the music and to the camera.",gender:"All genders",age_range:pick(["18–35","20–38","22–40"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Dancer / Movement Artist",description:"Choreographed or free-movement sequences. Hip-hop, contemporary, waacking, or vogue styles especially welcome.",gender:"All genders",age_range:pick(["18–30","20–32","18–28"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Background / Party Guest",description:"Ensemble atmosphere for party scenes, crowd shots, and social environments. Energy and presence over technique.",gender:"All genders",age_range:"21–35",ethnicity:"All ethnicities",pay:""}
+      ]
     },
     {
       type:"Podcast Guest / On-Camera Segment Pool",
       postedBy:"CastSlate Creator Network",
-      title:(c)=>pick([`On-Camera Podcast Guest Pool — ${c.short}`,`${c.short} Podcast & Interview Talent Roster`,`Creator Podcast Guest Pool — ${c.name}`]),
-      synopsis:(c)=>`CastSlate is curating a roster of ${c.name}-based actors and creatives for on-camera podcast appearances, interview segments, and creator-produced long-form content. Selected guests may be invited to appear on creator shows distributed through YouTube, Instagram, or podcast networks.\n\nNo performance experience required — thoughtful, conversational presence valued.`,
-      roles:`Actors and creatives ages 18–65, all genders. Must be comfortable speaking on camera, discussing craft, and engaging in unscripted conversation.`,
-      pay:PAY_VARIES,union:"All welcome",req:"Submit headshot, brief bio, and a short paragraph about your background and interests.",months:pick([1,2])
+      titles:(c)=>[`On-Camera Podcast Guest Pool — ${c.short}`,`${c.short} Podcast & Interview Talent Roster`,`Creator Podcast Guest Pool — ${c.name}`,`${c.short} On-Camera Interview Submissions`],
+      synopses:(c)=>[
+        `Open call for performers, creatives, and conversationalists based in ${c.name} for on-camera podcast appearances, interview segments, and hosted creator content. Selected guests may be invited to appear on shows distributed through YouTube, Instagram, or podcast networks.\n\nNo performance experience required. Thoughtful, real, and good on camera.`,
+        `We're building a guest pool of ${c.name}-based actors and creatives for creator-produced podcast content. Interview-style, panel formats, and hosted conversation segments.\n\nIf you have a perspective, a story, or an area of expertise, this is worth submitting to.`,
+        `Collecting on-camera guests for ${c.name}-based creator podcast projects. Not a talent showcase — this is for actors and creatives comfortable speaking candidly about craft, projects, and experience.\n\nShoot days are short (2–4 hours). Usually 1–2 segments per appearance.`
+      ],
+      pays:[PAY_VARIES,"Most appearances are unpaid or offer a small production stipend. Some shows offer paid guest fees — disclosed per project."],
+      union:"All welcome",
+      reqs:[
+        "Submit headshot, brief bio, and a short paragraph about your background, perspective, and what you'd bring to a conversation.",
+        "Headshot + bio. Tell us what you'd actually talk about — an area of expertise, a project you're working on, or a story worth telling.",
+        "Current headshot and a 1–2 sentence description of your background. A link to any prior on-camera appearance (optional) is helpful."
+      ],
+      months:()=>pick([1,2]),
+      roles:()=>[
+        {name:"On-Camera Guest / Panelist",description:"Interview guest or panel participant. Speaks from personal or professional experience — acting craft, film projects, industry perspective.",gender:"All genders",age_range:"21–65",ethnicity:"All ethnicities",pay:""},
+        {name:"Guest Host / Co-Host",description:"Leads or co-leads a segment. Strong interviewing instincts, clear vocal presence, comfortable with unscripted formats.",gender:"All genders",age_range:"25–50",ethnicity:"All ethnicities",pay:""},
+        {name:"Interview Subject / Storyteller",description:"Featured in a segment structured around their story or project. No hosting experience needed — just a compelling perspective.",gender:"All genders",age_range:"18+",ethnicity:"All ethnicities",pay:""}
+      ]
     },
     {
       type:"Experimental Film Roster",
       postedBy:"CastSlate Creator Network",
-      title:(c)=>pick([`Experimental Film Actor Roster — ${c.short}`,`${c.short} Experimental & Avant-Garde Film Pool`,`Experimental Performance Roster — ${c.name}`]),
-      synopsis:(c)=>`CastSlate is building a roster of ${c.name}-based actors for experimental films, visual art projects, and avant-garde productions. Accepted actors may be considered for non-traditional narratives, unconventional character work, and collaboration with independent and emerging filmmakers.`,
-      roles:`Actors ages 18–65, all genders, all backgrounds. Comfort with physical, abstract, or non-verbal performance welcomed. Prior experimental film experience preferred but not required.`,
-      pay:PAY_VARIES,union:UNION,req:BASE_REQ,months:pick([2,3])
+      titles:(c)=>[`Experimental Film Actor Roster — ${c.short}`,`${c.short} Experimental & Avant-Garde Film Pool`,`Experimental Performance Roster — ${c.name}`,`${c.short} Non-Traditional Film Submissions`],
+      synopses:(c)=>[
+        `Building a ${c.name}-based roster for experimental films, visual art projects, and avant-garde productions. Non-traditional narratives, unconventional character work, and collaboration with emerging and independent filmmakers.\n\nIf you work well in abstract or non-verbal performance — this is worth your time.`,
+        `For ${c.name}-based actors who are comfortable working outside the conventional script. Experimental short films, visual poetry, performance-as-film, and art-house collaborations.\n\nPrior experimental experience is a plus. Genuine curiosity about form matters more than credits.`,
+        `Experimental and avant-garde film roster for ${c.name}. We work with emerging filmmakers doing non-narrative, visually driven work — long takes, physical performance, and unconventional structure.\n\nSome projects have no dialogue. Some are built entirely in rehearsal. Open-minded performers only.`
+      ],
+      pays:[PAY_VARIES_C,PAY_VARIES],
+      union:UNION,
+      reqs:[
+        "Submit headshot, acting resume (optional), and a reel or self-tape clip. Note any experimental or physical performance experience.",
+        "Headshot and reel. If your reel doesn't show experimental work, include a brief statement about your experience with non-traditional material.",
+        "Current headshot + brief statement about your comfort level with non-scripted, physical, or abstract performance formats."
+      ],
+      months:()=>pick([2,3]),
+      roles:()=>[
+        {name:"Conceptual Lead",description:"Central figure in a visually driven narrative. Carries scenes through physicality, stillness, or symbolic presence rather than dialogue.",gender:"All genders",age_range:pick(["18–45","20–40","22–42"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Physical / Movement Performer",description:"Non-verbal or movement-based role. Comfort with body-as-expression work — slow cinema, physical theatre, durational performance.",gender:"All genders",age_range:pick(["18–40","20–38"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Voice / Narrator",description:"Off-screen or on-screen narration with a distinct vocal quality. Prose, abstract text, or poetic material.",gender:"All genders",age_range:"18–60",ethnicity:"All ethnicities",pay:""}
+      ]
     },
     {
       type:"Horror Short Talent Pool",
       postedBy:"CastSlate Creator Network",
-      title:(c)=>pick([`Horror Short Film Talent Pool — ${c.short}`,`${c.short} Horror Actor Roster`,`${c.name} Horror Short Film Pool`]),
-      synopsis:(c)=>`CastSlate is curating a roster of ${c.name}-based actors for upcoming horror short films, psychological thrillers, and genre projects posted through the platform. Accepted actors may be contacted for auditions and self-tape requests by independent horror filmmakers.\n\nProjects range from micro-budget student films to funded short productions.`,
-      roles:`Actors ages 18–55, all genders, all ethnicities. Comfort with intense dramatic material, physical performance, and genre-specific direction preferred.`,
-      pay:PAY_VARIES,union:UNION,req:"Submit headshot, acting resume (optional), and a reel or 60-second dramatic self-tape.",months:pick([1,2])
+      titles:(c)=>[`Horror Short Film Talent Pool — ${c.short}`,`${c.short} Horror Actor Roster`,`${c.name} Horror Short Film Pool`,`${c.short} Genre Film Submissions — Horror & Thriller`],
+      synopses:(c)=>[
+        `For the horror actors. We're collecting submissions from ${c.name}-based performers for upcoming horror short films, psychological thrillers, and genre projects from independent filmmakers on the platform.\n\nProjects range from micro-budget student shorts to well-funded productions. Most shoot 1–3 days. Intense material, small crews, fast schedules.`,
+        `Building a ${c.name}-based roster for horror shorts, psychological thrillers, and genre content. Independent filmmakers on the platform browse this pool first when they're casting.\n\nIf you're comfortable with intense dramatic material, physical performance, and genre-specific direction — this is for you.`,
+        `Horror and thriller actor roster for ${c.name}. We work with directors making everything from quiet psychological horror to visceral genre shorts.\n\nWe're looking for actors who can hold a scene under pressure — slow builds, real fear, and physical commitment.`
+      ],
+      pays:[PAY_VARIES_C,"Varies. Micro-budget projects offer copy/credit/meals. Funded shorts offer $150–$400/day. All rates disclosed before booking."],
+      union:UNION,
+      reqs:[
+        "Submit headshot, acting resume (optional), and a reel or 60-second dramatic self-tape. Thriller or genre material strongly preferred.",
+        "Headshot + dramatic self-tape (60–90 seconds). If you have genre-specific material, lead with it. Resume optional.",
+        "Current headshot and a dramatic reel or self-tape clip. Show emotional range, not just looks. Genre material preferred but not required."
+      ],
+      months:()=>pick([1,2]),
+      roles:()=>[
+        {name:"Lead — Protagonist",description:"Central character. Carries the emotional arc of the film — fear, survival, grief, or resolve. Naturalistic, grounded, capable of sustained tension.",gender:"All genders",age_range:pick(["22–40","25–42","20–38"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Supporting — Antagonist / Neighbor",description:"Antagonist, authority figure, or unsettling presence. Quiet menace or overt threat — depends on the project. Can hold ambiguity.",gender:"All genders",age_range:pick(["30–55","35–60","28–50"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Featured — Shadow Figure / Creature",description:"Physically expressive role with limited or no dialogue. Movement, stillness, and physical commitment over conventional acting technique.",gender:"All genders",age_range:"18–45",ethnicity:"All ethnicities",pay:""}
+      ]
     },
     {
       type:"Comedy Sketch Talent Pool",
       postedBy:"CastSlate Creator Network",
-      title:(c)=>pick([`Comedy Sketch Actor Pool — ${c.short}`,`${c.short} Sketch Comedy Talent Roster`,`${c.name} Comedy Sketch Performance Pool`]),
-      synopsis:(c)=>`CastSlate is building a roster of ${c.name}-based comedy actors for sketch productions, short-form comedic content, and creator-produced comedy series. Accepted actors may be contacted for self-tapes and day-of shoots by independent comedy producers using the platform.`,
-      roles:`Comedy performers and actors, ages 18–60, all genders, all backgrounds. Improv or sketch comedy background preferred. Strong physical comedy and character work welcome.`,
-      pay:PAY_VARIES,union:UNION,req:"Submit headshot and a 60-second comedic self-tape or clip from prior comedy work.",months:pick([1,2])
+      titles:(c)=>[`Comedy Sketch Actor Pool — ${c.short}`,`${c.short} Sketch Comedy Talent Roster`,`${c.name} Comedy Sketch Performance Pool`,`${c.short} Comedic Actor Submissions`],
+      synopses:(c)=>[
+        `Building a ${c.name}-based comedy roster for sketch productions, short-form comedic content, and creator-produced series. Independent comedy producers on the platform browse this pool when they're casting.\n\nImprov or sketch background preferred. Physical comedy and character work welcome.`,
+        `Open call for ${c.name}-based comedy actors. We're putting together a roster for sketch shorts, social media comedy content, and web series productions.\n\nStrong comedic timing, game-for-anything attitude, and the ability to do 15 takes without losing the bit.`,
+        `Comedy actor roster for ${c.name}. Most work here is sketch, character comedy, or short-form video — not standup. We're looking for people who can disappear into a character and land a joke without telegraphing it.`
+      ],
+      pays:[PAY_VARIES,"Most comedy projects offer copy/credit. Some paid bookings at $100–$300/day. Rate disclosed per project."],
+      union:UNION,
+      reqs:[
+        "Submit headshot and a 60-second comedic self-tape or clip from prior comedy work. Show timing, not just a funny face.",
+        "Headshot + a comedic clip (60–90 seconds). Sketch, improv, a character bit, or a moment from prior work. Resume optional.",
+        "Current headshot and a short comedic reel or self-tape. Make it specific — a real character or a scene, not just a general 'funny' tape."
+      ],
+      months:()=>pick([1,2]),
+      roles:()=>[
+        {name:"Lead Comedian / Sketch Performer",description:"Primary comedic voice in a sketch or short-form piece. Strong point of view, physical or verbal timing, and the ability to anchor a bit.",gender:"All genders",age_range:pick(["18–45","20–42","22–40"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Straight Man / Foil Character",description:"Plays it real while the world around them is ridiculous. Timing-smart, grounded, and able to make a reaction land.",gender:"All genders",age_range:pick(["25–55","28–50","30–55"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Ensemble / Background Comedic",description:"Character or bit player — a memorable presence in a short amount of screen time. Strong takes, physical comedy, and adaptability.",gender:"All genders",age_range:"18–50",ethnicity:"All ethnicities",pay:""}
+      ]
     },
     {
       type:"Theater Workshop Submissions",
       postedBy:"CastSlate Talent Team",
-      title:(c)=>pick([`${c.short} Theater Workshop Submissions`,`Stage Actor Workshop Pool — ${c.short}`,`${c.name} Theater & Workshop Roster`]),
-      synopsis:(c)=>`CastSlate is accepting submissions from ${c.name}-based stage actors for theater workshops, new play readings, and performance development projects facilitated through the platform. Selected actors may be invited to participate in workshop productions and developmental readings.\n\nThese are workshop opportunities, not full productions.`,
-      roles:`Stage actors ages 18–70, all genders, all ethnicities. Prior stage experience preferred. Strong text work, physical presence, and collaboration skills valued.`,
-      pay:"Stipend or rehearsal pay may be offered for some workshops. Others are unpaid developmental opportunities.",
-      union:UNION,req:"Submit headshot, theater resume, and a monologue video (60–120 seconds).",months:pick([2,3])
+      titles:(c)=>[`${c.short} Theater Workshop Submissions`,`Stage Actor Workshop Pool — ${c.short}`,`${c.name} Theater & Workshop Roster`,`${c.short} New Play Readings — Open Submissions`],
+      synopses:(c)=>[
+        `Collecting submissions from ${c.name}-based stage actors for theater workshops, new play readings, and developmental projects facilitated through the platform. Selected actors may be invited to participate in workshop productions and staged readings.\n\nThese are workshop opportunities — not full productions. Schedule commitments are shorter.`,
+        `Open call for stage-trained actors in ${c.name}. We're building a pool for workshop productions, developmental readings, and collaborative staged work.\n\nStrong text work, physical presence, and a collaborative process are the main requirements. Monologue submission required.`,
+        `Stage actor workshop roster for ${c.name}. Writers and directors on the platform use this pool to cast developmental readings, table reads, and workshop-style productions.\n\nPrior stage experience preferred. If you're serious about the room and good with new material — submit.`
+      ],
+      pays:[PAY_THEATER,"Most workshops are unpaid or offer a $25–$50 stipend. Some funded workshop series pay rehearsal rates. Disclosed per project."],
+      union:UNION,
+      reqs:[
+        "Submit headshot, theater resume, and a monologue video (60–120 seconds). Classical or contemporary — your choice.",
+        "Headshot + theater resume + a monologue (under 2 minutes). Show range — not necessarily Shakespeare, but something with real text.",
+        "Current headshot, stage resume, and a short monologue video. If you have video from prior stage work, that can substitute for the monologue."
+      ],
+      months:()=>pick([2,3]),
+      roles:()=>[
+        {name:"Lead Role",description:"Primary character in a workshop or developmental reading. Requires strong text instincts, ability to take direction quickly, and sustained emotional commitment.",gender:"All genders",age_range:pick(["25–45","28–50","22–42"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Supporting Role",description:"Key supporting character — often the emotional counterweight to the lead. Clear point of view and strong scene work.",gender:"All genders",age_range:pick(["30–60","35–65","28–55"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Reader / Ensemble",description:"Table read or ensemble participant. Multiple smaller roles or a narrator function. Quick study, collaborative, comfortable with cold reads.",gender:"All genders",age_range:"18+",ethnicity:"All ethnicities",pay:""}
+      ]
     },
     {
       type:"Voiceover Roster",
       postedBy:"CastSlate Talent Team",
-      title:(c)=>pick([`${c.short} Voiceover Actor Roster`,`Voiceover Talent Pool — ${c.short}`,`${c.name} VO & Narration Talent Pool`]),
-      synopsis:(c)=>`CastSlate is building a voiceover and narration roster of ${c.name}-based voice actors for commercial, documentary, animation, and audiobook projects posted through the platform. Accepted talent may be contacted for paid session work, spec projects, and creator-produced audio content.`,
-      roles:`Voice actors and narrators, ages 18–70, all genders. Range and character voice variety preferred. Home studio capability (quiet space, basic microphone) required.`,
-      pay:PAY_VOICEOVER,union:UNION,req:"Submit a voiceover demo reel (60–90 seconds minimum). Include headshot and brief bio.",months:pick([2,3])
+      titles:(c)=>[`${c.short} Voiceover Actor Roster`,`Voiceover Talent Pool — ${c.short}`,`${c.name} VO & Narration Talent Pool`,`${c.short} Voice Actor Submissions`],
+      synopses:(c)=>[
+        `Building a voiceover and narration roster of ${c.name}-based voice actors for commercial, documentary, animation, and audiobook projects posted through the platform. Accepted talent may be contacted for paid session work, spec projects, and creator-produced audio content.`,
+        `We're collecting VO submissions from ${c.name}-based voice actors. Most work here is commercial narration, documentary VO, and creator-produced audio content. Some animation and character work.\n\nHome studio required (quiet space + decent microphone). A professional studio isn't necessary, but clean audio is.`,
+        `Voiceover roster for ${c.name}. Covers commercial, explainer, narrative, and character work. Creators on the platform post VO requests and pull from this pool first.\n\nRange and versatility preferred over a single impressive voice type.`
+      ],
+      pays:[PAY_VOICEOVER_A,PAY_VOICEOVER_B],
+      union:UNION,
+      reqs:[
+        "Submit a voiceover demo reel (60–90 seconds minimum, 3 minutes max). Include headshot and a brief bio. Note your range and any specialty areas.",
+        "VO demo reel (under 3 minutes). Show range — commercial, character, and narration if you have it. Headshot + bio required.",
+        "Demo reel (60 seconds minimum). If you only do one style of VO, make that obvious. Include current headshot and a note about your home studio setup."
+      ],
+      months:()=>pick([2,3]),
+      roles:()=>[
+        {name:"Commercial / Spokesperson VO",description:"Product narration, brand spots, and direct-address commercial scripts. Warm, confident, and conversational delivery.",gender:"All genders",age_range:pick(["25–50","28–52","22–48"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Character / Animation Voice",description:"Animated or character-driven VO. Range, versatility, and distinctive character voices preferred.",gender:"All genders",age_range:pick(["18–55","20–50","22–52"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Narration / Documentary",description:"Long-form narration for documentaries, audiobooks, educational content, and explainer videos. Clear, measured, authoritative.",gender:"All genders",age_range:pick(["30–65","35–65","28–60"]),ethnicity:"All ethnicities",pay:""}
+      ]
     },
     {
       type:"Creator Collaboration Pool",
       postedBy:"Independent Creator Network",
-      title:(c)=>pick([`Creator Collaboration Pool — ${c.short}`,`${c.short} Indie Creator Actor Pool`,`${c.name} Creator Collaboration Roster`]),
-      synopsis:(c)=>`CastSlate is curating a roster of ${c.name}-based actors open to collaborating directly with independent creators, emerging filmmakers, and content producers. Accepted actors may be connected with creators for collaborative short films, micro-budget productions, and platform-based projects.\n\nCreators reach out directly — projects vary widely in scope, style, and compensation.`,
-      roles:`Actors of all types, 18–65, all genders, all ethnicities. Open to low-budget and spec work in exchange for quality footage, copy, and credit.`,
-      pay:PAY_VARIES,union:"Non-union and early-career union members welcome",req:"Submit headshot, reel or self-tape clip, and a brief statement about the types of projects you want to collaborate on.",months:pick([1,2,3])
+      titles:(c)=>[`Creator Collaboration Pool — ${c.short}`,`${c.short} Indie Creator Actor Pool`,`${c.name} Creator Collaboration Roster`,`${c.short} Open Collaboration — Actor & Creator Matching`],
+      synopses:(c)=>[
+        `Building a ${c.name}-based roster of actors open to collaborating directly with independent creators, emerging filmmakers, and content producers. Accepted actors get connected with creators for short films, micro-budget productions, and platform projects.\n\nCreators reach out directly. Scope and compensation vary widely.`,
+        `For ${c.name}-based actors who want to work with emerging filmmakers — not just audition for them. This pool matches talent directly with independent creators who are developing projects on the platform.\n\nLow-budget work in exchange for quality footage, copy, and credit. Strong collaborative mindset required.`,
+        `Indie actor/creator matching pool for ${c.name}. Independent filmmakers, YouTubers, and content creators use this pool to find actors willing to collaborate from the ground up.\n\nMost projects are spec or micro-budget. The right match here can lead to a long creative partnership.`
+      ],
+      pays:["Varies widely. Most opportunities are unpaid to low-paid — copy, credit, and quality footage. Some creators offer a small day rate. Disclosed per project.",PAY_VARIES_C],
+      union:"Non-union and early-career union members welcome",
+      reqs:[
+        "Submit headshot, reel or self-tape clip, and a brief statement about what types of projects and collaborators you're looking for.",
+        "Headshot + reel or clip. Include a short note about the kinds of projects you're genuinely interested in collaborating on — not just 'anything.'",
+        "Current headshot and a reel or self-tape. Tell us what you're looking for in a collaboration — genre, style, or the kind of story you want to be part of."
+      ],
+      months:()=>pick([1,2,3]),
+      roles:()=>[
+        {name:"Collaborative Lead",description:"Primary character in a creator-developed project. Willing to contribute to the creative process — not just show up and perform a script.",gender:"All genders",age_range:pick(["18–40","20–42","22–38"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Supporting Collaborator",description:"Scene partner or supporting presence in a creator project. Good with improvised blocking, collaborative decision-making, and a minimal crew.",gender:"All genders",age_range:pick(["22–50","25–48","20–45"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Creative Ensemble",description:"Ensemble or recurring presence in a short-form series or collection. Comfortable with multiple shoot days and an evolving production.",gender:"All genders",age_range:"18+",ethnicity:"All ethnicities",pay:""}
+      ]
     }
   ];
   function generateOne(adminUserId){
     const city=pickCity();
     const tpl=pick(TYPES);
-    const exMonths=tpl.months;
-    const titleStr=tpl.title(city);
+    const exMonths=tpl.months();
+    const titleStr=pick(tpl.titles(city));
+    const synopsisStr=pick(tpl.synopses(city));
+    const payStr=pick(tpl.pays);
+    const reqStr=pick(tpl.reqs);
+    const rolesArr=tpl.roles();
     return {
       cd_id:adminUserId,
       title:titleStr,
       type:tpl.type,
       prod:tpl.postedBy,
       posted_by_label:tpl.postedBy,
-      synopsis:tpl.synopsis(city),
+      synopsis:synopsisStr,
       location:city.name,
-      pay:tpl.pay,
+      pay:payStr,
       union_status:tpl.union,
       status:"draft",
       published:false,
       is_admin_created:true,
-      submission_requirements:tpl.req,
+      submission_requirements:reqStr,
       expires_at:expiresAt(exMonths),
       deadline:new Date(expiresAt(exMonths)).toISOString().slice(0,10),
-      // roles inserted separately after casting is created
-      _roleDesc:tpl.roles,
-      _roleType:tpl.type
+      _roles:rolesArr
     };
   }
   function generateBatch(adminUserId){
-    const count=3+Math.floor(Math.random()*2); // 3 or 4
+    const count=3+Math.floor(Math.random()*2);
     const used=new Set();
     const out=[];
     let attempts=0;
@@ -14589,20 +14793,13 @@ function AdminCastingGenerator({session}){
       const batch=ACG.generateBatch(adminId);
       let ok=0;let fail=0;
       for(const item of batch){
-        const roleDesc=item._roleDesc;
-        const roleType=item._roleType;
-        delete item._roleDesc;delete item._roleType;
+        const roles=item._roles||[];
+        delete item._roles;
         const {data:cData,error:cErr}=await window.sb.from("castings").insert(item).select("id").single();
         if(cErr){fail++;console.warn("[ACG] insert failed",cErr);continue;}
-        // Insert a single role representing the general talent pool spec
-        await window.sb.from("roles").insert({
-          casting_id:cData.id,
-          name:roleType+" Submissions",
-          description:roleDesc,
-          gender:"All genders",
-          age_range:"18–65",
-          ethnicity:"All ethnicities"
-        });
+        if(roles.length>0){
+          await window.sb.from("roles").insert(roles.map(r=>({casting_id:cData.id,name:r.name,description:r.description,gender:r.gender,age_range:r.age_range,ethnicity:r.ethnicity,pay:r.pay||null})));
+        }
         ok++;
       }
       // Record today's run date
@@ -14645,8 +14842,8 @@ function AdminCastingGenerator({session}){
     const key=c.id+":regen";setBusy(key);
     const batch=ACG.generateBatch(adminId);
     const fresh=batch[0];
-    const roleDesc=fresh._roleDesc;const roleType=fresh._roleType;
-    delete fresh._roleDesc;delete fresh._roleType;
+    const freshRoles=fresh._roles||[];
+    delete fresh._roles;
     const {error}=await window.sb.from("castings").update({
       title:fresh.title,type:fresh.type,prod:fresh.prod,posted_by_label:fresh.posted_by_label,
       synopsis:fresh.synopsis,location:fresh.location,pay:fresh.pay,union_status:fresh.union_status,
@@ -14654,9 +14851,10 @@ function AdminCastingGenerator({session}){
       status:"draft",published:false,updated_at:new Date().toISOString()
     }).eq("id",c.id);
     if(!error){
-      // Replace roles
       await window.sb.from("roles").delete().eq("casting_id",c.id);
-      await window.sb.from("roles").insert({casting_id:c.id,name:roleType+" Submissions",description:roleDesc,gender:"All genders",age_range:"18–65",ethnicity:"All ethnicities"});
+      if(freshRoles.length>0){
+        await window.sb.from("roles").insert(freshRoles.map(r=>({casting_id:c.id,name:r.name,description:r.description,gender:r.gender,age_range:r.age_range,ethnicity:r.ethnicity,pay:r.pay||null})));
+      }
     }
     setBusy(null);
     if(error){showMsg("Regenerate failed: "+error.message);return;}
@@ -14672,6 +14870,13 @@ function AdminCastingGenerator({session}){
       updated_at:new Date().toISOString()
     }).eq("id",updated.id);
     if(error){showMsg("Save failed: "+error.message);return;}
+    if(updated.roles!==undefined){
+      await window.sb.from("roles").delete().eq("casting_id",updated.id);
+      const toInsert=(updated.roles||[]).filter(r=>r.name&&r.name.trim());
+      if(toInsert.length>0){
+        await window.sb.from("roles").insert(toInsert.map(r=>({casting_id:updated.id,name:r.name,description:r.description||"",gender:r.gender||"All genders",age_range:r.age_range||"",ethnicity:r.ethnicity||"All ethnicities",pay:r.pay||null})));
+      }
+    }
     showMsg("Draft saved.");setEditDraft(null);loadAll();
   };
 
@@ -14865,21 +15070,41 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish}){
     expires_at:listing.expires_at?new Date(listing.expires_at).toISOString().slice(0,10):"",
     status:listing.status||"draft"
   });
+  const [roles,setRoles]=useState([]);
+  const [rolesLoading,setRolesLoading]=useState(true);
   const [busy,setBusy]=useState(false);
   const set=(k,v)=>setForm(f=>({...f,[k]:v}));
+
+  useEffect(()=>{
+    (async()=>{
+      const {data}=await window.sb.from("roles").select("id,name,description,gender,age_range,ethnicity,pay").eq("casting_id",listing.id).order("id");
+      setRoles((data||[]).map(r=>({...r,_key:r.id})));
+      setRolesLoading(false);
+    })();
+  },[listing.id]);
+
+  const BLANK_ROLE=()=>({_key:Date.now()+Math.random(),id:null,name:"",description:"",gender:"All genders",age_range:"",ethnicity:"All ethnicities",pay:""});
+  const addRole=()=>setRoles(r=>[...r,BLANK_ROLE()]);
+  const updateRole=(i,k,v)=>setRoles(r=>r.map((x,j)=>j===i?{...x,[k]:v}:x));
+  const deleteRole=(i)=>setRoles(r=>r.filter((_,j)=>j!==i));
+
   const handleSave=async()=>{
     setBusy(true);
-    await onSave({...form,expires_at:form.expires_at?new Date(form.expires_at).toISOString():null});
+    await onSave({...form,roles,expires_at:form.expires_at?new Date(form.expires_at).toISOString():null});
     setBusy(false);
   };
   const handlePublish=async()=>{
     setBusy(true);
-    await onSave({...form,expires_at:form.expires_at?new Date(form.expires_at).toISOString():null});
+    await onSave({...form,roles,expires_at:form.expires_at?new Date(form.expires_at).toISOString():null});
     await onPublish({id:form.id});
     setBusy(false);
   };
   const isDraft=listing.status==="draft"||listing.status==="pending_review";
-  return(<div className="modal-overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:680,maxHeight:"92vh",overflowY:"auto"}}>
+
+  const GENDER_OPTS=["All genders","Male","Female","Non-Binary","Any"];
+  const ETHNICITY_OPTS=["All ethnicities","Any ethnicity","Black / African descent","White / European descent","Latino / Hispanic","Asian / Pacific Islander","Middle Eastern / North African","South Asian","Indigenous / Native American","Mixed / Multiracial","Other"];
+
+  return(<div className="modal-overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"94vh",overflowY:"auto"}}>
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18}}>
       <h2 style={{marginBottom:0,fontSize:20}}>{isDraft?"Review & Edit Draft":"Edit Listing"}</h2>
       <button onClick={onClose} style={{background:"none",border:"none",fontSize:18,cursor:"pointer",color:"var(--t3)",fontFamily:"inherit"}}>✕</button>
@@ -14908,7 +15133,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish}){
 
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
       <div className="form-group"><label className="label">City / Location</label>
-        <select className="select" value={form.location} onChange={e=>set("location",e.target.value)}>
+        <select className="select" value={["New York, NY","Los Angeles, CA","Chicago, IL","Boston, MA"].includes(form.location)?form.location:""} onChange={e=>set("location",e.target.value)}>
           <option value="New York, NY">New York, NY</option>
           <option value="Los Angeles, CA">Los Angeles, CA</option>
           <option value="Chicago, IL">Chicago, IL</option>
@@ -14942,6 +15167,47 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish}){
           Current: <strong style={{color:"var(--t1)"}}>{listing.status==="open"?"Active / Live":"Draft"}</strong>
           {listing.status==="draft"&&<div style={{fontSize:11,marginTop:4}}>Use "Publish" below to make this listing live.</div>}
         </div></div>
+    </div>
+
+    {/* Roles section */}
+    <div style={{marginTop:20,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+        <div>
+          <div style={{fontWeight:700,fontSize:14}}>Roles</div>
+          <div style={{fontSize:11,color:"var(--t3)",marginTop:2}}>Roles appear on the public listing and in Browse Castings.</div>
+        </div>
+        <button className="btn-s btn-sm" onClick={addRole} style={{whiteSpace:"nowrap"}}>+ Add Role</button>
+      </div>
+      {rolesLoading&&<div style={{color:"var(--t3)",fontSize:12,padding:"8px 0"}}>Loading roles…</div>}
+      {!rolesLoading&&roles.length===0&&<div style={{background:"var(--s2)",borderRadius:8,padding:"12px 14px",fontSize:12,color:"var(--t3)",textAlign:"center"}}>No roles yet. Click "+ Add Role" to add one.</div>}
+      {!rolesLoading&&roles.map((role,i)=>(
+        <div key={role._key||i} style={{background:"var(--s2)",borderRadius:10,padding:"14px 16px",marginBottom:10,border:"1px solid var(--bdr)"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+            <div style={{fontWeight:600,fontSize:13,color:"var(--t1)"}}>{role.name||<span style={{color:"var(--t3)"}}>New Role</span>}</div>
+            <button onClick={()=>deleteRole(i)} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit",padding:"2px 6px"}}>Remove</button>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+            <div className="form-group" style={{margin:0}}><label className="label" style={{fontSize:11}}>Role Name</label>
+              <input className="input" style={{fontSize:13}} value={role.name} onChange={e=>updateRole(i,"name",e.target.value)} placeholder="e.g. Lead Actress, Supporting Role"/></div>
+            <div className="form-group" style={{margin:0}}><label className="label" style={{fontSize:11}}>Age Range</label>
+              <input className="input" style={{fontSize:13}} value={role.age_range} onChange={e=>updateRole(i,"age_range",e.target.value)} placeholder="e.g. 25–45"/></div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+            <div className="form-group" style={{margin:0}}><label className="label" style={{fontSize:11}}>Gender</label>
+              <select className="select" style={{fontSize:13}} value={role.gender} onChange={e=>updateRole(i,"gender",e.target.value)}>
+                {GENDER_OPTS.map(g=><option key={g} value={g}>{g}</option>)}
+              </select></div>
+            <div className="form-group" style={{margin:0}}><label className="label" style={{fontSize:11}}>Ethnicity</label>
+              <select className="select" style={{fontSize:13}} value={role.ethnicity} onChange={e=>updateRole(i,"ethnicity",e.target.value)}>
+                {ETHNICITY_OPTS.map(e=><option key={e} value={e}>{e}</option>)}
+              </select></div>
+          </div>
+          <div className="form-group" style={{margin:0,marginBottom:8}}><label className="label" style={{fontSize:11}}>Role Description</label>
+            <textarea className="textarea" rows={2} style={{fontSize:13,resize:"vertical"}} value={role.description} onChange={e=>updateRole(i,"description",e.target.value)} placeholder="What this role involves, tone, requirements…"/></div>
+          <div className="form-group" style={{margin:0}}><label className="label" style={{fontSize:11}}>Compensation (optional — leave blank to inherit listing pay)</label>
+            <input className="input" style={{fontSize:13}} value={role.pay||""} onChange={e=>updateRole(i,"pay",e.target.value)} placeholder="e.g. $150/day, Copy/Credit, TBD"/></div>
+        </div>
+      ))}
     </div>
 
     <div style={{display:"flex",gap:10,marginTop:20,paddingTop:16,borderTop:"1px solid var(--bdr)",flexWrap:"wrap"}}>
