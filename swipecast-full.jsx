@@ -9436,6 +9436,14 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           <div className="sw-overlay" style={{color:"#c88900",opacity:ac==="hold"?1:0}}>HOLD</div>
           <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="select"?1:0}}>SELECT ✓</div>
           <img src={img} alt={t.display_name} draggable="false" style={fsMode?{height:"65%"}:{}}/>
+          {/* Slate video button — upper-right of image, stopPropagation prevents swipe */}
+          {t.slate_video_url&&(
+            <button
+              onPointerDown={e=>e.stopPropagation()}
+              onClick={e=>{e.stopPropagation();setAppVideoViewer({url:t.slate_video_url,name:t.display_name||"Applicant",takeLabel:"Slate"});}}
+              style={{position:"absolute",top:10,right:10,zIndex:15,display:"flex",alignItems:"center",gap:4,padding:"5px 10px",borderRadius:20,background:"rgba(0,0,0,0.65)",color:"#fff",fontSize:11,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"inherit",letterSpacing:.4,backdropFilter:"blur(3px)",WebkitBackdropFilter:"blur(3px)"}}
+            >▶ Slate</button>
+          )}
           <div className="s-card-info" style={fsMode?{padding:"16px 22px"}:{}}>
             <h3 style={fsMode?{fontSize:22,marginBottom:5}:{}}>{t.display_name||"Applicant"}</h3>
             <div className="s-card-meta" style={fsMode?{fontSize:14,marginBottom:10}:{}}>{[t.age,t.gender,t.height,t.location].filter(Boolean).join(" · ")||"—"}</div>
@@ -9473,6 +9481,13 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         <div style={{position:"relative",aspectRatio:"3/4",overflow:"hidden",background:"var(--s2)",cursor:"pointer"}} onClick={()=>setCdProfileOverlay(buildTalentView(a))}>
           <img src={img} alt={tp.display_name||""} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} draggable="false"/>
           <span style={{position:"absolute",top:10,right:10,fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:.8,padding:"3px 8px",borderRadius:99,background:statusColor.bg,color:statusColor.color}}>{a.status}</span>
+          {/* Slate button — bottom-left so it doesn't overlap status badge */}
+          {tp.slate_video_url&&(
+            <button
+              onClick={e=>{e.stopPropagation();setAppVideoViewer({url:tp.slate_video_url,name:tp.display_name||"Applicant",takeLabel:"Slate"});}}
+              style={{position:"absolute",bottom:8,left:8,display:"flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:18,background:"rgba(0,0,0,0.65)",color:"#fff",fontSize:10,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"inherit",letterSpacing:.4,backdropFilter:"blur(3px)",WebkitBackdropFilter:"blur(3px)"}}
+            >▶ Slate</button>
+          )}
         </div>
         {/* Info */}
         <div style={{padding:"12px 14px 14px",display:"flex",flexDirection:"column",gap:3,flex:1}}>
@@ -9509,11 +9524,25 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16,overflow:"hidden",marginBottom:20,maxWidth:640,width:"100%"}}>
         {/* Actor info header */}
         <div style={{display:"flex",gap:14,padding:"16px 18px 12px",alignItems:"center",borderBottom:"1px solid var(--bdr)"}}>
-          <img src={img} alt={tp.display_name||""} style={{width:56,height:72,objectFit:"cover",borderRadius:8,flexShrink:0,cursor:"pointer"}} onClick={()=>onViewProfile(a)}/>
+          {/* Thumbnail — click opens full profile; slate badge when available */}
+          <div style={{position:"relative",flexShrink:0,cursor:"pointer"}} onClick={()=>onViewProfile(a)}>
+            <img src={img} alt={tp.display_name||""} style={{width:56,height:72,objectFit:"cover",borderRadius:8,display:"block"}}/>
+            {tp.slate_video_url&&(
+              <div style={{position:"absolute",bottom:3,left:0,right:0,display:"flex",justifyContent:"center",pointerEvents:"none"}}>
+                <span style={{fontSize:9,fontWeight:800,color:"#fff",background:"rgba(0,0,0,0.7)",padding:"2px 6px",borderRadius:8,letterSpacing:.3}}>▶ SLATE</span>
+              </div>
+            )}
+          </div>
           <div style={{flex:1,minWidth:0}}>
             <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
               <h4 style={{fontSize:16,fontWeight:800,margin:0,cursor:"pointer"}} onClick={()=>onViewProfile(a)}>{tp.display_name||"Applicant"}</h4>
               <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:statusColor.bg,color:statusColor.color,textTransform:"uppercase",letterSpacing:.5}}>{a.status}</span>
+              {tp.slate_video_url&&(
+                <button
+                  onClick={()=>setAppVideoViewer({url:tp.slate_video_url,name:tp.display_name||"Applicant",takeLabel:"Slate"})}
+                  style={{display:"inline-flex",alignItems:"center",gap:4,padding:"3px 9px",borderRadius:16,background:"rgba(0,0,0,0.08)",color:"var(--t1)",fontSize:10,fontWeight:700,border:"1px solid var(--bdr)",cursor:"pointer",fontFamily:"inherit",letterSpacing:.3}}
+                >▶ Slate 7s</button>
+              )}
             </div>
             <p style={{fontSize:12,color:"var(--t2)",margin:"3px 0 0"}}>{[tp.age,tp.gender,tp.location,tp.union_status].filter(Boolean).join(" · ")||"—"}</p>
             <p style={{fontSize:11,color:"var(--t3)",margin:"2px 0 0"}}>Submitted {new Date(a.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})} · Role: {a.roles?.name||activeRole?.name||"—"}</p>
