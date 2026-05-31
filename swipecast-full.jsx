@@ -9743,6 +9743,12 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
               {isOpen&&<button className="btn-s btn-sm" style={{fontSize:12}} disabled={busy} onClick={()=>busy||toggleCastingStatus(c,"closed")}>{busy?"…":"Close Casting"}</button>}
               {isClosed&&<button className="btn-s btn-sm" style={{fontSize:12}} disabled={busy} onClick={()=>busy||toggleCastingStatus(c,"open")}>{busy?"…":"Reopen"}</button>}
             </div>
+            {isPendingReview&&<div style={{marginTop:10,padding:"8px 12px",background:"rgba(200,137,0,0.08)",border:"1px solid rgba(200,137,0,0.2)",borderRadius:8,fontSize:12,color:"#c88900",lineHeight:1.5}}>
+              ⏳ <strong>Under review.</strong> Your casting has been submitted and is waiting for CastSlate approval. It will go live on Browse Castings once approved — typically within 1 business day.
+            </div>}
+            {isRejected&&<div style={{marginTop:10,padding:"8px 12px",background:"rgba(192,57,43,0.07)",border:"1px solid rgba(192,57,43,0.2)",borderRadius:8,fontSize:12,color:"#c0392b",lineHeight:1.5}}>
+              ✕ <strong>Not approved.</strong> This casting was not approved. Edit it to address any issues, then resubmit for review.
+            </div>}
           </div>);
         })}</div>:
         tab==="allSelected"?
@@ -15253,15 +15259,19 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
     return"overview";
   });
   const [pendingBookingCount,setPendingBookingCount]=useState(0);
+  const [pendingCastingCount,setPendingCastingCount]=useState(0);
   const role=profile?.user_type||"(unknown)";
 
   useEffect(()=>{
     (async()=>{
       try{
-        const{count}=await window.sb.from("class_booking_requests")
-          .select("id",{count:"exact",head:true}).eq("status","pending_review");
-        setPendingBookingCount(count||0);
-      }catch(e){console.warn("[admin-booking-count]",e);}
+        const[{count:bc},{count:cc}]=await Promise.all([
+          window.sb.from("class_booking_requests").select("id",{count:"exact",head:true}).eq("status","pending_review"),
+          window.sb.from("castings").select("id",{count:"exact",head:true}).eq("status","pending_review")
+        ]);
+        setPendingBookingCount(bc||0);
+        setPendingCastingCount(cc||0);
+      }catch(e){console.warn("[admin-pending-counts]",e);}
     })();
   },[]);
 
@@ -15289,7 +15299,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       <AdminNavLink current={section} target="overview" label="Overview" onClick={goToSection}/>
       <AdminNavLink current={section} target="users" label="Users" onClick={goToSection}/>
       <AdminNavLink current={section} target="cd-verification" label="CD Verification" onClick={goToSection}/>
-      <AdminNavLink current={section} target="castings" label="Castings" onClick={goToSection}/>
+      <AdminNavLink current={section} target="castings" label="Castings" badge={pendingCastingCount} onClick={goToSection}/>
       <AdminNavLink current={section} target="applications" label="Applications" onClick={goToSection}/>
       <AdminNavLink current={section} target="classes" label="Classes" onClick={goToSection}/>
       <AdminNavLink current={section} target="class-invitations" label="Class Invitations" onClick={goToSection}/>
@@ -15315,7 +15325,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="overview"&&<AdminOverview onGoToBookingRequests={()=>goToSection("booking-requests")}/>}
       {section==="users"&&<AdminUsers isSuperAdmin={isSuperAdmin} session={session} myProfile={profile}/>}
       {section==="cd-verification"&&<AdminCDVerification/>}
-      {section==="castings"&&<AdminCastings/>}
+      {section==="castings"&&<AdminCastings onPendingCountChange={setPendingCastingCount}/>}
       {section==="applications"&&<AdminApplications/>}
       {section==="classes"&&<AdminClasses/>}
       {section==="class-invitations"&&<AdminClassInvitations session={session}/>}
@@ -15776,129 +15786,251 @@ function AdminCDProfileView({u,session,myProfile,onBack}){
 }
 
 // ─── Castings: feature/close/reopen/edit/delete, still uses existing EditCastingModal
-function AdminCastings(){
+function AdminCastings({onPendingCountChange}){
   const [castings,setCastings]=useState([]);
   const [q,setQ]=useState("");
   const [loading,setLoading]=useState(true);
   const [msg,setMsg]=useState("");
+  const [msgType,setMsgType]=useState("info"); // "info" | "success" | "error"
   const [viewCasting,setViewCasting]=useState(null);
   const [editCasting,setEditCasting]=useState(null);
   const [busy,setBusy]=useState(null); // casting id + action key currently in flight
+  const [tab,setTab]=useState("pending"); // "pending" | "all" | "active" | "other"
+
   const reload=useCallback(async()=>{
     setLoading(true);
-    const {data,error}=await window.sb.from("castings").select("*,profiles:cd_id(display_name,email,company_name),roles(id,name,description,gender,age_range,ethnicity,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,official_takes_allowed,submission_mode)").order("created_at",{ascending:false}).limit(1000);
-    if(error)setMsg("Load failed: "+error.message);
-    setCastings(data||[]);setLoading(false);
-  },[]);
+    const {data,error}=await window.sb.from("castings")
+      .select("*,profiles:cd_id(display_name,email,company_name,user_type),roles(id,name,description,gender,age_range,ethnicity,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,official_takes_allowed,submission_mode)")
+      .order("created_at",{ascending:false}).limit(1000);
+    if(error){setMsg("Load failed: "+error.message);setMsgType("error");}
+    const list=data||[];
+    setCastings(list);
+    setLoading(false);
+    // Notify parent (AdminPanel sidebar badge)
+    if(onPendingCountChange){
+      onPendingCountChange(list.filter(c=>c.status==="pending_review").length);
+    }
+  },[onPendingCountChange]);
   useEffect(()=>{reload();},[reload]);
-  const showMsg=(m)=>{setMsg(m);setTimeout(()=>setMsg(""),4000);};
+
+  const showMsg=(m,type="info")=>{setMsg(m);setMsgType(type);setTimeout(()=>setMsg(""),5000);};
+
   const toggleFeatured=async(c)=>{
     const featuring=!c.featured;
     const key=c.id+":feature";
     setBusy(key);
-    // 1. Set featured flag
     const {error}=await window.sb.rpc("admin_set_casting_featured",{p_casting_id:c.id,p_featured:featuring});
-    if(error){setBusy(null);showMsg("Failed: "+error.message);return;}
-    // 2. If featuring a non-published casting, auto-publish it so it appears in Browse
+    if(error){setBusy(null);showMsg("Failed: "+error.message,"error");return;}
     if(featuring&&(!c.published||c.status!=="open")){
-      const {error:e2}=await window.sb.rpc("admin_set_casting_status",{p_casting_id:c.id,p_status:"open"});
+      const {error:e2}=await window.sb.from("castings").update({status:"open",published:true,updated_at:new Date().toISOString()}).eq("id",c.id);
       setBusy(null);
-      if(e2){showMsg("Featured but failed to publish: "+e2.message);reload();return;}
-      showMsg("Casting featured and published — now visible in Browse Castings.");
+      if(e2){showMsg("Featured but failed to publish: "+e2.message,"error");reload();return;}
+      showMsg("Casting featured and published — now live in Browse Castings.","success");
     } else {
       setBusy(null);
-      showMsg(featuring?"Casting featured — now pinned at top of Browse Castings.":"Casting removed from featured.");
+      showMsg(featuring?"Casting featured — pinned at top of Browse Castings.":"Casting unfeatured.","info");
     }
     reload();
   };
+
+  // publish: sets status=open AND published=true so it appears in Browse Castings
+  const publishCasting=async(c)=>{
+    const key=c.id+":status";
+    setBusy(key);
+    const {error}=await window.sb.from("castings")
+      .update({status:"open",published:true,updated_at:new Date().toISOString()})
+      .eq("id",c.id);
+    setBusy(null);
+    if(error){showMsg("Publish failed: "+error.message,"error");return;}
+    showMsg(`"${c.title}" published — now live on Browse Castings.`,"success");
+    reload();
+  };
+
   const setStatus=async(c,newStatus)=>{
     const key=c.id+":status";
-    console.log("[AdminCastings] admin_set_casting_status",{p_casting_id:c.id,p_status:newStatus});
     setBusy(key);
+    // When rejecting, also unpublish so it cannot appear anywhere public
+    const extra=newStatus==="rejected"?{published:false}:{};
     const {error}=await window.sb.rpc("admin_set_casting_status",{p_casting_id:c.id,p_status:newStatus});
+    if(!error&&Object.keys(extra).length){
+      await window.sb.from("castings").update({...extra,updated_at:new Date().toISOString()}).eq("id",c.id);
+    }
     setBusy(null);
-    if(error){showMsg("Failed: "+error.message);return;}
-    showMsg("Casting "+newStatus+".");reload();
+    if(error){showMsg("Failed: "+error.message,"error");return;}
+    showMsg(newStatus==="rejected"?`"${c.title}" rejected and hidden.`:`Casting set to ${newStatus}.`,"info");
+    reload();
   };
+
   const doDelete=async(c)=>{
     if(!confirm(`DELETE casting "${c.title}"?\n\nThis permanently removes the casting, all roles, and all submissions. Cannot be undone.`))return;
     const key=c.id+":delete";
-    console.log("[AdminCastings] delete casting",{id:c.id,title:c.title});
     setBusy(key);
     const {error}=await window.sb.from("castings").delete().eq("id",c.id);
     setBusy(null);
-    if(error){showMsg("Delete failed: "+error.message);return;}
-    showMsg("Casting deleted.");reload();
+    if(error){showMsg("Delete failed: "+error.message,"error");return;}
+    showMsg("Casting deleted.","info");reload();
   };
-  const filtered=castings.filter(c=>!q||[c.title,c.prod,c.location,c.tagline,c.synopsis,c.profiles?.email,c.profiles?.display_name].some(x=>x&&x.toLowerCase().includes(q.toLowerCase())));
+
+  const pending=castings.filter(c=>c.status==="pending_review");
+  const afterSearch=(list)=>!q?list:list.filter(c=>[c.title,c.prod,c.location,c.tagline,c.synopsis,c.profiles?.email,c.profiles?.display_name].some(x=>x&&x.toLowerCase().includes(q.toLowerCase())));
+  const tabList=tab==="pending"?afterSearch(pending)
+    :tab==="active"?afterSearch(castings.filter(c=>c.status==="open"))
+    :tab==="other"?afterSearch(castings.filter(c=>!["pending_review","open"].includes(c.status)))
+    :afterSearch(castings);
+
+  const msgStyle=msgType==="success"
+    ?{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.3)",color:"#1d7b44"}
+    :msgType==="error"
+    ?{background:"rgba(192,57,43,0.1)",border:"1px solid rgba(192,57,43,0.3)",color:"#c0392b"}
+    :{background:"var(--s2)",border:"1px solid var(--bdr)",color:"var(--t1)"};
+
   return(<>
-    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Castings</h1>
-    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{filtered.length} of {castings.length} listings</p>
-    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+    <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12,flexWrap:"wrap",marginBottom:4}}>
+      <div>
+        <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:2}}>Castings</h1>
+        <p style={{color:"var(--t2)",fontSize:13}}>Review and publish creator-submitted castings before they go live.</p>
+      </div>
+      {pending.length>0&&<div style={{background:"rgba(200,137,0,0.12)",border:"1px solid rgba(200,137,0,0.3)",borderRadius:10,padding:"10px 16px",fontSize:13,color:"#c88900",fontWeight:600,flexShrink:0}}>
+        ⏳ {pending.length} casting{pending.length===1?" needs":"s need"} review
+      </div>}
+    </div>
+
+    {/* Filter tabs */}
+    <div className="tabs" style={{marginTop:16,marginBottom:12}}>
+      <button className={`tab ${tab==="pending"?"active":""}`} onClick={()=>setTab("pending")}>
+        Pending Review {pending.length>0&&<span style={{background:tab==="pending"?"rgba(255,255,255,0.35)":"rgba(200,137,0,0.2)",color:tab==="pending"?"#fff":"#c88900",borderRadius:10,fontSize:11,fontWeight:700,padding:"1px 7px",marginLeft:4}}>{pending.length}</span>}
+      </button>
+      <button className={`tab ${tab==="active"?"active":""}`} onClick={()=>setTab("active")}>Active</button>
+      <button className={`tab ${tab==="other"?"active":""}`} onClick={()=>setTab("other")}>Closed / Rejected</button>
+      <button className={`tab ${tab==="all"?"active":""}`} onClick={()=>setTab("all")}>All</button>
+    </div>
+
+    {msg&&<div style={{...msgStyle,borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
     <input className="input" placeholder="Search title, production, location, CD…" value={q} onChange={e=>setQ(e.target.value)} style={{marginBottom:14}}/>
+
+    {tab==="pending"&&pending.length===0&&!loading&&<div style={{background:"rgba(46,204,113,0.08)",border:"1px solid rgba(46,204,113,0.25)",borderRadius:10,padding:"20px 24px",textAlign:"center",color:"#1d7b44",fontSize:14,fontWeight:600,marginBottom:14}}>
+      ✓ No castings pending review — you're all caught up.
+    </div>}
+
     {loading?<CastSlateLoader size="inline" text="Loading…"/>:
       <div className="card" style={{padding:0,overflow:"hidden"}}>
-        {filtered.map(c=>{
+        {tabList.map(c=>{
           const isPending=c.status==="pending_review";
           const statusColor=isPending?"#c88900":c.status==="open"?"#1d7b44":c.status==="rejected"?"#c0392b":"var(--t2)";
           const statusBg=isPending?"rgba(200,137,0,0.12)":c.status==="open"?"rgba(46,204,113,0.12)":c.status==="rejected"?"rgba(192,57,43,0.1)":"var(--s2)";
-          const statusLabel=isPending?"PENDING REVIEW":c.status.toUpperCase();
-          return(<div key={c.id} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"center",opacity:c.status==="closed"||c.status==="rejected"?0.6:1,borderLeft:isPending?"3px solid #c88900":"3px solid transparent"}}>
+          const statusLabel=isPending?"PENDING REVIEW":c.status==="open"?"ACTIVE":c.status.toUpperCase();
+          const postedByType=c.profiles?.user_type||"cd";
+          const typeLabel=postedByType==="admin"||postedByType==="super_admin"?"Admin"
+            :postedByType==="cd"?(c.profiles?.company_name?"Production Company":"Casting Director")
+            :"Creator";
+          return(<div key={c.id} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"center",opacity:c.status==="closed"||c.status==="rejected"||c.status==="archived"?0.6:1,borderLeft:isPending?"3px solid #c88900":"3px solid transparent",background:isPending?"rgba(200,137,0,0.025)":"transparent"}}>
             <div>
-              <div style={{fontWeight:600,fontSize:14}}>
+              <div style={{fontWeight:600,fontSize:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
                 {c.title}
-                {c.featured&&<span style={{color:"var(--acc)",fontSize:10,fontWeight:700,marginLeft:6}}>★ FEATURED</span>}
-                <span style={{color:statusColor,background:statusBg,fontSize:10,fontWeight:700,marginLeft:8,padding:"2px 7px",borderRadius:99}}>{statusLabel}</span>
+                {c.featured&&<span style={{color:"var(--acc)",fontSize:10,fontWeight:700}}>★ FEATURED</span>}
+                <span style={{color:statusColor,background:statusBg,fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:99}}>{statusLabel}</span>
               </div>
-              <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{c.type||"—"} · {c.prod||"—"} · {c.location||"—"} · {c.roles?.length||0} role{c.roles?.length===1?"":"s"} · by <strong>{c.profiles?.display_name||c.profiles?.email||"—"}</strong> · {new Date(c.created_at).toLocaleDateString()}</div>
+              <div style={{fontSize:12,color:"var(--t3)",marginTop:3,lineHeight:1.6}}>
+                {c.type||"—"} · {c.location||"—"} · {c.roles?.length||0} role{c.roles?.length===1?"":"s"} · {c.pay||"—"} · {c.union_status||"—"}
+              </div>
+              <div style={{fontSize:12,color:"var(--t3)",marginTop:1}}>
+                By <strong style={{color:"var(--t2)"}}>{c.profiles?.display_name||c.profiles?.email||"—"}</strong>
+                {c.profiles?.company_name&&<span> ({c.profiles.company_name})</span>}
+                <span style={{marginLeft:6,padding:"1px 6px",background:"var(--s2)",borderRadius:4,fontSize:11,color:"var(--t3)"}}>{typeLabel}</span>
+                <span style={{marginLeft:8}}>· submitted {new Date(c.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</span>
+              </div>
             </div>
             <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"flex-end"}}>
-              <button className="btn-s btn-sm" onClick={()=>setViewCasting(c)}>View</button>
+              <button className="btn-s btn-sm" onClick={()=>setViewCasting(c)}>Review</button>
               <button className="btn-s btn-sm" onClick={()=>setEditCasting(c)}>Edit</button>
               <button className="btn-s btn-sm" disabled={busy===c.id+":feature"||busy===c.id+":status"} onClick={()=>toggleFeatured(c)} style={c.featured?{background:"#1A1A2E",color:"#F5E6A3",borderColor:"#1A1A2E",fontWeight:700}:{}}>{busy===c.id+":feature"||busy===c.id+":status"?"…":c.featured?"★ Unfeature":"☆ Feature"}</button>
               {isPending?<>
-                <button className="btn-s btn-sm" style={{color:"#fff",background:"#1d7b44",borderColor:"#1d7b44"}} disabled={busy===c.id+":status"} onClick={()=>setStatus(c,"open")}>{busy===c.id+":status"?"…":"✓ Approve"}</button>
+                <button className="btn-s btn-sm" style={{color:"#fff",background:"#1d7b44",borderColor:"#1d7b44",fontWeight:700}} disabled={busy===c.id+":status"} onClick={()=>publishCasting(c)}>{busy===c.id+":status"?"…":"✓ Publish"}</button>
                 <button className="btn-s btn-sm" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} disabled={busy===c.id+":status"} onClick={()=>setStatus(c,"rejected")}>{busy===c.id+":status"?"…":"✕ Reject"}</button>
               </>:<button className="btn-s btn-sm" disabled={busy===c.id+":status"} onClick={()=>setStatus(c,c.status==="open"?"closed":"open")}>{busy===c.id+":status"?"…":c.status==="open"?"Close":"Reopen"}</button>}
               <button className="btn-s btn-sm" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} disabled={busy===c.id+":delete"} onClick={()=>doDelete(c)}>{busy===c.id+":delete"?"…":"Delete"}</button>
             </div>
           </div>);
         })}
-        {filtered.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No castings match.</div>}
+        {tabList.length===0&&!loading&&!(tab==="pending")&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No castings match.</div>}
       </div>
     }
-    {viewCasting&&<div className="modal-overlay" onClick={()=>setViewCasting(null)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"90vh",overflowY:"auto"}}>
+
+    {/* Review / View modal */}
+    {viewCasting&&<div className="modal-overlay" onClick={()=>setViewCasting(null)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:720,maxHeight:"92vh",overflowY:"auto"}}>
       <div className="flex-between" style={{marginBottom:16}}>
         <h2 style={{marginBottom:0}}>{viewCasting.title}</h2>
-        <span className="tag" style={{fontSize:10,background:viewCasting.status==="open"?"rgba(46,204,113,0.15)":"var(--s2)",color:viewCasting.status==="open"?"#1d7b44":"var(--t2)"}}>{viewCasting.status.toUpperCase()}</span>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          {viewCasting.status==="pending_review"&&<span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:99,background:"rgba(200,137,0,0.15)",color:"#c88900"}}>PENDING REVIEW</span>}
+          {viewCasting.status==="open"&&<span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:99,background:"rgba(46,204,113,0.15)",color:"#1d7b44"}}>ACTIVE</span>}
+        </div>
       </div>
-      <div style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:16,fontSize:12,color:"var(--t2)",lineHeight:1.6}}>
-        <div><strong style={{color:"var(--t1)"}}>Posted by:</strong> {viewCasting.profiles?.display_name||"—"} ({viewCasting.profiles?.email||"—"}) {viewCasting.profiles?.company_name?`· ${viewCasting.profiles.company_name}`:""}</div>
-        <div><strong style={{color:"var(--t1)"}}>Created:</strong> {new Date(viewCasting.created_at).toLocaleString()}</div>
-        <div><strong style={{color:"var(--t1)"}}>ID:</strong> <code style={{fontSize:11}}>{viewCasting.id}</code></div>
+
+      {/* Submitter info */}
+      <div style={{background:"var(--s2)",borderRadius:10,padding:14,marginBottom:16,fontSize:12,color:"var(--t2)",lineHeight:1.7}}>
+        <div><strong style={{color:"var(--t1)"}}>Submitted by:</strong> {viewCasting.profiles?.display_name||"—"} ({viewCasting.profiles?.email||"—"})
+          {viewCasting.profiles?.company_name&&<span> · {viewCasting.profiles.company_name}</span>}
+        </div>
+        <div><strong style={{color:"var(--t1)"}}>Account type:</strong> {
+          viewCasting.profiles?.user_type==="admin"||viewCasting.profiles?.user_type==="super_admin"?"Admin"
+          :viewCasting.profiles?.company_name?"Production Company / Studio":"Casting Director / Creator"
+        }</div>
+        <div><strong style={{color:"var(--t1)"}}>Submitted:</strong> {new Date(viewCasting.created_at).toLocaleString()}</div>
+        <div><strong style={{color:"var(--t1)"}}>Casting ID:</strong> <code style={{fontSize:10}}>{viewCasting.id}</code></div>
       </div>
+
+      {/* Core fields */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"10px 20px",fontSize:13,marginBottom:16}}>
-        <div><strong>Type:</strong> {viewCasting.type||"—"}</div>
+        <div><strong>Project type:</strong> {viewCasting.type||"—"}</div>
         <div><strong>Production:</strong> {viewCasting.prod||"—"}</div>
         <div><strong>Location:</strong> {viewCasting.location||"—"}</div>
-        <div><strong>Pay:</strong> {viewCasting.pay||"—"}</div>
-        <div><strong>Union:</strong> {viewCasting.union_status||"—"}</div>
-        <div><strong>Deadline:</strong> {viewCasting.deadline||"—"}</div>
+        <div><strong>Pay / Compensation:</strong> {viewCasting.pay||"—"}</div>
+        <div><strong>Union status:</strong> {viewCasting.union_status||"—"}</div>
+        <div><strong>Submission deadline:</strong> {viewCasting.deadline||"—"}</div>
+        <div><strong>Published:</strong> {viewCasting.published?"Yes — live":"No — not public"}</div>
+        <div><strong>Expires:</strong> {viewCasting.expires_at?new Date(viewCasting.expires_at).toLocaleDateString():"—"}</div>
       </div>
+
       {viewCasting.tagline&&<div style={{marginBottom:12}}><div className="label">Tagline</div><p style={{fontSize:14}}>{viewCasting.tagline}</p></div>}
-      {viewCasting.synopsis&&<div style={{marginBottom:16}}><div className="label">Synopsis</div><p style={{fontSize:14,lineHeight:1.6,color:"var(--t2)",whiteSpace:"pre-wrap"}}>{viewCasting.synopsis}</p></div>}
+      {viewCasting.synopsis&&<div style={{marginBottom:16}}><div className="label">Synopsis / Description</div><p style={{fontSize:14,lineHeight:1.6,color:"var(--t2)",whiteSpace:"pre-wrap"}}>{viewCasting.synopsis}</p></div>}
+      {viewCasting.submission_requirements&&<div style={{marginBottom:16}}><div className="label">Submission Requirements</div><p style={{fontSize:13,lineHeight:1.6,color:"var(--t2)",whiteSpace:"pre-wrap"}}>{viewCasting.submission_requirements}</p></div>}
+
+      {/* Images */}
+      {(viewCasting.casting_images?.length>0||viewCasting.casting_image_url)&&<div style={{marginBottom:16}}>
+        <div className="label">Casting Images</div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:6}}>
+          {(viewCasting.casting_images?.length>0?viewCasting.casting_images:[{url:viewCasting.casting_image_url}]).map((img,i)=>(
+            <img key={i} src={img.url||img} alt="" style={{width:100,height:70,objectFit:"cover",borderRadius:6,border:"1px solid var(--bdr)"}}/>
+          ))}
+        </div>
+      </div>}
+
+      {/* Roles */}
       <div style={{marginBottom:16}}>
         <div className="label">Roles ({viewCasting.roles?.length||0})</div>
+        {(viewCasting.roles||[]).length===0&&<p style={{fontSize:13,color:"var(--t3)"}}>No roles defined.</p>}
         {(viewCasting.roles||[]).map((r,i)=><div key={i} style={{background:"var(--s2)",borderRadius:8,padding:12,marginTop:8,fontSize:13}}>
-          <strong>{r.name}</strong> — <span style={{color:"var(--t3)"}}>{[r.gender,r.age_range,r.ethnicity].filter(Boolean).join(" · ")}</span>
-          {r.description&&<p style={{marginTop:4,color:"var(--t2)",fontSize:12,lineHeight:1.55}}>{r.description}</p>}
+          <div style={{fontWeight:700,marginBottom:4}}>{r.name}</div>
+          <div style={{color:"var(--t3)",fontSize:12,marginBottom:4}}>{[r.gender,r.age_range,r.ethnicity].filter(Boolean).join(" · ")}</div>
+          {r.description&&<p style={{color:"var(--t2)",fontSize:12,lineHeight:1.55,marginBottom:4}}>{r.description}</p>}
+          {r.direction_notes&&<p style={{color:"var(--t3)",fontSize:11}}><strong>Direction:</strong> {r.direction_notes}</p>}
+          {r.slate_instructions&&<p style={{color:"var(--t3)",fontSize:11}}><strong>Slate instructions:</strong> {r.slate_instructions}</p>}
+          {r.wardrobe_notes&&<p style={{color:"var(--t3)",fontSize:11}}><strong>Wardrobe:</strong> {r.wardrobe_notes}</p>}
+          {r.sides_pdf_url&&<a href={r.sides_pdf_url} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--acc)"}}>📎 Audition sides (PDF)</a>}
         </div>)}
       </div>
-      <div style={{display:"flex",gap:10,marginTop:20,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
-        <button className="btn-s" onClick={()=>{setEditCasting(viewCasting);setViewCasting(null);}}>Edit</button>
+
+      {/* Action buttons */}
+      <div style={{display:"flex",gap:10,marginTop:20,paddingTop:16,borderTop:"1px solid var(--bdr)",flexWrap:"wrap"}}>
+        <button className="btn-s" onClick={()=>{setEditCasting(viewCasting);setViewCasting(null);}}>✏ Edit</button>
+        {viewCasting.status==="pending_review"&&<>
+          <button className="btn-s" style={{color:"#fff",background:"#1d7b44",borderColor:"#1d7b44",fontWeight:700}} onClick={()=>{publishCasting(viewCasting);setViewCasting(null);}}>✓ Publish</button>
+          <button className="btn-s" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} onClick={()=>{setStatus(viewCasting,"rejected");setViewCasting(null);}}>✕ Reject</button>
+        </>}
         <button className="btn-p" style={{marginLeft:"auto"}} onClick={()=>setViewCasting(null)}>Close</button>
       </div>
     </div></div>}
+
     {editCasting&&<EditCastingModal casting={editCasting} onClose={()=>setEditCasting(null)} onSaved={()=>{setEditCasting(null);reload();}}/>}
   </>);
 }
@@ -18556,9 +18688,21 @@ function App(){
         const isUUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
         const field=isUUID?"id":"slug";
         const {data,error}=await window.sb.from("castings")
-          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,cd_id,status,published,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq(field,slug).maybeSingle();
         if(cancelled||error||!data)return;
+        // Guard: hide pending/unpublished castings from the public.
+        // Only the casting owner and admins may view a casting that isn't live.
+        const isLive=data.status==="open"&&data.published===true;
+        if(!isLive){
+          // Grab current session to check ownership / admin role
+          const {data:{session:sess}}=await window.sb.auth.getSession();
+          const uid2=sess?.user?.id;
+          const {data:prof}=uid2?await window.sb.from("profiles").select("user_type").eq("id",uid2).maybeSingle():{data:null};
+          const isAdmin2=prof&&["admin","super_admin"].includes(prof.user_type);
+          const isOwner=uid2&&uid2===data.cd_id;
+          if(!isAdmin2&&!isOwner)return; // leave viewingCasting null → "Casting not found"
+        }
         const c={
           id:data.id,slug:data.slug||slug,title:data.title,type:data.type||"Film",
           prod:data.prod||"",tagline:data.tagline||"",synopsis:data.synopsis||"",
