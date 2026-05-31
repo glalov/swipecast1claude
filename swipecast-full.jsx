@@ -6326,7 +6326,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     </div>
 
     <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
-      {c.featured&&<span className="badge" style={{background:"rgba(99,60,180,0.10)",color:"#5b3ecb",border:"1px solid rgba(99,60,180,0.22)"}}>★ {t('search.featured')}</span>}
+      {c.featured&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#1A1A2E",color:"#F5E6A3",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>★ Featured</span>}
       <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{translateCastingType(c.type,lang)}</span>
       <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.union}</span>
       <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.location}</span>
@@ -7344,7 +7344,7 @@ function CastingGatePage({casting,onCreateProfile,onLogin,onBack}){
         {casting&&(
           <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:12,padding:"16px 20px",marginBottom:20}}>
             <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap"}}>
-              {casting.featured&&<span className="badge" style={{background:"rgba(99,60,180,0.10)",color:"#5b3ecb",border:"1px solid rgba(99,60,180,0.22)"}}>★ Featured</span>}
+              {casting.featured&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#1A1A2E",color:"#F5E6A3",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>★ Featured</span>}
               {casting.type&&<span className="badge" style={{background:"var(--s3)",color:"var(--t2)"}}>{casting.type}</span>}
               {casting.union&&<span className="badge" style={{background:"var(--s3)",color:"var(--t2)"}}>{casting.union}</span>}
             </div>
@@ -7603,12 +7603,23 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
             <button className="btn-s btn-sm" onClick={()=>setRefreshTick(tk=>tk+1)} disabled={loading}>{loading?"…":t('search.refresh')}</button>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);return(
-            <div key={c.id} className="card" style={{padding:0,overflow:"hidden",cursor:"pointer"}} onClick={()=>onViewCasting&&onViewCasting(rawC)}>
-              <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
+          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;return(
+            <div key={c.id} style={{
+              padding:0,overflow:"hidden",cursor:"pointer",borderRadius:14,
+              background:isFeat?"#FDFBF7":"var(--s1)",
+              border:isFeat?"2px solid #1A1A2E":"1px solid var(--bdr)",
+              boxShadow:isFeat?"0 6px 32px rgba(26,26,46,0.13)":"0 1px 4px rgba(26,26,46,0.05)",
+              transition:"box-shadow .2s,transform .15s",
+            }}
+              onMouseEnter={e=>{e.currentTarget.style.boxShadow=isFeat?"0 10px 40px rgba(26,26,46,0.18)":"0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
+              onMouseLeave={e=>{e.currentTarget.style.boxShadow=isFeat?"0 6px 32px rgba(26,26,46,0.13)":"0 1px 4px rgba(26,26,46,0.05)";e.currentTarget.style.transform="";}}
+              onClick={()=>onViewCasting&&onViewCasting(rawC)}>
+              {/* Featured top accent bar */}
+              {isFeat&&<div style={{height:4,background:"#1A1A2E",width:"100%"}}/>}
+              <div className="casting-card-row" style={{padding:isFeat?"20px 28px 24px":"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
                 <div>
-                  <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
-                    {c.featured&&<span className="badge" style={{background:"rgba(99,60,180,0.10)",color:"#5b3ecb",border:"1px solid rgba(99,60,180,0.22)"}}>★ {t('search.featured')}</span>}
+                  <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
+                    {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#1A1A2E",color:"#F5E6A3",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>★ Featured</span>}
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{translateCastingType(c.type,lang)}</span>
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.union}</span>
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{(c.roles?.length||1)===1?`1 ${t('search.role')}`:`${c.roles?.length||1} ${t('search.roles')}`}</span>
