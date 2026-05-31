@@ -4339,7 +4339,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
     );
   };
 
-  return(<div className="page" style={{overflowX:"hidden"}}>
+  return(<div className="page">
 
     {/* ══════ HERO ══════ */}
     <section style={{background:"linear-gradient(155deg,#0D0D1A 0%,#1A1A2E 40%,#0f2347 100%)",color:"#fff",padding:"clamp(56px,8vw,96px) clamp(16px,5vw,60px) clamp(48px,7vw,80px)",position:"relative",overflow:"hidden"}}>
