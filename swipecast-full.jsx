@@ -15793,13 +15793,23 @@ function AdminCastings(){
   useEffect(()=>{reload();},[reload]);
   const showMsg=(m)=>{setMsg(m);setTimeout(()=>setMsg(""),4000);};
   const toggleFeatured=async(c)=>{
+    const featuring=!c.featured;
     const key=c.id+":feature";
-    console.log("[AdminCastings] admin_set_casting_featured",{p_casting_id:c.id,p_featured:!c.featured});
     setBusy(key);
-    const {error}=await window.sb.rpc("admin_set_casting_featured",{p_casting_id:c.id,p_featured:!c.featured});
-    setBusy(null);
-    if(error){showMsg("Failed: "+error.message);return;}
-    showMsg(c.featured?"Casting removed from featured.":"Casting marked as featured.");reload();
+    // 1. Set featured flag
+    const {error}=await window.sb.rpc("admin_set_casting_featured",{p_casting_id:c.id,p_featured:featuring});
+    if(error){setBusy(null);showMsg("Failed: "+error.message);return;}
+    // 2. If featuring a non-published casting, auto-publish it so it appears in Browse
+    if(featuring&&(!c.published||c.status!=="open")){
+      const {error:e2}=await window.sb.rpc("admin_set_casting_status",{p_casting_id:c.id,p_status:"open"});
+      setBusy(null);
+      if(e2){showMsg("Featured but failed to publish: "+e2.message);reload();return;}
+      showMsg("Casting featured and published — now visible in Browse Castings.");
+    } else {
+      setBusy(null);
+      showMsg(featuring?"Casting featured — now pinned at top of Browse Castings.":"Casting removed from featured.");
+    }
+    reload();
   };
   const setStatus=async(c,newStatus)=>{
     const key=c.id+":status";
@@ -15845,7 +15855,7 @@ function AdminCastings(){
             <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"flex-end"}}>
               <button className="btn-s btn-sm" onClick={()=>setViewCasting(c)}>View</button>
               <button className="btn-s btn-sm" onClick={()=>setEditCasting(c)}>Edit</button>
-              <button className="btn-s btn-sm" disabled={busy===c.id+":feature"} onClick={()=>toggleFeatured(c)}>{busy===c.id+":feature"?"…":c.featured?"Unfeature":"Feature"}</button>
+              <button className="btn-s btn-sm" disabled={busy===c.id+":feature"||busy===c.id+":status"} onClick={()=>toggleFeatured(c)} style={c.featured?{background:"#1A1A2E",color:"#F5E6A3",borderColor:"#1A1A2E",fontWeight:700}:{}}>{busy===c.id+":feature"||busy===c.id+":status"?"…":c.featured?"★ Unfeature":"☆ Feature"}</button>
               {isPending?<>
                 <button className="btn-s btn-sm" style={{color:"#fff",background:"#1d7b44",borderColor:"#1d7b44"}} disabled={busy===c.id+":status"} onClick={()=>setStatus(c,"open")}>{busy===c.id+":status"?"…":"✓ Approve"}</button>
                 <button className="btn-s btn-sm" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} disabled={busy===c.id+":status"} onClick={()=>setStatus(c,"rejected")}>{busy===c.id+":status"?"…":"✕ Reject"}</button>
