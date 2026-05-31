@@ -7198,6 +7198,23 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
       </div>
     </div>
 
+    {/* ── SLATE VIDEO — shown only when actor has one ── */}
+    {(freshProfile?.slate_video_url)&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,flexWrap:"wrap",gap:8}}>
+        {sectionHead("Slate")}
+        <span style={{fontSize:11,color:"var(--t3)"}}>7-second intro</span>
+      </div>
+      <div style={{borderRadius:10,overflow:"hidden",background:"#000"}}>
+        <video
+          src={freshProfile.slate_video_url}
+          controls
+          playsInline
+          preload="metadata"
+          style={{display:"block",width:"100%",maxHeight:200,objectFit:"contain",background:"#000"}}
+        />
+      </div>
+    </div>}
+
     {/* ── SKILLS ── */}
     {skills.length>0&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       {sectionHead("Skills")}
@@ -7686,6 +7703,7 @@ function computeProfileSuggestions(profile, dbCredits, mediaItems){
   if(!(profile?.bio?.trim()))suggestions.push({p:"High",text:"Write your bio — casting directors read this first",tab:"profile",btn:"Write Bio"});
   if(!hasCredits)suggestions.push({p:"High",text:"Add credits so casting directors can see your experience",tab:"credits",btn:"Add Credits"});
   if(!hasVideos)suggestions.push({p:"High",text:"Upload a reel so casting directors can see you on camera",tab:"videos",btn:"Upload Video"});
+  if(!profile?.slate_video_url)suggestions.push({p:"High",text:"Add a 7-second slate video — casting directors see and hear you instantly",tab:"profile",btn:"Add Slate"});
   if(photoCount<3)suggestions.push({p:"Medium",text:"Add more gallery photos with different looks and angles",tab:"photos",btn:"Add Photos"});
   if(!profile?.location)suggestions.push({p:"Medium",text:"Add your location — casting directors often filter by area",tab:"profile",btn:"Add Location"});
   if(!hasStats){const m=[!profile?.height&&"height",!profile?.hair&&"hair color",!profile?.eyes&&"eye color",!profile?.age_range&&"age range"].filter(Boolean);suggestions.push({p:"Medium",text:`Complete casting details: ${m.join(", ")}`,tab:"profile",btn:"Add Details"});}
@@ -8034,6 +8052,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     {label:"Add age range",done:!!myProfile?.age_range},
     {label:"Add credits / experience",done:dashDbCredits.length>0||!!(myProfile?.credits?.trim())},
     {label:"Add reel / video link",done:isPremium&&(myProfile?.video_links||[]).some(v=>v),premium:true},
+    {label:"Add slate video (7-sec intro)",done:!!myProfile?.slate_video_url},
   ];
   const completedCount=profileChecks.filter(c=>c.done).length;
   const isProfileComplete=completedCount===profileChecks.length;
@@ -12616,6 +12635,10 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
   const [inboxErr,setInboxErr]=useState("");   // surfaced fetch error
   const [inboxLoading,setInboxLoading]=useState(false);
   const [profileErrVisible,setProfileErrVisible]=useState(false);
+  // Slate video
+  const [slateVideoUrl,setSlateVideoUrl]=useState(profile?.slate_video_url||"");
+  const [showSlateRecorder,setShowSlateRecorder]=useState(false);
+  const [slateUploading,setSlateUploading]=useState(false);
   const [f,setF]=useState(()=>({
     display_name:profile?.display_name||"",bio:profile?.bio||"",location:profile?.location||"",
     age:profile?.age||"",gender:profile?.gender||"",ethnicity:profile?.ethnicity||"",
@@ -12651,6 +12674,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
       const slots=["","","","",""];vl.forEach((v,i)=>{if(i<5)slots[i]=v;});setVideos(slots);
       setSocialLinks(profile.social_links&&typeof profile.social_links==="object"?profile.social_links:{});
       setSelectedSkills(Array.isArray(profile.skills)?profile.skills:[]);
+      setSlateVideoUrl(profile.slate_video_url||"");
     }
   },[profile]);
 
@@ -12807,6 +12831,41 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
       setMsg("Profile saved.");window.scrollTo({top:0,behavior:"smooth"});onReload&&onReload();setTimeout(()=>setMsg(""),3000);
     }catch(e){showErr(e.message||"Could not save.");}finally{setSaving(false);}
   };
+  // ── Slate video helpers ──
+  const saveSlateUrl=async(url)=>{
+    try{
+      await window.sb.from("profiles").update({slate_video_url:url||null}).eq("id",session.user.id);
+      setSlateVideoUrl(url||"");
+      onReload&&onReload();
+    }catch(e){showErr(e.message||"Could not save slate video.");}
+  };
+  const checkVideoDuration=(file)=>new Promise(resolve=>{
+    const vid=document.createElement("video");vid.preload="metadata";
+    vid.onloadedmetadata=()=>{URL.revokeObjectURL(vid.src);resolve(vid.duration);};
+    vid.onerror=()=>resolve(null);
+    vid.src=URL.createObjectURL(file);
+  });
+  const uploadSlate=async(file)=>{
+    if(!file)return;
+    const accepted=["video/mp4","video/quicktime","video/webm","video/mov","video/x-m4v","video/mpeg"];
+    if(!accepted.some(t=>file.type.startsWith(t.split("/")[0]))){setErr("Please upload an MP4, MOV, or WebM video file.");return;}
+    if(file.size>100*1024*1024){setErr("Slate video must be under 100 MB.");return;}
+    setSlateUploading(true);setErr("");
+    try{
+      const dur=await checkVideoDuration(file);
+      if(dur!==null&&dur>7.5){setErr("Slate videos must be 7 seconds or shorter. This file is "+Math.round(dur)+" seconds.");return;}
+      const ext=(file.name?.split(".").pop()||"mp4").toLowerCase().replace("quicktime","mov");
+      const path=`${session.user.id}/slate-${Date.now()}.${ext}`;
+      const{error:upErr}=await window.sb.storage.from("talent-media").upload(path,file,{upsert:true,contentType:file.type});
+      if(upErr)throw upErr;
+      const{data:{publicUrl}}=window.sb.storage.from("talent-media").getPublicUrl(path);
+      await saveSlateUrl(publicUrl);
+      setShowSlateRecorder(false);
+      setMsg("Slate video saved.");setTimeout(()=>setMsg(""),3000);
+    }catch(e){showErr(e.message||"Upload failed.");}
+    finally{setSlateUploading(false);}
+  };
+
   const uploadFile=async(file,bucket,field)=>{
     if(!file)return;setUploading(true);setErr("");
     try{
@@ -13050,6 +13109,66 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
           <div className="form-group"><label className="label">Training / Education</label><input className="input" placeholder="e.g. BFA Acting, NYU Tisch · Meisner Technique" value={f.training} onChange={e=>up("training",e.target.value)}/></div>
           <div className="form-group"><label className="label">Special Skills (comma separated)</label><input className="input" placeholder="Stage Combat, Fluent Spanish, Horseback Riding, Guitar…" value={f.skills} onChange={e=>up("skills",e.target.value)}/></div>
           <div className="form-group"><label className="label">Representation</label><input className="input" placeholder="Agency, manager, or 'Seeking Representation'" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
+        </div>
+
+        {/* ── ACTOR SLATE VIDEO ── */}
+        <div className="card" style={{padding:24,marginBottom:16}}>
+          <div style={{marginBottom:14}}>
+            <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Actor Slate Video</h3>
+            <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,marginBottom:0}}>
+              Record a 7-second intro so casting teams can quickly see and hear you. Say your name, location, and one key detail like union status or local hire availability.
+            </p>
+            <p style={{fontSize:12,color:"var(--t3)",marginTop:6,fontStyle:"italic"}}>
+              Suggested: "Hi, I'm [Name]. I'm based in [City]. I'm [Union Status]. Thank you."
+            </p>
+          </div>
+
+          {slateVideoUrl&&!showSlateRecorder&&(
+            <div>
+              <div style={{borderRadius:10,overflow:"hidden",marginBottom:12,background:"#000"}}>
+                <video src={slateVideoUrl} controls playsInline style={{display:"block",width:"100%",maxHeight:220,objectFit:"contain",background:"#000"}}/>
+              </div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                <button className="btn-s btn-sm" onClick={()=>setShowSlateRecorder(true)}>🎥 Replace Slate Video</button>
+                <label className="btn-s btn-sm" style={{cursor:slateUploading?"not-allowed":"pointer"}}>
+                  {slateUploading?"Uploading…":"⬆ Upload New Slate"}
+                  <input type="file" accept="video/mp4,video/quicktime,video/webm,video/*" style={{display:"none"}} disabled={slateUploading} onChange={e=>{const f=e.target.files?.[0];if(f)uploadSlate(f);e.target.value="";}}/>
+                </label>
+                <button className="btn-s btn-sm" style={{color:"#c0392b"}} onClick={async()=>{if(confirm("Delete your slate video?"))await saveSlateUrl("");}}>🗑 Delete Slate</button>
+              </div>
+            </div>
+          )}
+
+          {showSlateRecorder&&(
+            <div>
+              <div style={{background:"rgba(99,60,180,0.06)",border:"1px solid rgba(99,60,180,0.18)",borderRadius:8,padding:"10px 14px",marginBottom:12,fontSize:12,color:"var(--acc)",fontWeight:600}}>
+                📹 Max 7 seconds — recording stops automatically
+              </div>
+              <VideoRecorder
+                session={session}
+                roleId={`slate-${session?.user?.id}`}
+                maxSec={7}
+                primaryLabel="💾 Save Slate Video"
+                onVideoReady={async url=>{await saveSlateUrl(url);setShowSlateRecorder(false);setMsg("Slate video saved.");setTimeout(()=>setMsg(""),3000);}}
+                onClose={()=>setShowSlateRecorder(false)}
+              />
+            </div>
+          )}
+
+          {!slateVideoUrl&&!showSlateRecorder&&(
+            <div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>
+                <button className="btn-p btn-sm" style={{display:"flex",alignItems:"center",gap:6}} onClick={()=>setShowSlateRecorder(true)}>
+                  🎥 Record Slate Video
+                </button>
+                <label className="btn-s btn-sm" style={{cursor:slateUploading?"not-allowed":"pointer",display:"inline-flex",alignItems:"center",gap:6}}>
+                  {slateUploading?"Uploading…":"⬆ Upload Slate Video"}
+                  <input type="file" accept="video/mp4,video/quicktime,video/webm,video/*" style={{display:"none"}} disabled={slateUploading} onChange={e=>{const f=e.target.files?.[0];if(f)uploadSlate(f);e.target.value="";}}/>
+                </label>
+              </div>
+              <p style={{fontSize:11,color:"var(--t3)",marginBottom:0}}>Accepted: MP4, MOV, WebM · Max 7 seconds · Max 100 MB</p>
+            </div>
+          )}
         </div>
       </>}
       {isCD&&<>
