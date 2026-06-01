@@ -14910,19 +14910,6 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
         </div>
       )}
 
-      {/* State 3: Free user with Stripe customer profile but no active subscription */}
-      {!isPremiumMember&&hasStripeCustomer&&!isCanceled&&(
-        <div className="card" style={{marginBottom:16,padding:"20px 24px"}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-            <div style={{fontSize:22}}>ℹ️</div>
-            <div style={{fontWeight:600,fontSize:14}}>Stripe customer profile created</div>
-          </div>
-          <p style={{color:"var(--t2)",fontSize:13,marginBottom:0}}>
-            This account has a Stripe customer profile, but no active paid subscription. You're currently on the Free Plan.
-          </p>
-        </div>
-      )}
-
       {/* State 4: Canceled/expired subscription */}
       {isCanceled&&(
         <div className="card" style={{marginBottom:16,padding:"20px 24px",border:"1px solid rgba(214,59,59,0.2)",background:"rgba(214,59,59,0.03)"}}>
@@ -14938,8 +14925,8 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
         </div>
       )}
 
-      {/* Free Plan — no subscription, no Stripe customer */}
-      {!isPremiumMember&&!hasStripeCustomer&&!isCanceled&&(
+      {/* Free Plan — no active subscription */}
+      {!isPremiumMember&&!isCanceled&&(
         <div className="card" style={{textAlign:"center",padding:"40px 24px"}}>
           <div style={{fontSize:36,marginBottom:12}}>🏦</div>
           <div style={{fontWeight:700,fontSize:16,marginBottom:8}}>No active paid subscription</div>
