@@ -7681,15 +7681,13 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
         {sectionHead("Slate")}
         <span style={{fontSize:11,color:"var(--t3)"}}>7-second intro</span>
       </div>
-      <div style={{maxWidth:380}}>
-        <video
-          src={freshProfile.slate_video_url}
-          controls
-          playsInline
-          preload="metadata"
-          style={{display:"block",width:"100%",height:"auto",borderRadius:10,background:"transparent"}}
-        />
-      </div>
+      <video
+        src={freshProfile.slate_video_url}
+        controls
+        playsInline
+        preload="metadata"
+        style={{display:"block",width:"auto",height:"auto",maxWidth:"min(300px,100%)",maxHeight:420,borderRadius:10}}
+      />
     </div>}
 
     {/* ── SKILLS ── */}
@@ -13935,8 +13933,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
               </p>
               {slateVideoUrl&&!showSlateRecorder&&(
                 <div>
-                  <div style={{maxWidth:380,marginBottom:12}}>
-                    <video src={slateVideoUrl} controls playsInline preload="metadata" style={{display:"block",width:"100%",height:"auto",borderRadius:10,background:"transparent"}}/>
+                  <div style={{marginBottom:12}}>
+                    <video src={slateVideoUrl} controls playsInline preload="metadata" style={{display:"block",width:"auto",height:"auto",maxWidth:"min(300px,100%)",maxHeight:420,borderRadius:10}}/>
                   </div>
                   <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                     <button className="btn-s btn-sm" onClick={()=>setShowSlateRecorder(true)}>🎥 Replace Slate Video</button>
