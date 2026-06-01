@@ -7686,7 +7686,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
         controls
         playsInline
         preload="metadata"
-        style={{display:"block",width:"auto",height:"auto",maxWidth:"min(300px,100%)",maxHeight:420,borderRadius:10}}
+        style={{display:"block",width:"auto",height:"auto",maxWidth:"min(360px,100%)",maxHeight:440,borderRadius:10,margin:"0 auto"}}
       />
     </div>}
 
