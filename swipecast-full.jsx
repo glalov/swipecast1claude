@@ -2131,9 +2131,12 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
           </div>
           <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>{p.note}</p>
           <ul style={{listStyle:"none",padding:0,margin:"0 0 22px",display:"flex",flexDirection:"column",gap:6}}>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Unlimited submissions</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Unlimited casting submissions</li>
             <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Unlimited photos &amp; gallery media</li>
             <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Unlimited video uploads</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Actor Slate Video — 7-sec intro for casting teams</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Actor Business Card with unique QR code</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Manager Mode — weekly career check-ins</li>
             <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Personalized profile improvement suggestions</li>
             <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>Cancel anytime</li>
           </ul>
@@ -2785,7 +2788,7 @@ function RegisterTalent({onNavigate}){
             </div>
             <div style={{border:"1px solid var(--bdr)",borderRadius:12,padding:"14px 16px",opacity:0.85}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><span style={{fontWeight:800,fontSize:14}}>Actor Premium</span><span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--acc)"}}>$9.99/mo</span></div>
-              {["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited casting submissions","Premium profile features","Profile improvement suggestions"].map(feat=><div key={feat} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{feat}</div>)}
+              {["Unlimited submissions","Unlimited photos, videos & Cast Me As","Actor Slate Video","Actor Business Card with QR code","Manager Mode weekly check-ins","Profile improvement suggestions"].map(feat=><div key={feat} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{feat}</div>)}
               <button className="btn-s" style={{width:"100%",marginTop:10,fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>
             </div>
           </div>
@@ -4261,7 +4264,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan}){
               <div style={{fontSize:12,color:"var(--t3)",marginTop:5}}>{t('pricing.perMonthCancel')}</div>
             </div>
             <div style={{flex:1}}>
-              {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Premium profile features','Personalized profile improvement suggestions'].map(f=>feat(f,"var(--acc)"))}
+              {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Actor Slate Video — 7-sec intro','Actor Business Card with QR code','Manager Mode weekly career check-ins','Personalized profile improvement suggestions'].map(f=>feat(f,"var(--acc)"))}
             </div>
             {isPremium
               ?<button style={{...btnFilled,marginTop:24}} onClick={()=>onNavigate("membership")}>Manage Plan →</button>
@@ -4303,6 +4306,9 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan}){
           {featureRow("Basic actor profile","✓","✓")}
           {featureRow("Premium profile features","—","✓")}
           {featureRow("Profile improvement suggestions","—","✓")}
+          {featureRow("Actor Slate Video","—","✓")}
+          {featureRow("Actor Business Card","—","✓")}
+          {featureRow("Manager Mode","—","✓")}
           {featureRow("Price",t('pricing.freeLabel'),PREMIUM_PRICE)}
         </div>
       </div>
@@ -9265,7 +9271,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <>
                 <p style={{fontSize:13,color:"var(--t2)",margin:"0 0 12px",fontWeight:500}}>Actor Premium</p>
                 <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:4}}>
-                  {["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited submissions","Profile improvement suggestions"].map((f,i)=>(
+                  {["Unlimited submissions","Unlimited photos, videos & Cast Me As","Actor Slate Video","Actor Business Card","Manager Mode","Profile improvement suggestions"].map((f,i)=>(
                     <div key={i} style={{display:"flex",alignItems:"center",gap:7,fontSize:12,color:"var(--t2)"}}>
                       <span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}
                     </div>
@@ -12894,7 +12900,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </section>
 
     <section className="lh-section" style={{padding:"60px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">Pricing</div><div className="section-title">Simple pricing. No surprises.</div>
-      <div className="grid-3">{[{name:"Actor Free",who:"Actors · Models · Performers",price:"$0",period:"no credit card required",features:["Free account","1 headshot","3 submissions per day","Basic actor profile","Browse all castings"],featured:false,cta:"Get Started Free",action:"auth-gate"},{name:"Actor Premium",who:"Actors · Models · Performers",price:"$9.99",period:"per month · cancel anytime",features:["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited submissions","Premium profile features","Profile improvement suggestions"],featured:true,cta:"Get Premium — $9.99/mo",action:"membership"},{name:"Casting Director",who:"Casting Directors · Producers",price:"Free",period:"to create an account",features:["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent filters"],featured:false,cta:"Create CD Account",action:"register-cd"}].map(p=>
+      <div className="grid-3">{[{name:"Actor Free",who:"Actors · Models · Performers",price:"$0",period:"no credit card required",features:["Free account","1 headshot","3 submissions per day","Basic actor profile","Browse all castings"],featured:false,cta:"Get Started Free",action:"auth-gate"},{name:"Actor Premium",who:"Actors · Models · Performers",price:"$9.99",period:"per month · cancel anytime",features:["Unlimited submissions","Unlimited photos, videos & Cast Me As","Actor Slate Video","Actor Business Card with QR code","Manager Mode weekly check-ins","Profile improvement suggestions"],featured:true,cta:"Get Premium — $9.99/mo",action:"membership"},{name:"Casting Director",who:"Casting Directors · Producers",price:"Free",period:"to create an account",features:["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent filters"],featured:false,cta:"Create CD Account",action:"register-cd"}].map(p=>
         <div key={p.name} className="card" style={p.featured?{borderColor:"var(--acc)",background:"linear-gradient(165deg,var(--s1),rgba(26,26,46,.02))",position:"relative"}:{}}>
           {p.featured&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"var(--acc)",color:"var(--bg)",fontSize:10,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:"4px 14px",borderRadius:100,letterSpacing:1}}>RECOMMENDED</div>}
           <h3 style={{fontSize:18,fontWeight:700,marginBottom:4,textAlign:"center"}}>{p.name}</h3><p style={{color:"var(--t2)",fontSize:12,marginBottom:20,textAlign:"center"}}>{p.who}</p>
@@ -13907,63 +13913,69 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
           <div className="form-group"><label className="label">Representation</label><input className="input" placeholder="Agency, manager, or 'Seeking Representation'" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
         </div>
 
-        {/* ── ACTOR SLATE VIDEO ── */}
+        {/* ── ACTOR SLATE VIDEO — Premium only ── */}
         <div className="card" style={{padding:24,marginBottom:16}}>
-          <div style={{marginBottom:14}}>
-            <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Actor Slate Video</h3>
-            <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,marginBottom:0}}>
-              Record a 7-second intro so casting teams can quickly see and hear you. Say your name, location, and one key detail like union status or local hire availability.
-            </p>
-            <p style={{fontSize:12,color:"var(--t3)",marginTop:6,fontStyle:"italic"}}>
-              Suggested: "Hi, I'm [Name]. I'm based in [City]. I'm [Union Status]. Thank you."
-            </p>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:isPremium?14:0,flexWrap:"wrap",gap:8}}>
+            <div>
+              <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Actor Slate Video <span style={{fontSize:10,fontWeight:800,background:"var(--acc)",color:"#fff",padding:"2px 7px",borderRadius:6,letterSpacing:0.8,textTransform:"uppercase",marginLeft:6,verticalAlign:"middle"}}>Premium</span></h3>
+              <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,marginBottom:0}}>
+                Record a 7-second intro so casting teams can quickly see and hear you.
+              </p>
+            </div>
           </div>
-
-          {slateVideoUrl&&!showSlateRecorder&&(
-            <div>
-              <div style={{borderRadius:10,overflow:"hidden",marginBottom:12,background:"#000"}}>
-                <video src={slateVideoUrl} controls playsInline style={{display:"block",width:"100%",maxHeight:220,objectFit:"contain",background:"#000"}}/>
-              </div>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                <button className="btn-s btn-sm" onClick={()=>setShowSlateRecorder(true)}>🎥 Replace Slate Video</button>
-                <label className="btn-s btn-sm" style={{cursor:slateUploading?"not-allowed":"pointer"}}>
-                  {slateUploading?"Uploading…":"⬆ Upload New Slate"}
-                  <input type="file" accept="video/mp4,video/quicktime,video/webm,video/*" style={{display:"none"}} disabled={slateUploading} onChange={e=>{const f=e.target.files?.[0];if(f)uploadSlate(f);e.target.value="";}}/>
-                </label>
-                <button className="btn-s btn-sm" style={{color:"#c0392b"}} onClick={async()=>{if(confirm("Delete your slate video?"))await saveSlateUrl("");}}>🗑 Delete Slate</button>
-              </div>
+          {!isPremium?(
+            <div style={{marginTop:14,background:"rgba(99,60,180,0.05)",border:"1px solid rgba(99,60,180,0.18)",borderRadius:10,padding:"16px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+              <div style={{fontSize:13,color:"var(--t2)"}}>🔒 Upgrade to Premium to record and upload your actor slate video.</div>
+              <button className="btn-p btn-sm" onClick={()=>onNavigate("membership")}>Upgrade — {PREMIUM_PRICE}</button>
             </div>
-          )}
-
-          {showSlateRecorder&&(
-            <div>
-              <div style={{background:"rgba(99,60,180,0.06)",border:"1px solid rgba(99,60,180,0.18)",borderRadius:8,padding:"10px 14px",marginBottom:12,fontSize:12,color:"var(--acc)",fontWeight:600}}>
-                📹 Max 7 seconds — recording stops automatically
-              </div>
-              <VideoRecorder
-                session={session}
-                roleId={`slate-${session?.user?.id}`}
-                maxSec={7}
-                primaryLabel="💾 Save Slate Video"
-                onVideoReady={async url=>{await saveSlateUrl(url);setShowSlateRecorder(false);setMsg("Slate video saved.");setTimeout(()=>setMsg(""),3000);}}
-                onClose={()=>setShowSlateRecorder(false)}
-              />
-            </div>
-          )}
-
-          {!slateVideoUrl&&!showSlateRecorder&&(
-            <div>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>
-                <button className="btn-p btn-sm" style={{display:"flex",alignItems:"center",gap:6}} onClick={()=>setShowSlateRecorder(true)}>
-                  🎥 Record Slate Video
-                </button>
-                <label className="btn-s btn-sm" style={{cursor:slateUploading?"not-allowed":"pointer",display:"inline-flex",alignItems:"center",gap:6}}>
-                  {slateUploading?"Uploading…":"⬆ Upload Slate Video"}
-                  <input type="file" accept="video/mp4,video/quicktime,video/webm,video/*" style={{display:"none"}} disabled={slateUploading} onChange={e=>{const f=e.target.files?.[0];if(f)uploadSlate(f);e.target.value="";}}/>
-                </label>
-              </div>
-              <p style={{fontSize:11,color:"var(--t3)",marginBottom:0}}>Accepted: MP4, MOV, WebM · Max 7 seconds · Max 100 MB</p>
-            </div>
+          ):(
+            <>
+              <p style={{fontSize:12,color:"var(--t3)",marginTop:6,marginBottom:14,fontStyle:"italic"}}>
+                Suggested: "Hi, I'm [Name]. I'm based in [City]. I'm [Union Status]. Thank you."
+              </p>
+              {slateVideoUrl&&!showSlateRecorder&&(
+                <div>
+                  <div style={{borderRadius:10,overflow:"hidden",marginBottom:12,background:"#000"}}>
+                    <video src={slateVideoUrl} controls playsInline style={{display:"block",width:"100%",maxHeight:220,objectFit:"contain",background:"#000"}}/>
+                  </div>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                    <button className="btn-s btn-sm" onClick={()=>setShowSlateRecorder(true)}>🎥 Replace Slate Video</button>
+                    <label className="btn-s btn-sm" style={{cursor:slateUploading?"not-allowed":"pointer"}}>
+                      {slateUploading?"Uploading…":"⬆ Upload New Slate"}
+                      <input type="file" accept="video/mp4,video/quicktime,video/webm,video/*" style={{display:"none"}} disabled={slateUploading} onChange={e=>{const f=e.target.files?.[0];if(f)uploadSlate(f);e.target.value="";}}/>
+                    </label>
+                    <button className="btn-s btn-sm" style={{color:"#c0392b"}} onClick={async()=>{if(confirm("Delete your slate video?"))await saveSlateUrl("");}}>🗑 Delete Slate</button>
+                  </div>
+                </div>
+              )}
+              {showSlateRecorder&&(
+                <div>
+                  <div style={{background:"rgba(99,60,180,0.06)",border:"1px solid rgba(99,60,180,0.18)",borderRadius:8,padding:"10px 14px",marginBottom:12,fontSize:12,color:"var(--acc)",fontWeight:600}}>
+                    📹 Max 7 seconds — recording stops automatically
+                  </div>
+                  <VideoRecorder
+                    session={session}
+                    roleId={`slate-${session?.user?.id}`}
+                    maxSec={7}
+                    primaryLabel="💾 Save Slate Video"
+                    onVideoReady={async url=>{await saveSlateUrl(url);setShowSlateRecorder(false);setMsg("Slate video saved.");setTimeout(()=>setMsg(""),3000);}}
+                    onClose={()=>setShowSlateRecorder(false)}
+                  />
+                </div>
+              )}
+              {!slateVideoUrl&&!showSlateRecorder&&(
+                <div>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>
+                    <button className="btn-p btn-sm" style={{display:"flex",alignItems:"center",gap:6}} onClick={()=>setShowSlateRecorder(true)}>🎥 Record Slate Video</button>
+                    <label className="btn-s btn-sm" style={{cursor:slateUploading?"not-allowed":"pointer",display:"inline-flex",alignItems:"center",gap:6}}>
+                      {slateUploading?"Uploading…":"⬆ Upload Slate Video"}
+                      <input type="file" accept="video/mp4,video/quicktime,video/webm,video/*" style={{display:"none"}} disabled={slateUploading} onChange={e=>{const f=e.target.files?.[0];if(f)uploadSlate(f);e.target.value="";}}/>
+                    </label>
+                  </div>
+                  <p style={{fontSize:11,color:"var(--t3)",marginBottom:0}}>Accepted: MP4, MOV, WebM · Max 7 seconds · Max 100 MB</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </>}
@@ -19441,6 +19453,24 @@ function ActorCardPreview({displayName,headline,showLocation,location,tags,showU
 
 function ActorBusinessCardPage({session,myProfile,onNavigate}){
   const isPremium=myProfile?.membership_status==='active';
+
+  // Full page gate — non-premium users see an upsell, not the builder
+  if(!isPremium){
+    return(
+      <div className="page" style={{maxWidth:560,margin:"0 auto",textAlign:"center",paddingTop:60}}>
+        <div style={{fontSize:48,marginBottom:20}}>🪪</div>
+        <div style={{display:"inline-block",background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.2,padding:"3px 12px",borderRadius:100,marginBottom:16}}>PREMIUM FEATURE</div>
+        <h1 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:12}}>Actor Business Card</h1>
+        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.65,marginBottom:28,maxWidth:420,margin:"0 auto 28px"}}>
+          Create a personalized actor business card with your headshot, casting details, and a unique QR code linking directly to your CastSlate profile. Download a print-ready PDF.
+        </p>
+        <button className="btn-p" onClick={()=>onNavigate("membership")}>Upgrade to Premium — {PREMIUM_PRICE}</button>
+        <p style={{fontSize:12,color:"var(--t3)",marginTop:12}}>Included with all Premium plans. Cancel anytime.</p>
+        <button className="btn-s btn-sm" style={{marginTop:20}} onClick={()=>onNavigate("my-profile")}>← Back to Profile</button>
+      </div>
+    );
+  }
+
   const publicSlug=myProfile?.public_slug||'';
   const profileUrl=publicSlug?`https://www.castslate.com/talent/${publicSlug}`:'';
   const vpw=useViewportWidth();
