@@ -9228,6 +9228,17 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             )}
           </div>
 
+          {/* Actor Business Card shortcut */}
+          <div style={{background:'var(--s1)',border:'1px solid var(--bdr)',borderRadius:14,padding:20}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+              <span style={{fontSize:20}}>💳</span>
+              <h3 style={{fontWeight:700,fontSize:15,color:'var(--t1)',margin:0}}>Actor Business Card</h3>
+              {isPremium&&<span style={{fontSize:10,fontWeight:700,padding:'2px 8px',borderRadius:6,background:'rgba(99,60,180,0.1)',color:'var(--acc)',textTransform:'uppercase',letterSpacing:0.6}}>Premium</span>}
+            </div>
+            <p style={{fontSize:13,color:'var(--t2)',margin:'0 0 14px',lineHeight:1.55}}>Create a downloadable actor card with your headshot and a QR code linking to your Cast Slate profile.</p>
+            <button className={isPremium?"btn-p btn-sm":"btn-s btn-sm"} style={{width:'100%',fontSize:12}} onClick={()=>onNavigate('actor-business-card')}>{isPremium?'Build My Actor Card →':'Preview Actor Card →'}</button>
+          </div>
+
           {/* Profile Improvement Suggestions (Premium feature) */}
           <ProfileImprovementCard
             profile={myProfile}
@@ -19157,6 +19168,418 @@ function UnsubscribedPage({onNavigate}){
   );
 }
 
+// ═══════════════════════════════════════════
+// ACTOR BUSINESS CARD — helpers & components
+// ═══════════════════════════════════════════
+async function _abcLoadImg(src){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.crossOrigin='anonymous';
+    img.onload=()=>resolve(img);
+    img.onerror=()=>reject(new Error('img-load-failed'));
+    img.src=src;
+  });
+}
+function _abcRoundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);
+  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+function ActorCardPreview({displayName,headline,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl}){
+  return(
+    <div style={{background:'#fff',border:'1px solid #E2E2E7',borderRadius:8,overflow:'hidden',boxShadow:'0 4px 24px rgba(26,26,46,0.12)',display:'flex',width:340,height:215,position:'relative',flexShrink:0}}>
+      <div style={{position:'absolute',top:0,left:0,right:0,height:4,background:'#1A1A2E',zIndex:1}}/>
+      <div style={{width:110,flexShrink:0,background:'#E8E8F2',position:'relative',marginTop:4,overflow:'hidden'}}>
+        {headshotUrl?(
+          <img src={headshotUrl} alt="" style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top',display:'block'}}/>
+        ):(
+          <div style={{width:'100%',height:'100%',background:'#E0E0EE',display:'flex',alignItems:'center',justifyContent:'center',fontSize:32,color:'#B0B0C0'}}>👤</div>
+        )}
+      </div>
+      <div style={{flex:1,padding:'14px 12px 10px',display:'flex',flexDirection:'column',minWidth:0,marginTop:4,overflow:'hidden'}}>
+        <div style={{display:'flex',alignItems:'center',gap:5,marginBottom:8}}>
+          <div style={{width:18,height:18,background:'#1A1A2E',borderRadius:3,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+            <svg viewBox="0 0 32 32" width={11} height={11}><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg>
+          </div>
+          <span style={{fontSize:9,fontWeight:800,color:'#1A1A2E',letterSpacing:1.2,textTransform:'uppercase'}}>CASTSLATE</span>
+        </div>
+        <div style={{fontWeight:800,fontSize:15,color:'#1A1A2E',letterSpacing:-0.3,lineHeight:1.15,marginBottom:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{displayName||'Your Name'}</div>
+        <div style={{fontSize:10,color:'#6B6B80',marginBottom:3}}>{headline||'Actor'}</div>
+        {showLocation&&location&&<div style={{fontSize:9.5,color:'#8E8EA0',marginBottom:4,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{location}</div>}
+        {tags&&tags.length>0&&(
+          <div style={{display:'flex',gap:4,flexWrap:'wrap',marginBottom:4}}>
+            {tags.slice(0,3).map((tag,i)=>(
+              <span key={i} style={{fontSize:7.5,fontWeight:600,padding:'2px 6px',borderRadius:4,background:'#F0F0F8',color:'#1A1A2E',border:'1px solid #E0E0F0',whiteSpace:'nowrap'}}>{tag}</span>
+            ))}
+          </div>
+        )}
+        {showUnion&&unionStatus&&unionStatus!=='Non-Union'&&<div style={{fontSize:9,fontWeight:700,color:'#2563EB',marginBottom:3}}>{unionStatus}</div>}
+        <div style={{flex:1}}/>
+        <div style={{borderTop:'1px solid #EDEDF0',paddingTop:6,display:'flex',alignItems:'flex-end',justifyContent:'space-between',gap:6}}>
+          <div style={{minWidth:0,flex:1}}>
+            <div style={{fontSize:7.5,color:'#9090A0',lineHeight:1.4}}>castslate.com/talent/</div>
+            <div style={{fontSize:9,fontWeight:700,color:'#1A1A2E',lineHeight:1.3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{publicSlug||'your-profile'}</div>
+          </div>
+          <div style={{flexShrink:0,textAlign:'center'}}>
+            {qrDataUrl?(
+              <><img src={qrDataUrl} alt="QR code" style={{width:40,height:40,display:'block'}}/><div style={{fontSize:6,color:'#9090A0',letterSpacing:0.3,marginTop:2,whiteSpace:'nowrap'}}>SCAN TO VIEW</div></>
+            ):(
+              <div style={{width:40,height:40,background:'#F0F0F8',borderRadius:3,display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,color:'#C0C0D0'}}>QR</div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ActorBusinessCardPage({session,myProfile,onNavigate}){
+  const isPremium=myProfile?.membership_status==='active';
+  const publicSlug=myProfile?.public_slug||'';
+  const profileUrl=publicSlug?`https://www.castslate.com/talent/${publicSlug}`:'';
+  const vpw=useViewportWidth();
+  const isMobile=vpw<768;
+
+  const allPhotos=[myProfile?.headshot_url,...(Array.isArray(myProfile?.additional_photos)?myProfile.additional_photos:[])].filter(Boolean);
+  const [selectedPhoto,setSelectedPhoto]=useState(myProfile?.headshot_url||'');
+  const [displayName,setDisplayName]=useState(myProfile?.display_name||'');
+  const [headline,setHeadline]=useState('Actor');
+  const [showLocation,setShowLocation]=useState(true);
+  const [showUnion,setShowUnion]=useState(true);
+  const [qrDataUrl,setQrDataUrl]=useState(null);
+  const [qrErr,setQrErr]=useState(false);
+  const [generating,setGenerating]=useState(false);
+  const [pdfGenerating,setPdfGenerating]=useState(false);
+  const [downloadErr,setDownloadErr]=useState('');
+
+  const cardTags=Array.isArray(myProfile?.skills)?myProfile.skills.filter(Boolean).slice(0,3):[];
+  const unionStatus=myProfile?.union_status||'';
+  const location=myProfile?.location||'';
+
+  useEffect(()=>{
+    if(!profileUrl)return;
+    if(!window.QRCode){setQrErr(true);return;}
+    window.QRCode.toDataURL(profileUrl,{width:300,margin:1,errorCorrectionLevel:'H',color:{dark:'#1A1A2E',light:'#ffffff'}})
+      .then(url=>{setQrDataUrl(url);setQrErr(false);})
+      .catch(()=>setQrErr(true));
+  },[profileUrl]);
+
+  const drawCard=useCallback(async()=>{
+    const CW=1050,CH=600;
+    const canvas=document.createElement('canvas');
+    canvas.width=CW;canvas.height=CH;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#ffffff';ctx.fillRect(0,0,CW,CH);
+    ctx.fillStyle='#1A1A2E';ctx.fillRect(0,0,CW,10);
+
+    const PW=280;
+    if(selectedPhoto){
+      try{
+        const img=await _abcLoadImg(selectedPhoto);
+        const sc=Math.max(PW/img.width,(CH-10)/img.height);
+        const dw=img.width*sc,dh=img.height*sc;
+        ctx.save();ctx.beginPath();ctx.rect(0,10,PW,CH-10);ctx.clip();
+        ctx.drawImage(img,(PW-dw)/2,10+((CH-10)-dh)/2,dw,dh);
+        ctx.restore();
+      }catch(e){}
+    }else{
+      ctx.fillStyle='#E0E0EE';ctx.fillRect(0,10,PW,CH-10);
+    }
+    ctx.strokeStyle='#E8E8F0';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(PW,0);ctx.lineTo(PW,CH);ctx.stroke();
+
+    const IX=PW+30;let IY=36;
+    // CS logo
+    ctx.fillStyle='#1A1A2E';
+    _abcRoundRect(ctx,IX,IY-18,24,24,4);ctx.fill();
+    ctx.fillStyle='#ffffff';
+    const ls=24/32;
+    ctx.save();ctx.translate(IX,IY-18);ctx.scale(ls,ls);
+    ctx.beginPath();ctx.moveTo(4,16);ctx.lineTo(12,9);ctx.lineTo(12,12);ctx.lineTo(20,12);
+    ctx.lineTo(20,9);ctx.lineTo(28,16);ctx.lineTo(20,23);ctx.lineTo(20,20);ctx.lineTo(12,20);ctx.lineTo(12,23);
+    ctx.closePath();ctx.fill();ctx.restore();
+    ctx.fillStyle='#1A1A2E';ctx.font='bold 17px Arial,sans-serif';ctx.textAlign='left';
+    ctx.fillText('CASTSLATE',IX+30,IY+1);
+    IY+=46;
+
+    // Name
+    ctx.fillStyle='#1A1A2E';
+    let fs2=52;ctx.font=`bold ${fs2}px Arial,sans-serif`;
+    let nameText=displayName||'Your Name';
+    const maxNW=CW-IX-24;
+    while(ctx.measureText(nameText).width>maxNW&&fs2>28){fs2-=2;ctx.font=`bold ${fs2}px Arial,sans-serif`;}
+    if(ctx.measureText(nameText).width>maxNW){while(ctx.measureText(nameText+'…').width>maxNW&&nameText.length>3)nameText=nameText.slice(0,-1);nameText+='…';}
+    ctx.fillText(nameText,IX,IY);IY+=Math.round(fs2*0.9)+10;
+
+    // Headline
+    ctx.fillStyle='#6B6B80';ctx.font='30px Arial,sans-serif';
+    ctx.fillText(headline||'Actor',IX,IY);IY+=38;
+
+    // Location
+    if(showLocation&&location){
+      ctx.fillStyle='#8E8EA0';ctx.font='26px Arial,sans-serif';
+      ctx.fillText(location,IX,IY);IY+=36;
+    }
+
+    // Tags
+    if(cardTags.length>0){
+      let tx=IX;ctx.font='bold 22px Arial,sans-serif';
+      for(const tag of cardTags){
+        const tw=ctx.measureText(tag).width;
+        const pw=tw+24,ph=34;
+        if(tx+pw>CW-20)break;
+        ctx.fillStyle='#F0F0F8';_abcRoundRect(ctx,tx,IY-24,pw,ph,5);ctx.fill();
+        ctx.strokeStyle='#E0E0F0';ctx.lineWidth=1;_abcRoundRect(ctx,tx,IY-24,pw,ph,5);ctx.stroke();
+        ctx.fillStyle='#1A1A2E';ctx.fillText(tag,tx+12,IY+4);
+        tx+=pw+10;
+      }
+      IY+=44;
+    }
+
+    // Union
+    if(showUnion&&unionStatus&&unionStatus!=='Non-Union'){
+      ctx.fillStyle='#2563EB';ctx.font='bold 24px Arial,sans-serif';
+      ctx.fillText(unionStatus,IX,IY);
+    }
+
+    // Bottom
+    const BY=CH-130;
+    ctx.strokeStyle='#EDEDF0';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(IX-10,BY);ctx.lineTo(CW-14,BY);ctx.stroke();
+    ctx.fillStyle='#9090A0';ctx.font='18px monospace';
+    ctx.fillText('castslate.com/talent/',IX,BY+34);
+    ctx.fillStyle='#1A1A2E';ctx.font='bold 24px monospace';
+    let st=publicSlug||'';
+    while(ctx.measureText(st).width>CW-IX-140&&st.length>3)st=st.slice(0,-1);
+    if(st!==publicSlug)st+='…';
+    ctx.fillText(st,IX,BY+66);
+
+    // QR code
+    if(qrDataUrl){
+      try{
+        const qrImg=await _abcLoadImg(qrDataUrl);
+        const QS=108,QX=CW-QS-18,QY=BY-26;
+        ctx.drawImage(qrImg,QX,QY,QS,QS);
+        ctx.fillStyle='#8E8EA0';ctx.font='14px Arial,sans-serif';ctx.textAlign='center';
+        ctx.fillText('SCAN TO VIEW PROFILE',QX+QS/2,QY+QS+18);
+        ctx.textAlign='left';
+      }catch(e){}
+    }
+    return canvas;
+  },[selectedPhoto,displayName,headline,showLocation,location,showUnion,unionStatus,cardTags,qrDataUrl,publicSlug]);
+
+  const handleDownloadPNG=async()=>{
+    if(!isPremium){setDownloadErr('Actor Business Card downloads are included with Premium. Upgrade to create and download your actor card.');return;}
+    if(!selectedPhoto){setDownloadErr('Upload a headshot before creating your actor card.');return;}
+    setGenerating(true);setDownloadErr('');
+    try{
+      const canvas=await drawCard();
+      const url=canvas.toDataURL('image/png');
+      const a=document.createElement('a');a.href=url;
+      a.download=`${(displayName||'actor').toLowerCase().replace(/\s+/g,'-')}-cast-slate-card.png`;
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+    }catch(e){setDownloadErr('Could not generate card. Please try again.');}
+    setGenerating(false);
+  };
+
+  const handleDownloadPDF=async()=>{
+    if(!isPremium){setDownloadErr('Actor Business Card downloads are included with Premium. Upgrade to create and print your card.');return;}
+    if(!selectedPhoto){setDownloadErr('Upload a headshot before creating your actor card.');return;}
+    if(!window.jspdf){setDownloadErr('PDF library not loaded. Please refresh the page and try again.');return;}
+    setPdfGenerating(true);setDownloadErr('');
+    try{
+      const canvas=await drawCard();
+      const cardImg=canvas.toDataURL('image/png');
+      const {jsPDF}=window.jspdf;
+      const doc=new jsPDF({format:'a4',unit:'mm',orientation:'portrait'});
+      // 2 cols × 5 rows = 10 cards on A4 (210×297mm)
+      const CWm=88,CHm=51,COLS=2,ROWS=5,GAP=4;
+      const TW=COLS*CWm+(COLS-1)*GAP;
+      const TH=ROWS*CHm+(ROWS-1)*GAP;
+      const ML=(210-TW)/2,MT=(297-TH)/2;
+      const MLEN=4,MGAP=1.5;
+      doc.setDrawColor(180,180,180);doc.setLineWidth(0.2);
+      for(let row=0;row<ROWS;row++){
+        for(let col=0;col<COLS;col++){
+          const x=ML+col*(CWm+GAP),y=MT+row*(CHm+GAP);
+          doc.addImage(cardImg,'PNG',x,y,CWm,CHm,undefined,'FAST');
+          [[x,y,-1,-1],[x+CWm,y,1,-1],[x,y+CHm,-1,1],[x+CWm,y+CHm,1,1]].forEach(([cx,cy,hd,vd])=>{
+            doc.line(cx+hd*MGAP,cy,cx+hd*(MGAP+MLEN),cy);
+            doc.line(cx,cy+vd*MGAP,cx,cy+vd*(MGAP+MLEN));
+          });
+        }
+      }
+      doc.save(`${(displayName||'actor').toLowerCase().replace(/\s+/g,'-')}-cast-slate-print-sheet.pdf`);
+    }catch(e){console.error('[abc-pdf]',e);setDownloadErr('Could not generate PDF. Please try again.');}
+    setPdfGenerating(false);
+  };
+
+  if(!publicSlug){
+    return(
+      <div className="page">
+        <div style={{maxWidth:560,margin:'60px auto',padding:'0 20px',textAlign:'center'}}>
+          <div style={{fontSize:40,marginBottom:16}}>💳</div>
+          <h2 style={{fontWeight:800,fontSize:22,marginBottom:10}}>Complete your profile first</h2>
+          <p style={{color:'var(--t2)',marginBottom:20,fontSize:14}}>You need a public profile to generate your actor business card. Finish setting up your profile to get started.</p>
+          <button className="btn-p" onClick={()=>onNavigate('my-profile')}>Complete My Profile →</button>
+        </div>
+        <Footer onNavigate={onNavigate}/>
+      </div>
+    );
+  }
+
+  return(
+    <div className="page">
+      <div style={{maxWidth:1100,margin:'0 auto',padding:'36px 20px 60px'}}>
+        <button className="btn-s btn-sm" style={{marginBottom:24}} onClick={()=>onNavigate('talent-dashboard')}>← Talent Dashboard</button>
+        <div style={{marginBottom:28}}>
+          <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(99,60,180,0.08)',border:'1px solid rgba(99,60,180,0.2)',padding:'5px 14px',borderRadius:100,fontSize:11,color:'var(--acc)',fontWeight:800,letterSpacing:1,textTransform:'uppercase',marginBottom:12}}>
+            <span style={{width:6,height:6,borderRadius:'50%',background:'var(--acc)'}}/>Premium Feature
+          </div>
+          <h1 style={{fontWeight:800,fontSize:isMobile?24:30,letterSpacing:-0.8,color:'var(--t1)',marginBottom:8,margin:'0 0 8px'}}>Actor Business Card</h1>
+          <p style={{color:'var(--t2)',fontSize:15,margin:0}}>Create a downloadable actor card with your headshot and a unique QR code linking directly to your Cast Slate profile.</p>
+        </div>
+
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:32,alignItems:'start'}}>
+
+          {/* Builder controls */}
+          <div style={{display:'flex',flexDirection:'column',gap:20}}>
+            <div style={{background:'var(--s1)',border:'1px solid var(--bdr)',borderRadius:14,padding:20}}>
+              <h3 style={{fontWeight:700,fontSize:14,margin:'0 0 14px',color:'var(--t1)'}}>Choose Headshot</h3>
+              {allPhotos.length===0?(
+                <div style={{padding:'12px 14px',background:'rgba(214,59,59,0.05)',border:'1px solid rgba(214,59,59,0.2)',borderRadius:8,fontSize:13,color:'var(--red)',display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+                  <span>Upload a headshot before creating your actor card.</span>
+                  <button className="btn-s btn-sm" style={{fontSize:11,flexShrink:0}} onClick={()=>onNavigate('my-profile')}>Upload Now →</button>
+                </div>
+              ):(
+                <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+                  {allPhotos.map((url,i)=>(
+                    <div key={i} onClick={()=>setSelectedPhoto(url)} style={{width:64,height:80,borderRadius:8,overflow:'hidden',border:`2.5px solid ${selectedPhoto===url?'var(--acc)':'var(--bdr)'}`,cursor:'pointer',flexShrink:0,position:'relative',boxShadow:selectedPhoto===url?'0 0 0 1px var(--acc)':'none'}}>
+                      <img src={url} alt={`Photo ${i+1}`} style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center top'}}/>
+                      {i===0&&<div style={{position:'absolute',bottom:0,left:0,right:0,background:'rgba(26,26,46,0.7)',fontSize:7,color:'#fff',textAlign:'center',padding:'2px 0',fontWeight:700,letterSpacing:0.5}}>PRIMARY</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div style={{background:'var(--s1)',border:'1px solid var(--bdr)',borderRadius:14,padding:20}}>
+              <h3 style={{fontWeight:700,fontSize:14,margin:'0 0 14px',color:'var(--t1)'}}>Card Details</h3>
+              <div style={{display:'flex',flexDirection:'column',gap:12}}>
+                <div>
+                  <label style={{fontSize:12,fontWeight:600,color:'var(--t2)',marginBottom:4,display:'block'}}>Display Name</label>
+                  <input type="text" value={displayName} onChange={e=>setDisplayName(e.target.value)} maxLength={40} placeholder="Your full name" style={{width:'100%',padding:'9px 12px',borderRadius:8,border:'1px solid var(--bdr)',fontSize:14,background:'var(--bg)',color:'var(--t1)',boxSizing:'border-box',fontFamily:'inherit'}}/>
+                </div>
+                <div>
+                  <label style={{fontSize:12,fontWeight:600,color:'var(--t2)',marginBottom:4,display:'block'}}>Headline</label>
+                  <input type="text" value={headline} onChange={e=>setHeadline(e.target.value)} maxLength={30} placeholder="Actor" style={{width:'100%',padding:'9px 12px',borderRadius:8,border:'1px solid var(--bdr)',fontSize:14,background:'var(--bg)',color:'var(--t1)',boxSizing:'border-box',fontFamily:'inherit'}}/>
+                </div>
+                {location&&(
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 0'}}>
+                    <span style={{fontSize:13,color:'var(--t2)'}}>Show location <span style={{color:'var(--t3)',fontSize:12}}>({location})</span></span>
+                    <div onClick={()=>setShowLocation(v=>!v)} style={{width:40,height:22,borderRadius:11,background:showLocation?'var(--acc)':'var(--s2)',cursor:'pointer',position:'relative',transition:'background .2s',flexShrink:0}}>
+                      <div style={{width:18,height:18,borderRadius:'50%',background:'#fff',position:'absolute',top:2,left:showLocation?20:2,transition:'left .2s',boxShadow:'0 1px 4px rgba(0,0,0,0.15)'}}/>
+                    </div>
+                  </div>
+                )}
+                {unionStatus&&(
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 0'}}>
+                    <span style={{fontSize:13,color:'var(--t2)'}}>Show union status <span style={{color:'var(--t3)',fontSize:12}}>({unionStatus})</span></span>
+                    <div onClick={()=>setShowUnion(v=>!v)} style={{width:40,height:22,borderRadius:11,background:showUnion?'var(--acc)':'var(--s2)',cursor:'pointer',position:'relative',transition:'background .2s',flexShrink:0}}>
+                      <div style={{width:18,height:18,borderRadius:'50%',background:'#fff',position:'absolute',top:2,left:showUnion?20:2,transition:'left .2s',boxShadow:'0 1px 4px rgba(0,0,0,0.15)'}}/>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div style={{background:'rgba(37,99,235,0.04)',border:'1px solid rgba(37,99,235,0.15)',borderRadius:10,padding:'12px 16px'}}>
+              <div style={{fontSize:12,fontWeight:700,color:'var(--acc)',marginBottom:4}}>Your Unique QR Code</div>
+              <div style={{fontSize:12,color:'var(--t2)',lineHeight:1.5,wordBreak:'break-all'}}>Links directly to: <span style={{fontFamily:'monospace',color:'var(--t1)',fontWeight:600}}>{profileUrl}</span></div>
+              {qrErr&&<div style={{fontSize:11,color:'var(--red)',marginTop:6}}>QR generation unavailable. Try refreshing the page.</div>}
+            </div>
+
+            {!isPremium?(
+              <div style={{padding:'18px',background:'rgba(99,60,180,0.05)',border:'1px solid rgba(99,60,180,0.2)',borderRadius:12,textAlign:'center'}}>
+                <div style={{fontSize:14,fontWeight:700,color:'var(--t1)',marginBottom:8}}>Actor Business Card is included with Premium</div>
+                <p style={{fontSize:13,color:'var(--t2)',margin:'0 0 14px',lineHeight:1.6}}>Upgrade to create, download, and print your actor card. Free users can preview the card design.</p>
+                <button className="btn-p btn-sm" onClick={()=>onNavigate('membership')}>Upgrade to Premium →</button>
+              </div>
+            ):(
+              <div style={{display:'flex',flexDirection:'column',gap:12}}>
+                <button className="btn-p" onClick={handleDownloadPDF} disabled={pdfGenerating||!qrDataUrl||allPhotos.length===0} style={{padding:'14px',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
+                  {pdfGenerating?'Generating PDF…':'⬇ Download A4 Print Sheet PDF'}
+                </button>
+                <button className="btn-s btn-sm" onClick={handleDownloadPNG} disabled={generating||!qrDataUrl||allPhotos.length===0} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
+                  {generating?'Generating…':'⬇ Download Single Card PNG'}
+                </button>
+              </div>
+            )}
+
+            {downloadErr&&<div style={{padding:'10px 14px',background:'rgba(214,59,59,0.06)',border:'1px solid rgba(214,59,59,0.2)',borderRadius:8,fontSize:13,color:'var(--red)'}}>{downloadErr}</div>}
+
+            {isPremium&&(
+              <div style={{background:'var(--s1)',border:'1px solid var(--bdr)',borderRadius:12,padding:'16px'}}>
+                <div style={{fontWeight:700,fontSize:13,color:'var(--t1)',marginBottom:12}}>Printing Tips</div>
+                <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                  {["Print on thick cardstock paper for a professional business card feel.",
+                    "Use matte or satin cardstock for a cleaner actor card look.",
+                    "Choose high-quality print settings and make sure scaling is set to 100%.",
+                    "After printing, cut along the guide lines with scissors or a paper cutter.",
+                    "Before printing many copies, scan the QR code from the PDF preview to make sure it opens your Cast Slate profile."
+                  ].map((tip,i)=>(
+                    <div key={i} style={{display:'flex',gap:8,fontSize:12,color:'var(--t2)',lineHeight:1.55}}>
+                      <span style={{color:'var(--acc)',fontWeight:700,flexShrink:0}}>•</span>{tip}
+                    </div>
+                  ))}
+                </div>
+                <div style={{marginTop:12,padding:'10px 12px',background:'rgba(99,60,180,0.04)',borderRadius:8,border:'1px solid rgba(99,60,180,0.1)'}}>
+                  <span style={{fontSize:12,fontWeight:700,color:'var(--t1)'}}>Recommended paper: </span>
+                  <span style={{fontSize:12,color:'var(--t2)'}}>Thick cardstock, ideally 250–350 gsm, works best for actor business cards.</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Card preview */}
+          <div style={{display:'flex',flexDirection:'column',gap:14,alignItems:isMobile?'center':'flex-start'}}>
+            <div style={{fontWeight:600,fontSize:12,color:'var(--t2)',textTransform:'uppercase',letterSpacing:0.8}}>Card Preview</div>
+            <ActorCardPreview
+              displayName={displayName}
+              headline={headline}
+              showLocation={showLocation}
+              location={location}
+              tags={cardTags}
+              showUnion={showUnion}
+              unionStatus={unionStatus}
+              headshotUrl={selectedPhoto}
+              publicSlug={publicSlug}
+              qrDataUrl={qrDataUrl}
+            />
+            <p style={{fontSize:11,color:'var(--t3)',maxWidth:340,lineHeight:1.55,margin:0}}>
+              {isPremium?"Premium card — download your A4 print sheet to print 10 cards per page. Use 250–350 gsm cardstock.":"Example card preview. Premium members can create and download their personalized actor business card."}
+            </p>
+            {!isPremium&&(
+              <div style={{width:'100%',maxWidth:340,padding:'10px 14px',background:'rgba(99,60,180,0.05)',border:'1px solid rgba(99,60,180,0.15)',borderRadius:8,fontSize:12,color:'var(--t2)'}}>
+                🔒 <strong>Downloads locked.</strong> Upgrade to Premium to download and print your actor business card.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <Footer onNavigate={onNavigate}/>
+    </div>
+  );
+}
+
 const PAGE_PATH={
   "home":"/","search":"/browse-castings","pricing":"/pricing",
   "dashboard":"/dashboard","talent-dashboard":"/talent-dashboard","admin":"/admin","my-profile":"/my-profile",
@@ -19170,6 +19593,7 @@ const PAGE_PATH={
   "pay-talent":"/pay-talent",
   "actor-toolkit":"/actor-toolkit",
   "manager-mode":"/manager-mode",
+  "actor-business-card":"/actor-business-card",
   "success":"/success",
   "unsubscribed":"/unsubscribed",
   // casting-gate is an overlay state, NOT a standalone URL — it must not
@@ -19195,6 +19619,7 @@ const PAGE_SEO={
   "privacy":{title:"Privacy Policy | CastSlate",desc:"CastSlate Privacy Policy — how we collect, use, and protect your personal information."},
   "studios":{title:"For Studios | CastSlate",desc:"CastSlate for studios and production companies. Post castings, review talent, and hire fast."},
   "manager-mode":{title:"Manager Mode | CastSlate",desc:"Cast Slate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."},
+  "actor-business-card":{title:"Actor Business Card | CastSlate",desc:"Create your personalized actor business card with your headshot, casting details, and a unique QR code linking directly to your Cast Slate profile. Download an A4 print-ready sheet."},
   "login":{title:"Sign In | CastSlate",desc:"Sign in to your CastSlate account to browse castings, manage your profile, and submit to roles."},
   "register-talent":{title:"Create Actor Profile | CastSlate",desc:"Create your free CastSlate actor profile. Get seen by casting directors for film, TV, theater, and commercial roles."},
   "register-cd":{title:"Post a Casting | CastSlate",desc:"Post your casting call on CastSlate and review actor submissions one at a time. Start for free."},
@@ -20154,6 +20579,7 @@ function App(){
         {page==="careers"&&<CareersPage onNavigate={navigate}/>}
         {page==="pay-talent"&&<PayTalentPage onNavigate={navigate}/>}
         {page==="actor-toolkit"&&<ActorToolkitPage onNavigate={navigate}/>}
+        {page==="actor-business-card"&&(!authReady?<PageLoader/>:isLoggedIn&&myProfile?.user_type==="talent"?<ActorBusinessCardPage session={session} myProfile={myProfile} onNavigate={navigate}/>:<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn}/>)}
         {page==="success"&&<PaymentSuccessPage session={session} myProfile={myProfile} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} successType={paymentSuccessType}/>}
         {page==="unsubscribed"&&<UnsubscribedPage onNavigate={navigate}/>}
       </main>
