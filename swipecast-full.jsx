@@ -19233,27 +19233,27 @@ function ActorCardPreview({displayName,headline,showLocation,location,tags,showU
   return(
     <div style={{background:'#ffffff',border:'1.5px solid #E0E0E8',borderRadius:10,overflow:'hidden',boxShadow:'0 8px 40px rgba(26,26,46,0.15)',display:'flex',width:390,height:246,position:'relative',flexShrink:0}}>
       <div style={{position:'absolute',top:0,left:0,right:0,height:5,background:'#1A1A2E',zIndex:2}}/>
-      {/* Headshot — draggable */}
-      <div ref={photoRef} style={{width:128,flexShrink:0,position:'relative',marginTop:5,overflow:'hidden',cursor:isDragging?'grabbing':'(headshotUrl?\'grab\':\'default\')',background:'#E8E8F2',userSelect:'none'}}
+      {/* Headshot — draggable, contain-based zoom */}
+      <div ref={photoRef} style={{width:128,flexShrink:0,position:'relative',marginTop:5,overflow:'hidden',cursor:headshotUrl?(isDragging?'grabbing':'grab'):'default',background:'#E8E8F2',userSelect:'none'}}
         onMouseDown={onPhotoMouseDown}
         onTouchStart={onPhotoTouchStart}
       >
         {headshotUrl?(
           <>
-            <img src={headshotUrl} alt="" style={{
-              position:'absolute',
-              width:`${photoZoom*100}%`,
-              height:`${photoZoom*100}%`,
-              objectFit:'cover',
-              left:`${-(photoPosX/100)*(photoZoom-1)*100}%`,
-              top:`${-(photoPosY/100)*(photoZoom-1)*100}%`,
-              display:'block',
+            {/* background-size:contain shows full image; scale(zoom) zooms in from anchor point */}
+            <div style={{
+              position:'absolute',inset:0,
+              backgroundImage:`url(${headshotUrl})`,
+              backgroundSize:'contain',
+              backgroundRepeat:'no-repeat',
+              backgroundPosition:`${photoPosX}% ${photoPosY}%`,
+              transform:`scale(${photoZoom})`,
+              transformOrigin:`${photoPosX}% ${photoPosY}%`,
               pointerEvents:'none',
               userSelect:'none',
-              draggable:'false'
             }}/>
-            <div style={{position:'absolute',bottom:0,left:0,right:0,background:'linear-gradient(transparent,rgba(26,26,46,0.55))',padding:'12px 0 4px',textAlign:'center',pointerEvents:'none',zIndex:1}}>
-              <div style={{fontSize:7,color:'rgba(255,255,255,0.85)',letterSpacing:0.5,fontWeight:600}}>drag to reposition</div>
+            <div style={{position:'absolute',bottom:0,left:0,right:0,background:'linear-gradient(transparent,rgba(26,26,46,0.45))',padding:'10px 0 4px',textAlign:'center',pointerEvents:'none',zIndex:1}}>
+              <div style={{fontSize:7,color:'rgba(255,255,255,0.85)',letterSpacing:0.5,fontWeight:600}}>{photoZoom>1.05?'drag to reposition':'zoom in to crop'}</div>
             </div>
           </>
         ):(
@@ -19278,7 +19278,7 @@ function ActorCardPreview({displayName,headline,showLocation,location,tags,showU
             ))}
           </div>
         )}
-        {showUnion&&unionStatus&&unionStatus!=='Non-Union'&&<div style={{fontSize:9.5,fontWeight:700,color:'#2563EB',marginBottom:5}}>{unionStatus}</div>}
+        {showUnion&&unionStatus&&<div style={{fontSize:9.5,fontWeight:700,color:unionStatus.toLowerCase().includes('non')?'#8E8EA0':'#2563EB',marginBottom:5}}>{unionStatus}</div>}
         <div style={{flex:1}}/>
         <div style={{borderTop:'1px solid #EDEDF0',paddingTop:7,display:'flex',alignItems:'flex-end',justifyContent:'space-between',gap:8}}>
           <div style={{minWidth:0,flex:1}}>
@@ -19312,7 +19312,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   // crop controls
   const [photoZoom,setPhotoZoom]=useState(1.0);
   const [photoPosX,setPhotoPosX]=useState(50);
-  const [photoPosY,setPhotoPosY]=useState(20);
+  const [photoPosY,setPhotoPosY]=useState(50);
   const [isDragging,setIsDragging]=useState(false);
   const dragDataRef=useRef(null);
   const photoRef=useRef(null);
@@ -19332,7 +19332,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   const location=myProfile?.location||'';
 
   // Reset crop when photo changes
-  useEffect(()=>{setPhotoZoom(1);setPhotoPosX(50);setPhotoPosY(20);},[selectedPhoto]);
+  useEffect(()=>{setPhotoZoom(1);setPhotoPosX(50);setPhotoPosY(50);},[selectedPhoto]);
 
   // Generate real QR code via free public API — no library required
   useEffect(()=>{
@@ -19386,13 +19386,16 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
       try{
         const img=await _abcLoadImg(selectedPhoto);
         const sw=img.naturalWidth||img.width,sh=img.naturalHeight||img.height;
-        // Match CSS: objectFit:cover + zoom + position
-        const scale=Math.max(PW/sw,(CH-10)/sh)*photoZoom;
-        const dw=sw*scale,dh=sh*scale;
-        const exX=dw-PW,exY=dh-(CH-10);
-        const imgX=-(exX*(photoPosX/100));
-        const imgY=-(exY*(photoPosY/100));
+        // Match CSS: background-size:contain + scale(zoom) from anchor — full image visible at zoom=1
+        const containScale=Math.min(PW/sw,(CH-10)/sh);
+        const finalScale=containScale*photoZoom;
+        const dw=sw*finalScale,dh=sh*finalScale;
+        // Anchor-point formula matching CSS transformOrigin + backgroundPosition
+        const ax=(photoPosX/100)*PW, ay=(photoPosY/100)*(CH-10);
+        const imgX=ax-(photoPosX/100)*dw;
+        const imgY=ay-(photoPosY/100)*dh;
         ctx.save();ctx.beginPath();ctx.rect(0,10,PW,CH-10);ctx.clip();
+        ctx.fillStyle='#E8E8F2';ctx.fillRect(0,10,PW,CH-10); // letterbox bg
         ctx.drawImage(img,imgX,10+imgY,dw,dh);
         ctx.restore();
       }catch(e){}
@@ -19451,8 +19454,9 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
     }
 
     // Union
-    if(showUnion&&unionStatus&&unionStatus!=='Non-Union'){
-      ctx.fillStyle='#2563EB';ctx.font='bold 24px Arial,sans-serif';
+    if(showUnion&&unionStatus){
+      ctx.fillStyle=unionStatus.toLowerCase().includes('non')?'#8E8EA0':'#2563EB';
+      ctx.font='bold 24px Arial,sans-serif';
       ctx.fillText(unionStatus,IX,IY);
     }
 
@@ -19472,10 +19476,11 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
     if(qrDataUrl){
       try{
         const qrImg=await _abcLoadImg(qrDataUrl);
-        const QS=108,QX=CW-QS-18,QY=BY-26;
+        const QS=100,QX=CW-QS-24,QY=BY-20;
         ctx.drawImage(qrImg,QX,QY,QS,QS);
-        ctx.fillStyle='#8E8EA0';ctx.font='14px Arial,sans-serif';ctx.textAlign='center';
-        ctx.fillText('SCAN TO VIEW PROFILE',QX+QS/2,QY+QS+18);
+        ctx.fillStyle='#8E8EA0';ctx.font='11px Arial,sans-serif';
+        ctx.textAlign='right';
+        ctx.fillText('SCAN TO VIEW PROFILE',QX+QS,QY+QS+15);
         ctx.textAlign='left';
       }catch(e){}
     }
@@ -19584,7 +19589,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
                   <span style={{fontSize:11,color:'var(--t3)',flexShrink:0,width:22,textAlign:'center'}}>3×</span>
                   <span style={{fontSize:11,fontWeight:700,color:'var(--acc)',width:32,textAlign:'right',flexShrink:0}}>{photoZoom.toFixed(1)}×</span>
                 </div>
-                <button className="btn-s btn-sm" style={{marginTop:10,fontSize:11}} onClick={()=>{setPhotoZoom(1);setPhotoPosX(50);setPhotoPosY(20);}}>Reset position</button>
+                <button className="btn-s btn-sm" style={{marginTop:10,fontSize:11}} onClick={()=>{setPhotoZoom(1);setPhotoPosX(50);setPhotoPosY(50);}}>Reset position</button>
               </div>
             )}
 
