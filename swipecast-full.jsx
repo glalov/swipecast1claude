@@ -2009,7 +2009,7 @@ function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){
 //     Click anywhere → /membership.
 function ActivateMembershipBanner({myProfile,onNavigate}){
   const userType=(myProfile?.user_type||"").toLowerCase();
-  const isTalent=userType==="talent";
+  const isTalent=["talent","actor"].includes(userType);
   const status=myProfile?.membership_status||"free";
   if(!isTalent)return null;
   if(status==="active")return null;
@@ -14868,47 +14868,88 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     const hasStripeSub=!!(profile?.stripe_subscription_id);
     const isPremiumMember=["talent","actor"].includes(role)&&(profile?.membership_status==="active"||profile?.membership_status==="premium");
     const isOverride=isPremiumMember&&!hasStripeSub;
+    const isActivePaidSub=isPremiumMember&&hasStripeSub;
+    const isCanceled=!isPremiumMember&&(profile?.subscription_status==="canceled"||profile?.subscription_status==="past_due");
+    const renewDate=profile?.current_period_end;
+    const planKey=profile?.plan_type||"monthly";
+    const planInfo=MEMBERSHIP_PLANS[planKey]||MEMBERSHIP_PLANS.monthly;
+
     return(
     <div>
       <h2 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:6}}>Payment & Billing</h2>
       <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Manage your payment methods and billing history.</p>
-      {isOverride?(
-        <div className="card" style={{textAlign:"center",padding:"40px 24px"}}>
-          <div style={{fontSize:40,marginBottom:16}}>🔑</div>
-          <div style={{fontWeight:700,fontSize:16,marginBottom:8}}>Admin/Test Override Account</div>
-          <div style={{color:"var(--t2)",fontSize:13,maxWidth:440,margin:"0 auto 0"}}>
-            This account has Premium access via an admin or test override. No Stripe subscription or billing information is attached — there is nothing to manage here.
-          </div>
-        </div>
-      ):hasStripeCustomer?(
-        <div className="card" style={{padding:"28px 24px"}}>
+
+      {/* State 1: Active paid Stripe subscription */}
+      {isActivePaidSub&&(
+        <div className="card" style={{padding:"24px"}}>
           <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
-            <div style={{fontSize:32}}>💳</div>
+            <div style={{fontSize:28}}>💳</div>
             <div>
               <div style={{fontWeight:700,fontSize:16}}>Stripe Billing Connected</div>
-              <div style={{color:"var(--t2)",fontSize:13,marginTop:2}}>Your subscription is managed through Stripe.</div>
+              <div style={{color:"var(--t2)",fontSize:13,marginTop:2}}>Your subscription is active and managed through Stripe.</div>
             </div>
           </div>
-          <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>To update your payment method, view invoices, or cancel your subscription, contact support. Self-service billing portal coming soon.</p>
-          <div style={{padding:"12px 16px",background:"var(--s2)",borderRadius:8,fontSize:12,color:"var(--t3)"}}>
-            Stripe Customer ID: <code style={{fontFamily:"monospace",fontSize:11}}>{profile.stripe_customer_id}</code>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"6px 24px",marginBottom:16}}>
+            <div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Plan:</span> <strong>{planInfo.label}</strong></div>
+            <div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Billing:</span> <strong>${planInfo.monthly.toFixed(2)}/month</strong></div>
+            {renewDate&&<div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Renews:</span> <strong>{new Date(renewDate).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}</strong></div>}
+            <div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Status:</span> <strong style={{color:"var(--grn)"}}>Active</strong></div>
           </div>
+          <p style={{color:"var(--t2)",fontSize:13,marginBottom:0}}>To update your payment method, view invoices, or cancel, contact support. Self-service billing portal coming soon.</p>
         </div>
-      ):(
-        <div className="card" style={{textAlign:"center",padding:"48px 24px"}}>
-          <div style={{fontSize:40,marginBottom:16}}>🏦</div>
-          <div style={{fontWeight:700,fontSize:16,marginBottom:8}}>No billing on file.</div>
-          <div style={{color:"var(--t2)",fontSize:13,maxWidth:400,margin:"0 auto"}}>
-            {isPremiumMember
-              ?"Your account is active but has no Stripe billing record. Contact support if you believe this is an error."
-              :"You're on the free plan. Upgrade to Premium to unlock unlimited submissions and more."}
-          </div>
-          {!isPremiumMember&&<button className="btn-p btn-sm" style={{marginTop:20}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>}
-          <div style={{marginTop:20,padding:"12px 16px",background:"var(--s2)",borderRadius:8,fontSize:12,color:"var(--t3)",maxWidth:400,margin:"20px auto 0"}}>
-            To request a refund or billing support, contact support.
+      )}
+
+      {/* State 2: Admin/Test override — premium but no Stripe */}
+      {isOverride&&(
+        <div className="card" style={{textAlign:"center",padding:"40px 24px"}}>
+          <div style={{fontSize:36,marginBottom:12}}>🔑</div>
+          <div style={{fontWeight:700,fontSize:16,marginBottom:8}}>Premium Access: Admin/Test Override</div>
+          <div style={{color:"var(--t2)",fontSize:13,maxWidth:440,margin:"0 auto"}}>
+            This account has Premium access via an admin or test override. No real Stripe subscription is attached — there is nothing to manage here.
           </div>
         </div>
       )}
+
+      {/* State 3: Free user with Stripe customer profile but no active subscription */}
+      {!isPremiumMember&&hasStripeCustomer&&!isCanceled&&(
+        <div className="card" style={{marginBottom:16,padding:"20px 24px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+            <div style={{fontSize:22}}>ℹ️</div>
+            <div style={{fontWeight:600,fontSize:14}}>Stripe customer profile created</div>
+          </div>
+          <p style={{color:"var(--t2)",fontSize:13,marginBottom:0}}>
+            This account has a Stripe customer profile, but no active paid subscription. You're currently on the Free Plan.
+          </p>
+        </div>
+      )}
+
+      {/* State 4: Canceled/expired subscription */}
+      {isCanceled&&(
+        <div className="card" style={{marginBottom:16,padding:"20px 24px",border:"1px solid rgba(214,59,59,0.2)",background:"rgba(214,59,59,0.03)"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+            <div style={{fontWeight:700,fontSize:14,color:"var(--red)"}}>{profile?.subscription_status==="past_due"?"Payment Past Due":"Subscription Canceled"}</div>
+          </div>
+          <p style={{color:"var(--t2)",fontSize:13,marginBottom:12}}>
+            {profile?.subscription_status==="past_due"
+              ?"Your last payment failed. Your account has been downgraded to Free. Contact support to resolve the billing issue."
+              :"Your subscription has been canceled. Your account is back on the Free Plan."}
+          </p>
+          <button className="btn-p btn-sm" onClick={()=>onNavigate("membership")}>Re-subscribe to Premium →</button>
+        </div>
+      )}
+
+      {/* Free Plan — no subscription, no Stripe customer */}
+      {!isPremiumMember&&!hasStripeCustomer&&!isCanceled&&(
+        <div className="card" style={{textAlign:"center",padding:"40px 24px"}}>
+          <div style={{fontSize:36,marginBottom:12}}>🏦</div>
+          <div style={{fontWeight:700,fontSize:16,marginBottom:8}}>No active paid subscription</div>
+          <div style={{color:"var(--t2)",fontSize:13,maxWidth:400,margin:"0 auto 16px"}}>
+            You're currently on the Free Plan. You do not have an active paid subscription.
+          </div>
+          <button className="btn-p btn-sm" onClick={()=>onNavigate("membership")}>Upgrade to Premium — $9.99/month</button>
+        </div>
+      )}
+
     </div>
     );
   };
