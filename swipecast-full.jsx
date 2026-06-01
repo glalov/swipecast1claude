@@ -1467,7 +1467,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .grid-2,.grid-3,.blog-grid,.team-grid,.feature-list,.form-row,.dash-stats{grid-template-columns:1fr;}
   .grid-3{display:flex !important;flex-direction:column !important;width:100% !important;max-width:100% !important;overflow:visible !important;}
   .page{padding:24px 16px 0;}
-  .page.page-wide{padding:24px 16px 120px;}
+  .page.page-wide{padding:24px 16px 0;}
   .search-bar,.filter-row{flex-direction:column;}
   .info-hero{padding:48px 20px 40px;}
   .info-hero h1{font-size:32px;}
@@ -20770,7 +20770,6 @@ function App(){
             <button className="mm-link" onClick={()=>navThen("manager-mode")}>{navT('nav.managerMode')}</button>
             <button className="mm-link" onClick={()=>navThen("blog")}>{navT('nav.blog')}</button>
             <button className="mm-link" onClick={()=>navThen("resources")}>{navT('nav.resources')}</button>
-            <button className="mm-link" onClick={()=>navThen("success-stories")}>{navT('nav.successStories')}</button>
             <button className="mm-link" onClick={()=>navThen("about")}>{navT('nav.about')}</button>
             <button className="mm-link" onClick={()=>navThen("contact")}>{navT('nav.contact')}</button>
           </div>
