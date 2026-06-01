@@ -2062,18 +2062,41 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
 
   // Active membership — show status card
   if(session?.user&&isActive&&currentPlan){
+    const hasStripe=!!(myProfile?.stripe_subscription_id);
+    const isOverride=!hasStripe;
+    // Prefer current_period_end (live Stripe date) over stored membership_end_date
+    const renewDate=myProfile?.current_period_end||myProfile?.membership_end_date;
+    const renewExpired=renewDate&&new Date(renewDate)<new Date();
+    const isMonthly=(myProfile?.plan_type||"monthly")==="monthly";
+
     return(<div className="page page-wide">
       <div className="section-label">Membership</div>
       <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1.2,marginBottom:8}}>You're all set.</h1>
-      <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>Your {currentPlan.label} is active{myProfile?.membership_end_date?` until ${new Date(myProfile.membership_end_date).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}`:""}. You can submit to castings without restriction.</p>
-      <div className="card" style={{padding:32,maxWidth:560,margin:"0 auto"}}>
-        <div style={{display:"inline-block",background:"rgba(46,204,113,0.15)",color:"#1d7b44",fontSize:11,fontWeight:800,letterSpacing:1.2,padding:"4px 12px",borderRadius:100,marginBottom:14}}>ACTIVE</div>
+      <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>Your {currentPlan.label} is active. You can submit to castings without restriction.</p>
+      <div className="card" style={{padding:32,maxWidth:560,margin:"0 auto",marginBottom:20}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+          <div style={{display:"inline-block",background:"rgba(46,204,113,0.15)",color:"#1d7b44",fontSize:11,fontWeight:800,letterSpacing:1.2,padding:"4px 12px",borderRadius:100}}>{renewExpired?"EXPIRED":"ACTIVE"}</div>
+          {isOverride&&<div style={{display:"inline-block",background:"rgba(99,60,180,0.1)",color:"var(--acc)",fontSize:11,fontWeight:800,letterSpacing:1.2,padding:"4px 12px",borderRadius:100}}>ADMIN/TEST OVERRIDE</div>}
+        </div>
         <h3 style={{fontSize:20,fontWeight:800,marginBottom:6}}>{currentPlan.label}</h3>
-        <p style={{color:"var(--t2)",fontSize:14,marginBottom:14}}>${currentPlan.monthly.toFixed(2)}/month · {currentPlan.note}</p>
-        {myProfile?.membership_start_date&&<p style={{fontSize:12,color:"var(--t3)"}}>Started {new Date(myProfile.membership_start_date).toLocaleDateString()}</p>}
-        {myProfile?.membership_end_date&&<p style={{fontSize:12,color:"var(--t3)"}}>Renews {new Date(myProfile.membership_end_date).toLocaleDateString()}</p>}
-        <button className="btn-p" style={{marginTop:18}} onClick={()=>onNavigate("search")}>Browse Castings →</button>
+        {hasStripe&&<p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>${currentPlan.monthly.toFixed(2)}/month · {currentPlan.note}</p>}
+        {isOverride&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:4}}>This account has Premium access through an admin/test override — no Stripe billing is attached.</p>}
+        {myProfile?.membership_start_date&&<p style={{fontSize:12,color:"var(--t3)",marginTop:8}}>Started {new Date(myProfile.membership_start_date).toLocaleDateString()}</p>}
+        {renewDate&&hasStripe&&<p style={{fontSize:12,color:renewExpired?"var(--red)":"var(--t3)"}}>{renewExpired?"Expired":"Renews"} {new Date(renewDate).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}</p>}
+        <div style={{display:"flex",gap:10,flexWrap:"wrap",marginTop:18}}>
+          <button className="btn-p" onClick={()=>onNavigate("search")}>Browse Castings →</button>
+          <button className="btn-s" onClick={()=>onNavigate("account-settings")}>Account Settings</button>
+        </div>
       </div>
+      {isMonthly&&!renewExpired&&!isOverride&&<div className="card" style={{padding:24,maxWidth:560,margin:"0 auto",marginBottom:20,background:"var(--s2)",border:"1px solid var(--bdr)"}}>
+        <div style={{fontWeight:700,fontSize:14,marginBottom:6}}>Want a better rate?</div>
+        <p style={{color:"var(--t2)",fontSize:13,marginBottom:14}}>Switch to 6-month or yearly billing and save up to 20% compared to monthly.</p>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          {Object.values(MEMBERSHIP_PLANS).filter(p=>p.key!=="monthly").map(p=>(
+            <button key={p.key} className="btn-s btn-sm" onClick={()=>onPickPlan&&onPickPlan(p.key)}>{p.label} — ${p.monthly.toFixed(2)}/mo</button>
+          ))}
+        </div>
+      </div>}
       <Footer onNavigate={onNavigate}/>
     </div>);
   }
@@ -4128,16 +4151,17 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan}){
   const isMobile=vpw<768;
   const [premiumMsg,setPremiumMsg]=React.useState(false);
 
-  // Logged-in users go straight to the membership page which branches correctly:
-  //   free talent     → 3 paid plan cards
-  //   premium talent  → "You're all set"
-  //   CD / industry   → "No membership needed"
-  // We do this in an effect so we don't call onNavigate during render.
+  const isPremium=myProfile?.membership_status==="active";
+  const hasStripeSubscription=!!(myProfile?.stripe_subscription_id);
+  const isAdminOverride=isPremium&&!hasStripeSubscription;
+
+  // Free/non-premium logged-in users go to membership plan selection.
+  // Premium users stay here so they can see their plan status and upgrade options.
   React.useEffect(()=>{
-    if(session?.user&&myProfile){onNavigate("membership");}
-  },[session?.user?.id,myProfile?.user_type]); // eslint-disable-line react-hooks/exhaustive-deps
-  // Suppress the public page for logged-in users (avoid flash while effect fires)
-  if(session?.user&&myProfile)return null;
+    if(session?.user&&myProfile&&!isPremium){onNavigate("membership");}
+  },[session?.user?.id,myProfile?.user_type,myProfile?.membership_status]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Suppress for free logged-in users (avoid flash while effect fires)
+  if(session?.user&&myProfile&&!isPremium)return null;
   // Profile still loading for a logged-in user — show a brief spinner
   if(session?.user&&!myProfile)return(<div className="page" style={{minHeight:"60vh",display:"flex",alignItems:"center",justifyContent:"center"}}><CastSlateLoader text="Loading…"/></div>);
 
@@ -4159,6 +4183,13 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan}){
   const btnOutline={width:"100%",height:44,border:"1.5px solid #2a2520",borderRadius:10,background:"transparent",color:"#2a2520",fontSize:13,fontWeight:700,cursor:"pointer",letterSpacing:0.2,fontFamily:"inherit"};
   const btnFilled={width:"100%",height:44,border:"none",borderRadius:10,background:"var(--acc)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",letterSpacing:0.2,fontFamily:"inherit"};
 
+  // Helpers for premium status display
+  const renewalDate=myProfile?.current_period_end||myProfile?.membership_end_date;
+  const renewalExpired=renewalDate&&new Date(renewalDate)<new Date();
+  const planKey=myProfile?.plan_type||"monthly";
+  const currentPlanInfo=MEMBERSHIP_PLANS[planKey]||MEMBERSHIP_PLANS.monthly;
+  const isMonthlyPlan=planKey==="monthly";
+
   return(
     <div className="page">
 
@@ -4168,6 +4199,32 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan}){
         <h1 style={{fontSize:38,fontWeight:800,letterSpacing:-1.5,lineHeight:1.15,marginBottom:14,color:"var(--t1)"}}>{t('pricing.subtitle')}</h1>
         <p style={{color:"var(--t3)",fontSize:15,lineHeight:1.65,maxWidth:500,margin:"0 auto"}}>{t('pricing.startFree')}</p>
       </div>
+
+      {/* ── Premium member status banner (only for active subscribers) ── */}
+      {isPremium&&<div style={{maxWidth:760,margin:"0 auto 32px",padding:"0 20px"}}>
+        <div style={{background:"linear-gradient(135deg,rgba(99,60,180,0.08),rgba(99,60,180,0.03))",border:"1.5px solid rgba(99,60,180,0.22)",borderRadius:16,padding:"22px 26px"}}>
+          <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",flexWrap:"wrap",gap:14}}>
+            <div>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+                <span style={{background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.2,padding:"3px 10px",borderRadius:100,whiteSpace:"nowrap"}}>PREMIUM</span>
+                <h3 style={{fontSize:17,fontWeight:800,margin:0,color:"var(--t1)"}}>You're already a Premium member.</h3>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 1fr",gap:"5px 28px"}}>
+                <div style={{fontSize:13,color:"var(--t2)"}}><span style={{fontWeight:600,color:"var(--t1)"}}>Current plan:</span> {currentPlanInfo.label}</div>
+                <div style={{fontSize:13,color:"var(--t2)"}}><span style={{fontWeight:600,color:"var(--t1)"}}>Status:</span> <span style={{color:renewalExpired?"var(--red)":"var(--grn)",fontWeight:600}}>{renewalExpired?"Expired":"Active"}</span></div>
+                {hasStripeSubscription&&<div style={{fontSize:13,color:"var(--t2)"}}><span style={{fontWeight:600,color:"var(--t1)"}}>Billing:</span> ${currentPlanInfo.monthly.toFixed(2)}/month</div>}
+                {isAdminOverride&&<div style={{fontSize:13,color:"var(--t2)"}}><span style={{fontWeight:600,color:"var(--t1)"}}>Billing:</span> <span style={{color:"var(--acc)",fontWeight:600}}>Admin/Test Override</span></div>}
+                {renewalDate&&hasStripeSubscription&&<div style={{fontSize:13,color:renewalExpired?"var(--red)":"var(--t2)"}}><span style={{fontWeight:600,color:"var(--t1)"}}>{renewalExpired?"Expired:":"Renewal:"}</span> {new Date(renewalDate).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}</div>}
+              </div>
+              {isMonthlyPlan&&!renewalExpired&&<p style={{fontSize:12,color:"var(--t3)",marginTop:10,marginBottom:0}}>On Monthly? Upgrade to 6-month or yearly below to lock in a lower rate.</p>}
+            </div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"flex-start",flexShrink:0}}>
+              <button className="btn-p btn-sm" onClick={()=>onNavigate("account-settings")}>Manage Membership</button>
+              <button className="btn-s btn-sm" onClick={()=>onNavigate("my-profile")}>View Premium Features</button>
+            </div>
+          </div>
+        </div>
+      </div>}
 
       {/* ── Cards ── */}
       <div style={{maxWidth:1020,margin:"0 auto 48px",padding:"0 20px 12px"}}>
@@ -4206,7 +4263,9 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan}){
             <div style={{flex:1}}>
               {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Premium profile features','Personalized profile improvement suggestions'].map(f=>feat(f,"var(--acc)"))}
             </div>
-            <button style={{...btnFilled,marginTop:24}} onClick={()=>onNavigate("membership")}>{t('pricing.getPremium')}</button>
+            {isPremium
+              ?<button style={{...btnFilled,marginTop:24}} onClick={()=>onNavigate("membership")}>Manage Plan →</button>
+              :<button style={{...btnFilled,marginTop:24}} onClick={()=>onNavigate("membership")}>{t('pricing.getPremium')}</button>}
           </div>
 
           {/* Casting Director */}
@@ -14734,29 +14793,49 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     </div>
   );
 
-  const renderSubscription=()=>(
+  const renderSubscription=()=>{
+    const isPremiumMember=["talent","actor"].includes(role)&&(profile?.membership_status==="active"||profile?.membership_status==="premium");
+    const hasStripe=!!(profile?.stripe_subscription_id);
+    const isOverride=isPremiumMember&&!hasStripe;
+    const renewDate=profile?.current_period_end||profile?.membership_end_date;
+    const renewExpired=renewDate&&new Date(renewDate)<new Date();
+    const planKey=profile?.plan_type||"monthly";
+    const planInfo=MEMBERSHIP_PLANS[planKey]||MEMBERSHIP_PLANS.monthly;
+    return(
     <div>
       <h2 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:6}}>Subscription Info</h2>
       <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Your current plan and membership status.</p>
       <div className="card" style={{marginBottom:16}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:10}}>
           <div>
             <div style={{fontWeight:800,fontSize:18}}>{membershipLabel()}</div>
             <div style={{color:"var(--t2)",fontSize:13,marginTop:4}}>{roleLabel()}</div>
           </div>
-          <span style={{
-            background:["talent","actor"].includes(role)&&(profile?.membership_status==="active"||profile?.membership_status==="premium")
-              ?"rgba(26,26,46,0.08)":"rgba(141,141,160,0.1)",
-            color:["talent","actor"].includes(role)&&(profile?.membership_status==="active"||profile?.membership_status==="premium")
-              ?"var(--acc)":"var(--t3)",
-            padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700
-          }}>
-            {["talent","actor"].includes(role)
-              ?(profile?.membership_status==="active"||profile?.membership_status==="premium")?"PREMIUM":"FREE"
-              :isAdminRole?"ADMIN":"CREATOR"}
-          </span>
+          <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+            <span style={{
+              background:isPremiumMember?"rgba(26,26,46,0.08)":"rgba(141,141,160,0.1)",
+              color:isPremiumMember?"var(--acc)":"var(--t3)",
+              padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700
+            }}>
+              {["talent","actor"].includes(role)?isPremiumMember?"PREMIUM":"FREE":isAdminRole?"ADMIN":"CREATOR"}
+            </span>
+            {isOverride&&<span style={{background:"rgba(99,60,180,0.1)",color:"var(--acc)",padding:"6px 14px",borderRadius:20,fontSize:11,fontWeight:700}}>TEST/ADMIN OVERRIDE</span>}
+          </div>
         </div>
-        {["talent","actor"].includes(role)&&!(profile?.membership_status==="active"||profile?.membership_status==="premium")&&(
+        {isPremiumMember&&(
+          <div style={{borderTop:"1px solid var(--bdr)",paddingTop:16}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"6px 24px"}}>
+              <div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Plan:</span> <strong>{planInfo.label}</strong></div>
+              {hasStripe&&<div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Billing:</span> <strong>${planInfo.monthly.toFixed(2)}/month</strong></div>}
+              <div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Status:</span> <strong style={{color:renewExpired?"var(--red)":"var(--grn)"}}>{renewExpired?"Expired":"Active"}</strong></div>
+              {renewDate&&hasStripe&&<div style={{fontSize:13,color:renewExpired?"var(--red)":"var(--t2)"}}>
+                <span style={{color:"var(--t3)"}}>Renewal:</span> <strong>{new Date(renewDate).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}</strong>
+              </div>}
+            </div>
+            {isOverride&&<p style={{fontSize:12,color:"var(--t3)",marginTop:10,marginBottom:0}}>Premium access granted via admin/test override. No real Stripe subscription is attached to this account.</p>}
+          </div>
+        )}
+        {["talent","actor"].includes(role)&&!isPremiumMember&&(
           <div style={{borderTop:"1px solid var(--bdr)",paddingTop:16}}>
             <p style={{color:"var(--t2)",fontSize:13,marginBottom:12}}>Free plan: 3 casting submissions/day, 1 headshot, no video reels.</p>
             <button className="btn-p btn-sm" onClick={()=>onNavigate("membership")}>Upgrade to Premium — $9.99/month</button>
@@ -14772,35 +14851,67 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
       </div>
       <div className="card" style={{background:"var(--s2)",border:"none"}}>
         <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>Plan management</div>
-        <div style={{color:"var(--t2)",fontSize:13}}>
-          Stripe billing management is not connected yet.{" "}
-          {/* TODO: wire Stripe Customer Portal link here when Stripe is set up */}
-          Contact support to manage your subscription.
-        </div>
+        {isOverride?(
+          <div style={{color:"var(--t2)",fontSize:13}}>This account has Premium access via an admin/test override. No Stripe billing is attached — no billing portal is available.</div>
+        ):hasStripe?(
+          <div style={{color:"var(--t2)",fontSize:13}}>Your subscription is managed through Stripe. To cancel or update your payment method, contact support or use the billing portal in Payment &amp; Billing.</div>
+        ):(
+          <div style={{color:"var(--t2)",fontSize:13}}>No active subscription. <span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</span></div>
+        )}
       </div>
     </div>
-  );
+    );
+  };
 
-  const renderBilling=()=>(
+  const renderBilling=()=>{
+    const hasStripeCustomer=!!(profile?.stripe_customer_id);
+    const hasStripeSub=!!(profile?.stripe_subscription_id);
+    const isPremiumMember=["talent","actor"].includes(role)&&(profile?.membership_status==="active"||profile?.membership_status==="premium");
+    const isOverride=isPremiumMember&&!hasStripeSub;
+    return(
     <div>
       <h2 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:6}}>Payment & Billing</h2>
       <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Manage your payment methods and billing history.</p>
-      <div className="card" style={{textAlign:"center",padding:"48px 24px"}}>
-        <div style={{fontSize:40,marginBottom:16}}>🏦</div>
-        <div style={{fontWeight:700,fontSize:16,marginBottom:8}}>Billing management is not connected yet.</div>
-        <div style={{color:"var(--t2)",fontSize:13,maxWidth:400,margin:"0 auto"}}>
-          Payment and billing management via Stripe Customer Portal will be available here once payment processing is fully configured.
+      {isOverride?(
+        <div className="card" style={{textAlign:"center",padding:"40px 24px"}}>
+          <div style={{fontSize:40,marginBottom:16}}>🔑</div>
+          <div style={{fontWeight:700,fontSize:16,marginBottom:8}}>Admin/Test Override Account</div>
+          <div style={{color:"var(--t2)",fontSize:13,maxWidth:440,margin:"0 auto 0"}}>
+            This account has Premium access via an admin or test override. No Stripe subscription or billing information is attached — there is nothing to manage here.
+          </div>
         </div>
-        {/* TODO: Add Stripe Customer Portal link:
-            const {data} = await sb.rpc("create_billing_portal_session");
-            window.location.href = data.url;
-        */}
-        <div style={{marginTop:24,padding:"12px 16px",background:"var(--s2)",borderRadius:8,fontSize:12,color:"var(--t3)",maxWidth:400,margin:"24px auto 0"}}>
-          To manage your subscription or request a refund, contact support.
+      ):hasStripeCustomer?(
+        <div className="card" style={{padding:"28px 24px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+            <div style={{fontSize:32}}>💳</div>
+            <div>
+              <div style={{fontWeight:700,fontSize:16}}>Stripe Billing Connected</div>
+              <div style={{color:"var(--t2)",fontSize:13,marginTop:2}}>Your subscription is managed through Stripe.</div>
+            </div>
+          </div>
+          <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>To update your payment method, view invoices, or cancel your subscription, contact support. Self-service billing portal coming soon.</p>
+          <div style={{padding:"12px 16px",background:"var(--s2)",borderRadius:8,fontSize:12,color:"var(--t3)"}}>
+            Stripe Customer ID: <code style={{fontFamily:"monospace",fontSize:11}}>{profile.stripe_customer_id}</code>
+          </div>
         </div>
-      </div>
+      ):(
+        <div className="card" style={{textAlign:"center",padding:"48px 24px"}}>
+          <div style={{fontSize:40,marginBottom:16}}>🏦</div>
+          <div style={{fontWeight:700,fontSize:16,marginBottom:8}}>No billing on file.</div>
+          <div style={{color:"var(--t2)",fontSize:13,maxWidth:400,margin:"0 auto"}}>
+            {isPremiumMember
+              ?"Your account is active but has no Stripe billing record. Contact support if you believe this is an error."
+              :"You're on the free plan. Upgrade to Premium to unlock unlimited submissions and more."}
+          </div>
+          {!isPremiumMember&&<button className="btn-p btn-sm" style={{marginTop:20}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>}
+          <div style={{marginTop:20,padding:"12px 16px",background:"var(--s2)",borderRadius:8,fontSize:12,color:"var(--t3)",maxWidth:400,margin:"20px auto 0"}}>
+            To request a refund or billing support, contact support.
+          </div>
+        </div>
+      )}
     </div>
-  );
+    );
+  };
 
   const renderNotifications=()=>(
     <div>
