@@ -7675,20 +7675,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
       </div>
     </div>
 
-    {/* ── SLATE VIDEO — shown only when actor has one ── */}
-    {(freshProfile?.slate_video_url)&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,flexWrap:"wrap",gap:8}}>
-        {sectionHead("Slate")}
-        <span style={{fontSize:11,color:"var(--t3)"}}>7-second intro</span>
-      </div>
-      <video
-        src={freshProfile.slate_video_url}
-        controls
-        playsInline
-        preload="metadata"
-        style={{display:"block",width:"auto",height:"auto",maxWidth:"min(360px,100%)",maxHeight:440,borderRadius:10,margin:"0 auto"}}
-      />
-    </div>}
+    {/* ── SLATE VIDEO — private; shown to casting directors in submission review only, not on public profile ── */}
 
     {/* ── SKILLS ── */}
     {skills.length>0&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
@@ -13913,13 +13900,14 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
 
         {/* ── ACTOR SLATE VIDEO — Premium only ── */}
         <div className="card" style={{padding:24,marginBottom:16}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:isPremium?14:0,flexWrap:"wrap",gap:8}}>
-            <div>
-              <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Actor Slate Video <span style={{fontSize:10,fontWeight:800,background:"var(--acc)",color:"#fff",padding:"2px 7px",borderRadius:6,letterSpacing:0.8,textTransform:"uppercase",marginLeft:6,verticalAlign:"middle"}}>Premium</span></h3>
-              <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,marginBottom:0}}>
-                Record a 7-second intro so casting teams can quickly see and hear you.
-              </p>
-            </div>
+          <div style={{marginBottom:isPremium?16:0}}>
+            <h3 style={{fontSize:15,fontWeight:700,marginBottom:6}}>Actor Slate Video <span style={{fontSize:10,fontWeight:800,background:"var(--acc)",color:"#fff",padding:"2px 7px",borderRadius:6,letterSpacing:0.8,textTransform:"uppercase",marginLeft:6,verticalAlign:"middle"}}>Premium</span></h3>
+            <p style={{fontSize:13,color:"var(--t1)",lineHeight:1.65,marginBottom:8}}>
+              Your slate is one of the most important first impressions casting directors receive. Before they decide to open your full profile or review the rest of your materials, this short video helps them quickly see your presence, voice, energy, and professionalism.
+            </p>
+            <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,marginBottom:0}}>
+              Casting is a visual business. Your first visual impression matters. A clean, simple slate can help casting teams understand who you are faster.
+            </p>
           </div>
           {!isPremium?(
             <div style={{marginTop:14,background:"rgba(99,60,180,0.05)",border:"1px solid rgba(99,60,180,0.18)",borderRadius:10,padding:"16px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
@@ -13928,15 +13916,16 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
             </div>
           ):(
             <>
-              <p style={{fontSize:12,color:"var(--t3)",marginTop:6,marginBottom:14,fontStyle:"italic"}}>
-                Suggested: "Hi, I'm [Name]. I'm based in [City]. I'm [Union Status]. Thank you."
-              </p>
+              <div style={{background:"var(--s2)",borderRadius:8,padding:"12px 16px",marginBottom:16}}>
+                <p style={{fontSize:12,color:"var(--t2)",marginBottom:4,fontStyle:"italic"}}>Suggested: "Hi, I'm [Name]. I'm based in [City]. I'm [Union Status]. Thank you."</p>
+                <p style={{fontSize:11,color:"var(--t3)",margin:0}}>Keep it natural, well-lit, and simple. Do not overperform. This is your quick professional introduction.</p>
+              </div>
               {slateVideoUrl&&!showSlateRecorder&&(
                 <div>
-                  <div style={{marginBottom:12}}>
-                    <video src={slateVideoUrl} controls playsInline preload="metadata" style={{display:"block",width:"auto",height:"auto",maxWidth:"min(300px,100%)",maxHeight:420,borderRadius:10}}/>
+                  <div style={{display:"flex",justifyContent:"center",marginBottom:12}}>
+                    <video src={slateVideoUrl} controls playsInline preload="metadata" style={{display:"block",width:"auto",height:"auto",maxWidth:"min(340px,100%)",maxHeight:440,borderRadius:12}}/>
                   </div>
-                  <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
                     <button className="btn-s btn-sm" onClick={()=>setShowSlateRecorder(true)}>🎥 Replace Slate Video</button>
                     <label className="btn-s btn-sm" style={{cursor:slateUploading?"not-allowed":"pointer"}}>
                       {slateUploading?"Uploading…":"⬆ Upload New Slate"}
