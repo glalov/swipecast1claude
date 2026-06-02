@@ -1757,10 +1757,6 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @keyframes partnersSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
 @media (prefers-reduced-motion: reduce){.partners-track{animation:none;}}
 @media (max-width:768px){.partners-tile{font-size:28px;gap:30px;padding:0 30px;}}
-/* ─── Scroll-reveal: sections fade + rise gently into view (subtle) ─── */
-.reveal-init{opacity:0;transform:translateY(14px);}
-.reveal-in{opacity:1;transform:none;transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .55s cubic-bezier(.22,.61,.36,1);}
-@media (prefers-reduced-motion:reduce){.reveal-init{opacity:1!important;transform:none!important;}}
 /* ─── Talent Dashboard responsive grid ─── */
 .td-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
@@ -12699,35 +12695,6 @@ function LandingSwipe(){
 // ═══════════════════════════════════════════
 function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,myProfile=null}){
   const tr=useT();
-  // Scroll-reveal + stat count-up. Lightweight (IntersectionObserver), honors
-  // prefers-reduced-motion via the .reveal-init/.reveal-in CSS above.
-  React.useLayoutEffect(()=>{
-    let cancelled=false, observers=[];
-    function setup(){
-      if(cancelled) return;
-      const h1=[].slice.call(document.querySelectorAll('h1')).find(h=>/Casting, finally/i.test(h.textContent));
-      if(!h1){ return setTimeout(setup,200); }
-      let n=h1; while(n&&n.parentElement&&n.parentElement.children.length<6){ n=n.parentElement; }
-      const stack=n&&n.parentElement; if(!stack) return;
-      const kids=[].slice.call(stack.children);
-      const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('reveal-in'); io.unobserve(e.target); } }),{threshold:.08,rootMargin:'0px 0px -5% 0px'});
-      observers.push(io);
-      kids.forEach((k,i)=>{ if(i===0)return; if(k.classList.contains('reveal-init'))return; k.classList.add('reveal-init'); io.observe(k); });
-      const parse=t=>{ const m=t.trim().match(/^(\D*)([\d.]+)(\D*)$/); return m?{pre:m[1],num:parseFloat(m[2]),suf:m[3],dec:(m[2].split('.')[1]||'').length}:null; };
-      const band=kids.find(k=>/100%/.test(k.textContent)&&/72hr/.test(k.textContent));
-      if(band){ [].slice.call(band.querySelectorAll('div')).filter(d=>d.children.length===0&&parseInt(getComputedStyle(d).fontSize)>=30&&parse(d.textContent)).forEach(el=>{
-        if(el.dataset.cu)return; el.dataset.cu='1';
-        const info=parse(el.textContent),to=info.num,final=el.textContent;
-        const o=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ o.unobserve(el); const dur=1200,s=performance.now();
-          (function tk(now){ const t=Math.min((now-s)/dur,1),k=1-Math.pow(1-t,3),v=info.dec?(to*k).toFixed(info.dec):Math.round(to*k);
-            el.textContent=info.pre+v+info.suf; if(t<1)requestAnimationFrame(tk); else el.textContent=final; })(s);
-        } }),{threshold:.6});
-        observers.push(o); o.observe(el);
-      }); }
-    }
-    setup();
-    return ()=>{ cancelled=true; observers.forEach(o=>o.disconnect()); };
-  },[]);
   // Logged-in-aware destinations — talents go to My Profile / Browse, CDs and
   // admins go to Dashboard / Browse. Replaces the old "Start My 7-Day Free
   // Trial" CTA which was gaslighting existing users.
