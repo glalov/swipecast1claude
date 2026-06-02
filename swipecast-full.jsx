@@ -8096,14 +8096,13 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               onClick={()=>onViewCasting&&onViewCasting(rawC)}>
               <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
                 <div>
-                  <div style={{display:"flex",gap:8,marginBottom:isFeat?6:12,flexWrap:"wrap",alignItems:"center"}}>
+                  <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
                     {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>★ Cast Slate Pick</span>}
-                    {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#F0FDF4",color:"#15803D",border:"1px solid #BBF7D0",borderRadius:20,fontSize:10,fontWeight:700,letterSpacing:"0.04em"}}>Curated by Cast Slate</span>}
+                    {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#F0FDF4",color:"#15803D",border:"1px solid #BBF7D0",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>Curated by Cast Slate</span>}
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{translateCastingType(c.type,lang)}</span>
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.union}</span>
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{(c.roles?.length||1)===1?`1 ${t('search.role')}`:`${c.roles?.length||1} ${t('search.roles')}`}</span>
                   </div>
-                  {isFeat&&<p style={{fontSize:12,color:"#6D28D9",fontStyle:"italic",marginBottom:10,marginTop:-4}}>Selected opportunity</p>}
                   <h3 style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:4,color:"var(--t1)"}}>{c.title}</h3>
                   <p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{c.tagline||c.prod}</p>
                   <p style={{color:"var(--t3)",fontSize:12,marginBottom:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.prod}{c.creator_verified&&<IDVerifiedBadge size="xs"/>}</p>
