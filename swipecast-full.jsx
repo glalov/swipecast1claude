@@ -6803,7 +6803,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     </div>
 
     <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
-      {c.featured&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>★ Featured</span>}
+      {c.featured&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>★ Cast Slate Pick</span>}
       <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{translateCastingType(c.type,lang)}</span>
       <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.union}</span>
       <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.location}</span>
@@ -7823,7 +7823,7 @@ function CastingGatePage({casting,onCreateProfile,onLogin,onBack}){
         {casting&&(
           <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:12,padding:"16px 20px",marginBottom:20}}>
             <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap"}}>
-              {casting.featured&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>★ Featured</span>}
+              {casting.featured&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>★ Cast Slate Pick</span>}
               {casting.type&&<span className="badge" style={{background:"var(--s3)",color:"var(--t2)"}}>{casting.type}</span>}
               {casting.union&&<span className="badge" style={{background:"var(--s3)",color:"var(--t2)"}}>{casting.union}</span>}
             </div>
@@ -8086,23 +8086,24 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             <div key={c.id} style={{
               padding:0,overflow:"hidden",cursor:"pointer",borderRadius:14,
               background:isFeat?"#FAF8FF":"var(--s1)",
-              border:isFeat?"2px solid #C4B5FD":"1px solid var(--bdr)",
-              boxShadow:isFeat?"0 6px 32px rgba(26,26,46,0.13)":"0 1px 4px rgba(26,26,46,0.05)",
+              border:"1px solid var(--bdr)",
+              borderLeft:isFeat?"3px solid #7C3AED":"1px solid var(--bdr)",
+              boxShadow:isFeat?"0 4px 20px rgba(124,58,237,0.10)":"0 1px 4px rgba(26,26,46,0.05)",
               transition:"box-shadow .2s,transform .15s",
             }}
-              onMouseEnter={e=>{e.currentTarget.style.boxShadow=isFeat?"0 10px 40px rgba(26,26,46,0.18)":"0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
-              onMouseLeave={e=>{e.currentTarget.style.boxShadow=isFeat?"0 6px 32px rgba(26,26,46,0.13)":"0 1px 4px rgba(26,26,46,0.05)";e.currentTarget.style.transform="";}}
+              onMouseEnter={e=>{e.currentTarget.style.boxShadow=isFeat?"0 8px 32px rgba(124,58,237,0.16)":"0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
+              onMouseLeave={e=>{e.currentTarget.style.boxShadow=isFeat?"0 4px 20px rgba(124,58,237,0.10)":"0 1px 4px rgba(26,26,46,0.05)";e.currentTarget.style.transform="";}}
               onClick={()=>onViewCasting&&onViewCasting(rawC)}>
-              {/* Featured top accent bar */}
-              {isFeat&&<div style={{height:4,background:"#7C3AED",width:"100%"}}/>}
-              <div className="casting-card-row" style={{padding:isFeat?"20px 28px 24px":"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
+              <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
                 <div>
-                  <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
-                    {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>★ Featured</span>}
+                  <div style={{display:"flex",gap:8,marginBottom:isFeat?6:12,flexWrap:"wrap",alignItems:"center"}}>
+                    {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>★ Cast Slate Pick</span>}
+                    {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#F0FDF4",color:"#15803D",border:"1px solid #BBF7D0",borderRadius:20,fontSize:10,fontWeight:700,letterSpacing:"0.04em"}}>Curated by Cast Slate</span>}
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{translateCastingType(c.type,lang)}</span>
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.union}</span>
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{(c.roles?.length||1)===1?`1 ${t('search.role')}`:`${c.roles?.length||1} ${t('search.roles')}`}</span>
                   </div>
+                  {isFeat&&<p style={{fontSize:12,color:"#6D28D9",fontStyle:"italic",marginBottom:10,marginTop:-4}}>Selected opportunity</p>}
                   <h3 style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:4,color:"var(--t1)"}}>{c.title}</h3>
                   <p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{c.tagline||c.prod}</p>
                   <p style={{color:"var(--t3)",fontSize:12,marginBottom:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.prod}{c.creator_verified&&<IDVerifiedBadge size="xs"/>}</p>
