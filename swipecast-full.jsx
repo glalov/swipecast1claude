@@ -8221,15 +8221,6 @@ function ProfileImprovementCard({profile,isPremium,onNavigate,dbCredits,mediaIte
         <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:0}}>Improve Your Profile</h3>
         <span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:6,background:"rgba(99,60,180,0.12)",color:"var(--acc)",textTransform:"uppercase",letterSpacing:0.6}}>Premium</span>
       </div>
-      <div style={{marginBottom:14}}>
-        <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"var(--t2)",marginBottom:6}}>
-          <span>Your profile is {pct}% complete</span>
-          <span style={{color:pct>=80?"var(--grn)":pct>=50?"#d97706":"var(--red)",fontWeight:700}}>{pct}%</span>
-        </div>
-        <div style={{height:6,background:"var(--s2)",borderRadius:3,overflow:"hidden"}}>
-          <div style={{width:`${pct}%`,height:"100%",background:pct>=80?"var(--grn)":pct>=50?"#d97706":"var(--red)",borderRadius:3,transition:"width .4s"}}/>
-        </div>
-      </div>
       {allDone?(
         <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"rgba(27,135,62,0.06)",border:"1px solid rgba(27,135,62,0.2)",borderRadius:8}}>
           <span style={{fontSize:18}}>✓</span>
@@ -8523,6 +8514,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const additionalPhotos=Array.isArray(myProfile?.additional_photos)?myProfile.additional_photos.filter(Boolean):[];
   const totalPhotos=isPremium?additionalPhotos.length:headshotCount;
   const videoLinks=Array.isArray(myProfile?.video_links)?myProfile.video_links.filter(Boolean):[];
+  const totalVideos=videoLinks.length+(myProfile?.slate_video_url?1:0);
   const hasResumeFile=!!(myProfile?.resume_url);
   const hasCredits=dashDbCredits.length>0||!!(myProfile?.credits?.trim());
   const hasResume=hasResumeFile||hasCredits;
@@ -9231,8 +9223,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             <div style={{display:"flex",flexDirection:"column",gap:0,marginBottom:16,border:"1px solid var(--bdr)",borderRadius:8,overflow:"hidden"}}>
               {[
                 {label:"Photos",val:isPremium?`${totalPhotos} uploaded`:`${totalPhotos} / 1`,ok:totalPhotos>0,warn:false},
-                {label:"Videos",val:isPremium?`${videoLinks.length} uploaded`:"Not included",note:!isPremium?"Upgrade":null,ok:isPremium&&videoLinks.length>0,warn:false},
-                {label:"Documents",val:"—",warn:false},
+                {label:"Videos",val:isPremium?`${totalVideos} uploaded`:"Not included",note:!isPremium?"Upgrade":null,ok:isPremium&&totalVideos>0,warn:false},
                 {label:"Resume / Credits",val:hasResumeFile&&hasCredits?"Resume & Credits":hasResumeFile?"Resume uploaded":hasCredits?"Credits added":"Missing",ok:hasResume,warn:!hasResume},
               ].map((row,i,arr)=>(
                 <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:13,padding:"11px 14px",background:i%2===0?"var(--s1)":"var(--bg)",borderBottom:i<arr.length-1?"1px solid var(--bdr)":"none"}}>
