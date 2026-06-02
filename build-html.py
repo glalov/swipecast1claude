@@ -177,13 +177,14 @@ html = f'''<!DOCTYPE html>
   <!-- BUILD: {BUILD_VERSION} -->
   <meta name="build-version" content="{BUILD_VERSION}"/>
   <script>
-    /* Force reload when a new deploy lands; also clears BFCache stale state */
+    /* Force reload when a new deploy lands (build version changed in localStorage).
+       BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
+       here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){{
       var B="{BUILD_VERSION}";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){{window.location.reload();}}
-      window.addEventListener("pageshow",function(e){{if(e.persisted)window.location.reload();}});
     }})();
   </script>
   <style>
