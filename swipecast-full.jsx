@@ -2788,7 +2788,7 @@ function RegisterTalent({onNavigate}){
             <div style={{border:"2px solid var(--grn)",borderRadius:12,padding:"14px 16px"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><span style={{fontWeight:800,fontSize:14}}>Free Account</span><span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--grn)"}}>$0</span></div>
               {["1 headshot","3 casting submissions per day","Browse all castings","Basic actor profile"].map(feat=><div key={feat} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{feat}</div>)}
-              <div style={{marginTop:10,fontSize:11,color:"var(--t3)",fontStyle:"italic"}}>↑ Use the form on the right to create your free account</div>
+              <div style={{marginTop:10,fontSize:11,color:"var(--t3)",fontStyle:"italic"}}>Fill out the form to create your free account</div>
             </div>
             <div style={{border:"1px solid var(--bdr)",borderRadius:12,padding:"14px 16px",opacity:0.85}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><span style={{fontWeight:800,fontSize:14}}>Actor Premium</span><span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--acc)"}}>$9.99/mo</span></div>
