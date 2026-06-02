@@ -12695,6 +12695,36 @@ function LandingSwipe(){
 // ═══════════════════════════════════════════
 function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,myProfile=null}){
   const tr=useT();
+  // Stat count-up ONLY. Never touches opacity/visibility, so it can never hide
+  // content. Numbers tick up from zero when the stat band scrolls into view.
+  // Respects prefers-reduced-motion.
+  React.useEffect(()=>{
+    if(typeof window==='undefined'||!('IntersectionObserver'in window))return;
+    if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    let killed=false;
+    function setup(){
+      if(killed)return;
+      const h1=[].slice.call(document.querySelectorAll('h1')).find(h=>/Casting, finally/i.test(h.textContent));
+      if(!h1){ setTimeout(setup,200); return; }
+      let n=h1; while(n&&n.parentElement&&n.parentElement.children.length<6){ n=n.parentElement; }
+      const stack=n&&n.parentElement; if(!stack)return;
+      const kids=[].slice.call(stack.children);
+      const parse=t=>{ const m=t.trim().match(/^(\D*)([\d.]+)(\D*)$/); return m?{pre:m[1],num:parseFloat(m[2]),suf:m[3],dec:(m[2].split('.')[1]||'').length}:null; };
+      const band=kids.find(k=>/100%/.test(k.textContent)&&/72hr/.test(k.textContent));
+      if(!band)return;
+      [].slice.call(band.querySelectorAll('div')).filter(d=>d.children.length===0&&parseInt(getComputedStyle(d).fontSize)>=30&&parse(d.textContent)).forEach(el=>{
+        if(el.dataset.cu)return; el.dataset.cu='1';
+        const info=parse(el.textContent),to=info.num,final=el.textContent;
+        const o=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ o.unobserve(el); const dur=1200,s=performance.now();
+          (function tk(now){ const t=Math.min((now-s)/dur,1),k=1-Math.pow(1-t,3),v=info.dec?(to*k).toFixed(info.dec):Math.round(to*k);
+            el.textContent=info.pre+v+info.suf; if(t<1)requestAnimationFrame(tk); else el.textContent=final; })(s);
+        } }),{threshold:.5});
+        o.observe(el);
+      });
+    }
+    setup();
+    return ()=>{ killed=true; };
+  },[]);
   // Logged-in-aware destinations — talents go to My Profile / Browse, CDs and
   // admins go to Dashboard / Browse. Replaces the old "Start My 7-Day Free
   // Trial" CTA which was gaslighting existing users.
