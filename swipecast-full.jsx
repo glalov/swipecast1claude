@@ -8085,8 +8085,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;return(
             <div key={c.id} style={{
               padding:0,overflow:"hidden",cursor:"pointer",borderRadius:14,
-              background:isFeat?"#F5F3FF":"var(--s1)",
-              border:isFeat?"2px solid #1A1A2E":"1px solid var(--bdr)",
+              background:isFeat?"#EDE9FE":"var(--s1)",
+              border:isFeat?"2px solid #C4B5FD":"1px solid var(--bdr)",
               boxShadow:isFeat?"0 6px 32px rgba(26,26,46,0.13)":"0 1px 4px rgba(26,26,46,0.05)",
               transition:"box-shadow .2s,transform .15s",
             }}
@@ -8094,7 +8094,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               onMouseLeave={e=>{e.currentTarget.style.boxShadow=isFeat?"0 6px 32px rgba(26,26,46,0.13)":"0 1px 4px rgba(26,26,46,0.05)";e.currentTarget.style.transform="";}}
               onClick={()=>onViewCasting&&onViewCasting(rawC)}>
               {/* Featured top accent bar */}
-              {isFeat&&<div style={{height:4,background:"#1A1A2E",width:"100%"}}/>}
+              {isFeat&&<div style={{height:4,background:"#7C3AED",width:"100%"}}/>}
               <div className="casting-card-row" style={{padding:isFeat?"20px 28px 24px":"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
                 <div>
                   <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
