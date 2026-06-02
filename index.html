@@ -10,9 +10,6 @@
   <meta name="google-site-verification" content="yMDmFzYmFlDLSIqxjBMRSD-Lzmsk57k9rr2UZUdjBbM"/>
   <meta name="msvalidate.01" content="A52953180F28A4CBCD8D5EB0B1928C68"/>
   <link rel="canonical" href="https://www.castslate.com/"/>
-  <script>
-    (function(){var p=window.location.pathname;if(p&&p!=='/'){var c=document.querySelector('link[rel="canonical"]');if(c)c.href='https://www.castslate.com'+p;}})();
-  </script>
   <!-- Open Graph -->
   <meta property="og:site_name" content="CastSlate"/>
   <meta property="og:type" content="website"/>
@@ -77,12 +74,12 @@
       };
     }
   </script>
-  <!-- BUILD: 20260601-214500 -->
-  <meta name="build-version" content="20260601-214500"/>
+  <!-- BUILD: 20260602-152923 -->
+  <meta name="build-version" content="20260602-152923"/>
   <script>
     /* Force reload when a new deploy lands; also clears BFCache stale state */
     (function(){
-      var B="20260601-212001";
+      var B="20260602-152923";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -1829,10 +1826,14 @@ if(!isPremium){return/*#__PURE__*/React.createElement("div",{className:"page",st
 const[photoZoom,setPhotoZoom]=useState(1.0);const[photoPosX,setPhotoPosX]=useState(50);const[photoPosY,setPhotoPosY]=useState(50);const[isDragging,setIsDragging]=useState(false);const dragDataRef=useRef(null);const photoRef=useRef(null);const[displayName,setDisplayName]=useState(myProfile?.display_name||'');const[headline,setHeadline]=useState('Actor');const[showLocation,setShowLocation]=useState(true);const[showUnion,setShowUnion]=useState(true);const[qrDataUrl,setQrDataUrl]=useState(null);const[qrLoading,setQrLoading]=useState(false);const[qrErr,setQrErr]=useState(false);const[generating,setGenerating]=useState(false);const[pdfGenerating,setPdfGenerating]=useState(false);const[downloadErr,setDownloadErr]=useState('');const cardTags=Array.isArray(myProfile?.skills)?myProfile.skills.filter(Boolean).slice(0,3):[];const unionStatus=myProfile?.union_status||'';const location=myProfile?.location||'';// Reset crop when photo changes
 useEffect(()=>{setPhotoZoom(1);setPhotoPosX(50);setPhotoPosY(50);},[selectedPhoto]);// Generate real QR code via free public API — no library required
 useEffect(()=>{if(!profileUrl)return;setQrLoading(true);setQrErr(false);setQrDataUrl(null);_abcGenerateQR(profileUrl).then(url=>{setQrDataUrl(url);setQrErr(false);}).catch(()=>setQrErr(true)).finally(()=>setQrLoading(false));},[profileUrl]);// Drag handlers for headshot crop
-const handlePhotoMouseDown=useCallback(e=>{if(!selectedPhoto)return;e.preventDefault();const cli=e.touches?e.touches[0]:e;dragDataRef.current={sx:cli.clientX,sy:cli.clientY,px:photoPosX,py:photoPosY};setIsDragging(true);},[selectedPhoto,photoPosX,photoPosY]);useEffect(()=>{if(!isDragging)return;const onMove=e=>{const d=dragDataRef.current;if(!d||!photoRef.current)return;const cli=e.touches?e.touches[0]:e;const rect=photoRef.current.getBoundingClientRect();const dx=(cli.clientX-d.sx)/rect.width*(100/photoZoom);const dy=(cli.clientY-d.sy)/rect.height*(100/photoZoom);setPhotoPosX(Math.max(0,Math.min(100,d.px-dx)));setPhotoPosY(Math.max(0,Math.min(100,d.py-dy)));};const onUp=()=>{setIsDragging(false);dragDataRef.current=null;};window.addEventListener('mousemove',onMove);window.addEventListener('mouseup',onUp);window.addEventListener('touchmove',onMove,{passive:false});window.addEventListener('touchend',onUp);return()=>{window.removeEventListener('mousemove',onMove);window.removeEventListener('mouseup',onUp);window.removeEventListener('touchmove',onMove);window.removeEventListener('touchend',onUp);};},[isDragging,photoZoom]);const drawCard=useCallback(async()=>{const CW=1050,CH=600;const canvas=document.createElement('canvas');canvas.width=CW;canvas.height=CH;const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,CW,CH);ctx.fillStyle='#1A1A2E';ctx.fillRect(0,0,CW,10);const PW=280;if(selectedPhoto){try{const img=await _abcLoadImg(selectedPhoto);const sw=img.naturalWidth||img.width,sh=img.naturalHeight||img.height;// Match CSS: background-size:contain + scale(zoom) from anchor — full image visible at zoom=1
-const containScale=Math.min(PW/sw,(CH-10)/sh);const finalScale=containScale*photoZoom;const dw=sw*finalScale,dh=sh*finalScale;// Anchor-point formula matching CSS transformOrigin + backgroundPosition
-const ax=photoPosX/100*PW,ay=photoPosY/100*(CH-10);const imgX=ax-photoPosX/100*dw;const imgY=ay-photoPosY/100*dh;ctx.save();ctx.beginPath();ctx.rect(0,10,PW,CH-10);ctx.clip();ctx.fillStyle='#E8E8F2';ctx.fillRect(0,10,PW,CH-10);// letterbox bg
-ctx.drawImage(img,imgX,10+imgY,dw,dh);ctx.restore();}catch(e){}}else{ctx.fillStyle='#E0E0EE';ctx.fillRect(0,10,PW,CH-10);}ctx.strokeStyle='#E8E8F0';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(PW,0);ctx.lineTo(PW,CH);ctx.stroke();const IX=PW+30;let IY=36;// CS logo
+const handlePhotoMouseDown=useCallback(e=>{if(!selectedPhoto)return;e.preventDefault();const cli=e.touches?e.touches[0]:e;dragDataRef.current={sx:cli.clientX,sy:cli.clientY,px:photoPosX,py:photoPosY};setIsDragging(true);},[selectedPhoto,photoPosX,photoPosY]);useEffect(()=>{if(!isDragging)return;const onMove=e=>{const d=dragDataRef.current;if(!d||!photoRef.current)return;const cli=e.touches?e.touches[0]:e;const rect=photoRef.current.getBoundingClientRect();const dx=(cli.clientX-d.sx)/rect.width*(100/photoZoom);const dy=(cli.clientY-d.sy)/rect.height*(100/photoZoom);setPhotoPosX(Math.max(0,Math.min(100,d.px-dx)));setPhotoPosY(Math.max(0,Math.min(100,d.py-dy)));};const onUp=()=>{setIsDragging(false);dragDataRef.current=null;};window.addEventListener('mousemove',onMove);window.addEventListener('mouseup',onUp);window.addEventListener('touchmove',onMove,{passive:false});window.addEventListener('touchend',onUp);return()=>{window.removeEventListener('mousemove',onMove);window.removeEventListener('mouseup',onUp);window.removeEventListener('touchmove',onMove);window.removeEventListener('touchend',onUp);};},[isDragging,photoZoom]);const drawCard=useCallback(async()=>{// CW/CH/PW/TB scaled to exactly match the preview card proportions (390×246, photo 128px, top-bar 5px)
+// so the downloaded card looks identical to the live card preview.
+const CW=1050,CH=662;const TB=14;// top bar height (5px preview × 2.692 scale)
+const canvas=document.createElement('canvas');canvas.width=CW;canvas.height=CH;const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,CW,CH);ctx.fillStyle='#1A1A2E';ctx.fillRect(0,0,CW,TB);const PW=344;// 128px preview × 2.692 scale — keeps photo area aspect ratio identical
+if(selectedPhoto){try{const img=await _abcLoadImg(selectedPhoto);const sw=img.naturalWidth||img.width,sh=img.naturalHeight||img.height;// Match CSS: background-size:contain + scale(zoom) from anchor — full image visible at zoom=1
+const containScale=Math.min(PW/sw,(CH-TB)/sh);const finalScale=containScale*photoZoom;const dw=sw*finalScale,dh=sh*finalScale;// Anchor-point formula matching CSS transformOrigin + backgroundPosition
+const ax=photoPosX/100*PW,ay=photoPosY/100*(CH-TB);const imgX=ax-photoPosX/100*dw;const imgY=ay-photoPosY/100*dh;ctx.save();ctx.beginPath();ctx.rect(0,TB,PW,CH-TB);ctx.clip();ctx.fillStyle='#E8E8F2';ctx.fillRect(0,TB,PW,CH-TB);// letterbox bg
+ctx.drawImage(img,imgX,TB+imgY,dw,dh);ctx.restore();}catch(e){}}else{ctx.fillStyle='#E0E0EE';ctx.fillRect(0,TB,PW,CH-TB);}ctx.strokeStyle='#E8E8F0';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(PW,0);ctx.lineTo(PW,CH);ctx.stroke();const IX=PW+30;let IY=36;// CS logo
 ctx.fillStyle='#1A1A2E';_abcRoundRect(ctx,IX,IY-18,24,24,4);ctx.fill();ctx.fillStyle='#ffffff';const ls=24/32;ctx.save();ctx.translate(IX,IY-18);ctx.scale(ls,ls);ctx.beginPath();ctx.moveTo(4,16);ctx.lineTo(12,9);ctx.lineTo(12,12);ctx.lineTo(20,12);ctx.lineTo(20,9);ctx.lineTo(28,16);ctx.lineTo(20,23);ctx.lineTo(20,20);ctx.lineTo(12,20);ctx.lineTo(12,23);ctx.closePath();ctx.fill();ctx.restore();ctx.fillStyle='#1A1A2E';ctx.font='bold 17px Arial,sans-serif';ctx.textAlign='left';ctx.fillText('CASTSLATE',IX+30,IY+1);IY+=46;// Name
 ctx.fillStyle='#1A1A2E';let fs2=52;ctx.font=`bold ${fs2}px Arial,sans-serif`;let nameText=displayName||'Your Name';const maxNW=CW-IX-24;while(ctx.measureText(nameText).width>maxNW&&fs2>28){fs2-=2;ctx.font=`bold ${fs2}px Arial,sans-serif`;}if(ctx.measureText(nameText).width>maxNW){while(ctx.measureText(nameText+'…').width>maxNW&&nameText.length>3)nameText=nameText.slice(0,-1);nameText+='…';}ctx.fillText(nameText,IX,IY);IY+=Math.round(fs2*0.9)+10;// Headline
 ctx.fillStyle='#6B6B80';ctx.font='30px Arial,sans-serif';ctx.fillText(headline||'Actor',IX,IY);IY+=38;// Location

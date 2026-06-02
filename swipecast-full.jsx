@@ -19530,33 +19530,36 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   },[isDragging,photoZoom]);
 
   const drawCard=useCallback(async()=>{
-    const CW=1050,CH=600;
+    // CW/CH/PW/TB scaled to exactly match the preview card proportions (390×246, photo 128px, top-bar 5px)
+    // so the downloaded card looks identical to the live card preview.
+    const CW=1050,CH=662;
+    const TB=14; // top bar height (5px preview × 2.692 scale)
     const canvas=document.createElement('canvas');
     canvas.width=CW;canvas.height=CH;
     const ctx=canvas.getContext('2d');
     ctx.fillStyle='#ffffff';ctx.fillRect(0,0,CW,CH);
-    ctx.fillStyle='#1A1A2E';ctx.fillRect(0,0,CW,10);
+    ctx.fillStyle='#1A1A2E';ctx.fillRect(0,0,CW,TB);
 
-    const PW=280;
+    const PW=344; // 128px preview × 2.692 scale — keeps photo area aspect ratio identical
     if(selectedPhoto){
       try{
         const img=await _abcLoadImg(selectedPhoto);
         const sw=img.naturalWidth||img.width,sh=img.naturalHeight||img.height;
         // Match CSS: background-size:contain + scale(zoom) from anchor — full image visible at zoom=1
-        const containScale=Math.min(PW/sw,(CH-10)/sh);
+        const containScale=Math.min(PW/sw,(CH-TB)/sh);
         const finalScale=containScale*photoZoom;
         const dw=sw*finalScale,dh=sh*finalScale;
         // Anchor-point formula matching CSS transformOrigin + backgroundPosition
-        const ax=(photoPosX/100)*PW, ay=(photoPosY/100)*(CH-10);
+        const ax=(photoPosX/100)*PW, ay=(photoPosY/100)*(CH-TB);
         const imgX=ax-(photoPosX/100)*dw;
         const imgY=ay-(photoPosY/100)*dh;
-        ctx.save();ctx.beginPath();ctx.rect(0,10,PW,CH-10);ctx.clip();
-        ctx.fillStyle='#E8E8F2';ctx.fillRect(0,10,PW,CH-10); // letterbox bg
-        ctx.drawImage(img,imgX,10+imgY,dw,dh);
+        ctx.save();ctx.beginPath();ctx.rect(0,TB,PW,CH-TB);ctx.clip();
+        ctx.fillStyle='#E8E8F2';ctx.fillRect(0,TB,PW,CH-TB); // letterbox bg
+        ctx.drawImage(img,imgX,TB+imgY,dw,dh);
         ctx.restore();
       }catch(e){}
     }else{
-      ctx.fillStyle='#E0E0EE';ctx.fillRect(0,10,PW,CH-10);
+      ctx.fillStyle='#E0E0EE';ctx.fillRect(0,TB,PW,CH-TB);
     }
     ctx.strokeStyle='#E8E8F0';ctx.lineWidth=2;
     ctx.beginPath();ctx.moveTo(PW,0);ctx.lineTo(PW,CH);ctx.stroke();
