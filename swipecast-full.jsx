@@ -3513,7 +3513,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
 
   useEffect(()=>{(async()=>{
     try{
-      const{data,error}=await window.sb.from("classes").select("*").eq("active",true);
+      const{data,error}=await window.sb.from("classes").select("*").eq("active",true).neq("is_visible",false);
       if(error)throw error;
       const cls=(data||[]).sort((a,b)=>{
         if(a.is_featured&&!b.is_featured)return -1;
@@ -18065,6 +18065,8 @@ function AdminClasses(){
   const[editingClass,setEditingClass]=useState(null);
   const[managingSlots,setManagingSlots]=useState(null);
   const[viewingRequests,setViewingRequests]=useState(null);
+  const[visFilter,setVisFilter]=useState("all");
+  const[togglingVis,setTogglingVis]=useState(null);
 
   const reload=useCallback(async()=>{
     setLoading(true);
@@ -18096,8 +18098,17 @@ function AdminClasses(){
     reload();
   };
 
+  const toggleVisible=async(cls)=>{
+    setTogglingVis(cls.id);
+    const next=cls.is_visible===false?true:false;
+    const{error}=await window.sb.from("classes").update({is_visible:next}).eq("id",cls.id);
+    setTogglingVis(null);
+    if(error){setMsg("Visibility update failed: "+error.message);return;}
+    setClasses(prev=>prev.map(c=>c.id===cls.id?{...c,is_visible:next}:c));
+  };
+
   const addNewClass=async()=>{
-    const{data,error}=await window.sb.from("classes").insert({title:"New Class",active:false,display_order:999}).select().single();
+    const{data,error}=await window.sb.from("classes").insert({title:"New Class",active:false,is_visible:false,display_order:999}).select().single();
     if(error){setMsg("Create failed: "+error.message);return;}
     setEditingClass(data);
   };
@@ -18106,21 +18117,35 @@ function AdminClasses(){
   if(managingSlots)return<AdminManageTimeSlots cls={managingSlots} onClose={()=>setManagingSlots(null)}/>;
   if(viewingRequests)return<AdminClassBookingRequests cls={viewingRequests} onClose={()=>setViewingRequests(null)}/>;
 
+  const visibleCount=classes.filter(c=>c.is_visible!==false).length;
+  const hiddenCount=classes.filter(c=>c.is_visible===false).length;
+  const filtered=visFilter==="visible"?classes.filter(c=>c.is_visible!==false):visFilter==="hidden"?classes.filter(c=>c.is_visible===false):classes;
+
   return(<>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4,flexWrap:"wrap",gap:10}}>
       <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,margin:0}}>Classes</h1>
       <button className="btn-p btn-sm" onClick={addNewClass}>+ Add Class</button>
     </div>
-    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Manage the classes listed on the public Classes page. Use the arrows to reorder. Star toggles Featured status.</p>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Manage classes on the public Classes page. Toggle visibility to show or hide without deleting.</p>
+    {/* Visibility filter tabs */}
+    <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
+      {[["all","All Classes",classes.length],["visible","Visible",visibleCount],["hidden","Hidden",hiddenCount]].map(([val,label,count])=>(
+        <button key={val} onClick={()=>setVisFilter(val)} style={{padding:"6px 14px",borderRadius:8,border:"1px solid var(--bdr)",background:visFilter===val?"var(--acc)":"var(--s2)",color:visFilter===val?"#fff":"var(--t1)",fontWeight:600,fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
+          {label}<span style={{background:visFilter===val?"rgba(255,255,255,0.25)":"var(--s3)",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:700}}>{count}</span>
+        </button>
+      ))}
+    </div>
     {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
     {loading?<CastSlateLoader size="inline" text="Loading classes…"/>:
-      <div>{classes.map((cls,idx)=>(
-        <div key={cls.id} className="card" style={{padding:16,marginBottom:10,borderLeft:cls.is_featured?"3px solid var(--acc)":"3px solid transparent"}}>
+      <div>{filtered.map((cls,idx)=>{
+        const isVis=cls.is_visible!==false;
+        return(
+        <div key={cls.id} className="card" style={{padding:16,marginBottom:10,borderLeft:cls.is_featured?"3px solid var(--acc)":"3px solid transparent",opacity:isVis?1:0.65}}>
           <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
             {/* Order controls */}
             <div style={{display:"flex",flexDirection:"column",gap:2,flexShrink:0}}>
               <button onClick={()=>moveOrder(cls,-1)} disabled={idx===0} title="Move up" style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:4,width:24,height:22,cursor:"pointer",fontSize:11,lineHeight:1,color:idx===0?"var(--t3)":"var(--t1)"}}>▲</button>
-              <button onClick={()=>moveOrder(cls,1)} disabled={idx===classes.length-1} title="Move down" style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:4,width:24,height:22,cursor:"pointer",fontSize:11,lineHeight:1,color:idx===classes.length-1?"var(--t3)":"var(--t1)"}}>▼</button>
+              <button onClick={()=>moveOrder(cls,1)} disabled={idx===filtered.length-1} title="Move down" style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:4,width:24,height:22,cursor:"pointer",fontSize:11,lineHeight:1,color:idx===filtered.length-1?"var(--t3)":"var(--t1)"}}>▼</button>
             </div>
             {/* Order number */}
             <div style={{width:22,textAlign:"center",fontSize:11,color:"var(--t3)",fontWeight:700,flexShrink:0}}>{idx+1}</div>
@@ -18142,6 +18167,13 @@ function AdminClasses(){
                 {cls.format&&<> · {cls.format.split(" · ")[0]}</>}
               </div>
             </div>
+            {/* Visibility toggle */}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,flexShrink:0}}>
+              <button onClick={()=>toggleVisible(cls)} disabled={togglingVis===cls.id} title={isVis?"Hide from public Classes page":"Show on public Classes page"} style={{display:"flex",alignItems:"center",gap:6,padding:"5px 10px",borderRadius:8,border:`1px solid ${isVis?"#1d7b44":"#c0392b"}`,background:isVis?"rgba(29,123,68,0.08)":"rgba(192,57,43,0.08)",color:isVis?"#1d7b44":"#c0392b",fontWeight:700,fontSize:11,cursor:"pointer",whiteSpace:"nowrap",minWidth:80,justifyContent:"center"}}>
+                {togglingVis===cls.id?"…":isVis?"● Visible":"○ Hidden"}
+              </button>
+              <span style={{fontSize:9,color:"var(--t3)",letterSpacing:0.3}}>Classes Page</span>
+            </div>
             {/* Actions */}
             <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",flexShrink:0}}>
               <button className="btn-s btn-sm" onClick={()=>setEditingClass(cls)}>Edit</button>
@@ -18150,7 +18182,9 @@ function AdminClasses(){
             </div>
           </div>
         </div>
-      ))}</div>
+      );})}
+      {filtered.length===0&&<p style={{color:"var(--t3)",textAlign:"center",padding:"32px 0",fontSize:13}}>No classes in this filter.</p>}
+      </div>
     }
   </>);
 }
