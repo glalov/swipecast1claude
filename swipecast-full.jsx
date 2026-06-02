@@ -113,7 +113,7 @@ const TRANSLATIONS = {
     'landing.myProfile':'My Profile',
     'landing.freeAccount':'Free actor account — upgrade to Premium at $9.99/mo',
     'landing.noCreditCard':'No credit card to sign up','landing.quickSignup':'60-second signup',
-    'landing.trustedBy':'Trusted across studios, streamers & production companies',
+    'landing.trustedBy':'Casting across every format',
     'landing.swipeDone':'You\'ve seen everyone!',
     'landing.swipeHowWorks':'That\'s how CastSlate works — one actor at a time, no scrolling.',
     'landing.swipeStartOver':'↺ Start Over','landing.swipeTry':'↔ Try it — swipe or tap',
@@ -357,7 +357,7 @@ const TRANSLATIONS = {
     'landing.myProfile':'Mi perfil',
     'landing.freeAccount':'Cuenta gratuita — mejora a Premium por $9.99/mes',
     'landing.noCreditCard':'Sin tarjeta de crédito para registrarse','landing.quickSignup':'Registro en 60 segundos',
-    'landing.trustedBy':'Confiado por estudios, plataformas de streaming y productoras',
+    'landing.trustedBy':'Casting en todos los formatos',
     'landing.swipeDone':'¡Ya los viste a todos!',
     'landing.swipeHowWorks':'Así funciona CastSlate — un actor a la vez, sin desplazamiento.',
     'landing.swipeStartOver':'↺ Empezar de nuevo','landing.swipeTry':'↔ Pruébalo — desliza o toca',
@@ -1301,6 +1301,7 @@ const SUCCESS_STORIES = [
 // ═══════════════════════════════════════════
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{--bg:#F7F4EE;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;}
 html,body{min-height:100vh;background:#1B1C20;}
@@ -1747,16 +1748,15 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .fcs-arrow.prev{left:4px;}
   .fcs-arrow.next{right:4px;}
 }
-/* ─── Industry partners marquee — infinite horizontal scroll of real studio logos ─── */
-.partners-marquee{position:relative;overflow:hidden;width:100%;padding:6px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);}
-.partners-track{display:flex;align-items:center;width:max-content;animation:partnersSlide 48s linear infinite;will-change:transform;}
+/* ─── Casting-format marquee — cinematic Playfair serif words, infinite horizontal scroll ─── */
+.partners-marquee{position:relative;overflow:hidden;width:100%;padding:16px 0;border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 100px,#000 calc(100% - 100px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 100px,#000 calc(100% - 100px),transparent 100%);}
+.partners-track{display:flex;align-items:center;width:max-content;animation:partnersSlide 52s linear infinite;will-change:transform;}
 .partners-marquee:hover .partners-track{animation-play-state:paused;}
-.partners-tile{flex-shrink:0;width:190px;height:72px;display:flex;align-items:center;justify-content:center;}
-.partners-tile img{max-height:44px;max-width:150px;height:44px;width:auto;object-fit:contain;display:block;opacity:.5;transition:opacity .25s ease;filter:grayscale(1) brightness(0);}
-.partners-tile:hover img{opacity:.8;}
+.partners-tile{flex-shrink:0;display:flex;align-items:center;gap:46px;padding:0 46px;font-family:'Playfair Display','Didot','Bodoni 72',Georgia,serif;font-weight:600;font-size:clamp(32px,4.6vw,56px);line-height:1;letter-spacing:.05em;text-transform:uppercase;color:rgba(26,26,46,.5);white-space:nowrap;}
+.partners-sep{width:7px;height:7px;background:rgba(26,26,46,.3);transform:rotate(45deg);flex:none;}
 @keyframes partnersSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
 @media (prefers-reduced-motion: reduce){.partners-track{animation:none;}}
-@media (max-width:768px){.partners-tile{width:148px;height:56px;}.partners-tile img{max-height:30px;max-width:110px;height:30px;}}
+@media (max-width:768px){.partners-tile{font-size:28px;gap:30px;padding:0 30px;}}
 /* ─── Talent Dashboard responsive grid ─── */
 .td-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
@@ -12747,34 +12747,21 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </div>
     </section>
 
-    {/* ───────── INDUSTRY PARTNERS MARQUEE — real studio + streamer logos, infinite scroll ───────── */}
-    <div style={{padding:"40px 0 44px",background:"var(--bg)"}}>
-      <div style={{maxWidth:1200,margin:"0 auto",textAlign:"center",padding:"0 24px",marginBottom:24}}>
+    {/* ───────── CASTING-FORMAT MARQUEE — cinematic Playfair serif words, infinite scroll ───────── */}
+    <div style={{padding:"44px 0 48px",background:"var(--bg)"}}>
+      <div style={{maxWidth:1200,margin:"0 auto",textAlign:"center",padding:"0 24px",marginBottom:22}}>
         <p style={{fontSize:11,letterSpacing:1.5,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,margin:0}}>{tr('landing.trustedBy')}</p>
       </div>
-      <div className="partners-marquee" aria-label="Industry partners">
+      <div className="partners-marquee" aria-label="Casting formats">
         {/* Track is duplicated so the keyframe translateX(-50%) loops seamlessly. */}
         <div className="partners-track">
           {(() => {
-            // Real brand SVG logos from Wikimedia Commons (Special:FilePath redirects to canonical asset).
-            // Each entry: name (alt text + fallback wordmark) and URL of the SVG.
-            const PARTNERS=[
-              {name:"Netflix",src:"https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg"},
-              {name:"Disney",src:"https://upload.wikimedia.org/wikipedia/commons/a/a4/Disney_wordmark.svg"},
-              {name:"Hulu",src:"https://upload.wikimedia.org/wikipedia/commons/f/f9/Hulu_logo_%282018%29.svg"},
-              {name:"Amazon Studios",src:"https://upload.wikimedia.org/wikipedia/commons/3/32/Amazon_Studios_logo.svg"},
-              {name:"Apple TV+",src:"https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg"},
-              {name:"YouTube",src:"https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg"},
-              {name:"Universal Pictures",src:"https://upload.wikimedia.org/wikipedia/commons/b/b6/Universal_Pictures_logo.svg"},
-              {name:"A24",src:"https://upload.wikimedia.org/wikipedia/commons/b/b7/A24_logo.svg"},
-              {name:"Sony Pictures",src:"https://upload.wikimedia.org/wikipedia/commons/d/d7/Sony_Pictures_logo.svg"},
-              {name:"Lionsgate",src:"https://upload.wikimedia.org/wikipedia/commons/a/ad/Lionsgate_Studios_logo.svg"}
-            ];
+            const FORMATS=["FILM","TELEVISION","INDIE FEATURES","STUDIO PROJECTS","THEATER","COMMERCIALS"];
             // Duplicate so the marquee keyframe (translateX -50%) loops seamlessly without a visible jump.
-            const doubled=[...PARTNERS,...PARTNERS];
-            return doubled.map((p,i)=>(
-              <div key={`${p.name}-${i}`} className="partners-tile" title={p.name} aria-label={p.name}>
-                <img src={p.src} alt={p.name} loading="eager" decoding="async" draggable="false" crossOrigin="anonymous"/>
+            const doubled=[...FORMATS,...FORMATS];
+            return doubled.map((w,i)=>(
+              <div key={`${w}-${i}`} className="partners-tile">
+                <span className="partners-sep" aria-hidden="true"></span>{w}
               </div>
             ));
           })()}
