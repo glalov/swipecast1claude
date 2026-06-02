@@ -8085,7 +8085,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;return(
             <div key={c.id} style={{
               padding:0,overflow:"hidden",cursor:"pointer",borderRadius:14,
-              background:isFeat?"#FDFBF7":"var(--s1)",
+              background:isFeat?"#F5F3FF":"var(--s1)",
               border:isFeat?"2px solid #1A1A2E":"1px solid var(--bdr)",
               boxShadow:isFeat?"0 6px 32px rgba(26,26,46,0.13)":"0 1px 4px rgba(26,26,46,0.05)",
               transition:"box-shadow .2s,transform .15s",
