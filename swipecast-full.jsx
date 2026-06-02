@@ -1749,7 +1749,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .fcs-arrow.next{right:4px;}
 }
 /* ─── Casting-format marquee — cinematic Playfair serif words, infinite horizontal scroll ─── */
-.partners-marquee{position:relative;overflow:hidden;width:100%;padding:16px 0;border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 100px,#000 calc(100% - 100px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 100px,#000 calc(100% - 100px),transparent 100%);}
+.partners-marquee{position:relative;overflow:hidden;width:100%;padding:16px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 100px,#000 calc(100% - 100px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 100px,#000 calc(100% - 100px),transparent 100%);}
 .partners-track{display:flex;align-items:center;width:max-content;animation:partnersSlide 52s linear infinite;will-change:transform;}
 .partners-marquee:hover .partners-track{animation-play-state:paused;}
 .partners-tile{flex-shrink:0;display:flex;align-items:center;gap:46px;padding:0 46px;font-family:'Playfair Display','Didot','Bodoni 72',Georgia,serif;font-weight:600;font-size:clamp(32px,4.6vw,56px);line-height:1;letter-spacing:.05em;text-transform:uppercase;color:rgba(26,26,46,.5);white-space:nowrap;}
@@ -12606,13 +12606,12 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
 // recreate it on every Landing re-render, which would reset swipe state.
 // ═══════════════════════════════════════════
 const LANDING_SWIPE_DEMO=[
+  {id:6,name:"Ryan Cole",age:29,gender:"Male",height:"5'11\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&h=800&fit=crop&crop=top&q=90",skills:["Juilliard Trained","Improv","Screen Acting"]},
   {id:1,name:"Maria Santos",age:28,gender:"Female",height:"5'6\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=800&fit=crop&crop=top&q=90",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
   {id:2,name:"James Walker",age:46,gender:"Male",height:"6'1\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Improv","Yale Drama MFA","Basketball"]},
   {id:3,name:"Elena Novak",age:25,gender:"Female",height:"5'9\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&h=800&fit=crop&crop=top&q=90",skills:["Classical Training","Ballet","Soprano"]},
   {id:4,name:"David Kim",age:31,gender:"Male",height:"5'10\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1552058544-f2b08422138a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Martial Arts","Korean Fluent","Stunt Work"]},
-  {id:5,name:"Rachel Stone",age:29,gender:"Female",height:"5'8\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=800&fit=crop&crop=top&q=90",skills:["Commercial Print","Runway","British Accent"]},
-  {id:6,name:"Ryan Cole",age:29,gender:"Male",height:"5'11\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&h=800&fit=crop&crop=top&q=90",skills:["Juilliard Trained","Improv","Screen Acting"]},
-  {id:7,name:"Sarah Chen",age:27,gender:"Female",height:"5'4\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=800&fit=crop&crop=top&q=90",skills:["Mandarin Fluent","Figure Skating","Understated Comedy"]},
+  {id:5,name:"Rachel Stone",age:29,gender:"Female",height:"5'8\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=800&fit=crop&crop=top&q=90",skills:["Commercial Print","Runway","British Accent"]},  {id:7,name:"Sarah Chen",age:27,gender:"Female",height:"5'4\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=800&fit=crop&crop=top&q=90",skills:["Mandarin Fluent","Figure Skating","Understated Comedy"]},
   {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop&crop=top&q=90",skills:["Military Background","Boxing","Bass Vocals"]},
   {id:9,name:"Priya Sharma",age:26,gender:"Female",height:"5'5\"",pos:"center 12%",img:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=800&fit=crop&crop=top&q=90",skills:["Bollywood Dance","Hindi Fluent","Drama Training"]},
   {id:10,name:"Marcus Reed",age:32,gender:"Male",height:"6'0\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=600&h=800&fit=crop&crop=top&q=90",skills:["TV Drama","Comedic Timing","Voice Work"]},
@@ -12760,9 +12759,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             // Duplicate so the marquee keyframe (translateX -50%) loops seamlessly without a visible jump.
             const doubled=[...FORMATS,...FORMATS];
             return doubled.map((w,i)=>(
-              <div key={`${w}-${i}`} className="partners-tile">
-                <span className="partners-sep" aria-hidden="true"></span>{w}
-              </div>
+              <div key={`${w}-${i}`} className="partners-tile">{w}</div>
             ));
           })()}
         </div>
