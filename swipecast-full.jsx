@@ -1381,7 +1381,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media(max-width:560px){.folder-cards-grid{grid-template-columns:1fr;}}
 .swipe-area{display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .swipe-card-wrap{position:relative;width:340px;height:530px;margin-bottom:20px;}
-.s-card{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:18px;overflow:hidden;background:var(--s1);border:1px solid var(--bdr);user-select:none;touch-action:none;box-shadow:0 8px 30px rgba(0,0,0,0.08);}
+.s-card{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:18px;overflow:hidden;background:var(--s1);border:1px solid var(--bdr);user-select:none;touch-action:pan-y;box-shadow:0 8px 30px rgba(0,0,0,0.08);}
 .s-card img{width:100%;height:56%;object-fit:cover;pointer-events:none;}
 .s-card-info{padding:14px 18px;overflow-y:auto;max-height:44%;}
 .s-card-info h3{font-size:18px;font-weight:700;margin-bottom:3px;}
@@ -12668,7 +12668,7 @@ function LandingSwipe(){
           <img src={nt.img} alt="" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:nt.pos||"center 8%"}}/>
         </div>
         <div className="s-card"
-          style={{transform:cardTransform,transition:cardTransition,zIndex:2,cursor:dragging.current?"grabbing":"grab",touchAction:"none",userSelect:"none"}}
+          style={{transform:cardTransform,transition:cardTransition,zIndex:2,cursor:dragging.current?"grabbing":"grab",touchAction:"pan-y",userSelect:"none"}}
           onPointerDown={e=>{if(animating)return;e.currentTarget.setPointerCapture(e.pointerId);dragging.current=true;startX.current=e.clientX;}}
           onPointerMove={e=>{if(!dragging.current||animating)return;setDx(e.clientX-startX.current);}}
           onPointerUp={e=>{if(!dragging.current)return;const d=e.clientX-startX.current;dragging.current=false;if(d>80)advance(1);else if(d<-80)advance(-1);else setDx(0);}}
