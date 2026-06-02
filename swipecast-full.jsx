@@ -20253,9 +20253,20 @@ function App(){
       else setViewingCasting(null);
       if(p==="talent-public"){setViewingTalentSlug(urlToTalentSlug());}
       else setViewingTalentSlug(null);
-      // BFCache restore: clear stale profile so we never briefly show the
-      // wrong account-type page. The profile-recovery effect will re-fetch it.
-      setMyProfile(null);
+      // BFCache restore: do NOT clear session/profile — that caused the "random
+      // logout" flicker. Instead, silently re-validate the session in the background.
+      // Only clear state if the session has actually expired or the user signed out
+      // in another tab. In-memory state is frozen during BFCache so we never saw
+      // TOKEN_REFRESHED; getSession() will return the refreshed token from storage.
+      window.sb.auth.getSession().then(function(res){
+        const s=res&&res.data&&res.data.session;
+        if(!s){
+          // Session truly gone (signed out elsewhere or expired) — clear everything.
+          setSession(null);
+          setMyProfile(null);
+        }
+        // Session still valid: leave session + myProfile as-is; no flicker.
+      }).catch(function(){});
     };
     window.addEventListener("pageshow",onPageShow);
     // ─── Lightweight client-error logger. Captures uncaught JS errors and
@@ -20667,7 +20678,7 @@ function App(){
 
   // Auth guard: when auth is ready and user is NOT logged in, redirect protected pages to login
   // instead of rendering a blank screen. Stores the intended destination for post-login redirect.
-  const PROTECTED_PAGES=["my-profile","dashboard","talent-dashboard","inbox","account-settings","admin","plan-summary"];
+  const PROTECTED_PAGES=["my-profile","dashboard","talent-dashboard","inbox","account-settings","admin","plan-summary","actor-business-card","membership"];
   useEffect(()=>{
     if(!authReady||isLoggedIn)return;
     if(!PROTECTED_PAGES.includes(page))return;
@@ -20876,7 +20887,7 @@ function App(){
         {page==="careers"&&<CareersPage onNavigate={navigate}/>}
         {page==="pay-talent"&&<PayTalentPage onNavigate={navigate}/>}
         {page==="actor-toolkit"&&<ActorToolkitPage onNavigate={navigate}/>}
-        {page==="actor-business-card"&&(!authReady?<PageLoader/>:isLoggedIn&&myProfile?.user_type==="talent"?<ActorBusinessCardPage session={session} myProfile={myProfile} onNavigate={navigate}/>:<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn}/>)}
+        {page==="actor-business-card"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?<PageLoader/>:isLoggedIn&&myProfile?.user_type==="talent"?<ActorBusinessCardPage session={session} myProfile={myProfile} onNavigate={navigate}/>:<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn}/>)}
         {page==="success"&&<PaymentSuccessPage session={session} myProfile={myProfile} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} successType={paymentSuccessType}/>}
         {page==="unsubscribed"&&<UnsubscribedPage onNavigate={navigate}/>}
       </main>
