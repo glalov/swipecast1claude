@@ -1397,10 +1397,10 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .sw-btn.yes:hover{border-color:var(--grn);background:rgba(27,135,62,0.07);transform:scale(1.1);}
 @keyframes sw-sway{0%,100%{transform:translateX(0)}30%{transform:translateX(-7px)}70%{transform:translateX(7px)}}
 @keyframes sw-ring{0%,100%{box-shadow:0 0 0 0 rgba(99,91,255,0)}55%{box-shadow:0 0 0 7px rgba(99,91,255,0.10)}}
-.sw-hint-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:var(--s2);border:1px solid var(--bdr);border-radius:100px;margin-bottom:10px;}
-.sw-hint-arrow{font-size:16px;display:inline-block;animation:sw-sway 2.4s ease-in-out infinite;line-height:1;}
-.sw-hint-text{font-size:12px;font-weight:600;color:var(--t2);}
-.sw-hint-text-mobile{display:none;font-size:12px;font-weight:600;color:var(--t2);}
+.sw-hint-pill{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:#fff;border:1px solid var(--bdr);border-radius:100px;margin:8px 0 14px;box-shadow:0 6px 18px rgba(26,26,46,0.10);}
+.sw-hint-arrow{font-size:16px;display:inline-block;animation:sw-sway 2.4s ease-in-out infinite;line-height:1;color:#1A1A2E;}
+.sw-hint-text{font-size:12px;font-weight:700;color:#1A1A2E;}
+.sw-hint-text-mobile{display:none;font-size:12px;font-weight:700;color:#1A1A2E;}
 .sw-btn.save{animation:sw-ring 2.8s ease-in-out infinite;}
 .sw-btn.save:hover{animation:none;}
 .sw-tagline{margin-top:14px;font-size:11px;color:var(--t3);text-align:center;line-height:1.6;max-width:260px;}
@@ -12643,29 +12643,31 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
   const [nudge,setNudge]=useState(0);
   const dragging=useRef(false);
   const startX=useRef(0);
-  const userActed=useRef(false);
+  const startT=useRef(0);
+  const dxRef=useRef(0);
   const t=demo[Math.min(idx,total-1)];
   const nt=demo[Math.min(idx+1,total-1)];
   const done=idx>=total;
   const ac=dx>50?"yes":dx<-50?"pass":null;
-  // Entry nudge: the card tilts/drifts to signal "drag me", repeating every 4s
-  // so a still-deciding visitor keeps getting the cue. Stops permanently the
-  // moment they swipe or tap. Skipped under prefers-reduced-motion.
+  // Idle nudge: the card tilts/drifts to signal "drag me", repeating every 4s
+  // while the visitor sits on a card. Re-arms for EVERY new card (keyed on idx)
+  // so each profile nudges again if they hesitate. Pauses during an active drag.
+  // Skipped under prefers-reduced-motion.
   React.useEffect(()=>{
     if(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    if(done)return;
     let iv,inner=[];
     function pulse(){
-      if(userActed.current){if(iv)clearInterval(iv);return;}
+      if(dragging.current)return;
       setNudge(18);
       inner.push(setTimeout(()=>setNudge(0),420));
     }
-    const first=setTimeout(pulse,1000);
+    const first=setTimeout(pulse,1400);
     iv=setInterval(pulse,4000);
     return ()=>{clearTimeout(first);clearInterval(iv);inner.forEach(clearTimeout);};
-  },[]);
+  },[idx,done]);
   function advance(dir){
     if(animating)return;
-    userActed.current=true;
     setNudge(0);
     setAnimating(true);
     setFlyDir(dir);
@@ -12706,10 +12708,10 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
         </div>
         <div className="s-card"
           style={{transform:cardTransform,transition:cardTransition,zIndex:2,cursor:dragging.current?"grabbing":"grab",touchAction:"pan-y",userSelect:"none"}}
-          onPointerDown={e=>{if(animating)return;userActed.current=true;if(nudge!==0)setNudge(0);e.currentTarget.setPointerCapture(e.pointerId);dragging.current=true;startX.current=e.clientX;}}
-          onPointerMove={e=>{if(!dragging.current||animating)return;setDx(e.clientX-startX.current);}}
-          onPointerUp={e=>{if(!dragging.current)return;const d=e.clientX-startX.current;dragging.current=false;if(d>80)advance(1);else if(d<-80)advance(-1);else setDx(0);}}
-          onPointerCancel={()=>{dragging.current=false;setDx(0);}}>
+          onPointerDown={e=>{if(animating)return;if(nudge!==0)setNudge(0);try{e.currentTarget.setPointerCapture(e.pointerId);}catch(_){}dragging.current=true;startX.current=e.clientX;startT.current=Date.now();dxRef.current=0;}}
+          onPointerMove={e=>{if(!dragging.current||animating)return;const d=e.clientX-startX.current;dxRef.current=d;setDx(d);}}
+          onPointerUp={e=>{if(!dragging.current)return;const d=e.clientX-startX.current;const dt=Date.now()-startT.current;const v=Math.abs(d)/Math.max(dt,1);dragging.current=false;const go=Math.abs(d)>55||(Math.abs(d)>24&&v>0.4);if(go&&d>0)advance(1);else if(go&&d<0)advance(-1);else setDx(0);}}
+          onPointerCancel={()=>{if(!dragging.current){setDx(0);return;}const d=dxRef.current;dragging.current=false;if(d>50)advance(1);else if(d<-50)advance(-1);else setDx(0);}}>
           <div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="pass"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>PASS</div>
           <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="yes"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>CALLBACK ✓</div>
           <img src={t.img} alt={t.name} draggable="false" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:t.pos||"center 8%"}}/>
@@ -12823,7 +12825,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--bdr)",padding:"6px 14px",borderRadius:100,fontSize:12,color:"var(--acc)",fontWeight:700,letterSpacing:0.5,textTransform:"uppercase",marginBottom:20}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--grn)",boxShadow:"0 0 8px var(--grn)"}}/>{isLoggedIn?tr('landing.welcomeBack').replace('{name}',myProfile?.display_name?", "+myProfile.display_name.split(" ")[0]:""):tr('landing.liveNow')}</div>
       <h1 className="landing-hero-title" style={{fontWeight:800,fontSize:56,lineHeight:1.02,letterSpacing:-2.2,marginBottom:20}}>{tr('landing.heroTitle')} <span style={{color:"var(--acc)"}}>{tr('landing.heroAccent')}</span></h1>
       <p style={{color:"var(--t2)",fontSize:18,lineHeight:1.55,marginBottom:28,maxWidth:500}}>{tr('landing.heroDesc')}</p>
-      <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate(heroPrimary.to)}>{heroPrimary.label}</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate(heroSecondary.to)}>{heroSecondary.label}</button></div>
+      <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate(heroPrimary.to)}>{heroPrimary.label}</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14,background:"#fff",color:"#1A1A2E"}} onClick={()=>onNavigate(heroSecondary.to)}>{heroSecondary.label}</button></div>
       <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> {tr('landing.freeAccount')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> {tr('landing.noCreditCard')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> {tr('landing.quickSignup')}</span></div>
     </div>
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:14}}>
