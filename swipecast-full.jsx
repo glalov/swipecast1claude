@@ -12886,7 +12886,6 @@ function NewsSection({onNavigate}){
                 <div className="news-meta">
                   <span className="news-bystaff">CastSlate Staff</span><span className="news-dot"/>
                   <span>{newsDate(a.written_at)}</span>
-                  {a.source_name&&<><span className="news-dot"/><span>via {a.source_name}</span></>}
                 </div>
               </div>
             </button>
@@ -12931,18 +12930,13 @@ function NewsArticlePage({slug,onNavigate}){
       <div className="news-article-meta">
         <span className="news-bystaff">Written by {a.author||"CastSlate Staff"}</span><span className="news-dot"/>
         <span>{newsDate(a.written_at)}</span>
-        {a.source_name&&<><span className="news-dot"/><span>Source: {a.source_name}</span></>}
       </div>
       {a.image_url&&<><div className="news-article-hero"><img src={a.image_url} alt=""/></div>
         <p className="news-article-caption">Illustrative image — CastSlate does not republish source photography.</p></>}
       <div className="news-article-body">{paras.map((p,i)=><p key={i}>{p}</p>)}</div>
-      {a.source_name&&(
-        <div className="news-source-box">
-          <div className="news-source-lbl">Credit</div>
-          <span style={{color:"var(--t2)",fontSize:15,fontWeight:600}}>Reported by {a.source_name}</span>
-          <p className="news-disclaimer">Written by CastSlate Staff. This is an original CastSlate write-up; we do not reproduce full source articles.</p>
-        </div>
-      )}
+      <div className="news-source-box">
+        <p className="news-disclaimer" style={{marginTop:0}}>Written by CastSlate Staff — original CastSlate editorial coverage.</p>
+      </div>
     </article>
   );
 }
