@@ -74,14 +74,14 @@
       };
     }
   </script>
-  <!-- BUILD: 20260603-045141 -->
-  <meta name="build-version" content="20260603-045141"/>
+  <!-- BUILD: 20260603-045719 -->
+  <meta name="build-version" content="20260603-045719"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
-      var B="20260603-045141";
+      var B="20260603-045719";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -104,7 +104,7 @@
     }
     #cs-loading .label{color:rgba(255,255,255,0.45);font-size:13px;font-family:-apple-system,sans-serif;letter-spacing:.3px;}
     #cs-loading .logo{color:#fff;font-size:22px;font-weight:800;font-family:-apple-system,sans-serif;letter-spacing:-0.5px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:10px;}
-    #cs-loading .logo-i{width:36px;height:36px;background:#6366f1;border-radius:8px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;}
+    #cs-loading .logo-i{width:36px;height:36px;background:#fff;border-radius:8px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;}
     #cs-error{
       display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:#1B1C20;
       -webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
@@ -121,7 +121,7 @@
   <!-- Loading indicator — shown until React mounts -->
   <div id="cs-loading">
     <div class="logo">
-      <div class="logo-i"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg></div>
+      <div class="logo-i"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#1B1C20"/></svg></div>
       CastSlate
     </div>
     <div class="spinner"></div>
@@ -130,7 +130,7 @@
   <!-- Error screen — shown if something goes wrong before React mounts -->
   <div id="cs-error">
     <div class="logo" style="color:#fff;font-size:20px;font-weight:800;font-family:-apple-system,sans-serif;display:-webkit-flex;display:flex;align-items:center;gap:10px;margin-bottom:4px;">
-      <div style="width:32px;height:32px;background:#6366f1;border-radius:7px;display:-webkit-flex;display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="18" height="18"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg></div>
+      <div style="width:32px;height:32px;background:#fff;border-radius:7px;display:-webkit-flex;display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="18" height="18"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#1B1C20"/></svg></div>
       CastSlate
     </div>
     <div class="err-title">Something went wrong</div>
@@ -143,7 +143,7 @@
   <noscript>
     <div style="font-family:sans-serif;max-width:800px;margin:40px auto;padding:0 24px;color:#1B1C20;">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px;">
-        <div style="width:40px;height:40px;background:#6366f1;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <div style="width:40px;height:40px;background:#1A1A2E;border-radius:10px;display:flex;align-items:center;justify-content:center;">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg>
         </div>
         <strong style="font-size:22px;font-weight:800;letter-spacing:-0.5px;">CastSlate</strong>
