@@ -1321,7 +1321,8 @@ a{color:inherit;text-decoration:none;}
 h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;position:sticky;top:0;z-index:100;background:#FFFFFF;border-bottom:1px solid var(--bdr);}
 .logo{font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--t1);}
-.logo-i{width:30px;height:30px;background:var(--acc);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;}
+.logo-i{width:30px;height:30px;background:var(--acc);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;}
+.logo-i svg{width:100%;height:100%;display:block;}
 .nav-links{display:flex;gap:28px;align-items:center;}
 .nav-links span{color:var(--t2);font-size:13px;font-weight:500;cursor:pointer;transition:color .2s;padding:4px 0;}
 .nav-links span:hover,.nav-links span.act{color:var(--t1);}
@@ -2513,6 +2514,23 @@ function LoggedInRedirect({targetForTalent,targetForCd,myProfile,onNavigate}){
 }
 
 // ═══════════════════════════════════════════
+// LOGO MARK — single source of truth for the CastSlate arrows icon.
+// ═══════════════════════════════════════════
+// Renders the canonical double-headed arrow (same path as favicon.svg and the
+// HTML splash). It uses fill:currentColor, so dropping it inside a .logo-i box
+// makes the box's `color` drive the arrow: white-on-dark or dark-on-white with
+// ZERO shape/proportion change. Never hand-type the ↔ glyph again — that glyph
+// is font-dependent and rendered differently across desktop/mobile/browsers,
+// which is exactly the inconsistency this component eliminates.
+function LogoMark(){
+  return(
+    /*#__PURE__*/React.createElement("svg",{viewBox:"0 0 32 32",width:"100%",height:"100%","aria-hidden":"true",focusable:"false",style:{display:"block"}},
+      /*#__PURE__*/React.createElement("path",{fill:"currentColor",d:"M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"})
+    )
+  );
+}
+
+// ═══════════════════════════════════════════
 // PAGE LOADER — shown while auth state resolves for guarded pages
 // ═══════════════════════════════════════════
 // Branded loader — shows the CastSlate logo + subtle spinner.
@@ -2523,7 +2541,7 @@ function CastSlateLoader({text="Loading...",size="page"}){
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:"1 1 auto",minHeight:pg?"70vh":"auto",padding:pg?"60px 24px":"28px 24px",gap:pg?18:12}}>
       <div className="logo" style={{fontSize:pg?22:17,gap:pg?10:7,cursor:"default",userSelect:"none"}}>
-        <div className="logo-i" style={{width:pg?36:26,height:pg?36:26,fontSize:pg?20:13}}>↔</div>
+        <div className="logo-i" style={{width:pg?36:26,height:pg?36:26}}><LogoMark/></div>
         CastSlate
       </div>
       <div style={{width:pg?26:18,height:pg?26:18,borderRadius:"50%",border:pg?"3px solid var(--bdr)":"2px solid var(--bdr)",borderTopColor:"var(--acc)",animation:"scSpin 0.8s linear infinite"}}></div>
@@ -2569,7 +2587,7 @@ function Footer({onNavigate,spacerBg}){
       <div className="site-footer-inner">
         <div className="site-footer-grid">
           <div className="site-footer-brand">
-            <div className="logo" onClick={()=>onNavigate("home")}><div className="logo-i">↔</div>CastSlate</div>
+            <div className="logo" onClick={()=>onNavigate("home")}><div className="logo-i"><LogoMark/></div>CastSlate</div>
             <p className="site-footer-blurb">{t('footer.blurb')}</p>
           </div>
           <div>
@@ -3145,7 +3163,7 @@ function LoginPage({onNavigate,onLoggedIn}){
   return(
     <div className="page"><form onSubmit={submit} style={{maxWidth:480,width:"100%",margin:"60px auto 0"}}>
       <div style={{textAlign:"center",marginBottom:32}}>
-        <div className="logo" style={{justifyContent:"center",fontSize:24,marginBottom:12}}><div className="logo-i" style={{width:36,height:36,fontSize:20}}>↔</div>CastSlate</div>
+        <div className="logo" style={{justifyContent:"center",fontSize:24,marginBottom:12}}><div className="logo-i" style={{width:36,height:36}}><LogoMark/></div>CastSlate</div>
         <h2 style={{fontSize:28,fontWeight:800,marginBottom:8}}>{forgot?t('login.resetPwd'):t('login.welcome')}</h2>
         <p style={{color:"var(--t2)",fontSize:14}}>{forgot?t('login.resetSubtitle'):t('login.subtitle')}</p>
       </div>
@@ -3227,7 +3245,7 @@ function ResetPasswordPage({onNavigate,session}){
   if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check">✓</div><h3>Password Updated</h3><p style={{marginBottom:24}}>You're all set — your new password is active.</p><button className="btn-p" onClick={()=>onNavigate(session?.user?.email?.toLowerCase()===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase()?"admin":"my-profile")}>Continue →</button></div><Footer onNavigate={onNavigate}/></div>);
   return(<div className="page"><form onSubmit={submit} style={{maxWidth:440,margin:"60px auto 0"}}>
     <div style={{textAlign:"center",marginBottom:32}}>
-      <div className="logo" style={{justifyContent:"center",fontSize:24,marginBottom:12}}><div className="logo-i" style={{width:36,height:36,fontSize:20}}>↔</div>CastSlate</div>
+      <div className="logo" style={{justifyContent:"center",fontSize:24,marginBottom:12}}><div className="logo-i" style={{width:36,height:36}}><LogoMark/></div>CastSlate</div>
       <h2 style={{fontSize:28,fontWeight:800,marginBottom:8}}>Set a New Password</h2>
       <p style={{color:"var(--t2)",fontSize:14}}>Choose a new password for {session?.user?.email||"your account"}.</p>
     </div>
@@ -20834,7 +20852,7 @@ function App(){
           activate. Hidden for CDs/admins/producers/studios and once active. */}
       <ActivateMembershipBanner myProfile={myProfile} onNavigate={navigate}/>
       <nav className="nav">
-        <div className="logo" onClick={()=>navThen("home")}><div className="logo-i">↔</div>CastSlate</div>
+        <div className="logo" onClick={()=>navThen("home")}><div className="logo-i"><LogoMark/></div>CastSlate</div>
         <div className="nav-links">
           <span className={page==="home"?"act":""} onClick={()=>navigate("home")}>{navT('nav.home')}</span>
           <span className={page==="search"?"act":""} onClick={()=>navigate("search")}>{navT('nav.browse')}</span>
