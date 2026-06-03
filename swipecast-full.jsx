@@ -12648,14 +12648,20 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
   const nt=demo[Math.min(idx+1,total-1)];
   const done=idx>=total;
   const ac=dx>50?"yes":dx<-50?"pass":null;
-  // Entry nudge: the card tilts/drifts twice on load to signal "drag me", then
-  // goes still so it doesn't compete with the page's primary CTA. Stops the
-  // moment the visitor interacts. Skipped under prefers-reduced-motion.
+  // Entry nudge: the card tilts/drifts to signal "drag me", repeating every 4s
+  // so a still-deciding visitor keeps getting the cue. Stops permanently the
+  // moment they swipe or tap. Skipped under prefers-reduced-motion.
   React.useEffect(()=>{
     if(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-    const seq=[[1000,18],[1380,0],[2000,18],[2380,0]];
-    const timers=seq.map(([ms,val])=>setTimeout(()=>{if(!userActed.current)setNudge(val);},ms));
-    return ()=>timers.forEach(clearTimeout);
+    let iv,inner=[];
+    function pulse(){
+      if(userActed.current){if(iv)clearInterval(iv);return;}
+      setNudge(18);
+      inner.push(setTimeout(()=>setNudge(0),420));
+    }
+    const first=setTimeout(pulse,1000);
+    iv=setInterval(pulse,4000);
+    return ()=>{clearTimeout(first);clearInterval(iv);inner.forEach(clearTimeout);};
   },[]);
   function advance(dir){
     if(animating)return;
