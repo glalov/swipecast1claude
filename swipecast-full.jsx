@@ -12633,21 +12633,34 @@ const LANDING_SWIPE_DEMO=[
   {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=800&fit=crop&crop=top&q=90",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
   {id:15,name:"Isabella Cruz",age:39,gender:"Female",height:"5'5\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&h=800&fit=crop&crop=top&q=90",skills:["Bilingual Spanish","Musical Theater","Commercial Print"]},
 ];
-function LandingSwipe(){
+function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your free profile"}={}){
   const demo=LANDING_SWIPE_DEMO;
   const total=demo.length;
   const [idx,setIdx]=useState(0);
   const [animating,setAnimating]=useState(false);
   const [flyDir,setFlyDir]=useState(0);
   const [dx,setDx]=useState(0);
+  const [nudge,setNudge]=useState(0);
   const dragging=useRef(false);
   const startX=useRef(0);
+  const userActed=useRef(false);
   const t=demo[Math.min(idx,total-1)];
   const nt=demo[Math.min(idx+1,total-1)];
   const done=idx>=total;
   const ac=dx>50?"yes":dx<-50?"pass":null;
+  // Entry nudge: the card tilts/drifts twice on load to signal "drag me", then
+  // goes still so it doesn't compete with the page's primary CTA. Stops the
+  // moment the visitor interacts. Skipped under prefers-reduced-motion.
+  React.useEffect(()=>{
+    if(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const seq=[[1000,18],[1380,0],[2000,18],[2380,0]];
+    const timers=seq.map(([ms,val])=>setTimeout(()=>{if(!userActed.current)setNudge(val);},ms));
+    return ()=>timers.forEach(clearTimeout);
+  },[]);
   function advance(dir){
     if(animating)return;
+    userActed.current=true;
+    setNudge(0);
     setAnimating(true);
     setFlyDir(dir);
     setDx(0);
@@ -12660,15 +12673,25 @@ function LandingSwipe(){
   }
   function reset(){setIdx(0);setAnimating(false);setFlyDir(0);setDx(0);dragging.current=false;}
   if(done){return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:300,minHeight:500,gap:12,textAlign:"center"}}>
-      <div style={{fontSize:48,marginBottom:4}}>🎬</div>
-      <p style={{fontWeight:800,fontSize:18,margin:0}}>You've seen everyone!</p>
-      <p style={{color:"var(--t2)",fontSize:13,margin:"4px 0 12px",maxWidth:220}}>That's how CastSlate works — one actor at a time, no scrolling.</p>
-      <button className="btn-p" style={{padding:"10px 22px",fontSize:13}} onClick={reset}>↺ Start Over</button>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:300,minHeight:500,gap:10,textAlign:"center"}}>
+      <div style={{fontSize:46,marginBottom:2}}>🎬</div>
+      <p style={{fontWeight:800,fontSize:20,margin:0,letterSpacing:-0.3}}>That's CastSlate.</p>
+      <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.6,margin:"2px 0 16px",maxWidth:230}}>One actor at a time, full-screen — no crowded grids. This is how casting should feel.</p>
+      <button className="btn-p" style={{padding:"13px 26px",fontSize:14}} onClick={()=>{if(onNavigate)onNavigate(ctaTo);}}>{ctaLabel}</button>
+      <button onClick={reset} style={{marginTop:6,background:"none",border:"none",color:"var(--t3)",fontSize:12,cursor:"pointer",textDecoration:"underline",fontFamily:"inherit"}}>↺ Replay the demo</button>
     </div>
   );}
-  const cardTransform=flyDir!==0?`translateX(${flyDir*520}px) rotate(${flyDir*20}deg)`:`translateX(${dx}px) rotate(${dx*0.035}deg)`;
-  const cardTransition=animating&&flyDir!==0?"transform .26s cubic-bezier(.4,0,.6,1), opacity .22s":"none";
+  let cardTransform,cardTransition;
+  if(flyDir!==0){
+    cardTransform=`translateX(${flyDir*520}px) rotate(${flyDir*20}deg)`;
+    cardTransition="transform .26s cubic-bezier(.4,0,.6,1), opacity .22s";
+  }else if(dx!==0){
+    cardTransform=`translateX(${dx}px) rotate(${dx*0.035}deg)`;
+    cardTransition="none";
+  }else{
+    cardTransform=`translateX(${nudge}px) rotate(${nudge*0.14}deg)`;
+    cardTransition="transform .55s cubic-bezier(.34,1.4,.64,1)";
+  }
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
       <div style={{position:"relative",width:300,height:450}}>
@@ -12677,7 +12700,7 @@ function LandingSwipe(){
         </div>
         <div className="s-card"
           style={{transform:cardTransform,transition:cardTransition,zIndex:2,cursor:dragging.current?"grabbing":"grab",touchAction:"pan-y",userSelect:"none"}}
-          onPointerDown={e=>{if(animating)return;e.currentTarget.setPointerCapture(e.pointerId);dragging.current=true;startX.current=e.clientX;}}
+          onPointerDown={e=>{if(animating)return;userActed.current=true;if(nudge!==0)setNudge(0);e.currentTarget.setPointerCapture(e.pointerId);dragging.current=true;startX.current=e.clientX;}}
           onPointerMove={e=>{if(!dragging.current||animating)return;setDx(e.clientX-startX.current);}}
           onPointerUp={e=>{if(!dragging.current)return;const d=e.clientX-startX.current;dragging.current=false;if(d>80)advance(1);else if(d<-80)advance(-1);else setDx(0);}}
           onPointerCancel={()=>{dragging.current=false;setDx(0);}}>
@@ -12798,7 +12821,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> {tr('landing.freeAccount')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> {tr('landing.noCreditCard')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> {tr('landing.quickSignup')}</span></div>
     </div>
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:14}}>
-      <LandingSwipe/>
+      <LandingSwipe onNavigate={onNavigate} ctaTo={heroPrimary.to} ctaLabel={heroPrimary.label}/>
     </div>
     </section>
 
