@@ -1573,7 +1573,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .site-footer-spacer{height:40px;flex-shrink:0;background:var(--bg);width:100%;}
 .site-backtotop{
   display:flex;align-items:center;justify-content:center;gap:8px;
-  position:relative;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;
+  position:relative;width:100vw;left:50%;right:50%;margin-top:auto;margin-left:-50vw;margin-right:-50vw;
   background:#26272D;color:#C2C2CC;
   border:none;border-top:1px solid rgba(255,255,255,0.05);
   padding:15px 16px;
@@ -1596,7 +1596,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   position:relative;
   width:100vw;
   left:50%;right:50%;
-  margin-top:auto;
+  margin-top:0;
   margin-left:-50vw;margin-right:-50vw;
   margin-bottom:0;
   flex-shrink:0;
@@ -2564,7 +2564,6 @@ function Footer({onNavigate,spacerBg}){
   // footer, smooth-scrolls (not a hard cut) to the top of the page.
   const scrollTop=()=>{try{window.scrollTo({top:0,behavior:'smooth'});}catch(_){window.scrollTo(0,0);}};
   return(<>
-    <div className="site-footer-spacer" aria-hidden="true" style={spacerBg?{background:spacerBg}:undefined}/>
     <button type="button" className="site-backtotop" onClick={scrollTop} aria-label={t('footer.backToTop')}>{t('footer.backToTop')} <span className="site-backtotop-arrow" aria-hidden="true">↑</span></button>
     <footer className="site-footer">
       <div className="site-footer-inner">
