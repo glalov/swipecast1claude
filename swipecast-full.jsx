@@ -87,6 +87,7 @@ const TRANSLATIONS = {
     'nav.about':'About','nav.contact':'Contact','nav.joinAsTalent':'Join as Talent',
     'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode',
     // Footer
+    'footer.backToTop':'Back to top',
     'footer.blurb':'The casting platform built for working actors. Every submission gets seen — guaranteed. Free accounts included — upgrade to Premium ($9.99/mo) for unlimited submissions, Slate Video, Business Card, Manager Mode, and more.',
     'footer.talent':'Talent','footer.industry':'Industry','footer.company':'Company','footer.support':'Support',
     'footer.createProfile':'Create Profile','footer.browse':'Browse Castings','footer.classes':'Classes',
@@ -334,6 +335,7 @@ const TRANSLATIONS = {
     'nav.about':'Acerca de','nav.contact':'Contacto','nav.joinAsTalent':'Unirse como Talento',
     'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager',
     // Footer
+    'footer.backToTop':'Volver arriba',
     'footer.blurb':'La plataforma de casting diseñada para actores que trabajan. Cada postulación es vista — garantizado. Cuentas gratuitas incluidas — mejora a Premium ($9.99/mes) para postulaciones ilimitadas y más.',
     'footer.talent':'Talento','footer.industry':'Industria','footer.company':'Empresa','footer.support':'Soporte',
     'footer.createProfile':'Crear perfil','footer.browse':'Convocatorias','footer.classes':'Clases',
@@ -1569,6 +1571,18 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
        component. Inherits the warm .app bg, flex-shrink:0 so it always exists
        even when the page is taller than the viewport. ─── */
 .site-footer-spacer{height:40px;flex-shrink:0;background:var(--bg);width:100%;}
+.site-backtotop{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  position:relative;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;
+  background:#26272D;color:#C2C2CC;
+  border:none;border-top:1px solid rgba(255,255,255,0.05);
+  padding:15px 16px;
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:.3px;
+  cursor:pointer;transition:background .2s ease,color .2s ease;
+}
+.site-backtotop:hover{background:#2F3037;color:#fff;}
+.site-backtotop-arrow{display:inline-block;font-size:13px;transition:transform .2s ease;}
+.site-backtotop:hover .site-backtotop-arrow{transform:translateY(-2px);}
 /* ─── Global site footer — dark charcoal, applied via Footer component everywhere.
        The width:100vw + negative-margin-50vw pattern lets the footer's dark bg
        escape any constrained .page (max-width:1200px) parent so it always
@@ -2546,8 +2560,12 @@ function Footer({onNavigate,spacerBg}){
   // margin-top:auto behavior. On short pages: 40px spacer + auto warm gap + footer.
   // On long pages: 40px spacer + footer (auto collapses to 0 — but the spacer
   // still guarantees the gap).
+  // Amazon-style "back to top" bar — full-bleed, one notch lighter than the
+  // footer, smooth-scrolls (not a hard cut) to the top of the page.
+  const scrollTop=()=>{try{window.scrollTo({top:0,behavior:'smooth'});}catch(_){window.scrollTo(0,0);}};
   return(<>
     <div className="site-footer-spacer" aria-hidden="true" style={spacerBg?{background:spacerBg}:undefined}/>
+    <button type="button" className="site-backtotop" onClick={scrollTop} aria-label={t('footer.backToTop')}>{t('footer.backToTop')} <span className="site-backtotop-arrow" aria-hidden="true">↑</span></button>
     <footer className="site-footer">
       <div className="site-footer-inner">
         <div className="site-footer-grid">
