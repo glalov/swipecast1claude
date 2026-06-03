@@ -1452,3 +1452,52 @@ alter table public.site_settings
   add column if not exists checkin_paused            boolean not null default false,
   add column if not exists checkin_last_run_at       timestamptz,
   add column if not exists checkin_paused_user_ids   jsonb not null default '[]'::jsonb;
+
+-- ═══════════════════════════════════════════════════════════════
+-- NEWS SECTION (2026-06-03) — landing-page industry news
+-- Auto-fetched from approved trade RSS feeds, rewritten by CastSlate Staff,
+-- paired with royalty-free imagery, always linked back to the source.
+-- Applied via migration `news_section_2026_06_03`.
+-- ═══════════════════════════════════════════════════════════════
+create table if not exists public.news_articles (
+  id          uuid primary key default gen_random_uuid(),
+  slug        text unique not null,
+  headline    text not null,
+  excerpt     text,
+  body        text,
+  category    text not null default 'Industry'
+              check (category in ('Casting','Film','Theater','Industry','Actors')),
+  image_url   text,
+  source_name text,
+  source_url  text,
+  author      text not null default 'CastSlate Staff',
+  status      text not null default 'published'
+              check (status in ('draft','published','archived')),
+  published   boolean not null default true,
+  fetched_at  timestamptz default now(),
+  written_at  timestamptz default now(),
+  created_at  timestamptz default now(),
+  updated_at  timestamptz default now()
+);
+create index if not exists news_articles_pub_idx on public.news_articles (published, status, written_at desc);
+create index if not exists news_articles_cat_idx on public.news_articles (category);
+alter table public.news_articles enable row level security;
+drop policy if exists news_articles_public_read on public.news_articles;
+create policy news_articles_public_read on public.news_articles
+  for select using (published = true and status = 'published');
+drop policy if exists news_articles_admin_all on public.news_articles;
+create policy news_articles_admin_all on public.news_articles
+  for all using (public.is_admin()) with check (public.is_admin());
+
+alter table public.site_settings
+  add column if not exists news_section_enabled      boolean     not null default true,
+  add column if not exists news_auto_refresh_enabled boolean     not null default false,
+  add column if not exists news_refresh_weeks         int        not null default 2,
+  add column if not exists news_last_run             timestamptz;
+
+-- RPCs: admin_set_news_section_enabled / admin_set_news_auto_refresh /
+-- admin_record_news_run (mirror casting-generator toggles; is_admin()-gated).
+-- Auto-refresh: public.run_news_auto_refresh() invoked daily by pg_cron job
+-- 'news-auto-refresh-daily'; fires the news-refresh edge function via pg_net
+-- using the service-role key stored in Vault secret 'news_service_role_key'.
+-- See migrations `news_section_2026_06_03` and `news_auto_refresh_cron`.

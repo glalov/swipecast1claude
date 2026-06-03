@@ -1796,6 +1796,42 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .scale-tagline .tg-neon{color:#9333EA;}
 .scale-tagline .tg-netflix{color:#E50914;}
 @media (max-width:768px){.scale-tagline{font-size:19px;padding:14px 20px 0;}}
+/* ─── Latest Industry News (compact landing section) ─── */
+.news-sec{border-top:1px solid var(--bdr);padding:54px 0 58px;}
+.news-head{display:flex;align-items:baseline;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:24px;}
+.news-head .news-ttl{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+.news-head h2{font-family:'Playfair Display',Georgia,serif;font-size:25px;font-weight:700;letter-spacing:-0.01em;margin:0;}
+.news-head .news-by{font-size:10.5px;letter-spacing:0.16em;text-transform:uppercase;font-weight:700;color:var(--acc);}
+.news-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.news-card{background:var(--s1);border:1px solid var(--bdr);border-radius:11px;overflow:hidden;cursor:pointer;transition:.18s;display:flex;flex-direction:column;text-align:left;}
+.news-card:hover{transform:translateY(-3px);box-shadow:0 16px 30px -22px rgba(26,26,46,.4);border-color:#cfd6e2;}
+.news-thumb{position:relative;aspect-ratio:16/10;overflow:hidden;background:var(--s2);}
+.news-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.news-cat{position:absolute;top:9px;left:9px;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff;padding:4px 9px;border-radius:999px;}
+.news-body{padding:13px 14px 14px;display:flex;flex-direction:column;flex:1;}
+.news-body h3{font-size:14px;font-weight:600;line-height:1.32;letter-spacing:-.005em;margin:0 0 9px;color:var(--t1);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.news-meta{margin-top:auto;font-size:11px;color:var(--t3);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.news-meta .news-bystaff{font-weight:600;color:var(--t2);}
+.news-meta .news-dot{width:3px;height:3px;border-radius:50%;background:var(--t3);flex:none;}
+/* Article page */
+.news-article-wrap{max-width:720px;margin:0 auto;padding:40px 24px 80px;}
+.news-back{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--t2);background:none;border:none;cursor:pointer;margin-bottom:24px;}
+.news-back:hover{color:var(--t1);}
+.news-article-cat{display:inline-flex;align-items:center;gap:7px;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;}
+.news-article-wrap h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(27px,4vw,38px);font-weight:700;line-height:1.14;letter-spacing:-.015em;margin:14px 0 16px;}
+.news-article-meta{font-size:13px;color:var(--t3);display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:24px;}
+.news-article-meta .news-bystaff{font-weight:600;color:var(--t2);}
+.news-article-hero{aspect-ratio:16/9;border-radius:13px;overflow:hidden;margin-bottom:10px;background:var(--s2);}
+.news-article-hero img{width:100%;height:100%;object-fit:cover;}
+.news-article-caption{font-size:12px;color:var(--t3);font-style:italic;margin-bottom:30px;}
+.news-article-body p{font-size:16.5px;line-height:1.75;color:var(--t1);margin-bottom:20px;}
+.news-source-box{margin-top:34px;padding:20px 22px;background:var(--s1);border:1px solid var(--bdr);border-left:3px solid var(--acc);border-radius:10px;}
+.news-source-box .news-source-lbl{font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--t3);margin-bottom:7px;}
+.news-source-box a{color:var(--acc);font-weight:600;text-decoration:none;font-size:15px;}
+.news-source-box a:hover{text-decoration:underline;}
+.news-disclaimer{margin-top:15px;font-size:12px;color:var(--t3);line-height:1.6;font-style:italic;}
+@media (max-width:900px){.news-grid{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:560px){.news-grid{grid-template-columns:repeat(2,1fr);gap:12px;}.news-body h3{font-size:13px;}.news-sec{padding:42px 0 46px;}}
 /* ─── Talent Dashboard responsive grid ─── */
 .td-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
@@ -12798,6 +12834,122 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
 }
 
 // ═══════════════════════════════════════════
+// LATEST INDUSTRY NEWS
+// Compact landing section + click-through article page.
+// Content is auto-fetched from approved trade feeds, rewritten in CastSlate's
+// own words ("Written by CastSlate Staff"), paired with royalty-free imagery,
+// and always linked back to the original source. Managed from Super Admin →
+// News Controls (show/hide, refresh now, optional 1–2 week auto-refresh).
+// ═══════════════════════════════════════════
+const NEWS_CATS={Casting:"#B0894F",Film:"#3E6B8C",Theater:"#9C5A8E",Industry:"#5C7A5C",Actors:"#B06A4F"};
+function newsDate(s){try{return new Date(s).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});}catch(_){return"";}}
+
+// Compact 4-card news strip on the landing page. Renders nothing when the
+// section is toggled off in Super Admin or when there are no published articles.
+function NewsSection({onNavigate}){
+  const[items,setItems]=React.useState(null); // null = loading, [] = empty
+  const[enabled,setEnabled]=React.useState(true);
+  React.useEffect(()=>{
+    let alive=true;
+    (async()=>{
+      try{
+        const{data:ss}=await window.sb.from("site_settings").select("news_section_enabled").eq("id",1).maybeSingle();
+        if(alive&&ss)setEnabled(ss.news_section_enabled!==false);
+        const{data}=await window.sb.from("news_articles")
+          .select("slug,headline,excerpt,category,image_url,source_name,written_at")
+          .eq("published",true).eq("status","published")
+          .order("written_at",{ascending:false}).limit(4);
+        if(alive)setItems(data||[]);
+      }catch(_){ if(alive)setItems([]); }
+    })();
+    return()=>{alive=false;};
+  },[]);
+  if(!enabled||items===null||items.length===0)return null;
+  return(
+    <section className="news-sec">
+      <div style={{maxWidth:1120,margin:"0 auto",padding:"0 32px"}}>
+        <div className="news-head">
+          <div className="news-ttl">
+            <h2>Latest Industry News &amp; Casting Updates</h2>
+            <span className="news-by">By CastSlate Staff</span>
+          </div>
+        </div>
+        <div className="news-grid">
+          {items.map(a=>(
+            <button key={a.slug} className="news-card" onClick={()=>onNavigate("news-article",{slug:a.slug})}>
+              <div className="news-thumb">
+                {a.image_url&&<img src={a.image_url} alt="" loading="lazy"/>}
+                <span className="news-cat" style={{background:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</span>
+              </div>
+              <div className="news-body">
+                <h3>{a.headline}</h3>
+                <div className="news-meta">
+                  <span className="news-bystaff">CastSlate Staff</span><span className="news-dot"/>
+                  <span>{newsDate(a.written_at)}</span>
+                  {a.source_name&&<><span className="news-dot"/><span>via {a.source_name}</span></>}
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Full article page (/news/<slug>). Fetches by slug so it survives a refresh.
+function NewsArticlePage({slug,onNavigate}){
+  const[a,setA]=React.useState(undefined); // undefined = loading, null = not found
+  React.useEffect(()=>{
+    let alive=true;
+    (async()=>{
+      try{
+        const{data}=await window.sb.from("news_articles")
+          .select("slug,headline,excerpt,body,category,image_url,source_name,source_url,author,written_at")
+          .eq("slug",slug).eq("published",true).eq("status","published").maybeSingle();
+        if(alive)setA(data||null);
+      }catch(_){ if(alive)setA(null); }
+    })();
+    return()=>{alive=false;};
+  },[slug]);
+  React.useEffect(()=>{if(a&&a.headline)setPageSEO("news-article",{title:a.headline,slug:a.slug});},[a]);
+  if(a===undefined)return <PageLoader/>;
+  if(a===null)return(
+    <div className="news-article-wrap" style={{textAlign:"center"}}>
+      <h1 style={{fontSize:24}}>Story not found</h1>
+      <p style={{color:"var(--t2)",marginBottom:20}}>This article may have been removed.</p>
+      <button className="btn-p btn-sm" onClick={()=>onNavigate("home")}>Back to home</button>
+    </div>
+  );
+  const accent=NEWS_CATS[a.category]||"#5C7A5C";
+  const paras=(a.body||a.excerpt||"").split(/\n\n+/).filter(Boolean);
+  return(
+    <article className="news-article-wrap">
+      <button className="news-back" onClick={()=>{if(window.history.length>1)window.history.back();else onNavigate("home");}}>← Back to news</button>
+      <span className="news-article-cat" style={{color:accent}}><span style={{width:6,height:6,borderRadius:"50%",background:accent,display:"inline-block"}}/>{a.category}</span>
+      <h1>{a.headline}</h1>
+      <div className="news-article-meta">
+        <span className="news-bystaff">Written by {a.author||"CastSlate Staff"}</span><span className="news-dot"/>
+        <span>{newsDate(a.written_at)}</span>
+        {a.source_name&&<><span className="news-dot"/><span>Source: {a.source_name}</span></>}
+      </div>
+      {a.image_url&&<><div className="news-article-hero"><img src={a.image_url} alt=""/></div>
+        <p className="news-article-caption">Illustrative image — CastSlate does not republish source photography.</p></>}
+      <div className="news-article-body">{paras.map((p,i)=><p key={i}>{p}</p>)}</div>
+      {(a.source_name||a.source_url)&&(
+        <div className="news-source-box">
+          <div className="news-source-lbl">Original Source</div>
+          {a.source_url
+            ?<a href={a.source_url} target="_blank" rel="noopener noreferrer">Read the original at {a.source_name||"the source"} →</a>
+            :<span style={{color:"var(--t2)",fontSize:15}}>{a.source_name}</span>}
+          <p className="news-disclaimer">This is an original CastSlate summary written by our editorial staff. CastSlate does not reproduce full articles or copyrighted images.{a.source_url?" Read the complete report at the source linked above.":""}</p>
+        </div>
+      )}
+    </article>
+  );
+}
+
+// ═══════════════════════════════════════════
 // LANDING PAGE
 // ═══════════════════════════════════════════
 function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,myProfile=null}){
@@ -13130,6 +13282,9 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         </div>
       </div>
     </div>
+
+    {/* ───────── LATEST INDUSTRY NEWS (compact; hidden via Super Admin toggle) ───────── */}
+    <div style={{maxWidth:1200,margin:"0 auto"}}><NewsSection onNavigate={onNavigate}/></div>
 
     {/* ───────── MANAGER MODE TEASER ───────── */}
     <section style={{padding:"72px 40px",background:"linear-gradient(160deg,#1A1A2E 0%,#16213e 60%,#0f3460 100%)",color:"#fff",position:"relative",overflow:"hidden"}}>
@@ -15902,6 +16057,156 @@ const ACG = (()=>{
   return{generateBatch};
 })();
 
+// ─── News Controls: show/hide the landing section, refresh the feed, manage
+// articles, and configure optional 1–2 week auto-refresh. (Super Admin only.)
+function AdminNews({session}){
+  const[settings,setSettings]=useState(null);
+  const[articles,setArticles]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const[refreshing,setRefreshing]=useState(false);
+  const[busyToggle,setBusyToggle]=useState(false);
+  const[busyRow,setBusyRow]=useState(null);
+  const[msg,setMsg]=useState("");
+  const showMsg=(m,dur=5000)=>{setMsg(m);if(dur)setTimeout(()=>setMsg(x=>x===m?"":x),dur);};
+
+  const loadAll=useCallback(async()=>{
+    setLoading(true);
+    const[{data:ss},{data:list,error:le}]=await Promise.all([
+      window.sb.from("site_settings").select("news_section_enabled,news_auto_refresh_enabled,news_refresh_weeks,news_last_run").eq("id",1).maybeSingle(),
+      window.sb.from("news_articles").select("id,slug,headline,category,source_name,status,published,written_at,image_url").order("written_at",{ascending:false}).limit(200)
+    ]);
+    if(ss)setSettings(ss);
+    if(le)showMsg("Failed to load articles: "+le.message);
+    setArticles(list||[]);
+    setLoading(false);
+  },[]);
+  useEffect(()=>{loadAll();},[loadAll]);
+
+  const sectionOn=settings?.news_section_enabled!==false;
+  const autoOn=!!settings?.news_auto_refresh_enabled;
+  const weeks=settings?.news_refresh_weeks||2;
+
+  const toggleSection=async(val)=>{
+    setBusyToggle(true);
+    const{error}=await window.sb.rpc("admin_set_news_section_enabled",{p_enabled:val});
+    setBusyToggle(false);
+    if(error){showMsg("Failed: "+error.message);return;}
+    setSettings(s=>({...s,news_section_enabled:val}));
+    showMsg(val?"News section is now showing on the landing page.":"News section is now hidden from the landing page.");
+  };
+  const setAuto=async(enabled,wk)=>{
+    const{error}=await window.sb.rpc("admin_set_news_auto_refresh",{p_enabled:enabled,p_weeks:wk});
+    if(error){showMsg("Failed: "+error.message);return;}
+    setSettings(s=>({...s,news_auto_refresh_enabled:enabled,news_refresh_weeks:wk}));
+    showMsg("Auto-refresh updated.");
+  };
+  const refreshNow=async()=>{
+    setRefreshing(true);setMsg("");
+    try{
+      const{data,error}=await window.sb.functions.invoke("news-refresh",{body:{trigger:"manual"}});
+      if(error)throw new Error(error.message||"Edge function error");
+      await window.sb.rpc("admin_record_news_run");
+      const added=data?.added??data?.inserted??null;
+      showMsg(added!=null?`Refresh complete — ${added} new article${added===1?"":"s"} added.`:"Refresh complete.",7000);
+      loadAll();
+    }catch(e){
+      showMsg("Refresh failed: "+(e.message||e)+". (The news-refresh edge function may not be deployed yet — see setup notes.)",9000);
+    }
+    setRefreshing(false);
+  };
+  const setRowPublished=async(a,pub)=>{
+    setBusyRow(a.id+":pub");
+    const{error}=await window.sb.from("news_articles").update({published:pub,status:pub?"published":"draft",updated_at:new Date().toISOString()}).eq("id",a.id);
+    setBusyRow(null);
+    if(error){showMsg("Update failed: "+error.message);return;}
+    showMsg(pub?"Article published.":"Article hidden (set to draft).");loadAll();
+  };
+  const deleteRow=async(a)=>{
+    if(!confirm(`Delete "${a.headline}"?\n\nThis permanently removes the article. This cannot be undone.`))return;
+    setBusyRow(a.id+":del");
+    const{error}=await window.sb.from("news_articles").delete().eq("id",a.id);
+    setBusyRow(null);
+    if(error){showMsg("Delete failed: "+error.message);return;}
+    showMsg("Article deleted.");loadAll();
+  };
+
+  const CAT_COLOR={Casting:"#B0894F",Film:"#3E6B8C",Theater:"#9C5A8E",Industry:"#5C7A5C",Actors:"#B06A4F"};
+
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>News Controls</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20,maxWidth:640}}>Manage the “Latest Industry News &amp; Casting Updates” section. The feed is auto-collected from approved trade sources, rewritten in CastSlate’s own words (bylined “CastSlate Staff”), paired with royalty-free imagery, and linked back to each original source.</p>
+
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,borderLeft:"3px solid var(--acc)"}}>{msg}</div>}
+
+    {/* Master show/hide */}
+    <div className="card" style={{padding:20,marginBottom:16}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
+        <div>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:2}}>News section on landing page</div>
+          <div style={{fontSize:12,color:"var(--t3)",maxWidth:440}}>Master switch. Off = the section disappears from the live page with no empty space or broken layout.</div>
+          <div style={{fontSize:12,marginTop:6}}>{sectionOn?<span style={{color:"#1d7b44",fontWeight:600}}>● Showing</span>:<span style={{color:"#c0392b",fontWeight:600}}>● Hidden</span>}</div>
+        </div>
+        <button className="btn-s btn-sm" disabled={busyToggle||loading} onClick={()=>toggleSection(!sectionOn)} style={{fontWeight:700,minWidth:96}}>{busyToggle?"…":sectionOn?"Hide section":"Show section"}</button>
+      </div>
+    </div>
+
+    {/* Refresh now */}
+    <div className="card" style={{padding:20,marginBottom:16}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
+        <div>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:2}}>Refresh news now</div>
+          <div style={{fontSize:12,color:"var(--t3)",maxWidth:460}}>Pulls the latest acting, casting, film, TV, theater, and industry stories, writes original CastSlate summaries, and publishes them.</div>
+          {settings?.news_last_run&&<div style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Last run: {new Date(settings.news_last_run).toLocaleString()}</div>}
+        </div>
+        <button className="btn-p" disabled={refreshing} onClick={refreshNow} style={{whiteSpace:"nowrap",minWidth:140}}>{refreshing?"Refreshing…":"Refresh News"}</button>
+      </div>
+    </div>
+
+    {/* Auto refresh */}
+    <div className="card" style={{padding:20,marginBottom:20}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
+        <div>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:2}}>Automatic refresh</div>
+          <div style={{fontSize:12,color:"var(--t3)",maxWidth:460}}>Fetch &amp; summarize new stories on a schedule, hands-free.</div>
+          <div style={{display:"flex",gap:8,marginTop:12}}>
+            {[1,2].map(w=>(
+              <button key={w} className="btn-s btn-sm" onClick={()=>setAuto(autoOn,w)} disabled={loading}
+                style={weeks===w?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)",fontWeight:700}:{}}>Every {w} week{w>1?"s":""}</button>
+            ))}
+          </div>
+        </div>
+        <button className="btn-s btn-sm" disabled={loading} onClick={()=>setAuto(!autoOn,weeks)} style={{fontWeight:700,minWidth:96}}>{autoOn?"Turn OFF":"Turn ON"}</button>
+      </div>
+      <div style={{fontSize:11,color:"var(--t3)",marginTop:10}}>{autoOn?<span style={{color:"#1d7b44",fontWeight:600}}>● Auto-refresh ON — every {weeks} week{weeks>1?"s":""}.</span>:<span>● Auto-refresh OFF — refresh manually with the button above.</span>}</div>
+    </div>
+
+    {/* Article list */}
+    <div style={{fontWeight:700,fontSize:15,marginBottom:10}}>Articles {loading?"":`(${articles.length})`}</div>
+    {loading?<p style={{color:"var(--t3)",fontSize:13}}>Loading…</p>:articles.length===0?
+      <p style={{color:"var(--t3)",fontSize:13}}>No articles yet. Click “Refresh News” to fetch and publish the latest stories.</p>:
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {articles.map(a=>(
+          <div key={a.id} className="card" style={{padding:"12px 14px",display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+            <div style={{width:54,height:36,borderRadius:6,overflow:"hidden",background:"var(--s2)",flex:"none"}}>{a.image_url&&<img src={a.image_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>}</div>
+            <div style={{flex:"1 1 240px",minWidth:200}}>
+              <div style={{fontSize:13.5,fontWeight:600,lineHeight:1.3}}>{a.headline}</div>
+              <div style={{fontSize:11,color:"var(--t3)",marginTop:3,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                <span style={{color:CAT_COLOR[a.category]||"var(--t3)",fontWeight:700,textTransform:"uppercase",letterSpacing:0.5}}>{a.category}</span>
+                <span>{newsDate(a.written_at)}</span>
+                {a.source_name&&<span>via {a.source_name}</span>}
+                <span style={{fontWeight:700,color:a.published&&a.status==="published"?"#1d7b44":"#c88900"}}>{a.published&&a.status==="published"?"PUBLISHED":"DRAFT"}</span>
+              </div>
+            </div>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              <button className="btn-s btn-sm" disabled={busyRow===a.id+":pub"} onClick={()=>setRowPublished(a,!(a.published&&a.status==="published"))}>{busyRow===a.id+":pub"?"…":(a.published&&a.status==="published")?"Hide":"Publish"}</button>
+              <button className="btn-s btn-sm" disabled={busyRow===a.id+":del"} onClick={()=>deleteRow(a)} style={{color:"#c0392b",borderColor:"#c0392b"}}>{busyRow===a.id+":del"?"…":"Delete"}</button>
+            </div>
+          </div>
+        ))}
+      </div>}
+  </>);
+}
+
 function AdminCastingGenerator({session}){
   const adminId=session?.user?.id;
   const [genEnabled,setGenEnabled]=useState(false);
@@ -16437,6 +16742,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       <AdminNavLink current={section} target="settings" label="Site settings" onClick={goToSection}/>
       <AdminNavLink current={section} target="toggles" label="Toggles" onClick={goToSection}/>
       {isSuperAdmin&&<AdminNavLink current={section} target="casting-generator" label="Casting Generator" onClick={goToSection}/>}
+      {isSuperAdmin&&<AdminNavLink current={section} target="news-controls" label="News Controls" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="legal-pages" label="Legal Pages" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="email-digests" label="Email Digests" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="weekly-checkins" label="Weekly Check-Ins" onClick={goToSection}/>}
@@ -16465,6 +16771,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="settings"&&<AdminSettings/>}
       {section==="toggles"&&<AdminToggles/>}
       {section==="casting-generator"&&isSuperAdmin&&<AdminCastingGenerator session={session}/>}
+      {section==="news-controls"&&isSuperAdmin&&<AdminNews session={session}/>}
       {section==="legal-pages"&&isSuperAdmin&&<AdminLegalPages/>}
       {section==="email-digests"&&isSuperAdmin&&<AdminEmailDigests/>}
       {section==="weekly-checkins"&&isSuperAdmin&&<AdminWeeklyCheckIns session={session}/>}
@@ -20146,6 +20453,10 @@ function setPageSEO(page,opts){
     title=`${opts.name} | Actor Profile | CastSlate`;
     desc=`View ${opts.name}'s actor profile on CastSlate.`;
     url=`https://www.castslate.com/talent/${encodeURIComponent(opts.slug||"")}`;
+  }else if(page==="news-article"&&opts?.title){
+    title=`${opts.title} | CastSlate News`;
+    desc=`${opts.title} — industry news summarized by CastSlate Staff.`;
+    url=`https://www.castslate.com/news/${encodeURIComponent(opts.slug||"")}`;
   }
 
   try{
@@ -20171,6 +20482,7 @@ function urlToPage(){
   const path=window.location.pathname;
   if(/^\/casting\//.test(path))return"casting-detail";
   if(/^\/talent\//.test(path))return"talent-public";
+  if(/^\/news\//.test(path))return"news-article";
   return PATH_PAGE[path]||"home";
 }
 function urlToCastingSlug(){
@@ -20179,6 +20491,10 @@ function urlToCastingSlug(){
 }
 function urlToTalentSlug(){
   const m=window.location.pathname.match(/^\/talent\/(.+)$/);
+  return m?decodeURIComponent(m[1]):null;
+}
+function urlToNewsSlug(){
+  const m=window.location.pathname.match(/^\/news\/(.+)$/);
   return m?decodeURIComponent(m[1]):null;
 }
 
@@ -20206,6 +20522,7 @@ function App(){
   const [viewingProfile,setViewingProfile]=useState(null);
   const [viewingCasting,setViewingCasting]=useState(()=>{const slug=urlToCastingSlug();return slug?(CASTINGS.find(c=>c.slug===slug)||null):null;});
   const [viewingTalentSlug,setViewingTalentSlug]=useState(()=>urlToTalentSlug());
+  const [viewingNewsSlug,setViewingNewsSlug]=useState(()=>urlToNewsSlug());
   const [prevPage,setPrevPage]=useState("home");
   const [session,setSession]=useState(null);
   const [myProfile,setMyProfile]=useState(null);
@@ -20416,9 +20733,11 @@ function App(){
       const curPage=urlToPage();
       const slug=urlToCastingSlug();
       const tslug=urlToTalentSlug();
+      const nslug=urlToNewsSlug();
       const st={swipecast:true,page:curPage};
       if(slug)st.castingSlug=slug;
       if(tslug)st.talentSlug=tslug;
+      if(nslug)st.newsSlug=nslug;
       if(!window.history.state||!window.history.state.swipecast){
         // Preserve hash (e.g. /admin#users, /dashboard#c=123) when seeding initial state
         const fullUrl=(window.location.pathname||"/")+window.location.search+window.location.hash;
@@ -20437,6 +20756,8 @@ function App(){
         else if(st.castingSlug){const c=CASTINGS.find(x=>x.slug===st.castingSlug);if(c)setViewingCasting(c);}
         if(p==="talent-public"&&st.talentSlug)setViewingTalentSlug(st.talentSlug);
         else if(p!=="talent-public")setViewingTalentSlug(null);
+        if(p==="news-article")setViewingNewsSlug(st.newsSlug||urlToNewsSlug());
+        else setViewingNewsSlug(null);
       }else{
         const p=urlToPage();
         setPage(p);
@@ -20445,6 +20766,8 @@ function App(){
         else{const slug=urlToCastingSlug();if(slug){const c=CASTINGS.find(x=>x.slug===slug);if(c)setViewingCasting(c);}}
         if(p==="talent-public"){setViewingTalentSlug(urlToTalentSlug());}
         else setViewingTalentSlug(null);
+        if(p==="news-article"){setViewingNewsSlug(urlToNewsSlug());}
+        else setViewingNewsSlug(null);
       }
     };
     window.addEventListener("popstate",onPop);
@@ -20462,6 +20785,8 @@ function App(){
       else setViewingCasting(null);
       if(p==="talent-public"){setViewingTalentSlug(urlToTalentSlug());}
       else setViewingTalentSlug(null);
+      if(p==="news-article"){setViewingNewsSlug(urlToNewsSlug());}
+      else setViewingNewsSlug(null);
       // BFCache restore: do NOT clear session/profile — that caused the "random
       // logout" flicker. Instead, silently re-validate the session in the background.
       // Only clear state if the session has actually expired or the user signed out
@@ -20685,6 +21010,7 @@ function App(){
     if(p==="casting-detail"&&opts.slug){url=`/casting/${encodeURIComponent(opts.slug)}`;st.castingSlug=opts.slug;}
     else if(p==="casting-detail"&&opts.id){url=`/casting/${encodeURIComponent(opts.id)}`;}
     else if(p==="talent-public"&&opts.slug){url=`/talent/${encodeURIComponent(opts.slug)}`;st.talentSlug=opts.slug;}
+    else if(p==="news-article"&&opts.slug){url=`/news/${encodeURIComponent(opts.slug)}`;st.newsSlug=opts.slug;}
     else if(p==="profile"){
       // Profile overlay: use talent's public URL if available, else keep current URL
       if(opts.talentSlug){url=`/talent/${encodeURIComponent(opts.talentSlug)}`;st.talentSlug=opts.talentSlug;}
@@ -20702,6 +21028,7 @@ function App(){
     else if(p==="search"){setUserType("talent");setPage("search");}
     else if(p==="dashboard"){setUserType("cd");setPage("dashboard");setDashboardKey(k=>k+1);}
     else if(p==="talent-dashboard"){setPage("talent-dashboard");}
+    else if(p==="news-article"){setViewingNewsSlug(opts.slug||null);setPage("news-article");}
     else setPage(p);
     // Deep-link into a specific class detail
     if(p==="classes"&&opts.classId){setOpenClassId(opts.classId);setOpenClassInvitationId(opts.invitationId||null);}
@@ -20709,7 +21036,7 @@ function App(){
     // Clear detail state on any nav that isn't a drilldown
     if(p!=="profile"&&p!=="casting-detail"&&p!=="auth-gate"&&p!=="casting-gate"){setViewingProfile(null);setViewingCasting(null);}
     setPageSEO(target,opts);
-    pushHist(target);
+    pushHist(target,opts);
   },[]);
   const viewProfile=(t)=>{setPrevPage(page);setViewingProfile(t);setPage("profile");pushHist("profile",t?.public_slug?{talentSlug:t.public_slug}:{});};
   const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");pushHist("auth-gate");};
@@ -21039,6 +21366,10 @@ function App(){
         {page==="talent-public"&&viewingTalentSlug&&
           <ErrorBoundary label="Public Profile" onReset={()=>navigate("search")}>
             <PublicTalentProfilePage slug={viewingTalentSlug} onNavigate={navigate} session={session} myProfile={myProfile}/>
+          </ErrorBoundary>}
+        {page==="news-article"&&viewingNewsSlug&&
+          <ErrorBoundary label="News Article" onReset={()=>navigate("home")}>
+            <NewsArticlePage slug={viewingNewsSlug} onNavigate={navigate}/>
           </ErrorBoundary>}
         {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):isLoggedIn?
           <ErrorBoundary label="My Profile" onReset={()=>navigate("home")}>
