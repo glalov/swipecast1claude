@@ -1388,11 +1388,23 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .s-card-meta{color:var(--t2);font-size:12px;margin-bottom:8px;}
 .s-card-tags{display:flex;gap:5px;flex-wrap:wrap;}
 .s-card-tags span{background:var(--s2);padding:3px 8px;border-radius:5px;font-size:10px;color:var(--t2);}
-.swipe-btns{display:flex;gap:16px;}
-.sw-btn{width:52px;height:52px;border-radius:50%;border:2px solid var(--bdr);background:var(--s1);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:20px;}
-.sw-btn.pass:hover{border-color:var(--red);background:rgba(214,59,59,0.06);}
-.sw-btn.save:hover{border-color:var(--blu);background:rgba(37,99,235,0.06);}
-.sw-btn.yes:hover{border-color:var(--grn);background:rgba(27,135,62,0.06);}
+.swipe-btns{display:flex;gap:20px;align-items:flex-start;}
+.sw-btn-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.sw-btn-label{font-size:9px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--t3);}
+.sw-btn{width:56px;height:56px;border-radius:50%;border:2px solid var(--bdr);background:var(--s1);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .18s,border-color .18s,background .18s,box-shadow .18s;font-size:22px;}
+.sw-btn.pass:hover{border-color:var(--red);background:rgba(214,59,59,0.07);transform:scale(1.1);}
+.sw-btn.save:hover{border-color:var(--blu);background:rgba(37,99,235,0.07);transform:scale(1.1);}
+.sw-btn.yes:hover{border-color:var(--grn);background:rgba(27,135,62,0.07);transform:scale(1.1);}
+@keyframes sw-sway{0%,100%{transform:translateX(0)}30%{transform:translateX(-7px)}70%{transform:translateX(7px)}}
+@keyframes sw-ring{0%,100%{box-shadow:0 0 0 0 rgba(99,91,255,0)}55%{box-shadow:0 0 0 7px rgba(99,91,255,0.10)}}
+.sw-hint-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:var(--s2);border:1px solid var(--bdr);border-radius:100px;margin-bottom:10px;}
+.sw-hint-arrow{font-size:16px;display:inline-block;animation:sw-sway 2.4s ease-in-out infinite;line-height:1;}
+.sw-hint-text{font-size:12px;font-weight:600;color:var(--t2);}
+.sw-hint-text-mobile{display:none;font-size:12px;font-weight:600;color:var(--t2);}
+.sw-btn.save{animation:sw-ring 2.8s ease-in-out infinite;}
+.sw-btn.save:hover{animation:none;}
+.sw-tagline{margin-top:14px;font-size:11px;color:var(--t3);text-align:center;line-height:1.6;max-width:260px;}
+@media(max-width:600px){.sw-hint-text{display:none;}.sw-hint-text-mobile{display:block;}}
 .sw-overlay{position:absolute;top:16px;left:0;right:0;text-align:center;font-family:'DM Sans',sans-serif;font-weight:800;font-size:28px;letter-spacing:-0.5px;pointer-events:none;z-index:10;text-shadow:0 2px 10px rgba(0,0,0,.4);}
 .sw-counter{text-align:center;color:var(--t2);font-size:13px;margin-bottom:12px;}
 .cb-sidebar{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:20px;overflow-y:auto;max-height:80vh;}
@@ -12679,13 +12691,27 @@ function LandingSwipe(){
           </div>
         </div>
       </div>
-      <div style={{fontSize:11,color:"var(--t3)",margin:"10px 0 6px",letterSpacing:.5}}>{idx+1} / {total}</div>
-      <div className="swipe-btns">
-        <button className="sw-btn pass" title="Pass" disabled={animating} onClick={()=>advance(-1)}>✕</button>
-        <button className="sw-btn save" title="Shortlist" disabled={animating} onClick={()=>advance(1)}>★</button>
-        <button className="sw-btn yes" title="Callback" disabled={animating} onClick={()=>advance(1)}>✓</button>
+      <div className="sw-hint-pill">
+        <span className="sw-hint-arrow">↔</span>
+        <span className="sw-hint-text">Swipe or tap to review talent</span>
+        <span className="sw-hint-text-mobile">Swipe the card or tap below</span>
       </div>
-      <p style={{marginTop:12,fontSize:11,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase"}}>↔ Swipe left/right or tap the buttons</p>
+      <div style={{fontSize:11,color:"var(--t3)",margin:"0 0 10px",letterSpacing:.5}}>{idx+1} / {total}</div>
+      <div className="swipe-btns">
+        <div className="sw-btn-wrap">
+          <button className="sw-btn pass" title="Pass" disabled={animating} onClick={()=>advance(-1)}>✕</button>
+          <span className="sw-btn-label">Skip</span>
+        </div>
+        <div className="sw-btn-wrap">
+          <button className="sw-btn save" title="Shortlist" disabled={animating} onClick={()=>advance(1)}>★</button>
+          <span className="sw-btn-label">Save</span>
+        </div>
+        <div className="sw-btn-wrap">
+          <button className="sw-btn yes" title="Callback" disabled={animating} onClick={()=>advance(1)}>✓</button>
+          <span className="sw-btn-label">Select</span>
+        </div>
+      </div>
+      <p className="sw-tagline">Review actors one profile at a time. No crowded grids.</p>
     </div>
   );
 }
