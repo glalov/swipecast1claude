@@ -1308,6 +1308,7 @@ const SUCCESS_STORIES = [
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{--bg:#F7F4EE;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;}
 html,body{min-height:100vh;background:#1B1C20;}
@@ -1788,6 +1789,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @keyframes partnersSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
 @media (prefers-reduced-motion: reduce){.partners-track{animation:none;}}
 @media (max-width:768px){.partners-tile{font-size:28px;gap:30px;padding:0 30px;}}
+/* ─── Tagline under the casting-format marquee (geometric sans, bold) ─── */
+.scale-tagline{text-align:center;padding:18px 24px 0;margin:0 auto;max-width:780px;font-family:'Poppins','DM Sans',system-ui,sans-serif;font-size:clamp(20px,2.6vw,28px);font-weight:700;letter-spacing:-0.01em;line-height:1.35;color:rgba(26,26,46,0.9);}
+.scale-tagline .tg-neon{color:#9333EA;}
+.scale-tagline .tg-netflix{color:#E50914;}
+@media (max-width:768px){.scale-tagline{font-size:19px;padding:14px 20px 0;}}
 /* ─── Talent Dashboard responsive grid ─── */
 .td-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
@@ -12791,6 +12797,19 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
 // ═══════════════════════════════════════════
 function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,myProfile=null}){
   const tr=useT();
+  // Tagline-under-marquee visibility. Defaults ON; admins flip it via Admin → Toggles,
+  // which writes site_settings.tagline_under_marquee (publicly readable).
+  const[taglineOn,setTaglineOn]=React.useState(true);
+  React.useEffect(()=>{
+    let alive=true;
+    (async()=>{
+      try{
+        const{data}=await window.sb.from("site_settings").select("tagline_under_marquee").eq("id",1).maybeSingle();
+        if(alive&&data)setTaglineOn(data.tagline_under_marquee!==false);
+      }catch(_){}
+    })();
+    return()=>{alive=false;};
+  },[]);
   // Stat count-up ONLY. Never touches opacity/visibility, so it can never hide
   // content. Numbers tick up from zero when the stat band scrolls into view.
   // Respects prefers-reduced-motion.
@@ -12892,6 +12911,12 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           })()}
         </div>
       </div>
+      {/* Tagline under the marquee — toggleable from Admin → Toggles (site_settings.tagline_under_marquee). */}
+      {taglineOn && (
+        <p className="scale-tagline">
+          from indie films to A24, <span className="tg-neon">Neon</span> and <span className="tg-netflix">Netflix</span> level projects
+        </p>
+      )}
     </div>
 
     {/* ───────── FEATURED CASTINGS SLIDER — pulls live from public.castings (same as Browse Castings) ───────── */}
@@ -16405,6 +16430,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       <AdminNavLink current={section} target="errors" label="Error log" onClick={goToSection}/>
       <AdminNavLink current={section} target="audit" label="Audit log" onClick={goToSection}/>
       <AdminNavLink current={section} target="settings" label="Site settings" onClick={goToSection}/>
+      <AdminNavLink current={section} target="toggles" label="Toggles" onClick={goToSection}/>
       {isSuperAdmin&&<AdminNavLink current={section} target="casting-generator" label="Casting Generator" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="legal-pages" label="Legal Pages" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="email-digests" label="Email Digests" onClick={goToSection}/>}
@@ -16432,6 +16458,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="errors"&&<AdminErrors/>}
       {section==="audit"&&<AdminAudit/>}
       {section==="settings"&&<AdminSettings/>}
+      {section==="toggles"&&<AdminToggles/>}
       {section==="casting-generator"&&isSuperAdmin&&<AdminCastingGenerator session={session}/>}
       {section==="legal-pages"&&isSuperAdmin&&<AdminLegalPages/>}
       {section==="email-digests"&&isSuperAdmin&&<AdminEmailDigests/>}
@@ -17352,6 +17379,46 @@ function AdminAudit(){
       <button className="btn-s btn-sm" disabled={page===0} onClick={()=>setPage(p=>Math.max(0,p-1))}>← Prev</button>
       <span style={{fontSize:12,color:"var(--t3)"}}>Page {page+1}</span>
       <button className="btn-s btn-sm" disabled={!hasMore} onClick={()=>setPage(p=>p+1)}>Next →</button>
+    </div>
+  </>);
+}
+
+// ─── Toggles: show/hide individual front-end elements (stored in site_settings).
+function AdminToggles(){
+  const [loading,setLoading]=useState(true);
+  const [busy,setBusy]=useState(false);
+  const [msg,setMsg]=useState("");
+  const [taglineOn,setTaglineOn]=useState(false);
+  useEffect(()=>{(async()=>{
+    try{
+      const{data,error}=await window.sb.from("site_settings").select("tagline_under_marquee").eq("id",1).maybeSingle();
+      if(error)throw error;
+      setTaglineOn(data?.tagline_under_marquee!==false);
+    }catch(e){setMsg("Load failed: "+(e.message||e));}
+    finally{setLoading(false);}
+  })();},[]);
+  const toggle=async(next)=>{
+    setBusy(true);setMsg("");
+    const{error}=await window.sb.rpc("admin_set_tagline_under_marquee",{p_enabled:next});
+    if(error){setMsg("Save failed: "+error.message);}
+    else{setTaglineOn(next);setMsg(next?"Tagline is now ON — visible on the landing page.":"Tagline is now OFF — hidden on the landing page.");}
+    setBusy(false);
+  };
+  if(loading)return <CastSlateLoader size="inline" text="Loading toggles…"/>;
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Toggles</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Show or hide individual front-end elements. Changes apply to all visitors immediately and are audit-logged.</p>
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+    <div className="card" style={{padding:24}}>
+      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16}}>
+        <div>
+          <div style={{fontSize:15,fontWeight:700,marginBottom:4}}>Tagline under marquee</div>
+          <p style={{color:"var(--t3)",fontSize:12,lineHeight:1.5,maxWidth:440,margin:0}}>The line "from indie films to A24, Neon and Netflix level projects" shown beneath the casting-format slider on the landing page.</p>
+        </div>
+        <button role="switch" aria-checked={taglineOn} disabled={busy} onClick={()=>toggle(!taglineOn)} style={{position:"relative",width:52,height:30,borderRadius:30,border:"none",cursor:busy?"default":"pointer",background:taglineOn?"var(--grn)":"var(--s3)",transition:"background .2s",flexShrink:0,opacity:busy?0.6:1}}>
+          <span style={{position:"absolute",top:3,left:taglineOn?25:3,width:24,height:24,borderRadius:"50%",background:"#fff",boxShadow:"0 1px 3px rgba(0,0,0,0.3)",transition:"left .2s"}}/>
+        </button>
+      </div>
     </div>
   </>);
 }
