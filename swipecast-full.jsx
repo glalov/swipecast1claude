@@ -106,8 +106,10 @@ const TRANSLATIONS = {
     // Landing
     'landing.liveNow':'Live now · Trusted by working actors and casting directors',
     'landing.welcomeBack':'Welcome back{name} · You\'re all set',
-    'landing.heroTitle':'Casting, finally built for','landing.heroAccent':'actors.',
-    'landing.heroDesc':'Tinder-style casting: one actor at a time, full-screen. Every headshot gets seen. And at $9.99/mo — a fraction of what legacy casting sites charge — we\'re the cheapest plan in the industry. Swipe. Get seen. Get cast.',
+    'landing.heroTitle':'Modern casting for independent storytellers and','landing.heroAccent':'undiscovered talent.',
+    'landing.heroDesc':'CastSlate is a visual-first casting platform for indie filmmakers, student directors, and creators — and the actors who deserve to be seen. Browse talent one profile at a time, where every headshot gets a real look instead of vanishing into a crowded grid.',
+    'landing.heroDesc2':'Actors join free, submit to projects free, and connect directly with the storytellers looking for something real.',
+    'landing.heroTagline':'Modern casting, built around discovery.',
     'landing.createProfile':'Create My Free Profile →','landing.iAmCD':'I\'m a Casting Director',
     'landing.openDashboard':'Open Dashboard →','landing.browseCastings':'Browse Castings →',
     'landing.myProfile':'My Profile',
@@ -350,8 +352,10 @@ const TRANSLATIONS = {
     // Landing
     'landing.liveNow':'En vivo · Confiado por actores y directores de casting profesionales',
     'landing.welcomeBack':'Bienvenido/a de nuevo{name} · Todo listo',
-    'landing.heroTitle':'Casting, finalmente diseñado para','landing.heroAccent':'actores.',
-    'landing.heroDesc':'Casting estilo Tinder: un actor a la vez, pantalla completa. Cada foto de perfil es vista. A $9.99/mes — una fracción de lo que cobran los sitios tradicionales — somos el plan más accesible del sector. Desliza. Sé visto. Consigue el papel.',
+    'landing.heroTitle':'Casting moderno para narradores independientes y','landing.heroAccent':'talento por descubrir.',
+    'landing.heroDesc':'CastSlate es una plataforma de casting visual para cineastas independientes, directores estudiantiles y creadores — y los actores que merecen ser vistos. Explora el talento perfil por perfil, donde cada foto recibe una mirada real en lugar de perderse en una cuadrícula saturada.',
+    'landing.heroDesc2':'Los actores se unen gratis, se postulan a proyectos gratis y conectan directamente con los narradores que buscan algo auténtico.',
+    'landing.heroTagline':'Casting moderno, construido en torno al descubrimiento.',
     'landing.createProfile':'Crear mi perfil gratis →','landing.iAmCD':'Soy director de casting',
     'landing.openDashboard':'Abrir panel →','landing.browseCastings':'Ver convocatorias →',
     'landing.myProfile':'Mi perfil',
@@ -1502,7 +1506,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .casting-card-row-side{align-items:stretch !important;width:100%;flex-direction:row !important;flex-wrap:wrap;justify-content:space-between;}
   .casting-card-row-side button{flex:1 1 100%;}
   .landing-hero{grid-template-columns:1fr !important;gap:32px !important;padding:48px 20px 28px !important;text-align:center;}
-  .landing-hero-title{font-size:38px !important;letter-spacing:-1.2px !important;}
+  .landing-hero-title{font-size:33px !important;letter-spacing:-1px !important;}
   .landing-testimonials{grid-template-columns:1fr !important;}
   .lh-section,.lh-cta{padding-left:20px !important;padding-right:20px !important;}
   .lh-section{padding-top:48px !important;padding-bottom:48px !important;}
@@ -12823,8 +12827,10 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     {/* ───────── HERO ───────── */}
     <section className="landing-hero" style={{padding:"72px 40px 40px",maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1.1fr 1fr",gap:60,alignItems:"center"}}><div>
       <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--bdr)",padding:"6px 14px",borderRadius:100,fontSize:12,color:"var(--acc)",fontWeight:700,letterSpacing:0.5,textTransform:"uppercase",marginBottom:20}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--grn)",boxShadow:"0 0 8px var(--grn)"}}/>{isLoggedIn?tr('landing.welcomeBack').replace('{name}',myProfile?.display_name?", "+myProfile.display_name.split(" ")[0]:""):tr('landing.liveNow')}</div>
-      <h1 className="landing-hero-title" style={{fontWeight:800,fontSize:56,lineHeight:1.02,letterSpacing:-2.2,marginBottom:20}}>{tr('landing.heroTitle')} <span style={{color:"var(--acc)"}}>{tr('landing.heroAccent')}</span></h1>
-      <p style={{color:"var(--t2)",fontSize:18,lineHeight:1.55,marginBottom:28,maxWidth:500}}>{tr('landing.heroDesc')}</p>
+      <h1 className="landing-hero-title" style={{fontWeight:800,fontSize:46,lineHeight:1.07,letterSpacing:-1.6,marginBottom:18}}>{tr('landing.heroTitle')} <span style={{color:"var(--acc)"}}>{tr('landing.heroAccent')}</span></h1>
+      <p style={{color:"var(--t2)",fontSize:16.5,lineHeight:1.6,marginBottom:14,maxWidth:520}}>{tr('landing.heroDesc')}</p>
+      <p style={{color:"var(--t2)",fontSize:16.5,lineHeight:1.6,marginBottom:16,maxWidth:520}}>{tr('landing.heroDesc2')}</p>
+      <p style={{color:"var(--t1)",fontSize:15.5,fontWeight:700,letterSpacing:-0.2,marginBottom:26}}>{tr('landing.heroTagline')}</p>
       <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate(heroPrimary.to)}>{heroPrimary.label}</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14,background:"#fff",color:"#1A1A2E"}} onClick={()=>onNavigate(heroSecondary.to)}>{heroSecondary.label}</button></div>
       <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> {tr('landing.freeAccount')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> {tr('landing.noCreditCard')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> {tr('landing.quickSignup')}</span></div>
     </div>
