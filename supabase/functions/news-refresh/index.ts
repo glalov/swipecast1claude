@@ -149,8 +149,55 @@ async function aiRewrite(title: string, desc: string, source: string, category: 
   }
 }
 
+// Shared instruction for any model: write an ORIGINAL post (never a reworded
+// copy) that reports the real facts from the feed teaser in CastSlate's voice.
+function rewritePrompt(title: string, desc: string, source: string, category: Category) {
+  return `You are a staff editor at CastSlate, a casting platform for actors. Using the headline and teaser below as your factual basis, write an ORIGINAL CastSlate news post in your own words. Keep every fact accurate — real names of people, companies, projects, and what actually happened must be correct and specific. Do NOT copy or closely reword the source's sentences; write fresh prose with your own structure, and add brief context on what it means for actors and casting. Write a complete standalone post; never tell readers to visit another site.\n\nReported by: ${source}\nCategory: ${category}\nHeadline: ${title}\nTeaser: ${desc}\n\nReturn ONLY valid JSON: {"headline": "<accurate original headline, max 14 words>", "excerpt": "<1 original sentence, max 30 words>", "body": "<3 to 5 substantial original paragraphs separated by \\n\\n>"}`;
+}
+function parseModelJson(text: string) {
+  const m = (text || "").match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  try {
+    const p = JSON.parse(m[0]);
+    if (!p.headline || !p.body) return null;
+    return p as { headline: string; excerpt: string; body: string };
+  } catch (_) { return null; }
+}
+
+// Gemini rewrite (Google AI Studio). Key comes from Vault via RPC.
+const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+// Retries on 429 (free-tier rate limit) with backoff so a burst of stories
+// doesn't get dropped to the fallback.
+async function geminiRewrite(key: string, title: string, desc: string, source: string, category: Category, attempt = 0): Promise<{ headline: string; excerpt: string; body: string } | null> {
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`;
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: rewritePrompt(title, desc, source, category) }] }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2048,
+          responseMimeType: "application/json",
+          thinkingConfig: { thinkingBudget: 0 },
+        },
+      }),
+    });
+    if (r.status === 429 && attempt < 3) {
+      await sleep(8000 * (attempt + 1));
+      return geminiRewrite(key, title, desc, source, category, attempt + 1);
+    }
+    if (!r.ok) return null;
+    const j = await r.json();
+    const text = j?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    return parseModelJson(text);
+  } catch (_) { return null; }
+}
+
 // Safe fallback: an original CastSlate blurb built from the headline only.
-// Never copies the source description verbatim; always links back for details.
+// Never copies the source description verbatim.
 function fallbackRewrite(title: string, source: string, category: Category) {
   const headline = title.replace(/\s*[\|\-–—]\s*[^|\-–—]*$/, "").trim() || title;
   const cat = category.toLowerCase();
@@ -198,6 +245,13 @@ serve(async (req) => {
   try {
     const sb = createClient(SUPABASE_URL, SERVICE_KEY);
 
+    // Gemini key lives in Vault (read via service-role-only RPC).
+    let geminiKey: string | null = null;
+    try {
+      const { data } = await sb.rpc("news_get_gemini_key");
+      if (data && typeof data === "string") geminiKey = data;
+    } catch (_) { /* no key configured */ }
+
     // Per-source cap so one feed can't dominate; overall cap keeps it compact.
     const PER_SOURCE = 2;
     const candidates: { item: FeedItem; source: string; category: Category }[] = [];
@@ -231,7 +285,9 @@ serve(async (req) => {
     const imgIdx: Record<string, number> = {};
     for (const c of candidates) {
       if (existing.has(c.item.link)) continue;
-      const rewritten = (await aiRewrite(c.item.title, c.item.description, c.source, c.category))
+      const rewritten =
+        (geminiKey ? await geminiRewrite(geminiKey, c.item.title, c.item.description, c.source, c.category) : null)
+        || (await aiRewrite(c.item.title, c.item.description, c.source, c.category))
         || fallbackRewrite(c.item.title, c.source, c.category);
       const baseSlug = slugify(rewritten.headline) || slugify(c.item.title) || `story-${Date.now()}`;
       const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`;
@@ -257,12 +313,14 @@ serve(async (req) => {
         written_at: written,
       });
       if (!error) added++;
+      // Pace requests to stay under Gemini's free-tier per-minute limit.
+      if (geminiKey) await sleep(4500);
     }
 
     // Stamp the run.
     await sb.from("site_settings").update({ news_last_run: new Date().toISOString() }).eq("id", 1);
 
-    return json({ ok: true, added, scanned: candidates.length, ai: !!ANTHROPIC_API_KEY });
+    return json({ ok: true, added, scanned: candidates.length, model: geminiKey ? "gemini" : (ANTHROPIC_API_KEY ? "claude" : "fallback"), tmdb: !!TMDB_API_KEY });
   } catch (e) {
     return json({ ok: false, error: String((e as Error)?.message || e) }, 500);
   }
