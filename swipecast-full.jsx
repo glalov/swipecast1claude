@@ -1585,6 +1585,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .site-backtotop:hover{background:#2F3037;color:#fff;}
 .site-backtotop-arrow{display:inline-block;font-size:13px;transition:transform .2s ease;}
 .site-backtotop:hover .site-backtotop-arrow{transform:translateY(-2px);}
+/* Breathing room between page content (e.g. pagination) and the Back-to-top bar. */
+.page-foot-gap{flex:none;height:clamp(40px,6vw,64px);}
 /* ─── Global site footer — dark charcoal, applied via Footer component everywhere.
        The width:100vw + negative-margin-50vw pattern lets the footer's dark bg
        escape any constrained .page (max-width:1200px) parent so it always
@@ -3319,6 +3321,7 @@ function BlogPage({onNavigate}){
   if(viewing){const p=BLOG_POSTS.find(b=>b.id===viewing);return(<div className="page"><button className="btn-s btn-sm mb-20" onClick={()=>setViewing(null)}>← Back to Blog</button><div style={{maxWidth:720,margin:"0 auto"}}><div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:12}}>{p.category}</div><h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:12}}>{p.title}</h1><div style={{color:"var(--t3)",fontSize:13,marginBottom:32}}>{p.date} · {p.readTime} read</div>{(BLOG_CONTENT[p.id]||p.excerpt).split("\n\n").map((para,i)=><p key={i} style={{color:"var(--t2)",fontSize:15,lineHeight:1.8,marginBottom:20}}>{para}</p>)}</div><Footer onNavigate={onNavigate}/></div>);}
   return(<div className="page"><div className="section-label">Blog</div><h1 className="section-title">CastSlate Journal</h1>
     <div className="blog-grid">{BLOG_POSTS.map(p=><div key={p.id} className="card blog-card" onClick={()=>setViewing(p.id)}><div className="blog-cat">{p.category}</div><h3>{p.title}</h3><p>{p.excerpt}</p><div className="blog-meta">{p.date} · {p.readTime} read</div></div>)}</div>
+    <div className="page-foot-gap" aria-hidden="true"/>
     <Footer onNavigate={onNavigate}/></div>);
 }
 
@@ -3847,6 +3850,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
       )}
 
       {bookingTarget&&<BookingRequestModal target={bookingTarget} myProfile={myProfile} session={session} onClose={()=>setBookingTarget(null)} onSubmitted={()=>setBookingTarget(null)}/>}
+      <div className="page-foot-gap" aria-hidden="true"/>
       <Footer onNavigate={onNavigate}/>
     </div>);
   }
@@ -8185,6 +8189,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         </>}
     </>
     {applyTo&&<div className="modal-overlay" onClick={()=>setApplyTo(null)}><div className="modal" onClick={e=>e.stopPropagation()}><h2>{t('search.submitForRole')}</h2><div style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:20}}><h4 style={{fontSize:14,fontWeight:700}}>{applyTo.title}</h4><p style={{color:"var(--t2)",fontSize:12,marginTop:2}}>{applyTo.prod} · {applyTo.location}</p></div><div className="form-group"><label className="label">{t('search.coverNote')}</label><textarea className="textarea" placeholder={t('search.coverNotePlaceholder')}></textarea></div><div className="form-group"><label className="label">{t('search.whichHeadshot')}</label><div style={{display:"flex",gap:10,marginTop:8}}><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"2px solid var(--acc)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t2)",textAlign:"center",padding:4}}>{t('search.primary')}</div><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t3)",textAlign:"center",padding:4,cursor:"pointer"}}>{t('search.addPhoto')}</div></div></div><div style={{display:"flex",gap:12,marginTop:24}}><button className="btn-p" style={{flex:1}} onClick={()=>{setApplied(p=>new Set([...p,applyTo.id]));setApplyTo(null);}}>{t('search.submitApp')}</button><button className="btn-s" onClick={()=>setApplyTo(null)}>{t('cancel')}</button></div></div></div>}
+    <div className="page-foot-gap" aria-hidden="true"/>
     <Footer onNavigate={onNavigate}/></div>);
 }
 
