@@ -12936,13 +12936,11 @@ function NewsArticlePage({slug,onNavigate}){
       {a.image_url&&<><div className="news-article-hero"><img src={a.image_url} alt=""/></div>
         <p className="news-article-caption">Illustrative image — CastSlate does not republish source photography.</p></>}
       <div className="news-article-body">{paras.map((p,i)=><p key={i}>{p}</p>)}</div>
-      {(a.source_name||a.source_url)&&(
+      {a.source_name&&(
         <div className="news-source-box">
-          <div className="news-source-lbl">Original Source</div>
-          {a.source_url
-            ?<a href={a.source_url} target="_blank" rel="noopener noreferrer">Read the original at {a.source_name||"the source"} →</a>
-            :<span style={{color:"var(--t2)",fontSize:15}}>{a.source_name}</span>}
-          <p className="news-disclaimer">This is an original CastSlate summary written by our editorial staff. CastSlate does not reproduce full articles or copyrighted images.{a.source_url?" Read the complete report at the source linked above.":""}</p>
+          <div className="news-source-lbl">Credit</div>
+          <span style={{color:"var(--t2)",fontSize:15,fontWeight:600}}>Reported by {a.source_name}</span>
+          <p className="news-disclaimer">Written by CastSlate Staff. This is an original CastSlate write-up; we do not reproduce full source articles.</p>
         </div>
       )}
     </article>

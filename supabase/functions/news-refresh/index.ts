@@ -1,19 +1,22 @@
 // news-refresh — Supabase Edge Function
 // Auto-collects entertainment-industry news from approved trade RSS feeds,
-// rewrites each item in CastSlate's own words ("Written by CastSlate Staff"),
-// pairs it with a royalty-free image, and publishes to public.news_articles —
-// always linking back to the original source.
+// writes a FULL ORIGINAL CastSlate post for each ("Written by CastSlate Staff"),
+// attaches a real movie/cast image via TMDB's official API, and publishes to
+// public.news_articles. A small non-linked "Reported by X" credit is kept.
 //
 // LEGALLY SAFE BY DESIGN:
-//   • Pulls only headline + short metadata from public RSS feeds (built for syndication).
-//   • Never copies full articles. Summaries are original CastSlate editorial.
-//   • Never reuses source photography — images come from a royalty-free pool.
-//   • Every article keeps a credited link back to the original report.
+//   • Pulls only headline + short teaser from public RSS feeds (built for syndication).
+//   • Never copies source article text — posts are original CastSlate editorial.
+//   • Never scrapes source photography (Getty/AP/wire). Images come from TMDB's
+//     official API (sanctioned for app display, with TMDB attribution) or a
+//     royalty-free fallback pool.
 //   • Backstage is intentionally NOT a source.
 //
-// Optional secret (Supabase Dashboard → Edge Functions → Secrets):
-//   ANTHROPIC_API_KEY — if set, summaries are rewritten by Claude for higher
-//                       quality. Without it, a safe original-blurb fallback is used.
+// Optional secrets (Supabase Dashboard → Edge Functions → Secrets):
+//   ANTHROPIC_API_KEY — if set, posts are written by Claude (higher quality).
+//                       Without it, a safe original full-length fallback is used.
+//   TMDB_API_KEY      — if set, attaches real movie/TV/cast imagery via TMDB.
+//                       Without it, falls back to royalty-free images.
 //
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected automatically.
 
@@ -23,6 +26,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+// Real movie stills / cast photos via TMDB's official API (themoviedb.org/settings/api).
+// TMDB is the sanctioned channel for apps to display film/TV/person imagery with
+// TMDB attribution — unlike scraping Getty/AP wire photos from trade sites.
+const TMDB_API_KEY = Deno.env.get("TMDB_API_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -114,7 +121,7 @@ function parseRss(xml: string): FeedItem[] {
 // AI rewrite (Claude). Returns {headline, excerpt, body} or null on failure.
 async function aiRewrite(title: string, desc: string, source: string, category: Category) {
   if (!ANTHROPIC_API_KEY) return null;
-  const prompt = `You are a staff editor at CastSlate, a casting platform for actors. Rewrite this trade-news item as an ORIGINAL short summary in CastSlate's own neutral, professional voice. Do NOT copy phrasing from the source. Focus on what it means for actors and the casting industry.\n\nSource: ${source}\nCategory: ${category}\nHeadline: ${title}\nSummary: ${desc}\n\nReturn ONLY valid JSON: {"headline": "<rewritten headline, max 12 words>", "excerpt": "<1 sentence, max 28 words>", "body": "<2-3 short original paragraphs separated by \\n\\n, ending by pointing readers to the original source for full details>"}`;
+  const prompt = `You are a staff editor at CastSlate, a casting platform for actors. Using ONLY the headline and brief teaser below as a factual starting point, write an ORIGINAL, full-length CastSlate news post in your own words and your own framing. Do NOT copy or closely paraphrase the source's sentences. Add genuine context and explain what it means for working actors, casting, and the industry. Write a complete, standalone article — do not tell readers to go elsewhere.\n\nReported by: ${source}\nCategory: ${category}\nHeadline: ${title}\nTeaser: ${desc}\n\nReturn ONLY valid JSON: {"headline": "<your own rewritten headline, max 14 words>", "excerpt": "<1 original sentence, max 30 words>", "body": "<4 to 6 substantial original paragraphs separated by \\n\\n>"}`;
   try {
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -125,7 +132,7 @@ async function aiRewrite(title: string, desc: string, source: string, category: 
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 700,
+        max_tokens: 1400,
         messages: [{ role: "user", content: prompt }],
       }),
     });
@@ -146,12 +153,41 @@ async function aiRewrite(title: string, desc: string, source: string, category: 
 // Never copies the source description verbatim; always links back for details.
 function fallbackRewrite(title: string, source: string, category: Category) {
   const headline = title.replace(/\s*[\|\-–—]\s*[^|\-–—]*$/, "").trim() || title;
-  const excerpt = `CastSlate's quick read on a ${category.toLowerCase()} story worth an actor's attention — full details at ${source}.`;
+  const cat = category.toLowerCase();
+  const excerpt = `A ${cat} development CastSlate is tracking for what it could mean for casting and working actors.`;
   const body =
-    `Industry watchers are tracking a developing ${category.toLowerCase()} story: "${headline}." For working actors and casting teams, items like this can signal shifts in upcoming opportunities, timelines, or expectations.\n\n` +
-    `CastSlate is flagging it here as part of our ongoing roundup of acting, casting, and entertainment-industry news. We summarize the signal so you can decide whether it's worth a deeper look.\n\n` +
-    `For the complete report and all specifics, read the original coverage at ${source} via the source link below.`;
+    `CastSlate is following a developing ${cat} story: “${headline}.” In a business that moves on momentum, items like this are worth an actor's attention because they tend to ripple outward into casting decisions, production timelines, and the kinds of roles that open up next.\n\n` +
+    `For performers, the practical question is always the same — does this change where the work is, or who's being seen for it? Shifts in ${cat} activity often precede new auditions, recasts, or expanded ensembles, and the actors who notice early are the ones positioned to submit first.\n\n` +
+    `It also reflects a broader pattern we watch closely at CastSlate: the industry rewards preparation and timing. A profile that's current, a reel that's ready, and a clear sense of your casting lane turn news like this into an opportunity rather than a missed window.\n\n` +
+    `We'll keep updating this roundup as the picture develops. In the meantime, the takeaway for actors is to stay ready — keep your materials sharp, your availability honest, and your submissions targeted to the roles that genuinely fit your range.\n\n` +
+    `This post was written by CastSlate Staff as part of our ongoing coverage of acting, casting, film, television, and theater news.`;
   return { headline, excerpt, body };
+}
+
+// Find a real, relevant image via TMDB (movie/TV poster/still or person photo).
+// Returns a TMDB image URL or null. Falls back to royalty-free pool when null.
+async function tmdbImage(headline: string): Promise<string | null> {
+  if (!TMDB_API_KEY) return null;
+  // Prefer a quoted title in the headline (e.g. 'The Four Seasons'); else use
+  // the leading words (often a name or show title).
+  const quoted = headline.match(/['"“”‘’]([^'"“”‘’]{2,60})['"“”‘’]/);
+  const query = (quoted ? quoted[1] : headline.split(/\s+/).slice(0, 5).join(" "))
+    .replace(/[^\w\s'-]/g, " ").trim();
+  if (!query) return null;
+  try {
+    const u = `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&include_adult=false&query=${encodeURIComponent(query)}`;
+    const r = await fetch(u);
+    if (!r.ok) return null;
+    const j = await r.json();
+    const results = (j?.results || []) as Array<Record<string, unknown>>;
+    for (const res of results) {
+      const path = (res.poster_path || res.backdrop_path || res.profile_path) as string | undefined;
+      if (path) return `https://image.tmdb.org/t/p/w780${path}`;
+    }
+    return null;
+  } catch (_) {
+    return null;
+  }
 }
 
 serve(async (req) => {
@@ -199,8 +235,10 @@ serve(async (req) => {
         || fallbackRewrite(c.item.title, c.source, c.category);
       const baseSlug = slugify(rewritten.headline) || slugify(c.item.title) || `story-${Date.now()}`;
       const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`;
+      // Real movie/cast image via TMDB; royalty-free pool only as a fallback.
       const pool = IMAGES[c.category] || IMAGES.Industry;
       const i = (imgIdx[c.category] = (imgIdx[c.category] ?? 0) + 1) % pool.length;
+      const image = (await tmdbImage(c.item.title)) || pool[i];
       const written = new Date().toISOString();
       const fetched = c.item.pubDate ? new Date(c.item.pubDate).toISOString() : written;
       const { error } = await sb.from("news_articles").insert({
@@ -209,7 +247,7 @@ serve(async (req) => {
         excerpt: rewritten.excerpt,
         body: rewritten.body,
         category: c.category,
-        image_url: pool[i],
+        image_url: image,
         source_name: c.source,
         source_url: c.item.link,
         author: "CastSlate Staff",
