@@ -1792,10 +1792,10 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media (prefers-reduced-motion: reduce){.partners-track{animation:none;}}
 @media (max-width:768px){.partners-tile{font-size:28px;gap:30px;padding:0 30px;}}
 /* ─── Tagline under the casting-format marquee (geometric sans, bold) ─── */
-.scale-tagline{text-align:center;padding:18px 24px 0;margin:0 auto;max-width:780px;font-family:'Poppins','DM Sans',system-ui,sans-serif;font-size:clamp(20px,2.6vw,28px);font-weight:700;letter-spacing:-0.01em;line-height:1.35;color:rgba(26,26,46,0.9);}
+.scale-tagline{text-align:center;padding:clamp(40px,5vw,72px) 24px 0;margin:0 auto;max-width:780px;font-family:'Poppins','DM Sans',system-ui,sans-serif;font-size:clamp(20px,2.6vw,28px);font-weight:700;letter-spacing:-0.01em;line-height:1.35;color:rgba(26,26,46,0.9);}
 .scale-tagline .tg-neon{color:#9333EA;}
 .scale-tagline .tg-netflix{color:#E50914;}
-@media (max-width:768px){.scale-tagline{font-size:19px;padding:14px 20px 0;}}
+@media (max-width:768px){.scale-tagline{font-size:19px;padding:36px 20px 0;}}
 /* ─── Latest Industry News (landing section: 3 blocks × 4 cards) ─── */
 .news-sec{border-top:1px solid var(--bdr);padding:54px 0 58px;}
 .news-block{margin-bottom:42px;}
@@ -7957,20 +7957,29 @@ function fmtCastingDate(val){
   }catch{return String(val);}
 }
 
+// Whole-word location match. Naive substring matching is wrong for short
+// tokens — e.g. "la" lives inside "white pLAins" and "is​LAnd", so a bare
+// loc.includes("la") made the Los Angeles filter return New York results.
+// Treat any non-alphanumeric char (space, comma, period) as a word boundary.
+function locHasTerm(loc,term){
+  if(!term)return false;
+  const esc=term.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  return new RegExp("(^|[^a-z0-9])"+esc+"($|[^a-z0-9])","i").test(loc);
+}
 function matchesLocationFilter(castingLoc,selectedFilter){
   const loc=(castingLoc||"").toLowerCase().trim();
   const sel=(selectedFilter||"").toLowerCase().trim();
   if(!sel)return true;
-  if(loc.includes(sel))return true;
+  if(locHasTerm(loc,sel))return true;
   const NY_TERMS=["new york","new york, ny","new york,ny","nyc","n.y.c","manhattan","brooklyn","queens","the bronx","bronx","staten island","long island","yonkers","westchester","jersey city","hoboken","newark","north jersey","new jersey","nj","nassau","suffolk","harlem","astoria","flushing","the heights","washington heights","upper east","upper west","midtown","downtown","tribeca","soho","noho","lower east","east village","west village","chelsea","flatiron","gramercy","murray hill","hell's kitchen","lincoln center","inwood","riverdale","soundview","fordham","jamaica","corona","elmhurst","ridgewood","bay ridge","bensonhurst","park slope","williamsburg","bushwick","bedford","crown heights","flatbush","east new york","rockaway","fresh meadows","bayside","forest hills","rego park","sunnyside","woodside","jackson heights","maspeth","north bergen","weehawken","union city","bayonne"];
   const LA_TERMS=["los angeles","los angeles, ca","los angeles,ca","la","l.a.","hollywood","west hollywood","weho","burbank","glendale","pasadena","santa monica","culver city","studio city","north hollywood","noho","long beach","compton","inglewood","torrance","hawthorne","el segundo","manhattan beach","hermosa beach","redondo beach","venice","marina del rey","playa vista","playa del rey","westwood","brentwood","bel air","beverly hills","west la","koreatown","echo park","silver lake","los feliz","atwater village","eagle rock","highland park","monterey park","alhambra","arcadia","san gabriel","the valley","sherman oaks","encino","van nuys","reseda","chatsworth","thousand oaks","calabasas","malibu","pomona","ontario","rancho cucamonga","san bernardino"];
   if(sel==="new york"||sel==="new york, ny"){
-    return NY_TERMS.some(t=>loc.includes(t));
+    return NY_TERMS.some(t=>locHasTerm(loc,t));
   }
   if(sel==="los angeles"||sel==="los angeles, ca"){
-    return LA_TERMS.some(t=>loc.includes(t));
+    return LA_TERMS.some(t=>locHasTerm(loc,t));
   }
-  return loc.includes(sel);
+  return locHasTerm(loc,sel);
 }
 
 function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,castingsVersion=0,session,myProfile}){
