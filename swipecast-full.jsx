@@ -13014,7 +13014,6 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
   const heroSecondary=!isLoggedIn
     ?{label:tr('landing.iAmCD'),to:"register-cd"}
     :{label:tr('landing.myProfile'),to:"my-profile"};
-  const [hTab,setHTab]=useState("talent");
   const [wlEmail,setWlEmail]=useState("");
   const [wlRole,setWlRole]=useState("talent");
   const [wlDone,setWlDone]=useState(false);
@@ -13165,22 +13164,15 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       </div>
     </div>
 
-    <section className="lh-section" style={{padding:"56px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">How It Works</div>
-      <div className="tabs"><button className={`tab ${hTab==="talent"?"active":""}`} onClick={()=>setHTab("talent")}>For Talent</button><button className={`tab ${hTab==="caster"?"active":""}`} onClick={()=>setHTab("caster")}>For Casting Directors</button></div>
-      <div className="section-title" style={{marginTop:8}}>{hTab==="talent"?"Your talent deserves to be seen.":"Cast smarter. See everyone."}</div>
-      <div className="grid-3">{(hTab==="talent"?[["01","Create Your Profile","Upload headshots, resume, and stats. Free accounts get 1 headshot and 3 submissions/day. Upgrade to Premium for $9.99/mo."],["02","Submit to Castings","Browse open casting calls for film, TV, theater, commercials, and modeling. One-tap apply."],["03","Get Seen. Guaranteed.","Every casting director swipes through your headshot individually. No grid views. No skipping."]]:
-        [["01","Post Your Breakdown","Describe the role, specs, and pay. Your casting goes live instantly."],["02","Swipe Through Talent","Review every submission one by one. Right to callback, left to pass."],["03","Manage & Schedule","Organize callbacks, send sides, schedule auditions — all from your dashboard."]]).map(([n,t,d])=>
-        <div key={n} className="card"><div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:44,color:"var(--acc)",opacity:.3,marginBottom:12}}>{n}</div><h3 style={{fontSize:17,fontWeight:700,marginBottom:10}}>{t}</h3><p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6}}>{d}</p></div>)}</div>
-    </section>
-
-    <section className="lh-section" style={{padding:"60px 40px",maxWidth:1200,margin:"0 auto"}}><div className="section-label">Pricing</div><div className="section-title">Simple pricing. No surprises.</div>
-      <div className="grid-3">{[{name:"Actor Free",who:"Actors · Models · Performers",price:"$0",period:"no credit card required",features:["Free account","1 headshot","3 submissions per day","Basic actor profile","Browse all castings"],featured:false,cta:"Get Started Free",action:"auth-gate"},{name:"Actor Premium",who:"Actors · Models · Performers",price:"$9.99",period:"per month · cancel anytime",features:["Unlimited submissions","Unlimited photos, videos & Cast Me As","Actor Slate Video","Actor Business Card with QR code","Manager Mode weekly check-ins","Profile improvement suggestions"],featured:true,cta:"Get Premium — $9.99/mo",action:"membership"},{name:"Casting Director",who:"Casting Directors · Producers",price:"Free",period:"to create an account",features:["Free account creation","Verified creators can post castings","Swipe-based talent review","Advanced talent filters"],featured:false,cta:"Create CD Account",action:"register-cd"}].map(p=>
-        <div key={p.name} className="card" style={p.featured?{borderColor:"var(--acc)",background:"linear-gradient(165deg,var(--s1),rgba(26,26,46,.02))",position:"relative"}:{}}>
-          {p.featured&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:"var(--acc)",color:"var(--bg)",fontSize:10,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:"4px 14px",borderRadius:100,letterSpacing:1}}>RECOMMENDED</div>}
-          <h3 style={{fontSize:18,fontWeight:700,marginBottom:4,textAlign:"center"}}>{p.name}</h3><p style={{color:"var(--t2)",fontSize:12,marginBottom:20,textAlign:"center"}}>{p.who}</p>
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:44,color:"var(--t1)",textAlign:"center"}}>{p.price}</div><p style={{color:"var(--t2)",fontSize:12,marginBottom:24,textAlign:"center"}}>{p.period}</p>
-          {p.features.map(f=><div key={f} style={{display:"flex",gap:8,alignItems:"center",padding:"7px 0",borderBottom:"1px solid var(--bdr)",fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}</div>)}
-          <button className={p.featured?"btn-p":"btn-s"} style={{width:"100%",marginTop:24}} onClick={()=>p.action?onNavigate(p.action):onNavigate("pricing")}>{p.cta}</button></div>)}</div>
+    {/* ───────── Pricing teaser (compact — full plans live on /pricing) ───────── */}
+    <section className="lh-section" style={{padding:"56px 40px",maxWidth:760,margin:"0 auto",textAlign:"center"}}>
+      <div className="section-label">Pricing</div>
+      <div className="section-title">Simple Pricing. No Surprises.</div>
+      <p style={{color:"var(--t2)",fontSize:15.5,lineHeight:1.7,maxWidth:620,margin:"14px auto 28px"}}>Actors can create a free account and start submitting. Actor Plus starts at $9.99/month for additional visibility and tools. Casting directors can post projects and review submissions for free.</p>
+      <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+        <button className="btn-p" style={{padding:"13px 24px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Create Free Profile</button>
+        <button className="btn-s" style={{padding:"13px 24px",fontSize:14}} onClick={()=>onNavigate("pricing")}>View Pricing</button>
+      </div>
     </section>
 
     {/* ───────── FAQ ───────── */}
