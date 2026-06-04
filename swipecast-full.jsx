@@ -12871,8 +12871,11 @@ function NewsSection({onNavigate}){
         const{data}=await window.sb.from("news_articles")
           .select("slug,headline,excerpt,category,image_url,source_name,source_url,original_headline,original_image_url,written_at")
           .eq("published",true).eq("status","published")
-          .order("written_at",{ascending:false}).limit(12);
-        if(alive)setItems(data||[]);
+          .order("written_at",{ascending:false}).limit(20);
+        // Safety net: never render the same story twice (dedupe by source/slug).
+        const seen=new Set();
+        const deduped=(data||[]).filter(a=>{const k=a.source_url||a.slug;if(seen.has(k))return false;seen.add(k);return true;}).slice(0,12);
+        if(alive)setItems(deduped);
       }catch(_){ if(alive)setItems([]); }
     })();
     return()=>{alive=false;};
@@ -16121,18 +16124,40 @@ function AdminNews({session}){
     showMsg("Auto-refresh updated.");
   };
   const refreshNow=async()=>{
+    // Re-entrancy guard — the run takes up to ~2 min; never let it be double-fired
+    // (that previously raced two runs and created duplicate stories).
+    if(refreshing)return;
     setRefreshing(true);setMsg("");
-    try{
-      const{data,error}=await window.sb.functions.invoke("news-refresh",{body:{trigger:"manual"}});
-      if(error)throw new Error(error.message||"Edge function error");
-      await window.sb.rpc("admin_record_news_run");
-      const added=data?.added??data?.inserted??null;
-      showMsg(added!=null?`Refresh complete — ${added} new article${added===1?"":"s"} added.`:"Refresh complete.",7000);
-      loadAll();
-    }catch(e){
-      showMsg("Refresh failed: "+(e.message||e)+". (The news-refresh edge function may not be deployed yet — see setup notes.)",9000);
-    }
-    setRefreshing(false);
+    showMsg("Refresh started — fetching the latest stories. This can take up to 2 minutes; you can keep working.",6000);
+    // Remember the last completed-run stamp so we can detect when this run finishes.
+    let startStamp="";
+    try{const{data:ss}=await window.sb.from("site_settings").select("news_last_run").eq("id",1).maybeSingle();startStamp=ss?.news_last_run||"";}catch(_){}
+    let done=false;
+    const finish=async(ok,extra)=>{
+      if(done)return;done=true;
+      try{await loadAll();}catch(_){}
+      showMsg(ok?"Refresh complete — latest stories published.":(extra||"Refresh finished."),ok?7000:9000);
+      setRefreshing(false);
+    };
+    // Kick the function off WITHOUT blocking the UI on its full runtime. The
+    // function runs server-side to completion even if this request times out;
+    // we detect completion by polling the run stamp below.
+    window.sb.functions.invoke("news-refresh",{body:{trigger:"manual"}})
+      .then(({error})=>{ if(!error)window.sb.rpc("admin_record_news_run").catch(()=>{}); })
+      .catch(()=>{});
+    // Poll site_settings.news_last_run (stamped when the run completes).
+    let tries=0;
+    const poll=async()=>{
+      if(done)return;
+      tries++;
+      try{
+        const{data:ss}=await window.sb.from("site_settings").select("news_last_run").eq("id",1).maybeSingle();
+        if(ss?.news_last_run&&ss.news_last_run!==startStamp)return finish(true);
+      }catch(_){}
+      if(tries>=40)return finish(false,"Refresh is taking longer than usual — reloaded the current list; new stories may still appear shortly.");
+      setTimeout(poll,4000);
+    };
+    setTimeout(poll,4000);
   };
   const setRowPublished=async(a,pub)=>{
     setBusyRow(a.id+":pub");
