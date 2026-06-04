@@ -4401,14 +4401,14 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan}){
             <span>{t('pricing.feature')}</span><span style={{textAlign:"center"}}>{t('pricing.freeLabel')}</span><span style={{textAlign:"center",color:"var(--acc)"}}>Premium</span>
           </div>
           {featureRow("Casting submissions / day","3",t('pricing.unlimitedLabel'))}
-          {featureRow("Headshots","1","Up to 10")}
-          {featureRow("Video reel links","None","Up to 5")}
+          {featureRow("Headshots","1","Unlimited")}
+          {featureRow("Photos & videos","—","Unlimited")}
           {featureRow("Browse castings","✓","✓")}
           {featureRow("Basic actor profile","✓","✓")}
           {featureRow("Premium profile features","—","✓")}
           {featureRow("Profile improvement suggestions","—","✓")}
           {featureRow("Actor Slate Video","—","✓")}
-          {featureRow("Actor Business Card","—","✓")}
+          {featureRow("Actor Business Card (with QR code)","—","✓")}
           {featureRow("Manager Mode","—","✓")}
           {featureRow("Price",t('pricing.freeLabel'),PREMIUM_PRICE)}
         </div>
@@ -12556,10 +12556,11 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
     };
   },[fetchCastings]);
 
-  // Auto-advance every 7s — paused on hover/focus and during touch swipe.
+  // Auto-advance every 5s — paused only when the cursor is over an arrow button,
+  // or during a touch swipe. Loops forever: end → wraps back to first card.
   useEffect(()=>{
     if(paused||castings.length<2)return;
-    const tid=setInterval(()=>setIdx(i=>(i+1)%castings.length),7000);
+    const tid=setInterval(()=>setIdx(i=>(i+1)%castings.length),5000);
     return()=>clearInterval(tid);
   },[paused,castings.length]);
 
@@ -12629,14 +12630,14 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   const gap=isWide?28:isMid?20:14;
   const itemStep=cardWidth+gap;
   const trackOffset=isMobileVpw?-(idx*itemStep):((stageWidth/2)-(cardWidth/2)-(idx*itemStep));
-  return(<section className="fcs-section" ref={sectionRef} onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)}>
+  return(<section className="fcs-section" ref={sectionRef}>
     <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:12,marginBottom:18,flexWrap:"wrap"}}>
       <div style={{flex:1,minWidth:0}}>
         <div className="section-label">Featured Castings</div>
         <h2 style={{fontWeight:800,fontSize:isMobileVpw?22:30,letterSpacing:-1,margin:0,lineHeight:1.2,wordBreak:"break-word"}}>Open jobs from real productions.</h2>
         {!isMobileVpw&&<p style={{color:"var(--t2)",fontSize:13,marginTop:6}}>Updated live — same listings as Browse Castings. Tap any card to view full role breakdown and apply.</p>}
       </div>
-      {onNavigate&&<button className="btn-s btn-sm" style={{flexShrink:0}} onClick={()=>onNavigate("search")}>Browse all →</button>}
+      {onNavigate&&<button className="btn-s" style={{flexShrink:0,background:"#fff",color:"#1A1A2E",fontWeight:700,padding:"11px 22px",fontSize:14,border:"1.5px solid rgba(26,26,46,0.18)"}} onClick={()=>onNavigate("search")}>Browse all →</button>}
     </div>
 
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
@@ -12649,7 +12650,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         and CSS transitions on the track + per-card transform/opacity produce a
         smooth slide. Side cards remain clickable to jump straight to them. */}
     <div className="fcs-stage" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-      {castings.length>1&&<button className="fcs-arrow prev" aria-label="Previous casting" onClick={(e)=>{e.stopPropagation();prev();}}>‹</button>}
+      {castings.length>1&&<button className="fcs-arrow prev" aria-label="Previous casting" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} onClick={(e)=>{e.stopPropagation();prev();}}>‹</button>}
       <div className="fcs-track" style={{transform:`translate3d(${trackOffset}px,0,0)`,gap:`${gap}px`}}>
         {castings.map((sc,i)=>{
           const isCenter=i===idx;
@@ -12700,7 +12701,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
           </div>);
         })}
       </div>
-      {castings.length>1&&<button className="fcs-arrow next" aria-label="Next casting" onClick={(e)=>{e.stopPropagation();next();}}>›</button>}
+      {castings.length>1&&<button className="fcs-arrow next" aria-label="Next casting" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} onClick={(e)=>{e.stopPropagation();next();}}>›</button>}
     </div>
 
     {castings.length>1&&<div className="fcs-dots" role="tablist" aria-label="Casting navigation">
@@ -13198,7 +13199,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <p style={{color:"var(--t2)",fontSize:15.5,lineHeight:1.7,maxWidth:620,margin:"14px auto 28px"}}>Actors can create a free account and start submitting. Actor Plus starts at $9.99/month for additional visibility and tools. Casting directors can post projects and review submissions for free.</p>
       <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
         <button className="btn-p" style={{padding:"13px 24px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Create Free Profile</button>
-        <button className="btn-s" style={{padding:"13px 24px",fontSize:14}} onClick={()=>onNavigate("pricing")}>View Pricing</button>
+        <button className="btn-s" style={{padding:"13px 24px",fontSize:14,background:"#fff",color:"#1A1A2E",fontWeight:700,border:"1.5px solid rgba(26,26,46,0.18)"}} onClick={()=>onNavigate("pricing")}>View Pricing</button>
       </div>
     </section>
 
