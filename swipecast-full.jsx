@@ -12883,7 +12883,7 @@ function NewsSection({onNavigate}){
   if(!enabled||items===null||items.length===0)return null;
   // Three labeled blocks of up to 4 cards each (Backstage-style sections).
   const SECTIONS=[
-    {label:"Latest Industry News & Casting Updates",desc:"Fresh casting, film, television, and theater headlines — written by CastSlate Staff.",lead:true},
+    {label:"Latest Industry News & Casting Updates",desc:"Fresh casting, film, television, and theater headlines — curated by CastSlate Staff.",lead:true},
     {label:"More From the Industry",desc:"Continuing coverage across film, TV, stage, and the business of casting."},
     {label:"Also Worth Knowing",desc:"More stories actors, creators, and casting teams are following right now."},
   ];
@@ -12919,9 +12919,9 @@ function NewsSection({onNavigate}){
       </a>
     );
   };
-  // Lead → internal. Other sections → external link-out (fall back to internal
-  // for any item without a source URL, e.g. CastSlate's own evergreen pieces).
-  const renderCard=(a,lead)=>(lead||!a.source_url)?InternalCard(a):ExternalCard(a);
+  // Every section links straight to the original post; fall back to the internal
+  // card only for items without a source URL (e.g. CastSlate's own evergreen pieces).
+  const renderCard=(a)=>a.source_url?ExternalCard(a):InternalCard(a);
   return(
     <section className="news-sec">
       <div style={{maxWidth:1200,margin:"0 auto",padding:"0 32px"}}>
@@ -12931,7 +12931,7 @@ function NewsSection({onNavigate}){
               {b.lead?<h2>{b.label}</h2>:<h3>{b.label}</h3>}
               <p className="news-block-desc">{b.desc}</p>
             </div>
-            <div className="news-grid">{b.cards.map(a=>renderCard(a,b.lead))}</div>
+            <div className="news-grid">{b.cards.map(a=>renderCard(a))}</div>
           </div>
         ))}
       </div>
