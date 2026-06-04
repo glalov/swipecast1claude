@@ -187,8 +187,8 @@ async function geminiRewrite(key: string, title: string, desc: string, source: s
         },
       }),
     });
-    if (r.status === 429 && attempt < 3) {
-      await sleep(8000 * (attempt + 1));
+    if (r.status === 429 && attempt < 2) {
+      await sleep(4000 * (attempt + 1));
       return geminiRewrite(key, title, desc, source, category, attempt + 1);
     }
     if (!r.ok) return null;
@@ -246,7 +246,10 @@ async function wikiImage(headline: string): Promise<string | null> {
   if (!q) return null;
   try {
     const u = `https://en.wikipedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=3&prop=pageimages&piprop=thumbnail&pithumbsize=900&redirects=1&origin=*`;
-    const r = await fetch(u, { headers: { "User-Agent": "CastSlateNewsBot/1.0 (news section images)" } });
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 3500);
+    const r = await fetch(u, { headers: { "User-Agent": "CastSlateNewsBot/1.0 (news section images)" }, signal: ctrl.signal });
+    clearTimeout(t);
     if (!r.ok) return null;
     const j = await r.json();
     const pages = j?.query?.pages;
@@ -327,7 +330,12 @@ serve(async (req) => {
     }
 
     let added = 0;
+    // Cap new articles per invocation so the run finishes within the function's
+    // 150s limit (Gemini free-tier pacing makes long batches slow). Re-run /
+    // the cron tops the feed up to 12 over subsequent runs (dedup skips existing).
+    const MAX_NEW = 6;
     for (const c of candidates) {
+      if (added >= MAX_NEW) break;
       if (existing.has(c.item.link)) continue;
       const rewritten =
         (geminiKey ? await geminiRewrite(geminiKey, c.item.title, c.item.description, c.source, c.category) : null)
@@ -356,7 +364,7 @@ serve(async (req) => {
       });
       if (!error) added++;
       // Pace requests to stay under Gemini's free-tier per-minute limit.
-      if (geminiKey) await sleep(4500);
+      if (geminiKey && added < MAX_NEW) await sleep(3000);
     }
 
     // Stamp the run.
