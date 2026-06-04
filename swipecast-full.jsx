@@ -1796,21 +1796,23 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .scale-tagline .tg-neon{color:#9333EA;}
 .scale-tagline .tg-netflix{color:#E50914;}
 @media (max-width:768px){.scale-tagline{font-size:19px;padding:14px 20px 0;}}
-/* ─── Latest Industry News (compact landing section) ─── */
+/* ─── Latest Industry News (landing section: 3 blocks × 4 cards) ─── */
 .news-sec{border-top:1px solid var(--bdr);padding:54px 0 58px;}
-.news-head{display:flex;align-items:baseline;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:24px;}
-.news-head .news-ttl{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
-.news-head h2{font-family:'DM Sans',sans-serif;font-size:28px;font-weight:800;letter-spacing:-0.8px;line-height:1.1;margin:0;}
-.news-head .news-by{font-size:10.5px;letter-spacing:0.16em;text-transform:uppercase;font-weight:700;color:var(--acc);}
-.news-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:13px;}
-.news-card{background:var(--s1);border:1px solid var(--bdr);border-radius:10px;overflow:hidden;cursor:pointer;transition:.18s;display:flex;flex-direction:column;text-align:left;}
+.news-block{margin-bottom:42px;}
+.news-block:last-child{margin-bottom:0;}
+.news-block-head{margin-bottom:18px;border-bottom:1px solid var(--bdr);padding-bottom:12px;}
+.news-block-head h2{font-family:'DM Sans',sans-serif;font-size:27px;font-weight:800;letter-spacing:-0.8px;line-height:1.12;margin:0;}
+.news-block-head h3{font-family:'DM Sans',sans-serif;font-size:21px;font-weight:800;letter-spacing:-0.5px;line-height:1.15;margin:0;}
+.news-block-desc{color:var(--t2);font-size:13.5px;line-height:1.5;margin:6px 0 0;}
+.news-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+.news-card{background:var(--s1);border:1px solid var(--bdr);border-radius:11px;overflow:hidden;cursor:pointer;transition:.18s;display:flex;flex-direction:column;text-align:left;}
 .news-card:hover{transform:translateY(-3px);box-shadow:0 16px 30px -22px rgba(26,26,46,.4);border-color:#cfd6e2;}
-.news-thumb{position:relative;aspect-ratio:16/11;overflow:hidden;background:var(--s2);}
+.news-thumb{position:relative;aspect-ratio:16/10;overflow:hidden;background:var(--s2);}
 .news-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
-.news-cat{position:absolute;top:8px;left:8px;font-size:8.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;padding:3px 8px;border-radius:999px;}
-.news-body{padding:11px 12px 12px;display:flex;flex-direction:column;flex:1;}
-.news-body h3{font-size:13px;font-weight:700;line-height:1.3;letter-spacing:-.01em;margin:0 0 8px;color:var(--t1);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
-.news-meta{margin-top:auto;font-size:10.5px;color:var(--t3);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.news-cat{position:absolute;top:9px;left:9px;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff;padding:4px 9px;border-radius:999px;}
+.news-body{padding:13px 15px 15px;display:flex;flex-direction:column;flex:1;}
+.news-body h3{font-size:14.5px;font-weight:700;line-height:1.32;letter-spacing:-.01em;margin:0 0 10px;color:var(--t1);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.news-meta{margin-top:auto;font-size:11px;color:var(--t3);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
 .news-meta .news-bystaff{font-weight:600;color:var(--t2);}
 .news-meta .news-dot{width:3px;height:3px;border-radius:50%;background:var(--t3);flex:none;}
 /* Article page */
@@ -1830,8 +1832,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .news-source-box a{color:var(--acc);font-weight:600;text-decoration:none;font-size:15px;}
 .news-source-box a:hover{text-decoration:underline;}
 .news-disclaimer{margin-top:15px;font-size:12px;color:var(--t3);line-height:1.6;font-style:italic;}
-@media (max-width:1100px){.news-grid{grid-template-columns:repeat(3,1fr);gap:14px;}}
-@media (max-width:680px){.news-grid{grid-template-columns:repeat(2,1fr);gap:12px;}.news-sec{padding:42px 0 46px;}}
+@media (max-width:980px){.news-grid{grid-template-columns:repeat(2,1fr);gap:16px;}}
+@media (max-width:620px){.news-grid{grid-template-columns:repeat(2,1fr);gap:12px;}.news-sec{padding:42px 0 46px;}.news-block{margin-bottom:32px;}}
 /* ─── Talent Dashboard responsive grid ─── */
 .td-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
@@ -12858,38 +12860,44 @@ function NewsSection({onNavigate}){
         const{data}=await window.sb.from("news_articles")
           .select("slug,headline,excerpt,category,image_url,source_name,written_at")
           .eq("published",true).eq("status","published")
-          .order("written_at",{ascending:false}).limit(6);
+          .order("written_at",{ascending:false}).limit(12);
         if(alive)setItems(data||[]);
       }catch(_){ if(alive)setItems([]); }
     })();
     return()=>{alive=false;};
   },[]);
   if(!enabled||items===null||items.length===0)return null;
+  // Three labeled blocks of up to 4 cards each (Backstage-style sections).
+  const SECTIONS=[
+    {label:"Latest Industry News & Casting Updates",desc:"Fresh casting, film, television, and theater headlines — written by CastSlate Staff.",lead:true},
+    {label:"More From the Industry",desc:"Continuing coverage across film, TV, stage, and the business of casting."},
+    {label:"Also Worth Knowing",desc:"More stories actors, creators, and casting teams are following right now."},
+  ];
+  const blocks=SECTIONS.map((s,i)=>({...s,cards:items.slice(i*4,i*4+4)})).filter(b=>b.cards.length>0);
+  const Card=(a)=>(
+    <button key={a.slug} className="news-card" onClick={()=>onNavigate("news-article",{slug:a.slug})}>
+      <div className="news-thumb">
+        {a.image_url&&<img src={a.image_url} alt="" loading="lazy"/>}
+        <span className="news-cat" style={{background:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</span>
+      </div>
+      <div className="news-body">
+        <h3>{a.headline}</h3>
+        <div className="news-meta"><span>{newsDate(a.written_at)}</span></div>
+      </div>
+    </button>
+  );
   return(
     <section className="news-sec">
-      <div style={{maxWidth:1120,margin:"0 auto",padding:"0 32px"}}>
-        <div className="news-head">
-          <div className="news-ttl">
-            <h2>Latest Industry News &amp; Casting Updates</h2>
-            <span className="news-by">By CastSlate Staff</span>
+      <div style={{maxWidth:1200,margin:"0 auto",padding:"0 32px"}}>
+        {blocks.map(b=>(
+          <div className="news-block" key={b.label}>
+            <div className="news-block-head">
+              {b.lead?<h2>{b.label}</h2>:<h3>{b.label}</h3>}
+              <p className="news-block-desc">{b.desc}</p>
+            </div>
+            <div className="news-grid">{b.cards.map(Card)}</div>
           </div>
-        </div>
-        <div className="news-grid">
-          {items.map(a=>(
-            <button key={a.slug} className="news-card" onClick={()=>onNavigate("news-article",{slug:a.slug})}>
-              <div className="news-thumb">
-                {a.image_url&&<img src={a.image_url} alt="" loading="lazy"/>}
-                <span className="news-cat" style={{background:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</span>
-              </div>
-              <div className="news-body">
-                <h3>{a.headline}</h3>
-                <div className="news-meta">
-                  <span>{newsDate(a.written_at)}</span>
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
+        ))}
       </div>
     </section>
   );
@@ -12930,12 +12938,8 @@ function NewsArticlePage({slug,onNavigate}){
         <span className="news-bystaff">Written by {a.author||"CastSlate Staff"}</span><span className="news-dot"/>
         <span>{newsDate(a.written_at)}</span>
       </div>
-      {a.image_url&&<><div className="news-article-hero"><img src={a.image_url} alt=""/></div>
-        <p className="news-article-caption">Illustrative image — CastSlate does not republish source photography.</p></>}
-      <div className="news-article-body">{paras.map((p,i)=><p key={i}>{p}</p>)}</div>
-      <div className="news-source-box">
-        <p className="news-disclaimer" style={{marginTop:0}}>Written by CastSlate Staff — original CastSlate editorial coverage.</p>
-      </div>
+      {a.image_url&&<div className="news-article-hero"><img src={a.image_url} alt=""/></div>}
+      <div className="news-article-body" style={{marginTop:a.image_url?22:0}}>{paras.map((p,i)=><p key={i}>{p}</p>)}</div>
     </article>
   );
 }

@@ -72,6 +72,13 @@ const IMAGES: Record<Category, string[]> = {
     "https://images.unsplash.com/photo-1454023492550-5696f8ff10e1?w=900&q=80&auto=format&fit=crop",
   ],
 };
+// Extra verified royalty-free shots for de-duplication overflow.
+const EXTRA_IMAGES: string[] = [
+  "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=900&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=900&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=900&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=900&q=80&auto=format&fit=crop",
+];
 
 // Only keep stories relevant to acting / casting / film / TV / theater / industry.
 const RELEVANT = /\b(cast|casting|audition|actor|actress|role|film|movie|cinema|tv|television|series|theater|theatre|stage|broadway|production|studio|director|screen|sag-?aftra|premiere|festival)\b/i;
@@ -231,6 +238,44 @@ async function tmdbImage(headline: string): Promise<string | null> {
   }
 }
 
+// Real, freely-licensed photo of the news subject via Wikipedia. Only returns
+// images hosted on Wikimedia Commons (CC / public-domain) — never non-free
+// local uploads (e.g. posters under /wikipedia/en/). Great for real people.
+async function wikiImage(headline: string): Promise<string | null> {
+  const q = headline.replace(/[^\w\s'&-]/g, " ").split(/\s+/).slice(0, 8).join(" ").trim();
+  if (!q) return null;
+  try {
+    const u = `https://en.wikipedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=3&prop=pageimages&piprop=thumbnail&pithumbsize=900&redirects=1&origin=*`;
+    const r = await fetch(u, { headers: { "User-Agent": "CastSlateNewsBot/1.0 (news section images)" } });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const pages = j?.query?.pages;
+    if (!pages) return null;
+    const arr = (Object.values(pages) as Array<Record<string, any>>)
+      .sort((a, b) => (a.index || 0) - (b.index || 0));
+    for (const p of arr) {
+      const src = p?.thumbnail?.source as string | undefined;
+      if (src && /\/\/upload\.wikimedia\.org\/wikipedia\/commons\//.test(src)) return src;
+    }
+    return null;
+  } catch (_) { return null; }
+}
+
+// Choose a non-repeating image: TMDB (if configured) → Wikipedia/Commons (real
+// people, free) → category royalty-free pool → extra pool. Tracks `used` so no
+// two articles in a run share an image.
+async function pickImage(title: string, category: Category, used: Set<string>): Promise<string> {
+  const tryUrl = (u: string | null): string | null => (u && !used.has(u) ? u : null);
+  let img = tryUrl(await tmdbImage(title));
+  if (img) { used.add(img); return img; }
+  img = tryUrl(await wikiImage(title));
+  if (img) { used.add(img); return img; }
+  for (const c of [...(IMAGES[category] || []), ...EXTRA_IMAGES]) {
+    if (!used.has(c)) { used.add(c); return c; }
+  }
+  return (IMAGES[category] || EXTRA_IMAGES)[0]; // last resort (allow repeat)
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   const json = (b: unknown, status = 200) =>
@@ -267,16 +312,21 @@ serve(async (req) => {
       } catch (_) { /* skip a failing feed, keep going */ }
     }
 
-    // Dedupe against what we already stored (by source_url).
+    // Dedupe against what we already stored (by source_url); also seed the
+    // used-image set with recent images so new posts don't repeat them.
     const links = candidates.map((c) => c.item.link);
-    let existing = new Set<string>();
-    if (links.length) {
-      const { data } = await sb.from("news_articles").select("source_url").in("source_url", links);
-      existing = new Set((data || []).map((r: { source_url: string }) => r.source_url));
+    const existing = new Set<string>();
+    const used = new Set<string>();
+    {
+      const { data: recent } = await sb.from("news_articles")
+        .select("source_url,image_url").order("written_at", { ascending: false }).limit(40);
+      for (const r of (recent || []) as Array<{ source_url: string; image_url: string }>) {
+        if (r.source_url) existing.add(r.source_url);
+        if (r.image_url) used.add(r.image_url);
+      }
     }
 
     let added = 0;
-    const imgIdx: Record<string, number> = {};
     for (const c of candidates) {
       if (existing.has(c.item.link)) continue;
       const rewritten =
@@ -285,10 +335,8 @@ serve(async (req) => {
         || fallbackRewrite(c.item.title, c.source, c.category);
       const baseSlug = slugify(rewritten.headline) || slugify(c.item.title) || `story-${Date.now()}`;
       const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`;
-      // Real movie/cast image via TMDB; royalty-free pool only as a fallback.
-      const pool = IMAGES[c.category] || IMAGES.Industry;
-      const i = (imgIdx[c.category] = (imgIdx[c.category] ?? 0) + 1) % pool.length;
-      const image = (await tmdbImage(c.item.title)) || pool[i];
+      // Real subject image: TMDB → Wikipedia/Commons → royalty-free, de-duplicated.
+      const image = await pickImage(c.item.title, c.category, used);
       const written = new Date().toISOString();
       const fetched = c.item.pubDate ? new Date(c.item.pubDate).toISOString() : written;
       const { error } = await sb.from("news_articles").insert({
