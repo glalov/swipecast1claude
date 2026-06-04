@@ -13194,6 +13194,9 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       </div>
     </section>
 
+    {/* ───────── LATEST INDUSTRY NEWS (compact; hidden via Super Admin toggle) ───────── */}
+    <div style={{maxWidth:1200,margin:"0 auto"}}><NewsSection onNavigate={onNavigate}/></div>
+
     {/* ───────── iOS APP TEASER ───────── */}
     <div className="ios-teaser-section" style={{background:"linear-gradient(135deg,#0f1629 0%,#162255 30%,#3730a3 65%,#0f2847 100%)"}}>
       {/* Decorative glow blobs */}
@@ -13274,9 +13277,6 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         </div>
       </div>
     </div>
-
-    {/* ───────── LATEST INDUSTRY NEWS (compact; hidden via Super Admin toggle) ───────── */}
-    <div style={{maxWidth:1200,margin:"0 auto"}}><NewsSection onNavigate={onNavigate}/></div>
 
     {/* ───────── MANAGER MODE TEASER ───────── */}
     <section style={{padding:"72px 40px",background:"linear-gradient(160deg,#1A1A2E 0%,#16213e 60%,#0f3460 100%)",color:"#fff",position:"relative",overflow:"hidden"}}>
@@ -16121,6 +16121,26 @@ function AdminNews({session}){
     if(error){showMsg("Delete failed: "+error.message);return;}
     showMsg("Article deleted.");loadAll();
   };
+  // Upload your own image for a story → news-media bucket → set image_url.
+  const uploadImage=async(a,file)=>{
+    if(!file)return;
+    if(!/^image\/(jpeg|png|webp)$/.test(file.type)){showMsg("Image must be JPG, PNG, or WebP.");return;}
+    if(file.size>5*1024*1024){showMsg("Image must be under 5 MB.");return;}
+    setBusyRow(a.id+":img");
+    try{
+      const ext=(file.name.split(".").pop()||"jpg").toLowerCase();
+      const path=`news/${a.id}-${Date.now()}.${ext}`;
+      const{error:upErr}=await window.sb.storage.from("news-media").upload(path,file,{upsert:true,contentType:file.type});
+      if(upErr)throw upErr;
+      const{data:pub}=window.sb.storage.from("news-media").getPublicUrl(path);
+      const url=pub?.publicUrl;
+      if(!url)throw new Error("Could not get image URL");
+      const{error:updErr}=await window.sb.from("news_articles").update({image_url:url,updated_at:new Date().toISOString()}).eq("id",a.id);
+      if(updErr)throw updErr;
+      showMsg("Image updated.");loadAll();
+    }catch(e){showMsg("Image upload failed: "+(e.message||e));}
+    setBusyRow(null);
+  };
 
   const CAT_COLOR={Casting:"#B0894F",Film:"#3E6B8C",Theater:"#9C5A8E",Industry:"#5C7A5C",Actors:"#B06A4F"};
 
@@ -16190,6 +16210,10 @@ function AdminNews({session}){
               </div>
             </div>
             <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              <label className="btn-s btn-sm" style={{cursor:busyRow===a.id+":img"?"default":"pointer",opacity:busyRow===a.id+":img"?0.6:1}} title="Upload your own image for this story">
+                {busyRow===a.id+":img"?"…":"Image"}
+                <input type="file" accept="image/jpeg,image/png,image/webp" style={{display:"none"}} disabled={busyRow===a.id+":img"} onChange={e=>{const f=e.target.files&&e.target.files[0];e.target.value="";if(f)uploadImage(a,f);}}/>
+              </label>
               <button className="btn-s btn-sm" disabled={busyRow===a.id+":pub"} onClick={()=>setRowPublished(a,!(a.published&&a.status==="published"))}>{busyRow===a.id+":pub"?"…":(a.published&&a.status==="published")?"Hide":"Publish"}</button>
               <button className="btn-s btn-sm" disabled={busyRow===a.id+":del"} onClick={()=>deleteRow(a)} style={{color:"#c0392b",borderColor:"#c0392b"}}>{busyRow===a.id+":del"?"…":"Delete"}</button>
             </div>
