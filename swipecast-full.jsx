@@ -1815,6 +1815,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .news-meta{margin-top:auto;font-size:11px;color:var(--t3);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
 .news-meta .news-bystaff{font-weight:600;color:var(--t2);}
 .news-meta .news-dot{width:3px;height:3px;border-radius:50%;background:var(--t3);flex:none;}
+a.news-card{text-decoration:none;color:inherit;}
+.news-meta .news-src{font-weight:700;color:var(--acc);}
 /* Article page */
 .news-article-wrap{max-width:720px;margin:0 auto;padding:40px 24px 80px;}
 .news-back{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--t2);background:none;border:none;cursor:pointer;margin-bottom:24px;}
@@ -12867,7 +12869,7 @@ function NewsSection({onNavigate}){
         const{data:ss}=await window.sb.from("site_settings").select("news_section_enabled").eq("id",1).maybeSingle();
         if(alive&&ss)setEnabled(ss.news_section_enabled!==false);
         const{data}=await window.sb.from("news_articles")
-          .select("slug,headline,excerpt,category,image_url,source_name,written_at")
+          .select("slug,headline,excerpt,category,image_url,source_name,source_url,original_headline,original_image_url,written_at")
           .eq("published",true).eq("status","published")
           .order("written_at",{ascending:false}).limit(12);
         if(alive)setItems(data||[]);
@@ -12883,7 +12885,8 @@ function NewsSection({onNavigate}){
     {label:"Also Worth Knowing",desc:"More stories actors, creators, and casting teams are following right now."},
   ];
   const blocks=SECTIONS.map((s,i)=>({...s,cards:items.slice(i*4,i*4+4)})).filter(b=>b.cards.length>0);
-  const Card=(a)=>(
+  // Lead section = CastSlate's own articles (open the internal /news/<slug> page).
+  const InternalCard=(a)=>(
     <button key={a.slug} className="news-card" onClick={()=>onNavigate("news-article",{slug:a.slug})}>
       <div className="news-thumb">
         {a.image_url&&<img src={a.image_url} alt="" loading="lazy"/>}
@@ -12895,6 +12898,27 @@ function NewsSection({onNavigate}){
       </div>
     </button>
   );
+  // "More From the Industry" / "Also Worth Knowing" = direct link-outs to the
+  // original post, showing the source's own headline + thumbnail and a credit.
+  const ExternalCard=(a)=>{
+    const img=a.original_image_url||a.image_url;
+    const head=a.original_headline||a.headline;
+    return (
+      <a key={a.slug} className="news-card" href={a.source_url} target="_blank" rel="noopener noreferrer nofollow">
+        <div className="news-thumb">
+          {img&&<img src={img} alt="" loading="lazy" referrerPolicy="no-referrer"/>}
+          <span className="news-cat" style={{background:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</span>
+        </div>
+        <div className="news-body">
+          <h3>{head}</h3>
+          <div className="news-meta">{a.source_name&&<span className="news-src">{a.source_name} ↗</span>}<span>{newsDate(a.written_at)}</span></div>
+        </div>
+      </a>
+    );
+  };
+  // Lead → internal. Other sections → external link-out (fall back to internal
+  // for any item without a source URL, e.g. CastSlate's own evergreen pieces).
+  const renderCard=(a,lead)=>(lead||!a.source_url)?InternalCard(a):ExternalCard(a);
   return(
     <section className="news-sec">
       <div style={{maxWidth:1200,margin:"0 auto",padding:"0 32px"}}>
@@ -12904,7 +12928,7 @@ function NewsSection({onNavigate}){
               {b.lead?<h2>{b.label}</h2>:<h3>{b.label}</h3>}
               <p className="news-block-desc">{b.desc}</p>
             </div>
-            <div className="news-grid">{b.cards.map(Card)}</div>
+            <div className="news-grid">{b.cards.map(a=>renderCard(a,b.lead))}</div>
           </div>
         ))}
       </div>

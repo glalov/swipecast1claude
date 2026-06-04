@@ -104,7 +104,30 @@ function stripHtml(s: string): string {
     .replace(/&nbsp;/g, " ").replace(/&[a-z0-9#]+;/gi, " ").replace(/\s+/g, " ").trim();
 }
 
-interface FeedItem { title: string; link: string; description: string; pubDate: string; }
+interface FeedItem { title: string; link: string; description: string; pubDate: string; image: string; }
+
+// Pull the post's OWN thumbnail out of the RSS <item> (media:content,
+// media:thumbnail, <enclosure type="image/…">, or an inline <img>). This is the
+// image the publisher syndicates with the item; it is used only on the external
+// "link-out" cards, which credit the source and link to the original post.
+function extractFeedImage(b: string): string {
+  for (const m of b.matchAll(/<media:content\b[^>]*>/gi)) {
+    const tag = m[0];
+    const url = (tag.match(/\burl=["']([^"']+)["']/i) || [])[1];
+    if (url && (/medium=["']image["']/i.test(tag) || /\.(jpe?g|png|webp|gif)(\?|$)/i.test(url))) return url;
+  }
+  const thumb = (b.match(/<media:thumbnail\b[^>]*\burl=["']([^"']+)["']/i) || [])[1];
+  if (thumb) return thumb;
+  for (const m of b.matchAll(/<enclosure\b[^>]*>/gi)) {
+    if (/type=["']image\//i.test(m[0])) {
+      const u = (m[0].match(/\burl=["']([^"']+)["']/i) || [])[1];
+      if (u) return u;
+    }
+  }
+  const enc = b.match(/<content:encoded[^>]*>([\s\S]*?)<\/content:encoded>/i);
+  const hay = (enc ? enc[1] : "") + " " + b;
+  return (hay.match(/<img[^>]*\bsrc=["']([^"']+)["']/i) || [])[1] || "";
+}
 
 function parseRss(xml: string): FeedItem[] {
   const items: FeedItem[] = [];
@@ -120,6 +143,7 @@ function parseRss(xml: string): FeedItem[] {
       link: linkRaw ? stripHtml(linkRaw[1]) : "",
       description: get("description"),
       pubDate: get("pubDate") || get("dc:date"),
+      image: extractFeedImage(b),
     });
   }
   return items;
@@ -354,6 +378,10 @@ serve(async (req) => {
         body: rewritten.body,
         category: c.category,
         image_url: image,
+        // Originals — used by the external "link-out" cards (source's own
+        // headline + syndicated thumbnail, linking to the exact post).
+        original_headline: c.item.title || null,
+        original_image_url: c.item.image || null,
         source_name: c.source,
         source_url: c.item.link,
         author: "CastSlate Staff",
