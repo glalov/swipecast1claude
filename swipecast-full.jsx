@@ -1800,17 +1800,17 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .news-sec{border-top:1px solid var(--bdr);padding:54px 0 58px;}
 .news-head{display:flex;align-items:baseline;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:24px;}
 .news-head .news-ttl{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
-.news-head h2{font-family:'Playfair Display',Georgia,serif;font-size:25px;font-weight:700;letter-spacing:-0.01em;margin:0;}
+.news-head h2{font-family:'DM Sans',sans-serif;font-size:28px;font-weight:800;letter-spacing:-0.8px;line-height:1.1;margin:0;}
 .news-head .news-by{font-size:10.5px;letter-spacing:0.16em;text-transform:uppercase;font-weight:700;color:var(--acc);}
-.news-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
-.news-card{background:var(--s1);border:1px solid var(--bdr);border-radius:11px;overflow:hidden;cursor:pointer;transition:.18s;display:flex;flex-direction:column;text-align:left;}
+.news-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:13px;}
+.news-card{background:var(--s1);border:1px solid var(--bdr);border-radius:10px;overflow:hidden;cursor:pointer;transition:.18s;display:flex;flex-direction:column;text-align:left;}
 .news-card:hover{transform:translateY(-3px);box-shadow:0 16px 30px -22px rgba(26,26,46,.4);border-color:#cfd6e2;}
-.news-thumb{position:relative;aspect-ratio:16/10;overflow:hidden;background:var(--s2);}
+.news-thumb{position:relative;aspect-ratio:16/11;overflow:hidden;background:var(--s2);}
 .news-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
-.news-cat{position:absolute;top:9px;left:9px;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff;padding:4px 9px;border-radius:999px;}
-.news-body{padding:13px 14px 14px;display:flex;flex-direction:column;flex:1;}
-.news-body h3{font-size:14px;font-weight:600;line-height:1.32;letter-spacing:-.005em;margin:0 0 9px;color:var(--t1);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
-.news-meta{margin-top:auto;font-size:11px;color:var(--t3);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.news-cat{position:absolute;top:8px;left:8px;font-size:8.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;padding:3px 8px;border-radius:999px;}
+.news-body{padding:11px 12px 12px;display:flex;flex-direction:column;flex:1;}
+.news-body h3{font-size:13px;font-weight:700;line-height:1.3;letter-spacing:-.01em;margin:0 0 8px;color:var(--t1);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.news-meta{margin-top:auto;font-size:10.5px;color:var(--t3);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
 .news-meta .news-bystaff{font-weight:600;color:var(--t2);}
 .news-meta .news-dot{width:3px;height:3px;border-radius:50%;background:var(--t3);flex:none;}
 /* Article page */
@@ -1830,8 +1830,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .news-source-box a{color:var(--acc);font-weight:600;text-decoration:none;font-size:15px;}
 .news-source-box a:hover{text-decoration:underline;}
 .news-disclaimer{margin-top:15px;font-size:12px;color:var(--t3);line-height:1.6;font-style:italic;}
-@media (max-width:900px){.news-grid{grid-template-columns:repeat(2,1fr);}}
-@media (max-width:560px){.news-grid{grid-template-columns:repeat(2,1fr);gap:12px;}.news-body h3{font-size:13px;}.news-sec{padding:42px 0 46px;}}
+@media (max-width:1100px){.news-grid{grid-template-columns:repeat(3,1fr);gap:14px;}}
+@media (max-width:680px){.news-grid{grid-template-columns:repeat(2,1fr);gap:12px;}.news-sec{padding:42px 0 46px;}}
 /* ─── Talent Dashboard responsive grid ─── */
 .td-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
@@ -12858,7 +12858,7 @@ function NewsSection({onNavigate}){
         const{data}=await window.sb.from("news_articles")
           .select("slug,headline,excerpt,category,image_url,source_name,written_at")
           .eq("published",true).eq("status","published")
-          .order("written_at",{ascending:false}).limit(4);
+          .order("written_at",{ascending:false}).limit(6);
         if(alive)setItems(data||[]);
       }catch(_){ if(alive)setItems([]); }
     })();
@@ -12884,7 +12884,6 @@ function NewsSection({onNavigate}){
               <div className="news-body">
                 <h3>{a.headline}</h3>
                 <div className="news-meta">
-                  <span className="news-bystaff">CastSlate Staff</span><span className="news-dot"/>
                   <span>{newsDate(a.written_at)}</span>
                 </div>
               </div>

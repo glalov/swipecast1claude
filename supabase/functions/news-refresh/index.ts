@@ -48,28 +48,28 @@ const FEEDS: { name: string; url: string; defaultCat: Category }[] = [
 
 type Category = "Casting" | "Film" | "Theater" | "Industry" | "Actors";
 
-// Royalty-free imagery pool (Unsplash license — free to use). Source photos are
-// never reused; we pick a fitting image per category.
+// Royalty-free imagery: cinematic shots of real people / sets / stages (Unsplash
+// license). Used when TMDB has no match. Not source photography. All verified.
 const IMAGES: Record<Category, string[]> = {
   Casting: [
-    "https://images.unsplash.com/photo-1507924538820-ede94a04019d?w=900&q=80&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1521119989659-a83eee488004?w=900&q=80&auto=format&fit=crop",
-  ],
-  Film: [
     "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=900&q=80&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=900&q=80&auto=format&fit=crop",
   ],
-  Theater: [
-    "https://images.unsplash.com/photo-1503095396549-807759245b35?w=900&q=80&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?w=900&q=80&auto=format&fit=crop",
-  ],
-  Industry: [
-    "https://images.unsplash.com/photo-1518929458119-e5bf444c30f4?w=900&q=80&auto=format&fit=crop",
+  Film: [
+    "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=900&q=80&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=900&q=80&auto=format&fit=crop",
   ],
-  Actors: [
+  Theater: [
+    "https://images.unsplash.com/photo-1503095396549-807759245b35?w=900&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=900&q=80&auto=format&fit=crop",
+  ],
+  Industry: [
+    "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=900&q=80&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=900&q=80&auto=format&fit=crop",
+  ],
+  Actors: [
     "https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=900&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1454023492550-5696f8ff10e1?w=900&q=80&auto=format&fit=crop",
   ],
 };
 
@@ -118,10 +118,10 @@ function parseRss(xml: string): FeedItem[] {
   return items;
 }
 
-// AI rewrite (Claude). Returns {headline, excerpt, body} or null on failure.
+// Claude fallback writer (used only if Gemini is unavailable). Shares the same
+// original-news prompt as Gemini.
 async function aiRewrite(title: string, desc: string, source: string, category: Category) {
   if (!ANTHROPIC_API_KEY) return null;
-  const prompt = `You are a staff editor at CastSlate, a casting platform for actors. Using ONLY the headline and brief teaser below as a factual starting point, write an ORIGINAL, full-length CastSlate news post in your own words and your own framing. Do NOT copy or closely paraphrase the source's sentences. Add genuine context and explain what it means for working actors, casting, and the industry. Write a complete, standalone article — do not tell readers to go elsewhere.\n\nReported by: ${source}\nCategory: ${category}\nHeadline: ${title}\nTeaser: ${desc}\n\nReturn ONLY valid JSON: {"headline": "<your own rewritten headline, max 14 words>", "excerpt": "<1 original sentence, max 30 words>", "body": "<4 to 6 substantial original paragraphs separated by \\n\\n>"}`;
   try {
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -132,18 +132,13 @@ async function aiRewrite(title: string, desc: string, source: string, category: 
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 1400,
-        messages: [{ role: "user", content: prompt }],
+        max_tokens: 2600,
+        messages: [{ role: "user", content: rewritePrompt(title, desc, source, category) }],
       }),
     });
     if (!r.ok) return null;
     const j = await r.json();
-    const text = j?.content?.[0]?.text || "";
-    const m = text.match(/\{[\s\S]*\}/);
-    if (!m) return null;
-    const parsed = JSON.parse(m[0]);
-    if (!parsed.headline || !parsed.body) return null;
-    return parsed as { headline: string; excerpt: string; body: string };
+    return parseModelJson(j?.content?.[0]?.text || "");
   } catch (_) {
     return null;
   }
@@ -152,7 +147,7 @@ async function aiRewrite(title: string, desc: string, source: string, category: 
 // Shared instruction for any model: write an ORIGINAL post (never a reworded
 // copy) that reports the real facts from the feed teaser in CastSlate's voice.
 function rewritePrompt(title: string, desc: string, source: string, category: Category) {
-  return `You are a staff editor at CastSlate, a casting platform for actors. Using the headline and teaser below as your factual basis, write an ORIGINAL CastSlate news post in your own words. Keep every fact accurate — real names of people, companies, projects, and what actually happened must be correct and specific. Do NOT copy or closely reword the source's sentences; write fresh prose with your own structure, and add brief context on what it means for actors and casting. Write a complete standalone post; never tell readers to visit another site.\n\nReported by: ${source}\nCategory: ${category}\nHeadline: ${title}\nTeaser: ${desc}\n\nReturn ONLY valid JSON: {"headline": "<accurate original headline, max 14 words>", "excerpt": "<1 original sentence, max 30 words>", "body": "<3 to 5 substantial original paragraphs separated by \\n\\n>"}`;
+  return `You are a news writer for a casting and entertainment-industry publication. Using the headline and teaser below as your factual basis, write an ORIGINAL, in-depth news article in your own words. Do NOT copy or closely reword the source's sentences — write entirely fresh prose with your own structure.\n\nRequirements:\n- Be accurate and specific: the real names of people, companies, projects, and events must be correct, and the article must clearly be about that subject.\n- Keep the focus on the SUBJECT of the news — the people, companies, productions, and what is happening. Report it like a real journalist would.\n- Write a substantial article of 6 to 8 well-developed paragraphs: what happened, who is involved, relevant background and context, and why it matters for actors and casting.\n- Do NOT make the article about the publisher. Mention the brand name "CastSlate" at most ONCE, lightly, near the end — and ideally not at all. Never start paragraphs with "CastSlate". No repetition of the brand.\n- Professional, neutral news voice. Do not tell readers to visit another website.\n\nCategory: ${category}\nHeadline: ${title}\nTeaser: ${desc}\n\nReturn ONLY valid JSON: {"headline": "<accurate original headline, max 14 words>", "excerpt": "<1 original sentence summarizing the story, max 30 words, no brand name>", "body": "<6 to 8 substantial original paragraphs separated by \\n\\n>"}`;
 }
 function parseModelJson(text: string) {
   const m = (text || "").match(/\{[\s\S]*\}/);
@@ -179,7 +174,7 @@ async function geminiRewrite(key: string, title: string, desc: string, source: s
         contents: [{ parts: [{ text: rewritePrompt(title, desc, source, category) }] }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 3200,
           responseMimeType: "application/json",
           thinkingConfig: { thinkingBudget: 0 },
         },
@@ -203,11 +198,10 @@ function fallbackRewrite(title: string, source: string, category: Category) {
   const cat = category.toLowerCase();
   const excerpt = `A ${cat} development CastSlate is tracking for what it could mean for casting and working actors.`;
   const body =
-    `CastSlate is following a developing ${cat} story: “${headline}.” In a business that moves on momentum, items like this are worth an actor's attention because they tend to ripple outward into casting decisions, production timelines, and the kinds of roles that open up next.\n\n` +
-    `For performers, the practical question is always the same — does this change where the work is, or who's being seen for it? Shifts in ${cat} activity often precede new auditions, recasts, or expanded ensembles, and the actors who notice early are the ones positioned to submit first.\n\n` +
-    `It also reflects a broader pattern we watch closely at CastSlate: the industry rewards preparation and timing. A profile that's current, a reel that's ready, and a clear sense of your casting lane turn news like this into an opportunity rather than a missed window.\n\n` +
-    `We'll keep updating this roundup as the picture develops. In the meantime, the takeaway for actors is to stay ready — keep your materials sharp, your availability honest, and your submissions targeted to the roles that genuinely fit your range.\n\n` +
-    `This post was written by CastSlate Staff as part of our ongoing coverage of acting, casting, film, television, and theater news.`;
+    `A developing ${cat} story is drawing attention across the industry: “${headline}.” In a business that moves on momentum, developments like this tend to ripple outward into casting decisions, production timelines, and the kinds of roles that open up next.\n\n` +
+    `For performers, the practical question is always the same — does this change where the work is, or who is being seen for it? Shifts in ${cat} activity often precede new auditions, recasts, or expanded ensembles, and the people who track them early tend to be the first in the room.\n\n` +
+    `The broader takeaway is that timing and preparation matter. A current profile, a ready reel, and a clear sense of one's casting lane turn a passing headline into a real opportunity.\n\n` +
+    `Written by CastSlate Staff.`;
   return { headline, excerpt, body };
 }
 
