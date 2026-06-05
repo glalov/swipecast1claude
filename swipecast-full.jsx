@@ -1310,7 +1310,7 @@ const css = `
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
-:root{--bg:#F7F4EE;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;}
+:root{--bg:#F7F4EE;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#4F8A8B;--teal-dk:#37696A;}
 html,body{min-height:100vh;background:#1B1C20;}
 *{box-sizing:border-box;}
 html,body{overflow-x:hidden;width:100%;max-width:100%;}
@@ -1332,6 +1332,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .btn-p:hover{background:var(--acc2);transform:translateY(-1px);}
 .btn-s{background:transparent;color:var(--t1);border:1px solid var(--bdr);padding:10px 22px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;}
 .btn-s:hover{border-color:var(--t2);background:var(--s1);}
+.btn-teal{background:var(--teal);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.btn-teal:hover{background:var(--teal-dk);transform:translateY(-1px);}
 .btn-sm{padding:8px 16px;font-size:12px;border-radius:6px;}
 .social-btn-dark{background:#1a1a2e;color:#fff;border:none;padding:12px 20px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;letter-spacing:0.1px;}
 .social-btn-dark:hover{background:#2d2d44;transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,26,46,0.18);}
@@ -1760,7 +1762,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .fcs-card-side:hover{opacity:0.7;filter:none;transform:scale(.96);}
 .fcs-card-far{opacity:0.18;}
 .fcs-arrow{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;border-radius:50%;background:var(--s1);border:1px solid var(--bdr);color:var(--t1);cursor:pointer;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:5;box-shadow:0 6px 18px rgba(0,0,0,0.12);transition:transform .18s ease,background .18s ease,color .18s ease;font-family:'DM Sans',sans-serif;line-height:1;}
-.fcs-arrow:hover{background:var(--acc);color:#fff;transform:translateY(-50%) scale(1.08);border-color:var(--acc);}
+.fcs-arrow:hover{background:var(--teal);color:#fff;transform:translateY(-50%) scale(1.08);border-color:var(--teal);}
 .fcs-arrow:disabled{opacity:0.45;cursor:not-allowed;}
 .fcs-arrow.prev{left:14px;}
 .fcs-arrow.next{right:14px;}
@@ -3959,7 +3961,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
 
         {/* Action */}
         <div className="cls-card-action">
-          <button className="btn-p btn-sm" style={{whiteSpace:"nowrap"}}
+          <button className="btn-teal btn-sm" style={{whiteSpace:"nowrap"}}
             onClick={e=>{e.stopPropagation();setViewing(cls);window.scrollTo(0,0);}}>
             {t('classes.viewClass')}
           </button>
@@ -3979,7 +3981,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
       <p>{t('classes.heroDesc')}</p>
     </div>
     <div style={{display:"flex",flexWrap:"wrap",gap:8,justifyContent:"center",marginBottom:40}}>
-      <button className="btn-s btn-sm" onClick={()=>setFilter("all")} style={filter==="all"?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>{t('classes.allCategories')}</button>
+      <button className="btn-s btn-sm" onClick={()=>setFilter("all")} style={filter==="all"?{background:"var(--teal)",color:"#fff",borderColor:"var(--teal)"}:{}}>{t('classes.allCategories')}</button>
       {CLASS_CATEGORIES.map(cat=><button key={cat.id} className="btn-s btn-sm" onClick={()=>setFilter(cat.id)} style={filter===cat.id?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>{cat.name}</button>)}
     </div>
 
@@ -4368,8 +4370,8 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan}){
               {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Actor Slate Video — 7-sec intro','Actor Business Card with QR code','Manager Mode weekly career check-ins','Personalized profile improvement suggestions'].map(f=>feat(f,"var(--acc)"))}
             </div>
             {isPremium
-              ?<button style={{...btnFilled,marginTop:24}} onClick={()=>onNavigate("membership")}>Manage Plan →</button>
-              :<button style={{...btnFilled,marginTop:24}} onClick={()=>onNavigate("membership")}>{t('pricing.getPremium')}</button>}
+              ?<button className="btn-teal" style={{width:"100%",height:44,borderRadius:10,marginTop:24}} onClick={()=>onNavigate("membership")}>Manage Plan →</button>
+              :<button className="btn-teal" style={{width:"100%",height:44,borderRadius:10,marginTop:24}} onClick={()=>onNavigate("membership")}>{t('pricing.getPremium')}</button>}
           </div>
 
           {/* Casting Director */}
@@ -8168,7 +8170,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const fc=allCastings.filter(c=>{if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&c.type!==f.type)return false;if(f.location&&!matchesLocationFilter(c.location,f.location))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;});
   return(<div className="page page-wide">
     <div className="section-label">{t('search.title')}</div>
-    <div className="search-bar"><input className="input" placeholder={t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/><button className="btn-p">{t('search.searchBtn')}</button></div>
+    <div className="search-bar"><input className="input" placeholder={t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/><button className="btn-teal">{t('search.searchBtn')}</button></div>
     <>
       {/* Full-height loading placeholder — only during initial load (no cached data).
           Keeps the footer pinned to the bottom so it never flashes upward. */}
@@ -8224,7 +8226,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                   </div>
                 </div>
                 <div className="casting-card-row-side" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",minWidth:140}}>
-                  <button className="btn-p" onClick={e=>{e.stopPropagation();onViewCasting&&onViewCasting(rawC);}}>{t('search.viewRoles')}</button>
+                  <button className="btn-teal" onClick={e=>{e.stopPropagation();onViewCasting&&onViewCasting(rawC);}}>{t('search.viewRoles')}</button>
                   {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>{t('search.applied')}</span>:null}
                 </div>
               </div>
@@ -12637,7 +12639,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         <h2 style={{fontWeight:800,fontSize:isMobileVpw?22:30,letterSpacing:-1,margin:0,lineHeight:1.2,wordBreak:"break-word"}}>Open jobs from real productions.</h2>
         {!isMobileVpw&&<p style={{color:"var(--t2)",fontSize:13,marginTop:6}}>Updated live — same listings as Browse Castings. Tap any card to view full role breakdown and apply.</p>}
       </div>
-      {onNavigate&&<button className="btn-s" style={{flexShrink:0,background:"#fff",color:"#1A1A2E",fontWeight:700,padding:"11px 22px",fontSize:14,border:"1.5px solid rgba(26,26,46,0.18)"}} onClick={()=>onNavigate("search")}>Browse all →</button>}
+      {onNavigate&&<button className="btn-teal" style={{flexShrink:0,padding:"11px 22px",fontSize:14}} onClick={()=>onNavigate("search")}>Browse all →</button>}
     </div>
 
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
@@ -12695,7 +12697,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
               {sc.deadline&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Deadline</strong> · {sc.deadline}</span>}
             </div>
             {isCenter&&<div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
-              <button className="btn-p" onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(sc);}}>View Roles &amp; Apply →</button>
+              <button className="btn-teal" onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(sc);}}>View Roles &amp; Apply →</button>
               <span style={{fontSize:11,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase",fontWeight:700}}>· Casting {idx+1} of {castings.length}</span>
             </div>}
           </div>);
@@ -13132,7 +13134,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             ))}
           </div>
           <div>
-            <button className="btn-p" style={{padding:"13px 22px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Create My Free Profile →</button>
+            <button className="btn-teal" style={{padding:"13px 22px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Create My Free Profile →</button>
           </div>
         </div>
       </div>
@@ -13186,7 +13188,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             ))}
           </div>
           <div style={{marginTop:4}}>
-            <button className="btn-p" style={{padding:"13px 22px",fontSize:14}} onClick={()=>onNavigate("register-cd")}>Create CD Account →</button>
+            <button className="btn-teal" style={{padding:"13px 22px",fontSize:14}} onClick={()=>onNavigate("register-cd")}>Create CD Account →</button>
           </div>
         </div>
       </div>
@@ -13198,7 +13200,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div className="section-title">Simple Pricing. No Surprises.</div>
       <p style={{color:"var(--t2)",fontSize:15.5,lineHeight:1.7,maxWidth:620,margin:"14px auto 28px"}}>Actors can create a free account and start submitting. Actor Plus starts at $9.99/month for additional visibility and tools. Casting directors can post projects and review submissions for free.</p>
       <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-        <button className="btn-p" style={{padding:"13px 24px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Create Free Profile</button>
+        <button className="btn-teal" style={{padding:"13px 24px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Create Free Profile</button>
         <button className="btn-s" style={{padding:"13px 24px",fontSize:14,background:"#fff",color:"#1A1A2E",fontWeight:700,border:"1.5px solid rgba(26,26,46,0.18)"}} onClick={()=>onNavigate("pricing")}>View Pricing</button>
       </div>
     </section>
@@ -21344,7 +21346,7 @@ function App(){
             <button className="btn-p btn-sm" onClick={signOut}>{navT('nav.signOut')}</button>
           </>:<>
             <div className="join-dropdown" ref={joinRef}>
-              <button className={`${["auth-gate","register-talent"].includes(page)||joinOpen?"btn-p":"btn-s"} btn-sm`} onClick={()=>setJoinOpen(o=>!o)} style={{display:"inline-flex",alignItems:"center",gap:5}}>
+              <button className="btn-teal btn-sm" onClick={()=>setJoinOpen(o=>!o)} style={{display:"inline-flex",alignItems:"center",gap:5}}>
                 {navT('nav.join')}
                 <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor" style={{transition:"transform .2s",transform:joinOpen?"rotate(180deg)":"rotate(0deg)"}}><path d="M0 0l5 6 5-6z"/></svg>
               </button>
