@@ -1310,17 +1310,18 @@ const css = `
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
-:root{--bg:#F7F4EE;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#4F8A8B;--teal-dk:#37696A;}
+:root{--bg:#F7F4EE;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#4F8A8B;--teal-dk:#37696A;--amber:#E8902A;--amber-dk:#C8761B;}
 html,body{min-height:100vh;background:#1B1C20;}
 *{box-sizing:border-box;}
-html,body{overflow-x:hidden;width:100%;max-width:100%;}
-body{color:var(--t1);font-family:'DM Sans',sans-serif;overflow-x:hidden;margin:0;display:flex;flex-direction:column;}
+html{width:100%;max-width:100%;}
+body{color:var(--t1);font-family:'DM Sans',sans-serif;overflow-x:hidden;width:100%;max-width:100%;margin:0;display:flex;flex-direction:column;}
 #root{flex:1 1 auto;display:flex;flex-direction:column;min-height:100vh;width:100%;max-width:100%;}
 img,video,iframe{max-width:100%;}
 .app{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;flex:1 1 auto;}
 a{color:inherit;text-decoration:none;}
 h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
-.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;position:sticky;top:0;z-index:100;background:#FFFFFF;border-bottom:1px solid var(--bdr);}
+.site-top{position:sticky;top:0;z-index:120;}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;position:relative;z-index:1;background:#FFFFFF;border-bottom:1px solid var(--bdr);}
 .logo{font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--t1);}
 .logo-i{width:30px;height:30px;background:var(--acc);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;}
 .logo-i svg{width:100%;height:100%;display:block;}
@@ -1334,6 +1335,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .btn-s:hover{border-color:var(--t2);background:var(--s1);}
 .btn-teal{background:var(--teal);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .btn-teal:hover{background:var(--teal-dk);transform:translateY(-1px);}
+.btn-amber-hover{transition:background .2s,color .2s,border-color .2s;}
+.btn-amber-hover:hover{background:var(--amber)!important;color:#fff!important;border-color:var(--amber)!important;}
 .btn-sm{padding:8px 16px;font-size:12px;border-radius:6px;}
 .social-btn-dark{background:#1a1a2e;color:#fff;border:none;padding:12px 20px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;letter-spacing:0.1px;}
 .social-btn-dark:hover{background:#2d2d44;transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,26,46,0.18);}
@@ -1785,11 +1788,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .fcs-arrow.next{right:4px;}
 }
 /* ─── Casting-format marquee — cinematic Playfair serif words, infinite horizontal scroll ─── */
-.partners-marquee{position:relative;overflow:hidden;width:100%;padding:16px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 100px,#000 calc(100% - 100px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 100px,#000 calc(100% - 100px),transparent 100%);}
+.partners-marquee{position:relative;overflow:hidden;width:100%;padding:16px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,rgba(0,0,0,0.15) 6%,#000 16%,#000 84%,rgba(0,0,0,0.15) 94%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,rgba(0,0,0,0.15) 6%,#000 16%,#000 84%,rgba(0,0,0,0.15) 94%,transparent 100%);}
 .partners-track{display:flex;align-items:center;width:max-content;animation:partnersSlide 52s linear infinite;will-change:transform;}
 .partners-marquee:hover .partners-track{animation-play-state:paused;}
-.partners-tile{flex-shrink:0;display:flex;align-items:center;gap:46px;padding:0 46px;font-family:'Playfair Display','Didot','Bodoni 72',Georgia,serif;font-weight:600;font-size:clamp(32px,4.6vw,56px);line-height:1;letter-spacing:.05em;text-transform:uppercase;color:rgba(26,26,46,.5);white-space:nowrap;}
-.partners-sep{width:7px;height:7px;background:rgba(26,26,46,.3);transform:rotate(45deg);flex:none;}
+.partners-tile{flex-shrink:0;display:flex;align-items:center;gap:46px;padding:0 46px;font-family:'Playfair Display','Didot','Bodoni 72',Georgia,serif;font-weight:600;font-size:clamp(32px,4.6vw,56px);line-height:1;letter-spacing:.05em;text-transform:uppercase;color:rgba(26,26,46,.82);white-space:nowrap;}
+.partners-sep{width:7px;height:7px;background:rgba(26,26,46,.5);transform:rotate(45deg);flex:none;}
 @keyframes partnersSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
 @media (prefers-reduced-motion: reduce){.partners-track{animation:none;}}
 @media (max-width:768px){.partners-tile{font-size:28px;gap:30px;padding:0 30px;}}
@@ -2099,7 +2102,7 @@ function ActivateMembershipBanner({myProfile,onNavigate}){
     className="member-banner"
     aria-label="Upgrade to Premium"
     style={{
-      position:"sticky",top:0,zIndex:100,
+      position:"relative",
       width:"100%",border:"none",cursor:"pointer",
       background:"linear-gradient(90deg,#1a1a2e 0%,#16213e 100%)",
       color:"#fff",fontFamily:"'DM Sans',sans-serif",fontWeight:700,
@@ -2890,7 +2893,7 @@ function RegisterTalent({onNavigate}){
             <div style={{border:"1px solid var(--bdr)",borderRadius:12,padding:"14px 16px",opacity:0.85}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><span style={{fontWeight:800,fontSize:14}}>Actor Premium</span><span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--acc)"}}>$9.99/mo</span></div>
               {["Unlimited submissions","Unlimited photos, videos & Cast Me As","Actor Slate Video","Actor Business Card with QR code","Manager Mode weekly check-ins","Profile improvement suggestions"].map(feat=><div key={feat} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{feat}</div>)}
-              <button className="btn-s" style={{width:"100%",marginTop:10,fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>
+              <button className="btn-s btn-amber-hover" style={{width:"100%",marginTop:10,fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>
             </div>
           </div>
         </div>
@@ -4527,7 +4530,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
           <h1 style={{fontWeight:800,fontSize:"clamp(30px,4.5vw,54px)",lineHeight:1.07,letterSpacing:-1.8,marginBottom:18,color:"#fff"}}>Cast Slate becomes your talent manager before you have a talent manager.</h1>
           <p style={{fontSize:"clamp(15px,2vw,19px)",lineHeight:1.65,color:"rgba(255,255,255,0.72)",marginBottom:32,maxWidth:520}}>Cast Slate doesn't just help actors find auditions. It helps actors become more castable.</p>
           <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-            <button style={{padding:"14px 28px",fontSize:14,background:"#fff",color:"#1A1A2E",borderRadius:100,fontWeight:800,letterSpacing:0.3,border:"none",cursor:"pointer",boxShadow:"0 4px 20px rgba(255,255,255,0.2)"}} onClick={()=>onNavigate("membership")}>Unlock Manager Mode</button>
+            <button className="btn-amber-hover" style={{padding:"14px 28px",fontSize:14,background:"#fff",color:"#1A1A2E",borderRadius:100,fontWeight:800,letterSpacing:0.3,border:"none",cursor:"pointer",boxShadow:"0 4px 20px rgba(255,255,255,0.2)"}} onClick={()=>onNavigate("membership")}>Unlock Manager Mode</button>
             <button style={{padding:"14px 28px",fontSize:14,background:"transparent",color:"rgba(255,255,255,0.82)",borderRadius:100,fontWeight:700,letterSpacing:0.3,border:"1px solid rgba(255,255,255,0.28)",cursor:"pointer"}} onClick={()=>onNavigate("pricing")}>See Premium Plans</button>
           </div>
           <div style={{display:"flex",gap:20,marginTop:24,flexWrap:"wrap"}}>
@@ -4716,7 +4719,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
                   </div>
                 ))}
               </div>
-              <button style={{padding:"14px 28px",borderRadius:100,background:"#fff",color:"#1A1A2E",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3,boxShadow:"0 4px 20px rgba(255,255,255,0.2)"}} onClick={cardCTA}>{cardCTALabel}</button>
+              <button className="btn-amber-hover" style={{padding:"14px 28px",borderRadius:100,background:"#fff",color:"#1A1A2E",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3,boxShadow:"0 4px 20px rgba(255,255,255,0.2)"}} onClick={cardCTA}>{cardCTALabel}</button>
             </div>
 
             {/* Right: Business card visual */}
@@ -4798,7 +4801,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
               </div>
             ))}
           </div>
-          <button style={{padding:"15px 34px",borderRadius:100,background:"#fff",color:"#1A1A2E",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3,boxShadow:"0 4px 20px rgba(255,255,255,0.2)"}} onClick={()=>onNavigate("membership")}>Upgrade to Premium</button>
+          <button className="btn-amber-hover" style={{padding:"15px 34px",borderRadius:100,background:"#fff",color:"#1A1A2E",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3,boxShadow:"0 4px 20px rgba(255,255,255,0.2)"}} onClick={()=>onNavigate("membership")}>Upgrade to Premium</button>
         </div>
       </div>
     </section>
@@ -5902,7 +5905,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
               <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--acc)"}}>$9.99/mo</span>
             </div>
             {["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited casting submissions","Premium profile features","Profile improvement suggestions"].map(f=><div key={f} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{f}</div>)}
-            <button className="btn-s" style={{width:"100%",marginTop:10,fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>
+            <button className="btn-s btn-amber-hover" style={{width:"100%",marginTop:10,fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>
           </div>
         </div>
       </div>
@@ -6928,7 +6931,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     {/* ── Free-actor submissions remaining badge ── */}
     {isTalent&&!isPremium&&isLoggedIn&&<div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
       <span style={{fontSize:13,color:"var(--t2)"}}>Free Plan: <strong style={{color:todayCount>=FREE_PLAN.submissionsPerDay?"#c0392b":"var(--t1)"}}>{Math.max(0,FREE_PLAN.submissionsPerDay-todayCount)}</strong> of {FREE_PLAN.submissionsPerDay} submissions remaining today</span>
-      <button className="btn-s btn-sm" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade for Unlimited</button>
+      <button className="btn-s btn-sm btn-amber-hover" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade for Unlimited</button>
     </div>}
     {/* ── Save Casting / Send to a Friend — Backstage-style action row ── */}
     {(()=>{
@@ -13069,7 +13072,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
 
   return(<>
     {/* ───────── HERO ───────── */}
-    <section className="landing-hero" style={{padding:"72px 40px 40px",maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1.1fr 1fr",gap:60,alignItems:"center"}}><div>
+    <section className="landing-hero" style={{padding:"44px 40px 14px",maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1.1fr 1fr",gap:60,alignItems:"center"}}><div>
       <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--bdr)",padding:"6px 14px",borderRadius:100,fontSize:12,color:"var(--acc)",fontWeight:700,letterSpacing:0.5,textTransform:"uppercase",marginBottom:20}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--grn)",boxShadow:"0 0 8px var(--grn)"}}/>{isLoggedIn?tr('landing.welcomeBack').replace('{name}',myProfile?.display_name?", "+myProfile.display_name.split(" ")[0]:""):tr('landing.liveNow')}</div>
       <h1 className="landing-hero-title" style={{fontWeight:800,fontSize:46,lineHeight:1.07,letterSpacing:-1.6,marginBottom:18}}>{tr('landing.heroTitle')} <span style={{color:"var(--acc)"}}>{tr('landing.heroAccent')}</span></h1>
       <p style={{color:"var(--t2)",fontSize:16.5,lineHeight:1.6,marginBottom:14,maxWidth:520}}>{tr('landing.heroDesc')}</p>
@@ -13084,8 +13087,8 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </section>
 
     {/* ───────── CASTING-FORMAT MARQUEE — cinematic Playfair serif words, infinite scroll ───────── */}
-    <div style={{padding:"44px 0 48px",background:"var(--bg)"}}>
-      <div style={{maxWidth:1200,margin:"0 auto",textAlign:"center",padding:"0 24px",marginBottom:22}}>
+    <div style={{padding:"14px 0 30px",background:"var(--bg)"}}>
+      <div style={{maxWidth:1200,margin:"0 auto",textAlign:"center",padding:"0 24px",marginBottom:14}}>
         <p style={{fontSize:11,letterSpacing:1.5,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,margin:0}}>{tr('landing.trustedBy')}</p>
       </div>
       <div className="partners-marquee" aria-label="Casting formats">
@@ -13201,7 +13204,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <p style={{color:"var(--t2)",fontSize:15.5,lineHeight:1.7,maxWidth:620,margin:"14px auto 28px"}}>Actors can create a free account and start submitting. Actor Plus starts at $9.99/month for additional visibility and tools. Casting directors can post projects and review submissions for free.</p>
       <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
         <button className="btn-teal" style={{padding:"13px 24px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Create Free Profile</button>
-        <button className="btn-s" style={{padding:"13px 24px",fontSize:14,background:"#fff",color:"#1A1A2E",fontWeight:700,border:"1.5px solid rgba(26,26,46,0.18)"}} onClick={()=>onNavigate("pricing")}>View Pricing</button>
+        <button className="btn-s btn-amber-hover" style={{padding:"13px 24px",fontSize:14,background:"#fff",color:"#1A1A2E",fontWeight:700,border:"1.5px solid rgba(26,26,46,0.18)"}} onClick={()=>onNavigate("pricing")}>View Pricing</button>
       </div>
     </section>
 
@@ -13542,7 +13545,7 @@ function CastingFitDNAEditor({session,isPremium,onNavigate}){
           ?<>⭐ <strong>Premium:</strong> unlimited casting types · 1 mood clip + {PREMIUM_PLAN.castingSupportingPhotos} supporting photos per type</>
           :<>Free Plan: up to {FREE_PLAN.castingTypes} casting types · no clips or photos. <strong>Upgrade for full Cast Me As.</strong></>}
       </span>
-      {!isPremium&&<button className="btn-s btn-sm" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade — {PREMIUM_PRICE}</button>}
+      {!isPremium&&<button className="btn-s btn-sm btn-amber-hover" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade — {PREMIUM_PRICE}</button>}
     </div>
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
 
@@ -14378,7 +14381,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
       {!isPremium&&(
         <div style={{padding:"14px 18px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
           <span style={{fontSize:13,color:"var(--t2)"}}>Free Plan: 1 headshot included. Upgrade to Premium for unlimited gallery photos and videos.</span>
-          <button className="btn-s btn-sm" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade — {PREMIUM_PRICE}</button>
+          <button className="btn-s btn-sm btn-amber-hover" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade — {PREMIUM_PRICE}</button>
         </div>
       )}
       {isPremium&&(
@@ -21311,6 +21314,9 @@ function App(){
   return(
     <LanguageContext.Provider value={{lang,setLang}}>
     <div className="app"><style>{css}</style>
+      {/* Sticky top: promo stripe + activate banner + white nav stay pinned
+          together at the top of the viewport while the page scrolls. */}
+      <div className="site-top">
       {/* Yearly promo stripe — homepage only, hidden for active members and
           industry accounts. Savings calculated dynamically from MEMBERSHIP_PLANS,
           so any pricing change updates the headline automatically. */}
@@ -21319,7 +21325,7 @@ function App(){
         isLoggedIn={isLoggedIn}
         onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}}
       />}
-      {/* Free-tier talent see this red sticky banner above the nav until they
+      {/* Free-tier talent see this red banner above the nav until they
           activate. Hidden for CDs/admins/producers/studios and once active. */}
       <ActivateMembershipBanner myProfile={myProfile} onNavigate={navigate}/>
       <nav className="nav">
@@ -21369,6 +21375,7 @@ function App(){
           <span style={{display:"block",width:18,height:2,background:"var(--t1)",boxShadow:"0 -5px 0 var(--t1), 0 5px 0 var(--t1)"}}></span>
         </button>
       </nav>
+      </div>
       {menuOpen&&<div className="mobile-menu" onClick={()=>setMenuOpen(false)}>
         <div className="mobile-menu-inner" onClick={e=>e.stopPropagation()}>
           <div style={{display:"flex",flexDirection:"column",gap:4}}>
