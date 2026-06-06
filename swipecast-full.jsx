@@ -1642,55 +1642,70 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
        on the left. Eye-catching headline copy in heavy uppercase. ─── */
 .promo-stripe{
   position:relative;
+  overflow:hidden;
   display:flex;align-items:stretch;gap:22px;
   padding:14px 30px 14px 14px;
-  background:linear-gradient(90deg,#0a0a1c 0%,#1a1a2e 45%,#2d2d44 100%);
-  color:#fff;
+  background:linear-gradient(90deg,#092C4C 0%,#0F4C81 50%,#092C4C 100%);
+  color:#F8FAFC;
   font-family:'DM Sans',sans-serif;
-  border-bottom:1px solid rgba(255,255,255,0.1);
+  border-bottom:1px solid rgba(248,250,252,0.12);
   min-height:84px;
   z-index:99;
 }
+.promo-stripe-sheen{
+  position:absolute;top:0;bottom:0;left:-40%;width:34%;
+  background:linear-gradient(100deg,transparent 0%,rgba(248,250,252,0.10) 50%,transparent 100%);
+  transform:skewX(-12deg);
+  pointer-events:none;
+  z-index:1;
+  animation:promoSheen 9s ease-in-out infinite;
+}
+@keyframes promoSheen{0%{left:-40%;}55%,100%{left:130%;}}
+@media (prefers-reduced-motion: reduce){.promo-stripe-sheen{animation:none;display:none;}}
 .promo-stripe::before{
   content:'';
   position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent 0%,#f5e8d0 30%,#fff 50%,#f5e8d0 70%,transparent 100%);
-  opacity:.55;
+  background:linear-gradient(90deg,transparent 0%,#FFD166 30%,#fff 50%,#FFD166 70%,transparent 100%);
+  opacity:.6;
+  z-index:2;
 }
 .promo-stripe::after{
   content:'';
   position:absolute;bottom:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent 0%,rgba(245,232,208,0.4) 50%,transparent 100%);
+  background:linear-gradient(90deg,transparent 0%,rgba(255,209,102,0.45) 50%,transparent 100%);
+  z-index:2;
 }
 .promo-stripe-img{
+  position:relative;z-index:2;
   width:160px;height:64px;
   border-radius:100px;
   object-fit:cover;
   flex-shrink:0;
-  border:2px solid rgba(245,232,208,0.45);
+  border:2px solid rgba(255,209,102,0.5);
   box-shadow:0 0 0 1px rgba(255,255,255,0.05),0 4px 16px rgba(0,0,0,0.3);
 }
 .promo-stripe-text{
+  position:relative;z-index:2;
   flex:1;min-width:0;
   display:flex;align-items:center;gap:18px;
   line-height:1.15;
 }
 .promo-stripe-brand{
   font-weight:900;letter-spacing:2.6px;font-size:22px;
-  color:#f5e8d0;
+  color:#FFD166;
   flex-shrink:0;
   text-transform:uppercase;
-  text-shadow:0 1px 2px rgba(0,0,0,0.25);
+  text-shadow:0 1px 2px rgba(0,0,0,0.3);
 }
 .promo-stripe-divider{
-  color:rgba(245,232,208,0.4);font-weight:200;font-size:30px;line-height:1;
+  color:rgba(248,250,252,0.4);font-weight:200;font-size:30px;line-height:1;
   flex-shrink:0;
 }
 .promo-stripe-headline{
   flex:1;min-width:0;
   font-size:18px;
   font-weight:700;
-  color:#fff;
+  color:#F8FAFC;
   letter-spacing:.2px;
 }
 .promo-stripe-headline strong{
@@ -1702,10 +1717,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 }
 .promo-stripe-message{
   font-weight:600;
-  color:rgba(255,255,255,0.92);
+  color:rgba(248,250,252,0.92);
 }
 .promo-stripe-cta{
-  background:#f5e8d0;color:#1a1a2e;
+  position:relative;z-index:2;
+  background:#FFD166;color:#0B1320;
   border:none;
   padding:14px 36px;
   border-radius:100px;
@@ -1714,13 +1730,13 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   cursor:pointer;flex-shrink:0;
   transition:transform .18s ease,background .18s ease,color .18s ease,box-shadow .18s ease;
   align-self:center;
-  box-shadow:0 4px 14px rgba(0,0,0,0.25);
+  box-shadow:0 4px 14px rgba(0,0,0,0.28);
   text-transform:uppercase;
 }
 .promo-stripe-cta:hover{
   transform:translateY(-1px) scale(1.04);
-  background:#fff;
-  box-shadow:0 8px 22px rgba(0,0,0,0.35);
+  background:#FFDA85;
+  box-shadow:0 8px 22px rgba(9,44,76,0.45);
 }
 @media (max-width:900px){
   .promo-stripe{gap:14px;padding:12px 16px 12px 12px;min-height:68px;}
@@ -1738,7 +1754,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .promo-stripe-divider{display:none;}
   .promo-stripe-text{gap:0;}
   .promo-stripe-headline{font-size:12px;line-height:1.3;}
-  .promo-stripe-headline strong{display:block;font-size:11px;color:#f5e8d0;margin-bottom:2px;letter-spacing:1.4px;}
+  .promo-stripe-headline strong{display:block;font-size:11px;color:#FFD166;margin-bottom:2px;letter-spacing:1.4px;}
   .promo-stripe-message{display:block;}
   .promo-stripe-cta{padding:10px 18px;font-size:12px;}
 }
@@ -2072,6 +2088,8 @@ function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){
   };
 
   return(<aside className="promo-stripe" role="region" aria-label="Yearly membership offer">
+    {/* Subtle slow light sweep for a premium feel (disabled for reduced-motion). */}
+    <span className="promo-stripe-sheen" aria-hidden="true"/>
     {/* Cinematic crew/camera scene — Unsplash CDN URL, easy to swap for a
         CastSlate-branded asset later (just change the src). */}
     <img className="promo-stripe-img" alt="" loading="lazy"
