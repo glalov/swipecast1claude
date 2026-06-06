@@ -1,4 +1,4 @@
-const { useState, useRef, useCallback, useEffect, useMemo, createContext, useContext } = React;
+const { useState, useRef, useCallback, useEffect, useLayoutEffect, useMemo, createContext, useContext } = React;
 
 // ═══════════════════════════════════════════
 // ERROR BOUNDARY — catches render errors in any wrapped subtree and shows
@@ -1317,10 +1317,10 @@ html{width:100%;max-width:100%;}
 body{color:var(--t1);font-family:'DM Sans',sans-serif;overflow-x:hidden;width:100%;max-width:100%;margin:0;display:flex;flex-direction:column;}
 #root{flex:1 1 auto;display:flex;flex-direction:column;min-height:100vh;width:100%;max-width:100%;}
 img,video,iframe{max-width:100%;}
-.app{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;flex:1 1 auto;}
+.app{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;flex:1 1 auto;padding-top:var(--site-top-h,0px);}
 a{color:inherit;text-decoration:none;}
 h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
-.site-top{position:sticky;top:0;z-index:120;}
+.site-top{position:fixed;top:0;left:0;right:0;z-index:120;}
 .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;position:relative;z-index:1;background:#FFFFFF;border-bottom:1px solid var(--bdr);}
 .logo{font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--t1);}
 .logo-i{width:30px;height:30px;background:var(--acc);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;}
@@ -21310,13 +21310,29 @@ function App(){
   const navThen=useCallback((p)=>{setMenuOpen(false);setJoinOpen(false);navigate(p);},[navigate]);
   const doSignOut=useCallback(()=>{setMenuOpen(false);setJoinOpen(false);signOut();},[signOut]);
 
+  // Fixed top bar (promo + banner + nav): measure its height and offset the
+  // page content by exactly that much so nothing hides underneath. Height
+  // varies by page (promo is home-only) and account (free-talent banner), and
+  // by viewport, so we re-measure on resize and whenever those inputs change.
+  const siteTopRef=useRef(null);
+  useLayoutEffect(()=>{
+    const el=siteTopRef.current;
+    if(!el)return;
+    const apply=()=>document.documentElement.style.setProperty("--site-top-h",el.offsetHeight+"px");
+    apply();
+    let ro;
+    if(typeof ResizeObserver!=="undefined"){ro=new ResizeObserver(apply);ro.observe(el);}
+    window.addEventListener("resize",apply);
+    return()=>{if(ro)ro.disconnect();window.removeEventListener("resize",apply);};
+  },[page,isLoggedIn,myProfile?.user_type,myProfile?.membership_status]);
+
   const navT=(key)=>(TRANSLATIONS[lang]&&TRANSLATIONS[lang][key])||TRANSLATIONS.en[key]||key;
   return(
     <LanguageContext.Provider value={{lang,setLang}}>
     <div className="app"><style>{css}</style>
       {/* Sticky top: promo stripe + activate banner + white nav stay pinned
           together at the top of the viewport while the page scrolls. */}
-      <div className="site-top">
+      <div className="site-top" ref={siteTopRef}>
       {/* Yearly promo stripe — homepage only, hidden for active members and
           industry accounts. Savings calculated dynamically from MEMBERSHIP_PLANS,
           so any pricing change updates the headline automatically. */}
