@@ -1642,121 +1642,122 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
        on the left. Eye-catching headline copy in heavy uppercase. ─── */
 .promo-stripe{
   position:relative;
-  overflow:hidden;
-  display:flex;align-items:stretch;gap:22px;
-  padding:14px 30px 14px 14px;
-  background:linear-gradient(90deg,#092C4C 0%,#0F4C81 50%,#092C4C 100%);
-  color:#F8FAFC;
+  padding:10px 22px;
+  background:radial-gradient(130% 180% at 50% -20%, #1a1a1a 0%, #0c0c0c 48%, #060606 100%);
+  color:#fff;
   font-family:'DM Sans',sans-serif;
-  border-bottom:1px solid rgba(248,250,252,0.12);
-  min-height:84px;
+  border-bottom:1px solid #1f1f1f;
   z-index:99;
 }
-.promo-stripe-sheen{
-  position:absolute;top:0;bottom:0;left:-40%;width:34%;
-  background:linear-gradient(100deg,transparent 0%,rgba(248,250,252,0.10) 50%,transparent 100%);
-  transform:skewX(-12deg);
-  pointer-events:none;
-  z-index:1;
-  animation:promoSheen 9s ease-in-out infinite;
+.promo-stripe-inner{
+  position:relative;
+  max-width:1280px;margin:0 auto;
+  display:flex;align-items:center;gap:22px;
+  padding:12px 26px;
+  min-height:62px;
+  border:1px solid #2e2e2e;
+  border-radius:12px;
+  background:linear-gradient(180deg,#101010 0%,#080808 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.04),0 2px 12px rgba(0,0,0,0.45);
 }
-@keyframes promoSheen{0%{left:-40%;}55%,100%{left:130%;}}
-@media (prefers-reduced-motion: reduce){.promo-stripe-sheen{animation:none;display:none;}}
-.promo-stripe::before{
-  content:'';
-  position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent 0%,#FFD166 30%,#fff 50%,#FFD166 70%,transparent 100%);
-  opacity:.6;
-  z-index:2;
+/* Ticket-style perforation along the inner frame's left & right edges. */
+.promo-stripe-inner::before,
+.promo-stripe-inner::after{
+  content:'';position:absolute;top:11px;bottom:11px;width:1px;
+  background:repeating-linear-gradient(to bottom,#3a3a3a 0 3px,transparent 3px 9px);
+  opacity:.85;
 }
-.promo-stripe::after{
-  content:'';
-  position:absolute;bottom:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent 0%,rgba(255,209,102,0.45) 50%,transparent 100%);
-  z-index:2;
+.promo-stripe-inner::before{left:13px;}
+.promo-stripe-inner::after{right:13px;}
+.promo-logo-wrap{display:flex;align-items:center;gap:12px;flex-shrink:0;padding-left:8px;}
+.promo-logo{
+  width:46px;height:46px;flex-shrink:0;
+  display:grid;place-items:center;
+  clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);
+  background:#3a3a3a;
+  animation:promoLogoSpin 7s linear infinite;
+  will-change:transform;
 }
-.promo-stripe-img{
-  position:relative;z-index:2;
-  width:160px;height:64px;
-  border-radius:100px;
-  object-fit:cover;
-  flex-shrink:0;
-  border:2px solid rgba(255,209,102,0.5);
-  box-shadow:0 0 0 1px rgba(255,255,255,0.05),0 4px 16px rgba(0,0,0,0.3);
+.promo-logo-face{
+  width:40px;height:40px;
+  display:grid;place-items:center;
+  clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);
+  background:linear-gradient(150deg,#1d1d1d 0%,#090909 100%);
+  color:#fff;
 }
-.promo-stripe-text{
-  position:relative;z-index:2;
-  flex:1;min-width:0;
-  display:flex;align-items:center;gap:18px;
-  line-height:1.15;
-}
+.promo-logo-face svg{width:22px;height:22px;display:block;}
+@keyframes promoLogoSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+@media (prefers-reduced-motion: reduce){.promo-logo{animation:none;}}
 .promo-stripe-brand{
-  font-weight:900;letter-spacing:2.6px;font-size:22px;
-  color:#FFD166;
-  flex-shrink:0;
-  text-transform:uppercase;
-  text-shadow:0 1px 2px rgba(0,0,0,0.3);
+  font-weight:800;letter-spacing:0.4px;font-size:18px;
+  color:#e9e9e9;flex-shrink:0;
 }
 .promo-stripe-divider{
-  color:rgba(248,250,252,0.4);font-weight:200;font-size:30px;line-height:1;
-  flex-shrink:0;
+  width:1px;height:38px;flex-shrink:0;
+  background:linear-gradient(180deg,transparent,#3a3a3a 20%,#3a3a3a 80%,transparent);
+}
+.promo-stripe-text{
+  flex:1;min-width:0;
+  display:flex;flex-direction:column;justify-content:center;gap:2px;
+  line-height:1.05;
 }
 .promo-stripe-headline{
-  flex:1;min-width:0;
-  font-size:18px;
-  font-weight:700;
-  color:#F8FAFC;
-  letter-spacing:.2px;
-}
-.promo-stripe-headline strong{
-  font-weight:900;letter-spacing:1.6px;
+  font-weight:900;
+  font-size:clamp(20px,3vw,32px);
+  letter-spacing:1px;
   text-transform:uppercase;
-  font-size:22px;
   color:#fff;
-  margin-right:6px;
+  line-height:1;
 }
 .promo-stripe-message{
-  font-weight:600;
-  color:rgba(248,250,252,0.92);
+  font-weight:600;font-size:14.5px;
+  color:#d6d6d6;letter-spacing:.2px;
 }
 .promo-stripe-cta{
-  position:relative;z-index:2;
-  background:#FFD166;color:#0B1320;
+  flex-shrink:0;align-self:center;
+  background:#ffffff;color:#0b1320;
   border:none;
-  padding:14px 36px;
-  border-radius:100px;
+  padding:13px 30px;
+  border-radius:8px;
   font-family:'DM Sans',sans-serif;
-  font-weight:900;font-size:15px;letter-spacing:0.5px;
-  cursor:pointer;flex-shrink:0;
-  transition:transform .18s ease,background .18s ease,color .18s ease,box-shadow .18s ease;
-  align-self:center;
-  box-shadow:0 4px 14px rgba(0,0,0,0.28);
+  font-weight:900;font-size:14px;letter-spacing:0.6px;
   text-transform:uppercase;
+  cursor:pointer;
+  transition:transform .18s ease,background .18s ease,box-shadow .18s ease;
+  box-shadow:0 2px 10px rgba(0,0,0,0.4);
 }
 .promo-stripe-cta:hover{
-  transform:translateY(-1px) scale(1.04);
-  background:#FFDA85;
-  box-shadow:0 8px 22px rgba(9,44,76,0.45);
+  transform:translateY(-1px);
+  background:#ededed;
+  box-shadow:0 6px 18px rgba(0,0,0,0.55);
 }
 @media (max-width:900px){
-  .promo-stripe{gap:14px;padding:12px 16px 12px 12px;min-height:68px;}
-  .promo-stripe-img{width:96px;height:54px;}
-  .promo-stripe-brand{font-size:14px;letter-spacing:1.6px;}
-  .promo-stripe-divider{font-size:22px;}
-  .promo-stripe-headline{font-size:13px;line-height:1.3;}
-  .promo-stripe-headline strong{font-size:13px;letter-spacing:1.2px;}
-  .promo-stripe-cta{padding:11px 22px;font-size:13px;}
+  .promo-stripe{padding:8px 12px;}
+  .promo-stripe-inner{gap:14px;padding:10px 16px;min-height:54px;}
+  .promo-stripe-inner::before{left:9px;}
+  .promo-stripe-inner::after{right:9px;}
+  .promo-logo-wrap{padding-left:4px;}
+  .promo-logo{width:38px;height:38px;}
+  .promo-logo-face{width:33px;height:33px;}
+  .promo-logo-face svg{width:18px;height:18px;}
+  .promo-stripe-brand{font-size:15px;}
+  .promo-stripe-divider{height:30px;}
+  .promo-stripe-headline{font-size:clamp(16px,4.4vw,22px);letter-spacing:.6px;}
+  .promo-stripe-message{font-size:12.5px;}
+  .promo-stripe-cta{padding:10px 18px;font-size:12px;}
 }
 @media (max-width:600px){
-  .promo-stripe{padding:10px 12px 10px 10px;gap:10px;min-height:60px;}
-  .promo-stripe-img{width:64px;height:48px;}
+  .promo-stripe-inner{gap:10px;padding:9px 12px;}
+  .promo-stripe-inner::before,.promo-stripe-inner::after{display:none;}
   .promo-stripe-brand{display:none;}
   .promo-stripe-divider{display:none;}
-  .promo-stripe-text{gap:0;}
-  .promo-stripe-headline{font-size:12px;line-height:1.3;}
-  .promo-stripe-headline strong{display:block;font-size:11px;color:#FFD166;margin-bottom:2px;letter-spacing:1.4px;}
-  .promo-stripe-message{display:block;}
-  .promo-stripe-cta{padding:10px 18px;font-size:12px;}
+  .promo-logo-wrap{padding-left:2px;}
+  .promo-logo{width:34px;height:34px;}
+  .promo-logo-face{width:29px;height:29px;}
+  .promo-logo-face svg{width:16px;height:16px;}
+  .promo-stripe-headline{font-size:16px;letter-spacing:.4px;}
+  .promo-stripe-message{font-size:11.5px;}
+  .promo-stripe-cta{padding:9px 14px;font-size:11px;letter-spacing:.3px;}
 }
 /* ─── Per-message delete button reveals on bubble hover (modal timeline) ─── */
 .msg-bubble{position:relative;}
@@ -2088,21 +2089,19 @@ function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){
   };
 
   return(<aside className="promo-stripe" role="region" aria-label="Yearly membership offer">
-    {/* Subtle slow light sweep for a premium feel (disabled for reduced-motion). */}
-    <span className="promo-stripe-sheen" aria-hidden="true"/>
-    {/* Cinematic crew/camera scene — Unsplash CDN URL, easy to swap for a
-        CastSlate-branded asset later (just change the src). */}
-    <img className="promo-stripe-img" alt="" loading="lazy"
-      src="https://images.unsplash.com/photo-1485846234645-a62644f84728?w=480&h=200&fit=crop&auto=format&q=80"/>
-    <div className="promo-stripe-text">
-      <span className="promo-stripe-brand">CASTSLATE</span>
-      <span className="promo-stripe-divider" aria-hidden="true">|</span>
-      <span className="promo-stripe-headline">
-        <strong>LIMITED TIME OFFER</strong>
+    <div className="promo-stripe-inner">
+      {/* CastSlate octagon mark — slow continuous rotation (reduced-motion safe). */}
+      <div className="promo-logo-wrap">
+        <span className="promo-logo" aria-hidden="true"><span className="promo-logo-face"><LogoMark/></span></span>
+        <span className="promo-stripe-brand">CastSlate</span>
+      </div>
+      <span className="promo-stripe-divider" aria-hidden="true"/>
+      <div className="promo-stripe-text">
+        <strong className="promo-stripe-headline">LIMITED TIME OFFER</strong>
         <span className="promo-stripe-message">Save {dollarsLabel} ({percentSaved}%) on your first year of CastSlate.</span>
-      </span>
+      </div>
+      <button className="promo-stripe-cta" onClick={handleJoin} aria-label={`Join the yearly plan and save ${percentSaved}%`}>Join Today</button>
     </div>
-    <button className="promo-stripe-cta" onClick={handleJoin} aria-label={`Join the yearly plan and save ${percentSaved}%`}>Join Today</button>
   </aside>);
 }
 
