@@ -4819,7 +4819,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
 // PAGE: TAPELINK — Self-tape auditions built into casting
 // ═══════════════════════════════════════════
 function TapeLinkPage({onNavigate}){
-  const TAPE_PHOTO="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=400&h=480&q=80";
+  const TAPE_PHOTO="https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&w=400&h=480&q=80";
 
   // Small reusable Cast Slate logo mark (matches Manager Mode hero badge)
   const CSLogo=({size=36})=>(
