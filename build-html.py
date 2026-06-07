@@ -215,7 +215,7 @@ html = f'''<!DOCTYPE html>
     #cs-error .err-msg{{color:rgba(255,255,255,0.5);font-size:13px;font-family:-apple-system,sans-serif;line-height:1.6;max-width:480px;}}
     #cs-error .err-detail{{color:#888;font-size:11px;font-family:monospace;margin-top:10px;padding:10px;background:rgba(255,255,255,0.05);border-radius:6px;text-align:left;max-width:480px;max-height:120px;overflow-y:auto;word-break:break-all;display:none;}}
     #cs-error button{{background:#6366f1;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:-apple-system,sans-serif;margin-top:8px;}}
-    /* Intro reveal — logo eases out of black, then the site is revealed (once per session). */
+    /* Intro reveal — logo eases out of black, then the site is revealed (every load). */
     #cs-intro{{
       position:fixed;top:0;right:0;bottom:0;left:0;background:#0A0A0A;z-index:100000;
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;
@@ -237,7 +237,7 @@ html = f'''<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <!-- Intro reveal — logo fades out of black for ~3s, then the site is revealed. Once per session. -->
+  <!-- Intro reveal — logo fades out of black for ~3s, then the site is revealed. Plays on every load. -->
   <div id="cs-intro" aria-hidden="true">
     <div class="cs-intro-mark">
       <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="33" height="33"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
@@ -249,10 +249,8 @@ html = f'''<!DOCTYPE html>
       var el=document.getElementById('cs-intro');
       if(!el)return;
       var skip=false;
-      try{{skip=sessionStorage.getItem('cs_intro_seen')==='1';}}catch(e){{}}
       try{{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true;}}catch(e){{}}
       if(skip){{if(el.parentNode)el.parentNode.removeChild(el);return;}}
-      try{{sessionStorage.setItem('cs_intro_seen','1');}}catch(e){{}}
       setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},3150);
     }})();
   </script>
