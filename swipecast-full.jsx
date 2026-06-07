@@ -1803,21 +1803,21 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media (max-width:768px){.scale-tagline{font-size:19px;padding:36px 20px 0;}}
 /* ─── Casting Across Every Format — premium video-card carousel ─── */
 .fmt-reel-wrap{position:relative;}
-.fmt-reel{display:flex;gap:20px;overflow-x:auto;overflow-y:hidden;padding:8px 24px 16px;scrollbar-width:none;-ms-overflow-style:none;cursor:grab;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%);}
-.fmt-reel::-webkit-scrollbar{display:none;}
-.fmt-reel.dragging{cursor:grabbing;}
-.fmt-card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;border-radius:18px;overflow:hidden;cursor:pointer;background:#15151f;box-shadow:0 10px 30px -12px rgba(20,20,35,.45),0 2px 8px rgba(20,20,35,.10);transition:transform .45s cubic-bezier(.2,.7,.2,1),box-shadow .45s ease;outline:none;}
+.fmt-reel{overflow:hidden;padding:10px 0 16px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%);}
+/* GPU-composited marquee: transform animation runs off the main thread, so the
+   slide stays perfectly smooth while every video keeps decoding/playing. */
+.fmt-track{display:flex;width:max-content;will-change:transform;animation:fmtSlide 52s linear infinite;}
+@keyframes fmtSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
+.fmt-card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;margin-right:20px;border-radius:18px;overflow:hidden;cursor:pointer;background:#15151f;box-shadow:0 10px 30px -12px rgba(20,20,35,.45),0 2px 8px rgba(20,20,35,.10);transition:transform .45s cubic-bezier(.2,.7,.2,1),box-shadow .45s ease;outline:none;}
 .fmt-card:hover,.fmt-card:focus-visible{transform:translateY(-8px);box-shadow:0 24px 48px -16px rgba(20,20,35,.55),0 4px 12px rgba(20,20,35,.16);}
 .fmt-poster,.fmt-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.fmt-video{opacity:0;transition:opacity .8s ease;}
-.fmt-card.playing .fmt-video{opacity:1;}
 .fmt-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,18,.05) 0%,rgba(10,10,18,.02) 36%,rgba(10,10,18,.5) 72%,rgba(10,10,18,.85) 100%);}
 .fmt-body{position:absolute;left:0;right:0;bottom:0;padding:20px 20px 22px;color:#fff;z-index:2;}
 .fmt-icon{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;margin-bottom:12px;color:#fff;background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.22);}
 .fmt-title{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:20px;line-height:1.12;margin:0 0 4px;text-shadow:0 1px 12px rgba(0,0,0,.5);color:#fff;}
 .fmt-desc{font-size:13px;line-height:1.4;font-weight:400;color:rgba(255,255,255,.9);margin:0;text-shadow:0 1px 10px rgba(0,0,0,.55);max-width:92%;}
-@media (max-width:768px){.fmt-card{width:80vw;max-width:300px;}.fmt-reel{gap:14px;padding:6px 18px 14px;}}
-@media (prefers-reduced-motion: reduce){.fmt-card{transition:none;}.fmt-card:hover,.fmt-card:focus-visible{transform:none;}}
+@media (max-width:768px){.fmt-card{width:80vw;max-width:300px;margin-right:14px;}}
+@media (prefers-reduced-motion: reduce){.fmt-track{animation:none;}.fmt-card{transition:none;}.fmt-card:hover,.fmt-card:focus-visible{transform:none;}}
 /* ─── Latest Industry News (landing section: 3 blocks × 4 cards) ─── */
 .news-sec{border-top:1px solid var(--bdr);padding:54px 0 58px;}
 .news-block{margin-bottom:42px;}
@@ -13296,50 +13296,49 @@ function FormatReel(){
   const reelRef=React.useRef(null);
   React.useEffect(function(){
     const reel=reelRef.current; if(!reel) return;
-    // Every clip plays continuously; fade in once it actually starts.
-    reel.querySelectorAll('.fmt-video').forEach(function(v){
-      const card=v.closest('.fmt-card');
-      const go=function(){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); };
-      if(v.readyState>=2)go(); else v.addEventListener('loadeddata',go,{once:true});
-      v.addEventListener('playing',function(){ if(card)card.classList.add('playing'); });
-    });
-    // Slow, smooth auto-slide (time-based float accumulator, seamless wrap).
-    let pos=0,last=0,paused=false,raf=0,dragging=false,startX=0,startScroll=0;
-    const PPS=38;
-    function loop(ts){ if(!last)last=ts; const dt=ts-last; last=ts; if(!paused){ const half=reel.scrollWidth/2; if(half>0){ pos+=PPS*(dt/1000); if(pos>=half)pos-=half; reel.scrollLeft=pos; } } raf=requestAnimationFrame(loop); }
-    raf=requestAnimationFrame(loop);
-    const onEnter=function(){ paused=true; };
-    const onLeave=function(){ if(!dragging){ paused=false; pos=reel.scrollLeft; } };
-    const onDown=function(e){ dragging=true; paused=true; startX=e.clientX; startScroll=reel.scrollLeft; reel.classList.add('dragging'); };
-    const onMove=function(e){ if(!dragging)return; reel.scrollLeft=startScroll-(e.clientX-startX); };
-    const onUp=function(){ if(!dragging)return; dragging=false; reel.classList.remove('dragging'); pos=reel.scrollLeft; paused=false; };
-    const onScroll=function(){ if(paused&&!dragging)pos=reel.scrollLeft; };
-    reel.addEventListener('pointerenter',onEnter);
-    reel.addEventListener('pointerleave',onLeave);
-    reel.addEventListener('focusin',onEnter);
-    reel.addEventListener('focusout',onLeave);
-    reel.addEventListener('pointerdown',onDown);
-    window.addEventListener('pointermove',onMove);
-    window.addEventListener('pointerup',onUp);
-    reel.addEventListener('scroll',onScroll,{passive:true});
-    return function(){ cancelAnimationFrame(raf); window.removeEventListener('pointermove',onMove); window.removeEventListener('pointerup',onUp); };
+    // Motion is pure CSS (GPU compositor) — the slide never stutters and never
+    // pauses on hover. Videos are lazy-loaded and only the ones near the screen
+    // play, so phones decode only a few at a time (the rest show a sharp poster
+    // frame, behind the edge fade). Every card you can see is always playing.
+    const vids=Array.prototype.slice.call(reel.querySelectorAll('.fmt-video'));
+    function play(v){
+      if(!v.getAttribute('src') && v.dataset.src){ v.setAttribute('src', v.dataset.src); }
+      const p=v.play(); if(p&&p.catch)p.catch(function(){});
+    }
+    let io=null;
+    if(typeof IntersectionObserver!=='undefined'){
+      io=new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          if(e.isIntersecting){ play(e.target); }
+          else { try{ e.target.pause(); }catch(_){} }
+        });
+      },{root:null,rootMargin:'200px 600px',threshold:0.01});
+      vids.forEach(function(v){ io.observe(v); });
+    } else {
+      vids.forEach(play); // very old browsers: just play them all
+    }
+    const onVis=function(){ if(!document.hidden) vids.forEach(function(v){ if(v.getAttribute('src')) play(v); }); };
+    document.addEventListener('visibilitychange',onVis);
+    return function(){ if(io)io.disconnect(); document.removeEventListener('visibilitychange',onVis); };
   },[]);
   const doubled=[...FORMAT_CARDS,...FORMAT_CARDS];
   return (
     <div className="fmt-reel-wrap">
       <div className="fmt-reel" ref={reelRef} role="list" aria-label="Production formats">
-        {doubled.map(function(c,i){ return (
-          <article className="fmt-card" role="listitem" tabIndex={0} key={c.file+'-'+i}>
-            <img className="fmt-poster" src={'/video-formats/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
-            <video className="fmt-video" src={'/video-formats/'+c.file+'.mp4'} poster={'/video-formats/'+c.file+'.jpg'} autoPlay muted loop playsInline preload="auto" aria-hidden="true"/>
-            <div className="fmt-shade"/>
-            <div className="fmt-body">
-              <span className="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="22" height="22" dangerouslySetInnerHTML={{__html:FORMAT_ICONS[c.icon]}}/></span>
-              <h3 className="fmt-title">{c.cat}</h3>
-              <p className="fmt-desc">{c.desc}</p>
-            </div>
-          </article>
-        ); })}
+        <div className="fmt-track">
+          {doubled.map(function(c,i){ return (
+            <article className="fmt-card" role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={i>=FORMAT_CARDS.length?'true':undefined}>
+              <img className="fmt-poster" src={'/video-formats/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
+              <video className="fmt-video" data-src={'/video-formats/'+c.file+'.mp4'} poster={'/video-formats/'+c.file+'.jpg'} muted loop playsInline preload="none" aria-hidden="true"/>
+              <div className="fmt-shade"/>
+              <div className="fmt-body">
+                <span className="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="22" height="22" dangerouslySetInnerHTML={{__html:FORMAT_ICONS[c.icon]}}/></span>
+                <h3 className="fmt-title">{c.cat}</h3>
+                <p className="fmt-desc">{c.desc}</p>
+              </div>
+            </article>
+          ); })}
+        </div>
       </div>
     </div>
   );
