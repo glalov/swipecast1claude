@@ -12,7 +12,7 @@
     }
   ],
   "rewrites": [
-    { "source": "/((?!favicon\\.ico|favicon\\.svg|favicon-32x32\\.png|apple-touch-icon\\.png|og-image\\.png|robots\\.txt|sitemap\\.xml|googlec524d5c8d8b80af3\\.html|a6124d7bc19f64d5eba71e5868b9a59a\\.txt).*)", "destination": "/index.html" }
+    { "source": "/((?!favicon\\.ico|favicon\\.svg|favicon-32x32\\.png|apple-touch-icon\\.png|og-image\\.png|robots\\.txt|sitemap\\.xml|googlec524d5c8d8b80af3\\.html|a6124d7bc19f64d5eba71e5868b9a59a\\.txt|video-formats/).*)", "destination": "/index.html" }
   ],
   "headers": [
     {
@@ -48,6 +48,12 @@
     },
     {
       "source": "/apple-touch-icon.png",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=2592000, immutable" }
+      ]
+    },
+    {
+      "source": "/video-formats/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=2592000, immutable" }
       ]

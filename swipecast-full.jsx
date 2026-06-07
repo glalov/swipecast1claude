@@ -1801,6 +1801,23 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .scale-tagline .tg-neon{color:#9333EA;}
 .scale-tagline .tg-netflix{color:#E50914;}
 @media (max-width:768px){.scale-tagline{font-size:19px;padding:36px 20px 0;}}
+/* ─── Casting Across Every Format — premium video-card carousel ─── */
+.fmt-reel-wrap{position:relative;}
+.fmt-reel{display:flex;gap:20px;overflow-x:auto;overflow-y:hidden;padding:8px 24px 16px;scrollbar-width:none;-ms-overflow-style:none;cursor:grab;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%);}
+.fmt-reel::-webkit-scrollbar{display:none;}
+.fmt-reel.dragging{cursor:grabbing;}
+.fmt-card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;border-radius:18px;overflow:hidden;cursor:pointer;background:#15151f;box-shadow:0 10px 30px -12px rgba(20,20,35,.45),0 2px 8px rgba(20,20,35,.10);transition:transform .45s cubic-bezier(.2,.7,.2,1),box-shadow .45s ease;outline:none;}
+.fmt-card:hover,.fmt-card:focus-visible{transform:translateY(-8px);box-shadow:0 24px 48px -16px rgba(20,20,35,.55),0 4px 12px rgba(20,20,35,.16);}
+.fmt-poster,.fmt-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.fmt-video{opacity:0;transition:opacity .8s ease;}
+.fmt-card.playing .fmt-video{opacity:1;}
+.fmt-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,18,.05) 0%,rgba(10,10,18,.02) 36%,rgba(10,10,18,.5) 72%,rgba(10,10,18,.85) 100%);}
+.fmt-body{position:absolute;left:0;right:0;bottom:0;padding:20px 20px 22px;color:#fff;z-index:2;}
+.fmt-icon{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;margin-bottom:12px;color:#fff;background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.22);}
+.fmt-title{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:20px;line-height:1.12;margin:0 0 4px;text-shadow:0 1px 12px rgba(0,0,0,.5);color:#fff;}
+.fmt-desc{font-size:13px;line-height:1.4;font-weight:400;color:rgba(255,255,255,.9);margin:0;text-shadow:0 1px 10px rgba(0,0,0,.55);max-width:92%;}
+@media (max-width:768px){.fmt-card{width:80vw;max-width:300px;}.fmt-reel{gap:14px;padding:6px 18px 14px;}}
+@media (prefers-reduced-motion: reduce){.fmt-card{transition:none;}.fmt-card:hover,.fmt-card:focus-visible{transform:none;}}
 /* ─── Latest Industry News (landing section: 3 blocks × 4 cards) ─── */
 .news-sec{border-top:1px solid var(--bdr);padding:54px 0 58px;}
 .news-block{margin-bottom:42px;}
@@ -13254,6 +13271,81 @@ function NewsArticlePage({slug,onNavigate}){
 }
 
 // ═══════════════════════════════════════════
+// CASTING ACROSS EVERY FORMAT — premium video-card carousel
+// Real production footage (Pexels + Coverr · free commercial license · no AI),
+// optimised to 720p and served from /video-formats/. Slow auto-slide, hover to
+// pause, drag/swipe to scroll; every clip autoplays muted/looping continuously.
+// ═══════════════════════════════════════════
+const FORMAT_CARDS=[
+  {cat:"Feature Films",desc:"Big stories.",file:"feature",icon:"clapper"},
+  {cat:"Theater",desc:"Live performance.",file:"theater",icon:"masks"},
+  {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials",icon:"megaphone"},
+  {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student",icon:"cap"},
+  {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover",icon:"mic"},
+  {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie",icon:"star"},
+];
+const FORMAT_ICONS={
+  clapper:'<path d="M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Z"/><path d="M3 7 6 3l3 4M9 7l3-4 3 4M15 7l3-4 3 4"/>',
+  masks:'<path d="M3 4s1.5 1 4 1 4-1 4-1v6a4 4 0 0 1-8 0V4Z"/><path d="M13 8s1.5 1 4 1 4-1 4-1v6a4 4 0 0 1-8 0"/><path d="M5 8.5h.01M9 8.5h.01M15 12h.01M19 12h.01"/>',
+  megaphone:'<path d="M3 11v2a1 1 0 0 0 1 1h2l3 4 .5-.2V7.2L9 7H6a1 1 0 0 0-1 1"/><path d="M9 7l9-4v18l-9-4"/><path d="M18 8a3 3 0 0 1 0 8"/>',
+  cap:'<path d="M12 4 2 9l10 5 10-5-10-5Z"/><path d="M6 11v4c0 1.1 2.7 2.5 6 2.5s6-1.4 6-2.5v-4"/><path d="M22 9v4"/>',
+  mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>',
+  star:'<path d="M12 3l2.6 5.6L20.5 9.4l-4.2 4 1 5.9L12 16.6 6.7 19.3l1-5.9-4.2-4 5.9-.8L12 3Z"/>',
+};
+function FormatReel(){
+  const reelRef=React.useRef(null);
+  React.useEffect(function(){
+    const reel=reelRef.current; if(!reel) return;
+    // Every clip plays continuously; fade in once it actually starts.
+    reel.querySelectorAll('.fmt-video').forEach(function(v){
+      const card=v.closest('.fmt-card');
+      const go=function(){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); };
+      if(v.readyState>=2)go(); else v.addEventListener('loadeddata',go,{once:true});
+      v.addEventListener('playing',function(){ if(card)card.classList.add('playing'); });
+    });
+    // Slow, smooth auto-slide (time-based float accumulator, seamless wrap).
+    let pos=0,last=0,paused=false,raf=0,dragging=false,startX=0,startScroll=0;
+    const PPS=38;
+    function loop(ts){ if(!last)last=ts; const dt=ts-last; last=ts; if(!paused){ const half=reel.scrollWidth/2; if(half>0){ pos+=PPS*(dt/1000); if(pos>=half)pos-=half; reel.scrollLeft=pos; } } raf=requestAnimationFrame(loop); }
+    raf=requestAnimationFrame(loop);
+    const onEnter=function(){ paused=true; };
+    const onLeave=function(){ if(!dragging){ paused=false; pos=reel.scrollLeft; } };
+    const onDown=function(e){ dragging=true; paused=true; startX=e.clientX; startScroll=reel.scrollLeft; reel.classList.add('dragging'); };
+    const onMove=function(e){ if(!dragging)return; reel.scrollLeft=startScroll-(e.clientX-startX); };
+    const onUp=function(){ if(!dragging)return; dragging=false; reel.classList.remove('dragging'); pos=reel.scrollLeft; paused=false; };
+    const onScroll=function(){ if(paused&&!dragging)pos=reel.scrollLeft; };
+    reel.addEventListener('pointerenter',onEnter);
+    reel.addEventListener('pointerleave',onLeave);
+    reel.addEventListener('focusin',onEnter);
+    reel.addEventListener('focusout',onLeave);
+    reel.addEventListener('pointerdown',onDown);
+    window.addEventListener('pointermove',onMove);
+    window.addEventListener('pointerup',onUp);
+    reel.addEventListener('scroll',onScroll,{passive:true});
+    return function(){ cancelAnimationFrame(raf); window.removeEventListener('pointermove',onMove); window.removeEventListener('pointerup',onUp); };
+  },[]);
+  const doubled=[...FORMAT_CARDS,...FORMAT_CARDS];
+  return (
+    <div className="fmt-reel-wrap">
+      <div className="fmt-reel" ref={reelRef} role="list" aria-label="Production formats">
+        {doubled.map(function(c,i){ return (
+          <article className="fmt-card" role="listitem" tabIndex={0} key={c.file+'-'+i}>
+            <img className="fmt-poster" src={'/video-formats/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
+            <video className="fmt-video" src={'/video-formats/'+c.file+'.mp4'} poster={'/video-formats/'+c.file+'.jpg'} autoPlay muted loop playsInline preload="auto" aria-hidden="true"/>
+            <div className="fmt-shade"/>
+            <div className="fmt-body">
+              <span className="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="22" height="22" dangerouslySetInnerHTML={{__html:FORMAT_ICONS[c.icon]}}/></span>
+              <h3 className="fmt-title">{c.cat}</h3>
+              <p className="fmt-desc">{c.desc}</p>
+            </div>
+          </article>
+        ); })}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════
 // LANDING PAGE
 // ═══════════════════════════════════════════
 function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,myProfile=null}){
@@ -13358,19 +13450,8 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div style={{maxWidth:1200,margin:"0 auto",textAlign:"center",padding:"0 24px",marginBottom:14}}>
         <p style={{fontSize:11,letterSpacing:1.5,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,margin:0}}>{tr('landing.trustedBy')}</p>
       </div>
-      <div className="partners-marquee" aria-label="Casting formats">
-        {/* Track is duplicated so the keyframe translateX(-50%) loops seamlessly. */}
-        <div className="partners-track">
-          {(() => {
-            const FORMATS=["FILM","TELEVISION","INDIE FEATURES","STUDIO PROJECTS","THEATER","COMMERCIALS"];
-            // Duplicate so the marquee keyframe (translateX -50%) loops seamlessly without a visible jump.
-            const doubled=[...FORMATS,...FORMATS];
-            return doubled.map((w,i)=>(
-              <div key={`${w}-${i}`} className="partners-tile">{w}</div>
-            ));
-          })()}
-        </div>
-      </div>
+      {/* Premium video-card carousel — replaces the old text marquee. */}
+      <FormatReel/>
       {/* Tagline under the marquee — toggleable from Admin → Toggles (site_settings.tagline_under_marquee). */}
       {taglineOn && (
         <p className="scale-tagline">
