@@ -74,14 +74,14 @@
       };
     }
   </script>
-  <!-- BUILD: 20260607-004158 -->
-  <meta name="build-version" content="20260607-004158"/>
+  <!-- BUILD: 20260607-005605 -->
+  <meta name="build-version" content="20260607-005605"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
-      var B="20260607-004158";
+      var B="20260607-005605";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -644,7 +644,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .promo-stripe{
   position:relative;
   padding:11px 22px;
-  background:linear-gradient(180deg,#0c2745 0%,#081d33 100%);
+  background:linear-gradient(180deg,#1b2034 0%,#13172a 100%);
   color:#fff;
   font-family:'DM Sans',sans-serif;
   border-bottom:1px solid #000;
@@ -657,10 +657,10 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   display:flex;align-items:center;gap:22px;
   padding:13px 24px;
   min-height:64px;
-  border:1px solid #3d83c4;
+  border:1px solid #4f8a8b;
   border-radius:14px;
-  background:linear-gradient(180deg,#2767a8 0%,#15497f 100%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.16),0 4px 20px rgba(4,18,36,0.5);
+  background:linear-gradient(180deg,#2a3052 0%,#1d2340 100%);
+  box-shadow:inset 0 1px 0 rgba(150,210,210,0.16),0 4px 20px rgba(6,12,26,0.5);
 }
 /* Ticket-style perforation punched into the gray card's left & right edges. */
 .promo-stripe-inner::before,
@@ -675,7 +675,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   width:46px;height:46px;flex-shrink:0;
   display:grid;place-items:center;
   clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);
-  background:linear-gradient(145deg,#7cc0f2 0%,#173f64 100%);
+  background:linear-gradient(145deg,#6fb3b4 0%,#274647 100%);
   animation:promoLogoSpin 7s linear infinite;
   will-change:transform;
 }
@@ -683,7 +683,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   width:40px;height:40px;
   display:grid;place-items:center;
   clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);
-  background:radial-gradient(circle at 34% 28%,#123a61 0%,#06182b 100%);
+  background:radial-gradient(circle at 34% 28%,#1b2440 0%,#0a0e1c 100%);
   color:#fff;
 }
 .promo-logo-face svg{width:22px;height:22px;display:block;}
@@ -696,15 +696,15 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 }
 .promo-stripe-divider{
   width:1px;height:40px;flex-shrink:0;
-  background:linear-gradient(180deg,transparent,#4d8bc4 18%,#4d8bc4 82%,transparent);
+  background:linear-gradient(180deg,transparent,#4f8a8b 18%,#4f8a8b 82%,transparent);
 }
 /* Black inset panel that surrounds the white offer letters. */
 .promo-stripe-text{
   flex:1;min-width:0;
   display:flex;flex-direction:column;justify-content:center;gap:3px;
   line-height:1.05;
-  background:radial-gradient(120% 170% at 50% 0%,#10355a 0%,#0a2440 72%);
-  border:1px solid #2f628f;
+  background:radial-gradient(120% 170% at 50% 0%,#1a2038 0%,#11162a 72%);
+  border:1px solid #3a6566;
   border-radius:11px;
   padding:11px 24px;
   box-shadow:inset 0 0 24px rgba(0,0,0,0.65),0 1px 0 rgba(255,255,255,0.05);
@@ -720,11 +720,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 }
 .promo-stripe-message{
   font-weight:600;font-size:14.5px;
-  color:#cadcf0;letter-spacing:.2px;
+  color:#c6d2e2;letter-spacing:.2px;
 }
 .promo-stripe-cta{
   flex-shrink:0;align-self:center;
-  background:#ffffff;color:#0b1320;
+  background:#4f8a8b;color:#ffffff;
   border:none;
   padding:13px 30px;
   border-radius:8px;
@@ -737,7 +737,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 }
 .promo-stripe-cta:hover{
   transform:translateY(-1px);
-  background:#ededed;
+  background:#37696a;
   box-shadow:0 6px 18px rgba(0,0,0,0.55);
 }
 @media (max-width:900px){
@@ -817,7 +817,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 }
 /* ─── Casting-format marquee — cinematic Playfair serif words, infinite horizontal scroll ─── */
 .partners-marquee{position:relative;overflow:hidden;width:100%;padding:16px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,rgba(0,0,0,0.15) 6%,#000 16%,#000 84%,rgba(0,0,0,0.15) 94%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,rgba(0,0,0,0.15) 6%,#000 16%,#000 84%,rgba(0,0,0,0.15) 94%,transparent 100%);}
-.partners-track{display:flex;align-items:center;width:max-content;animation:partnersSlide 52s linear infinite;will-change:transform;}
+.partners-track{display:flex;align-items:center;width:max-content;animation:partnersSlide 28s linear infinite;will-change:transform;}
 .partners-marquee:hover .partners-track{animation-play-state:paused;}
 .partners-tile{flex-shrink:0;display:flex;align-items:center;gap:46px;padding:0 46px;font-family:'Playfair Display','Didot','Bodoni 72',Georgia,serif;font-weight:600;font-size:clamp(32px,4.6vw,56px);line-height:1;letter-spacing:.05em;text-transform:uppercase;color:rgba(26,26,46,.82);white-space:nowrap;}
 .partners-sep{width:7px;height:7px;background:rgba(26,26,46,.5);transform:rotate(45deg);flex:none;}
