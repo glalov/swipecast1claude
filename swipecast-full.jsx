@@ -85,7 +85,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Sign in','nav.accountSettings':'Account Settings',
     'nav.resources':'Resources','nav.successStories':'Success Stories',
     'nav.about':'About','nav.contact':'Contact','nav.joinAsTalent':'Join as Talent',
-    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode',
+    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.tapelink':'TapeLink',
     // Footer
     'footer.backToTop':'Back to top',
     'footer.blurb':'The casting platform built for working actors. Every submission gets seen — guaranteed. Free accounts included — upgrade to Premium ($9.99/mo) for unlimited submissions, Slate Video, Business Card, Manager Mode, and more.',
@@ -333,7 +333,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Iniciar sesión','nav.accountSettings':'Configuración de cuenta',
     'nav.resources':'Recursos','nav.successStories':'Historias de éxito',
     'nav.about':'Acerca de','nav.contact':'Contacto','nav.joinAsTalent':'Unirse como Talento',
-    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager',
+    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.tapelink':'TapeLink',
     // Footer
     'footer.backToTop':'Volver arriba',
     'footer.blurb':'La plataforma de casting diseñada para actores que trabajan. Cada postulación es vista — garantizado. Cuentas gratuitas incluidas — mejora a Premium ($9.99/mes) para postulaciones ilimitadas y más.',
@@ -2648,6 +2648,7 @@ function Footer({onNavigate,spacerBg}){
             <L to="search">{t('footer.browse')}</L>
             <L to="actor-toolkit">{t('footer.actorToolkit')}</L>
             <L to="manager-mode">{t('footer.managerMode')}</L>
+            <L to="tapelink">TapeLink</L>
             <L to="classes">{t('footer.classes')}</L>
             <L to="resources">{t('footer.resources')}</L>
           </div>
@@ -4808,6 +4809,274 @@ function ManagerModePage({onNavigate,session,myProfile}){
     {/* ══════ TRUST / LEGAL ══════ */}
     <section style={{padding:"0 clamp(16px,5vw,40px) clamp(48px,7vw,72px)",maxWidth:720,margin:"0 auto",textAlign:"center"}}>
       <p style={{fontSize:12.5,color:"var(--t3)",lineHeight:1.75}}>Manager Mode is designed to help improve your profile and may help you present yourself more clearly to casting directors. It helps actors become more castable and is designed to help you focus your weekly profile improvement. Cast Slate does not guarantee bookings, callbacks, representation, auditions, or career outcomes. The Actor Business Card is a downloadable digital asset for personal use. Event suggestions are informational and not guaranteed to be available in all locations.</p>
+    </section>
+
+    <Footer onNavigate={onNavigate}/>
+  </div>);
+}
+
+// ═══════════════════════════════════════════
+// PAGE: TAPELINK — Self-tape auditions built into casting
+// ═══════════════════════════════════════════
+function TapeLinkPage({onNavigate}){
+  const TAPE_PHOTO="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=400&h=480&q=80";
+
+  // Small reusable Cast Slate logo mark (matches Manager Mode hero badge)
+  const CSLogo=({size=36})=>(
+    <div style={{width:size,height:size,background:"rgba(255,255,255,0.13)",borderRadius:Math.round(size*0.24),display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:"1px solid rgba(255,255,255,0.2)"}}>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={Math.round(size*0.58)} height={Math.round(size*0.58)}>
+        <path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/>
+      </svg>
+    </div>
+  );
+
+  // The "role page" the casting director sets up — sides PDF + instructions + take limit
+  const RolePageMockup=()=>(
+    <div style={{background:"#fff",border:"1px solid #E2E2E7",borderRadius:18,overflow:"hidden",boxShadow:"0 20px 56px rgba(26,26,46,0.18)",width:"100%",maxWidth:380,minWidth:0,flexShrink:1}}>
+      <div style={{background:"#1A1A2E",padding:"11px 16px",display:"flex",alignItems:"center",gap:8}}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="15" height="15"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg>
+        <span style={{color:"rgba(255,255,255,0.7)",fontSize:11,fontWeight:600,letterSpacing:0.3}}>Role — Cast Slate</span>
+      </div>
+      <div style={{padding:"16px 18px"}}>
+        <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:6,flexWrap:"wrap"}}>
+          <span style={{background:"rgba(37,99,235,0.1)",border:"1px solid rgba(37,99,235,0.25)",color:"#2563EB",fontSize:9,fontWeight:800,padding:"2px 8px",borderRadius:100,letterSpacing:0.5,textTransform:"uppercase"}}>Self-tape</span>
+          <span style={{fontSize:11,color:"#8E8EA0",fontWeight:600}}>Indie Feature · Lead</span>
+        </div>
+        <h4 style={{fontSize:16,fontWeight:800,margin:"0 0 12px",letterSpacing:-0.4,color:"#1A1A2E"}}>"MARA" — Scene 14</h4>
+        {/* Sides PDF attachment */}
+        <div style={{display:"flex",alignItems:"center",gap:10,background:"rgba(26,26,46,0.035)",border:"1px solid #E8E2D6",borderRadius:10,padding:"10px 12px",marginBottom:12}}>
+          <div style={{width:30,height:36,borderRadius:5,background:"#D63B3B",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 2px 6px rgba(214,59,59,0.25)"}}>
+            <span style={{color:"#fff",fontSize:8,fontWeight:800,letterSpacing:0.3}}>PDF</span>
+          </div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:12,fontWeight:700,color:"#1A1A2E"}}>Sides — Mara_Sc14.pdf</div>
+            <div style={{fontSize:10,color:"#8E8EA0"}}>1 page · attached by casting</div>
+          </div>
+          <span style={{fontSize:10,fontWeight:700,color:"#2563EB"}}>Download</span>
+        </div>
+        {/* Instructions */}
+        {[
+          ["Self-tape notes","Read for warmth, not intensity. Slate name + height first."],
+          ["Framing","Chest-up, neutral wall, landscape."],
+        ].map(([label,val])=>(
+          <div key={label} style={{marginBottom:8}}>
+            <div style={{fontSize:9,fontWeight:700,color:"#8E8EA0",letterSpacing:0.6,textTransform:"uppercase",marginBottom:2}}>{label}</div>
+            <div style={{fontSize:11.5,color:"#1A1A2E",lineHeight:1.4}}>{val}</div>
+          </div>
+        ))}
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:12}}>
+          <span style={{display:"inline-flex",alignItems:"center",gap:4,background:"rgba(27,135,62,0.07)",border:"1px solid rgba(27,135,62,0.22)",borderRadius:6,padding:"4px 9px",fontSize:10.5,color:"#1B873E",fontWeight:700}}>1 official take</span>
+          <span style={{display:"inline-flex",alignItems:"center",gap:4,background:"rgba(26,26,46,0.05)",border:"1px solid #E5DFD2",borderRadius:6,padding:"4px 9px",fontSize:10.5,color:"#5A5A72",fontWeight:700}}>Due Fri 6pm</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  // The actor's phone — self-tape recording view with REC indicator
+  const PhoneTapeMockup=()=>(
+    <div style={{background:"#1A1A2E",borderRadius:30,padding:"11px 9px 14px",boxShadow:"0 24px 64px rgba(26,26,46,0.32)",border:"2px solid #2D2D44",width:178,flexShrink:0}}>
+      <div style={{width:36,height:4,background:"rgba(255,255,255,0.2)",borderRadius:100,margin:"0 auto 9px"}}/>
+      <div style={{background:"#000",borderRadius:20,overflow:"hidden",position:"relative"}}>
+        <img src={TAPE_PHOTO} alt="Actor recording a self-tape" style={{width:"100%",height:230,objectFit:"cover",objectPosition:"center top",display:"block",opacity:0.92}} onError={e=>{e.target.style.display="none";e.target.nextSibling.style.display="flex";}}/>
+        <div style={{width:"100%",height:230,background:"linear-gradient(135deg,#1A1A2E,#2D2D44)",display:"none",alignItems:"center",justifyContent:"center",fontSize:40}}>🎭</div>
+        {/* REC pill */}
+        <div style={{position:"absolute",top:10,left:10,display:"flex",alignItems:"center",gap:5,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(4px)",borderRadius:100,padding:"3px 9px"}}>
+          <span style={{width:7,height:7,borderRadius:"50%",background:"#FF4136",boxShadow:"0 0 8px #FF4136"}}/>
+          <span style={{color:"#fff",fontSize:9,fontWeight:800,letterSpacing:1}}>REC 00:07</span>
+        </div>
+        {/* Mode badge */}
+        <div style={{position:"absolute",top:10,right:10,background:"rgba(37,99,235,0.85)",borderRadius:100,padding:"3px 9px",color:"#fff",fontSize:8.5,fontWeight:800,letterSpacing:0.5,textTransform:"uppercase"}}>Practice</div>
+        {/* Framing guide */}
+        <div style={{position:"absolute",inset:"22px 26px 60px",border:"1.5px dashed rgba(255,255,255,0.35)",borderRadius:8,pointerEvents:"none"}}/>
+        {/* Bottom controls */}
+        <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"12px 0 16px",background:"linear-gradient(0deg,rgba(0,0,0,0.55),transparent)",display:"flex",alignItems:"center",justifyContent:"center",gap:18}}>
+          <span style={{fontSize:14,color:"rgba(255,255,255,0.85)"}}>↺</span>
+          <div style={{width:46,height:46,borderRadius:"50%",border:"3px solid #fff",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <div style={{width:32,height:32,borderRadius:"50%",background:"#FF4136"}}/>
+          </div>
+          <span style={{fontSize:13,color:"rgba(255,255,255,0.85)"}}>⤴</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  return(<div className="page">
+
+    {/* ══════ HERO ══════ */}
+    <section style={{background:"linear-gradient(155deg,#0D0D1A 0%,#1A1A2E 40%,#0f2347 100%)",color:"#fff",padding:"clamp(56px,8vw,96px) clamp(16px,5vw,60px) clamp(48px,7vw,80px)",position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 15% 60%,rgba(99,102,241,0.18) 0%,transparent 55%),radial-gradient(ellipse at 85% 15%,rgba(37,99,235,0.14) 0%,transparent 50%),radial-gradient(ellipse at 50% 100%,rgba(110,231,183,0.06) 0%,transparent 50%)",pointerEvents:"none"}}/>
+      <div className="mm-hero-row" style={{maxWidth:1160,margin:"0 auto",position:"relative",display:"flex",alignItems:"center",gap:"clamp(32px,5vw,72px)",flexWrap:"wrap"}}>
+        <div style={{flex:"1 1 300px",minWidth:0,width:"100%"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:24}}>
+            <CSLogo size={38}/>
+            <div>
+              <div style={{fontSize:13,fontWeight:800,color:"#fff",letterSpacing:0.3}}>Cast Slate</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,0.5)",letterSpacing:0.2}}>castslate.com</div>
+            </div>
+          </div>
+          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(110,231,183,0.1)",border:"1px solid rgba(110,231,183,0.3)",padding:"6px 16px",borderRadius:100,fontSize:11,color:"#6EE7B7",fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",marginBottom:24}}>
+            <span style={{width:6,height:6,borderRadius:"50%",background:"#6EE7B7",boxShadow:"0 0 10px #6EE7B7"}}/>TapeLink — Self-tape workflow
+          </div>
+          <h1 style={{fontWeight:800,fontSize:"clamp(30px,4.5vw,54px)",lineHeight:1.07,letterSpacing:-1.8,marginBottom:18,color:"#fff"}}>Self-tape auditions, directly inside CastSlate.</h1>
+          <p style={{fontSize:"clamp(15px,2vw,19px)",lineHeight:1.65,color:"rgba(255,255,255,0.72)",marginBottom:32,maxWidth:540}}>Casting directors can attach sides, add recording instructions, set take limits, and receive actor tapes through the same role page. Actors can practice, record, upload, and submit without leaving the platform.</p>
+          <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+            <button className="btn-amber-hover" style={{padding:"14px 28px",fontSize:14,background:"#fff",color:"#1A1A2E",borderRadius:100,fontWeight:800,letterSpacing:0.3,border:"none",cursor:"pointer",boxShadow:"0 4px 20px rgba(255,255,255,0.2)"}} onClick={()=>onNavigate("search")}>Browse Castings</button>
+            <button style={{padding:"14px 28px",fontSize:14,background:"transparent",color:"rgba(255,255,255,0.82)",borderRadius:100,fontWeight:700,letterSpacing:0.3,border:"1px solid rgba(255,255,255,0.28)",cursor:"pointer"}} onClick={()=>onNavigate("register-cd")}>Post a Job</button>
+          </div>
+          <div style={{display:"flex",gap:20,marginTop:24,flexWrap:"wrap"}}>
+            {["Attach sides to a role","Practice & re-record","Submit through Cast Slate"].map(f=>(
+              <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"rgba(255,255,255,0.6)"}}>
+                <span style={{color:"#6EE7B7",fontWeight:800,fontSize:13}}>✓</span>{f}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="mm-show-desktop mm-inbox-wrap" style={{justifyContent:"center",flex:"1 1 300px",minWidth:0}}>
+          <div style={{position:"relative",width:"100%",display:"flex",alignItems:"flex-end",justifyContent:"center",gap:0}}>
+            <div style={{position:"absolute",inset:-1,background:"linear-gradient(135deg,rgba(110,231,183,0.3),rgba(99,102,241,0.2),transparent 60%)",borderRadius:22,filter:"blur(1px)"}}/>
+            <div style={{position:"relative",display:"flex",alignItems:"center",gap:0}}>
+              <RolePageMockup/>
+              <div style={{marginLeft:-34,marginBottom:-12,zIndex:2}}><PhoneTapeMockup/></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* ══════ WHAT IS TAPELINK ══════ */}
+    <section style={{padding:"clamp(48px,7vw,80px) clamp(16px,5vw,40px)",background:"var(--s1)",borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)"}}>
+      <div style={{maxWidth:900,margin:"0 auto",display:"flex",alignItems:"flex-start",gap:"clamp(20px,4vw,48px)",flexWrap:"wrap",justifyContent:"center"}}>
+        <div style={{flexShrink:0,width:56,height:56,borderRadius:14,background:"#1A1A2E",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 8px 24px rgba(26,26,46,0.18)"}}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        </div>
+        <div style={{flex:"1 1 260px",minWidth:0,textAlign:"left"}}>
+          <div className="section-label">What is TapeLink?</div>
+          <h3 style={{fontWeight:800,fontSize:"clamp(18px,2.5vw,26px)",letterSpacing:-0.8,marginBottom:10,lineHeight:1.2}}>A direct self-tape workflow built into the casting process.</h3>
+          <p style={{color:"var(--t2)",fontSize:"clamp(14px,1.6vw,16px)",lineHeight:1.7,margin:0}}>TapeLink is CastSlate's built-in self-tape workflow for roles that require an audition video. When a casting director posts a role, they can attach a short script or sides — usually a one-page PDF — plus clear self-tape instructions. Actors can view the role, download the sides, practice with their device camera, and submit their tape directly back to the casting director through CastSlate.</p>
+        </div>
+      </div>
+    </section>
+
+    {/* ══════ HOW IT WORKS ══════ */}
+    <section style={{padding:"clamp(56px,8vw,88px) clamp(16px,5vw,40px)",maxWidth:1140,margin:"0 auto"}}>
+      <div style={{textAlign:"center",marginBottom:48}}>
+        <div className="section-label">How It Works</div>
+        <h2 style={{fontWeight:800,fontSize:"clamp(24px,3.2vw,38px)",letterSpacing:-1.2,lineHeight:1.08}}>From sides to submission,<br/>on one role page.</h2>
+      </div>
+      <div className="grid-2" style={{gap:20}}>
+        {[
+          {step:"01",accent:"#2563EB",title:"Casting director attaches sides.",body:"Casting can upload a short PDF script or audition side directly to a specific role, so actors always read from the right material."},
+          {step:"02",accent:"#7C3AED",title:"Actors read the instructions.",body:"The role page shows the script, self-tape notes, deadline, framing instructions, and any special direction — all in one place."},
+          {step:"03",accent:"#1B873E",title:"Actors practice before submitting.",body:"Actors can open practice mode, turn on their camera, rehearse, and re-record as many times as they need before final submission."},
+          {step:"04",accent:"#D97706",title:"Final take is submitted.",body:"When the actor enters submission mode, CastSlate follows the casting director's take limit. One allowed take means one official attempt; if multiple takes are allowed, CastSlate follows that setting."}
+        ].map(({step,accent,title,body})=>(
+          <div key={step} className="card" style={{padding:"28px 26px",display:"flex",flexDirection:"column",gap:14,borderLeft:`3px solid ${accent}`,transition:"all 0.25s"}}>
+            <div style={{width:44,height:44,borderRadius:12,background:`${accent}12`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:800,color:accent,flexShrink:0}}>{step}</div>
+            <h3 style={{fontWeight:700,fontSize:16,letterSpacing:-0.3,margin:0,lineHeight:1.3}}>{title}</h3>
+            <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.65,margin:0}}>{body}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {/* ══════ CASTING DIRECTOR CONTROL + ACTOR EXPERIENCE ══════ */}
+    <section style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,88px)",maxWidth:1140,margin:"0 auto"}}>
+      <div className="grid-2" style={{gap:20,alignItems:"stretch"}}>
+        {[
+          {tag:"For Casting Directors",accent:"#2563EB",title:"You stay in control.",lead:"Casting directors decide exactly how a role accepts tapes:",items:["Whether a role accepts self-tapes","Whether to attach a PDF script or sides","What self-tape instructions actors see","How many official takes are allowed","Whether actors upload a pre-recorded file or record directly in CastSlate","Submission deadline","Role-specific notes"]},
+          {tag:"For Actors",accent:"#1B873E",title:"Everything in one place.",lead:"Actors respond to a role without leaving the platform. They can:",items:["View the role","Download the attached sides","Read the tape instructions","Open practice mode","Record using their phone, tablet, or laptop camera","Re-record freely in practice mode","Submit their official tape through CastSlate","Avoid unnecessary travel for first-round auditions"]}
+        ].map(({tag,accent,title,lead,items})=>(
+          <div key={tag} className="card" style={{padding:"clamp(24px,3vw,34px)",borderTop:`3px solid ${accent}`}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:7,background:`${accent}10`,border:`1px solid ${accent}33`,color:accent,fontSize:10.5,fontWeight:800,padding:"4px 12px",borderRadius:100,letterSpacing:0.8,textTransform:"uppercase",marginBottom:16}}>{tag}</div>
+            <h3 style={{fontWeight:800,fontSize:"clamp(18px,2.4vw,24px)",letterSpacing:-0.6,margin:"0 0 8px",lineHeight:1.2}}>{title}</h3>
+            <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6,margin:"0 0 18px"}}>{lead}</p>
+            <div style={{display:"flex",flexDirection:"column",gap:11}}>
+              {items.map(it=>(
+                <div key={it} style={{display:"flex",alignItems:"flex-start",gap:10}}>
+                  <span style={{color:accent,fontWeight:800,fontSize:13,flexShrink:0,marginTop:1}}>✓</span>
+                  <span style={{fontSize:14,color:"var(--t1)",lineHeight:1.45}}>{it}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {/* ══════ PRACTICE MODE VS SUBMISSION MODE ══════ */}
+    <section style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,88px)",maxWidth:1140,margin:"0 auto"}}>
+      <div style={{textAlign:"center",marginBottom:48}}>
+        <div className="section-label">Practice vs Submission</div>
+        <h2 style={{fontWeight:800,fontSize:"clamp(24px,3.2vw,38px)",letterSpacing:-1.2,lineHeight:1.08}}>Rehearse freely.<br/>Submit with intention.</h2>
+      </div>
+      <div className="grid-2" style={{gap:20,alignItems:"stretch"}}>
+        {/* Practice Mode */}
+        <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:18,padding:"clamp(24px,3vw,34px)",boxShadow:"0 1px 2px rgba(26,26,46,0.03)"}}>
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+            <div style={{width:44,height:44,borderRadius:12,background:"rgba(37,99,235,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>🎬</div>
+            <div>
+              <div style={{fontSize:10,fontWeight:800,color:"#2563EB",letterSpacing:0.8,textTransform:"uppercase"}}>Practice Mode</div>
+              <h3 style={{fontWeight:800,fontSize:18,letterSpacing:-0.4,margin:0}}>Rehearse as much as you want.</h3>
+            </div>
+          </div>
+          <p style={{color:"var(--t2)",fontSize:14.5,lineHeight:1.7,margin:0}}>Actors can rehearse with their camera on and re-record multiple times. Nothing is sent to casting. It's a private space to get comfortable with the sides, framing, and timing before anything counts.</p>
+          <div style={{marginTop:18,display:"flex",gap:8,flexWrap:"wrap"}}>
+            {["Camera on","Unlimited re-records","Nothing sent to casting"].map(c=>(
+              <span key={c} style={{background:"rgba(37,99,235,0.06)",border:"1px solid rgba(37,99,235,0.18)",color:"#2563EB",fontSize:11.5,fontWeight:700,padding:"4px 11px",borderRadius:100}}>{c}</span>
+            ))}
+          </div>
+        </div>
+        {/* Submission Mode */}
+        <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:18,padding:"clamp(24px,3vw,34px)",boxShadow:"0 1px 2px rgba(26,26,46,0.03)"}}>
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+            <div style={{width:44,height:44,borderRadius:12,background:"rgba(27,135,62,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>📤</div>
+            <div>
+              <div style={{fontSize:10,fontWeight:800,color:"#1B873E",letterSpacing:0.8,textTransform:"uppercase"}}>Submission Mode</div>
+              <h3 style={{fontWeight:800,fontSize:18,letterSpacing:-0.4,margin:0}}>The take that counts.</h3>
+            </div>
+          </div>
+          <p style={{color:"var(--t2)",fontSize:14.5,lineHeight:1.7,margin:0}}>The official tape is recorded or uploaded for the casting director. The number of final takes depends on the casting director's settings. If the role allows one take, the actor can submit only one official take with no re-recording.</p>
+          <div style={{marginTop:18,display:"flex",gap:8,flexWrap:"wrap"}}>
+            {["Goes to casting","Follows take limit","Record or upload"].map(c=>(
+              <span key={c} style={{background:"rgba(27,135,62,0.06)",border:"1px solid rgba(27,135,62,0.2)",color:"#1B873E",fontSize:11.5,fontWeight:700,padding:"4px 11px",borderRadius:100}}>{c}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* ══════ WHY IT MATTERS ══════ */}
+    <section style={{padding:"clamp(48px,7vw,80px) clamp(16px,5vw,40px)",background:"var(--s1)",borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)"}}>
+      <div style={{maxWidth:760,margin:"0 auto",textAlign:"center"}}>
+        <div className="section-label" style={{textAlign:"center"}}>Why It Matters</div>
+        <h2 style={{fontWeight:800,fontSize:"clamp(22px,3vw,34px)",letterSpacing:-1,lineHeight:1.12,marginBottom:18}}>Designed to make self-tape casting faster and more direct.</h2>
+        <p style={{color:"var(--t2)",fontSize:"clamp(14px,1.7vw,17px)",lineHeight:1.75,margin:0}}>TapeLink helps casting move faster. It gives actors a simple way to respond to roles, gives casting directors cleaner submissions, and reduces the need for early in-person auditions when a self-tape is enough.</p>
+      </div>
+    </section>
+
+    {/* ══════ FINAL CTA ══════ */}
+    <section style={{padding:"clamp(48px,7vw,80px) clamp(16px,5vw,40px) clamp(36px,6vw,64px)",maxWidth:860,margin:"0 auto",boxSizing:"border-box"}}>
+      <div style={{background:"linear-gradient(145deg,#1A1A2E,#16213e)",borderRadius:20,padding:"clamp(28px,5vw,56px) clamp(18px,4vw,48px)",textAlign:"center",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 50% 0%,rgba(99,102,241,0.18) 0%,transparent 60%)",pointerEvents:"none"}}/>
+        <div style={{position:"relative"}}>
+          <div style={{display:"flex",justifyContent:"center",marginBottom:20}}>
+            <div style={{width:52,height:52,background:"rgba(255,255,255,0.08)",borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",border:"1px solid rgba(255,255,255,0.14)"}}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            </div>
+          </div>
+          <h2 style={{fontWeight:800,fontSize:"clamp(22px,3.2vw,38px)",letterSpacing:-1.2,lineHeight:1.08,marginBottom:14,color:"#fff"}}>Post a role with self-tapes<br/>built in.</h2>
+          <p style={{fontSize:"clamp(13px,1.7vw,16px)",lineHeight:1.7,color:"rgba(255,255,255,0.65)",maxWidth:560,margin:"0 auto 28px"}}>A faster way to request, record, and receive self-tapes directly inside a casting platform.</p>
+          <div style={{display:"flex",justifyContent:"center",gap:12,flexWrap:"wrap"}}>
+            <button className="btn-amber-hover" style={{padding:"15px 34px",borderRadius:100,background:"#fff",color:"#1A1A2E",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3,boxShadow:"0 4px 20px rgba(255,255,255,0.2)"}} onClick={()=>onNavigate("register-cd")}>Post a Job</button>
+            <button style={{padding:"15px 34px",borderRadius:100,background:"transparent",color:"rgba(255,255,255,0.85)",fontSize:14,fontWeight:700,border:"1px solid rgba(255,255,255,0.3)",cursor:"pointer",letterSpacing:0.3}} onClick={()=>onNavigate("search")}>Browse Castings</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* ══════ TRUST / LEGAL ══════ */}
+    <section style={{padding:"0 clamp(16px,5vw,40px) clamp(48px,7vw,72px)",maxWidth:720,margin:"0 auto",textAlign:"center"}}>
+      <p style={{fontSize:12.5,color:"var(--t3)",lineHeight:1.75}}>TapeLink is designed to make self-tape casting faster and more direct. Available self-tape options, take limits, recording, and upload features depend on each casting director's settings for a given role. Cast Slate does not guarantee auditions, callbacks, bookings, or career outcomes.</p>
     </section>
 
     <Footer onNavigate={onNavigate}/>
@@ -20480,6 +20749,7 @@ const PAGE_PATH={
   "pay-talent":"/pay-talent",
   "actor-toolkit":"/actor-toolkit",
   "manager-mode":"/manager-mode",
+  "tapelink":"/tapelink",
   "actor-business-card":"/actor-business-card",
   "success":"/success",
   "unsubscribed":"/unsubscribed",
@@ -20506,6 +20776,7 @@ const PAGE_SEO={
   "privacy":{title:"Privacy Policy | CastSlate",desc:"CastSlate Privacy Policy — how we collect, use, and protect your personal information."},
   "studios":{title:"For Studios | CastSlate",desc:"CastSlate for studios and production companies. Post castings, review talent, and hire fast."},
   "manager-mode":{title:"Manager Mode | CastSlate",desc:"Cast Slate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."},
+  "tapelink":{title:"TapeLink: Self-Tape Auditions Built Into Casting",desc:"TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."},
   "actor-business-card":{title:"Actor Business Card | CastSlate",desc:"Create your personalized actor business card with your headshot, casting details, and a unique QR code linking directly to your Cast Slate profile. Download an A4 print-ready sheet."},
   "login":{title:"Sign In | CastSlate",desc:"Sign in to your CastSlate account to browse castings, manage your profile, and submit to roles."},
   "register-talent":{title:"Create Actor Profile | CastSlate",desc:"Create your free CastSlate actor profile. Get seen by casting directors for film, TV, theater, and commercial roles."},
@@ -21348,7 +21619,7 @@ function App(){
           <span className={page==="home"?"act":""} onClick={()=>navigate("home")}>{navT('nav.home')}</span>
           <span className={page==="search"?"act":""} onClick={()=>navigate("search")}>{navT('nav.browse')}</span>
           <span className={page==="classes"?"act":""} onClick={()=>navigate("classes")}>{navT('nav.classes')}</span>
-          <span className={page==="pricing"?"act":""} onClick={()=>navigate("pricing")}>{navT('nav.pricing')}</span>
+          <span className={page==="tapelink"?"act":""} onClick={()=>navigate("tapelink")}>{navT('nav.tapelink')}</span>
           <span className={page==="manager-mode"?"act":""} onClick={()=>navigate("manager-mode")}>{navT('nav.managerMode')}</span>
           <span className={page==="blog"?"act":""} onClick={()=>navigate("blog")}>{navT('nav.blog')}</span>
         </div>
@@ -21396,7 +21667,7 @@ function App(){
             <button className="mm-link" onClick={()=>navThen("home")}>{navT('nav.home')}</button>
             <button className="mm-link" onClick={()=>navThen("search")}>{navT('nav.browse')}</button>
             <button className="mm-link" onClick={()=>navThen("classes")}>{navT('nav.classes')}</button>
-            <button className="mm-link" onClick={()=>navThen("pricing")}>{navT('nav.pricing')}</button>
+            <button className="mm-link" onClick={()=>navThen("tapelink")}>{navT('nav.tapelink')}</button>
             <button className="mm-link" onClick={()=>navThen("manager-mode")}>{navT('nav.managerMode')}</button>
             <button className="mm-link" onClick={()=>navThen("blog")}>{navT('nav.blog')}</button>
             <button className="mm-link" onClick={()=>navThen("resources")}>{navT('nav.resources')}</button>
@@ -21513,6 +21784,7 @@ function App(){
         {page==="success-stories"&&<SuccessStoriesPage onNavigate={navigate}/>}
         {page==="pricing"&&<PricingPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}}/>}
         {page==="manager-mode"&&<ManagerModePage onNavigate={navigate} session={session} myProfile={myProfile}/>}
+        {page==="tapelink"&&<TapeLinkPage onNavigate={navigate}/>}
         {page==="studios"&&<StudiosPage onNavigate={navigate}/>}
         {page==="api-info"&&<ApiPage onNavigate={navigate}/>}
         {page==="terms"&&<TermsPage onNavigate={navigate}/>}
