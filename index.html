@@ -74,14 +74,14 @@
       };
     }
   </script>
-  <!-- BUILD: 20260607-002340 -->
-  <meta name="build-version" content="20260607-002340"/>
+  <!-- BUILD: 20260607-004158 -->
+  <meta name="build-version" content="20260607-004158"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
-      var B="20260607-002340";
+      var B="20260607-004158";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -644,7 +644,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .promo-stripe{
   position:relative;
   padding:11px 22px;
-  background:linear-gradient(180deg,#121212 0%,#090909 100%);
+  background:linear-gradient(180deg,#0c2745 0%,#081d33 100%);
   color:#fff;
   font-family:'DM Sans',sans-serif;
   border-bottom:1px solid #000;
@@ -657,16 +657,16 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   display:flex;align-items:center;gap:22px;
   padding:13px 24px;
   min-height:64px;
-  border:1px solid #4d4d4d;
+  border:1px solid #3d83c4;
   border-radius:14px;
-  background:linear-gradient(180deg,#2c2c2c 0%,#1f1f1f 100%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.08),0 4px 20px rgba(0,0,0,0.55);
+  background:linear-gradient(180deg,#2767a8 0%,#15497f 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.16),0 4px 20px rgba(4,18,36,0.5);
 }
 /* Ticket-style perforation punched into the gray card's left & right edges. */
 .promo-stripe-inner::before,
 .promo-stripe-inner::after{
   content:'';position:absolute;top:12px;bottom:12px;width:2px;
-  background:repeating-linear-gradient(to bottom,rgba(0,0,0,0.55) 0 3px,transparent 3px 9px);
+  background:repeating-linear-gradient(to bottom,rgba(5,20,38,0.6) 0 3px,transparent 3px 9px);
 }
 .promo-stripe-inner::before{left:12px;}
 .promo-stripe-inner::after{right:12px;}
@@ -675,7 +675,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   width:46px;height:46px;flex-shrink:0;
   display:grid;place-items:center;
   clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);
-  background:linear-gradient(145deg,#6a6a6a 0%,#262626 100%);
+  background:linear-gradient(145deg,#7cc0f2 0%,#173f64 100%);
   animation:promoLogoSpin 7s linear infinite;
   will-change:transform;
 }
@@ -683,7 +683,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   width:40px;height:40px;
   display:grid;place-items:center;
   clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);
-  background:radial-gradient(circle at 34% 28%,#222 0%,#050505 100%);
+  background:radial-gradient(circle at 34% 28%,#123a61 0%,#06182b 100%);
   color:#fff;
 }
 .promo-logo-face svg{width:22px;height:22px;display:block;}
@@ -691,20 +691,20 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media (prefers-reduced-motion: reduce){.promo-logo{animation:none;}}
 .promo-stripe-brand{
   font-weight:800;letter-spacing:0.4px;font-size:18px;
-  color:#f4f4f4;flex-shrink:0;
-  text-shadow:0 1px 1px rgba(0,0,0,0.4);
+  color:#eaf3fc;flex-shrink:0;
+  text-shadow:0 1px 2px rgba(4,18,36,0.55);
 }
 .promo-stripe-divider{
   width:1px;height:40px;flex-shrink:0;
-  background:linear-gradient(180deg,transparent,#5a5a5a 18%,#5a5a5a 82%,transparent);
+  background:linear-gradient(180deg,transparent,#4d8bc4 18%,#4d8bc4 82%,transparent);
 }
 /* Black inset panel that surrounds the white offer letters. */
 .promo-stripe-text{
   flex:1;min-width:0;
   display:flex;flex-direction:column;justify-content:center;gap:3px;
   line-height:1.05;
-  background:radial-gradient(120% 170% at 50% 0%,#171717 0%,#0a0a0a 72%);
-  border:1px solid #383838;
+  background:radial-gradient(120% 170% at 50% 0%,#10355a 0%,#0a2440 72%);
+  border:1px solid #2f628f;
   border-radius:11px;
   padding:11px 24px;
   box-shadow:inset 0 0 24px rgba(0,0,0,0.65),0 1px 0 rgba(255,255,255,0.05);
@@ -720,7 +720,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 }
 .promo-stripe-message{
   font-weight:600;font-size:14.5px;
-  color:#cfcfcf;letter-spacing:.2px;
+  color:#cadcf0;letter-spacing:.2px;
 }
 .promo-stripe-cta{
   flex-shrink:0;align-self:center;
