@@ -1657,7 +1657,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   min-height:62px;
   border:1px solid #2e2e2e;
   border-radius:12px;
-  background:linear-gradient(180deg,#101010 0%,#080808 100%);
+  background:linear-gradient(180deg,#0b0b0b 0%,#070707 100%);
   box-shadow:inset 0 1px 0 rgba(255,255,255,0.04),0 2px 12px rgba(0,0,0,0.45);
 }
 /* Ticket-style perforation along the inner frame's left & right edges. */
@@ -1700,6 +1700,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   flex:1;min-width:0;
   display:flex;flex-direction:column;justify-content:center;gap:2px;
   line-height:1.05;
+  background:#1A1A1A;
+  border:1px solid #3A3A3A;
+  border-radius:10px;
+  padding:9px 20px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.03),inset 0 0 26px rgba(0,0,0,0.45);
 }
 .promo-stripe-headline{
   font-weight:900;
@@ -1742,6 +1747,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .promo-logo-face svg{width:18px;height:18px;}
   .promo-stripe-brand{font-size:15px;}
   .promo-stripe-divider{height:30px;}
+  .promo-stripe-text{padding:7px 14px;border-radius:9px;}
   .promo-stripe-headline{font-size:clamp(16px,4.4vw,22px);letter-spacing:.6px;}
   .promo-stripe-message{font-size:12.5px;}
   .promo-stripe-cta{padding:10px 18px;font-size:12px;}
@@ -1755,6 +1761,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .promo-logo{width:34px;height:34px;}
   .promo-logo-face{width:29px;height:29px;}
   .promo-logo-face svg{width:16px;height:16px;}
+  .promo-stripe-text{padding:6px 12px;border-radius:8px;}
   .promo-stripe-headline{font-size:16px;letter-spacing:.4px;}
   .promo-stripe-message{font-size:11.5px;}
   .promo-stripe-cta{padding:9px 14px;font-size:11px;letter-spacing:.3px;}
