@@ -74,14 +74,14 @@
       };
     }
   </script>
-  <!-- BUILD: 20260607-155512 -->
-  <meta name="build-version" content="20260607-155512"/>
+  <!-- BUILD: 20260607-162503 -->
+  <meta name="build-version" content="20260607-162503"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
-      var B="20260607-155512";
+      var B="20260607-162503";
       var prev=localStorage.getItem("sc_bv");
       localStorage.setItem("sc_bv",B);
       if(prev&&prev!==B){window.location.reload();}
@@ -115,9 +115,47 @@
     #cs-error .err-msg{color:rgba(255,255,255,0.5);font-size:13px;font-family:-apple-system,sans-serif;line-height:1.6;max-width:480px;}
     #cs-error .err-detail{color:#888;font-size:11px;font-family:monospace;margin-top:10px;padding:10px;background:rgba(255,255,255,0.05);border-radius:6px;text-align:left;max-width:480px;max-height:120px;overflow-y:auto;word-break:break-all;display:none;}
     #cs-error button{background:#6366f1;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:-apple-system,sans-serif;margin-top:8px;}
+    /* Intro reveal — logo eases out of black, then the site is revealed (once per session). */
+    #cs-intro{
+      position:fixed;top:0;right:0;bottom:0;left:0;background:#0A0A0A;z-index:100000;
+      display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;
+      -webkit-justify-content:center;justify-content:center;
+      -webkit-animation:cs-intro-out .8s ease 2.35s forwards;animation:cs-intro-out .8s ease 2.35s forwards;
+    }
+    #cs-intro .cs-intro-mark{
+      display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:16px;
+      opacity:0;-webkit-transform:translateY(10px) scale(.965);transform:translateY(10px) scale(.965);
+      -webkit-animation:cs-intro-in 1.15s cubic-bezier(.2,.7,.2,1) .15s forwards;animation:cs-intro-in 1.15s cubic-bezier(.2,.7,.2,1) .15s forwards;
+    }
+    #cs-intro .cs-intro-box{width:58px;height:58px;background:#fff;border-radius:13px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}
+    #cs-intro .cs-intro-name{color:#fff;font-size:40px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'DM Sans',sans-serif;letter-spacing:-1px;}
+    @-webkit-keyframes cs-intro-in{to{opacity:1;-webkit-transform:none;transform:none;}}
+    @keyframes cs-intro-in{to{opacity:1;-webkit-transform:none;transform:none;}}
+    @-webkit-keyframes cs-intro-out{to{opacity:0;visibility:hidden;}}
+    @keyframes cs-intro-out{to{opacity:0;visibility:hidden;}}
+    @media (prefers-reduced-motion: reduce){#cs-intro{display:none;}}
   </style>
 </head>
 <body>
+  <!-- Intro reveal — logo fades out of black for ~3s, then the site is revealed. Once per session. -->
+  <div id="cs-intro" aria-hidden="true">
+    <div class="cs-intro-mark">
+      <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="33" height="33"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
+      <span class="cs-intro-name">CastSlate</span>
+    </div>
+  </div>
+  <script>
+    (function(){
+      var el=document.getElementById('cs-intro');
+      if(!el)return;
+      var skip=false;
+      try{skip=sessionStorage.getItem('cs_intro_seen')==='1';}catch(e){}
+      try{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true;}catch(e){}
+      if(skip){if(el.parentNode)el.parentNode.removeChild(el);return;}
+      try{sessionStorage.setItem('cs_intro_seen','1');}catch(e){}
+      setTimeout(function(){if(el&&el.parentNode)el.parentNode.removeChild(el);},3150);
+    })();
+  </script>
   <!-- Loading indicator — shown until React mounts -->
   <div id="cs-loading">
     <div class="logo">
@@ -646,7 +684,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
        style Join button. Kept thin so the marquee peeks beneath on landing. ─── */
 .promo-stripe{
   position:relative;
-  padding:6px 22px;
+  padding:17px 22px;
   background:linear-gradient(90deg,#0E9E95 0%,#17B9AD 52%,#0E9E95 100%);
   color:#fff;
   font-family:'DM Sans',sans-serif;
@@ -657,19 +695,19 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   position:relative;
   max-width:1200px;margin:0 auto;
   display:flex;align-items:center;gap:18px;
-  min-height:48px;
+  min-height:70px;
 }
 .promo-logo-wrap{display:flex;align-items:center;gap:11px;flex-shrink:0;}
 /* Flat blue cube (matches the paper), white arrows — no octagon, no 3D. */
 .promo-logo{
-  width:38px;height:38px;flex-shrink:0;
-  display:grid;place-items:center;
-  border-radius:9px;
+  width:34px;height:34px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  border-radius:7px;
   background:#3f74bf;
   color:#fff;
   box-shadow:0 2px 6px rgba(0,0,0,0.25);
 }
-.promo-logo svg{width:22px;height:22px;display:block;}
+.promo-logo svg{width:100%;height:100%;display:block;}
 .promo-stripe-brand{
   font-weight:800;letter-spacing:0.2px;font-size:18px;
   color:#F4FBFA;flex-shrink:0;
@@ -680,7 +718,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   position:relative;flex:1;min-width:0;
   display:flex;flex-direction:column;justify-content:center;gap:1px;
   line-height:1.05;
-  padding:7px 22px 8px 44px;
+  padding:13px 22px 14px 44px;
   transform:rotate(-0.8deg);
   filter:drop-shadow(0 5px 11px rgba(0,0,0,0.26));
   background:
@@ -725,12 +763,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   box-shadow:0 6px 16px rgba(0,0,0,0.28);
 }
 @media (max-width:900px){
-  .promo-stripe{padding:6px 12px;}
-  .promo-stripe-inner{gap:12px;min-height:44px;}
-  .promo-logo{width:34px;height:34px;}
-  .promo-logo svg{width:19px;height:19px;}
+  .promo-stripe{padding:13px 12px;}
+  .promo-stripe-inner{gap:12px;min-height:58px;}
+  .promo-logo{width:30px;height:30px;}
   .promo-stripe-brand{font-size:15px;}
-  .promo-stripe-text{padding:6px 16px 7px 36px;}
+  .promo-stripe-text{padding:10px 16px 11px 36px;}
   .promo-stripe-headline{font-size:clamp(15px,4.2vw,20px);}
   .promo-stripe-message{font-size:12px;}
   .promo-stripe-cta{padding:9px 18px;font-size:12px;}
@@ -738,9 +775,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media (max-width:600px){
   .promo-stripe-inner{gap:9px;}
   .promo-stripe-brand{display:none;}
-  .promo-logo{width:30px;height:30px;}
-  .promo-logo svg{width:17px;height:17px;}
-  .promo-stripe-text{padding:6px 12px 7px 30px;}
+  .promo-logo{width:28px;height:28px;}
+  .promo-stripe-text{padding:9px 12px 10px 30px;}
   .promo-stripe-headline{font-size:15px;}
   .promo-stripe-message{font-size:11px;}
   .promo-stripe-cta{padding:8px 13px;font-size:11px;}
@@ -1739,8 +1775,8 @@ const NEWS_CATS={Casting:"#B0894F",Film:"#3E6B8C",Theater:"#9C5A8E",Industry:"#5
 function NewsSection({onNavigate}){const[items,setItems]=React.useState(null);// null = loading, [] = empty
 const[enabled,setEnabled]=React.useState(true);React.useEffect(()=>{let alive=true;(async()=>{try{const{data:ss}=await window.sb.from("site_settings").select("news_section_enabled").eq("id",1).maybeSingle();if(alive&&ss)setEnabled(ss.news_section_enabled!==false);const{data}=await window.sb.from("news_articles").select("slug,headline,excerpt,category,image_url,source_name,source_url,original_headline,original_image_url,written_at").eq("published",true).eq("status","published").order("written_at",{ascending:false}).limit(20);// Safety net: never render the same story twice (dedupe by source/slug).
 const seen=new Set();const deduped=(data||[]).filter(a=>{const k=a.source_url||a.slug;if(seen.has(k))return false;seen.add(k);return true;}).slice(0,12);if(alive)setItems(deduped);}catch(_){if(alive)setItems([]);}})();return()=>{alive=false;};},[]);if(!enabled||items===null||items.length===0)return null;// Three labeled blocks of up to 4 cards each (Backstage-style sections).
-const SECTIONS=[{label:"Latest Industry News & Casting Updates",desc:"Fresh casting, film, television, and theater headlines — curated by CastSlate Staff.",lead:true},{label:"More From the Industry",desc:"Continuing coverage across film, TV, stage, and the business of casting."},{label:"Also Worth Knowing",desc:"More stories actors, creators, and casting teams are following right now."}];const blocks=SECTIONS.map((s,i)=>({...s,cards:items.slice(i*4,i*4+4)})).filter(b=>b.cards.length>0);// Lead section = CastSlate's own articles (open the internal /news/<slug> page).
-const InternalCard=a=>/*#__PURE__*/React.createElement("button",{key:a.slug,className:"news-card",onClick:()=>onNavigate("news-article",{slug:a.slug})},/*#__PURE__*/React.createElement("div",{className:"news-thumb"},a.image_url&&/*#__PURE__*/React.createElement("img",{src:a.image_url,alt:"",loading:"lazy"}),/*#__PURE__*/React.createElement("span",{className:"news-cat",style:{background:NEWS_CATS[a.category]||"#5C7A5C"}},a.category)),/*#__PURE__*/React.createElement("div",{className:"news-body"},/*#__PURE__*/React.createElement("h3",null,a.headline),/*#__PURE__*/React.createElement("div",{className:"news-meta"},/*#__PURE__*/React.createElement("span",null,newsDate(a.written_at)))));// "More From the Industry" / "Also Worth Knowing" = direct link-outs to the
+const SECTIONS=[{label:"Latest Industry News & Casting Updates",desc:"Fresh casting, film, television, and theater headlines — curated by CastSlate Staff.",lead:true},{label:"More From the Industry",desc:"Continuing coverage across film, TV, stage, and the business of casting."}];const blocks=SECTIONS.map((s,i)=>({...s,cards:items.slice(i*4,i*4+4)})).filter(b=>b.cards.length>0);// Lead section = CastSlate's own articles (open the internal /news/<slug> page).
+const InternalCard=a=>/*#__PURE__*/React.createElement("button",{key:a.slug,className:"news-card",onClick:()=>onNavigate("news-article",{slug:a.slug})},/*#__PURE__*/React.createElement("div",{className:"news-thumb"},a.image_url&&/*#__PURE__*/React.createElement("img",{src:a.image_url,alt:"",loading:"lazy"}),/*#__PURE__*/React.createElement("span",{className:"news-cat",style:{background:NEWS_CATS[a.category]||"#5C7A5C"}},a.category)),/*#__PURE__*/React.createElement("div",{className:"news-body"},/*#__PURE__*/React.createElement("h3",null,a.headline),/*#__PURE__*/React.createElement("div",{className:"news-meta"},/*#__PURE__*/React.createElement("span",null,newsDate(a.written_at)))));// "More From the Industry" = direct link-outs to the
 // original post, showing the source's own headline + thumbnail and a credit.
 const ExternalCard=a=>{const img=a.original_image_url||a.image_url;const head=a.original_headline||a.headline;return/*#__PURE__*/React.createElement("a",{key:a.slug,className:"news-card",href:a.source_url,target:"_blank",rel:"noopener noreferrer nofollow"},/*#__PURE__*/React.createElement("div",{className:"news-thumb"},img&&/*#__PURE__*/React.createElement("img",{src:img,alt:"",loading:"lazy",referrerPolicy:"no-referrer"}),/*#__PURE__*/React.createElement("span",{className:"news-cat",style:{background:NEWS_CATS[a.category]||"#5C7A5C"}},a.category)),/*#__PURE__*/React.createElement("div",{className:"news-body"},/*#__PURE__*/React.createElement("h3",null,head),/*#__PURE__*/React.createElement("div",{className:"news-meta"},a.source_name&&/*#__PURE__*/React.createElement("span",{className:"news-src"},a.source_name," \u2197"),/*#__PURE__*/React.createElement("span",null,newsDate(a.written_at)))));};// Every section links straight to the original post; fall back to the internal
 // card only for items without a source URL (e.g. CastSlate's own evergreen pieces).

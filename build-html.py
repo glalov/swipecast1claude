@@ -215,9 +215,47 @@ html = f'''<!DOCTYPE html>
     #cs-error .err-msg{{color:rgba(255,255,255,0.5);font-size:13px;font-family:-apple-system,sans-serif;line-height:1.6;max-width:480px;}}
     #cs-error .err-detail{{color:#888;font-size:11px;font-family:monospace;margin-top:10px;padding:10px;background:rgba(255,255,255,0.05);border-radius:6px;text-align:left;max-width:480px;max-height:120px;overflow-y:auto;word-break:break-all;display:none;}}
     #cs-error button{{background:#6366f1;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:-apple-system,sans-serif;margin-top:8px;}}
+    /* Intro reveal — logo eases out of black, then the site is revealed (once per session). */
+    #cs-intro{{
+      position:fixed;top:0;right:0;bottom:0;left:0;background:#0A0A0A;z-index:100000;
+      display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;
+      -webkit-justify-content:center;justify-content:center;
+      -webkit-animation:cs-intro-out .8s ease 2.35s forwards;animation:cs-intro-out .8s ease 2.35s forwards;
+    }}
+    #cs-intro .cs-intro-mark{{
+      display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:16px;
+      opacity:0;-webkit-transform:translateY(10px) scale(.965);transform:translateY(10px) scale(.965);
+      -webkit-animation:cs-intro-in 1.15s cubic-bezier(.2,.7,.2,1) .15s forwards;animation:cs-intro-in 1.15s cubic-bezier(.2,.7,.2,1) .15s forwards;
+    }}
+    #cs-intro .cs-intro-box{{width:58px;height:58px;background:#fff;border-radius:13px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}}
+    #cs-intro .cs-intro-name{{color:#fff;font-size:40px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'DM Sans',sans-serif;letter-spacing:-1px;}}
+    @-webkit-keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
+    @keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
+    @-webkit-keyframes cs-intro-out{{to{{opacity:0;visibility:hidden;}}}}
+    @keyframes cs-intro-out{{to{{opacity:0;visibility:hidden;}}}}
+    @media (prefers-reduced-motion: reduce){{#cs-intro{{display:none;}}}}
   </style>
 </head>
 <body>
+  <!-- Intro reveal — logo fades out of black for ~3s, then the site is revealed. Once per session. -->
+  <div id="cs-intro" aria-hidden="true">
+    <div class="cs-intro-mark">
+      <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="33" height="33"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
+      <span class="cs-intro-name">CastSlate</span>
+    </div>
+  </div>
+  <script>
+    (function(){{
+      var el=document.getElementById('cs-intro');
+      if(!el)return;
+      var skip=false;
+      try{{skip=sessionStorage.getItem('cs_intro_seen')==='1';}}catch(e){{}}
+      try{{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true;}}catch(e){{}}
+      if(skip){{if(el.parentNode)el.parentNode.removeChild(el);return;}}
+      try{{sessionStorage.setItem('cs_intro_seen','1');}}catch(e){{}}
+      setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},3150);
+    }})();
+  </script>
   <!-- Loading indicator — shown until React mounts -->
   <div id="cs-loading">
     <div class="logo">

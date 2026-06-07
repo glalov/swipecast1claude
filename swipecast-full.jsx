@@ -1645,7 +1645,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
        style Join button. Kept thin so the marquee peeks beneath on landing. ─── */
 .promo-stripe{
   position:relative;
-  padding:6px 22px;
+  padding:17px 22px;
   background:linear-gradient(90deg,#0E9E95 0%,#17B9AD 52%,#0E9E95 100%);
   color:#fff;
   font-family:'DM Sans',sans-serif;
@@ -1656,19 +1656,19 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   position:relative;
   max-width:1200px;margin:0 auto;
   display:flex;align-items:center;gap:18px;
-  min-height:48px;
+  min-height:70px;
 }
 .promo-logo-wrap{display:flex;align-items:center;gap:11px;flex-shrink:0;}
 /* Flat blue cube (matches the paper), white arrows — no octagon, no 3D. */
 .promo-logo{
-  width:38px;height:38px;flex-shrink:0;
-  display:grid;place-items:center;
-  border-radius:9px;
+  width:34px;height:34px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  border-radius:7px;
   background:#3f74bf;
   color:#fff;
   box-shadow:0 2px 6px rgba(0,0,0,0.25);
 }
-.promo-logo svg{width:22px;height:22px;display:block;}
+.promo-logo svg{width:100%;height:100%;display:block;}
 .promo-stripe-brand{
   font-weight:800;letter-spacing:0.2px;font-size:18px;
   color:#F4FBFA;flex-shrink:0;
@@ -1679,7 +1679,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   position:relative;flex:1;min-width:0;
   display:flex;flex-direction:column;justify-content:center;gap:1px;
   line-height:1.05;
-  padding:7px 22px 8px 44px;
+  padding:13px 22px 14px 44px;
   transform:rotate(-0.8deg);
   filter:drop-shadow(0 5px 11px rgba(0,0,0,0.26));
   background:
@@ -1724,12 +1724,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   box-shadow:0 6px 16px rgba(0,0,0,0.28);
 }
 @media (max-width:900px){
-  .promo-stripe{padding:6px 12px;}
-  .promo-stripe-inner{gap:12px;min-height:44px;}
-  .promo-logo{width:34px;height:34px;}
-  .promo-logo svg{width:19px;height:19px;}
+  .promo-stripe{padding:13px 12px;}
+  .promo-stripe-inner{gap:12px;min-height:58px;}
+  .promo-logo{width:30px;height:30px;}
   .promo-stripe-brand{font-size:15px;}
-  .promo-stripe-text{padding:6px 16px 7px 36px;}
+  .promo-stripe-text{padding:10px 16px 11px 36px;}
   .promo-stripe-headline{font-size:clamp(15px,4.2vw,20px);}
   .promo-stripe-message{font-size:12px;}
   .promo-stripe-cta{padding:9px 18px;font-size:12px;}
@@ -1737,9 +1736,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media (max-width:600px){
   .promo-stripe-inner{gap:9px;}
   .promo-stripe-brand{display:none;}
-  .promo-logo{width:30px;height:30px;}
-  .promo-logo svg{width:17px;height:17px;}
-  .promo-stripe-text{padding:6px 12px 7px 30px;}
+  .promo-logo{width:28px;height:28px;}
+  .promo-stripe-text{padding:9px 12px 10px 30px;}
   .promo-stripe-headline{font-size:15px;}
   .promo-stripe-message{font-size:11px;}
   .promo-stripe-cta{padding:8px 13px;font-size:11px;}
@@ -12892,7 +12890,6 @@ function NewsSection({onNavigate}){
   const SECTIONS=[
     {label:"Latest Industry News & Casting Updates",desc:"Fresh casting, film, television, and theater headlines — curated by CastSlate Staff.",lead:true},
     {label:"More From the Industry",desc:"Continuing coverage across film, TV, stage, and the business of casting."},
-    {label:"Also Worth Knowing",desc:"More stories actors, creators, and casting teams are following right now."},
   ];
   const blocks=SECTIONS.map((s,i)=>({...s,cards:items.slice(i*4,i*4+4)})).filter(b=>b.cards.length>0);
   // Lead section = CastSlate's own articles (open the internal /news/<slug> page).
@@ -12908,7 +12905,7 @@ function NewsSection({onNavigate}){
       </div>
     </button>
   );
-  // "More From the Industry" / "Also Worth Knowing" = direct link-outs to the
+  // "More From the Industry" = direct link-outs to the
   // original post, showing the source's own headline + thumbnail and a credit.
   const ExternalCard=(a)=>{
     const img=a.original_image_url||a.image_url;
