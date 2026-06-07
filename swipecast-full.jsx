@@ -1640,134 +1640,109 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 /* ─── Yearly promo stripe — large, premium banner above the main nav on homepage.
        Navy CastSlate palette + warm cream highlights, capsule-shaped actor image
        on the left. Eye-catching headline copy in heavy uppercase. ─── */
+/* ─── Promo banner: turquoise band with a casually torn blue lined-paper note
+       taped on. Flat blue "cube" logo, white serif headline, white Backstage-
+       style Join button. Kept thin so the marquee peeks beneath on landing. ─── */
 .promo-stripe{
   position:relative;
-  padding:11px 22px;
-  background:linear-gradient(180deg,#1b2034 0%,#13172a 100%);
+  padding:6px 22px;
+  background:linear-gradient(90deg,#0E9E95 0%,#17B9AD 52%,#0E9E95 100%);
   color:#fff;
   font-family:'DM Sans',sans-serif;
-  border-bottom:1px solid #000;
+  border-bottom:1px solid rgba(0,0,0,0.12);
   z-index:99;
 }
-/* Gray framed "card" — the mid-tone layer that the black offer panel sits in. */
 .promo-stripe-inner{
   position:relative;
-  max-width:1280px;margin:0 auto;
-  display:flex;align-items:center;gap:22px;
-  padding:13px 24px;
-  min-height:64px;
-  border:1px solid #4f8a8b;
-  border-radius:14px;
-  background:linear-gradient(180deg,#2a3052 0%,#1d2340 100%);
-  box-shadow:inset 0 1px 0 rgba(150,210,210,0.16),0 4px 20px rgba(6,12,26,0.5);
+  max-width:1200px;margin:0 auto;
+  display:flex;align-items:center;gap:18px;
+  min-height:48px;
 }
-/* Ticket-style perforation punched into the gray card's left & right edges. */
-.promo-stripe-inner::before,
-.promo-stripe-inner::after{
-  content:'';position:absolute;top:12px;bottom:12px;width:2px;
-  background:repeating-linear-gradient(to bottom,rgba(5,20,38,0.6) 0 3px,transparent 3px 9px);
-}
-.promo-stripe-inner::before{left:12px;}
-.promo-stripe-inner::after{right:12px;}
-.promo-logo-wrap{display:flex;align-items:center;gap:12px;flex-shrink:0;padding-left:8px;}
+.promo-logo-wrap{display:flex;align-items:center;gap:11px;flex-shrink:0;}
+/* Flat blue cube (matches the paper), white arrows — no octagon, no 3D. */
 .promo-logo{
-  width:46px;height:46px;flex-shrink:0;
+  width:38px;height:38px;flex-shrink:0;
   display:grid;place-items:center;
-  clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);
-  background:linear-gradient(145deg,#6fb3b4 0%,#274647 100%);
-  animation:promoLogoSpin 7s linear infinite;
-  will-change:transform;
-}
-.promo-logo-face{
-  width:40px;height:40px;
-  display:grid;place-items:center;
-  clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);
-  background:radial-gradient(circle at 34% 28%,#1b2440 0%,#0a0e1c 100%);
+  border-radius:9px;
+  background:#3f74bf;
   color:#fff;
+  box-shadow:0 2px 6px rgba(0,0,0,0.25);
 }
-.promo-logo-face svg{width:22px;height:22px;display:block;}
-@keyframes promoLogoSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
-@media (prefers-reduced-motion: reduce){.promo-logo{animation:none;}}
+.promo-logo svg{width:22px;height:22px;display:block;}
 .promo-stripe-brand{
-  font-weight:800;letter-spacing:0.4px;font-size:18px;
-  color:#eaf3fc;flex-shrink:0;
-  text-shadow:0 1px 2px rgba(4,18,36,0.55);
+  font-weight:800;letter-spacing:0.2px;font-size:18px;
+  color:#F4FBFA;flex-shrink:0;
+  text-shadow:0 1px 2px rgba(0,0,0,0.25);
 }
-.promo-stripe-divider{
-  width:1px;height:40px;flex-shrink:0;
-  background:linear-gradient(180deg,transparent,#4f8a8b 18%,#4f8a8b 82%,transparent);
-}
-/* Black inset panel that surrounds the white offer letters. */
+/* Casually torn blue lined-paper note. */
 .promo-stripe-text{
-  flex:1;min-width:0;
-  display:flex;flex-direction:column;justify-content:center;gap:3px;
+  position:relative;flex:1;min-width:0;
+  display:flex;flex-direction:column;justify-content:center;gap:1px;
   line-height:1.05;
-  background:radial-gradient(120% 170% at 50% 0%,#1a2038 0%,#11162a 72%);
-  border:1px solid #3a6566;
-  border-radius:11px;
-  padding:11px 24px;
-  box-shadow:inset 0 0 24px rgba(0,0,0,0.65),0 1px 0 rgba(255,255,255,0.05);
+  padding:7px 22px 8px 44px;
+  transform:rotate(-0.8deg);
+  filter:drop-shadow(0 5px 11px rgba(0,0,0,0.26));
+  background:
+    linear-gradient(90deg, transparent 0 34px, rgba(255,120,120,0.5) 34px 35px, transparent 35px),
+    repeating-linear-gradient(#4076c1 0 19px, rgba(255,255,255,0.24) 19px 20px),
+    linear-gradient(180deg,#4a7ec6,#37699f);
+  clip-path:polygon(
+    0% 7%,4% 3%,8% 9%,13% 2%,19% 8%,25% 3%,32% 9%,39% 2%,47% 8%,55% 2%,63% 9%,71% 3%,79% 8%,86% 2%,92% 9%,97% 3%,100% 8%,
+    100% 93%,96% 98%,90% 91%,83% 98%,75% 92%,67% 98%,59% 92%,50% 98%,42% 92%,34% 98%,26% 92%,18% 98%,11% 91%,5% 98%,0% 92%);
 }
 .promo-stripe-headline{
-  font-weight:900;
-  font-size:clamp(20px,3vw,32px);
-  letter-spacing:1px;
-  text-transform:uppercase;
+  font-family:'Playfair Display','Didot','Bodoni 72',Georgia,serif;
+  font-weight:800;
+  font-size:clamp(17px,2.3vw,23px);
+  letter-spacing:0;
+  text-transform:none;
   color:#fff;
-  line-height:1;
-  text-shadow:0 1px 10px rgba(0,0,0,0.5);
+  line-height:1.04;
+  text-shadow:0 1px 3px rgba(0,0,0,0.32);
 }
 .promo-stripe-message{
-  font-weight:600;font-size:14.5px;
-  color:#c6d2e2;letter-spacing:.2px;
+  font-weight:600;font-size:13px;
+  color:#eaf2ff;letter-spacing:.1px;
+  text-shadow:0 1px 2px rgba(0,0,0,0.22);
 }
 .promo-stripe-cta{
   flex-shrink:0;align-self:center;
-  background:#4f8a8b;color:#ffffff;
+  background:#ffffff;color:#0c6b63;
   border:none;
-  padding:13px 30px;
-  border-radius:8px;
+  padding:11px 26px;
+  border-radius:9px;
   font-family:'DM Sans',sans-serif;
-  font-weight:900;font-size:14px;letter-spacing:0.6px;
-  text-transform:uppercase;
+  font-weight:800;font-size:14px;letter-spacing:0.2px;
+  text-transform:none;
   cursor:pointer;
   transition:transform .18s ease,background .18s ease,box-shadow .18s ease;
-  box-shadow:0 2px 10px rgba(0,0,0,0.4);
+  box-shadow:0 3px 10px rgba(0,0,0,0.2);
 }
 .promo-stripe-cta:hover{
   transform:translateY(-1px);
-  background:#37696a;
-  box-shadow:0 6px 18px rgba(0,0,0,0.55);
+  background:#eaf6f4;
+  box-shadow:0 6px 16px rgba(0,0,0,0.28);
 }
 @media (max-width:900px){
-  .promo-stripe{padding:8px 12px;}
-  .promo-stripe-inner{gap:14px;padding:10px 16px;min-height:54px;}
-  .promo-stripe-inner::before{left:9px;}
-  .promo-stripe-inner::after{right:9px;}
-  .promo-logo-wrap{padding-left:4px;}
-  .promo-logo{width:38px;height:38px;}
-  .promo-logo-face{width:33px;height:33px;}
-  .promo-logo-face svg{width:18px;height:18px;}
+  .promo-stripe{padding:6px 12px;}
+  .promo-stripe-inner{gap:12px;min-height:44px;}
+  .promo-logo{width:34px;height:34px;}
+  .promo-logo svg{width:19px;height:19px;}
   .promo-stripe-brand{font-size:15px;}
-  .promo-stripe-divider{height:30px;}
-  .promo-stripe-text{padding:7px 14px;border-radius:9px;}
-  .promo-stripe-headline{font-size:clamp(16px,4.4vw,22px);letter-spacing:.6px;}
-  .promo-stripe-message{font-size:12.5px;}
-  .promo-stripe-cta{padding:10px 18px;font-size:12px;}
+  .promo-stripe-text{padding:6px 16px 7px 36px;}
+  .promo-stripe-headline{font-size:clamp(15px,4.2vw,20px);}
+  .promo-stripe-message{font-size:12px;}
+  .promo-stripe-cta{padding:9px 18px;font-size:12px;}
 }
 @media (max-width:600px){
-  .promo-stripe-inner{gap:10px;padding:9px 12px;}
-  .promo-stripe-inner::before,.promo-stripe-inner::after{display:none;}
+  .promo-stripe-inner{gap:9px;}
   .promo-stripe-brand{display:none;}
-  .promo-stripe-divider{display:none;}
-  .promo-logo-wrap{padding-left:2px;}
-  .promo-logo{width:34px;height:34px;}
-  .promo-logo-face{width:29px;height:29px;}
-  .promo-logo-face svg{width:16px;height:16px;}
-  .promo-stripe-text{padding:6px 12px;border-radius:8px;}
-  .promo-stripe-headline{font-size:16px;letter-spacing:.4px;}
-  .promo-stripe-message{font-size:11.5px;}
-  .promo-stripe-cta{padding:9px 14px;font-size:11px;letter-spacing:.3px;}
+  .promo-logo{width:30px;height:30px;}
+  .promo-logo svg{width:17px;height:17px;}
+  .promo-stripe-text{padding:6px 12px 7px 30px;}
+  .promo-stripe-headline{font-size:15px;}
+  .promo-stripe-message{font-size:11px;}
+  .promo-stripe-cta{padding:8px 13px;font-size:11px;}
 }
 /* ─── Per-message delete button reveals on bubble hover (modal timeline) ─── */
 .msg-bubble{position:relative;}
@@ -2102,12 +2077,11 @@ function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){
     <div className="promo-stripe-inner">
       {/* CastSlate octagon mark — slow continuous rotation (reduced-motion safe). */}
       <div className="promo-logo-wrap">
-        <span className="promo-logo" aria-hidden="true"><span className="promo-logo-face"><LogoMark/></span></span>
+        <span className="promo-logo" aria-hidden="true"><LogoMark/></span>
         <span className="promo-stripe-brand">CastSlate</span>
       </div>
-      <span className="promo-stripe-divider" aria-hidden="true"/>
       <div className="promo-stripe-text">
-        <strong className="promo-stripe-headline">LIMITED TIME OFFER</strong>
+        <strong className="promo-stripe-headline">Limited Time Offer</strong>
         <span className="promo-stripe-message">Save {dollarsLabel} ({percentSaved}%) on your first year of CastSlate.</span>
       </div>
       <button className="promo-stripe-cta" onClick={handleJoin} aria-label={`Join the yearly plan and save ${percentSaved}%`}>Join Today</button>
