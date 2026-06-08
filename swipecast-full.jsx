@@ -1939,14 +1939,15 @@ html,body{overflow-x:hidden;}
 
 /* ── Landing: Single cinematic feature image section ── */
 .cinema-feature{max-width:1100px;margin:0 auto 52px;padding:0 clamp(16px,4vw,40px);}
-.cinema-feature-inner{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,0.08);overflow:hidden;display:grid;grid-template-columns:1.4fr 1fr;}
-/* Wide landscape photo panel locked to 3:2 — the SAME ratio the image is served
-   at (w=1400&h=933&fit=crop). Matching ratios means object-fit:cover does no
-   real cropping and leaves no navy/letterbox bars: the full photo shows edge to
-   edge. The 1.4fr image column makes the 3:2 panel tall enough to drive the row
-   height, so the copy centers beside it with no white gap. Rounded left corners
-   come from the inner's overflow:hidden + border-radius. */
-.cinema-feature-img{position:relative;overflow:hidden;align-self:stretch;aspect-ratio:3/2;}
+.cinema-feature-inner{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,0.08);overflow:hidden;display:grid;grid-template-columns:1.15fr 1fr;min-height:430px;}
+/* Photo panel: the image is served at 3:2 (w=1400&h=933&fit=crop) and the panel
+   stays close to 3:2 (≈600px wide × min-height 430px), so object-fit:cover trims
+   almost nothing and leaves no navy/letterbox bars — the full photo shows edge
+   to edge. NOTE: do NOT put aspect-ratio on this grid cell — with align-self:
+   stretch it widens the image to keep the ratio and overflows into the copy
+   column, covering the text/buttons. Rounded left corners come from the inner's
+   overflow:hidden + border-radius. */
+.cinema-feature-img{position:relative;overflow:hidden;align-self:stretch;}
 .cinema-feature-img img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;}
 .cinema-feature-copy{padding:44px 40px;display:flex;flex-direction:column;justify-content:center;gap:14px;}
 .cinema-feature-copy .cf-label{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--acc);font-weight:700;font-family:'DM Sans',sans-serif;margin:0;}
@@ -1961,10 +1962,10 @@ html,body{overflow-x:hidden;}
 
 /* ── Landing: How It Works card (Mandy-style: image left, text right) ── */
 .hiw-card{max-width:1100px;margin:0 auto 48px;padding:0 clamp(16px,4vw,40px);}
-.hiw-card-inner{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,0.08);overflow:hidden;display:grid;grid-template-columns:1.4fr 1fr;}
-/* Wide 3:2 photo panel served at the same ratio — full image, no crop, no bars.
-   See .cinema-feature-img note above for the mechanics. */
-.hiw-card-img{position:relative;overflow:hidden;align-self:stretch;aspect-ratio:3/2;}
+.hiw-card-inner{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,0.08);overflow:hidden;display:grid;grid-template-columns:1.15fr 1fr;min-height:430px;}
+/* 3:2 photo panel — full image, no crop, no bars, no overflow into the copy.
+   See .cinema-feature-img note above (do NOT add aspect-ratio to this cell). */
+.hiw-card-img{position:relative;overflow:hidden;align-self:stretch;}
 .hiw-card-img img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;}
 .hiw-card-body{padding:44px 40px;display:flex;flex-direction:column;justify-content:center;gap:14px;}
 .hiw-card-steps{display:flex;flex-direction:column;gap:10px;margin:4px 0;}
