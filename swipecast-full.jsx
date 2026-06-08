@@ -1810,11 +1810,16 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @keyframes fmtSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
 .fmt-card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;margin-right:20px;border-radius:18px;overflow:hidden;cursor:pointer;background:#15151f;box-shadow:0 10px 30px -12px rgba(20,20,35,.45),0 2px 8px rgba(20,20,35,.10);transition:transform .45s cubic-bezier(.2,.7,.2,1),box-shadow .45s ease;outline:none;}
 .fmt-card:hover,.fmt-card:focus-visible{transform:translateY(-8px);box-shadow:0 24px 48px -16px rgba(20,20,35,.55),0 4px 12px rgba(20,20,35,.16);}
-.fmt-poster,.fmt-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.fmt-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,18,.05) 0%,rgba(10,10,18,.02) 36%,rgba(10,10,18,.42) 70%,rgba(10,10,18,.78) 100%);}
+.fmt-poster,.fmt-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;}
+.fmt-shade{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,rgba(10,10,18,.05) 0%,rgba(10,10,18,.02) 36%,rgba(10,10,18,.42) 70%,rgba(10,10,18,.78) 100%);}
 /* Self-contained dark bottom overlay lives on .fmt-body so the white title/desc
-   stay readable on every device even if .fmt-shade ever fails to paint. */
-.fmt-body{position:absolute;left:0;right:0;bottom:0;padding:52px 20px 22px;color:#fff;z-index:2;background:linear-gradient(180deg,rgba(8,8,16,0) 0%,rgba(8,8,16,.55) 55%,rgba(8,8,16,.88) 100%);}
+   stay readable on every device even if .fmt-shade ever fails to paint.
+   translateZ(0) forces its own GPU layer so it always stacks ABOVE the inline
+   <video> — iOS Safari promotes a playing video to an overlay that otherwise
+   paints over non-composited text (which is why mobile showed only the icon,
+   whose backdrop-filter already gave it a layer). Rounded bottom corners keep
+   the overlay inside the card even when a composited layer escapes overflow. */
+.fmt-body{position:absolute;left:0;right:0;bottom:0;padding:52px 20px 22px;color:#fff;z-index:3;transform:translateZ(0);-webkit-transform:translateZ(0);border-bottom-left-radius:18px;border-bottom-right-radius:18px;background:linear-gradient(180deg,rgba(8,8,16,0) 0%,rgba(8,8,16,.55) 55%,rgba(8,8,16,.88) 100%);}
 .fmt-icon{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;margin-bottom:12px;color:#fff;background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.22);}
 .fmt-title{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:20px;line-height:1.12;margin:0 0 4px;text-shadow:0 1px 12px rgba(0,0,0,.5);color:#fff;}
 .fmt-desc{font-size:13px;line-height:1.4;font-weight:400;color:rgba(255,255,255,.9);margin:0;text-shadow:0 1px 10px rgba(0,0,0,.55);max-width:92%;}
@@ -1822,12 +1827,12 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .fmt-card{width:80vw;max-width:300px;margin-right:14px;}
   /* Lighter edge fade on phones — only the outer ~34px, main card stays sharp. */
   .fmt-reel{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 34px,#000 calc(100% - 34px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 34px,#000 calc(100% - 34px),transparent 100%);}
-  /* Force the category title + description to show on mobile (some builds were
-     hiding them); keep the dark overlay and text inside the rounded card. */
-  .fmt-body{display:block!important;padding:46px 18px 20px;}
-  .fmt-title,.fmt-desc{display:block!important;visibility:visible!important;opacity:1!important;color:#fff;}
+  /* Force the category title + description to show on mobile and keep them
+     above the video overlay (see .fmt-body note); text inside the rounded card. */
+  .fmt-body{display:block!important;padding:46px 18px 20px;z-index:3!important;}
+  .fmt-title,.fmt-desc{display:block!important;visibility:visible!important;opacity:1!important;position:relative;z-index:1;color:#fff!important;}
   .fmt-title{font-size:19px;}
-  .fmt-desc{font-size:12.5px;color:rgba(255,255,255,.92);}
+  .fmt-desc{font-size:12.5px;color:rgba(255,255,255,.92)!important;}
 }
 @media (prefers-reduced-motion: reduce){.fmt-track{animation:none;}.fmt-card{transition:none;}.fmt-card:hover,.fmt-card:focus-visible{transform:none;}}
 /* ─── Latest Industry News (landing section: 3 blocks × 4 cards) ─── */
