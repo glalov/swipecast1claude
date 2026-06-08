@@ -1803,7 +1803,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media (max-width:768px){.scale-tagline{font-size:19px;padding:36px 20px 0;}}
 /* ─── Casting Across Every Format — premium video-card carousel ─── */
 .fmt-reel-wrap{position:relative;}
-.fmt-reel{overflow:hidden;padding:10px 0 16px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);}
+.fmt-reel{overflow:hidden;padding:10px 0 16px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 60px,#000 calc(100% - 36px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 60px,#000 calc(100% - 36px),transparent 100%);}
 /* GPU-composited marquee: transform animation runs off the main thread, so the
    slide stays perfectly smooth while every video keeps decoding/playing. */
 .fmt-track{display:flex;width:max-content;will-change:transform;animation:fmtSlide 52s linear infinite;}
@@ -1820,8 +1820,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .fmt-desc{font-size:13px;line-height:1.4;font-weight:400;color:rgba(255,255,255,.9);margin:0;text-shadow:0 1px 10px rgba(0,0,0,.55);max-width:92%;}
 @media (max-width:768px){
   .fmt-card{width:80vw;max-width:300px;margin-right:14px;}
-  /* Lighter edge fade on phones so cards stay sharp and un-washed. */
-  .fmt-reel{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 45px,#000 calc(100% - 45px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 45px,#000 calc(100% - 45px),transparent 100%);}
+  /* Lighter edge fade on phones — only the outer ~34px, main card stays sharp. */
+  .fmt-reel{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 34px,#000 calc(100% - 34px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 34px,#000 calc(100% - 34px),transparent 100%);}
   /* Force the category title + description to show on mobile (some builds were
      hiding them); keep the dark overlay and text inside the rounded card. */
   .fmt-body{display:block!important;padding:46px 18px 20px;}
@@ -13457,7 +13457,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </section>
 
     {/* ───────── CASTING-FORMAT MARQUEE — cinematic Playfair serif words, infinite scroll ───────── */}
-    <div style={{padding:"44px 0 30px",background:"var(--bg)"}}>
+    <div style={{padding:"30px 0 30px",background:"var(--bg)"}}>
       <div style={{maxWidth:1200,margin:"0 auto",textAlign:"center",padding:"0 24px",marginBottom:22}}>
         <p style={{fontSize:12,letterSpacing:1.6,textTransform:"uppercase",color:"var(--t2)",fontWeight:700,margin:0}}>{tr('landing.trustedBy')}</p>
       </div>
