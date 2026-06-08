@@ -1803,7 +1803,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media (max-width:768px){.scale-tagline{font-size:19px;padding:36px 20px 0;}}
 /* ─── Casting Across Every Format — premium video-card carousel ─── */
 .fmt-reel-wrap{position:relative;}
-.fmt-reel{overflow:hidden;padding:10px 0 16px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%);}
+.fmt-reel{overflow:hidden;padding:10px 0 16px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);}
 /* GPU-composited marquee: transform animation runs off the main thread, so the
    slide stays perfectly smooth while every video keeps decoding/playing. */
 .fmt-track{display:flex;width:max-content;will-change:transform;animation:fmtSlide 52s linear infinite;}
@@ -1811,12 +1811,24 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .fmt-card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;margin-right:20px;border-radius:18px;overflow:hidden;cursor:pointer;background:#15151f;box-shadow:0 10px 30px -12px rgba(20,20,35,.45),0 2px 8px rgba(20,20,35,.10);transition:transform .45s cubic-bezier(.2,.7,.2,1),box-shadow .45s ease;outline:none;}
 .fmt-card:hover,.fmt-card:focus-visible{transform:translateY(-8px);box-shadow:0 24px 48px -16px rgba(20,20,35,.55),0 4px 12px rgba(20,20,35,.16);}
 .fmt-poster,.fmt-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.fmt-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,18,.05) 0%,rgba(10,10,18,.02) 36%,rgba(10,10,18,.5) 72%,rgba(10,10,18,.85) 100%);}
-.fmt-body{position:absolute;left:0;right:0;bottom:0;padding:20px 20px 22px;color:#fff;z-index:2;}
+.fmt-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,18,.05) 0%,rgba(10,10,18,.02) 36%,rgba(10,10,18,.42) 70%,rgba(10,10,18,.78) 100%);}
+/* Self-contained dark bottom overlay lives on .fmt-body so the white title/desc
+   stay readable on every device even if .fmt-shade ever fails to paint. */
+.fmt-body{position:absolute;left:0;right:0;bottom:0;padding:52px 20px 22px;color:#fff;z-index:2;background:linear-gradient(180deg,rgba(8,8,16,0) 0%,rgba(8,8,16,.55) 55%,rgba(8,8,16,.88) 100%);}
 .fmt-icon{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;margin-bottom:12px;color:#fff;background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.22);}
 .fmt-title{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:20px;line-height:1.12;margin:0 0 4px;text-shadow:0 1px 12px rgba(0,0,0,.5);color:#fff;}
 .fmt-desc{font-size:13px;line-height:1.4;font-weight:400;color:rgba(255,255,255,.9);margin:0;text-shadow:0 1px 10px rgba(0,0,0,.55);max-width:92%;}
-@media (max-width:768px){.fmt-card{width:80vw;max-width:300px;margin-right:14px;}}
+@media (max-width:768px){
+  .fmt-card{width:80vw;max-width:300px;margin-right:14px;}
+  /* Lighter edge fade on phones so cards stay sharp and un-washed. */
+  .fmt-reel{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 45px,#000 calc(100% - 45px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 45px,#000 calc(100% - 45px),transparent 100%);}
+  /* Force the category title + description to show on mobile (some builds were
+     hiding them); keep the dark overlay and text inside the rounded card. */
+  .fmt-body{display:block!important;padding:46px 18px 20px;}
+  .fmt-title,.fmt-desc{display:block!important;visibility:visible!important;opacity:1!important;color:#fff;}
+  .fmt-title{font-size:19px;}
+  .fmt-desc{font-size:12.5px;color:rgba(255,255,255,.92);}
+}
 @media (prefers-reduced-motion: reduce){.fmt-track{animation:none;}.fmt-card{transition:none;}.fmt-card:hover,.fmt-card:focus-visible{transform:none;}}
 /* ─── Latest Industry News (landing section: 3 blocks × 4 cards) ─── */
 .news-sec{border-top:1px solid var(--bdr);padding:54px 0 58px;}
@@ -13445,9 +13457,9 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </section>
 
     {/* ───────── CASTING-FORMAT MARQUEE — cinematic Playfair serif words, infinite scroll ───────── */}
-    <div style={{padding:"14px 0 30px",background:"var(--bg)"}}>
-      <div style={{maxWidth:1200,margin:"0 auto",textAlign:"center",padding:"0 24px",marginBottom:14}}>
-        <p style={{fontSize:11,letterSpacing:1.5,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,margin:0}}>{tr('landing.trustedBy')}</p>
+    <div style={{padding:"44px 0 30px",background:"var(--bg)"}}>
+      <div style={{maxWidth:1200,margin:"0 auto",textAlign:"center",padding:"0 24px",marginBottom:22}}>
+        <p style={{fontSize:12,letterSpacing:1.6,textTransform:"uppercase",color:"var(--t2)",fontWeight:700,margin:0}}>{tr('landing.trustedBy')}</p>
       </div>
       {/* Premium video-card carousel — replaces the old text marquee. */}
       <FormatReel/>
