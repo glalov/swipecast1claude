@@ -13559,7 +13559,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="hiw-card">
       <div className="hiw-card-inner">
         <div className="hiw-card-img">
-          <img src="https://images.pexels.com/photos/8088390/pexels-photo-8088390.jpeg?auto=compress&cs=tinysrgb&w=1600" alt="Actor being filmed on a screen test while a crew member holds a clapperboard during a casting session" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+          <img src="https://images.pexels.com/photos/4612886/pexels-photo-4612886.jpeg?auto=compress&cs=tinysrgb&w=1600" alt="Single actor performing in front of a film camera during a casting screen test" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
         </div>
         <div className="hiw-card-body">
           <p style={{fontSize:10,letterSpacing:1.8,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,margin:0,fontFamily:"'DM Sans',sans-serif"}}>For Casting Directors</p>
