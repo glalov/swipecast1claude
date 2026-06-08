@@ -12973,7 +12973,10 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
           // On wide stages we keep prev/next interactive; further away is hidden.
           const visuallyHidden=!isWide&&!isCenter;
           const sCd=sc._cd||{};
-          const sCdName=sCd.display_name||sCd.company_name||"";
+          const sCdNameRaw=sCd.display_name||sCd.company_name||"";
+          // Hide the internal admin/office posting identity ("Office Casting") on the
+          // featured slider — show only the production company name (sc.prod).
+          const sCdName=/office\s*casting/i.test(sCdNameRaw)?"":sCdNameRaw;
           const sRoles=sc.roles||[];
           const sFirstRole=sRoles[0];
           const sRaw=(sc.synopsis||sc.tagline||"").replace(/\*/g,"").trim();
