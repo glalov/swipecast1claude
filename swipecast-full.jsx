@@ -1939,42 +1939,35 @@ html,body{overflow-x:hidden;}
 
 /* ── Landing: Single cinematic feature image section ── */
 .cinema-feature{max-width:1100px;margin:0 auto 52px;padding:0 clamp(16px,4vw,40px);}
-.cinema-feature-inner{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,0.08);overflow:hidden;display:grid;grid-template-columns:1.15fr 1fr;min-height:430px;}
-/* Photo panel: the image is served at 3:2 (w=1400&h=933&fit=crop) and the panel
-   stays close to 3:2 (≈600px wide × min-height 430px), so object-fit:cover trims
-   almost nothing and leaves no navy/letterbox bars — the full photo shows edge
-   to edge. NOTE: do NOT put aspect-ratio on this grid cell — with align-self:
-   stretch it widens the image to keep the ratio and overflows into the copy
-   column, covering the text/buttons. Rounded left corners come from the inner's
-   overflow:hidden + border-radius. */
-.cinema-feature-img{position:relative;overflow:hidden;align-self:stretch;}
-.cinema-feature-img img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;}
-.cinema-feature-copy{padding:44px 40px;display:flex;flex-direction:column;justify-content:center;gap:14px;}
+.cinema-feature-inner{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,0.08);overflow:hidden;display:block;}
+/* Banner-on-top layout: the FULL photo spans the card width at its natural
+   ratio (height:auto), so it is NEVER cropped and shows no black/white bars.
+   The copy sits BELOW the image, so the photo can never overlap the text or
+   buttons. Rounded top corners come from the inner's overflow:hidden. */
+.cinema-feature-img{position:relative;width:100%;line-height:0;}
+.cinema-feature-img img{width:100%;height:auto;display:block;}
+.cinema-feature-copy{padding:36px clamp(24px,4vw,44px) 40px;display:flex;flex-direction:column;gap:14px;}
 .cinema-feature-copy .cf-label{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--acc);font-weight:700;font-family:'DM Sans',sans-serif;margin:0;}
 .cinema-feature-copy h2{font-weight:800;font-size:clamp(22px,2.8vw,30px);letter-spacing:-0.8px;line-height:1.15;margin:0;}
 .cinema-feature-copy p{color:var(--t2);font-size:14px;line-height:1.7;margin:0;}
 @media(max-width:720px){
-  .cinema-feature-inner{grid-template-columns:1fr;}
-  .cinema-feature-img{aspect-ratio:3/2;}
-  .cinema-feature-copy{padding:28px 24px;}
+  .cinema-feature-copy{padding:26px 22px 30px;}
   .cinema-feature{margin-bottom:48px;}
 }
 
 /* ── Landing: How It Works card (Mandy-style: image left, text right) ── */
 .hiw-card{max-width:1100px;margin:0 auto 48px;padding:0 clamp(16px,4vw,40px);}
-.hiw-card-inner{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,0.08);overflow:hidden;display:grid;grid-template-columns:1.15fr 1fr;min-height:430px;}
-/* 3:2 photo panel — full image, no crop, no bars, no overflow into the copy.
-   See .cinema-feature-img note above (do NOT add aspect-ratio to this cell). */
-.hiw-card-img{position:relative;overflow:hidden;align-self:stretch;}
-.hiw-card-img img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;}
-.hiw-card-body{padding:44px 40px;display:flex;flex-direction:column;justify-content:center;gap:14px;}
+.hiw-card-inner{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,0.08);overflow:hidden;display:block;}
+/* Banner-on-top layout — full photo at natural ratio, no crop, no bars, copy
+   below so the image never overlaps text/buttons. See .cinema-feature note. */
+.hiw-card-img{position:relative;width:100%;line-height:0;}
+.hiw-card-img img{width:100%;height:auto;display:block;}
+.hiw-card-body{padding:36px clamp(24px,4vw,44px) 40px;display:flex;flex-direction:column;gap:14px;}
 .hiw-card-steps{display:flex;flex-direction:column;gap:10px;margin:4px 0;}
 .hiw-card-step{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--t2);line-height:1.5;}
 .hiw-step-num{width:22px;height:22px;min-width:22px;border-radius:50%;background:var(--acc);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;margin-top:2px;}
 @media(max-width:720px){
-  .hiw-card-inner{grid-template-columns:1fr;}
-  .hiw-card-img{aspect-ratio:3/2;}
-  .hiw-card-body{padding:28px 24px;}
+  .hiw-card-body{padding:26px 22px 30px;}
   .hiw-card{margin-bottom:48px;}
 }
 @keyframes mv-slide-left{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
@@ -13495,7 +13488,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="cinema-feature">
       <div className="cinema-feature-inner">
         <div className="cinema-feature-img">
-          <img src="https://images.pexels.com/photos/3062539/pexels-photo-3062539.jpeg?auto=compress&cs=tinysrgb&w=1400&h=933&fit=crop" alt="Film crew filming an actress on an outdoor movie set with cinema camera" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+          <img src="https://images.pexels.com/photos/3062539/pexels-photo-3062539.jpeg?auto=compress&cs=tinysrgb&w=1600" alt="Film crew filming an actress on an outdoor movie set with cinema camera" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
         </div>
         <div className="cinema-feature-copy">
           <p className="cf-label">The actor journey</p>
@@ -13561,7 +13554,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="hiw-card">
       <div className="hiw-card-inner">
         <div className="hiw-card-img">
-          <img src="https://images.unsplash.com/photo-1497015289639-54688650d173?w=1400&h=933&fit=crop&crop=entropy&q=85" alt="Professional video camera filming an actor in a casting audition session with studio lighting" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+          <img src="https://images.unsplash.com/photo-1497015289639-54688650d173?w=1600&q=85" alt="Professional video camera filming an actor in a casting audition session with studio lighting" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
         </div>
         <div className="hiw-card-body">
           <p style={{fontSize:10,letterSpacing:1.8,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,margin:0,fontFamily:"'DM Sans',sans-serif"}}>For Casting Directors</p>
