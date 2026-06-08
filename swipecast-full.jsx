@@ -7302,6 +7302,23 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       {cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
     </div>
 
+    {/* ── Instant-hook strip: surfaces pay, deadline & open-role count above the
+           fold, with a primary CTA that jumps straight to the roles. The full
+           detail grid (union, shoot dates, audition format) still sits below. ── */}
+    <div style={{display:"flex",alignItems:"center",gap:"10px 18px",flexWrap:"wrap",padding:"13px 18px",marginBottom:24,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12}}>
+      {(c.rate||c.pay)&&<div style={{display:"flex",alignItems:"center",gap:7}}>
+        <span style={{fontSize:16}}>💰</span>
+        <span style={{fontSize:15,fontWeight:800,color:"var(--t1)",letterSpacing:-0.2}}>{c.rate||c.pay}</span>
+      </div>}
+      <span style={{display:"flex",alignItems:"center",gap:7,color:"var(--t2)",fontSize:14,fontWeight:600}}>
+        <span style={{fontSize:15}}>🎭</span>{c.roles?.length||0} {(c.roles?.length||0)===1?"role":"roles"} open
+      </span>
+      {c.deadline&&<span style={{display:"flex",alignItems:"center",gap:7,color:"var(--t2)",fontSize:14,fontWeight:600}}>
+        <span style={{fontSize:15}}>📅</span>Apply by {fmtCastingDate(c.deadline)}
+      </span>}
+      <button className="btn-p btn-sm" style={{marginLeft:"auto"}} onClick={()=>document.getElementById("roles-section")?.scrollIntoView({behavior:"smooth",block:"start"})}>View Roles &amp; Apply ↓</button>
+    </div>
+
     <CastingImageCarousel images={getCastingImages(c)} title={c.title}/>
 
     <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,padding:"20px 24px",marginBottom:32,display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"14px 28px"}}>
@@ -7325,7 +7342,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,maxWidth:720}}>{c.synopsis?render(c.synopsis):c.desc}</p>
     </section>
 
-    <section style={{marginBottom:40}}>
+    <section id="roles-section" style={{marginBottom:40,scrollMarginTop:90}}>
       <div className="flex-between" style={{marginBottom:16}}>
         <div>
           <div className="section-label">{t('casting.roles')}</div>
