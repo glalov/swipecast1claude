@@ -497,6 +497,27 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   background:#eaf6f4;
   box-shadow:0 6px 16px rgba(0,0,0,0.28);
 }
+/* ── Featured-class banner (replaces the promo stripe on the home page).
+      Desktop shows the supplied artwork as-is with an invisible hotspot over
+      the baked-in "view classes" button. Mobile hides the navy free-plan
+      stripe, crops the photo to a compact full-width strip, and overlays a
+      live, readable title + "View Classes" button (the baked-in text is too
+      small at phone width). ── */
+.featured-class-stripe{position:relative;width:100%;line-height:0;background:#0c0a08;}
+.fcs-img{display:block;width:100%;height:auto;}
+.fcs-hotspot{position:absolute;left:1.6%;top:80.5%;width:5%;height:13%;background:transparent;border:none;padding:0;margin:0;cursor:pointer;}
+.fcs-mobile{display:none;}
+@media (max-width:768px){
+  .member-banner{display:none !important;}
+  .featured-class-stripe{height:96px;overflow:hidden;}
+  .fcs-img{height:100%;width:100%;object-fit:cover;object-position:74% center;}
+  .fcs-hotspot{display:none;}
+  .fcs-mobile{display:flex;flex-direction:column;gap:4px;position:absolute;left:16px;top:50%;transform:translateY(-50%);z-index:2;max-width:62%;line-height:normal;}
+  .fcs-mobile::before{content:"";position:absolute;inset:-16px -52px -16px -28px;z-index:-1;background:linear-gradient(90deg,rgba(8,8,10,0.9) 0%,rgba(8,8,10,0.62) 58%,rgba(8,8,10,0) 100%);}
+  .fcs-m-label{font-size:8.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#E0A43B;}
+  .fcs-m-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:17px;line-height:1.02;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,0.6);}
+  .fcs-m-btn{align-self:flex-start;margin-top:4px;background:#E0A43B;color:#231706;border:none;border-radius:6px;padding:6px 13px;font-size:10px;font-weight:800;line-height:1;cursor:pointer;}
+}
 @media (max-width:900px){
   .promo-stripe{padding:13px 12px;}
   .promo-stripe-inner{gap:12px;min-height:58px;}
@@ -793,7 +814,7 @@ function calculateYearlySavings(monthlyPrice,yearlyTotal){const annualAtMonthly=
 // artwork exactly as-is (headline, tagline, and "view classes" button are
 // baked into the image). An invisible hotspot sits over the baked-in
 // "view classes" button and routes to the Classes page.
-function FeaturedClassBanner({onNavigate}){return/*#__PURE__*/React.createElement("aside",{className:"featured-class-stripe",role:"region","aria-label":"Featured class: Scene Study Workshop",style:{position:"relative",width:"100%",lineHeight:0,background:"#0c0a08"}},/*#__PURE__*/React.createElement("img",{src:"/assets/banner/scene-study.png",alt:"Featured Class \u2014 Scene Study Workshop",style:{display:"block",width:"100%",height:"auto"}}),/*#__PURE__*/React.createElement("button",{type:"button",onClick:()=>{if(typeof onNavigate==="function")onNavigate("classes");},"aria-label":"View classes",style:{position:"absolute",left:"1.6%",top:"80.5%",width:"5%",height:"13%",background:"transparent",border:"none",padding:0,margin:0,cursor:"pointer"}}));}function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){// Industry accounts (CD, admin, producer, studio) don't have a talent
+function FeaturedClassBanner({onNavigate}){const go=()=>{if(typeof onNavigate==="function")onNavigate("classes");};return/*#__PURE__*/React.createElement("aside",{className:"featured-class-stripe",role:"region","aria-label":"Featured class: Scene Study Workshop"},/*#__PURE__*/React.createElement("img",{className:"fcs-img",src:"/assets/banner/scene-study.png",alt:"Featured Class \u2014 Scene Study Workshop"}),/*#__PURE__*/React.createElement("button",{type:"button",className:"fcs-hotspot",onClick:go,"aria-label":"View classes"}),/*#__PURE__*/React.createElement("div",{className:"fcs-mobile"},/*#__PURE__*/React.createElement("span",{className:"fcs-m-label"},"Featured Class"),/*#__PURE__*/React.createElement("span",{className:"fcs-m-title"},"Scene Study Workshop"),/*#__PURE__*/React.createElement("button",{type:"button",className:"fcs-m-btn",onClick:go},"View Classes \u2192")));}function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){// Industry accounts (CD, admin, producer, studio) don't have a talent
 // membership, so the savings copy doesn't apply to them.
 const userType=(myProfile?.user_type||"").toLowerCase();const isCDish=["cd","admin","super_admin","producer","studio"].includes(userType);if(isLoggedIn&&isCDish)return null;// Hide once a user has an active membership. Spec says "if on yearly,
 // hide" but it's safer to hide for any active paid plan — pestering an
