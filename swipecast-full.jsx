@@ -2676,7 +2676,7 @@ function Footer({onNavigate,spacerBg}){
     {/* Global breathing room above the footer on EVERY page. Carries margin-top:auto
         (the sticky-footer push) AND a guaranteed min-height so no page's final card,
         icon row, or button ever touches the Back-to-top bar. 96px desktop / 72px mobile. */}
-    <div className="site-footer-spacer" aria-hidden="true"></div>
+    <div className="site-footer-spacer" style={spacerBg?{background:spacerBg}:undefined} aria-hidden="true"></div>
     <button type="button" className="site-backtotop" onClick={scrollTop} aria-label={t('footer.backToTop')}>{t('footer.backToTop')} <span className="site-backtotop-arrow" aria-hidden="true">↑</span></button>
     <footer className="site-footer">
       <div className="site-footer-inner">
