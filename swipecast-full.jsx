@@ -1737,14 +1737,14 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .fcs-mobile{display:none;}
 @media (max-width:768px){
   .member-banner{display:none !important;}
-  .featured-class-stripe{height:96px;overflow:hidden;}
-  .fcs-img{height:100%;width:100%;object-fit:cover;object-position:74% center;}
+  .featured-class-stripe{height:148px;overflow:hidden;}
+  .fcs-img{height:100%;width:100%;object-fit:cover;object-position:70% center;filter:brightness(1.46) saturate(1.07);}
   .fcs-hotspot{display:none;}
-  .fcs-mobile{display:flex;flex-direction:column;gap:4px;position:absolute;left:16px;top:50%;transform:translateY(-50%);z-index:2;max-width:62%;line-height:normal;}
-  .fcs-mobile::before{content:"";position:absolute;inset:-16px -52px -16px -28px;z-index:-1;background:linear-gradient(90deg,rgba(8,8,10,0.9) 0%,rgba(8,8,10,0.62) 58%,rgba(8,8,10,0) 100%);}
-  .fcs-m-label{font-size:8.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#E0A43B;}
-  .fcs-m-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:17px;line-height:1.02;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,0.6);}
-  .fcs-m-btn{align-self:flex-start;margin-top:4px;background:#E0A43B;color:#231706;border:none;border-radius:6px;padding:6px 13px;font-size:10px;font-weight:800;line-height:1;cursor:pointer;}
+  .fcs-mobile{display:flex;flex-direction:column;gap:5px;position:absolute;left:18px;top:50%;transform:translateY(-50%);z-index:2;max-width:62%;line-height:normal;}
+  .fcs-mobile::before{content:"";position:absolute;inset:-22px -56px -22px -30px;z-index:-1;background:linear-gradient(90deg,rgba(8,8,10,0.72) 0%,rgba(8,8,10,0.4) 56%,rgba(8,8,10,0) 100%);}
+  .fcs-m-label{font-size:9.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:#E0A43B;}
+  .fcs-m-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:21px;line-height:1.03;color:#fff;text-shadow:0 1px 7px rgba(0,0,0,0.6);}
+  .fcs-m-btn{align-self:flex-start;margin-top:6px;background:#E0A43B;color:#231706;border:none;border-radius:7px;padding:8px 16px;font-size:11px;font-weight:800;line-height:1;cursor:pointer;}
 }
 @media (max-width:900px){
   .promo-stripe{padding:13px 12px;}
