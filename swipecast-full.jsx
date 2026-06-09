@@ -2090,6 +2090,18 @@ function calculateYearlySavings(monthlyPrice,yearlyTotal){
 //     Calculates savings dynamically from MEMBERSHIP_PLANS so the headline
 //     stays in sync with the pricing config. Hidden for users who already
 //     have an active paid membership and for non-talent account types.
+// Featured-class banner shown above the nav on the homepage, in the slot the
+// yearly promo stripe used to occupy. Uses the supplied Scene Study Workshop
+// artwork exactly as-is (headline, tagline, and "view classes" button are
+// baked into the image). An invisible hotspot sits over the baked-in
+// "view classes" button and routes to the Classes page.
+function FeaturedClassBanner({onNavigate}){
+  return(<aside className="featured-class-stripe" role="region" aria-label="Featured class: Scene Study Workshop" style={{position:"relative",width:"100%",lineHeight:0,background:"#0c0a08"}}>
+    <img src="/assets/banner/scene-study.png" alt="Featured Class — Scene Study Workshop" style={{display:"block",width:"100%",height:"auto"}}/>
+    <button type="button" onClick={()=>{if(typeof onNavigate==="function")onNavigate("classes");}} aria-label="View classes" style={{position:"absolute",left:"1.6%",top:"80.5%",width:"5%",height:"13%",background:"transparent",border:"none",padding:0,margin:0,cursor:"pointer"}}/>
+  </aside>);
+}
+
 function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){
   // Industry accounts (CD, admin, producer, studio) don't have a talent
   // membership, so the savings copy doesn't apply to them.
@@ -21794,14 +21806,10 @@ function App(){
       {/* Sticky top: promo stripe + activate banner + white nav stay pinned
           together at the top of the viewport while the page scrolls. */}
       <div className="site-top" ref={siteTopRef}>
-      {/* Yearly promo stripe — homepage only, hidden for active members and
-          industry accounts. Savings calculated dynamically from MEMBERSHIP_PLANS,
-          so any pricing change updates the headline automatically. */}
-      {page==="home"&&<YearlyPromoStripe
-        myProfile={myProfile}
-        isLoggedIn={isLoggedIn}
-        onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}}
-      />}
+      {/* Featured-class banner — homepage only. Replaces the old yearly promo
+          stripe in this slot. Uses the Scene Study Workshop artwork as-is; the
+          "view classes" hotspot routes to the Classes page. */}
+      {page==="home"&&<FeaturedClassBanner onNavigate={navigate}/>}
       {/* Free-tier talent see this red banner above the nav until they
           activate. Hidden for CDs/admins/producers/studios and once active. */}
       <ActivateMembershipBanner myProfile={myProfile} onNavigate={navigate}/>
