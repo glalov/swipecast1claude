@@ -682,7 +682,10 @@ html,body{overflow-x:hidden;}
   .cls-detail-grid{grid-template-columns:1fr !important;}
   .cls-credits-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
   .cls-card-row{flex-direction:column !important;}
-  .cls-card-img{width:100% !important;min-width:0 !important;height:180px !important;min-height:180px !important;flex-shrink:0;}
+  /* Frame height tracks width at the ratio of 3 portrait posters side by side
+     (3 × 2:3 ≈ 2.05:1), so contained posters fill the frame with no top/bottom
+     empty space and no cropping. */
+  .cls-card-img{width:100% !important;min-width:0 !important;aspect-ratio:2.05/1;height:auto !important;min-height:0 !important;flex-shrink:0;}
   .cls-card-action{border-left:none !important;border-top:1px solid var(--bdr);min-width:0 !important;flex-direction:row !important;flex-wrap:wrap !important;}
   .cls-card-action button{flex:1 1 auto;}
 }
