@@ -3626,7 +3626,7 @@ function ClassPosterCollage({posters,imageUrl,title,bg="#F4F1EA",variant="hero"}
     <div style={{display:"grid",gridTemplateColumns:`repeat(${imgs.length},1fr)`,width:"100%",height:"100%",background:bg}}>
       {imgs.map((url,i)=>(
         <img key={i} src={url} alt={`${title} ${i+1}`}
-          style={{width:"100%",height:"100%",objectFit:"contain",objectPosition:"center",display:"block",background:bg}}/>
+          style={{width:"100%",height:"100%",objectFit:"contain",objectPosition:variant==="card"?"center top":"center",display:"block",background:bg}}/>
       ))}
     </div>
   );
