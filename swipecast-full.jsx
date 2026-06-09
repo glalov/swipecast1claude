@@ -1738,7 +1738,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media (max-width:768px){
   .member-banner{display:none !important;}
   .featured-class-stripe{height:148px;overflow:hidden;}
-  .fcs-img{height:100%;width:100%;object-fit:cover;object-position:70% center;filter:brightness(1.46) saturate(1.07);}
+  .fcs-img{height:100%;width:100%;object-fit:cover;object-position:70% center;filter:brightness(1.75) saturate(1.08);}
   .fcs-hotspot{display:none;}
   .fcs-mobile{display:flex;flex-direction:column;gap:5px;position:absolute;left:18px;top:50%;transform:translateY(-50%);z-index:2;max-width:62%;line-height:normal;}
   .fcs-mobile::before{content:"";position:absolute;inset:-22px -56px -22px -30px;z-index:-1;background:linear-gradient(90deg,rgba(8,8,10,0.72) 0%,rgba(8,8,10,0.4) 56%,rgba(8,8,10,0) 100%);}
