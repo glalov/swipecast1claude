@@ -1326,9 +1326,9 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .logo-i{width:30px;height:30px;background:var(--acc);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;}
 .logo-i svg{width:100%;height:100%;display:block;}
 .nav-links{display:flex;gap:4px;align-items:center;}
-.nav-links span{color:#111827;font-size:13px;font-weight:600;cursor:pointer;padding:8px 12px;border-radius:9px;transition:background-color .18s ease,color .18s ease;}
-.nav-links span:hover{background:#F3F4F6;}
-.nav-links span.act{background:#ECEFF3;color:#111827;}
+.nav-links span{color:#111827;font-size:13px;font-weight:500;cursor:pointer;padding:8px 12px;border-radius:9px;transition:background-color .18s ease,color .18s ease;}
+.nav-links span:hover{background:#F7F7F8;}
+.nav-links span.act{background:#F3F4F6;color:#111827;font-weight:600;}
 .btn-p{background:var(--acc);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .btn-p:hover{background:var(--acc2);transform:translateY(-1px);}
 .btn-s{background:transparent;color:var(--t1);border:1px solid var(--bdr);padding:10px 22px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;}
