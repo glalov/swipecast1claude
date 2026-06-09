@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CastSlate — Contact + Footer Spacing Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#F7F4EE;--s1:#FFFFFF;--s2:#F1ECE2;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--grn:#1B873E;--red:#D63B3B;--teal:#4F8A8B;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:var(--t1);}
+  /* sticky-footer skeleton like the real app */
+  .app{min-height:100vh;display:flex;flex-direction:column;}
+  .page{max-width:1200px;margin:0 auto;padding:40px 40px 0;width:100%;display:flex;flex-direction:column;flex:1 1 auto;}
+
+  .section-label{font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:12px;}
+  .label{display:block;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--acc);margin-bottom:8px;}
+  .input,.textarea,.select{background:var(--s1);border:1px solid var(--bdr);border-radius:8px;padding:10px 14px;color:var(--t1);font-size:13px;font-family:'DM Sans',sans-serif;width:100%;outline:none;}
+  .textarea{min-height:140px;resize:vertical;}
+  .form-group{margin-bottom:16px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+  .card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:24px;box-shadow:0 1px 2px rgba(26,26,46,0.03);}
+  .btn-p{background:var(--acc);color:#fff;border:none;padding:12px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+  /* success / error states */
+  .success-msg{text-align:center;padding:48px 24px;border:1px solid var(--bdr);border-radius:14px;background:var(--s1);}
+  .success-msg .check{width:54px;height:54px;border-radius:50%;background:rgba(27,135,62,.12);color:var(--grn);font-size:26px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
+  .form-error{margin-top:14px;padding:12px 14px;border-radius:10px;background:rgba(214,59,59,.08);border:1px solid rgba(214,59,59,.25);color:var(--red);font-size:13px;font-weight:600;text-align:center;}
+
+  /* ── single NY office card (replaces 3-up email/office/social) ── */
+  .contact-office{margin-top:40px;display:flex;justify-content:center;}
+  .contact-office .card{max-width:340px;width:100%;text-align:center;}
+  .contact-office .ico{font-size:30px;margin-bottom:10px;}
+  .contact-office h4{font-size:14px;font-weight:700;margin:0 0 4px;}
+  .contact-office p{font-size:13px;color:var(--t2);margin:0;line-height:1.5;}
+
+  /* ════════════ GLOBAL FOOTER SPACING FIX ════════════
+     spacer takes over margin-top:auto (sticky footer) AND guarantees a
+     minimum gap so content never touches the Back-to-top bar. */
+  .site-footer-spacer{height:96px;flex-shrink:0;background:var(--bg);width:100%;margin-top:auto;}
+  .site-backtotop{display:flex;align-items:center;justify-content:center;gap:8px;background:#26272D;color:#C2C2CC;border:none;border-top:1px solid rgba(255,255,255,.05);padding:15px 16px;font-size:13px;font-weight:600;letter-spacing:.3px;cursor:pointer;width:100%;}
+  .site-footer{background:#1B1C20;color:#A8A8B3;border-top:1px solid rgba(255,255,255,.06);padding:40px;text-align:center;font-size:13px;}
+
+  @media(max-width:760px){
+    .form-row{grid-template-columns:1fr;}
+    .site-footer-spacer{height:72px;}
+    .page{padding:24px 16px 0;}
+  }
+
+  /* demo chrome */
+  .demobar{position:sticky;top:0;z-index:5;background:#111;color:#fff;padding:10px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;}
+  .demobar b{margin-right:8px;}
+  .demobar button{background:#2a2a2a;color:#fff;border:1px solid #444;border-radius:7px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit;}
+  .demobar button.on{background:#fff;color:#111;}
+  .hint{max-width:600px;margin:0 auto;padding:14px 0 0;color:var(--t2);font-size:13px;line-height:1.6;}
+  .redline{outline:2px dashed rgba(214,59,59,.5);outline-offset:3px;}
+</style>
+</head>
+<body>
+<div class="demobar">
+  <b>Contact form state:</b>
+  <button id="b-form" class="on" onclick="setState('form')">Form</button>
+  <button id="b-ok" onclick="setState('ok')">Success</button>
+  <button id="b-err" onclick="setState('err')">Error</button>
+  <span style="margin-left:auto;opacity:.7">Scroll down to see the footer spacing ↓</span>
+</div>
+
+<div class="app">
+  <div class="page">
+    <div style="max-width:600px;margin:0 auto;width:100%;">
+      <div class="section-label">Contact</div>
+      <h1 style="font-weight:800;font-size:36px;letter-spacing:-1.5px;margin:0 0 8px;">Get in Touch</h1>
+      <p style="color:var(--t2);font-size:14px;margin:0 0 32px;">Questions? Want to partner? Need support? We'd love to hear from you.</p>
+
+      <!-- FORM -->
+      <div id="state-form">
+        <div class="form-row">
+          <div class="form-group"><label class="label">Name</label><input class="input" placeholder="Your name"/></div>
+          <div class="form-group"><label class="label">Email</label><input class="input" type="email" placeholder="you@email.com"/></div>
+        </div>
+        <div class="form-group"><label class="label">I am a...</label>
+          <select class="select"><option>Actor / Model / Performer</option><option>Casting Director</option><option>Producer / Director</option><option>Agent / Manager</option><option>Press / Media</option><option>Other</option></select>
+        </div>
+        <div class="form-group"><label class="label">Subject</label><input class="input" placeholder="What's this about?"/></div>
+        <div class="form-group"><label class="label">Message</label><textarea class="textarea" placeholder="Tell us more..."></textarea></div>
+        <button class="btn-p" style="width:100%;">Send Message</button>
+      </div>
+
+      <!-- SUCCESS -->
+      <div id="state-ok" style="display:none;">
+        <div class="success-msg">
+          <div class="check">✓</div>
+          <h3 style="margin:0 0 6px;font-size:18px;font-weight:800;">Message sent</h3>
+          <p style="margin:0;color:var(--t2);font-size:14px;">We'll get back to you soon.</p>
+        </div>
+      </div>
+
+      <!-- ERROR (form + error banner) -->
+      <div id="state-err" style="display:none;">
+        <div class="form-row">
+          <div class="form-group"><label class="label">Name</label><input class="input" value="Jane Actor"/></div>
+          <div class="form-group"><label class="label">Email</label><input class="input" value="jane@email.com"/></div>
+        </div>
+        <div class="form-group"><label class="label">Subject</label><input class="input" value="Partnership question"/></div>
+        <div class="form-group"><label class="label">Message</label><textarea class="textarea">Hi, I'd love to talk about...</textarea></div>
+        <button class="btn-p" style="width:100%;">Send Message</button>
+        <div class="form-error">Message could not be sent. Please try again.</div>
+      </div>
+    </div>
+
+    <!-- SINGLE NEW YORK OFFICE CARD (email + social removed) -->
+    <div class="contact-office">
+      <div class="card">
+        <div class="ico">📍</div>
+        <h4>Office</h4>
+        <p>New York, NY</p>
+      </div>
+    </div>
+
+    <!-- GLOBAL SPACER → guarantees 96px (72px mobile) above the footer on every page -->
+    <div class="site-footer-spacer" aria-hidden="true"></div>
+  </div>
+
+  <button class="site-backtotop">Back to top ↑</button>
+  <footer class="site-footer">© 2026 CastSlate · footer sits here with guaranteed breathing room above</footer>
+</div>
+
+<script>
+  function setState(s){
+    ['form','ok','err'].forEach(function(k){
+      document.getElementById('state-'+k).style.display = (k===s)?'block':'none';
+      document.getElementById('b-'+(k==='form'?'form':k)).classList.toggle('on', k===s);
+    });
+  }
+</script>
+</body>
+</html>

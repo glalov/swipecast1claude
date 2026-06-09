@@ -1535,6 +1535,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   /* Footer safe-area: dark bg fills iPhone bottom safe zone, no white stripe */
   html{background:#1B1C20 !important;}
   .site-footer{padding-bottom:max(28px,env(safe-area-inset-bottom)) !important;}
+  /* Tablet/mobile: lighter but still comfortable gap above the footer */
+  .site-footer-spacer{height:72px;}
   /* Profile hero → single column */
   .my-profile-hero{grid-template-columns:1fr !important;gap:16px !important;}
   .my-profile-hero-photo{max-width:200px !important;margin:0 auto !important;}
@@ -1577,10 +1579,10 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 /* ─── 40px breathing-room spacer rendered right before the footer by the Footer
        component. Inherits the warm .app bg, flex-shrink:0 so it always exists
        even when the page is taller than the viewport. ─── */
-.site-footer-spacer{height:40px;flex-shrink:0;background:var(--bg);width:100%;}
+.site-footer-spacer{height:96px;flex-shrink:0;background:var(--bg);width:100%;margin-top:auto;}
 .site-backtotop{
   display:flex;align-items:center;justify-content:center;gap:8px;
-  position:relative;width:100vw;left:50%;right:50%;margin-top:auto;margin-left:-50vw;margin-right:-50vw;
+  position:relative;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;
   background:#26272D;color:#C2C2CC;
   border:none;border-top:1px solid rgba(255,255,255,0.05);
   padding:15px 16px;
@@ -2671,6 +2673,10 @@ function Footer({onNavigate,spacerBg}){
   // footer, smooth-scrolls (not a hard cut) to the top of the page.
   const scrollTop=()=>{try{window.scrollTo({top:0,behavior:'smooth'});}catch(_){window.scrollTo(0,0);}};
   return(<>
+    {/* Global breathing room above the footer on EVERY page. Carries margin-top:auto
+        (the sticky-footer push) AND a guaranteed min-height so no page's final card,
+        icon row, or button ever touches the Back-to-top bar. 96px desktop / 72px mobile. */}
+    <div className="site-footer-spacer" aria-hidden="true"></div>
     <button type="button" className="site-backtotop" onClick={scrollTop} aria-label={t('footer.backToTop')}>{t('footer.backToTop')} <span className="site-backtotop-arrow" aria-hidden="true">↑</span></button>
     <footer className="site-footer">
       <div className="site-footer-inner">
@@ -4231,17 +4237,45 @@ function BookingRequestModal({target,myProfile,session,onClose,onSubmitted}){
 // ═══════════════════════════════════════════
 function ContactPage({onNavigate}){
   const [sent,setSent]=useState(false);
+  const [name,setName]=useState("");
+  const [email,setEmail]=useState("");
+  const [role,setRole]=useState("Actor / Model / Performer");
+  const [subject,setSubject]=useState("");
+  const [message,setMessage]=useState("");
+  const [sending,setSending]=useState(false);
+  const [error,setError]=useState("");
+  const send=async()=>{
+    setError("");
+    if(!name.trim()||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())||!message.trim()){
+      setError("Please enter your name, a valid email, and a message.");
+      return;
+    }
+    setSending(true);
+    try{
+      const{data,error:fnErr}=await window.sb.functions.invoke("contact-form",{body:{name:name.trim(),email:email.trim(),role,subject:subject.trim(),message:message.trim(),source:"CastSlate Contact Form"}});
+      if(fnErr||!data?.ok){setError("Message could not be sent. Please try again.");}
+      else{setSent(true);}
+    }catch(_){setError("Message could not be sent. Please try again.");}
+    setSending(false);
+  };
   return(<div className="page"><div style={{maxWidth:600,margin:"0 auto"}}>
     <div className="section-label">Contact</div>
     <h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:8}}>Get in Touch</h1>
     <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>Questions? Want to partner? Need support? We'd love to hear from you.</p>
-    {sent?<div className="success-msg"><div className="check">✓</div><h3>Message Sent</h3><p>We'll get back to you within 24 hours.</p></div>:<>
-      <div className="form-row"><div className="form-group"><label className="label">Name</label><input className="input" placeholder="Your name"/></div><div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com"/></div></div>
-      <div className="form-group"><label className="label">I am a...</label><select className="select" style={{width:"100%"}}><option>Actor / Model / Performer</option><option>Casting Director</option><option>Producer / Director</option><option>Agent / Manager</option><option>Press / Media</option><option>Other</option></select></div>
-      <div className="form-group"><label className="label">Subject</label><input className="input" placeholder="What's this about?"/></div>
-      <div className="form-group"><label className="label">Message</label><textarea className="textarea" placeholder="Tell us more..." style={{minHeight:140}}></textarea></div>
-      <button className="btn-p" style={{width:"100%"}} onClick={()=>setSent(true)}>Send Message</button></>}
-    <div className="grid-3" style={{marginTop:48}}>{[["📧","Email","hello@castslate.com"],["📍","Office","New York, NY"],["📱","Social","@castslate"]].map(([ic,ti,va])=><div key={ti} style={{textAlign:"center"}}><div style={{fontSize:28,marginBottom:8}}>{ic}</div><h4 style={{fontSize:13,fontWeight:700,marginBottom:2}}>{ti}</h4><p style={{fontSize:12,color:"var(--t2)"}}>{va}</p></div>)}</div>
+    {sent?<div className="success-msg"><div className="check">✓</div><h3>Message sent</h3><p>We'll get back to you soon.</p></div>:<>
+      <div className="form-row"><div className="form-group"><label className="label">Name</label><input className="input" placeholder="Your name" value={name} onChange={e=>setName(e.target.value)}/></div><div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)}/></div></div>
+      <div className="form-group"><label className="label">I am a...</label><select className="select" style={{width:"100%"}} value={role} onChange={e=>setRole(e.target.value)}><option>Actor / Model / Performer</option><option>Casting Director</option><option>Producer / Director</option><option>Agent / Manager</option><option>Press / Media</option><option>Other</option></select></div>
+      <div className="form-group"><label className="label">Subject</label><input className="input" placeholder="What's this about?" value={subject} onChange={e=>setSubject(e.target.value)}/></div>
+      <div className="form-group"><label className="label">Message</label><textarea className="textarea" placeholder="Tell us more..." style={{minHeight:140}} value={message} onChange={e=>setMessage(e.target.value)}></textarea></div>
+      <button className="btn-p" style={{width:"100%"}} onClick={send} disabled={sending}>{sending?"Sending…":"Send Message"}</button>
+      {error&&<div style={{marginTop:14,padding:"12px 14px",borderRadius:10,background:"rgba(214,59,59,.08)",border:"1px solid rgba(214,59,59,.25)",color:"var(--red)",fontSize:13,fontWeight:600,textAlign:"center"}}>{error}</div>}</>}
+    <div style={{marginTop:48,display:"flex",justifyContent:"center"}}>
+      <div className="card" style={{maxWidth:340,width:"100%",textAlign:"center"}}>
+        <div style={{fontSize:30,marginBottom:10}}>📍</div>
+        <h4 style={{fontSize:14,fontWeight:700,marginBottom:4}}>Office</h4>
+        <p style={{fontSize:13,color:"var(--t2)",margin:0}}>New York, NY</p>
+      </div>
+    </div>
   </div><Footer onNavigate={onNavigate}/></div>);
 }
 
