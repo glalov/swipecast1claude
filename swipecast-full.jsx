@@ -8327,11 +8327,6 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const [castingTypeIds,setCastingTypeIds]=useState(null); // null=no filter, Set=filtered ids
   const [applyTo,setApplyTo]=useState(null);
   const [applied,setApplied]=useState(new Set());
-  // ── Browse accordion: one casting expands in place at a time ──
-  const [expandedId,setExpandedId]=useState(null);
-  const [savedIds,setSavedIds]=useState(()=>new Set());
-  const [savingId,setSavingId]=useState(null);
-  const [copiedId,setCopiedId]=useState(null);
   const [pg,setPg]=useState(1);
   const [dbCastings,setDbCastings]=useState([]);
   const [dbTalent,setDbTalent]=useState([]);
@@ -8396,7 +8391,6 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         casting_image_path:c.casting_image_path||null,
         casting_images:Array.isArray(c.casting_images)?c.casting_images:[],
         casting_website_url:c.casting_website_url||null,
-        submission_requirements:c.submission_requirements||"",
         creator_verified:c.profiles?.identity_verified===true&&c.profiles?.can_post_castings===true&&c.profiles?.verification_status==="verified",
         profiles:c.profiles||null,
         roles:(c.roles||[]).map(r=>({
@@ -8406,8 +8400,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           type:"Supporting",
           gender:r.gender||"Any",
           ageRange:r.age_range||"",
-          ethnicity:r.ethnicity||"Any",
-          pay:r.pay||""
+          ethnicity:r.ethnicity||"Any"
         }))
       }));
       setDbCastings(mapped);
@@ -8500,33 +8493,6 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   // They're kept in the codebase as a fallback for the empty Browse state on
   // a brand-new install (see `allCastings.length===0` branch below) but never
   // merged into search results once any real data exists.
-  // Load the viewer's saved-casting ids so the accordion Save button reflects state.
-  useEffect(()=>{
-    const uid=session?.user?.id;
-    if(!uid){setSavedIds(new Set());return;}
-    let cancelled=false;
-    (async()=>{try{const{data}=await window.sb.from("saved_castings").select("casting_id").eq("user_id",uid);if(!cancelled)setSavedIds(new Set((data||[]).map(r=>r.casting_id)));}catch(_){}})();
-    return()=>{cancelled=true;};
-  },[session]);
-  const toggleSaveCasting=async(id)=>{
-    const uid=session?.user?.id;
-    if(!uid){onRequireAuth&&onRequireAuth();return;}
-    if(savingId)return;
-    const willSave=!savedIds.has(id);
-    setSavingId(id);
-    setSavedIds(prev=>{const n=new Set(prev);if(willSave)n.add(id);else n.delete(id);return n;});
-    try{
-      if(willSave)await window.sb.from("saved_castings").insert({user_id:uid,casting_id:id});
-      else await window.sb.from("saved_castings").delete().eq("user_id",uid).eq("casting_id",id);
-    }catch(_){
-      setSavedIds(prev=>{const n=new Set(prev);if(willSave)n.delete(id);else n.add(id);return n;});
-    }finally{setSavingId(null);}
-  };
-  const copyCastingLink=(rawC)=>{
-    const url=rawC.slug?`${window.location.origin}/casting/${encodeURIComponent(rawC.slug)}`:window.location.href;
-    try{navigator.clipboard.writeText(url).then(()=>{setCopiedId(rawC.id);setTimeout(()=>setCopiedId(x=>x===rawC.id?null:x),2000);});}catch(_){}
-  };
-
   const allCastings=dbCastings.length>0?dbCastings:[];
   const allTalent=dbTalent.length>0?dbTalent:[];
   const ft=allTalent.filter(t=>{if(q&&!t.name.toLowerCase().includes(q.toLowerCase())&&!t.skills.join(" ").toLowerCase().includes(q.toLowerCase()))return false;if(f.gender&&t.gender!==f.gender)return false;if(f.ethnicity&&!t.ethnicity.toLowerCase().includes(f.ethnicity.toLowerCase()))return false;if(f.location&&!t.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&t.union!==f.union)return false;if(castingTypeIds!==null&&!castingTypeIds.has(t.id))return false;return true;});
@@ -8557,113 +8523,40 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
             <button className="btn-s btn-sm" onClick={()=>setRefreshTick(tk=>tk+1)} disabled={loading}>{loading?"…":t('search.refresh')}</button>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;const isExp=expandedId===c.id;const isSaved=savedIds.has(c.id);const roleCount=c.roles?.length||1;const EASE="cubic-bezier(.4,0,.2,1)";return(
+          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;return(
             <div key={c.id} style={{
-              padding:0,overflow:"hidden",borderRadius:14,
+              padding:0,overflow:"hidden",cursor:"pointer",borderRadius:14,
               background:isFeat?"#FAF8FF":"var(--s1)",
               border:"1px solid var(--bdr)",
-              borderLeft:isExp?"3px solid var(--acc)":(isFeat?"3px solid #7C3AED":"1px solid var(--bdr)"),
-              boxShadow:isExp?"0 18px 50px -12px rgba(26,26,46,0.20), 0 6px 16px -8px rgba(26,26,46,0.12)":(isFeat?"0 4px 20px rgba(124,58,237,0.10)":"0 1px 4px rgba(26,26,46,0.05)"),
-              transform:isExp?"translateY(-3px) scale(1.004)":"none",
-              transition:`box-shadow .42s ${EASE}, transform .42s ${EASE}, border-color .3s`,
-            }}>
-              {/* ── Clickable header: toggles the in-place accordion ── */}
-              <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start",cursor:"pointer"}}
-                onClick={()=>setExpandedId(isExp?null:c.id)}>
+              borderLeft:isFeat?"3px solid #7C3AED":"1px solid var(--bdr)",
+              boxShadow:isFeat?"0 4px 20px rgba(124,58,237,0.10)":"0 1px 4px rgba(26,26,46,0.05)",
+              transition:"box-shadow .2s,transform .15s",
+            }}
+              onMouseEnter={e=>{e.currentTarget.style.boxShadow=isFeat?"0 8px 32px rgba(124,58,237,0.16)":"0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
+              onMouseLeave={e=>{e.currentTarget.style.boxShadow=isFeat?"0 4px 20px rgba(124,58,237,0.10)":"0 1px 4px rgba(26,26,46,0.05)";e.currentTarget.style.transform="";}}
+              onClick={()=>onViewCasting&&onViewCasting(rawC)}>
+              <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
                 <div>
                   <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
                     {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>★ Cast Slate Pick</span>}
                     {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EFF6FF",color:"#1D4ED8",border:"1px solid #BFDBFE",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>Curated by Cast Slate</span>}
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{translateCastingType(c.type,lang)}</span>
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.union}</span>
-                    <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{roleCount===1?`1 ${t('search.role')}`:`${roleCount} ${t('search.roles')}`}</span>
+                    <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{(c.roles?.length||1)===1?`1 ${t('search.role')}`:`${c.roles?.length||1} ${t('search.roles')}`}</span>
                   </div>
                   <h3 style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:4,color:"var(--t1)"}}>{c.title}</h3>
                   <p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{c.tagline||c.prod}</p>
-                  <p style={{color:"var(--t3)",fontSize:12,marginBottom:isExp?0:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.prod}{c.creator_verified&&<IDVerifiedBadge size="xs"/>}</p>
-                  {!isExp&&<p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6,marginBottom:16,maxWidth:620}}>{c.synopsis?c.synopsis.replace(/\*/g,"").slice(0,200)+(c.synopsis.length>200?"…":""):c.desc}</p>}
-                  {!isExp&&<div style={{display:"flex",gap:20,flexWrap:"wrap",fontSize:12,color:"var(--t2)"}}>
+                  <p style={{color:"var(--t3)",fontSize:12,marginBottom:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.prod}{c.creator_verified&&<IDVerifiedBadge size="xs"/>}</p>
+                  <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6,marginBottom:16,maxWidth:620}}>{c.synopsis?c.synopsis.replace(/\*/g,"").slice(0,200)+(c.synopsis.length>200?"…":""):c.desc}</p>
+                  <div style={{display:"flex",gap:20,flexWrap:"wrap",fontSize:12,color:"var(--t2)"}}>
                     <span><strong style={{color:"var(--t1)"}}>{t('search.filterLocation')}</strong> · {c.location}</span>
                     <span><strong style={{color:"var(--t1)"}}>{t('search.pay')}</strong> · {c.pay}</span>
                     {(c.deadline)&&<span><strong style={{color:"var(--t1)"}}>{t('search.deadline')}</strong> · {fmtCastingDate(c.deadline)}</span>}
-                  </div>}
+                  </div>
                 </div>
                 <div className="casting-card-row-side" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",minWidth:140}}>
-                  {isExp
-                    ?<button className="btn-s btn-sm" onClick={e=>{e.stopPropagation();setExpandedId(null);}} style={{display:"inline-flex",alignItems:"center",gap:6}}>✕ Close</button>
-                    :<button className="btn-teal" onClick={e=>{e.stopPropagation();setExpandedId(c.id);}}>{t('search.viewRoles')}</button>}
+                  <button className="btn-teal" onClick={e=>{e.stopPropagation();onViewCasting&&onViewCasting(rawC);}}>{t('search.viewRoles')}</button>
                   {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>{t('search.applied')}</span>:null}
-                </div>
-              </div>
-              {/* ── In-place expanding sheet (real height animation, pushes list down) ── */}
-              <div style={{display:"grid",gridTemplateRows:isExp?"1fr":"0fr",transition:`grid-template-rows .42s ${EASE}`}}>
-                <div style={{overflow:"hidden"}}>
-                  <div style={{opacity:isExp?1:0,transform:isExp?"none":"translateY(-10px)",transition:`opacity .3s ease .06s, transform .34s ${EASE} .06s`,borderTop:"1px solid var(--bdr)",padding:"22px 28px"}}>
-                    {/* Save / Send */}
-                    <div style={{display:"flex",gap:18,flexWrap:"wrap",marginBottom:20}}>
-                      <button onClick={e=>{e.stopPropagation();toggleSaveCasting(c.id);}} disabled={savingId===c.id} style={{display:"inline-flex",alignItems:"center",gap:6,background:"none",border:"none",padding:0,cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",color:isSaved?"var(--acc)":"var(--t2)"}}>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill={isSaved?"currentColor":"none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                        {savingId===c.id?"Saving…":isSaved?"Saved Casting":"Save Casting"}
-                      </button>
-                      <button onClick={e=>{e.stopPropagation();copyCastingLink(rawC);}} style={{display:"inline-flex",alignItems:"center",gap:6,background:"none",border:"none",padding:0,cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",color:copiedId===c.id?"var(--acc)":"var(--t2)"}}>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                        {copiedId===c.id?"✓ Link Copied":"Send to a Friend"}
-                      </button>
-                    </div>
-                    {/* Quick info strip */}
-                    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:1,background:"var(--bdr)",border:"1px solid var(--bdr)",borderRadius:12,overflow:"hidden",marginBottom:24}}>
-                      {[[t('search.pay'),c.pay,true],[t('search.roles'),`${roleCount} open`,false],[t('search.filterLocation'),c.location,false],["Union",c.union,false],[t('search.deadline'),fmtCastingDate(c.deadline)||"—",false]].map((cell,ci)=>(
-                        <div key={ci} style={{background:"var(--s1)",padding:"13px 15px"}}>
-                          <div style={{fontSize:10,fontWeight:800,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--t3)",marginBottom:4}}>{cell[0]}</div>
-                          <div style={{fontSize:14,fontWeight:700,color:cell[2]?"#27645c":"var(--t1)"}}>{cell[1]||"—"}</div>
-                        </div>
-                      ))}
-                    </div>
-                    {/* About */}
-                    {(c.synopsis||c.desc)&&<div style={{marginBottom:26}}>
-                      <div className="section-label" style={{marginBottom:10}}>About the Project</div>
-                      <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.7,maxWidth:680}}>{(c.synopsis||c.desc).replace(/\*/g,"")}</p>
-                    </div>}
-                    {/* Roles */}
-                    <div style={{marginBottom:26}}>
-                      <h3 style={{fontSize:20,fontWeight:800,letterSpacing:"-0.4px",marginBottom:14}}>{roleCount} {roleCount===1?t('search.role'):t('search.roles')} Open</h3>
-                      <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                        {(c.roles||[]).map((r,ri)=>(
-                          <div key={ri} style={{border:"1px solid var(--bdr)",borderRadius:13,padding:"18px 20px",background:"var(--s1)"}}>
-                            <div style={{display:"flex",justifyContent:"space-between",gap:16,alignItems:"flex-start",flexWrap:"wrap"}}>
-                              <div style={{flex:1,minWidth:200}}>
-                                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:9}}>
-                                  <span className="badge tag-acc">{r.type}</span>
-                                  <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{r.gender}</span>
-                                  {r.ageRange&&<span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>Age {r.ageRange}</span>}
-                                </div>
-                                <div style={{fontSize:16,fontWeight:800,letterSpacing:"-0.2px",marginBottom:6,color:"var(--t1)"}}>{r.name}</div>
-                                {r.desc&&<p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.6,maxWidth:520}}>{r.desc}</p>}
-                              </div>
-                              <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:8,flexShrink:0}}>
-                                {r.pay&&<div style={{fontSize:13,fontWeight:800,color:"#27645c",whiteSpace:"nowrap"}}>{r.pay}</div>}
-                                <button className="btn-p btn-sm" onClick={e=>{e.stopPropagation();onViewCasting&&onViewCasting(rawC);}}>{t('search.applyNow')||"Apply for This Role"}</button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    {/* Submission requirements (free-text from the casting) */}
-                    {c.submission_requirements&&<div style={{marginBottom:24}}>
-                      <div className="section-label" style={{marginBottom:10}}>Submission Requirements</div>
-                      <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderLeft:"3px solid #2F7A70",borderRadius:11,padding:"14px 16px",fontSize:13.5,color:"var(--t2)",lineHeight:1.65,whiteSpace:"pre-wrap"}}>{c.submission_requirements}</div>
-                    </div>}
-                    {/* Sticky bottom action bar */}
-                    <div style={{position:"sticky",bottom:0,background:"rgba(255,255,255,0.9)",backdropFilter:"saturate(180%) blur(8px)",WebkitBackdropFilter:"saturate(180%) blur(8px)",borderTop:"1px solid var(--bdr)",padding:"14px 28px",margin:"8px -28px -22px",display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
-                      <button onClick={e=>{e.stopPropagation();toggleSaveCasting(c.id);}} disabled={savingId===c.id} style={{marginRight:"auto",display:"inline-flex",alignItems:"center",gap:6,background:"none",border:"none",padding:0,cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",color:isSaved?"var(--acc)":"var(--t2)"}}>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill={isSaved?"currentColor":"none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                        {isSaved?"Saved":"Save Casting"}
-                      </button>
-                      <button className="btn-s btn-sm" onClick={e=>{e.stopPropagation();setExpandedId(null);}}>↑ Collapse</button>
-                      <button className="btn-teal" onClick={e=>{e.stopPropagation();onViewCasting&&onViewCasting(rawC);}}>{t('search.viewRoles')} →</button>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>);})}</div>
