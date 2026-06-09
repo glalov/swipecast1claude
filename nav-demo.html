@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CastSlate — Nav Restyle Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#F7F4EE;--s1:#FFFFFF;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--teal:#4F8A8B;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--t1);}
+  .wrap{max-width:1100px;margin:0 auto;padding:40px 24px 80px;}
+  h2.section{font-family:'DM Sans',sans-serif;font-size:14px;letter-spacing:.4px;text-transform:uppercase;color:var(--t3);margin:36px 0 10px;font-weight:700;}
+  .note{font-size:13px;color:var(--t2);margin:0 0 14px;line-height:1.6;}
+
+  /* ── shared nav shell (identical to production) ── */
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;background:#FFFFFF;border-bottom:1px solid var(--bdr);border-radius:14px;box-shadow:0 1px 3px rgba(17,24,39,.04);}
+  .logo{font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--t1);}
+  .logo-i{width:30px;height:30px;background:var(--acc);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;}
+  .logo-i svg{width:20px;height:20px;display:block;}
+  .nav-actions{display:flex;gap:10px;align-items:center;}
+  .btn-sm{padding:8px 16px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;border:1px solid var(--bdr);background:#fff;color:var(--t1);}
+  .btn-teal{background:var(--teal);color:#fff;border-color:var(--teal);}
+  .btn-p{background:var(--acc);color:#fff;border-color:var(--acc);}
+
+  /* ════════════════════════════════════════
+     OLD (current production) nav-links
+     ════════════════════════════════════════ */
+  .old .nav-links{display:flex;gap:28px;align-items:center;}
+  .old .nav-links span{color:var(--t2);font-size:13px;font-weight:500;cursor:pointer;transition:color .2s;padding:4px 0;}
+  .old .nav-links span:hover,.old .nav-links span.act{color:var(--t1);}
+  .old .nav-links span.act{border-bottom:2px solid var(--acc);color:var(--acc);}
+
+  /* ════════════════════════════════════════
+     NEW (proposed — Attio-style pills)
+     ════════════════════════════════════════ */
+  .new .nav-links{display:flex;gap:4px;align-items:center;}
+  .new .nav-links span{
+    color:#111827;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    padding:8px 12px;
+    border-radius:9px;
+    transition:background-color .18s ease, color .18s ease;
+  }
+  .new .nav-links span:hover{background:#F3F4F6;}
+  .new .nav-links span.act{background:#ECEFF3;color:#111827;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1 style="font-family:'DM Sans',sans-serif;font-size:24px;margin:0 0 4px;">Navigation bar restyle — preview</h1>
+  <p class="note">Hover the links to compare the hover state. “Browse Castings” is shown as the <strong>active</strong> page in both. Nothing here is committed — this is a static demo file.</p>
+
+  <h2 class="section">Current (production)</h2>
+  <p class="note">Gray text, underline on hover/active.</p>
+  <div class="old">
+    <nav class="nav">
+      <div class="logo"><div class="logo-i"><svg viewBox="0 0 32 32"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#fff"/></svg></div>CastSlate</div>
+      <div class="nav-links">
+        <span>Home</span>
+        <span class="act">Browse Castings</span>
+        <span>Classes</span>
+        <span>TapeLink</span>
+        <span>Manager Mode</span>
+        <span>Blog</span>
+      </div>
+      <div class="nav-actions">
+        <button class="btn-sm btn-teal">Join</button>
+        <button class="btn-sm">Post a Job</button>
+        <button class="btn-sm btn-p">Sign In</button>
+      </div>
+    </nav>
+  </div>
+
+  <h2 class="section">Proposed (new — Attio-style)</h2>
+  <p class="note">Darker text (#111827), weight 600, no underline, soft rounded pill on hover (#F3F4F6) and active (#ECEFF3), calm 180ms transition.</p>
+  <div class="new">
+    <nav class="nav">
+      <div class="logo"><div class="logo-i"><svg viewBox="0 0 32 32"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#fff"/></svg></div>CastSlate</div>
+      <div class="nav-links">
+        <span>Home</span>
+        <span class="act">Browse Castings</span>
+        <span>Classes</span>
+        <span>TapeLink</span>
+        <span>Manager Mode</span>
+        <span>Blog</span>
+      </div>
+      <div class="nav-actions">
+        <button class="btn-sm btn-teal">Join</button>
+        <button class="btn-sm">Post a Job</button>
+        <button class="btn-sm btn-p">Sign In</button>
+      </div>
+    </nav>
+  </div>
+
+  <h2 class="section">Active-state options (pick one)</h2>
+  <p class="note">The spec listed two active background candidates. Hover to see #F3F4F6 hover; the pill shown is the active color.</p>
+  <div class="new" style="display:flex;flex-direction:column;gap:14px;">
+    <nav class="nav">
+      <div class="logo" style="font-size:16px;">Option A · #ECEFF3</div>
+      <div class="nav-links">
+        <span>Home</span><span class="act" style="background:#ECEFF3;">Browse Castings</span><span>Classes</span><span>TapeLink</span><span>Manager Mode</span><span>Blog</span>
+      </div>
+      <div></div>
+    </nav>
+    <nav class="nav">
+      <div class="logo" style="font-size:16px;">Option B · #EEF0F3</div>
+      <div class="nav-links">
+        <span>Home</span><span class="act" style="background:#EEF0F3;">Browse Castings</span><span>Classes</span><span>TapeLink</span><span>Manager Mode</span><span>Blog</span>
+      </div>
+      <div></div>
+    </nav>
+  </div>
+
+</div>
+</body>
+</html>
