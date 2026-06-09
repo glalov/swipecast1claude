@@ -1904,7 +1904,7 @@ html,body{overflow-x:hidden;}
 .cls-credits-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
 .cls-slot-row{display:flex;align-items:center;gap:14px;padding:13px 18px;flex-wrap:wrap;}
 .cls-card-row{display:flex;align-items:stretch;border-radius:14px;overflow:hidden;cursor:pointer;margin-bottom:16px;position:relative;transition:box-shadow 0.15s,transform 0.1s;}
-.cls-card-img{width:190px;min-width:190px;position:relative;overflow:hidden;background:var(--s2);flex-shrink:0;}
+.cls-card-img{width:250px;min-width:250px;position:relative;overflow:hidden;background:#F4F1EA;flex-shrink:0;}
 .cls-card-action{padding:18px 20px;display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:8px;border-left:1px solid var(--bdr);min-width:140px;flex-shrink:0;}
 @media(max-width:768px){
   .cls-detail-grid{grid-template-columns:1fr !important;}
@@ -1919,7 +1919,7 @@ html,body{overflow-x:hidden;}
   .cls-slot-row .slot-btn{width:100% !important;text-align:center;box-sizing:border-box;}
   .cls-detail-hero{padding:20px 18px !important;}
   .cls-detail-no-media{padding:24px 18px !important;}
-  .cls-hero-inner{height:260px !important;}
+  .cls-hero-inner{height:300px !important;}
 }
 /* ─── AuthGate (Apply / Join / Signup) responsive layout ─── */
 .auth-gate-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;padding:20px 0 60px;}
@@ -3584,28 +3584,24 @@ function fmtTime(t){if(!t)return"";const[h,m]=t.split(":").map(Number);const ap=
 // ─── helper: next N occurrences of a day-of-week (0=Sun…6=Sat) ───
 function upcomingDates(dow,count=4){const dates=[];const d=new Date();d.setHours(0,0,0,0);const diff=(dow-d.getDay()+7)%7;d.setDate(d.getDate()+(diff===0?7:diff));for(let i=0;i<count;i++){dates.push(new Date(d));d.setDate(d.getDate()+7);}return dates;}
 
-function ClassPosterCollage({posters,imageUrl,title}){
+function ClassPosterCollage({posters,imageUrl,title,bg="#F4F1EA"}){
   const imgs=Array.isArray(posters)&&posters.length>0
     ?posters.map(p=>p.url||p)
     :imageUrl?[imageUrl]:[];
   if(imgs.length===0)return(
-    <div style={{width:"100%",height:"100%",background:"var(--s2)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <div style={{width:36,height:36,borderRadius:8,background:"var(--s3)",opacity:0.35}}/>
+    <div style={{width:"100%",height:"100%",background:bg,display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{width:36,height:36,borderRadius:8,background:"rgba(0,0,0,0.08)"}}/>
     </div>
   );
-  if(imgs.length===1)return<img src={imgs[0]} alt={title} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>;
-  if(imgs.length===2)return(
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",height:"100%",gap:2}}>
-      {imgs.map((url,i)=><img key={i} src={url} alt={`${title} ${i+1}`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>)}
-    </div>
-  );
+  // Every poster shown FULLY (object-fit:contain) in its own equal-width column,
+  // side by side. A neutral backdrop fills any letterbox space so empty areas
+  // read as intentional rather than broken. Never crops or distorts.
   return(
-    <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",height:"100%",gap:2}}>
-      <img src={imgs[0]} alt={`${title} 1`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
-      <div style={{display:"grid",gridTemplateRows:"1fr 1fr",gap:2}}>
-        <img src={imgs[1]} alt={`${title} 2`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
-        <img src={imgs[2]} alt={`${title} 3`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
-      </div>
+    <div style={{display:"grid",gridTemplateColumns:`repeat(${imgs.length},1fr)`,width:"100%",height:"100%",background:bg}}>
+      {imgs.map((url,i)=>(
+        <img key={i} src={url} alt={`${title} ${i+1}`}
+          style={{width:"100%",height:"100%",objectFit:"contain",objectPosition:"center",display:"block",background:bg}}/>
+      ))}
     </div>
   );
 }
@@ -3785,12 +3781,12 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
       <div style={{maxWidth:900,margin:"0 auto",marginBottom:36}}>
         {hasHeroMedia?(
           <div style={{position:"relative",borderRadius:16,overflow:"hidden",lineHeight:0,marginBottom:0}}>
-            <div className="cls-hero-inner" style={{height:isNarrow?260:400,position:"relative"}}>
-              <ClassPosterCollage posters={viewing.instructor_poster_urls} imageUrl={viewing.image_url} title={viewing.title}/>
-              <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.88) 0%,rgba(0,0,0,0.35) 55%,transparent 100%)"}}/>
+            <div className="cls-hero-inner" style={{height:isNarrow?300:400,position:"relative"}}>
+              <ClassPosterCollage posters={viewing.instructor_poster_urls} imageUrl={viewing.image_url} title={viewing.title} bg="#111322"/>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(10,12,24,0.9) 0%,rgba(10,12,24,0.35) 50%,rgba(10,12,24,0.05) 100%)",pointerEvents:"none"}}/>
               <div className="cls-detail-hero" style={{position:"absolute",bottom:0,left:0,right:0,padding:isNarrow?"18px 16px":"28px 32px",lineHeight:"normal"}}>
                 {cm&&<div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"rgba(255,255,255,0.6)",marginBottom:8}}>{cm.name}</div>}
-                <h1 style={{fontWeight:800,fontSize:30,letterSpacing:"-0.8px",marginBottom:6,color:"#fff",lineHeight:1.2}}>{viewing.title}</h1>
+                <h1 style={{fontWeight:800,fontSize:isNarrow?22:30,letterSpacing:"-0.6px",marginBottom:6,color:"#fff",lineHeight:isNarrow?1.15:1.2,textShadow:"0 1px 12px rgba(0,0,0,0.4)"}}>{viewing.title}</h1>
                 {viewing.instructor_name&&<div style={{color:"rgba(255,255,255,0.75)",fontSize:14,marginBottom:14}}>{t('classes.with')} {viewing.instructor_name}</div>}
                 <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
                   {hasSale?(
