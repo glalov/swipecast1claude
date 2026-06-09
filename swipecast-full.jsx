@@ -3994,7 +3994,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
       >
         {/* Image / Collage */}
         <div className="cls-card-img">
-          <ClassPosterCollage posters={cls.instructor_poster_urls} imageUrl={cls.image_url} title={cls.title} variant="card"/>
+          <ClassPosterCollage posters={cls.instructor_poster_urls} imageUrl={cls.image_url} title={cls.title} variant="card" bg="#111322"/>
           {isFeatured&&(
             <div style={{position:"absolute",top:10,left:10,background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:0.8,textTransform:"uppercase",padding:"3px 8px",borderRadius:20,lineHeight:1.4}}>{t('classes.featured')}</div>
           )}
