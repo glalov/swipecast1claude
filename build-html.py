@@ -89,41 +89,62 @@ compiled_js, compile_err = compile_jsx(jsx_raw)
 if compiled_js:
     print(f"  ✓ JSX pre-compiled ({len(compiled_js):,} chars) — no runtime Babel needed")
     USE_BABEL_RUNTIME = False
-    app_script_block = f'  <script>\n{compiled_js}\n  </script>'
 else:
     print(f"  ⚠ Build-time compilation failed ({compile_err}) — falling back to runtime Babel")
     USE_BABEL_RUNTIME = True
-    app_script_block = f'  <script type="text/babel" data-presets="react">\n{jsx_raw}\n  </script>'
 
-babel_cdn = '  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>' if USE_BABEL_RUNTIME else ''
+# ── Externalize the app bundle into a single file ─────────────────────────────
+# The app is identical for every route — only the <head> SEO tags differ. By
+# loading the app from one external file we can pre-render a tiny self-canonical
+# HTML file per crawlable route without duplicating the (huge) app on disk.
+if not USE_BABEL_RUNTIME:
+    APP_FILE = "app.js"
+    open(APP_FILE, "w", encoding="utf-8").write(compiled_js)
+    # Plain compiled JS, loaded in order after the React/Supabase CDN scripts.
+    app_tag = f'  <script src="/app.js?v={BUILD_VERSION}"></script>'
+    babel_cdn = ''
+else:
+    APP_FILE = "app.jsx"
+    open(APP_FILE, "w", encoding="utf-8").write(jsx_raw)
+    # Babel standalone supports `src` on text/babel scripts.
+    app_tag = f'  <script type="text/babel" data-presets="react" src="/app.jsx?v={BUILD_VERSION}"></script>'
+    babel_cdn = '  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>'
 
-# ── Generate index.html ───────────────────────────────────────────────────────
-html = f'''<!DOCTYPE html>
+pre_compiled_flag = str(not USE_BABEL_RUNTIME).lower()
+SITE = "https://www.castslate.com"
+
+# ── HTML template ─────────────────────────────────────────────────────────────
+# title / desc / canonical are per-route; everything else is shared. The app
+# still patches these client-side on SPA navigation via setPageSEO(), but the
+# initial server-served HTML now declares the correct canonical for each URL,
+# which is what Google indexes.
+def render_page(title, desc, canonical):
+    return f'''<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CastSlate | Casting, Finally Built for Actors</title>
-  <meta name="description" content="CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."/>
+  <title>{title}</title>
+  <meta name="description" content="{desc}"/>
   <meta name="robots" content="index, follow"/>
   <meta name="theme-color" content="#6366f1"/>
   <meta name="google-site-verification" content="yMDmFzYmFlDLSIqxjBMRSD-Lzmsk57k9rr2UZUdjBbM"/>
   <meta name="msvalidate.01" content="A52953180F28A4CBCD8D5EB0B1928C68"/>
-  <link rel="canonical" href="https://www.castslate.com/"/>
+  <link rel="canonical" href="{canonical}"/>
   <!-- Open Graph -->
   <meta property="og:site_name" content="CastSlate"/>
   <meta property="og:type" content="website"/>
-  <meta property="og:title" content="CastSlate | Casting, Finally Built for Actors"/>
-  <meta property="og:description" content="A modern casting platform where actors get seen and casting teams review talent one profile at a time. Free accounts included."/>
-  <meta property="og:url" content="https://www.castslate.com/"/>
+  <meta property="og:title" content="{title}"/>
+  <meta property="og:description" content="{desc}"/>
+  <meta property="og:url" content="{canonical}"/>
   <meta property="og:image" content="https://www.castslate.com/og-image.png"/>
   <meta property="og:image:width" content="1200"/>
   <meta property="og:image:height" content="630"/>
   <meta property="og:image:alt" content="CastSlate — Casting, finally built for actors"/>
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="CastSlate | Casting, Finally Built for Actors"/>
-  <meta name="twitter:description" content="A modern casting platform where actors get seen and casting teams review talent one profile at a time."/>
+  <meta name="twitter:title" content="{title}"/>
+  <meta name="twitter:description" content="{desc}"/>
   <meta name="twitter:image" content="https://www.castslate.com/og-image.png"/>
   <!-- Favicon -->
   <link rel="icon" href="/favicon.ico?v=3" sizes="any"/>
@@ -318,7 +339,7 @@ html = f'''<!DOCTYPE html>
     window.__CS_LOADING_STARTED = Date.now();
     window.__CS_REACT_MOUNTED   = false;
     window.__SC_ERR             = [];
-    window.__CS_PRE_COMPILED    = {str(not USE_BABEL_RUNTIME).lower()};
+    window.__CS_PRE_COMPILED    = {pre_compiled_flag};
 
     window.__CS_HIDE_LOADING = function(){{
       var el = document.getElementById('cs-loading');
@@ -362,10 +383,44 @@ html = f'''<!DOCTYPE html>
       }}
     }}, 90000);
   </script>
-  {app_script_block}
+{app_tag}
 </body>
 </html>'''
 
-open("index.html", "w", encoding="utf-8").write(html)
+# ── Pre-rendered routes ───────────────────────────────────────────────────────
+# Each indexable public route gets a static file whose served HTML declares its
+# OWN canonical (and matching title/description). Keep this list in sync with
+# sitemap.xml and the rewrites in vercel.json. Private/auth routes are NOT
+# pre-rendered — they fall through to index.html and are noindex via robots.txt.
+# title/desc are copied verbatim from PAGE_SEO in swipecast-full.jsx so the
+# server HTML and the client-side setPageSEO() agree exactly.
+ROUTES = [
+    ("index.html",            "/",                "CastSlate | Casting, Finally Built for Actors", "CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."),
+    ("browse-castings.html",  "/browse-castings", "Browse Castings | CastSlate", "Browse open casting calls for film, TV, theater, and commercials. Submit your actor profile to roles that match your look and skills."),
+    ("pricing.html",          "/pricing",         "Pricing | CastSlate", "CastSlate is free forever for actors. Upgrade to Premium at $9.99/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, and more. See all plans and what's included."),
+    ("classes.html",          "/classes",         "Acting Classes | CastSlate", "Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."),
+    ("actor-toolkit.html",    "/actor-toolkit",   "Actor Toolkit | CastSlate", "Free tools, guides, and resources for working actors — headshot advice, self-tape setup, audition prep, and more."),
+    ("resources.html",        "/resources",       "Resources | CastSlate", "Guides and resources for actors and casting directors on the CastSlate platform."),
+    ("pay-talent.html",       "/pay-talent",      "Pay Talent | CastSlate", "Fast, secure talent payments for casting directors and producers. Pay actors directly through CastSlate."),
+    ("about.html",            "/about",           "About | CastSlate", "CastSlate is a modern casting platform built for working actors and the industry professionals who discover them."),
+    ("blog.html",             "/blog",            "Blog | CastSlate", "Casting industry news, actor tips, and platform updates from the CastSlate team."),
+    ("careers.html",          "/careers",         "Careers | CastSlate", "Join the team building the future of casting. Open roles at CastSlate."),
+    ("contact.html",          "/contact",         "Contact | CastSlate", "Get in touch with the CastSlate team. We're here to help actors, casting directors, and production companies."),
+    ("faq.html",              "/faq",             "FAQ | CastSlate", "Frequently asked questions about CastSlate — how it works, account types, submissions, and pricing."),
+    ("success-stories.html",  "/success-stories", "Success Stories | CastSlate", "Real actors, real results. Read how CastSlate members booked roles through the platform."),
+    ("terms.html",            "/terms",           "Terms of Use | CastSlate", "CastSlate Terms of Use — the rules and guidelines for using the CastSlate casting platform."),
+    ("privacy.html",          "/privacy",         "Privacy Policy | CastSlate", "CastSlate Privacy Policy — how we collect, use, and protect your personal information."),
+    ("manager-mode.html",     "/manager-mode",    "Manager Mode | CastSlate", "Cast Slate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."),
+    ("tapelink.html",         "/tapelink",        "TapeLink: Self-Tape Auditions Built Into Casting", "TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."),
+]
+
+for filename, path, title, desc in ROUTES:
+    canonical = SITE + ("/" if path == "/" else path)
+    open(filename, "w", encoding="utf-8").write(render_page(title, desc, canonical))
+
 mode = "pre-compiled JS" if not USE_BABEL_RUNTIME else "runtime Babel (fallback)"
 print(f"Done — BUILD: {BUILD_VERSION} [{mode}]")
+print(f"  App bundle: {APP_FILE}")
+print(f"  Pre-rendered {len(ROUTES)} routes (self-canonical):")
+for filename, path, title, desc in ROUTES:
+    print(f"    {path:24s} → {filename}")
