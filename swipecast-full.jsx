@@ -3584,7 +3584,8 @@ function fmtTime(t){if(!t)return"";const[h,m]=t.split(":").map(Number);const ap=
 // ─── helper: next N occurrences of a day-of-week (0=Sun…6=Sat) ───
 function upcomingDates(dow,count=4){const dates=[];const d=new Date();d.setHours(0,0,0,0);const diff=(dow-d.getDay()+7)%7;d.setDate(d.getDate()+(diff===0?7:diff));for(let i=0;i<count;i++){dates.push(new Date(d));d.setDate(d.getDate()+7);}return dates;}
 
-function ClassPosterCollage({posters,imageUrl,title,bg="#F4F1EA"}){
+function ClassPosterCollage({posters,imageUrl,title,bg="#F4F1EA",variant="hero"}){
+  const vw=useViewportWidth();
   const imgs=Array.isArray(posters)&&posters.length>0
     ?posters.map(p=>p.url||p)
     :imageUrl?[imageUrl]:[];
@@ -3593,6 +3594,26 @@ function ClassPosterCollage({posters,imageUrl,title,bg="#F4F1EA"}){
       <div style={{width:36,height:36,borderRadius:8,background:"rgba(0,0,0,0.08)"}}/>
     </div>
   );
+  // Desktop class CARDS keep the original edge-to-edge collage (1 big + 2 small)
+  // so the frame fills with no empty letterbox space. Mobile cards (≤768px) and
+  // the class-detail hero use the full-poster contain layout instead.
+  if(variant==="card"&&vw>768){
+    if(imgs.length===1)return<img src={imgs[0]} alt={title} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>;
+    if(imgs.length===2)return(
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",height:"100%",gap:2}}>
+        {imgs.map((url,i)=><img key={i} src={url} alt={`${title} ${i+1}`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>)}
+      </div>
+    );
+    return(
+      <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",height:"100%",gap:2}}>
+        <img src={imgs[0]} alt={`${title} 1`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+        <div style={{display:"grid",gridTemplateRows:"1fr 1fr",gap:2}}>
+          <img src={imgs[1]} alt={`${title} 2`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+          <img src={imgs[2]} alt={`${title} 3`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+        </div>
+      </div>
+    );
+  }
   // Every poster shown FULLY (object-fit:contain) in its own equal-width column,
   // side by side. A neutral backdrop fills any letterbox space so empty areas
   // read as intentional rather than broken. Never crops or distorts.
@@ -3968,7 +3989,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
       >
         {/* Image / Collage */}
         <div className="cls-card-img">
-          <ClassPosterCollage posters={cls.instructor_poster_urls} imageUrl={cls.image_url} title={cls.title}/>
+          <ClassPosterCollage posters={cls.instructor_poster_urls} imageUrl={cls.image_url} title={cls.title} variant="card"/>
           {isFeatured&&(
             <div style={{position:"absolute",top:10,left:10,background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:0.8,textTransform:"uppercase",padding:"3px 8px",borderRadius:20,lineHeight:1.4}}>{t('classes.featured')}</div>
           )}
