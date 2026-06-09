@@ -1,6 +1,6 @@
 {
-  "name": "swipecast",
+  "name": "castslate",
   "version": "0.1.0",
   "private": true,
-  "description": "SwipeCast — casting platform where every headshot gets seen."
+  "description": "CastSlate — casting platform where every headshot gets seen."
 }
