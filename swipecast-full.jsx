@@ -3807,7 +3807,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
       <div style={{maxWidth:900,margin:"0 auto",marginBottom:36}}>
         {hasHeroMedia?(
           <div style={{position:"relative",borderRadius:16,overflow:"hidden",lineHeight:0,marginBottom:0}}>
-            <div className="cls-hero-inner" style={{height:isNarrow?300:400,position:"relative"}}>
+            <div className="cls-hero-inner" style={isNarrow?{height:300,position:"relative"}:{aspectRatio:"2.15 / 1",position:"relative"}}>
               <ClassPosterCollage posters={viewing.instructor_poster_urls} imageUrl={viewing.image_url} title={viewing.title} bg="#111322"/>
               <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(10,12,24,0.9) 0%,rgba(10,12,24,0.35) 50%,rgba(10,12,24,0.05) 100%)",pointerEvents:"none"}}/>
               <div className="cls-detail-hero" style={{position:"absolute",bottom:0,left:0,right:0,padding:isNarrow?"18px 16px":"28px 32px",lineHeight:"normal"}}>
