@@ -13657,20 +13657,23 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
 
     {/* ───────── THE GUARANTEE ───────── */}
     <div style={{maxWidth:880,margin:"24px auto 64px",padding:"0 24px"}}>
-      <div style={{background:"linear-gradient(180deg,#FFFFFF 0%,#FBF8F2 100%)",border:"1px solid var(--bdr)",borderRadius:24,padding:"clamp(36px,5vw,60px) clamp(24px,5vw,52px)",textAlign:"center",boxShadow:"0 18px 50px -28px rgba(26,26,46,.28),0 2px 8px rgba(26,26,46,.05)"}}>
-        <div style={{display:"inline-flex",alignItems:"center",gap:7,background:"var(--acc)",color:"#fff",fontSize:10.5,fontWeight:800,letterSpacing:1.5,padding:"6px 14px",borderRadius:100,marginBottom:22,fontFamily:"'DM Sans',sans-serif"}}>
+      <div style={{position:"relative",overflow:"hidden",background:"#fff",border:"1px solid var(--bdr)",borderRadius:24,padding:"clamp(36px,5vw,60px) clamp(24px,5vw,52px)",textAlign:"center",boxShadow:"0 24px 60px -36px rgba(26,26,46,.35),0 2px 8px rgba(26,26,46,.05)"}}>
+        {/* colorful glow blobs */}
+        <span style={{position:"absolute",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle,rgba(79,138,139,.22),transparent 70%)",top:-110,left:-50,pointerEvents:"none"}}/>
+        <span style={{position:"absolute",width:280,height:280,borderRadius:"50%",background:"radial-gradient(circle,rgba(232,144,42,.20),transparent 70%)",bottom:-100,right:-40,pointerEvents:"none"}}/>
+        <div style={{position:"relative",display:"inline-flex",alignItems:"center",gap:7,background:"linear-gradient(135deg,#5C9FA0,#3B6E6F)",color:"#fff",fontSize:10.5,fontWeight:800,letterSpacing:1.5,padding:"6px 14px",borderRadius:100,marginBottom:22,fontFamily:"'DM Sans',sans-serif",boxShadow:"0 8px 18px -8px rgba(79,138,139,.6)"}}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z"/><path d="M9 12l2 2 4-4"/></svg>
           THE CASTSLATE GUARANTEE
         </div>
-        <h3 style={{fontWeight:800,fontSize:"clamp(28px,4.6vw,46px)",letterSpacing:-1.4,lineHeight:1.08,margin:0}}>Your headshot gets seen. Period.</h3>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,maxWidth:520,margin:"26px auto 24px"}}>
+        <h3 style={{position:"relative",fontWeight:800,fontSize:"clamp(28px,4.6vw,46px)",letterSpacing:-1.4,lineHeight:1.08,margin:0}}>Your headshot gets <span style={{background:"linear-gradient(90deg,var(--teal),var(--amber))",WebkitBackgroundClip:"text",backgroundClip:"text",color:"transparent"}}>seen.</span> Period.</h3>
+        <div style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center",gap:14,maxWidth:520,margin:"26px auto 24px"}}>
           <span style={{flex:1,height:2,borderRadius:2,background:"linear-gradient(90deg,rgba(79,138,139,0) 0%,rgba(79,138,139,.55) 100%)"}}/>
           <span style={{flexShrink:0,display:"inline-flex"}}>
-            <svg width="40" height="40" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z" fill="var(--teal)"/><path d="M9 12l2 2 4-4" fill="none" stroke="#fff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <svg width="40" height="40" viewBox="0 0 24 24"><defs><linearGradient id="guarantee-shield" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#4F8A8B"/><stop offset="1" stopColor="#E8902A"/></linearGradient></defs><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z" fill="url(#guarantee-shield)"/><path d="M9 12l2 2 4-4" fill="none" stroke="#fff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </span>
-          <span style={{flex:1,height:2,borderRadius:2,background:"linear-gradient(90deg,rgba(79,138,139,.55) 0%,rgba(79,138,139,0) 100%)"}}/>
+          <span style={{flex:1,height:2,borderRadius:2,background:"linear-gradient(90deg,rgba(232,144,42,.55) 0%,rgba(232,144,42,0) 100%)"}}/>
         </div>
-        <p style={{color:"var(--t2)",fontSize:"clamp(15px,1.7vw,17.5px)",lineHeight:1.65,maxWidth:660,margin:"0 auto"}}>On legacy platforms, your submission is one face in a grid of 80. Directors scan in seconds. On CastSlate, every submission is full-screen. The CD <strong style={{color:"var(--t1)"}}>must</strong> decide: pass or callback. No grids. No skipping. Your shot, actually taken.</p>
+        <p style={{position:"relative",color:"var(--t2)",fontSize:"clamp(15px,1.7vw,17.5px)",lineHeight:1.65,maxWidth:660,margin:"0 auto"}}>On legacy platforms, your submission is one face in a grid of 80. Directors scan in seconds. On CastSlate, every submission is <strong style={{color:"var(--teal)"}}>full-screen</strong>. The CD <strong style={{color:"var(--t1)"}}>must</strong> decide: pass or callback. No grids. No skipping. Your shot, actually taken.</p>
       </div>
     </div>
 
