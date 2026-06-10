@@ -2000,6 +2000,21 @@ html,body{overflow-x:hidden;}
   .hiw-card-body{padding:4px 6px 8px;}
   .hiw-card{margin-bottom:48px;}
 }
+
+/* ── Landing: pricing trust strip (promise-first; full plans live on /pricing) ── */
+.trust-strip-inner{background:#fff;border:1px solid var(--bdr);border-radius:18px;box-shadow:0 10px 30px -20px rgba(26,26,46,.22),0 2px 6px rgba(26,26,46,.04);display:flex;align-items:center;gap:22px;padding:22px 26px;max-width:1000px;margin:0 auto;}
+.trust-strip-shield{flex:0 0 auto;width:46px;height:46px;border-radius:12px;background:rgba(79,138,139,.12);display:flex;align-items:center;justify-content:center;}
+.trust-strip-copy{flex:1 1 auto;min-width:0;}
+.trust-strip-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.4px;margin:0 0 4px;}
+.trust-strip-copy p{color:var(--t2);font-size:13.5px;line-height:1.55;margin:0;}
+.trust-strip-copy strong{color:var(--t1);}
+.trust-strip-cta{flex:0 0 auto;display:flex;align-items:center;gap:18px;}
+.trust-strip-link{color:var(--teal);font-weight:700;font-size:14px;text-decoration:none;font-family:'DM Sans',sans-serif;white-space:nowrap;cursor:pointer;background:none;border:none;padding:0;}
+.trust-strip-link:hover{text-decoration:underline;}
+@media(max-width:640px){
+  .trust-strip-inner{flex-direction:column;align-items:flex-start;gap:16px;padding:20px;}
+  .trust-strip-cta{width:100%;justify-content:space-between;}
+}
 @keyframes mv-slide-left{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
 @keyframes mv-slide-right{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:translateX(0)}}
 .mv-in-left{animation:mv-slide-left 0.22s ease}
@@ -13698,14 +13713,20 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       </div>
     </div>
 
-    {/* ───────── Pricing teaser (compact — full plans live on /pricing) ───────── */}
-    <section className="lh-section" style={{padding:"56px 40px",maxWidth:760,margin:"0 auto",textAlign:"center"}}>
-      <div className="section-label">Pricing</div>
-      <div className="section-title">Simple Pricing. No Surprises.</div>
-      <p style={{color:"var(--t2)",fontSize:15.5,lineHeight:1.7,maxWidth:620,margin:"14px auto 28px"}}>Actors can create a free account and start submitting. Actor Plus starts at $9.99/month for additional visibility and tools. Casting directors can post projects and review submissions for free.</p>
-      <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-        <button className="btn-teal" style={{padding:"13px 24px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Create Free Profile</button>
-        <button className="btn-s btn-amber-hover" style={{padding:"13px 24px",fontSize:14,background:"#fff",color:"#1A1A2E",fontWeight:700,border:"1.5px solid rgba(26,26,46,0.18)"}} onClick={()=>onNavigate("pricing")}>View Pricing</button>
+    {/* ───────── Pricing trust strip (promise-first; full plans live on /pricing) ───────── */}
+    <section className="lh-section" style={{padding:"44px 40px",maxWidth:1040,margin:"0 auto"}}>
+      <div className="trust-strip-inner">
+        <div className="trust-strip-shield">
+          <svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z" fill="var(--teal)"/><path d="M9 12l2 2 4-4" fill="none" stroke="#fff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </div>
+        <div className="trust-strip-copy">
+          <h3>Free to submit. Always.</h3>
+          <p>No subscription to apply. No "featured upgrade." Actor Plus is <strong>$9.99/mo</strong> if you want more visibility and tools — casting directors post and review for <strong>free</strong>.</p>
+        </div>
+        <div className="trust-strip-cta">
+          <button className="trust-strip-link" onClick={()=>onNavigate("pricing")}>See full pricing →</button>
+          <button className="btn-teal" style={{padding:"12px 24px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Create Free Profile</button>
+        </div>
       </div>
     </section>
 
