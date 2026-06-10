@@ -2023,6 +2023,23 @@ html,body{overflow-x:hidden;}
   .home-cta-sub{flex-direction:column;gap:14px;}
   .home-cta-sub .txt{text-align:center;align-items:center;}
 }
+
+/* ── Login: split layout — hero face stripe (left) + form (right) ── */
+.login-split{display:grid;grid-template-columns:minmax(0,420px) 1fr;min-height:min(660px,calc(100vh - 90px));}
+.login-hero{position:relative;overflow:hidden;background:#3B6E6F;}
+.login-hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 28%;}
+.login-hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,26,46,.16) 0%,rgba(26,26,46,.22) 45%,rgba(20,40,40,.86) 100%);}
+.login-hero-copy{position:absolute;left:0;right:0;bottom:0;padding:clamp(28px,4vw,48px);color:#fff;}
+.login-hero-copy .eye{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#FFD79A;margin:0 0 10px;}
+.login-hero-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(26px,3vw,34px);letter-spacing:-1px;line-height:1.08;margin:0 0 10px;}
+.login-hero-copy p{font-size:14px;line-height:1.55;opacity:.92;margin:0;max-width:320px;}
+.login-form-side{display:flex;align-items:center;justify-content:center;padding:48px 24px;}
+@media(max-width:820px){
+  .login-split{grid-template-columns:1fr;min-height:0;}
+  .login-hero{min-height:190px;}
+  .login-hero-copy{padding:22px 24px;}
+  .login-form-side{padding:36px 20px;}
+}
 @keyframes mv-slide-left{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
 @keyframes mv-slide-right{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:translateX(0)}}
 .mv-in-left{animation:mv-slide-left 0.22s ease}
@@ -3331,7 +3348,17 @@ function LoginPage({onNavigate,onLoggedIn}){
   };
   if(sentReset)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check">✓</div><h3>{t('login.checkEmail')}</h3><p>{t('login.resetSent')} <strong>{email}</strong>.</p><button className="btn-s" style={{marginTop:24}} onClick={()=>{setForgot(false);setSentReset(false);}}>{t('login.backToLoginBtn')}</button></div><Footer onNavigate={onNavigate}/></div>);
   return(
-    <div className="page"><form onSubmit={submit} style={{maxWidth:480,width:"100%",margin:"60px auto 0"}}>
+    <div className="page"><div className="login-split">
+    <div className="login-hero">
+      <img src="https://images.unsplash.com/photo-1488161628813-04466f872be2?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/>
+      <div className="login-hero-overlay"/>
+      <div className="login-hero-copy">
+        <div className="eye">Free to submit</div>
+        <h3>Get seen.<br/>Get booked.</h3>
+        <p>Join thousands of actors getting reviewed one profile at a time.</p>
+      </div>
+    </div>
+    <div className="login-form-side"><form onSubmit={submit} style={{maxWidth:420,width:"100%"}}>
       <div style={{textAlign:"center",marginBottom:32}}>
         <div className="logo" style={{justifyContent:"center",fontSize:24,marginBottom:12}}><div className="logo-i" style={{width:36,height:36}}><LogoMark/></div>CastSlate</div>
         <h2 style={{fontSize:28,fontWeight:800,marginBottom:8}}>{forgot?t('login.resetPwd'):t('login.welcome')}</h2>
@@ -3358,7 +3385,8 @@ function LoginPage({onNavigate,onLoggedIn}){
         {" · "}
         <span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("register-cd")}>{t('login.joinAsCD')}</span>
       </div>
-    </form><Footer onNavigate={onNavigate}/></div>
+    </form></div>
+    </div><Footer onNavigate={onNavigate}/></div>
   );
 }
 
