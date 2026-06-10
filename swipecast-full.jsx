@@ -3014,28 +3014,21 @@ function RegisterTalent({onNavigate}){
   };
   if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Your free profile is ready. Click the link in that email, then log in to browse castings. You'll only need to activate a membership when you're ready to submit for a role.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}>✓ Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
   if(step===1)return(
-    <div className="page" style={{maxWidth:960}}>
-      <div className="auth-gate-grid">
-        {/* LEFT: plan context */}
-        <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16,padding:"32px 28px",position:"sticky",top:100}}>
-          <div className="section-label" style={{marginBottom:8}}>Get started free</div>
-          <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginBottom:10,lineHeight:1.15}}>Create your free actor profile.</h2>
-          <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:20}}>Creating an actor account is <strong style={{color:"var(--t1)"}}>free</strong>. Upgrade to Premium later for more uploads and unlimited submissions.</p>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            <div style={{border:"2px solid var(--grn)",borderRadius:12,padding:"14px 16px"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><span style={{fontWeight:800,fontSize:14}}>Free Account</span><span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--grn)"}}>$0</span></div>
-              {["1 headshot","3 casting submissions per day","Browse all castings","Basic actor profile"].map(feat=><div key={feat} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{feat}</div>)}
-              <div style={{marginTop:10,fontSize:11,color:"var(--t3)",fontStyle:"italic"}}>Fill out the form to create your free account</div>
-            </div>
-            <div style={{border:"1px solid var(--bdr)",borderRadius:12,padding:"14px 16px",opacity:0.85}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><span style={{fontWeight:800,fontSize:14}}>Actor Premium</span><span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--acc)"}}>$9.99/mo</span></div>
-              {["Unlimited submissions","Unlimited photos, videos & Cast Me As","Actor Slate Video","Actor Business Card with QR code","Manager Mode weekly check-ins","Profile improvement suggestions"].map(feat=><div key={feat} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{feat}</div>)}
-              <button className="btn-s btn-amber-hover" style={{width:"100%",marginTop:10,fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>
-            </div>
+    <div className="page"><div className="login-shell"><div className="login-split">
+      {/* LEFT: hero */}
+      <div className="login-hero">
+        <img src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/>
+        <div className="login-hero-overlay"/>
+        <div className="login-hero-copy">
+          <div className="eye">Free forever for actors</div>
+          <h3>Start getting<br/>seen today.</h3>
+          <div style={{display:"flex",flexDirection:"column",gap:9,marginTop:2}}>
+            {["Free account — no card required","Submit to real casting calls","Reviewed one profile at a time"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
           </div>
         </div>
-        {/* RIGHT: form */}
-        <div>
+      </div>
+      {/* RIGHT: form */}
+      <div className="login-form-side"><div style={{maxWidth:440,width:"100%"}}>
           <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:6}}>Create your free actor account</h2>
           <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>Takes about 60 seconds. No payment required.</p>
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
@@ -3051,8 +3044,8 @@ function RegisterTalent({onNavigate}){
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,lineHeight:1.55,margin:"16px 0"}}>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</p>
           <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={()=>{if(validStep1())setStep(2);}}>{tr('reg.t.next')}</button>
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>onNavigate("login")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
-        </div>
-      </div>
+        </div></div>
+      </div></div>
       <Footer onNavigate={onNavigate}/>
     </div>
   );
@@ -6323,56 +6316,31 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
     </div>
     <Footer onNavigate={onNavigate}/></div>);
 
-  return(<div className="page" style={{maxWidth:960}}>
-    <div className="auth-gate-grid">
-      {/* LEFT: Context panel */}
-      <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16,padding:"32px 28px",position:"sticky",top:100}}>
-        <div className="section-label" style={{marginBottom:8}}>{c?"Almost there":"Get started"}</div>
-        <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginBottom:10,lineHeight:1.15}}>{c?"Create a free account to apply.":"Create your free actor profile."}</h2>
-        <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:20}}>Creating an actor account is <strong style={{color:"var(--t1)"}}>free</strong>. You can upgrade to Premium later for more uploads and unlimited submissions.</p>
-
-        {c&&<div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,padding:"18px 20px",marginBottom:20}}>
-          <div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,fontWeight:700,marginBottom:8}}>You're applying to</div>
-          <h3 style={{fontSize:16,fontWeight:700,marginBottom:2}}>{c.title}</h3>
-          <p style={{color:"var(--t2)",fontSize:12,marginBottom:10}}>{c.tagline} · {c.prod}</p>
-          {r&&<>
-            <div style={{borderTop:"1px solid var(--bdr)",paddingTop:10,marginTop:10}}>
-              <div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,fontWeight:700,marginBottom:6}}>Role</div>
-              <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>{r.name}</div>
-              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                <span className="badge" style={{background:"var(--s2)",color:"var(--t2)",fontSize:10}}>{r.gender}</span>
-                <span className="badge" style={{background:"var(--s2)",color:"var(--t2)",fontSize:10}}>Age {r.ageRange}</span>
-                <span className="badge" style={{background:"var(--s2)",color:"var(--t2)",fontSize:10}}>{r.ethnicity}</span>
-              </div>
+  return(<div className="page"><div className="login-shell"><div className="login-split">
+      {/* LEFT: hero */}
+      <div className="login-hero">
+        <img src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/>
+        <div className="login-hero-overlay"/>
+        <div className="login-hero-copy">
+          <div className="eye">Free forever for actors</div>
+          <h3>{c?"You're one step away.":<>Start getting<br/>seen today.</>}</h3>
+          {c?(
+            <div style={{background:"rgba(255,255,255,.12)",border:"1px solid rgba(255,255,255,.25)",borderRadius:12,padding:"14px 16px",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)"}}>
+              <div style={{fontSize:10.5,letterSpacing:1.4,textTransform:"uppercase",fontWeight:700,color:"#FFD79A",marginBottom:6}}>You're applying to</div>
+              <div style={{fontWeight:700,fontSize:15,color:"#fff",marginBottom:2}}>{c.title}</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,.82)"}}>{c.tagline} · {c.prod}</div>
+              {r&&<div style={{fontSize:12,color:"rgba(255,255,255,.82)",marginTop:6}}>Role: <strong style={{color:"#fff"}}>{r.name}</strong></div>}
             </div>
-          </>}
-        </div>}
-
-        {/* Free vs Premium mini comparison */}
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {/* Free option */}
-          <div style={{border:"2px solid var(--grn)",borderRadius:12,padding:"14px 16px"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-              <span style={{fontWeight:800,fontSize:14}}>Free Account</span>
-              <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--grn)"}}>$0</span>
+          ):(
+            <div style={{display:"flex",flexDirection:"column",gap:9,marginTop:2}}>
+              {["Free account — no card required","Submit to real casting calls","Reviewed one profile at a time"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
             </div>
-            {["1 headshot","3 casting submissions per day","No video uploads","Basic actor profile"].map(f=><div key={f} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{f}</div>)}
-            <div style={{marginTop:10,fontSize:11,color:"var(--t3)",fontStyle:"italic"}}>↑ Use the email form to create your free account</div>
-          </div>
-          {/* Premium option */}
-          <div style={{border:"1px solid var(--bdr)",borderRadius:12,padding:"14px 16px",opacity:0.85}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-              <span style={{fontWeight:800,fontSize:14}}>Actor Premium</span>
-              <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--acc)"}}>$9.99/mo</span>
-            </div>
-            {["Unlimited media uploads","Unlimited photos, videos & Cast Me As","Unlimited casting submissions","Premium profile features","Profile improvement suggestions"].map(f=><div key={f} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--acc)",fontWeight:700}}>✓</span>{f}</div>)}
-            <button className="btn-s btn-amber-hover" style={{width:"100%",marginTop:10,fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>
-          </div>
+          )}
         </div>
       </div>
 
       {/* RIGHT: Sign up / Log in form */}
-      <div>
+      <div className="login-form-side"><div style={{maxWidth:440,width:"100%"}}>
         <div className="tabs" style={{marginBottom:24}}>
           <button className={`tab ${mode==="signup"?"active":""}`} onClick={()=>{setMode("signup");setErr("");}}>Sign Up</button>
           <button className={`tab ${mode==="login"?"active":""}`} onClick={()=>{setMode("login");setErr("");}}>Log In</button>
@@ -6430,8 +6398,8 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
         </>}
 
         {onCancel&&<p style={{textAlign:"center",color:"var(--t3)",fontSize:11,marginTop:24}}><span onClick={onCancel} style={{cursor:"pointer",textDecoration:"underline"}}>{c?"← Back to casting":"← Back"}</span></p>}
-      </div>
-    </div>
+      </div></div>
+    </div></div>
     <Footer onNavigate={onNavigate}/></div>);
 }
 
