@@ -2,6 +2,29 @@
 
 ---
 
+## 2026-06-10 — Stripe payment flow verified END-TO-END (supersedes "not connected" notes below)
+
+The 2026-05-09 entries in this file say "Premium checkout is not connected yet." **That is stale.** Stripe was wired up on 2026-05-19 (`stripe-checkout` + `stripe-webhook` edge functions) and the full loop is proven working in production data:
+
+| Check | Result |
+|---|---|
+| `STRIPE_SECRET_KEY` configured | ✅ (checkout returns 401 not 503 when probed without auth — key check passes) |
+| `STRIPE_WEBHOOK_SECRET` configured | ✅ (webhook returns 400 "missing signature" not 500 "config error") |
+| Price IDs configured | ✅ (user `82b3b840` has a real Stripe subscription object — can't be created without a valid price) |
+| Checkout creates sessions | ✅ (6 users have `stripe_customer_id`, 2 have subscriptions) |
+| Webhook registered & firing | ✅ (user `ac0e4357` fully activated: `membership_status=active`, `subscription_status=active`, `premium_started_at=2026-05-19` — all written by the `checkout.session.completed` handler) |
+| Real completed payment | ✅ **1 genuine Stripe subscriber** (`ac0e4357`, 2026-05-19) |
+| Frontend → function contract | ✅ sends `{type:"premium", plan_key}` / `{type:"class", …}` — matches the function exactly |
+| `/success` post-payment page | ✅ `PaymentSuccessPage` polls for webhook activation up to 60s; URL detection routes correctly |
+
+**Conversion funnel (Stripe era):** 6 reached Stripe → 2 entered full checkout → 1 abandoned at card entry (`incomplete_expired`) → 1 completed. So checkout opens fine; the drop-off is the ordinary "reached the card form and left."
+
+**Owner action (only thing unverifiable from code):** confirm the Stripe keys are **live-mode** (`sk_live_…`), not test-mode. A test-mode key makes the whole flow "work" without collecting real money. Check Stripe Dashboard → Developers → API keys, and that the webhook endpoint (`…/functions/v1/stripe-webhook`) is in the **live** mode list subscribed to `checkout.session.completed`, `customer.subscription.*`, and `invoice.payment_*`.
+
+**Minor data-hygiene note:** subscriber `ac0e4357` has `plan_type=null` despite the handler setting `plan_type=plan_key`. Cosmetic; doesn't affect access. Worth a one-row backfill if you want clean reporting. The other "active" row (`ee8b231b`, 2026-04-30, no Stripe customer) is the pre-Stripe grandfathered account — expected.
+
+---
+
 ## 2026-06-10 — Security hardening session (DB grants, RLS, edge function auth, file exposure)
 
 ### Issues found and fixed (all verified live)
@@ -25,7 +48,7 @@
 ### Still open (prioritized)
 
 1. **Enable "Leaked password protection"** — Supabase Dashboard → Auth → Passwords (1-click, dashboard-only; advisor WARN).
-2. **Stale docs vs reality**: `stripe-checkout` + `stripe-webhook` edge functions are deployed and the frontend calls them, but the 2026-05-09 entries below still say "Stripe not connected." Verify the live checkout flow end-to-end and update docs.
+2. ~~Verify Stripe~~ **DONE 2026-06-10 — Stripe is live and the full loop works.** See the verification entry below. One owner action remains: confirm the keys are **live-mode** (`sk_live_…`), not test-mode, so real money is actually collected. Cannot be checked without the Stripe dashboard.
 3. Performance advisors at scale: `auth_rls_initplan` ×68 (wrap `auth.uid()` in `(select auth.uid())`), `multiple_permissive_policies` ×85, 24 unindexed FKs. Not urgent at current user count; do before growth marketing.
 4. `function_search_path_mutable` ×9 and public-bucket listing ×4 — low-risk hardening batch.
 5. Consider making the GitHub repo private (source/docs are public there; `.vercelignore` only fixes the domain).
