@@ -2025,20 +2025,23 @@ html,body{overflow-x:hidden;}
 }
 
 /* ── Login: split layout — hero face stripe (left) + form (right) ── */
-.login-split{display:grid;grid-template-columns:minmax(0,420px) 1fr;min-height:min(660px,calc(100vh - 90px));}
+.login-shell{padding:clamp(28px,4vw,56px) clamp(16px,4vw,40px);display:flex;justify-content:center;}
+.login-split{width:100%;max-width:1040px;display:grid;grid-template-columns:minmax(0,440px) 1fr;background:#fff;border:1px solid var(--bdr);border-radius:26px;overflow:hidden;box-shadow:0 30px 72px -42px rgba(26,26,46,.5),0 3px 10px rgba(26,26,46,.05);min-height:600px;}
 .login-hero{position:relative;overflow:hidden;background:#3B6E6F;}
-.login-hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 28%;}
-.login-hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,26,46,.16) 0%,rgba(26,26,46,.22) 45%,rgba(20,40,40,.86) 100%);}
-.login-hero-copy{position:absolute;left:0;right:0;bottom:0;padding:clamp(28px,4vw,48px);color:#fff;}
+.login-hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 25%;}
+.login-hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,26,46,.14) 0%,rgba(26,26,46,.22) 45%,rgba(20,40,40,.86) 100%);}
+.login-hero-copy{position:absolute;left:0;right:0;bottom:0;padding:clamp(28px,3vw,44px);color:#fff;}
 .login-hero-copy .eye{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#FFD79A;margin:0 0 10px;}
 .login-hero-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(26px,3vw,34px);letter-spacing:-1px;line-height:1.08;margin:0 0 10px;}
 .login-hero-copy p{font-size:14px;line-height:1.55;opacity:.92;margin:0;max-width:320px;}
-.login-form-side{display:flex;align-items:center;justify-content:center;padding:48px 24px;}
+.login-form-side{display:flex;align-items:center;justify-content:center;padding:clamp(36px,4vw,56px) clamp(24px,3vw,44px);background:#fff;}
 @media(max-width:820px){
-  .login-split{grid-template-columns:1fr;min-height:0;}
-  .login-hero{min-height:190px;}
-  .login-hero-copy{padding:22px 24px;}
-  .login-form-side{padding:36px 20px;}
+  .login-shell{padding:18px 14px 32px;}
+  .login-split{grid-template-columns:1fr;min-height:0;border-radius:22px;}
+  .login-hero{min-height:300px;}
+  .login-hero>img{object-position:center 42%;}
+  .login-hero-copy{padding:22px 22px 24px;}
+  .login-form-side{padding:34px 22px 38px;}
 }
 @keyframes mv-slide-left{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
 @keyframes mv-slide-right{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:translateX(0)}}
@@ -3348,7 +3351,7 @@ function LoginPage({onNavigate,onLoggedIn}){
   };
   if(sentReset)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check">✓</div><h3>{t('login.checkEmail')}</h3><p>{t('login.resetSent')} <strong>{email}</strong>.</p><button className="btn-s" style={{marginTop:24}} onClick={()=>{setForgot(false);setSentReset(false);}}>{t('login.backToLoginBtn')}</button></div><Footer onNavigate={onNavigate}/></div>);
   return(
-    <div className="page"><div className="login-split">
+    <div className="page"><div className="login-shell"><div className="login-split">
     <div className="login-hero">
       <img src="https://images.unsplash.com/photo-1488161628813-04466f872be2?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/>
       <div className="login-hero-overlay"/>
@@ -3386,7 +3389,7 @@ function LoginPage({onNavigate,onLoggedIn}){
         <span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("register-cd")}>{t('login.joinAsCD')}</span>
       </div>
     </form></div>
-    </div><Footer onNavigate={onNavigate}/></div>
+    </div></div><Footer onNavigate={onNavigate}/></div>
   );
 }
 
