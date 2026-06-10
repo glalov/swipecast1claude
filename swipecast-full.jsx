@@ -1968,35 +1968,43 @@ html,body{overflow-x:hidden;}
 
 /* ── Landing: Single cinematic feature image section ── */
 .cinema-feature{max-width:1100px;margin:0 auto 52px;padding:0 clamp(16px,4vw,40px);}
-.cinema-feature-inner{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,0.08);overflow:hidden;display:block;}
-/* Banner-on-top layout: the FULL photo spans the card width at its natural
-   ratio (height:auto), so it is NEVER cropped and shows no black/white bars.
-   The copy sits BELOW the image, so the photo can never overlap the text or
-   buttons. Rounded top corners come from the inner's overflow:hidden. */
-.cinema-feature-img{position:relative;width:100%;line-height:0;}
-.cinema-feature-img img{width:100%;height:auto;display:block;}
-.cinema-feature-copy{padding:36px clamp(24px,4vw,44px) 40px;display:flex;flex-direction:column;gap:14px;}
+.cinema-feature-inner{background:#fff;border:1px solid var(--bdr);border-radius:20px;box-shadow:0 10px 36px -18px rgba(26,26,46,.22),0 2px 8px rgba(26,26,46,.04);overflow:hidden;display:flex;align-items:stretch;}
+/* Side-by-side, image LEFT: the image fills the FULL height of the card at its
+   natural aspect ratio (height:100%/width:auto) — the whole photo is shown,
+   never cropped, no black/white bars. The image column auto-sizes to the
+   photo's width; the copy flexes to fill the remaining space, centered. */
+.cinema-feature-img{flex:0 0 auto;background:var(--s3);line-height:0;display:flex;}
+.cinema-feature-img img{height:100%;width:auto;display:block;}
+.cinema-feature-copy{flex:1 1 0;min-width:0;padding:30px clamp(24px,3vw,40px);display:flex;flex-direction:column;justify-content:center;gap:14px;}
 .cinema-feature-copy .cf-label{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--acc);font-weight:700;font-family:'DM Sans',sans-serif;margin:0;}
 .cinema-feature-copy h2{font-weight:800;font-size:clamp(22px,2.8vw,30px);letter-spacing:-0.8px;line-height:1.15;margin:0;}
 .cinema-feature-copy p{color:var(--t2);font-size:14px;line-height:1.7;margin:0;}
 @media(max-width:720px){
+  .cinema-feature-inner{flex-direction:column;}
+  .cinema-feature-img{width:100%;}
+  .cinema-feature-img img{width:100%;height:auto;}
   .cinema-feature-copy{padding:26px 22px 30px;}
   .cinema-feature{margin-bottom:48px;}
 }
 
 /* ── Landing: How It Works card (Mandy-style: image left, text right) ── */
 .hiw-card{max-width:1100px;margin:0 auto 48px;padding:0 clamp(16px,4vw,40px);}
-.hiw-card-inner{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,0.08);overflow:hidden;display:block;}
-/* Banner-on-top layout — full photo at natural ratio, no crop, no bars, copy
-   below so the image never overlaps text/buttons. See .cinema-feature note. */
-.hiw-card-img{position:relative;width:100%;line-height:0;}
-.hiw-card-img img{width:100%;height:auto;display:block;}
-.hiw-card-body{padding:36px clamp(24px,4vw,44px) 40px;display:flex;flex-direction:column;gap:14px;}
+.hiw-card-inner{background:#fff;border:1px solid var(--bdr);border-radius:20px;box-shadow:0 10px 36px -18px rgba(26,26,46,.22),0 2px 8px rgba(26,26,46,.04);overflow:hidden;display:flex;align-items:stretch;}
+/* Side-by-side, image RIGHT (alternates with .cinema-feature): image fills the
+   FULL height of the card at its natural aspect ratio (height:100%/width:auto)
+   — whole photo shown, never cropped, no bars. Column auto-sizes to the photo;
+   copy flexes to fill the rest, centered. */
+.hiw-card-img{flex:0 0 auto;order:2;background:var(--s3);line-height:0;display:flex;}
+.hiw-card-img img{height:100%;width:auto;display:block;}
+.hiw-card-body{flex:1 1 0;min-width:0;order:1;padding:30px clamp(24px,3vw,40px);display:flex;flex-direction:column;justify-content:center;gap:14px;}
 .hiw-card-steps{display:flex;flex-direction:column;gap:10px;margin:4px 0;}
 .hiw-card-step{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--t2);line-height:1.5;}
 .hiw-step-num{width:22px;height:22px;min-width:22px;border-radius:50%;background:var(--acc);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;margin-top:2px;}
 @media(max-width:720px){
-  .hiw-card-body{padding:26px 22px 30px;}
+  .hiw-card-inner{flex-direction:column;}
+  .hiw-card-img{order:1;width:100%;}
+  .hiw-card-img img{width:100%;height:auto;}
+  .hiw-card-body{order:2;padding:26px 22px 30px;}
   .hiw-card{margin-bottom:48px;}
 }
 @keyframes mv-slide-left{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
