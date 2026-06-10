@@ -2,6 +2,36 @@
 
 ---
 
+## 2026-06-10 — Security hardening session (DB grants, RLS, edge function auth, file exposure)
+
+### Issues found and fixed (all verified live)
+
+| # | Severity | Issue | Fix |
+|---|---|---|---|
+| 1 | **Critical** | `activate_membership` RPC was executable by `anon`/`authenticated` — any logged-in user could self-grant Premium (`payment_status='paid'`, up to 365 days) from the browser console, bypassing Stripe entirely | Migration `revoke_client_exec_activate_membership_and_news_refresh`: revoked EXECUTE from `public`/`anon`/`authenticated`; kept `service_role` (Stripe webhook path). Verified: client call now returns `42501 permission denied`. |
+| 2 | High | `system_notifications` had `WITH CHECK (true)` INSERT policy — anyone (even anon) could inject fake notifications (phishing) into any user's feed | Migration `tighten_system_notifications_insert_policy`: replaced with admin-only insert. All legitimate inserts go through SECURITY DEFINER functions that bypass RLS. Verified: trigger path still creates notifications; direct client insert blocked. |
+| 3 | High | `news-refresh` edge function had `verify_jwt=false` and **no caller check** — anyone on the internet could invoke it and burn Gemini API quota / churn news content | Deployed v11 with an in-function gate: service-role key, the new Vault `news_refresh_token`, or an admin/super_admin JWT. Verified: no-auth, garbage-token, and anon-key calls all return 401. |
+| 4 | High (bug) | **The daily news auto-refresh cron has never worked**: `run_news_auto_refresh()` expected a Vault secret `news_service_role_key` that was never created, so the 14:00 UTC job silently no-oped since launch | Migration `news_refresh_token_and_fix_cron`: generated a random `news_refresh_token` in Vault + service-role-only reader RPC `news_get_refresh_token()`; `run_news_auto_refresh()` now sends it as the Bearer. Note: `site_settings.news_auto_refresh_enabled` is currently **false** (owner choice), so the cron stays dormant until toggled on in Super Admin → News Controls — but it now actually works. |
+| 5 | Medium | Internal files were publicly downloadable on production: `castslate.com/supabase-schema.sql`, `/PROJECT_STATUS.md`, `/DEPLOY-NOW.md`, `/swipecast-full.jsx`, `/build-html.py`, edge-function source, committed demo HTML, `.claude/` state (static files win over the SPA catch-all rewrite) | Added `.vercelignore` (commit `bd82b5e`). Verified live: all internal paths now serve the SPA shell; robots.txt, sitemap.xml, Google/IndexNow verification files, app.js, og-image, and all route HTML still served correctly. |
+
+### Also checked, no action needed
+
+- `news_get_gemini_key()` — already service-role-only ✓
+- All `admin_*` RPCs — internally check `is_admin()` / `is_super_admin()` ✓
+- Edge functions — no hardcoded secrets (env vars only) ✓
+- Exploitation check: only 1 Premium account (2026-04-30, pre-dates UI removal of the RPC call — likely owner test) + 1 `active` with `plan_type=null`. **Owner: review these two rows.**
+- Production deploy state: latest commit READY on Vercel, main in sync ✓
+
+### Still open (prioritized)
+
+1. **Enable "Leaked password protection"** — Supabase Dashboard → Auth → Passwords (1-click, dashboard-only; advisor WARN).
+2. **Stale docs vs reality**: `stripe-checkout` + `stripe-webhook` edge functions are deployed and the frontend calls them, but the 2026-05-09 entries below still say "Stripe not connected." Verify the live checkout flow end-to-end and update docs.
+3. Performance advisors at scale: `auth_rls_initplan` ×68 (wrap `auth.uid()` in `(select auth.uid())`), `multiple_permissive_policies` ×85, 24 unindexed FKs. Not urgent at current user count; do before growth marketing.
+4. `function_search_path_mutable` ×9 and public-bucket listing ×4 — low-risk hardening batch.
+5. Consider making the GitHub repo private (source/docs are public there; `.vercelignore` only fixes the domain).
+
+---
+
 ## 2026-05-16 — Talent Profile Overhaul (Parts 1–10)
 
 ### Overview

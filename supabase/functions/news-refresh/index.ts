@@ -308,6 +308,32 @@ serve(async (req) => {
   const json = (b: unknown, status = 200) =>
     new Response(JSON.stringify(b), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
+  // Caller authentication (verify_jwt is off so the cron token can pass).
+  // Allowed: pg_cron via run_news_auto_refresh (Bearer = news_refresh_token
+  // from Vault), server-side calls with the service-role key, and logged-in
+  // admin / super_admin users (the Super Admin "Refresh Now" button).
+  try {
+    const token = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+    if (!token) return json({ ok: false, error: "unauthorized" }, 401);
+    let allowed = token === SERVICE_KEY;
+    const sbAuth = createClient(SUPABASE_URL, SERVICE_KEY);
+    if (!allowed) {
+      const { data: refreshToken } = await sbAuth.rpc("news_get_refresh_token");
+      allowed = typeof refreshToken === "string" && refreshToken.length > 0 && token === refreshToken;
+    }
+    if (!allowed) {
+      const { data: userData } = await sbAuth.auth.getUser(token);
+      const uid = userData?.user?.id;
+      if (uid) {
+        const { data: prof } = await sbAuth.from("profiles").select("user_type").eq("id", uid).maybeSingle();
+        allowed = !!prof && ["admin", "super_admin"].includes((prof as { user_type: string }).user_type);
+      }
+    }
+    if (!allowed) return json({ ok: false, error: "unauthorized" }, 401);
+  } catch (_) {
+    return json({ ok: false, error: "unauthorized" }, 401);
+  }
+
   try {
     const sb = createClient(SUPABASE_URL, SERVICE_KEY);
 
