@@ -1,0 +1,30 @@
+# Internal files that must never be served on production.
+# Vercel serves the repo root as static output (outputDirectory ".") —
+# anything not listed here becomes publicly downloadable at castslate.com/<file>.
+
+# Internal docs
+*.md
+
+# Database schema and build/deploy tooling
+*.sql
+*.py
+*.sh
+package.json
+
+# JSX sources (app.js is the compiled file the site loads)
+*.jsx
+
+# Design demo files (approved demos get built into the real source)
+*-demo.html
+mobile-frame.html
+
+# Dead/unreferenced
+castings-array.js
+
+# Edge function source (deployed separately to Supabase)
+supabase/
+
+# Local tooling state
+.claude/
+.gitignore
+.vercelignore
