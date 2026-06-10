@@ -2043,6 +2043,9 @@ html,body{overflow-x:hidden;}
   .login-hero-copy{padding:22px 22px 24px;}
   .login-form-side{padding:34px 22px 38px;}
 }
+/* Industry/CD signup: teal info panel (left side of the split card) */
+.cd-panel{position:relative;overflow:hidden;background:linear-gradient(160deg,#5C9FA0 0%,#4F8A8B 48%,#3B6E6F 100%);color:#fff;padding:clamp(32px,3.5vw,46px);display:flex;flex-direction:column;justify-content:center;}
+@media(max-width:820px){.cd-panel{padding:30px 24px;}}
 @keyframes mv-slide-left{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
 @keyframes mv-slide-right{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:translateX(0)}}
 .mv-in-left{animation:mv-slide-left 0.22s ease}
@@ -3217,23 +3220,23 @@ function RegisterCD({onNavigate}){
   };
   if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check">✓</div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Click the link to activate your account. Then log in to post your first casting.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}>✓ Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
   return(
-    <div className="page" style={{maxWidth:960}}>
-      <div className="auth-gate-grid">
-        {/* LEFT: context panel */}
-        <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:16,padding:"32px 28px",position:"sticky",top:100}}>
-          <div className="section-label" style={{marginBottom:8}}>Industry account</div>
-          <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginBottom:10,lineHeight:1.15}}>Post castings, find great talent.</h2>
-          <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:20}}>Industry accounts are <strong style={{color:"var(--t1)"}}>free</strong> to create. Post your first casting and go live after a quick admin review.</p>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            <div style={{border:"2px solid var(--grn)",borderRadius:12,padding:"14px 16px"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><span style={{fontWeight:800,fontSize:14}}>Industry Account</span><span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,color:"var(--grn)"}}>FREE</span></div>
-              {["Post castings for free","Swipe-based talent review","Advanced talent filters","Verified industry badge"].map(feat=><div key={feat} style={{display:"flex",gap:8,fontSize:12,color:"var(--t2)",marginBottom:3}}><span style={{color:"var(--grn)",fontWeight:700}}>✓</span>{feat}</div>)}
-              <div style={{marginTop:10,fontSize:11,color:"var(--t3)",fontStyle:"italic"}}>No membership fee required for industry accounts</div>
-            </div>
+    <div className="page"><div className="login-shell"><div className="login-split">
+      {/* LEFT: teal info panel */}
+      <div className="cd-panel">
+        <span style={{position:"absolute",width:280,height:280,borderRadius:"50%",background:"radial-gradient(circle,rgba(232,144,42,.30),transparent 70%)",top:-90,right:-50,pointerEvents:"none"}}/>
+        <div style={{position:"relative"}}>
+          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,letterSpacing:1.6,textTransform:"uppercase",color:"#FFD79A",marginBottom:10}}>For industry</div>
+          <h2 style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:"clamp(24px,2.6vw,30px)",letterSpacing:-0.8,lineHeight:1.12,margin:"0 0 8px"}}>Post castings,<br/>find great talent.</h2>
+          <p style={{fontSize:13.5,lineHeight:1.55,color:"rgba(255,255,255,.86)",margin:"0 0 22px"}}>Industry accounts are free to create. Post your first casting and go live after a quick admin review.</p>
+          <div style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.22)",borderRadius:14,padding:18,backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><b style={{fontFamily:"'DM Sans',sans-serif",fontSize:15}}>Industry Account</b><span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:16,color:"#FFD79A",letterSpacing:0.5}}>FREE</span></div>
+            {["Post castings for free","Swipe-based talent review","Advanced talent filters","Verified industry badge"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:8,fontSize:13,color:"rgba(255,255,255,.92)",marginBottom:6}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
           </div>
+          <p style={{margin:"16px 0 0",fontSize:12,color:"rgba(255,255,255,.7)",fontStyle:"italic"}}>No membership fee required for industry accounts.</p>
         </div>
-        {/* RIGHT: form */}
-        <div>
+      </div>
+      {/* RIGHT: form */}
+      <div className="login-form-side"><div style={{maxWidth:440,width:"100%"}}>
           <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:6}}>Create your industry account</h2>
           <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>Takes about 60 seconds. No payment required.</p>
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
@@ -3251,8 +3254,8 @@ function RegisterCD({onNavigate}){
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,lineHeight:1.55,margin:"16px 0"}}>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</p>
           <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={submit} disabled={loading}>{loading?tr('reg.cd.creating'):tr('reg.cd.createAccount')}</button>
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>onNavigate("login")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
-        </div>
-      </div>
+        </div></div>
+      </div></div>
       <Footer onNavigate={onNavigate}/>
     </div>
   );
