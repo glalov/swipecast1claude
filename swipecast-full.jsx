@@ -2001,19 +2001,27 @@ html,body{overflow-x:hidden;}
   .hiw-card{margin-bottom:48px;}
 }
 
-/* ── Landing: pricing trust strip (promise-first; full plans live on /pricing) ── */
-.trust-strip-inner{background:#fff;border:1px solid var(--bdr);border-radius:18px;box-shadow:0 10px 30px -20px rgba(26,26,46,.22),0 2px 6px rgba(26,26,46,.04);display:flex;align-items:center;gap:22px;padding:22px 26px;max-width:1000px;margin:0 auto;}
-.trust-strip-shield{flex:0 0 auto;width:46px;height:46px;border-radius:12px;background:rgba(79,138,139,.12);display:flex;align-items:center;justify-content:center;}
-.trust-strip-copy{flex:1 1 auto;min-width:0;}
-.trust-strip-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.4px;margin:0 0 4px;}
-.trust-strip-copy p{color:var(--t2);font-size:13.5px;line-height:1.55;margin:0;}
-.trust-strip-copy strong{color:var(--t1);}
-.trust-strip-cta{flex:0 0 auto;display:flex;align-items:center;gap:18px;}
-.trust-strip-link{color:var(--teal);font-weight:700;font-size:14px;text-decoration:none;font-family:'DM Sans',sans-serif;white-space:nowrap;cursor:pointer;background:none;border:none;padding:0;}
-.trust-strip-link:hover{text-decoration:underline;}
+/* ── Landing: home CTA card (warm teal block, promise-first; plans live on /pricing) ── */
+.home-cta{max-width:1100px;margin:0 auto;padding:clamp(40px,6vw,56px) clamp(16px,4vw,40px);}
+.home-cta-inner{position:relative;overflow:hidden;border-radius:28px;padding:clamp(40px,5.5vw,64px) clamp(24px,5vw,56px);text-align:center;background:linear-gradient(135deg,#5C9FA0 0%,#4F8A8B 45%,#3B6E6F 100%);color:#fff;box-shadow:0 26px 60px -34px rgba(26,26,46,.45);}
+.home-cta-eyebrow{font-family:'DM Sans',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;margin:0 0 16px;display:inline-flex;align-items:center;gap:8px;color:#FFE6C2;position:relative;}
+.home-cta-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);}
+.home-cta-inner h2{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(28px,4.4vw,46px);letter-spacing:-1.3px;line-height:1.05;margin:0 0 16px;color:#fff;position:relative;}
+.home-cta-lede{font-size:clamp(15px,1.6vw,17.5px);line-height:1.6;max-width:580px;margin:0 auto 30px;color:rgba(255,255,255,.86);position:relative;}
+.home-cta-primary{display:inline-flex;align-items:center;gap:9px;border:none;border-radius:13px;padding:15px 32px;font-size:15.5px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;background:var(--amber);color:#1A1A2E;box-shadow:0 12px 30px -10px rgba(232,144,42,.7);transition:transform .12s,filter .2s;position:relative;}
+.home-cta-primary:hover{transform:translateY(-2px);filter:brightness(1.04);}
+.home-cta-sub{position:relative;display:flex;justify-content:center;align-items:center;gap:18px;margin-top:36px;padding-top:28px;border-top:1px solid rgba(255,255,255,.22);}
+.home-cta-sub .txt{display:flex;flex-direction:column;text-align:left;}
+.home-cta-sub .txt b{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;}
+.home-cta-sub .txt span{font-size:12.5px;color:rgba(255,255,255,.8);margin-top:2px;}
+.home-cta-outline{border-radius:11px;padding:10px 20px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;background:transparent;border:1.5px solid rgba(255,255,255,.55);color:#fff;transition:all .18s;}
+.home-cta-outline:hover{background:#fff;color:var(--teal);}
+.home-cta-blob{position:absolute;border-radius:50%;pointer-events:none;}
+.home-cta-blob.b1{width:340px;height:340px;background:radial-gradient(circle,rgba(232,144,42,.30),transparent 70%);top:-120px;right:-50px;}
+.home-cta-blob.b2{width:260px;height:260px;background:radial-gradient(circle,rgba(255,255,255,.14),transparent 70%);bottom:-90px;left:-30px;}
 @media(max-width:640px){
-  .trust-strip-inner{flex-direction:column;align-items:flex-start;gap:16px;padding:20px;}
-  .trust-strip-cta{width:100%;justify-content:space-between;}
+  .home-cta-sub{flex-direction:column;gap:14px;}
+  .home-cta-sub .txt{text-align:center;align-items:center;}
 }
 @keyframes mv-slide-left{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
 @keyframes mv-slide-right{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:translateX(0)}}
@@ -13713,19 +13721,17 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       </div>
     </div>
 
-    {/* ───────── Pricing trust strip (promise-first; full plans live on /pricing) ───────── */}
-    <section className="lh-section" style={{padding:"44px 40px",maxWidth:1040,margin:"0 auto"}}>
-      <div className="trust-strip-inner">
-        <div className="trust-strip-shield">
-          <svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z" fill="var(--teal)"/><path d="M9 12l2 2 4-4" fill="none" stroke="#fff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </div>
-        <div className="trust-strip-copy">
-          <h3>Free to submit. Always.</h3>
-          <p>No subscription to apply. No "featured upgrade." Actor Plus is <strong>$9.99/mo</strong> if you want more visibility and tools — casting directors post and review for <strong>free</strong>.</p>
-        </div>
-        <div className="trust-strip-cta">
-          <button className="trust-strip-link" onClick={()=>onNavigate("pricing")}>See full pricing →</button>
-          <button className="btn-teal" style={{padding:"12px 24px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Create Free Profile</button>
+    {/* ───────── Home CTA card (warm teal block; full plans live on /pricing) ───────── */}
+    <section className="home-cta">
+      <div className="home-cta-inner">
+        <span className="home-cta-blob b1"/><span className="home-cta-blob b2"/>
+        <p className="home-cta-eyebrow"><span className="dot"/>Free to submit</p>
+        <h2>It's time to get seen.</h2>
+        <p className="home-cta-lede">Build your profile, submit to real roles, and get reviewed one actor at a time. Free to start — Actor Plus is just $9.99/mo when you want more.</p>
+        <button className="home-cta-primary" onClick={()=>onNavigate("register-talent")}>Create My Free Profile →</button>
+        <div className="home-cta-sub">
+          <div className="txt"><b>For Casting Directors</b><span>Post a project and review submissions for free</span></div>
+          <button className="home-cta-outline" onClick={()=>onNavigate("register-cd")}>Post a Project</button>
         </div>
       </div>
     </section>
