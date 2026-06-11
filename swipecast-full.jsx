@@ -1733,7 +1733,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
       small at phone width). ── */
 .featured-class-stripe{position:relative;width:100%;line-height:0;background:#0c0a08;}
 .fcs-img{display:block;width:100%;height:auto;}
-.fcs-hotspot{position:absolute;left:1.6%;top:80.5%;width:5%;height:13%;background:transparent;border:none;padding:0;margin:0;cursor:pointer;}
+.fcs-hotspot{position:absolute;left:3.8%;top:72%;width:8.5%;height:20%;background:transparent;border:none;padding:0;margin:0;cursor:pointer;}
 .fcs-mobile{display:none;}
 @media (max-width:768px){
   .member-banner{display:none !important;}
@@ -21765,12 +21765,20 @@ function App(){
       setPage("talent-dashboard");
       try{window.history.replaceState({swipecast:true,page:"talent-dashboard"},"","/talent-dashboard");}catch(_){}
     }
+    // Mirror: a CD/producer/studio/admin landing on /talent-dashboard (direct URL)
+    // previously hit an infinite loader. Send them to their own dashboard.
+    if(page==="talent-dashboard"&&myProfile&&["cd","producer","studio","admin","super_admin"].includes(myProfile.user_type)){
+      setPage("dashboard");
+      try{window.history.replaceState({swipecast:true,page:"dashboard"},"","/dashboard");}catch(_){}
+    }
   },[page,myProfile?.user_type]);
 
-  // When page is "casting-detail" but viewingCasting is null (direct URL load like /casting/slug-or-id),
-  // try to find it in static CASTINGS first, then fetch from the database.
+  // When page is "casting-detail" or "casting-gate" but viewingCasting is null
+  // (direct URL load like /casting/slug-or-id), try to find it in static
+  // CASTINGS first, then fetch from the database. The gate page needs the
+  // casting too (it shows the title), so it shares this loader.
   useEffect(()=>{
-    if(page!=="casting-detail"||viewingCasting)return;
+    if((page!=="casting-detail"&&page!=="casting-gate")||viewingCasting)return;
     const slug=urlToCastingSlug();
     if(!slug)return;
     // Try static array first (slugs and numeric IDs)
@@ -21832,6 +21840,25 @@ function App(){
     try{sessionStorage.setItem("sc_return_to",window.location.pathname+window.location.search+window.location.hash);}catch(_){}
     navigate("login");
   },[authReady,isLoggedIn,page]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Casting access gate: logged-out users must never see full casting details
+  // (roles, requirements) — not via refresh, deep-link, back button, or BFCache
+  // restore. urlToPage() maps /casting/<slug> to "casting-detail" before auth
+  // state is known, so once auth resolves we swap to the create-profile gate
+  // (same URL). The reverse swap handles a logged-in user landing on the gate
+  // (e.g. back button after signing in) — they get the full detail page.
+  useEffect(()=>{
+    if(!authReady)return;
+    const histSlug=()=>{try{return urlToCastingSlug()||viewingCasting?.slug||String(viewingCasting?.id||"")||undefined;}catch(_){return undefined;}};
+    if(page==="casting-detail"&&!isLoggedIn){
+      if(viewingCasting)setPendingApply(p=>p||{casting:viewingCasting,role:null});
+      setPage("casting-gate");
+      try{window.history.replaceState({swipecast:true,page:"casting-gate",castingSlug:histSlug()},"",(window.location.pathname||"/")+window.location.search);}catch(_){}
+    }else if(page==="casting-gate"&&isLoggedIn){
+      setPage("casting-detail");
+      try{window.history.replaceState({swipecast:true,page:"casting-detail",castingSlug:histSlug()},"",(window.location.pathname||"/")+window.location.search);}catch(_){}
+    }
+  },[authReady,isLoggedIn,page,viewingCasting]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [menuOpen,setMenuOpen]=useState(false);
   const [joinOpen,setJoinOpen]=useState(false);
@@ -21968,12 +21995,19 @@ function App(){
               <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")}/>
             </ErrorBoundary>
           </div>}
-        {page==="casting-detail"&&(viewingCasting
+        {/* Full casting detail renders ONLY for logged-in users with auth resolved.
+            Logged-out visitors see a loader until the gate effect swaps the page
+            to casting-gate — never a flash of role details. */}
+        {page==="casting-detail"&&(!authReady||!isLoggedIn
+          ?<PageLoader/>
+          :viewingCasting
           ?<ErrorBoundary key={viewingCasting.id} label="Casting Page" onReset={()=>navigate("search")}>
               <CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>
             </ErrorBoundary>
           :<PageLoader/>)}
-        {page==="casting-gate"&&viewingCasting&&<CastingGatePage casting={viewingCasting} onCreateProfile={()=>{setPage("auth-gate");pushHist("auth-gate");}} onLogin={()=>navigate("login")} onBack={()=>{setPendingApply(null);navigate(prevPage==="home"?"home":"search");}}/>}
+        {page==="casting-gate"&&(viewingCasting
+          ?<CastingGatePage casting={viewingCasting} onCreateProfile={()=>{setPage("auth-gate");pushHist("auth-gate");}} onLogin={()=>navigate("login")} onBack={()=>{setPendingApply(null);navigate(prevPage==="home"?"home":"search");}}/>
+          :<PageLoader/>)}
         {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
         {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):isLoggedIn?
           <ErrorBoundary key={dashboardKey} label="CD Dashboard" onReset={()=>navigate("home")}>
