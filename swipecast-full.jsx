@@ -20599,10 +20599,13 @@ async function _abcGeneratePrintSheet(cardCanvas){
   return a4;
 }
 
-function ActorCardPreview({displayName,headline,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl,photoZoom,photoPosX,photoPosY,photoRef,onPhotoMouseDown,onPhotoTouchStart,isDragging}){
+function ActorCardPreview({displayName,headline,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl,photoZoom,photoPosX,photoPosY,photoRef,onPhotoMouseDown,onPhotoTouchStart,isDragging,watermark}){
   return(
     <div style={{background:'#ffffff',border:'1.5px solid #E0E0E8',borderRadius:10,overflow:'hidden',boxShadow:'0 8px 40px rgba(26,26,46,0.15)',display:'flex',width:390,height:246,position:'relative',flexShrink:0}}>
       <div style={{position:'absolute',top:0,left:0,right:0,height:5,background:'#1A1A2E',zIndex:2}}/>
+      {watermark&&<div style={{position:'absolute',inset:0,zIndex:5,display:'flex',alignItems:'center',justifyContent:'center',pointerEvents:'none'}}>
+        <span style={{transform:'rotate(-16deg)',border:'2.5px solid rgba(26,26,46,0.18)',borderRadius:10,color:'rgba(26,26,46,0.22)',fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:26,letterSpacing:'0.22em',textTransform:'uppercase',padding:'7px 20px',background:'rgba(255,255,255,0.18)'}}>Preview</span>
+      </div>}
       {/* Headshot — draggable, contain-based zoom */}
       <div ref={photoRef} style={{width:128,flexShrink:0,position:'relative',marginTop:5,overflow:'hidden',cursor:headshotUrl?(isDragging?'grabbing':'grab'):'default',background:'#E8E8F2',userSelect:'none'}}
         onMouseDown={onPhotoMouseDown}
@@ -20672,23 +20675,9 @@ function ActorCardPreview({displayName,headline,showLocation,location,tags,showU
 
 function ActorBusinessCardPage({session,myProfile,onNavigate}){
   const isPremium=myProfile?.membership_status==='active';
-
-  // Full page gate — non-premium users see an upsell, not the builder
-  if(!isPremium){
-    return(
-      <div className="page" style={{maxWidth:560,margin:"0 auto",textAlign:"center",paddingTop:60}}>
-        <div style={{fontSize:48,marginBottom:20}}>🪪</div>
-        <div style={{display:"inline-block",background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.2,padding:"3px 12px",borderRadius:100,marginBottom:16}}>PREMIUM FEATURE</div>
-        <h1 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:12}}>Actor Business Card</h1>
-        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.65,marginBottom:28,maxWidth:420,margin:"0 auto 28px"}}>
-          Create a personalized actor business card with your headshot, casting details, and a unique QR code linking directly to your CastSlate profile. Download a print-ready PDF.
-        </p>
-        <button className="btn-p" onClick={()=>onNavigate("membership")}>Upgrade to Premium — {PREMIUM_PRICE}</button>
-        <p style={{fontSize:12,color:"var(--t3)",marginTop:12}}>Included with all Premium plans. Cancel anytime.</p>
-        <button className="btn-s btn-sm" style={{marginTop:20}} onClick={()=>onNavigate("my-profile")}>← Back to Profile</button>
-      </div>
-    );
-  }
+  // NOTE: free users are NOT gated out here. They build + preview their real card
+  // live (watermarked); only downloads are Premium. Seeing their finished card is
+  // the strongest reason to upgrade — the upsell sits right under the preview.
 
   const publicSlug=myProfile?.public_slug||'';
   const profileUrl=publicSlug?`https://www.castslate.com/talent/${publicSlug}`:'';
@@ -20938,10 +20927,10 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
         <button className="btn-s btn-sm" style={{marginBottom:24}} onClick={()=>onNavigate('talent-dashboard')}>← Talent Dashboard</button>
         <div style={{marginBottom:28}}>
           <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(99,60,180,0.08)',border:'1px solid rgba(99,60,180,0.2)',padding:'5px 14px',borderRadius:100,fontSize:11,color:'var(--acc)',fontWeight:800,letterSpacing:1,textTransform:'uppercase',marginBottom:12}}>
-            <span style={{width:6,height:6,borderRadius:'50%',background:'var(--acc)'}}/>Premium Feature
+            <span style={{width:6,height:6,borderRadius:'50%',background:'var(--acc)'}}/>{isPremium?'Premium Feature':'Free Preview'}
           </div>
           <h1 style={{fontWeight:800,fontSize:isMobile?24:30,letterSpacing:-0.8,color:'var(--t1)',marginBottom:8,margin:'0 0 8px'}}>Actor Business Card</h1>
-          <p style={{color:'var(--t2)',fontSize:15,margin:0}}>Create a downloadable actor card with your headshot and a unique QR code linking directly to your Cast Slate profile.</p>
+          <p style={{color:'var(--t2)',fontSize:15,margin:0}}>{isPremium?'Create a downloadable actor card with your headshot and a unique QR code linking directly to your Cast Slate profile.':'Build your actor card live below — it uses your real headshot, name, and profile. Customize it free; upgrade to Premium to download and print.'}</p>
         </div>
 
         <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:32,alignItems:'start'}}>
@@ -21089,6 +21078,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
               onPhotoMouseDown={handlePhotoMouseDown}
               onPhotoTouchStart={handlePhotoMouseDown}
               isDragging={isDragging}
+              watermark={!isPremium}
             />
             <div style={{maxWidth:390,width:'100%'}}>
               <p style={{fontSize:11.5,color:'var(--t3)',lineHeight:1.6,margin:'0 0 10px'}}>
@@ -21097,8 +21087,11 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
                   :'Preview of your actor business card. Upgrade to Premium to download and print.'}
               </p>
               {!isPremium&&(
-                <div style={{padding:'12px 14px',background:'rgba(99,60,180,0.05)',border:'1px solid rgba(99,60,180,0.15)',borderRadius:9,fontSize:12,color:'var(--t2)',lineHeight:1.5}}>
-                  🔒 <strong>Downloads locked.</strong> <span style={{cursor:'pointer',color:'var(--acc)',fontWeight:600}} onClick={()=>onNavigate('membership')}>Upgrade to Premium</span> to download and print your actor business card.
+                <div style={{padding:'16px 16px 18px',background:'linear-gradient(135deg,rgba(15,107,102,0.07),rgba(232,163,61,0.06))',border:'1px solid rgba(15,107,102,0.18)',borderRadius:12,textAlign:'center'}}>
+                  <div style={{fontSize:14.5,fontWeight:800,color:'var(--t1)',marginBottom:5}}>This card is ready — it's yours.</div>
+                  <div style={{fontSize:12.5,color:'var(--t2)',lineHeight:1.55,marginBottom:13}}>Activate Premium to remove the watermark and download your print-ready card + A4 sheet with QR code.</div>
+                  <button className="btn-p" onClick={()=>onNavigate('membership')} style={{width:'100%',padding:'13px 20px',fontSize:14.5,fontWeight:700}}>Activate My Card — Premium {PREMIUM_PRICE}</button>
+                  <div style={{fontSize:11,color:'var(--t3)',marginTop:9}}>Included with all Premium plans · cancel anytime</div>
                 </div>
               )}
             </div>
