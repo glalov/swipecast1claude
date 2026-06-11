@@ -2,6 +2,29 @@
 
 ---
 
+## 2026-06-11 — Permission fixes, banner fix, Self Improvement board (v1)
+
+### Fixed and deployed (commit 03aa5c2, verified)
+
+1. **Logged-out casting leak (high)** — refresh/deep-link/back/BFCache on `/casting/<slug>` showed full casting + roles while logged out (click path gated correctly). Root cause: `urlToPage()` maps the URL before auth resolves and the deep-link fetch effect had no auth check. Fix: casting-detail renders a loader until auth is ready and never renders logged-out; a gate effect swaps to `casting-gate` (same URL); the fetch effect also feeds the gate (title/producer context); logged-in users landing on the gate swap to full detail. E2E verified on the exact repro (deep-link + hard refresh, no role text, no console errors). Prod `app.js` MD5-matches the verified local build.
+2. **Banner "View Classes" only clickable on the left (medium)** — hotspot covered 1.6–6.6% × 80.5–93.5% but the baked-in button (measured from the PNG) is 4.4–10.8% × 76–88.4%. New hotspot 3.8–12.3% × 72–92%; all corners + center verified clicking to `/classes`.
+3. **CD on `/talent-dashboard` infinite loader (low)** — added reverse role redirect to `/dashboard`.
+
+### Route/auth audit result
+
+All PAGE_PATH pages reviewed: PROTECTED_PAGES covers every account page; `/admin` render-gated by `isAdmin`; both dashboards now role-redirect both ways; `manager-mode` confirmed as a public marketing page (the gated feature is `actor-business-card`, already protected). **Known remaining (needs owner decision):** the casting gate is UI-level — anon API can still SELECT castings+roles via PostgREST (RLS is public by design). Hard-gating affects logged-out Browse + SEO. Logged in Self Improvement as `needs_approval`.
+
+### New: Self Improvement board (v1)
+
+- Table `self_improvement_items` (admin-only RLS) created and **seeded with 17 real items** from the 06-10/06-11 sessions: bugs fixed, security holes closed, suggestions, strategy, legal flags (severity, status, dates, demo-link column).
+- UI demo awaiting approval: `self-improvement-demo.html` (repo root, not deployed). After approval it gets wired into the Admin sidebar with live data + status controls.
+
+### Local preview now works in the sandbox
+
+`/tmp/castslate_serve.py` rewritten: serves a `/tmp/castslate_site` rsync copy (sandbox can't read ~/Desktop — TCC), passes `directory=` explicitly (avoids the getcwd PermissionError), and mimics Vercel rewrites incl. the SPA catch-all. Sync before testing: `rsync -a --delete --exclude .git --exclude .claude --exclude supabase "/Users/georgi/Desktop/swipecast claude/" /tmp/castslate_site/`.
+
+---
+
 ## 2026-06-10 — Stripe payment flow verified END-TO-END (supersedes "not connected" notes below)
 
 The 2026-05-09 entries in this file say "Premium checkout is not connected yet." **That is stale.** Stripe was wired up on 2026-05-19 (`stripe-checkout` + `stripe-webhook` edge functions) and the full loop is proven working in production data:
