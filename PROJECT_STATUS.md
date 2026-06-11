@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-06-11 (later) — Logged-in audit, audit fixes, Stripe mode answer, Manager Mode demos
+
+- **Stripe is in LIVE mode** (checkout session `cs_live_` via QA-actor probe; no charge made). The 2026-05-19 subscriber was a real payment.
+- **QA test accounts created** (approved): `qa-actor-test@`, `qa-cd-test@`, `qa-admin-test@castslate.com` — display names prefixed `[QA TEST]`. Hand-inserted via SQL (GoTrue quirk: token columns must be `''` not NULL). Password login E2E-verified.
+- **Self Improvement section deployed + verified live** (commit 9a71325): 17 items, status updates persist, actors see 0 rows (RLS).
+- **Logged-in audit (actor/CD/admin at 1280/682/375px)**: core pages clean — no overflow, broken images, or console errors. Logged-in casting page still shows roles + Apply (gate regression check passed).
+- **Audit fixes deployed (commit 7fe9ece, hash-verified)**: CD dashboard duplicate "Submissions" label → "Pending Review" (en+es); casting page Save/Send 17px tap targets → 37px.
+- **Open design finding**: My Profile mobile tab strip hides 8 of 11 tabs with no scroll hint (logged to board; demo before changing).
+- **Manager Mode demos built** (awaiting approval): `manager-mode-improvements-demo.html` — availability status, watermarked live card preview before pricing, card-as-submission-tool. Recommended order 2→1→3.
+
+---
+
 ## 2026-06-11 — Permission fixes, banner fix, Self Improvement board (v1)
 
 ### Fixed and deployed (commit 03aa5c2, verified)
