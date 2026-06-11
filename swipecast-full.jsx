@@ -17337,6 +17337,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       <div style={{fontSize:13,fontWeight:700,marginBottom:2,wordBreak:"break-word"}}>{profile?.display_name||session?.user?.email||"—"}</div>
       <div style={{fontSize:11,color:"var(--t3)",marginBottom:18,wordBreak:"break-word"}}>{session?.user?.email}</div>
       <AdminNavLink current={section} target="overview" label="Overview" onClick={goToSection}/>
+      <AdminNavLink current={section} target="self-improvement" label="Self Improvement" onClick={goToSection}/>
       <AdminNavLink current={section} target="users" label="Users" onClick={goToSection}/>
       <AdminNavLink current={section} target="cd-verification" label="CD Verification" onClick={goToSection}/>
       <AdminNavLink current={section} target="castings" label="Castings" badge={pendingCastingCount} onClick={goToSection}/>
@@ -17366,6 +17367,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
     </aside>
     <div>
       {section==="overview"&&<AdminOverview onGoToBookingRequests={()=>goToSection("booking-requests")}/>}
+      {section==="self-improvement"&&<AdminSelfImprovement/>}
       {section==="users"&&<AdminUsers isSuperAdmin={isSuperAdmin} session={session} myProfile={profile}/>}
       {section==="cd-verification"&&<AdminCDVerification/>}
       {section==="castings"&&<AdminCastings onPendingCountChange={setPendingCastingCount}/>}
@@ -18224,6 +18226,112 @@ function AdminReports(){
 
 // ─── Client errors: read-only feed of front-end exceptions captured by the
 //     window.onerror hook. Keeps a shallow stack + URL to make triage easy.
+// ─── Self Improvement: maintenance & intelligence board.
+//     Work sessions and scheduled audits log bugs, fixes, security findings,
+//     design/SEO/strategy/legal suggestions and test results here.
+//     Table: self_improvement_items (admin-only RLS).
+const SII_STATUSES=["suggested","in_progress","needs_approval","fixed","ignored"];
+const SII_STATUS_STYLE={
+  fixed:{background:"rgba(30,125,79,0.12)",color:"#1E7D4F"},
+  suggested:{background:"rgba(232,163,61,0.16)",color:"#9A6314"},
+  needs_approval:{background:"rgba(91,63,168,0.12)",color:"#5B3FA8"},
+  in_progress:{background:"rgba(15,107,102,0.12)",color:"var(--acc)"},
+  ignored:{background:"var(--s3)",color:"var(--t3)"},
+};
+const SII_SEV_STYLE={
+  critical:{background:"rgba(192,57,43,0.12)",color:"#c0392b"},
+  high:{background:"rgba(232,163,61,0.16)",color:"#9A6314"},
+  medium:{background:"rgba(15,107,102,0.12)",color:"var(--acc)"},
+  low:{background:"var(--s3)",color:"var(--t3)"},
+  info:{background:"var(--s3)",color:"var(--t3)"},
+};
+const SII_SEV_ORDER={critical:0,high:1,medium:2,low:3,info:4};
+function AdminSelfImprovement(){
+  const [rows,setRows]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [msg,setMsg]=useState("");
+  const [catFilter,setCatFilter]=useState("all");
+  const [statusFilter,setStatusFilter]=useState("all");
+  const [busyId,setBusyId]=useState(null);
+  const reload=useCallback(async()=>{
+    setLoading(true);
+    const {data,error}=await window.sb.from("self_improvement_items")
+      .select("id,category,title,detail,severity,status,source,page_or_area,demo_url,created_at,resolved_at,created_by")
+      .order("created_at",{ascending:false}).limit(500);
+    if(error)setMsg("Load failed: "+error.message);
+    setRows(data||[]);setLoading(false);
+  },[]);
+  useEffect(()=>{reload();},[reload]);
+  const setStatus=async(item,newStatus)=>{
+    if(busyId)return;
+    setBusyId(item.id);
+    const patch={status:newStatus,resolved_at:(newStatus==="fixed"||newStatus==="ignored")?new Date().toISOString():null};
+    const {error}=await window.sb.from("self_improvement_items").update(patch).eq("id",item.id);
+    if(error)setMsg("Update failed: "+error.message);
+    else setRows(rs=>rs.map(r=>r.id===item.id?{...r,...patch}:r));
+    setBusyId(null);
+  };
+  const cats=["all",...Array.from(new Set(rows.map(r=>r.category)))];
+  const open=rows.filter(r=>r.status==="suggested"||r.status==="in_progress");
+  const approval=rows.filter(r=>r.status==="needs_approval");
+  const fixed=rows.filter(r=>r.status==="fixed");
+  const filtered=rows
+    .filter(r=>catFilter==="all"||r.category===catFilter)
+    .filter(r=>statusFilter==="all"||r.status===statusFilter)
+    .sort((a,b)=>{
+      // Open items first, then needs_approval, then by severity, then newest
+      const grp=s=>s==="suggested"||s==="in_progress"?0:s==="needs_approval"?1:s==="fixed"?2:3;
+      if(grp(a.status)!==grp(b.status))return grp(a.status)-grp(b.status);
+      const sv=(SII_SEV_ORDER[a.severity]??9)-(SII_SEV_ORDER[b.severity]??9);
+      if(sv!==0)return sv;
+      return new Date(b.created_at)-new Date(a.created_at);
+    });
+  const fmtD=(d)=>d?new Date(d).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):null;
+  const statTile=(n,label,color)=>(
+    <div className="card" style={{padding:"12px 16px",flex:"1 1 120px",minWidth:120}}>
+      <div style={{fontWeight:800,fontSize:24,letterSpacing:-0.5,color}}>{n}</div>
+      <div style={{fontSize:10,color:"var(--t3)",fontWeight:700,textTransform:"uppercase",letterSpacing:0.6,marginTop:2}}>{label}</div>
+    </div>);
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>🛠 Self Improvement</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16,lineHeight:1.6}}>CastSlate's maintenance &amp; intelligence board. Bugs, fixes, security findings, design/SEO/strategy/legal suggestions, and QA results — logged by work sessions and scheduled audits. Items marked <strong>needs approval</strong> wait for your decision.</p>
+    {msg&&<div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+    <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:16}}>
+      {statTile(open.length,"Open","#9A6314")}
+      {statTile(approval.length,"Needs approval","#5B3FA8")}
+      {statTile(fixed.length,"Fixed","#1E7D4F")}
+      {statTile(rows.length,"Total","var(--t1)")}
+    </div>
+    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
+      {cats.map(c=><button key={c} onClick={()=>setCatFilter(c)} className="btn-s btn-sm" style={{fontSize:11.5,padding:"5px 12px",borderRadius:16,...(catFilter===c?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{})}}>{c==="all"?"All categories":c.replace(/_/g," ")}</button>)}
+    </div>
+    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:16}}>
+      {["all",...SII_STATUSES].map(s=><button key={s} onClick={()=>setStatusFilter(s)} className="btn-s btn-sm" style={{fontSize:11.5,padding:"5px 12px",borderRadius:16,...(statusFilter===s?{background:"var(--t1)",color:"#fff",borderColor:"var(--t1)"}:{})}}>{s==="all"?"All statuses":s.replace(/_/g," ")}</button>)}
+    </div>
+    {loading?<CastSlateLoader size="inline" text="Loading…"/>:filtered.length===0?<div className="card" style={{padding:32,textAlign:"center",color:"var(--t3)"}}>Nothing here for this filter.</div>:
+      filtered.map(r=>(
+        <div key={r.id} className="card" style={{padding:"14px 18px",marginBottom:10,opacity:r.status==="ignored"?0.6:1}}>
+          <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:6}}>
+            <span className="tag" style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:0.5,padding:"3px 9px",borderRadius:12,...(SII_SEV_STYLE[r.severity]||SII_SEV_STYLE.info)}}>{r.severity}</span>
+            <span className="tag" style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,padding:"3px 9px",borderRadius:12,background:"var(--s3)",color:"var(--t2)"}}>{r.category.replace(/_/g," ")}</span>
+            <span className="tag" style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:0.5,padding:"3px 9px",borderRadius:12,...(SII_STATUS_STYLE[r.status]||{})}}>{r.status.replace(/_/g," ")}</span>
+            {r.page_or_area&&<span style={{fontSize:11,color:"var(--t3)"}}>· {r.page_or_area}</span>}
+            <span style={{fontSize:11,color:"var(--t3)",marginLeft:"auto",whiteSpace:"nowrap"}}>{fmtD(r.created_at)}{r.resolved_at?` → ${fmtD(r.resolved_at)}`:""}</span>
+          </div>
+          <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>{r.title}</div>
+          {r.detail&&<p style={{fontSize:12.5,color:"var(--t2)",lineHeight:1.55,margin:0}}>{r.detail}</p>}
+          <div style={{display:"flex",gap:8,alignItems:"center",marginTop:10,flexWrap:"wrap"}}>
+            <select value={r.status} disabled={busyId===r.id} onChange={e=>setStatus(r,e.target.value)} style={{fontSize:12,padding:"5px 8px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s2)",color:"var(--t1)",fontFamily:"inherit",cursor:"pointer"}}>
+              {SII_STATUSES.map(s=><option key={s} value={s}>{s.replace(/_/g," ")}</option>)}
+            </select>
+            {r.demo_url&&<a href={r.demo_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm" style={{fontSize:11.5,textDecoration:"none"}}>Open demo ↗</a>}
+            <span style={{fontSize:10.5,color:"var(--t3)"}}>source: {r.source}{r.created_by?` · by ${r.created_by}`:""}</span>
+          </div>
+        </div>
+      ))}
+  </>);
+}
+
 function AdminErrors(){
   const [rows,setRows]=useState([]);
   const [loading,setLoading]=useState(true);
