@@ -196,7 +196,7 @@ const TRANSLATIONS = {
     'td.noSaved':'No saved castings yet.','td.noApps':'No applications yet. Browse castings to get started.',
     'td.recentActivity':'Recent Activity',
     'cd.title':'Casting Dashboard','cd.newCasting':'Post New Casting','cd.myCastings':'My Castings',
-    'cd.submissions':'Submissions','cd.callbacks':'Callbacks',
+    'cd.submissions':'Submissions','cd.callbacks':'Callbacks','cd.pendingReview':'Pending Review',
     'cd.noSubmissions':'No submissions yet.','cd.noCastings':'No castings posted yet.',
     'cd.reviewSubmissions':'Review Submissions','cd.editCasting':'Edit Casting',
     'cd.deleteCasting':'Delete Casting','cd.viewProfile':'View Profile',
@@ -443,7 +443,7 @@ const TRANSLATIONS = {
     'td.noSaved':'Ninguna convocatoria guardada aún.','td.noApps':'Ninguna postulación aún. Navega las convocatorias para comenzar.',
     'td.recentActivity':'Actividad reciente',
     'cd.title':'Panel de casting','cd.newCasting':'Publicar nueva convocatoria','cd.myCastings':'Mis convocatorias',
-    'cd.submissions':'Postulaciones','cd.callbacks':'Callbacks',
+    'cd.submissions':'Postulaciones','cd.callbacks':'Callbacks','cd.pendingReview':'Pendientes de revisión',
     'cd.noSubmissions':'Ninguna postulación aún.','cd.noCastings':'Ninguna convocatoria publicada aún.',
     'cd.reviewSubmissions':'Revisar postulaciones','cd.editCasting':'Editar convocatoria',
     'cd.deleteCasting':'Eliminar convocatoria','cd.viewProfile':'Ver perfil',
@@ -7374,11 +7374,11 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       if(roleNames.length>0)emailBody+=`\n\nROLES: ${roleNames.join(", ")}`;
       const mailtoHref=`mailto:?subject=${encodeURIComponent(c.title)}&body=${encodeURIComponent(emailBody)}`;
       return(
-        <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:14,flexWrap:"wrap"}}>
+        <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:6,flexWrap:"wrap"}}>
           {isDbCasting&&<button
             disabled={savingCasting}
             onClick={handleToggleSave}
-            style={{display:"inline-flex",alignItems:"center",gap:5,background:"none",border:"none",padding:0,cursor:savingCasting?"not-allowed":"pointer",fontSize:13,color:isSaved?"var(--acc)":"var(--t2)",fontFamily:"inherit",fontWeight:500,transition:"color .15s"}}
+            style={{display:"inline-flex",alignItems:"center",gap:5,background:"none",border:"none",padding:"10px 0",cursor:savingCasting?"not-allowed":"pointer",fontSize:13,color:isSaved?"var(--acc)":"var(--t2)",fontFamily:"inherit",fontWeight:500,transition:"color .15s"}}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill={isSaved?"currentColor":"none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
             {savingCasting?"Saving…":isSaved?"Saved Casting":"Save Casting"}
@@ -7386,7 +7386,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           <div ref={sendMenuRef} style={{position:"relative"}}>
             <button
               onClick={()=>setShowSendMenu(v=>!v)}
-              style={{display:"inline-flex",alignItems:"center",gap:5,background:"none",border:"none",padding:0,cursor:"pointer",fontSize:13,color:"var(--t2)",fontFamily:"inherit",fontWeight:500,transition:"color .15s"}}
+              style={{display:"inline-flex",alignItems:"center",gap:5,background:"none",border:"none",padding:"10px 0",cursor:"pointer",fontSize:13,color:"var(--t2)",fontFamily:"inherit",fontWeight:500,transition:"color .15s"}}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
               Send to a Friend
@@ -10636,7 +10636,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     <div className="dash-stats">
       <div className="dash-stat"><div className="dash-stat-num">{myCastings.length}</div><div className="dash-stat-label">{t('cd.myCastings')}</div></div>
       <div className="dash-stat"><div className="dash-stat-num">{stats.total}</div><div className="dash-stat-label">{t('cd.submissions')}</div></div>
-      <div className="dash-stat"><div className="dash-stat-num" style={{color:stats.pending>0?"var(--acc)":undefined}}>{stats.pending}</div><div className="dash-stat-label">{t('casting.submissions')}</div></div>
+      <div className="dash-stat"><div className="dash-stat-num" style={{color:stats.pending>0?"var(--acc)":undefined}}>{stats.pending}</div><div className="dash-stat-label">{t('cd.pendingReview')}</div></div>
       <div className="dash-stat"><div className="dash-stat-num">{stats.selected}</div><div className="dash-stat-label">{t('cd.callbacks')}</div></div>
     </div>
     {verificationReturn&&<div style={{background:"rgba(46,204,113,0.09)",border:"1px solid rgba(46,204,113,0.35)",borderRadius:12,padding:"14px 20px",marginBottom:16,display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}>
