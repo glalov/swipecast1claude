@@ -498,36 +498,44 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   box-shadow:0 6px 16px rgba(0,0,0,0.28);
 }
 /* ── Featured-class banner (replaces the promo stripe on the home page).
-      Desktop shows the supplied artwork as-is with an invisible hotspot over
-      the baked-in "view classes" button. Mobile hides the navy free-plan
-      stripe, crops the photo to a compact full-width strip, and overlays a
-      live, readable title + "View Classes" button (the baked-in text is too
-      small at phone width). On scroll, the banner smoothly collapses into a
-      thin strip (height shrinks, photo stays in view via object-fit cover)
-      and expands again when scrolled back to the top — same artwork, same
-      button, no new copy. ── */
+      Two states, same campaign content throughout:
+      FULL (page at top) — original supplied artwork as-is with an invisible
+      hotspot over the baked-in "view classes" button (desktop), or the
+      cover-cropped photo + live title/button overlay (mobile). Unchanged
+      from the original design.
+      COMPACT (scrolled) — a separately-designed thin strip (60px desktop /
+      54px mobile) using the same photo as a dimmed background plus the same
+      "Featured Class / Scene Study Workshop / View Classes →" copy, vertically
+      centered and fully clickable. The two states crossfade as the banner
+      height animates between them, and reverse on scroll back to top. ── */
 .featured-class-stripe{position:relative;width:100%;line-height:0;background:#0c0a08;overflow:hidden;transition:height .42s cubic-bezier(.4,0,.2,1);}
+.fcs-full{position:relative;transition:opacity .22s ease;}
+.featured-class-stripe.is-collapsed .fcs-full{opacity:0;pointer-events:none;}
 .fcs-img{display:block;width:100%;height:auto;}
-.featured-class-stripe.is-collapsed .fcs-img{height:100%;width:100%;object-fit:cover;object-position:center 78%;}
 .fcs-hotspot{position:absolute;left:3.8%;top:72%;width:8.5%;height:20%;background:transparent;border:none;padding:0;margin:0;cursor:pointer;}
-.featured-class-stripe.is-collapsed .fcs-hotspot{left:0;top:0;width:100%;height:100%;}
 .fcs-mobile{display:none;}
+/* Compact scrolled strip — own layout, not a crop of the full banner. */
+.fcs-compact{position:absolute;inset:0;display:flex;align-items:center;gap:16px;padding:0 24px;opacity:0;pointer-events:none;transition:opacity .28s ease;
+  background:linear-gradient(100deg, rgba(10,9,14,.92) 0%, rgba(20,18,26,.86) 55%, rgba(20,18,26,.74) 100%), url(/assets/banner/scene-study.jpg) center 78%/cover;}
+.featured-class-stripe.is-collapsed .fcs-compact{opacity:1;pointer-events:auto;}
+.fcs-compact-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
+.fcs-compact-label{font-size:9.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:#E0A43B;line-height:1.2;white-space:nowrap;}
+.fcs-compact-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:16px;line-height:1.15;color:#fff;text-shadow:0 1px 7px rgba(0,0,0,0.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fcs-compact-btn{flex-shrink:0;background:#E0A43B;color:#231706;border:none;border-radius:8px;padding:9px 18px;font-size:12px;font-weight:800;line-height:1;letter-spacing:.2px;cursor:pointer;white-space:nowrap;}
 @media (max-width:768px){
   .member-banner{display:none !important;}
   .featured-class-stripe{height:148px;overflow:hidden;}
   .featured-class-stripe.is-collapsed{height:54px;}
   .fcs-img{height:100%;width:100%;object-fit:cover;object-position:70% center;filter:brightness(1.75) saturate(1.08);}
-  .featured-class-stripe.is-collapsed .fcs-img{object-position:70% 30%;}
   .fcs-hotspot{display:none;}
-  .fcs-mobile{display:flex;flex-direction:column;gap:5px;position:absolute;left:18px;top:50%;transform:translateY(-50%);z-index:2;max-width:62%;line-height:normal;transition:gap .3s ease;}
+  .fcs-mobile{display:flex;flex-direction:column;gap:5px;position:absolute;left:18px;top:50%;transform:translateY(-50%);z-index:2;max-width:62%;line-height:normal;}
   .fcs-mobile::before{content:"";position:absolute;inset:-22px -56px -22px -30px;z-index:-1;background:linear-gradient(90deg,rgba(8,8,10,0.72) 0%,rgba(8,8,10,0.4) 56%,rgba(8,8,10,0) 100%);}
-  .fcs-m-label{font-size:9.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:#E0A43B;transition:font-size .3s ease,opacity .3s ease;}
-  .fcs-m-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:21px;line-height:1.03;color:#fff;text-shadow:0 1px 7px rgba(0,0,0,0.6);transition:font-size .3s ease;}
-  .fcs-m-btn{align-self:flex-start;margin-top:6px;background:#E0A43B;color:#231706;border:none;border-radius:7px;padding:8px 16px;font-size:11px;font-weight:800;line-height:1;cursor:pointer;transition:padding .3s ease,font-size .3s ease;}
-  .featured-class-stripe.is-collapsed .fcs-mobile{gap:2px;}
-  .featured-class-stripe.is-collapsed .fcs-m-label{font-size:8px;opacity:.8;}
-  .featured-class-stripe.is-collapsed .fcs-m-title{font-size:12px;}
-  .featured-class-stripe.is-collapsed .fcs-m-btn{padding:4px 9px;font-size:9px;margin-top:1px;}
+  .fcs-m-label{font-size:9.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:#E0A43B;}
+  .fcs-m-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:21px;line-height:1.03;color:#fff;text-shadow:0 1px 7px rgba(0,0,0,0.6);}
+  .fcs-m-btn{align-self:flex-start;margin-top:6px;background:#E0A43B;color:#231706;border:none;border-radius:7px;padding:8px 16px;font-size:11px;font-weight:800;line-height:1;cursor:pointer;}
+  .fcs-compact{padding:0 16px;gap:12px;}
+  .fcs-compact-title{font-size:13px;}
+  .fcs-compact-btn{padding:7px 13px;font-size:10.5px;}
 }
 @media (max-width:900px){
   .promo-stripe{padding:13px 12px;}
@@ -875,7 +883,7 @@ function calculateYearlySavings(monthlyPrice,yearlyTotal){const annualAtMonthly=
 function FeaturedClassBanner({onNavigate}){const go=()=>{if(typeof onNavigate==="function")onNavigate("classes");};const ref=useRef(null);const[collapsed,setCollapsed]=useState(false);const[fullH,setFullH]=useState(null);// Desktop: measure the banner's natural (full) height from the image's
 // intrinsic aspect ratio so we can animate height -> 60px on scroll and
 // back. Mobile keeps its existing fixed 148px/54px CSS heights instead.
-useLayoutEffect(()=>{const img=ref.current&&ref.current.querySelector(".fcs-img");const measure=()=>{if(window.innerWidth<=768){setFullH(null);return;}if(img&&img.clientWidth&&img.naturalWidth){setFullH(Math.round(img.clientWidth*img.naturalHeight/img.naturalWidth));}};measure();window.addEventListener("resize",measure);if(img&&!img.complete)img.addEventListener("load",measure);return()=>{window.removeEventListener("resize",measure);if(img)img.removeEventListener("load",measure);};},[]);useEffect(()=>{const onScroll=()=>setCollapsed(window.scrollY>40);onScroll();window.addEventListener("scroll",onScroll,{passive:true});return()=>window.removeEventListener("scroll",onScroll);},[]);const style=fullH?{height:collapsed?60:fullH}:undefined;return/*#__PURE__*/React.createElement("aside",{ref:ref,className:`featured-class-stripe${collapsed?" is-collapsed":""}`,role:"region","aria-label":"Featured class: Scene Study Workshop",style:style},/*#__PURE__*/React.createElement("img",{className:"fcs-img",src:"/assets/banner/scene-study.jpg",alt:"Featured Class \u2014 Scene Study Workshop",width:"3360",height:"430",fetchpriority:"high",decoding:"async"}),/*#__PURE__*/React.createElement("button",{type:"button",className:"fcs-hotspot",onClick:go,"aria-label":"View classes"}),/*#__PURE__*/React.createElement("div",{className:"fcs-mobile"},/*#__PURE__*/React.createElement("span",{className:"fcs-m-label"},"Featured Class"),/*#__PURE__*/React.createElement("span",{className:"fcs-m-title"},"Scene Study Workshop"),/*#__PURE__*/React.createElement("button",{type:"button",className:"fcs-m-btn",onClick:go},"View Classes \u2192")));}function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){// Industry accounts (CD, admin, producer, studio) don't have a talent
+useLayoutEffect(()=>{const img=ref.current&&ref.current.querySelector(".fcs-img");const measure=()=>{if(window.innerWidth<=768){setFullH(null);return;}if(img&&img.clientWidth&&img.naturalWidth){setFullH(Math.round(img.clientWidth*img.naturalHeight/img.naturalWidth));}};measure();window.addEventListener("resize",measure);if(img&&!img.complete)img.addEventListener("load",measure);return()=>{window.removeEventListener("resize",measure);if(img)img.removeEventListener("load",measure);};},[]);useEffect(()=>{const onScroll=()=>setCollapsed(window.scrollY>40);onScroll();window.addEventListener("scroll",onScroll,{passive:true});return()=>window.removeEventListener("scroll",onScroll);},[]);const style=fullH?{height:collapsed?60:fullH}:undefined;return/*#__PURE__*/React.createElement("aside",{ref:ref,className:`featured-class-stripe${collapsed?" is-collapsed":""}`,role:"region","aria-label":"Featured class: Scene Study Workshop",style:style},/*#__PURE__*/React.createElement("div",{className:"fcs-full"},/*#__PURE__*/React.createElement("img",{className:"fcs-img",src:"/assets/banner/scene-study.jpg",alt:"Featured Class \u2014 Scene Study Workshop",width:"3360",height:"430",fetchpriority:"high",decoding:"async"}),/*#__PURE__*/React.createElement("button",{type:"button",className:"fcs-hotspot",onClick:go,"aria-label":"View classes"}),/*#__PURE__*/React.createElement("div",{className:"fcs-mobile"},/*#__PURE__*/React.createElement("span",{className:"fcs-m-label"},"Featured Class"),/*#__PURE__*/React.createElement("span",{className:"fcs-m-title"},"Scene Study Workshop"),/*#__PURE__*/React.createElement("button",{type:"button",className:"fcs-m-btn",onClick:go},"View Classes \u2192"))),/*#__PURE__*/React.createElement("div",{className:"fcs-compact","aria-hidden":!collapsed},/*#__PURE__*/React.createElement("div",{className:"fcs-compact-text"},/*#__PURE__*/React.createElement("span",{className:"fcs-compact-label"},"Featured Class"),/*#__PURE__*/React.createElement("span",{className:"fcs-compact-title"},"Scene Study Workshop")),/*#__PURE__*/React.createElement("button",{type:"button",className:"fcs-compact-btn",onClick:go,tabIndex:collapsed?0:-1},"View Classes \u2192")));}function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){// Industry accounts (CD, admin, producer, studio) don't have a talent
 // membership, so the savings copy doesn't apply to them.
 const userType=(myProfile?.user_type||"").toLowerCase();const isCDish=["cd","admin","super_admin","producer","studio"].includes(userType);if(isLoggedIn&&isCDish)return null;// Hide once a user has an active membership. Spec says "if on yearly,
 // hide" but it's safer to hide for any active paid plan — pestering an
