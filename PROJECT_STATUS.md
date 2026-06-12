@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-06-11 (eve) — Legal pages from PDFs, Manager Mode 2+3, mobile card fix
+
+- **Terms of Service & Privacy Policy replaced** with the owner-provided counsel PDFs. `legal_pages` rows (`terms-of-use`, `privacy-policy`) are DB-backed and read at runtime, so this is **live on production immediately — no deploy**. Converter (`/tmp/legal_to_html.py`) cleaned PDF page headers + publisher-facing drafting scaffolding/jokes, filled bracketed placeholders with established values (`legal@`/`hello@castslate.com`, `privacy@castslate.com`, NY address, effective June 11 2026), and built clean HTML (h2/h3/ul). TOS: 24 §§ + Manager Mode addendum + Addendum B (Nationwide). Privacy: 31 §§ + CCPA/GDPR/AI/children + addendum. Upserted via a briefly-elevated QA admin + browser `fetch()` of locally-served HTML (kept 107 KB out of context); reverted. Verified both render in-app with no placeholders/scaffolding. **Lawyer review still advisable.**
+- **Manager Mode Concept 2 (live card preview before paywall)** — commit b31be6c. Free users build/preview their real card (watermarked); Activate CTA under it. The preview infra already existed but was dead code behind an early-return gate.
+- **Manager Mode Concept 3 (card as submission tool)** — commit 518cd2a. Public talent profile is viewer-adaptive: CD → Invite/Self-Tape(template)/Message/Save; logged-in actor → Message; logged-out → free-account funnel (`sc_return_to` preserved → returns to profile after signup). **No anonymous DB writes** (respects 2026-06-10 security work). Verified all 3 states + self-tape prefill.
+- **Mobile actor-card cutoff fixed** — commit 518cd2a. `ActorCardPreview` was hard-coded `width:390px`, overflowing 375px phones and clipping the page. Now fluid (`width:100%`/`maxWidth:390` + `aspect-ratio`, photo `32.8%`), `minWidth:0` on builder columns. Verified at 375px: card 307px, no overflow.
+- **Self Improvement board**: 21 fixed / 2 needs-approval / 5 suggested. Stripe-live-mode + the two legal-clause items closed (addressed by the new legal docs).
+- **Awaiting owner**: My Profile mobile tab strip — pick option A/B/C (demo `profile-tabs-mobile-demo.html`, B recommended). Manager Mode Concept 1 (availability status) not yet built.
+
+---
+
 ## 2026-06-11 (later) — Logged-in audit, audit fixes, Stripe mode answer, Manager Mode demos
 
 - **Stripe is in LIVE mode** (checkout session `cs_live_` via QA-actor probe; no charge made). The 2026-05-19 subscriber was a real payment.
