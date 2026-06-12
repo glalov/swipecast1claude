@@ -21014,6 +21014,34 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
 
         <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:32,alignItems:'start'}}>
 
+          {/* On mobile, pin the live preview near the top so it stays visible
+              while the user scrolls the controls (e.g. the position slider). */}
+          {isMobile&&(
+            <div style={{display:'flex',flexDirection:'column',gap:10,alignItems:'center',position:'sticky',top:'calc(var(--site-top-h, 56px) + 8px)',zIndex:5,background:'var(--bg)',paddingBottom:10,width:'100%'}}>
+              <div style={{fontWeight:700,fontSize:11,color:'var(--t3)',textTransform:'uppercase',letterSpacing:1}}>Live Card Preview</div>
+              <ActorCardPreview
+                displayName={displayName}
+                headline={headline}
+                showLocation={showLocation}
+                location={location}
+                tags={cardTags}
+                showUnion={showUnion}
+                unionStatus={unionStatus}
+                headshotUrl={selectedPhoto}
+                publicSlug={publicSlug}
+                qrDataUrl={qrDataUrl}
+                photoZoom={photoZoom}
+                photoPosX={photoPosX}
+                photoPosY={photoPosY}
+                photoRef={photoRef}
+                onPhotoMouseDown={handlePhotoMouseDown}
+                onPhotoTouchStart={handlePhotoMouseDown}
+                isDragging={isDragging}
+                watermark={!isPremium}
+              />
+            </div>
+          )}
+
           {/* LEFT — builder controls */}
           <div style={{display:'flex',flexDirection:'column',gap:18,minWidth:0}}>
 
@@ -21136,29 +21164,33 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
             </div>
           </div>
 
-          {/* RIGHT — card preview with draggable headshot */}
-          <div style={{display:'flex',flexDirection:'column',gap:16,alignItems:isMobile?'center':'flex-start',position:'sticky',top:24,minWidth:0,width:'100%'}}>
-            <div style={{fontWeight:700,fontSize:11,color:'var(--t3)',textTransform:'uppercase',letterSpacing:1}}>Live Card Preview</div>
-            <ActorCardPreview
-              displayName={displayName}
-              headline={headline}
-              showLocation={showLocation}
-              location={location}
-              tags={cardTags}
-              showUnion={showUnion}
-              unionStatus={unionStatus}
-              headshotUrl={selectedPhoto}
-              publicSlug={publicSlug}
-              qrDataUrl={qrDataUrl}
-              photoZoom={photoZoom}
-              photoPosX={photoPosX}
-              photoPosY={photoPosY}
-              photoRef={photoRef}
-              onPhotoMouseDown={handlePhotoMouseDown}
-              onPhotoTouchStart={handlePhotoMouseDown}
-              isDragging={isDragging}
-              watermark={!isPremium}
-            />
+          {/* RIGHT — card preview with draggable headshot (desktop), or
+              non-sticky preview text/upsell continuation (mobile, since the
+              preview itself is pinned at the top of the grid above). */}
+          <div style={{display:'flex',flexDirection:'column',gap:16,alignItems:isMobile?'center':'flex-start',position:isMobile?'static':'sticky',top:24,minWidth:0,width:'100%'}}>
+            {!isMobile&&(<>
+              <div style={{fontWeight:700,fontSize:11,color:'var(--t3)',textTransform:'uppercase',letterSpacing:1}}>Live Card Preview</div>
+              <ActorCardPreview
+                displayName={displayName}
+                headline={headline}
+                showLocation={showLocation}
+                location={location}
+                tags={cardTags}
+                showUnion={showUnion}
+                unionStatus={unionStatus}
+                headshotUrl={selectedPhoto}
+                publicSlug={publicSlug}
+                qrDataUrl={qrDataUrl}
+                photoZoom={photoZoom}
+                photoPosX={photoPosX}
+                photoPosY={photoPosY}
+                photoRef={photoRef}
+                onPhotoMouseDown={handlePhotoMouseDown}
+                onPhotoTouchStart={handlePhotoMouseDown}
+                isDragging={isDragging}
+                watermark={!isPremium}
+              />
+            </>)}
             <div style={{maxWidth:390,width:'100%'}}>
               <p style={{fontSize:11.5,color:'var(--t3)',lineHeight:1.6,margin:'0 0 10px'}}>
                 {isPremium
