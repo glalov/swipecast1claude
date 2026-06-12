@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CastSlate — mobile promo brightness compare</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700;9..40,800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#d8d3c8;font-family:'DM Sans',sans-serif;padding:30px 20px 70px;}
+  .hd{text-align:center;font-size:14px;color:#222;max-width:760px;margin:0 auto 22px;line-height:1.5;}
+  .hd b{color:#000;}
+  .row{display:flex;gap:26px;justify-content:center;flex-wrap:wrap;align-items:flex-start;}
+  .col{display:flex;flex-direction:column;align-items:center;gap:9px;}
+  .tag{font-size:12px;font-weight:800;color:#2a2a2a;background:#fff;border:1px solid #c5bfb2;border-radius:20px;padding:4px 13px;}
+  .tag.live{background:#1A1A2E;color:#fff;border-color:#1A1A2E;}
+  .phone{width:340px;background:#fff;border-radius:28px;overflow:hidden;box-shadow:0 16px 44px rgba(0,0,0,.26);border:1px solid #c9c3b6;}
+  .statusbar{height:26px;background:#0c0a08;display:flex;align-items:center;justify-content:space-between;padding:0 16px;color:#fff;font-size:11px;font-weight:700;}
+
+  /* production mobile CSS (brightness overridden per-phone below) */
+  .featured-class-stripe{position:relative;width:100%;line-height:0;background:#0c0a08;height:148px;overflow:hidden;}
+  .fcs-img{height:100%;width:100%;object-fit:cover;object-position:70% center;display:block;}
+  .fcs-mobile{display:flex;flex-direction:column;gap:5px;position:absolute;left:18px;top:50%;transform:translateY(-50%);z-index:2;max-width:62%;line-height:normal;}
+  .fcs-mobile::before{content:"";position:absolute;inset:-22px -56px -22px -30px;z-index:-1;background:linear-gradient(90deg,rgba(8,8,10,0.72) 0%,rgba(8,8,10,0.4) 56%,rgba(8,8,10,0) 100%);}
+  .fcs-m-label{font-size:9px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#E0A43B;}
+  .fcs-m-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:20px;line-height:1.03;color:#fff;text-shadow:0 1px 7px rgba(0,0,0,0.6);}
+  .fcs-m-btn{align-self:flex-start;margin-top:5px;background:#E0A43B;color:#231706;border:none;border-radius:7px;padding:7px 15px;font-size:10.5px;font-weight:800;line-height:1;cursor:pointer;}
+
+  .b146 .fcs-img{filter:brightness(1.46) saturate(1.07);}
+  .b160 .fcs-img{filter:brightness(1.60) saturate(1.07);}
+  .b175 .fcs-img{filter:brightness(1.75) saturate(1.08);}
+  .b190 .fcs-img{filter:brightness(1.90) saturate(1.08);}
+
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1px solid #ECE6DA;}
+  .nav .logo{display:flex;align-items:center;gap:7px;font-weight:800;font-size:16px;color:#1A1A2E;}
+  .nav .li{width:25px;height:25px;border-radius:6px;background:#1A1A2E;display:grid;place-items:center;}
+  .nav .li svg{width:15px;height:15px;}
+  .nav .burger{width:34px;height:34px;border:1px solid #E5DFD2;border-radius:8px;display:grid;place-items:center;}
+  .nav .burger span{display:block;width:15px;height:2px;background:#1A1A2E;box-shadow:0 -4px 0 #1A1A2E,0 4px 0 #1A1A2E;}
+</style>
+</head>
+<body>
+  <p class="hd"><b>Brightness compare.</b> Same banner, four brightness levels. <b>1.46 is what's live now.</b> Tell me which number you want and I'll deploy it. (Note: your desktop monitor ≠ phone screen — final call is best made on your actual phone.)</p>
+  <div class="row">
+    <!-- template repeated with different brightness class -->
+    <div class="col"><span class="tag live">1.46 — live now</span>
+      <div class="phone"><div class="statusbar"><span>18:31</span><span>LTE</span></div>
+        <aside class="featured-class-stripe b146"><img class="fcs-img" src="http://localhost:8060/assets/banner/scene-study.png"/><div class="fcs-mobile"><span class="fcs-m-label">Featured Class</span><span class="fcs-m-title">Scene Study Workshop</span><button class="fcs-m-btn">View Classes →</button></div></aside>
+        <div class="nav"><div class="logo"><span class="li"><svg viewBox="0 0 32 32"><path fill="#fff" d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"/></svg></span>CastSlate</div><div class="burger"><span></span></div></div>
+      </div>
+    </div>
+    <div class="col"><span class="tag">1.60 — brighter</span>
+      <div class="phone"><div class="statusbar"><span>18:31</span><span>LTE</span></div>
+        <aside class="featured-class-stripe b160"><img class="fcs-img" src="http://localhost:8060/assets/banner/scene-study.png"/><div class="fcs-mobile"><span class="fcs-m-label">Featured Class</span><span class="fcs-m-title">Scene Study Workshop</span><button class="fcs-m-btn">View Classes →</button></div></aside>
+        <div class="nav"><div class="logo"><span class="li"><svg viewBox="0 0 32 32"><path fill="#fff" d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"/></svg></span>CastSlate</div><div class="burger"><span></span></div></div>
+      </div>
+    </div>
+    <div class="col"><span class="tag">1.75 — much brighter</span>
+      <div class="phone"><div class="statusbar"><span>18:31</span><span>LTE</span></div>
+        <aside class="featured-class-stripe b175"><img class="fcs-img" src="http://localhost:8060/assets/banner/scene-study.png"/><div class="fcs-mobile"><span class="fcs-m-label">Featured Class</span><span class="fcs-m-title">Scene Study Workshop</span><button class="fcs-m-btn">View Classes →</button></div></aside>
+        <div class="nav"><div class="logo"><span class="li"><svg viewBox="0 0 32 32"><path fill="#fff" d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"/></svg></span>CastSlate</div><div class="burger"><span></span></div></div>
+      </div>
+    </div>
+    <div class="col"><span class="tag">1.90 — max (risk: washed out)</span>
+      <div class="phone"><div class="statusbar"><span>18:31</span><span>LTE</span></div>
+        <aside class="featured-class-stripe b190"><img class="fcs-img" src="http://localhost:8060/assets/banner/scene-study.png"/><div class="fcs-mobile"><span class="fcs-m-label">Featured Class</span><span class="fcs-m-title">Scene Study Workshop</span><button class="fcs-m-btn">View Classes →</button></div></aside>
+        <div class="nav"><div class="logo"><span class="li"><svg viewBox="0 0 32 32"><path fill="#fff" d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"/></svg></span>CastSlate</div><div class="burger"><span></span></div></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

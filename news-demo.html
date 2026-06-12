@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>News Section Demo — CastSlate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F5F0; --s1:#FFFFFF; --ink:#1A1A2E; --ink2:#2D2D44;
+    --t2:#5A5A72; --t3:#8E8EA0; --bdr:#E7E1D6;
+    --gold:#B0894F; --gold-soft:#C9AE82;
+    --c-casting:#B0894F; --c-film:#3E6B8C; --c-theater:#9C5A8E;
+    --c-industry:#5C7A5C; --c-actors:#B06A4F;
+  }
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;line-height:1.5;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 32px;}
+  a{color:inherit;} img{display:block;}
+
+  /* fake context band so you can judge scale against other sections */
+  .context{padding:42px 0;text-align:center;color:var(--t3);font-size:12.5px;
+    letter-spacing:.16em;text-transform:uppercase;font-weight:600;}
+  .context.alt{background:var(--ink);color:#7d7d99;}
+  .context .mini{display:block;font-family:'Playfair Display',serif;font-size:22px;
+    letter-spacing:-.01em;text-transform:none;color:var(--t2);margin-top:8px;font-weight:600;}
+  .context.alt .mini{color:#cdbb9a;}
+
+  /* ---------------- COMPACT NEWS SECTION ---------------- */
+  .news{padding:54px 0 58px;border-top:1px solid var(--bdr);}
+  .news-head{display:flex;align-items:baseline;justify-content:space-between;gap:20px;
+    flex-wrap:wrap;margin-bottom:24px;}
+  .news-head .ttl{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+  .news-head h2{font-family:'Playfair Display',serif;font-size:25px;font-weight:600;
+    letter-spacing:-.01em;}
+  .news-head .tag{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+    font-weight:700;color:var(--gold);}
+  .news-head .all{font-size:12.5px;font-weight:600;color:var(--t2);text-decoration:none;
+    display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+  .news-head .all:hover{color:var(--gold);}
+
+  .news-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+
+  .card{background:var(--s1);border:1px solid var(--bdr);border-radius:11px;overflow:hidden;
+    cursor:pointer;transition:.18s;display:flex;flex-direction:column;}
+  .card:hover{transform:translateY(-3px);box-shadow:0 16px 30px -22px rgba(26,26,46,.4);
+    border-color:#dcd4c4;}
+  .card .thumb{position:relative;aspect-ratio:16/10;overflow:hidden;}
+  .card .thumb canvas{width:100%;height:100%;display:block;}
+  .card .cat{position:absolute;top:9px;left:9px;font-size:9.5px;font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--c,rgba(0,0,0,.6));
+    padding:4px 9px;border-radius:999px;}
+  .card .body{padding:13px 14px 14px;display:flex;flex-direction:column;flex:1;}
+  .card h3{font-size:14px;font-weight:600;line-height:1.32;letter-spacing:-.005em;
+    margin-bottom:9px;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+  .card .meta{margin-top:auto;font-size:11px;color:var(--t3);display:flex;
+    align-items:center;gap:7px;flex-wrap:wrap;}
+  .card .meta .by{font-weight:600;color:var(--t2);}
+  .card .meta .sep{width:3px;height:3px;border-radius:50%;background:var(--t3);flex:none;}
+
+  /* hidden-state note (when toggled off in admin) */
+  .news.hidden-by-admin{display:none;}
+  .placeholder-gap{padding:34px 0;text-align:center;color:var(--t3);font-size:13px;
+    border-top:1px dashed var(--bdr);border-bottom:1px dashed var(--bdr);display:none;}
+  .placeholder-gap.show{display:block;}
+
+  /* ---------------- ARTICLE PAGE ---------------- */
+  .article{display:none;padding:44px 0 80px;animation:fade .3s ease;}
+  .article.show{display:block;}
+  .scene.hide{display:none;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .back{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;
+    color:var(--t2);background:none;border:none;cursor:pointer;margin-bottom:24px;}
+  .back:hover{color:var(--ink);}
+  .article-wrap{max-width:720px;margin:0 auto;}
+  .a-cat{display:inline-flex;align-items:center;gap:7px;font-size:10.5px;font-weight:700;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--c,var(--gold));}
+  .a-cat::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}
+  .article h1{font-family:'Playfair Display',serif;font-size:clamp(27px,4vw,38px);
+    font-weight:600;line-height:1.14;letter-spacing:-.015em;margin:14px 0 16px;}
+  .article .a-meta{font-size:13px;color:var(--t3);display:flex;align-items:center;gap:9px;
+    flex-wrap:wrap;margin-bottom:24px;}
+  .article .a-meta .by{font-weight:600;color:var(--t2);}
+  .article .a-meta .sep{width:3px;height:3px;border-radius:50%;background:var(--t3);}
+  .a-hero{aspect-ratio:16/9;border-radius:13px;overflow:hidden;margin-bottom:10px;}
+  .a-hero canvas{width:100%;height:100%;}
+  .a-caption{font-size:12px;color:var(--t3);font-style:italic;margin-bottom:30px;}
+  .a-body p{font-size:16.5px;line-height:1.75;color:var(--ink2);margin-bottom:20px;}
+  .source-box{margin-top:34px;padding:20px 22px;background:var(--s1);border:1px solid var(--bdr);
+    border-left:3px solid var(--gold);border-radius:10px;}
+  .source-box .lbl{font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    font-weight:700;color:var(--t3);margin-bottom:7px;}
+  .source-box a{color:var(--gold);font-weight:600;text-decoration:none;font-size:15px;}
+  .source-box a:hover{text-decoration:underline;}
+  .disclaimer{margin-top:15px;font-size:12px;color:var(--t3);line-height:1.6;font-style:italic;}
+
+  /* ---------------- ADMIN MOCKUP ---------------- */
+  .admin{background:var(--ink);color:#fff;padding:60px 0;}
+  .admin-eyebrow{font-size:11px;letter-spacing:.28em;text-transform:uppercase;
+    font-weight:700;color:var(--gold-soft);}
+  .admin h2{font-family:'Playfair Display',serif;font-size:30px;font-weight:600;margin:12px 0 4px;}
+  .admin .sub{color:#a9a9c0;font-size:14px;margin-bottom:28px;}
+  .panel{background:#23233a;border:1px solid #34344f;border-radius:14px;padding:26px;max-width:680px;}
+  .panel-row{display:flex;align-items:center;justify-content:space-between;gap:20px;
+    padding:18px 0;border-bottom:1px solid #34344f;flex-wrap:wrap;}
+  .panel-row:first-child{padding-top:0;}
+  .panel-row:last-child{border-bottom:none;padding-bottom:0;}
+  .panel-row .t{font-size:15px;font-weight:600;}
+  .panel-row .d{font-size:12.5px;color:#9a9ab5;margin-top:3px;max-width:36em;}
+  .btn-refresh{display:inline-flex;align-items:center;gap:9px;background:var(--gold);
+    color:#1a1a2e;font-weight:700;font-size:14px;padding:12px 20px;border-radius:9px;
+    border:none;cursor:pointer;transition:.2s;white-space:nowrap;}
+  .btn-refresh:hover{background:var(--gold-soft);}
+  .btn-refresh.spin svg{animation:rot .8s linear infinite;}
+  @keyframes rot{to{transform:rotate(360deg);}}
+  .toggle{width:46px;height:26px;border-radius:999px;background:#3d3d5c;position:relative;
+    cursor:pointer;transition:.2s;flex:none;}
+  .toggle::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;
+    border-radius:50%;background:#fff;transition:.2s;}
+  .toggle.on{background:var(--gold);}
+  .toggle.on::after{transform:translateX(20px);}
+  .state-label{font-size:12px;font-weight:600;color:#9a9ab5;margin-right:2px;}
+  .state-label b{color:#fff;}
+  .freq{display:flex;gap:8px;margin-top:12px;}
+  .freq button{font-size:12px;font-weight:600;padding:7px 14px;border-radius:999px;
+    background:#2d2d48;border:1px solid #3d3d5c;color:#c9c9dd;cursor:pointer;transition:.18s;}
+  .freq button.sel{background:var(--gold);color:#1a1a2e;border-color:var(--gold);}
+  .admin-log{margin-top:14px;font-size:12px;color:#8e8eb0;font-family:ui-monospace,monospace;min-height:16px;}
+
+  /* ---------------- DEMO CHROME ---------------- */
+  .demobar{background:#1a1a2e;color:#cdbb9a;text-align:center;font-size:12px;
+    letter-spacing:.14em;text-transform:uppercase;padding:11px;font-weight:600;}
+  .demo-note{max-width:760px;margin:0 auto;padding:24px 28px 64px;font-size:13px;
+    color:var(--t2);line-height:1.65;}
+  .demo-note strong{color:var(--ink);} .demo-note ul{margin:9px 0 0 18px;}
+  .demo-note li{margin-bottom:5px;}
+
+  @media (max-width:900px){.news-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:560px){
+    .wrap{padding:0 20px;}
+    .news-grid{grid-template-columns:repeat(2,1fr);gap:12px;}
+    .card h3{font-size:13px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="demobar">CastSlate · Compact News Section Demo · design preview only — not applied to the live site</div>
+
+<div class="scene" id="scene">
+  <!-- context: where it sits on the page -->
+  <div class="context">↑ Casting calls · Talent profiles · Pricing · Join CTA<span class="mini">…your main landing sections live above…</span></div>
+
+  <!-- ========================= COMPACT NEWS SECTION ========================= -->
+  <section class="news" id="newsSection">
+    <div class="wrap">
+      <div class="news-head">
+        <div class="ttl">
+          <h2>Latest Industry News &amp; Casting Updates</h2>
+          <span class="tag">By CastSlate Staff</span>
+        </div>
+        <a class="all" href="#">View all news →</a>
+      </div>
+      <div class="news-grid" id="grid"></div>
+    </div>
+  </section>
+
+  <!-- shown only when admin hides the section -->
+  <div class="placeholder-gap" id="gap">News section is hidden (toggled off in Super Admin). The page flows straight from your main features to the footer.</div>
+
+  <div class="context alt">↓ Footer · Back to top<span class="mini">…footer continues below…</span></div>
+</div>
+
+<!-- ========================= ARTICLE PAGE ========================= -->
+<section class="article scene" id="articlePage">
+  <div class="wrap">
+    <div class="article-wrap">
+      <button class="back" id="backBtn">← Back to news</button>
+      <span class="a-cat" id="aCat"></span>
+      <h1 id="aTitle"></h1>
+      <div class="a-meta" id="aMeta"></div>
+      <div class="a-hero"><canvas id="aHero"></canvas></div>
+      <p class="a-caption" id="aCaption"></p>
+      <div class="a-body" id="aBody"></div>
+      <div class="source-box">
+        <div class="lbl">Original Source</div>
+        <a id="aSource" href="#" target="_blank" rel="noopener">→</a>
+        <p class="disclaimer">Original CastSlate summary written by our editorial staff. CastSlate does not
+          reproduce full articles or copyrighted images — read the complete report at the source above.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= SUPER ADMIN MOCKUP ========================= -->
+<section class="admin">
+  <div class="wrap">
+    <span class="admin-eyebrow">Super Admin → News Controls</span>
+    <h2>Newsroom Controls</h2>
+    <p class="sub">Run the feed, schedule it, and switch the whole section on or off.</p>
+
+    <div class="panel">
+      <!-- master show/hide -->
+      <div class="panel-row">
+        <div>
+          <div class="t">News section on landing page</div>
+          <div class="d">Master switch. Turn it off anytime and the section disappears from the live page —
+            no empty space, no broken layout.</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span class="state-label" id="showState">Showing <b>·</b></span>
+          <div class="toggle on" id="showToggle"></div>
+        </div>
+      </div>
+
+      <!-- refresh now -->
+      <div class="panel-row">
+        <div>
+          <div class="t">Refresh news now</div>
+          <div class="d">Pulls headlines from approved trade feeds, writes original CastSlate summaries, and publishes.</div>
+          <div class="admin-log" id="adminLog"></div>
+        </div>
+        <button class="btn-refresh" id="refreshBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Refresh News
+        </button>
+      </div>
+
+      <!-- auto refresh -->
+      <div class="panel-row">
+        <div>
+          <div class="t">Automatic refresh</div>
+          <div class="d">Fetch &amp; summarize new stories on a schedule, hands-free.</div>
+          <div class="freq" id="freq">
+            <button data-w="1">Every 1 week</button>
+            <button class="sel" data-w="2">Every 2 weeks</button>
+          </div>
+        </div>
+        <div class="toggle on" id="autoToggle"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="demo-note">
+  <strong>What changed in this version</strong>
+  <ul>
+    <li><strong>Compact &amp; subordinate</strong> — a single tidy row of 4 small cards (wraps to 2 on tablet/mobile), tucked between your main features and the footer. It deliberately doesn't compete with casting calls, profiles, pricing, or join CTAs.</li>
+    <li><strong>Master Show / Hide toggle</strong> — first control in Super Admin → News Controls. Flip it in this demo and watch the section vanish cleanly (no empty gap). If it ever feels messy or thin, hide it — no funeral required.</li>
+    <li><strong>Click a card</strong> → full CastSlate article page: image, title, date, category, original staff-written summary, credited source link + legal disclaimer.</li>
+    <li><strong>Still legally safe</strong> — generated placeholder art, summaries in our own words, source link on every story. No Backstage anywhere.</li>
+  </ul>
+  Tweak anything (card count, size, colors, wording) or say <strong>"apply it"</strong> to wire it into the live landing page + Super Admin with the real refresh pipeline.
+</div>
+
+<script>
+const CATCOLORS={Casting:'#B0894F',Film:'#3E6B8C',Theater:'#9C5A8E',Industry:'#5C7A5C',Actors:'#B06A4F'};
+const SEED={Casting:[28,52],Film:[206,38],Theater:[295,40],Industry:[110,30],Actors:[18,55]};
+
+const ARTICLES=[
+  {id:1,cat:'Casting',title:'Open casting call announced for new indie ensemble drama',
+   src:'IndieWire',link:'https://www.indiewire.com/',date:'Jun 3, 2026',
+   body:['A newly announced independent feature is opening its doors to a wide pool of performers, with casting directors signalling an unusually broad search for its principal ensemble. Several lead roles remain open to actors without prior screen credits.','Photography is expected to begin in late summer, with regional auditions and self-tape submissions both accepted. The team has emphasized authentic performances over marquee names.','CastSlate will track the call as official submission windows are confirmed.']},
+  {id:2,cat:'Film',title:'Studio greenlights mid-budget genre slate for theatrical release',
+   src:'Variety',link:'https://variety.com/',date:'Jun 2, 2026',
+   body:['A major studio has committed to a slate of original mid-budget films intended for theatrical release — a renewed appetite for star-driven, non-franchise storytelling that means more shooting days, and more roles, over the next year.','Analysts note mid-budget projects historically open more doors for character actors and emerging talent than tentpoles.','Casting timelines have not yet been announced.']},
+  {id:3,cat:'Theater',title:'Acclaimed revival extends its run on strong word of mouth',
+   src:'Playbill',link:'https://playbill.com/',date:'Jun 1, 2026',
+   body:['A celebrated stage revival has extended its limited engagement after a wave of strong audience response. The extension is expected to create additional understudy and swing openings as the company grows.','Performers interested in future replacement casting should monitor official audition notices.','Full details are available at the source.']},
+  {id:4,cat:'Industry',title:'New self-tape guidelines aim to standardize auditions',
+   src:'The Hollywood Reporter',link:'https://www.hollywoodreporter.com/',date:'May 31, 2026',
+   body:['A set of proposed self-tape guidelines is circulating across the industry, aiming to standardize tape length, submission turnaround, and the unpaid preparation asked of performers. Advocates say clearer norms would reduce burnout.','The guidelines remain non-binding, but several casting offices have signalled early support.','Read the full report at the source.']},
+  {id:5,cat:'Actors',title:'Breakout performer lands first lead after years auditioning',
+   src:'Deadline',link:'https://deadline.com/',date:'May 30, 2026',
+   body:['A performer long familiar to casting offices has landed a first leading role, capping years of steady auditioning and supporting work — an encouraging example for actors deep in the submission grind.','The actor credited consistent self-tape practice and relationships built with casting teams.','The full profile lives at the source.']},
+  {id:6,cat:'Film',title:'International co-production opens regional casting hubs',
+   src:'ScreenDaily',link:'https://www.screendaily.com/',date:'May 29, 2026',
+   body:['A new international co-production is establishing regional casting hubs as cross-border financing brings shooting to multiple territories. Local performers may see expanded opportunities for principal and background roles.','Submission logistics are being coordinated through regional casting partners.','Details at the source.']},
+];
+const SHOWN=ARTICLES.slice(0,4); // compact: 4 cards
+
+function paint(canvas,cat){
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const r=canvas.getBoundingClientRect();
+  const w=canvas.width=Math.max(r.width,160)*dpr, h=canvas.height=Math.max(r.height,100)*dpr;
+  const ctx=canvas.getContext('2d');
+  const [hue,sat]=SEED[cat]||[28,40];
+  const g=ctx.createLinearGradient(0,0,w,h);
+  g.addColorStop(0,`hsl(${hue},${sat}%,32%)`); g.addColorStop(1,`hsl(${hue+18},${sat-8}%,18%)`);
+  ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+  ctx.globalAlpha=.07; ctx.fillStyle='#fff';
+  for(let x=-h;x<w;x+=44*dpr){ctx.beginPath();
+    ctx.moveTo(x,0);ctx.lineTo(x+h*0.4,h);ctx.lineTo(x+h*0.4+11*dpr,h);ctx.lineTo(x+11*dpr,0);
+    ctx.closePath();ctx.fill();}
+  ctx.globalAlpha=1;
+  const rg=ctx.createRadialGradient(w*0.72,h*0.28,0,w*0.72,h*0.28,w*0.6);
+  rg.addColorStop(0,'rgba(255,255,255,.18)');rg.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=rg;ctx.fillRect(0,0,w,h);
+}
+
+const grid=document.getElementById('grid');
+function metaHTML(a){return `<span class="by">CastSlate Staff</span><span class="sep"></span><span>${a.date}</span><span class="sep"></span><span>via ${a.src}</span>`;}
+
+function render(){
+  grid.innerHTML='';
+  SHOWN.forEach(a=>{
+    const el=document.createElement('div');
+    el.className='card'; el.onclick=()=>openArticle(a.id);
+    el.innerHTML=`<div class="thumb"><canvas></canvas><span class="cat" style="--c:${CATCOLORS[a.cat]}">${a.cat}</span></div>
+      <div class="body"><h3>${a.title}</h3><div class="meta">${metaHTML(a)}</div></div>`;
+    grid.appendChild(el);
+    paint(el.querySelector('canvas'),a.cat);
+  });
+}
+
+const scenes=document.querySelectorAll('.scene');
+const articlePage=document.getElementById('articlePage');
+function openArticle(id){
+  const a=ARTICLES.find(x=>x.id===id);if(!a)return;
+  const cat=document.getElementById('aCat');
+  cat.textContent=a.cat; cat.style.setProperty('--c',CATCOLORS[a.cat]);
+  document.getElementById('aTitle').textContent=a.title;
+  document.getElementById('aMeta').innerHTML=`<span class="by">Written by CastSlate Staff</span><span class="sep"></span><span>${a.date}</span><span class="sep"></span><span>Source: ${a.src}</span>`;
+  document.getElementById('aCaption').textContent='Illustrative image — CastSlate does not republish source photography.';
+  document.getElementById('aBody').innerHTML=a.body.map(p=>`<p>${p}</p>`).join('');
+  const s=document.getElementById('aSource'); s.textContent=`Read the original at ${a.src} →`; s.href=a.link;
+  document.getElementById('scene').classList.add('hide');
+  articlePage.classList.remove('hide'); articlePage.classList.add('show');
+  paint(document.getElementById('aHero'),a.cat);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('backBtn').onclick=()=>{
+  articlePage.classList.remove('show'); articlePage.classList.add('hide');
+  document.getElementById('scene').classList.remove('hide');
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+
+/* admin: show/hide */
+const showToggle=document.getElementById('showToggle');
+const showState=document.getElementById('showState');
+showToggle.onclick=function(){
+  this.classList.toggle('on');
+  const on=this.classList.contains('on');
+  document.getElementById('newsSection').classList.toggle('hidden-by-admin',!on);
+  document.getElementById('gap').classList.toggle('show',!on);
+  showState.innerHTML=on?'Showing <b>·</b>':'Hidden <b>·</b>';
+};
+
+/* admin: refresh */
+const refreshBtn=document.getElementById('refreshBtn');
+const adminLog=document.getElementById('adminLog');
+refreshBtn.onclick=()=>{
+  if(refreshBtn.classList.contains('spin'))return;
+  refreshBtn.classList.add('spin');
+  const steps=['Fetching approved trade feeds…','Filtering casting / film / theater / industry stories…','Generating original CastSlate summaries…','Saving to database…','Published ✓'];
+  let i=0;adminLog.textContent='';
+  const t=setInterval(()=>{adminLog.textContent=steps[i++];
+    if(i>=steps.length){clearInterval(t);refreshBtn.classList.remove('spin');}},620);
+};
+document.getElementById('autoToggle').onclick=function(){this.classList.toggle('on');};
+document.getElementById('freq').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  document.querySelectorAll('#freq button').forEach(x=>x.classList.remove('sel'));
+  b.classList.add('sel');
+});
+
+render();
+let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(render,150);});
+</script>
+</body>
+</html>

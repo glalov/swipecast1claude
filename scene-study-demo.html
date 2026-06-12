@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CastSlate — Scene Study Workshop banner (your image, as-is)</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet"/>
+<style>
+  :root{--bg:#F7F4EE;--ink:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--teal:#4F8A8B;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);font-family:'DM Sans',system-ui,sans-serif;color:var(--ink);padding:30px 0 90px;}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 24px;}
+  h1.page{font-size:21px;font-weight:800;margin-bottom:6px;}
+  p.page{color:var(--t2);font-size:13.5px;margin-bottom:6px;line-height:1.55;max-width:980px;}
+  .cap{font-size:12.5px;color:var(--t2);margin-top:11px;line-height:1.55;max-width:980px;}
+  .frame{border:1px solid #E5DFD2;border-radius:14px;overflow:hidden;box-shadow:0 12px 38px rgba(26,26,46,.12);background:#fff;}
+
+  /* ===== promo bar = your image, used as-is, full width ===== */
+  .pbar{position:relative;display:block;line-height:0;}
+  .pbar img{display:block;width:100%;height:auto;}
+  /* invisible clickable hotspot over the baked-in "view classes" button */
+  .pbar .hot{position:absolute;left:4.4%;top:74%;width:11.5%;height:22%;z-index:3;
+    display:block;border-radius:6px;cursor:pointer;
+    /* DEMO ONLY outline so you can confirm alignment — removed for production */
+    outline:2px dashed rgba(255,210,90,.95);outline-offset:1px;background:rgba(255,210,90,.12);}
+  .pbar .hot:hover{background:rgba(255,210,90,.22);}
+  /* close X like a real promo bar (optional) */
+  .pbar .x{position:absolute;top:12px;right:16px;z-index:4;width:26px;height:26px;display:grid;place-items:center;
+    border-radius:50%;color:#fff;opacity:.6;cursor:pointer;border:1px solid rgba(255,255,255,.3);font-size:13px;line-height:1;}
+
+  /* fake nav under the bar */
+  .nav{display:flex;align-items:center;gap:22px;padding:14px 26px;background:#fff;border-top:1px solid #ECE6DA;}
+  .nav .logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:17px;color:var(--ink);}
+  .nav .logo .li{width:26px;height:26px;border-radius:7px;background:var(--ink);display:grid;place-items:center;}
+  .nav .logo .li svg{width:15px;height:15px;}
+  .nav .links{display:flex;gap:18px;font-size:13.5px;color:var(--t2);font-weight:600;margin-left:8px;}
+  .nav .links a:first-child{color:var(--ink);}
+  .nav .acts{margin-left:auto;display:flex;gap:8px;}
+  .nav .btn{padding:8px 15px;border-radius:8px;font-size:12.5px;font-weight:700;border:1px solid #E5DFD2;background:#fff;color:var(--ink);}
+  .nav .btn.teal{background:var(--teal);color:#fff;border:none;}
+  .swapnote{background:#fff8ec;border:1px solid #f0e2c4;border-radius:10px;padding:13px 16px;margin-top:16px;font-size:12.5px;color:#7a5a22;line-height:1.55;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="page">CastSlate — Scene Study Workshop banner · your image, used as-is</h1>
+  <p class="page">Your banner (3360×430) dropped straight into the promo-bar slot, above the nav. The yellow dashed box is a <b>clickable hotspot over the “view classes” button</b> — click it and it routes to the Classes page. <b>The dashed outline is DEMO-ONLY</b> so you can confirm it lines up; it’s invisible on the real site. Demo only — not live.</p>
+
+  <div class="frame">
+    <div class="pbar">
+      <img src="assets/banner/scene-study.png" alt="Featured Class — Scene Study Workshop"/>
+      <a class="hot" href="classes.html" aria-label="View classes"></a>
+      <span class="x">✕</span>
+    </div>
+    <div class="nav">
+      <div class="logo"><span class="li"><svg viewBox="0 0 32 32"><path fill="#fff" d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"/></svg></span>CastSlate</div>
+      <div class="links"><a>Home</a><a>Browse Castings</a><a>Classes</a><a>TapeLink</a><a>Blog</a></div>
+      <div class="acts"><span class="btn teal">Join ▾</span><span class="btn">Post a Job</span><span class="btn">Sign in</span></div>
+    </div>
+  </div>
+  <p class="cap">If the dashed box isn’t centered on the “view classes” button, tell me and I’ll nudge it. Once it’s aligned and you approve, I make it invisible, wire it into the real <code>promo-stripe</code> in app.js, and deploy + verify on castslate.com.</p>
+
+  <div class="swapnote">Note: this uses your image <b>exactly as-is</b> — baked-in text and button, nothing re-rendered. Only the click target over “view classes” is added on top.</div>
+</div>
+</body>
+</html>

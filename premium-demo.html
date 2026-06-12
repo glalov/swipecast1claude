@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CastSlate — Premium Direction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F4EE; --s1:#FFFFFF; --ink:#1A1A2E; --ink2:#2D2D44;
+    --t2:#5A5A72; --t3:#8E8EA0; --bdr:#E5DFD2;
+    --gold:#B0894F;            /* champagne — used sparingly */
+    --gold-soft:#C9AE82;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  .serif{font-family:'Playfair Display',Georgia,serif;}
+  .eyebrow{font-size:11px;letter-spacing:.28em;text-transform:uppercase;
+    font-weight:700;color:var(--gold);display:inline-flex;align-items:center;gap:12px;}
+  .eyebrow::before,.eyebrow.center::after{content:"";width:28px;height:1px;background:var(--gold-soft);display:inline-block;}
+  .btn{display:inline-block;font-weight:700;font-size:14px;letter-spacing:.01em;
+    padding:16px 30px;border-radius:2px;cursor:pointer;text-decoration:none;transition:.25s;border:1px solid transparent;}
+  .btn-solid{background:var(--ink);color:#fff;}
+  .btn-solid:hover{background:var(--ink2);transform:translateY(-1px);}
+  .btn-ghost{background:transparent;color:var(--ink);border-color:var(--ink);}
+  .btn-ghost:hover{background:var(--ink);color:#fff;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 40px;}
+
+  /* tag note */
+  .tagbar{background:var(--ink);color:#cdbb9a;text-align:center;font-size:12px;
+    letter-spacing:.18em;text-transform:uppercase;padding:11px;font-weight:600;}
+
+  /* ---------- HERO ---------- */
+  .hero{padding:110px 0 96px;}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:72px;align-items:center;}
+  .hero h1{font-size:74px;line-height:1.02;font-weight:600;letter-spacing:-.015em;margin:26px 0 0;}
+  .hero h1 em{font-style:italic;color:var(--gold);font-weight:500;}
+  .hero p.lede{font-size:18px;line-height:1.65;color:var(--t2);margin:28px 0 38px;max-width:30em;}
+  .hero .cta-row{display:flex;gap:14px;align-items:center;}
+  .hero .fineprint{margin-top:22px;font-size:13px;color:var(--t3);letter-spacing:.02em;}
+  .hero-card{position:relative;aspect-ratio:4/5;border-radius:4px;overflow:hidden;
+    box-shadow:0 40px 80px -30px rgba(26,26,46,.45);}
+  .hero-card img{width:100%;height:100%;object-fit:cover;filter:saturate(.92) contrast(1.03);}
+  .hero-card .frame{position:absolute;inset:14px;border:1px solid rgba(255,255,255,.35);border-radius:2px;pointer-events:none;}
+  .hero-card .meta{position:absolute;left:0;right:0;bottom:0;padding:26px 24px 22px;
+    background:linear-gradient(transparent,rgba(20,20,35,.82));color:#fff;}
+  .hero-card .meta .nm{font-size:22px;font-weight:600;}
+  .hero-card .meta .sb{font-size:13px;opacity:.8;margin-top:2px;letter-spacing:.02em;}
+
+  /* ---------- MARQUEE ---------- */
+  .marquee{position:relative;overflow:hidden;padding:18px 0;margin-top:30px;
+    border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
+            mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);}
+  .mtrack{display:flex;align-items:center;width:max-content;animation:slide 52s linear infinite;}
+  .marquee:hover .mtrack{animation-play-state:paused;}
+  .mword{font-family:'Playfair Display',serif;font-weight:600;font-size:54px;
+    text-transform:uppercase;letter-spacing:.05em;color:rgba(26,26,46,.46);
+    display:flex;align-items:center;gap:44px;padding:0 44px;white-space:nowrap;}
+  .mword .d{width:7px;height:7px;background:var(--gold);transform:rotate(45deg);flex:none;}
+  @keyframes slide{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+  /* ---------- STATS ---------- */
+  .stats{padding:96px 0;}
+  .stats-inner{display:grid;grid-template-columns:repeat(4,1fr);}
+  .stat{text-align:center;padding:0 24px;position:relative;}
+  .stat + .stat::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:1px;background:var(--bdr);}
+  .stat .n{font-family:'Playfair Display',serif;font-size:56px;font-weight:500;letter-spacing:-.01em;line-height:1;}
+  .stat .n small{font-size:24px;color:var(--gold);}
+  .stat .l{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);margin-top:14px;font-weight:600;}
+
+  /* ---------- TESTIMONIALS ---------- */
+  .quotes{padding:30px 0 100px;}
+  .section-head{text-align:center;margin-bottom:58px;}
+  .section-head h2{font-family:'Playfair Display',serif;font-size:46px;font-weight:600;letter-spacing:-.01em;margin-top:18px;}
+  .qgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;}
+  .qcard{background:var(--s1);border:1px solid var(--bdr);border-radius:4px;padding:38px 32px;}
+  .qmark{font-family:'Playfair Display',serif;font-size:64px;line-height:.6;color:var(--gold-soft);height:34px;}
+  .qcard p{font-family:'Playfair Display',serif;font-style:italic;font-size:19px;line-height:1.5;color:var(--ink);margin:18px 0 26px;}
+  .qwho{display:flex;align-items:center;gap:13px;}
+  .qav{width:42px;height:42px;border-radius:50%;background:linear-gradient(140deg,var(--gold-soft),var(--gold));}
+  .qwho .qn{font-weight:700;font-size:14px;}
+  .qwho .qr{font-size:12.5px;color:var(--t3);letter-spacing:.02em;}
+
+  /* ---------- CLOSING CTA ---------- */
+  .closing{background:var(--ink);color:#fff;text-align:center;padding:104px 40px;}
+  .closing .eyebrow{color:var(--gold-soft);}
+  .closing .eyebrow::before,.closing .eyebrow::after{background:rgba(201,174,130,.5);}
+  .closing h2{font-family:'Playfair Display',serif;font-size:58px;font-weight:500;letter-spacing:-.01em;margin:22px 0 14px;}
+  .closing p{color:#b9b9c8;font-size:17px;max-width:32em;margin:0 auto 40px;line-height:1.6;}
+  .closing .btn-ghost{color:#fff;border-color:rgba(255,255,255,.55);}
+  .closing .btn-ghost:hover{background:#fff;color:var(--ink);}
+
+  .label-demo{position:fixed;top:0;left:0;right:0;z-index:50;background:#111;color:#9ad;
+    font:600 12px/1 'DM Sans';letter-spacing:.15em;text-transform:uppercase;text-align:center;padding:7px;}
+  body{padding-top:0;}
+  @media(max-width:820px){.hero-grid,.qgrid,.stats-inner{grid-template-columns:1fr;}
+    .hero h1{font-size:50px;} .stat + .stat::before{display:none;} .stat{padding:22px 0;}
+    .mword{font-size:34px;}}
+</style>
+</head>
+<body>
+  <div class="tagbar">Limited engagement · Founding-member pricing through opening season</div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">For working actors</span>
+        <h1 class="serif">Casting, <em>finally</em><br>built for actors.</h1>
+        <p class="lede">One actor at a time, full-screen. Every headshot gets seen — and at $9.99 a month, the most accessible plan in the industry. Submit. Get seen. Get cast.</p>
+        <div class="cta-row">
+          <a class="btn btn-solid">Create my profile</a>
+          <a class="btn btn-ghost">I'm a casting director</a>
+        </div>
+        <p class="fineprint">Free actor account · No credit card · 60-second setup</p>
+      </div>
+      <div class="hero-card">
+        <img src="https://images.pexels.com/photos/1languages" onerror="this.src='https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&q=80'" alt="Actor headshot">
+        <div class="frame"></div>
+        <div class="meta">
+          <div class="nm serif">Maria Santos</div>
+          <div class="sb">Meisner Trained · Fluent Spanish · Stage Combat</div>
+        </div>
+      </div>
+    </div>
+    <!-- format marquee -->
+    <div class="marquee">
+      <div class="mtrack" id="mtrack"></div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats">
+    <div class="wrap stats-inner">
+      <div class="stat"><div class="n">100<small>%</small></div><div class="l">Submissions reviewed</div></div>
+      <div class="stat"><div class="n"><small>$</small>9.99</div><div class="l">Per month · cheapest in casting</div></div>
+      <div class="stat"><div class="n">3.2<small>×</small></div><div class="l">Faster to callback</div></div>
+      <div class="stat"><div class="n">72<small>hr</small></div><div class="l">Average response time</div></div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="quotes">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow center" style="justify-content:center;">From the community</span>
+        <h2>Actors and casting directors, on CastSlate.</h2>
+      </div>
+      <div class="qgrid">
+        <div class="qcard"><div class="qmark">&ldquo;</div><p>I got two callbacks in my first week. The full-screen review is something every actor deserves.</p><div class="qwho"><div class="qav"></div><div><div class="qn">Jasmine C.</div><div class="qr">Actor · New York</div></div></div></div>
+        <div class="qcard"><div class="qmark">&ldquo;</div><p>The fairest, most modern casting tool I've used. It respects the actor's time and the work.</p><div class="qwho"><div class="qav"></div><div><div class="qn">David E.</div><div class="qr">Casting Director · LA</div></div></div></div>
+        <div class="qcard"><div class="qmark">&ldquo;</div><p>One actor at a time means my headshot finally gets a real look. That changes everything.</p><div class="qwho"><div class="qav"></div><div><div class="qn">Marcus R.</div><div class="qr">Actor · Atlanta</div></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLOSING -->
+  <section class="closing">
+    <span class="eyebrow center" style="justify-content:center;">Now casting</span>
+    <h2>Your work deserves to be seen.</h2>
+    <p>Create your free profile in under a minute and start submitting to real roles today.</p>
+    <a class="btn btn-ghost">Begin your profile</a>
+  </section>
+
+<script>
+  const FORMATS=["FILM","TELEVISION","INDIE FEATURES","STUDIO PROJECTS","THEATER","COMMERCIALS"];
+  const t=document.getElementById('mtrack');
+  const one=FORMATS.map(w=>`<span class="mword"><span class="d"></span>${w}</span>`).join('');
+  t.innerHTML=one+one;
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CastSlate — Guarantee Card Options</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#F7F4EE;--bdr:#E5DFD2;
+    --t1:#1A1A2E;--t2:#5A5A72;
+    --teal:#4F8A8B;--amber:#E8902A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased;padding:40px 0 90px;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 clamp(16px,4vw,40px);}
+  .tag{display:inline-block;color:#fff;font-family:'DM Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;padding:6px 12px;border-radius:100px;margin:34px 0 14px;}
+  .secnote{max-width:920px;margin:10px auto 0;padding:0 clamp(16px,4vw,40px);color:var(--t2);font-size:13px;line-height:1.6;}
+
+  .g{max-width:920px;margin:0 auto;padding:0 clamp(16px,4vw,40px);}
+  .g-inner{position:relative;overflow:hidden;border-radius:26px;padding:clamp(40px,5.5vw,60px) clamp(24px,5vw,52px);text-align:center;}
+  .g-badge{display:inline-flex;align-items:center;gap:7px;font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:800;letter-spacing:1.5px;padding:7px 15px;border-radius:100px;margin-bottom:22px;position:relative;text-transform:uppercase;}
+  .g-inner h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(28px,4.6vw,46px);letter-spacing:-1.4px;line-height:1.08;margin:0;position:relative;}
+  .g-divider{display:flex;align-items:center;justify-content:center;gap:14px;max-width:520px;margin:26px auto 24px;position:relative;}
+  .g-divider .line{flex:1;height:2px;border-radius:2px;}
+  .g-body{font-size:clamp(15px,1.7vw,17.5px);line-height:1.65;max-width:660px;margin:0 auto;position:relative;}
+  .blob{position:absolute;border-radius:50%;pointer-events:none;}
+
+  /* ===== A — WARM CREAM + AMBER ===== */
+  .a .g-inner{background:linear-gradient(180deg,#FFFDF8 0%,#FBF1DF 100%);border:1px solid #EFDFC2;box-shadow:0 22px 56px -34px rgba(232,144,42,.45),0 2px 8px rgba(26,26,46,.04);}
+  .a .g-badge{background:linear-gradient(135deg,#F2A33E,#E8902A);color:#fff;box-shadow:0 8px 18px -8px rgba(232,144,42,.7);}
+  .a .g-inner h3{color:var(--t1);}
+  .a .g-inner h3 .hl{color:var(--amber);}
+  .a .g-divider .line{background:linear-gradient(90deg,rgba(232,144,42,0),rgba(232,144,42,.55));}
+  .a .g-divider .line:last-child{background:linear-gradient(90deg,rgba(232,144,42,.55),rgba(232,144,42,0));}
+  .a .g-body{color:var(--t2);}
+  .a .g-body b{color:var(--t1);}
+  .a .g-body .teal{color:var(--teal);font-weight:700;}
+  .a .b1{width:300px;height:300px;background:radial-gradient(circle,rgba(232,144,42,.16),transparent 70%);top:-100px;right:-40px;}
+
+  /* ===== B — TEAL GRADIENT BLOCK ===== */
+  .b .g-inner{background:linear-gradient(135deg,#5C9FA0 0%,#4F8A8B 45%,#3B6E6F 100%);color:#fff;box-shadow:0 26px 60px -34px rgba(26,26,46,.5);}
+  .b .g-badge{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.28);}
+  .b .g-inner h3{color:#fff;}
+  .b .g-inner h3 .hl{color:#FFD79A;}
+  .b .g-divider .line{background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.5));}
+  .b .g-divider .line:last-child{background:linear-gradient(90deg,rgba(255,255,255,.5),rgba(255,255,255,0));}
+  .b .g-body{color:rgba(255,255,255,.88);}
+  .b .g-body b{color:#fff;}
+  .b .g-body .teal{color:#FFD79A;font-weight:700;}
+  .b .b1{width:320px;height:320px;background:radial-gradient(circle,rgba(232,144,42,.34),transparent 70%);top:-110px;right:-50px;}
+  .b .b2{width:240px;height:240px;background:radial-gradient(circle,rgba(255,255,255,.14),transparent 70%);bottom:-90px;left:-30px;}
+
+  /* ===== C — WHITE CARD + COLORFUL GLOW ===== */
+  .c .g-inner{background:#fff;border:1px solid var(--bdr);box-shadow:0 24px 60px -36px rgba(26,26,46,.35);}
+  .c .g-badge{background:linear-gradient(135deg,#5C9FA0,#3B6E6F);color:#fff;box-shadow:0 8px 18px -8px rgba(79,138,139,.6);}
+  .c .g-inner h3{color:var(--t1);}
+  .c .g-inner h3 .hl{background:linear-gradient(90deg,var(--teal),var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .c .g-divider .line{background:linear-gradient(90deg,rgba(79,138,139,0),rgba(79,138,139,.5));}
+  .c .g-divider .line:last-child{background:linear-gradient(90deg,rgba(232,144,42,.5),rgba(232,144,42,0));}
+  .c .g-body{color:var(--t2);}
+  .c .g-body b{color:var(--t1);}
+  .c .g-body .teal{color:var(--teal);font-weight:700;}
+  .c .b1{width:300px;height:300px;background:radial-gradient(circle,rgba(79,138,139,.22),transparent 70%);top:-110px;left:-50px;}
+  .c .b2{width:280px;height:280px;background:radial-gradient(circle,rgba(232,144,42,.20),transparent 70%);bottom:-100px;right:-40px;}
+
+  .shield{flex-shrink:0;display:inline-flex;}
+</style>
+</head>
+<body>
+
+<!-- ===== A ===== -->
+<div class="wrap"><span class="tag" style="background:var(--amber)">Option A · Warm cream + amber</span></div>
+<div class="g a">
+  <div class="g-inner">
+    <span class="blob b1"></span>
+    <span class="g-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z"/><path d="M9 12l2 2 4-4"/></svg>THE CASTSLATE GUARANTEE</span>
+    <h3>Your headshot gets <span class="hl">seen.</span> Period.</h3>
+    <div class="g-divider">
+      <span class="line"></span>
+      <span class="shield"><svg width="40" height="40" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z" fill="var(--amber)"/><path d="M9 12l2 2 4-4" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="line"></span>
+    </div>
+    <p class="g-body">On legacy platforms, your submission is one face in a grid of 80. Directors scan in seconds. On CastSlate, every submission is <span class="teal">full-screen</span>. The CD <b>must</b> decide: pass or callback. No grids. No skipping. Your shot, actually taken.</p>
+  </div>
+</div>
+<p class="secnote"><strong>Light & welcoming.</strong> Warm cream gradient with an amber badge/shield and amber-highlighted "seen." Keeps the premium, airy feel — just warmer than the current grayscale card.</p>
+
+<!-- ===== B ===== -->
+<div class="wrap"><span class="tag" style="background:var(--teal)">Option B · Teal gradient block</span></div>
+<div class="g b">
+  <div class="g-inner">
+    <span class="blob b1"></span><span class="blob b2"></span>
+    <span class="g-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z"/><path d="M9 12l2 2 4-4"/></svg>THE CASTSLATE GUARANTEE</span>
+    <h3>Your headshot gets <span class="hl">seen.</span> Period.</h3>
+    <div class="g-divider">
+      <span class="line"></span>
+      <span class="shield"><svg width="40" height="40" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z" fill="var(--amber)"/><path d="M9 12l2 2 4-4" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="line"></span>
+    </div>
+    <p class="g-body">On legacy platforms, your submission is one face in a grid of 80. Directors scan in seconds. On CastSlate, every submission is <span class="teal">full-screen</span>. The CD <b>must</b> decide: pass or callback. No grids. No skipping. Your shot, actually taken.</p>
+  </div>
+</div>
+<p class="secnote"><strong>Bold & confident.</strong> Matches the new teal CTA card. Note: two teal blocks on one page may be a lot — strongest if you want the guarantee to really stand out.</p>
+
+<!-- ===== C ===== -->
+<div class="wrap"><span class="tag" style="background:#3B6E6F">Option C · White card + colorful glow</span></div>
+<div class="g c">
+  <div class="g-inner">
+    <span class="blob b1"></span><span class="blob b2"></span>
+    <span class="g-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z"/><path d="M9 12l2 2 4-4"/></svg>THE CASTSLATE GUARANTEE</span>
+    <h3>Your headshot gets <span class="hl">seen.</span> Period.</h3>
+    <div class="g-divider">
+      <span class="line"></span>
+      <span class="shield"><svg width="40" height="40" viewBox="0 0 24 24"><defs><linearGradient id="sg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4F8A8B"/><stop offset="1" stop-color="#E8902A"/></linearGradient></defs><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z" fill="url(#sg)"/><path d="M9 12l2 2 4-4" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="line"></span>
+    </div>
+    <p class="g-body">On legacy platforms, your submission is one face in a grid of 80. Directors scan in seconds. On CastSlate, every submission is <span class="teal">full-screen</span>. The CD <b>must</b> decide: pass or callback. No grids. No skipping. Your shot, actually taken.</p>
+  </div>
+</div>
+<p class="secnote"><strong>Premium & playful.</strong> Keeps the clean white card but adds soft teal + amber glow blobs and a teal→amber gradient on "seen." and the shield. Colorful without being a heavy block — pairs nicely beside the teal CTA.</p>
+
+</body>
+</html>

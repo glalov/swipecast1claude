@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CastSlate — Notebook Banner Demo v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700;9..40,800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#F7F4EE;--ink:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--teal:#4F8A8B;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);font-family:'DM Sans',system-ui,sans-serif;color:var(--ink);padding:30px 0 80px;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px;}
+  h1.page{font-size:20px;font-weight:800;margin-bottom:4px;}
+  p.page{color:var(--t2);font-size:13px;margin-bottom:6px;line-height:1.5;}
+  .opt-label{font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--t3);margin:34px 0 10px;}
+  .opt-label span{color:#13a99c;}
+  .frame{border:1px solid #E5DFD2;border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(26,26,46,.06);background:#fff;}
+
+  /* ── Promo banner (thin) ── */
+  .promo{position:relative;display:flex;align-items:center;gap:20px;padding:8px 26px;min-height:62px;overflow:hidden;}
+  .promo--turq{background:linear-gradient(90deg,#0E9E95 0%,#17B9AD 52%,#0E9E95 100%);}
+  .promo--turq2{background:linear-gradient(90deg,#0B8F8A 0%,#119C96 52%,#0B8F8A 100%);}
+
+  /* cube logo (flat rounded square + arrows), not octagon, no 3D */
+  .brand{display:flex;align-items:center;gap:11px;flex-shrink:0;}
+  .cube{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;flex-shrink:0;
+    background:#0c2f2e;box-shadow:0 2px 6px rgba(0,0,0,.28);}
+  .cube svg{width:22px;height:22px;display:block;}
+  .brand .name{font-weight:800;font-size:18px;letter-spacing:.2px;color:#F4FBFA;}
+
+  /* ── Casually torn BLUE lined-paper note, white text ── */
+  .note{position:relative;flex:1;min-width:0;
+    background:
+      linear-gradient(90deg, transparent 0 34px, rgba(255,120,120,.55) 34px 35px, transparent 35px),
+      repeating-linear-gradient(#3f74bf 0 21px, rgba(255,255,255,.26) 21px 22px),
+      linear-gradient(180deg,#4a7ec6,#37699f);
+    padding:10px 24px 11px 46px;
+    transform:rotate(-0.8deg);
+    filter:drop-shadow(0 6px 12px rgba(0,0,0,.28));
+    display:flex;flex-direction:column;justify-content:center;gap:1px;
+    /* hand-torn top + bottom edges */
+    clip-path:polygon(
+      0% 7%,4% 3%,8% 9%,13% 2%,19% 8%,25% 3%,32% 9%,39% 2%,47% 8%,55% 2%,63% 9%,71% 3%,79% 8%,86% 2%,92% 9%,97% 3%,100% 8%,
+      100% 93%,96% 98%,90% 91%,83% 98%,75% 92%,67% 98%,59% 92%,50% 98%,42% 92%,34% 98%,26% 92%,18% 98%,11% 91%,5% 98%,0% 92%);
+  }
+  .note .headline{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:24px;letter-spacing:0;color:#fff;line-height:1.04;text-shadow:0 1px 3px rgba(0,0,0,.3);}
+  .note .sub{font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;color:#eaf2ff;letter-spacing:.1px;text-shadow:0 1px 2px rgba(0,0,0,.25);}
+
+  .tape{position:absolute;width:58px;height:19px;z-index:3;opacity:.55;
+    background:repeating-linear-gradient(135deg, rgba(245,245,245,.9) 0 7px, rgba(220,225,228,.65) 7px 14px);
+    box-shadow:0 1px 3px rgba(0,0,0,.16);}
+  .tape.tl{top:-3px;left:30px;transform:rotate(-20deg);}
+
+  /* ── Join button — Backstage style (solid rounded, bold) ── */
+  .join{flex-shrink:0;border:none;border-radius:9px;padding:12px 28px;cursor:pointer;
+    font-family:'DM Sans',sans-serif;font-weight:800;font-size:14.5px;letter-spacing:.2px;
+    background:#ffffff;color:#0c6b63;box-shadow:0 3px 10px rgba(0,0,0,.18);}
+  .join--alt{background:#0c2f2e;color:#fff;}
+
+  /* ── faux nav ── */
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 26px;background:#fff;border-top:1px solid #ECE6DA;}
+  .nav .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;}
+  .nav .logo .li{width:28px;height:28px;border-radius:7px;background:var(--ink);display:grid;place-items:center;}
+  .nav .logo .li svg{width:17px;height:17px;}
+  .nav .links{display:flex;gap:22px;font-size:14px;color:var(--t2);font-weight:600;}
+  .nav .links a:first-child{color:var(--ink);border-bottom:2px solid var(--ink);padding-bottom:3px;}
+  .nav .acts{display:flex;gap:8px;}
+  .nav .btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #E5DFD2;background:#fff;color:var(--ink);}
+  .nav .btn.teal{background:var(--teal);color:#fff;border:none;}
+
+  /* ── marquee sample ── */
+  .marq{padding:12px 0 14px;background:var(--bg);overflow:hidden;position:relative;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);
+            mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);}
+  .marq .lbl{text-align:center;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);font-weight:700;margin-bottom:8px;}
+  .marq .row{display:flex;gap:54px;white-space:nowrap;font-family:'Playfair Display',serif;font-weight:700;
+    font-size:34px;letter-spacing:.04em;text-transform:uppercase;color:rgba(26,26,46,.82);justify-content:center;}
+  .note-cap{font-size:12px;color:var(--t2);margin-top:9px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="page">CastSlate — promo banner v2 (turquoise · torn blue paper · cube logo)</h1>
+  <p class="page">Turquoise banner, flat cube logo (no octagon, no 3D), casually torn blue lined‑paper note with white serif headline (Backstage‑style font), and a Backstage‑style solid Join button. Thinner so the marquee shows. Demo only — not live.</p>
+
+  <!-- OPTION A: bright turquoise, white button -->
+  <div class="opt-label">Option A — <span>Bright turquoise</span> · white Join button</div>
+  <div class="frame">
+    <div class="promo promo--turq">
+      <div class="brand"><span class="cube"><svg viewBox="0 0 32 32"><path fill="#fff" d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"/></svg></span><span class="name">CastSlate</span></div>
+      <div class="note">
+        <span class="tape tl"></span>
+        <span class="headline">Limited Time Offer</span>
+        <span class="sub">Save $24 (20%) on your first year of CastSlate.</span>
+      </div>
+      <button class="join">Join Today</button>
+    </div>
+    <div class="nav">
+      <div class="logo"><span class="li"><svg viewBox="0 0 32 32"><path fill="#fff" d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"/></svg></span>CastSlate</div>
+      <div class="links"><a>Home</a><a>Browse Castings</a><a>Classes</a><a>Pricing</a><a>Blog</a></div>
+      <div class="acts"><span class="btn teal">Join ▾</span><span class="btn">Post a Job</span><span class="btn">Sign in</span></div>
+    </div>
+    <div class="marq"><div class="lbl">Casting across every format</div><div class="row"><span>Film</span><span>•</span><span>Television</span><span>•</span><span>Indie Features</span><span>•</span><span>Theater</span></div></div>
+  </div>
+
+  <!-- OPTION B: deeper turquoise, dark button -->
+  <div class="opt-label">Option B — <span>Deeper turquoise</span> · dark Join button</div>
+  <div class="frame">
+    <div class="promo promo--turq2">
+      <div class="brand"><span class="cube"><svg viewBox="0 0 32 32"><path fill="#fff" d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"/></svg></span><span class="name">CastSlate</span></div>
+      <div class="note">
+        <span class="tape tl"></span>
+        <span class="headline">Limited Time Offer</span>
+        <span class="sub">Save $24 (20%) on your first year of CastSlate.</span>
+      </div>
+      <button class="join join--alt">Join Today</button>
+    </div>
+    <div class="nav">
+      <div class="logo"><span class="li"><svg viewBox="0 0 32 32"><path fill="#fff" d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"/></svg></span>CastSlate</div>
+      <div class="links"><a>Home</a><a>Browse Castings</a><a>Classes</a><a>Pricing</a><a>Blog</a></div>
+      <div class="acts"><span class="btn teal">Join ▾</span><span class="btn">Post a Job</span><span class="btn">Sign in</span></div>
+    </div>
+    <div class="marq"><div class="lbl">Casting across every format</div><div class="row"><span>Film</span><span>•</span><span>Television</span><span>•</span><span>Indie Features</span><span>•</span><span>Theater</span></div></div>
+  </div>
+
+  <p class="note-cap">Headline = Playfair serif (Backstage‑style), title‑case, white. Paper = blue lined loose‑leaf with red margin, casually torn top &amp; bottom, slight tilt. Cube logo is flat (no 3D); on the real site I can keep it static or add a gentle spin — your call. Tell me A or B + any tweak (turquoise brightness, paper blue tone, more/less torn) and I'll build &amp; deploy.</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Landing Cards — Compact Video Demo</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Inter','Helvetica Neue',Arial,sans-serif;
+    background:#F7F4EE;
+    padding:60px 20px;
+    color:#1A1A2E;
+  }
+  .demo-wrap{max-width:1100px;margin:0 auto;}
+  .demo-note{
+    text-align:center;margin-bottom:40px;padding:14px 20px;
+    background:#fff;border:1px solid #E5DFD2;border-radius:12px;
+    font-size:13px;color:#5A5A72;line-height:1.6;
+  }
+  .demo-note b{color:#1A1A2E;}
+
+  /* ───────── COMPACT CARD (Backstage-style) ───────── */
+  .compact-card{
+    max-width:1100px;margin:0 auto 28px;
+  }
+  .compact-card-inner{
+    background:#fff;
+    border-radius:20px;
+    box-shadow:0 4px 32px rgba(0,0,0,0.08);
+    padding:32px;
+    display:grid;
+    grid-template-columns:440px 1fr;
+    gap:36px;
+    align-items:center;
+  }
+  .compact-card-media{
+    border-radius:14px;
+    overflow:hidden;
+    aspect-ratio:4/3;
+    background:#1A1A2E;
+    position:relative;
+  }
+  .compact-card-media video{
+    width:100%;height:100%;object-fit:cover;display:block;
+  }
+  .compact-card-copy{
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .cf-label{
+    font-size:10px;letter-spacing:1.8px;text-transform:uppercase;
+    color:#1A1A2E;font-weight:700;font-family:'DM Sans',sans-serif;
+    background:#F1ECE2;display:inline-block;padding:5px 10px;border-radius:100px;
+    width:fit-content;
+  }
+  .compact-card-copy h2{
+    font-weight:800;font-size:clamp(22px,2.6vw,30px);
+    letter-spacing:-0.8px;line-height:1.15;margin:4px 0;
+  }
+  .compact-card-copy p{
+    color:#5A5A72;font-size:14px;line-height:1.7;margin:0;
+  }
+  .hiw-card-steps{display:flex;flex-direction:column;gap:8px;margin:6px 0;}
+  .hiw-card-step{display:flex;align-items:flex-start;gap:12px;font-size:13px;color:#5A5A72;line-height:1.5;}
+  .hiw-step-num{width:20px;height:20px;min-width:20px;border-radius:50%;background:#1A1A2E;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;margin-top:1px;}
+  .btn-p{
+    background:#1A1A2E;color:#fff;border:none;border-radius:10px;
+    padding:13px 22px;font-size:14px;font-weight:700;cursor:pointer;
+    width:fit-content;
+  }
+
+  @media(max-width:760px){
+    .compact-card-inner{grid-template-columns:1fr;padding:20px;gap:20px;}
+    .compact-card-media{aspect-ratio:16/9;}
+  }
+</style>
+</head>
+<body>
+<div class="demo-wrap">
+
+  <div class="demo-note">
+    <b>Demo only — nothing applied to the live site.</b><br>
+    Compact Backstage-style cards: media is a fixed-ratio box (4:3, ~440px wide on desktop) instead of stretching to match
+    the text column height. Videos autoplay muted &amp; loop, showing real actor / casting-set footage. Replace the
+    placeholder Pexels video URLs with your preferred clips before using.
+  </div>
+
+  <!-- CARD 1: From submission to set -->
+  <div class="compact-card">
+    <div class="compact-card-inner">
+      <div class="compact-card-media">
+        <video autoplay muted loop playsinline>
+          <source src="https://videos.pexels.com/video-files/6896043/6896043-uhd_2732_1440_25fps.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="compact-card-copy">
+        <span class="cf-label">The actor journey</span>
+        <h2>From submission to set.</h2>
+        <p>CastSlate helps actors move from profile submission to real casting consideration. Casting teams review actors visually, one profile at a time, so every headshot has a real chance to be seen.</p>
+        <div class="hiw-card-steps">
+          <div class="hiw-card-step"><span class="hiw-step-num">1</span><span><strong style="color:#1A1A2E">Step 1:</strong> Create your actor profile.</span></div>
+          <div class="hiw-card-step"><span class="hiw-step-num">2</span><span><strong style="color:#1A1A2E">Step 2:</strong> Submit to roles.</span></div>
+          <div class="hiw-card-step"><span class="hiw-step-num">3</span><span><strong style="color:#1A1A2E">Step 3:</strong> Get reviewed full-screen.</span></div>
+        </div>
+        <button class="btn-p">Create My Free Profile →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 2: Casting teams review one actor at a time -->
+  <div class="compact-card">
+    <div class="compact-card-inner">
+      <div class="compact-card-media">
+        <video autoplay muted loop playsinline>
+          <source src="https://videos.pexels.com/video-files/6896040/6896040-uhd_4096_2160_25fps.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="compact-card-copy">
+        <span class="cf-label">For casting directors</span>
+        <h2>Casting teams review one actor at a time.</h2>
+        <p>Instead of burying actors in crowded thumbnail grids, CastSlate presents each profile clearly — headshots, credits, skills, resume, and reels organized for faster decisions.</p>
+        <div class="hiw-card-steps">
+          <div class="hiw-card-step"><span class="hiw-step-num">1</span><span><strong style="color:#1A1A2E">Step 1:</strong> Review full-screen profiles.</span></div>
+          <div class="hiw-card-step"><span class="hiw-step-num">2</span><span><strong style="color:#1A1A2E">Step 2:</strong> Compare actors visually.</span></div>
+          <div class="hiw-card-step"><span class="hiw-step-num">3</span><span><strong style="color:#1A1A2E">Step 3:</strong> Shortlist and message faster.</span></div>
+        </div>
+        <button class="btn-p">Create CD Account →</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1726,37 +1726,36 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   box-shadow:0 6px 16px rgba(0,0,0,0.28);
 }
 /* ── Featured-class banner (replaces the promo stripe on the home page).
-      Full-height cinematic banner using the Scene Study Workshop photo as a
-      cover background with a dark gradient + live overlay copy. On scroll it
-      smoothly collapses into a thin sticky strip (title truncates, subtitle
-      and gap shrink, CTA condenses) and expands again when scrolled back to
-      the top — never disappears or covers the nav. ── */
-.featured-class-stripe{position:relative;width:100%;overflow:hidden;background:#0c0a08;height:240px;transition:height .42s cubic-bezier(.4,0,.2,1);}
-.featured-class-stripe.is-collapsed{height:60px;}
-.fcs-bg{position:absolute;inset:0;background:linear-gradient(100deg, rgba(10,9,14,.88) 0%, rgba(10,9,14,.42) 45%, rgba(10,9,14,.18) 100%), url(/assets/banner/scene-study.jpg);background-size:cover;background-position:center 38%;transition:transform .6s cubic-bezier(.4,0,.2,1);transform:scale(1);}
-.featured-class-stripe.is-collapsed .fcs-bg{transform:scale(1.12);}
-.fcs-inner{position:relative;height:100%;display:flex;align-items:center;gap:22px;padding:0 28px;max-width:1480px;margin:0 auto;}
-.fcs-copy{display:flex;flex-direction:column;gap:8px;transition:gap .35s ease;min-width:0;}
-.featured-class-stripe.is-collapsed .fcs-copy{gap:1px;}
-.fcs-eyebrow{font-size:10.5px;font-weight:800;letter-spacing:2.2px;text-transform:uppercase;color:#E0A43B;transition:font-size .35s ease,opacity .3s ease;}
-.featured-class-stripe.is-collapsed .fcs-eyebrow{font-size:9px;letter-spacing:1.6px;opacity:.85;}
-.fcs-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;color:#fff;font-size:32px;line-height:1.08;margin:0;text-shadow:0 2px 14px rgba(0,0,0,.45);transition:font-size .35s ease;}
-.featured-class-stripe.is-collapsed .fcs-title{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;}
-.fcs-sub{color:rgba(255,255,255,.82);font-size:13px;line-height:1.5;max-width:420px;margin:0;transition:max-height .35s ease,opacity .25s ease;max-height:40px;opacity:1;overflow:hidden;}
-.featured-class-stripe.is-collapsed .fcs-sub{max-height:0;opacity:0;}
-.fcs-cta{flex-shrink:0;margin-left:auto;background:#fff;color:#171522;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-weight:800;letter-spacing:.2px;cursor:pointer;padding:13px 26px;font-size:14px;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.22);transition:padding .35s ease,font-size .35s ease,transform .2s ease;}
-.featured-class-stripe.is-collapsed .fcs-cta{padding:8px 16px;font-size:12px;}
-.fcs-cta:hover{transform:translateY(-1px);}
+      Desktop shows the supplied artwork as-is with an invisible hotspot over
+      the baked-in "view classes" button. Mobile hides the navy free-plan
+      stripe, crops the photo to a compact full-width strip, and overlays a
+      live, readable title + "View Classes" button (the baked-in text is too
+      small at phone width). On scroll, the banner smoothly collapses into a
+      thin strip (height shrinks, photo stays in view via object-fit cover)
+      and expands again when scrolled back to the top — same artwork, same
+      button, no new copy. ── */
+.featured-class-stripe{position:relative;width:100%;line-height:0;background:#0c0a08;overflow:hidden;transition:height .42s cubic-bezier(.4,0,.2,1);}
+.fcs-img{display:block;width:100%;height:auto;}
+.featured-class-stripe.is-collapsed .fcs-img{height:100%;width:100%;object-fit:cover;object-position:center 78%;}
+.fcs-hotspot{position:absolute;left:3.8%;top:72%;width:8.5%;height:20%;background:transparent;border:none;padding:0;margin:0;cursor:pointer;}
+.featured-class-stripe.is-collapsed .fcs-hotspot{left:0;top:0;width:100%;height:100%;}
+.fcs-mobile{display:none;}
 @media (max-width:768px){
   .member-banner{display:none !important;}
-  .featured-class-stripe{height:148px;}
+  .featured-class-stripe{height:148px;overflow:hidden;}
   .featured-class-stripe.is-collapsed{height:54px;}
-  .fcs-inner{padding:0 18px;gap:14px;}
-  .fcs-sub{display:none;}
-  .fcs-title{font-size:21px;}
-  .featured-class-stripe.is-collapsed .fcs-title{font-size:14.5px;max-width:48vw;}
-  .fcs-cta{padding:10px 16px;font-size:12px;}
-  .featured-class-stripe.is-collapsed .fcs-cta{padding:7px 12px;font-size:10.5px;}
+  .fcs-img{height:100%;width:100%;object-fit:cover;object-position:70% center;filter:brightness(1.75) saturate(1.08);}
+  .featured-class-stripe.is-collapsed .fcs-img{object-position:70% 30%;}
+  .fcs-hotspot{display:none;}
+  .fcs-mobile{display:flex;flex-direction:column;gap:5px;position:absolute;left:18px;top:50%;transform:translateY(-50%);z-index:2;max-width:62%;line-height:normal;transition:gap .3s ease;}
+  .fcs-mobile::before{content:"";position:absolute;inset:-22px -56px -22px -30px;z-index:-1;background:linear-gradient(90deg,rgba(8,8,10,0.72) 0%,rgba(8,8,10,0.4) 56%,rgba(8,8,10,0) 100%);}
+  .fcs-m-label{font-size:9.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:#E0A43B;transition:font-size .3s ease,opacity .3s ease;}
+  .fcs-m-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:21px;line-height:1.03;color:#fff;text-shadow:0 1px 7px rgba(0,0,0,0.6);transition:font-size .3s ease;}
+  .fcs-m-btn{align-self:flex-start;margin-top:6px;background:#E0A43B;color:#231706;border:none;border-radius:7px;padding:8px 16px;font-size:11px;font-weight:800;line-height:1;cursor:pointer;transition:padding .3s ease,font-size .3s ease;}
+  .featured-class-stripe.is-collapsed .fcs-mobile{gap:2px;}
+  .featured-class-stripe.is-collapsed .fcs-m-label{font-size:8px;opacity:.8;}
+  .featured-class-stripe.is-collapsed .fcs-m-title{font-size:12px;}
+  .featured-class-stripe.is-collapsed .fcs-m-btn{padding:4px 9px;font-size:9px;margin-top:1px;}
 }
 @media (max-width:900px){
   .promo-stripe{padding:13px 12px;}
@@ -2176,23 +2175,42 @@ function calculateYearlySavings(monthlyPrice,yearlyTotal){
 // baked into the image). An invisible hotspot sits over the baked-in
 // "view classes" button and routes to the Classes page.
 function FeaturedClassBanner({onNavigate}){
-  const [collapsed,setCollapsed]=useState(false);
   const go=()=>{if(typeof onNavigate==="function")onNavigate("classes");};
+  const ref=useRef(null);
+  const [collapsed,setCollapsed]=useState(false);
+  const [fullH,setFullH]=useState(null);
+  // Desktop: measure the banner's natural (full) height from the image's
+  // intrinsic aspect ratio so we can animate height -> 60px on scroll and
+  // back. Mobile keeps its existing fixed 148px/54px CSS heights instead.
+  useLayoutEffect(()=>{
+    const img=ref.current&&ref.current.querySelector(".fcs-img");
+    const measure=()=>{
+      if(window.innerWidth<=768){setFullH(null);return;}
+      if(img&&img.clientWidth&&img.naturalWidth){
+        setFullH(Math.round(img.clientWidth*img.naturalHeight/img.naturalWidth));
+      }
+    };
+    measure();
+    window.addEventListener("resize",measure);
+    if(img&&!img.complete)img.addEventListener("load",measure);
+    return()=>{window.removeEventListener("resize",measure);if(img)img.removeEventListener("load",measure);};
+  },[]);
   useEffect(()=>{
     const onScroll=()=>setCollapsed(window.scrollY>40);
     onScroll();
     window.addEventListener("scroll",onScroll,{passive:true});
     return()=>window.removeEventListener("scroll",onScroll);
   },[]);
-  return(<aside className={`featured-class-stripe${collapsed?" is-collapsed":""}`} role="region" aria-label="Featured class: Scene Study Workshop">
-    <div className="fcs-bg" aria-hidden="true"/>
-    <div className="fcs-inner">
-      <div className="fcs-copy">
-        <span className="fcs-eyebrow">Featured Class</span>
-        <h2 className="fcs-title">Scene Study Workshop</h2>
-        <p className="fcs-sub">Small-group scene study with live coaching, on-camera reps, and feedback from working professionals.</p>
-      </div>
-      <button type="button" className="fcs-cta" onClick={go}>Explore Classes →</button>
+  const style=fullH?{height:collapsed?60:fullH}:undefined;
+  return(<aside ref={ref} className={`featured-class-stripe${collapsed?" is-collapsed":""}`} role="region" aria-label="Featured class: Scene Study Workshop" style={style}>
+    <img className="fcs-img" src="/assets/banner/scene-study.jpg" alt="Featured Class — Scene Study Workshop" width="3360" height="430" fetchpriority="high" decoding="async"/>
+    {/* Desktop: invisible hotspot over the baked-in "view classes" button (covers the whole strip once collapsed). */}
+    <button type="button" className="fcs-hotspot" onClick={go} aria-label="View classes"/>
+    {/* Mobile: live, readable title + button over the cover-cropped photo. */}
+    <div className="fcs-mobile">
+      <span className="fcs-m-label">Featured Class</span>
+      <span className="fcs-m-title">Scene Study Workshop</span>
+      <button type="button" className="fcs-m-btn" onClick={go}>View Classes →</button>
     </div>
   </aside>);
 }

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CastSlate — Featured Class promo bar (realism treatment)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700;9..40,800&family=Playfair+Display:ital,wght@0,700;0,800;0,900&family=Fraunces:opsz,ital,wght@9..144,1,500;9..144,0,600&display=swap" rel="stylesheet"/>
+<style>
+  :root{--bg:#F7F4EE;--ink:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--teal:#4F8A8B;--gold:#C99A4B;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);font-family:'DM Sans',system-ui,sans-serif;color:var(--ink);padding:30px 0 90px;}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 24px;}
+  h1.page{font-size:21px;font-weight:800;margin-bottom:6px;}
+  p.page{color:var(--t2);font-size:13.5px;margin-bottom:6px;line-height:1.55;max-width:980px;}
+  .opt-label{font-size:12px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:var(--t3);margin:38px 0 11px;}
+  .opt-label span{color:#13a99c;}
+  .cap{font-size:12.5px;color:var(--t2);margin-top:10px;line-height:1.55;max-width:980px;}
+  .frame{border:1px solid #E5DFD2;border-radius:14px;overflow:hidden;box-shadow:0 12px 38px rgba(26,26,46,.12);background:#fff;}
+
+  /* ===== promo-bar banner ===== */
+  .pbar{position:relative;display:flex;align-items:center;overflow:hidden;color:#fff;min-height:150px;}
+  /* the photo layer — filmic grade via filter */
+  .pbar .bg{position:absolute;inset:0;background-size:cover;background-position:72% 26%;
+    filter:contrast(1.05) saturate(.94) brightness(1.0);}
+  /* directional scrim: only strong on the far-left text zone; photo stays visible */
+  .pbar .scrim{position:absolute;inset:0;background:
+    linear-gradient(90deg,rgba(8,9,12,.86) 0%,rgba(8,9,12,.45) 26%,rgba(8,9,12,0) 48%,rgba(8,9,12,0) 70%,rgba(8,9,12,.45) 100%);}
+  /* soft readability pad behind the quote so text stays legible without darkening the face */
+  .pbar .qpad{position:absolute;top:0;bottom:0;left:34%;width:34%;pointer-events:none;
+    background:linear-gradient(90deg,rgba(8,9,12,0),rgba(8,9,12,.34) 40%,rgba(8,9,12,.34) 60%,rgba(8,9,12,0));}
+  /* vignette — gentle, just kisses the corners */
+  .pbar .vig{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(130% 150% at 50% 45%, transparent 66%, rgba(0,0,0,.20) 92%, rgba(0,0,0,.34) 100%);}
+  /* film grain — SVG fractal noise, reads as real-camera texture & masks AI smoothness */
+  .pbar .grain{position:absolute;inset:0;pointer-events:none;opacity:.10;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  /* a very faint cool film grade on top */
+  .pbar .tone{position:absolute;inset:0;pointer-events:none;mix-blend-mode:soft-light;opacity:.3;
+    background:linear-gradient(120deg,rgba(20,40,55,.5),rgba(60,40,20,.3));}
+
+  .pbar .row{position:relative;z-index:2;display:flex;align-items:center;gap:26px;width:100%;padding:0 26px;}
+  .pbar .label{font-size:10.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:6px;}
+  .pbar .label .d{width:5px;height:5px;border-radius:50%;background:var(--gold);}
+  .pbar h2{font-family:'Playfair Display',serif;font-weight:800;line-height:1;color:#fff;font-size:28px;text-shadow:0 2px 10px rgba(0,0,0,.5);}
+  .pbar .meta{display:flex;gap:8px;align-items:center;color:#e7e4dc;font-size:12.5px;font-weight:600;}
+  .pbar .meta svg{width:14px;height:14px;opacity:.9;}
+  .star{display:inline-flex;color:var(--gold);font-size:13px;letter-spacing:1px;}
+  .pbar .quote{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:500;color:#fff;line-height:1.28;font-size:15.5px;max-width:330px;text-shadow:0 1px 6px rgba(0,0,0,.5);}
+  .pbar .by{font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#cfcbc1;margin-top:5px;}
+  .pbar .view{flex-shrink:0;display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#1a1407;
+    border:none;border-radius:9px;padding:11px 20px;font-weight:800;font-size:13.5px;cursor:pointer;white-space:nowrap;box-shadow:0 5px 14px rgba(201,154,75,.4);}
+  .pbar .view svg{width:15px;height:15px;}
+  .pbar .x{flex-shrink:0;width:26px;height:26px;display:grid;place-items:center;border-radius:50%;color:#fff;opacity:.7;cursor:pointer;border:1px solid rgba(255,255,255,.25);}
+  .pbar .divider{width:1px;align-self:stretch;background:rgba(255,255,255,.18);margin:18px 0;}
+
+  /* toggle for "no treatment" comparison */
+  .pbar.raw .bg{filter:none;}
+  .pbar.raw .grain,.pbar.raw .vig,.pbar.raw .tone{display:none;}
+
+  /* fake nav */
+  .nav{display:flex;align-items:center;gap:22px;padding:13px 26px;background:#fff;border-top:1px solid #ECE6DA;}
+  .nav .logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:17px;color:var(--ink);}
+  .nav .logo .li{width:26px;height:26px;border-radius:7px;background:var(--ink);display:grid;place-items:center;}
+  .nav .logo .li svg{width:15px;height:15px;}
+  .nav .links{display:flex;gap:18px;font-size:13.5px;color:var(--t2);font-weight:600;margin-left:8px;}
+  .nav .links a:first-child{color:var(--ink);}
+  .nav .acts{margin-left:auto;display:flex;gap:8px;}
+  .nav .btn{padding:8px 15px;border-radius:8px;font-size:12.5px;font-weight:700;border:1px solid #E5DFD2;background:#fff;color:var(--ink);}
+  .nav .btn.teal{background:var(--teal);color:#fff;border:none;}
+  .swapnote{background:#fff8ec;border:1px solid #f0e2c4;border-radius:10px;padding:13px 16px;margin-top:14px;font-size:12.5px;color:#7a5a22;line-height:1.55;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="page">CastSlate — Featured-Class promo bar · realism treatment</h1>
+  <p class="page">This sits where your “Limited Time Offer” strip is (above the nav). Location only — <b>no date, no instructor name</b>. Testimonial kept as anonymous social proof (no “Mariana” name). The <b>WITH-treatment</b> version has film grain + vignette + filmic grade baked in to push the photo toward real and hide AI tells. Stand-in photo for now — <b>drop me your PNG and I swap it in.</b> Demo only — not live.</p>
+
+  <!-- WITH treatment -->
+  <div class="opt-label">▸ WITH realism treatment — <span>grain + vignette + filmic grade</span></div>
+  <div class="frame">
+    <div class="pbar">
+      <div class="bg" style="background-image:url('assets/banner/c2.png');"></div>
+      <div class="scrim"></div><div class="qpad"></div><div class="tone"></div><div class="vig"></div><div class="grain"></div>
+      <div class="row">
+        <div style="display:flex;flex-direction:column;gap:9px;flex:0 0 auto;max-width:320px;">
+          <span class="label"><span class="d"></span>Featured Class</span>
+          <h2>On-Camera<br/>Film Intensive</h2>
+          <span class="meta"><svg viewBox="0 0 24 24" fill="none" stroke="#C99A4B" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>New York, NY</span>
+        </div>
+        <div class="divider"></div>
+        <div style="display:flex;flex-direction:column;flex:1;min-width:0;">
+          <span class="star">★★★★★</span>
+          <p class="quote">“The most valuable class I’ve ever taken. It changed the way I show up on camera.”</p>
+          <span class="by">Verified Actor Review</span>
+        </div>
+        <button class="view">View Class <svg viewBox="0 0 24 24" fill="none" stroke="#1a1407" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        <span class="x">✕</span>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="logo"><span class="li"><svg viewBox="0 0 32 32"><path fill="#fff" d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"/></svg></span>CastSlate</div>
+      <div class="links"><a>Home</a><a>Browse Castings</a><a>Classes</a><a>TapeLink</a><a>Blog</a></div>
+      <div class="acts"><span class="btn teal">Join ▾</span><span class="btn">Post a Job</span><span class="btn">Sign in</span></div>
+    </div>
+  </div>
+  <p class="cap">Grain + vignette + grade = the “optical tricks.” Edges fall into shadow (hides melty gear), grain reads as a real sensor, and the grade kills the flat AI look. This is the version I’d ship.</p>
+
+  <!-- WITHOUT treatment (comparison) -->
+  <div class="opt-label">▸ WITHOUT treatment — <span>raw photo</span> (for comparison)</div>
+  <div class="frame">
+    <div class="pbar raw">
+      <div class="bg" style="background-image:url('assets/banner/c2.png');"></div>
+      <div class="scrim"></div>
+      <div class="row">
+        <div style="display:flex;flex-direction:column;gap:9px;flex:0 0 auto;max-width:320px;">
+          <span class="label"><span class="d"></span>Featured Class</span>
+          <h2>On-Camera<br/>Film Intensive</h2>
+          <span class="meta"><svg viewBox="0 0 24 24" fill="none" stroke="#C99A4B" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>New York, NY</span>
+        </div>
+        <div class="divider"></div>
+        <div style="display:flex;flex-direction:column;flex:1;min-width:0;">
+          <span class="star">★★★★★</span>
+          <p class="quote">“The most valuable class I’ve ever taken. It changed the way I show up on camera.”</p>
+          <span class="by">Verified Actor Review</span>
+        </div>
+        <button class="view">View Class <svg viewBox="0 0 24 24" fill="none" stroke="#1a1407" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        <span class="x">✕</span>
+      </div>
+    </div>
+  </div>
+  <p class="cap">Same photo, no tricks — compare the two to see how much the grain + vignette + grade do.</p>
+
+  <div class="swapnote">⚠︎ The photo above is a <b>real stock stand-in</b> (c4) so you can see the treatment. To use <b>your</b> image: drag the actual PNG into the chat and I’ll drop it in behind the same grain/vignette/grade — one-line swap.</div>
+</div>
+</body>
+</html>

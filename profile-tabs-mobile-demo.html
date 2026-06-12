@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>My Profile — Mobile Tabs (3 options)</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#FAF7F2;--s1:#F3EFE8;--s2:#fff;--bdr:#E7E1D6;--t1:#1A1A2E;--t2:#5C5C70;--t3:#9494A6;--acc:#0F6B66;--amber:#E8A33D;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#ECE7DE;color:var(--t1);padding:30px 16px 80px;}
+.wrap{max-width:1180px;margin:0 auto;}
+h1{font-family:'DM Sans',sans-serif;font-weight:800;font-size:25px;letter-spacing:-0.7px;}
+.sub{color:var(--t2);font-size:13.5px;margin:6px 0 28px;line-height:1.6;max-width:760px;}
+.grid{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;}
+.col{flex:1 1 320px;max-width:360px;}
+.opt-h{display:flex;align-items:center;gap:9px;margin-bottom:6px;}
+.opt-h .tag{background:var(--acc);color:#fff;font-size:10px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border-radius:7px;padding:4px 10px;}
+.opt-h.cur .tag{background:#B23B3B;}
+.opt-h h2{font-family:'DM Sans',sans-serif;font-weight:700;font-size:16px;}
+.opt-desc{font-size:12px;color:var(--t2);line-height:1.55;margin-bottom:14px;min-height:48px;}
+/* phone frame */
+.phone{width:340px;margin:0 auto;background:var(--bg);border:9px solid #1A1A2E;border-radius:32px;padding:16px 13px 22px;box-shadow:0 16px 40px rgba(26,26,46,0.2);}
+.phh{display:flex;justify-content:center;margin-bottom:14px;}
+.phh .notch{width:90px;height:5px;border-radius:5px;background:#1A1A2E;opacity:0.25;}
+.pg-title{font-family:'DM Sans',sans-serif;font-weight:800;font-size:19px;letter-spacing:-0.5px;margin-bottom:3px;}
+.pg-sub{font-size:11px;color:var(--t3);margin-bottom:16px;}
+.panel{margin-top:16px;background:var(--s2);border:1px solid var(--bdr);border-radius:12px;padding:18px 16px;min-height:120px;}
+.panel .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--t3);margin-bottom:8px;}
+.panel .ln{height:10px;border-radius:5px;background:var(--s1);margin-bottom:9px;}
+.panel .ln.s{width:60%;}
+
+/* shared tab look */
+.tab{padding:9px 16px;border-radius:7px;font-size:13px;font-weight:600;border:none;background:none;color:var(--t2);font-family:'DM Sans',sans-serif;white-space:nowrap;cursor:pointer;}
+.tab.active{background:var(--acc);color:#fff;}
+
+/* CURRENT (broken) */
+.tabs-cur{display:flex;flex-wrap:nowrap;overflow-x:auto;width:100%;background:var(--s1);border:1px solid var(--bdr);border-radius:10px;padding:4px;}
+.tabs-cur .tab{flex:1 0 auto;}
+
+/* OPTION A — edge fade + peek */
+.aWrap{position:relative;}
+.tabs-a{display:flex;flex-wrap:nowrap;overflow-x:auto;width:100%;background:var(--s1);border:1px solid var(--bdr);border-radius:10px;padding:4px;scrollbar-width:thin;}
+.tabs-a::-webkit-scrollbar{height:5px;}
+.tabs-a::-webkit-scrollbar-thumb{background:#C9C0AE;border-radius:5px;}
+.tabs-a .tab{flex:0 0 auto;}
+.aWrap::after{content:"";position:absolute;top:0;right:0;bottom:0;width:46px;border-radius:0 10px 10px 0;background:linear-gradient(90deg,rgba(243,239,232,0) 0%,var(--s1) 78%);pointer-events:none;}
+.aWrap .chev{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--acc);font-weight:800;pointer-events:none;}
+
+/* OPTION B — wrapping pill grid */
+.tabs-b{display:flex;flex-wrap:wrap;gap:6px;background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:8px;}
+.tabs-b .tab{flex:0 0 auto;padding:8px 13px;font-size:12.5px;border-radius:8px;background:var(--s2);border:1px solid var(--bdr);}
+.tabs-b .tab.active{background:var(--acc);color:#fff;border-color:var(--acc);}
+
+/* OPTION C — dropdown */
+.tabs-c{position:relative;}
+.tabs-c .sel{display:flex;align-items:center;justify-content:space-between;width:100%;background:var(--s2);border:1px solid var(--bdr);border-radius:10px;padding:13px 15px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;color:var(--t1);}
+.tabs-c .sel .cur{display:flex;align-items:center;gap:8px;}
+.tabs-c .sel .cur .dot{width:7px;height:7px;border-radius:50%;background:var(--acc);}
+.tabs-c .menu{margin-top:8px;background:var(--s2);border:1px solid var(--bdr);border-radius:10px;overflow:hidden;box-shadow:0 10px 28px rgba(26,26,46,0.12);}
+.tabs-c .menu .it{padding:11px 15px;font-size:13.5px;font-weight:600;color:var(--t2);border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;}
+.tabs-c .menu .it:last-child{border-bottom:none;}
+.tabs-c .menu .it.active{background:rgba(15,107,102,0.08);color:var(--acc);}
+.tabs-c .menu .it .b{font-size:11px;color:var(--t3);font-weight:500;float:right;}
+
+.foot{font-size:11px;color:var(--t3);margin-top:14px;text-align:center;line-height:1.5;}
+.note{background:rgba(15,107,102,0.08);border:1px solid #C9E0DE;border-radius:12px;padding:13px 18px;font-size:12.5px;color:var(--acc);line-height:1.6;margin-top:30px;}
+.demo-tag{position:fixed;top:10px;right:12px;background:var(--amber);color:#fff;font-size:10px;font-weight:800;letter-spacing:0.08em;border-radius:8px;padding:5px 10px;text-transform:uppercase;z-index:10;}
+.rec{display:inline-block;background:rgba(232,163,61,0.18);color:#9A6314;font-size:10px;font-weight:800;border-radius:6px;padding:3px 8px;margin-left:6px;text-transform:uppercase;letter-spacing:0.05em;}
+</style>
+</head>
+<body>
+<span class="demo-tag">Demo — not wired</span>
+<div class="wrap">
+  <h1>My Profile tabs on mobile — 11 tabs, pick a fix</h1>
+  <p class="sub">At 375px the profile has 11 tabs. Today they sit in a sideways-scrolling strip with no hint that 8 are hidden — actors may never find "Cast Me As", "Improve Profile", or "Showcase Order". Three options below; all keep desktop exactly as-is and only change the mobile (&lt;768px) layout.</p>
+
+  <div class="grid">
+    <!-- CURRENT -->
+    <div class="col">
+      <div class="opt-h cur"><span class="tag">Current</span><h2>Sideways scroll, no hint</h2></div>
+      <div class="opt-desc">What's live now. The strip scrolls but looks like it ends at "Videos" — most users never scroll. 8 of 11 tabs are effectively invisible.</div>
+      <div class="phone">
+        <div class="phh"><div class="notch"></div></div>
+        <div class="pg-title">My Profile</div>
+        <div class="pg-sub">[QA TEST] Actor</div>
+        <div class="tabs-cur">
+          <button class="tab active">Edit Profile</button>
+          <button class="tab">Photos (0/1)</button>
+          <button class="tab">Videos</button>
+          <button class="tab">Showcase</button>
+          <button class="tab">Skills</button>
+        </div>
+        <div class="panel"><div class="lbl">Edit Profile</div><div class="ln"></div><div class="ln"></div><div class="ln s"></div></div>
+        <div class="foot">← scrollable, but who knew?</div>
+      </div>
+    </div>
+
+    <!-- OPTION A -->
+    <div class="col">
+      <div class="opt-h"><span class="tag">Option A</span><h2>Edge fade + peek</h2></div>
+      <div class="opt-desc">Smallest change. Keep the scroll, but add a right-edge fade, a ›› chevron, and a slim scrollbar — and leave the next tab half-visible so it's obviously swipeable.</div>
+      <div class="phone">
+        <div class="phh"><div class="notch"></div></div>
+        <div class="pg-title">My Profile</div>
+        <div class="pg-sub">[QA TEST] Actor</div>
+        <div class="aWrap">
+          <div class="tabs-a">
+            <button class="tab active">Edit Profile</button>
+            <button class="tab">Photos (0/1)</button>
+            <button class="tab">Videos</button>
+            <button class="tab">Showcase Order</button>
+            <button class="tab">Skills</button>
+          </div>
+          <span class="chev">›</span>
+        </div>
+        <div class="panel"><div class="lbl">Edit Profile</div><div class="ln"></div><div class="ln"></div><div class="ln s"></div></div>
+        <div class="foot">Fade + peeking tab signals "more →"</div>
+      </div>
+    </div>
+
+    <!-- OPTION B -->
+    <div class="col">
+      <div class="opt-h"><span class="tag">Option B</span><h2>Wrapping pill grid <span class="rec">Recommended</span></h2></div>
+      <div class="opt-desc">All 11 tabs visible at once as wrapping pills — no scrolling, nothing hidden. Most "finished/premium" feel and zero discoverability loss. Tallest by a couple rows.</div>
+      <div class="phone">
+        <div class="phh"><div class="notch"></div></div>
+        <div class="pg-title">My Profile</div>
+        <div class="pg-sub">[QA TEST] Actor</div>
+        <div class="tabs-b">
+          <button class="tab active">Edit Profile</button>
+          <button class="tab">Photos (0/1)</button>
+          <button class="tab">Videos</button>
+          <button class="tab">Showcase Order</button>
+          <button class="tab">Skills</button>
+          <button class="tab">Credits</button>
+          <button class="tab">Social Links</button>
+          <button class="tab">Applications</button>
+          <button class="tab">Cast Me As</button>
+          <button class="tab">Improve Profile</button>
+          <button class="tab">Inbox</button>
+        </div>
+        <div class="panel"><div class="lbl">Edit Profile</div><div class="ln"></div><div class="ln"></div><div class="ln s"></div></div>
+        <div class="foot">Everything visible, nothing buried</div>
+      </div>
+    </div>
+
+    <!-- OPTION C -->
+    <div class="col">
+      <div class="opt-h"><span class="tag">Option C</span><h2>Dropdown selector</h2></div>
+      <div class="opt-desc">Most compact. The strip becomes a single dropdown showing the active tab; tapping reveals all 11 in a clean list with counts. Saves vertical space; one extra tap to switch.</div>
+      <div class="phone">
+        <div class="phh"><div class="notch"></div></div>
+        <div class="pg-title">My Profile</div>
+        <div class="pg-sub">[QA TEST] Actor</div>
+        <div class="tabs-c">
+          <div class="sel"><span class="cur"><span class="dot"></span>Edit Profile</span><span>▾</span></div>
+          <div class="menu">
+            <div class="it active">Edit Profile</div>
+            <div class="it">Photos <span class="b">0/1</span></div>
+            <div class="it">Videos <span class="b">Premium</span></div>
+            <div class="it">Showcase Order</div>
+            <div class="it">Cast Me As</div>
+            <div class="it">Improve Profile</div>
+            <div class="it">Inbox</div>
+          </div>
+        </div>
+        <div class="foot">Tap to reveal all 11 (4 more below)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">💡 My recommendation: <b>Option B (wrapping pill grid)</b> — nothing is ever hidden, it reads as the most polished, and it needs only a mobile CSS change (no JS). Reply with A, B, or C and I'll implement + deploy it.</div>
+</div>
+</body>
+</html>

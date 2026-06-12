@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CastSlate — Industry / CD Signup · Design Options</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#F7F4EE;--bdr:#E5DFD2;--s1:#FFFDF8;
+    --t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;
+    --teal:#4F8A8B;--amber:#E8902A;--acc:#1A1A2E;--grn:#2e9e6b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased;padding:40px 0 90px;}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 clamp(16px,4vw,40px);}
+  .tag{display:inline-block;color:#fff;font-family:'DM Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;padding:6px 12px;border-radius:100px;margin:36px 0 14px;}
+  .secnote{max-width:1040px;margin:10px auto 0;padding:0 clamp(16px,4vw,40px);color:var(--t2);font-size:13px;line-height:1.6;}
+
+  .shell{display:flex;justify-content:center;}
+  .split{width:100%;max-width:1040px;display:grid;grid-template-columns:minmax(0,440px) 1fr;background:#fff;border:1px solid var(--bdr);border-radius:26px;overflow:hidden;box-shadow:0 30px 72px -42px rgba(26,26,46,.5),0 3px 10px rgba(26,26,46,.05);min-height:660px;}
+
+  .hero{position:relative;overflow:hidden;background:#3B6E6F;}
+  .hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 45%;}
+  .hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,26,46,.20) 0%,rgba(26,26,46,.28) 42%,rgba(20,40,40,.9) 100%);}
+  .hero-copy{position:absolute;left:0;right:0;bottom:0;padding:clamp(28px,3vw,42px);color:#fff;}
+  .hero-copy .eye{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#FFD79A;margin:0 0 10px;}
+  .hero-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(25px,2.8vw,32px);letter-spacing:-1px;line-height:1.08;margin:0 0 14px;}
+  .benefits{display:flex;flex-direction:column;gap:9px;}
+  .benefits .b{display:flex;align-items:center;gap:9px;font-size:13.5px;color:rgba(255,255,255,.94);}
+
+  .panel{position:relative;overflow:hidden;background:linear-gradient(160deg,#5C9FA0 0%,#4F8A8B 48%,#3B6E6F 100%);color:#fff;padding:clamp(32px,3.5vw,46px);display:flex;flex-direction:column;justify-content:center;}
+  .panel .blob{position:absolute;border-radius:50%;pointer-events:none;width:280px;height:280px;background:radial-gradient(circle,rgba(232,144,42,.32),transparent 70%);top:-90px;right:-50px;}
+  .panel .eye{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#FFD79A;margin:0 0 10px;position:relative;}
+  .panel h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(24px,2.6vw,30px);letter-spacing:-.8px;line-height:1.12;margin:0 0 8px;position:relative;}
+  .panel .lede{font-size:13.5px;line-height:1.55;color:rgba(255,255,255,.86);margin:0 0 22px;position:relative;}
+  .planbox{position:relative;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:18px;backdrop-filter:blur(6px);}
+  .planbox .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .planbox .top b{font-family:'DM Sans',sans-serif;font-size:15px;}
+  .planbox .top .price{font-family:'DM Sans',sans-serif;font-weight:800;font-size:16px;color:#FFD79A;letter-spacing:.5px;}
+  .planbox .b{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.92);margin-bottom:6px;}
+  .panel .note{position:relative;margin:16px 0 0;font-size:12px;color:rgba(255,255,255,.7);font-style:italic;}
+
+  .chip{position:absolute;left:clamp(20px,3vw,32px);bottom:clamp(96px,12vw,120px);background:rgba(255,255,255,.94);border-radius:14px;padding:14px 16px;box-shadow:0 14px 30px -14px rgba(0,0,0,.5);max-width:240px;}
+  .chip .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .chip .top b{font-family:'DM Sans',sans-serif;font-size:14px;color:var(--t1);}
+  .chip .top .price{font-family:'DM Sans',sans-serif;font-weight:800;font-size:14px;color:var(--grn);letter-spacing:.5px;}
+  .chip .b{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--t2);margin-bottom:4px;}
+
+  .form-side{padding:clamp(36px,4vw,52px) clamp(24px,3vw,44px);background:#fff;display:flex;flex-direction:column;justify-content:center;}
+  .form-side h2{font-family:'DM Sans',sans-serif;font-weight:800;font-size:27px;letter-spacing:-1px;margin:0 0 6px;}
+  .form-side .sub{color:var(--t2);font-size:14px;margin:0 0 22px;}
+  .gbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--acc);color:#fff;border:none;border-radius:11px;padding:14px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;}
+  .divider{display:flex;align-items:center;gap:12px;color:var(--t3);font-size:12px;margin:18px 0;}
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--bdr);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .field{text-align:left;margin-bottom:13px;}
+  .field label{display:block;font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--t2);text-transform:uppercase;margin-bottom:6px;}
+  .field input,.field select{width:100%;border:1px solid var(--bdr);border-radius:10px;padding:12px 14px;font-size:14px;background:#fff;font-family:'Inter',sans-serif;color:var(--t1);}
+  .terms{font-size:11.5px;color:var(--t3);line-height:1.5;text-align:center;margin:6px 0 14px;}
+  .terms a{color:#3a6ea5;}
+  .cta{width:100%;background:var(--acc);color:#fff;border:none;border-radius:11px;padding:14px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;}
+  .foot{text-align:center;color:var(--t2);font-size:13px;margin-top:16px;}
+  .foot a{color:#3a6ea5;}
+
+  @media(max-width:820px){
+    .split{grid-template-columns:1fr;min-height:0;border-radius:22px;}
+    .hero,.panel{min-height:280px;}
+    .chip{bottom:96px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== OPTION A ===== -->
+<div class="wrap"><span class="tag" style="background:var(--teal)">Option A · Production hero + benefits (matches signup)</span></div>
+<div class="shell"><div class="split">
+  <div class="hero">
+    <img src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=900&q=80&auto=format&fit=crop" alt="Film crew on set">
+    <div class="hero-overlay"></div>
+    <div class="hero-copy">
+      <div class="eye">Free for industry</div>
+      <h3>Cast your<br>next project.</h3>
+      <div class="benefits">
+        <div class="b"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Post castings free — no membership</div>
+        <div class="b"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Review talent one at a time, swipe-style</div>
+        <div class="b"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Verified industry badge</div>
+      </div>
+    </div>
+  </div>
+  <div class="form-side">
+    <h2>Create your industry account</h2>
+    <p class="sub">Takes about 60 seconds. No payment required.</p>
+    <button class="gbtn"><svg viewBox="0 0 24 24" width="17" height="17"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+    <div class="divider">or sign up with email</div>
+    <div class="row2"><div class="field"><label>First name</label><input placeholder="First name"></div><div class="field"><label>Last name</label><input placeholder="Last name"></div></div>
+    <div class="field"><label>Work email</label><input placeholder="you@studio.com"></div>
+    <div class="field"><label>Password</label><input type="password" placeholder="Create a password"></div>
+    <div class="row2"><div class="field"><label>Company / Project</label><input placeholder="Company / Project"></div><div class="field"><label>Your role</label><select><option>Casting Director</option><option>Producer</option><option>Director</option><option>Casting Associate</option></select></div></div>
+    <div class="field"><label>Location</label><input placeholder="City, State"></div>
+    <div class="field"><label>Website (optional)</label><input placeholder="https://"></div>
+    <p class="terms">By continuing, you agree to CastSlate's <a>Terms of Service</a> and <a>Privacy Policy</a>, and confirm you are at least 18.</p>
+    <button class="cta">Create Account</button>
+    <p class="foot">Already have an account? <a>Log in</a></p>
+  </div>
+</div></div>
+<p class="secnote"><strong>Most consistent with the actor signup.</strong> A real on-set/production photo under the teal-navy gradient + industry benefits. Cohesive across talent &amp; industry signups.</p>
+
+<!-- ===== OPTION B ===== -->
+<div class="wrap"><span class="tag" style="background:#3B6E6F">Option B · Teal info panel (plan at a glance)</span></div>
+<div class="shell"><div class="split">
+  <div class="panel">
+    <span class="blob"></span>
+    <div class="eye">For industry</div>
+    <h3>Post castings,<br>find great talent.</h3>
+    <p class="lede">Industry accounts are free to create. Post your first casting and go live after a quick admin review.</p>
+    <div class="planbox">
+      <div class="top"><b>Industry Account</b><span class="price">FREE</span></div>
+      <div class="b"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Post castings for free</div>
+      <div class="b"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Swipe-based talent review</div>
+      <div class="b"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Advanced talent filters</div>
+      <div class="b"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Verified industry badge</div>
+    </div>
+    <p class="note">No membership fee required for industry accounts.</p>
+  </div>
+  <div class="form-side">
+    <h2>Create your industry account</h2>
+    <p class="sub">Takes about 60 seconds. No payment required.</p>
+    <button class="gbtn"><svg viewBox="0 0 24 24" width="17" height="17"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+    <div class="divider">or sign up with email</div>
+    <div class="row2"><div class="field"><label>First name</label><input placeholder="First name"></div><div class="field"><label>Last name</label><input placeholder="Last name"></div></div>
+    <div class="field"><label>Work email</label><input placeholder="you@studio.com"></div>
+    <div class="field"><label>Password</label><input type="password" placeholder="Create a password"></div>
+    <div class="row2"><div class="field"><label>Company / Project</label><input placeholder="Company / Project"></div><div class="field"><label>Your role</label><select><option>Casting Director</option><option>Producer</option><option>Director</option><option>Casting Associate</option></select></div></div>
+    <div class="field"><label>Location</label><input placeholder="City, State"></div>
+    <div class="field"><label>Website (optional)</label><input placeholder="https://"></div>
+    <p class="terms">By continuing, you agree to CastSlate's <a>Terms of Service</a> and <a>Privacy Policy</a>, and confirm you are at least 18.</p>
+    <button class="cta">Create Account</button>
+    <p class="foot">Already have an account? <a>Log in</a></p>
+  </div>
+</div></div>
+<p class="secnote"><strong>Keeps the plan info (no photo).</strong> The current page's value on a branded teal panel with the free Industry plan boxed. Most informative; no photo to license.</p>
+
+<!-- ===== OPTION C ===== -->
+<div class="wrap"><span class="tag" style="background:var(--amber)">Option C · Production hero + floating "Industry · Free" chip</span></div>
+<div class="shell"><div class="split">
+  <div class="hero">
+    <img src="https://images.unsplash.com/photo-1601506521793-dc748fc80b67?w=900&q=80&auto=format&fit=crop" alt="Film set lighting and production">
+    <div class="hero-overlay"></div>
+    <div class="chip">
+      <div class="top"><b>Industry Account</b><span class="price">FREE</span></div>
+      <div class="b"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--grn)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Post castings · swipe review</div>
+      <div class="b"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--grn)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Verified industry badge</div>
+    </div>
+    <div class="hero-copy">
+      <div class="eye">Free for industry</div>
+      <h3>Cast your<br>next project.</h3>
+    </div>
+  </div>
+  <div class="form-side">
+    <h2>Create your industry account</h2>
+    <p class="sub">Takes about 60 seconds. No payment required.</p>
+    <button class="gbtn"><svg viewBox="0 0 24 24" width="17" height="17"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+    <div class="divider">or sign up with email</div>
+    <div class="row2"><div class="field"><label>First name</label><input placeholder="First name"></div><div class="field"><label>Last name</label><input placeholder="Last name"></div></div>
+    <div class="field"><label>Work email</label><input placeholder="you@studio.com"></div>
+    <div class="field"><label>Password</label><input type="password" placeholder="Create a password"></div>
+    <div class="row2"><div class="field"><label>Company / Project</label><input placeholder="Company / Project"></div><div class="field"><label>Your role</label><select><option>Casting Director</option><option>Producer</option><option>Director</option><option>Casting Associate</option></select></div></div>
+    <div class="field"><label>Location</label><input placeholder="City, State"></div>
+    <div class="field"><label>Website (optional)</label><input placeholder="https://"></div>
+    <p class="terms">By continuing, you agree to CastSlate's <a>Terms of Service</a> and <a>Privacy Policy</a>, and confirm you are at least 18.</p>
+    <button class="cta">Create Account</button>
+    <p class="foot">Already have an account? <a>Log in</a></p>
+  </div>
+</div></div>
+<p class="secnote"><strong>Production photo + free reassurance.</strong> A real set/production image with a small floating "Industry · Free" chip.</p>
+
+<p class="secnote" style="margin-top:30px"><em>Images are real film/TV production stock (Unsplash, none AI) used as placeholders — please confirm the subjects read right; swap for licensed/owned production photos in production. The form fields match the current CD signup (work email, company/project, role, location, website).</em></p>
+
+</body>
+</html>

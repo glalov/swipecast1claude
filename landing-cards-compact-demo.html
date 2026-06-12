@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CastSlate — Landing Cards Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#F7F4EE;--s3:#E8E0D0;--bdr:#E5DFD2;
+    --t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;
+    --acc:#1A1A2E;--teal:#4F8A8B;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased;padding:40px 0 80px;}
+  .demo-head{max-width:1080px;margin:0 auto 8px;padding:0 clamp(16px,4vw,40px);}
+  .demo-head h1{font-family:'DM Sans',sans-serif;font-weight:800;font-size:24px;letter-spacing:-0.6px;margin:0 0 6px;}
+  .demo-head p{color:var(--t2);font-size:14px;line-height:1.6;margin:0;max-width:700px;}
+  .demo-tag{display:inline-block;background:var(--t1);color:#fff;font-family:'DM Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;padding:6px 12px;border-radius:100px;}
+  .demo-tag-wrap{max-width:1080px;margin:34px auto 16px;padding:0 clamp(16px,4vw,40px);}
+
+  /* ───────── Backstage-style long card: rounded card with INSET image ─────────
+     The image keeps its natural aspect ratio (width:100%/height:auto) so the
+     WHOLE photo is shown — never cropped, no black/white bars. It is inset
+     inside the card's padding and has its own rounded corners. Copy on the
+     right, vertically centered. */
+  .cs-card{max-width:1080px;margin:0 auto 24px;padding:0 clamp(16px,4vw,40px);}
+  .cs-card-inner{
+    background:#fff;border:1px solid var(--bdr);border-radius:22px;
+    box-shadow:0 12px 38px -22px rgba(26,26,46,.24),0 2px 8px rgba(26,26,46,.04);
+    padding:clamp(16px,2.4vw,26px);
+    display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.04fr);
+    gap:clamp(22px,3.2vw,44px);align-items:center;
+  }
+  .cs-card-img{line-height:0;}
+  .cs-card-img img{width:100%;height:auto;display:block;border-radius:14px;}
+  .cs-card-body{padding:6px clamp(4px,1vw,14px) 6px 0;display:flex;flex-direction:column;justify-content:center;gap:12px;}
+  .cs-label{font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--teal);font-weight:700;margin:0;}
+  .cs-card-body h2{font-weight:800;font-size:clamp(20px,2.3vw,27px);letter-spacing:-0.6px;line-height:1.16;margin:0;}
+  .cs-card-body .cs-lede{color:var(--t2);font-size:13.5px;line-height:1.65;margin:0;}
+  .cs-steps{display:flex;flex-direction:column;gap:8px;margin:2px 0;}
+  .cs-step{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--t2);line-height:1.45;}
+  .cs-step-num{width:20px;height:20px;min-width:20px;border-radius:50%;background:var(--acc);color:#fff;font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;margin-top:1px;}
+  .cs-step strong{color:var(--t1);}
+  .btn-teal{display:inline-block;background:var(--teal);color:#fff;border:none;border-radius:10px;padding:11px 20px;font-size:13.5px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;width:fit-content;margin-top:4px;transition:filter .15s;}
+  .btn-teal:hover{filter:brightness(1.06);}
+
+  @media(max-width:720px){
+    .cs-card-inner{grid-template-columns:1fr;gap:18px;padding:14px;}
+    .cs-card-body{padding:4px 6px 8px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-head">
+  <h1>Landing cards — Backstage-style long card</h1>
+  <p>One long rounded card. The <strong>full image</strong> (uncropped, natural ratio, no black bars) is inset on the left with its own rounded corners; the wording sits on the right, vertically centered.</p>
+</div>
+
+<div class="demo-tag-wrap"><span class="demo-tag">Demo · not deployed</span></div>
+
+<!-- Card 1: The actor journey -->
+<div class="cs-card">
+  <div class="cs-card-inner">
+    <div class="cs-card-img">
+      <img src="https://images.pexels.com/photos/3062539/pexels-photo-3062539.jpeg?auto=compress&cs=tinysrgb&w=1100" alt="Film crew filming an actress on an outdoor movie set"/>
+    </div>
+    <div class="cs-card-body">
+      <p class="cs-label">The actor journey</p>
+      <h2>From submission to set.</h2>
+      <p class="cs-lede">CastSlate helps actors move from profile submission to real casting consideration. Casting teams review actors visually, one profile at a time, so every headshot has a real chance to be seen.</p>
+      <div class="cs-steps">
+        <div class="cs-step"><span class="cs-step-num">1</span><span><strong>Step 1:</strong> Create your actor profile.</span></div>
+        <div class="cs-step"><span class="cs-step-num">2</span><span><strong>Step 2:</strong> Submit to roles.</span></div>
+        <div class="cs-step"><span class="cs-step-num">3</span><span><strong>Step 3:</strong> Get reviewed full-screen.</span></div>
+      </div>
+      <button class="btn-teal">Create My Free Profile →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: For Casting Directors -->
+<div class="cs-card">
+  <div class="cs-card-inner">
+    <div class="cs-card-img">
+      <img src="https://images.pexels.com/photos/4612886/pexels-photo-4612886.jpeg?auto=compress&cs=tinysrgb&w=1100" alt="Single actor performing in front of a film camera during a screen test"/>
+    </div>
+    <div class="cs-card-body">
+      <p class="cs-label">For Casting Directors</p>
+      <h2>Casting teams review one actor at a time.</h2>
+      <p class="cs-lede">Instead of burying actors in crowded thumbnail grids, CastSlate presents each profile clearly — headshots, credits, skills, resume, and reels organized for faster decisions.</p>
+      <div class="cs-steps">
+        <div class="cs-step"><span class="cs-step-num">1</span><span><strong>Step 1:</strong> Review full-screen profiles.</span></div>
+        <div class="cs-step"><span class="cs-step-num">2</span><span><strong>Step 2:</strong> Compare actors visually.</span></div>
+        <div class="cs-step"><span class="cs-step-num">3</span><span><strong>Step 3:</strong> Shortlist and message faster.</span></div>
+      </div>
+      <button class="btn-teal">Create CD Account →</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

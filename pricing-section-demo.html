@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CastSlate — Pricing Section Options</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#F7F4EE;--s3:#E8E0D0;--bdr:#E5DFD2;
+    --t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;
+    --acc:#1A1A2E;--teal:#4F8A8B;--amber:#E8902A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased;padding:0 0 90px;}
+  .tag{display:inline-block;background:var(--t1);color:#fff;font-family:'DM Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;padding:6px 12px;border-radius:100px;}
+  .tag.rec{background:var(--teal);}
+  .tag.cur{background:#9a9a9a;}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 clamp(16px,4vw,40px);}
+  .divider{border:0;border-top:1px dashed var(--bdr);max-width:1000px;margin:0 auto;}
+  .secnote{max-width:1000px;margin:8px auto 0;padding:0 clamp(16px,4vw,40px);color:var(--t2);font-size:13px;line-height:1.6;}
+
+  .section-label{font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:12px;}
+  .section-title{font-weight:800;font-size:36px;letter-spacing:-1.5px;margin-bottom:24px;line-height:1.1;font-family:'DM Sans',sans-serif;}
+  .btn-teal{background:var(--teal);color:#fff;border:none;padding:12px 24px;border-radius:8px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  .btn-s{background:#fff;color:var(--t1);border:1.5px solid rgba(26,26,46,.18);padding:12px 24px;border-radius:8px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  .link-teal{color:var(--teal);font-weight:700;font-size:14px;text-decoration:none;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+  .link-teal:hover{text-decoration:underline;}
+
+  /* ── A: CURRENT ── */
+  .cur-sec{padding:56px 40px;max-width:760px;margin:0 auto;text-align:center;}
+  .cur-sec p{color:var(--t2);font-size:15.5px;line-height:1.7;max-width:620px;margin:14px auto 28px;}
+  .cur-sec .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+
+  /* ── B: SLIM TRUST STRIP (recommended) ── */
+  .strip{max-width:1000px;margin:18px auto;padding:0 clamp(16px,4vw,40px);}
+  .strip-inner{
+    background:#fff;border:1px solid var(--bdr);border-radius:18px;
+    box-shadow:0 10px 30px -20px rgba(26,26,46,.22);
+    display:flex;align-items:center;gap:22px;padding:22px 26px;
+  }
+  .strip-shield{flex:0 0 auto;width:46px;height:46px;border-radius:12px;background:rgba(79,138,139,.12);display:flex;align-items:center;justify-content:center;}
+  .strip-copy{flex:1 1 auto;min-width:0;}
+  .strip-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.4px;margin:0 0 4px;}
+  .strip-copy p{color:var(--t2);font-size:13.5px;line-height:1.55;margin:0;}
+  .strip-copy strong{color:var(--t1);}
+  .strip-cta{flex:0 0 auto;display:flex;align-items:center;gap:18px;}
+  @media(max-width:640px){
+    .strip-inner{flex-direction:column;align-items:flex-start;gap:16px;text-align:left;}
+    .strip-cta{width:100%;justify-content:space-between;}
+  }
+
+  /* ── C: COMPACT PROMISE-FIRST ── */
+  .promise{padding:48px 40px;max-width:680px;margin:0 auto;text-align:center;}
+  .promise .eyebrow{font-family:'DM Sans',sans-serif;font-weight:700;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin-bottom:12px;}
+  .promise h2{font-family:'DM Sans',sans-serif;font-weight:800;font-size:34px;letter-spacing:-1.2px;line-height:1.08;margin:0 0 14px;}
+  .promise p{color:var(--t2);font-size:15px;line-height:1.65;max-width:540px;margin:0 auto 24px;}
+  .promise .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .pill{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--bdr);border-radius:100px;padding:7px 15px;font-size:12.5px;font-weight:600;color:var(--t1);font-family:'DM Sans',sans-serif;}
+  .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);}
+  .pillrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:22px;}
+</style>
+</head>
+<body>
+
+<!-- ════════ A: CURRENT ════════ -->
+<div class="wrap" style="margin:40px auto 0;"><span class="tag cur">A · Current (live now)</span></div>
+<section class="cur-sec">
+  <div class="section-label">Pricing</div>
+  <div class="section-title">Simple Pricing. No Surprises.</div>
+  <p>Actors can create a free account and start submitting. Actor Plus starts at $9.99/month for additional visibility and tools. Casting directors can post projects and review submissions for free.</p>
+  <div class="btns">
+    <button class="btn-teal">Create Free Profile</button>
+    <button class="btn-s">View Pricing</button>
+  </div>
+</section>
+<p class="secnote"><strong>Reads like a pricing page mid-scroll.</strong> Leads with the word "Pricing" and a paragraph — frames you as a cost, can stall momentum.</p>
+
+<hr class="divider" style="margin:48px auto;"/>
+
+<!-- ════════ B: SLIM TRUST STRIP ════════ -->
+<div class="wrap"><span class="tag rec">B · Slim trust strip (recommended)</span></div>
+<div class="strip">
+  <div class="strip-inner">
+    <div class="strip-shield">
+      <svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z" fill="var(--teal)"/><path d="M9 12l2 2 4-4" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="strip-copy">
+      <h3>Free to submit. Always.</h3>
+      <p>No subscription to apply. No "featured upgrade." Actor Plus is <strong>$9.99/mo</strong> if you want more visibility and tools — casting directors post and review for <strong>free</strong>.</p>
+    </div>
+    <div class="strip-cta">
+      <a href="#" class="link-teal">See full pricing →</a>
+      <button class="btn-teal">Create Free Profile</button>
+    </div>
+  </div>
+</div>
+<p class="secnote"><strong>Promise-first, lightweight.</strong> Leads with the differentiator (free to submit, no pay-to-play), keeps the $9.99 as supporting detail, links out for the full breakdown. Doesn't interrupt the scroll.</p>
+
+<hr class="divider" style="margin:48px auto;"/>
+
+<!-- ════════ C: COMPACT PROMISE-FIRST ════════ -->
+<div class="wrap"><span class="tag">C · Compact promise section</span></div>
+<section class="promise">
+  <div class="eyebrow">No pay-to-play</div>
+  <h2>Free to submit. Always.</h2>
+  <div class="pillrow">
+    <span class="pill"><span class="dot"></span>Actors free to apply</span>
+    <span class="pill"><span class="dot"></span>Actor Plus $9.99/mo</span>
+    <span class="pill"><span class="dot"></span>Casting directors free</span>
+  </div>
+  <p>The cheapest, most transparent pricing in casting — no hidden tiers, no per-submission fees, no upsells to get seen.</p>
+  <div class="btns">
+    <button class="btn-teal">Create Free Profile</button>
+    <button class="btn-s">View Pricing</button>
+  </div>
+</section>
+<p class="secnote"><strong>Middle ground.</strong> Keeps a real section but leads with the promise headline + scannable pills instead of a paragraph. Still centered, but lighter and more confident than A.</p>
+
+</body>
+</html>

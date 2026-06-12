@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CastSlate — Big CTA Card Options</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#F7F4EE;--bdr:#E5DFD2;
+    --t1:#1A1A2E;--t2:#5A5A72;
+    --teal:#4F8A8B;--amber:#E8902A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased;padding:40px 0 90px;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 clamp(16px,4vw,40px);}
+  .tag{display:inline-block;color:#fff;font-family:'DM Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;padding:6px 12px;border-radius:100px;margin:34px 0 14px;}
+  .secnote{max-width:1120px;margin:10px auto 0;padding:0 clamp(16px,4vw,40px);color:var(--t2);font-size:13px;line-height:1.6;}
+
+  /* shared CTA card skeleton */
+  .cta{max-width:1120px;margin:0 auto;padding:0 clamp(16px,4vw,40px);}
+  .cta-inner{position:relative;overflow:hidden;border-radius:30px;padding:clamp(40px,6vw,72px) clamp(24px,5vw,64px);text-align:center;}
+  .cta-eyebrow{font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.6px;text-transform:uppercase;margin:0 0 16px;display:inline-flex;align-items:center;gap:8px;}
+  .cta-eyebrow .dot{width:7px;height:7px;border-radius:50%;}
+  .cta-inner h2{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(30px,4.6vw,50px);letter-spacing:-1.4px;line-height:1.04;margin:0 0 16px;}
+  .cta-inner .lede{font-size:clamp(15px,1.7vw,18px);line-height:1.6;max-width:600px;margin:0 auto 30px;}
+  .cta-primary{display:inline-flex;align-items:center;gap:9px;border:none;border-radius:14px;padding:16px 34px;font-size:16px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;transition:transform .12s,box-shadow .2s;}
+  .cta-primary:hover{transform:translateY(-2px);}
+  .cta-sub{display:flex;justify-content:center;gap:clamp(20px,5vw,64px);flex-wrap:wrap;margin-top:38px;padding-top:30px;}
+  .cta-sub-col{display:flex;align-items:center;gap:16px;text-align:left;}
+  .cta-sub-col .txt{display:flex;flex-direction:column;}
+  .cta-sub-col .txt b{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;}
+  .cta-sub-col .txt span{font-size:12.5px;opacity:.8;margin-top:2px;}
+  .cta-outline{border-radius:11px;padding:10px 20px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;background:transparent;transition:all .18s;}
+  .blob{position:absolute;border-radius:50%;pointer-events:none;filter:blur(8px);}
+
+  /* ===== OPTION 1 — TEAL ===== */
+  .v1 .cta-inner{background:linear-gradient(135deg,#5C9FA0 0%,#4F8A8B 45%,#3B6E6F 100%);color:#fff;}
+  .v1 .cta-eyebrow{color:#FFE6C2;}
+  .v1 .cta-eyebrow .dot{background:var(--amber);box-shadow:0 0 10px var(--amber);}
+  .v1 .lede{color:rgba(255,255,255,.86);}
+  .v1 .cta-primary{background:var(--amber);color:#1A1A2E;box-shadow:0 12px 30px -10px rgba(232,144,42,.7);}
+  .v1 .cta-sub{border-top:1px solid rgba(255,255,255,.22);}
+  .v1 .cta-sub-col .txt b{color:#fff;}
+  .v1 .cta-sub-col .txt span{color:rgba(255,255,255,.8);}
+  .v1 .cta-outline{border:1.5px solid rgba(255,255,255,.55);color:#fff;}
+  .v1 .cta-outline:hover{background:#fff;color:var(--teal);}
+  .v1 .b1{width:360px;height:360px;background:radial-gradient(circle,rgba(232,144,42,.35),transparent 70%);top:-120px;right:-60px;}
+  .v1 .b2{width:280px;height:280px;background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%);bottom:-100px;left:-40px;}
+
+  /* ===== OPTION 2 — WARM SUNSET ===== */
+  .v2 .cta-inner{background:linear-gradient(130deg,#F6B45A 0%,#EE9442 38%,#E8755A 100%);color:#3A1E12;}
+  .v2 .cta-eyebrow{color:#5A2E18;}
+  .v2 .cta-eyebrow .dot{background:#3A1E12;}
+  .v2 .cta-inner h2{color:#2E1407;}
+  .v2 .lede{color:rgba(58,30,18,.82);}
+  .v2 .cta-primary{background:#241019;color:#fff;box-shadow:0 14px 30px -12px rgba(40,18,10,.6);}
+  .v2 .cta-sub{border-top:1px solid rgba(58,30,18,.22);}
+  .v2 .cta-sub-col .txt b{color:#2E1407;}
+  .v2 .cta-sub-col .txt span{color:rgba(58,30,18,.72);}
+  .v2 .cta-outline{border:1.5px solid rgba(46,20,7,.45);color:#2E1407;}
+  .v2 .cta-outline:hover{background:#241019;color:#fff;border-color:#241019;}
+  .v2 .b1{width:340px;height:340px;background:radial-gradient(circle,rgba(255,235,200,.5),transparent 70%);top:-110px;left:8%;}
+  .v2 .b2{width:300px;height:300px;background:radial-gradient(circle,rgba(232,90,90,.45),transparent 70%);bottom:-120px;right:-30px;}
+
+  /* ===== OPTION 3 — CREAM CARD, COLORFUL ACCENTS ===== */
+  .v3 .cta-inner{background:#FFFDF8;border:1px solid var(--bdr);box-shadow:0 22px 60px -34px rgba(26,26,46,.3);color:var(--t1);}
+  .v3 .cta-eyebrow{color:var(--teal);}
+  .v3 .cta-eyebrow .dot{background:var(--amber);}
+  .v3 .cta-inner h2{color:var(--t1);}
+  .v3 .cta-inner h2 .hl{color:var(--teal);}
+  .v3 .lede{color:var(--t2);}
+  .v3 .pillrow{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:-6px 0 26px;}
+  .v3 .pill{display:inline-flex;align-items:center;gap:7px;border-radius:100px;padding:7px 15px;font-size:12.5px;font-weight:700;font-family:'DM Sans',sans-serif;}
+  .v3 .pill.teal{background:rgba(79,138,139,.12);color:#3B6E6F;}
+  .v3 .pill.amber{background:rgba(232,144,42,.15);color:#B96C12;}
+  .v3 .pill.navy{background:rgba(26,26,46,.07);color:var(--t1);}
+  .v3 .cta-primary{background:var(--amber);color:#fff;box-shadow:0 14px 30px -12px rgba(232,144,42,.6);}
+  .v3 .cta-sub{border-top:1px solid var(--bdr);}
+  .v3 .cta-sub-col .txt b{color:var(--t1);}
+  .v3 .cta-sub-col .txt span{color:var(--t2);}
+  .v3 .cta-outline{border:1.5px solid rgba(26,26,46,.18);color:var(--t1);background:#fff;}
+  .v3 .cta-outline:hover{background:var(--teal);color:#fff;border-color:var(--teal);}
+
+  @media(max-width:640px){
+    .cta-sub{flex-direction:column;gap:18px;align-items:stretch;}
+    .cta-sub-col{justify-content:space-between;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== OPTION 1 ===== -->
+<div class="wrap"><span class="tag" style="background:var(--teal)">Option 1 · Teal + amber</span></div>
+<div class="cta v1">
+  <div class="cta-inner">
+    <span class="blob b1"></span><span class="blob b2"></span>
+    <p class="cta-eyebrow"><span class="dot"></span>Free to submit · No pay-to-play</p>
+    <h2>It's time to get seen.</h2>
+    <p class="lede">Build your profile, submit to real roles, and get reviewed one actor at a time. Free to start — Actor Plus is just $9.99/mo when you want more.</p>
+    <button class="cta-primary">Create My Free Profile →</button>
+    <div class="cta-sub">
+      <div class="cta-sub-col"><div class="txt"><b>For Casting Directors</b><span>Post a project, review for free</span></div><button class="cta-outline">Post a Project</button></div>
+      <div class="cta-sub-col"><div class="txt"><b>For Reps &amp; Managers</b><span>Manage your talent roster</span></div><button class="cta-outline">Manager Mode</button></div>
+    </div>
+  </div>
+</div>
+<p class="secnote"><strong>Brand teal block with amber CTA.</strong> Warm, confident, on-brand. The amber button pops hard against the teal.</p>
+
+<!-- ===== OPTION 2 ===== -->
+<div class="wrap"><span class="tag" style="background:#E8755A">Option 2 · Warm sunset</span></div>
+<div class="cta v2">
+  <div class="cta-inner">
+    <span class="blob b1"></span><span class="blob b2"></span>
+    <p class="cta-eyebrow"><span class="dot"></span>Free to submit · No pay-to-play</p>
+    <h2>Your next role is waiting.</h2>
+    <p class="lede">Get discovered by casting teams who review every submission individually. Create a free profile and start applying today — no subscription required.</p>
+    <button class="cta-primary">Create My Free Profile →</button>
+    <div class="cta-sub">
+      <div class="cta-sub-col"><div class="txt"><b>For Casting Directors</b><span>Post a project, review for free</span></div><button class="cta-outline">Post a Project</button></div>
+      <div class="cta-sub-col"><div class="txt"><b>For Reps &amp; Managers</b><span>Manage your talent roster</span></div><button class="cta-outline">Manager Mode</button></div>
+    </div>
+  </div>
+</div>
+<p class="secnote"><strong>Warm amber-to-coral sunset.</strong> The most fun and inviting — high energy, very "welcoming." Dark navy button keeps it grounded.</p>
+
+<!-- ===== OPTION 3 ===== -->
+<div class="wrap"><span class="tag" style="background:var(--amber)">Option 3 · Cream + colorful pills</span></div>
+<div class="cta v3">
+  <div class="cta-inner">
+    <p class="cta-eyebrow"><span class="dot"></span>Free to submit · No pay-to-play</p>
+    <h2>Get seen. <span class="hl">Get booked.</span></h2>
+    <div class="pillrow">
+      <span class="pill teal">Actors free to apply</span>
+      <span class="pill amber">Actor Plus $9.99/mo</span>
+      <span class="pill navy">Casting directors free</span>
+    </div>
+    <p class="lede">The most transparent platform in casting — no hidden tiers, no featured upgrades, no per-submission fees. Just your tape, actually seen.</p>
+    <button class="cta-primary">Create My Free Profile →</button>
+    <div class="cta-sub">
+      <div class="cta-sub-col"><div class="txt"><b>For Casting Directors</b><span>Post a project, review for free</span></div><button class="cta-outline">Post a Project</button></div>
+      <div class="cta-sub-col"><div class="txt"><b>For Reps &amp; Managers</b><span>Manage your talent roster</span></div><button class="cta-outline">Manager Mode</button></div>
+    </div>
+  </div>
+</div>
+<p class="secnote"><strong>Lighter cream card with colorful pills + amber CTA.</strong> Warm and fun but less of a heavy color block — keeps the premium feel and shows pricing at a glance.</p>
+
+</body>
+</html>

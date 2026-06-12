@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CastSlate — Casting Across Every Format (Demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F4EE; --s1:#FFFFFF; --s2:#F1ECE2; --bdr:#E5DFD2;
+    --t1:#1A1A2E; --t2:#5A5A72; --t3:#8E8EA0; --acc:#1A1A2E; --teal:#4F8A8B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased;}
+
+  .demo-note{background:#1A1A2E;color:#fff;text-align:center;font-size:12.5px;
+    letter-spacing:.04em;padding:9px 16px;font-weight:600;}
+  .demo-note b{color:#E8C97A;}
+
+  .fmt-sec{padding:clamp(40px,5vw,68px) 0 clamp(44px,5vw,72px);background:var(--bg);}
+  .fmt-head{max-width:1200px;margin:0 auto;padding:0 24px;text-align:center;}
+  .fmt-eyebrow{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--teal);margin:0 0 12px;}
+  .fmt-title-h{font-family:'Playfair Display',Georgia,serif;font-weight:600;
+    font-size:clamp(28px,4.4vw,46px);line-height:1.08;letter-spacing:-.01em;
+    color:var(--t1);margin:0 0 clamp(28px,3.5vw,40px);}
+
+  .fmt-reel-wrap{position:relative;}
+  .fmt-reel{display:flex;gap:20px;overflow-x:auto;overflow-y:hidden;padding:8px 24px 16px;
+    scrollbar-width:none;-ms-overflow-style:none;cursor:grab;
+    -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%);
+            mask-image:linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%);}
+  .fmt-reel::-webkit-scrollbar{display:none;}
+  .fmt-reel.dragging{cursor:grabbing;}
+
+  .fmt-card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;
+    border-radius:18px;overflow:hidden;cursor:pointer;background:#15151f;
+    box-shadow:0 10px 30px -12px rgba(20,20,35,.45),0 2px 8px rgba(20,20,35,.10);
+    transition:transform .45s cubic-bezier(.2,.7,.2,1),box-shadow .45s ease;outline:none;}
+  .fmt-card:hover,.fmt-card:focus-visible{transform:translateY(-8px);
+    box-shadow:0 24px 48px -16px rgba(20,20,35,.55),0 4px 12px rgba(20,20,35,.16);}
+  .fmt-poster,.fmt-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .fmt-video{opacity:0;transition:opacity .8s ease;}
+  .fmt-card.playing .fmt-video{opacity:1;}
+  .fmt-shade{position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(10,10,18,.05) 0%,rgba(10,10,18,.02) 36%,rgba(10,10,18,.5) 72%,rgba(10,10,18,.85) 100%);}
+  .fmt-body{position:absolute;left:0;right:0;bottom:0;padding:20px 20px 22px;color:#fff;z-index:2;}
+  .fmt-icon{display:inline-flex;align-items:center;justify-content:center;
+    width:38px;height:38px;border-radius:11px;margin-bottom:12px;color:#fff;
+    background:rgba(255,255,255,.14);backdrop-filter:blur(6px);
+    border:1px solid rgba(255,255,255,.22);}
+  .fmt-title{font-family:'Playfair Display',Georgia,serif;font-weight:600;
+    font-size:20px;line-height:1.12;margin:0 0 4px;text-shadow:0 1px 12px rgba(0,0,0,.5);}
+  .fmt-desc{font-size:13px;line-height:1.4;font-weight:400;color:rgba(255,255,255,.9);
+    margin:0;text-shadow:0 1px 10px rgba(0,0,0,.55);max-width:92%;}
+
+  @media (max-width:768px){
+    .fmt-card{width:80vw;max-width:300px;}
+    .fmt-reel{gap:14px;padding:6px 18px 14px;}
+  }
+</style>
+</head>
+<body>
+  <div class="demo-note">DEMO PREVIEW — <b>not yet live.</b> &nbsp;Real production footage (Pexels + Coverr · free commercial license · no AI) · stored & optimised locally. Slow auto-slide · hover to pause · drag / swipe.</div>
+
+  <section class="fmt-sec" aria-labelledby="fmt-h">
+    <div class="fmt-head">
+      <p class="fmt-eyebrow">Casting Across Every Format</p>
+      <h2 class="fmt-title-h" id="fmt-h">From indie projects to studio-level productions.</h2>
+    </div>
+    <div class="fmt-reel-wrap">
+      <div class="fmt-reel" id="fmtReel" role="list" aria-label="Production formats">
+      <article class="fmt-card" role="listitem" tabindex="0">
+        <img class="fmt-poster" src="video-formats/feature.jpg" alt="Feature Films — production footage" decoding="async" />
+        <video class="fmt-video" src="video-formats/feature.mp4" poster="video-formats/feature.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+        <div class="fmt-shade"></div>
+        <div class="fmt-body">
+          <span class="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Z"/><path d="M3 7 6 3l3 4M9 7l3-4 3 4M15 7l3-4 3 4"/></svg></span>
+          <h3 class="fmt-title">Feature Films</h3>
+          <p class="fmt-desc">Big stories. Real sets.</p>
+        </div>
+      </article>
+      <article class="fmt-card" role="listitem" tabindex="0">
+        <img class="fmt-poster" src="video-formats/theater.jpg" alt="Theater — production footage" decoding="async" />
+        <video class="fmt-video" src="video-formats/theater.mp4" poster="video-formats/theater.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+        <div class="fmt-shade"></div>
+        <div class="fmt-body">
+          <span class="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 4s1.5 1 4 1 4-1 4-1v6a4 4 0 0 1-8 0V4Z"/><path d="M13 8s1.5 1 4 1 4-1 4-1v6a4 4 0 0 1-8 0"/><path d="M5 8.5h.01M9 8.5h.01M15 12h.01M19 12h.01"/></svg></span>
+          <h3 class="fmt-title">Theater</h3>
+          <p class="fmt-desc">Live performance. Real impact.</p>
+        </div>
+      </article>
+      <article class="fmt-card" role="listitem" tabindex="0">
+        <img class="fmt-poster" src="video-formats/commercials.jpg" alt="Commercials — production footage" decoding="async" />
+        <video class="fmt-video" src="video-formats/commercials.mp4" poster="video-formats/commercials.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+        <div class="fmt-shade"></div>
+        <div class="fmt-body">
+          <span class="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 11v2a1 1 0 0 0 1 1h2l3 4 .5-.2V7.2L9 7H6a1 1 0 0 0-1 1"/><path d="M9 7l9-4v18l-9-4"/><path d="M18 8a3 3 0 0 1 0 8"/></svg></span>
+          <h3 class="fmt-title">Commercials</h3>
+          <p class="fmt-desc">Brands. Campaigns. Real people.</p>
+        </div>
+      </article>
+      <article class="fmt-card" role="listitem" tabindex="0">
+        <img class="fmt-poster" src="video-formats/student.jpg" alt="Student Films — production footage" decoding="async" />
+        <video class="fmt-video" src="video-formats/student.mp4" poster="video-formats/student.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+        <div class="fmt-shade"></div>
+        <div class="fmt-body">
+          <span class="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M12 4 2 9l10 5 10-5-10-5Z"/><path d="M6 11v4c0 1.1 2.7 2.5 6 2.5s6-1.4 6-2.5v-4"/><path d="M22 9v4"/></svg></span>
+          <h3 class="fmt-title">Student Films</h3>
+          <p class="fmt-desc">Where emerging talent gets discovered.</p>
+        </div>
+      </article>
+      <article class="fmt-card" role="listitem" tabindex="0">
+        <img class="fmt-poster" src="video-formats/voiceover.jpg" alt="Voiceover — production footage" decoding="async" />
+        <video class="fmt-video" src="video-formats/voiceover.mp4" poster="video-formats/voiceover.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+        <div class="fmt-shade"></div>
+        <div class="fmt-body">
+          <span class="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+          <h3 class="fmt-title">Voiceover</h3>
+          <p class="fmt-desc">Bring words to life.</p>
+        </div>
+      </article>
+      <article class="fmt-card" role="listitem" tabindex="0">
+        <img class="fmt-poster" src="video-formats/indie.jpg" alt="Indie Projects — production footage" decoding="async" />
+        <video class="fmt-video" src="video-formats/indie.mp4" poster="video-formats/indie.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+        <div class="fmt-shade"></div>
+        <div class="fmt-body">
+          <span class="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M12 3l2.6 5.6L20.5 9.4l-4.2 4 1 5.9L12 16.6 6.7 19.3l1-5.9-4.2-4 5.9-.8L12 3Z"/></svg></span>
+          <h3 class="fmt-title">Indie Projects</h3>
+          <p class="fmt-desc">Independent stories. Unlimited possibilities.</p>
+        </div>
+      </article>
+      <article class="fmt-card" role="listitem" tabindex="0">
+        <img class="fmt-poster" src="video-formats/feature.jpg" alt="Feature Films — production footage" decoding="async" />
+        <video class="fmt-video" src="video-formats/feature.mp4" poster="video-formats/feature.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+        <div class="fmt-shade"></div>
+        <div class="fmt-body">
+          <span class="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Z"/><path d="M3 7 6 3l3 4M9 7l3-4 3 4M15 7l3-4 3 4"/></svg></span>
+          <h3 class="fmt-title">Feature Films</h3>
+          <p class="fmt-desc">Big stories. Real sets.</p>
+        </div>
+      </article>
+      <article class="fmt-card" role="listitem" tabindex="0">
+        <img class="fmt-poster" src="video-formats/theater.jpg" alt="Theater — production footage" decoding="async" />
+        <video class="fmt-video" src="video-formats/theater.mp4" poster="video-formats/theater.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+        <div class="fmt-shade"></div>
+        <div class="fmt-body">
+          <span class="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 4s1.5 1 4 1 4-1 4-1v6a4 4 0 0 1-8 0V4Z"/><path d="M13 8s1.5 1 4 1 4-1 4-1v6a4 4 0 0 1-8 0"/><path d="M5 8.5h.01M9 8.5h.01M15 12h.01M19 12h.01"/></svg></span>
+          <h3 class="fmt-title">Theater</h3>
+          <p class="fmt-desc">Live performance. Real impact.</p>
+        </div>
+      </article>
+      <article class="fmt-card" role="listitem" tabindex="0">
+        <img class="fmt-poster" src="video-formats/commercials.jpg" alt="Commercials — production footage" decoding="async" />
+        <video class="fmt-video" src="video-formats/commercials.mp4" poster="video-formats/commercials.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+        <div class="fmt-shade"></div>
+        <div class="fmt-body">
+          <span class="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 11v2a1 1 0 0 0 1 1h2l3 4 .5-.2V7.2L9 7H6a1 1 0 0 0-1 1"/><path d="M9 7l9-4v18l-9-4"/><path d="M18 8a3 3 0 0 1 0 8"/></svg></span>
+          <h3 class="fmt-title">Commercials</h3>
+          <p class="fmt-desc">Brands. Campaigns. Real people.</p>
+        </div>
+      </article>
+      <article class="fmt-card" role="listitem" tabindex="0">
+        <img class="fmt-poster" src="video-formats/student.jpg" alt="Student Films — production footage" decoding="async" />
+        <video class="fmt-video" src="video-formats/student.mp4" poster="video-formats/student.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+        <div class="fmt-shade"></div>
+        <div class="fmt-body">
+          <span class="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M12 4 2 9l10 5 10-5-10-5Z"/><path d="M6 11v4c0 1.1 2.7 2.5 6 2.5s6-1.4 6-2.5v-4"/><path d="M22 9v4"/></svg></span>
+          <h3 class="fmt-title">Student Films</h3>
+          <p class="fmt-desc">Where emerging talent gets discovered.</p>
+        </div>
+      </article>
+      <article class="fmt-card" role="listitem" tabindex="0">
+        <img class="fmt-poster" src="video-formats/voiceover.jpg" alt="Voiceover — production footage" decoding="async" />
+        <video class="fmt-video" src="video-formats/voiceover.mp4" poster="video-formats/voiceover.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+        <div class="fmt-shade"></div>
+        <div class="fmt-body">
+          <span class="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+          <h3 class="fmt-title">Voiceover</h3>
+          <p class="fmt-desc">Bring words to life.</p>
+        </div>
+      </article>
+      <article class="fmt-card" role="listitem" tabindex="0">
+        <img class="fmt-poster" src="video-formats/indie.jpg" alt="Indie Projects — production footage" decoding="async" />
+        <video class="fmt-video" src="video-formats/indie.mp4" poster="video-formats/indie.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+        <div class="fmt-shade"></div>
+        <div class="fmt-body">
+          <span class="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M12 3l2.6 5.6L20.5 9.4l-4.2 4 1 5.9L12 16.6 6.7 19.3l1-5.9-4.2-4 5.9-.8L12 3Z"/></svg></span>
+          <h3 class="fmt-title">Indie Projects</h3>
+          <p class="fmt-desc">Independent stories. Unlimited possibilities.</p>
+        </div>
+      </article>
+      </div>
+    </div>
+  </section>
+
+<script>
+(function(){
+  var reel = document.getElementById('fmtReel');
+
+  /* every video plays continuously; fade in once it actually starts */
+  document.querySelectorAll('.fmt-video').forEach(function(v){
+    var card = v.closest('.fmt-card');
+    function go(){ var p = v.play(); if(p && p.catch) p.catch(function(){}); }
+    if(v.readyState >= 2){ go(); } else { v.addEventListener('loadeddata', go, {once:true}); }
+    v.addEventListener('playing', function(){ card.classList.add('playing'); });
+  });
+
+  /* slow, smooth auto-slide (time-based float accumulator, seamless wrap) */
+  var PPS = 38;                 // pixels per second — calm and premium
+  var pos = 0, last = 0, paused = false;
+  function loop(ts){
+    if(!last) last = ts;
+    var dt = ts - last; last = ts;
+    if(!paused){
+      var half = reel.scrollWidth / 2;
+      if(half > 0){
+        pos += PPS * (dt/1000);
+        if(pos >= half) pos -= half;
+        reel.scrollLeft = pos;
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // pause the SLIDE on hover / focus (videos keep playing)
+  reel.addEventListener('pointerenter', function(){ paused = true; });
+  reel.addEventListener('pointerleave', function(){ if(!dragging){ paused = false; pos = reel.scrollLeft; } });
+  reel.addEventListener('focusin',  function(){ paused = true; });
+  reel.addEventListener('focusout', function(){ paused = false; pos = reel.scrollLeft; });
+
+  // drag / swipe to scroll (mouse + touch via pointer events)
+  var dragging = false, startX = 0, startScroll = 0;
+  reel.addEventListener('pointerdown', function(e){
+    dragging = true; paused = true; startX = e.clientX; startScroll = reel.scrollLeft;
+    reel.classList.add('dragging');
+  });
+  window.addEventListener('pointermove', function(e){
+    if(!dragging) return;
+    reel.scrollLeft = startScroll - (e.clientX - startX);
+  });
+  window.addEventListener('pointerup', function(){
+    if(!dragging) return;
+    dragging = false; reel.classList.remove('dragging');
+    pos = reel.scrollLeft; paused = false;
+  });
+  reel.addEventListener('scroll', function(){ if(paused && !dragging) pos = reel.scrollLeft; }, {passive:true});
+})();
+</script>
+</body>
+</html>

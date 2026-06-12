@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tagline Demo — CastSlate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #F7F5F0;
+    color: #1A1A2E;
+  }
+
+  /* ── Marquee ── */
+  .partners-section {
+    padding: 44px 0 48px;
+    background: #F7F5F0;
+  }
+
+  .trusted-label {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 0 24px;
+    margin-bottom: 22px;
+  }
+
+  .trusted-label p {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(26,26,46,0.45);
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .partners-marquee {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    padding: 16px 0;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 100px, #000 calc(100% - 100px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 100px, #000 calc(100% - 100px), transparent 100%);
+  }
+
+  .partners-track {
+    display: flex;
+    align-items: center;
+    width: max-content;
+    animation: partnersSlide 52s linear infinite;
+    will-change: transform;
+  }
+
+  .partners-marquee:hover .partners-track {
+    animation-play-state: paused;
+  }
+
+  .partners-tile {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 46px;
+    padding: 0 46px;
+    font-family: 'Playfair Display', 'Didot', 'Bodoni 72', Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(32px, 4.6vw, 56px);
+    line-height: 1;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: rgba(26,26,46,.5);
+    white-space: nowrap;
+  }
+
+  .partners-sep {
+    width: 7px;
+    height: 7px;
+    background: rgba(26,26,46,.3);
+    transform: rotate(45deg);
+    flex: none;
+  }
+
+  @keyframes partnersSlide {
+    from { transform: translate3d(0,0,0); }
+    to   { transform: translate3d(-50%,0,0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .partners-track { animation: none; }
+  }
+
+  @media (max-width: 768px) {
+    .partners-tile { font-size: 28px; gap: 30px; padding: 0 30px; }
+  }
+
+  /* ── NEW: tagline under the slider ── */
+  .scale-tagline {
+    text-align: center;
+    padding: 20px 24px 0;
+    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+    font-style: normal;
+    font-size: clamp(20px, 2.6vw, 28px);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: rgba(26,26,46,0.9);
+    line-height: 1.35;
+  }
+
+  /* ── Demo chrome ── */
+  .demo-note {
+    max-width: 700px;
+    margin: 40px auto 0;
+    padding: 20px 28px;
+    background: #fff;
+    border: 1px solid rgba(26,26,46,0.12);
+    border-radius: 10px;
+    font-size: 13px;
+    color: rgba(26,26,46,0.6);
+    line-height: 1.6;
+  }
+
+  .demo-note strong { color: #1A1A2E; }
+
+  .demo-divider {
+    border: none;
+    border-top: 1px solid rgba(26,26,46,0.1);
+    margin: 48px 0 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Simulated section above (for context) ── -->
+<div style="height:32px; background:#F7F5F0;"></div>
+
+<!-- ── Partners/Marquee section + new tagline ── -->
+<div class="partners-section">
+
+  <div class="trusted-label">
+    <p>Casting across every format</p>
+  </div>
+
+  <div class="partners-marquee" aria-label="Casting formats">
+    <div class="partners-track" id="track"></div>
+  </div>
+
+  <!-- NEW TAGLINE -->
+  <p class="scale-tagline">from indie films to A24, Neon and Netflix level projects</p>
+
+</div>
+
+<hr class="demo-divider">
+
+<div class="demo-note">
+  <strong>Demo — pending your approval.</strong><br>
+  The line sits directly under the scrolling word strip, centered, in Playfair Display italic at ~62 % opacity of the page's primary ink color.
+  It reads as a subtle, elegant qualifier — not a boast — and fades into the section without competing with the marquee.<br><br>
+  Reply <strong>"looks good"</strong> to apply this to the live website, or describe any adjustments (size, weight, color, wording, spacing).
+</div>
+
+<script>
+  const FORMATS = ["FILM","TELEVISION","INDIE FEATURES","STUDIO PROJECTS","THEATER","COMMERCIALS"];
+  const doubled = [...FORMATS, ...FORMATS];
+  const track = document.getElementById('track');
+  doubled.forEach(w => {
+    const tile = document.createElement('div');
+    tile.className = 'partners-tile';
+    tile.textContent = w;
+    track.appendChild(tile);
+  });
+</script>
+</body>
+</html>

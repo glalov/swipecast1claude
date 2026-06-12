@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CastSlate — Featured Class Banner: Scroll-Collapse Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700;9..40,800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#F7F4EE;--ink:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--bdr:#E5DFD2;
+    --teal:#4F8A8B;--amber:#E8902A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);font-family:'DM Sans',system-ui,sans-serif;color:var(--ink);padding:30px 0 80px;}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 24px;}
+  h1.page{font-size:21px;font-weight:800;margin-bottom:6px;}
+  p.page{color:var(--t2);font-size:13.5px;margin-bottom:6px;line-height:1.6;max-width:760px;}
+  .note-box{background:#fff;border:1px solid var(--bdr);border-radius:12px;padding:14px 18px;margin:18px 0 36px;font-size:13px;color:var(--t2);line-height:1.65;}
+  .note-box b{color:var(--ink);}
+  .opt-head{margin:46px 0 14px;}
+  .opt-head h2{font-size:18px;font-weight:800;margin-bottom:6px;}
+  .opt-head p{color:var(--t2);font-size:13px;max-width:680px;line-height:1.6;}
+  .opt-label{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#13a99c;background:#E6F5F3;padding:5px 12px;border-radius:100px;margin-bottom:10px;}
+
+  .frames{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;margin-top:16px;}
+  .frame-card{background:#fff;border:1px solid var(--bdr);border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(26,26,46,.06);}
+  .frame-card .frame-lbl{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--t3);padding:10px 14px;border-bottom:1px solid var(--bdr);background:#FBF9F4;}
+  .frame-desktop{width:760px;}
+  .frame-mobile{width:340px;}
+  .frame-scroll{height:560px;overflow-y:auto;position:relative;-webkit-overflow-scrolling:touch;}
+  .frame-scroll::-webkit-scrollbar{width:8px;}
+  .frame-scroll::-webkit-scrollbar-thumb{background:#D8D2C4;border-radius:8px;}
+  .scroll-hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(26,26,46,.78);color:#fff;font-size:11px;font-weight:700;padding:6px 14px;border-radius:100px;pointer-events:none;z-index:5;transition:opacity .3s;letter-spacing:.3px;}
+  .scroll-hint.hidden{opacity:0;}
+
+  /* ════════ Mock nav ════════ */
+  .mock-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:#fff;border-bottom:1px solid var(--bdr);}
+  .mock-nav .brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:16px;letter-spacing:-.3px;}
+  .mock-nav .cube{width:28px;height:28px;border-radius:7px;background:var(--ink);display:grid;place-items:center;flex-shrink:0;}
+  .mock-nav .cube svg{width:16px;height:16px;}
+  .mock-nav .links{display:flex;gap:18px;font-size:12.5px;font-weight:700;color:var(--t2);}
+  .frame-mobile .mock-nav .links{display:none;}
+  .mock-nav .join-btn{background:var(--ink);color:#fff;font-weight:800;font-size:12px;border:none;border-radius:8px;padding:8px 16px;}
+
+  /* ════════ Mock page content (filler for scroll) ════════ */
+  .mock-hero{padding:34px 22px;}
+  .mock-hero h3{font-family:'Playfair Display',Georgia,serif;font-size:26px;font-weight:800;line-height:1.18;margin-bottom:10px;}
+  .mock-hero p{color:var(--t2);font-size:13.5px;line-height:1.6;max-width:480px;}
+  .mock-card{margin:0 22px 16px;background:#fff;border:1px solid var(--bdr);border-radius:14px;padding:18px 20px;}
+  .mock-card .l1{height:12px;width:60%;background:#EFEAE0;border-radius:6px;margin-bottom:10px;}
+  .mock-card .l2{height:10px;width:90%;background:#F3EFE6;border-radius:6px;margin-bottom:6px;}
+  .mock-card .l3{height:10px;width:75%;background:#F3EFE6;border-radius:6px;}
+
+  /* ════════════════════════════════════════════════════════════
+     OPTION A — Cinematic visual banner with acting-class imagery
+     ════════════════════════════════════════════════════════════ */
+  .cs-banner-a{
+    position:sticky;top:0;z-index:40;overflow:hidden;
+    height:240px;
+    transition:height .42s cubic-bezier(.4,0,.2,1);
+  }
+  .frame-mobile .cs-banner-a{height:178px;}
+  .cs-banner-a.is-collapsed{height:60px;}
+  .frame-mobile .cs-banner-a.is-collapsed{height:54px;}
+
+  .cs-banner-a .bg{
+    position:absolute;inset:0;
+    background:linear-gradient(115deg,#171522 0%,#1f2a33 48%,#16312f 100%) center/cover;
+    background-image:
+      linear-gradient(100deg, rgba(10,9,14,.88) 0%, rgba(10,9,14,.42) 45%, rgba(10,9,14,.18) 100%),
+      url(/assets/banner/scene-study.jpg);
+    background-size:cover;background-position:center 38%;
+    transition:transform .6s cubic-bezier(.4,0,.2,1);
+    transform:scale(1);
+  }
+  .cs-banner-a.is-collapsed .bg{transform:scale(1.12);}
+
+  .cs-banner-a .inner{
+    position:relative;height:100%;display:flex;align-items:center;gap:22px;
+    padding:0 28px;max-width:1180px;margin:0 auto;
+  }
+  .cs-banner-a .copy{display:flex;flex-direction:column;gap:8px;transition:gap .35s ease;}
+  .cs-banner-a.is-collapsed .copy{gap:1px;}
+  .cs-banner-a .eyebrow{
+    font-size:10.5px;font-weight:800;letter-spacing:2.2px;text-transform:uppercase;color:#E0A43B;
+    transition:font-size .35s ease,opacity .3s ease,max-height .35s ease;overflow:hidden;
+  }
+  .cs-banner-a.is-collapsed .eyebrow{font-size:9px;letter-spacing:1.6px;opacity:.85;}
+  .cs-banner-a .title{
+    font-family:'Playfair Display',Georgia,serif;font-weight:800;color:#fff;
+    font-size:32px;line-height:1.08;text-shadow:0 2px 14px rgba(0,0,0,.45);
+    transition:font-size .35s ease;
+  }
+  .cs-banner-a.is-collapsed .title{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;}
+  .frame-mobile .cs-banner-a .title{font-size:21px;}
+  .frame-mobile .cs-banner-a.is-collapsed .title{font-size:14.5px;}
+  .cs-banner-a .sub{
+    color:rgba(255,255,255,.82);font-size:13px;line-height:1.5;max-width:420px;
+    transition:max-height .35s ease,opacity .25s ease,margin .35s ease;
+    max-height:40px;opacity:1;overflow:hidden;
+  }
+  .cs-banner-a.is-collapsed .sub{max-height:0;opacity:0;}
+  .frame-mobile .cs-banner-a .sub{display:none;}
+
+  .cs-banner-a .cta{
+    flex-shrink:0;margin-left:auto;background:#fff;color:#171522;border:none;border-radius:9px;
+    font-family:'DM Sans',sans-serif;font-weight:800;letter-spacing:.2px;cursor:pointer;
+    padding:13px 26px;font-size:14px;white-space:nowrap;
+    box-shadow:0 6px 18px rgba(0,0,0,.22);
+    transition:padding .35s ease,font-size .35s ease,transform .2s ease;
+  }
+  .cs-banner-a.is-collapsed .cta{padding:8px 16px;font-size:12px;}
+  .cs-banner-a .cta:hover{transform:translateY(-1px);}
+  .frame-mobile .cs-banner-a .cta{padding:10px 16px;font-size:12px;}
+  .frame-mobile .cs-banner-a.is-collapsed .cta{padding:7px 12px;font-size:10.5px;}
+
+  /* ════════════════════════════════════════════════════════════
+     OPTION B — Clean premium text-led banner, gradient + glow
+     ════════════════════════════════════════════════════════════ */
+  .cs-banner-b{
+    position:sticky;top:0;z-index:40;overflow:hidden;
+    height:188px;
+    background:linear-gradient(135deg,#5C9FA0,#4F8A8B,#3B6E6F);
+    transition:height .42s cubic-bezier(.4,0,.2,1);
+  }
+  .frame-mobile .cs-banner-b{height:158px;}
+  .cs-banner-b.is-collapsed{height:58px;}
+  .frame-mobile .cs-banner-b.is-collapsed{height:52px;}
+
+  .cs-banner-b .glow{position:absolute;border-radius:50%;filter:blur(60px);pointer-events:none;transition:opacity .35s ease;}
+  .cs-banner-b .glow-1{width:280px;height:280px;background:rgba(232,144,42,.35);top:-120px;right:8%;}
+  .cs-banner-b .glow-2{width:240px;height:240px;background:rgba(255,255,255,.18);bottom:-150px;left:6%;}
+  .cs-banner-b.is-collapsed .glow{opacity:.4;}
+
+  .cs-banner-b .inner{
+    position:relative;height:100%;display:flex;align-items:center;gap:22px;
+    padding:0 28px;max-width:1180px;margin:0 auto;z-index:2;
+  }
+  .cs-banner-b .copy{display:flex;flex-direction:column;gap:7px;transition:gap .35s ease;}
+  .cs-banner-b.is-collapsed .copy{gap:1px;}
+  .cs-banner-b .eyebrow{
+    font-size:11px;font-weight:800;letter-spacing:2.2px;text-transform:uppercase;color:#FFD79A;
+    transition:font-size .35s ease,opacity .3s ease;
+  }
+  .cs-banner-b.is-collapsed .eyebrow{font-size:9px;letter-spacing:1.6px;opacity:.85;}
+  .cs-banner-b .title{
+    font-family:'DM Sans',sans-serif;font-weight:800;color:#fff;letter-spacing:-.5px;
+    font-size:28px;line-height:1.15;
+    transition:font-size .35s ease;
+  }
+  .cs-banner-b.is-collapsed .title{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;}
+  .frame-mobile .cs-banner-b .title{font-size:19px;}
+  .frame-mobile .cs-banner-b.is-collapsed .title{font-size:14px;}
+  .cs-banner-b .sub{
+    color:rgba(255,255,255,.85);font-size:13px;line-height:1.5;max-width:440px;
+    transition:max-height .35s ease,opacity .25s ease;max-height:40px;opacity:1;overflow:hidden;
+  }
+  .cs-banner-b.is-collapsed .sub{max-height:0;opacity:0;}
+  .frame-mobile .cs-banner-b .sub{display:none;}
+
+  .cs-banner-b .cta{
+    flex-shrink:0;margin-left:auto;background:var(--amber);color:#1A1A2E;border:none;border-radius:9px;
+    font-family:'DM Sans',sans-serif;font-weight:800;letter-spacing:.2px;cursor:pointer;
+    padding:13px 26px;font-size:14px;white-space:nowrap;
+    box-shadow:0 6px 18px rgba(0,0,0,.18);
+    transition:padding .35s ease,font-size .35s ease,transform .2s ease;
+  }
+  .cs-banner-b.is-collapsed .cta{padding:8px 16px;font-size:12px;}
+  .cs-banner-b .cta:hover{transform:translateY(-1px);}
+  .frame-mobile .cs-banner-b .cta{padding:10px 16px;font-size:12px;}
+  .frame-mobile .cs-banner-b.is-collapsed .cta{padding:7px 12px;font-size:10.5px;}
+
+  footer.page{margin-top:60px;font-size:12px;color:var(--t3);text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="page">Featured Class Banner — Scroll-Collapse Demo</h1>
+  <p class="page">Inspired by the Backstage.com behavior: a full-width promo banner appears immediately above the navigation, then smoothly collapses into a thinner sticky strip as the visitor scrolls — without ever fully disappearing or blocking the nav.</p>
+  <div class="note-box">
+    <b>How to test:</b> scroll inside each frame below. The banner starts full-height, then shrinks into a slim sticky strip once you scroll past it, and expands back to full size when you scroll back to the top. Nothing here is live yet — this is a preview only. Each frame is an independent scroll container simulating the page viewport (desktop ~760px, mobile ~340px).
+  </div>
+
+  <!-- ═══════════ OPTION A ═══════════ -->
+  <div class="opt-head">
+    <span class="opt-label">Option A — Cinematic</span>
+    <h2>Visual banner with acting-class imagery</h2>
+    <p>Full-bleed photo from the Scene Study Workshop with a dark cinematic gradient, Playfair headline, and a white CTA button. On collapse, the photo stays as a slim cinematic strip with the image subtly zoomed, headline shrunk to one line, and the CTA condensed but still tappable.</p>
+  </div>
+  <div class="frames">
+    <div class="frame-card frame-desktop">
+      <div class="frame-lbl">Desktop</div>
+      <div class="frame-scroll" data-banner="a">
+        <header class="cs-banner-a">
+          <div class="bg"></div>
+          <div class="inner">
+            <div class="copy">
+              <span class="eyebrow">Featured Class</span>
+              <h2 class="title">Scene Study Workshop</h2>
+              <p class="sub">Sharpen your craft with working industry coaches. Limited seats for this month's cohort.</p>
+            </div>
+            <button class="cta">Explore Classes →</button>
+          </div>
+        </header>
+        <nav class="mock-nav">
+          <div class="brand"><span class="cube"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#fff"/></svg></span>CastSlate</div>
+          <div class="links"><span>Browse Castings</span><span>Classes</span><span>Pricing</span><span>Resources</span></div>
+          <button class="join-btn">Sign Up Free</button>
+        </nav>
+        <div class="mock-hero">
+          <h3>Casting, finally built for actors.</h3>
+          <p>Submit to real roles, get discovered, and manage your acting career — all in one place. Scroll down to see the banner collapse into a slim sticky strip.</p>
+        </div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <span class="scroll-hint">↓ scroll to collapse</span>
+      </div>
+    </div>
+    <div class="frame-card frame-mobile">
+      <div class="frame-lbl">Mobile</div>
+      <div class="frame-scroll" data-banner="a">
+        <header class="cs-banner-a">
+          <div class="bg"></div>
+          <div class="inner">
+            <div class="copy">
+              <span class="eyebrow">Featured Class</span>
+              <h2 class="title">Scene Study Workshop</h2>
+            </div>
+            <button class="cta">View →</button>
+          </div>
+        </header>
+        <nav class="mock-nav">
+          <div class="brand"><span class="cube"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#fff"/></svg></span>CastSlate</div>
+          <button class="join-btn">Sign Up</button>
+        </nav>
+        <div class="mock-hero">
+          <h3>Casting, finally built for actors.</h3>
+          <p>Scroll down to see the banner collapse.</p>
+        </div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <span class="scroll-hint">↓ scroll</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ OPTION B ═══════════ -->
+  <div class="opt-head">
+    <span class="opt-label">Option B — Clean &amp; Premium</span>
+    <h2>Text-led banner with teal gradient</h2>
+    <p>Uses CastSlate's existing teal CTA gradient with soft amber/white glow blobs — no photo dependency, so it renders instantly with zero image weight. On collapse, it becomes a slim sticky teal strip with a condensed headline and amber CTA.</p>
+  </div>
+  <div class="frames">
+    <div class="frame-card frame-desktop">
+      <div class="frame-lbl">Desktop</div>
+      <div class="frame-scroll" data-banner="b">
+        <header class="cs-banner-b">
+          <div class="glow glow-1"></div>
+          <div class="glow glow-2"></div>
+          <div class="inner">
+            <div class="copy">
+              <span class="eyebrow">Featured Class</span>
+              <h2 class="title">Scene Study Workshop — New Cohort Open</h2>
+              <p class="sub">Work scenes with working industry coaches. Free trial class for new members this month.</p>
+            </div>
+            <button class="cta">Explore Classes →</button>
+          </div>
+        </header>
+        <nav class="mock-nav">
+          <div class="brand"><span class="cube"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#fff"/></svg></span>CastSlate</div>
+          <div class="links"><span>Browse Castings</span><span>Classes</span><span>Pricing</span><span>Resources</span></div>
+          <button class="join-btn">Sign Up Free</button>
+        </nav>
+        <div class="mock-hero">
+          <h3>Casting, finally built for actors.</h3>
+          <p>Submit to real roles, get discovered, and manage your acting career — all in one place. Scroll down to see the banner collapse into a slim sticky strip.</p>
+        </div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <span class="scroll-hint">↓ scroll to collapse</span>
+      </div>
+    </div>
+    <div class="frame-card frame-mobile">
+      <div class="frame-lbl">Mobile</div>
+      <div class="frame-scroll" data-banner="b">
+        <header class="cs-banner-b">
+          <div class="glow glow-1"></div>
+          <div class="glow glow-2"></div>
+          <div class="inner">
+            <div class="copy">
+              <span class="eyebrow">Featured Class</span>
+              <h2 class="title">Scene Study Workshop</h2>
+            </div>
+            <button class="cta">View →</button>
+          </div>
+        </header>
+        <nav class="mock-nav">
+          <div class="brand"><span class="cube"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#fff"/></svg></span>CastSlate</div>
+          <button class="join-btn">Sign Up</button>
+        </nav>
+        <div class="mock-hero">
+          <h3>Casting, finally built for actors.</h3>
+          <p>Scroll down to see the banner collapse.</p>
+        </div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <div class="mock-card"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div>
+        <span class="scroll-hint">↓ scroll</span>
+      </div>
+    </div>
+  </div>
+
+  <footer class="page">Demo only — nothing here is wired into the live CastSlate app yet.</footer>
+</div>
+
+<script>
+  // Each .frame-scroll is an independent scroll container that owns one
+  // .cs-banner-a / .cs-banner-b sticky header. Toggle .is-collapsed once the
+  // user scrolls past a small threshold, and remove it when back near the top.
+  document.querySelectorAll('.frame-scroll').forEach(function(scroller){
+    var which = scroller.getAttribute('data-banner');
+    var banner = scroller.querySelector(which === 'a' ? '.cs-banner-a' : '.cs-banner-b');
+    var hint = scroller.querySelector('.scroll-hint');
+    var THRESHOLD = 40;
+    var collapsed = false;
+    scroller.addEventListener('scroll', function(){
+      var y = scroller.scrollTop;
+      if(y > THRESHOLD && !collapsed){
+        banner.classList.add('is-collapsed');
+        collapsed = true;
+      } else if(y <= THRESHOLD && collapsed){
+        banner.classList.remove('is-collapsed');
+        collapsed = false;
+      }
+      if(hint){ hint.classList.toggle('hidden', y > 12); }
+    }, {passive:true});
+  });
+</script>
+</body>
+</html>

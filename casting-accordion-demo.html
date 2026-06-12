@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CastSlate — Expanding Casting Sheet (Demo)</title>
+<style>
+  :root{
+    --bg:#F7F4EE; --s1:#FFFFFF; --s2:#F1ECE2; --s3:#E8E0D0;
+    --bdr:#E5DFD2; --t1:#1A1A2E; --t2:#5A5A72; --t3:#8E8EA0;
+    --acc:#1A1A2E; --teal:#2F7A70; --teal-d:#27645c;
+    --grn-bg:#E7F6EC; --grn:#1d7b44;
+    --pick-bg:#EDE9FE; --pick:#4C1D95; --pick-bd:#C4B5FD;
+    --amber-bg:rgba(200,137,0,0.12); --amber:#c88900;
+    --shadow-card:0 1px 2px rgba(26,26,46,.04), 0 1px 3px rgba(26,26,46,.05);
+    --shadow-open:0 18px 50px -12px rgba(26,26,46,.22), 0 6px 16px -8px rgba(26,26,46,.14);
+    --ease:cubic-bezier(.4,0,.2,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--t1);
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+
+  /* ── Top nav (context only) ── */
+  .nav{
+    background:var(--s1); border-bottom:1px solid var(--bdr);
+    padding:0 28px; height:64px; display:flex; align-items:center; gap:14px;
+    position:sticky; top:0; z-index:50;
+  }
+  .logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:18px;letter-spacing:-.3px}
+  .logo .mark{width:30px;height:30px;border-radius:8px;background:var(--acc);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px}
+  .nav .links{display:flex;gap:22px;margin-left:18px}
+  .nav .links a{color:var(--t2);font-size:14px;font-weight:500;text-decoration:none}
+  .nav .links a.active{color:var(--t1);font-weight:700}
+  .nav .spacer{flex:1}
+  .pill-btn{border:1px solid var(--bdr);background:var(--s1);color:var(--t1);font-weight:700;font-size:13px;padding:9px 16px;border-radius:10px;cursor:pointer}
+
+  /* ── Page ── */
+  .wrap{max-width:880px;margin:0 auto;padding:40px 24px 120px}
+  .page-head{margin-bottom:8px}
+  .eyebrow{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--t3)}
+  h1.page-title{font-size:34px;font-weight:800;letter-spacing:-1px;margin:4px 0 6px}
+  .sub{color:var(--t2);font-size:15px;margin-bottom:26px}
+
+  .demo-note{font-size:12px;color:var(--t3);background:var(--s2);border:1px dashed var(--bdr);border-radius:10px;padding:10px 14px;margin-bottom:24px}
+
+  /* ── List ── */
+  .list{display:flex;flex-direction:column;gap:16px}
+
+  /* ── Card ── */
+  .card{
+    background:var(--s1); border:1px solid var(--bdr); border-radius:16px;
+    box-shadow:var(--shadow-card);
+    transition:box-shadow .42s var(--ease), transform .42s var(--ease), border-color .42s var(--ease);
+    overflow:hidden;
+  }
+  .card.open{
+    box-shadow:var(--shadow-open);
+    transform:translateY(-3px) scale(1.006);
+    border-color:#d9d2c2;
+  }
+
+  /* ── Collapsed header (always visible, the click target) ── */
+  .head{padding:20px 24px;cursor:pointer;display:flex;gap:18px;align-items:flex-start}
+  .head:hover .head-title{color:#000}
+  .head-main{flex:1;min-width:0}
+  .badges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:11px}
+  .badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--s2);color:var(--t2);white-space:nowrap}
+  .badge.pick{background:var(--pick-bg);color:var(--pick);border:1px solid var(--pick-bd);letter-spacing:.05em;text-transform:uppercase;font-size:10px;font-weight:800;display:inline-flex;align-items:center;gap:4px}
+  .badge.tag{background:var(--s2);color:var(--t1)}
+  .head-title{font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1.2;transition:color .2s;margin-bottom:4px}
+  .head-tag{color:var(--t2);font-size:14px;margin-bottom:8px}
+  .head-prod{color:var(--t3);font-size:13px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .verified{display:inline-flex;align-items:center;gap:4px;background:var(--grn-bg);color:var(--grn);font-size:10px;font-weight:800;padding:2px 8px;border-radius:99px}
+  .head-meta{margin-top:13px;display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--t2)}
+  .head-meta b{color:var(--t1)}
+
+  .head-right{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+  .chev{
+    width:34px;height:34px;border-radius:50%;border:1px solid var(--bdr);background:var(--s1);
+    display:flex;align-items:center;justify-content:center;color:var(--t2);
+    transition:transform .42s var(--ease), background .2s, color .2s;
+  }
+  .card.open .chev{transform:rotate(180deg);background:var(--acc);color:#fff;border-color:var(--acc)}
+  .head-cta{font-size:12px;font-weight:700;color:var(--teal);white-space:nowrap}
+  .card.open .head-cta{color:var(--t3)}
+
+  /* ── Slim merged header on open: the header collapses to just the title +
+        a clear close control; everything else lives in the unfolded sheet,
+        so nothing is shown twice. ── */
+  .head-open-label{display:none;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:6px}
+  .card.open .head-open-label{display:block}
+  .card.open .head > .head-main > .badges,
+  .card.open .head > .head-main > .head-tag,
+  .card.open .head > .head-main > .head-prod,
+  .card.open .head > .head-main > .head-meta,
+  .card.open .head-cta{display:none}
+  .card.open .head{align-items:center;padding-bottom:18px}
+  .card.open .head-title{font-size:26px;margin-bottom:0}
+  /* clear ✕ close control at top-right of the expanded card */
+  .card.open .chev{display:none}
+  .head-close{display:none}
+  .card.open .head-close{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    height:34px;padding:0 14px;border-radius:99px;border:1px solid var(--bdr);
+    background:var(--s1);color:var(--t2);cursor:pointer;font-family:inherit;
+    font-size:12.5px;font-weight:700;transition:background .18s,color .18s,border-color .18s;
+  }
+  .card.open .head-close:hover{background:var(--acc);color:#fff;border-color:var(--acc)}
+
+  /* ── The expanding detail (grid-rows accordion: animates real height) ── */
+  .detail{
+    display:grid; grid-template-rows:0fr;
+    transition:grid-template-rows .42s var(--ease);
+  }
+  .card.open .detail{grid-template-rows:1fr}
+  .detail-clip{overflow:hidden}
+  .detail-content{
+    opacity:0; transform:translateY(-10px);
+    transition:opacity .3s ease .06s, transform .34s var(--ease) .06s;
+    border-top:1px solid var(--bdr);
+  }
+  .card.open .detail-content{opacity:1;transform:none}
+
+  .pad{padding:24px}
+
+  /* expanded top area */
+  .x-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px}
+  .x-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .ghost{display:inline-flex;align-items:center;gap:7px;background:none;border:none;color:var(--t2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;padding:6px 0}
+  .ghost svg{width:15px;height:15px}
+  .ghost:hover{color:var(--t1)}
+  .ghost.saved{color:var(--teal)}
+  .closex{
+    flex-shrink:0;width:36px;height:36px;border-radius:10px;border:1px solid var(--bdr);
+    background:var(--s1);color:var(--t2);cursor:pointer;font-size:16px;
+    display:flex;align-items:center;justify-content:center;transition:background .18s,color .18s
+  }
+  .closex:hover{background:var(--s2);color:var(--t1)}
+
+  /* quick info strip */
+  .strip{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+    background:var(--bdr);border:1px solid var(--bdr);border-radius:12px;overflow:hidden;margin-bottom:24px
+  }
+  .strip .cell{background:var(--s1);padding:13px 15px}
+  .strip .k{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:4px}
+  .strip .v{font-size:14px;font-weight:700;color:var(--t1)}
+  .strip .v.pay{color:var(--teal-d)}
+
+  .sec{margin-bottom:26px}
+  .sec-label{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:10px}
+  .about{color:var(--t2);font-size:14.5px;line-height:1.7;max-width:680px}
+  .roles-h{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
+  .roles-h h3{font-size:20px;font-weight:800;letter-spacing:-.4px}
+  .roles-h span{color:var(--t3);font-size:13px}
+
+  /* role card */
+  .roles{display:flex;flex-direction:column;gap:12px}
+  .role{border:1px solid var(--bdr);border-radius:13px;padding:18px 20px;background:var(--s1);transition:border-color .2s, box-shadow .2s}
+  .role:hover{border-color:#d9d2c2;box-shadow:0 4px 14px -8px rgba(26,26,46,.18)}
+  .role-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+  .role-main{flex:1;min-width:0}
+  .role-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+  .role-name{font-size:16px;font-weight:800;letter-spacing:-.2px;margin-bottom:6px}
+  .role-desc{color:var(--t2);font-size:13.5px;line-height:1.6;max-width:520px}
+  .role-right{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .role-pay{font-size:13px;font-weight:800;color:var(--teal-d);white-space:nowrap}
+
+  .btn{font-family:inherit;font-weight:700;border-radius:10px;cursor:pointer;border:1px solid transparent;transition:transform .12s, background .18s, opacity .18s}
+  .btn:active{transform:translateY(1px)}
+  .btn-sm{font-size:13px;padding:9px 15px}
+  .btn-primary{background:var(--acc);color:#fff}
+  .btn-primary:hover{background:#2c2c4a}
+  .btn-teal{background:var(--teal);color:#fff}
+  .btn-teal:hover{background:var(--teal-d)}
+  .btn-ghost{background:var(--s1);border-color:var(--bdr);color:var(--t1)}
+  .btn-ghost:hover{background:var(--s2)}
+  .applied{display:inline-flex;align-items:center;gap:6px;background:var(--grn-bg);color:var(--grn);font-size:12px;font-weight:800;padding:8px 13px;border-radius:99px;white-space:nowrap}
+
+  /* submission requirements */
+  .reqs{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px}
+  .req{display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--bdr);border-radius:11px;padding:12px 14px}
+  .req .ico{width:30px;height:30px;border-radius:8px;background:var(--s1);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+  .req .rk{font-size:13px;font-weight:700}
+  .req .rv{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .rv.req-on{color:var(--grn)}
+  .rv.req-opt{color:var(--t3)}
+  .notes{background:var(--s2);border:1px solid var(--bdr);border-left:3px solid var(--teal);border-radius:11px;padding:14px 16px;font-size:13.5px;color:var(--t2);line-height:1.65}
+  .notes b{color:var(--t1);display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+
+  /* sticky bottom action bar inside card */
+  .actionbar{
+    position:sticky;bottom:0;
+    background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(8px);
+    border-top:1px solid var(--bdr);
+    padding:14px 24px;display:flex;align-items:center;gap:12px;
+    margin:0 -24px -24px;
+  }
+  .actionbar .ab-save{margin-right:auto}
+  .actionbar .btn-submit{padding:11px 22px;font-size:14px}
+
+  /* toast (demo only — shows where "Submit" routes to) */
+  #toast{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(16px);
+    background:var(--t1);color:#fff;font-size:13px;font-weight:600;
+    padding:12px 18px;border-radius:12px;box-shadow:0 12px 32px -8px rgba(26,26,46,.4);
+    opacity:0;pointer-events:none;transition:opacity .25s var(--ease), transform .25s var(--ease);z-index:200;
+    max-width:90vw;text-align:center;
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:640px){
+    .wrap{padding:28px 14px 120px}
+    .head{padding:16px}
+    .pad{padding:18px}
+    .strip{grid-template-columns:repeat(2,1fr)}
+    .reqs{grid-template-columns:1fr}
+    .head-right .head-cta{display:none}
+    .role-top{flex-direction:column}
+    .role-right{flex-direction:row;align-items:center;width:100%;justify-content:space-between}
+    .actionbar{margin:0 -18px -18px;padding:12px 18px}
+    .actionbar .btn-submit{padding:11px 16px}
+  }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="logo"><span class="mark">⮂</span> CastSlate</div>
+  <div class="links">
+    <a href="#">Home</a>
+    <a href="#" class="active">Browse Castings</a>
+    <a href="#">Classes</a>
+    <a href="#">TapeLink</a>
+    <a href="#">Blog</a>
+  </div>
+  <div class="spacer"></div>
+  <button class="pill-btn">Post a Job</button>
+</div>
+
+<div class="wrap">
+  <div class="page-head">
+    <div class="eyebrow">Featured Castings</div>
+    <h1 class="page-title">Browse Castings</h1>
+    <p class="sub">Tap any casting to roll it open in place — full role breakdown, requirements, and apply without leaving the page.</p>
+  </div>
+  <div class="demo-note">⬢ Interactive demo · Click a card to expand the casting sheet. Only one opens at a time; opening another collapses the last. Nothing here is committed.</div>
+
+  <div class="list" id="list"></div>
+</div>
+
+<script>
+const CASTINGS = [
+  {
+    id:"horror",
+    pick:true, type:"Film & TV", union:"Non-Union", location:"Manhattan, New York",
+    title:"Untitled Horror Film", tagline:"Grounded psychological horror feature",
+    prod:"Revolutionary A", verified:true,
+    pay:"$250/day", deadline:"Jun 21, 2026", shoots:"Aug 4 – Aug 22, 2026", rehearsal:"2 days (remote OK)",
+    about:"A grounded psychological horror project centered on Sarah and Annie, two young women caught in a tense, unsettling situation inside a quiet house. The story relies on natural performances, slow-building fear, and emotional realism. Actors should be comfortable with restrained horror, subtle tension, and scenes where fear is shown through behavior rather than overacting.",
+    roles:[
+      {name:"Sarah — Lead", type:"Lead", gender:"Female", age:"20–30", pay:"$250/day", desc:"Quiet, observant, emotionally controlled — but hiding fear. Senses something is wrong before anyone else and tries not to show it.", status:"submitted"},
+      {name:"Annie", type:"Supporting", gender:"Female", age:"20–30", pay:"$200/day", desc:"Protective, sharp, emotionally steady under pressure. Scared, but does not freeze — tries to take control as the situation worsens.", status:"submitted"},
+      {name:"Marek", type:"Supporting", gender:"Male", age:"30–45", pay:"$200/day", desc:"Protective, practical, emotionally restrained. Tries to stay calm for the people around him as the situation breaks through his control.", status:"open"},
+      {name:"Rebeccah", type:"Supporting", gender:"Any", age:"Any", pay:"$150/day", desc:"A neighbor pulled into the night's events. One scene, pivotal beat.", status:"applied"},
+      {name:"Michelle", type:"Background", gender:"Any", age:"Any", pay:"$120/day", desc:"Non-speaking presence in the final sequence. Strong, still screen presence.", status:"open"},
+    ],
+    reqs:{headshot:"Required", resume:"Required", reel:"Optional", availability:"Required"},
+    notes:"Self-tapes only for the first round — no in-person meeting required. Keep performances grounded and cinematic; neutral wardrobe, clean audio, chest-up framing."
+  },
+  {
+    id:"cinema",
+    pick:false, type:"Commercial", union:"Non-Union", location:"Newark, NJ",
+    title:"Older Couple Needed — Local Cinema Promo", tagline:"45-second pre-show ad · regional 4-screen chain",
+    prod:"Hudson Valley Media", verified:false,
+    pay:"$300/each flat + transport", deadline:"May 30, 2026", shoots:"One-day shoot, Jun 12, 2026", rehearsal:"None",
+    about:"A regional cinema chain (NJ + Hudson Valley) is updating their pre-show reel. We're looking for a real, warm older couple with genuine chemistry to play 'movie buffs' sharing popcorn and a little playful dialogue. Natural, unforced, and likeable on camera.",
+    roles:[
+      {name:"Movie Buff Husband", type:"Principal", gender:"Male", age:"55–70", pay:"$300 flat", desc:"Warm, funny, easy on camera. Comfortable improvising light banter.", status:"open"},
+      {name:"Movie Buff Wife", type:"Principal", gender:"Female", age:"55–70", pay:"$300 flat", desc:"Playful, sharp, real chemistry with on-screen partner. Couples encouraged to submit together.", status:"open"},
+    ],
+    reqs:{headshot:"Required", resume:"Optional", reel:"Optional", availability:"Required"},
+    notes:"Real-life couples are encouraged to apply together — note it in your submission. Transport to set covered."
+  },
+  {
+    id:"web",
+    pick:false, type:"Web Series", union:"Non-Union", location:"Greenpoint, Brooklyn",
+    title:"Web Series Looking For Day Players — Episode 4", tagline:"4th-season Brooklyn-set comedy web series",
+    prod:"Subway Stories", verified:false,
+    pay:"$150/day + meal + footage", deadline:"May 21, 2026", shoots:"May 28–29, 2026", rehearsal:"Table read (remote)",
+    about:"We're casting day players for episode 4 of our Brooklyn web series. Each role is one day on set. We've shot 32 episodes so we know what we're doing — production is unionized in spirit but not contractually. Bring comic timing and a relaxed, naturalistic style.",
+    roles:[
+      {name:"Coffee Shop Customer", type:"Day Player", gender:"Any", age:"25–45", pay:"$150/day", desc:"One funny exchange with the barista. Dry delivery wins.", status:"open"},
+      {name:"Loud Neighbor", type:"Day Player", gender:"Any", age:"30–55", pay:"$150/day", desc:"Big energy, one scene, lots of yelling through a door. Comedy chops a must.", status:"applied"},
+    ],
+    reqs:{headshot:"Required", resume:"Optional", reel:"Optional", availability:"Required"},
+    notes:"You'll get a copy of the footage for your reel. Meals provided. Greenpoint location, easy off the G train."
+  },
+];
+
+const ICON = {
+  save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
+  saved:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
+  send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>',
+  chev:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+};
+
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function roleBadge(t){
+  const map={Lead:'background:#1A1A2E;color:#fff', Supporting:'background:#EDE9FE;color:#4C1D95', Principal:'background:#EDE9FE;color:#4C1D95', 'Day Player':'background:var(--s3);color:var(--t1)', Background:'background:var(--s3);color:var(--t1)'};
+  return `<span class="badge" style="${map[t]||'background:var(--s2);color:var(--t2)'}">${esc(t)}</span>`;
+}
+function roleAction(r,cid){
+  if(r.status==='submitted') return `<span class="applied">✓ Audition Submitted</span>`;
+  if(r.status==='applied') return `<span class="applied">✓ Applied</span>`;
+  return `<button class="btn btn-primary btn-sm" onclick="routeApply(event,'${cid}','${esc(r.name)}')">Apply for This Role</button>`;
+}
+function req(label,val,ico){
+  const on=/required/i.test(val);
+  return `<div class="req"><div class="ico">${ico}</div><div><div class="rk">${label}</div><div class="rv ${on?'req-on':'req-opt'}">${esc(val)}</div></div></div>`;
+}
+
+function detailHTML(c){
+  return `
+  <div class="pad">
+    <div class="x-top">
+      <div>
+        <div class="badges">
+          ${c.pick?'<span class="badge pick">★ Cast Slate Pick</span>':''}
+          <span class="badge tag">${esc(c.type)}</span>
+          <span class="badge tag">${esc(c.union)}</span>
+          <span class="badge tag">${esc(c.location)}</span>
+        </div>
+        <div class="head-tag" style="font-size:15px;margin-bottom:8px">${esc(c.tagline)}</div>
+        <div class="head-prod">Produced by <b style="color:var(--t2)">${esc(c.prod)}</b>
+          ${c.verified?'<span class="verified">✓ ID Verified</span>':''}
+        </div>
+        <div class="x-actions">
+          <button class="ghost ab-toggle-save" onclick="toggleSave(event)">${ICON.save}<span>Save Casting</span></button>
+          <button class="ghost" onclick="event.stopPropagation()">${ICON.send}<span>Send to a Friend</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="strip">
+      <div class="cell"><div class="k">Pay / Rate</div><div class="v pay">${esc(c.pay)}</div></div>
+      <div class="cell"><div class="k">Roles</div><div class="v">${c.roles.length} open</div></div>
+      <div class="cell"><div class="k">Location</div><div class="v">${esc(c.location)}</div></div>
+      <div class="cell"><div class="k">Union</div><div class="v">${esc(c.union)}</div></div>
+      <div class="cell"><div class="k">Deadline</div><div class="v">${esc(c.deadline)}</div></div>
+      <div class="cell"><div class="k">Shoot / Rehearsal</div><div class="v">${esc(c.shoots)}</div></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">About the Project</div>
+      <p class="about">${esc(c.about)}</p>
+    </div>
+
+    <div class="sec">
+      <div class="roles-h"><h3>${c.roles.length} Roles Open</h3><span>· Submit for as many as you fit</span></div>
+      <div class="roles">
+        ${c.roles.map(r=>`
+          <div class="role">
+            <div class="role-top">
+              <div class="role-main">
+                <div class="role-badges">${roleBadge(r.type)}<span class="badge">${esc(r.gender)}</span><span class="badge">Age ${esc(r.age)}</span></div>
+                <div class="role-name">${esc(r.name)}</div>
+                <div class="role-desc">${esc(r.desc)}</div>
+              </div>
+              <div class="role-right">
+                ${r.pay?`<div class="role-pay">${esc(r.pay)}</div>`:''}
+                ${roleAction(r,c.id)}
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">Submission Requirements</div>
+      <div class="reqs">
+        ${req('Headshot', c.reqs.headshot, '📷')}
+        ${req('Resume', c.reqs.resume, '📄')}
+        ${req('Reel / Slate', c.reqs.reel, '🎬')}
+        ${req('Availability', c.reqs.availability, '📅')}
+      </div>
+      <div class="notes"><b>Notes from the casting team</b>${esc(c.notes)}</div>
+    </div>
+
+    <div class="actionbar">
+      <button class="ghost ab-toggle-save ab-save" onclick="toggleSave(event)">${ICON.save}<span>Save Casting</span></button>
+      <button class="btn btn-ghost btn-sm" onclick="collapse(event)">↑ Collapse</button>
+      <button class="btn btn-teal btn-submit" onclick="routeApply(event,'${c.id}')">Submit for a Role</button>
+    </div>
+  </div>`;
+}
+
+function cardHTML(c){
+  return `
+  <article class="card" id="card-${c.id}" data-id="${c.id}">
+    <div class="head" onclick="toggle('${c.id}')">
+      <div class="head-main">
+        <div class="head-open-label">Casting · Expanded</div>
+        <div class="badges">
+          ${c.pick?'<span class="badge pick">★ Cast Slate Pick</span>':''}
+          <span class="badge tag">${esc(c.type)}</span>
+          <span class="badge tag">${esc(c.union)}</span>
+          <span class="badge">${c.roles.length} Roles</span>
+        </div>
+        <div class="head-title">${esc(c.title)}</div>
+        <div class="head-tag">${esc(c.tagline)}</div>
+        <div class="head-prod">Posted by <b style="color:var(--t2)">${esc(c.prod)}</b>
+          ${c.verified?'<span class="verified">✓ ID Verified</span>':'<span class="badge" style="background:var(--amber-bg);color:var(--amber);font-size:9px;font-weight:800;letter-spacing:.06em">UNVERIFIED</span>'}
+        </div>
+        <div class="head-meta">
+          <span><b>${esc(c.pay)}</b></span>
+          <span>📍 ${esc(c.location)}</span>
+          <span>📅 ${esc(c.deadline)}</span>
+        </div>
+      </div>
+      <div class="head-right">
+        <div class="chev">${ICON.chev}</div>
+        <div class="head-cta">View Roles &amp; Apply</div>
+        <button class="head-close" title="Collapse" onclick="collapse(event)">✕ Close</button>
+      </div>
+    </div>
+    <div class="detail"><div class="detail-clip"><div class="detail-content">${detailHTML(c)}</div></div></div>
+  </article>`;
+}
+
+document.getElementById('list').innerHTML = CASTINGS.map(cardHTML).join('');
+
+let openId = null;
+function toggle(id){
+  if(openId === id){ collapseAll(); return; }
+  collapseAll();
+  const card = document.getElementById('card-'+id);
+  card.classList.add('open');
+  openId = id;
+  // keep the opening card comfortably in view without yanking the page
+  setTimeout(()=>{
+    const r = card.getBoundingClientRect();
+    if(r.top < 70) card.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 60);
+}
+function collapseAll(){
+  document.querySelectorAll('.card.open').forEach(c=>c.classList.remove('open'));
+  openId = null;
+}
+function collapse(e){
+  e.stopPropagation();
+  const card = e.target.closest('.card');
+  card.classList.remove('open');
+  if(openId === card.dataset.id) openId = null;
+  card.scrollIntoView({behavior:'smooth', block:'center'});
+}
+function toggleSave(e){
+  e.stopPropagation();
+  const card = e.target.closest('.card');
+  const on = card.dataset.saved === '1';
+  card.dataset.saved = on ? '0' : '1';
+  card.querySelectorAll('.ab-toggle-save').forEach(btn=>{
+    btn.classList.toggle('saved', !on);
+    btn.querySelector('span').textContent = on ? 'Save Casting' : 'Saved';
+    btn.innerHTML = (on?ICON.save:ICON.saved) + '<span>'+(on?'Save Casting':'Saved')+'</span>';
+    btn.classList.toggle('saved', !on);
+  });
+}
+
+// In the real app this navigates to the dedicated casting page (/casting/<slug>)
+// where the full audition flow — sides, self-tape upload, etc. — lives.
+function routeApply(e, cid, roleName){
+  e.stopPropagation();
+  const c = CASTINGS.find(x=>x.id===cid) || {};
+  const slug = '/casting/' + cid;
+  toast(`→ Opening full casting page to apply${roleName?': '+roleName:''}  ·  ${slug}`);
+}
+let toastT;
+function toast(msg){
+  let t = document.getElementById('toast');
+  if(!t){ t = document.createElement('div'); t.id='toast'; document.body.appendChild(t); }
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CastSlate — "For Casting Directors" photo options (v2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#FFFFFF;--s1:#F7F7F8;--s2:#EDEDF0;--s3:#E2E2E7;--bdr:#D8D8DE;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--grn:#1B873E;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--s1);color:var(--t1);padding:40px 24px 80px;line-height:1.5;}
+  .wrap{max-width:1180px;margin:0 auto;}
+  h1{font-family:'Syne',sans-serif;font-weight:800;font-size:34px;letter-spacing:-1.2px;margin-bottom:10px;}
+  .lede{color:var(--t2);font-size:15px;max-width:780px;margin-bottom:6px;}
+  .lede strong{color:var(--t1);}
+  .note{color:var(--t3);font-size:12.5px;max-width:780px;margin-bottom:8px;}
+  .section-label{font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:var(--acc);font-weight:700;margin:34px 0 14px;}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;}
+  .opt{background:var(--bg);border:1px solid var(--bdr);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;}
+  .opt.current{border:2px solid var(--grn);}
+  .frame{position:relative;width:100%;aspect-ratio:16/9;background:var(--s3);overflow:hidden;}
+  .frame img{width:100%;height:100%;object-fit:cover;display:block;}
+  .pill{position:absolute;top:12px;left:12px;background:rgba(26,26,46,.86);color:#fff;font-size:11px;font-weight:700;letter-spacing:.4px;padding:5px 11px;border-radius:100px;backdrop-filter:blur(4px);}
+  .pill.live{background:var(--grn);}
+  .meta{padding:16px 18px 18px;}
+  .meta .opt-label{font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--acc);font-weight:700;margin-bottom:6px;}
+  .meta h3{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;margin-bottom:6px;}
+  .meta p{color:var(--t2);font-size:13px;}
+  .meta .id{color:var(--t3);font-size:11.5px;margin-top:8px;font-family:ui-monospace,monospace;}
+  @media(max-width:720px){.grid{grid-template-columns:1fr;}h1{font-size:26px;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>"For Casting Directors" — screen-test / on-set options</h1>
+  <p class="lede">All <strong>real photographs</strong> (no AI), <strong>landscape</strong>, cropped to the exact 16:9 homepage card shape. Theme: an actor being filmed / reviewed on a monitor — modern casting, not theater. <strong>No red</strong> lighting; kept to the site's neutral palette.</p>
+  <p class="note">Tell me the option number (or photo ID) and I'll swap it into the live card in <code>index.html</code>.</p>
+
+  <div class="section-label">Currently live</div>
+  <div class="grid">
+    <div class="opt current">
+      <div class="frame"><span class="pill live">● Live now</span>
+        <img loading="lazy" src="https://images.pexels.com/photos/8088390/pexels-photo-8088390.jpeg?auto=compress&cs=tinysrgb&w=1400" alt="current">
+      </div>
+      <div class="meta"><div class="opt-label">Current</div>
+        <h3>Red-studio clapperboard</h3>
+        <p>The staged red-lit shot you're replacing.</p>
+        <div class="id">pexels 8088390</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">★ Round 2 — best new finds (recommended)</div>
+  <div class="grid">
+
+    <div class="opt">
+      <div class="frame"><span class="pill">Pick A ★</span>
+        <img loading="lazy" src="https://images.unsplash.com/photo-1760893107446-58b108d419d8?auto=format&fit=crop&w=1400&q=80" alt="">
+      </div>
+      <div class="meta"><div class="opt-label">Casting board · headshot wall</div>
+        <h3>A wall of labeled headshots</h3>
+        <p>The most on-concept image found — a literal casting board of talent headshots. Clean white, neutral, bright; perfect fit for the cream site and the "every headshot gets seen" pitch.</p>
+        <div class="id">unsplash 1760893107446-58b108d419d8</div>
+      </div>
+    </div>
+
+    <div class="opt">
+      <div class="frame"><span class="pill">Pick B ★</span>
+        <img loading="lazy" src="https://images.pexels.com/photos/4123577/pexels-photo-4123577.jpeg?auto=compress&cs=tinysrgb&w=1400" alt="">
+      </div>
+      <div class="meta"><div class="opt-label">Screen test · bright studio</div>
+        <h3>Talent filmed in a white, window-lit studio</h3>
+        <p>Camera operator filming an actor in a bright, airy studio. Modern and real, light enough to sit naturally on the cream background. No red lighting.</p>
+        <div class="id">pexels 4123577</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Round 1 options</div>
+  <div class="grid">
+
+    <div class="opt">
+      <div class="frame"><span class="pill">Option 1</span>
+        <img loading="lazy" src="https://images.pexels.com/photos/31329890/pexels-photo-31329890.jpeg?auto=compress&cs=tinysrgb&w=1400" alt="">
+      </div>
+      <div class="meta"><div class="opt-label">Screen test · actor + operator</div>
+        <h3>Actor on the test set, being filmed</h3>
+        <p>The clearest "casting screen test" of the set — actor seated, camera operator capturing him, his image on the small monitor. Cool neutral tones, no red.</p>
+        <div class="id">pexels 31329890</div>
+      </div>
+    </div>
+
+    <div class="opt">
+      <div class="frame"><span class="pill">Option 2</span>
+        <img loading="lazy" src="https://images.pexels.com/photos/2041396/pexels-photo-2041396.jpeg?auto=compress&cs=tinysrgb&w=1400" alt="">
+      </div>
+      <div class="meta"><div class="opt-label">Self-tape · talent on camera</div>
+        <h3>Talent recorded, framed on screen</h3>
+        <p>An actor being recorded, her face crisp on the camera display. Cool teal tones that echo the site's accent. Reads exactly like a submission/audition tape.</p>
+        <div class="id">pexels 2041396</div>
+      </div>
+    </div>
+
+    <div class="opt">
+      <div class="frame"><span class="pill">Option 3</span>
+        <img loading="lazy" src="https://images.pexels.com/photos/7247731/pexels-photo-7247731.jpeg?auto=compress&cs=tinysrgb&w=1400" alt="">
+      </div>
+      <div class="meta"><div class="opt-label">On set · daylight</div>
+        <h3>Talent being filmed, bright & open</h3>
+        <p>Two talent in front of a camera + crew in natural daylight. Bright and airy — the lightest option, closest to the site's white/cream feel.</p>
+        <div class="id">pexels 7247731</div>
+      </div>
+    </div>
+
+    <div class="opt">
+      <div class="frame"><span class="pill">Option 4</span>
+        <img loading="lazy" src="https://images.pexels.com/photos/11157605/pexels-photo-11157605.jpeg?auto=compress&cs=tinysrgb&w=1400" alt="">
+      </div>
+      <div class="meta"><div class="opt-label">On set · loft</div>
+        <h3>Crew + camera, modern loft</h3>
+        <p>Airy minimal space, crew setting up around the camera. Editorial, neutral, and clean — very on-brand for a tech-forward platform.</p>
+        <div class="id">pexels 11157605</div>
+      </div>
+    </div>
+
+    <div class="opt">
+      <div class="frame"><span class="pill">Option 5</span>
+        <img loading="lazy" src="https://images.pexels.com/photos/6714952/pexels-photo-6714952.jpeg?auto=compress&cs=tinysrgb&w=1400" alt="">
+      </div>
+      <div class="meta"><div class="opt-label">Reviewing talent · monitor</div>
+        <h3>An actor framed on the monitor</h3>
+        <p>Over-the-shoulder of someone reviewing an actor's performance on the field monitor. Warm-neutral, intimate — the "reviewing actors one at a time" idea.</p>
+        <div class="id">pexels 6714952</div>
+      </div>
+    </div>
+
+    <div class="opt">
+      <div class="frame"><span class="pill">Option 6</span>
+        <img loading="lazy" src="https://images.pexels.com/photos/6559472/pexels-photo-6559472.jpeg?auto=compress&cs=tinysrgb&w=1400" alt="">
+      </div>
+      <div class="meta"><div class="opt-label">Reviewing talent · monitor</div>
+        <h3>Performance on the camera screen</h3>
+        <p>A scene playing back on the camera display with cinematic bokeh. Moody-neutral, premium feel. Equipment-forward without being cold.</p>
+        <div class="id">pexels 6559472</div>
+      </div>
+    </div>
+
+    <div class="opt">
+      <div class="frame"><span class="pill">Option 7</span>
+        <img loading="lazy" src="https://images.pexels.com/photos/32610376/pexels-photo-32610376.jpeg?auto=compress&cs=tinysrgb&w=1400" alt="">
+      </div>
+      <div class="meta"><div class="opt-label">The gear · studio</div>
+        <h3>Cinema camera + operator</h3>
+        <p>Clean close-up of a pro rig with the operator beside it. Neutral studio tones — premium and unmistakably "real production," no actor needed to read it.</p>
+        <div class="id">pexels 32610376</div>
+      </div>
+    </div>
+
+    <div class="opt">
+      <div class="frame"><span class="pill">Option 8</span>
+        <img loading="lazy" src="https://images.pexels.com/photos/6125167/pexels-photo-6125167.jpeg?auto=compress&cs=tinysrgb&w=1400" alt="">
+      </div>
+      <div class="meta"><div class="opt-label">On set · daylight</div>
+        <h3>Operators on a cinema camera</h3>
+        <p>Two crew running an ARRI in crisp daylight. Bright, neutral greens — energetic and real, leans documentary/behind-the-scenes.</p>
+        <div class="id">pexels 6125167</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

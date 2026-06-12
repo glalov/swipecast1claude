@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin — Self Improvement (Demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#FAF7F2; --s2:#FFFFFF; --s3:#F3EFE8; --bdr:#E7E1D6;
+  --t1:#1A1A2E; --t2:#5C5C70; --t3:#9494A6;
+  --teal:#0F6B66; --teal-soft:#E3F0EF; --amber:#E8A33D; --amber-soft:#FBF0DD;
+  --red:#C0392B; --red-soft:#FBE9E6; --green:#1E7D4F; --green-soft:#E5F3EC;
+  --purple:#5B3FA8; --purple-soft:#EDE9FE;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);padding:32px 20px;}
+.wrap{max-width:1040px;margin:0 auto;}
+h1{font-family:'DM Sans',sans-serif;font-weight:800;font-size:26px;letter-spacing:-0.8px;margin-bottom:4px;}
+.sub{color:var(--t2);font-size:13.5px;margin-bottom:24px;line-height:1.6;}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px;}
+.stat{background:var(--s2);border:1px solid var(--bdr);border-radius:14px;padding:14px 16px;}
+.stat .n{font-family:'DM Sans',sans-serif;font-weight:800;font-size:24px;letter-spacing:-0.5px;}
+.stat .l{font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;}
+.stat.fixed .n{color:var(--green);} .stat.open .n{color:var(--amber);} .stat.approval .n{color:var(--purple);} .stat.critical .n{color:var(--red);}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.chip{border:1px solid var(--bdr);background:var(--s2);border-radius:20px;padding:7px 14px;font-size:12.5px;font-weight:600;color:var(--t2);cursor:pointer;font-family:'Inter',sans-serif;}
+.chip.act{background:var(--teal);border-color:var(--teal);color:#fff;}
+.card{background:var(--s2);border:1px solid var(--bdr);border-radius:14px;padding:16px 18px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;}
+.card .body{flex:1;min-width:0;}
+.card h3{font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:700;margin-bottom:4px;letter-spacing:-0.2px;}
+.card p{font-size:12.5px;color:var(--t2);line-height:1.55;}
+.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;align-items:center;}
+.badge{font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:12px;padding:3px 9px;}
+.b-sev-critical{background:var(--red-soft);color:var(--red);}
+.b-sev-high{background:var(--amber-soft);color:#9A6314;}
+.b-sev-medium{background:var(--teal-soft);color:var(--teal);}
+.b-sev-low,.b-sev-info{background:var(--s3);color:var(--t3);}
+.b-cat{background:var(--s3);color:var(--t2);}
+.b-st-fixed{background:var(--green-soft);color:var(--green);}
+.b-st-suggested{background:var(--amber-soft);color:#9A6314;}
+.b-st-needs_approval{background:var(--purple-soft);color:var(--purple);}
+.b-st-in_progress{background:var(--teal-soft);color:var(--teal);}
+.b-st-ignored{background:var(--s3);color:var(--t3);}
+.date{font-size:11px;color:var(--t3);margin-left:auto;white-space:nowrap;}
+.dot{width:9px;height:9px;border-radius:50%;margin-top:6px;flex-shrink:0;}
+.actions{display:flex;gap:6px;margin-top:10px;}
+.btn{font-size:11.5px;font-weight:600;border-radius:8px;padding:6px 11px;border:1px solid var(--bdr);background:var(--s2);color:var(--t2);cursor:pointer;font-family:'Inter',sans-serif;}
+.btn.p{background:var(--teal);border-color:var(--teal);color:#fff;}
+.note{background:var(--teal-soft);border:1px solid #C9E0DE;border-radius:14px;padding:14px 18px;font-size:12.5px;color:var(--teal);line-height:1.6;margin-bottom:22px;}
+.demo-tag{position:fixed;top:10px;right:12px;background:var(--amber);color:#fff;font-size:10px;font-weight:800;letter-spacing:0.08em;border-radius:8px;padding:5px 10px;text-transform:uppercase;}
+</style>
+</head>
+<body>
+<span class="demo-tag">Demo — not wired</span>
+<div class="wrap">
+  <h1>🛠 Self Improvement</h1>
+  <p class="sub">CastSlate's maintenance &amp; intelligence board. Work sessions and scheduled audits log bugs, fixes, design findings, strategy and legal suggestions here. Items needing your decision are marked <b>needs approval</b>.</p>
+
+  <div class="note">ℹ️ This is a working demo with the <b>real 17 items already in the database</b> (table <code>self_improvement_items</code>, admin-only RLS). Approving this design wires it into Admin as a new sidebar section with live data, status dropdowns, and filters.</div>
+
+  <div class="stats">
+    <div class="stat fixed"><div class="n">9</div><div class="l">Fixed</div></div>
+    <div class="stat open"><div class="n">5</div><div class="l">Suggested</div></div>
+    <div class="stat approval"><div class="n">3</div><div class="l">Needs approval</div></div>
+    <div class="stat critical"><div class="n">1</div><div class="l">Critical (fixed)</div></div>
+  </div>
+
+  <div class="filters">
+    <button class="chip act">All</button><button class="chip">Security</button><button class="chip">Bugs</button><button class="chip">Design</button><button class="chip">Improvements</button><button class="chip">Strategy</button><button class="chip">Legal</button><button class="chip">Test results</button>
+  </div>
+
+  <div class="card"><div class="dot" style="background:var(--red)"></div><div class="body">
+    <h3>Self-grant Premium RPC hole closed</h3>
+    <p>activate_membership was executable by any logged-in user from the browser console — free Premium, up to 365 days. Revoked client EXECUTE; only the Stripe webhook can call it.</p>
+    <div class="meta"><span class="badge b-sev-critical">critical</span><span class="badge b-cat">security</span><span class="badge b-st-fixed">fixed</span><span class="badge b-cat">database / RPC</span><span class="date">created 2026-06-10 · resolved 2026-06-10</span></div>
+  </div></div>
+
+  <div class="card"><div class="dot" style="background:var(--amber)"></div><div class="body">
+    <h3>Logged-out casting role leak via refresh/deep-link</h3>
+    <p>Refreshing /casting/&lt;slug&gt; while logged out showed the full casting with all roles. Fixed with render guard + gate swap covering refresh, deep-link, back button and BFCache. Verified on the exact repro.</p>
+    <div class="meta"><span class="badge b-sev-high">high</span><span class="badge b-cat">security</span><span class="badge b-st-fixed">fixed</span><span class="badge b-cat">routing</span><span class="date">created 2026-06-11 · resolved 2026-06-11</span></div>
+  </div></div>
+
+  <div class="card"><div class="dot" style="background:var(--purple)"></div><div class="body">
+    <h3>Anon API can still read castings+roles directly</h3>
+    <p>The casting gate is UI-level only: RLS allows anonymous SELECT on castings and roles via the REST API. Hard-gating at DB level would affect logged-out Browse + SEO. Your call: conversion gate (Backstage-style) or hard gate.</p>
+    <div class="meta"><span class="badge b-sev-medium">medium</span><span class="badge b-cat">security</span><span class="badge b-st-needs_approval">needs approval</span><span class="date">created 2026-06-11</span></div>
+    <div class="actions"><button class="btn p">Approve fix</button><button class="btn">Keep as-is</button><button class="btn">Ignore</button></div>
+  </div></div>
+
+  <div class="card"><div class="dot" style="background:var(--amber)"></div><div class="body">
+    <h3>Actor activation funnel is the #1 conversion blocker</h3>
+    <p>Only 2 of 13 actors have both a headshot and bio — 79% of profiles are invisible to CDs. Build guided post-signup onboarding + completion nudges. Demo links will attach here when ready.</p>
+    <div class="meta"><span class="badge b-sev-high">high</span><span class="badge b-cat">improvement</span><span class="badge b-st-suggested">suggested</span><span class="badge b-cat">onboarding</span><span class="date">created 2026-06-11</span></div>
+    <div class="actions"><button class="btn p">Start (demo first)</button><button class="btn">Ignore</button></div>
+  </div></div>
+
+  <div class="card"><div class="dot" style="background:var(--teal)"></div><div class="body">
+    <h3>Terms: add UGC license + casting-content liability clauses</h3>
+    <p>Suggested clauses for lawyer review: media display license, no-employment-relationship disclaimer, poster responsibility for casting accuracy, minors/guardian-consent policy. Not legal advice.</p>
+    <div class="meta"><span class="badge b-sev-medium">medium</span><span class="badge b-cat">legal</span><span class="badge b-st-suggested">suggested</span><span class="badge b-cat">terms of use</span><span class="date">created 2026-06-11</span></div>
+  </div></div>
+
+  <div class="card"><div class="dot" style="background:var(--green)"></div><div class="body">
+    <h3>Logged-out casting gate E2E test passed</h3>
+    <p>Deep-link + hard refresh on a live casting while logged out: gate shown with title/producer only, zero role fields, URL preserved, no console errors.</p>
+    <div class="meta"><span class="badge b-sev-info">info</span><span class="badge b-cat">test result</span><span class="badge b-st-fixed">passed</span><span class="badge b-cat">QA</span><span class="date">2026-06-11</span></div>
+  </div></div>
+
+  <p class="sub" style="margin-top:18px">…plus 11 more items already in the database (full list renders live when wired in). Sort: open first, then severity, then date.</p>
+</div>
+</body>
+</html>
