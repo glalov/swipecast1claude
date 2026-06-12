@@ -162,9 +162,9 @@ def render_page(title, desc, canonical):
   <script type="application/ld+json">
   {{"@context":"https://schema.org","@type":"WebApplication","name":"CastSlate","url":"https://www.castslate.com","applicationCategory":"EntertainmentApplication","operatingSystem":"Web","offers":{{"@type":"Offer","price":"0","priceCurrency":"USD","description":"Free actor account. Premium at $9.99/month."}},"description":"A modern casting platform where actors submit to roles and casting directors review talent one profile at a time."}}
   </script>
-  <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/vendor/react.production.min.js"></script>
+  <script src="/vendor/react-dom.production.min.js"></script>
+  <script src="/vendor/supabase.min.js"></script>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 {babel_cdn}
   <script>
