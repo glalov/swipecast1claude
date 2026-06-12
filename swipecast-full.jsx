@@ -9913,15 +9913,19 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             )}
           </div>
 
-          {/* Actor Business Card shortcut */}
-          <div style={{background:'var(--s1)',border:'1px solid var(--bdr)',borderRadius:14,padding:20}}>
-            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
-              <span style={{fontSize:20}}>💳</span>
-              <h3 style={{fontWeight:700,fontSize:15,color:'var(--t1)',margin:0}}>Actor Business Card</h3>
-              {isPremium&&<span style={{fontSize:10,fontWeight:700,padding:'2px 8px',borderRadius:6,background:'rgba(99,60,180,0.1)',color:'var(--acc)',textTransform:'uppercase',letterSpacing:0.6}}>Premium</span>}
+          {/* Actor Business Card shortcut — teal/amber treatment to match the landing-page CTA */}
+          <div style={{position:'relative',overflow:'hidden',borderRadius:16,padding:20,background:'linear-gradient(135deg,#5C9FA0 0%,#4F8A8B 45%,#3B6E6F 100%)',color:'#fff',boxShadow:'0 18px 40px -22px rgba(26,26,46,.45)'}}>
+            <span style={{position:'absolute',borderRadius:'50%',pointerEvents:'none',width:180,height:180,background:'radial-gradient(circle,rgba(232,144,42,.32),transparent 70%)',top:-60,right:-40}}/>
+            <span style={{position:'absolute',borderRadius:'50%',pointerEvents:'none',width:140,height:140,background:'radial-gradient(circle,rgba(255,255,255,.14),transparent 70%)',bottom:-50,left:-30}}/>
+            <p style={{position:'relative',display:'inline-flex',alignItems:'center',gap:6,fontSize:10,fontWeight:800,letterSpacing:1.4,textTransform:'uppercase',color:'#FFE6C2',margin:'0 0 8px',fontFamily:"'DM Sans',sans-serif"}}>
+              <span style={{width:6,height:6,borderRadius:'50%',background:'var(--amber)',boxShadow:'0 0 8px var(--amber)'}}/>{isPremium?'Premium Feature':'Free Preview'}
+            </p>
+            <div style={{position:'relative',display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+              <span style={{fontSize:20,display:'flex',alignItems:'center',justifyContent:'center',width:36,height:36,borderRadius:10,background:'rgba(255,255,255,0.14)'}}>💳</span>
+              <h3 style={{fontWeight:800,fontSize:15.5,color:'#fff',margin:0,fontFamily:"'DM Sans',sans-serif",letterSpacing:-0.2}}>Actor Business Card</h3>
             </div>
-            <p style={{fontSize:13,color:'var(--t2)',margin:'0 0 14px',lineHeight:1.55}}>Create a downloadable actor card with your headshot and a QR code linking to your Cast Slate profile.</p>
-            <button className={isPremium?"btn-p btn-sm":"btn-s btn-sm"} style={{width:'100%',fontSize:12}} onClick={()=>onNavigate('actor-business-card')}>{isPremium?'Build My Actor Card →':'Preview Actor Card →'}</button>
+            <p style={{position:'relative',fontSize:13,color:'rgba(255,255,255,.85)',margin:'0 0 16px',lineHeight:1.55}}>Create a downloadable actor card with your headshot and a unique QR code linking to your Cast Slate profile.</p>
+            <button style={{position:'relative',width:'100%',fontSize:13,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:'12px 14px',borderRadius:10,border:'none',cursor:'pointer',background:'var(--amber)',color:'#1A1A2E',boxShadow:'0 10px 24px -10px rgba(232,144,42,.7)'}} onClick={()=>onNavigate('actor-business-card')}>{isPremium?'Build My Actor Card →':'Preview Actor Card →'}</button>
           </div>
 
           {/* Profile Improvement Suggestions (Premium feature) */}
