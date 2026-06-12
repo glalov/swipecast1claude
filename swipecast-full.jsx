@@ -1737,7 +1737,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
       centered and fully clickable. The two states crossfade as the banner
       height animates between them, and reverse on scroll back to top. ── */
 .featured-class-stripe{position:relative;width:100%;line-height:0;background:#0c0a08;overflow:hidden;transition:height .42s cubic-bezier(.4,0,.2,1);}
-.fcs-full{position:relative;transition:opacity .22s ease;}
+.fcs-full{position:relative;height:100%;transition:opacity .22s ease;}
 .featured-class-stripe.is-collapsed .fcs-full{opacity:0;pointer-events:none;}
 .fcs-img{display:block;width:100%;height:auto;}
 .fcs-hotspot{position:absolute;left:3.8%;top:72%;width:8.5%;height:20%;background:transparent;border:none;padding:0;margin:0;cursor:pointer;}
