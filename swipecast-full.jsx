@@ -8221,12 +8221,34 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
           </div>
         )}
 
-        {/* CD action buttons */}
-        {viewerIsCd&&talentDbId&&talentDbId!==session?.user?.id&&<div style={{display:"flex",gap:8,flexWrap:"wrap",borderTop:"1px solid var(--bdr)",paddingTop:12,marginTop:2}}>
-          <button className="btn-p btn-sm" onClick={()=>setCdAction("save")}>★ Save</button>
-          <button className="btn-s btn-sm" onClick={()=>setCdAction("invite")}>📩 Invite</button>
-          <button className="btn-s btn-sm" onClick={()=>setCdAction("dm")}>💬 Message</button>
-        </div>}
+        {/* ── Card action bar — turns the public profile (where the actor's card
+            QR/link lands) into an active submission tool. Adapts to the viewer.
+            No anonymous writes: logged-out visitors are funneled to a free
+            account, preserving the return path. ── */}
+        {!isOwnProfile&&talentDbId&&talentDbId!==session?.user?.id&&(()=>{
+          const talentFirst=(talent.name||talent.display_name||"this actor").split(" ")[0];
+          return(
+          <div style={{borderTop:"1px solid var(--bdr)",paddingTop:14,marginTop:2}}>
+            {viewerIsCd?(
+              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                <button className="btn-p btn-sm" onClick={()=>setCdAction("invite")}>📩 Invite to a Casting</button>
+                <button className="btn-s btn-sm" onClick={()=>setCdAction("selftape")}>🎥 Request Self-Tape</button>
+                <button className="btn-s btn-sm" onClick={()=>setCdAction("dm")}>💬 Message</button>
+                <button className="btn-s btn-sm" onClick={()=>setCdAction("save")}>★ Save</button>
+              </div>
+            ):session?(
+              <button className="btn-s btn-sm" onClick={()=>setCdAction("dm")}>💬 Message {talentFirst}</button>
+            ):(
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+                <div style={{minWidth:0}}>
+                  <div style={{fontWeight:700,fontSize:14,color:"var(--t1)"}}>Want to work with {talentFirst}?</div>
+                  <div style={{fontSize:12.5,color:"var(--t2)",lineHeight:1.5,marginTop:2}}>Casting directors &amp; producers can invite {talentFirst} to a project or send a message — free to start.</div>
+                </div>
+                <button className="btn-p btn-sm" style={{flexShrink:0}} onClick={()=>{try{sessionStorage.setItem("sc_return_to",window.location.pathname+window.location.search);}catch(_){}onNavigate("register-cd");}}>Create a free account →</button>
+              </div>
+            )}
+          </div>);
+        })()}
       </div>
     </div>
 
@@ -8297,6 +8319,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     {cdAction==="save"&&talentDbId&&<SaveToListModal cdId={session?.user?.id} talentId={talentDbId} talentName={talent.name||talent.display_name||"Talent"} onClose={()=>setCdAction(null)}/>}
     {cdAction==="invite"&&talentDbId&&<InviteToProjectModal cdId={session?.user?.id} talentId={talentDbId} talentName={talent.name||talent.display_name||"Talent"} onClose={()=>setCdAction(null)}/>}
     {cdAction==="dm"&&talentDbId&&<ComposeDMModal fromId={session?.user?.id} toId={talentDbId} toName={talent.name||talent.display_name||"Talent"} onClose={()=>setCdAction(null)}/>}
+    {cdAction==="selftape"&&talentDbId&&<ComposeDMModal fromId={session?.user?.id} toId={talentDbId} toName={talent.name||talent.display_name||"Talent"} title={`Request a self-tape from ${(talent.name||talent.display_name||"this actor").split(" ")[0]}`} intro="Send a self-tape request. They'll get it in their inbox and can reply with a tape." initialBody={`Hi ${(talent.name||talent.display_name||"there").split(" ")[0]} — I'd love to see a self-tape from you for a project I'm casting. A short scene or monologue (60–90 seconds) is perfect. Thanks!`} onClose={()=>setCdAction(null)}/>}
 
     <Footer onNavigate={onNavigate}/></div>);
 }
@@ -11195,8 +11218,8 @@ function fireMessageNotification(toUserId,fromId,fromName){
 
 // ─── General-purpose direct message (not tied to an application). CD-side use mostly,
 // but the same modal works for talent → CD too. Writes to public.messages with application_id=null.
-function ComposeDMModal({fromId,toId,toName,onClose}){
-  const [body,setBody]=useState("");
+function ComposeDMModal({fromId,toId,toName,onClose,initialBody,title,intro}){
+  const [body,setBody]=useState(initialBody||"");
   const [busy,setBusy]=useState(false);
   const [err,setErr]=useState("");
   const [sent,setSent]=useState(false);
@@ -11216,8 +11239,8 @@ function ComposeDMModal({fromId,toId,toName,onClose}){
   };
   return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:520}}>
     {sent?<div className="success-msg"><div className="check">✓</div><h3>Message Sent</h3><p>{toName} will see it in their inbox.</p></div>:<>
-      <h2>Message {toName}</h2>
-      <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:18}}>Direct message — no application or audition attached. Use this for quick check-ins or follow-ups.</p>
+      <h2>{title||`Message ${toName}`}</h2>
+      <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:18}}>{intro||"Direct message — no application or audition attached. Use this for quick check-ins or follow-ups."}</p>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{err}</div>}
       <div className="form-group"><label className="label">Message</label><textarea className="textarea" rows="6" placeholder={`Hi ${toName.split(" ")[0]||"there"} — …`} value={body} onChange={e=>setBody(e.target.value)} autoFocus></textarea></div>
       <div style={{display:"flex",gap:12,marginTop:8}}>
@@ -20601,13 +20624,13 @@ async function _abcGeneratePrintSheet(cardCanvas){
 
 function ActorCardPreview({displayName,headline,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl,photoZoom,photoPosX,photoPosY,photoRef,onPhotoMouseDown,onPhotoTouchStart,isDragging,watermark}){
   return(
-    <div style={{background:'#ffffff',border:'1.5px solid #E0E0E8',borderRadius:10,overflow:'hidden',boxShadow:'0 8px 40px rgba(26,26,46,0.15)',display:'flex',width:390,height:246,position:'relative',flexShrink:0}}>
+    <div style={{background:'#ffffff',border:'1.5px solid #E0E0E8',borderRadius:10,overflow:'hidden',boxShadow:'0 8px 40px rgba(26,26,46,0.15)',display:'flex',width:'100%',maxWidth:390,aspectRatio:'390 / 246',position:'relative',flexShrink:0}}>
       <div style={{position:'absolute',top:0,left:0,right:0,height:5,background:'#1A1A2E',zIndex:2}}/>
       {watermark&&<div style={{position:'absolute',inset:0,zIndex:5,display:'flex',alignItems:'center',justifyContent:'center',pointerEvents:'none'}}>
         <span style={{transform:'rotate(-16deg)',border:'2.5px solid rgba(26,26,46,0.18)',borderRadius:10,color:'rgba(26,26,46,0.22)',fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:26,letterSpacing:'0.22em',textTransform:'uppercase',padding:'7px 20px',background:'rgba(255,255,255,0.18)'}}>Preview</span>
       </div>}
       {/* Headshot — draggable, contain-based zoom */}
-      <div ref={photoRef} style={{width:128,flexShrink:0,position:'relative',marginTop:5,overflow:'hidden',cursor:headshotUrl?(isDragging?'grabbing':'grab'):'default',background:'#E8E8F2',userSelect:'none'}}
+      <div ref={photoRef} style={{width:'32.8%',flexShrink:0,position:'relative',marginTop:5,overflow:'hidden',cursor:headshotUrl?(isDragging?'grabbing':'grab'):'default',background:'#E8E8F2',userSelect:'none'}}
         onMouseDown={onPhotoMouseDown}
         onTouchStart={onPhotoTouchStart}
       >
@@ -20936,7 +20959,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
         <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:32,alignItems:'start'}}>
 
           {/* LEFT — builder controls */}
-          <div style={{display:'flex',flexDirection:'column',gap:18}}>
+          <div style={{display:'flex',flexDirection:'column',gap:18,minWidth:0}}>
 
             {/* Choose headshot */}
             <div style={{background:'var(--s1)',border:'1px solid var(--bdr)',borderRadius:14,padding:20}}>
@@ -21058,7 +21081,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
           </div>
 
           {/* RIGHT — card preview with draggable headshot */}
-          <div style={{display:'flex',flexDirection:'column',gap:16,alignItems:isMobile?'center':'flex-start',position:'sticky',top:24}}>
+          <div style={{display:'flex',flexDirection:'column',gap:16,alignItems:isMobile?'center':'flex-start',position:'sticky',top:24,minWidth:0,width:'100%'}}>
             <div style={{fontWeight:700,fontSize:11,color:'var(--t3)',textTransform:'uppercase',letterSpacing:1}}>Live Card Preview</div>
             <ActorCardPreview
               displayName={displayName}
