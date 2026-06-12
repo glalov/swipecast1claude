@@ -4440,10 +4440,22 @@ function ContactPage({onNavigate}){
       <button className="btn-p" style={{width:"100%"}} onClick={send} disabled={sending}>{sending?"Sending…":"Send Message"}</button>
       {error&&<div style={{marginTop:14,padding:"12px 14px",borderRadius:10,background:"rgba(214,59,59,.08)",border:"1px solid rgba(214,59,59,.25)",color:"var(--red)",fontSize:13,fontWeight:600,textAlign:"center"}}>{error}</div>}</>}
     <div style={{marginTop:48,display:"flex",justifyContent:"center"}}>
-      <div className="card" style={{maxWidth:340,width:"100%",textAlign:"center"}}>
-        <div style={{fontSize:30,marginBottom:10}}>📍</div>
-        <h4 style={{fontSize:14,fontWeight:700,marginBottom:4}}>Office</h4>
-        <p style={{fontSize:13,color:"var(--t2)",margin:0}}>New York, NY</p>
+      <div className="card" style={{maxWidth:340,width:"100%",textAlign:"center",overflow:"hidden",padding:0}}>
+        <div style={{position:"relative",width:"100%",height:150,overflow:"hidden",background:"#dfe6e0"}}>
+          <iframe title="CastSlate office area map" loading="lazy" referrerPolicy="no-referrer-when-downgrade" scrolling="no"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=-73.9966%2C40.7577%2C-73.9806%2C40.7697&layer=mapnik"
+            style={{position:"absolute",top:0,left:0,width:"100%",height:172,border:0,filter:"saturate(0.85) contrast(1.02)"}}/>
+          <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-100%)",display:"flex",flexDirection:"column",alignItems:"center",pointerEvents:"none"}}>
+            <div style={{width:30,height:30,background:"var(--acc)",borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",boxShadow:"0 4px 10px rgba(0,0,0,.28)",border:"2px solid #fff"}}>
+              <div style={{width:17,height:17}}><LogoMark/></div>
+            </div>
+            <div style={{width:0,height:0,borderLeft:"6px solid transparent",borderRight:"6px solid transparent",borderTop:"7px solid var(--acc)",marginTop:-2,filter:"drop-shadow(0 2px 2px rgba(0,0,0,.15))"}}/>
+          </div>
+        </div>
+        <div style={{padding:16}}>
+          <h4 style={{fontSize:14,fontWeight:700,marginBottom:4}}>Office</h4>
+          <p style={{fontSize:13,color:"var(--t2)",margin:0}}>New York, NY</p>
+        </div>
       </div>
     </div>
   </div><Footer onNavigate={onNavigate}/></div>);
