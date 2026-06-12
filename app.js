@@ -759,7 +759,7 @@ html,body{overflow-x:hidden;}
 
 /* ── Landing: Single cinematic feature image section ── */
 .cinema-feature{max-width:1100px;margin:0 auto 52px;padding:0 clamp(16px,4vw,40px);}
-.cinema-feature-inner{background:#fff;border:1px solid var(--bdr);border-radius:22px;box-shadow:0 12px 38px -22px rgba(26,26,46,.24),0 2px 8px rgba(26,26,46,.04);padding:clamp(16px,2.4vw,26px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.04fr);gap:clamp(22px,3.2vw,44px);align-items:center;}
+.cinema-feature-inner{background:#fff;border:1px solid var(--bdr);border-radius:22px;box-shadow:0 12px 38px -22px rgba(26,26,46,.24),0 2px 8px rgba(26,26,46,.04);padding:clamp(16px,2.4vw,26px);display:grid;grid-template-columns:minmax(0,1.28fr) minmax(0,1fr);gap:clamp(22px,3.2vw,44px);align-items:center;}
 /* Backstage-style long card: the FULL photo is inset on the LEFT with its own
    rounded corners, shown at natural ratio (width:100%/height:auto) so it is
    NEVER cropped and has no black/white bars. Copy sits on the right, centered. */
@@ -777,7 +777,7 @@ html,body{overflow-x:hidden;}
 
 /* ── Landing: How It Works card (Mandy-style: image left, text right) ── */
 .hiw-card{max-width:1100px;margin:0 auto 48px;padding:0 clamp(16px,4vw,40px);}
-.hiw-card-inner{background:#fff;border:1px solid var(--bdr);border-radius:22px;box-shadow:0 12px 38px -22px rgba(26,26,46,.24),0 2px 8px rgba(26,26,46,.04);padding:clamp(16px,2.4vw,26px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.04fr);gap:clamp(22px,3.2vw,44px);align-items:center;}
+.hiw-card-inner{background:#fff;border:1px solid var(--bdr);border-radius:22px;box-shadow:0 12px 38px -22px rgba(26,26,46,.24),0 2px 8px rgba(26,26,46,.04);padding:clamp(16px,2.4vw,26px);display:grid;grid-template-columns:minmax(0,1.28fr) minmax(0,1fr);gap:clamp(22px,3.2vw,44px);align-items:center;}
 /* Backstage-style long card: full photo inset on the LEFT with rounded corners,
    natural ratio (width:100%/height:auto) — never cropped, no bars. Copy right. */
 .hiw-card-img{line-height:0;}
