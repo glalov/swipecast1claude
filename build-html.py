@@ -45,7 +45,9 @@ var src = readFile({repr(tmp_jsx.name)});
 try {{
   var result = Babel.transform(src, {{
     presets: ['react'],
-    plugins: [['transform-react-jsx', {{runtime:'classic'}}]]
+    plugins: [['transform-react-jsx', {{runtime:'classic'}}]],
+    comments: false,
+    compact: true
   }});
   print(result.code);
 }} catch(e) {{
