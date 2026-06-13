@@ -13277,7 +13277,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
 // recreate it on every Landing re-render, which would reset swipe state.
 // ═══════════════════════════════════════════
 const LANDING_SWIPE_DEMO=[
-  {id:6,name:"Ethan Vance",age:22,gender:"Male",height:"6'0\"",pos:"center 10%",img:"https://images.pexels.com/photos/769745/pexels-photo-769745.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Juilliard Trained","Drama","Screen Acting"]},
+  {id:6,name:"Daniel Brooks",age:29,gender:"Male",height:"5'10\"",pos:"center 18%",img:"https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Indie Film","Drama","Guitar"]},
   {id:1,name:"Maria Santos",age:28,gender:"Female",height:"5'6\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=800&fit=crop&crop=top&q=90",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
   {id:2,name:"James Walker",age:46,gender:"Male",height:"6'1\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Improv","Yale Drama MFA","Basketball"]},
   {id:3,name:"Owen Fletcher",age:28,gender:"Male",height:"6'0\"",pos:"center 25%",img:"https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Drama","Film & TV","Screen Acting"]},
@@ -13292,7 +13292,7 @@ const LANDING_SWIPE_DEMO=[
   {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=800&fit=crop&crop=top&q=90",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
   {id:15,name:"Isabella Cruz",age:39,gender:"Female",height:"5'5\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&h=800&fit=crop&crop=top&q=90",skills:["Bilingual Spanish","Musical Theater","Commercial Print"]},
   {id:16,name:"Adrian Cole",age:34,gender:"Male",height:"6'1\"",pos:"center 20%",img:"https://images.pexels.com/photos/532220/pexels-photo-532220.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Corporate","Film","Spanish Fluent"]},
-  {id:17,name:"Daniel Brooks",age:29,gender:"Male",height:"5'10\"",pos:"center 18%",img:"https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Indie Film","Drama","Guitar"]},
+  {id:17,name:"Ethan Vance",age:22,gender:"Male",height:"6'0\"",pos:"center 10%",img:"https://images.pexels.com/photos/769745/pexels-photo-769745.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Juilliard Trained","Drama","Screen Acting"]},
   {id:19,name:"Malik Jensen",age:22,gender:"Male",height:"6'0\"",pos:"center 18%",img:"https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Music Video","Indie","Dance"]},
 ];
 function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your free profile"}={}){
