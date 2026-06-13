@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CastSlate — Main Card Headshot Options (real / candid)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#F7F4EE;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--teal:#4F8A8B;--teal-dk:#37696A;--amber:#E8902A;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased;padding:40px 0 70px;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px;}
+  .eyebrow{font-family:'DM Sans',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:1.8px;text-transform:uppercase;color:var(--teal);display:inline-flex;align-items:center;gap:8px;margin:0 0 12px;}
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);}
+  h1{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(24px,3.2vw,34px);letter-spacing:-1px;margin:0 0 8px;}
+  .lede{font-size:15px;color:var(--t2);line-height:1.6;max-width:660px;margin:0 0 30px;}
+  .row{display:flex;gap:34px;flex-wrap:wrap;}
+  .opt{width:300px;}
+  .opt .tag{font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;margin:0 0 12px;color:var(--t2);display:flex;align-items:center;gap:8px;}
+  .opt .tag .pri{font-size:10px;letter-spacing:.6px;text-transform:uppercase;background:rgba(79,138,139,.14);color:var(--teal-dk);padding:3px 8px;border-radius:6px;}
+  .s-card{width:300px;background:#fff;border:1px solid var(--bdr);border-radius:20px;overflow:hidden;box-shadow:0 24px 60px -34px rgba(26,26,46,.5),0 2px 8px rgba(26,26,46,.05);}
+  .s-card .photo{width:100%;height:306px;overflow:hidden;background:#ddd;}
+  .s-card .photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .s-card .body{padding:14px 16px 18px;}
+  .s-card h3{font-family:'DM Sans',sans-serif;font-size:18px;font-weight:700;margin:0 0 3px;}
+  .s-card .meta{font-size:13px;color:var(--t3);margin-bottom:12px;}
+  .s-card .skills{display:flex;flex-wrap:wrap;gap:6px;}
+  .s-card .skills span{font-size:10.5px;font-weight:600;color:var(--teal-dk);background:rgba(79,138,139,.10);padding:4px 8px;border-radius:6px;}
+  .src{font-size:11px;color:var(--t3);margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow"><span class="dot"></span>Main card — real / candid headshots</p>
+  <h1>Round 2 — authentic, not glossy</h1>
+  <p class="lede">Candid natural-light photography — real skin texture, real settings. Attractive, 20s, clearly real people. Framed exactly as the swipe card crops them.</p>
+
+  <div class="row">
+    <div class="opt">
+      <div class="tag"><span class="pri">Option A</span> Male · clean-cut</div>
+      <div class="s-card">
+        <div class="photo"><img src="https://images.pexels.com/photos/769745/pexels-photo-769745.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop" style="object-position:center 10%" alt=""/></div>
+        <div class="body">
+          <h3>Ethan Vance</h3>
+          <div class="meta">22 · Male · 6'0"</div>
+          <div class="skills"><span>Drama</span><span>Commercial</span><span>Film &amp; TV</span></div>
+        </div>
+      </div>
+      <div class="src">Pexels #769745</div>
+    </div>
+
+    <div class="opt">
+      <div class="tag"><span class="pri">Option B</span> Female · natural</div>
+      <div class="s-card">
+        <div class="photo"><img src="https://images.pexels.com/photos/712513/pexels-photo-712513.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop" style="object-position:center 18%" alt=""/></div>
+        <div class="body">
+          <h3>Maya Larsen</h3>
+          <div class="meta">24 · Female · 5'7"</div>
+          <div class="skills"><span>Indie</span><span>Theater</span><span>Drama</span></div>
+        </div>
+      </div>
+      <div class="src">Pexels #712513</div>
+    </div>
+
+    <div class="opt">
+      <div class="tag">Backup · female · glasses</div>
+      <div class="s-card">
+        <div class="photo"><img src="https://images.pexels.com/photos/1239288/pexels-photo-1239288.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop" style="object-position:center 20%" alt=""/></div>
+        <div class="body">
+          <h3>Priya Anand</h3>
+          <div class="meta">25 · Female · 5'5"</div>
+          <div class="skills"><span>Comedy</span><span>TV</span><span>Commercial</span></div>
+        </div>
+      </div>
+      <div class="src">Pexels #1239288</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -13277,7 +13277,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
 // recreate it on every Landing re-render, which would reset swipe state.
 // ═══════════════════════════════════════════
 const LANDING_SWIPE_DEMO=[
-  {id:6,name:"Ryan Cole",age:29,gender:"Male",height:"5'11\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&h=800&fit=crop&crop=top&q=90",skills:["Juilliard Trained","Improv","Screen Acting"]},
+  {id:6,name:"Ethan Vance",age:22,gender:"Male",height:"6'0\"",pos:"center 10%",img:"https://images.pexels.com/photos/769745/pexels-photo-769745.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Juilliard Trained","Drama","Screen Acting"]},
   {id:1,name:"Maria Santos",age:28,gender:"Female",height:"5'6\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=800&fit=crop&crop=top&q=90",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
   {id:2,name:"James Walker",age:46,gender:"Male",height:"6'1\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Improv","Yale Drama MFA","Basketball"]},
   {id:3,name:"Owen Fletcher",age:28,gender:"Male",height:"6'0\"",pos:"center 25%",img:"https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Drama","Film & TV","Screen Acting"]},
