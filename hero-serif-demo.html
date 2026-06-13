@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CastSlate — Hero Serif / Trim Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Playfair+Display:wght@600;700;800&family=Lora:wght@600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F4EE; --bdr:#E5DFD2;
+    --t1:#1A1A2E; --t2:#5A5A72; --t3:#8E8EA0;
+    --teal:#4F8A8B; --teal-dk:#37696A; --amber:#E8902A; --amber-dk:#C8761B; --grn:#1B873E;
+    --serif:'Fraunces',serif;   /* swapped by the toggle */
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased;}
+
+  /* ---- demo control bar ---- */
+  .ctrl{position:sticky;top:0;z-index:20;background:#1A1A2E;color:#fff;padding:12px 24px;
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:13px;}
+  .ctrl b{font-family:'DM Sans',sans-serif;font-weight:700;letter-spacing:.2px;}
+  .ctrl .seg{display:flex;gap:4px;background:rgba(255,255,255,.1);padding:4px;border-radius:10px;}
+  .ctrl button{font-family:var(--btnfont,'Inter');font-size:12.5px;font-weight:600;border:none;cursor:pointer;
+    background:transparent;color:rgba(255,255,255,.7);padding:7px 13px;border-radius:7px;transition:.15s;}
+  .ctrl button.on{background:#fff;color:#1A1A2E;}
+  .ctrl .hint{color:rgba(255,255,255,.55);font-size:12px;}
+
+  /* ---- nav replica ---- */
+  .nav{background:#fff;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:72px;}
+  .brand{display:flex;align-items:center;gap:9px;font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.5px;}
+  .brand .logo{width:32px;height:32px;border-radius:8px;background:var(--t1);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;}
+  .nav-links{display:flex;gap:4px;}
+  .nav-links span{color:#0A0A0A;font-size:13px;font-weight:500;padding:8px 12px;border-radius:9px;}
+  .nav-links .mm{color:var(--amber-dk);font-weight:600;background:rgba(232,144,42,.10);}
+  .nav-actions{display:flex;gap:9px;align-items:center;}
+  .btn-join{background:var(--teal);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-weight:700;font-size:13px;font-family:'DM Sans',sans-serif;}
+  .btn-ghost{background:#fff;border:1px solid var(--bdr);border-radius:10px;padding:9px 16px;font-weight:600;font-size:13px;color:var(--t1);}
+  @media(max-width:900px){.nav-links{display:none;}}
+
+  /* ---- hero ---- */
+  .hero{max-width:1200px;margin:0 auto;padding:64px 40px 72px;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;}
+  @media(max-width:900px){.hero{grid-template-columns:1fr;gap:36px;padding:40px 28px 56px;}}
+
+  .badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--bdr);background:#fff;border-radius:100px;
+    padding:7px 14px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:.8px;color:var(--t2);margin-bottom:24px;}
+  .badge .dot{width:7px;height:7px;border-radius:50%;background:var(--grn);box-shadow:0 0 8px var(--grn);}
+
+  h1{font-family:var(--serif);font-weight:700;font-size:clamp(40px,5.4vw,68px);line-height:1.02;letter-spacing:-1.5px;
+    margin:0 0 22px;color:var(--t1);}
+  h1 .accent{font-style:italic;color:var(--teal-dk);}
+  .sub{font-size:clamp(16px,1.6vw,18.5px);line-height:1.6;color:var(--t2);max-width:480px;margin:0 0 18px;}
+  .free-line{font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;color:var(--t1);margin:0 0 30px;}
+
+  .cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+  .btn-p{background:var(--t1);color:#fff;border:none;border-radius:12px;padding:15px 26px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:15px;cursor:pointer;}
+  .btn-s{background:#fff;border:1px solid var(--bdr);border-radius:12px;padding:15px 24px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:15px;cursor:pointer;color:var(--t1);}
+  .checks{display:flex;gap:22px;flex-wrap:wrap;font-size:12.5px;color:var(--t3);}
+  .checks span{display:flex;align-items:center;gap:6px;}
+  .checks b{color:var(--grn);}
+
+  /* right card */
+  .shot{aspect-ratio:4/5;border-radius:22px;overflow:hidden;background:#ddd;box-shadow:0 30px 70px -34px rgba(26,26,46,.5);max-width:420px;margin-left:auto;}
+  .shot img{width:100%;height:100%;object-fit:cover;object-position:center 20%;display:block;}
+
+  .label{font-family:'DM Sans',sans-serif;font-weight:700;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);max-width:1200px;margin:0 auto;padding:6px 40px 0;}
+</style>
+</head>
+<body>
+  <div class="ctrl">
+    <b>Headline font:</b>
+    <div class="seg" id="fontseg">
+      <button data-f="'Fraunces',serif" class="on">Fraunces</button>
+      <button data-f="'Playfair Display',serif">Playfair</button>
+      <button data-f="'Lora',serif">Lora</button>
+      <button data-f="'Source Serif 4',serif">Source Serif</button>
+    </div>
+    <span class="hint">↑ Fraunces is the closest match to Backstage's serif. Tap to compare.</span>
+    <b style="margin-left:auto">Copy:</b>
+    <div class="seg" id="copyseg">
+      <button data-c="0" class="on">Trimmed</button>
+      <button data-c="1">Punchy (Backstage-style)</button>
+    </div>
+  </div>
+
+  <!-- nav -->
+  <div class="nav">
+    <div class="brand"><span class="logo">⇄</span>CastSlate</div>
+    <div class="nav-links">
+      <span>Home</span><span>Browse Castings</span><span>Classes</span><span>TapeLink</span>
+      <span class="mm">Manager Mode</span><span>Blog</span>
+    </div>
+    <div class="nav-actions">
+      <button class="btn-join">Join ▾</button>
+      <button class="btn-ghost">Post a Job</button>
+      <button class="btn-ghost">Sign in</button>
+    </div>
+  </div>
+
+  <p class="label">Hero preview ▾</p>
+  <!-- hero -->
+  <div class="hero">
+    <div class="copy">
+      <span class="badge"><span class="dot"></span>LIVE NOW · TRUSTED BY WORKING ACTORS &amp; CASTING DIRECTORS</span>
+      <h1 id="hl"></h1>
+      <p class="sub" id="sub"></p>
+      <p class="free-line" id="free"></p>
+      <div class="cta-row">
+        <button class="btn-p">Create My Free Profile →</button>
+        <button class="btn-s">I'm a Casting Director</button>
+      </div>
+      <div class="checks">
+        <span><b>✓</b> Free actor account — Premium at $9.99/mo</span>
+        <span><b>✓</b> No credit card to sign up</span>
+      </div>
+    </div>
+    <div>
+      <div class="shot"><img src="https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=600&h=750&fit=crop" alt="actor headshot"/></div>
+    </div>
+  </div>
+
+<script>
+  var copy = [
+    { // 0 — Trimmed (keeps your voice, one tight paragraph)
+      hl:'Modern casting for independent storytellers and <span class="accent">undiscovered talent.</span>',
+      sub:'A visual-first platform for indie filmmakers, student directors, and creators — browse talent one profile at a time, where every headshot gets a real look instead of vanishing into a crowded grid.',
+      free:'Actors join free, submit free, and connect directly with the storytellers looking for something real.'
+    },
+    { // 1 — Punchy (Backstage cadence: short fragments)
+      hl:'Get seen. <span class="accent">Get cast.</span>',
+      sub:'The visual-first casting platform where indie filmmakers and undiscovered actors actually find each other — one profile at a time.',
+      free:'Free to join. Free to submit. No credit card.'
+    }
+  ];
+  var hl=document.getElementById('hl'), sub=document.getElementById('sub'), free=document.getElementById('free');
+  function render(i){ hl.innerHTML=copy[i].hl; sub.textContent=copy[i].sub; free.textContent=copy[i].free; }
+  render(0);
+
+  document.getElementById('fontseg').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    document.querySelectorAll('#fontseg button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+    document.documentElement.style.setProperty('--serif', b.dataset.f);
+  });
+  document.getElementById('copyseg').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    document.querySelectorAll('#copyseg button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+    render(+b.dataset.c);
+  });
+</script>
+</body>
+</html>

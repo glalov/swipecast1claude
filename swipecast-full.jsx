@@ -107,10 +107,10 @@ const TRANSLATIONS = {
     // Landing
     'landing.liveNow':'Live now · Trusted by working actors and casting directors',
     'landing.welcomeBack':'Welcome back{name} · You\'re all set',
-    'landing.heroTitle':'Modern casting for independent storytellers and','landing.heroAccent':'undiscovered talent.',
-    'landing.heroDesc':'CastSlate is a visual-first casting platform for indie filmmakers, student directors, and creators — and the actors who deserve to be seen. Browse talent one profile at a time, where every headshot gets a real look instead of vanishing into a crowded grid.',
-    'landing.heroDesc2':'Actors join free, submit to projects free, and connect directly with the storytellers looking for something real.',
-    'landing.heroTagline':'Modern casting, built around discovery.',
+    'landing.heroTitle':'Modern casting that gives every actor','landing.heroAccent':'a real look.',
+    'landing.heroDesc':'A visual-first platform where indie filmmakers and undiscovered talent meet — browsed one profile at a time, never lost in a grid.',
+    'landing.heroDesc2':'',
+    'landing.heroTagline':'',
     'landing.createProfile':'Create My Free Profile →','landing.iAmCD':'I\'m a Casting Director',
     'landing.openDashboard':'Open Dashboard →','landing.browseCastings':'Browse Castings →',
     'landing.myProfile':'My Profile',
@@ -354,10 +354,10 @@ const TRANSLATIONS = {
     // Landing
     'landing.liveNow':'En vivo · Confiado por actores y directores de casting profesionales',
     'landing.welcomeBack':'Bienvenido/a de nuevo{name} · Todo listo',
-    'landing.heroTitle':'Casting moderno para narradores independientes y','landing.heroAccent':'talento por descubrir.',
-    'landing.heroDesc':'CastSlate es una plataforma de casting visual para cineastas independientes, directores estudiantiles y creadores — y los actores que merecen ser vistos. Explora el talento perfil por perfil, donde cada foto recibe una mirada real en lugar de perderse en una cuadrícula saturada.',
-    'landing.heroDesc2':'Los actores se unen gratis, se postulan a proyectos gratis y conectan directamente con los narradores que buscan algo auténtico.',
-    'landing.heroTagline':'Casting moderno, construido en torno al descubrimiento.',
+    'landing.heroTitle':'Casting moderno que le da a cada actor','landing.heroAccent':'una mirada real.',
+    'landing.heroDesc':'Una plataforma visual donde cineastas independientes y talento por descubrir se encuentran — explorado perfil por perfil, nunca perdido en una cuadrícula.',
+    'landing.heroDesc2':'',
+    'landing.heroTagline':'',
     'landing.createProfile':'Crear mi perfil gratis →','landing.iAmCD':'Soy director de casting',
     'landing.openDashboard':'Abrir panel →','landing.browseCastings':'Ver convocatorias →',
     'landing.myProfile':'Mi perfil',
@@ -1309,6 +1309,7 @@ const css = `
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{--bg:#F7F4EE;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#4F8A8B;--teal-dk:#37696A;--amber:#E8902A;--amber-dk:#C8761B;}
 html,body{min-height:100vh;background:#1B1C20;}
@@ -13702,10 +13703,8 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     {/* ───────── HERO ───────── */}
     <section className="landing-hero" style={{padding:"44px 40px 14px",maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1.1fr 1fr",gap:60,alignItems:"center"}}><div>
       <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--bdr)",padding:"6px 14px",borderRadius:100,fontSize:12,color:"var(--acc)",fontWeight:700,letterSpacing:0.5,textTransform:"uppercase",marginBottom:20}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--grn)",boxShadow:"0 0 8px var(--grn)"}}/>{isLoggedIn?tr('landing.welcomeBack').replace('{name}',myProfile?.display_name?", "+myProfile.display_name.split(" ")[0]:""):tr('landing.liveNow')}</div>
-      <h1 className="landing-hero-title" style={{fontWeight:800,fontSize:46,lineHeight:1.07,letterSpacing:-1.6,marginBottom:18}}>{tr('landing.heroTitle')} <span style={{color:"var(--acc)"}}>{tr('landing.heroAccent')}</span></h1>
-      <p style={{color:"var(--t2)",fontSize:16.5,lineHeight:1.6,marginBottom:14,maxWidth:520}}>{tr('landing.heroDesc')}</p>
-      <p style={{color:"var(--t2)",fontSize:16.5,lineHeight:1.6,marginBottom:16,maxWidth:520}}>{tr('landing.heroDesc2')}</p>
-      <p style={{color:"var(--t1)",fontSize:15.5,fontWeight:700,letterSpacing:-0.2,marginBottom:26}}>{tr('landing.heroTagline')}</p>
+      <h1 className="landing-hero-title" style={{fontFamily:"'Source Serif 4',serif",fontWeight:700,fontSize:52,lineHeight:1.05,letterSpacing:-0.5,marginBottom:20}}>{tr('landing.heroTitle')} <span style={{color:"var(--acc)"}}>{tr('landing.heroAccent')}</span></h1>
+      <p style={{color:"var(--t2)",fontSize:16.5,lineHeight:1.6,marginBottom:26,maxWidth:520}}>{tr('landing.heroDesc')}</p>
       <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate(heroPrimary.to)}>{heroPrimary.label}</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14,background:"#fff",color:"#1A1A2E"}} onClick={()=>onNavigate(heroSecondary.to)}>{heroSecondary.label}</button></div>
       <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> {tr('landing.freeAccount')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> {tr('landing.noCreditCard')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> {tr('landing.quickSignup')}</span></div>
     </div>
