@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CastSlate — Guarantee Card Font Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#F7F4EE;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--teal:#4F8A8B;--teal-dk:#37696A;--amber:#E8902A;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);font-family:'DM Sans','Inter',sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased;padding:40px 0 70px;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 28px;}
+  .lbl{font-family:'DM Sans',sans-serif;font-weight:800;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);margin:34px 0 14px;display:flex;align-items:center;gap:10px;}
+  .lbl .pill{font-size:10px;letter-spacing:.6px;padding:3px 9px;border-radius:6px;}
+  .pill.now{background:#EFEAE0;color:var(--t2);}
+  .pill.new{background:rgba(79,138,139,.14);color:var(--teal-dk);}
+
+  .card{position:relative;overflow:hidden;background:#fff;border:1px solid var(--bdr);border-radius:24px;padding:clamp(36px,5vw,56px) clamp(24px,5vw,52px);text-align:center;box-shadow:0 24px 60px -36px rgba(26,26,46,.35),0 2px 8px rgba(26,26,46,.05);}
+  .blob1{position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(79,138,139,.22),transparent 70%);top:-110px;left:-50px;pointer-events:none;}
+  .blob2{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(232,144,42,.20),transparent 70%);bottom:-100px;right:-40px;pointer-events:none;}
+  .badge{position:relative;display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#5C9FA0,#3B6E6F);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:1.5px;padding:6px 14px;border-radius:100px;margin-bottom:22px;font-family:'DM Sans',sans-serif;box-shadow:0 8px 18px -8px rgba(79,138,139,.6);}
+  h3{position:relative;margin:0;line-height:1.08;}
+  .divider{position:relative;display:flex;align-items:center;justify-content:center;gap:14px;max-width:520px;margin:26px auto 24px;}
+  .divider .ln-l{flex:1;height:2px;border-radius:2px;background:linear-gradient(90deg,rgba(79,138,139,0),rgba(79,138,139,.55));}
+  .divider .ln-r{flex:1;height:2px;border-radius:2px;background:linear-gradient(90deg,rgba(232,144,42,.55),rgba(232,144,42,0));}
+  .para{position:relative;color:var(--t2);font-family:'Inter',sans-serif;font-size:clamp(15px,1.7vw,17.5px);line-height:1.65;max-width:660px;margin:0 auto;}
+  .para strong.teal{color:var(--teal);}
+  .para strong.dark{color:var(--t1);}
+
+  /* CURRENT: sans, weight 800, gradient accent */
+  .now h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(28px,4.6vw,46px);letter-spacing:-1.4px;}
+  .now h3 .accent{background:linear-gradient(90deg,var(--teal),var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent;}
+
+  /* PROPOSED: Source Serif 4, weight 700, single solid teal accent */
+  .new h3{font-family:'Source Serif 4',serif;font-weight:700;font-size:clamp(30px,4.8vw,48px);letter-spacing:-0.5px;}
+  .new h3 .accent{color:var(--teal);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="lbl"><span class="pill now">Now</span> Current — DM Sans, multi-color gradient on “seen.”</div>
+  <div class="card now">
+    <span class="blob1"></span><span class="blob2"></span>
+    <span class="badge">🛡 THE CASTSLATE GUARANTEE</span>
+    <h3>Your headshot gets <span class="accent">seen.</span> Period.</h3>
+    <div class="divider"><span class="ln-l"></span>🛡<span class="ln-r"></span></div>
+    <p class="para">On legacy platforms, your submission is one face in a grid of 80. Directors scan in seconds. On CastSlate, every submission is <strong class="teal">full-screen</strong>. The CD <strong class="dark">must</strong> decide: pass or callback. No grids. No skipping. Your shot, actually taken.</p>
+  </div>
+
+  <div class="lbl"><span class="pill new">Proposed</span> Serif (Source Serif 4), single solid teal accent on “seen.”</div>
+  <div class="card new">
+    <span class="blob1"></span><span class="blob2"></span>
+    <span class="badge">🛡 THE CASTSLATE GUARANTEE</span>
+    <h3>Your headshot gets <span class="accent">seen.</span> Period.</h3>
+    <div class="divider"><span class="ln-l"></span>🛡<span class="ln-r"></span></div>
+    <p class="para">On legacy platforms, your submission is one face in a grid of 80. Directors scan in seconds. On CastSlate, every submission is <strong class="teal">full-screen</strong>. The CD <strong class="dark">must</strong> decide: pass or callback. No grids. No skipping. Your shot, actually taken.</p>
+  </div>
+
+</div>
+</body>
+</html>

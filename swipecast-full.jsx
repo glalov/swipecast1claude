@@ -13769,7 +13769,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z"/><path d="M9 12l2 2 4-4"/></svg>
           THE CASTSLATE GUARANTEE
         </div>
-        <h3 style={{position:"relative",fontWeight:800,fontSize:"clamp(28px,4.6vw,46px)",letterSpacing:-1.4,lineHeight:1.08,margin:0}}>Your headshot gets <span style={{background:"linear-gradient(90deg,var(--teal),var(--amber))",WebkitBackgroundClip:"text",backgroundClip:"text",color:"transparent"}}>seen.</span> Period.</h3>
+        <h3 style={{position:"relative",fontFamily:"'Source Serif 4',serif",fontWeight:700,fontSize:"clamp(30px,4.8vw,48px)",letterSpacing:-0.5,lineHeight:1.08,margin:0}}>Your headshot gets <span style={{background:"linear-gradient(90deg,var(--teal),var(--amber))",WebkitBackgroundClip:"text",backgroundClip:"text",color:"transparent"}}>seen.</span> Period.</h3>
         <div style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center",gap:14,maxWidth:520,margin:"26px auto 24px"}}>
           <span style={{flex:1,height:2,borderRadius:2,background:"linear-gradient(90deg,rgba(79,138,139,0) 0%,rgba(79,138,139,.55) 100%)"}}/>
           <span style={{flexShrink:0,display:"inline-flex"}}>
