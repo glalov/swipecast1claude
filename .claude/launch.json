@@ -2,11 +2,57 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "CastSlate Dev",
-      "runtimeExecutable": "/usr/bin/ruby",
-      "runtimeArgs": ["-run", "-ehttpd", "/Users/georgi/Desktop/swipecast claude", "-p8000"],
-      "cwd": "/Users/georgi/Desktop/swipecast claude",
+      "name": "swipecast",
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": ["/tmp/castslate_serve.py"],
       "port": 8000
+    },
+    {
+      "name": "tagline-demo",
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": ["/tmp/castslate_demo_serve.py"],
+      "port": 8001
+    },
+    {
+      "name": "news-demo",
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": ["/tmp/castslate_news_serve.py"],
+      "port": 8014
+    },
+    {
+      "name": "swipecast-preview",
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": ["/tmp/castslate_preview_serve.py"],
+      "autoPort": true,
+      "port": 8021
+    },
+    {
+      "name": "tl-preview",
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": ["/tmp/castslate_tl_serve.py"],
+      "autoPort": true,
+      "port": 8033
+    },
+    {
+      "name": "format-demo",
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": ["/tmp/castslate_format_serve.py"],
+      "autoPort": true,
+      "port": 8042
+    },
+    {
+      "name": "casting-accordion-demo",
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": ["/tmp/castslate_accordion_serve.py"],
+      "autoPort": true,
+      "port": 8044
+    },
+    {
+      "name": "banner-demo",
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": ["/tmp/castslate_banner_serve.py"],
+      "autoPort": true,
+      "port": 8051
     }
   ]
 }

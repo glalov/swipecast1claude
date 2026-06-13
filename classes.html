@@ -74,17 +74,26 @@
       };
     }
   </script>
-  <!-- BUILD: 20260613-155458 -->
-  <meta name="build-version" content="20260613-155458"/>
+  <!-- BUILD: 20260613-160723 -->
+  <meta name="build-version" content="20260613-160723"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
-      var B="20260613-155458";
-      var prev=localStorage.getItem("sc_bv");
-      localStorage.setItem("sc_bv",B);
-      if(prev&&prev!==B){window.location.reload();}
+      try{
+        var B="20260613-160723";
+        var prev=localStorage.getItem("sc_bv");
+        localStorage.setItem("sc_bv",B);
+        if(prev&&prev!==B){
+          /* Reload at most once per build per session — prevents an infinite
+             reload loop if two CDN edges briefly serve different builds. */
+          if(sessionStorage.getItem("sc_reload_build")!==B){
+            sessionStorage.setItem("sc_reload_build",B);
+            window.location.reload();
+          }
+        }
+      }catch(e){/* storage blocked (private mode / disabled) — never block boot */}
     })();
   </script>
   <style>
@@ -218,9 +227,13 @@
   </noscript>
   <script>
     /* ── Runtime error infrastructure ────────────────────────────────────────
-       Errors BEFORE React mounts → show full crash screen.
-       Errors AFTER  React mounts → ErrorBoundary catches them per-section.
-       window.__CS_REACT_MOUNTED is set to true by App's first useEffect.
+       The crash screen means "the app did NOT start" — NOT merely "an error
+       fired." A single stray error (browser extension, injected assistant
+       script, a cross-origin "Script error.", a benign ResizeObserver loop)
+       must never blank an app that was about to render fine. So error handlers
+       only LOG; a polling verify-mount check is the ONLY thing that shows the
+       crash screen, and only when React genuinely rendered nothing in time.
+       Errors AFTER React mounts are caught per-section by ErrorBoundary.
     ──────────────────────────────────────────────────────────────────────── */
     window.__CS_LOADING_STARTED = Date.now();
     window.__CS_REACT_MOUNTED   = false;
@@ -235,40 +248,52 @@
     var showDebug = (window.location.search||'').indexOf('debug')!==-1;
 
     function csShowCrash(msg){
-      document.getElementById('cs-loading').style.display='none';
-      document.getElementById('cs-error').style.display='flex';
+      var ld=document.getElementById('cs-loading'); if(ld) ld.style.display='none';
+      var er=document.getElementById('cs-error');   if(er) er.style.display='flex';
       if(showDebug && msg){
         var d=document.getElementById('cs-err-detail');
         if(d){d.style.display='block';d.textContent=msg;}
       }
     }
 
-    /* Uncaught JS errors — show crash screen if React hasn't mounted yet */
+    /* Noise we never count as a real failure (browser/extension chatter). */
+    function csIsBenign(msg){ return /ResizeObserver loop|^Script error\.?$/i.test(msg||''); }
+
+    /* Log uncaught errors for diagnostics only — do NOT show the crash screen
+       here. The verify-mount poll below decides whether the app truly failed. */
     window.addEventListener('error', function(e){
       var msg = (e.message||'unknown') + '\n' + (e.filename||'?') + ':' + (e.lineno||0);
-      window.__SC_ERR.push({type:'error', msg:msg, ts:new Date().toISOString()});
+      if(!csIsBenign(e.message)) window.__SC_ERR.push({type:'error', msg:msg, ts:new Date().toISOString()});
       console.error('[CS error]', msg);
-      if(!window.__CS_REACT_MOUNTED) csShowCrash(msg);
     });
-
-    /* Unhandled promise rejections */
     window.addEventListener('unhandledrejection', function(e){
       var msg = (e.reason && e.reason.message) ? e.reason.message : String(e.reason||'unknown rejection');
       window.__SC_ERR.push({type:'rejection', msg:msg, ts:new Date().toISOString()});
       console.error('[CS unhandled rejection]', msg);
-      /* Do NOT show crash screen for async rejections post-mount */
-      if(!window.__CS_REACT_MOUNTED) csShowCrash('Unhandled rejection: ' + msg);
     });
 
-    /* Safety timeout — 90s for slow mobile connections */
-    setTimeout(function(){
-      if(!window.__CS_REACT_MOUNTED){
-        var elapsed = Math.round((Date.now()-window.__CS_LOADING_STARTED)/1000);
-        var errList = window.__SC_ERR.map(function(e){return e.msg;}).join('\n');
-        csShowCrash('Startup timeout after '+elapsed+'s.\n'+(errList||'No JS errors captured. May be a network issue.'));
-      }
-    }, 90000);
+    /* Verify-mount — the ONLY path to the crash screen. Poll until React mounts
+       (flag set by App's first effect, or #root has painted children). Show the
+       crash UI only if nothing rendered within the grace window — a genuine
+       startup failure, never a stray error on an otherwise-healthy load.
+       30s grace is generous for slow mobile networks; a fast boot clears it
+       within a couple hundred ms. */
+    (function(){
+      var DEADLINE = Date.now() + 30000;
+      (function poll(){
+        if(window.__CS_REACT_MOUNTED) return;
+        var root=document.getElementById('root');
+        if(root && root.childElementCount>0){ window.__CS_REACT_MOUNTED=true; return; }
+        if(Date.now()>=DEADLINE){
+          var elapsed=Math.round((Date.now()-window.__CS_LOADING_STARTED)/1000);
+          var errList=window.__SC_ERR.map(function(e){return e.msg;}).join('\n');
+          csShowCrash('App did not start within '+elapsed+'s.\n'+(errList||'No JS errors captured — likely a network issue.'));
+          return;
+        }
+        setTimeout(poll, 400);
+      })();
+    })();
   </script>
-  <script src="/app.js?v=20260613-155458"></script>
+  <script src="/app.js?v=20260613-160723"></script>
 </body>
 </html>
