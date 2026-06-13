@@ -1351,7 +1351,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .page{max-width:1200px;margin:0 auto;padding:40px 40px 0;width:100%;display:flex;flex-direction:column;flex:1 1 auto;min-height:calc(100vh - 80px);}
 .page-wide{max-width:1400px;}
 .section-label{font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:12px;}
-.section-title{font-weight:800;font-size:36px;letter-spacing:-1.5px;margin-bottom:40px;line-height:1.1;}
+.section-title{font-family:'Source Serif 4',serif;font-weight:700;font-size:38px;letter-spacing:-0.5px;margin-bottom:40px;line-height:1.1;}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;}
 .flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
@@ -2033,7 +2033,7 @@ html,body{overflow-x:hidden;}
 .home-cta-inner{position:relative;overflow:hidden;border-radius:36px;padding:clamp(56px,7.5vw,96px) clamp(32px,7vw,88px);text-align:center;background:linear-gradient(135deg,#5C9FA0 0%,#4F8A8B 45%,#3B6E6F 100%);color:#fff;box-shadow:0 26px 60px -34px rgba(26,26,46,.45);}
 .home-cta-eyebrow{font-family:'DM Sans',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;margin:0 0 16px;display:inline-flex;align-items:center;gap:8px;color:#FFE6C2;position:relative;}
 .home-cta-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);}
-.home-cta-inner h2{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(36px,6vw,64px);letter-spacing:-1.3px;line-height:1.05;margin:0 0 16px;color:#fff;position:relative;}
+.home-cta-inner h2{font-family:'Source Serif 4',serif;font-weight:700;font-size:clamp(36px,6vw,64px);letter-spacing:-0.5px;line-height:1.05;margin:0 0 16px;color:#fff;position:relative;}
 .home-cta-lede{font-size:clamp(17px,2vw,21px);line-height:1.6;max-width:740px;margin:0 auto 30px;color:rgba(255,255,255,.86);position:relative;}
 .home-cta-primary{display:inline-flex;align-items:center;gap:9px;border:none;border-radius:13px;padding:18px 38px;font-size:17px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;background:var(--amber);color:#1A1A2E;box-shadow:0 12px 30px -10px rgba(232,144,42,.7);transition:transform .12s,filter .2s;position:relative;}
 .home-cta-primary:hover{transform:translateY(-2px);filter:brightness(1.04);}
