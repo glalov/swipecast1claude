@@ -13284,7 +13284,6 @@ const LANDING_SWIPE_DEMO=[
   {id:15,name:"Isabella Cruz",age:39,gender:"Female",height:"5'5\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&h=800&fit=crop&crop=top&q=90",skills:["Bilingual Spanish","Musical Theater","Commercial Print"]},
   {id:16,name:"Adrian Cole",age:34,gender:"Male",height:"6'1\"",pos:"center 20%",img:"https://images.pexels.com/photos/532220/pexels-photo-532220.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Corporate","Film","Spanish Fluent"]},
   {id:17,name:"Daniel Brooks",age:29,gender:"Male",height:"5'10\"",pos:"center 18%",img:"https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Indie Film","Drama","Guitar"]},
-  {id:18,name:"Sofia Reyes",age:24,gender:"Female",height:"5'5\"",pos:"center 38%",img:"https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Comedy","TV","Spanish Fluent"]},
   {id:19,name:"Malik Jensen",age:22,gender:"Male",height:"6'0\"",pos:"center 18%",img:"https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Music Video","Indie","Dance"]},
 ];
 function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your free profile"}={}){
