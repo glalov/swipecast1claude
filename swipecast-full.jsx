@@ -1352,6 +1352,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .page-wide{max-width:1400px;}
 .section-label{font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:12px;}
 .section-title{font-family:'Source Serif 4',serif;font-weight:700;font-size:38px;letter-spacing:-0.5px;margin-bottom:40px;line-height:1.1;}
+.landing-hero-desc{color:var(--t1);font-size:17.5px;line-height:1.6;font-weight:500;max-width:520px;margin-bottom:26px;}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;}
 .flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
@@ -1523,7 +1524,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .casting-card-row-side{align-items:stretch !important;width:100%;flex-direction:row !important;flex-wrap:wrap;justify-content:space-between;}
   .casting-card-row-side button{flex:1 1 100%;}
   .landing-hero{grid-template-columns:1fr !important;gap:32px !important;padding:48px 20px 28px !important;text-align:center;}
-  .landing-hero-title{font-size:33px !important;letter-spacing:-1px !important;}
+  .landing-hero-title{font-size:33px !important;letter-spacing:-1px !important;line-height:1.07 !important;}
+  .landing-hero-desc{color:var(--t2) !important;font-weight:400 !important;font-size:15.5px !important;max-width:100% !important;}
   .landing-testimonials{grid-template-columns:1fr !important;}
   .lh-section,.lh-cta{padding-left:20px !important;padding-right:20px !important;}
   .lh-section{padding-top:48px !important;padding-bottom:48px !important;}
@@ -13701,10 +13703,10 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
 
   return(<>
     {/* ───────── HERO ───────── */}
-    <section className="landing-hero" style={{padding:"44px 40px 14px",maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1.1fr 1fr",gap:60,alignItems:"center"}}><div>
+    <section className="landing-hero" style={{padding:"44px 40px 14px",maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1.1fr 1fr",gap:60,alignItems:"start"}}><div>
       <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--bdr)",padding:"6px 14px",borderRadius:100,fontSize:12,color:"var(--acc)",fontWeight:700,letterSpacing:0.5,textTransform:"uppercase",marginBottom:20}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--grn)",boxShadow:"0 0 8px var(--grn)"}}/>{isLoggedIn?tr('landing.welcomeBack').replace('{name}',myProfile?.display_name?", "+myProfile.display_name.split(" ")[0]:""):tr('landing.liveNow')}</div>
-      <h1 className="landing-hero-title" style={{fontFamily:"'Source Serif 4',serif",fontWeight:700,fontSize:52,lineHeight:1.05,letterSpacing:-0.5,marginBottom:20}}>{tr('landing.heroTitle')} <span style={{color:"var(--acc)"}}>{tr('landing.heroAccent')}</span></h1>
-      <p style={{color:"var(--t2)",fontSize:16.5,lineHeight:1.6,marginBottom:26,maxWidth:520}}>{tr('landing.heroDesc')}</p>
+      <h1 className="landing-hero-title" style={{fontFamily:"'Source Serif 4',serif",fontWeight:700,fontSize:58,lineHeight:1.12,letterSpacing:-0.1,marginBottom:20}}>{tr('landing.heroTitle')} <span style={{color:"var(--acc)"}}>{tr('landing.heroAccent')}</span></h1>
+      <p className="landing-hero-desc">{tr('landing.heroDesc')}</p>
       <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate(heroPrimary.to)}>{heroPrimary.label}</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14,background:"#fff",color:"#1A1A2E"}} onClick={()=>onNavigate(heroSecondary.to)}>{heroSecondary.label}</button></div>
       <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> {tr('landing.freeAccount')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> {tr('landing.noCreditCard')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}>✓</span> {tr('landing.quickSignup')}</span></div>
     </div>
