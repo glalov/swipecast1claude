@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CastSlate — Manager Mode Button Animation Demos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F4EE; --bdr:#E5DFD2;
+    --t1:#1A1A2E; --t2:#5A5A72; --t3:#8E8EA0;
+    --teal:#4F8A8B; --teal-dk:#37696A; --amber:#E8902A; --amber-dk:#C8761B; --grn:#1B873E;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:var(--t1);
+    -webkit-font-smoothing:antialiased;padding:36px 0 80px;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+
+  .head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:18px;margin-bottom:8px;}
+  .eyebrow{font-family:'DM Sans',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:1.8px;
+    text-transform:uppercase;color:var(--teal);display:inline-flex;align-items:center;gap:8px;margin:0 0 12px;}
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);}
+  h1{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(26px,3.4vw,38px);letter-spacing:-1px;line-height:1.1;margin:0 0 10px;}
+  .lede{font-size:15.5px;color:var(--t2);line-height:1.6;max-width:620px;margin:0;}
+  .replay{font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;border:none;cursor:pointer;
+    background:var(--t1);color:#fff;padding:13px 22px;border-radius:11px;box-shadow:0 10px 24px -12px rgba(26,26,46,.6);
+    transition:transform .12s,filter .2s;white-space:nowrap;}
+  .replay:hover{transform:translateY(-2px);filter:brightness(1.1);}
+
+  .demo{margin-top:30px;}
+  .demo-meta{display:flex;align-items:baseline;gap:12px;margin:0 0 12px;flex-wrap:wrap;}
+  .demo-num{font-family:'DM Sans',sans-serif;font-weight:800;font-size:13px;color:#fff;background:var(--teal);
+    width:26px;height:26px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .demo-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:17px;letter-spacing:-.3px;}
+  .demo-desc{font-size:13px;color:var(--t3);}
+  .rec{display:inline-block;font-family:'DM Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:.8px;
+    color:var(--amber-dk);background:rgba(232,144,42,.14);padding:4px 9px;border-radius:6px;text-transform:uppercase;}
+
+  /* ===== Real CastSlate nav bar replica ===== */
+  .nav{background:#fff;border:1px solid var(--bdr);border-radius:16px;display:flex;align-items:center;
+    justify-content:space-between;padding:0 20px;height:66px;box-shadow:0 14px 36px -28px rgba(26,26,46,.4);overflow:visible;}
+  .brand{display:flex;align-items:center;gap:9px;font-family:'DM Sans',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.5px;}
+  .brand .logo{width:30px;height:30px;border-radius:8px;background:var(--t1);display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;}
+  .nav-links{display:flex;gap:4px;align-items:center;}
+  .nav-links span{position:relative;color:#0A0A0A;font-size:13px;font-weight:500;cursor:pointer;
+    padding:8px 12px;border-radius:9px;transition:background-color .18s ease,color .18s ease;}
+  .nav-links span:hover{background:#F7F7F8;}
+  .nav-actions{display:flex;gap:9px;align-items:center;}
+  .btn-join{background:var(--teal);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-weight:700;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+  .btn-ghost{background:#fff;border:1px solid var(--bdr);border-radius:10px;padding:9px 16px;font-weight:600;font-size:13px;cursor:pointer;color:var(--t1);}
+  @media(max-width:860px){.nav-links{display:none;}}
+
+  /* the Manager Mode item — base hook for animations */
+  .mm{position:relative;}
+
+  /* ───────── OPTION 1 · Spotlight Sweep (shimmer) ───────── */
+  .a1 .mm{color:var(--amber-dk);font-weight:600;background:rgba(232,144,42,.10);overflow:hidden;
+    animation:a1-tint 6s ease-out forwards;}
+  .a1 .mm::after{content:"";position:absolute;top:0;left:-130%;width:60%;height:100%;
+    background:linear-gradient(115deg,transparent 0%,rgba(255,255,255,.85) 50%,transparent 100%);
+    transform:skewX(-18deg);animation:a1-sweep 2.4s ease-in-out 2;}
+  @keyframes a1-sweep{0%{left:-130%}55%,100%{left:170%}}
+  @keyframes a1-tint{0%,80%{background:rgba(232,144,42,.10)}100%{background:rgba(232,144,42,.07)}}
+
+  /* ───────── OPTION 2 · Breathing Glow Pill ───────── */
+  .a2 .mm{color:#fff;font-weight:700;border-radius:9px;
+    background:linear-gradient(135deg,var(--teal) 0%,var(--amber) 130%);
+    animation:a2-breathe 1.9s ease-in-out 3, a2-rest 0s linear 5.7s forwards;}
+  .a2 .mm .pdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#fff;margin-left:6px;
+    vertical-align:middle;animation:a2-dot 1.9s ease-in-out 3;}
+  @keyframes a2-breathe{
+    0%,100%{box-shadow:0 0 0 0 rgba(232,144,42,.0);transform:scale(1);}
+    50%{box-shadow:0 6px 22px -4px rgba(232,144,42,.65),0 0 0 4px rgba(232,144,42,.14);transform:scale(1.045);}
+  }
+  @keyframes a2-dot{0%,100%{opacity:.5}50%{opacity:1}}
+  @keyframes a2-rest{to{background:linear-gradient(135deg,var(--teal),var(--teal-dk));box-shadow:0 4px 14px -6px rgba(79,138,139,.6);}}
+
+  /* ───────── OPTION 3 · Notification Ping + Sparkle ───────── */
+  .a3 .mm{animation:a3-pop 0.7s cubic-bezier(.34,1.56,.64,1) 1;}
+  .a3 .mm strong{font-weight:600;color:var(--teal-dk);}
+  .a3 .mm::before{content:"";position:absolute;inset:2px 6px;border-radius:9px;border:2px solid var(--amber);
+    opacity:0;animation:a3-ping 1.6s ease-out 2;}
+  .a3 .mm .spark{position:absolute;top:-3px;right:-2px;font-size:13px;color:var(--amber);
+    animation:a3-spark 1.5s ease-in-out 3;transform-origin:center;}
+  @keyframes a3-pop{0%{transform:scale(1)}40%{transform:scale(1.13)}100%{transform:scale(1)}}
+  @keyframes a3-ping{0%{opacity:.9;transform:scale(.85)}80%,100%{opacity:0;transform:scale(1.5)}}
+  @keyframes a3-spark{0%,100%{opacity:0;transform:scale(.4) rotate(-20deg)}40%{opacity:1;transform:scale(1.1) rotate(10deg)}}
+
+  @media(prefers-reduced-motion:reduce){
+    .a1 .mm::after,.a3 .mm::before,.a3 .mm .spark{animation:none!important;}
+    .a2 .mm{animation:none!important;background:linear-gradient(135deg,var(--teal),var(--teal-dk))!important;color:#fff;}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <p class="eyebrow"><span class="dot"></span>Interaction Design</p>
+        <h1>Drawing attention to “Manager Mode”</h1>
+        <p class="lede">Three premium, on-load treatments for the nav button. Each plays a short, polite animation when the page loads, then settles so it stays discoverable without looping forever.</p>
+      </div>
+      <button class="replay" id="replay">↻ Replay all animations</button>
+    </div>
+
+    <!-- OPTION 1 -->
+    <div class="demo">
+      <div class="demo-meta">
+        <span class="demo-num">1</span>
+        <span class="demo-title">Spotlight Sweep</span>
+        <span class="rec">Recommended · most premium</span>
+        <span class="demo-desc">A soft amber pill with a glossy light that sweeps across twice — the Stripe/Apple “new feature” feel. Subtle, settles into a faint highlight.</span>
+      </div>
+      <div class="nav a1" id="nav1"></div>
+    </div>
+
+    <!-- OPTION 2 -->
+    <div class="demo">
+      <div class="demo-meta">
+        <span class="demo-num">2</span>
+        <span class="demo-title">Breathing Glow Pill</span>
+        <span class="demo-desc">A teal→amber gradient pill that gently breathes (scale + glow) three times, then rests as a solid teal highlight. High visibility, still tasteful.</span>
+      </div>
+      <div class="nav a2" id="nav2"></div>
+    </div>
+
+    <!-- OPTION 3 -->
+    <div class="demo">
+      <div class="demo-meta">
+        <span class="demo-num">3</span>
+        <span class="demo-title">Notification Ping + Sparkle</span>
+        <span class="demo-desc">An expanding ring “ping” radiates out, the label springs in, and an amber sparkle twinkles — playful, signals “something new.”</span>
+      </div>
+      <div class="nav a3" id="nav3"></div>
+    </div>
+  </div>
+
+<script>
+  // Build the identical nav bar three times; only the Manager Mode markup varies per option.
+  var mmMarkup = {
+    1: '<span class="mm">Manager Mode</span>',
+    2: '<span class="mm">Manager Mode<span class="pdot"></span></span>',
+    3: '<span class="mm"><span class="spark">✦</span><strong>Manager Mode</strong></span>'
+  };
+  function navHTML(opt){
+    return ''+
+      '<div class="brand"><span class="logo">⇄</span>CastSlate</div>'+
+      '<div class="nav-links">'+
+        '<span>Home</span><span>Browse Castings</span><span>Classes</span><span>TapeLink</span>'+
+        mmMarkup[opt]+
+        '<span>Blog</span>'+
+      '</div>'+
+      '<div class="nav-actions">'+
+        '<button class="btn-join">Join ▾</button>'+
+        '<button class="btn-ghost">Post a Job</button>'+
+        '<button class="btn-ghost">Sign in</button>'+
+      '</div>';
+  }
+  [1,2,3].forEach(function(o){ document.getElementById('nav'+o).innerHTML = navHTML(o); });
+
+  // Replay: strip and re-add the animation class to force a fresh run.
+  document.getElementById('replay').addEventListener('click', function(){
+    [['nav1','a1'],['nav2','a2'],['nav3','a3']].forEach(function(p){
+      var el=document.getElementById(p[0]);
+      el.classList.remove(p[1]);
+      void el.offsetWidth;            // force reflow so the animation restarts
+      el.classList.add(p[1]);
+    });
+  });
+</script>
+</body>
+</html>

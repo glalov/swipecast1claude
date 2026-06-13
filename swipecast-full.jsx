@@ -1329,6 +1329,13 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .nav-links span{color:#0A0A0A;font-size:13px;font-weight:500;cursor:pointer;padding:8px 12px;border-radius:9px;transition:background-color .18s ease,color .18s ease;}
 .nav-links span:hover{background:#F7F7F8;}
 .nav-links span.act{background:#F3F4F6;color:#0A0A0A;font-weight:600;}
+/* Manager Mode attention sweep — runs on site entry, settles to a faint amber highlight */
+.nav-links span.mm-attn{position:relative;overflow:hidden;color:var(--amber-dk);font-weight:600;background:rgba(232,144,42,.10);}
+.nav-links span.mm-attn:hover{background:rgba(232,144,42,.16);}
+.nav-links span.mm-attn.act{background:rgba(232,144,42,.16);color:var(--amber-dk);}
+.nav-links span.mm-attn::after{content:"";position:absolute;top:0;left:-130%;width:60%;height:100%;background:linear-gradient(115deg,transparent 0%,rgba(255,255,255,.85) 50%,transparent 100%);transform:skewX(-18deg);pointer-events:none;animation:mm-sweep 2.4s ease-in-out .5s 2;}
+@keyframes mm-sweep{0%{left:-130%}55%,100%{left:170%}}
+@media(prefers-reduced-motion:reduce){.nav-links span.mm-attn::after{animation:none;}}
 .btn-p{background:var(--acc);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .btn-p:hover{background:var(--acc2);transform:translateY(-1px);}
 .btn-s{background:transparent;color:var(--t1);border:1px solid var(--bdr);padding:10px 22px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;}
@@ -22138,7 +22145,7 @@ function App(){
           <span className={page==="search"?"act":""} onClick={()=>navigate("search")}>{navT('nav.browse')}</span>
           <span className={page==="classes"?"act":""} onClick={()=>navigate("classes")}>{navT('nav.classes')}</span>
           <span className={page==="tapelink"?"act":""} onClick={()=>navigate("tapelink")}>{navT('nav.tapelink')}</span>
-          <span className={page==="manager-mode"?"act":""} onClick={()=>navigate("manager-mode")}>{navT('nav.managerMode')}</span>
+          <span className={"mm-attn"+(page==="manager-mode"?" act":"")} onClick={()=>navigate("manager-mode")}>{navT('nav.managerMode')}</span>
           <span className={page==="blog"?"act":""} onClick={()=>navigate("blog")}>{navT('nav.blog')}</span>
         </div>
         <div className="nav-actions" style={{display:"flex",gap:10,alignItems:"center"}}>
