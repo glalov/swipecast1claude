@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Featured Casting Card — Demos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F7F4EE;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--teal:#4F8A8B;--teal-dk:#37696A;--amber:#E8902A;--amber-dk:#C8761B;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:var(--t1);padding:40px 20px;}
+h1{font-family:'DM Sans',sans-serif;font-size:24px;font-weight:800;text-align:center;margin-bottom:8px;}
+.sub{text-align:center;color:var(--t2);font-size:14px;margin-bottom:48px;}
+.wrap{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:56px;}
+.demo-label{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--teal-dk);margin-bottom:14px;}
+
+/* shared bits */
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;border-radius:10px;padding:11px 20px;border:none;cursor:pointer;text-decoration:none;}
+.btn-teal{background:var(--teal);color:#fff;}
+.h3{font-family:'DM Sans',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px;margin:0 0 6px;}
+.meta{display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:var(--t2);}
+.meta strong{color:var(--t1);}
+.body-txt{color:var(--t2);font-size:13px;line-height:1.6;margin:10px 0 16px;max-width:560px;}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 11px;}
+
+/* ===== DEMO 1: Teal ribbon banner across top, like the landing-page guarantee card ===== */
+.d1-card{background:var(--s1);border-radius:18px;border:1px solid var(--bdr);overflow:hidden;box-shadow:0 4px 24px rgba(26,26,46,0.06);}
+.d1-ribbon{background:var(--teal);color:#fff;padding:10px 24px;display:flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;}
+.d1-body{padding:24px 28px;}
+.d1-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.d1-tag{background:var(--s2);color:var(--t1);font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;}
+.d1-foot{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;margin-top:18px;}
+
+/* ===== DEMO 2: Amber corner badge + teal accent bar, more "spotlight" feel ===== */
+.d2-card{background:var(--s1);border-radius:18px;border:1px solid var(--bdr);overflow:hidden;position:relative;display:flex;box-shadow:0 4px 24px rgba(26,26,46,0.06);}
+.d2-bar{width:6px;background:linear-gradient(180deg,var(--amber),var(--teal));flex-shrink:0;}
+.d2-body{padding:26px 28px;flex:1;}
+.d2-corner{position:absolute;top:18px;right:24px;background:var(--amber);color:#fff;}
+.d2-tags{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 12px;}
+.d2-tag{background:var(--s2);color:var(--t1);font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;}
+.d2-foot{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;margin-top:18px;}
+
+/* ===== DEMO 3: Soft cream "spotlight" card, badges inline, big rounded corners, image swatch like landing feature cards ===== */
+.d3-card{background:linear-gradient(135deg,#FBF6EC 0%,#F4EFE3 100%);border-radius:20px;border:1px solid var(--bdr);overflow:hidden;display:grid;grid-template-columns:1.4fr 1fr;box-shadow:0 4px 24px rgba(26,26,46,0.06);}
+.d3-img{background:linear-gradient(135deg,#37696A,#1A1A2E);display:flex;align-items:center;justify-content:center;color:#fff;font-family:'DM Sans',sans-serif;font-weight:800;font-size:14px;letter-spacing:.05em;text-align:center;padding:24px;min-height:220px;}
+.d3-body{padding:26px 28px;}
+.d3-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.d3-tag{background:rgba(255,255,255,0.7);color:var(--t1);font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;}
+.d3-foot{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;margin-top:18px;}
+@media (max-width:620px){.d3-card{grid-template-columns:1fr;}.d3-img{min-height:120px;}}
+</style>
+</head>
+<body>
+<h1>Featured Casting Card — 3 Demos</h1>
+<p class="sub">Reworking the "Cast Slate Pick" card to match the cream/teal/amber landing-page look. Same content, three treatments.</p>
+<div class="wrap">
+
+  <!-- DEMO 1 -->
+  <div>
+    <div class="demo-label">Demo 1 — Teal Ribbon Header</div>
+    <div class="d1-card">
+      <div class="d1-ribbon">★ Cast Slate Pick · Curated by Cast Slate</div>
+      <div class="d1-body">
+        <div class="d1-tags">
+          <span class="d1-tag">Film &amp; TV</span>
+          <span class="d1-tag">Non-Union</span>
+          <span class="d1-tag">5 roles</span>
+        </div>
+        <h3 class="h3">Untitled Horror Film</h3>
+        <p class="body-txt">This is a grounded psychological horror project centered on Sarah and Annie, two young women caught in a tense and unsettling situation inside a quiet house. The story relies on natural performances…</p>
+        <div class="d1-foot">
+          <div class="meta">
+            <span><strong>Location</strong> · Manhattan, New York</span>
+            <span><strong>Pay</strong> · $150/day</span>
+            <span><strong>Deadline</strong> · Jul 16, 2026</span>
+          </div>
+          <a class="btn btn-teal" href="#">View Roles →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEMO 2 -->
+  <div>
+    <div class="demo-label">Demo 2 — Amber Spotlight Badge + Gradient Bar</div>
+    <div class="d2-card">
+      <div class="d2-bar"></div>
+      <div class="d2-body">
+        <span class="badge d2-corner">Cast Slate Pick</span>
+        <div class="d2-tags">
+          <span class="d2-tag">Film &amp; TV</span>
+          <span class="d2-tag">Non-Union</span>
+          <span class="d2-tag">5 roles</span>
+          <span class="badge" style="background:#EAF3F3;color:var(--teal-dk);">Curated by Cast Slate</span>
+        </div>
+        <h3 class="h3">Untitled Horror Film</h3>
+        <p class="body-txt">This is a grounded psychological horror project centered on Sarah and Annie, two young women caught in a tense and unsettling situation inside a quiet house. The story relies on natural performances…</p>
+        <div class="d2-foot">
+          <div class="meta">
+            <span><strong>Location</strong> · Manhattan, New York</span>
+            <span><strong>Pay</strong> · $150/day</span>
+            <span><strong>Deadline</strong> · Jul 16, 2026</span>
+          </div>
+          <a class="btn btn-teal" href="#">View Roles →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEMO 3 -->
+  <div>
+    <div class="demo-label">Demo 3 — Split Card with Image Panel (landing-card style)</div>
+    <div class="d3-card">
+      <div class="d3-body">
+        <div class="d3-tags">
+          <span class="badge" style="background:var(--amber);color:#fff;">★ Cast Slate Pick</span>
+          <span class="d3-tag">Film &amp; TV</span>
+          <span class="d3-tag">Non-Union</span>
+          <span class="d3-tag">5 roles</span>
+        </div>
+        <h3 class="h3">Untitled Horror Film</h3>
+        <p class="body-txt">This is a grounded psychological horror project centered on Sarah and Annie, two young women caught in a tense and unsettling situation inside a quiet house. The story relies on natural performances…</p>
+        <div class="d3-foot">
+          <div class="meta">
+            <span><strong>Location</strong> · Manhattan, New York</span>
+            <span><strong>Pay</strong> · $150/day</span>
+            <span><strong>Deadline</strong> · Jul 16, 2026</span>
+          </div>
+          <a class="btn btn-teal" href="#">View Roles →</a>
+        </div>
+      </div>
+      <div class="d3-img">REVOLUTIONARY A<br><span style="opacity:.7;font-weight:500;font-size:12px;">poster / production photo</span></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

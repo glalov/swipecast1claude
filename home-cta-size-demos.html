@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Home CTA Card — Size Demos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F7F4EE;--amber:#E8902A;--teal:#4F8A8B;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:#1A1A2E;padding:40px 0;}
+h1{font-family:'DM Sans',sans-serif;font-size:24px;font-weight:800;text-align:center;margin-bottom:8px;}
+.sub{text-align:center;color:#5A5A72;font-size:14px;margin-bottom:48px;}
+.demo-label{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#37696A;text-align:center;margin-bottom:14px;}
+.section-wrap{margin-bottom:64px;}
+
+/* ===== shared card styles (copied from app, unchanged) ===== */
+.home-cta-inner{position:relative;overflow:hidden;border-radius:28px;padding:clamp(40px,5.5vw,64px) clamp(24px,5vw,56px);text-align:center;background:linear-gradient(135deg,#5C9FA0 0%,#4F8A8B 45%,#3B6E6F 100%);color:#fff;box-shadow:0 26px 60px -34px rgba(26,26,46,.45);}
+.home-cta-eyebrow{font-family:'DM Sans',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;margin:0 0 16px;display:inline-flex;align-items:center;gap:8px;color:#FFE6C2;position:relative;}
+.home-cta-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);}
+.home-cta-inner h2{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(28px,4.4vw,46px);letter-spacing:-1.3px;line-height:1.05;margin:0 0 16px;color:#fff;position:relative;}
+.home-cta-lede{font-size:clamp(15px,1.6vw,17.5px);line-height:1.6;max-width:580px;margin:0 auto 30px;color:rgba(255,255,255,.86);position:relative;}
+.home-cta-primary{display:inline-flex;align-items:center;gap:9px;border:none;border-radius:13px;padding:15px 32px;font-size:15.5px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;background:var(--amber);color:#1A1A2E;box-shadow:0 12px 30px -10px rgba(232,144,42,.7);transition:transform .12s,filter .2s;position:relative;}
+.home-cta-primary:hover{transform:translateY(-2px);filter:brightness(1.04);}
+.home-cta-sub{position:relative;display:flex;justify-content:center;align-items:center;gap:18px;margin-top:36px;padding-top:28px;border-top:1px solid rgba(255,255,255,.22);}
+.home-cta-sub .txt{display:flex;flex-direction:column;text-align:left;}
+.home-cta-sub .txt b{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;}
+.home-cta-sub .txt span{font-size:12.5px;color:rgba(255,255,255,.8);margin-top:2px;}
+.home-cta-outline{border-radius:11px;padding:10px 20px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;background:transparent;border:1.5px solid rgba(255,255,255,.55);color:#fff;transition:all .18s;}
+.home-cta-outline:hover{background:#fff;color:var(--teal);}
+.home-cta-blob{position:absolute;border-radius:50%;pointer-events:none;}
+.home-cta-blob.b1{width:340px;height:340px;background:radial-gradient(circle,rgba(232,144,42,.30),transparent 70%);top:-120px;right:-50px;}
+.home-cta-blob.b2{width:260px;height:260px;background:radial-gradient(circle,rgba(255,255,255,.14),transparent 70%);bottom:-90px;left:-30px;}
+
+/* ===== width variants ===== */
+.w-current{max-width:1100px;margin:0 auto;padding:0 24px;}
+.w-wide{max-width:1320px;margin:0 auto;padding:0 24px;}
+.w-xwide{max-width:1520px;margin:0 auto;padding:0 24px;}
+.w-full{max-width:1760px;margin:0 auto;padding:0 24px;}
+
+/* ===== bigger variants: scale up the card itself (padding/blobs/font) ===== */
+.scale-big .home-cta-inner{padding:clamp(48px,6.5vw,80px) clamp(28px,6vw,72px);border-radius:32px;}
+.scale-big .home-cta-inner h2{font-size:clamp(32px,5.2vw,56px);}
+.scale-big .home-cta-lede{font-size:clamp(16px,1.8vw,19px);max-width:660px;}
+.scale-big .home-cta-blob.b1{width:440px;height:440px;}
+.scale-big .home-cta-blob.b2{width:340px;height:340px;}
+
+.scale-xbig .home-cta-inner{padding:clamp(56px,7.5vw,96px) clamp(32px,7vw,88px);border-radius:36px;}
+.scale-xbig .home-cta-inner h2{font-size:clamp(36px,6vw,64px);}
+.scale-xbig .home-cta-lede{font-size:clamp(17px,2vw,21px);max-width:740px;}
+.scale-xbig .home-cta-primary{padding:18px 38px;font-size:17px;}
+.scale-xbig .home-cta-blob.b1{width:520px;height:520px;}
+.scale-xbig .home-cta-blob.b2{width:400px;height:400px;}
+</style>
+</head>
+<body>
+<h1>Home CTA Card — 3 Bigger/Wider Demos</h1>
+<p class="sub">Same card, content and design untouched — just sized up to see how it fills the desktop landing page better.</p>
+
+<div class="section-wrap">
+  <div class="demo-label">Demo 1 — Wider container (1320px), current card size</div>
+  <div class="w-wide">
+    <div class="home-cta-inner">
+      <span class="home-cta-blob b1"></span><span class="home-cta-blob b2"></span>
+      <p class="home-cta-eyebrow"><span class="dot"></span>Free to submit</p>
+      <h2>It's time to get seen.</h2>
+      <p class="home-cta-lede">Build your profile, submit to real roles, and get reviewed one actor at a time. Free to start — Actor Plus is just $9.99/mo when you want more.</p>
+      <button class="home-cta-primary">Create My Free Profile →</button>
+      <div class="home-cta-sub">
+        <div class="txt"><b>For Casting Directors</b><span>Post a project and review submissions for free</span></div>
+        <button class="home-cta-outline">Post a Project</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-wrap">
+  <div class="demo-label">Demo 2 — Wider container (1520px) + bigger card padding/type</div>
+  <div class="w-xwide scale-big">
+    <div class="home-cta-inner">
+      <span class="home-cta-blob b1"></span><span class="home-cta-blob b2"></span>
+      <p class="home-cta-eyebrow"><span class="dot"></span>Free to submit</p>
+      <h2>It's time to get seen.</h2>
+      <p class="home-cta-lede">Build your profile, submit to real roles, and get reviewed one actor at a time. Free to start — Actor Plus is just $9.99/mo when you want more.</p>
+      <button class="home-cta-primary">Create My Free Profile →</button>
+      <div class="home-cta-sub">
+        <div class="txt"><b>For Casting Directors</b><span>Post a project and review submissions for free</span></div>
+        <button class="home-cta-outline">Post a Project</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-wrap">
+  <div class="demo-label">Demo 3 — Full-width container (1760px) + largest card padding/type</div>
+  <div class="w-full scale-xbig">
+    <div class="home-cta-inner">
+      <span class="home-cta-blob b1"></span><span class="home-cta-blob b2"></span>
+      <p class="home-cta-eyebrow"><span class="dot"></span>Free to submit</p>
+      <h2>It's time to get seen.</h2>
+      <p class="home-cta-lede">Build your profile, submit to real roles, and get reviewed one actor at a time. Free to start — Actor Plus is just $9.99/mo when you want more.</p>
+      <button class="home-cta-primary">Create My Free Profile →</button>
+      <div class="home-cta-sub">
+        <div class="txt"><b>For Casting Directors</b><span>Post a project and review submissions for free</span></div>
+        <button class="home-cta-outline">Post a Project</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
