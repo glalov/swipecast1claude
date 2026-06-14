@@ -6074,7 +6074,7 @@ function TermsPage({onNavigate}){
 
     <S n="9" t="Intellectual Property">The Service, including all software, design, text, graphics, logos, the "CastSlate" name and mark, and all other content (excluding User Content), is the property of CastSlate or its licensors and is protected by U.S. and international copyright, trademark, and other intellectual property laws. Except for the limited license to use the Service as expressly permitted in these Terms, no rights are granted to you.</S>
 
-    <S n="10" t="DMCA and Copyright Infringement">CastSlate respects intellectual property rights and will respond to notices of alleged copyright infringement in accordance with the Digital Millennium Copyright Act ("DMCA"). If you believe that your copyrighted work has been copied and is accessible on the Service in a way that constitutes infringement, please send a notice to our designated agent at <strong style={{color:"var(--t1)"}}>dmca@castslate.com</strong> containing the information required by 17 U.S.C. § 512(c)(3). Repeat infringers will have their accounts terminated.</S>
+    <S n="10" t="DMCA and Copyright Infringement">CastSlate respects intellectual property rights and will respond to notices of alleged copyright infringement in accordance with the Digital Millennium Copyright Act ("DMCA"). If you believe that your copyrighted work has been copied and is accessible on the Service in a way that constitutes infringement, please send a notice to our designated agent at <strong style={{color:"var(--t1)"}}>team@castslate.com</strong> containing the information required by 17 U.S.C. § 512(c)(3). Repeat infringers will have their accounts terminated.</S>
 
     <S n="11" t="Third-Party Links and Services">The Service may contain links to or integrations with third-party websites or services. CastSlate does not control and is not responsible for the content, policies, or practices of any third-party service. Your use of third-party services is at your own risk and subject to the terms of those services.</S>
 
@@ -6086,7 +6086,7 @@ function TermsPage({onNavigate}){
 
     <S n="15" t="Indemnification">You agree to defend, indemnify, and hold harmless CastSlate, its affiliates, and their officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable attorneys' fees) arising out of or in any way connected with (a) your access to or use of the Service; (b) your User Content; (c) your violation of these Terms; or (d) your violation of any rights of another.</S>
 
-    <S n="16" t="Dispute Resolution and Binding Arbitration">Any dispute, claim, or controversy arising out of or relating to these Terms or the Service (a "Dispute") shall be resolved by binding individual arbitration administered by JAMS under its Streamlined Arbitration Rules then in effect. The arbitration shall take place in New York, New York, unless you and CastSlate agree otherwise. <strong style={{color:"var(--t1)"}}>You and CastSlate waive the right to a trial by jury or to participate in a class action.</strong> You may opt out of this arbitration agreement by sending written notice to <strong style={{color:"var(--t1)"}}>legal@castslate.com</strong> within 30 days of first accepting these Terms.</S>
+    <S n="16" t="Dispute Resolution and Binding Arbitration">Any dispute, claim, or controversy arising out of or relating to these Terms or the Service (a "Dispute") shall be resolved by binding individual arbitration administered by JAMS under its Streamlined Arbitration Rules then in effect. The arbitration shall take place in New York, New York, unless you and CastSlate agree otherwise. <strong style={{color:"var(--t1)"}}>You and CastSlate waive the right to a trial by jury or to participate in a class action.</strong> You may opt out of this arbitration agreement by sending written notice to <strong style={{color:"var(--t1)"}}>team@castslate.com</strong> within 30 days of first accepting these Terms.</S>
 
     <S n="17" t="Governing Law">These Terms and any dispute arising out of or relating to them or the Service are governed by the laws of the State of New York, without regard to its conflict-of-laws provisions. Subject to Section 16, the state and federal courts located in New York County, New York, shall have exclusive jurisdiction over any action not subject to arbitration.</S>
 
@@ -6094,7 +6094,7 @@ function TermsPage({onNavigate}){
 
     <S n="19" t="Miscellaneous">These Terms constitute the entire agreement between you and CastSlate regarding the Service and supersede all prior agreements. If any provision is held invalid or unenforceable, the remaining provisions shall remain in full force. Our failure to enforce any right or provision is not a waiver of such right or provision. You may not assign these Terms without our prior written consent; we may assign them freely.</S>
 
-    <S n="20" t="Contact">Questions about these Terms should be sent to <strong style={{color:"var(--t1)"}}>legal@castslate.com</strong>, or by mail to CastSlate, Inc., 353 W 48th Street, New York, NY 10036, United States.</S>
+    <S n="20" t="Contact">Questions about these Terms should be sent to <strong style={{color:"var(--t1)"}}>team@castslate.com</strong>, or by mail to CastSlate, Inc., 353 W 48th Street, New York, NY 10036, United States.</S>
 
     <div style={{borderTop:"1px solid var(--bdr)",paddingTop:24,marginTop:24,display:"flex",gap:12}}>
       <button className="btn-s" onClick={()=>onNavigate("privacy")}>Privacy Policy</button>
@@ -6194,7 +6194,7 @@ function PrivacyPage({onNavigate}){
     <S n="5" t="Your Choices">You have several choices regarding your information:
       <B>
         <li>Access, correct, or download your data from your account settings.</li>
-        <li>Delete your account by selecting "Delete Account" in settings or by emailing <strong style={{color:"var(--t1)"}}>privacy@castslate.com</strong>.</li>
+        <li>Delete your account by selecting "Delete Account" in settings or by emailing <strong style={{color:"var(--t1)"}}>team@castslate.com</strong>.</li>
         <li>Opt out of promotional emails via the unsubscribe link in any marketing message.</li>
         <li>Control cookies through your browser settings (see Section 6).</li>
         <li>Control push notifications via your device settings.</li>
@@ -6212,16 +6212,16 @@ function PrivacyPage({onNavigate}){
         <li>Opt out of the "sharing" of personal information for targeted advertising.</li>
         <li>Not be subject to discrimination for exercising your rights.</li>
       </B>
-      To exercise these rights, email <strong style={{color:"var(--t1)"}}>privacy@castslate.com</strong>. We will verify your request and respond within the time required by applicable law (typically 45 days). We do <strong>not</strong> sell personal information as defined by the CCPA.
+      To exercise these rights, email <strong style={{color:"var(--t1)"}}>team@castslate.com</strong>. We will verify your request and respond within the time required by applicable law (typically 45 days). We do <strong>not</strong> sell personal information as defined by the CCPA.
     </S>
 
-    <S n="8" t="Your Rights Under the GDPR (EEA, UK, Switzerland)">If you are located in the European Economic Area, the United Kingdom, or Switzerland, you have the right to access, rectify, erase, restrict processing, object to processing, and data portability with respect to your personal data. You may also withdraw any consent you previously provided. Our legal bases for processing are: (a) performance of a contract with you; (b) compliance with a legal obligation; (c) our legitimate interests in operating and improving the Service; and (d) your consent, where required. To exercise your rights, email <strong style={{color:"var(--t1)"}}>privacy@castslate.com</strong>. You also have the right to lodge a complaint with your local data protection authority.</S>
+    <S n="8" t="Your Rights Under the GDPR (EEA, UK, Switzerland)">If you are located in the European Economic Area, the United Kingdom, or Switzerland, you have the right to access, rectify, erase, restrict processing, object to processing, and data portability with respect to your personal data. You may also withdraw any consent you previously provided. Our legal bases for processing are: (a) performance of a contract with you; (b) compliance with a legal obligation; (c) our legitimate interests in operating and improving the Service; and (d) your consent, where required. To exercise your rights, email <strong style={{color:"var(--t1)"}}>team@castslate.com</strong>. You also have the right to lodge a complaint with your local data protection authority.</S>
 
     <S n="9" t="Data Retention">We retain personal information for as long as your account is active and for a reasonable period thereafter as necessary to comply with legal obligations, resolve disputes, enforce agreements, and for legitimate business purposes. When you delete your account, we will delete or anonymize your personal information within 90 days, except where retention is required or permitted by law.</S>
 
     <S n="10" t="Data Security">We implement reasonable administrative, technical, and physical safeguards designed to protect personal information, including encryption in transit (TLS), encryption at rest for sensitive fields, access controls, and periodic security reviews. However, no method of transmission or storage is 100% secure, and we cannot guarantee absolute security. You are responsible for keeping your login credentials confidential.</S>
 
-    <S n="11" t="Children's Privacy">The Service is not directed to children under 13, and we do not knowingly collect personal information from children under 13. If we learn that we have collected personal information from a child under 13 without parental consent, we will delete that information promptly. Parents or guardians who believe we may have collected information about a child may contact us at <strong style={{color:"var(--t1)"}}>privacy@castslate.com</strong>.</S>
+    <S n="11" t="Children's Privacy">The Service is not directed to children under 13, and we do not knowingly collect personal information from children under 13. If we learn that we have collected personal information from a child under 13 without parental consent, we will delete that information promptly. Parents or guardians who believe we may have collected information about a child may contact us at <strong style={{color:"var(--t1)"}}>team@castslate.com</strong>.</S>
 
     <S n="12" t="International Data Transfers">CastSlate is headquartered in the United States, and we process data there. If you access the Service from outside the United States, your information may be transferred to, stored in, and processed in the United States and other countries where our service providers operate. Where required, we use appropriate safeguards such as the EU Standard Contractual Clauses to protect transferred data.</S>
 
@@ -6231,7 +6231,7 @@ function PrivacyPage({onNavigate}){
 
     <S n="15" t="Changes to This Policy">We may update this Privacy Policy from time to time. If we make material changes, we will notify you by email or by posting a prominent notice on the Service at least 14 days before the change takes effect. The "Last updated" date at the top of this Policy indicates when it was most recently revised.</S>
 
-    <S n="16" t="Contact Us">If you have questions about this Policy or our privacy practices, or wish to exercise any of your rights, please contact our Data Protection Officer at <strong style={{color:"var(--t1)"}}>privacy@castslate.com</strong>, or by mail at CastSlate, Inc., Attn: Privacy Team, 353 W 48th Street, New York, NY 10036, United States.</S>
+    <S n="16" t="Contact Us">If you have questions about this Policy or our privacy practices, or wish to exercise any of your rights, please contact our Data Protection Officer at <strong style={{color:"var(--t1)"}}>team@castslate.com</strong>, or by mail at CastSlate, Inc., Attn: Privacy Team, 353 W 48th Street, New York, NY 10036, United States.</S>
 
     <div style={{borderTop:"1px solid var(--bdr)",paddingTop:24,marginTop:24,display:"flex",gap:12}}>
       <button className="btn-s" onClick={()=>onNavigate("terms")}>Terms of Service</button>
