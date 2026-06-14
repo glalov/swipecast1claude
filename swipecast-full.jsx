@@ -1309,7 +1309,7 @@ const css = `
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,900&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{--bg:#F7F4EE;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#4F8A8B;--teal-dk:#37696A;--amber:#E8902A;--amber-dk:#C8761B;}
 html,body{min-height:100vh;background:#1B1C20;}
@@ -1848,10 +1848,20 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media (prefers-reduced-motion: reduce){.partners-track{animation:none;}}
 @media (max-width:768px){.partners-tile{font-size:28px;gap:30px;padding:0 30px;}}
 /* ─── Tagline under the casting-format marquee (geometric sans, bold) ─── */
-.scale-tagline{text-align:center;padding:clamp(40px,5vw,72px) 24px 0;margin:0 auto;max-width:780px;font-family:'Poppins','DM Sans',system-ui,sans-serif;font-size:clamp(20px,2.6vw,28px);font-weight:700;letter-spacing:-0.01em;line-height:1.35;color:rgba(26,26,46,0.9);}
-.scale-tagline .tg-neon{color:#9333EA;}
-.scale-tagline .tg-netflix{color:#E50914;}
-@media (max-width:768px){.scale-tagline{font-size:19px;padding:36px 20px 0;}}
+.scale-tagline{text-align:center;padding:clamp(40px,5vw,72px) 24px 0;margin:0 auto;max-width:900px;}
+.scale-tagline .st-lead{font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;letter-spacing:2.4px;text-transform:uppercase;color:var(--t3);margin:0 0 16px;}
+.scale-tagline .st-names{font-family:'Source Serif 4',serif;font-weight:900;font-size:clamp(38px,7vw,72px);letter-spacing:-1px;line-height:1.05;margin:0;}
+.scale-tagline .st-names span{display:inline-block;}
+.scale-tagline .st-sep{color:var(--t3);font-weight:400;}
+.scale-tagline .st-a24{color:#0A0A0A;animation:st-dark 2.9s ease-in-out infinite;}
+.scale-tagline .st-neon{color:#FF2D6F;animation:st-glowN 2.9s ease-in-out infinite;}
+.scale-tagline .st-netflix{color:#E50914;animation:st-glowX 2.9s ease-in-out infinite .7s;}
+.scale-tagline .st-trail{display:block;font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px;letter-spacing:.5px;color:var(--t2);margin-top:16px;}
+@keyframes st-dark{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.87;transform:scale(1.014);}}
+@keyframes st-glowN{0%,100%{filter:brightness(1);text-shadow:0 0 14px rgba(255,45,111,.22);transform:scale(1);}50%{filter:brightness(1.18);text-shadow:0 0 24px rgba(255,45,111,.45);transform:scale(1.018);}}
+@keyframes st-glowX{0%,100%{filter:brightness(1);text-shadow:0 0 14px rgba(229,9,20,.22);transform:scale(1);}50%{filter:brightness(1.18);text-shadow:0 0 24px rgba(229,9,20,.45);transform:scale(1.018);}}
+@media (max-width:768px){.scale-tagline{padding:36px 20px 0;}.scale-tagline .st-names{font-size:34px;}}
+@media (prefers-reduced-motion:reduce){.scale-tagline .st-names span{animation:none;}}
 /* ─── Casting Across Every Format — premium video-card carousel ─── */
 .fmt-reel-wrap{position:relative;}
 .fmt-reel{overflow:hidden;padding:10px 0 16px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 36px,#000 calc(100% - 36px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 36px,#000 calc(100% - 36px),transparent 100%);}
@@ -13723,9 +13733,11 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <FormatReel/>
       {/* Tagline under the marquee — toggleable from Admin → Toggles (site_settings.tagline_under_marquee). */}
       {taglineOn && (
-        <p className="scale-tagline">
-          from indie films to A24, <span className="tg-neon">Neon</span> and <span className="tg-netflix">Netflix</span> level projects
-        </p>
+        <div className="scale-tagline">
+          <p className="st-lead">From indie films to</p>
+          <p className="st-names"><span className="st-a24">A24</span> <span className="st-sep">·</span> <span className="st-neon">Neon</span> <span className="st-sep">·</span> <span className="st-netflix">Netflix</span></p>
+          <span className="st-trail">— level projects</span>
+        </div>
       )}
     </div>
 

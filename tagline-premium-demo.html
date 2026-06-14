@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CastSlate — Studio Tagline Premium Demos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,900&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#F7F4EE;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--teal:#4F8A8B;--teal-dk:#37696A;--amber:#E8902A;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased;padding:36px 0 80px;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px;}
+  .eyebrow{font-family:'DM Sans',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:1.8px;text-transform:uppercase;color:var(--teal);display:inline-flex;align-items:center;gap:8px;margin:0 0 12px;}
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);}
+  h1{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(24px,3.2vw,32px);letter-spacing:-1px;margin:0 0 6px;}
+  .lede{font-size:14px;color:var(--t2);line-height:1.6;max-width:640px;margin:0 0 6px;}
+
+  .opt{margin-top:14px;border-top:1px dashed var(--bdr);}
+  .opt-meta{display:flex;align-items:baseline;gap:12px;margin:26px 0 4px;flex-wrap:wrap;}
+  .opt-num{font-family:'DM Sans',sans-serif;font-weight:800;font-size:13px;color:#fff;background:var(--teal);width:26px;height:26px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .opt-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:16px;}
+  .opt-desc{font-size:12.5px;color:var(--t3);}
+  .stage{padding:44px 24px;text-align:center;}
+  .stage.dark{background:#101018;border-radius:20px;margin-top:14px;}
+
+  .lead{font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;letter-spacing:2.4px;text-transform:uppercase;color:var(--t3);margin:0 0 14px;}
+  .stage.dark .lead{color:rgba(255,255,255,.5);}
+
+  /* ===== Option 1 — Editorial serif + gold shimmer on studio names ===== */
+  .o1 .names{font-family:'Source Serif 4',serif;font-weight:900;font-size:clamp(40px,7vw,72px);letter-spacing:-1px;line-height:1.04;margin:0;}
+  .o1 .gold{background:linear-gradient(90deg,#9A7B2E 0%,#D8B65A 22%,#FBF0CB 50%,#D8B65A 78%,#9A7B2E 100%);background-size:220% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:o1shimmer 5s linear infinite;}
+  .o1 .dot{color:var(--t3);font-weight:400;-webkit-text-fill-color:var(--t3);}
+  .o1 .trail{display:block;font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px;letter-spacing:.5px;color:var(--t2);margin-top:14px;}
+  @keyframes o1shimmer{to{background-position:-220% center;}}
+
+  /* ===== Option 2 — Brand chips with a looping light sweep ===== */
+  .o2 .line{font-family:'Source Serif 4',serif;font-weight:700;font-size:clamp(24px,3.6vw,38px);letter-spacing:-.4px;line-height:1.5;color:var(--t1);}
+  .o2 .chip{position:relative;overflow:hidden;display:inline-block;vertical-align:middle;font-family:'DM Sans',sans-serif;font-weight:800;font-size:.62em;letter-spacing:.3px;color:#fff;padding:.16em .5em;border-radius:9px;margin:0 .12em;transform:translateY(-.06em);}
+  .o2 .chip.a24{background:#0A0A0A;}
+  .o2 .chip.neon{background:linear-gradient(135deg,#FF2D6F,#C81E5B);}
+  .o2 .chip.netflix{background:#E50914;}
+  .o2 .chip::after{content:"";position:absolute;top:0;left:-130%;width:55%;height:100%;background:linear-gradient(115deg,transparent,rgba(255,255,255,.7),transparent);transform:skewX(-18deg);animation:o2sweep 3.6s ease-in-out infinite;}
+  .o2 .chip.neon::after{animation-delay:.4s;}
+  .o2 .chip.netflix::after{animation-delay:.8s;}
+  @keyframes o2sweep{0%{left:-130%}40%,100%{left:170%}}
+
+  /* ===== Option 3 — Cinematic dark band, brand-glow names, gentle pulse ===== */
+  .o3 .names{font-family:'Source Serif 4',serif;font-weight:900;font-size:clamp(40px,7vw,74px);letter-spacing:-1px;line-height:1.05;margin:0;color:#fff;}
+  .o3 .a24{color:#fff;text-shadow:0 0 18px rgba(255,255,255,.35);}
+  .o3 .neon{color:#FF3D74;text-shadow:0 0 22px rgba(255,61,116,.55);animation:o3pulse 2.8s ease-in-out infinite;}
+  .o3 .netflix{color:#E50914;text-shadow:0 0 22px rgba(229,9,20,.6);animation:o3pulse 2.8s ease-in-out infinite .6s;}
+  .o3 .sep{color:rgba(255,255,255,.3);font-weight:400;}
+  .o3 .trail{display:block;font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px;letter-spacing:.5px;color:rgba(255,255,255,.55);margin-top:16px;}
+  @keyframes o3pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25)}}
+
+  @media(prefers-reduced-motion:reduce){.o1 .gold,.o2 .chip::after,.o3 .neon,.o3 .netflix{animation:none!important;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow"><span class="dot"></span>Studio tagline — premium options</p>
+  <h1>“From indie films to A24, Neon &amp; Netflix level projects”</h1>
+  <p class="lede">Bigger, more cinematic, with motion. Three directions — open and watch them animate.</p>
+
+  <div class="opt">
+    <div class="opt-meta"><span class="opt-num">1</span><span class="opt-title">Editorial serif + gold shimmer</span><span class="opt-desc">Big serif studio names with a slow champagne-gold shine moving across. Luxe, understated.</span></div>
+    <div class="o1 stage">
+      <p class="lead">From indie films to</p>
+      <p class="names"><span class="gold">A24</span> <span class="dot">·</span> <span class="gold">Neon</span> <span class="dot">·</span> <span class="gold">Netflix</span></p>
+      <span class="trail">— level projects</span>
+    </div>
+  </div>
+
+  <div class="opt">
+    <div class="opt-meta"><span class="opt-num">2</span><span class="opt-title">Brand chips + light sweep</span><span class="opt-desc">Studio names as real brand-colored badges, each catching a sweep of light in sequence. Recognizable.</span></div>
+    <div class="o2 stage">
+      <p class="line">From indie films to <span class="chip a24">A24</span> <span class="chip neon">NEON</span> &amp; <span class="chip netflix">NETFLIX</span> level projects</p>
+    </div>
+  </div>
+
+  <div class="opt">
+    <div class="opt-meta"><span class="opt-num">3</span><span class="opt-title">Cinematic dark band + neon glow</span><span class="opt-desc">Bold names on a dark cinematic strip, brand colors gently pulsing like signage. Most eye-catching.</span></div>
+    <div class="o3 stage dark">
+      <p class="lead">From indie films to</p>
+      <p class="names"><span class="a24">A24</span> <span class="sep">·</span> <span class="neon">Neon</span> <span class="sep">·</span> <span class="netflix">Netflix</span></p>
+      <span class="trail">— level projects</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>
