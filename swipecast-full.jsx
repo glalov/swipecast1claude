@@ -590,6 +590,32 @@ function translateRoleType(type, lang) {
   return map[type] || type;
 }
 
+// Selectable role/billing types for casting roles (CD post form + admin generator).
+const ROLE_TYPE_OPTIONS=["Lead","Supporting","Principal","Featured","Co-Star","Guest Star","Recurring","Series Regular","Day Player","Background","Featured Background","Stand-In","Photo Double","Body Double","Stunt Performer","Voiceover","Host","Dancer","Singer","Understudy","Swing","Ensemble"];
+// Best-guess role type from a role name (used to seed auto-generated castings so
+// they don't all default to "Supporting"). Admins can override in the edit form.
+function inferRoleType(name){
+  const n=(name||"").toLowerCase();
+  if(/photo double/.test(n))return"Photo Double";
+  if(/body double/.test(n))return"Body Double";
+  if(/stunt/.test(n))return"Stunt Performer";
+  if(/stand-in|stand in/.test(n))return"Stand-In";
+  if(/featured background/.test(n))return"Featured Background";
+  if(/voice|narrat|jingle|animation voice|spokesperson vo/.test(n))return"Voiceover";
+  if(/host|presenter/.test(n))return"Host";
+  if(/dancer|movement/.test(n))return"Dancer";
+  if(/day player/.test(n))return"Day Player";
+  if(/featured/.test(n))return"Featured";
+  if(/lead|protagonist|spokesperson/.test(n))return"Lead";
+  if(/supporting|foil|antagonist|straight man/.test(n))return"Supporting";
+  if(/ensemble|ensamble|reader|sketch player|house team|workshop participant|reenactor|multiple roles/.test(n))return"Ensemble";
+  if(/background|party guest|audience|extra|crew member/.test(n))return"Background";
+  if(/guest|panelist|interview subject|storyteller|sidekick/.test(n))return"Guest Star";
+  if(/singer|vocalist/.test(n))return"Singer";
+  if(/lifestyle|model|figure model/.test(n))return"Principal";
+  return"Supporting";
+}
+
 // ─── Spanish Casting Translations ────────────────────────────────────────────
 // Seeded/demo castings fully translated. User-generated castings from the DB
 // would need a server-side translation API (e.g. DeepL, Google Translate) or
@@ -8596,7 +8622,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       });
       const {data:cs,error}=await Promise.race([
         window.sb.from("castings")
-          .select("*,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(identity_verified,can_post_castings,verification_status)")
+          .select("*,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(identity_verified,can_post_castings,verification_status)")
           .eq("status","open").eq("published",true)
           .order("featured",{ascending:false})
           .order("created_at",{ascending:false}),
@@ -8630,7 +8656,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           id:r.id||null,
           name:r.name,
           desc:r.description||"",
-          type:"Supporting",
+          type:r.role_type||"Supporting",
           gender:r.gender||"Any",
           ageRange:r.age_range||"",
           ethnicity:r.ethnicity||"Any"
@@ -12431,6 +12457,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
   });
   const [roles,setRoles]=useState(()=>(casting.roles||[]).map(r=>({
     id:r.id,name:r.name||"",description:r.description||"",gender:r.gender||"Any",
+    role_type:r.role_type||r.type||"Supporting",
     age_range:r.age_range||"",ethnicity:r.ethnicity||"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",
     sides_pdf_url:r.sides_pdf_url||"",direction_notes:r.direction_notes||"",slate_instructions:r.slate_instructions||"",
     video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||"",
@@ -12440,7 +12467,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
   })));
   const setField=(k,v)=>setF(p=>({...p,[k]:v}));
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
-  const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false}]);
+  const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",role_type:"Supporting",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false}]);
   const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
   const uploadPdf=async(file,roleIdx)=>{
     if(!file)return;
@@ -12532,12 +12559,12 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
         let ageRange=r.age_range||"";
         if(r.age_preset==="Custom range")ageRange=[r.age_min,r.age_max].filter(Boolean).join("-");
         else if(r.age_preset&&r.age_preset!=="Any age")ageRange=r.age_preset;
-        const rp={name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:ageRange||null,ethnicity:(r.ethnicity&&r.ethnicity!=="Any ethnicity")?r.ethnicity:null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"};
+        const rp={name:r.name.trim(),description:r.description||null,gender:r.gender||null,role_type:r.role_type||"Supporting",age_range:ageRange||null,ethnicity:(r.ethnicity&&r.ethnicity!=="Any ethnicity")?r.ethnicity:null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"};
         if(r.id){const{error:uErr}=await window.sb.from("roles").update(rp).eq("id",r.id);if(uErr)throw uErr;}
         else{const{error:iErr}=await window.sb.from("roles").insert({...rp,casting_id:casting.id});if(iErr)throw iErr;}
       }
       // Re-fetch roles from DB so onSaved carries fresh IDs and all audition fields persist correctly
-      const{data:freshRoles}=await window.sb.from("roles").select("id,name,description,gender,age_range,ethnicity,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,official_takes_allowed,submission_mode").eq("casting_id",casting.id);
+      const{data:freshRoles}=await window.sb.from("roles").select("id,name,description,gender,age_range,ethnicity,role_type,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,official_takes_allowed,submission_mode").eq("casting_id",casting.id);
       onSaved({...casting,...patch,roles:freshRoles||[]});
     }catch(e){setErr(e.message||"Save failed.");}finally{setBusy(false);}
   };
@@ -12604,6 +12631,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
       {roles.map((r,i)=>{const isLast=i===roles.length-1;return(<div key={r.id||`new-${i}`} ref={isLast?lastRoleRef:null} style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:12}}>
         <div className="flex-between" style={{marginBottom:10}}><strong style={{fontSize:13}}>Role {i+1} {r.id?"":<span style={{color:"var(--acc)",fontSize:11}}>(new)</span>}</strong>{(roles.length>1||r.id===null)&&<button onClick={()=>removeRole(i)} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12}}>✕ Remove</button>}</div>
         <div className="form-group" style={{marginBottom:10}}><label className="label">Role Name *</label><input className="input" value={r.name} onChange={e=>setRole(i,"name",e.target.value)} placeholder="e.g. Sarah — Lead"/></div>
+          <div className="form-group" style={{marginBottom:10}}><label className="label">Role Type</label><select className="select" style={{width:"100%"}} value={r.role_type||"Supporting"} onChange={e=>setRole(i,"role_type",e.target.value)}>{ROLE_TYPE_OPTIONS.map(rt=><option key={rt} value={rt}>{rt}</option>)}</select></div>
         <div className="form-row">
           <div><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={r.gender} onChange={e=>setRole(i,"gender",e.target.value)}><option>Any</option><option>Male</option><option>Female</option><option>Non-Binary</option></select></div>
           <div><label className="label">Age Range</label>
@@ -12690,7 +12718,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   const [busy,setBusy]=useState(false);
   const DRAFT_KEY="sc_new_casting_draft";
   const BLANK_F={title:"",prod:"",type:"Film & TV",location:"",pay:"",union:"SAG-AFTRA",deadline:"",tagline:"",synopsis:"",casting_website_url:""};
-  const BLANK_ROLE={name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false};
+  const BLANK_ROLE={name:"",description:"",gender:"Any",role_type:"Supporting",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false};
   // Initialize form from localStorage draft so a remount (e.g. background refresh) restores what the user typed.
   const [f,setF]=useState(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(p?.f?.title!==undefined)return p.f;}}catch(_){}return BLANK_F;});
   const [roles,setRoles]=useState(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(Array.isArray(p?.roles)&&p.roles.length)return p.roles;}}catch(_){}return[BLANK_ROLE];});
@@ -12872,7 +12900,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
         }else if(r.age_preset&&r.age_preset!=="Any age"){
           ageRange=r.age_preset;
         }
-        return {casting_id:casting.id,name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:ageRange||null,ethnicity:(r.ethnicity&&r.ethnicity!=="Any ethnicity")?r.ethnicity:null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"};
+        return {casting_id:casting.id,name:r.name.trim(),description:r.description||null,gender:r.gender||null,role_type:r.role_type||"Supporting",age_range:ageRange||null,ethnicity:(r.ethnicity&&r.ethnicity!=="Any ethnicity")?r.ethnicity:null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"};
       });
       let insertedRoles=[];
       if(rolePayload.length){
@@ -12944,6 +12972,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
         {roles.map((r,i)=><div key={i} style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:12}}>
           <div className="flex-between" style={{marginBottom:10}}><strong style={{fontSize:13}}>Role {i+1}</strong>{roles.length>1&&<button type="button" onClick={()=>removeRole(i)} style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:12}}>✕ Remove</button>}</div>
           <div className="form-group" style={{marginBottom:10}}><label className="label">Role Name *</label><input className="input" value={r.name} onChange={e=>setRole(i,"name",e.target.value)} placeholder="e.g. Sarah — Lead"/></div>
+          <div className="form-group" style={{marginBottom:10}}><label className="label">Role Type</label><select className="select" style={{width:"100%"}} value={r.role_type||"Supporting"} onChange={e=>setRole(i,"role_type",e.target.value)}>{ROLE_TYPE_OPTIONS.map(rt=><option key={rt} value={rt}>{rt}</option>)}</select></div>
           <div className="form-row">
             <div><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={r.gender} onChange={e=>setRole(i,"gender",e.target.value)}><option>Any</option><option>Male</option><option>Female</option><option>Non-Binary</option></select></div>
             <div><label className="label">Age Range</label>
@@ -13055,7 +13084,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("FCS timed out after 10s")),10000);});
       const {data,error}=await Promise.race([
         window.sb.from("castings")
-          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq("status","open").eq("published",true)
           .order("featured",{ascending:false})
           .order("created_at",{ascending:false})
@@ -13093,7 +13122,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
           id:r.id||null,
           name:r.name,
           desc:r.description||"",
-          type:"Supporting",
+          type:r.role_type||"Supporting",
           gender:r.gender||"Any",
           ageRange:r.age_range||"",
           ethnicity:r.ethnicity||"Any"
@@ -16996,7 +17025,7 @@ function AdminCastingGenerator({session}){
         const {data:cData,error:cErr}=await window.sb.from("castings").insert(item).select("id").single();
         if(cErr){fail++;console.warn("[ACG] insert failed",cErr);continue;}
         if(roles.length>0){
-          await window.sb.from("roles").insert(roles.map(r=>({casting_id:cData.id,name:r.name,description:r.description,gender:r.gender,age_range:r.age_range,ethnicity:r.ethnicity,pay:r.pay||null})));
+          await window.sb.from("roles").insert(roles.map(r=>({casting_id:cData.id,name:r.name,description:r.description,gender:r.gender,role_type:r.role_type||inferRoleType(r.name),age_range:r.age_range,ethnicity:r.ethnicity,pay:r.pay||null})));
         }
         ok++;
       }
@@ -17051,7 +17080,7 @@ function AdminCastingGenerator({session}){
     if(!error){
       await window.sb.from("roles").delete().eq("casting_id",c.id);
       if(freshRoles.length>0){
-        await window.sb.from("roles").insert(freshRoles.map(r=>({casting_id:c.id,name:r.name,description:r.description,gender:r.gender,age_range:r.age_range,ethnicity:r.ethnicity,pay:r.pay||null})));
+        await window.sb.from("roles").insert(freshRoles.map(r=>({casting_id:c.id,name:r.name,description:r.description,gender:r.gender,role_type:r.role_type||inferRoleType(r.name),age_range:r.age_range,ethnicity:r.ethnicity,pay:r.pay||null})));
       }
     }
     setBusy(null);
@@ -17078,7 +17107,7 @@ function AdminCastingGenerator({session}){
       await window.sb.from("roles").delete().eq("casting_id",updated.id);
       const toInsert=(updated.roles||[]).filter(r=>r.name&&r.name.trim());
       if(toInsert.length>0){
-        await window.sb.from("roles").insert(toInsert.map(r=>({casting_id:updated.id,name:r.name.trim(),description:r.description||"",gender:r.gender||"Any",age_range:r.age_range||"",ethnicity:r.ethnicity||"Any ethnicity",pay:r.pay||null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"})));
+        await window.sb.from("roles").insert(toInsert.map(r=>({casting_id:updated.id,name:r.name.trim(),description:r.description||"",gender:r.gender||"Any",role_type:r.role_type||inferRoleType(r.name),age_range:r.age_range||"",ethnicity:r.ethnicity||"Any ethnicity",pay:r.pay||null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"})));
       }
     }
     showMsg("Draft saved.");setEditDraft(null);loadAll();
@@ -17316,13 +17345,13 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
 
   useEffect(()=>{
     (async()=>{
-      const {data}=await window.sb.from("roles").select("id,name,description,gender,age_range,ethnicity,pay,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,official_takes_allowed,submission_mode").eq("casting_id",listing.id).order("id");
-      setRoles((data||[]).map(r=>({...r,_key:r.id,...ageToPreset(r.age_range),_showAudInstr:false,_uploadingPdf:false})));
+      const {data}=await window.sb.from("roles").select("id,name,description,gender,age_range,ethnicity,pay,role_type,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,official_takes_allowed,submission_mode").eq("casting_id",listing.id).order("id");
+      setRoles((data||[]).map(r=>({...r,_key:r.id,role_type:r.role_type||"Supporting",...ageToPreset(r.age_range),_showAudInstr:false,_uploadingPdf:false})));
       setRolesLoading(false);
     })();
   },[listing.id]);
 
-  const BLANK_ROLE=()=>({_key:Date.now()+Math.random(),id:null,name:"",description:"",gender:"Any",age_preset:"Any age",age_min:"",age_max:"",ethnicity:"Any ethnicity",pay:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false});
+  const BLANK_ROLE=()=>({_key:Date.now()+Math.random(),id:null,name:"",description:"",gender:"Any",role_type:"Supporting",age_preset:"Any age",age_min:"",age_max:"",ethnicity:"Any ethnicity",pay:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false});
   const addRole=()=>setRoles(r=>[...r,BLANK_ROLE()]);
   const updateRole=(i,k,v)=>setRoles(r=>r.map((x,j)=>j===i?{...x,[k]:v}:x));
   const deleteRole=(i)=>setRoles(r=>r.filter((_,j)=>j!==i));
@@ -17509,6 +17538,8 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
           </div>
           <div className="form-group" style={{margin:0,marginBottom:10}}><label className="label" style={{fontSize:11}}>Role Name</label>
             <input className="input" style={{fontSize:13}} value={role.name} onChange={e=>updateRole(i,"name",e.target.value)} placeholder="e.g. Sarah — Lead"/></div>
+          <div className="form-group" style={{margin:0,marginBottom:10}}><label className="label" style={{fontSize:11}}>Role Type</label>
+            <select className="select" style={{fontSize:13}} value={role.role_type||"Supporting"} onChange={e=>updateRole(i,"role_type",e.target.value)}>{ROLE_TYPE_OPTIONS.map(rt=><option key={rt} value={rt}>{rt}</option>)}</select></div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
             <div className="form-group" style={{margin:0}}><label className="label" style={{fontSize:11}}>Gender</label>
               <select className="select" style={{fontSize:13}} value={role.gender} onChange={e=>updateRole(i,"gender",e.target.value)}>
@@ -18154,7 +18185,7 @@ function AdminCastings({onPendingCountChange}){
   const reload=useCallback(async()=>{
     setLoading(true);
     const {data,error}=await window.sb.from("castings")
-      .select("*,profiles:cd_id(display_name,email,company_name,user_type),roles(id,name,description,gender,age_range,ethnicity,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,official_takes_allowed,submission_mode)")
+      .select("*,profiles:cd_id(display_name,email,company_name,user_type),roles(id,name,description,gender,age_range,ethnicity,role_type,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,official_takes_allowed,submission_mode)")
       .order("created_at",{ascending:false}).limit(1000);
     if(error){setMsg("Load failed: "+error.message);setMsgType("error");}
     const list=data||[];
@@ -20618,6 +20649,7 @@ function EditCastingModal({casting,onClose,onSaved}){
   });
   const [roles,setRoles]=useState(()=>(casting.roles||[]).map(r=>({
     id:r.id,name:r.name||"",description:r.description||"",gender:r.gender||"Any",
+    role_type:r.role_type||r.type||"Supporting",
     age_range:r.age_range||"",ethnicity:r.ethnicity||"Any",
     sides_pdf_url:r.sides_pdf_url||"",direction_notes:r.direction_notes||"",
     slate_instructions:r.slate_instructions||"",video_length_limit:r.video_length_limit||60,
@@ -20628,7 +20660,7 @@ function EditCastingModal({casting,onClose,onSaved}){
   })));
   const setField=(k,v)=>setF(p=>({...p,[k]:v}));
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
-  const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",age_range:"",ethnicity:"Any",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false}]);
+  const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",role_type:"Supporting",age_range:"",ethnicity:"Any",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false}]);
   const removeRole=(i)=>setRoles(p=>p.filter((_,idx)=>idx!==i));
   const uploadPdf=async(file,roleIdx)=>{
     if(!file)return;
@@ -20691,7 +20723,7 @@ function EditCastingModal({casting,onClose,onSaved}){
       }
       for(const r of roles){
         if(!r.name.trim())continue;
-        const rp={name:r.name.trim(),description:r.description||null,gender:r.gender||null,age_range:r.age_range||null,ethnicity:r.ethnicity||null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"};
+        const rp={name:r.name.trim(),description:r.description||null,gender:r.gender||null,role_type:r.role_type||"Supporting",age_range:r.age_range||null,ethnicity:r.ethnicity||null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"};
         if(r.id){
           const {error:uErr}=await window.sb.from("roles").update(rp).eq("id",r.id);
           if(uErr)throw uErr;
@@ -20744,6 +20776,7 @@ function EditCastingModal({casting,onClose,onSaved}){
       {roles.map((r,i)=><div key={r.id||`new-${i}`} style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:12}}>
         <div className="flex-between" style={{marginBottom:10}}><strong style={{fontSize:13}}>Role {i+1} {r.id?"":<span style={{color:"var(--acc)",fontSize:11}}>(new)</span>}</strong><button onClick={()=>removeRole(i)} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12}}>✕ Remove</button></div>
         <div className="form-group" style={{marginBottom:10}}><label className="label">Role Name *</label><input className="input" value={r.name} onChange={e=>setRole(i,"name",e.target.value)}/></div>
+        <div className="form-group" style={{marginBottom:10}}><label className="label">Role Type</label><select className="select" style={{width:"100%"}} value={r.role_type||"Supporting"} onChange={e=>setRole(i,"role_type",e.target.value)}>{ROLE_TYPE_OPTIONS.map(rt=><option key={rt} value={rt}>{rt}</option>)}</select></div>
         <div className="form-row">
           <div><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={r.gender} onChange={e=>setRole(i,"gender",e.target.value)}><option>Any</option><option>Male</option><option>Female</option><option>Non-Binary</option></select></div>
           <div><label className="label">Age Range</label><input className="input" value={r.age_range} onChange={e=>setRole(i,"age_range",e.target.value)}/></div>
@@ -22111,7 +22144,7 @@ function App(){
     if(!castingId)return;
     try{
       const{data,error}=await window.sb.from("castings")
-        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
         .eq("id",castingId).maybeSingle();
       if(error||!data)return;
       const c={
@@ -22126,7 +22159,7 @@ function App(){
         casting_images:Array.isArray(data.casting_images)?data.casting_images:[],
         casting_website_url:data.casting_website_url||null,
         roles:(data.roles||[]).map(r=>({
-          id:r.id||null,name:r.name||"",desc:r.description||"",type:"Supporting",
+          id:r.id||null,name:r.name||"",desc:r.description||"",type:r.role_type||"Supporting",
           ageRange:r.age_range||"",gender:r.gender||"Any",
           ethnicity:r.ethnicity||"Any",pay:r.pay||"",
         })),
@@ -22231,7 +22264,7 @@ function App(){
         const isUUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
         const field=isUUID?"id":"slug";
         const {data,error}=await window.sb.from("castings")
-          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,cd_id,status,published,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,cd_id,status,published,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq(field,slug).maybeSingle();
         if(cancelled||error||!data)return;
         // Guard: hide pending/unpublished castings from the public.
@@ -22258,7 +22291,7 @@ function App(){
           casting_images:Array.isArray(data.casting_images)?data.casting_images:[],
           casting_website_url:data.casting_website_url||null,
           roles:(data.roles||[]).map(r=>({
-            id:r.id||null,name:r.name||"",desc:r.description||"",type:"Supporting",
+            id:r.id||null,name:r.name||"",desc:r.description||"",type:r.role_type||"Supporting",
             ageRange:r.age_range||"",gender:r.gender||"Any",
             ethnicity:r.ethnicity||"Any",pay:r.pay||"",
           })),
