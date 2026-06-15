@@ -10026,6 +10026,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   const [folder,setFolder]=useState("pending");    // per-role: pending | hold | selected | rejected
   const [showNew,setShowNew]=useState(false);
   const [myCastings,setMyCastings]=useState([]);
+  const [castingSearch,setCastingSearch]=useState(""); // quick-search box on the My Castings tab
   const [loading,setLoading]=useState(true);
   const [stats,setStats]=useState({total:0,pending:0,selected:0,hold:0});
   const [allSelected,setAllSelected]=useState([]); // cross-casting "everyone I selected"
@@ -10086,6 +10087,13 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   const hashInitRef=useRef(_hashInit);              // stable ref for data-load callback
 
   const uid=session?.user?.id;
+  // Admin/office dashboard mirrors public Browse Castings: show ONLY live published
+  // listings (status==="open"). Regular CDs still see all their castings (incl. drafts/
+  // pending) so they can track them. Search filters whichever base list applies.
+  const isAdminDash=myProfile&&(myProfile.user_type==="admin"||myProfile.user_type==="super_admin");
+  const baseCastings=isAdminDash?myCastings.filter(c=>c.status==="open"):myCastings;
+  const castingQ=castingSearch.trim().toLowerCase();
+  const visibleCastings=castingQ?baseCastings.filter(c=>[c.title,c.prod,c.type,c.location].some(x=>x&&String(x).toLowerCase().includes(castingQ))):baseCastings;
 
   // When the CD clicks "Message" on a talent card, check for an existing conversation
   // first. If one exists, open MessageThreadModal directly. Otherwise open the new-
@@ -10748,7 +10756,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       <button className="btn-p" style={{flexShrink:0,whiteSpace:"nowrap"}} onClick={()=>setShowNew(true)}>+ New Casting</button>
     </div>
     <div className="dash-stats">
-      <div className="dash-stat"><div className="dash-stat-num">{myCastings.length}</div><div className="dash-stat-label">{t('cd.myCastings')}</div></div>
+      <div className="dash-stat"><div className="dash-stat-num">{baseCastings.length}</div><div className="dash-stat-label">{t('cd.myCastings')}</div></div>
       <div className="dash-stat"><div className="dash-stat-num">{stats.total}</div><div className="dash-stat-label">{t('cd.submissions')}</div></div>
       <div className="dash-stat"><div className="dash-stat-num" style={{color:stats.pending>0?"var(--acc)":undefined}}>{stats.pending}</div><div className="dash-stat-label">{t('cd.pendingReview')}</div></div>
       <div className="dash-stat"><div className="dash-stat-num">{stats.selected}</div><div className="dash-stat-label">{t('cd.callbacks')}</div></div>
@@ -10895,11 +10903,15 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         <button className="btn-s btn-sm" onClick={()=>setReloadTick(t=>t+1)}>Retry</button>
       </div>}
       {tab==="castings"?
-        myCastings.length===0?<div className="card" style={{textAlign:"center",padding:48}}>
-          <p style={{color:"var(--t3)",marginBottom:16}}>{loading?<span style={{display:"inline-flex",alignItems:"center",gap:8}}><span style={{width:14,height:14,borderRadius:"50%",border:"2px solid var(--bdr)",borderTopColor:"var(--acc)",animation:"scSpin 0.8s linear infinite",display:"inline-block"}}></span>Loading your castings…</span>:"You haven't posted any castings yet."}</p>
-          {!loading&&<button className="btn-p" onClick={()=>setShowNew(true)}>+ Post Your First Casting</button>}
+        <>
+        {baseCastings.length>0&&<div style={{marginBottom:14}}>
+          <input className="input" value={castingSearch} onChange={e=>setCastingSearch(e.target.value)} placeholder="Search castings by title, company, type, or location…"/>
+        </div>}
+        {visibleCastings.length===0?<div className="card" style={{textAlign:"center",padding:48}}>
+          <p style={{color:"var(--t3)",marginBottom:16}}>{loading?<span style={{display:"inline-flex",alignItems:"center",gap:8}}><span style={{width:14,height:14,borderRadius:"50%",border:"2px solid var(--bdr)",borderTopColor:"var(--acc)",animation:"scSpin 0.8s linear infinite",display:"inline-block"}}></span>Loading your castings…</span>:castingQ?"No castings match your search.":isAdminDash?"No live published castings.":"You haven't posted any castings yet."}</p>
+          {!loading&&!castingQ&&!isAdminDash&&<button className="btn-p" onClick={()=>setShowNew(true)}>+ Post Your First Casting</button>}
         </div>:
-        <div className="card-flat">{myCastings.map(c=>{
+        <div className="card-flat">{visibleCastings.map(c=>{
           const isPendingReview=c.status==="pending_review";
           const isRejected=c.status==="rejected";
           const isOpen=c.status==="open";
@@ -10941,7 +10953,8 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
               ✕ <strong>Not approved.</strong> This casting was not approved. Edit it to address any issues, then resubmit for review.
             </div>}
           </div>);
-        })}</div>:
+        })}</div>}
+        </>:
         tab==="allSelected"?
           (allSelected.length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No selected talent yet. Review your pending submissions to build your shortlist.</p></div>:
           <div className="results-grid">{allSelected.map((a,i)=>{const p=a.profiles||{};return(<div key={a.id||i} className="talent-thumb" onClick={()=>setCdProfileOverlay(buildTalentView(a))}><img src={a.selected_photo_url||p.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?"} alt={p.display_name||""}/><div className="talent-thumb-info"><h4>{p.display_name||"Applicant"}</h4><p>{[p.age,p.location].filter(Boolean).join(" · ")}</p></div></div>);})}</div>):
