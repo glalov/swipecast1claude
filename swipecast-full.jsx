@@ -8776,7 +8776,9 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{(c.roles?.length||1)===1?`1 ${t('search.role')}`:`${c.roles?.length||1} ${t('search.roles')}`}</span>
                   </div>
                   <h3 style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:4,color:"var(--t1)"}}>{c.title}</h3>
-                  {c.tagline&&c.tagline!==c.prod&&<p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{c.tagline}</p>}
+                  {(c.tagline&&c.tagline!==c.prod)
+                    ?<p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{c.tagline}</p>
+                    :c.type?<p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{translateCastingType(c.type,lang)}</p>:null}
                   {c.prod&&<p style={{color:"var(--t3)",fontSize:12,marginBottom:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.prod}{c.creator_verified&&<IDVerifiedBadge size="xs"/>}</p>}
                   <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6,marginBottom:16,maxWidth:620}}>{c.synopsis?c.synopsis.replace(/\*/g,"").slice(0,200)+(c.synopsis.length>200?"…":""):c.desc}</p>
                   <div style={{display:"flex",gap:20,flexWrap:"wrap",fontSize:12,color:"var(--t2)"}}>
@@ -17303,7 +17305,14 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish}){
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
       <div className="form-group"><label className="label">Category / Type</label>
         <select className="select" value={form.type} onChange={e=>set("type",e.target.value)}>
-          {["Open Talent Pool","Indie Short Film Talent Pool","Self-Tape Showcase","Actor Profile Review Opportunity","Commercial Talent Pool","Music Video Talent Pool","Podcast Guest / On-Camera Segment Pool","Experimental Film Roster","Horror Short Talent Pool","Comedy Sketch Talent Pool","Theater Workshop Submissions","Voiceover Roster","Creator Collaboration Pool"].map(t=><option key={t} value={t}>{t}</option>)}
+          {/* If the saved type isn't in either list (legacy/custom), surface it so it isn't silently lost. */}
+          {form.type&&![...["Open Talent Pool","Indie Short Film Talent Pool","Self-Tape Showcase","Actor Profile Review Opportunity","Commercial Talent Pool","Music Video Talent Pool","Podcast Guest / On-Camera Segment Pool","Experimental Film Roster","Horror Short Talent Pool","Comedy Sketch Talent Pool","Theater Workshop Submissions","Voiceover Roster","Creator Collaboration Pool"],...["Action","Adventure","Comedy","Drama","Horror","Thriller","Romance","Science Fiction","Fantasy","Crime","Mystery","Western","War","Historical","Biographical","Musical","Animation","Documentary","Family","Sports"]].includes(form.type)&&<option value={form.type}>{form.type}</option>}
+          <optgroup label="Talent Pools">
+            {["Open Talent Pool","Indie Short Film Talent Pool","Self-Tape Showcase","Actor Profile Review Opportunity","Commercial Talent Pool","Music Video Talent Pool","Podcast Guest / On-Camera Segment Pool","Experimental Film Roster","Horror Short Talent Pool","Comedy Sketch Talent Pool","Theater Workshop Submissions","Voiceover Roster","Creator Collaboration Pool"].map(t=><option key={t} value={t}>{t}</option>)}
+          </optgroup>
+          <optgroup label="Film Genres">
+            {["Action","Adventure","Comedy","Drama","Horror","Thriller","Romance","Science Fiction","Fantasy","Crime","Mystery","Western","War","Historical","Biographical","Musical","Animation","Documentary","Family","Sports"].map(t=><option key={t} value={t}>{t}</option>)}
+          </optgroup>
         </select></div>
 
       <div className="form-group"><label className="label">Posted By (public)</label>
