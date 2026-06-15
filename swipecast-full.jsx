@@ -9030,32 +9030,35 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         .select("id,from_id,to_id,body,created_at,read_at,application_id")
         .or(`from_id.eq.${uid},to_id.eq.${uid}`)
         .order("created_at",{ascending:false}).limit(100);
+      // Group by counterparty + application so each casting submission is its own thread.
       const map=new Map();
       let totalUnread=0;
       (data||[]).forEach(m=>{
         const other=m.from_id===uid?m.to_id:m.from_id;
         if(!other)return;
-        if(!map.has(other))map.set(other,{latest:m,unread:0,appId:m.application_id});
-        const t=map.get(other);
+        const appId=m.application_id||null;
+        const key=other+"::"+(appId||"dm");
+        if(!map.has(key))map.set(key,{key,otherId:other,appId,latest:m,unread:0});
+        const t=map.get(key);
         if(m.to_id===uid&&!m.read_at){t.unread++;totalUnread++;}
-        if(new Date(m.created_at)>new Date(t.latest.created_at)){t.latest=m;if(m.application_id)t.appId=m.application_id;}
+        if(new Date(m.created_at)>new Date(t.latest.created_at)){t.latest=m;}
       });
       setGlobalUnreadCount(totalUnread);
-      const otherIds=Array.from(map.keys()).slice(0,10);
+      const otherIds=[...new Set(Array.from(map.values()).map(t=>t.otherId))].slice(0,20);
       let profileMap={};
       if(otherIds.length){
         const{data:profs}=await window.sb.from("profiles").select("id,display_name,company_name,headshot_url,user_type").in("id",otherIds);
         (profs||[]).forEach(p=>{profileMap[p.id]=p;});
       }
       // Resolve application casting context (title + poster info for admin-generated castings)
-      const appIds=[...new Set(Array.from(map.values()).map(t=>t.appId).filter(Boolean))].slice(0,10);
+      const appIds=[...new Set(Array.from(map.values()).map(t=>t.appId).filter(Boolean))].slice(0,20);
       let castingByApp={};
       if(appIds.length){
         const{data:apps}=await window.sb.from("applications").select("id,castings(id,title,prod,is_admin_created,posted_by_label)").in("id",appIds);
         (apps||[]).forEach(a=>{if(a.castings)castingByApp[a.id]=a.castings;});
       }
-      const threadList=Array.from(map.entries())
-        .map(([id,t])=>({otherId:id,...t,profile:profileMap[id],casting:t.appId?castingByApp[t.appId]:null,castingTitle:t.appId?castingByApp[t.appId]?.title:null}))
+      const threadList=Array.from(map.values())
+        .map(t=>({...t,profile:profileMap[t.otherId],casting:t.appId?castingByApp[t.appId]:null,castingTitle:t.appId?castingByApp[t.appId]?.title:null}))
         .sort((a,b)=>new Date(b.latest.created_at)-new Date(a.latest.created_at))
         .slice(0,5);
       setThreads(threadList);
@@ -9773,7 +9776,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 <>
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
                     {threads.slice(0,3).map(t=>(
-                      <div key={t.otherId} onClick={()=>onNavigate("inbox")} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:10,border:t.unread>0?"1px solid var(--acc)":"1px solid var(--bdr)",background:t.unread>0?"rgba(99,60,180,0.02)":"var(--bg)",cursor:"pointer",borderLeft:t.unread>0?"3px solid var(--acc)":"3px solid transparent",transition:"border-color .15s",width:"100%",boxSizing:"border-box",overflow:"hidden"}}>
+                      <div key={t.key} onClick={()=>onNavigate("inbox")} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:10,border:t.unread>0?"1px solid var(--acc)":"1px solid var(--bdr)",background:t.unread>0?"rgba(99,60,180,0.02)":"var(--bg)",cursor:"pointer",borderLeft:t.unread>0?"3px solid var(--acc)":"3px solid transparent",transition:"border-color .15s",width:"100%",boxSizing:"border-box",overflow:"hidden"}}>
                         <div style={{width:40,height:40,borderRadius:"50%",flexShrink:0,background:"var(--s2)",overflow:"hidden",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"var(--t2)"}}>
                           {t.profile?.headshot_url?<img src={t.profile.headshot_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:posterDisplayName(t.profile,t.casting,"?")[0]?.toUpperCase()}
                         </div>
@@ -10149,7 +10152,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     if(!uid||!app?.talent_id)return;
     const convId=uid<app.talent_id?`${uid}|${app.talent_id}`:`${app.talent_id}|${uid}`;
     try{
-      const{data}=await window.sb.from("messages").select("id").eq("conversation_id",convId).limit(1);
+      const{data}=await window.sb.from("messages").select("id").eq("conversation_id",convId).eq("application_id",app.id).limit(1);
       if(data&&data.length>0){
         setOpenThreadSeed({from_id:uid,to_id:app.talent_id,application_id:app.id,profiles:app.profiles||{}});
       }else{
@@ -11425,6 +11428,11 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
   const conversationId=(message&&sessionUid&&counterpartyId)
     ? (sessionUid<counterpartyId?`${sessionUid}|${counterpartyId}`:`${counterpartyId}|${sessionUid}`)
     : null;
+  // Each casting submission is its own thread: scope by the seed's application_id so
+  // messages about one project never bleed into another project's chat with the same
+  // person. General (non-application) DMs share the application_id=null thread.
+  const threadAppId=message?.application_id||null;
+  const inThread=(m)=>threadAppId?m.application_id===threadAppId:!m.application_id;
 
   // ─── Bulk mark-read helper. Takes an array of message IDs; updates DB + bubbles
   //     the IDs back to the parent so the inbox / global badge can recompute locally.
@@ -11443,11 +11451,11 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
     if(!conversationId||!sessionUid)return;
     (async()=>{
       try{
-        const {data,error}=await window.sb.from("messages")
+        let q=window.sb.from("messages")
           .select("id,from_id,to_id,body,created_at,read_at,application_id,conversation_id,message_type,checkin_week,profiles:from_id(id,display_name,company_name,headshot_url,user_type)")
-          .eq("conversation_id",conversationId)
-          .order("created_at",{ascending:true})
-          .limit(500);
+          .eq("conversation_id",conversationId);
+        q=threadAppId?q.eq("application_id",threadAppId):q.is("application_id",null);
+        const {data,error}=await q.order("created_at",{ascending:true}).limit(500);
         if(error)throw error;
         if(cancelled)return;
         const rows=data||[];
@@ -11464,7 +11472,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
       }catch(e){if(!cancelled)setErr(e.message||"Could not load conversation.");}
     })();
     return()=>{cancelled=true;};
-  },[conversationId,sessionUid,counterpartyId,bulkMarkRead]);
+  },[conversationId,sessionUid,counterpartyId,threadAppId,bulkMarkRead]);
 
   // Fallback: if no thread row carries the counterparty's profile (e.g. they only
   // received messages), look it up directly so the header still shows their name.
@@ -11494,6 +11502,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
         .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages",filter:`conversation_id=eq.${conversationId}`},async(p)=>{
           if(cancelled)return;
           const row=p.new;
+          if(!inThread(row))return; // belongs to a different project's thread
           // De-dupe with our own optimistic insert
           setThread(prev=>prev.some(m=>m.id===row.id)?prev:[...prev,row].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)));
           // If the incoming row is addressed to us, mark it read right away
@@ -11512,7 +11521,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
         .subscribe();
     }catch(_){/* realtime optional */}
     return()=>{cancelled=true;if(ch){try{window.sb.removeChannel(ch);}catch(_){}}};
-  },[conversationId,sessionUid,bulkMarkRead]);
+  },[conversationId,sessionUid,threadAppId,bulkMarkRead]);
 
   // Casting context — pulled from the seed message's application_id, not changed.
   useEffect(()=>{
@@ -11764,29 +11773,29 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
       .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
   },[messages,uid]);
 
-  // ─── Thread grouping. Key = counterparty user_id. Check-in messages excluded.
+  // ─── Thread grouping. Key = counterparty + application (each casting submission
+  //     is its own thread so projects never merge). Check-in messages excluded.
   const threads=useMemo(()=>{
     const map=new Map();
     messages.forEach(m=>{
       if(m.message_type==="weekly_actor_checkin")return; // handled separately
       const other=m.from_id===uid?m.to_id:m.from_id;
       if(!other)return;
-      const t=map.get(other)||{otherId:other,latest:null,unread:0,total:0,messages:[]};
+      const appKey=m.application_id||"dm";
+      const key=other+"::"+appKey;
+      const t=map.get(key)||{key,otherId:other,appId:m.application_id||null,latest:null,unread:0,total:0,messages:[]};
       t.messages.push(m);
       t.total++;
       if(m.to_id===uid&&!m.read_at)t.unread++;
       if(!t.latest||new Date(m.created_at)>new Date(t.latest.created_at))t.latest=m;
-      map.set(other,t);
+      map.set(key,t);
     });
     return Array.from(map.values()).sort((a,b)=>new Date(b.latest?.created_at||0)-new Date(a.latest?.created_at||0));
   },[messages,uid]);
 
   // Casting tied to a thread (via any message's application_id) — drives the
   // admin-generated poster-name override.
-  const threadCasting=useCallback((th)=>{
-    const appId=(th.messages||[]).map(m=>m.application_id).find(Boolean)||th.latest?.application_id;
-    return appId?castingByApp[appId]:null;
-  },[castingByApp]);
+  const threadCasting=useCallback((th)=>th.appId?castingByApp[th.appId]:null,[castingByApp]);
 
   const checkinUnread=checkins.filter(m=>!m.read_at).length;
   const totalUnread=threads.reduce((n,t)=>n+t.unread,0)+checkinUnread;
@@ -11912,7 +11921,8 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
          const dt=t.latest?new Date(t.latest.created_at):null;
          const sameDay=dt&&new Date().toDateString()===dt.toDateString();
          const dateLabel=dt?(sameDay?dt.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"}):dt.toLocaleDateString(undefined,{month:"short",day:"numeric"})):"";
-         return(<div key={t.otherId} onClick={()=>openThread(t)} style={{display:"grid",gridTemplateColumns:"auto 1fr auto",gap:14,padding:"16px 22px",borderBottom:"1px solid var(--bdr)",cursor:"pointer",alignItems:"center",background:t.unread>0?"rgba(26,26,46,0.025)":"transparent",transition:"background 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--s2)"} onMouseLeave={e=>e.currentTarget.style.background=t.unread>0?"rgba(26,26,46,0.025)":"transparent"}>
+         const projectTitle=threadCasting(t)?.title;
+         return(<div key={t.key} onClick={()=>openThread(t)} style={{display:"grid",gridTemplateColumns:"auto 1fr auto",gap:14,padding:"16px 22px",borderBottom:"1px solid var(--bdr)",cursor:"pointer",alignItems:"center",background:t.unread>0?"rgba(26,26,46,0.025)":"transparent",transition:"background 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--s2)"} onMouseLeave={e=>e.currentTarget.style.background=t.unread>0?"rgba(26,26,46,0.025)":"transparent"}>
            <div style={{position:"relative"}}>
              <img src={cp.headshot_url||"https://placehold.co/52x52/e5e5e5/999?text=?"} alt="" style={{width:52,height:52,borderRadius:"50%",objectFit:"cover",display:"block"}}/>
              {t.unread>0&&<span style={{position:"absolute",top:-2,right:-2,background:"var(--acc)",color:"#fff",borderRadius:"50%",minWidth:20,height:20,padding:"0 5px",fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid var(--s1)"}}>{t.unread}</span>}
@@ -11921,6 +11931,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
              <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:3}}>
                <strong style={{fontSize:14,fontWeight:t.unread>0?800:700}}>{cpName}</strong>
                <span className="tag" style={{fontSize:9,background:"var(--s2)",color:"var(--t2)",fontWeight:700}}>{(threadCasting(t)?.is_admin_created&&(cp.user_type==="admin"||cp.user_type==="super_admin")?"Casting Director":senderTypeLabel(cp.user_type)).toUpperCase()}</span>
+               {projectTitle&&<span style={{fontSize:10,color:"var(--t3)",background:"var(--s2)",padding:"1px 6px",borderRadius:4,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:200}}>{projectTitle}</span>}
                <span style={{fontSize:11,color:"var(--t3)"}}>· {t.total} message{t.total===1?"":"s"}</span>
              </div>
              <div style={{fontSize:13,color:t.unread>0?"var(--t1)":"var(--t2)",fontWeight:t.unread>0?500:400,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{previewPrefix}{t.latest?.body||""}</div>
