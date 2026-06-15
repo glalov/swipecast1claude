@@ -8776,8 +8776,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{(c.roles?.length||1)===1?`1 ${t('search.role')}`:`${c.roles?.length||1} ${t('search.roles')}`}</span>
                   </div>
                   <h3 style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:4,color:"var(--t1)"}}>{c.title}</h3>
-                  <p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{c.tagline||c.prod}</p>
-                  <p style={{color:"var(--t3)",fontSize:12,marginBottom:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.prod}{c.creator_verified&&<IDVerifiedBadge size="xs"/>}</p>
+                  {c.tagline&&c.tagline!==c.prod&&<p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{c.tagline}</p>}
+                  {c.prod&&<p style={{color:"var(--t3)",fontSize:12,marginBottom:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.prod}{c.creator_verified&&<IDVerifiedBadge size="xs"/>}</p>}
                   <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6,marginBottom:16,maxWidth:620}}>{c.synopsis?c.synopsis.replace(/\*/g,"").slice(0,200)+(c.synopsis.length>200?"…":""):c.desc}</p>
                   <div style={{display:"flex",gap:20,flexWrap:"wrap",fontSize:12,color:"var(--t2)"}}>
                     <span><strong style={{color:"var(--t1)"}}>{t('search.filterLocation')}</strong> · {c.location}</span>
@@ -17307,11 +17307,13 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish}){
         </select></div>
 
       <div className="form-group"><label className="label">Posted By (public)</label>
-        <select className="select" value={form.posted_by_label} onChange={e=>set("posted_by_label",e.target.value)}>
-          <option value="CastSlate Talent Team">CastSlate Talent Team</option>
-          <option value="CastSlate Creator Network">CastSlate Creator Network</option>
-          <option value="Independent Creator Network">Independent Creator Network</option>
-        </select></div>
+        <input className="input" list="posted-by-suggestions" value={form.posted_by_label} onChange={e=>set("posted_by_label",e.target.value)} placeholder="Creator / CD name, production company…"/>
+        <datalist id="posted-by-suggestions">
+          <option value="CastSlate Talent Team"/>
+          <option value="CastSlate Creator Network"/>
+          <option value="Independent Creator Network"/>
+        </datalist>
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Type any name — creator, casting director, or production company. This is what shows on the public listing.</p></div>
     </div>
 
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>

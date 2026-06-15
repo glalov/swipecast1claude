@@ -8,6 +8,13 @@
       "port": 8000
     },
     {
+      "name": "swipecast-site-preview",
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": ["/tmp/castslate_site_preview.py"],
+      "autoPort": true,
+      "port": 8061
+    },
+    {
       "name": "tagline-demo",
       "runtimeExecutable": "/usr/bin/python3",
       "runtimeArgs": ["/tmp/castslate_demo_serve.py"],
