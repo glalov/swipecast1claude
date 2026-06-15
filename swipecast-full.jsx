@@ -616,6 +616,26 @@ function inferRoleType(name){
   return"Supporting";
 }
 
+// Rank used to order roles within a casting: lead/big roles first, background last.
+const ROLE_TYPE_RANK={Lead:0,"Series Regular":1,Principal:2,Supporting:3,"Co-Star":4,Recurring:5,"Guest Star":6,Featured:7,Host:8,Voiceover:9,Singer:10,Dancer:11,Understudy:12,Swing:13,Ensemble:14,"Day Player":15,"Stand-In":16,"Photo Double":17,"Body Double":18,"Stunt Performer":19,"Featured Background":20,Background:21};
+function roleTypeRank(t){const r=ROLE_TYPE_RANK[t||"Supporting"];return r===undefined?12:r;}
+// Stable comparator (rank, then id) so the display list and the audition-role
+// index map (fetched separately) always order identically.
+function compareRolesByType(aType,aId,bType,bId){
+  return roleTypeRank(aType)-roleTypeRank(bType) || String(aId).localeCompare(String(bId));
+}
+
+// Name to show for the OTHER party in a message thread. For admin-generated
+// castings, talent should see the casting's Production Company (posted_by_label/
+// prod) instead of the platform/admin profile name. Normal CD castings are
+// unchanged — their own profile name is used.
+function posterDisplayName(profile,casting,fallback){
+  const adminPoster = casting && casting.is_admin_created &&
+    (profile?.user_type==="admin"||profile?.user_type==="super_admin");
+  if(adminPoster) return casting.posted_by_label||casting.prod||profile?.display_name||profile?.company_name||"Casting";
+  return profile?.display_name||profile?.company_name||fallback||"Unknown user";
+}
+
 // ─── Spanish Casting Translations ────────────────────────────────────────────
 // Seeded/demo castings fully translated. User-generated castings from the DB
 // would need a server-side translation API (e.g. DeepL, Google Translate) or
@@ -7302,9 +7322,9 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       }
     }
     if(isDbCasting){
-      const {data:roles}=await window.sb.from("roles").select("id,name,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,submission_type,allow_multiple_takes,official_takes_allowed,submission_mode").eq("casting_id",casting.id);
+      const {data:roles}=await window.sb.from("roles").select("id,name,role_type,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,submission_type,allow_multiple_takes,official_takes_allowed,submission_mode").eq("casting_id",casting.id);
       const map={};const instrMap={};
-      (roles||[]).forEach((r,idx)=>{
+      (roles||[]).slice().sort((a,b)=>compareRolesByType(a.role_type,a.id,b.role_type,b.id)).forEach((r,idx)=>{
         map[idx]=r.id;
         instrMap[r.id]={sides_pdf_url:r.sides_pdf_url||"",direction_notes:r.direction_notes||"",slate_instructions:r.slate_instructions||"",video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||"",wardrobe_notes:r.wardrobe_notes||"",submission_type:r.submission_type||"both",allow_multiple_takes:r.allow_multiple_takes!==false,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"};
       });
@@ -7586,7 +7606,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
         </div>
       </div>
       <div style={{display:"flex",flexDirection:"column",gap:14}}>
-        {(c.roles||[]).map((r,i)=>{
+        {(c.roles||[]).slice().sort((a,b)=>compareRolesByType(a.type,a.id,b.type,b.id)).map((r,i)=>{
           const roleId=realRoleIds[i];
           const instr=roleId?roleInstructions[roleId]:null;
           const hasInstructions=instr&&(instr.sides_pdf_url||instr.direction_notes||instr.slate_instructions||instr.wardrobe_notes);
@@ -9027,15 +9047,15 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         const{data:profs}=await window.sb.from("profiles").select("id,display_name,company_name,headshot_url,user_type").in("id",otherIds);
         (profs||[]).forEach(p=>{profileMap[p.id]=p;});
       }
-      // Resolve application casting titles for context
+      // Resolve application casting context (title + poster info for admin-generated castings)
       const appIds=[...new Set(Array.from(map.values()).map(t=>t.appId).filter(Boolean))].slice(0,10);
-      let castingTitleMap={};
+      let castingByApp={};
       if(appIds.length){
-        const{data:apps}=await window.sb.from("applications").select("id,castings(title)").in("id",appIds);
-        (apps||[]).forEach(a=>{if(a.castings?.title)castingTitleMap[a.id]=a.castings.title;});
+        const{data:apps}=await window.sb.from("applications").select("id,castings(id,title,prod,is_admin_created,posted_by_label)").in("id",appIds);
+        (apps||[]).forEach(a=>{if(a.castings)castingByApp[a.id]=a.castings;});
       }
       const threadList=Array.from(map.entries())
-        .map(([id,t])=>({otherId:id,...t,profile:profileMap[id],castingTitle:t.appId?castingTitleMap[t.appId]:null}))
+        .map(([id,t])=>({otherId:id,...t,profile:profileMap[id],casting:t.appId?castingByApp[t.appId]:null,castingTitle:t.appId?castingByApp[t.appId]?.title:null}))
         .sort((a,b)=>new Date(b.latest.created_at)-new Date(a.latest.created_at))
         .slice(0,5);
       setThreads(threadList);
@@ -9755,11 +9775,11 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                     {threads.slice(0,3).map(t=>(
                       <div key={t.otherId} onClick={()=>onNavigate("inbox")} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:10,border:t.unread>0?"1px solid var(--acc)":"1px solid var(--bdr)",background:t.unread>0?"rgba(99,60,180,0.02)":"var(--bg)",cursor:"pointer",borderLeft:t.unread>0?"3px solid var(--acc)":"3px solid transparent",transition:"border-color .15s",width:"100%",boxSizing:"border-box",overflow:"hidden"}}>
                         <div style={{width:40,height:40,borderRadius:"50%",flexShrink:0,background:"var(--s2)",overflow:"hidden",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"var(--t2)"}}>
-                          {t.profile?.headshot_url?<img src={t.profile.headshot_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:(t.profile?.display_name||t.profile?.company_name||"?")[0]?.toUpperCase()}
+                          {t.profile?.headshot_url?<img src={t.profile.headshot_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:posterDisplayName(t.profile,t.casting,"?")[0]?.toUpperCase()}
                         </div>
                         <div style={{flex:1,minWidth:0}}>
                           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
-                            <span style={{fontWeight:t.unread>0?700:500,fontSize:13,color:"var(--t1)"}}>{t.profile?.display_name||t.profile?.company_name||"Unknown"}</span>
+                            <span style={{fontWeight:t.unread>0?700:500,fontSize:13,color:"var(--t1)"}}>{posterDisplayName(t.profile,t.casting,"Unknown")}</span>
                             {t.castingTitle&&<span style={{fontSize:10,color:"var(--t3)",background:"var(--s2)",padding:"1px 6px",borderRadius:4,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:160}}>{t.castingTitle}</span>}
                           </div>
                           <div style={{fontSize:12,color:"var(--t2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{(t.latest?.body||"").slice(0,72)}{(t.latest?.body||"").length>72?"…":""}</div>
@@ -11501,7 +11521,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
     (async()=>{
       try{
         const {data}=await window.sb.from("applications")
-          .select("id,castings(id,title,prod,location,type),roles(name)")
+          .select("id,castings(id,title,prod,location,type,is_admin_created,posted_by_label),roles(name)")
           .eq("id",message.application_id).maybeSingle();
         if(!cancelled&&data)setCastingCtx({casting:data.castings||null,role:data.roles||null});
       }catch(_){/* silent */}
@@ -11514,10 +11534,12 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
 
   if(!message)return null;
   const cp=counterpartyProfile||message.profiles||{};
-  const cpName=cp.display_name||cp.company_name||"Unknown user";
+  const cpName=posterDisplayName(cp,castingCtx?.casting,"Unknown user");
   const isAdmin=(sessionUserType==="admin"||sessionUserType==="super_admin");
   const cpTypeLabel=(()=>{
     const t=(cp.user_type||"").toLowerCase();
+    // Admin-generated castings present to talent as the Production Company, not "CastSlate Admin".
+    if(castingCtx?.casting?.is_admin_created&&(t==="admin"||t==="super_admin"))return "Casting Director";
     if(t==="cd")return "Casting Director";
     if(t==="talent")return "Actor / Talent";
     if(t==="admin"||t==="super_admin")return "CastSlate Admin";
@@ -11615,7 +11637,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
              const yesterday=new Date(Date.now()-86400000).toDateString();
              const dayLabel=day===today?"Today":day===yesterday?"Yesterday":dt.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:dt.getFullYear()!==new Date().getFullYear()?"numeric":undefined});
              const time=dt.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
-             const fromLabel=mine?"You":(m.profiles?.display_name||m.profiles?.company_name||cpName);
+             const fromLabel=mine?"You":cpName;
              return(<div key={m.id}>
                {showSeparator&&<div style={{textAlign:"center",margin:"14px 0 12px",fontSize:10,letterSpacing:1.2,textTransform:"uppercase",color:"var(--t3)",fontWeight:700}}>{dayLabel}</div>}
                <div style={{display:"flex",justifyContent:mine?"flex-end":"flex-start",marginBottom:8}}>
@@ -11665,6 +11687,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
   const t=useT();
   const [messages,setMessages]=useState([]);    // raw flat list of all messages I'm in
   const [counterparties,setCounterparties]=useState({}); // id -> profile snapshot
+  const [castingByApp,setCastingByApp]=useState({}); // application_id -> casting (for admin-generated poster name)
   const [openMsg,setOpenMsg]=useState(null);
   const [openCheckin,setOpenCheckin]=useState(null); // for weekly_actor_checkin messages
   const [loading,setLoading]=useState(true);
@@ -11694,6 +11717,14 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
           .in("id",others);
         const map={};(profs||[]).forEach(p=>{map[p.id]=p;});
         setCounterparties(map);
+      }
+      // Resolve casting context per application so admin-generated castings show
+      // their Production Company as the sender (instead of the platform/admin name).
+      const appIds=Array.from(new Set((data||[]).map(m=>m.application_id).filter(Boolean)));
+      if(appIds.length){
+        const {data:apps}=await window.sb.from("applications").select("id,castings(id,title,prod,is_admin_created,posted_by_label)").in("id",appIds);
+        const cmap={};(apps||[]).forEach(a=>{if(a.castings)cmap[a.id]=a.castings;});
+        setCastingByApp(cmap);
       }
     }catch(e){
       console.error("[inbox-page] load failed:",e);
@@ -11750,12 +11781,19 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
     return Array.from(map.values()).sort((a,b)=>new Date(b.latest?.created_at||0)-new Date(a.latest?.created_at||0));
   },[messages,uid]);
 
+  // Casting tied to a thread (via any message's application_id) — drives the
+  // admin-generated poster-name override.
+  const threadCasting=useCallback((th)=>{
+    const appId=(th.messages||[]).map(m=>m.application_id).find(Boolean)||th.latest?.application_id;
+    return appId?castingByApp[appId]:null;
+  },[castingByApp]);
+
   const checkinUnread=checkins.filter(m=>!m.read_at).length;
   const totalUnread=threads.reduce((n,t)=>n+t.unread,0)+checkinUnread;
   const filtered=threads.filter(t=>{
     if(!search.trim())return true;
     const p=counterparties[t.otherId]||{};
-    const name=(p.display_name||p.company_name||"").toLowerCase();
+    const name=posterDisplayName(p,threadCasting(t),"").toLowerCase();
     const body=(t.latest?.body||"").toLowerCase();
     const q=search.toLowerCase();
     return name.includes(q)||body.includes(q);
@@ -11868,7 +11906,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
      <div className="card" style={{padding:0,overflow:"hidden"}}>
        {filtered.map(t=>{
          const cp=counterparties[t.otherId]||{};
-         const cpName=cp.display_name||cp.company_name||"Unknown user";
+         const cpName=posterDisplayName(cp,threadCasting(t),"Unknown user");
          const isFromMe=t.latest?.from_id===uid;
          const previewPrefix=isFromMe?"You: ":"";
          const dt=t.latest?new Date(t.latest.created_at):null;
@@ -11882,7 +11920,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
            <div style={{minWidth:0}}>
              <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:3}}>
                <strong style={{fontSize:14,fontWeight:t.unread>0?800:700}}>{cpName}</strong>
-               <span className="tag" style={{fontSize:9,background:"var(--s2)",color:"var(--t2)",fontWeight:700}}>{senderTypeLabel(cp.user_type).toUpperCase()}</span>
+               <span className="tag" style={{fontSize:9,background:"var(--s2)",color:"var(--t2)",fontWeight:700}}>{(threadCasting(t)?.is_admin_created&&(cp.user_type==="admin"||cp.user_type==="super_admin")?"Casting Director":senderTypeLabel(cp.user_type)).toUpperCase()}</span>
                <span style={{fontSize:11,color:"var(--t3)"}}>· {t.total} message{t.total===1?"":"s"}</span>
              </div>
              <div style={{fontSize:13,color:t.unread>0?"var(--t1)":"var(--t2)",fontWeight:t.unread>0?500:400,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{previewPrefix}{t.latest?.body||""}</div>
