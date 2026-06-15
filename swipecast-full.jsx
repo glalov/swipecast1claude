@@ -632,9 +632,17 @@ function compareRolesByType(aType,aId,bType,bId){
 function posterDisplayName(profile,casting,fallback){
   const adminPoster = casting && casting.is_admin_created &&
     (profile?.user_type==="admin"||profile?.user_type==="super_admin");
-  if(adminPoster) return casting.posted_by_label||casting.prod||profile?.display_name||profile?.company_name||"Casting";
+  if(adminPoster){
+    // Source / casting director is whatever is in the Production Company (prod)
+    // field. Never surface the platform "CastSlate ..." label.
+    const name=(casting.prod||casting.posted_by_label||"").trim();
+    return name && !/castslate/i.test(name) ? name : "Casting Director";
+  }
   return profile?.display_name||profile?.company_name||fallback||"Unknown user";
 }
+
+// Project / production types offered in the CD post form and the admin generator.
+const PROJECT_TYPE_OPTIONS=["Feature Film","Short Film","Student Film","Independent Film","Documentary","TV Series","TV Pilot","Web Series","Streaming Series","Commercial","Social Media Ad","Branded Content","Corporate Video","Industrial / Training Video","Promo Video","Product Demo","Music Video","Voiceover","Podcast / Audio Drama","Animation","Video Game","Theater","Off-Broadway Theater","Off-Off-Broadway Theater","Musical Theater","Workshop / Staged Reading","Live Event","Hosting / Presenter","Reality / Docu-Series","Lifestyle / Unscripted","Modeling","Print Campaign","Photo Shoot","Influencer / UGC Content","Educational Video","Public Service Announcement","Spec Commercial","Proof of Concept","Sizzle Reel","Pitch Trailer","Table Read","Experimental Film","Dance Project","Performance Art","Background / Extras","Stand-In","Body Double","Stunts","Motion Capture","Other"];
 
 // ─── Spanish Casting Translations ────────────────────────────────────────────
 // Seeded/demo castings fully translated. User-generated castings from the DB
@@ -7554,8 +7562,10 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     <p style={{color:"var(--t2)",fontSize:17,marginBottom:4}}>{c.tagline}</p>
     <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:28}}>
       <p style={{color:"var(--t3)",fontSize:13,margin:0}}>Produced by {c.prod} {c.director?`· Directed by ${c.director}`:""}</p>
-      {cdProfile&&cdProfile.identity_verified===true&&cdProfile.can_post_castings===true&&cdProfile.verification_status==="verified"&&<IDVerifiedBadge/>}
-      {cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
+      {c.is_admin_created
+        ? (c.admin_verified===true?<IDVerifiedBadge/>:<UnverifiedBadge/>)
+        : (cdProfile&&cdProfile.identity_verified===true&&cdProfile.can_post_castings===true&&cdProfile.verification_status==="verified"&&<IDVerifiedBadge/>)}
+      {!c.is_admin_created&&cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
     </div>
 
     {/* ── Instant-hook strip: surfaces pay, deadline & open-role count above the
@@ -8670,7 +8680,11 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         casting_image_path:c.casting_image_path||null,
         casting_images:Array.isArray(c.casting_images)?c.casting_images:[],
         casting_website_url:c.casting_website_url||null,
-        creator_verified:c.profiles?.identity_verified===true&&c.profiles?.can_post_castings===true&&c.profiles?.verification_status==="verified",
+        is_admin_created:c.is_admin_created===true,
+        admin_verified:c.admin_verified===true,
+        creator_verified:c.is_admin_created===true
+          ? c.admin_verified===true
+          : (c.profiles?.identity_verified===true&&c.profiles?.can_post_castings===true&&c.profiles?.verification_status==="verified"),
         profiles:c.profiles||null,
         roles:(c.roles||[]).map(r=>({
           id:r.id||null,
@@ -8825,7 +8839,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                   {(c.tagline&&c.tagline!==c.prod)
                     ?<p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{c.tagline}</p>
                     :c.type?<p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{translateCastingType(c.type,lang)}</p>:null}
-                  {c.prod&&<p style={{color:"var(--t3)",fontSize:12,marginBottom:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.prod}{c.creator_verified&&<IDVerifiedBadge size="xs"/>}</p>}
+                  {c.prod&&<p style={{color:"var(--t3)",fontSize:12,marginBottom:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.prod}{c.creator_verified?<IDVerifiedBadge size="xs"/>:(c.is_admin_created&&<UnverifiedBadge size="xs"/>)}</p>}
                   <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6,marginBottom:16,maxWidth:620}}>{c.synopsis?c.synopsis.replace(/\*/g,"").slice(0,200)+(c.synopsis.length>200?"…":""):c.desc}</p>
                   <div style={{display:"flex",gap:20,flexWrap:"wrap",fontSize:12,color:"var(--t2)"}}>
                     <span><strong style={{color:"var(--t1)"}}>{t('search.filterLocation')}</strong> · {c.location}</span>
@@ -12336,6 +12350,12 @@ function IDVerifiedBadge({size="sm"}){
   </span>);
 }
 
+// ─── UnverifiedBadge — yellow "Not Verified" pill (admin-generated castings the
+//     admin has not marked ID-verified).
+function UnverifiedBadge({size="sm"}){
+  return <span title="This caster has not completed identity verification" style={{background:"rgba(200,137,0,0.12)",color:"#c88900",fontSize:size==="xs"?10:11,fontWeight:700,letterSpacing:0.3,padding:size==="xs"?"3px 8px":"4px 10px",borderRadius:100}}>Not Verified</span>;
+}
+
 // ─── CastingVerifiedBadge — "Background Checked" badge
 //     Only shown when background_check_status="passed" via a real criminal-background
 //     check provider (e.g. Checkr). Admin approve no longer sets this field, so the
@@ -12638,7 +12658,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     <div className="form-group"><label className="label">Project Title *</label><input className="input" value={f.title} onChange={e=>setField("title",e.target.value)}/></div>
     <div className="form-row">
       <div><label className="label">Production Company</label><input className="input" value={f.prod} onChange={e=>setField("prod",e.target.value)}/></div>
-      <div><label className="label">Project Type</label><select className="select" style={{width:"100%"}} value={f.type} onChange={e=>setField("type",e.target.value)}>{PROJECT_TYPES.map(pt=><option key={pt.value} value={pt.value}>{pt.label}</option>)}</select></div>
+      <div><label className="label">Project Type</label><select className="select" style={{width:"100%"}} value={f.type} onChange={e=>setField("type",e.target.value)}>{f.type&&!PROJECT_TYPE_OPTIONS.includes(f.type)&&<option value={f.type}>{f.type}</option>}{PROJECT_TYPE_OPTIONS.map(t=><option key={t} value={t}>{t}</option>)}</select></div>
     </div>
     <div className="form-row">
       <div><label className="label">Location</label><input className="input" value={f.location} onChange={e=>setField("location",e.target.value)} placeholder="City, State"/></div>
@@ -12977,7 +12997,8 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
       <div className="form-row">
         <div><label className="label">Production Company</label><input className="input" value={f.prod} onChange={e=>setField("prod",e.target.value)} placeholder="Company name"/></div>
         <div><label className="label">Project Type</label><select className="select" style={{width:"100%"}} value={f.type} onChange={e=>setField("type",e.target.value)}>
-          {PROJECT_TYPES.map(pt=><option key={pt.value} value={pt.value}>{pt.label}</option>)}
+          {f.type&&!PROJECT_TYPE_OPTIONS.includes(f.type)&&<option value={f.type}>{f.type}</option>}
+          {PROJECT_TYPE_OPTIONS.map(t=><option key={t} value={t}>{t}</option>)}
         </select></div>
       </div>
       {f.type&&PROJECT_TYPES.find(pt=>pt.value===f.type)&&<p style={{fontSize:11,color:"var(--t3)",marginTop:-8,marginBottom:12}}>{PROJECT_TYPES.find(pt=>pt.value===f.type).desc}</p>}
@@ -13133,7 +13154,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("FCS timed out after 10s")),10000);});
       const {data,error}=await Promise.race([
         window.sb.from("castings")
-          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq("status","open").eq("published",true)
           .order("featured",{ascending:false})
           .order("created_at",{ascending:false})
@@ -13161,6 +13182,11 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         featured:c.featured===true,
         submissions:0,
         cd_id:c.cd_id||null,
+        is_admin_created:c.is_admin_created===true,
+        admin_verified:c.admin_verified===true,
+        creator_verified:c.is_admin_created===true
+          ? c.admin_verified===true
+          : (c.profiles?.identity_verified===true&&c.profiles?.can_post_castings===true&&c.profiles?.verification_status==="verified"),
         profiles:c.profiles||null,
         _cd:c.profiles||null,
         casting_image_url:c.casting_image_url||null,
@@ -13346,9 +13372,13 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
             {sc.tagline&&sc.tagline!==sc.synopsis&&<p style={{color:"var(--t2)",fontSize:15,marginBottom:6,fontWeight:500}}>{sc.tagline}</p>}
             {(sCdName||sc.prod)&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:14,fontWeight:500,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
               <span>{sCdName?`Posted by ${sCdName}`:""}{sCdName&&sc.prod?" · ":""}{sc.prod||""}</span>
-              {(sCd.identity_verified===true&&sCd.can_post_castings===true&&sCd.verification_status==="verified")&&<IDVerifiedBadge size="xs"/>}
-              {(sCd.identity_verified===true&&sCd.background_check_status==="passed")&&<CastingVerifiedBadge/>}
-              {!(sCd.identity_verified===true&&sCd.can_post_castings===true)&&sCdName&&<span style={{background:"rgba(200,137,0,0.12)",color:"#c88900",fontSize:9,fontWeight:800,letterSpacing:0.6,padding:"2px 8px",borderRadius:99}} title="This caster has not yet completed identity verification">UNVERIFIED</span>}
+              {sc.is_admin_created
+                ? (sc.admin_verified===true?<IDVerifiedBadge size="xs"/>:<UnverifiedBadge size="xs"/>)
+                : <>
+                    {(sCd.identity_verified===true&&sCd.can_post_castings===true&&sCd.verification_status==="verified")&&<IDVerifiedBadge size="xs"/>}
+                    {(sCd.identity_verified===true&&sCd.background_check_status==="passed")&&<CastingVerifiedBadge/>}
+                    {!(sCd.identity_verified===true&&sCd.can_post_castings===true)&&sCdName&&<span style={{background:"rgba(200,137,0,0.12)",color:"#c88900",fontSize:9,fontWeight:800,letterSpacing:0.6,padding:"2px 8px",borderRadius:99}} title="This caster has not yet completed identity verification">UNVERIFIED</span>}
+                  </>}
             </p>}
             {sDesc&&<p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:18,maxWidth:680}}>{sDesc}</p>}
             <div style={{display:"flex",gap:24,flexWrap:"wrap",fontSize:13,color:"var(--t2)",marginBottom:22}}>
@@ -16483,7 +16513,7 @@ const ACG = (()=>{
   const TYPES=[
     {
       type:"Open Talent Pool",
-      postedBy:"CastSlate Talent Team",
+      postedBy:"Independent Talent Network",
       titles:(c)=>[`${c.short} Open Actor Talent Pool`,`General Actor Roster — ${c.short}`,`${c.name} Talent Pool — All Types`,`${c.short} Performer Database — Open Submissions`],
       synopses:(c)=>[
         `We're building a ${c.name}-based pool of performers for upcoming creator-led short-form projects, branded content, and independent productions. Not auditioning for one project — this is an ongoing roster that creators and filmmakers pull from when they're ready to cast.\n\nAll types, all experience levels.`,
@@ -16507,7 +16537,7 @@ const ACG = (()=>{
     },
     {
       type:"Indie Short Film Talent Pool",
-      postedBy:"CastSlate Creator Network",
+      postedBy:"Independent Creator Network",
       titles:(c)=>[`${c.short} Indie Short Film Talent Pool`,`Short Film Actor Roster — ${c.short}`,`${c.name} Independent Short Film Pool`,`${c.short} Short Film Submissions — Ongoing`],
       synopses:(c)=>[
         `Collecting submissions from ${c.name}-based actors for upcoming micro-budget short films and creator-led narrative projects. Filmmakers using the platform browse this pool first when they're casting.\n\nMost projects are 1–3 shoot days. Strong scene work matters more than credits.`,
@@ -16531,7 +16561,7 @@ const ACG = (()=>{
     },
     {
       type:"Self-Tape Showcase",
-      postedBy:"CastSlate Talent Team",
+      postedBy:"Independent Talent Network",
       titles:(c)=>[`Self-Tape Showcase — ${c.short}`,`Actor Self-Tape Showcase Submissions`,`${c.short} Self-Tape Performance Showcase`,`${c.name} Curated Self-Tape Collection`],
       synopses:(c)=>[
         `Accepting self-tape submissions from ${c.name}-based actors for CastSlate's curated actor showcase. Selected tapes get featured in platform emails, shared with casting directors on the platform, and used to connect talent with upcoming opportunities.\n\nThis is a visibility play, not an audition for a single paid project.`,
@@ -16554,7 +16584,7 @@ const ACG = (()=>{
     },
     {
       type:"Actor Profile Review Opportunity",
-      postedBy:"CastSlate Talent Team",
+      postedBy:"Independent Talent Network",
       titles:(c)=>[`Actor Profile Review — ${c.short}`,`${c.short} Actor Profile Spotlight`,`Profile Review Opportunity — ${c.short}`,`Featured Talent Review — ${c.name}`],
       synopses:(c)=>[
         `We're reviewing ${c.name}-based actor profiles for inclusion in featured talent collections shared with casting directors on the platform. Actors with complete profiles — headshot, reel, bio, location — may be highlighted.\n\nThis is a profile review, not an audition for a specific project.`,
@@ -16577,7 +16607,7 @@ const ACG = (()=>{
     },
     {
       type:"Commercial Talent Pool",
-      postedBy:"CastSlate Creator Network",
+      postedBy:"Independent Creator Network",
       titles:(c)=>[`${c.short} Commercial Actor Roster`,`Commercial Talent Pool — ${c.short}`,`${c.name} Commercial-Style Actor Pool`,`${c.short} On-Camera Commercial Submissions`],
       synopses:(c)=>[
         `Building a ${c.name}-based roster for commercial-style projects, branded content, and product-focused creator work. Day rates, spec spots, and social media campaigns — creators on the platform pull from this pool when casting.\n\nFriendly, camera-confident, and punctual. That's the main ask.`,
@@ -16600,7 +16630,7 @@ const ACG = (()=>{
     },
     {
       type:"Music Video Talent Pool",
-      postedBy:"CastSlate Creator Network",
+      postedBy:"Independent Creator Network",
       titles:(c)=>[`Music Video Performer Roster — ${c.short}`,`${c.short} Music Video Talent Pool`,`${c.name} Music Video Actor Pool`,`${c.short} Visual Content Performer Roster`],
       synopses:(c)=>[
         `Putting together a ${c.name}-based roster for music video productions, visual album segments, and short-form creator music content. Featured roles, ensemble scenes, concept-driven work — creators on the platform pull from this pool when they're casting.\n\nMovement-comfortable performers preferred. Dance background is a plus, not a requirement.`,
@@ -16623,7 +16653,7 @@ const ACG = (()=>{
     },
     {
       type:"Podcast Guest / On-Camera Segment Pool",
-      postedBy:"CastSlate Creator Network",
+      postedBy:"Independent Creator Network",
       titles:(c)=>[`On-Camera Podcast Guest Pool — ${c.short}`,`${c.short} Podcast & Interview Talent Roster`,`Creator Podcast Guest Pool — ${c.name}`,`${c.short} On-Camera Interview Submissions`],
       synopses:(c)=>[
         `Open call for performers, creatives, and conversationalists based in ${c.name} for on-camera podcast appearances, interview segments, and hosted creator content. Selected guests may be invited to appear on shows distributed through YouTube, Instagram, or podcast networks.\n\nNo performance experience required. Thoughtful, real, and good on camera.`,
@@ -16646,7 +16676,7 @@ const ACG = (()=>{
     },
     {
       type:"Experimental Film Roster",
-      postedBy:"CastSlate Creator Network",
+      postedBy:"Independent Creator Network",
       titles:(c)=>[`Experimental Film Actor Roster — ${c.short}`,`${c.short} Experimental & Avant-Garde Film Pool`,`Experimental Performance Roster — ${c.name}`,`${c.short} Non-Traditional Film Submissions`],
       synopses:(c)=>[
         `Building a ${c.name}-based roster for experimental films, visual art projects, and avant-garde productions. Non-traditional narratives, unconventional character work, and collaboration with emerging and independent filmmakers.\n\nIf you work well in abstract or non-verbal performance — this is worth your time.`,
@@ -16669,7 +16699,7 @@ const ACG = (()=>{
     },
     {
       type:"Horror Short Talent Pool",
-      postedBy:"CastSlate Creator Network",
+      postedBy:"Independent Creator Network",
       titles:(c)=>[`Horror Short Film Talent Pool — ${c.short}`,`${c.short} Horror Actor Roster`,`${c.name} Horror Short Film Pool`,`${c.short} Genre Film Submissions — Horror & Thriller`],
       synopses:(c)=>[
         `For the horror actors. We're collecting submissions from ${c.name}-based performers for upcoming horror short films, psychological thrillers, and genre projects from independent filmmakers on the platform.\n\nProjects range from micro-budget student shorts to well-funded productions. Most shoot 1–3 days. Intense material, small crews, fast schedules.`,
@@ -16692,7 +16722,7 @@ const ACG = (()=>{
     },
     {
       type:"Comedy Sketch Talent Pool",
-      postedBy:"CastSlate Creator Network",
+      postedBy:"Independent Creator Network",
       titles:(c)=>[`Comedy Sketch Actor Pool — ${c.short}`,`${c.short} Sketch Comedy Talent Roster`,`${c.name} Comedy Sketch Performance Pool`,`${c.short} Comedic Actor Submissions`],
       synopses:(c)=>[
         `Building a ${c.name}-based comedy roster for sketch productions, short-form comedic content, and creator-produced series. Independent comedy producers on the platform browse this pool when they're casting.\n\nImprov or sketch background preferred. Physical comedy and character work welcome.`,
@@ -16715,7 +16745,7 @@ const ACG = (()=>{
     },
     {
       type:"Theater Workshop Submissions",
-      postedBy:"CastSlate Talent Team",
+      postedBy:"Independent Talent Network",
       titles:(c)=>[`${c.short} Theater Workshop Submissions`,`Stage Actor Workshop Pool — ${c.short}`,`${c.name} Theater & Workshop Roster`,`${c.short} New Play Readings — Open Submissions`],
       synopses:(c)=>[
         `Collecting submissions from ${c.name}-based stage actors for theater workshops, new play readings, and developmental projects facilitated through the platform. Selected actors may be invited to participate in workshop productions and staged readings.\n\nThese are workshop opportunities — not full productions. Schedule commitments are shorter.`,
@@ -16738,7 +16768,7 @@ const ACG = (()=>{
     },
     {
       type:"Voiceover Roster",
-      postedBy:"CastSlate Talent Team",
+      postedBy:"Independent Talent Network",
       titles:(c)=>[`${c.short} Voiceover Actor Roster`,`Voiceover Talent Pool — ${c.short}`,`${c.name} VO & Narration Talent Pool`,`${c.short} Voice Actor Submissions`],
       synopses:(c)=>[
         `Building a voiceover and narration roster of ${c.name}-based voice actors for commercial, documentary, animation, and audiobook projects posted through the platform. Accepted talent may be contacted for paid session work, spec projects, and creator-produced audio content.`,
@@ -17043,7 +17073,7 @@ function AdminCastingGenerator({session}){
     setLoading(true);
     const [{data:ss},{data:cs,error:ce}]=await Promise.all([
       window.sb.from("site_settings").select("casting_generator_enabled,casting_generator_last_run").eq("id",1).maybeSingle(),
-      window.sb.from("castings").select("id,title,type,prod,posted_by_label,location,pay,union_status,status,published,is_admin_created,expires_at,submission_requirements,synopsis,tagline,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured").order("created_at",{ascending:false}).limit(2000)
+      window.sb.from("castings").select("id,title,type,prod,posted_by_label,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,submission_requirements,synopsis,tagline,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured").order("created_at",{ascending:false}).limit(2000)
     ]);
     if(ss){setGenEnabled(!!ss.casting_generator_enabled);setLastRun(ss.casting_generator_last_run);}
     if(ce)showMsg("Failed to load castings: "+ce.message);
@@ -17148,6 +17178,7 @@ function AdminCastingGenerator({session}){
       casting_image_url:updated.casting_image_url||null,casting_image_path:updated.casting_image_path||null,
       casting_images:updated.casting_images||[],
       expires_at:updated.expires_at,
+      admin_verified:updated.admin_verified===true,
       deadline:updated.deadline||(updated.expires_at?new Date(updated.expires_at).toISOString().slice(0,10):null),
       updated_at:new Date().toISOString()
     }).eq("id",updated.id);
@@ -17357,7 +17388,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
   const ETHNICITY_OPTS=["Any ethnicity","Black / African descent","White / European descent","Hispanic / Latino","Asian","South Asian","Middle Eastern / North African","Native American / Indigenous","Pacific Islander","Mixed ethnicity","Other / open to all"];
   const AGE_PRESETS=["Any age","0–5","6–12","13–17","18–25","20–30","25–35","30–40","35–50","40–60","50–70","60+","Custom range"];
   const MAX_IMAGES=5;
-  const knownTypes=[...PROJECT_TYPES.map(p=>p.value),...FILM_GENRES];
+  const knownTypes=[...PROJECT_TYPE_OPTIONS,...PROJECT_TYPES.map(p=>p.value),...FILM_GENRES];
 
   const [form,setForm]=useState({
     id:listing.id,
@@ -17373,7 +17404,8 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     casting_website_url:listing.casting_website_url||"",
     submission_requirements:listing.submission_requirements||"",
     expires_at:listing.expires_at?new Date(listing.expires_at).toISOString().slice(0,10):"",
-    status:listing.status||"draft"
+    status:listing.status||"draft",
+    admin_verified:listing.admin_verified===true,
   });
   const [castingImages,setCastingImages]=useState(Array.isArray(listing.casting_images)?listing.casting_images:(listing.casting_image_url?[{url:listing.casting_image_url,path:listing.casting_image_path||""}]:[]));
   const [uploadingImg,setUploadingImg]=useState(false);
@@ -17491,23 +17523,26 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
       <div><label className="label">Production Company</label>
         <input className="input" list="posted-by-suggestions" value={form.prod} onChange={e=>set("prod",e.target.value)} placeholder="Creator / CD name or company"/>
         <datalist id="posted-by-suggestions">
-          <option value="CastSlate Talent Team"/>
-          <option value="CastSlate Creator Network"/>
+          <option value="Independent Talent Network"/>
           <option value="Independent Creator Network"/>
         </datalist></div>
       <div><label className="label">Project Type</label>
         <select className="select" style={{width:"100%"}} value={form.type} onChange={e=>set("type",e.target.value)}>
           {/* Surface legacy/pool values so they aren't silently lost on edit. */}
           {form.type&&!knownTypes.includes(form.type)&&<option value={form.type}>{form.type}</option>}
-          <optgroup label="Categories">
-            {PROJECT_TYPES.map(pt=><option key={pt.value} value={pt.value}>{pt.label}</option>)}
-          </optgroup>
-          <optgroup label="Film Genres">
-            {FILM_GENRES.map(t=><option key={t} value={t}>{t}</option>)}
-          </optgroup>
+          {PROJECT_TYPE_OPTIONS.map(t=><option key={t} value={t}>{t}</option>)}
         </select></div>
     </div>
     {PROJECT_TYPES.find(pt=>pt.value===form.type)&&<p style={{fontSize:11,color:"var(--t3)",marginTop:-8,marginBottom:12}}>{PROJECT_TYPES.find(pt=>pt.value===form.type).desc}</p>}
+
+    <div className="form-group" style={{marginBottom:16}}>
+      <label className="label">Verification Badge</label>
+      <div style={{display:"flex",gap:8,marginTop:4}}>
+        <button type="button" onClick={()=>set("admin_verified",true)} style={{flex:1,padding:"10px 12px",borderRadius:8,border:form.admin_verified?"1px solid #1d7b44":"1px solid var(--bdr)",background:form.admin_verified?"rgba(46,204,113,0.12)":"var(--s2)",color:form.admin_verified?"#1d7b44":"var(--t2)",fontWeight:700,fontSize:13,cursor:"pointer"}}>✓ ID Verified</button>
+        <button type="button" onClick={()=>set("admin_verified",false)} style={{flex:1,padding:"10px 12px",borderRadius:8,border:!form.admin_verified?"1px solid #c88900":"1px solid var(--bdr)",background:!form.admin_verified?"rgba(200,137,0,0.12)":"var(--s2)",color:!form.admin_verified?"#c88900":"var(--t2)",fontWeight:700,fontSize:13,cursor:"pointer"}}>Not Verified</button>
+      </div>
+      <p style={{fontSize:11,color:"var(--t3)",marginTop:6,marginBottom:0}}>Sets the badge on this platform listing — green “ID Verified” or yellow “Not Verified”. Real CD-posted castings are unaffected (they use their own identity verification).</p>
+    </div>
 
     <div className="form-row">
       <div><label className="label">Location</label><input className="input" value={form.location} onChange={e=>set("location",e.target.value)} placeholder="City, State"/></div>
@@ -20791,7 +20826,7 @@ function EditCastingModal({casting,onClose,onSaved}){
     <div className="form-group"><label className="label">Project Title *</label><input className="input" value={f.title} onChange={e=>setField("title",e.target.value)}/></div>
     <div className="form-row">
       <div><label className="label">Production Company</label><input className="input" value={f.prod} onChange={e=>setField("prod",e.target.value)}/></div>
-      <div><label className="label">Project Type</label><select className="select" style={{width:"100%"}} value={f.type} onChange={e=>setField("type",e.target.value)}><option>Film</option><option>TV</option><option>Theater</option><option>Commercial</option><option>Modeling</option></select></div>
+      <div><label className="label">Project Type</label><select className="select" style={{width:"100%"}} value={f.type} onChange={e=>setField("type",e.target.value)}>{f.type&&!PROJECT_TYPE_OPTIONS.includes(f.type)&&<option value={f.type}>{f.type}</option>}{PROJECT_TYPE_OPTIONS.map(t=><option key={t} value={t}>{t}</option>)}</select></div>
     </div>
     <div className="form-row">
       <div><label className="label">Location</label><input className="input" value={f.location} onChange={e=>setField("location",e.target.value)}/></div>
@@ -22193,7 +22228,7 @@ function App(){
     if(!castingId)return;
     try{
       const{data,error}=await window.sb.from("castings")
-        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
         .eq("id",castingId).maybeSingle();
       if(error||!data)return;
       const c={
@@ -22201,7 +22236,7 @@ function App(){
         tagline:data.tagline||"",synopsis:data.synopsis||"",desc:data.synopsis||data.tagline||"",
         location:data.location||"",pay:data.pay||"",rate:data.pay||"",
         deadline:data.deadline||(data.expires_at?data.expires_at.slice(0,10):""),union:data.union_status||"",submissions:0,
-        featured:data.featured===true,
+        featured:data.featured===true,is_admin_created:data.is_admin_created===true,admin_verified:data.admin_verified===true,
         cd_id:data.cd_id,profiles:data.profiles||null,_cd:data.profiles||null,
         casting_image_url:data.casting_image_url||null,
         casting_image_path:data.casting_image_path||null,
@@ -22313,7 +22348,7 @@ function App(){
         const isUUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
         const field=isUUID?"id":"slug";
         const {data,error}=await window.sb.from("castings")
-          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,cd_id,status,published,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,is_admin_created,admin_verified,cd_id,status,published,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq(field,slug).maybeSingle();
         if(cancelled||error||!data)return;
         // Guard: hide pending/unpublished castings from the public.
@@ -22333,7 +22368,7 @@ function App(){
           prod:data.prod||"",tagline:data.tagline||"",synopsis:data.synopsis||"",
           desc:data.synopsis||data.tagline||"",location:data.location||"",
           pay:data.pay||"",rate:data.pay||"",deadline:data.deadline||(data.expires_at?data.expires_at.slice(0,10):""),
-          union:data.union_status||"",submissions:0,featured:data.featured===true,
+          union:data.union_status||"",submissions:0,featured:data.featured===true,is_admin_created:data.is_admin_created===true,admin_verified:data.admin_verified===true,
           cd_id:data.cd_id,profiles:data.profiles||null,_cd:data.profiles||null,
           casting_image_url:data.casting_image_url||null,
           casting_image_path:data.casting_image_path||null,
