@@ -16952,7 +16952,7 @@ function AdminCastingGenerator({session}){
     setLoading(true);
     const [{data:ss},{data:cs,error:ce}]=await Promise.all([
       window.sb.from("site_settings").select("casting_generator_enabled,casting_generator_last_run").eq("id",1).maybeSingle(),
-      window.sb.from("castings").select("id,title,type,prod,posted_by_label,location,pay,union_status,status,published,is_admin_created,expires_at,submission_requirements,synopsis,created_at,updated_at,deadline,featured").order("created_at",{ascending:false}).limit(2000)
+      window.sb.from("castings").select("id,title,type,prod,posted_by_label,location,pay,union_status,status,published,is_admin_created,expires_at,submission_requirements,synopsis,tagline,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured").order("created_at",{ascending:false}).limit(2000)
     ]);
     if(ss){setGenEnabled(!!ss.casting_generator_enabled);setLastRun(ss.casting_generator_last_run);}
     if(ce)showMsg("Failed to load castings: "+ce.message);
@@ -17047,11 +17047,17 @@ function AdminCastingGenerator({session}){
   };
 
   const saveDraft=async(updated)=>{
+    // Production Company (prod) is also mirrored to posted_by_label so the public
+    // "posted by" line and prod stay in sync, matching how CD castings display.
+    const postedBy=updated.prod||updated.posted_by_label||null;
     const {error}=await window.sb.from("castings").update({
-      title:updated.title,type:updated.type,prod:updated.posted_by_label,posted_by_label:updated.posted_by_label,
-      synopsis:updated.synopsis,location:updated.location,pay:updated.pay,union_status:updated.union_status,
-      submission_requirements:updated.submission_requirements,expires_at:updated.expires_at,
-      deadline:updated.expires_at?new Date(updated.expires_at).toISOString().slice(0,10):null,
+      title:updated.title,type:updated.type,prod:postedBy,posted_by_label:postedBy,
+      tagline:updated.tagline||null,synopsis:updated.synopsis,location:updated.location,pay:updated.pay,union_status:updated.union_status,
+      submission_requirements:updated.submission_requirements,casting_website_url:updated.casting_website_url||null,
+      casting_image_url:updated.casting_image_url||null,casting_image_path:updated.casting_image_path||null,
+      casting_images:updated.casting_images||[],
+      expires_at:updated.expires_at,
+      deadline:updated.deadline||(updated.expires_at?new Date(updated.expires_at).toISOString().slice(0,10):null),
       updated_at:new Date().toISOString()
     }).eq("id",updated.id);
     if(error){showMsg("Save failed: "+error.message);return;}
@@ -17059,7 +17065,7 @@ function AdminCastingGenerator({session}){
       await window.sb.from("roles").delete().eq("casting_id",updated.id);
       const toInsert=(updated.roles||[]).filter(r=>r.name&&r.name.trim());
       if(toInsert.length>0){
-        await window.sb.from("roles").insert(toInsert.map(r=>({casting_id:updated.id,name:r.name,description:r.description||"",gender:r.gender||"All genders",age_range:r.age_range||"",ethnicity:r.ethnicity||"All ethnicities",pay:r.pay||null})));
+        await window.sb.from("roles").insert(toInsert.map(r=>({casting_id:updated.id,name:r.name.trim(),description:r.description||"",gender:r.gender||"Any",age_range:r.age_range||"",ethnicity:r.ethnicity||"Any ethnicity",pay:r.pay||null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"})));
       }
     }
     showMsg("Draft saved.");setEditDraft(null);loadAll();
@@ -17237,57 +17243,143 @@ function AdminCastingGenerator({session}){
     }
 
     {/* ── Edit / Review Modal ── */}
-    {editDraft&&<AdminCastingEditModal listing={editDraft} onClose={()=>setEditDraft(null)} onSave={saveDraft} onPublish={publishListing}/>}
+    {editDraft&&<AdminCastingEditModal listing={editDraft} adminId={adminId} onClose={()=>setEditDraft(null)} onSave={saveDraft} onPublish={publishListing}/>}
   </>);
 }
 
-function AdminCastingEditModal({listing,onClose,onSave,onPublish}){
+function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
+  // Mirrors the CD "Post New Casting" form so generated listings carry the same
+  // fields and render identically in Browse Castings.
+  const PROJECT_TYPES=[
+    {value:"Film & TV",label:"Film & TV",desc:"Feature films, short films, indie films, and television series."},
+    {value:"Commercials & Branded Content",label:"Commercials & Branded Content",desc:"Commercials, branded content, social media ads, and industrial videos."},
+    {value:"Theater & Musicals",label:"Theater & Musicals",desc:"Broadway, off-Broadway, regional, and community theater."},
+    {value:"Digital & New Media",label:"Digital & New Media",desc:"Web series, webisodes, digital commercials, and user-generated content (UGC)."},
+    {value:"Voiceover",label:"Voiceover",desc:"Animation, commercial, narration, and video game voice acting."},
+    {value:"Modeling & Fashion",label:"Modeling & Fashion",desc:"Print modeling, fashion, photo shoots, and runway."},
+    {value:"Other Media",label:"Other Media",desc:"Music videos, reality TV, student films, and photo shoots."},
+  ];
+  const FILM_GENRES=["Action","Adventure","Comedy","Drama","Horror","Thriller","Romance","Science Fiction","Fantasy","Crime","Mystery","Western","War","Historical","Biographical","Musical","Animation","Documentary","Family","Sports"];
+  const PAY_PRESETS=["$100/day","$150/day","$200/day","$20/hour","$50/hour","Unpaid","Deferred","Negotiable","SAG Scale"];
+  const UNION_OPTS=["SAG-AFTRA","AEA","Non-Union","SAG-AFTRA / Non-Union","Union and non-union welcome"];
+  const GENDER_OPTS=["Any","Male","Female","Non-Binary"];
+  const ETHNICITY_OPTS=["Any ethnicity","Black / African descent","White / European descent","Hispanic / Latino","Asian","South Asian","Middle Eastern / North African","Native American / Indigenous","Pacific Islander","Mixed ethnicity","Other / open to all"];
+  const AGE_PRESETS=["Any age","0–5","6–12","13–17","18–25","20–30","25–35","30–40","35–50","40–60","50–70","60+","Custom range"];
+  const MAX_IMAGES=5;
+  const knownTypes=[...PROJECT_TYPES.map(p=>p.value),...FILM_GENRES];
+
   const [form,setForm]=useState({
     id:listing.id,
     title:listing.title||"",
-    type:listing.type||"",
-    posted_by_label:listing.posted_by_label||listing.prod||"CastSlate Talent Team",
+    type:listing.type||"Film & TV",
+    prod:listing.prod||listing.posted_by_label||"",
+    tagline:listing.tagline||"",
     synopsis:listing.synopsis||"",
     location:listing.location||"",
     pay:listing.pay||"",
-    union_status:listing.union_status||"",
+    union_status:listing.union_status||"SAG-AFTRA",
+    deadline:listing.deadline||"",
+    casting_website_url:listing.casting_website_url||"",
     submission_requirements:listing.submission_requirements||"",
     expires_at:listing.expires_at?new Date(listing.expires_at).toISOString().slice(0,10):"",
     status:listing.status||"draft"
   });
+  const [castingImages,setCastingImages]=useState(Array.isArray(listing.casting_images)?listing.casting_images:(listing.casting_image_url?[{url:listing.casting_image_url,path:listing.casting_image_path||""}]:[]));
+  const [uploadingImg,setUploadingImg]=useState(false);
+  const [err,setErr]=useState("");
   const [roles,setRoles]=useState([]);
   const [rolesLoading,setRolesLoading]=useState(true);
   const [busy,setBusy]=useState(false);
   const set=(k,v)=>setForm(f=>({...f,[k]:v}));
 
+  // Map a stored age_range string back into the preset/custom controls.
+  const ageToPreset=(ar)=>{
+    if(!ar)return{age_preset:"Any age",age_min:"",age_max:""};
+    if(AGE_PRESETS.includes(ar))return{age_preset:ar,age_min:"",age_max:""};
+    const m=String(ar).split(/[-–—]/).map(s=>s.trim());
+    if(m.length>=2&&(m[0]||m[1]))return{age_preset:"Custom range",age_min:m[0]||"",age_max:m[1]||""};
+    return{age_preset:"Custom range",age_min:m[0]||"",age_max:""};
+  };
+
   useEffect(()=>{
     (async()=>{
-      const {data}=await window.sb.from("roles").select("id,name,description,gender,age_range,ethnicity,pay").eq("casting_id",listing.id).order("id");
-      setRoles((data||[]).map(r=>({...r,_key:r.id})));
+      const {data}=await window.sb.from("roles").select("id,name,description,gender,age_range,ethnicity,pay,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,official_takes_allowed,submission_mode").eq("casting_id",listing.id).order("id");
+      setRoles((data||[]).map(r=>({...r,_key:r.id,...ageToPreset(r.age_range),_showAudInstr:false,_uploadingPdf:false})));
       setRolesLoading(false);
     })();
   },[listing.id]);
 
-  const BLANK_ROLE=()=>({_key:Date.now()+Math.random(),id:null,name:"",description:"",gender:"All genders",age_range:"",ethnicity:"All ethnicities",pay:""});
+  const BLANK_ROLE=()=>({_key:Date.now()+Math.random(),id:null,name:"",description:"",gender:"Any",age_preset:"Any age",age_min:"",age_max:"",ethnicity:"Any ethnicity",pay:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false});
   const addRole=()=>setRoles(r=>[...r,BLANK_ROLE()]);
   const updateRole=(i,k,v)=>setRoles(r=>r.map((x,j)=>j===i?{...x,[k]:v}:x));
   const deleteRole=(i)=>setRoles(r=>r.filter((_,j)=>j!==i));
 
+  const uploadImage=async(files)=>{
+    const fileList=files instanceof FileList?Array.from(files):[files].filter(Boolean);
+    const remaining=MAX_IMAGES-castingImages.length;
+    const toUpload=fileList.slice(0,remaining);
+    if(!toUpload.length){setErr(`You can upload up to ${MAX_IMAGES} images.`);return;}
+    for(const file of toUpload){
+      if(file.size>5*1024*1024){setErr("Each image must be 5 MB or smaller.");return;}
+      const ext=file.name.split(".").pop().toLowerCase();
+      if(!["jpg","jpeg","png","webp"].includes(ext)){setErr("Only jpg, jpeg, png, webp images allowed.");return;}
+    }
+    setUploadingImg(true);setErr("");
+    try{
+      const uploaded=[];
+      for(const file of toUpload){
+        const path=`${adminId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true});
+        if(upErr)throw upErr;
+        const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
+        uploaded.push({url:publicUrl,path});
+      }
+      setCastingImages(prev=>[...prev,...uploaded].slice(0,MAX_IMAGES));
+    }catch(e){setErr("Image upload failed: "+e.message);}
+    finally{setUploadingImg(false);}
+  };
+  const uploadPdf=async(file,roleIdx)=>{
+    if(!file)return;
+    if(file.type!=="application/pdf"&&!file.name.toLowerCase().endsWith(".pdf")){setErr("Only PDF files are allowed for audition sides.");return;}
+    updateRole(roleIdx,"_uploadingPdf",true);setErr("");
+    try{
+      const path=`${adminId}/sides/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+      const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true,contentType:"application/pdf"});
+      if(upErr)throw upErr;
+      const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
+      updateRole(roleIdx,"sides_pdf_url",publicUrl);
+    }catch(e){setErr("PDF upload failed: "+e.message);}
+    finally{updateRole(roleIdx,"_uploadingPdf",false);}
+  };
+
+  // Compute final role payload (age_range from preset/custom) + image fields.
+  const buildPayload=()=>{
+    const computedRoles=roles.map(r=>{
+      let age_range="";
+      if(r.age_preset==="Custom range")age_range=[r.age_min,r.age_max].filter(Boolean).join("-");
+      else if(r.age_preset&&r.age_preset!=="Any age")age_range=r.age_preset;
+      return {...r,age_range};
+    });
+    return {...form,roles:computedRoles,
+      expires_at:form.expires_at?new Date(form.expires_at).toISOString():null,
+      casting_image_url:castingImages[0]?.url||null,
+      casting_image_path:castingImages[0]?.path||null,
+      casting_images:castingImages};
+  };
   const handleSave=async()=>{
-    setBusy(true);
-    await onSave({...form,roles,expires_at:form.expires_at?new Date(form.expires_at).toISOString():null});
+    if(form.casting_website_url.trim()&&!/^https?:\/\//i.test(form.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
+    setBusy(true);setErr("");
+    await onSave(buildPayload());
     setBusy(false);
   };
   const handlePublish=async()=>{
-    setBusy(true);
-    await onSave({...form,roles,expires_at:form.expires_at?new Date(form.expires_at).toISOString():null});
+    if(form.casting_website_url.trim()&&!/^https?:\/\//i.test(form.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
+    setBusy(true);setErr("");
+    await onSave(buildPayload());
     await onPublish({id:form.id});
     setBusy(false);
   };
   const isDraft=listing.status==="draft"||listing.status==="pending_review";
-
-  const GENDER_OPTS=["All genders","Male","Female","Non-Binary","Any"];
-  const ETHNICITY_OPTS=["All ethnicities","Any ethnicity","Black / African descent","White / European descent","Latino / Hispanic","Asian / Pacific Islander","Middle Eastern / North African","South Asian","Indigenous / Native American","Mixed / Multiracial","Other"];
 
   return(<div className="modal-overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"94vh",overflowY:"auto"}}>
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18}}>
@@ -17299,57 +17391,79 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish}){
       <strong style={{color:"var(--t1)"}}>Platform listing.</strong> This was generated by the Admin Casting Generator. Review all fields carefully before publishing. Do not claim a specific third-party production exists unless you have confirmed it manually.
     </div>
 
-    <div className="form-group"><label className="label">Title</label>
-      <input className="input" value={form.title} onChange={e=>set("title",e.target.value)}/></div>
+    {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
 
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-      <div className="form-group"><label className="label">Category / Type</label>
-        <select className="select" value={form.type} onChange={e=>set("type",e.target.value)}>
-          {/* If the saved type isn't in either list (legacy/custom), surface it so it isn't silently lost. */}
-          {form.type&&![...["Open Talent Pool","Indie Short Film Talent Pool","Self-Tape Showcase","Actor Profile Review Opportunity","Commercial Talent Pool","Music Video Talent Pool","Podcast Guest / On-Camera Segment Pool","Experimental Film Roster","Horror Short Talent Pool","Comedy Sketch Talent Pool","Theater Workshop Submissions","Voiceover Roster","Creator Collaboration Pool"],...["Action","Adventure","Comedy","Drama","Horror","Thriller","Romance","Science Fiction","Fantasy","Crime","Mystery","Western","War","Historical","Biographical","Musical","Animation","Documentary","Family","Sports"]].includes(form.type)&&<option value={form.type}>{form.type}</option>}
-          <optgroup label="Talent Pools">
-            {["Open Talent Pool","Indie Short Film Talent Pool","Self-Tape Showcase","Actor Profile Review Opportunity","Commercial Talent Pool","Music Video Talent Pool","Podcast Guest / On-Camera Segment Pool","Experimental Film Roster","Horror Short Talent Pool","Comedy Sketch Talent Pool","Theater Workshop Submissions","Voiceover Roster","Creator Collaboration Pool"].map(t=><option key={t} value={t}>{t}</option>)}
-          </optgroup>
-          <optgroup label="Film Genres">
-            {["Action","Adventure","Comedy","Drama","Horror","Thriller","Romance","Science Fiction","Fantasy","Crime","Mystery","Western","War","Historical","Biographical","Musical","Animation","Documentary","Family","Sports"].map(t=><option key={t} value={t}>{t}</option>)}
-          </optgroup>
-        </select></div>
+    <div className="form-group"><label className="label">Project Title</label>
+      <input className="input" value={form.title} onChange={e=>set("title",e.target.value)} placeholder="e.g. Lead Role — Untitled Horror Feature"/></div>
 
-      <div className="form-group"><label className="label">Posted By (public)</label>
-        <input className="input" list="posted-by-suggestions" value={form.posted_by_label} onChange={e=>set("posted_by_label",e.target.value)} placeholder="Creator / CD name, production company…"/>
+    <div className="form-row">
+      <div><label className="label">Production Company</label>
+        <input className="input" list="posted-by-suggestions" value={form.prod} onChange={e=>set("prod",e.target.value)} placeholder="Creator / CD name or company"/>
         <datalist id="posted-by-suggestions">
           <option value="CastSlate Talent Team"/>
           <option value="CastSlate Creator Network"/>
           <option value="Independent Creator Network"/>
-        </datalist>
-        <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Type any name — creator, casting director, or production company. This is what shows on the public listing.</p></div>
+        </datalist></div>
+      <div><label className="label">Project Type</label>
+        <select className="select" style={{width:"100%"}} value={form.type} onChange={e=>set("type",e.target.value)}>
+          {/* Surface legacy/pool values so they aren't silently lost on edit. */}
+          {form.type&&!knownTypes.includes(form.type)&&<option value={form.type}>{form.type}</option>}
+          <optgroup label="Categories">
+            {PROJECT_TYPES.map(pt=><option key={pt.value} value={pt.value}>{pt.label}</option>)}
+          </optgroup>
+          <optgroup label="Film Genres">
+            {FILM_GENRES.map(t=><option key={t} value={t}>{t}</option>)}
+          </optgroup>
+        </select></div>
+    </div>
+    {PROJECT_TYPES.find(pt=>pt.value===form.type)&&<p style={{fontSize:11,color:"var(--t3)",marginTop:-8,marginBottom:12}}>{PROJECT_TYPES.find(pt=>pt.value===form.type).desc}</p>}
+
+    <div className="form-row">
+      <div><label className="label">Location</label><input className="input" value={form.location} onChange={e=>set("location",e.target.value)} placeholder="City, State"/></div>
+      <div><label className="label">Pay / Rate</label><input className="input" value={form.pay} onChange={e=>set("pay",e.target.value)} placeholder="e.g. $150/day, $20/hour, Negotiable"/>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:8}}>{PAY_PRESETS.map(p=><button type="button" key={p} onClick={()=>set("pay",p)} style={{fontSize:11,padding:"4px 10px",borderRadius:999,border:"1px solid var(--bdr)",background:form.pay===p?"var(--acc)":"var(--s2)",color:form.pay===p?"#fff":"var(--t2)",cursor:"pointer",fontWeight:500}}>{p}</button>)}</div></div>
     </div>
 
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-      <div className="form-group"><label className="label">City / Location</label>
-        <select className="select" value={["New York, NY","Los Angeles, CA","Chicago, IL","Boston, MA"].includes(form.location)?form.location:""} onChange={e=>set("location",e.target.value)}>
-          <option value="New York, NY">New York, NY</option>
-          <option value="Los Angeles, CA">Los Angeles, CA</option>
-          <option value="Chicago, IL">Chicago, IL</option>
-          <option value="Boston, MA">Boston, MA</option>
-          <option value="">(other)</option>
-        </select>
-        {!["New York, NY","Los Angeles, CA","Chicago, IL","Boston, MA",""].includes(form.location)&&
-          <input className="input" style={{marginTop:6}} value={form.location} onChange={e=>set("location",e.target.value)} placeholder="Custom location"/>}</div>
-
-      <div className="form-group"><label className="label">Union Status</label>
-        <input className="input" value={form.union_status} onChange={e=>set("union_status",e.target.value)}/></div>
+    <div className="form-row">
+      <div><label className="label">Union Status</label>
+        <select className="select" style={{width:"100%"}} value={UNION_OPTS.includes(form.union_status)?form.union_status:""} onChange={e=>set("union_status",e.target.value)}>
+          {form.union_status&&!UNION_OPTS.includes(form.union_status)&&<option value={form.union_status}>{form.union_status}</option>}
+          {UNION_OPTS.map(u=><option key={u} value={u}>{u}</option>)}
+        </select></div>
+      <div><label className="label">Deadline</label><input className="input" type="date" value={form.deadline} onChange={e=>set("deadline",e.target.value)}/></div>
     </div>
 
-    <div className="form-group"><label className="label">Description</label>
-      <textarea className="textarea" rows={5} value={form.synopsis} onChange={e=>set("synopsis",e.target.value)} style={{resize:"vertical"}}/></div>
+    <div className="form-group"><label className="label">Tagline (short)</label>
+      <input className="input" value={form.tagline} onChange={e=>set("tagline",e.target.value)} placeholder="One-line hook"/></div>
 
-    <div className="form-group"><label className="label">Compensation</label>
-      <textarea className="textarea" rows={3} value={form.pay} onChange={e=>set("pay",e.target.value)} style={{resize:"vertical"}}/>
-      <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Use honest language. Do not promise payment unless it is confirmed.</p></div>
+    <div className="form-group"><label className="label">Project Summary</label>
+      <textarea className="textarea" rows={5} value={form.synopsis} onChange={e=>set("synopsis",e.target.value)} style={{resize:"vertical"}} placeholder="Describe the project — genre, tone, what the production is about..."/></div>
 
     <div className="form-group"><label className="label">Submission Requirements</label>
-      <textarea className="textarea" rows={3} value={form.submission_requirements} onChange={e=>set("submission_requirements",e.target.value)} style={{resize:"vertical"}}/></div>
+      <textarea className="textarea" rows={3} value={form.submission_requirements} onChange={e=>set("submission_requirements",e.target.value)} style={{resize:"vertical"}}/>
+      <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Use honest language. Do not promise payment unless it is confirmed.</p></div>
+
+    <div className="form-group"><label className="label">Casting Website / Project Link</label>
+      <input className="input" value={form.casting_website_url} onChange={e=>set("casting_website_url",e.target.value)} placeholder="https://example.com"/>
+      <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Optional. Must start with https:// or http://.</p></div>
+
+    <div className="form-group">
+      <label className="label">Casting Images / Posters <span style={{fontWeight:400,color:"var(--t3)"}}>(up to {MAX_IMAGES})</span></label>
+      {castingImages.length>0&&<div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>
+        {castingImages.map((img,i)=>(
+          <div key={i} style={{position:"relative",width:90,flexShrink:0}}>
+            <img src={img.url} alt={`Image ${i+1}`} style={{width:90,height:110,objectFit:"contain",borderRadius:8,background:"var(--s2)",display:"block",border:"1px solid var(--bdr)"}}/>
+            <div style={{position:"absolute",top:3,right:3,background:"rgba(0,0,0,0.55)",borderRadius:99,width:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,color:"#fff",lineHeight:1}} onClick={()=>setCastingImages(p=>p.filter((_,j)=>j!==i))}>✕</div>
+            {i===0&&<div style={{position:"absolute",bottom:3,left:0,right:0,textAlign:"center",fontSize:9,fontWeight:700,color:"#fff",background:"rgba(0,0,0,0.5)",borderRadius:4,padding:"1px 0"}}>COVER</div>}
+          </div>
+        ))}
+      </div>}
+      {castingImages.length<MAX_IMAGES&&<>
+        <input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" multiple onChange={e=>uploadImage(e.target.files)} disabled={uploadingImg} style={{fontSize:13}}/>
+        {uploadingImg&&<p style={{fontSize:12,color:"var(--acc)",marginTop:4}}>Uploading…</p>}
+      </>}
+      <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Optional. Up to {MAX_IMAGES} images · jpg, jpeg, png, webp · 5 MB each. First image is the cover.</p>
+    </div>
 
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
       <div className="form-group"><label className="label">Expiration Date</label>
@@ -17380,26 +17494,79 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish}){
             <div style={{fontWeight:600,fontSize:13,color:"var(--t1)"}}>{role.name||<span style={{color:"var(--t3)"}}>New Role</span>}</div>
             <button onClick={()=>deleteRole(i)} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit",padding:"2px 6px"}}>Remove</button>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
-            <div className="form-group" style={{margin:0}}><label className="label" style={{fontSize:11}}>Role Name</label>
-              <input className="input" style={{fontSize:13}} value={role.name} onChange={e=>updateRole(i,"name",e.target.value)} placeholder="e.g. Lead Actress, Supporting Role"/></div>
-            <div className="form-group" style={{margin:0}}><label className="label" style={{fontSize:11}}>Age Range</label>
-              <input className="input" style={{fontSize:13}} value={role.age_range} onChange={e=>updateRole(i,"age_range",e.target.value)} placeholder="e.g. 25–45"/></div>
-          </div>
+          <div className="form-group" style={{margin:0,marginBottom:10}}><label className="label" style={{fontSize:11}}>Role Name</label>
+            <input className="input" style={{fontSize:13}} value={role.name} onChange={e=>updateRole(i,"name",e.target.value)} placeholder="e.g. Sarah — Lead"/></div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
             <div className="form-group" style={{margin:0}}><label className="label" style={{fontSize:11}}>Gender</label>
               <select className="select" style={{fontSize:13}} value={role.gender} onChange={e=>updateRole(i,"gender",e.target.value)}>
+                {role.gender&&!GENDER_OPTS.includes(role.gender)&&<option value={role.gender}>{role.gender}</option>}
                 {GENDER_OPTS.map(g=><option key={g} value={g}>{g}</option>)}
               </select></div>
-            <div className="form-group" style={{margin:0}}><label className="label" style={{fontSize:11}}>Ethnicity</label>
-              <select className="select" style={{fontSize:13}} value={role.ethnicity} onChange={e=>updateRole(i,"ethnicity",e.target.value)}>
-                {ETHNICITY_OPTS.map(e=><option key={e} value={e}>{e}</option>)}
-              </select></div>
+            <div className="form-group" style={{margin:0}}><label className="label" style={{fontSize:11}}>Age Range</label>
+              <select className="select" style={{fontSize:13}} value={role.age_preset} onChange={e=>updateRole(i,"age_preset",e.target.value)}>
+                {AGE_PRESETS.map(ap=><option key={ap} value={ap}>{ap}</option>)}
+              </select>
+              {role.age_preset==="Custom range"&&<div style={{display:"flex",gap:8,marginTop:8}}>
+                <input className="input" style={{fontSize:13,flex:1}} value={role.age_min} onChange={e=>updateRole(i,"age_min",e.target.value)} placeholder="Min age"/>
+                <input className="input" style={{fontSize:13,flex:1}} value={role.age_max} onChange={e=>updateRole(i,"age_max",e.target.value)} placeholder="Max age"/>
+              </div>}
+            </div>
           </div>
+          <div className="form-group" style={{margin:0,marginBottom:10}}><label className="label" style={{fontSize:11}}>Ethnicity</label>
+            <select className="select" style={{fontSize:13}} value={role.ethnicity} onChange={e=>updateRole(i,"ethnicity",e.target.value)}>
+              {role.ethnicity&&!ETHNICITY_OPTS.includes(role.ethnicity)&&<option value={role.ethnicity}>{role.ethnicity}</option>}
+              {ETHNICITY_OPTS.map(e=><option key={e} value={e}>{e}</option>)}
+            </select></div>
           <div className="form-group" style={{margin:0,marginBottom:8}}><label className="label" style={{fontSize:11}}>Role Description</label>
-            <textarea className="textarea" rows={2} style={{fontSize:13,resize:"vertical"}} value={role.description} onChange={e=>updateRole(i,"description",e.target.value)} placeholder="What this role involves, tone, requirements…"/></div>
+            <textarea className="textarea" rows={2} style={{fontSize:13,resize:"vertical"}} value={role.description} onChange={e=>updateRole(i,"description",e.target.value)} placeholder="Describe the role, personality, key scenes…"/></div>
           <div className="form-group" style={{margin:0}}><label className="label" style={{fontSize:11}}>Compensation (optional — leave blank to inherit listing pay)</label>
             <input className="input" style={{fontSize:13}} value={role.pay||""} onChange={e=>updateRole(i,"pay",e.target.value)} placeholder="e.g. $150/day, Copy/Credit, TBD"/></div>
+          {/* Audition Instructions (matches CD form) */}
+          <div style={{marginTop:14,borderTop:"1px solid var(--bdr)",paddingTop:12}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",marginBottom:role._showAudInstr?12:0}} onClick={()=>updateRole(i,"_showAudInstr",!role._showAudInstr)}>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--t2)",display:"flex",alignItems:"center",gap:6}}>🎬 Audition Instructions</span>
+              <span style={{fontSize:11,color:"var(--acc)",fontWeight:600}}>{role._showAudInstr?"Hide ▲":"Set Instructions ▼"}</span>
+            </div>
+            {role._showAudInstr&&<>
+              <div className="form-group" style={{marginBottom:10}}>
+                <label className="label" style={{fontSize:11}}>Audition Sides / Scene <span style={{fontWeight:400,color:"var(--t3)",fontSize:11}}>(PDF only)</span></label>
+                {role.sides_pdf_url?(
+                  <div style={{display:"flex",alignItems:"center",gap:8,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:8,padding:"10px 12px"}}>
+                    <span style={{fontSize:20}}>📄</span>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:13,fontWeight:600,color:"var(--t1)",marginBottom:2}}>Sides PDF attached</div>
+                      <a href={role.sides_pdf_url} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:"var(--acc)"}}>View PDF →</a>
+                    </div>
+                    <button type="button" onClick={()=>updateRole(i,"sides_pdf_url","")} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12,fontWeight:700,padding:"4px 8px"}}>✕ Remove</button>
+                  </div>
+                ):(
+                  <label style={{cursor:role._uploadingPdf?"default":"pointer",display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:8,border:"2px dashed var(--bdr)",background:"var(--s1)",color:role._uploadingPdf?"var(--t3)":"var(--t2)",fontWeight:600,fontSize:13}}>
+                    {role._uploadingPdf?"Uploading PDF…":"📎 Attach PDF Sides"}
+                    <input type="file" accept=".pdf,application/pdf" style={{display:"none"}} disabled={role._uploadingPdf} onChange={e=>{const f=e.target.files?.[0];if(f)uploadPdf(f,i);e.target.value="";}}/>
+                  </label>
+                )}
+              </div>
+              <div className="form-group" style={{marginBottom:10}}><label className="label" style={{fontSize:11}}>Performance Direction / Tone Notes</label><textarea className="textarea" style={{minHeight:70,fontSize:13}} value={role.direction_notes||""} onChange={e=>updateRole(i,"direction_notes",e.target.value)} placeholder="e.g. Keep it grounded. Internal pressure, not external…"/></div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                <div><label className="label" style={{fontSize:11}}>Slate Instructions</label><input className="input" style={{fontSize:13}} value={role.slate_instructions||""} onChange={e=>updateRole(i,"slate_instructions",e.target.value)} placeholder="e.g. State your name and agency"/></div>
+                <div><label className="label" style={{fontSize:11}}>Video Length Limit</label>
+                  <select className="select" style={{fontSize:13}} value={role.video_length_limit||60} onChange={e=>updateRole(i,"video_length_limit",parseInt(e.target.value))}>
+                    <option value={30}>30 seconds</option><option value={60}>1 minute</option><option value={120}>2 minutes</option><option value={180}>3 minutes</option>
+                  </select></div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:10}}>
+                <div><label className="label" style={{fontSize:11}}>Official Takes Allowed</label>
+                  <select className="select" style={{fontSize:13}} value={role.official_takes_allowed||2} onChange={e=>updateRole(i,"official_takes_allowed",parseInt(e.target.value))}>
+                    <option value={1}>1 take only</option><option value={2}>Up to 2 takes</option><option value={3}>Up to 3 takes</option>
+                  </select></div>
+                <div><label className="label" style={{fontSize:11}}>Submission Mode</label>
+                  <select className="select" style={{fontSize:13}} value={role.submission_mode||"best_take"} onChange={e=>updateRole(i,"submission_mode",e.target.value)}>
+                    <option value="best_take">Best take only</option><option value="all_takes">All recorded takes</option>
+                  </select></div>
+              </div>
+              <div className="form-group" style={{marginTop:10,marginBottom:0}}><label className="label" style={{fontSize:11}}>Wardrobe / Framing Notes <span style={{fontWeight:400,color:"var(--t3)",fontSize:11}}>(optional)</span></label><input className="input" style={{fontSize:13}} value={role.wardrobe_notes||""} onChange={e=>updateRole(i,"wardrobe_notes",e.target.value)} placeholder="e.g. Dress simply, neutral background."/></div>
+            </>}
+          </div>
         </div>
       ))}
     </div>
