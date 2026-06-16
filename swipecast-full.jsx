@@ -1846,14 +1846,14 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
    featured-class banner (homepage). Folds to 0 height in sync with the
    banner on scroll. Seamless left→right loop via two duplicated groups
    animated from -50% back to 0. ── */
-.mq-stripe{position:relative;width:100%;height:24px;background:#15131f;overflow:hidden;display:flex;align-items:center;border-bottom:1px solid rgba(255,255,255,0.06);transition:height .42s cubic-bezier(.4,0,.2,1),opacity .30s ease;}
+.mq-stripe{position:relative;width:100%;height:24px;background:#15131f;overflow:hidden;display:flex;align-items:center;border:none;transition:height .42s cubic-bezier(.4,0,.2,1),opacity .30s ease;}
 .mq-track{display:flex;width:max-content;flex-shrink:0;animation:mq-scroll 210s linear infinite;will-change:transform;}
 .mq-group{display:flex;flex-shrink:0;align-items:center;}
 .mq-item{display:inline-flex;align-items:center;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:11px;letter-spacing:2.2px;text-transform:uppercase;color:#E0A43B;}
 .mq-item::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:#E0A43B;opacity:.8;margin:0 26px;flex-shrink:0;}
 @keyframes mq-scroll{from{transform:translateX(-50%);}to{transform:translateX(0);}}
 .mq-stripe:hover .mq-track{animation-play-state:paused;}
-.mq-stripe.is-collapsed{height:0;opacity:0;border-bottom-color:transparent;}
+.mq-stripe.is-collapsed{height:0;opacity:0;}
 @media (prefers-reduced-motion:reduce){.mq-track{animation:none;}}
 @media (max-width:768px){
   .member-banner{display:none !important;}
@@ -2364,7 +2364,7 @@ function MarqueeStripe(){
     window.addEventListener("scroll",onScroll,{passive:true});
     return()=>window.removeEventListener("scroll",onScroll);
   },[]);
-  const PHRASES=["Find Roles","Build Your Actor Profile","Submit to Projects","Join Industry Classes","Connect With Creative Teams","Grow Your Career"];
+  const PHRASES=["Every Submission Gets Seen","Find Roles","Trusted by Working Actors & Casting Directors","New Classes Open Weekly","Build Your Actor Profile","Get Seen by Casting Professionals"];
   // Repeat the sequence enough times per group that one group is wider than any
   // viewport, so the seamless -50% loop never shows a gap.
   const renderGroup=(gk)=>{
