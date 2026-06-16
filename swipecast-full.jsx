@@ -7621,6 +7621,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.location')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.location}</div></div>
       <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.pay')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.rate||c.pay}</div></div>
       <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.deadline')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{fmtCastingDate(c.deadline)||"—"}</div></div>
+      {c.created_at&&<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>Posted</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{fmtCastingDate(c.created_at)}{c.expires_at&&new Date(c.expires_at)<new Date()?<span style={{marginLeft:8,fontSize:11,fontWeight:700,color:"#c0392b"}}>· Expired</span>:null}</div></div>}
       {c.shoots&&<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.shoots')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.shoots}</div></div>}
       {c.rehearsal&&<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.rehearsal')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.rehearsal}</div></div>}
       {c.auditionFormat&&<div style={{gridColumn:"1 / -1"}}><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.auditionFormat')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.auditionFormat}</div></div>}
@@ -8703,6 +8704,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         pay:c.pay||"",
         rate:c.pay||"",
         deadline:c.deadline||(c.expires_at?c.expires_at.slice(0,10):""),
+        created_at:c.created_at||null,
+        expires_at:c.expires_at||null,
         union:c.union_status||"",
         featured:c.featured===true,
         casting_image_url:c.casting_image_url||null,
@@ -8845,7 +8848,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
             <button className="btn-s btn-sm" onClick={()=>setRefreshTick(tk=>tk+1)} disabled={loading}>{loading?"…":t('search.refresh')}</button>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;return(
+          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;const isExpiredCasting=!!(c.expires_at&&new Date(c.expires_at)<new Date());return(
             <div key={c.id} style={{
               padding:0,overflow:"hidden",cursor:"pointer",borderRadius:14,
               background:"var(--s1)",
@@ -8863,6 +8866,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{translateCastingType(c.type,lang)}</span>
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.union}</span>
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{(c.roles?.length||1)===1?`1 ${t('search.role')}`:`${c.roles?.length||1} ${t('search.roles')}`}</span>
+                    {isExpiredCasting&&<span className="badge" style={{background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>Expired</span>}
                   </div>
                   <h3 style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:4,color:"var(--t1)"}}>{c.title}</h3>
                   {(c.tagline&&c.tagline!==c.prod)
@@ -8874,6 +8878,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                     <span><strong style={{color:"var(--t1)"}}>{t('search.filterLocation')}</strong> · {c.location}</span>
                     <span><strong style={{color:"var(--t1)"}}>{t('search.pay')}</strong> · {c.pay}</span>
                     {(c.deadline)&&<span><strong style={{color:"var(--t1)"}}>{t('search.deadline')}</strong> · {fmtCastingDate(c.deadline)}</span>}
+                    {c.created_at&&<span><strong style={{color:"var(--t1)"}}>Posted</strong> · {fmtCastingDate(c.created_at)}</span>}
                   </div>
                 </div>
                 <div className="casting-card-row-side" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",minWidth:140}}>
@@ -13201,7 +13206,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("FCS timed out after 10s")),10000);});
       const {data,error}=await Promise.race([
         window.sb.from("castings")
-          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq("status","open").eq("published",true)
           .order("featured",{ascending:false})
           .order("created_at",{ascending:false})
@@ -13225,6 +13230,8 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         pay:c.pay||"",
         rate:c.pay||"",
         deadline:c.deadline||(c.expires_at?c.expires_at.slice(0,10):""),
+        created_at:c.created_at||null,
+        expires_at:c.expires_at||null,
         union:c.union_status||"",
         featured:c.featured===true,
         submissions:0,
@@ -17221,7 +17228,7 @@ function AdminCastingGenerator({session}){
     // Production Company (prod) is also mirrored to posted_by_label so the public
     // "posted by" line and prod stay in sync, matching how CD castings display.
     const postedBy=updated.prod||updated.posted_by_label||null;
-    const {error}=await window.sb.from("castings").update({
+    const patch={
       title:updated.title,type:updated.type,prod:postedBy,posted_by_label:postedBy,
       tagline:updated.tagline||null,synopsis:updated.synopsis,location:updated.location,pay:updated.pay,union_status:updated.union_status,
       submission_requirements:updated.submission_requirements,casting_website_url:updated.casting_website_url||null,
@@ -17231,7 +17238,11 @@ function AdminCastingGenerator({session}){
       admin_verified:updated.admin_verified===true,
       deadline:updated.deadline||(updated.expires_at?new Date(updated.expires_at).toISOString().slice(0,10):null),
       updated_at:new Date().toISOString()
-    }).eq("id",updated.id);
+    };
+    // Only overwrite the posted date (created_at) when the admin set one — a blank
+    // field must not wipe the original timestamp.
+    if(updated.created_at)patch.created_at=updated.created_at;
+    const {error}=await window.sb.from("castings").update(patch).eq("id",updated.id);
     if(error){showMsg("Save failed: "+error.message);return;}
     if(updated.roles!==undefined){
       await window.sb.from("roles").delete().eq("casting_id",updated.id);
@@ -17389,7 +17400,7 @@ function AdminCastingGenerator({session}){
                 <span>Posted by: <strong style={{color:"var(--t2)"}}>{c.posted_by_label||c.prod||"—"}</strong></span>
                 {expDate&&<><span style={{margin:"0 5px"}}>·</span><span style={{color:isExpired?"#c0392b":"var(--t3)"}}>Expires {expDate}</span></>}
                 <span style={{margin:"0 5px"}}>·</span>
-                <span>Created {new Date(c.created_at).toLocaleDateString()}</span>
+                <span>Posted {new Date(c.created_at).toLocaleDateString()}</span>
               </div>
               {c.pay&&<div style={{fontSize:12,color:"var(--t2)",marginTop:2,maxWidth:520,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}><em>{c.pay.slice(0,100)}{c.pay.length>100?"…":""}</em></div>}
             </div>
@@ -17454,6 +17465,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     casting_website_url:listing.casting_website_url||"",
     submission_requirements:listing.submission_requirements||"",
     expires_at:listing.expires_at?new Date(listing.expires_at).toISOString().slice(0,10):"",
+    created_at:listing.created_at?new Date(listing.created_at).toISOString().slice(0,10):"",
     status:listing.status||"draft",
     admin_verified:listing.admin_verified===true,
   });
@@ -17535,6 +17547,9 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     });
     return {...form,roles:computedRoles,
       expires_at:form.expires_at?new Date(form.expires_at).toISOString():null,
+      // Posted date (created_at) — anchor at noon UTC so the displayed day doesn't
+      // shift across timezones. Empty input leaves the original timestamp untouched.
+      created_at:form.created_at?new Date(form.created_at+"T12:00:00Z").toISOString():null,
       casting_image_url:castingImages[0]?.url||null,
       casting_image_path:castingImages[0]?.path||null,
       casting_images:castingImages};
@@ -17642,6 +17657,10 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     </div>
 
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+      <div className="form-group"><label className="label">Date Posted</label>
+        <input className="input" type="date" value={form.created_at} onChange={e=>set("created_at",e.target.value)}/>
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>The "Posted" date shown to talent on Browse Castings and the listing page. Leave blank to keep the original.</p></div>
+
       <div className="form-group"><label className="label">Expiration Date</label>
         <input className="input" type="date" value={form.expires_at} onChange={e=>set("expires_at",e.target.value)}/>
         <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Leave blank or set 1–3 months out. Expired listings are hidden from active castings.</p></div>
@@ -22278,7 +22297,7 @@ function App(){
     if(!castingId)return;
     try{
       const{data,error}=await window.sb.from("castings")
-        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
         .eq("id",castingId).maybeSingle();
       if(error||!data)return;
       const c={
@@ -22286,6 +22305,7 @@ function App(){
         tagline:data.tagline||"",synopsis:data.synopsis||"",desc:data.synopsis||data.tagline||"",
         location:data.location||"",pay:data.pay||"",rate:data.pay||"",
         deadline:data.deadline||(data.expires_at?data.expires_at.slice(0,10):""),union:data.union_status||"",submissions:0,
+        created_at:data.created_at||null,expires_at:data.expires_at||null,
         featured:data.featured===true,is_admin_created:data.is_admin_created===true,admin_verified:data.admin_verified===true,
         cd_id:data.cd_id,profiles:data.profiles||null,_cd:data.profiles||null,
         casting_image_url:data.casting_image_url||null,
