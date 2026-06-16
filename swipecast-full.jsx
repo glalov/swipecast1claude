@@ -1842,8 +1842,24 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .fcs-compact-label{font-size:9.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:#E0A43B;line-height:1.2;white-space:nowrap;}
 .fcs-compact-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:16px;line-height:1.15;color:#fff;text-shadow:0 1px 7px rgba(0,0,0,0.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .fcs-compact-btn{flex-shrink:0;background:#E0A43B;color:#231706;border:none;border-radius:8px;padding:9px 18px;font-size:12px;font-weight:800;line-height:1;letter-spacing:.2px;cursor:pointer;white-space:nowrap;}
+/* ── Marquee stripe: thin sliding announcement bar directly above the
+   featured-class banner (homepage). Folds to 0 height in sync with the
+   banner on scroll. Seamless left→right loop via two duplicated groups
+   animated from -50% back to 0. ── */
+.mq-stripe{position:relative;width:100%;height:24px;background:#15131f;overflow:hidden;display:flex;align-items:center;border-bottom:1px solid rgba(255,255,255,0.06);transition:height .42s cubic-bezier(.4,0,.2,1),opacity .30s ease;}
+.mq-track{display:flex;width:max-content;flex-shrink:0;animation:mq-scroll 210s linear infinite;will-change:transform;}
+.mq-group{display:flex;flex-shrink:0;align-items:center;}
+.mq-item{display:inline-flex;align-items:center;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:11px;letter-spacing:2.2px;text-transform:uppercase;color:#E0A43B;}
+.mq-item::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:#E0A43B;opacity:.8;margin:0 26px;flex-shrink:0;}
+@keyframes mq-scroll{from{transform:translateX(-50%);}to{transform:translateX(0);}}
+.mq-stripe:hover .mq-track{animation-play-state:paused;}
+.mq-stripe.is-collapsed{height:0;opacity:0;border-bottom-color:transparent;}
+@media (prefers-reduced-motion:reduce){.mq-track{animation:none;}}
 @media (max-width:768px){
   .member-banner{display:none !important;}
+  .mq-stripe{height:24px;}
+  .mq-item{font-size:10px;letter-spacing:1.8px;}
+  .mq-item::after{margin:0 20px;}
   .featured-class-stripe{height:148px;overflow:hidden;}
   .featured-class-stripe.is-collapsed{height:54px;}
   .fcs-img{height:100%;width:100%;object-fit:cover;object-position:70% center;filter:brightness(1.75) saturate(1.08);}
@@ -2334,6 +2350,34 @@ function FeaturedClassBanner({onNavigate}){
       <button type="button" className="fcs-compact-btn" onClick={go} tabIndex={collapsed?0:-1}>View Classes →</button>
     </div>
   </aside>);
+}
+
+// Thin sliding marquee shown directly above the featured-class banner on the
+// homepage. Collapses to 0 height on scroll (same >40px threshold as the
+// banner) so the two fold away together. Text is duplicated into two identical
+// groups; the -50%→0 keyframe gives a seamless left→right loop with no jump.
+function MarqueeStripe(){
+  const [collapsed,setCollapsed]=useState(false);
+  useEffect(()=>{
+    const onScroll=()=>setCollapsed(window.scrollY>40);
+    onScroll();
+    window.addEventListener("scroll",onScroll,{passive:true});
+    return()=>window.removeEventListener("scroll",onScroll);
+  },[]);
+  const PHRASES=["Find Roles","Build Your Actor Profile","Submit to Projects","Join Industry Classes","Connect With Creative Teams","Grow Your Career"];
+  // Repeat the sequence enough times per group that one group is wider than any
+  // viewport, so the seamless -50% loop never shows a gap.
+  const renderGroup=(gk)=>{
+    const items=[];
+    for(let r=0;r<4;r++)PHRASES.forEach((p,i)=>items.push(<span key={gk+"-"+r+"-"+i} className="mq-item">{p}</span>));
+    return items;
+  };
+  return(<div className={`mq-stripe${collapsed?" is-collapsed":""}`} role="region" aria-label="CastSlate highlights">
+    <div className="mq-track">
+      <div className="mq-group">{renderGroup("a")}</div>
+      <div className="mq-group" aria-hidden="true">{renderGroup("b")}</div>
+    </div>
+  </div>);
 }
 
 function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){
@@ -22521,6 +22565,9 @@ function App(){
       {/* Sticky top: promo stripe + activate banner + white nav stay pinned
           together at the top of the viewport while the page scrolls. */}
       <div className="site-top" ref={siteTopRef}>
+      {/* Thin sliding marquee directly above the featured-class banner —
+          homepage only. Folds away in sync with the banner on scroll. */}
+      {page==="home"&&<MarqueeStripe/>}
       {/* Featured-class banner — homepage only. Replaces the old yearly promo
           stripe in this slot. Uses the Scene Study Workshop artwork as-is; the
           "view classes" hotspot routes to the Classes page. */}
