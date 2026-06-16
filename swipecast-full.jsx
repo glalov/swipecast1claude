@@ -641,6 +641,33 @@ function posterDisplayName(profile,casting,fallback){
   return profile?.display_name||profile?.company_name||fallback||"Unknown user";
 }
 
+// True when a message counterparty is the casting side of a conversation — a real
+// CD/producer/studio, or an admin-generated casting presenting as a Casting
+// Director. Talent must never open a profile for these, and their avatar shows a
+// default director's-chair icon instead of a headshot/"?" placeholder.
+function isCastingSideSender(userType,isAdminCreated){
+  const t=(userType||"").toLowerCase();
+  if(isAdminCreated&&(t==="admin"||t==="super_admin"))return true;
+  return t==="cd"||t==="producer"||t==="studio";
+}
+
+// Default director's-chair avatar used for casting-side senders across the inbox
+// list and the thread modal. Inert by design — never opens a profile.
+function DirectorChairAvatar({size=52}){
+  const icon=Math.round(size*0.5);
+  return(<div style={{width:size,height:size,borderRadius:"50%",flexShrink:0,background:"var(--s2)",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t2)"}} aria-hidden="true">
+    <svg viewBox="0 0 24 24" width={icon} height={icon} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="4" y1="3.5" x2="20" y2="3.5"/>
+      <line x1="4" y1="6.5" x2="20" y2="6.5"/>
+      <line x1="5" y1="3" x2="5" y2="11"/>
+      <line x1="19" y1="3" x2="19" y2="11"/>
+      <line x1="4" y1="11" x2="20" y2="11"/>
+      <line x1="6.5" y1="11" x2="17.5" y2="21"/>
+      <line x1="17.5" y1="11" x2="6.5" y2="21"/>
+    </svg>
+  </div>);
+}
+
 // Project / production types offered in the CD post form and the admin generator.
 const PROJECT_TYPE_OPTIONS=["Feature Film","Short Film","Student Film","Independent Film","Documentary","TV Series","TV Pilot","Web Series","Streaming Series","Commercial","Social Media Ad","Branded Content","Corporate Video","Industrial / Training Video","Promo Video","Product Demo","Music Video","Voiceover","Podcast / Audio Drama","Animation","Video Game","Theater","Off-Broadway Theater","Off-Off-Broadway Theater","Musical Theater","Workshop / Staged Reading","Live Event","Hosting / Presenter","Reality / Docu-Series","Lifestyle / Unscripted","Modeling","Print Campaign","Photo Shoot","Influencer / UGC Content","Educational Video","Public Service Announcement","Spec Commercial","Proof of Concept","Sizzle Reel","Pitch Trailer","Table Read","Experimental Film","Dance Project","Performance Art","Background / Extras","Stand-In","Body Double","Stunts","Motion Capture","Other"];
 
@@ -11168,7 +11195,7 @@ function MessageModal({app,fromId,castingTitle,onClose,onSent}){
       if(full){
         const {error}=await window.sb.from("messages").insert({from_id:fromId,to_id:app.talent_id,application_id:app.id,body:full});
         if(error)throw error;
-        fireMessageNotification(app.talent_id,fromId);
+        fireMessageNotification(app.talent_id,fromId,{applicationId:app.id});
       }
       if(auditionAt){
         const {error:e2}=await window.sb.from("applications").update({audition_at:new Date(auditionAt).toISOString(),audition_note:auditionNote||null}).eq("id",app.id);
@@ -11329,7 +11356,7 @@ function InviteToProjectModal({cdId,talentId,talentName,onClose}){
       try{
         const body=`📩 You've been invited to audition for ${pickedCasting.title}${pickedRole?` · ${pickedRole.name}`:""}.${note.trim()?`\n\n"${note.trim()}"`:""}`;
         await window.sb.from("messages").insert({from_id:cdId,to_id:talentId,application_id:null,body});
-        fireMessageNotification(talentId,cdId);
+        fireMessageNotification(talentId,cdId,{castingId:pickedCasting.id});
       }catch(_){/* non-fatal */}
       setSent(true);
       setTimeout(()=>onClose(),1100);
@@ -11376,10 +11403,14 @@ function InviteToProjectModal({cdId,talentId,talentName,onClose}){
 
 // ─── Fire-and-forget notification after a message insert. Never blocks the send,
 // never throws. The edge function checks the recipient's preferences server-side.
-function fireMessageNotification(toUserId,fromId,fromName){
+// opts: {fromName, applicationId, castingId}. The application/casting lets the
+// edge function resolve the casting-aware sender name (real CD name, or the
+// admin casting's Production Company) and include the project name in the email.
+function fireMessageNotification(toUserId,fromId,opts){
+  const o=opts||{};
   try{
     window.sb.functions.invoke("send-notification-email",{
-      body:{to_user_id:toUserId,type:"inbox_message",from_id:fromId||undefined,from_name:fromName||undefined}
+      body:{to_user_id:toUserId,type:"inbox_message",from_id:fromId||undefined,from_name:o.fromName||undefined,application_id:o.applicationId||undefined,casting_id:o.castingId||undefined}
     }).catch(e=>console.warn("[notify]",e?.message||e));
   }catch(_){}
 }
@@ -11575,11 +11606,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
   // casting presenting as a CD). For these, talent must NOT be able to open a
   // profile from the thread — name + avatar are inert and the avatar shows a
   // default director's-chair icon instead of a headshot/question-mark.
-  const cpIsCasting=(()=>{
-    const t=(cp.user_type||"").toLowerCase();
-    if(castingCtx?.casting?.is_admin_created&&(t==="admin"||t==="super_admin"))return true;
-    return t==="cd"||t==="producer"||t==="studio";
-  })();
+  const cpIsCasting=isCastingSideSender(cp.user_type,castingCtx?.casting?.is_admin_created);
   const canOpenProfile=!!onViewProfile&&!!cp.id&&!cpIsCasting;
 
   // Send a reply: insert the row, then optimistically append. Realtime will reconcile.
@@ -11594,7 +11621,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
         .select("id,from_id,to_id,body,created_at,read_at,application_id,conversation_id")
         .single();
       if(error)throw error;
-      fireMessageNotification(counterpartyId,sessionUid);
+      fireMessageNotification(counterpartyId,sessionUid,{applicationId:message.application_id||undefined});
       setReply("");
       setThread(p=>p.some(m=>m.id===data.id)?p:[...p,data]);
       if(typeof onReplied==="function")onReplied(data);
@@ -11634,20 +11661,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
       <div style={{display:"flex",alignItems:"center",gap:14,padding:"18px 22px",borderBottom:"1px solid var(--bdr)",flexShrink:0}}>
         <button className="btn-s btn-sm" onClick={onClose} disabled={busy||deleting}>←</button>
         {cpIsCasting
-          ? (
-            // Casting-side counterparty: fixed director's-chair avatar, never opens a profile.
-            <div style={{width:44,height:44,borderRadius:"50%",flexShrink:0,background:"var(--s2)",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t2)"}} aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="4" y1="3.5" x2="20" y2="3.5"/>
-                <line x1="4" y1="6.5" x2="20" y2="6.5"/>
-                <line x1="5" y1="3" x2="5" y2="11"/>
-                <line x1="19" y1="3" x2="19" y2="11"/>
-                <line x1="4" y1="11" x2="20" y2="11"/>
-                <line x1="6.5" y1="11" x2="17.5" y2="21"/>
-                <line x1="17.5" y1="11" x2="6.5" y2="21"/>
-              </svg>
-            </div>
-          )
+          ? <DirectorChairAvatar size={44}/>
           : (
             <img
               src={cp.headshot_url||"https://placehold.co/44x44/e5e5e5/999?text=?"}
@@ -11966,7 +11980,9 @@ function InboxPage({session,profile,onNavigate,onViewProfile,onViewCastingById})
          const projectTitle=threadCasting(t)?.title;
          return(<div key={t.key} onClick={()=>openThread(t)} style={{display:"grid",gridTemplateColumns:"auto 1fr auto",gap:14,padding:"16px 22px",borderBottom:"1px solid var(--bdr)",cursor:"pointer",alignItems:"center",background:t.unread>0?"rgba(26,26,46,0.025)":"transparent",transition:"background 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--s2)"} onMouseLeave={e=>e.currentTarget.style.background=t.unread>0?"rgba(26,26,46,0.025)":"transparent"}>
            <div style={{position:"relative"}}>
-             <img src={cp.headshot_url||"https://placehold.co/52x52/e5e5e5/999?text=?"} alt="" style={{width:52,height:52,borderRadius:"50%",objectFit:"cover",display:"block"}}/>
+             {isCastingSideSender(cp.user_type,threadCasting(t)?.is_admin_created)
+               ? <DirectorChairAvatar size={52}/>
+               : <img src={cp.headshot_url||"https://placehold.co/52x52/e5e5e5/999?text=?"} alt="" style={{width:52,height:52,borderRadius:"50%",objectFit:"cover",display:"block"}}/>}
              {t.unread>0&&<span style={{position:"absolute",top:-2,right:-2,background:"var(--acc)",color:"#fff",borderRadius:"50%",minWidth:20,height:20,padding:"0 5px",fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid var(--s1)"}}>{t.unread}</span>}
            </div>
            <div style={{minWidth:0}}>
@@ -15592,7 +15608,9 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       </div>}
       {inbox.length===0?<div>{inboxLoading?<CastSlateLoader size="inline" text="Loading messages…"/>:<p style={{color:"var(--t3)",fontSize:14}}>No messages yet.</p>}</div>:
       inbox.map(m=><div key={m.id} onClick={()=>setOpenMsg(m)} style={{padding:"14px 0",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:12,alignItems:"flex-start",cursor:"pointer",opacity:m.read_at?0.78:1,transition:"background 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--s2)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-        <img src={m.profiles?.headshot_url||"https://placehold.co/44x44/e5e5e5/999?text=?"} style={{width:44,height:44,objectFit:"cover",borderRadius:"50%"}}/>
+        {isCastingSideSender(m.profiles?.user_type,m.castings?.is_admin_created)
+          ? <DirectorChairAvatar size={44}/>
+          : <img src={m.profiles?.headshot_url||"https://placehold.co/44x44/e5e5e5/999?text=?"} style={{width:44,height:44,objectFit:"cover",borderRadius:"50%"}}/>}
         <div style={{minWidth:0}}>
           <div style={{fontWeight:700,fontSize:14,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
             <span>{m.profiles?.display_name||m.profiles?.company_name||"Sender"}</span>

@@ -37,13 +37,21 @@ interface NotifyRequest {
   type: "inbox_message" | "class_invitation";
   from_id?: string;
   from_name?: string;
+  application_id?: string;
+  casting_id?: string;
   class_title?: string;
 }
 
-function inboxMessageHtml(firstName: string, fromName?: string): string {
+// Minimal HTML escape for any user-controlled string interpolated into the email.
+function esc(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function inboxMessageHtml(firstName: string, fromName?: string, projectName?: string): string {
+  const about = projectName ? ` about <strong>${esc(projectName)}</strong>` : "";
   const senderLine = fromName
-    ? `You received a new message from <strong>${fromName}</strong> on CastSlate.`
-    : "You received a new message on CastSlate.";
+    ? `You received a new message from <strong>${esc(fromName)}</strong>${about} on CastSlate.`
+    : `You received a new message${about} on CastSlate.`;
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"/></head>
@@ -150,7 +158,7 @@ serve(async (req) => {
     });
 
   try {
-    const { to_user_id, type, from_id, from_name: rawFromName, class_title } = (await req.json()) as NotifyRequest;
+    const { to_user_id, type, from_id, from_name: rawFromName, application_id, casting_id, class_title } = (await req.json()) as NotifyRequest;
 
     if (!to_user_id || !type) {
       return json({ error: "Missing to_user_id or type" }, 400);
@@ -169,15 +177,48 @@ serve(async (req) => {
       return json({ error: "User profile not found" }, 404);
     }
 
-    // Resolve sender display name: prefer explicit from_name, then look up from_id
+    // Resolve the related casting (for the project name + casting-aware sender
+    // name). Prefer the application's casting, fall back to an explicit casting_id.
+    let casting:
+      | { title: string | null; prod: string | null; is_admin_created: boolean | null; cd_id: string | null }
+      | null = null;
+    if (type === "inbox_message") {
+      if (application_id) {
+        const { data } = await supabase
+          .from("applications")
+          .select("castings(title, prod, is_admin_created, cd_id)")
+          .eq("id", application_id)
+          .maybeSingle();
+        // deno-lint-ignore no-explicit-any
+        casting = ((data as any)?.castings) ?? null;
+      }
+      if (!casting && casting_id) {
+        const { data } = await supabase
+          .from("castings")
+          .select("title, prod, is_admin_created, cd_id")
+          .eq("id", casting_id)
+          .maybeSingle();
+        casting = data ?? null;
+      }
+    }
+    const projectName = casting?.title?.trim() || undefined;
+
+    // Resolve sender display name: prefer explicit from_name, then derive from the
+    // casting + sender. Mirrors the client posterDisplayName rule: an admin-generated
+    // casting surfaces the Production Company (prod) instead of the platform/admin
+    // account name; a real CD surfaces their own name.
     let resolvedFromName = rawFromName?.trim() || undefined;
     if (!resolvedFromName && from_id) {
       const { data: senderProfile } = await supabase
         .from("profiles")
-        .select("display_name, company_name")
+        .select("display_name, company_name, user_type")
         .eq("id", from_id)
         .maybeSingle();
-      if (senderProfile) {
+      const senderType = (senderProfile?.user_type || "").toLowerCase();
+      if (casting?.is_admin_created && (senderType === "admin" || senderType === "super_admin")) {
+        const prod = (casting.prod || "").trim();
+        resolvedFromName = prod && !/castslate/i.test(prod) ? prod : "Casting Director";
+      } else if (senderProfile) {
         resolvedFromName = (senderProfile.display_name || senderProfile.company_name || "").trim() || undefined;
       }
     }
@@ -205,7 +246,7 @@ serve(async (req) => {
             ? "New message on CastSlate"
             : "CastSlate selected a class for you";
           const html = type === "inbox_message"
-            ? inboxMessageHtml(firstName, resolvedFromName)
+            ? inboxMessageHtml(firstName, resolvedFromName, projectName)
             : classInvitationHtml(firstName, class_title?.trim() || "a class");
 
           const resendRes = await fetch("https://api.resend.com/emails", {
@@ -237,7 +278,7 @@ serve(async (req) => {
 
     if (smsEnabled && validPhone && type === "inbox_message") {
       const normalizedPhone = rawPhone.startsWith("+") ? rawPhone : `+1${rawPhone.replace(/\D/g, "")}`;
-      const smsBody = `CastSlate: You received a new message${resolvedFromName ? ` from ${resolvedFromName}` : ""}. Open your inbox: ${APP_URL}/inbox`;
+      const smsBody = `CastSlate: You received a new message${resolvedFromName ? ` from ${resolvedFromName}` : ""}${projectName ? ` about ${projectName}` : ""}. Open your inbox: ${APP_URL}/inbox`;
       const smsResult = await sendSms(normalizedPhone, smsBody);
       results.sms = smsResult.ok ? "sent" : `error:${smsResult.error}`;
     } else if (smsEnabled && !validPhone && type === "inbox_message") {
