@@ -10074,7 +10074,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
 // Hold / Selected / Rejected = filtered list views with search + sort
 // Undo reverts the most recent decision.
 // ═══════════════════════════════════════════════════════════════════
-function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion=0,bumpCastings,verificationReturn=false,onClearVerificationReturn}){
+function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion=0,bumpCastings,verificationReturn=false,onClearVerificationReturn,onViewCastingById}){
   const t=useT();
   const {lang}=useLanguage();
   const vpw=useViewportWidth();
@@ -11134,6 +11134,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       sessionUid={uid}
       sessionUserType="cd"
       onViewProfile={cdProfileOverlay?undefined:((p)=>setCdProfileOverlay(p))}
+      onViewCasting={onViewCastingById}
       onClose={()=>setOpenThreadSeed(null)}
       onRead={()=>{}}
       onDeleted={()=>setOpenThreadSeed(null)}
@@ -11425,7 +11426,7 @@ function ComposeDMModal({fromId,toId,toName,onClose,initialBody,title,intro}){
 // Realtime-subscribes to the conversation_id so new messages from the other side
 // appear live without a manual refresh — and they get marked read immediately too,
 // since the user is actively viewing the thread.
-function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,onClose,onRead,onDeleted,onReplied}){
+function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,onViewCasting,onClose,onRead,onDeleted,onReplied}){
   const [reply,setReply]=useState("");
   const [busy,setBusy]=useState(false);
   const [deleting,setDeleting]=useState(false);
@@ -11570,6 +11571,16 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
     if(t==="studio")return "Studio";
     return "Member";
   })();
+  // Casting-side counterparty (real CD, producer, studio, or an admin-generated
+  // casting presenting as a CD). For these, talent must NOT be able to open a
+  // profile from the thread — name + avatar are inert and the avatar shows a
+  // default director's-chair icon instead of a headshot/question-mark.
+  const cpIsCasting=(()=>{
+    const t=(cp.user_type||"").toLowerCase();
+    if(castingCtx?.casting?.is_admin_created&&(t==="admin"||t==="super_admin"))return true;
+    return t==="cd"||t==="producer"||t==="studio";
+  })();
+  const canOpenProfile=!!onViewProfile&&!!cp.id&&!cpIsCasting;
 
   // Send a reply: insert the row, then optimistically append. Realtime will reconcile.
   const sendReply=async()=>{
@@ -11622,16 +11633,33 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
       {/* Header — back button, counterparty info, delete-conversation (admin only) */}
       <div style={{display:"flex",alignItems:"center",gap:14,padding:"18px 22px",borderBottom:"1px solid var(--bdr)",flexShrink:0}}>
         <button className="btn-s btn-sm" onClick={onClose} disabled={busy||deleting}>←</button>
-        <img
-          src={cp.headshot_url||"https://placehold.co/44x44/e5e5e5/999?text=?"}
-          alt=""
-          style={{width:44,height:44,borderRadius:"50%",objectFit:"cover",flexShrink:0,cursor:onViewProfile&&cp.id?"pointer":"default"}}
-          onClick={()=>{if(onViewProfile&&cp.id)onViewProfile({...cp,id:cp.id,name:cpName,display_name:cpName,img:cp.headshot_url||"",type:"Talent"});}}
-        />
+        {cpIsCasting
+          ? (
+            // Casting-side counterparty: fixed director's-chair avatar, never opens a profile.
+            <div style={{width:44,height:44,borderRadius:"50%",flexShrink:0,background:"var(--s2)",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t2)"}} aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" y1="3.5" x2="20" y2="3.5"/>
+                <line x1="4" y1="6.5" x2="20" y2="6.5"/>
+                <line x1="5" y1="3" x2="5" y2="11"/>
+                <line x1="19" y1="3" x2="19" y2="11"/>
+                <line x1="4" y1="11" x2="20" y2="11"/>
+                <line x1="6.5" y1="11" x2="17.5" y2="21"/>
+                <line x1="17.5" y1="11" x2="6.5" y2="21"/>
+              </svg>
+            </div>
+          )
+          : (
+            <img
+              src={cp.headshot_url||"https://placehold.co/44x44/e5e5e5/999?text=?"}
+              alt=""
+              style={{width:44,height:44,borderRadius:"50%",objectFit:"cover",flexShrink:0,cursor:canOpenProfile?"pointer":"default"}}
+              onClick={()=>{if(canOpenProfile)onViewProfile({...cp,id:cp.id,name:cpName,display_name:cpName,img:cp.headshot_url||"",type:"Talent"});}}
+            />
+          )}
         <div style={{minWidth:0,flex:1}}>
           <div
-            style={{fontWeight:800,fontSize:15,letterSpacing:"-0.2px",lineHeight:1.2,cursor:onViewProfile&&cp.id?"pointer":"default"}}
-            onClick={()=>{if(onViewProfile&&cp.id)onViewProfile({...cp,id:cp.id,name:cpName,display_name:cpName,img:cp.headshot_url||"",type:"Talent"});}}
+            style={{fontWeight:800,fontSize:15,letterSpacing:"-0.2px",lineHeight:1.2,cursor:canOpenProfile?"pointer":"default"}}
+            onClick={()=>{if(canOpenProfile)onViewProfile({...cp,id:cp.id,name:cpName,display_name:cpName,img:cp.headshot_url||"",type:"Talent"});}}
           >{cpName}</div>
           <div style={{fontSize:10,letterSpacing:1,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,marginTop:3}}>{cpTypeLabel}</div>
         </div>
@@ -11641,7 +11669,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
       {/* Casting context strip — sticky-feeling block under the header */}
       {castingCtx?.casting&&<div style={{background:"var(--s2)",borderBottom:"1px solid var(--bdr)",padding:"10px 22px",flexShrink:0}}>
         <div style={{fontSize:9,letterSpacing:1.2,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,marginBottom:2}}>Related casting</div>
-        <div style={{fontSize:13,fontWeight:700,color:"var(--t1)"}}>{castingCtx.casting.title||"Casting"}{castingCtx.role?.name?<span style={{color:"var(--t2)",fontWeight:500}}> · {castingCtx.role.name}</span>:null} <span style={{color:"var(--t3)",fontWeight:500,fontSize:12}}>· {[castingCtx.casting.prod,castingCtx.casting.location].filter(Boolean).join(" · ")}</span></div>
+        <div style={{fontSize:13,fontWeight:700,color:"var(--t1)"}}>{(()=>{const canOpenCasting=!!onViewCasting&&!!castingCtx.casting.id;return <span onClick={()=>{if(canOpenCasting){onViewCasting(castingCtx.casting.id);onClose();}}} style={{cursor:canOpenCasting?"pointer":"default",color:canOpenCasting?"var(--acc)":"var(--t1)",textDecoration:canOpenCasting?"underline":"none"}} title={canOpenCasting?"View this casting":undefined}>{castingCtx.casting.title||"Casting"}</span>;})()}{castingCtx.role?.name?<span style={{color:"var(--t2)",fontWeight:500}}> · {castingCtx.role.name}</span>:null} <span style={{color:"var(--t3)",fontWeight:500,fontSize:12}}>· {[castingCtx.casting.prod,castingCtx.casting.location].filter(Boolean).join(" · ")}</span></div>
       </div>}
 
       {/* Chronological timeline — oldest top, newest bottom. Day separators on date change. */}
@@ -11706,7 +11734,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
 // person you're talking to, showing the latest message + unread count. Clicking
 // opens MessageThreadModal which already supports reply, delete, and full history.
 // Realtime + 30s polling + focus listener keep it synced without manual refresh.
-function InboxPage({session,profile,onNavigate,onViewProfile}){
+function InboxPage({session,profile,onNavigate,onViewProfile,onViewCastingById}){
   const t=useT();
   const [messages,setMessages]=useState([]);    // raw flat list of all messages I'm in
   const [counterparties,setCounterparties]=useState({}); // id -> profile snapshot
@@ -11962,6 +11990,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile}){
       sessionUid={uid}
       sessionUserType={profile?.user_type}
       onViewProfile={onViewProfile}
+      onViewCasting={onViewCastingById}
       onClose={()=>setOpenMsg(null)}
       onRead={(ids)=>{
         const stamp=new Date().toISOString();
@@ -14475,7 +14504,7 @@ function CastMeAsSection({talentId}){
 // ═══════════════════════════════════════════
 // PAGE: MY PROFILE — Backstage-style with gallery + videos
 // ═══════════════════════════════════════════
-function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
+function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onViewCastingById}){
   const vpw=useViewportWidth();
   const isMobile=vpw<768;
   const profileInitializedRef=useRef(false); // prevent focus/reload from wiping form state
@@ -15597,6 +15626,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile}){
       sessionUid={session.user.id}
       sessionUserType={profile?.user_type}
       onViewProfile={onViewProfile}
+      onViewCasting={onViewCastingById}
       onClose={()=>setOpenMsg(null)}
       // Bulk mark-read: the modal already wrote read_at to the DB for every unread
       // incoming message in this thread; we just need to mirror that locally so the
@@ -22567,7 +22597,7 @@ function App(){
         {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
         {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):isLoggedIn?
           <ErrorBoundary key={dashboardKey} label="CD Dashboard" onReset={()=>navigate("home")}>
-            <CDDashboard key={dashboardKey} onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)}/>
+            <CDDashboard key={dashboardKey} onViewProfile={viewProfile} onNavigate={navigate} session={session} myProfile={myProfile} castingsVersion={castingsVersion} bumpCastings={bumpCastings} verificationReturn={verificationReturn} onClearVerificationReturn={()=>setVerificationReturn(false)} onViewCastingById={viewCastingById}/>
           </ErrorBoundary>
           :<PageLoader/>)}
         {page==="talent-dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&(myProfile?.user_type==="talent"||!myProfile)?
@@ -22589,7 +22619,7 @@ function App(){
           </ErrorBoundary>}
         {page==="my-profile"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):isLoggedIn?
           <ErrorBoundary label="My Profile" onReset={()=>navigate("home")}>
-            <MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onViewProfile={viewProfile}/>
+            <MyProfilePage session={session} profile={myProfile} onReload={()=>loadProfile(session?.user?.id)} onNavigate={navigate} onViewProfile={viewProfile} onViewCastingById={viewCastingById}/>
           </ErrorBoundary>
           :<PageLoader/>)}
         {page==="account-settings"&&(!authReady?<PageLoader/>:isLoggedIn?
@@ -22599,7 +22629,7 @@ function App(){
           :<PageLoader/>)}
         {page==="inbox"&&(!authReady?<PageLoader/>:isLoggedIn?
           <ErrorBoundary label="Inbox" onReset={()=>navigate("home")}>
-            <InboxPage session={session} profile={myProfile} onNavigate={navigate} onViewProfile={viewProfile}/>
+            <InboxPage session={session} profile={myProfile} onNavigate={navigate} onViewProfile={viewProfile} onViewCastingById={viewCastingById}/>
           </ErrorBoundary>
           :<PageLoader/>)}
         {page==="admin"&&(!authReady?<PageLoader/>:isLoggedIn&&isAdmin?
