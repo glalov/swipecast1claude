@@ -642,13 +642,15 @@ function posterDisplayName(profile,casting,fallback){
 }
 
 // True when a message counterparty is the casting side of a conversation — a real
-// CD/producer/studio, or an admin-generated casting presenting as a Casting
-// Director. Talent must never open a profile for these, and their avatar shows a
-// default director's-chair icon instead of a headshot/"?" placeholder.
+// CD/producer/studio, or the platform/office (admin) account, which to talent is
+// always a casting entity (admin-generated castings AND plain office DMs). Talent
+// must never open a profile for these, and their avatar shows a default
+// director's-chair icon instead of a headshot/"?" placeholder. (isAdminCreated is
+// no longer needed for the boolean — admin senders always count — but kept for
+// call-site compatibility.)
 function isCastingSideSender(userType,isAdminCreated){
   const t=(userType||"").toLowerCase();
-  if(isAdminCreated&&(t==="admin"||t==="super_admin"))return true;
-  return t==="cd"||t==="producer"||t==="studio";
+  return t==="cd"||t==="producer"||t==="studio"||t==="admin"||t==="super_admin";
 }
 
 // Default director's-chair avatar used for casting-side senders across the inbox
