@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CastSlate · Testimonial Section — 3 Versions</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#F7F4EE;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--grn:#1B873E;--teal:#4F8A8B;--amber:#E8902A;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;padding:40px 20px 80px;}
+  .wrap{max-width:1200px;margin:0 auto;}
+  .demo-head{text-align:center;margin-bottom:10px;}
+  .demo-head h1{font-family:'Fraunces',serif;font-size:30px;font-weight:700;letter-spacing:-0.5px;}
+  .demo-head p{color:var(--t2);font-size:14px;margin-top:8px;}
+  .version-block{margin-top:56px;padding-top:34px;border-top:2px dashed var(--bdr);}
+  .version-tag{display:inline-flex;align-items:center;gap:8px;background:var(--t1);color:#fff;font-size:12px;font-weight:700;letter-spacing:.5px;padding:7px 14px;border-radius:999px;margin-bottom:6px;}
+  .version-tag .num{background:var(--amber);color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;}
+  .version-desc{color:var(--t2);font-size:13.5px;margin:10px 0 28px;max-width:680px;}
+
+  .section-label{font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:var(--teal);font-weight:700;margin-bottom:10px;}
+  .section-title{font-family:'Fraunces',serif;font-weight:700;font-size:clamp(24px,3vw,34px);letter-spacing:-0.8px;line-height:1.1;}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:34px;}
+  @media(max-width:860px){.grid{grid-template-columns:1fr;}}
+  .card{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:28px;display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(26,26,46,.04);}
+  .quote{font-size:14px;line-height:1.65;color:var(--t1);margin-bottom:18px;font-weight:500;flex:1;}
+  .person{display:flex;align-items:center;gap:12px;padding-top:16px;border-top:1px solid var(--bdr);}
+  .person img{width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--bdr);}
+  .pname{font-size:13px;font-weight:700;}
+  .prole{font-size:11px;color:var(--t3);}
+  .chip{display:inline-flex;align-items:center;gap:6px;margin-top:16px;align-self:flex-start;background:rgba(27,135,62,.08);color:var(--grn);font-size:11px;font-weight:600;padding:5px 11px;border-radius:999px;}
+  .chip svg{width:13px;height:13px;}
+
+  /* V1 — half stars */
+  .stars{display:inline-flex;align-items:center;gap:3px;margin-bottom:14px;}
+  .stars .s{position:relative;width:15px;height:15px;color:#D8D2C4;}
+  .stars .s svg{width:15px;height:15px;display:block;}
+  .stars .s .fill{position:absolute;top:0;left:0;height:100%;overflow:hidden;color:var(--amber);}
+  .rating-txt{font-size:11px;color:var(--t3);font-weight:600;margin-left:4px;}
+
+  /* V2 — verified pill, no stars */
+  .verified{display:inline-flex;align-items:center;gap:6px;background:rgba(79,138,139,.1);color:var(--teal);font-size:11px;font-weight:700;letter-spacing:.3px;padding:5px 11px;border-radius:999px;margin-bottom:16px;align-self:flex-start;}
+  .verified svg{width:13px;height:13px;}
+
+  /* V3 — rating number pill */
+  .ratepill{display:inline-flex;align-items:center;gap:7px;margin-bottom:16px;align-self:flex-start;}
+  .ratepill .big{font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:var(--t1);line-height:1;}
+  .ratepill .mini{display:inline-flex;gap:2px;color:var(--amber);}
+  .ratepill .mini svg{width:12px;height:12px;}
+  .ratepill .of{font-size:11px;color:var(--t3);}
+
+  .picker{position:fixed;bottom:0;left:0;right:0;background:var(--t1);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;box-shadow:0 -4px 20px rgba(0,0,0,.15);z-index:50;}
+  .picker span{font-size:13px;font-weight:600;}
+  .picker button{background:var(--amber);color:#fff;border:none;font-weight:700;font-size:13px;padding:9px 16px;border-radius:8px;cursor:pointer;font-family:inherit;}
+  .picker button:hover{filter:brightness(1.08);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="demo-head">
+    <h1>Testimonial Section — 3 Versions</h1>
+    <p>Same authentic, specific copy in all three. Only the rating style changes. All photos are real headshots (Unsplash), no AI faces. Pick one.</p>
+  </div>
+
+  <!-- ============ VERSION 1 ============ -->
+  <div class="version-block">
+    <span class="version-tag"><span class="num">1</span> Honest Stars</span>
+    <p class="version-desc">Mixed, realistic ratings with <b>half-stars</b> (4.5 / 5 / 4) instead of three perfect 5s — reads far more believable. Small credibility chip under each. All cards identical weight.</p>
+    <div class="section-label">What people are saying</div>
+    <div class="section-title">From actors and casting directors using CastSlate.</div>
+    <div class="grid" id="v1"></div>
+  </div>
+
+  <!-- ============ VERSION 2 ============ -->
+  <div class="version-block">
+    <span class="version-tag"><span class="num">2</span> Verified, No Stars</span>
+    <p class="version-desc">Drops star ratings entirely. A teal <b>“Verified review”</b> pill carries the trust instead — feels like a real review platform, not a marketing page. Credibility chips do the heavy lifting.</p>
+    <div class="section-label">What people are saying</div>
+    <div class="section-title">From actors and casting directors using CastSlate.</div>
+    <div class="grid" id="v2"></div>
+  </div>
+
+  <!-- ============ VERSION 3 ============ -->
+  <div class="version-block">
+    <span class="version-tag"><span class="num">3</span> Rating Number</span>
+    <p class="version-desc">A precise number (<b>4.6 / 5</b>) with tiny stars beside it. Specific decimals feel measured and real — the opposite of generic five-star rows.</p>
+    <div class="section-label">What people are saying</div>
+    <div class="section-title">From actors and casting directors using CastSlate.</div>
+    <div class="grid" id="v3"></div>
+  </div>
+</div>
+
+<div class="picker">
+  <span>Which version do you want live?</span>
+  <button onclick="pick(1)">Use Version 1</button>
+  <button onclick="pick(2)">Use Version 2</button>
+  <button onclick="pick(3)">Use Version 3</button>
+</div>
+
+<script>
+const data=[
+  {q:"I submitted for two roles my first week and got one callback. The profile was easy to send, and I didn't feel like I was fighting the website.",n:"Alyssa Bennett",r:"Actor · NYC · Non-Union",s:4.5,chip:"Submitted for 2 projects",img:"https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=160&q=80",pos:"center 20%"},
+  {q:"I reviewed 60+ actors for a spec spot in one sitting. Clean profiles, organized media, no broken links. It honestly saved me hours.",n:"Jordan Blake",r:"Casting Director · Commercials",s:5,chip:"CD · 10+ yrs experience",img:"https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=160&q=80",pos:"center 15%"},
+  {q:"I like that I can submit without feeling pushed into an upgrade. The casting details are clear and the process feels straightforward.",n:"Ethan Cole",r:"Actor · LA · Non-Union",s:4,chip:"Working actor",img:"https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=160&q=80",pos:"center 10%"}
+];
+const starSVG='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.3 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>';
+const checkSVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+function halfStars(s){let h='';for(let i=1;i<=5;i++){let pct=Math.max(0,Math.min(1,s-(i-1)))*100;h+=`<span class="s">${starSVG}<span class="fill" style="width:${pct}%">${starSVG}</span></span>`;}return h;}
+function chip(t){return `<span class="chip">${checkSVG} ${t}</span>`;}
+function person(t){return `<div class="person"><img src="${t.img}" style="object-position:${t.pos}" alt="${t.n}"><div><div class="pname">${t.n}</div><div class="prole">${t.r}</div></div></div>`;}
+
+document.getElementById('v1').innerHTML=data.map(t=>`<div class="card"><div class="stars">${halfStars(t.s)}<span class="rating-txt">${t.s.toFixed(1)}</span></div><p class="quote">"${t.q}"</p>${person(t)}${chip(t.chip)}</div>`).join('');
+document.getElementById('v2').innerHTML=data.map(t=>`<div class="card"><span class="verified">${checkSVG} Verified review</span><p class="quote">"${t.q}"</p>${person(t)}${chip(t.chip)}</div>`).join('');
+document.getElementById('v3').innerHTML=data.map(t=>`<div class="card"><span class="ratepill"><span class="big">${t.s.toFixed(1)}</span><span class="mini">${starSVG}</span><span class="of">/ 5</span></span><p class="quote">"${t.q}"</p>${person(t)}${chip(t.chip)}</div>`).join('');
+function pick(n){alert("Great — tell Claude: \"use version "+n+"\" and it will wire it into the live site (swipecast-full.jsx + app.js).");}
+</script>
+</body>
+</html>
