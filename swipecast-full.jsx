@@ -7641,15 +7641,6 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       {!c.is_admin_created&&cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
     </div>
 
-    {/* ── Safety notice — shown on every casting so talent and casters alike are
-           protected. CastSlate does not vet or guarantee any listing. ── */}
-    <div style={{display:"flex",gap:10,alignItems:"flex-start",background:"rgba(232,144,42,0.08)",border:"1px solid rgba(232,144,42,0.28)",borderRadius:12,padding:"12px 16px",marginBottom:28,maxWidth:760}}>
-      <span style={{fontSize:16,lineHeight:1.4,flexShrink:0}} aria-hidden="true">🛡️</span>
-      <p style={{color:"var(--t2)",fontSize:12.5,lineHeight:1.6,margin:0}}>
-        <strong style={{color:"var(--t1)"}}>Safety notice.</strong> CastSlate does not vet, endorse, or guarantee any casting, project, person, or company listed on the platform. A verification badge, where shown, confirms identity only — not the legitimacy, safety, payment, or conduct of a project. Never pay to audition or submit, and never share financial or sensitive personal information. Always use your own judgment and report anything that feels off.
-      </p>
-    </div>
-
     {/* ── Instant-hook strip: surfaces pay, deadline & open-role count above the
            fold, with a primary CTA that jumps straight to the roles. The full
            detail grid (union, shoot dates, audition format) still sits below. ── */}
