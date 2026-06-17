@@ -1843,8 +1843,15 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .fcs-full{position:relative;height:100%;transition:opacity .22s ease;}
 .featured-class-stripe.is-collapsed .fcs-full{opacity:0;pointer-events:none;}
 .fcs-img{display:block;width:100%;height:auto;}
-.fcs-hotspot{position:absolute;left:3.8%;top:72%;width:8.5%;height:20%;background:transparent;border:none;padding:0;margin:0;cursor:pointer;}
+.fcs-hotspot{display:none;}
 .fcs-mobile{display:none;}
+/* Desktop: sharp HTML overlay (label/title/tagline/button) over the dark left of the artwork; a scrim hides the soft baked-in text underneath. */
+.fcs-overlay{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:center;gap:clamp(5px,0.9vw,11px);padding-left:clamp(28px,4.3vw,86px);padding-right:40px;pointer-events:none;}
+.fcs-overlay::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#0c0a08 0%,#0c0a08 19%,rgba(12,10,8,0.92) 28%,rgba(12,10,8,0.55) 38%,rgba(12,10,8,0) 48%);}
+.fcs-ov-label{font-size:clamp(10px,0.82vw,13px);font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#E0A43B;line-height:1;}
+.fcs-ov-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;text-transform:uppercase;font-size:clamp(19px,2.55vw,42px);line-height:1.02;color:#fff;letter-spacing:.5px;}
+.fcs-ov-tag{font-size:clamp(11px,1.02vw,15px);line-height:1.4;color:#ECE8E0;max-width:34ch;}
+.fcs-ov-btn{pointer-events:auto;align-self:flex-start;margin-top:clamp(3px,0.6vw,9px);background:#E0A43B;color:#231706;border:none;border-radius:8px;padding:clamp(8px,0.85vw,13px) clamp(16px,1.6vw,28px);font-size:clamp(11px,0.97vw,14px);font-weight:800;line-height:1;letter-spacing:.2px;cursor:pointer;white-space:nowrap;}
 /* Compact scrolled strip — own layout, not a crop of the full banner. */
 .fcs-compact{position:absolute;inset:0;display:flex;align-items:center;gap:16px;padding:0 24px;opacity:0;pointer-events:none;transition:opacity .28s ease;
   background:linear-gradient(100deg, rgba(10,9,14,.92) 0%, rgba(20,18,26,.86) 55%, rgba(20,18,26,.74) 100%), url(/assets/banner/scene-study.jpg) center 78%/cover;}
@@ -1875,6 +1882,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .featured-class-stripe.is-collapsed{height:54px;}
   .fcs-img{height:100%;width:100%;object-fit:cover;object-position:70% center;filter:brightness(1.75) saturate(1.08);}
   .fcs-hotspot{display:none;}
+  .fcs-overlay{display:none;}
   .fcs-mobile{display:flex;flex-direction:column;gap:5px;position:absolute;left:18px;top:50%;transform:translateY(-50%);z-index:2;max-width:62%;line-height:normal;}
   .fcs-mobile::before{content:"";position:absolute;inset:-22px -56px -22px -30px;z-index:-1;background:linear-gradient(90deg,rgba(8,8,10,0.72) 0%,rgba(8,8,10,0.4) 56%,rgba(8,8,10,0) 100%);}
   .fcs-m-label{font-size:9.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:#E0A43B;}
@@ -2343,8 +2351,13 @@ function FeaturedClassBanner({onNavigate}){
     {/* Full state — original artwork, untouched. */}
     <div className="fcs-full">
       <img className="fcs-img" src="/assets/banner/scene-study.jpg" alt="Featured Class — Scene Study Workshop" width="3360" height="430" fetchpriority="high" decoding="async"/>
-      {/* Desktop: invisible hotspot over the baked-in "view classes" button. */}
-      <button type="button" className="fcs-hotspot" onClick={go} aria-label="View classes"/>
+      {/* Desktop: sharp HTML overlay over the dark left of the artwork (scrim hides baked-in text). */}
+      <div className="fcs-overlay">
+        <span className="fcs-ov-label">Featured Class</span>
+        <span className="fcs-ov-title">Scene Study<br/>Workshop</span>
+        <span className="fcs-ov-tag">Deepen your craft and bring depth, truth, and connection to every scene.</span>
+        <button type="button" className="fcs-ov-btn" onClick={go}>View Classes →</button>
+      </div>
       {/* Mobile: live, readable title + button over the cover-cropped photo. */}
       <div className="fcs-mobile">
         <span className="fcs-m-label">Featured Class</span>
@@ -13527,6 +13540,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
 // recreate it on every Landing re-render, which would reset swipe state.
 // ═══════════════════════════════════════════
 const LANDING_SWIPE_DEMO=[
+  {id:13,name:"Zara Williams",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=800&fit=crop&crop=top&q=90",skills:["Drama Training","Voiceover","Stage Combat"]},
   {id:6,name:"Daniel Brooks",age:29,gender:"Male",height:"5'10\"",pos:"center 18%",img:"https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Indie Film","Drama","Guitar"]},
   {id:1,name:"Maria Santos",age:28,gender:"Female",height:"5'6\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=800&fit=crop&crop=top&q=90",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
   {id:2,name:"James Walker",age:46,gender:"Male",height:"6'1\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Improv","Yale Drama MFA","Basketball"]},
@@ -13538,7 +13552,6 @@ const LANDING_SWIPE_DEMO=[
   {id:10,name:"Marcus Reed",age:32,gender:"Male",height:"6'0\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=600&h=800&fit=crop&crop=top&q=90",skills:["TV Drama","Comedic Timing","Voice Work"]},
   {id:11,name:"Lucas Hartman",age:26,gender:"Male",height:"5'11\"",pos:"center 20%",img:"https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Action","Commercial","Improv"]},
   {id:12,name:"Hannah Whitfield",age:23,gender:"Female",height:"5'6\"",pos:"center 15%",img:"https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Period Drama","Theater","Voiceover"]},
-  {id:13,name:"Zara Williams",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=800&fit=crop&crop=top&q=90",skills:["Drama Training","Voiceover","Stage Combat"]},
   {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=800&fit=crop&crop=top&q=90",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
   {id:15,name:"Isabella Cruz",age:39,gender:"Female",height:"5'5\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&h=800&fit=crop&crop=top&q=90",skills:["Bilingual Spanish","Musical Theater","Commercial Print"]},
   {id:16,name:"Adrian Cole",age:34,gender:"Male",height:"6'1\"",pos:"center 20%",img:"https://images.pexels.com/photos/532220/pexels-photo-532220.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Corporate","Film","Spanish Fluent"]},
