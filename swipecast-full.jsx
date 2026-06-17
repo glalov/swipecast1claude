@@ -1419,6 +1419,15 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .nav-links span.mm-attn.act{background:rgba(232,144,42,.16);color:var(--amber-dk);}
 @keyframes mm-breathe{0%,100%{box-shadow:0 0 0 0 rgba(232,144,42,0);background:rgba(232,144,42,.08);}50%{box-shadow:0 0 16px 1px rgba(232,144,42,.50);background:rgba(232,144,42,.16);}}
 @media(prefers-reduced-motion:reduce){.nav-links span.mm-attn{animation:none;}}
+/* Free-plan upgrade stripe (ActivateMembershipBanner) — muted purple, amber CTA w/ shimmer, star glint */
+.mb-star{display:inline-block;color:#E8B65A;font-size:14px;line-height:1;animation:mb-glint 9s ease-in-out infinite;}
+.mb-cta{position:relative;overflow:hidden;border:none;border-radius:999px;padding:6px 16px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;background:var(--amber);color:#2C1E04;}
+.mb-cta .mb-arr{display:inline-block;transition:transform .25s;}
+.member-banner:hover .mb-cta .mb-arr,.mb-cta:hover .mb-arr{transform:translateX(4px);}
+.mb-cta::after{content:"";position:absolute;top:0;left:0;width:35%;height:100%;background:rgba(255,255,255,.35);filter:blur(2px);animation:mb-shimmer 10s ease-in-out infinite;pointer-events:none;}
+@keyframes mb-shimmer{0%{transform:translateX(-130%) skewX(-20deg);}100%{transform:translateX(430%) skewX(-20deg);}}
+@keyframes mb-glint{0%,82%,100%{opacity:.6;transform:scale(1);}88%{opacity:1;transform:scale(1.18);}94%{opacity:.85;transform:scale(1.04);}}
+@media(prefers-reduced-motion:reduce){.mb-cta::after,.mb-star{animation:none;}}
 .btn-p{background:var(--acc);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .btn-p:hover{background:var(--acc2);transform:translateY(-1px);}
 .btn-s{background:transparent;color:var(--t1);border:1px solid var(--bdr);padding:10px 22px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;}
@@ -2430,22 +2439,30 @@ function ActivateMembershipBanner({myProfile,onNavigate}){
   const status=myProfile?.membership_status||"free";
   if(!isTalent)return null;
   if(status==="active")return null;
-  return(<button
+  return(<div
     onClick={()=>onNavigate&&onNavigate("membership")}
     className="member-banner"
+    role="button" tabIndex={0}
     aria-label="Upgrade to Premium"
+    onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onNavigate&&onNavigate("membership");}}}
     style={{
-      position:"relative",
-      width:"100%",border:"none",cursor:"pointer",
-      background:"linear-gradient(90deg,#1a1a2e 0%,#16213e 100%)",
-      color:"#fff",fontFamily:"'DM Sans',sans-serif",fontWeight:700,
-      fontSize:13,letterSpacing:0.5,padding:"10px 24px",
-      display:"flex",alignItems:"center",justifyContent:"center",gap:10,
-      boxShadow:"0 1px 0 rgba(0,0,0,0.15)"
+      position:"relative",width:"100%",cursor:"pointer",
+      background:"#564D78",color:"#fff",fontFamily:"'DM Sans',sans-serif",
+      padding:"6px 18px",
+      display:"flex",alignItems:"center",justifyContent:"space-between",gap:14,
+      flexWrap:"wrap",boxShadow:"0 1px 0 rgba(0,0,0,0.15)"
     }}>
-    <span style={{fontSize:14}}>⭐</span>
-    <span>Free Plan: {FREE_PLAN.submissionsPerDay} submissions/day · 1 headshot · Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, Slate Video, Business Card, Manager Mode &amp; more →</span>
-  </button>);
+    <span style={{display:"flex",alignItems:"center",gap:9,minWidth:0,fontSize:13,fontWeight:700,color:"#fff",letterSpacing:0.2}}>
+      <span className="mb-star" aria-hidden="true">★</span>
+      <span>Get seen more — unlock unlimited submissions, Slate Video &amp; Manager Mode</span>
+    </span>
+    <button
+      className="mb-cta"
+      aria-label="Upgrade to Premium"
+      onClick={e=>{e.stopPropagation();onNavigate&&onNavigate("membership");}}>
+      Upgrade {PREMIUM_PRICE.replace("/month","/mo")} <span className="mb-arr" aria-hidden="true">→</span>
+    </button>
+  </div>);
 }
 
 // ─── Plan-picker. Three tiers (Yearly / 6mo / Monthly). Click a plan card
