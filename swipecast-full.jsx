@@ -1666,8 +1666,12 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .pricing-cards-grid{max-width:100% !important;}
 }
 .mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:150;backdrop-filter:blur(4px);}
-.mobile-menu-inner{background:var(--s1);border-bottom:1px solid var(--bdr);padding:18px 18px 22px;max-width:100%;animation:mmDrop .92s cubic-bezier(.22,.68,.28,1);box-shadow:0 10px 40px rgba(0,0,0,.12);transform-origin:top;will-change:transform;}
+.mobile-menu-inner{position:relative;background:var(--s1);border-bottom:1px solid var(--bdr);padding:18px 18px 22px;max-width:100%;animation:mmDrop .92s cubic-bezier(.22,.68,.28,1);box-shadow:0 10px 40px rgba(0,0,0,.12);transform-origin:top;will-change:transform;}
+.mobile-menu-inner.closing{animation:mmDropUp .92s cubic-bezier(.22,.68,.28,1) forwards;}
 @keyframes mmDrop{from{transform:translateY(-100%);}to{transform:translateY(0);}}
+@keyframes mmDropUp{from{transform:translateY(0);}to{transform:translateY(-100%);}}
+.mm-close{position:absolute;top:12px;right:12px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;background:none;border:1px solid var(--bdr);border-radius:8px;cursor:pointer;color:var(--t1);font-size:20px;line-height:1;padding:0;}
+.mm-close:hover{background:var(--s2);}
 @keyframes mmFade{from{opacity:0;}to{opacity:1;}}
 @keyframes pageFade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 @media(prefers-reduced-motion:reduce){.mobile-menu,.mobile-menu-inner{animation:none;}}
@@ -22575,6 +22579,8 @@ function App(){
   },[authReady,isLoggedIn,page,viewingCasting]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [menuOpen,setMenuOpen]=useState(false);
+  const [menuClosing,setMenuClosing]=useState(false);
+  const closeMenu=useCallback(()=>{setMenuClosing(true);setTimeout(()=>{setMenuOpen(false);setMenuClosing(false);},900);},[]);
   const [joinOpen,setJoinOpen]=useState(false);
   const joinRef=useRef(null);
   useEffect(()=>{
@@ -22662,13 +22668,14 @@ function App(){
             <button className={`${page==="login"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navigate("login")}>{navT('nav.signIn')}</button>
           </>}
         </div>
-        <button className="nav-burger" aria-label="Menu" onClick={()=>setMenuOpen(o=>!o)} style={{display:"none",background:"none",border:"1px solid var(--bdr)",borderRadius:8,width:40,height:40,cursor:"pointer",alignItems:"center",justifyContent:"center",padding:0}}>
+        <button className="nav-burger" aria-label="Menu" onClick={()=>menuOpen?closeMenu():setMenuOpen(true)} style={{display:"none",background:"none",border:"1px solid var(--bdr)",borderRadius:8,width:40,height:40,cursor:"pointer",alignItems:"center",justifyContent:"center",padding:0}}>
           <span style={{display:"block",width:18,height:2,background:"var(--t1)",boxShadow:"0 -5px 0 var(--t1), 0 5px 0 var(--t1)"}}></span>
         </button>
       </nav>
       </div>
-      {menuOpen&&<div className="mobile-menu" onClick={()=>setMenuOpen(false)}>
-        <div className="mobile-menu-inner" onClick={e=>e.stopPropagation()}>
+      {menuOpen&&<div className="mobile-menu" onClick={closeMenu}>
+        <div className={"mobile-menu-inner"+(menuClosing?" closing":"")} onClick={e=>e.stopPropagation()}>
+          <button className="mm-close" aria-label="Close menu" onClick={closeMenu}>×</button>
           <div style={{display:"flex",flexDirection:"column",gap:4}}>
             <button className="mm-link" onClick={()=>navThen("home")}>{navT('nav.home')}</button>
             <button className="mm-link" onClick={()=>navThen("search")}>{navT('nav.browse')}</button>
