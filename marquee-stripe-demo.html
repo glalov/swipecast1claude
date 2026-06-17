@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Marquee Stripe Demo — CastSlate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F4EE; --t1:#1A1A2E; --acc:#1A1A2E; --t2:#5A5A72; --t3:#8E8EA0;
+    --bdr:#E5DFD2; --teal:#4F8A8B; --amber:#E8902A; --gold:#E0A43B; --bannerbg:#0c0a08;
+    /* marquee tunables (driven by the control panel) */
+    --mq-h:30px;            /* desktop height */
+    --mq-h-mobile:26px;
+    --mq-speed:140s;        /* loop duration (higher = slower) */
+    --mq-bg:#15131f;        /* navy-black */
+    --mq-fg:#E0A43B;        /* gold text */
+    --mq-dot:#E0A43B;       /* bullet color */
+    --mq-fontsize:11px;
+    --mq-letter:2.2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--t1);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+
+  /* ─────────────────────────────────────────────────────────────
+     STICKY HEADER STACK:  marquee  ▸  workshop banner  ▸  nav
+     The marquee + banner both fold (collapse) together on scroll.
+  ───────────────────────────────────────────────────────────── */
+  .site-header{position:sticky;top:0;z-index:100;}
+
+  /* ── MARQUEE STRIPE ──────────────────────────────────────────── */
+  .marquee{
+    position:relative;width:100%;height:var(--mq-h);
+    background:var(--mq-bg);overflow:hidden;display:flex;align-items:center;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    transition:height .42s cubic-bezier(.4,0,.2,1), opacity .30s ease;
+  }
+  .marquee__track{
+    display:flex;width:max-content;flex-shrink:0;
+    animation:mq-scroll var(--mq-speed) linear infinite;
+    will-change:transform;
+  }
+  .marquee__group{display:flex;flex-shrink:0;align-items:center;}
+  .marquee__item{
+    display:inline-flex;align-items:center;white-space:nowrap;
+    font-family:'DM Sans',sans-serif;font-weight:700;
+    font-size:var(--mq-fontsize);letter-spacing:var(--mq-letter);
+    text-transform:uppercase;color:var(--mq-fg);padding:0 0 0 0;
+  }
+  .marquee__item::after{
+    content:"";display:inline-block;width:4px;height:4px;border-radius:50%;
+    background:var(--mq-dot);opacity:.8;margin:0 26px;flex-shrink:0;
+  }
+  /* move content left→right; start at -50% (one duplicated group) and slide
+     back to 0 — identical frames at both ends → seamless loop, no jump */
+  @keyframes mq-scroll{from{transform:translateX(-50%);}to{transform:translateX(0);}}
+  .marquee:hover .marquee__track{animation-play-state:paused;}
+
+  /* folded state — collapses to nothing, in sync with the banner */
+  .site-header.is-scrolled .marquee{height:0;opacity:0;border-bottom-color:transparent;}
+
+  /* ── WORKSHOP BANNER (mirrors production .featured-class-stripe) ── */
+  .fcb{position:relative;width:100%;line-height:0;background:var(--bannerbg);overflow:hidden;
+       transition:height .42s cubic-bezier(.4,0,.2,1);}
+  .fcb-full{position:relative;height:100%;transition:opacity .22s ease;}
+  .fcb img{display:block;width:100%;height:auto;}
+  .fcb-compact{position:absolute;inset:0;display:flex;align-items:center;gap:16px;padding:0 24px;
+       opacity:0;pointer-events:none;transition:opacity .28s ease;}
+  .fcb-compact .lbl{font-size:9.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:var(--gold);font-family:'DM Sans',sans-serif;}
+  .fcb-compact .ttl{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:16px;color:#fff;white-space:nowrap;flex:1;}
+  .fcb-compact .btn{flex-shrink:0;background:var(--gold);color:#231706;border:none;border-radius:8px;padding:9px 18px;font-size:12px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;}
+  .site-header.is-scrolled .fcb-full{opacity:0;pointer-events:none;}
+  .site-header.is-scrolled .fcb-compact{opacity:1;pointer-events:auto;}
+
+  /* ── NAV (recreated to match the live header) ──────────────────── */
+  .nav{background:var(--bg);border-bottom:1px solid var(--bdr);display:flex;align-items:center;
+       justify-content:space-between;padding:0 28px;height:64px;}
+  .nav-logo{display:flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;color:var(--t1);}
+  .nav-logo .mark{width:34px;height:34px;border-radius:9px;background:var(--t1);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;}
+  .nav-links{display:flex;gap:26px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:14px;color:var(--t2);}
+  .nav-links a{color:var(--t2);text-decoration:none;}
+  .nav-links a.active{color:var(--t1);font-weight:700;background:#fff;border:1px solid var(--bdr);padding:6px 14px;border-radius:9px;}
+  .nav-links a.mm{color:var(--amber);font-weight:700;}
+  .nav-right{display:flex;gap:10px;}
+  .nav-right button{font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;border-radius:9px;padding:9px 16px;cursor:pointer;border:1px solid var(--bdr);background:#fff;color:var(--t1);}
+  .nav-right .join{background:var(--t1);color:#fff;border-color:var(--t1);}
+
+  /* ── PAGE CONTENT (representative homepage so the fold has context) ── */
+  .hero{max-width:1200px;margin:0 auto;padding:54px 28px 40px;display:grid;grid-template-columns:1.1fr .9fr;gap:50px;align-items:center;}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--bdr);border-radius:999px;padding:7px 15px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:11px;letter-spacing:1.3px;color:var(--t2);text-transform:uppercase;}
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);}
+  .hero h1{font-family:'Playfair Display',serif;font-weight:800;font-size:62px;line-height:1.05;letter-spacing:-1.5px;margin:22px 0 18px;color:var(--t1);}
+  .hero p{font-size:17px;line-height:1.6;color:var(--t2);max-width:480px;}
+  .hero-cta{display:flex;gap:12px;margin-top:26px;}
+  .hero-cta button{font-family:'DM Sans',sans-serif;font-weight:700;font-size:15px;border-radius:11px;padding:14px 22px;cursor:pointer;border:1px solid var(--bdr);background:#fff;color:var(--t1);}
+  .hero-cta .primary{background:var(--t1);color:#fff;border-color:var(--t1);}
+  .pcard{background:#fff;border:1px solid var(--bdr);border-radius:18px;overflow:hidden;box-shadow:0 24px 60px -36px rgba(26,26,46,.35),0 2px 8px rgba(26,26,46,.05);}
+  .pcard .ph{aspect-ratio:1/1;background:linear-gradient(135deg,#cfc8bd,#a9a2b6);}
+  .pcard .meta{padding:18px 20px;}
+  .pcard .meta b{font-size:17px;}
+  .pcard .meta .sub{color:var(--t3);font-size:13px;margin-top:3px;}
+  .pcard .tags{display:flex;gap:7px;margin-top:12px;}
+  .pcard .tags span{background:var(--bg);border:1px solid var(--bdr);border-radius:7px;padding:4px 9px;font-size:11px;color:var(--t2);}
+
+  .section{max-width:1200px;margin:0 auto;padding:40px 28px;}
+  .kicker{text-align:center;font-family:'DM Sans',sans-serif;font-weight:800;letter-spacing:2px;font-size:12px;color:var(--t3);text-transform:uppercase;margin-bottom:26px;}
+  .fmt-row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+  .fmt{aspect-ratio:3/4;border-radius:16px;background:linear-gradient(180deg,rgba(26,26,46,.1),rgba(26,26,46,.6));color:#fff;padding:20px;display:flex;flex-direction:column;justify-content:flex-end;font-family:'DM Sans',sans-serif;}
+  .fmt b{font-family:'Playfair Display',serif;font-size:22px;}
+  .fmt small{opacity:.85;font-family:'Inter';}
+  .studios{text-align:center;padding:70px 28px;}
+  .studios .from{font-family:'DM Sans',sans-serif;font-weight:800;letter-spacing:2px;font-size:12px;color:var(--t3);text-transform:uppercase;}
+  .studios .names{font-family:'Playfair Display',serif;font-weight:900;font-size:58px;margin:14px 0;}
+  .studios .names .a{color:var(--t1);} .studios .names .n{color:#ff4d6d;} .studios .names .x{color:#e50914;}
+  .studios .lvl{color:var(--t3);font-family:'DM Sans';font-weight:700;}
+  .tail{height:900px;}
+
+  /* ── CONTROL PANEL ─────────────────────────────────────────────── */
+  .panel{position:fixed;right:18px;bottom:18px;z-index:9999;width:268px;background:#fff;border:1px solid var(--bdr);
+    border-radius:14px;box-shadow:0 18px 50px -20px rgba(26,26,46,.45);padding:16px 16px 14px;font-family:'DM Sans',sans-serif;}
+  .panel h4{margin:0 0 4px;font-size:13px;font-weight:800;letter-spacing:.4px;}
+  .panel .hint{font-size:10.5px;color:var(--t3);margin:0 0 12px;line-height:1.4;}
+  .panel label{display:block;font-size:11px;font-weight:700;color:var(--t2);margin:10px 0 4px;display:flex;justify-content:space-between;}
+  .panel label .val{color:var(--t1);font-weight:800;}
+  .panel input[type=range]{width:100%;accent-color:var(--teal);}
+  .swatches{display:flex;gap:8px;margin-top:6px;}
+  .swatch{flex:1;height:30px;border-radius:8px;border:2px solid transparent;cursor:pointer;font-size:9px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;text-transform:uppercase;letter-spacing:.5px;}
+  .swatch.sel{border-color:var(--t1);box-shadow:0 0 0 2px #fff inset;}
+  .panel .togglerow{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:11px;font-weight:700;color:var(--t2);}
+  .panel .mini{font-size:10px;color:var(--t3);margin-top:12px;border-top:1px solid var(--bdr);padding-top:9px;line-height:1.5;}
+  .panel code{background:var(--bg);border:1px solid var(--bdr);border-radius:4px;padding:1px 4px;color:var(--t1);}
+
+  @media (max-width:768px){
+    :root{--mq-h:var(--mq-h-mobile);}
+    .marquee{height:var(--mq-h-mobile);}
+    .hero{grid-template-columns:1fr;padding:30px 18px;}
+    .hero h1{font-size:38px;}
+    .fmt-row{grid-template-columns:repeat(2,1fr);}
+    .studios .names{font-size:36px;}
+    .panel{left:12px;right:12px;width:auto;bottom:12px;}
+  }
+</style>
+</head>
+<body>
+
+  <header class="site-header" id="header">
+
+    <!-- ▸ MARQUEE STRIPE (immediately above the workshop banner) -->
+    <div class="marquee" aria-label="CastSlate announcements">
+      <div class="marquee__track" id="mqTrack">
+        <!-- group 1 -->
+        <div class="marquee__group" id="mqGroup">
+          <!-- items injected by JS so the sequence repeats enough to fill any width -->
+        </div>
+        <!-- group 2 (identical) is cloned by JS for the seamless -50% loop -->
+      </div>
+    </div>
+
+    <!-- ▸ WORKSHOP BANNER (collapses on scroll; marquee folds with it) -->
+    <aside class="fcb" id="fcb" role="region" aria-label="Featured class">
+      <div class="fcb-full">
+        <img src="https://www.castslate.com/assets/banner/scene-study.jpg" alt="Featured Class — Scene Study Workshop"/>
+      </div>
+      <div class="fcb-compact">
+        <span class="lbl">Featured Class</span>
+        <span class="ttl">Scene Study Workshop</span>
+        <button class="btn">View Classes →</button>
+      </div>
+    </aside>
+
+    <!-- ▸ NAV (never covered by the marquee) -->
+    <nav class="nav">
+      <div class="nav-logo"><span class="mark">◆</span> CastSlate</div>
+      <div class="nav-links">
+        <a class="active" href="#">Home</a>
+        <a href="#">Browse Castings</a>
+        <a href="#">Classes</a>
+        <a href="#">TapeLink</a>
+        <a class="mm" href="#">Manager Mode</a>
+        <a href="#">Blog</a>
+      </div>
+      <div class="nav-right">
+        <button class="join">Join ▾</button>
+        <button>Post a Job</button>
+        <button>Sign in</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ── representative homepage content ── -->
+  <section class="hero">
+    <div>
+      <span class="eyebrow"><span class="dot"></span> Live now · Trusted by working actors and casting directors</span>
+      <h1>Modern casting that gives every actor a real look.</h1>
+      <p>A visual-first platform where indie filmmakers and undiscovered talent meet — browsed one profile at a time, never lost in a grid.</p>
+      <div class="hero-cta">
+        <button class="primary">Create My Free Profile →</button>
+        <button>I'm a Casting Director</button>
+      </div>
+    </div>
+    <div class="pcard">
+      <div class="ph"></div>
+      <div class="meta"><b>Daniel Brooks</b><div class="sub">29 · Male · 5'10"</div>
+        <div class="tags"><span>Indie Film</span><span>Drama</span><span>Guitar</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="kicker">Casting across every format</div>
+    <div class="fmt-row">
+      <div class="fmt"><b>Student Films</b><small>Where emerging talent gets discovered.</small></div>
+      <div class="fmt"><b>Voiceover</b><small>Bring words to life.</small></div>
+      <div class="fmt"><b>Feature Films</b><small>Big stories.</small></div>
+      <div class="fmt"><b>Theater</b><small>Live performance.</small></div>
+    </div>
+  </section>
+
+  <section class="studios">
+    <div class="from">From indie films to</div>
+    <div class="names"><span class="a">A24</span> · <span class="n">Neon</span> · <span class="x">Netflix</span></div>
+    <div class="lvl">— level projects</div>
+  </section>
+
+  <div class="tail"></div>
+
+  <!-- ── CONTROL PANEL ── -->
+  <div class="panel">
+    <h4>Marquee controls</h4>
+    <p class="hint">Scroll the page to watch the stripe fold away with the banner. Hover the stripe to pause.</p>
+
+    <label>Height (desktop) <span class="val" id="vH">30px</span></label>
+    <input type="range" id="rH" min="24" max="40" value="30"/>
+
+    <label>Speed (loop time) <span class="val" id="vS">140s</span></label>
+    <input type="range" id="rS" min="40" max="300" value="140"/>
+    <p class="hint" style="margin:4px 0 0;">Lower = faster. Higher = slower & calmer.</p>
+
+    <label style="margin-top:12px;">Color theme</label>
+    <div class="swatches">
+      <div class="swatch sel" data-theme="navy"  style="background:#15131f;">Navy<br>+Gold</div>
+      <div class="swatch" data-theme="teal"  style="background:linear-gradient(135deg,#5C9FA0,#3B6E6F);">Teal</div>
+      <div class="swatch" data-theme="cream" style="background:#F1ECE1;color:#1A1A2E;">Cream</div>
+    </div>
+
+    <div class="togglerow">
+      <span>Fold with banner on scroll</span>
+      <input type="checkbox" id="rFold" checked style="accent-color:var(--teal);transform:scale(1.2);"/>
+    </div>
+
+    <div class="mini" id="readout">Current: <code>30px</code> · <code>140s</code> · <code>navy+gold</code></div>
+  </div>
+
+<script>
+(function(){
+  var PHRASES=[
+    "CastSlate Workshops","Industry-Led Acting Classes","NYC Casting Access",
+    "New Classes Open","Build Your Actor Profile","Get Seen by Casting Professionals"
+  ];
+  var root=document.documentElement;
+  var group=document.getElementById('mqGroup');
+  var track=document.getElementById('mqTrack');
+
+  // Fill one group with the phrase sequence repeated enough to exceed the
+  // widest viewport, then clone the whole group so the -50% keyframe loops
+  // perfectly with no visible jump.
+  function buildItems(){
+    var html='';
+    for(var r=0;r<4;r++){
+      for(var i=0;i<PHRASES.length;i++){
+        html+='<span class="marquee__item">'+PHRASES[i]+'</span>';
+      }
+    }
+    group.innerHTML=html;
+    // remove any previous clone, then clone fresh
+    while(track.children.length>1) track.removeChild(track.lastChild);
+    track.appendChild(group.cloneNode(true));
+  }
+  buildItems();
+
+  // Scroll → fold the marquee + collapse the banner together.
+  var header=document.getElementById('header');
+  var foldEnabled=true;
+  function onScroll(){
+    if(foldEnabled && window.scrollY>40) header.classList.add('is-scrolled');
+    else header.classList.remove('is-scrolled');
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+
+  // ── controls ──
+  var rH=document.getElementById('rH'),vH=document.getElementById('vH');
+  var rS=document.getElementById('rS'),vS=document.getElementById('vS');
+  var rFold=document.getElementById('rFold');
+  var readout=document.getElementById('readout');
+  var theme='navy';
+
+  var THEMES={
+    navy:{bg:'#15131f',fg:'#E0A43B',dot:'#E0A43B'},
+    teal:{bg:'linear-gradient(135deg,#5C9FA0,#4F8A8B,#3B6E6F)',fg:'#FFF7EC',dot:'#FFD79A'},
+    cream:{bg:'#F1ECE1',fg:'#1A1A2E',dot:'#E8902A'}
+  };
+
+  function sync(){
+    var h=rH.value+'px', s=rS.value+'s';
+    root.style.setProperty('--mq-h',h);
+    root.style.setProperty('--mq-speed',s);
+    vH.textContent=h; vS.textContent=s;
+    readout.innerHTML='Current: <code>'+h+'</code> · <code>'+s+'</code> · <code>'+theme+(theme==='navy'?'+gold':'')+'</code>';
+  }
+  function applyTheme(name){
+    theme=name; var t=THEMES[name];
+    root.style.setProperty('--mq-bg',t.bg);
+    root.style.setProperty('--mq-fg',t.fg);
+    root.style.setProperty('--mq-dot',t.dot);
+    sync();
+  }
+  rH.addEventListener('input',sync);
+  rS.addEventListener('input',sync);
+  rFold.addEventListener('change',function(){foldEnabled=rFold.checked;onScroll();});
+  document.querySelectorAll('.swatch').forEach(function(sw){
+    sw.addEventListener('click',function(){
+      document.querySelectorAll('.swatch').forEach(function(x){x.classList.remove('sel');});
+      sw.classList.add('sel');
+      applyTheme(sw.getAttribute('data-theme'));
+    });
+  });
+  sync();
+})();
+</script>
+</body>
+</html>

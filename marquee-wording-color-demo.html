@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Marquee — Wording & Color Compare</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F4EE; --t1:#1A1A2E; --t2:#5A5A72; --t3:#8E8EA0; --bdr:#E5DFD2;
+    --teal:#4F8A8B; --amber:#E8902A; --gold:#E0A43B; --bannerbg:#0c0a08;
+    --mq-bg:#15131f;
+    --mq-fg:#E0A43B;          /* live (banner gold) by default */
+    --mq-speed:60s;           /* demo default = readable; live is 210s */
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--t1);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:120px;}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:26px 22px 0;}
+  h2{font-family:'DM Sans',sans-serif;font-size:20px;margin:0 0 4px;}
+  .sub{color:var(--t2);font-size:13px;margin:0 0 22px;line-height:1.5;}
+
+  .stage{border:1px solid var(--bdr);border-radius:14px;overflow:hidden;box-shadow:0 18px 50px -30px rgba(26,26,46,.4);}
+  .caption{font-family:'DM Sans';font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin:26px 0 8px;}
+
+  /* marquee */
+  .marquee{position:relative;width:100%;height:24px;background:var(--mq-bg);overflow:hidden;display:flex;align-items:center;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .marquee.alt{--mq-fg:#E8902A;}      /* brand amber variant for compare */
+  .marquee__track{display:flex;width:max-content;flex-shrink:0;animation:mq var(--mq-speed) linear infinite;will-change:transform;}
+  .marquee__group{display:flex;flex-shrink:0;align-items:center;}
+  .mq-item{display:inline-flex;align-items:center;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:11px;letter-spacing:2.2px;text-transform:uppercase;color:var(--mq-fg);}
+  .mq-item::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--mq-fg);opacity:.8;margin:0 26px;flex-shrink:0;}
+  @keyframes mq{from{transform:translateX(-50%);}to{transform:translateX(0);}}
+  .marquee:hover .marquee__track{animation-play-state:paused;}
+
+  /* banner (real artwork, for context) */
+  .fcb{position:relative;width:100%;line-height:0;background:var(--bannerbg);}
+  .fcb img{display:block;width:100%;height:auto;}
+
+  /* swatch chips for the gold compare */
+  .chips{display:flex;gap:14px;margin:10px 0 0;flex-wrap:wrap;}
+  .chip{display:flex;align-items:center;gap:8px;font-family:'DM Sans';font-size:12px;font-weight:700;color:var(--t2);}
+  .chip i{width:16px;height:16px;border-radius:4px;display:inline-block;}
+
+  /* control panel */
+  .panel{position:fixed;left:0;right:0;bottom:0;z-index:50;background:#fff;border-top:1px solid var(--bdr);box-shadow:0 -10px 30px -18px rgba(26,26,46,.4);padding:14px 22px;display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap;font-family:'DM Sans',sans-serif;}
+  .ctl{min-width:0;}
+  .ctl h4{margin:0 0 7px;font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--t3);}
+  .opts{display:flex;gap:8px;flex-wrap:wrap;}
+  .opt{border:1px solid var(--bdr);background:var(--bg);border-radius:9px;padding:8px 13px;font-size:12px;font-weight:700;color:var(--t1);cursor:pointer;}
+  .opt.sel{background:var(--t1);color:#fff;border-color:var(--t1);}
+  .readme{font-size:11px;color:var(--t3);max-width:300px;line-height:1.5;}
+  @media (max-width:720px){.panel{gap:16px;}}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>Marquee — wording &amp; gold comparison</h2>
+    <p class="sub">Top stage = the live header (marquee on the real banner) so you judge wording + color in context. Below it, the two golds run side-by-side on the dark stripe for a direct read. Use the bar at the bottom to switch wording and the live color. Hover any stripe to pause it.</p>
+
+    <!-- IN-CONTEXT: marquee on the banner -->
+    <div class="caption">In context · on the workshop banner</div>
+    <div class="stage">
+      <div class="marquee" id="mqLive">
+        <div class="marquee__track"><div class="marquee__group" id="gLiveA"></div><div class="marquee__group" id="gLiveB" aria-hidden="true"></div></div>
+      </div>
+      <div class="fcb"><img src="https://www.castslate.com/assets/banner/scene-study.jpg" alt="Scene Study Workshop banner"/></div>
+    </div>
+
+    <!-- DIRECT GOLD COMPARE -->
+    <div class="caption">Gold A/B · same wording, same dark stripe</div>
+    <div class="stage">
+      <div class="marquee">
+        <div class="marquee__track"><div class="marquee__group" id="gAa"></div><div class="marquee__group" id="gAb" aria-hidden="true"></div></div>
+      </div>
+      <div class="marquee alt">
+        <div class="marquee__track"><div class="marquee__group" id="gBa"></div><div class="marquee__group" id="gBb" aria-hidden="true"></div></div>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip"><i style="background:#E0A43B;"></i> Top — #E0A43B (banner gold · current live)</span>
+      <span class="chip"><i style="background:#E8902A;"></i> Bottom — #E8902A (brand amber · used on buttons/Manager Mode)</span>
+    </div>
+  </div>
+
+  <!-- CONTROL PANEL -->
+  <div class="panel">
+    <div class="ctl">
+      <h4>Wording set</h4>
+      <div class="opts" id="wordOpts">
+        <button class="opt sel" data-set="current">1 · Current (live)</button>
+        <button class="opt" data-set="mixed">2 · Mixed register ★</button>
+        <button class="opt" data-set="punchy">3 · Punchy / short</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <h4>Live stripe gold</h4>
+      <div class="opts" id="goldOpts">
+        <button class="opt sel" data-gold="#E0A43B">Banner gold #E0A43B</button>
+        <button class="opt" data-gold="#E8902A">Brand amber #E8902A</button>
+      </div>
+    </div>
+    <div class="ctl readme">
+      ★ "Mixed register" is my recommendation — it blends a proof line, a freshness line, and action lines so the ticker reads with texture instead of a flat list of verbs.
+    </div>
+  </div>
+
+<script>
+(function(){
+  var SETS={
+    current:["Find Roles","Build Your Actor Profile","Submit to Projects","Join Industry Classes","Connect With Creative Teams","Grow Your Career"],
+    mixed:["Every Submission Gets Seen","Find Roles","Trusted by Working Actors & Casting Directors","New Classes Open Weekly","Build Your Actor Profile","Get Seen by Casting Professionals"],
+    punchy:["Find Roles","Get Seen","Book Work","New Classes Open Weekly","Submit to Real Projects","Trusted by Working Actors & Casting Directors"]
+  };
+  var current="current";
+  function fill(elId,phrases){
+    var el=document.getElementById(elId);var html="";
+    for(var r=0;r<4;r++)for(var i=0;i<phrases.length;i++)html+='<span class="mq-item">'+phrases[i]+'</span>';
+    el.innerHTML=html;
+  }
+  function render(){
+    var p=SETS[current];
+    ["gLiveA","gLiveB","gAa","gAb","gBa","gBb"].forEach(function(id){fill(id,p);});
+  }
+  render();
+
+  document.getElementById('wordOpts').addEventListener('click',function(e){
+    var b=e.target.closest('.opt'); if(!b)return;
+    document.querySelectorAll('#wordOpts .opt').forEach(function(x){x.classList.remove('sel');});
+    b.classList.add('sel'); current=b.getAttribute('data-set'); render();
+  });
+  document.getElementById('goldOpts').addEventListener('click',function(e){
+    var b=e.target.closest('.opt'); if(!b)return;
+    document.querySelectorAll('#goldOpts .opt').forEach(function(x){x.classList.remove('sel');});
+    b.classList.add('sel');
+    document.documentElement.style.setProperty('--mq-fg',b.getAttribute('data-gold'));
+  });
+})();
+</script>
+</body>
+</html>

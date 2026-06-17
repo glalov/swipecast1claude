@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Profile Review — CastSlate (demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F4EE; --t1:#1A1A2E; --acc:#1A1A2E; --t2:#5A5A72; --t3:#8E8EA0;
+    --bdr:#E5DFD2; --teal:#4F8A8B; --amber:#E8902A; --gold:#E0A43B;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--bg);color:var(--t1);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+  .narrow{max-width:780px;}
+
+  /* nav */
+  .nav{position:sticky;top:0;z-index:50;background:rgba(247,244,238,.88);backdrop-filter:blur(8px);border-bottom:1px solid var(--bdr);}
+  .nav-in{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:64px;}
+  .logo{display:flex;align-items:center;gap:10px;font-family:'DM Sans';font-weight:800;font-size:20px;}
+  .logo .m{width:34px;height:34px;border-radius:9px;background:var(--t1);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;}
+  .nav-links{display:flex;gap:24px;font-family:'DM Sans';font-weight:500;font-size:14px;color:var(--t2);}
+  .nav-links a{color:var(--t2);text-decoration:none;}
+  .nav-links a.mm{color:var(--amber);font-weight:700;}
+  .nav-right{display:flex;gap:10px;}
+  .nav-right button{font-family:'DM Sans';font-weight:700;font-size:13px;border-radius:9px;padding:9px 16px;cursor:pointer;border:1px solid var(--bdr);background:#fff;color:var(--t1);}
+  .nav-right .join{background:var(--t1);color:#fff;border-color:var(--t1);}
+  @media(max-width:880px){.nav-links{display:none;}}
+
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--bdr);border-radius:999px;padding:7px 15px;font-family:'DM Sans';font-weight:700;font-size:11px;letter-spacing:1.3px;color:var(--t2);text-transform:uppercase;}
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);}
+
+  /* hero */
+  .hero{padding:64px 0 44px;text-align:center;}
+  .hero h1{font-family:'Playfair Display',serif;font-weight:800;font-size:58px;line-height:1.05;letter-spacing:-1.4px;margin:22px auto 16px;max-width:760px;}
+  .hero h1 .hl{background:linear-gradient(90deg,var(--teal),var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hero p{font-size:18px;line-height:1.6;color:var(--t2);max-width:560px;margin:0 auto;}
+  .btn-p{font-family:'DM Sans';font-weight:800;font-size:15px;border:none;border-radius:13px;padding:15px 26px;cursor:pointer;background:var(--amber);color:#231706;text-decoration:none;display:inline-block;}
+  .btn-ghost{font-family:'DM Sans';font-weight:700;font-size:15px;border:1px solid var(--bdr);border-radius:13px;padding:14px 24px;cursor:pointer;background:#fff;color:var(--t1);text-decoration:none;display:inline-block;}
+  .hero-cta{display:flex;gap:12px;justify-content:center;margin-top:30px;flex-wrap:wrap;}
+  .hero-fine{margin-top:16px;font-size:12.5px;color:var(--t3);}
+
+  .section{padding:54px 0;}
+  .label{text-align:center;font-family:'DM Sans';font-weight:800;letter-spacing:2px;font-size:12px;color:var(--teal);text-transform:uppercase;margin-bottom:10px;}
+  .h2{font-family:'Playfair Display',serif;font-weight:800;font-size:36px;text-align:center;letter-spacing:-.6px;margin:0 0 14px;}
+  .lead{text-align:center;color:var(--t2);font-size:16px;line-height:1.6;max-width:620px;margin:0 auto 38px;}
+
+  /* what you get */
+  .grid4{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;}
+  .card{background:#fff;border:1px solid var(--bdr);border-radius:22px;padding:28px;box-shadow:0 12px 38px -22px rgba(26,26,46,.24),0 2px 8px rgba(26,26,46,.04);}
+  .card .ic{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(79,138,139,.15),rgba(232,144,42,.15));display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px;}
+  .card h3{font-family:'DM Sans';font-weight:800;font-size:18px;margin:0 0 7px;}
+  .card p{color:var(--t2);font-size:14px;line-height:1.6;margin:0;}
+  @media(max-width:720px){.grid4{grid-template-columns:1fr;}}
+
+  /* how it works */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .step{background:#fff;border:1px solid var(--bdr);border-radius:20px;padding:26px;}
+  .step .n{width:34px;height:34px;border-radius:50%;background:var(--t1);color:#fff;font-family:'DM Sans';font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+  .step h4{font-family:'DM Sans';font-weight:800;font-size:16px;margin:0 0 6px;}
+  .step p{color:var(--t2);font-size:13.5px;line-height:1.6;margin:0;}
+  .timenote{margin-top:22px;text-align:center;background:rgba(79,138,139,.08);border:1px solid rgba(79,138,139,.25);border-radius:12px;padding:13px 18px;font-size:13.5px;color:var(--t2);}
+  @media(max-width:720px){.steps{grid-template-columns:1fr;}}
+
+  /* mission — teal gradient CTA block */
+  .mission{border-radius:28px;background:linear-gradient(135deg,#5C9FA0,#4F8A8B,#3B6E6F);color:#fff;padding:48px 44px;text-align:center;position:relative;overflow:hidden;}
+  .mission .eb{color:#FFD79A;font-family:'DM Sans';font-weight:800;letter-spacing:2px;font-size:12px;text-transform:uppercase;}
+  .mission h3{font-family:'Playfair Display',serif;font-weight:800;font-size:32px;margin:10px 0 12px;}
+  .mission p{font-size:16px;line-height:1.7;max-width:620px;margin:0 auto;opacity:.96;}
+
+  /* free vs premium honesty */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px;}
+  .plan{background:#fff;border:1px solid var(--bdr);border-radius:20px;padding:26px;}
+  .plan.prem{border:1.5px solid var(--teal);box-shadow:0 16px 44px -26px rgba(79,138,139,.5);}
+  .plan .tag{font-family:'DM Sans';font-weight:800;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--t3);}
+  .plan.prem .tag{color:var(--teal);}
+  .plan h4{font-family:'DM Sans';font-weight:800;font-size:20px;margin:6px 0 14px;}
+  .plan ul{margin:0;padding:0;list-style:none;}
+  .plan li{display:flex;gap:9px;font-size:14px;color:var(--t2);padding:7px 0;line-height:1.5;}
+  .plan li b{color:var(--t1);}
+  .plan li .ck{color:var(--teal);font-weight:800;flex-shrink:0;}
+  .plan li .x{color:var(--t3);flex-shrink:0;}
+  .honest{margin-top:18px;background:#fff;border:1px solid var(--bdr);border-left:3px solid var(--amber);border-radius:12px;padding:16px 20px;font-size:14px;color:var(--t2);line-height:1.6;}
+  @media(max-width:720px){.compare{grid-template-columns:1fr;}}
+
+  /* form */
+  .formcard{background:#fff;border:1px solid var(--bdr);border-radius:24px;padding:36px;box-shadow:0 24px 60px -36px rgba(26,26,46,.35),0 2px 8px rgba(26,26,46,.05);}
+  .fg{margin-bottom:18px;}
+  .fg label{display:block;font-family:'DM Sans';font-weight:700;font-size:13px;margin-bottom:6px;}
+  .fg .help{font-size:12px;color:var(--t3);margin:5px 0 0;}
+  .fg input,.fg select,.fg textarea{width:100%;font-family:'Inter';font-size:14px;padding:12px 14px;border:1px solid var(--bdr);border-radius:11px;background:var(--bg);color:var(--t1);}
+  .fg textarea{min-height:90px;resize:vertical;}
+  .linkrow{display:flex;gap:8px;}
+  .linkrow input{flex:1;}
+  .copybtn{flex-shrink:0;font-family:'DM Sans';font-weight:700;font-size:13px;border:1px solid var(--bdr);background:#fff;border-radius:11px;padding:0 16px;cursor:pointer;color:var(--t1);}
+  .submit{width:100%;font-family:'DM Sans';font-weight:800;font-size:16px;border:none;border-radius:13px;padding:16px;cursor:pointer;background:var(--t1);color:#fff;margin-top:6px;}
+  .confirm{display:none;text-align:center;padding:30px 10px;}
+  .confirm .big{font-size:40px;}
+  .confirm h3{font-family:'Playfair Display',serif;font-size:26px;margin:10px 0 8px;}
+  .confirm p{color:var(--t2);font-size:15px;line-height:1.6;margin:0 auto;max-width:420px;}
+
+  /* faq */
+  .faq{max-width:780px;margin:0 auto;}
+  .qa{background:#fff;border:1px solid var(--bdr);border-radius:14px;padding:18px 22px;margin-bottom:12px;}
+  .qa summary{font-family:'DM Sans';font-weight:700;font-size:15px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;}
+  .qa summary::-webkit-details-marker{display:none;}
+  .qa summary::after{content:"+";color:var(--teal);font-size:20px;font-weight:700;}
+  .qa[open] summary::after{content:"–";}
+  .qa p{color:var(--t2);font-size:14px;line-height:1.6;margin:12px 0 0;}
+
+  .footcta{text-align:center;padding:60px 0 80px;}
+  .footcta p{color:var(--t2);margin:0 0 16px;}
+
+  .demoflag{position:fixed;left:12px;bottom:12px;z-index:99;background:var(--t1);color:#fff;font-family:'DM Sans';font-weight:700;font-size:11px;letter-spacing:.5px;padding:7px 12px;border-radius:8px;opacity:.85;}
+</style>
+</head>
+<body>
+
+  <!-- nav (for context) -->
+  <div class="nav"><div class="nav-in">
+    <div class="logo"><span class="m">◆</span> CastSlate</div>
+    <div class="nav-links"><a>Home</a><a>Browse Castings</a><a>Classes</a><a>TapeLink</a><a class="mm">Manager Mode</a><a>Blog</a></div>
+    <div class="nav-right"><button class="join">Join ▾</button><button>Post a Job</button><button>Sign in</button></div>
+  </div></div>
+
+  <!-- HERO -->
+  <header class="hero"><div class="wrap">
+    <span class="eyebrow"><span class="dot"></span> Free · Reviewed by a working casting director</span>
+    <h1>Get a free <span class="hl">profile review</span> from a casting director.</h1>
+    <p>Find your casting type, learn which roles to chase, and see exactly what to fix — personal feedback from the same casting professionals we work with every day.</p>
+    <div class="hero-cta">
+      <a class="btn-p" href="#request">Request my free review</a>
+      <a class="btn-ghost" href="#how">See how it works</a>
+    </div>
+    <div class="hero-fine">One review per actor · Feedback usually within a week</div>
+  </div></header>
+
+  <!-- WHAT THE REVIEW COVERS -->
+  <section class="section"><div class="wrap">
+    <div class="label">What your review covers</div>
+    <h2 class="h2">A real read on where you fit.</h2>
+    <p class="lead">A casting director looks at your profile the way they look at submissions for a real project — then tells you what's working, what isn't, and where to aim.</p>
+    <div class="grid4">
+      <div class="card"><div class="ic">🎯</div><h3>Your casting type</h3><p>The roles you read for instantly — your lane, your range, and the brackets a CD would actually file you under.</p></div>
+      <div class="card"><div class="ic">🎬</div><h3>Roles to pursue (and skip)</h3><p>Where to spend your energy, and which auditions aren't worth your time yet — honest, specific direction.</p></div>
+      <div class="card"><div class="ic">🛠️</div><h3>What to fix</h3><p>Headshots, reel, slate, bio, and how your profile reads at a glance — the things quietly costing you callbacks.</p></div>
+      <div class="card"><div class="ic">💪</div><h3>Confidence &amp; first steps</h3><p>New to this? You'll get beginner-friendly coaching notes and simple next steps so you can submit with confidence.</p></div>
+    </div>
+  </div></section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how" style="background:linear-gradient(180deg,transparent,rgba(79,138,139,.04));"><div class="wrap">
+    <div class="label">How it works</div>
+    <h2 class="h2">Three steps. No cost.</h2>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><h4>Send your profile</h4><p>Paste your CastSlate profile link and email below. Copy the link straight from your Dashboard with the Copy button.</p></div>
+      <div class="step"><div class="n">2</div><h4>A CD reviews you</h4><p>One of our casting directors goes through your profile, photos, and reel the way they would for a real project.</p></div>
+      <div class="step"><div class="n">3</div><h4>You get feedback</h4><p>Personalized notes sent to your email — or, when schedules allow, in person at our Times Square office.</p></div>
+    </div>
+    <div class="timenote">📬 Most reviews are delivered <b>by email</b> — the casting directors we partner with keep tight schedules, and in-person sessions are limited. CastSlate decides the format that fits. Because of high volume, please allow <b>up to a week</b> for your feedback.</div>
+  </div></section>
+
+  <!-- MISSION -->
+  <section class="section"><div class="wrap narrow">
+    <div class="mission">
+      <div class="eb">Why we do this</div>
+      <h3>When our actors look their best, everyone wins.</h3>
+      <p>Your profile is what we put in front of filmmakers, producers, and casting directors in pre-production — so we care deeply about how it presents. Helping you sharpen it makes you more bookable and makes our community stronger. We believe in giving real value first; good things tend to come back around.</p>
+    </div>
+  </div></section>
+
+  <!-- FREE VS PREMIUM (honest) -->
+  <section class="section"><div class="wrap narrow">
+    <div class="label">Free for everyone — but read this first</div>
+    <h2 class="h2">A CD can only judge what they can see.</h2>
+    <div class="compare">
+      <div class="plan">
+        <div class="tag">Free plan</div>
+        <h4>One photo to work with</h4>
+        <ul>
+          <li><span class="x">—</span><span><b>1 headshot only.</b> No reel, no footage, no gallery.</span></li>
+          <li><span class="x">—</span><span>A reviewer sees a single image — hard to read range or type.</span></li>
+          <li><span class="ck">✓</span><span>You can still request a review, completely free.</span></li>
+        </ul>
+      </div>
+      <div class="plan prem">
+        <div class="tag">Premium · $9.99/mo</div>
+        <h4>Your full body of work</h4>
+        <ul>
+          <li><span class="ck">✓</span><span><b>Unlimited photos</b> + demo reels &amp; performance footage.</span></li>
+          <li><span class="ck">✓</span><span>The CD can watch you actually <b>perform</b> and give precise notes.</span></li>
+          <li><span class="ck">✓</span><span>Far more useful casting-type &amp; role guidance.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="honest">The review is <b>100% free on either plan</b> — we'd never gate feedback. We're just being straight with you: on the free plan a reviewer has one photo to go on, so the notes are limited. On Premium they can see your reel and full gallery, and the review is genuinely worth the wait.</div>
+  </div></section>
+
+  <!-- REQUEST FORM -->
+  <section class="section" id="request"><div class="wrap narrow">
+    <div class="label">Request your review</div>
+    <h2 class="h2">Send it over — we'll take it from here.</h2>
+    <div class="formcard">
+      <form id="reviewForm">
+        <div class="fg"><label>Full name</label><input type="text" placeholder="Your name" required></div>
+        <div class="fg"><label>Email *</label><input type="email" placeholder="you@email.com" required>
+          <p class="help">We'll send your feedback here.</p></div>
+        <div class="fg"><label>Your CastSlate profile link *</label>
+          <div class="linkrow"><input type="url" placeholder="https://castslate.com/talent/your-name" required><button type="button" class="copybtn" id="copyHint">How?</button></div>
+          <p class="help" id="copyHelp">Open your Dashboard → tap the <b>Copy link</b> button → paste it here.</p></div>
+        <div class="fg"><label>Experience level</label>
+          <select><option>Beginner — just getting started</option><option>Some experience</option><option>Professional / working actor</option></select></div>
+        <div class="fg"><label>Anything you'd like feedback on? <span style="color:var(--t3);font-weight:500;">(optional)</span></label>
+          <textarea placeholder="e.g. I'm not sure what my casting type is, or whether my reel is working."></textarea></div>
+        <button type="submit" class="submit">Request my free review →</button>
+        <p class="help" style="text-align:center;margin-top:12px;">Free · One review per actor · Feedback usually within a week</p>
+      </form>
+      <div class="confirm" id="confirm">
+        <div class="big">✅</div>
+        <h3>Your review is in the queue.</h3>
+        <p>Thanks! One of our casting directors will go through your profile. Because of high volume, feedback can take <b>up to a week</b> — we'll email it to the address you gave us.</p>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- FAQ -->
+  <section class="section" style="background:linear-gradient(180deg,rgba(79,138,139,.04),transparent);"><div class="wrap">
+    <div class="label">Questions</div>
+    <h2 class="h2">Good to know.</h2>
+    <div class="faq">
+      <details class="qa"><summary>Is it really free?</summary><p>Yes — completely free, on the free plan or Premium. We don't charge for feedback and never will. It's part of how we keep our community strong.</p></details>
+      <details class="qa"><summary>Do I need to be on Premium?</summary><p>No. Anyone can request a review. But on the free plan a reviewer only sees one photo, so the notes are limited. Premium lets them watch your reel and full gallery — which makes the review far more useful.</p></details>
+      <details class="qa"><summary>Will it be by email or in person?</summary><p>Most reviews are delivered by email, since the casting directors we work with keep tight schedules. In-person sessions at our Times Square office happen when availability allows. CastSlate decides the format.</p></details>
+      <details class="qa"><summary>How long does it take?</summary><p>Up to about a week. We get a high volume of requests and each one is reviewed by a real person, so thank you for your patience.</p></details>
+      <details class="qa"><summary>Where do I find my profile link?</summary><p>In your Dashboard there's a <b>Copy link</b> button on your profile — tap it, then paste the link into the form above.</p></details>
+    </div>
+  </div></section>
+
+  <!-- FOOTER CTA -->
+  <div class="footcta"><div class="wrap">
+    <p>Not on CastSlate yet? Create your free profile first, then come back for your review.</p>
+    <a class="btn-p" href="#">Create my free profile →</a>
+  </div></div>
+
+  <div class="demoflag">DEMO · Profile Review page</div>
+
+<script>
+  document.getElementById('reviewForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    this.style.display='none';
+    document.getElementById('confirm').style.display='block';
+    document.getElementById('confirm').scrollIntoView({behavior:'smooth',block:'center'});
+  });
+  document.getElementById('copyHint').addEventListener('click',function(){
+    var h=document.getElementById('copyHelp');
+    h.style.color='var(--teal)';h.style.fontWeight='600';
+  });
+</script>
+</body>
+</html>
