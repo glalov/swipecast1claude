@@ -6269,7 +6269,9 @@ function TermsPage({onNavigate}){
 
     <S n="19" t="Miscellaneous">These Terms constitute the entire agreement between you and CastSlate regarding the Service and supersede all prior agreements. If any provision is held invalid or unenforceable, the remaining provisions shall remain in full force. Our failure to enforce any right or provision is not a waiver of such right or provision. You may not assign these Terms without our prior written consent; we may assign them freely.</S>
 
-    <S n="20" t="Contact">Questions about these Terms should be sent to <strong style={{color:"var(--t1)"}}>team@castslate.com</strong>, or by mail to CastSlate, Inc., 353 W 48th Street, New York, NY 10036, United States.</S>
+    <S n="20" t="Testimonials and Representative Statements">Testimonials, reviews, ratings, quotes, and similar user-feedback statements displayed on the Service reflect the individual experiences and opinions of the people who provided them or, where indicated, representative examples of the type of feedback the Service is designed to support. Such statements are not a guarantee, warranty, or prediction of the results you will obtain. Individual results vary, and CastSlate does not guarantee that use of the Service will result in callbacks, bookings, auditions, employment, or compensation. Names and photographs accompanying any statement may be illustrative unless expressly identified as those of a specific, verified user. To the extent any statement constitutes an endorsement, it reflects the honest opinion of the person who provided it at the time it was given.</S>
+
+    <S n="21" t="Contact">Questions about these Terms should be sent to <strong style={{color:"var(--t1)"}}>team@castslate.com</strong>, or by mail to CastSlate, Inc., 353 W 48th Street, New York, NY 10036, United States.</S>
 
     <div style={{borderTop:"1px solid var(--bdr)",paddingTop:24,marginTop:24,display:"flex",gap:12}}>
       <button className="btn-s" onClick={()=>onNavigate("privacy")}>Privacy Policy</button>
@@ -14076,7 +14078,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           <div key={i} className="card" style={{padding:28,display:"flex",flexDirection:"column"}}>
             <span style={{display:"inline-flex",alignItems:"center",gap:6,alignSelf:"flex-start",background:"rgba(79,138,139,.1)",color:"var(--teal)",fontSize:11,fontWeight:700,letterSpacing:.3,padding:"5px 11px",borderRadius:999,marginBottom:16}}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-              Verified review
+              User feedback
             </span>
             <p style={{fontSize:14,lineHeight:1.65,color:"var(--t1)",marginBottom:20,fontWeight:500,flex:1}}>"{t.q}"</p>
             <div style={{display:"flex",alignItems:"center",gap:12,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
