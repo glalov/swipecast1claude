@@ -1421,6 +1421,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media(prefers-reduced-motion:reduce){.nav-links span.mm-attn{animation:none;}}
 /* Free-plan upgrade stripe (ActivateMembershipBanner) — darker purple, centered full-width text, ghost CTA (fills black on hover) w/ shimmer, twinkling star */
 .mb-msg{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;text-align:center;font-size:13px;font-weight:700;color:#fff;letter-spacing:0.2px;padding:0 220px;}
+.mb-text-short{display:none;}
 .mb-star{display:inline-block;color:#E8B65A;font-size:15px;line-height:1;transform-origin:center;animation:mb-glint 3.6s ease-in-out infinite;flex-shrink:0;}
 .mb-cta{position:absolute;right:14px;top:50%;transform:translateY(-50%);overflow:hidden;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:6px 15px;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;background:transparent;color:#fff;transition:background .2s,border-color .2s,color .2s;}
 .mb-cta .mb-arr{display:inline-block;transition:transform .25s;}
@@ -1664,9 +1665,12 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   /* Pricing cards compact */
   .pricing-cards-grid{max-width:100% !important;}
 }
-.mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:150;backdrop-filter:blur(4px);}
-.mobile-menu-inner{background:var(--s1);border-bottom:1px solid var(--bdr);padding:18px 18px 22px;max-width:100%;animation:mmSlide .18s ease-out;box-shadow:0 10px 40px rgba(0,0,0,.12);}
-@keyframes mmSlide{from{transform:translateY(-12px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:150;backdrop-filter:blur(4px);animation:mmFade .22s ease;}
+.mobile-menu-inner{background:var(--s1);border-bottom:1px solid var(--bdr);padding:18px 18px 22px;max-width:100%;animation:mmDrop .32s cubic-bezier(.22,1,.36,1);box-shadow:0 10px 40px rgba(0,0,0,.12);transform-origin:top;}
+@keyframes mmDrop{from{transform:translateY(-100%);}to{transform:translateY(0);}}
+@keyframes mmFade{from{opacity:0;}to{opacity:1;}}
+@keyframes pageFade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+@media(prefers-reduced-motion:reduce){.mobile-menu,.mobile-menu-inner{animation:none;}}
 .join-dropdown{position:relative;display:inline-flex;}
 @keyframes ddFadeIn{from{opacity:0;transform:translateX(-50%) translateY(-6px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
 .join-dd-menu{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--bdr);border-radius:12px;box-shadow:0 8px 32px rgba(26,26,46,0.14);padding:6px;min-width:260px;z-index:300;animation:ddFadeIn .15s ease;}
@@ -1874,7 +1878,14 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .mq-stripe.is-collapsed{height:0;opacity:0;}
 @media (prefers-reduced-motion:reduce){.mq-track{animation:none;}}
 @media (max-width:768px){
-  .member-banner{display:none !important;}
+  .member-banner{padding:8px 12px !important;justify-content:space-between !important;gap:10px;}
+  .member-banner .mb-msg{position:static;width:auto;flex:1 1 auto;min-width:0;justify-content:flex-start;text-align:left;padding:0;font-size:12px;gap:7px;letter-spacing:0;overflow:hidden;}
+  .member-banner .mb-text-full{display:none;}
+  .member-banner .mb-text-short{display:inline;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .member-banner .mb-star{font-size:13px;}
+  .member-banner .mb-cta{position:static;transform:none;flex-shrink:0;padding:6px 12px;font-size:11px;}
+  .member-banner .mb-cta-price{display:none;}
+  .page{animation:pageFade .26s ease;}
   .mq-stripe{height:24px;}
   .mq-item{font-size:10px;letter-spacing:1.8px;}
   .mq-item::after{margin:0 20px;}
@@ -2469,13 +2480,14 @@ function ActivateMembershipBanner({myProfile,onNavigate}){
     }}>
     <span className="mb-msg">
       <span className="mb-star" aria-hidden="true">★</span>
-      <span>Get seen more — unlock unlimited submissions, Slate Video, Business Card &amp; Manager Mode</span>
+      <span className="mb-text-full">Get seen more — unlock unlimited submissions, Slate Video, Business Card &amp; Manager Mode</span>
+      <span className="mb-text-short">Unlock unlimited submissions</span>
     </span>
     <button
       className="mb-cta"
       aria-label="Upgrade to Premium"
       onClick={e=>{e.stopPropagation();onNavigate&&onNavigate("membership");}}>
-      Upgrade {PREMIUM_PRICE.replace("/month","/mo")} <span className="mb-arr" aria-hidden="true">→</span>
+      Upgrade <span className="mb-cta-price">{PREMIUM_PRICE.replace("/month","/mo")} </span><span className="mb-arr" aria-hidden="true">→</span>
     </button>
   </div>);
 }
