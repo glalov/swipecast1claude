@@ -275,8 +275,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   /* Pricing cards compact */
   .pricing-cards-grid{max-width:100% !important;}
 }
-.mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:150;backdrop-filter:blur(4px);animation:mmFade .38s ease;}
-.mobile-menu-inner{background:var(--s1);border-bottom:1px solid var(--bdr);padding:18px 18px 22px;max-width:100%;animation:mmDrop .58s cubic-bezier(.34,1.32,.5,1);box-shadow:0 10px 40px rgba(0,0,0,.12);transform-origin:top;}
+.mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:150;backdrop-filter:blur(4px);}
+.mobile-menu-inner{background:var(--s1);border-bottom:1px solid var(--bdr);padding:18px 18px 22px;max-width:100%;animation:mmDrop .92s cubic-bezier(.22,.68,.28,1);box-shadow:0 10px 40px rgba(0,0,0,.12);transform-origin:top;will-change:transform;}
 @keyframes mmDrop{from{transform:translateY(-100%);}to{transform:translateY(0);}}
 @keyframes mmFade{from{opacity:0;}to{opacity:1;}}
 @keyframes pageFade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
