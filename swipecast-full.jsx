@@ -1419,14 +1419,16 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .nav-links span.mm-attn.act{background:rgba(232,144,42,.16);color:var(--amber-dk);}
 @keyframes mm-breathe{0%,100%{box-shadow:0 0 0 0 rgba(232,144,42,0);background:rgba(232,144,42,.08);}50%{box-shadow:0 0 16px 1px rgba(232,144,42,.50);background:rgba(232,144,42,.16);}}
 @media(prefers-reduced-motion:reduce){.nav-links span.mm-attn{animation:none;}}
-/* Free-plan upgrade stripe (ActivateMembershipBanner) — muted purple, amber CTA w/ shimmer, star glint */
-.mb-star{display:inline-block;color:#E8B65A;font-size:14px;line-height:1;animation:mb-glint 9s ease-in-out infinite;}
-.mb-cta{position:relative;overflow:hidden;border:none;border-radius:999px;padding:6px 16px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;background:var(--amber);color:#2C1E04;}
+/* Free-plan upgrade stripe (ActivateMembershipBanner) — darker purple, centered full-width text, ghost CTA (fills black on hover) w/ shimmer, twinkling star */
+.mb-msg{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;text-align:center;font-size:13px;font-weight:700;color:#fff;letter-spacing:0.2px;padding:0 220px;}
+.mb-star{display:inline-block;color:#E8B65A;font-size:15px;line-height:1;transform-origin:center;animation:mb-glint 3.6s ease-in-out infinite;flex-shrink:0;}
+.mb-cta{position:absolute;right:14px;top:50%;transform:translateY(-50%);overflow:hidden;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:6px 15px;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;background:transparent;color:#fff;transition:background .2s,border-color .2s,color .2s;}
 .mb-cta .mb-arr{display:inline-block;transition:transform .25s;}
-.member-banner:hover .mb-cta .mb-arr,.mb-cta:hover .mb-arr{transform:translateX(4px);}
-.mb-cta::after{content:"";position:absolute;top:0;left:0;width:35%;height:100%;background:rgba(255,255,255,.35);filter:blur(2px);animation:mb-shimmer 10s ease-in-out infinite;pointer-events:none;}
+.mb-cta:hover{background:#15162B;border-color:#15162B;color:#fff;}
+.mb-cta:hover .mb-arr{transform:translateX(4px);}
+.mb-cta::after{content:"";position:absolute;top:0;left:0;width:35%;height:100%;background:rgba(255,255,255,.30);filter:blur(2px);animation:mb-shimmer 10s ease-in-out infinite;pointer-events:none;}
 @keyframes mb-shimmer{0%{transform:translateX(-130%) skewX(-20deg);}100%{transform:translateX(430%) skewX(-20deg);}}
-@keyframes mb-glint{0%,82%,100%{opacity:.6;transform:scale(1);}88%{opacity:1;transform:scale(1.18);}94%{opacity:.85;transform:scale(1.04);}}
+@keyframes mb-glint{0%,60%,100%{opacity:.65;transform:scale(1) rotate(0deg);}72%{opacity:1;transform:scale(1.45) rotate(8deg);}84%{opacity:.85;transform:scale(1.1) rotate(-4deg);}}
 @media(prefers-reduced-motion:reduce){.mb-cta::after,.mb-star{animation:none;}}
 .btn-p{background:var(--acc);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .btn-p:hover{background:var(--acc2);transform:translateY(-1px);}
@@ -2447,14 +2449,14 @@ function ActivateMembershipBanner({myProfile,onNavigate}){
     onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onNavigate&&onNavigate("membership");}}}
     style={{
       position:"relative",width:"100%",cursor:"pointer",
-      background:"#564D78",color:"#fff",fontFamily:"'DM Sans',sans-serif",
-      padding:"6px 18px",
-      display:"flex",alignItems:"center",justifyContent:"space-between",gap:14,
-      flexWrap:"wrap",boxShadow:"0 1px 0 rgba(0,0,0,0.15)"
+      background:"#473F63",color:"#fff",fontFamily:"'DM Sans',sans-serif",
+      padding:"5px 18px",minHeight:34,
+      display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",
+      boxShadow:"0 1px 0 rgba(0,0,0,0.15)"
     }}>
-    <span style={{display:"flex",alignItems:"center",gap:9,minWidth:0,fontSize:13,fontWeight:700,color:"#fff",letterSpacing:0.2}}>
+    <span className="mb-msg">
       <span className="mb-star" aria-hidden="true">★</span>
-      <span>Get seen more — unlock unlimited submissions, Slate Video &amp; Manager Mode</span>
+      <span>Get seen more — unlock unlimited submissions, Slate Video, Business Card &amp; Manager Mode</span>
     </span>
     <button
       className="mb-cta"
