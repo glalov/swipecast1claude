@@ -706,7 +706,7 @@ html,body{overflow-x:hidden;}
 .cls-credits-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
 .cls-slot-row{display:flex;align-items:center;gap:14px;padding:13px 18px;flex-wrap:wrap;}
 .cls-card-row{display:flex;align-items:stretch;border-radius:14px;overflow:hidden;cursor:pointer;margin-bottom:16px;position:relative;transition:box-shadow 0.15s,transform 0.1s;}
-.cls-card-img{width:250px;min-width:250px;position:relative;overflow:hidden;background:#F4F1EA;flex-shrink:0;}.cls-card-img>:first-child{position:absolute;inset:0;width:100%;height:100%;}
+.cls-card-img{width:250px;min-width:250px;min-height:220px;position:relative;overflow:hidden;background:#F4F1EA;flex-shrink:0;}.cls-card-img>:first-child{position:absolute;inset:0;width:100%;height:100%;}
 .cls-card-action{padding:18px 20px;display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:8px;border-left:1px solid var(--bdr);min-width:140px;flex-shrink:0;}
 @media(max-width:768px){
   .cls-detail-grid{grid-template-columns:1fr !important;}
