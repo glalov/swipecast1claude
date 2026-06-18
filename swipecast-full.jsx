@@ -2096,12 +2096,7 @@ html,body{overflow-x:hidden;}
 .cls-credits-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
 .cls-slot-row{display:flex;align-items:center;gap:14px;padding:13px 18px;flex-wrap:wrap;}
 .cls-card-row{display:flex;align-items:stretch;border-radius:14px;overflow:hidden;cursor:pointer;margin-bottom:16px;position:relative;transition:box-shadow 0.15s,transform 0.1s;}
-.cls-card-img{width:250px;min-width:250px;min-height:220px;position:relative;overflow:hidden;background:#F4F1EA;flex-shrink:0;}
-/* The poster collage fills the image column via absolute positioning so its
-   intrinsic image height never inflates the flex-row height. The fixed
-   min-height gives the 1-big-2-small collage proper poster proportions
-   (matching the original look) instead of collapsing to the short text height. */
-.cls-card-img>:first-child{position:absolute;inset:0;width:100%;height:100%;}
+.cls-card-img{width:250px;min-width:250px;position:relative;overflow:hidden;background:#F4F1EA;flex-shrink:0;}
 .cls-card-action{padding:18px 20px;display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:8px;border-left:1px solid var(--bdr);min-width:140px;flex-shrink:0;}
 @media(max-width:768px){
   .cls-detail-grid{grid-template-columns:1fr !important;}
@@ -3945,7 +3940,11 @@ function sbImg(url,width,quality){
   if(!url||typeof url!=="string")return url;
   if(url.indexOf("/storage/v1/object/public/")===-1)return url;
   const u=url.replace("/storage/v1/object/public/","/storage/v1/render/image/public/");
-  return u+(u.indexOf("?")===-1?"?":"&")+"width="+(width||640)+"&quality="+(quality||74);
+  // resize=contain is REQUIRED: without it the endpoint keeps the original
+  // height and only changes width, distorting the aspect ratio and making
+  // object-fit crop/zoom wrongly. With it the image scales proportionally so
+  // the crop matches the original full-size image exactly.
+  return u+(u.indexOf("?")===-1?"?":"&")+"width="+(width||640)+"&quality="+(quality||74)+"&resize=contain";
 }
 
 function ClassPosterCollage({posters,imageUrl,title,bg="#F4F1EA",variant="hero"}){
