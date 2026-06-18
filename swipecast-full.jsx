@@ -13899,7 +13899,12 @@ function FormatReel(){
   // Phones load the smaller mobile encode (.m.mp4 ~60–460KB); desktop gets the
   // crisper .mp4 (~180KB–1.3MB). Both are a fraction of the old multi-MB files,
   // so even weak Wi-Fi streams them smoothly with no freezing or black frames.
-  const vsuf=(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(max-width:768px)').matches)?'.m.mp4':'.mp4';
+  // Mobile previously loaded a small .m.mp4 encode that looked blurry when
+  // upscaled on high-DPR phones (card is up to 300px CSS ≈ 900px on a 3x screen,
+  // but the mobile file was only ~480px wide). Serve the sharp desktop .mp4 on
+  // all viewports so mobile matches desktop quality. Clips are lazy-loaded and
+  // only the visible ones play, so this stays smooth.
+  const vsuf='.mp4';
   return (
     <div className="fmt-reel-wrap">
       <div className="fmt-reel" ref={reelRef} role="list" aria-label="Production formats">
