@@ -612,8 +612,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
    slide stays perfectly smooth while every video keeps decoding/playing. */
 .fmt-track{display:flex;width:max-content;will-change:transform;animation:fmtSlide 52s linear infinite;}
 @keyframes fmtSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
-.fmt-card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;margin-right:20px;border-radius:18px;overflow:hidden;cursor:pointer;background:#15151f;box-shadow:0 10px 30px -12px rgba(20,20,35,.45),0 2px 8px rgba(20,20,35,.10);transition:transform .45s cubic-bezier(.2,.7,.2,1),box-shadow .45s ease;outline:none;}
-.fmt-card:hover,.fmt-card:focus-visible{transform:translateY(-8px);box-shadow:0 24px 48px -16px rgba(20,20,35,.55),0 4px 12px rgba(20,20,35,.16);}
+.fmt-card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;margin-right:20px;border-radius:18px;overflow:hidden;cursor:pointer;background:#15151f;transition:transform .45s cubic-bezier(.2,.7,.2,1);outline:none;}
+.fmt-card:hover,.fmt-card:focus-visible{transform:translateY(-8px);}
 .fmt-poster,.fmt-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;}
 .fmt-shade{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,rgba(10,10,18,.05) 0%,rgba(10,10,18,.02) 36%,rgba(10,10,18,.42) 70%,rgba(10,10,18,.78) 100%);}
 /* Self-contained dark bottom overlay lives on .fmt-body so the white title/desc
