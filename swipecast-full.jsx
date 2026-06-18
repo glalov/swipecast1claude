@@ -13907,7 +13907,7 @@ function FormatReel(){
           {doubled.map(function(c,i){ return (
             <article className="fmt-card" role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={i>=FORMAT_CARDS.length?'true':undefined}>
               <img className="fmt-poster" src={'/video-formats/'+c.file+'.jpg'} alt={c.cat+' — production footage'} loading="lazy" decoding="async"/>
-              <video className="fmt-video" data-src={'/video-formats/'+c.file+vsuf} poster={'/video-formats/'+c.file+'.jpg'} muted loop playsInline preload="none" aria-hidden="true"/>
+              <video className="fmt-video" data-src={'/video-formats/'+c.file+vsuf+'?v=60s'} poster={'/video-formats/'+c.file+'.jpg'} muted loop playsInline preload="none" aria-hidden="true"/>
               <div className="fmt-shade"/>
               <div className="fmt-body">
                 <span className="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="22" height="22" dangerouslySetInnerHTML={{__html:FORMAT_ICONS[c.icon]}}/></span>
