@@ -3931,8 +3931,23 @@ function fmtTime(t){if(!t)return"";const[h,m]=t.split(":").map(Number);const ap=
 // ─── helper: next N occurrences of a day-of-week (0=Sun…6=Sat) ───
 function upcomingDates(dow,count=4){const dates=[];const d=new Date();d.setHours(0,0,0,0);const diff=(dow-d.getDay()+7)%7;d.setDate(d.getDate()+(diff===0?7:diff));for(let i=0;i<count;i++){dates.push(new Date(d));d.setDate(d.getDate()+7);}return dates;}
 
+// Supabase image transform: rewrite a public storage object URL to the CDN
+// render/image endpoint so the browser downloads a resized WebP/AVIF sized for
+// the slot instead of the full-size original upload (often a multi-MB PNG).
+// Non-Supabase URLs are returned untouched. Keeps the same crop/quality look,
+// just far smaller + CDN-cached, so images appear near-instantly.
+function sbImg(url,width,quality){
+  if(!url||typeof url!=="string")return url;
+  if(url.indexOf("/storage/v1/object/public/")===-1)return url;
+  const u=url.replace("/storage/v1/object/public/","/storage/v1/render/image/public/");
+  return u+(u.indexOf("?")===-1?"?":"&")+"width="+(width||640)+"&quality="+(quality||74);
+}
+
 function ClassPosterCollage({posters,imageUrl,title,bg="#F4F1EA",variant="hero"}){
   const vw=useViewportWidth();
+  const _W=variant==="card"?(vw>768?560:640):1100;
+  const _Q=variant==="card"?74:82;
+  const _img=u=>sbImg(u,_W,_Q);
   const imgs=Array.isArray(posters)&&posters.length>0
     ?posters.map(p=>p.url||p)
     :imageUrl?[imageUrl]:[];
@@ -3944,19 +3959,20 @@ function ClassPosterCollage({posters,imageUrl,title,bg="#F4F1EA",variant="hero"}
   // Desktop class CARDS keep the original edge-to-edge collage (1 big + 2 small)
   // so the frame fills with no empty letterbox space. Mobile cards (≤768px) and
   // the class-detail hero use the full-poster contain layout instead.
+  const _ld=variant==="hero"?"eager":"lazy";
   if(variant==="card"&&vw>768){
-    if(imgs.length===1)return<img src={imgs[0]} alt={title} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>;
+    if(imgs.length===1)return<img src={_img(imgs[0])} alt={title} loading={_ld} decoding="async" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>;
     if(imgs.length===2)return(
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",height:"100%",gap:2}}>
-        {imgs.map((url,i)=><img key={i} src={url} alt={`${title} ${i+1}`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>)}
+        {imgs.map((url,i)=><img key={i} src={_img(url)} alt={`${title} ${i+1}`} loading={_ld} decoding="async" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>)}
       </div>
     );
     return(
       <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",height:"100%",gap:2}}>
-        <img src={imgs[0]} alt={`${title} 1`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+        <img src={_img(imgs[0])} alt={`${title} 1`} loading={_ld} decoding="async" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
         <div style={{display:"grid",gridTemplateRows:"1fr 1fr",gap:2}}>
-          <img src={imgs[1]} alt={`${title} 2`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
-          <img src={imgs[2]} alt={`${title} 3`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+          <img src={_img(imgs[1])} alt={`${title} 2`} loading={_ld} decoding="async" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+          <img src={_img(imgs[2])} alt={`${title} 3`} loading={_ld} decoding="async" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
         </div>
       </div>
     );
@@ -3967,7 +3983,7 @@ function ClassPosterCollage({posters,imageUrl,title,bg="#F4F1EA",variant="hero"}
   return(
     <div style={{display:"grid",gridTemplateColumns:`repeat(${imgs.length},1fr)`,width:"100%",height:"100%",background:bg}}>
       {imgs.map((url,i)=>(
-        <img key={i} src={url} alt={`${title} ${i+1}`}
+        <img key={i} src={_img(url)} alt={`${title} ${i+1}`} loading={_ld} decoding="async"
           style={{width:"100%",height:"100%",objectFit:"contain",objectPosition:variant==="card"?"center top":"center",display:"block",background:bg}}/>
       ))}
     </div>
@@ -4207,7 +4223,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
             <div className="cls-credits-grid" style={{gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)"}}>
               {viewing.instructor_poster_urls.map((p,i)=>(
                 <div key={i} style={{borderRadius:10,overflow:"hidden",lineHeight:0,boxShadow:"0 4px 16px rgba(0,0,0,0.15)"}}>
-                  <img src={p.url||p} alt={`Credit ${i+1}`} style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",display:"block"}}/>
+                  <img src={sbImg(p.url||p,800,82)} alt={`Credit ${i+1}`} loading="lazy" decoding="async" style={{width:"100%",aspectRatio:"2/3",objectFit:"cover",display:"block"}}/>
                 </div>
               ))}
             </div>
@@ -9654,17 +9670,18 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                       {hasMedia?(
                         posterImgs.length===1?(
                           <img
-                            src={posterImgs[0]}
+                            src={sbImg(posterImgs[0],560,74)}
                             alt={cls?.title||"Class poster"}
+                            loading="lazy" decoding="async"
                             style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block",position:"absolute",inset:0}}
                           />
                         ):(
                           /* collage: big left + stacked right */
                           <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",height:"100%",gap:2,position:"absolute",inset:0}}>
-                            <img src={posterImgs[0]} alt={cls?.title} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block"}}/>
+                            <img src={sbImg(posterImgs[0],560,74)} alt={cls?.title} loading="lazy" decoding="async" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block"}}/>
                             <div style={{display:"grid",gridTemplateRows:`repeat(${Math.min(posterImgs.length-1,2)},1fr)`,gap:2}}>
                               {posterImgs.slice(1,3).map((u,i)=>(
-                                <img key={i} src={u} alt={`${cls?.title} ${i+2}`} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block"}}/>
+                                <img key={i} src={sbImg(u,400,74)} alt={`${cls?.title} ${i+2}`} loading="lazy" decoding="async" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",display:"block"}}/>
                               ))}
                             </div>
                           </div>
@@ -13558,8 +13575,8 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
 // recreate it on every Landing re-render, which would reset swipe state.
 // ═══════════════════════════════════════════
 const LANDING_SWIPE_DEMO=[
-  {id:13,name:"Zara Williams",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=800&fit=crop&crop=top&q=90",skills:["Drama Training","Voiceover","Stage Combat"]},
-  {id:6,name:"Daniel Brooks",age:29,gender:"Male",height:"5'10\"",pos:"center 18%",img:"https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Indie Film","Drama","Guitar"]},
+  {id:13,name:"Zara Monrie",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=800&fit=crop&crop=top&q=90",skills:["Drama Training","Voiceover","Stage Combat"]},
+  {id:6,name:"Roman Kovalenko",age:29,gender:"Male",height:"5'10\"",pos:"center 18%",img:"https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Indie Film","Drama","Guitar"]},
   {id:1,name:"Maria Santos",age:28,gender:"Female",height:"5'6\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=800&fit=crop&crop=top&q=90",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
   {id:2,name:"James Walker",age:46,gender:"Male",height:"6'1\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Improv","Yale Drama MFA","Basketball"]},
   {id:3,name:"Owen Fletcher",age:28,gender:"Male",height:"6'0\"",pos:"center 25%",img:"https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Drama","Film & TV","Screen Acting"]},
@@ -13875,14 +13892,18 @@ function FormatReel(){
     return function(){ if(io)io.disconnect(); document.removeEventListener('visibilitychange',onVis); };
   },[]);
   const doubled=[...FORMAT_CARDS,...FORMAT_CARDS];
+  // Phones load the smaller mobile encode (.m.mp4 ~60–460KB); desktop gets the
+  // crisper .mp4 (~180KB–1.3MB). Both are a fraction of the old multi-MB files,
+  // so even weak Wi-Fi streams them smoothly with no freezing or black frames.
+  const vsuf=(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(max-width:768px)').matches)?'.m.mp4':'.mp4';
   return (
     <div className="fmt-reel-wrap">
       <div className="fmt-reel" ref={reelRef} role="list" aria-label="Production formats">
         <div className="fmt-track">
           {doubled.map(function(c,i){ return (
             <article className="fmt-card" role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={i>=FORMAT_CARDS.length?'true':undefined}>
-              <img className="fmt-poster" src={'/video-formats/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
-              <video className="fmt-video" data-src={'/video-formats/'+c.file+'.mp4'} poster={'/video-formats/'+c.file+'.jpg'} muted loop playsInline preload="none" aria-hidden="true"/>
+              <img className="fmt-poster" src={'/video-formats/'+c.file+'.jpg'} alt={c.cat+' — production footage'} loading="lazy" decoding="async"/>
+              <video className="fmt-video" data-src={'/video-formats/'+c.file+vsuf} poster={'/video-formats/'+c.file+'.jpg'} muted loop playsInline preload="none" aria-hidden="true"/>
               <div className="fmt-shade"/>
               <div className="fmt-body">
                 <span className="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="22" height="22" dangerouslySetInnerHTML={{__html:FORMAT_ICONS[c.icon]}}/></span>
