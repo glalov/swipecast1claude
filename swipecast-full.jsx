@@ -3826,7 +3826,7 @@ const FAQ_CATEGORIES=[
   {id:"account",label:"Account & Privacy",icon:"🔐",blurb:"Your data, your settings, and your privacy controls.",items:[
     {q:"What data do you collect?",a:"The information you put in your profile (headshots, stats, bio, credits) and basic account data (email, login activity, payment confirmations). We do not sell, license, or share your data with third parties for advertising."},
     {q:"Who can see my profile?",a:"Verified casting directors and producers can see profiles of talent who have submitted to their castings. Public-facing profiles are visible only when you opt in. You can also hide your profile entirely from search."},
-    {q:"How do I delete my account?",a:"My Profile → Account → Delete Account. We remove your profile data and login within 7 days. Some transactional records (receipts, support tickets) are retained as required by law."},
+    {q:"How do I delete my account?",a:"Account Settings → Deactivation & Deletion → Delete my account. Deletion is immediate — your profile and personal account data are removed right away, and you're free to sign up again later with the same email. Some transactional records (receipts, support tickets) are retained as required by law."},
     {q:"Can I download a copy of my data?",a:"Yes. My Profile → Account → Export Data. We send a complete copy of your profile and submission history as a single file."},
     {q:"How do I change my email or password?",a:"My Profile → Account. Changes require re-verification by email for security."},
     {q:"What's your stance on cookies and tracking?",a:"Necessary cookies (login, session, security) are always on. Analytics and marketing cookies are off by default and you can manage them anytime via the 'Cookie Preferences' link in the footer."}
@@ -7786,7 +7786,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                 <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65}}>{r.desc}</p>
               </div>
               <div style={{flexShrink:0}}>
-                {applied.has(i)?<span className="tag tag-grn" style={{fontSize:12,fontWeight:700,padding:"8px 14px"}}>{hasInstructions?"✓ Audition Submitted":"✓ Applied"}</span>:<button className="btn-p btn-sm" onClick={()=>handleApply(r,i)}>{hasInstructions?"🎬 Audition for This Role":"Apply for This Role"}</button>}
+                {applied.has(i)?<span className="tag tag-grn" style={{fontSize:12,fontWeight:700,padding:"8px 14px"}}>{hasInstructions?"✓ Audition Submitted":"✓ Applied"}</span>:<button className="btn-p btn-sm" onClick={()=>handleApply(r,i)}>{!isLoggedIn?"Create a free account to apply":(hasInstructions?"🎬 Audition for This Role":"Apply for This Role")}</button>}
               </div>
             </div>
             {/* Audition Instructions block — shown when the CD has set them */}
@@ -13495,7 +13495,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
     <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:12,marginBottom:18,flexWrap:"wrap"}}>
       <div style={{flex:1,minWidth:0}}>
         <div className="section-label">Featured Castings</div>
-        <h2 style={{fontWeight:800,fontSize:isMobileVpw?22:30,letterSpacing:-1,margin:0,lineHeight:1.2,wordBreak:"break-word"}}>Open jobs from real productions.</h2>
+        <h2 style={{fontWeight:800,fontSize:isMobileVpw?22:30,letterSpacing:-1,margin:0,lineHeight:1.2,wordBreak:"break-word"}}>Roles that are actually casting right now.</h2>
         {!isMobileVpw&&<p style={{color:"var(--t2)",fontSize:13,marginTop:6}}>Updated live — same listings as Browse Castings. Tap any card to view full role breakdown and apply.</p>}
       </div>
       {onNavigate&&<button className="btn-teal" style={{flexShrink:0,padding:"11px 22px",fontSize:14}} onClick={()=>onNavigate("search")}>Browse all →</button>}
@@ -15948,16 +15948,17 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     if(!uid)return;
     setSaving(true);
     try{
-      const{error}=await window.sb.from("profiles").update({
-        account_status:"deletion_requested",
-        deletion_requested_at:new Date().toISOString()
-      }).eq("id",uid);
+      // Permanently delete the account NOW. The delete_own_account() RPC removes
+      // the auth.users row, which cascades to the profile and every related row
+      // and frees the email address so the user can sign up again with it later.
+      const{error}=await window.sb.rpc("delete_own_account");
       if(error)throw error;
-      await onReload();
       setDeleteOpen(false);
       setDeleteConfirm("");
-      showMsg("Account deletion request submitted. Our support team will review and complete the deletion within 30 days.");
-    }catch(e){showMsg(e.message||"Deletion request failed.",true);}
+      // Session is now invalid — sign out and return to the public site.
+      if(onSignOut){onSignOut();}
+      else{try{await window.sb.auth.signOut();}catch(_){}if(onNavigate)onNavigate("home");}
+    }catch(e){showMsg(e.message||"Account deletion failed. Please try again or contact support.",true);}
     finally{setSaving(false);}
   };
 
@@ -16517,9 +16518,9 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
 
       {/* Delete */}
       <div className="card" style={{borderColor:"rgba(214,59,59,0.3)"}}>
-        <h3 style={{fontSize:17,fontWeight:700,marginBottom:8,color:"var(--red)"}}>Delete Account</h3>
+        <h3 style={{fontSize:17,fontWeight:700,marginBottom:8,color:"var(--red)"}}>Delete my account</h3>
         <p style={{color:"var(--t2)",fontSize:14,marginBottom:16}}>
-          Deleting your account is permanent and cannot be reversed. All your data will be removed from the platform.
+          Permanently remove your CastSlate profile and personal account data. Your profile will be hidden immediately and scheduled for permanent deletion. You can create a new account with the same email anytime.
         </p>
         {isDeletionRequested?(
           <div style={{background:"rgba(214,59,59,0.06)",border:"1px solid rgba(214,59,59,0.2)",borderRadius:8,padding:"14px 16px"}}>
@@ -16572,7 +16573,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
           <div style={{background:"var(--s1)",borderRadius:16,padding:32,maxWidth:480,width:"100%",boxShadow:"0 20px 60px rgba(0,0,0,0.25)"}}>
             <h3 style={{fontSize:18,fontWeight:800,color:"var(--red)",marginBottom:12}}>Permanently delete your account?</h3>
             <p style={{color:"var(--t2)",fontSize:14,marginBottom:16}}>
-              This action cannot be undone. Your profile, applications, and all data will be permanently removed from CastSlate.
+              This action cannot be undone. Your profile, applications, and all account data will be permanently removed from CastSlate right away. You can sign up again later with the same email if you change your mind.
             </p>
             <div style={{background:"rgba(214,59,59,0.06)",border:"1px solid rgba(214,59,59,0.2)",borderRadius:8,padding:"12px 14px",marginBottom:20,fontSize:13,color:"var(--red)",fontWeight:600}}>
               Type <strong>DELETE</strong> in the box below to confirm:
@@ -16583,11 +16584,11 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
               <button className="btn-s btn-sm" onClick={()=>{setDeleteOpen(false);setDeleteConfirm("");}} disabled={saving}>Cancel</button>
               <button className="btn-s btn-sm" style={{borderColor:"var(--red)",color:"var(--red)",opacity:deleteConfirm==="DELETE"?1:0.5}}
                 disabled={saving||deleteConfirm!=="DELETE"} onClick={handleDeleteRequest}>
-                {saving?"Submitting…":"Submit Deletion Request"}
+                {saving?"Deleting…":"Delete My Account"}
               </button>
             </div>
             <p style={{color:"var(--t3)",fontSize:11,marginTop:16}}>
-              Full deletion requires server-side processing. Your request will be reviewed and completed within 30 days.
+              Your account and data are removed immediately. The same email can be used to register again.
             </p>
           </div>
         </div>
@@ -22416,7 +22417,10 @@ function App(){
   const handleViewCasting=(c,from)=>{
     window.scrollTo(0,0);
     const castingSlug=c.slug||String(c.id);
-    if(!isLoggedIn){
+    // Featured / staff-pick castings are public: signed-out visitors can open the
+    // full detail page and only hit the create-account wall when they try to apply.
+    // Every other casting still shows the create-profile gate up front.
+    if(!isLoggedIn&&!(c&&c.featured===true)){
       setPendingApply({casting:c,role:null});
       setViewingCasting(c);
       setPrevPage(from||page);
@@ -22615,7 +22619,11 @@ function App(){
     if(!authReady)return;
     const histSlug=()=>{try{return urlToCastingSlug()||viewingCasting?.slug||String(viewingCasting?.id||"")||undefined;}catch(_){return undefined;}};
     if(page==="casting-detail"&&!isLoggedIn){
-      if(viewingCasting)setPendingApply(p=>p||{casting:viewingCasting,role:null});
+      // Wait for the deep-link fetch to resolve before deciding — we need to know
+      // whether the casting is featured (public-viewable) before walling it off.
+      if(!viewingCasting)return;
+      if(viewingCasting.featured===true)return; // featured castings stay public
+      setPendingApply(p=>p||{casting:viewingCasting,role:null});
       setPage("casting-gate");
       try{window.history.replaceState({swipecast:true,page:"casting-gate",castingSlug:histSlug()},"",(window.location.pathname||"/")+window.location.search);}catch(_){}
     }else if(page==="casting-gate"&&isLoggedIn){
@@ -22768,9 +22776,9 @@ function App(){
         {/* Full casting detail renders ONLY for logged-in users with auth resolved.
             Logged-out visitors see a loader until the gate effect swaps the page
             to casting-gate — never a flash of role details. */}
-        {page==="casting-detail"&&(!authReady||!isLoggedIn
+        {page==="casting-detail"&&(!authReady
           ?<PageLoader/>
-          :viewingCasting
+          :viewingCasting&&(isLoggedIn||viewingCasting.featured===true)
           ?<ErrorBoundary key={viewingCasting.id} label="Casting Page" onReset={()=>navigate("search")}>
               <CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>
             </ErrorBoundary>
