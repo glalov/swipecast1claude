@@ -22562,7 +22562,7 @@ function App(){
         const isUUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
         const field=isUUID?"id":"slug";
         const {data,error}=await window.sb.from("castings")
-          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,union_status,featured,is_admin_created,admin_verified,cd_id,status,published,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,status,published,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq(field,slug).maybeSingle();
         if(cancelled||error||!data)return;
         // Guard: hide pending/unpublished castings from the public.
@@ -22582,7 +22582,7 @@ function App(){
           prod:data.prod||"",tagline:data.tagline||"",synopsis:data.synopsis||"",
           desc:data.synopsis||data.tagline||"",location:data.location||"",
           pay:data.pay||"",rate:data.pay||"",deadline:data.deadline||(data.expires_at?data.expires_at.slice(0,10):""),
-          union:data.union_status||"",submissions:0,featured:data.featured===true,is_admin_created:data.is_admin_created===true,admin_verified:data.admin_verified===true,
+          union:data.union_status||"",submissions:0,created_at:data.created_at||null,expires_at:data.expires_at||null,featured:data.featured===true,is_admin_created:data.is_admin_created===true,admin_verified:data.admin_verified===true,
           cd_id:data.cd_id,profiles:data.profiles||null,_cd:data.profiles||null,
           casting_image_url:data.casting_image_url||null,
           casting_image_path:data.casting_image_path||null,
