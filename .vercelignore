@@ -24,6 +24,11 @@ castings-array.js
 # Edge function source (deployed separately to Supabase)
 supabase/
 
+# Internal admin email tool — takes the service_role key, must NEVER be public.
+email/admin-email-campaign.html
+# Email recipient lists must never be served.
+*.csv
+
 # Local tooling state
 .claude/
 .gitignore

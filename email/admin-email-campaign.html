@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CastSlate — Campaign Sender (admin)</title>
+<style>
+  :root{--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--teal:#0F6B66;--bg:#f5f5f7;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;line-height:1.5;}
+  .wrap{max-width:760px;margin:0 auto;padding:28px 18px 80px;}
+  h1{font-size:22px;margin:0 0 4px;}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 22px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:16px;}
+  .card h2{font-size:15px;margin:0 0 14px;display:flex;align-items:center;gap:8px;}
+  .step{width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;}
+  label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:10px 0 4px;}
+  input[type=text],input[type=email],input[type=password],textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:14px;font-family:inherit;}
+  textarea{min-height:70px;resize:vertical;}
+  .row{display:flex;gap:12px;flex-wrap:wrap;}
+  .row>div{flex:1;min-width:200px;}
+  button{background:var(--teal);color:#fff;border:none;border-radius:11px;padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer;}
+  button.secondary{background:#fff;color:var(--ink);border:1px solid var(--line);}
+  button:disabled{opacity:.5;cursor:not-allowed;}
+  .pill{display:inline-block;background:#f0f0ff;color:#4338ca;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700;}
+  .stat{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;}
+  .stat div{background:var(--bg);border-radius:9px;padding:8px 14px;font-size:13px;}
+  .stat b{font-size:18px;display:block;}
+  .log{background:#0f172a;color:#cbd5e1;border-radius:9px;padding:12px;font-family:ui-monospace,Menlo,monospace;font-size:12px;white-space:pre-wrap;max-height:240px;overflow:auto;margin-top:12px;}
+  .bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:10px;}
+  .bar>i{display:block;height:100%;background:var(--teal);width:0;transition:width .3s;}
+  .warn{background:#fef3c7;color:#854d0e;border-radius:9px;padding:10px 12px;font-size:12.5px;margin-top:10px;}
+  .ok{color:#15803d;font-weight:700;}
+  .err{color:#b91c1c;font-weight:700;}
+  small{color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>CastSlate Campaign Sender</h1>
+  <p class="sub">Internal admin tool. Run this file locally — it is not deployed to the website.</p>
+
+  <div class="card">
+    <h2><span class="step">1</span> Connect</h2>
+    <label>Function URL</label>
+    <input id="fnUrl" type="text" value="https://mvqhqbjjvgkftninjcby.supabase.co/functions/v1/send-campaign"/>
+    <label>Admin secret (your Supabase <b>service_role</b> key — Dashboard → Settings → API)</label>
+    <input id="secret" type="password" placeholder="paste service_role key — kept only in this tab, never saved"/>
+    <div class="warn">Keep this tab private. The key stays in memory only; it is never written to disk or sent anywhere except your own Supabase function.</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">2</span> Campaign</h2>
+    <div class="row">
+      <div><label>Name (internal)</label><input id="name" type="text" value="Actor list — castings promo"/></div>
+      <div><label>From</label><input id="from" type="text" value="CastSlate <notifications@castslate.com>"/></div>
+    </div>
+    <label>Subject</label>
+    <input id="subject" type="text" value="Casting calls are live on CastSlate"/>
+    <label>Email HTML <small>(loads promo-castings-campaign.html automatically; edit if needed)</small></label>
+    <textarea id="html" placeholder="loading template…"></textarea>
+    <div style="margin-top:8px;"><small id="tplNote"></small></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">3</span> Recipients</h2>
+    <label>Upload CSV <small>(needs an <b>email</b> column; optional <b>name</b> column)</small></label>
+    <input id="csv" type="file" accept=".csv"/>
+    <div id="csvInfo" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">4</span> Create &amp; import</h2>
+    <button id="btnCreate">Create campaign &amp; import recipients</button>
+    <div id="createInfo" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">5</span> Test send</h2>
+    <div class="row">
+      <div><label>Send one test to</label><input id="testEmail" type="email" placeholder="you@example.com"/></div>
+      <div style="display:flex;align-items:flex-end;"><button id="btnTest" class="secondary">Send test</button></div>
+    </div>
+    <div id="testInfo" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">6</span> Send to everyone</h2>
+    <div class="row">
+      <div><label>Batch size (per request)</label><input id="batch" type="text" value="50"/></div>
+      <div><label>Max to send this run <small>(blank = all remaining)</small></label><input id="cap" type="text" placeholder="e.g. 500 for a warm-up day"/></div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:10px;">
+      <button id="btnSend">Start sending</button>
+      <button id="btnStop" class="secondary" disabled>Stop</button>
+      <button id="btnStatus" class="secondary">Refresh status</button>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="stat">
+      <div>Queued <b id="sQueued">—</b></div>
+      <div>Sent <b id="sSent">—</b></div>
+      <div>Failed <b id="sFailed">—</b></div>
+      <div>Unsub-skipped <b id="sSkip">—</b></div>
+    </div>
+    <div class="warn">Tip: for a brand-new list, send a warm-up day first (e.g. 300–500), check Resend for bounces/complaints, then send the rest over the following days.</div>
+    <div class="log" id="log">Ready.</div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let campaignId = null, stopFlag = false, totalForBar = 0;
+
+function log(msg, cls){ const l=$("log"); const t=new Date().toLocaleTimeString();
+  l.innerHTML += `\n<span class="${cls||''}">[${t}] ${msg}</span>`; l.scrollTop=l.scrollHeight; }
+
+async function call(payload){
+  const r = await fetch($("fnUrl").value.trim(), {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ ...payload, secret: $("secret").value })
+  });
+  const data = await r.json().catch(()=>({error:"bad response"}));
+  if(!r.ok) throw new Error(data.error || ("HTTP "+r.status));
+  return data;
+}
+
+// Load the production template automatically
+fetch("promo-castings-campaign.html").then(r=>r.ok?r.text():Promise.reject())
+  .then(t=>{ $("html").value=t; $("tplNote").textContent="Loaded promo-castings-campaign.html ("+t.length+" chars). {{UNSUB_URL}} present: "+t.includes("{{UNSUB_URL}}"); })
+  .catch(()=>{ $("tplNote").textContent="Couldn't auto-load template — paste the email HTML manually (must include {{UNSUB_URL}})."; });
+
+// CSV parsing
+let recipients = [];
+function parseCSV(text){
+  const lines = text.split(/\r?\n/).filter(l=>l.trim().length);
+  if(!lines.length) return [];
+  const split = (line)=>{ const out=[]; let cur="",q=false;
+    for(let i=0;i<line.length;i++){ const c=line[i];
+      if(c==='"'){ if(q&&line[i+1]==='"'){cur+='"';i++;} else q=!q; }
+      else if(c===','&&!q){ out.push(cur); cur=""; } else cur+=c; }
+    out.push(cur); return out; };
+  const header = split(lines[0]).map(h=>h.trim().toLowerCase());
+  const ei = header.findIndex(h=>h==="email"||h.includes("email"));
+  const ni = header.findIndex(h=>h==="name"||h.includes("name"));
+  if(ei<0) throw new Error('No "email" column found in CSV header.');
+  const rows=[];
+  for(let i=1;i<lines.length;i++){ const c=split(lines[i]);
+    const email=(c[ei]||"").trim(); if(!email) continue;
+    rows.push({ email, name: ni>=0?(c[ni]||"").trim():"" }); }
+  return rows;
+}
+$("csv").addEventListener("change", (e)=>{
+  const f=e.target.files[0]; if(!f) return;
+  const reader=new FileReader();
+  reader.onload=()=>{ try{ recipients=parseCSV(reader.result);
+    const uniq=new Set(recipients.map(r=>r.email.toLowerCase())).size;
+    $("csvInfo").innerHTML=`<span class="pill">${recipients.length} rows</span> &nbsp; <span class="pill">${uniq} unique emails</span>`;
+    log("Parsed "+recipients.length+" rows ("+uniq+" unique) from "+f.name);
+  }catch(err){ $("csvInfo").innerHTML='<span class="err">'+err.message+'</span>'; } };
+  reader.readAsText(f);
+});
+
+$("btnCreate").addEventListener("click", async ()=>{
+  try{
+    if(!$("secret").value) return alert("Paste your service_role key in step 1.");
+    if(!$("html").value.trim()) return alert("Email HTML is empty.");
+    if(!recipients.length) return alert("Upload a CSV first.");
+    $("btnCreate").disabled=true;
+    log("Creating campaign…");
+    const c = await call({ action:"create_campaign", name:$("name").value, subject:$("subject").value, html:$("html").value, from_email:$("from").value });
+    campaignId = c.id; log("Campaign created: "+campaignId, "ok");
+    log("Importing "+recipients.length+" recipients…");
+    // import in chunks to keep requests small
+    let imported=0, skipped=0; const CH=2000;
+    for(let i=0;i<recipients.length;i+=CH){
+      const r = await call({ action:"import_recipients", campaign_id:campaignId, recipients:recipients.slice(i,i+CH) });
+      imported+=r.imported; skipped+=r.skipped_invalid;
+      log("  imported batch "+(i/CH+1)+" — running total "+imported);
+    }
+    const st = await call({ action:"status", campaign_id:campaignId });
+    $("createInfo").innerHTML=`<span class="ok">Ready.</span> ${st.queued} queued (${skipped} invalid skipped). Campaign id: <code>${campaignId}</code>`;
+    refreshStatus();
+  }catch(e){ log("ERROR: "+e.message,"err"); $("createInfo").innerHTML='<span class="err">'+e.message+'</span>'; }
+  finally{ $("btnCreate").disabled=false; }
+});
+
+$("btnTest").addEventListener("click", async ()=>{
+  try{
+    if(!campaignId) return alert("Create the campaign first (step 4).");
+    const to=$("testEmail").value.trim(); if(!to) return alert("Enter a test email.");
+    $("btnTest").disabled=true; log("Sending test to "+to+"…");
+    const r = await call({ action:"send_batch", campaign_id:campaignId, test_email:to });
+    if(r.ok){ $("testInfo").innerHTML='<span class="ok">Test sent to '+to+'.</span> Check the inbox.'; log("Test sent (id "+r.provider_id+")","ok"); }
+    else{ $("testInfo").innerHTML='<span class="err">Failed: '+(r.error||'')+'</span>'; }
+  }catch(e){ log("ERROR: "+e.message,"err"); $("testInfo").innerHTML='<span class="err">'+e.message+'</span>'; }
+  finally{ $("btnTest").disabled=false; }
+});
+
+async function refreshStatus(){
+  if(!campaignId) return;
+  try{ const s=await call({ action:"status", campaign_id:campaignId });
+    $("sQueued").textContent=s.queued; $("sSent").textContent=s.sent;
+    $("sFailed").textContent=s.failed; $("sSkip").textContent=s.skipped;
+    const total = s.queued+s.sent+s.failed+s.skipped; totalForBar=total||1;
+    $("bar").style.width = Math.round(((s.sent+s.failed+s.skipped)/totalForBar)*100)+"%";
+  }catch(e){ log("status error: "+e.message,"err"); }
+}
+$("btnStatus").addEventListener("click", refreshStatus);
+
+$("btnStop").addEventListener("click", ()=>{ stopFlag=true; log("Stopping after current batch…"); });
+
+$("btnSend").addEventListener("click", async ()=>{
+  if(!campaignId) return alert("Create the campaign first (step 4).");
+  if(!confirm("Start sending real emails to your list? You can Stop anytime.")) return;
+  stopFlag=false; $("btnSend").disabled=true; $("btnStop").disabled=false;
+  const batch = Math.max(1, Math.min(100, parseInt($("batch").value)||50));
+  const cap = parseInt($("cap").value)||Infinity;
+  let done=0;
+  log("=== Sending started (batch "+batch+(cap!==Infinity?(", cap "+cap):"")+") ===");
+  try{
+    while(!stopFlag){
+      const r = await call({ action:"send_batch", campaign_id:campaignId, batch_size:batch });
+      done += (r.sent+r.failed+r.skipped);
+      log("batch → sent "+r.sent+", failed "+r.failed+", unsub-skipped "+r.skipped+", remaining "+r.remaining);
+      await refreshStatus();
+      if(r.remaining===0){ log("=== ALL DONE ===","ok"); break; }
+      if(done>=cap){ log("=== Reached this run's cap ("+cap+"). Remaining "+r.remaining+" — run again later. ===","ok"); break; }
+      await new Promise(res=>setTimeout(res,400));
+    }
+    if(stopFlag) log("=== Stopped. You can resume anytime. ===");
+  }catch(e){ log("ERROR: "+e.message,"err"); }
+  finally{ $("btnSend").disabled=false; $("btnStop").disabled=true; stopFlag=false; }
+});
+</script>
+</body>
+</html>
