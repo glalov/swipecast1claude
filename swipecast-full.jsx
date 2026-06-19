@@ -19118,7 +19118,7 @@ function AdminSettings(){
       </div>
       <p style={{color:"var(--t3)",fontSize:12,marginTop:-8,marginBottom:12}}>When on, non-admins see the maintenance message instead of the app. (UI rendering of this flag is optional — the setting is stored and readable by any page.)</p>
       <div className="form-group"><label className="label">Maintenance message</label><textarea className="textarea" value={form.maintenance_message||""} onChange={e=>setForm(f=>({...f,maintenance_message:e.target.value}))} placeholder="We're upgrading things. Be back shortly."/></div>
-      <div className="form-group"><label className="label">Support email</label><input className="input" value={form.support_email||""} onChange={e=>setForm(f=>({...f,support_email:e.target.value}))} placeholder="hello@castslate.com"/></div>
+      <div className="form-group"><label className="label">Support email</label><input className="input" value={form.support_email||""} onChange={e=>setForm(f=>({...f,support_email:e.target.value}))} placeholder="team@castslate.com"/></div>
       <div className="form-group"><label className="label">Site-wide announcement (shown on home)</label><input className="input" value={form.announcement||""} onChange={e=>setForm(f=>({...f,announcement:e.target.value}))} placeholder="e.g. New feature: one-tap callbacks"/></div>
       <button className="btn-p" disabled={busy} onClick={save}>{busy?"Saving…":"Save settings"}</button>
     </div>
@@ -19424,10 +19424,10 @@ function AdminEmailDigests(){
         </label>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
           <div className="form-group">
-            <label className="label">Minimum matches to trigger send</label>
+            <label className="label">Max castings per email</label>
             <input className="input" type="number" min={1} max={50} value={form.digest_min_projects}
               onChange={e=>setForm(f=>({...f,digest_min_projects:parseInt(e.target.value)||5}))}/>
-            <div style={{color:"var(--t3)",fontSize:11,marginTop:3}}>Default: 5. Users won't get an email unless this many new matches exist.</div>
+            <div style={{color:"var(--t3)",fontSize:11,marginTop:3}}>Default: 5. Each digest includes up to this many new matches. A user is emailed daily whenever they have at least one new matching casting they haven't seen.</div>
           </div>
           <div className="form-group">
             <label className="label">Default send hour (UTC)</label>
@@ -19496,7 +19496,7 @@ function AdminEmailDigests(){
           <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
             <thead>
               <tr style={{borderBottom:"2px solid var(--bdr)"}}>
-                {["Sent At","User ID","Projects","Status","Provider ID","Error"].map(h=>(
+                {["Sent At","User ID","Email","Projects","Status","Reason","Provider ID","Error"].map(h=>(
                   <th key={h} style={{textAlign:"left",padding:"8px 10px",fontWeight:700,color:"var(--t2)",whiteSpace:"nowrap"}}>{h}</th>
                 ))}
               </tr>
@@ -19506,12 +19506,14 @@ function AdminEmailDigests(){
                 <tr key={log.id} style={{borderBottom:"1px solid var(--bdr)"}}>
                   <td style={{padding:"10px 10px",whiteSpace:"nowrap",fontSize:12}}>{fmt(log.sent_at)}</td>
                   <td style={{padding:"10px 10px",fontFamily:"monospace",fontSize:11,color:"var(--t3)"}}>{(log.user_id||"").slice(0,12)}…</td>
+                  <td style={{padding:"10px 10px",fontSize:11,color:"var(--t2)",maxWidth:180,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{log.email||"—"}</td>
                   <td style={{padding:"10px 10px",textAlign:"center"}}>{log.project_ids_included?.length||0}</td>
                   <td style={{padding:"10px 10px"}}>
                     <span style={{background:statusBg[log.status]||"transparent",color:statusColor[log.status]||"var(--t1)",padding:"2px 8px",borderRadius:5,fontSize:11,fontWeight:700,textTransform:"uppercase"}}>
                       {log.status}
                     </span>
                   </td>
+                  <td style={{padding:"10px 10px",fontSize:11,color:"var(--t3)",maxWidth:160,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{log.reason||"—"}</td>
                   <td style={{padding:"10px 10px",fontFamily:"monospace",fontSize:11,color:"var(--t3)",maxWidth:140,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{log.provider_message_id||"—"}</td>
                   <td style={{padding:"10px 10px",fontSize:11,color:"var(--red)",maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{log.error_message||"—"}</td>
                 </tr>

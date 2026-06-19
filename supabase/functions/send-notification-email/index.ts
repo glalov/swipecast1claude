@@ -22,6 +22,7 @@ const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const FROM_EMAIL           = Deno.env.get("NOTIFY_FROM_EMAIL") ?? "CastSlate <notifications@castslate.com>";
+const CONTACT_EMAIL        = Deno.env.get("CONTACT_EMAIL") ?? "team@castslate.com";
 const APP_URL              = (Deno.env.get("APP_URL") ?? "https://www.castslate.com").replace(/\/$/, "");
 const TWILIO_SID           = Deno.env.get("TWILIO_ACCOUNT_SID");
 const TWILIO_TOKEN         = Deno.env.get("TWILIO_AUTH_TOKEN");
@@ -255,7 +256,7 @@ serve(async (req) => {
               Authorization: `Bearer ${RESEND_API_KEY}`,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ from: FROM_EMAIL, to: [toEmail], subject, html }),
+            body: JSON.stringify({ from: FROM_EMAIL, to: [toEmail], reply_to: CONTACT_EMAIL, subject, html }),
           });
 
           if (!resendRes.ok) {
