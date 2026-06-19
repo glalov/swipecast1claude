@@ -145,12 +145,12 @@ serve(async (req) => {
       const emailMap:Record<string,string>={};
       {
         let page=1;
-        while(page<=50){
+        while(page<=200){
           const{data,error}=await sb.auth.admin.listUsers({page,perPage:1000});
           if(error){ console.error("[digest-queue] listUsers error",error); break; }
           const us=(data?.users||[]) as any[];
+          if(us.length===0) break; // paginate until empty regardless of effective page size
           us.forEach(u=>{ if(u?.id&&u?.email) emailMap[u.id]=u.email; });
-          if(us.length<1000) break;
           page++;
         }
       }
@@ -186,7 +186,8 @@ serve(async (req) => {
           else if(p.notification_email===false)      skipReason="email_notifications_off";
           else if((pf.frequency||"daily")==="off")   skipReason="frequency_off";
           else if(!eligible(pf.frequency||"daily",pf.last_sent_at??null)) skipReason="sent_recently";
-          else if(!email)                            skipReason="no_email_on_file";
+          // NOTE: we do NOT skip on a missing emailMap entry — send-digest-email
+          // resolves the address itself via getUserById. The map is logging-only.
 
           if(skipReason){ skipped++; bump(skipReason); await logRow({user_id:p.id,email,status:"skipped",reason:skipReason,project_ids_included:[]}); continue; }
 
