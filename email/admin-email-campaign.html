@@ -50,6 +50,12 @@
   </div>
 
   <div class="card">
+    <h2 style="justify-content:space-between;"><span style="display:flex;align-items:center;gap:8px;"><span class="step">★</span> Dashboard</span>
+      <button class="secondary" id="btnDash" style="padding:7px 14px;font-size:13px;">Refresh stats</button></h2>
+    <div id="dashBody"><small>Enter your key above, then click “Refresh stats”.</small></div>
+  </div>
+
+  <div class="card">
     <h2><span class="step">2</span> Campaign</h2>
     <div class="row">
       <div><label>Name (internal)</label><input id="name" type="text" value="Actor list — castings promo"/></div>
@@ -123,6 +129,45 @@ async function call(payload){
   if(!r.ok) throw new Error(data.error || ("HTTP "+r.status));
   return data;
 }
+
+// ── Dashboard ──
+const statsUrl = () => $("fnUrl").value.trim().replace(/send-campaign\/?$/,"admin-stats");
+function tile(label,val,accent){ return `<div style="background:var(--bg);border-radius:10px;padding:12px 14px;">
+  <div style="font-size:12px;color:var(--muted);margin-bottom:3px;">${label}</div>
+  <div style="font-size:22px;font-weight:700;color:${accent||'var(--ink)'};">${val}</div></div>`; }
+function grid(items){ return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px;margin:6px 0 16px;">${items.join("")}</div>`; }
+function renderStats(d){
+  const u=d.users,e=d.engagement,em=d.email;
+  let h="";
+  h+='<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 8px;">Users</div>';
+  h+=grid([tile("Total users",u.total),tile("Talent / actors",u.talent),tile("Casting directors",u.casting_directors),
+    tile("Free members",u.free_members),tile("Premium members",u.premium_members,"var(--teal)"),
+    tile("Paid subscriptions",u.paid_subscriptions,"var(--teal)"),tile("Monthly plan",u.plan_monthly),tile("Yearly plan",u.plan_yearly)]);
+  h+='<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 8px;">Growth</div>';
+  h+=grid([tile("Signups today",u.signups_today),tile("Signups (7d)",u.signups_7d),tile("Signups (30d)",u.signups_30d),tile("Stripe customers",u.stripe_customers)]);
+  h+='<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 8px;">Engagement &amp; email</div>';
+  h+=grid([tile("Open castings",e.open_castings),tile("Casting views",e.casting_views),tile("Unsubscribes",em.unsubscribes,"#b91c1c")]);
+  h+='<div class="warn">Site traffic / visitors isn’t stored in the database — see <b>Vercel Analytics</b> (or Google Analytics) for pageviews. “Casting views” above is in-app engagement only.</div>';
+  if(d.campaigns&&d.campaigns.length){
+    h+='<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px;">Email campaigns</div>';
+    h+='<table style="width:100%;border-collapse:collapse;font-size:13px;"><tr style="text-align:left;color:var(--muted);"><th style="padding:6px 8px;">Campaign</th><th>Status</th><th>Total</th><th>Sent</th><th>Failed</th><th>Queued</th><th>Unsub</th></tr>';
+    d.campaigns.forEach(c=>{ h+=`<tr style="border-top:1px solid var(--line);"><td style="padding:6px 8px;">${c.name}</td><td>${c.status}</td><td>${c.total_recipients}</td><td style="color:#15803d;font-weight:600;">${c.sent}</td><td style="color:#b91c1c;">${c.failed}</td><td>${c.queued}</td><td>${c.skipped}</td></tr>`; });
+    h+='</table>';
+  }
+  h+=`<div style="margin-top:10px;"><small>Updated ${new Date(d.generated_at).toLocaleString()}</small></div>`;
+  return h;
+}
+async function loadStats(){
+  if(!$("secret").value) return alert("Paste your service_role key in step 1 first.");
+  $("btnDash").disabled=true; $("dashBody").innerHTML="Loading…";
+  try{
+    const r=await fetch(statsUrl(),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({secret:$("secret").value})});
+    const d=await r.json(); if(!r.ok) throw new Error(d.error||("HTTP "+r.status));
+    $("dashBody").innerHTML=renderStats(d);
+  }catch(e){ $("dashBody").innerHTML='<span class="err">'+e.message+'</span>'; }
+  finally{ $("btnDash").disabled=false; }
+}
+$("btnDash").addEventListener("click", loadStats);
 
 // Load the production template automatically
 fetch("promo-castings-campaign.html").then(r=>r.ok?r.text():Promise.reject())
