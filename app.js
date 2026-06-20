@@ -19,6 +19,12 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .logo{font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--t1);}
 .logo-i{width:30px;height:30px;background:var(--acc);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;}
 .logo-i svg{width:100%;height:100%;display:block;}
+/* Top-nav logo: a bit larger + a 3D "cube turn" spin once every 10s. */
+.nav .logo{perspective:620px;}
+.nav .logo-i{width:38px;height:38px;border-radius:9px;transform-style:preserve-3d;animation:cs-logo-spin 10s cubic-bezier(.6,0,.3,1) infinite;}
+@keyframes cs-logo-spin{0%,70%{transform:rotateY(0deg) scale(1);}82%{transform:rotateY(180deg) scale(1.12);}100%{transform:rotateY(360deg) scale(1);}}
+@media (max-width:768px){.nav .logo-i{width:32px;height:32px;}}
+@media (prefers-reduced-motion:reduce){.nav .logo-i{animation:none;}}
 .nav-links{display:flex;gap:4px;align-items:center;}
 .nav-links span{color:#0A0A0A;font-size:13px;font-weight:500;cursor:pointer;padding:8px 12px;border-radius:9px;transition:background-color .18s ease,color .18s ease;}
 .nav-links span:hover{background:#F7F7F8;}
