@@ -13626,7 +13626,6 @@ const LANDING_SWIPE_DEMO=[
   {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop&crop=top&q=90",skills:["Military Background","Boxing","Bass Vocals"]},
   {id:3,name:"Owen Fletcher",age:28,gender:"Male",height:"6'0\"",pos:"center 25%",img:"https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Drama","Film & TV","Screen Acting"]},
   {id:11,name:"Lucas Hartman",age:26,gender:"Male",height:"5'11\"",pos:"center 20%",img:"https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Action","Commercial","Improv"]},
-  {id:12,name:"Hannah Whitfield",age:23,gender:"Female",height:"5'6\"",pos:"center 12%",img:"https://images.unsplash.com/photo-1506863530036-1efeddceb993?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Period Drama","Theater","Voiceover"]},
   {id:15,name:"Isabella Cruz",age:39,gender:"Female",height:"5'5\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&h=800&fit=crop&crop=top&q=90",skills:["Bilingual Spanish","Musical Theater","Commercial Print"]},
 ];
 function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your free profile"}={}){
