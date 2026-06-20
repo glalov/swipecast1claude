@@ -17983,6 +17983,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {isSuperAdmin&&<AdminNavLink current={section} target="news-controls" label="News Controls" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="legal-pages" label="Legal Pages" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="email-digests" label="Email Digests" onClick={goToSection}/>}
+      {isSuperAdmin&&<AdminNavLink current={section} target="email-campaigns" label="Email Campaigns" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="weekly-checkins" label="Weekly Check-Ins" onClick={goToSection}/>}
       {/* Direct jump to the CD dashboard — admins inherit CD capabilities, so they post + review
           submissions from there using the exact same interface as regular casting directors. */}
@@ -18013,6 +18014,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="news-controls"&&isSuperAdmin&&<AdminNews session={session}/>}
       {section==="legal-pages"&&isSuperAdmin&&<AdminLegalPages/>}
       {section==="email-digests"&&isSuperAdmin&&<AdminEmailDigests/>}
+      {section==="email-campaigns"&&isSuperAdmin&&<AdminEmailCampaigns session={session}/>}
       {section==="weekly-checkins"&&isSuperAdmin&&<AdminWeeklyCheckIns session={session}/>}
       <div style={{marginTop:40}}><Footer onNavigate={onNavigate}/></div>
     </div>
@@ -18024,6 +18026,176 @@ function AdminNavLink({current,target,label,onClick,badge}){
     <span>{label}</span>
     {badge>0&&<span style={{background:active?"rgba(255,255,255,0.3)":"var(--acc)",color:"#fff",borderRadius:10,fontSize:11,fontWeight:700,padding:"1px 7px",minWidth:20,textAlign:"center",lineHeight:"18px"}}>{badge}</span>}
   </button>);
+}
+
+// ─── Email Campaigns: bulk promo emailer (admin-only) ───────────────────────
+function AdminEmailCampaigns({session}){
+  const SUPA=(window.SC_CONFIG?.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co");
+  const [campaigns,setCampaigns]=useState(null);
+  const [err,setErr]=useState("");
+  const [sel,setSel]=useState(null);
+  const [selStatus,setSelStatus]=useState(null);
+  const [testEmail,setTestEmail]=useState(session?.user?.email||"");
+  const [batch,setBatch]=useState("50");
+  const [cap,setCap]=useState("");
+  const [sending,setSending]=useState(false);
+  const [logLines,setLogLines]=useState([]);
+  const stopRef=useRef(false);
+  // new campaign form
+  const [showNew,setShowNew]=useState(false);
+  const [nName,setNName]=useState("Actor list — castings promo");
+  const [nSubject,setNSubject]=useState("Casting calls are live on CastSlate");
+  const [nHtml,setNHtml]=useState("");
+  const [recips,setRecips]=useState([]);
+  const [busy,setBusy]=useState(false);
+
+  const addLog=(m)=>setLogLines(l=>[...l.slice(-200),`[${new Date().toLocaleTimeString()}] ${m}`]);
+
+  const fnCall=useCallback(async(action,extra={})=>{
+    const {data:{session:s}}=await window.sb.auth.getSession();
+    const r=await fetch(SUPA+"/functions/v1/send-campaign",{method:"POST",
+      headers:{"Content-Type":"application/json",Authorization:"Bearer "+(s?.access_token||"")},
+      body:JSON.stringify({action,...extra})});
+    const d=await r.json().catch(()=>({error:"bad response"}));
+    if(!r.ok) throw new Error(d.error||("HTTP "+r.status));
+    return d;
+  },[SUPA]);
+
+  const loadCampaigns=useCallback(async()=>{
+    try{ const d=await fnCall("list_campaigns"); setCampaigns(d.campaigns||[]); }
+    catch(e){ setErr(e.message); }
+  },[fnCall]);
+  useEffect(()=>{ loadCampaigns(); },[loadCampaigns]);
+
+  const refreshSel=useCallback(async(id)=>{
+    const cid=id||sel; if(!cid)return;
+    try{ const s=await fnCall("status",{campaign_id:cid}); setSelStatus(s); }catch(_){}
+  },[fnCall,sel]);
+
+  const parseCSV=(text)=>{
+    const lines=text.split(/\r?\n/).filter(l=>l.trim().length); if(!lines.length)return[];
+    const split=(line)=>{const out=[];let cur="",q=false;for(let i=0;i<line.length;i++){const c=line[i];
+      if(c==='"'){if(q&&line[i+1]==='"'){cur+='"';i++;}else q=!q;}else if(c===','&&!q){out.push(cur);cur="";}else cur+=c;}out.push(cur);return out;};
+    const header=split(lines[0]).map(h=>h.trim().toLowerCase());
+    const ei=header.findIndex(h=>h==="email"||h.includes("email"));
+    const ni=header.findIndex(h=>h==="name"||h.includes("name"));
+    if(ei<0)throw new Error('CSV needs an "email" column.');
+    const rows=[];for(let i=1;i<lines.length;i++){const c=split(lines[i]);const email=(c[ei]||"").trim();if(!email)continue;rows.push({email,name:ni>=0?(c[ni]||"").trim():""});}
+    return rows;
+  };
+  const onCsv=(e)=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+    rd.onload=()=>{try{const rows=parseCSV(rd.result);setRecips(rows);addLog("Parsed "+rows.length+" rows from "+f.name);}catch(er){setErr(er.message);}};rd.readAsText(f);};
+  const loadTemplate=async()=>{try{const t=await(await fetch("/email/promo-castings-campaign.html")).text();setNHtml(t);addLog("Loaded default template ("+t.length+" chars)");}catch(_){addLog("Couldn't load template — paste HTML manually.");}};
+
+  const createCampaign=async()=>{
+    if(!nHtml.trim())return alert("Email HTML is empty — click “Load default template” or paste HTML.");
+    if(!recips.length)return alert("Upload a CSV of recipients first.");
+    setBusy(true);
+    try{
+      addLog("Creating campaign…");
+      const c=await fnCall("create_campaign",{name:nName,subject:nSubject,html:nHtml});
+      addLog("Created "+c.id+". Importing "+recips.length+" recipients…");
+      for(let i=0;i<recips.length;i+=2000){await fnCall("import_recipients",{campaign_id:c.id,recipients:recips.slice(i,i+2000)});addLog("  imported "+Math.min(i+2000,recips.length)+"/"+recips.length);}
+      addLog("Done importing.");
+      setShowNew(false);setRecips([]);await loadCampaigns();setSel(c.id);await refreshSel(c.id);
+    }catch(e){addLog("ERROR: "+e.message);}
+    finally{setBusy(false);}
+  };
+
+  const sendTest=async()=>{
+    if(!sel)return; const to=(testEmail||"").trim(); if(!to)return alert("Enter a test email.");
+    setBusy(true);
+    try{const r=await fnCall("send_batch",{campaign_id:sel,test_email:to});addLog(r.ok?("Test sent to "+to):("Test failed: "+(r.error||"")));}
+    catch(e){addLog("ERROR: "+e.message);}finally{setBusy(false);}
+  };
+
+  const startSend=async()=>{
+    if(!sel)return;
+    if(!window.confirm("Send real emails to this list now? You can Stop anytime."))return;
+    stopRef.current=false;setSending(true);
+    const b=Math.max(1,Math.min(100,parseInt(batch)||50));
+    const capN=parseInt(cap)||Infinity;let done=0;
+    addLog("=== Sending started (batch "+b+(capN!==Infinity?(", cap "+capN):"")+") ===");
+    try{
+      while(!stopRef.current){
+        const r=await fnCall("send_batch",{campaign_id:sel,batch_size:b});
+        done+=(r.sent+r.failed+r.skipped);
+        addLog("batch → sent "+r.sent+", failed "+r.failed+", unsub-skipped "+r.skipped+", remaining "+r.remaining);
+        await refreshSel();
+        if(r.remaining===0){addLog("=== ALL DONE ===");break;}
+        if(done>=capN){addLog("=== Reached cap ("+capN+"). Remaining "+r.remaining+" — run again later. ===");break;}
+        await new Promise(res=>setTimeout(res,400));
+      }
+      if(stopRef.current)addLog("=== Stopped. Resume anytime. ===");
+    }catch(e){addLog("ERROR: "+e.message);}
+    finally{setSending(false);await loadCampaigns();}
+  };
+
+  const selCamp=(campaigns||[]).find(c=>c.id===sel);
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Email Campaigns</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Send promo emails to an uploaded list. Warm up a new list (a few hundred/day), watch bounces, then send the rest.</p>
+    {err&&<div style={{color:"#c0392b",fontSize:13,marginBottom:12}}>{err}</div>}
+
+    <div style={{display:"flex",gap:10,marginBottom:18}}>
+      <button className="btn-s btn-sm" onClick={loadCampaigns}>↻ Refresh</button>
+      <button className="btn-p btn-sm" onClick={()=>{setShowNew(s=>!s);if(!nHtml)loadTemplate();}}>{showNew?"Close new campaign":"+ New campaign"}</button>
+    </div>
+
+    {showNew&&<div className="card" style={{padding:18,marginBottom:20}}>
+      <h3 style={{fontSize:15,fontWeight:800,margin:"0 0 12px"}}>New campaign</h3>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:10}}>
+        <div><label style={{fontSize:12,color:"var(--t3)",fontWeight:600}}>Name (internal)</label><input value={nName} onChange={e=>setNName(e.target.value)} style={{width:"100%",padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14}}/></div>
+        <div><label style={{fontSize:12,color:"var(--t3)",fontWeight:600}}>Subject</label><input value={nSubject} onChange={e=>setNSubject(e.target.value)} style={{width:"100%",padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14}}/></div>
+      </div>
+      <div style={{marginBottom:10}}>
+        <label style={{fontSize:12,color:"var(--t3)",fontWeight:600}}>Email HTML <button className="btn-s btn-sm" style={{marginLeft:8}} onClick={loadTemplate}>Load default template</button></label>
+        <textarea value={nHtml} onChange={e=>setNHtml(e.target.value)} style={{width:"100%",minHeight:80,padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:12,fontFamily:"monospace"}} placeholder="Loads promo-castings-campaign.html automatically (must include {{UNSUB_URL}})."/>
+        <div style={{fontSize:11,color:"var(--t3)",marginTop:4}}>{nHtml?(nHtml.length+" chars · {{UNSUB_URL}} "+(nHtml.includes("{{UNSUB_URL}}")?"present ✓":"MISSING ✗")):""}</div>
+      </div>
+      <div style={{marginBottom:12}}>
+        <label style={{fontSize:12,color:"var(--t3)",fontWeight:600,display:"block"}}>Recipients CSV (needs an email column; optional name)</label>
+        <input type="file" accept=".csv" onChange={onCsv} style={{fontSize:13}}/>
+        {recips.length>0&&<span style={{marginLeft:10,fontSize:13,fontWeight:700,color:"var(--acc)"}}>{recips.length} rows ready</span>}
+      </div>
+      <button className="btn-p" disabled={busy} onClick={createCampaign}>{busy?"Working…":"Create campaign & import recipients"}</button>
+    </div>}
+
+    {campaigns===null&&<CastSlateLoader size="inline" text="Loading campaigns…"/>}
+    {campaigns&&campaigns.length===0&&<p style={{color:"var(--t3)",fontSize:13}}>No campaigns yet. Click “New campaign”.</p>}
+    {campaigns&&campaigns.map(c=>(
+      <div key={c.id} className="card" style={{padding:"14px 16px",marginBottom:10,borderLeft:sel===c.id?"3px solid var(--acc)":"3px solid transparent"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+          <div>
+            <div style={{fontWeight:700,fontSize:14}}>{c.name} <span style={{fontSize:11,fontWeight:700,color:"var(--t3)",marginLeft:6}}>{c.status}</span></div>
+            <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{c.total_recipients} recipients · <span style={{color:"#15803d"}}>{c.sent} sent</span> · <span style={{color:"#c0392b"}}>{c.failed} failed</span> · {c.queued} queued · {c.skipped} unsub-skipped</div>
+          </div>
+          <button className="btn-s btn-sm" onClick={()=>{setSel(c.id);setSelStatus({queued:c.queued,sent:c.sent,failed:c.failed,skipped:c.skipped,remaining:c.queued});}}>{sel===c.id?"Selected":"Manage"}</button>
+        </div>
+      </div>
+    ))}
+
+    {selCamp&&<div className="card" style={{padding:18,marginTop:8}}>
+      <h3 style={{fontSize:15,fontWeight:800,margin:"0 0 12px"}}>Send: {selCamp.name}</h3>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:10,marginBottom:16}}>
+        <StatTile num={selStatus?selStatus.queued:selCamp.queued} label="Queued"/>
+        <StatTile num={selStatus?selStatus.sent:selCamp.sent} label="Sent"/>
+        <StatTile num={selStatus?selStatus.failed:selCamp.failed} label="Failed" danger={(selStatus?selStatus.failed:selCamp.failed)>0}/>
+        <StatTile num={selStatus?selStatus.skipped:selCamp.skipped} label="Unsub-skipped"/>
+      </div>
+      <div style={{display:"flex",gap:10,alignItems:"flex-end",flexWrap:"wrap",marginBottom:14}}>
+        <div><label style={{fontSize:12,color:"var(--t3)",fontWeight:600,display:"block"}}>Send a test to</label><input value={testEmail} onChange={e=>setTestEmail(e.target.value)} style={{padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14,width:240}}/></div>
+        <button className="btn-s" disabled={busy} onClick={sendTest}>Send test</button>
+      </div>
+      <div style={{display:"flex",gap:10,alignItems:"flex-end",flexWrap:"wrap",marginBottom:14}}>
+        <div><label style={{fontSize:12,color:"var(--t3)",fontWeight:600,display:"block"}}>Batch size</label><input value={batch} onChange={e=>setBatch(e.target.value)} style={{padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14,width:90}}/></div>
+        <div><label style={{fontSize:12,color:"var(--t3)",fontWeight:600,display:"block"}}>Max this run (blank = all)</label><input value={cap} onChange={e=>setCap(e.target.value)} placeholder="e.g. 500" style={{padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14,width:140}}/></div>
+        {!sending?<button className="btn-p" onClick={startSend}>Start sending</button>:<button className="btn-s" onClick={()=>{stopRef.current=true;}}>Stop</button>}
+        <button className="btn-s btn-sm" onClick={()=>refreshSel()}>↻ Status</button>
+      </div>
+      <div style={{background:"#0f172a",color:"#cbd5e1",borderRadius:8,padding:12,fontFamily:"monospace",fontSize:12,maxHeight:240,overflow:"auto",whiteSpace:"pre-wrap"}}>{logLines.length?logLines.join("\n"):"Ready."}</div>
+    </div>}
+  </>);
 }
 
 // ─── Overview: counts + recent audit activity

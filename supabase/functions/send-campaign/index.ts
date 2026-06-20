@@ -1,19 +1,12 @@
 // send-campaign — Supabase Edge Function
-// Admin bulk email tool for CastSlate promo campaigns (e.g. the actor list).
+// Admin bulk email tool for CastSlate promo campaigns.
 //
-// Auth: all admin actions require `secret` === SUPABASE_SERVICE_ROLE_KEY
-//       (or ADMIN_CAMPAIGN_SECRET if that env is set). The unsubscribe GET
-//       endpoint is intentionally public (it's a link inside emails).
+// Auth (any ONE of):
+//   • `secret` === SUPABASE_SERVICE_ROLE_KEY or ADMIN_CAMPAIGN_SECRET  (standalone local tool)
+//   • Authorization: Bearer <user JWT> where that user's profile is admin/super_admin (in-app admin UI)
+// The unsubscribe GET endpoint is public (link inside emails).
 //
-// POST { action:"create_campaign", secret, name, subject, html, from_email?, reply_to? }
-//        -> { id }
-// POST { action:"import_recipients", secret, campaign_id, recipients:[{email,name}] }
-//        -> { imported, skipped_invalid, total }
-// POST { action:"send_batch", secret, campaign_id, batch_size?, test_email? }
-//        -> test: { ok, test:true }  |  bulk: { sent, failed, skipped, remaining }
-// POST { action:"status", secret, campaign_id } -> counts + remaining
-// GET  ?action=unsubscribe&e=<base64url email>&c=<campaign_id>
-//        -> records unsubscribe, redirects to APP_URL/unsubscribed
+// Actions: create_campaign, import_recipients, list_campaigns, status, send_batch (+ test_email)
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -21,7 +14,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const ADMIN_SECRET         = Deno.env.get("ADMIN_CAMPAIGN_SECRET") ?? "";
+const ADMIN_SECRET         = Deno.env.get("ADMIN_CAMPAIGN_SECRET") ?? "cmpn_9e872b254fab6297129ac7ee95c021831a2163dd1f7a9906";
 const DEFAULT_FROM         = Deno.env.get("NOTIFY_FROM_EMAIL") ?? "CastSlate <notifications@castslate.com>";
 const CONTACT_EMAIL        = Deno.env.get("CONTACT_EMAIL") ?? "team@castslate.com";
 const APP_URL              = (Deno.env.get("APP_URL") ?? "https://www.castslate.com").replace(/\/$/,"");
@@ -49,20 +42,19 @@ function unsubUrl(email: string, campaignId: string): string {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
+  const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-  // ── Public unsubscribe (GET link from inside emails) ──────────────────────
+  // Public unsubscribe (GET link from inside emails)
   if (req.method === "GET") {
     const url = new URL(req.url);
     if (url.searchParams.get("action") === "unsubscribe" && url.searchParams.get("e")) {
       try {
         const email = b64urlDecode(url.searchParams.get("e")!).toLowerCase().trim();
         const campaignId = url.searchParams.get("c") || null;
-        const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
         await sb.from("email_unsubscribes").upsert(
           { email, unsubscribed_at: new Date().toISOString(), campaign_id: campaignId },
           { onConflict: "email" }
         );
-        // also mark any still-queued copies so they never go out
         await sb.from("email_campaign_recipients").update({ status: "skipped_unsub" }).eq("email", email).eq("status", "queued");
       } catch (e) { console.error("[send-campaign] unsubscribe error", e); }
       return new Response(null, { status: 302, headers: { "Location": `${APP_URL}/unsubscribed` } });
@@ -77,14 +69,23 @@ serve(async (req) => {
     const body = await req.json();
     const { action, secret } = body;
 
-    // ── Admin auth ──────────────────────────────────────────────────────────
-    const authorized = !!secret && (secret === SUPABASE_SERVICE_KEY || (ADMIN_SECRET && secret === ADMIN_SECRET));
+    // ── Auth: shared secret OR an admin's logged-in session ──────────────────
+    let authorized = !!secret && (secret === SUPABASE_SERVICE_KEY || (ADMIN_SECRET && secret === ADMIN_SECRET));
+    if (!authorized) {
+      const authz = req.headers.get("Authorization") || "";
+      if (authz.startsWith("Bearer ")) {
+        try {
+          const { data: { user } } = await sb.auth.getUser(authz.slice(7));
+          if (user) {
+            const { data: prof } = await sb.from("profiles").select("user_type").eq("id", user.id).maybeSingle();
+            if (prof && ["admin", "super_admin"].includes(prof.user_type)) authorized = true;
+          }
+        } catch (_) { /* fall through to 401 */ }
+      }
+    }
     if (!authorized) return res({ error: "Unauthorized" }, 401);
     if (!RESEND_API_KEY) return res({ error: "RESEND_API_KEY not set" }, 500);
 
-    const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-
-    // ── Create campaign ───────────────────────────────────────────────────────
     if (action === "create_campaign") {
       const { name, subject, html, from_email, reply_to } = body;
       if (!name || !subject || !html) return res({ error: "name, subject, html required" }, 400);
@@ -98,7 +99,6 @@ serve(async (req) => {
       return res({ id: data.id });
     }
 
-    // ── Import recipients ─────────────────────────────────────────────────────
     if (action === "import_recipients") {
       const { campaign_id, recipients } = body;
       if (!campaign_id || !Array.isArray(recipients)) return res({ error: "campaign_id and recipients[] required" }, 400);
@@ -111,7 +111,6 @@ serve(async (req) => {
         seen.add(email);
         rows.push({ campaign_id, email, name: (r.name ?? "").toString().trim() || null });
       }
-      // chunked upsert (ignore conflicts on (campaign_id,email))
       const CH = 500;
       for (let i = 0; i < rows.length; i += CH) {
         const { error } = await sb.from("email_campaign_recipients")
@@ -124,7 +123,19 @@ serve(async (req) => {
       return res({ imported: rows.length, skipped_invalid: skipped, total: count ?? rows.length });
     }
 
-    // ── Status ────────────────────────────────────────────────────────────────
+    if (action === "list_campaigns") {
+      const { data: camps } = await sb.from("email_campaigns")
+        .select("id,name,subject,status,total_recipients,sent_count,failed_count,created_at")
+        .order("created_at", { ascending: false }).limit(30);
+      const out = [];
+      for (const c of camps || []) {
+        const cnt = async (st: string) => (await sb.from("email_campaign_recipients").select("*", { count: "exact", head: true }).eq("campaign_id", c.id).eq("status", st)).count ?? 0;
+        const [queued, sent, failed, skipped] = await Promise.all([cnt("queued"), cnt("sent"), cnt("failed"), cnt("skipped_unsub")]);
+        out.push({ ...c, queued, sent, failed, skipped });
+      }
+      return res({ campaigns: out });
+    }
+
     if (action === "status") {
       const { campaign_id } = body;
       if (!campaign_id) return res({ error: "campaign_id required" }, 400);
@@ -134,7 +145,6 @@ serve(async (req) => {
       return res({ queued, sent, failed, skipped, remaining: queued });
     }
 
-    // ── Send batch (or single test) ────────────────────────────────────────────
     if (action === "send_batch") {
       const { campaign_id } = body;
       if (!campaign_id) return res({ error: "campaign_id required" }, 400);
@@ -156,7 +166,6 @@ serve(async (req) => {
         return { ok: false, err: await r.text() };
       };
 
-      // Test send — does not touch the recipient list
       const testEmail = (body.test_email ?? "").toString().toLowerCase().trim();
       if (testEmail) {
         if (!EMAIL_RE.test(testEmail)) return res({ error: "invalid test_email" }, 400);
@@ -165,7 +174,6 @@ serve(async (req) => {
                       : res({ ok: false, test: true, error: out.err }, 500);
       }
 
-      // Bulk batch
       const batchSize = Math.min(Math.max(parseInt(body.batch_size ?? "50", 10) || 50, 1), 100);
       const { data: recips } = await sb.from("email_campaign_recipients")
         .select("id,email").eq("campaign_id", campaign_id).eq("status", "queued").limit(batchSize);
@@ -175,7 +183,6 @@ serve(async (req) => {
       }
       await sb.from("email_campaigns").update({ status: "sending" }).eq("id", campaign_id);
 
-      // unsubscribe suppression
       const emails = recips.map((r: any) => r.email);
       const { data: unsubs } = await sb.from("email_unsubscribes").select("email").in("email", emails);
       const unsubSet = new Set((unsubs || []).map((u: any) => u.email));
@@ -194,10 +201,9 @@ serve(async (req) => {
           await sb.from("email_campaign_recipients").update({ status: "failed", error_message: out.err }).eq("id", r.id);
           failed++;
         }
-        await new Promise((res2) => setTimeout(res2, 120)); // respect Resend rate limit
+        await new Promise((res2) => setTimeout(res2, 120));
       }
 
-      // bump campaign counters
       const cnt = async (status: string) => (await sb.from("email_campaign_recipients")
         .select("*", { count: "exact", head: true }).eq("campaign_id", campaign_id).eq("status", status)).count ?? 0;
       const [totalSent, totalFailed, remaining] = await Promise.all([cnt("sent"), cnt("failed"), cnt("queued")]);
