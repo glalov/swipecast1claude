@@ -22537,8 +22537,8 @@ function App(){
       const supabaseUrl=window.SC_CONFIG?.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co";
       const url=`${supabaseUrl}/functions/v1/track-view`;
       const payload=JSON.stringify({path:location.pathname+location.search,page,referrer:document.referrer||"",session_id:sid,is_logged_in:!!session?.user});
-      if(navigator.sendBeacon){navigator.sendBeacon(url,new Blob([payload],{type:"application/json"}));}
-      else{fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:payload,keepalive:true}).catch(()=>{});}
+      if(navigator.sendBeacon){navigator.sendBeacon(url,new Blob([payload],{type:"text/plain;charset=UTF-8"}));}
+      else{fetch(url,{method:"POST",headers:{"Content-Type":"text/plain;charset=UTF-8"},body:payload,keepalive:true}).catch(()=>{});}
     }catch(_){}
   },[page]);
 
