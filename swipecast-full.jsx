@@ -3737,6 +3737,16 @@ function AboutPage({onNavigate}){
       <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>Our Mission</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>Democratize the casting process. Remove financial barriers for talent. Guarantee that every submission gets a real, human look. Build tools that make casting faster, fairer, and more efficient.</p></div>
       <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>The Problem We Solve</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>Legacy platforms charge actors $15-$30/month — a tax on people working service jobs. Meanwhile, CDs get overwhelmed with grid-view headshots and miss great talent. CastSlate fixes both.</p></div>
     </div>
+    <div style={{maxWidth:800,margin:"0 auto 60px"}}>
+      <div style={{textAlign:"center",marginBottom:28}}>
+        <h2 style={{fontSize:28,fontWeight:800,marginBottom:12}}>What Makes CastSlate Different</h2>
+        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.65,maxWidth:620,margin:"0 auto"}}>Most casting sites just store your headshot in a database. We build tools no other platform has — because we actually care whether our talent gets seen and gets better.</p>
+      </div>
+      <div className="grid-2">
+        <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>The QR Talent Card — an industry first</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>CastSlate is the first and only casting platform to give every actor a downloadable, printable QR business card. Take it to a networking event and hand it to an agent, casting director, filmmaker, or producer — they scan it and, in seconds, land directly on your full CastSlate profile: every headshot, every reel, all your media, in one place. No fumbling for links, no paper resumes. A decision-maker can scan, watch, and make a call on the spot. No other casting platform offers this.</p></div>
+        <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>Manager Mode — also a first</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>We're also the first platform to offer Manager Mode — individual, hands-on managing for each member. Most sites take your subscription and forget you exist. We do the opposite: personalized guidance to help you sharpen your craft, strengthen your profile, and make smarter career moves over time. Real support for your growth, not just a place to park a headshot.</p></div>
+      </div>
+    </div>
     <div style={{maxWidth:900,margin:"0 auto"}}>
       <div style={{textAlign:"center",marginBottom:40}}>
         <h2 style={{fontSize:28,fontWeight:800,marginBottom:12}}>Built by an Industry Collective</h2>
@@ -14121,7 +14131,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div className="section-title" style={{marginBottom:40}}>From actors and casting directors using CastSlate.</div>
       <div className="landing-testimonials" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
         {[
-          {q:"I submitted for two roles my first week and got one callback. The profile was easy to send, and I didn't feel like I was fighting the website.",n:"Alyssa Bennett",r:"Actor · NYC · Non-Union",chip:"Submitted for 2 projects",img:"https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=160&q=80",imgPos:"center 20%"},
+          {q:"At a networking night at Ripley Grier, I handed an agent my CastSlate QR card instead of a resume. He scanned my reel on the spot — and I had a callback the same day.",n:"Alyssa Bennett",r:"Actor · NYC · Non-Union",chip:"Callback the same day",img:"https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=160&q=80",imgPos:"center 20%"},
           {q:"I reviewed 60+ actors for a spec spot in one sitting. Clean profiles, organized media, no broken links. It honestly saved me hours.",n:"Jordan Blake",r:"Casting Director · Commercials",chip:"CD · 10+ yrs experience",img:"https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=160&q=80",imgPos:"center 15%"},
           {q:"I like that I can submit without feeling pushed into an upgrade. The casting details are clear and the process feels straightforward.",n:"Ethan Cole",r:"Actor · LA · Non-Union",chip:"Working actor",img:"https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=160&q=80",imgPos:"center 10%"}
         ].map((t,i)=>
