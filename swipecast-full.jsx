@@ -22559,6 +22559,8 @@ function App(){
   // beacon on each route change; never blocks or errors the UI. Aggregated in admin-stats.
   useEffect(()=>{
     try{
+      // Don't count staff/owner's own browsing in site traffic.
+      if(myProfile&&["admin","super_admin"].includes(myProfile.user_type))return;
       let sid=localStorage.getItem("sc_sid");
       if(!sid){sid=Date.now().toString(36)+Math.random().toString(36).slice(2,10);localStorage.setItem("sc_sid",sid);}
       const supabaseUrl=window.SC_CONFIG?.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co";
