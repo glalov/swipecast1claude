@@ -4437,10 +4437,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
       <h1>{t('classes.heroTitle')}</h1>
       <p>{t('classes.heroDesc')}</p>
     </div>
-    <div style={{display:"flex",flexWrap:"wrap",gap:8,justifyContent:"center",marginBottom:40}}>
-      <button className="btn-s btn-sm" onClick={()=>setFilter("all")} style={filter==="all"?{background:"var(--teal)",color:"#fff",borderColor:"var(--teal)"}:{}}>{t('classes.allCategories')}</button>
-      {CLASS_CATEGORIES.map(cat=><button key={cat.id} className="btn-s btn-sm" onClick={()=>setFilter(cat.id)} style={filter===cat.id?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}>{cat.name}</button>)}
-    </div>
+    <div style={{marginBottom:40}}/>
 
     <div style={{maxWidth:900,margin:"0 auto"}}>
       {/* Featured classes */}
