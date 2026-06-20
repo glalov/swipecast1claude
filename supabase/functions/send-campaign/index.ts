@@ -145,6 +145,18 @@ serve(async (req) => {
       return res({ queued, sent, failed, skipped, remaining: queued });
     }
 
+    // Re-queue everyone (except those who unsubscribed) so the whole list can be emailed again.
+    if (action === "reset_campaign") {
+      const { campaign_id } = body;
+      if (!campaign_id) return res({ error: "campaign_id required" }, 400);
+      await sb.from("email_campaign_recipients")
+        .update({ status: "queued", provider_message_id: null, error_message: null, sent_at: null })
+        .eq("campaign_id", campaign_id).neq("status", "skipped_unsub");
+      await sb.from("email_campaigns").update({ status: "draft", sent_count: 0, failed_count: 0, updated_at: new Date().toISOString() }).eq("id", campaign_id);
+      const { count } = await sb.from("email_campaign_recipients").select("*", { count: "exact", head: true }).eq("campaign_id", campaign_id).eq("status", "queued");
+      return res({ ok: true, requeued: count ?? 0 });
+    }
+
     if (action === "send_batch") {
       const { campaign_id } = body;
       if (!campaign_id) return res({ error: "campaign_id required" }, 400);

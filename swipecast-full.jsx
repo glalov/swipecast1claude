@@ -18109,26 +18109,36 @@ function AdminEmailCampaigns({session}){
     catch(e){addLog("ERROR: "+e.message);}finally{setBusy(false);}
   };
 
-  const startSend=async()=>{
+  const startSend=async(capValue,label)=>{
     if(!sel)return;
-    if(!window.confirm("Send real emails to this list now? You can Stop anytime."))return;
+    const remaining=selStatus?selStatus.queued:(selCamp?selCamp.queued:0);
+    if(remaining===0){alert("Everyone has already been emailed. Use “Resend to everyone” if you want to send again.");return;}
+    const willSend=capValue?Math.min(capValue,remaining):remaining;
+    if(!window.confirm("Send "+willSend.toLocaleString()+" email"+(willSend===1?"":"s")+" now"+(label?" ("+label+")":"")+"? You can press Stop anytime."))return;
     stopRef.current=false;setSending(true);
-    const b=Math.max(1,Math.min(100,parseInt(batch)||50));
-    const capN=parseInt(cap)||Infinity;let done=0;
-    addLog("=== Sending started (batch "+b+(capN!==Infinity?(", cap "+capN):"")+") ===");
+    const b=100;const capN=capValue||Infinity;let done=0;
+    addLog("=== Sending "+(capN===Infinity?"everyone remaining":("up to "+capN))+" ===");
     try{
       while(!stopRef.current){
         const r=await fnCall("send_batch",{campaign_id:sel,batch_size:b});
         done+=(r.sent+r.failed+r.skipped);
-        addLog("batch → sent "+r.sent+", failed "+r.failed+", unsub-skipped "+r.skipped+", remaining "+r.remaining);
+        addLog("sent "+r.sent+", failed "+r.failed+", skipped "+r.skipped+" — "+r.remaining.toLocaleString()+" still to go");
         await refreshSel();
-        if(r.remaining===0){addLog("=== ALL DONE ===");break;}
-        if(done>=capN){addLog("=== Reached cap ("+capN+"). Remaining "+r.remaining+" — run again later. ===");break;}
+        if(r.remaining===0){addLog("=== ✅ ALL DONE — everyone has been emailed ===");break;}
+        if(done>=capN){addLog("=== Reached this run's limit ("+capN+"). "+r.remaining.toLocaleString()+" left — come back and send more anytime. ===");break;}
         await new Promise(res=>setTimeout(res,400));
       }
-      if(stopRef.current)addLog("=== Stopped. Resume anytime. ===");
+      if(stopRef.current)addLog("=== Stopped. Nobody gets emailed twice — pick up where you left off anytime. ===");
     }catch(e){addLog("ERROR: "+e.message);}
     finally{setSending(false);await loadCampaigns();}
+  };
+
+  const resetAll=async()=>{
+    if(!sel)return;
+    if(!window.confirm("Re-queue the WHOLE list so everyone gets emailed again? (Anyone who unsubscribed stays excluded.)"))return;
+    setBusy(true);
+    try{const r=await fnCall("reset_campaign",{campaign_id:sel});addLog("Re-queued "+(r.requeued||0).toLocaleString()+" — ready to resend to everyone.");await refreshSel();await loadCampaigns();}
+    catch(e){addLog("ERROR: "+e.message);}finally{setBusy(false);}
   };
 
   const selCamp=(campaigns||[]).find(c=>c.id===sel);
@@ -18183,17 +18193,33 @@ function AdminEmailCampaigns({session}){
         <StatTile num={selStatus?selStatus.failed:selCamp.failed} label="Failed" danger={(selStatus?selStatus.failed:selCamp.failed)>0}/>
         <StatTile num={selStatus?selStatus.skipped:selCamp.skipped} label="Unsub-skipped"/>
       </div>
-      <div style={{display:"flex",gap:10,alignItems:"flex-end",flexWrap:"wrap",marginBottom:14}}>
-        <div><label style={{fontSize:12,color:"var(--t3)",fontWeight:600,display:"block"}}>Send a test to</label><input value={testEmail} onChange={e=>setTestEmail(e.target.value)} style={{padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14,width:240}}/></div>
-        <button className="btn-s" disabled={busy} onClick={sendTest}>Send test</button>
+      {(()=>{ const st=selStatus||{queued:selCamp.queued,sent:selCamp.sent,failed:selCamp.failed,skipped:selCamp.skipped};
+        const total=st.queued+st.sent+st.failed+st.skipped; const done=st.sent+st.failed+st.skipped; const pct=total?Math.round(done/total*100):0;
+        return(<div style={{marginBottom:16}}>
+          <div style={{fontSize:14,color:"var(--t1)",marginBottom:6}}><strong>{(st.sent||0).toLocaleString()}</strong> emailed · <strong>{(st.queued||0).toLocaleString()}</strong> still to email{st.queued===0?<span style={{color:"#15803d",fontWeight:700}}> · ✅ everyone has been emailed</span>:""}</div>
+          <div style={{height:14,background:"var(--bdr)",borderRadius:7,overflow:"hidden"}}><div style={{height:"100%",width:pct+"%",background:"var(--acc)",transition:"width .3s"}}/></div>
+        </div>);
+      })()}
+      <div style={{display:"flex",gap:10,alignItems:"flex-end",flexWrap:"wrap",marginBottom:16}}>
+        <div><label style={{fontSize:12,color:"var(--t3)",fontWeight:600,display:"block"}}>Send a test to yourself first</label><input value={testEmail} onChange={e=>setTestEmail(e.target.value)} style={{padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14,width:240}}/></div>
+        <button className="btn-s" disabled={busy||sending} onClick={sendTest}>Send test</button>
       </div>
-      <div style={{display:"flex",gap:10,alignItems:"flex-end",flexWrap:"wrap",marginBottom:14}}>
-        <div><label style={{fontSize:12,color:"var(--t3)",fontWeight:600,display:"block"}}>Batch size</label><input value={batch} onChange={e=>setBatch(e.target.value)} style={{padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14,width:90}}/></div>
-        <div><label style={{fontSize:12,color:"var(--t3)",fontWeight:600,display:"block"}}>Max this run (blank = all)</label><input value={cap} onChange={e=>setCap(e.target.value)} placeholder="e.g. 500" style={{padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14,width:140}}/></div>
-        {!sending?<button className="btn-p" onClick={startSend}>Start sending</button>:<button className="btn-s" onClick={()=>{stopRef.current=true;}}>Stop</button>}
-        <button className="btn-s btn-sm" onClick={()=>refreshSel()}>↻ Status</button>
+      <div style={{fontSize:12,color:"var(--t3)",fontWeight:600,marginBottom:6}}>Send to the list</div>
+      {!sending?<div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:8}}>
+        <button className="btn-p" disabled={busy} onClick={()=>startSend(500,"warm-up — recommended first")}>Send warm-up (500)</button>
+        <button className="btn-s" disabled={busy} onClick={()=>startSend(2000,"next 2,000")}>Send 2,000</button>
+        <button className="btn-s" disabled={busy} onClick={()=>startSend(null,"everyone remaining")}>Send everyone remaining</button>
+        <button className="btn-s btn-sm" onClick={()=>refreshSel()}>↻ Refresh</button>
+      </div>:<div style={{display:"flex",gap:10,alignItems:"center",marginBottom:8}}>
+        <button className="btn-s" onClick={()=>{stopRef.current=true;}} style={{color:"#c0392b",borderColor:"#c0392b"}}>■ Stop</button>
+        <span style={{fontSize:13,color:"var(--t3)"}}>Sending… (safe to leave this tab open)</span>
+      </div>}
+      <p style={{fontSize:11,color:"var(--t3)",margin:"4px 0 14px",lineHeight:1.5}}>Tip: start with the warm-up, check Resend tomorrow for bounces, then send 2,000, then the rest. Nobody is ever emailed twice — it always continues from where it stopped.</p>
+      <div style={{background:"#0f172a",color:"#cbd5e1",borderRadius:8,padding:12,fontFamily:"monospace",fontSize:12,maxHeight:220,overflow:"auto",whiteSpace:"pre-wrap",marginBottom:14}}>{logLines.length?logLines.join("\n"):"Ready."}</div>
+      <div style={{borderTop:"1px solid var(--bdr)",paddingTop:12}}>
+        <button className="btn-s btn-sm" style={{color:"#c0392b",borderColor:"#c0392b"}} disabled={sending||busy} onClick={resetAll}>↺ Resend to everyone (re-queue the whole list)</button>
+        <p style={{fontSize:11,color:"var(--t3)",margin:"6px 0 0",lineHeight:1.5}}>Use this only when you want to email the entire list again from scratch. Unsubscribed people stay excluded.</p>
       </div>
-      <div style={{background:"#0f172a",color:"#cbd5e1",borderRadius:8,padding:12,fontFamily:"monospace",fontSize:12,maxHeight:240,overflow:"auto",whiteSpace:"pre-wrap"}}>{logLines.length?logLines.join("\n"):"Ready."}</div>
     </div>}
   </>);
 }
