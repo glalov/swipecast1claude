@@ -22528,6 +22528,20 @@ function App(){
     }finally{setProfileRetrying(false);}
   },[session?.user?.id,loadProfile,profileRetrying]);
 
+  // Lightweight pageview tracking for site traffic (visitors/pageviews). Fire-and-forget
+  // beacon on each route change; never blocks or errors the UI. Aggregated in admin-stats.
+  useEffect(()=>{
+    try{
+      let sid=localStorage.getItem("sc_sid");
+      if(!sid){sid=Date.now().toString(36)+Math.random().toString(36).slice(2,10);localStorage.setItem("sc_sid",sid);}
+      const supabaseUrl=window.SC_CONFIG?.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co";
+      const url=`${supabaseUrl}/functions/v1/track-view`;
+      const payload=JSON.stringify({path:location.pathname+location.search,page,referrer:document.referrer||"",session_id:sid,is_logged_in:!!session?.user});
+      if(navigator.sendBeacon){navigator.sendBeacon(url,new Blob([payload],{type:"application/json"}));}
+      else{fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:payload,keepalive:true}).catch(()=>{});}
+    }catch(_){}
+  },[page]);
+
   // If a talent user lands on /dashboard (CD dashboard), redirect them to their Talent Dashboard.
   // This handles direct URL loads, post-login routing, and nav button presses that call navigate("dashboard").
   useEffect(()=>{

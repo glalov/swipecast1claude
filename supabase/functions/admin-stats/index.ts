@@ -59,6 +59,7 @@ serve(async (req) => {
     const { count: unsubscribes } = await sb.from("email_unsubscribes").select("*", { count: "exact", head: true });
     const { count: castingViews } = await sb.from("recently_viewed_castings").select("*", { count: "exact", head: true });
     const { count: openCastings } = await sb.from("castings").select("*", { count: "exact", head: true }).eq("status", "open").eq("published", true);
+    const { data: traffic } = await sb.rpc("dashboard_traffic");
 
     // Campaigns + per-campaign progress
     const { data: camps } = await sb.from("email_campaigns").select("id,name,subject,status,total_recipients,sent_count,failed_count,created_at").order("created_at", { ascending: false }).limit(20);
@@ -76,6 +77,7 @@ serve(async (req) => {
                stripe_customers: stripeCustomers,
                signups_today: signups1, signups_7d: signups7, signups_30d: signups30 },
       engagement: { open_castings: openCastings, casting_views: castingViews },
+      traffic: traffic ?? null,
       email: { unsubscribes: unsubscribes ?? 0 },
       campaigns,
       generated_at: new Date().toISOString(),

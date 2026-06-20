@@ -145,9 +145,15 @@ function renderStats(d){
     tile("Paid subscriptions",u.paid_subscriptions,"var(--teal)"),tile("Monthly plan",u.plan_monthly),tile("Yearly plan",u.plan_yearly)]);
   h+='<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 8px;">Growth</div>';
   h+=grid([tile("Signups today",u.signups_today),tile("Signups (7d)",u.signups_7d),tile("Signups (30d)",u.signups_30d),tile("Stripe customers",u.stripe_customers)]);
+  const tr=d.traffic;
+  if(tr){
+    h+='<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 8px;">Site traffic</div>';
+    h+=grid([tile("Visitors today",tr.visitors_today,"var(--teal)"),tile("Visitors (7d)",tr.visitors_7d),tile("Visitors (30d)",tr.visitors_30d),
+      tile("Pageviews today",tr.views_today),tile("Pageviews (7d)",tr.views_7d),tile("Pageviews (30d)",tr.views_30d),tile("Pageviews total",tr.views_total)]);
+  }
   h+='<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 8px;">Engagement &amp; email</div>';
   h+=grid([tile("Open castings",e.open_castings),tile("Casting views",e.casting_views),tile("Unsubscribes",em.unsubscribes,"#b91c1c")]);
-  h+='<div class="warn">Site traffic / visitors isn’t stored in the database — see <b>Vercel Analytics</b> (or Google Analytics) for pageviews. “Casting views” above is in-app engagement only.</div>';
+  h+='<div class="warn">Traffic counts pageviews/visitors from the moment tracking went live (it isn’t backfilled). “Visitors” = unique browser sessions. For an independent cross-check, Vercel Analytics also has pageviews.</div>';
   if(d.campaigns&&d.campaigns.length){
     h+='<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px;">Email campaigns</div>';
     h+='<table style="width:100%;border-collapse:collapse;font-size:13px;"><tr style="text-align:left;color:var(--muted);"><th style="padding:6px 8px;">Campaign</th><th>Status</th><th>Total</th><th>Sent</th><th>Failed</th><th>Queued</th><th>Unsub</th></tr>';
