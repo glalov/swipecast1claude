@@ -85,8 +85,11 @@ function buildEmail(firstName: string, castings: any[], userId: string, count: n
   const home      = APP_URL;
   // Email-safe imagery: self-hosted on the CastSlate domain (public, no auth, no
   // expiring signed URLs, no third-party host that Zoho/Outlook proxies may block).
-  const heroImg    = `${APP_URL}/email/digest-hero.jpg?v=1`;
-  const logoImgUrl = `${APP_URL}/email/castslate-logo.png?v=1`;
+  // NOTE: no "?v=" query string — some image proxies (Zoho) fail to fetch URLs
+  // with query params, which left the hero showing as a broken image. The /email/
+  // assets are served immutable, so cache-busting is done by renaming the file.
+  const heroImg    = `${APP_URL}/email/digest-hero.jpg`;
+  const logoImgUrl = `${APP_URL}/email/castslate-logo.png`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -99,7 +102,7 @@ function buildEmail(firstName: string, castings: any[], userId: string, count: n
 @media only screen and (max-width:620px){
   .wrap{padding:0 !important;}
   .shell{border-radius:0 !important;}
-  .hero-img{height:160px !important;}
+  .hero-img{height:auto !important;}
   .head-pad{padding:10px 18px !important;}
   .hl{font-size:21px !important;}
   .cards-pad{padding:16px 12px 6px !important;}
@@ -142,7 +145,7 @@ function buildEmail(firstName: string, castings: any[], userId: string, count: n
 <!-- HERO IMAGE -->
 <tr>
   <td style="padding:0;line-height:0;">
-    <img src="${heroImg}" width="600" height="220" class="hero-img" alt="New casting roles on CastSlate" style="display:block;width:100%;max-width:600px;height:220px;object-fit:cover;border:none;outline:none;text-decoration:none;" />
+    <img src="${heroImg}" width="600" height="220" class="hero-img" alt="New casting roles on CastSlate" style="display:block;width:100%;max-width:600px;height:auto;border:none;outline:none;text-decoration:none;" />
   </td>
 </tr>
 
@@ -165,7 +168,7 @@ function buildEmail(firstName: string, castings: any[], userId: string, count: n
 <!-- BROWSE CTA -->
 <tr>
   <td class="cta-pad" style="background:#f8fafc;padding:4px 28px 26px;text-align:center;">
-    <a href="${browse}" style="display:inline-block;background:#ffffff;color:#0f172a;text-decoration:none;padding:12px 30px;border-radius:9px;font-size:14px;font-weight:700;letter-spacing:0.1px;border:2px solid #0f172a;">Browse All Castings</a>
+    <a href="${browse}" style="display:inline-block;background:#37696A;color:#ffffff;text-decoration:none;padding:12px 30px;border-radius:9px;font-size:14px;font-weight:700;letter-spacing:0.1px;border:2px solid #37696A;">Browse All Castings</a>
   </td>
 </tr>
 

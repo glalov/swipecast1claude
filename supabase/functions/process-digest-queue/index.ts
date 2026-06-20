@@ -7,17 +7,18 @@
 //
 // Reliability notes:
 //   • Users are paginated (no 1000-row cap) so OLDER users are never dropped.
-//   • A user gets the digest whenever they have >= 1 NEW matching casting they
-//     haven't been emailed before — NOT a fixed "5 new" threshold. This is the
-//     fix for digests silently stopping for older users once the initial pool
-//     of castings had all been sent. digest_min_projects is now the MAX number
-//     of cards per email (cap), not a send-gate.
+//   • The digest goes out DAILY for the life of the account and never stops on
+//     its own. As long as a user has >= 1 matching ACTIVE casting, they get an
+//     email — even after they've already been sent every casting in the pool.
+//     Newly-posted castings are prioritised; once those run out we recycle ones
+//     the user has seen before, SHUFFLED and excluding the exact batch from their
+//     last email, so each day's 5 differ from the previous send.
+//     digest_min_projects is the MAX cards per email (cap), not a send-gate.
+//   • Expired castings (deadline in the past) are excluded — active only.
 //   • Every user outcome (sent/skipped/failed) is written to email_digest_logs
 //     with the recipient email + a human reason, so admins can audit who got
 //     what and why.
 //   • Each user is isolated in try/catch — one failure never stops the run.
-//   • De-dup via user_casting_email_history keeps users from getting the same
-//     casting twice, while still letting tomorrow's new castings go out.
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -155,8 +156,11 @@ serve(async (req) => {
         }
       }
 
-      // ── All open published castings (recent first) + their roles ─────────────
-      const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at").eq("status","open").eq("published",true).order("created_at",{ascending:false}).limit(500);
+      // ── All open, published, NON-EXPIRED castings (recent first) + roles ──────
+      //    Exclude anything whose application deadline has already passed; a null
+      //    deadline means "no deadline" and stays eligible.
+      const today=new Date().toISOString().slice(0,10);
+      const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).order("created_at",{ascending:false}).limit(500);
       if(!castings?.length) return res({ok:true,message:"No active castings",sent:0,skipped:0});
       const cids=castings.map((c:any)=>c.id);
       const rb:Record<string,any[]>={};
@@ -191,19 +195,42 @@ serve(async (req) => {
 
           if(skipReason){ skipped++; bump(skipReason); await logRow({user_id:p.id,email,status:"skipped",reason:skipReason,project_ids_included:[]}); continue; }
 
-          // ── New (not-yet-emailed) matching castings ─────────────────────────
+          // ── Pick this user's castings ───────────────────────────────────────
+          //    The digest must keep going out DAILY for the life of the account —
+          //    it must NOT stop once a user has already been emailed every casting
+          //    (that was the bug where older accounts silently went quiet). So:
+          //      1. all matching ACTIVE castings = the pool,
+          //      2. prefer ones they've never been emailed (fresh),
+          //      3. then recycle ones they've seen before, EXCLUDING the exact
+          //         batch from their last email so today's 5 always differ,
+          //      4. shuffle so the daily mix varies,
+          //    and we only skip when the pool is genuinely empty.
+          const pool=cwr.filter((c:any)=>matches(pf,c));
+          if(pool.length<1){ skipped++; bump("no_matches"); await logRow({user_id:p.id,email,status:"skipped",reason:"no_matches",project_ids_included:[]}); continue; }
+
           let sentIds=new Set<string>();
           try{
             const{data:hist}=await sb.from("user_casting_email_history").select("casting_id").eq("user_id",p.id);
             sentIds=new Set((hist||[]).map((h:any)=>h.casting_id));
           }catch(e){ console.error("[digest-queue] history fetch failed",p.id,e); }
 
-          const m=cwr.filter((c:any)=>!sentIds.has(c.id)&&matches(pf,c));
-          if(m.length<1){ skipped++; bump("no_new_matches"); await logRow({user_id:p.id,email,status:"skipped",reason:"no_new_matches",project_ids_included:[]}); continue; }
+          let lastIds=new Set<string>();
+          try{
+            const{data:last}=await sb.from("email_digest_logs").select("project_ids_included").eq("user_id",p.id).eq("status","sent").order("sent_at",{ascending:false}).limit(1).maybeSingle();
+            lastIds=new Set(((last?.project_ids_included)||[]) as string[]);
+          }catch(e){ console.error("[digest-queue] last-batch fetch failed",p.id,e); }
+
+          const shuffle=(arr:any[])=>{ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; };
+          const fresh=shuffle(pool.filter((c:any)=>!sentIds.has(c.id)));
+          const recycled=shuffle(pool.filter((c:any)=>sentIds.has(c.id)&&!lastIds.has(c.id)));
+          let candidates=[...fresh,...recycled];
+          // Tiny pool: if everything we have was in the last email, resend the
+          // shuffled pool rather than send nothing.
+          if(candidates.length<1) candidates=shuffle(pool.slice());
 
           // ── Send (cap cards). send-digest-email writes the sent/failed log,
           //    history rows, and last_sent_at. We only log transport failures. ──
-          const batch=m.slice(0,cap);
+          const batch=candidates.slice(0,cap);
           const{error:ie}=await sb.functions.invoke("send-digest-email",{body:{user_id:p.id,castings:batch,is_test:false}});
           if(ie){ failed++; errs.push(`${p.id}: ${ie.message}`); await logRow({user_id:p.id,email,status:"failed",reason:"invoke_error",error_message:ie.message,project_ids_included:batch.map((c:any)=>c.id)}); }
           else sent++;
