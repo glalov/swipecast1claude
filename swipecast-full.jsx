@@ -13625,12 +13625,11 @@ const LANDING_SWIPE_DEMO=[
   {id:20,name:"Daniel Brooks",age:30,gender:"Male",height:"6'0\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1587397845856-e6cf49176c70?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Drama","Screen Acting","Stage Combat"]},
   {id:7,name:"Sarah Chen",age:27,gender:"Female",height:"5'4\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=800&fit=crop&crop=top&q=90",skills:["Mandarin Fluent","Figure Skating","Understated Comedy"]},
   {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop&crop=top&q=90",skills:["Military Background","Boxing","Bass Vocals"]},
-  {id:10,name:"Marcus Reed",age:32,gender:"Male",height:"6'0\"",pos:"center 12%",img:"https://images.unsplash.com/photo-1610903866883-c280999dcc0e?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["TV Drama","Comedic Timing","Voice Work"]},
+  {id:19,name:"Malik Jensen",age:22,gender:"Male",height:"6'0\"",pos:"center 18%",img:"https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Music Video","Indie","Dance"]},
   {id:11,name:"Lucas Hartman",age:26,gender:"Male",height:"5'11\"",pos:"center 20%",img:"https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Action","Commercial","Improv"]},
   {id:12,name:"Hannah Whitfield",age:23,gender:"Female",height:"5'6\"",pos:"center 12%",img:"https://images.unsplash.com/photo-1506863530036-1efeddceb993?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Period Drama","Theater","Voiceover"]},
   {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=800&fit=crop&crop=top&q=90",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
   {id:15,name:"Isabella Cruz",age:39,gender:"Female",height:"5'5\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&h=800&fit=crop&crop=top&q=90",skills:["Bilingual Spanish","Musical Theater","Commercial Print"]},
-  {id:19,name:"Malik Jensen",age:22,gender:"Male",height:"6'0\"",pos:"center 18%",img:"https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Music Video","Indie","Dance"]},
 ];
 function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your free profile"}={}){
   const demo=LANDING_SWIPE_DEMO;
