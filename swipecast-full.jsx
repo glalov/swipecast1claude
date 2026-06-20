@@ -1427,7 +1427,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @keyframes mm-breathe{0%,100%{box-shadow:0 0 0 0 rgba(232,144,42,0);background:rgba(232,144,42,.08);}50%{box-shadow:0 0 16px 1px rgba(232,144,42,.50);background:rgba(232,144,42,.16);}}
 @media(prefers-reduced-motion:reduce){.nav-links span.mm-attn{animation:none;}}
 /* Free-plan upgrade stripe (ActivateMembershipBanner) — darker purple, centered full-width text, ghost CTA (fills black on hover) w/ shimmer, twinkling star */
-.mb-msg{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;text-align:center;font-size:13px;font-weight:700;color:#fff;letter-spacing:0.2px;padding:0 220px;}
+.mb-msg{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;text-align:center;font-size:13px;font-weight:700;color:#fff;letter-spacing:0.2px;padding:0 24px;}
 .mb-text-short{display:none;}
 .mb-star{display:inline-block;color:#E8B65A;font-size:15px;line-height:1;transform-origin:center;animation:mb-glint 3.6s ease-in-out infinite;flex-shrink:0;}
 .mb-cta{position:absolute;right:14px;top:50%;transform:translateY(-50%);overflow:hidden;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:6px 15px;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;background:transparent;color:#fff;transition:background .2s,border-color .2s,color .2s;}
@@ -2484,7 +2484,7 @@ function ActivateMembershipBanner({myProfile,onNavigate}){
     onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onNavigate&&onNavigate("membership");}}}
     style={{
       position:"relative",width:"100%",cursor:"pointer",
-      background:"#473F63",color:"#fff",fontFamily:"'DM Sans',sans-serif",
+      background:"#37696A",color:"#fff",fontFamily:"'DM Sans',sans-serif",
       padding:"5px 18px",minHeight:34,
       display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",
       boxShadow:"0 1px 0 rgba(0,0,0,0.15)"
@@ -2494,12 +2494,6 @@ function ActivateMembershipBanner({myProfile,onNavigate}){
       <span className="mb-text-full">Get seen more — unlock unlimited submissions, Slate Video, Business Card &amp; Manager Mode</span>
       <span className="mb-text-short">Unlock unlimited submissions</span>
     </span>
-    <button
-      className="mb-cta"
-      aria-label="Upgrade to Premium"
-      onClick={e=>{e.stopPropagation();onNavigate&&onNavigate("membership");}}>
-      Upgrade <span className="mb-cta-price">{PREMIUM_PRICE.replace("/month","/mo")} </span><span className="mb-arr" aria-hidden="true">→</span>
-    </button>
   </div>);
 }
 
