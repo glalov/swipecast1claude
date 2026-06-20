@@ -1368,6 +1368,22 @@ alter table public.site_settings
   add column if not exists digest_send_hour      integer not null default 7,
   add column if not exists digest_paused         boolean not null default false;
 
+-- Master switch for the front-end Classes section (Admin → Toggles).
+-- When false: Classes nav links, footer link, and the /classes page are hidden.
+alter table public.site_settings
+  add column if not exists classes_section_enabled boolean not null default true;
+
+create or replace function public.admin_set_classes_section(p_enabled boolean)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_old jsonb;
+begin
+  if not public.is_admin() then raise exception 'not authorised'; end if;
+  select to_jsonb(s) into v_old from public.site_settings s where id = 1;
+  update public.site_settings set classes_section_enabled = p_enabled, updated_at = now() where id = 1;
+  perform public._audit('set_classes_section','site_settings','1',v_old,jsonb_build_object('classes_section_enabled',p_enabled),null);
+end; $$;
+grant execute on function public.admin_set_classes_section(boolean) to authenticated;
+
 -- ── RLS ────────────────────────────────────────────────────────
 
 alter table public.email_preferences          enable row level security;
