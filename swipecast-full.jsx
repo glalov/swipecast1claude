@@ -3521,7 +3521,7 @@ function RegisterCD({onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE: LOGIN
 // ═══════════════════════════════════════════
-function LoginPage({onNavigate,onLoggedIn}){
+function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice}){
   const t=useT();
   const [email,setEmail]=useState("");
   const [password,setPassword]=useState("");
@@ -3529,6 +3529,24 @@ function LoginPage({onNavigate,onLoggedIn}){
   const [err,setErr]=useState("");
   const [forgot,setForgot]=useState(false);
   const [sentReset,setSentReset]=useState(false);
+  // ── Resend-confirmation (shown when a confirmation link expired, or when a
+  //    login attempt fails because the email is not yet confirmed) ──────────
+  const [resending,setResending]=useState(false);
+  const [resentOk,setResentOk]=useState(false);
+  const [resendCooldown,setResendCooldown]=useState(0);
+  useEffect(()=>{if(resendCooldown<=0)return;const id=setTimeout(()=>setResendCooldown(c=>c-1),1000);return()=>clearTimeout(id);},[resendCooldown]);
+  const resendConfirm=async()=>{
+    setErr("");setResentOk(false);
+    const clean=(email||"").trim().toLowerCase();
+    if(!clean||!clean.includes("@")){setErr("Enter your email above, then tap Resend.");return;}
+    setResending(true);
+    try{
+      const {error}=await window.sb.auth.resend({type:"signup",email:clean,options:{emailRedirectTo:"https://www.castslate.com"}});
+      if(error)throw error;
+      setResentOk(true);setResendCooldown(60);
+    }catch(e){console.warn("[auth] login-page resend failed:",e?.message||e);setErr("We couldn't resend the confirmation email. Please try again in a minute.");}
+    finally{setResending(false);}
+  };
   const submittingRef=useRef(false);
   const withTimeout=(promise,ms=20000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Check your connection and try again.`)),ms))]);
   const dbg=()=>{window.__SC_DBG=window.__SC_DBG||{};return window.__SC_DBG;};
@@ -3561,6 +3579,7 @@ function LoginPage({onNavigate,onLoggedIn}){
         );
         if(error)throw error;
         dbg().loginStep="supabase-login-ok-navigating";
+        clearAuthNotice&&clearAuthNotice();
         if(onLoggedIn&&data.user)await onLoggedIn(data.user);
         dbg().loginStep="navigate-done";
       }
@@ -3628,12 +3647,15 @@ function LoginPage({onNavigate,onLoggedIn}){
           <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or log in with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
         </div>
       </>}
+      {authNotice&&!forgot&&<div style={{background:"rgba(255,176,32,0.12)",border:"1px solid rgba(255,176,32,0.45)",color:"#8a5a00",padding:"12px 14px",borderRadius:8,fontSize:13,marginBottom:16,lineHeight:1.55}}><strong>{authNotice==="expired"?"Your confirmation link has expired.":"That confirmation link didn't work."}</strong><br/>Enter your email below and tap <b>Resend confirmation email</b> for a fresh link. New links stay valid for 24 hours.</div>}
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
       <div className="form-group"><label className="label">{t('login.email')}</label><input className="input" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email"/></div>
       {!forgot&&<div className="form-group"><label className="label">{t('login.password')}</label><input className="input" type="password" placeholder="Your password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password"/></div>}
       {!forgot&&<div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",marginBottom:20}}><span style={{color:"var(--acc)",fontSize:13,cursor:"pointer"}} onClick={()=>{setForgot(true);setErr("");}}>{t('login.forgotPwd')}</span></div>}
       {!forgot&&<p style={{textAlign:"center",color:"var(--t3)",fontSize:12,lineHeight:1.55,margin:"0 0 16px"}}>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</p>}
       <button type="submit" className="btn-p" style={{width:"100%"}} disabled={loading}>{loading?(forgot?t('login.sending'):t('login.loggingIn')):(forgot?t('login.sendReset'):t('login.logIn'))}</button>
+      {!forgot&&(authNotice||/verify your email/i.test(err))&&<button type="button" className="btn-s" style={{width:"100%",marginTop:8,opacity:(resending||resendCooldown>0)?0.6:1}} disabled={resending||resendCooldown>0} onClick={resendConfirm}>{resending?"Sending…":resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button>}
+      {resentOk&&<div style={{marginTop:8,textAlign:"center",color:"var(--grn)",fontWeight:600,fontSize:13}}>✓ New confirmation email sent — check your inbox &amp; spam folder.</div>}
       {forgot&&<button type="button" className="btn-s" style={{width:"100%",marginTop:8}} onClick={()=>{setForgot(false);setErr("");}}>{t('login.backToLogin')}</button>}
       <div style={{textAlign:"center",marginTop:24,fontSize:13,color:"var(--t2)"}}>
         {t('login.noAccount')}<br/>
@@ -22136,6 +22158,12 @@ function App(){
   const [selectedPlan,setSelectedPlan]=useState(null);
   // Payment success type — set when returning from Stripe ("premium" | "class")
   const [paymentSuccessType,setPaymentSuccessType]=useState("premium");
+  // Email-confirmation link result — "" | "expired" | "invalid".
+  // Set when a user lands back from a confirmation link that could not be used
+  // (expired or already consumed). Surfaced on the Login page with a one-click
+  // resend so the user is never stranded.
+  const [authNotice,setAuthNotice]=useState("");
+  const clearAuthNotice=useCallback(()=>setAuthNotice(""),[]);
   // ───────────────────────────────────────────────────────────────
   // Shared refresh signal for cross-page data (castings, talent, etc.)
   // Any page that wants to know "something important changed, re-fetch"
@@ -22303,6 +22331,73 @@ function App(){
       return r;
     }),15000);
     return()=>clearTimeout(tid);
+  },[]);
+
+  // ───────────────────────────────────────────────────────────────
+  // EMAIL-CONFIRMATION CALLBACK HANDLER
+  // Runs once on mount, before the router/onAuthStateChange wiring below, so a
+  // click on the "Confirm your email" link always either lands the user logged
+  // in, or — if the link expired / was already used — drops them on the Login
+  // page with a clear notice and a one-click "Resend confirmation email".
+  //
+  // Handles the redirect shapes Supabase can produce:
+  //   1. ?token_hash=...&type=signup  → verifyOtp(). This is the link we send in
+  //      the signup email. It is device-independent: it works no matter which
+  //      browser/device opens it, and never needs the PKCE code-verifier that
+  //      the older {{ .ConfirmationURL }} flow required (that requirement was the
+  //      root cause of "clicked the link but I'm still not logged in").
+  //   2. #error=...&error_code=otp_expired | access_denied → expired/invalid or
+  //      already-used link. We surface a friendly notice + resend instead of
+  //      silently showing the homepage with the account still unconfirmed.
+  //   3. ?code=... / #access_token=... (Google OAuth, legacy confirm links) are
+  //      left to the SDK's detectSessionInUrl + onAuthStateChange — already work.
+  // ───────────────────────────────────────────────────────────────
+  useEffect(()=>{
+    let qsP,hashP;
+    try{
+      qsP=new URLSearchParams(window.location.search||"");
+      hashP=new URLSearchParams((window.location.hash||"").replace(/^#/,""));
+    }catch(_){return;}
+    const errCode=qsP.get("error_code")||hashP.get("error_code")||"";
+    const errRaw=qsP.get("error")||hashP.get("error")||"";
+    const errDesc=qsP.get("error_description")||hashP.get("error_description")||"";
+    const tokenHash=qsP.get("token_hash");
+    const otpType=qsP.get("type");
+    const looksExpired=(s)=>/expired|invalid|already|not\s*found|consumed/i.test(s||"");
+    const toLogin=(notice)=>{
+      setAuthNotice(notice);
+      try{window.history.replaceState({swipecast:true,page:"login"},"","/login");}catch(_){}
+      window.scrollTo(0,0);
+      setPage("login");
+    };
+    // 1) Token-hash confirmation link (the link in our signup/confirm email).
+    //    Recovery links are still detected via type=recovery in the router below,
+    //    so here we only act on signup/email/invite/magiclink confirmations.
+    if(tokenHash&&otpType&&otpType!=="recovery"){
+      (async()=>{
+        try{
+          const {error}=await window.sb.auth.verifyOtp({type:otpType,token_hash:tokenHash});
+          if(error){
+            console.warn("[auth] verifyOtp failed:",error?.message||error);
+            toLogin(looksExpired(error?.message)?"expired":"invalid");
+          }else{
+            // Success: onAuthStateChange SIGNED_IN populates session + profile
+            // (and restores any pending application). Land on the dashboard.
+            try{window.history.replaceState({swipecast:true,page:"dashboard"},"","/dashboard");}catch(_){}
+            window.scrollTo(0,0);
+            setPage("dashboard");
+          }
+        }catch(e){
+          console.warn("[auth] verifyOtp threw:",e?.message||e);
+          toLogin("invalid");
+        }
+      })();
+      return;
+    }
+    // 2) Expired / invalid / already-used confirmation link.
+    if(errCode||errRaw){
+      toLogin(errCode==="otp_expired"||looksExpired(errDesc)||looksExpired(errCode)?"expired":"invalid");
+    }
   },[]);
 
   useEffect(()=>{
@@ -23079,7 +23174,7 @@ function App(){
             gaslit signed-in users. */}
         {page==="register-talent"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterTalent onNavigate={navigate}/>)}
         {page==="register-cd"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterCD onNavigate={navigate}/>)}
-        {page==="login"&&<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn}/>}
+        {page==="login"&&<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn} authNotice={authNotice} clearAuthNotice={clearAuthNotice}/>}
         {page==="membership"&&<MembershipPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}}/>}
         {page==="plan-summary"&&(!authReady?<PageLoader text="Loading your plan…"/>:<PlanSummaryPage session={session} myProfile={myProfile} planKey={selectedPlan||"monthly"} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} onActivated={(returnInfo)=>{
           // Came from a casting they tried to apply to — bounce back to that casting.
