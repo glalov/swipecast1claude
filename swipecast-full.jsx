@@ -13617,7 +13617,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
 const LANDING_SWIPE_DEMO=[
   {id:13,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=800&fit=crop&crop=top&q=90",skills:["Drama Training","Voiceover","Stage Combat"]},
   {id:20,name:"Julian J. West",age:30,gender:"Male",height:"6'0\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1587397845856-e6cf49176c70?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Drama","Screen Acting","Stage Combat"]},
-  {id:1,name:"Maria Santos",age:28,gender:"Female",height:"5'6\"",pos:"center 12%",img:"https://images.unsplash.com/photo-1601412436009-d964bd02edbc?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
+  {id:1,name:"Marisol Veyra",age:28,gender:"Female",height:"5'6\"",pos:"center 12%",img:"https://images.unsplash.com/photo-1601412436009-d964bd02edbc?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
   {id:2,name:"Evan Calder",age:46,gender:"Male",height:"6'1\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Improv","Yale Drama MFA","Basketball"]},
   {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"center 20%",img:"https://images.unsplash.com/photo-1624395213043-fa2e123b2656?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
   {id:19,name:"Malik Jensen",age:22,gender:"Male",height:"6'0\"",pos:"center 18%",img:"https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Music Video","Indie","Dance"]},
@@ -13625,8 +13625,8 @@ const LANDING_SWIPE_DEMO=[
   {id:6,name:"Roman Kovalenko",age:29,gender:"Male",height:"5'10\"",pos:"center 18%",img:"https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Indie Film","Drama","Guitar"]},
   {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop&crop=top&q=90",skills:["Military Background","Boxing","Bass Vocals"]},
   {id:3,name:"Owen Fletcher",age:28,gender:"Male",height:"6'0\"",pos:"center 25%",img:"https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Drama","Film & TV","Screen Acting"]},
-  {id:11,name:"Lucas Hartman",age:26,gender:"Male",height:"5'11\"",pos:"center 20%",img:"https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Action","Commercial","Improv"]},
-  {id:15,name:"Isabella Cruz",age:39,gender:"Female",height:"5'5\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&h=800&fit=crop&crop=top&q=90",skills:["Bilingual Spanish","Musical Theater","Commercial Print"]},
+  {id:11,name:"Lucas Hartman",age:26,gender:"Male",height:"5'11\"",pos:"center 18%",img:"https://images.unsplash.com/photo-1721956514577-f6c15d73e585?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Action","Commercial","Improv"]},
+  {id:15,name:"Isabella Cruz",age:51,gender:"Female",height:"5'5\"",pos:"center 18%",img:"https://images.unsplash.com/photo-1696960181436-1b6d9576354e?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Bilingual Spanish","Musical Theater","Commercial Print"]},
 ];
 function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your free profile"}={}){
   const demo=LANDING_SWIPE_DEMO;
