@@ -18034,12 +18034,13 @@ function AdminOverview({onGoToBookingRequests}){
   const [err,setErr]=useState("");
   useEffect(()=>{(async()=>{
     try{
-      const [p,c,a,au,br]=await Promise.all([
-        window.sb.from("profiles").select("user_type,banned,suspended,verified,featured,verification_status,can_post_castings",{count:"exact"}).limit(5000),
+      const [p,c,a,au,br,xs]=await Promise.all([
+        window.sb.from("profiles").select("user_type,banned,suspended,verified,featured,verification_status,can_post_castings,membership_status,plan_type,subscription_status",{count:"exact"}).limit(5000),
         window.sb.from("castings").select("status,featured",{count:"exact"}).limit(5000),
         window.sb.from("applications").select("status",{count:"exact"}).limit(10000),
         window.sb.from("audit_logs").select("*").order("created_at",{ascending:false}).limit(10),
-        window.sb.from("class_booking_requests").select("id,status",{count:"exact"}).eq("status","pending_review").limit(5)
+        window.sb.from("class_booking_requests").select("id,status",{count:"exact"}).eq("status","pending_review").limit(5),
+        window.sb.rpc("admin_extra_stats")
       ]);
       if(p.error||c.error||a.error||au.error){setErr((p.error||c.error||a.error||au.error).message);return;}
       const pu=p.data||[],cu=c.data||[],au2=a.data||[];
@@ -18062,7 +18063,13 @@ function AdminOverview({onGoToBookingRequests}){
         pending:au2.filter(x=>x.status==="pending").length,
         hold:au2.filter(x=>x.status==="hold").length,
         selected:au2.filter(x=>x.status==="selected").length,
-        rejected:au2.filter(x=>x.status==="rejected").length
+        rejected:au2.filter(x=>x.status==="rejected").length,
+        free_members:pu.filter(x=>x.membership_status==="free").length,
+        premium_members:pu.filter(x=>x.membership_status==="active").length,
+        paid_subs:pu.filter(x=>x.subscription_status==="active").length,
+        plan_monthly:pu.filter(x=>x.plan_type==="monthly").length,
+        plan_yearly:pu.filter(x=>x.plan_type==="yearly").length,
+        extra:(xs&&!xs.error&&xs.data)?xs.data:null
       });
       setAudit(au.data||[]);
     }catch(e){setErr(e.message||String(e));}
@@ -18092,6 +18099,26 @@ function AdminOverview({onGoToBookingRequests}){
       <StatTile num={stats.pending} label="Pending review"/>
       <StatTile num={stats.selected} label="Selected"/>
       <StatTile num={stats.rejected} label="Rejected"/>
+    </div>
+    <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 12px",color:"var(--t2)"}}>Membership &amp; subscriptions</h3>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:28}}>
+      <StatTile num={stats.free_members} label="Free members"/>
+      <StatTile num={stats.premium_members} label="Premium members"/>
+      <StatTile num={stats.paid_subs} label="Paid subscriptions"/>
+      <StatTile num={stats.plan_monthly} label="Monthly plan"/>
+      <StatTile num={stats.plan_yearly} label="Yearly plan"/>
+      <StatTile num={stats.extra?stats.extra.unsubscribes:"—"} label="Email unsubscribes"/>
+    </div>
+    <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 4px",color:"var(--t2)"}}>Site traffic</h3>
+    <p style={{color:"var(--t3)",fontSize:12,margin:"0 0 12px"}}>Counts from when tracking went live (not backfilled). Visitors = unique browser sessions.</p>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:28}}>
+      <StatTile num={stats.extra?stats.extra.visitors_today:"—"} label="Visitors today"/>
+      <StatTile num={stats.extra?stats.extra.visitors_7d:"—"} label="Visitors (7d)"/>
+      <StatTile num={stats.extra?stats.extra.visitors_30d:"—"} label="Visitors (30d)"/>
+      <StatTile num={stats.extra?stats.extra.views_today:"—"} label="Pageviews today"/>
+      <StatTile num={stats.extra?stats.extra.views_7d:"—"} label="Pageviews (7d)"/>
+      <StatTile num={stats.extra?stats.extra.views_30d:"—"} label="Pageviews (30d)"/>
+      <StatTile num={stats.extra?stats.extra.views_total:"—"} label="Pageviews total"/>
     </div>
     {pendingBookings!==null&&pendingBookings>0&&(
       <div className="card" style={{padding:20,marginBottom:20,borderLeft:"4px solid var(--acc)",background:"rgba(99,102,241,0.04)"}}>
