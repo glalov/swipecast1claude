@@ -1866,7 +1866,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .fcs-ov-label{font-size:clamp(9px,0.66vw,11px);font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:#FFD79A;line-height:1;}
 .fcs-ov-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;text-transform:uppercase;font-size:clamp(15px,1.62vw,28px);line-height:1.04;color:#fff;letter-spacing:.5px;}
 .fcs-ov-tag{font-size:clamp(10px,0.85vw,13px);line-height:1.35;color:#ECE8E0;max-width:32ch;}
-.fcs-ov-btn{pointer-events:auto;align-self:flex-start;margin-top:clamp(2px,0.45vw,7px);background:#FFD79A;color:#231706;border:none;border-radius:8px;padding:clamp(6px,0.6vw,10px) clamp(13px,1.25vw,22px);font-size:clamp(10px,0.78vw,12.5px);font-weight:800;line-height:1;letter-spacing:.2px;cursor:pointer;white-space:nowrap;}
+.fcs-ov-btn{pointer-events:auto;align-self:flex-start;margin-top:clamp(2px,0.45vw,7px);background:#F0B860;color:#231706;border:none;border-radius:8px;padding:clamp(6px,0.6vw,10px) clamp(13px,1.25vw,22px);font-size:clamp(10px,0.78vw,12.5px);font-weight:800;line-height:1;letter-spacing:.2px;cursor:pointer;white-space:nowrap;}
 /* Compact scrolled strip — own layout, not a crop of the full banner. */
 .fcs-compact{position:absolute;inset:0;display:flex;align-items:center;gap:16px;padding:0 24px;opacity:0;pointer-events:none;transition:opacity .28s ease;
   background:linear-gradient(100deg, rgba(10,9,14,.92) 0%, rgba(20,18,26,.86) 55%, rgba(20,18,26,.74) 100%), url(/assets/banner/scene-study.jpg) center 78%/cover;}
@@ -1874,7 +1874,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .fcs-compact-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
 .fcs-compact-label{font-size:9.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:#FFD79A;line-height:1.2;white-space:nowrap;}
 .fcs-compact-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:16px;line-height:1.15;color:#fff;text-shadow:0 1px 7px rgba(0,0,0,0.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.fcs-compact-btn{flex-shrink:0;background:#FFD79A;color:#231706;border:none;border-radius:8px;padding:9px 18px;font-size:12px;font-weight:800;line-height:1;letter-spacing:.2px;cursor:pointer;white-space:nowrap;}
+.fcs-compact-btn{flex-shrink:0;background:#F0B860;color:#231706;border:none;border-radius:8px;padding:9px 18px;font-size:12px;font-weight:800;line-height:1;letter-spacing:.2px;cursor:pointer;white-space:nowrap;}
 /* ── Marquee stripe: thin sliding announcement bar directly above the
    featured-class banner (homepage). Folds to 0 height in sync with the
    banner on scroll. Seamless left→right loop via two duplicated groups
@@ -1909,7 +1909,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .fcs-mobile::before{content:"";position:absolute;inset:-22px -56px -22px -30px;z-index:-1;background:linear-gradient(90deg,rgba(8,8,10,0.72) 0%,rgba(8,8,10,0.4) 56%,rgba(8,8,10,0) 100%);}
   .fcs-m-label{font-size:9.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:#FFD79A;}
   .fcs-m-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:21px;line-height:1.03;color:#fff;text-shadow:0 1px 7px rgba(0,0,0,0.6);}
-  .fcs-m-btn{align-self:flex-start;margin-top:6px;background:#FFD79A;color:#231706;border:none;border-radius:7px;padding:8px 16px;font-size:11px;font-weight:800;line-height:1;cursor:pointer;}
+  .fcs-m-btn{align-self:flex-start;margin-top:6px;background:#F0B860;color:#231706;border:none;border-radius:7px;padding:8px 16px;font-size:11px;font-weight:800;line-height:1;cursor:pointer;}
   .fcs-compact{padding:0 16px;gap:12px;}
   .fcs-compact-title{font-size:13px;}
   .fcs-compact-btn{padding:7px 13px;font-size:10.5px;}
@@ -2186,7 +2186,7 @@ html,body{overflow-x:hidden;}
 .home-cta-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);}
 .home-cta-inner h2{font-family:'Source Serif 4',serif;font-weight:700;font-size:clamp(36px,6vw,64px);letter-spacing:-0.5px;line-height:1.05;margin:0 0 16px;color:#fff;position:relative;}
 .home-cta-lede{font-size:clamp(17px,2vw,21px);line-height:1.6;max-width:740px;margin:0 auto 30px;color:rgba(255,255,255,.86);position:relative;}
-.home-cta-primary{display:inline-flex;align-items:center;gap:9px;border:none;border-radius:13px;padding:18px 38px;font-size:17px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;background:#FFD79A;color:#1A1A2E;box-shadow:0 12px 30px -10px rgba(255,215,154,.6);transition:transform .12s,filter .2s;position:relative;}
+.home-cta-primary{display:inline-flex;align-items:center;gap:9px;border:none;border-radius:13px;padding:18px 38px;font-size:17px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;background:#F0B860;color:#1A1A2E;transition:transform .12s,filter .2s;position:relative;}
 .home-cta-primary:hover{transform:translateY(-2px);filter:brightness(1.04);}
 .home-cta-sub{position:relative;display:flex;justify-content:center;align-items:center;gap:18px;margin-top:36px;padding-top:28px;border-top:1px solid rgba(255,255,255,.22);}
 .home-cta-sub .txt{display:flex;flex-direction:column;text-align:left;}
