@@ -3036,7 +3036,7 @@ function Footer({onNavigate,noSpacer}){
             <L to="actor-toolkit">{t('footer.actorToolkit')}</L>
             <L to="manager-mode">{t('footer.managerMode')}</L>
             <L to="tapelink">TapeLink</L>
-            <L to="classes">{t('footer.classes')}</L>
+            {(typeof window==="undefined"||window.__SC_CLASSES_ON!==false)&&<L to="classes">{t('footer.classes')}</L>}
             <L to="resources">{t('footer.resources')}</L>
           </div>
           <div>
@@ -4230,7 +4230,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
         {/* Description + Instructor sidebar */}
         <div className="cls-detail-grid" style={{gridTemplateColumns:isMobile?"1fr":(viewing.instructor_name?"1fr 260px":"1fr"),marginTop:28}}>
           <div>
-            {(viewing.full_description||viewing.short_description)&&<p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,margin:0}}>{viewing.full_description||viewing.short_description}</p>}
+            {(viewing.full_description||viewing.short_description)&&<p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,margin:0,whiteSpace:"pre-line"}}>{viewing.full_description||viewing.short_description}</p>}
           </div>
           {viewing.instructor_name&&(
             <div className="card" style={{padding:20}}>
@@ -4238,7 +4238,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
               {viewing.instructor_photo_url&&<img src={viewing.instructor_photo_url} alt={viewing.instructor_name} style={{width:52,height:52,borderRadius:"50%",objectFit:"cover",marginBottom:10,display:"block"}}/>}
               <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>{viewing.instructor_name}</div>
               {viewing.instructor_bio&&<div style={{color:"var(--t2)",fontSize:12,lineHeight:1.55,marginBottom:8}}>{viewing.instructor_bio}</div>}
-              {viewing.instructor_imdb&&<a href={viewing.instructor_imdb} target="_blank" rel="noopener noreferrer" style={{color:"var(--acc)",fontSize:12,fontWeight:600,textDecoration:"none"}}>IMDb profile →</a>}
+              {viewing.instructor_imdb&&<a href={viewing.instructor_imdb} target="_blank" rel="noopener noreferrer" aria-label={`${viewing.instructor_name} on IMDb`} title="View IMDb profile" style={{display:"inline-flex",alignItems:"center",gap:7,textDecoration:"none",marginTop:2}}><span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",background:"#F5C518",color:"#000000",fontWeight:800,fontSize:13,lineHeight:1,letterSpacing:-0.3,padding:"5px 7px",borderRadius:4,fontFamily:"Arial,Helvetica,sans-serif"}}>IMDb</span><span style={{color:"var(--t2)",fontSize:12,fontWeight:600}}>profile →</span></a>}
             </div>
           )}
         </div>
@@ -19287,37 +19287,66 @@ function AdminToggles(){
   const [busy,setBusy]=useState(false);
   const [msg,setMsg]=useState("");
   const [taglineOn,setTaglineOn]=useState(false);
+  const [classesSecOn,setClassesSecOn]=useState(true);
+  const [featClass,setFeatClass]=useState(null); // {id,title,is_visible}
   useEffect(()=>{(async()=>{
     try{
-      const{data,error}=await window.sb.from("site_settings").select("tagline_under_marquee").eq("id",1).maybeSingle();
+      const{data,error}=await window.sb.from("site_settings").select("tagline_under_marquee,classes_section_enabled").eq("id",1).maybeSingle();
       if(error)throw error;
       setTaglineOn(data?.tagline_under_marquee!==false);
+      setClassesSecOn(data?.classes_section_enabled!==false);
+      // The headline (featured) class on the Classes page — its own show/hide switch.
+      const{data:fc}=await window.sb.from("classes").select("id,title,is_visible").eq("is_featured",true).order("display_order",{ascending:true}).limit(1).maybeSingle();
+      if(fc)setFeatClass(fc);
     }catch(e){setMsg("Load failed: "+(e.message||e));}
     finally{setLoading(false);}
   })();},[]);
-  const toggle=async(next)=>{
+  const toggleTagline=async(next)=>{
     setBusy(true);setMsg("");
     const{error}=await window.sb.rpc("admin_set_tagline_under_marquee",{p_enabled:next});
     if(error){setMsg("Save failed: "+error.message);}
     else{setTaglineOn(next);setMsg(next?"Tagline is now ON — visible on the landing page.":"Tagline is now OFF — hidden on the landing page.");}
     setBusy(false);
   };
+  const toggleClassesSec=async(next)=>{
+    setBusy(true);setMsg("");
+    const{error}=await window.sb.rpc("admin_set_classes_section",{p_enabled:next});
+    if(error){setMsg("Save failed: "+error.message);}
+    else{setClassesSecOn(next);try{window.__SC_CLASSES_ON=next;}catch(_){}setMsg(next?"Classes section is now ON — visible across the site.":"Classes section is now OFF — hidden everywhere (nav, footer, and the page).");}
+    setBusy(false);
+  };
+  const toggleFeatClass=async(next)=>{
+    if(!featClass)return;
+    setBusy(true);setMsg("");
+    const{error}=await window.sb.from("classes").update({is_visible:next,updated_at:new Date().toISOString()}).eq("id",featClass.id);
+    if(error){setMsg("Save failed: "+error.message);}
+    else{setFeatClass(c=>({...c,is_visible:next}));setMsg(next?"Featured class is now VISIBLE on the Classes page.":"Featured class is now HIDDEN from the Classes page.");}
+    setBusy(false);
+  };
+  const Switch=({on,onToggle})=>(
+    <button role="switch" aria-checked={on} disabled={busy} onClick={()=>onToggle(!on)} style={{position:"relative",width:52,height:30,borderRadius:30,border:"none",cursor:busy?"default":"pointer",background:on?"var(--grn)":"var(--s3)",transition:"background .2s",flexShrink:0,opacity:busy?0.6:1}}>
+      <span style={{position:"absolute",top:3,left:on?25:3,width:24,height:24,borderRadius:"50%",background:"#fff",boxShadow:"0 1px 3px rgba(0,0,0,0.3)",transition:"left .2s"}}/>
+    </button>
+  );
+  const Row=({title,desc,on,onToggle})=>(
+    <div className="card" style={{padding:24,marginBottom:14}}>
+      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16}}>
+        <div>
+          <div style={{fontSize:15,fontWeight:700,marginBottom:4}}>{title}</div>
+          <p style={{color:"var(--t3)",fontSize:12,lineHeight:1.5,maxWidth:440,margin:0}}>{desc}</p>
+        </div>
+        <Switch on={on} onToggle={onToggle}/>
+      </div>
+    </div>
+  );
   if(loading)return <CastSlateLoader size="inline" text="Loading toggles…"/>;
   return(<>
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Toggles</h1>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Show or hide individual front-end elements. Changes apply to all visitors immediately and are audit-logged.</p>
     {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
-    <div className="card" style={{padding:24}}>
-      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16}}>
-        <div>
-          <div style={{fontSize:15,fontWeight:700,marginBottom:4}}>Tagline under marquee</div>
-          <p style={{color:"var(--t3)",fontSize:12,lineHeight:1.5,maxWidth:440,margin:0}}>The line "from indie films to A24, Neon and Netflix level projects" shown beneath the casting-format slider on the landing page.</p>
-        </div>
-        <button role="switch" aria-checked={taglineOn} disabled={busy} onClick={()=>toggle(!taglineOn)} style={{position:"relative",width:52,height:30,borderRadius:30,border:"none",cursor:busy?"default":"pointer",background:taglineOn?"var(--grn)":"var(--s3)",transition:"background .2s",flexShrink:0,opacity:busy?0.6:1}}>
-          <span style={{position:"absolute",top:3,left:taglineOn?25:3,width:24,height:24,borderRadius:"50%",background:"#fff",boxShadow:"0 1px 3px rgba(0,0,0,0.3)",transition:"left .2s"}}/>
-        </button>
-      </div>
-    </div>
+    <Row title="Classes section (entire site)" desc="Master switch for the whole Classes section. When OFF, the Classes link is removed from the top nav, the mobile menu, and the footer, and the /classes page itself is hidden from all visitors." on={classesSecOn} onToggle={toggleClassesSec}/>
+    {featClass&&<Row title={`Featured class — ${featClass.title}`} desc="Show or hide the highlighted On-Camera Film Intensive (George Ludlow) on the Classes page, without affecting any other class." on={featClass.is_visible!==false} onToggle={toggleFeatClass}/>}
+    <Row title="Tagline under marquee" desc={'The line "from indie films to A24, Neon and Netflix level projects" shown beneath the casting-format slider on the landing page.'} on={taglineOn} onToggle={toggleTagline}/>
   </>);
 }
 
@@ -22158,6 +22187,19 @@ function App(){
   // resend so the user is never stranded.
   const [authNotice,setAuthNotice]=useState("");
   const clearAuthNotice=useCallback(()=>setAuthNotice(""),[]);
+  // Site-wide "Classes section" visibility (Admin → Toggles). When OFF, the
+  // Classes nav links, footer link, and the /classes page are all hidden.
+  // Defaults ON; window flag lets the Footer (rendered in many places) read it
+  // without prop-drilling.
+  const [classesOn,setClassesOn]=useState(()=>{try{return window.__SC_CLASSES_ON!==false;}catch(_){return true;}});
+  useEffect(()=>{(async()=>{
+    try{
+      const{data}=await window.sb.from("site_settings").select("classes_section_enabled").eq("id",1).maybeSingle();
+      const on=data?.classes_section_enabled!==false;
+      try{window.__SC_CLASSES_ON=on;}catch(_){}
+      setClassesOn(on);
+    }catch(_){}
+  })();},[]);
   // ───────────────────────────────────────────────────────────────
   // Shared refresh signal for cross-page data (castings, talent, etc.)
   // Any page that wants to know "something important changed, re-fetch"
@@ -23016,7 +23058,7 @@ function App(){
         <div className="nav-links">
           <span className={page==="home"?"act":""} onClick={()=>navigate("home")}>{navT('nav.home')}</span>
           <span className={page==="search"?"act":""} onClick={()=>navigate("search")}>{navT('nav.browse')}</span>
-          <span className={page==="classes"?"act":""} onClick={()=>navigate("classes")}>{navT('nav.classes')}</span>
+          {classesOn&&<span className={page==="classes"?"act":""} onClick={()=>navigate("classes")}>{navT('nav.classes')}</span>}
           <span className={page==="tapelink"?"act":""} onClick={()=>navigate("tapelink")}>{navT('nav.tapelink')}</span>
           <span className={"mm-attn"+(page==="manager-mode"?" act":"")} onClick={()=>navigate("manager-mode")}>{navT('nav.managerMode')}</span>
           <span className={page==="blog"?"act":""} onClick={()=>navigate("blog")}>{navT('nav.blog')}</span>
@@ -23065,7 +23107,7 @@ function App(){
           <div style={{display:"flex",flexDirection:"column",gap:4}}>
             <button className="mm-link" onClick={()=>navThen("home")}>{navT('nav.home')}</button>
             <button className="mm-link" onClick={()=>navThen("search")}>{navT('nav.browse')}</button>
-            <button className="mm-link" onClick={()=>navThen("classes")}>{navT('nav.classes')}</button>
+            {classesOn&&<button className="mm-link" onClick={()=>navThen("classes")}>{navT('nav.classes')}</button>}
             <button className="mm-link" onClick={()=>navThen("tapelink")}>{navT('nav.tapelink')}</button>
             <button className="mm-link" onClick={()=>navThen("manager-mode")}>{navT('nav.managerMode')}</button>
             <button className="mm-link" onClick={()=>navThen("blog")}>{navT('nav.blog')}</button>
@@ -23183,7 +23225,7 @@ function App(){
         {page==="reset-password"&&<ResetPasswordPage onNavigate={navigate} session={session}/>}
         {page==="about"&&<AboutPage onNavigate={navigate}/>}
         {page==="blog"&&<BlogPage onNavigate={navigate}/>}
-        {page==="classes"&&<ClassesPage onNavigate={navigate} session={session} myProfile={myProfile} isLoggedIn={isLoggedIn} openClassId={openClassId} onClassOpened={()=>{setOpenClassId(null);}} invitationId={openClassInvitationId}/>}
+        {page==="classes"&&(classesOn?<ClassesPage onNavigate={navigate} session={session} myProfile={myProfile} isLoggedIn={isLoggedIn} openClassId={openClassId} onClassOpened={()=>{setOpenClassId(null);}} invitationId={openClassInvitationId}/>:<div className="page"><div style={{textAlign:"center",padding:"80px 24px",maxWidth:520,margin:"0 auto"}}><h2 style={{fontSize:24,fontWeight:800,marginBottom:10}}>Classes are unavailable</h2><p style={{color:"var(--t2)",marginBottom:24}}>The classes section is currently turned off. Please check back soon.</p><button className="btn-p" onClick={()=>navigate("home")}>Back to Home</button></div><Footer onNavigate={navigate}/></div>)}
         {page==="contact"&&<ContactPage onNavigate={navigate}/>}
         {page==="resources"&&<ResourcesPage onNavigate={navigate}/>}
         {page==="faq"&&<FaqPage onNavigate={navigate}/>}
