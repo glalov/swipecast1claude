@@ -7764,25 +7764,22 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <div style={{fontSize:13,color:"#c0392b",fontWeight:600,lineHeight:1.5}}>This role has been filled and is no longer accepting submissions.</div>
     </div>}
 
-    {/* ── Instant-hook strip: surfaces pay, deadline & open-role count above the
-           fold, with a primary CTA that jumps straight to the roles. The full
-           detail grid (union, shoot dates, audition format) still sits below. ── */}
+    {/* ── Instant-hook strip: at-a-glance pay (short rates only), open-role count
+           & live deadline. Full pay always lives in the details grid below. ── */}
+    {(()=>{const payText=c.rate||c.pay;const payShort=payText&&payText.length<=42;return(
     <div style={{display:"flex",alignItems:"center",gap:"10px 18px",flexWrap:"wrap",padding:"13px 18px",marginBottom:24,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12}}>
-      {(c.rate||c.pay)&&<div style={{display:"flex",alignItems:"center",gap:7}}>
+      {payShort&&<div style={{display:"flex",alignItems:"center",gap:7}}>
         <span style={{fontSize:16}}>💰</span>
-        <span style={{fontSize:15,fontWeight:800,color:"var(--t1)",letterSpacing:-0.2}}>{c.rate||c.pay}</span>
+        <span style={{fontSize:15,fontWeight:800,color:"var(--t1)",letterSpacing:-0.2}}>{payText}</span>
       </div>}
       <span style={{display:"flex",alignItems:"center",gap:7,color:"var(--t2)",fontSize:14,fontWeight:600}}>
         <span style={{fontSize:15}}>🎭</span>{c.roles?.length||0} {(c.roles?.length||0)===1?"role":"roles"} open
       </span>
-      {(()=>{const cdn=castingCountdown(c.deadline);
-        if(c.status==="archived")return <span style={{display:"flex",alignItems:"center",gap:7,color:"#c0392b",fontSize:14,fontWeight:700}}><span style={{fontSize:15}}>📅</span>Applications closed</span>;
-        if(cdn&&!cdn.expired)return <span style={{display:"flex",alignItems:"center",gap:7,color:cdn.urgent?"#c0392b":"#0F6E56",fontSize:14,fontWeight:700}}><span style={{fontSize:15}}>📅</span>{cdn.label}</span>;
-        return c.deadline?<span style={{display:"flex",alignItems:"center",gap:7,color:"var(--t2)",fontSize:14,fontWeight:600}}><span style={{fontSize:15}}>📅</span>Apply by {fmtCastingDate(c.deadline)}</span>:null;})()}
-      {c.status!=="archived"
-        ?<button className="btn-p btn-sm" style={{marginLeft:"auto"}} onClick={()=>document.getElementById("roles-section")?.scrollIntoView({behavior:"smooth",block:"start"})}>View Roles &amp; Apply ↓</button>
-        :<span className="badge" style={{marginLeft:"auto",background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>Position filled</span>}
-    </div>
+      {c.status==="archived"
+        ?<span style={{display:"flex",alignItems:"center",gap:7,color:"#c0392b",fontSize:14,fontWeight:700}}><span style={{fontSize:15}}>📅</span>Applications closed</span>
+        :<span style={{fontSize:14}}><CastingCountdown deadline={c.deadline} emoji={true}/></span>}
+      {c.status==="archived"&&<span className="badge" style={{marginLeft:"auto",background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>Position filled</span>}
+    </div>);})()}
 
     <CastingImageCarousel images={getCastingImages(c)} title={c.title}/>
 
@@ -7795,7 +7792,13 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       {c.shoots&&<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.shoots')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.shoots}</div></div>}
       {c.rehearsal&&<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.rehearsal')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.rehearsal}</div></div>}
       {c.auditionFormat&&<div style={{gridColumn:"1 / -1"}}><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.auditionFormat')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.auditionFormat}</div></div>}
+      <div style={{gridColumn:"1 / -1"}}><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>Nudity / Intimate content</div><div style={{fontSize:14,color:c.has_nudity?"#c0392b":"var(--t1)",fontWeight:600}}>{c.has_nudity?"Yes — this project involves nudity or intimate content":"None"}</div></div>
     </div>
+
+    {c.has_nudity&&<div style={{display:"flex",gap:12,padding:"14px 18px",marginBottom:24,background:"rgba(192,57,43,0.06)",border:"1px solid rgba(192,57,43,0.3)",borderRadius:12,alignItems:"flex-start"}}>
+      <span style={{fontSize:18,lineHeight:1.2}}>⚠️</span>
+      <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}><strong style={{color:"#c0392b"}}>Contains nudity / intimate content.</strong>{c.nudity_details?<> {c.nudity_details}</>:<> This project involves nudity or intimate scenes. Please make sure you're comfortable with this before applying.</>}</div>
+    </div>}
 
     {c.casting_website_url&&<div style={{marginBottom:24}}>
       <a href={c.casting_website_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,textDecoration:"none"}}>
@@ -9071,9 +9074,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                     <span><strong style={{color:"var(--t1)"}}>{t('search.pay')}</strong> · {c.pay}</span>
                     {isArchived
                       ?<span style={{color:"#c0392b",fontWeight:600}}>Role filled — no longer accepting</span>
-                      :cdn
-                      ?<span style={{color:cdn.expired?"var(--t3)":(cdn.urgent?"#c0392b":"#0F6E56"),fontWeight:600,display:"inline-flex",alignItems:"center",gap:5}}>{cdn.label}{!cdn.expired&&c.deadline?` · closes ${fmtCastingDate(c.deadline)}`:""}</span>
-                      :(c.deadline)&&<span><strong style={{color:"var(--t1)"}}>{t('search.deadline')}</strong> · {fmtCastingDate(c.deadline)}</span>}
+                      :<CastingCountdown deadline={c.deadline}/>}
                     {c.created_at&&<span style={{color:"var(--t3)"}}><strong style={{color:"var(--t3)",fontWeight:600}}>Posted</strong> · {fmtCastingDate(c.created_at)}</span>}
                   </div>
                 </div>
@@ -12589,11 +12590,11 @@ function InfoTip({children,color="var(--t2)",width=300,label="More information"}
   return(<>
     <span
       ref={iconRef}
-      onMouseEnter={()=>setShow(true)}
-      onMouseLeave={()=>setShow(false)}
+      onPointerEnter={(e)=>{if(e.pointerType==="mouse")setShow(true);}}
+      onPointerLeave={(e)=>{if(e.pointerType==="mouse")setShow(false);}}
       onFocus={()=>setShow(true)}
       onBlur={()=>setShow(false)}
-      onClick={(e)=>{e.stopPropagation();setShow(v=>!v);}}
+      onClick={(e)=>{e.stopPropagation();e.preventDefault();setShow(v=>!v);}}
       tabIndex={0}
       role="button"
       aria-label={label}
@@ -12613,6 +12614,38 @@ function LiveCastingBadge({text="Casting now — apply today"}){
       <strong style={{color:"var(--t1)"}}>Still actively casting.</strong> The team behind this project is still accepting new submissions and has not archived it yet — so they are actively looking for new actors, no matter whether the casting was posted a month ago or longer. Casting is a complex process and can sometimes take many months to find the right talent, so an older post does not mean the role is taken.
     </InfoTip>
   </span>);
+}
+
+// ─── CastingCountdown — "X days left to apply" most of the time, auto-switching
+//     to a live ticking clock (1d 6h 12m) in the final 48 hours before the apply
+//     deadline. Counts to the deadline date (end of that day), not listing expiry.
+//     The 1s interval only runs inside the final-48h window, so idle cards are cheap.
+function CastingCountdown({deadline,emoji=false,baseColor="#0F6E56"}){
+  const end=useMemo(()=>{
+    if(!deadline)return null;
+    const d=(typeof deadline==="string"&&deadline.length===10)?new Date(deadline+"T23:59:59"):new Date(deadline);
+    return isNaN(d)?null:d.getTime();
+  },[deadline]);
+  const [now,setNow]=useState(()=>Date.now());
+  const within48=end!=null&&(end-now)>0&&(end-now)<=48*3600*1000;
+  useEffect(()=>{
+    if(!within48)return;
+    const id=setInterval(()=>setNow(Date.now()),1000);
+    return()=>clearInterval(id);
+  },[within48]);
+  if(end==null)return null;
+  const ms=end-now;
+  const pre=emoji?<span style={{fontSize:15}}>📅</span>:null;
+  const wrap=(color,weight,content)=>(<span style={{display:"inline-flex",alignItems:"center",gap:emoji?7:5,color,fontWeight:weight}}>{pre}{content}</span>);
+  if(ms<=0)return wrap("var(--t3)",600,"Applications closed");
+  if(within48){
+    const s=Math.floor(ms/1000),d=Math.floor(s/86400),h=Math.floor((s%86400)/3600),m=Math.floor((s%3600)/60),sec=s%60;
+    const clock=d>0?`${d}d ${h}h ${m}m left`:`${h}h ${m}m ${sec}s left to apply`;
+    return wrap("#c0392b",700,<>{clock} · closes {fmtCastingDate(deadline)}</>);
+  }
+  const days=Math.ceil(ms/86400000);
+  const label=days===1?"1 day left to apply":`${days} days left to apply`;
+  return wrap(days<=5?"#c0392b":baseColor,days<=5?700:600,<>{label} · closes {fmtCastingDate(deadline)}</>);
 }
 
 // ─── IDVerifiedBadge — "ID Verified" badge with disclaimer tooltip
@@ -12778,6 +12811,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     title:casting.title||"",prod:casting.prod||"",type:casting.type||"Film & TV",
     location:casting.location||"",pay:casting.pay||"",union:casting.union_status||"SAG-AFTRA",
     deadline:casting.deadline||"",tagline:casting.tagline||"",synopsis:casting.synopsis||"",
+    has_nudity:!!casting.has_nudity,nudity_details:casting.nudity_details||"",
     casting_website_url:casting.casting_website_url||"",
   });
   const MAX_IMAGES=5;
@@ -12874,6 +12908,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
       const patch={
         title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,
         pay:f.pay||null,union_status:f.union||null,deadline:f.deadline||null,
+        has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,
         tagline:f.tagline||null,synopsis:f.synopsis||null,
         casting_website_url:f.casting_website_url.trim()||null,
         casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,
@@ -12931,6 +12966,13 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     <div className="form-row">
       <div><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union} onChange={e=>setField("union",e.target.value)}><option>SAG-AFTRA</option><option>AEA</option><option>Non-Union</option><option>SAG-AFTRA / Non-Union</option></select></div>
       <div><label className="label">Deadline</label><input className="input" type="date" value={f.deadline||""} onChange={e=>setField("deadline",e.target.value)}/></div>
+    </div>
+    <div className="form-group">
+      <label className="label">Contains nudity or intimate content?</label>
+      <div style={{display:"flex",gap:8,marginTop:4}}>
+        {[["No",false],["Yes",true]].map(([lbl,val])=><button type="button" key={lbl} onClick={()=>setField("has_nudity",val)} style={{fontSize:13,padding:"7px 20px",borderRadius:999,border:"1px solid var(--bdr)",cursor:"pointer",fontWeight:600,background:(!!f.has_nudity)===val?(val?"#c0392b":"var(--acc)"):"var(--s2)",color:(!!f.has_nudity)===val?"#fff":"var(--t2)"}}>{lbl}</button>)}
+      </div>
+      {f.has_nudity&&<textarea className="textarea" style={{marginTop:10}} value={f.nudity_details||""} onChange={e=>setField("nudity_details",e.target.value)} placeholder="Describe the nudity / intimacy expectations…"></textarea>}
     </div>
     <div className="form-group"><label className="label">Tagline</label><input className="input" value={f.tagline} onChange={e=>setField("tagline",e.target.value)} placeholder="One-line hook"/></div>
     <div className="form-group"><label className="label">Project Summary</label><textarea className="textarea" value={f.synopsis} onChange={e=>setField("synopsis",e.target.value)}></textarea></div>
@@ -13223,7 +13265,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
     if(f.casting_website_url.trim()&&!/^https?:\/\//i.test(f.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
     setBusy(true);
     try{
-      const payload={cd_id:uid,title:f.title.trim(),type:f.type,prod:f.prod||null,tagline:f.tagline||null,synopsis:f.synopsis||null,location:f.location||null,pay:f.pay||null,union_status:f.union,deadline:f.deadline||null,status:"pending_review",published:false,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages};
+      const payload={cd_id:uid,title:f.title.trim(),type:f.type,prod:f.prod||null,tagline:f.tagline||null,synopsis:f.synopsis||null,location:f.location||null,pay:f.pay||null,union_status:f.union,deadline:f.deadline||null,has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,status:"pending_review",published:false,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages};
       const {data:casting,error:cErr}=await window.sb.from("castings").insert(payload).select().single();
       if(cErr)throw cErr;
       const rolePayload=roles.filter(r=>r.name.trim()).map(r=>{
@@ -13273,6 +13315,13 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
       <div className="form-row">
         <div><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union} onChange={e=>setField("union",e.target.value)}><option>SAG-AFTRA</option><option>AEA</option><option>Non-Union</option><option>SAG-AFTRA / Non-Union</option></select></div>
         <div><label className="label">Deadline</label><input className="input" type="date" value={f.deadline} onChange={e=>setField("deadline",e.target.value)}/></div>
+      </div>
+      <div className="form-group">
+        <label className="label">Does this project contain nudity or intimate content?</label>
+        <div style={{display:"flex",gap:8,marginTop:4}}>
+          {[["No",false],["Yes",true]].map(([lbl,val])=><button type="button" key={lbl} onClick={()=>setField("has_nudity",val)} style={{fontSize:13,padding:"7px 20px",borderRadius:999,border:"1px solid var(--bdr)",cursor:"pointer",fontWeight:600,background:(!!f.has_nudity)===val?(val?"#c0392b":"var(--acc)"):"var(--s2)",color:(!!f.has_nudity)===val?"#fff":"var(--t2)"}}>{lbl}</button>)}
+        </div>
+        {f.has_nudity&&<textarea className="textarea" style={{marginTop:10}} value={f.nudity_details||""} onChange={e=>setField("nudity_details",e.target.value)} placeholder="Describe what's involved — e.g. partial nudity, simulated intimacy, closed set, intimacy coordinator present. This helps actors decide before applying."></textarea>}
       </div>
       <div className="form-group"><label className="label">Tagline (short)</label><input className="input" value={f.tagline} onChange={e=>setField("tagline",e.target.value)} placeholder="One-line hook"/></div>
       <div className="form-group"><label className="label">Project Summary</label><textarea className="textarea" value={f.synopsis} onChange={e=>setField("synopsis",e.target.value)} placeholder="Describe the project — genre, tone, what the production is about..."></textarea></div>
@@ -13651,7 +13700,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
             <div style={{display:"flex",gap:24,flexWrap:"wrap",fontSize:13,color:"var(--t2)",marginBottom:22}}>
               {sc.location&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Location</strong> · {sc.location}</span>}
               {sc.pay&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Pay</strong> · {sc.pay}</span>}
-              {(()=>{const cdn=castingCountdown(sc.deadline);if(cdn&&!cdn.expired)return <span style={{color:cdn.urgent?"#c0392b":"#0F6E56",fontWeight:700}}>{cdn.label}{sc.deadline?` · closes ${fmtCastingDate(sc.deadline)}`:""}</span>;return sc.deadline?<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Deadline</strong> · {fmtCastingDate(sc.deadline)}</span>:null;})()}
+              <CastingCountdown deadline={sc.deadline}/>
             </div>
             {isCenter&&<div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
               <button className="btn-teal" onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(sc);}}>View Roles &amp; Apply →</button>
@@ -17354,7 +17403,7 @@ function AdminCastingGenerator({session}){
     setLoading(true);
     const [{data:ss},{data:cs,error:ce}]=await Promise.all([
       window.sb.from("site_settings").select("casting_generator_enabled,casting_generator_last_run").eq("id",1).maybeSingle(),
-      window.sb.from("castings").select("id,title,type,prod,posted_by_label,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,submission_requirements,synopsis,tagline,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured").order("created_at",{ascending:false}).limit(2000)
+      window.sb.from("castings").select("id,title,type,prod,posted_by_label,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,submission_requirements,synopsis,tagline,has_nudity,nudity_details,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured").order("created_at",{ascending:false}).limit(2000)
     ]);
     if(ss){setGenEnabled(!!ss.casting_generator_enabled);setLastRun(ss.casting_generator_last_run);}
     if(ce)showMsg("Failed to load castings: "+ce.message);
@@ -17480,6 +17529,8 @@ function AdminCastingGenerator({session}){
       casting_images:updated.casting_images||[],
       expires_at:updated.expires_at,
       admin_verified:updated.admin_verified===true,
+      has_nudity:!!updated.has_nudity,
+      nudity_details:updated.has_nudity?(updated.nudity_details||null):null,
       deadline:updated.deadline||(updated.expires_at?new Date(updated.expires_at).toISOString().slice(0,10):null),
       updated_at:new Date().toISOString()
     };
@@ -17712,6 +17763,8 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     pay:listing.pay||"",
     union_status:listing.union_status||"SAG-AFTRA",
     deadline:listing.deadline||"",
+    has_nudity:!!listing.has_nudity,
+    nudity_details:listing.nudity_details||"",
     casting_website_url:listing.casting_website_url||"",
     submission_requirements:listing.submission_requirements||"",
     expires_at:listing.expires_at?new Date(listing.expires_at).toISOString().slice(0,10):"",
@@ -17872,6 +17925,14 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
           {UNION_OPTS.map(u=><option key={u} value={u}>{u}</option>)}
         </select></div>
       <div><label className="label">Deadline</label><input className="input" type="date" value={form.deadline} onChange={e=>set("deadline",e.target.value)}/></div>
+    </div>
+
+    <div className="form-group">
+      <label className="label">Does this project contain nudity or intimate content?</label>
+      <div style={{display:"flex",gap:8,marginTop:4}}>
+        {[["No",false],["Yes",true]].map(([lbl,val])=><button type="button" key={lbl} onClick={()=>set("has_nudity",val)} style={{fontSize:13,padding:"7px 20px",borderRadius:999,border:"1px solid var(--bdr)",cursor:"pointer",fontWeight:600,background:(!!form.has_nudity)===val?(val?"#c0392b":"var(--acc)"):"var(--s2)",color:(!!form.has_nudity)===val?"#fff":"var(--t2)"}}>{lbl}</button>)}
+      </div>
+      {form.has_nudity&&<textarea className="textarea" style={{marginTop:10}} value={form.nudity_details||""} onChange={e=>set("nudity_details",e.target.value)} placeholder="Describe what's involved — e.g. partial nudity, simulated intimacy, closed set, intimacy coordinator present."/>}
     </div>
 
     <div className="form-group"><label className="label">Tagline (short)</label>
@@ -21303,6 +21364,7 @@ function EditCastingModal({casting,onClose,onSaved}){
     title:casting.title||"",prod:casting.prod||"",type:casting.type||"Film",
     location:casting.location||"",pay:casting.pay||"",union_status:casting.union_status||"Non-Union",
     deadline:casting.deadline||"",tagline:casting.tagline||"",synopsis:casting.synopsis||"",
+    has_nudity:!!casting.has_nudity,nudity_details:casting.nudity_details||"",
     casting_website_url:casting.casting_website_url||"",
   });
   const ADMIN_MAX_IMAGES=5;
@@ -21376,7 +21438,7 @@ function EditCastingModal({casting,onClose,onSaved}){
     if(f.casting_website_url.trim()&&!/^https?:\/\//i.test(f.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
     setBusy(true);
     try{
-      const patch={title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,pay:f.pay||null,union_status:f.union_status||null,deadline:f.deadline||null,tagline:f.tagline||null,synopsis:f.synopsis||null,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages};
+      const patch={title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,pay:f.pay||null,union_status:f.union_status||null,deadline:f.deadline||null,has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,tagline:f.tagline||null,synopsis:f.synopsis||null,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages};
       const {error:cErr}=await window.sb.from("castings").update(patch).eq("id",casting.id);
       if(cErr)throw cErr;
       // Diff roles: update existing, insert new, delete removed
@@ -21417,6 +21479,13 @@ function EditCastingModal({casting,onClose,onSaved}){
     <div className="form-row">
       <div><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union_status} onChange={e=>setField("union_status",e.target.value)}><option>SAG-AFTRA</option><option>AEA</option><option>Non-Union</option><option>SAG-AFTRA / Non-Union</option></select></div>
       <div><label className="label">Deadline</label><input className="input" type="date" value={f.deadline||""} onChange={e=>setField("deadline",e.target.value)}/></div>
+    </div>
+    <div className="form-group">
+      <label className="label">Contains nudity or intimate content?</label>
+      <div style={{display:"flex",gap:8,marginTop:4}}>
+        {[["No",false],["Yes",true]].map(([lbl,val])=><button type="button" key={lbl} onClick={()=>setField("has_nudity",val)} style={{fontSize:13,padding:"7px 20px",borderRadius:999,border:"1px solid var(--bdr)",cursor:"pointer",fontWeight:600,background:(!!f.has_nudity)===val?(val?"#c0392b":"var(--acc)"):"var(--s2)",color:(!!f.has_nudity)===val?"#fff":"var(--t2)"}}>{lbl}</button>)}
+      </div>
+      {f.has_nudity&&<textarea className="textarea" style={{marginTop:10}} value={f.nudity_details||""} onChange={e=>setField("nudity_details",e.target.value)} placeholder="Describe the nudity / intimacy expectations…"></textarea>}
     </div>
     <div className="form-group"><label className="label">Tagline</label><input className="input" value={f.tagline} onChange={e=>setField("tagline",e.target.value)}/></div>
     <div className="form-group"><label className="label">Synopsis</label><textarea className="textarea" value={f.synopsis} onChange={e=>setField("synopsis",e.target.value)}></textarea></div>
@@ -23041,7 +23110,7 @@ function App(){
         const isUUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
         const field=isUUID?"id":"slug";
         const {data,error}=await window.sb.from("castings")
-          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,status,published,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,status,published,has_nudity,nudity_details,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq(field,slug).maybeSingle();
         if(cancelled||error||!data)return;
         // Guard: hide pending/unpublished castings from the public.

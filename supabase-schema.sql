@@ -114,6 +114,8 @@ create table if not exists public.castings (
   status text not null default 'open' check (status in ('draft','open','closed','archived')),
   published boolean default true,
   featured boolean default false,
+  has_nudity boolean not null default false,   -- project contains nudity / intimate content
+  nudity_details text,                          -- optional CD description of the nudity/intimacy expectations
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
