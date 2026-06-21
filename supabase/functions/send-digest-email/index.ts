@@ -10,6 +10,61 @@ const CONTACT_EMAIL        = Deno.env.get("CONTACT_EMAIL") ?? "team@castslate.co
 const APP_URL              = (Deno.env.get("APP_URL") ?? "https://www.castslate.com").replace(/\/$/,"");
 const UNSUB_BASE           = `${SUPABASE_URL}/functions/v1/process-digest-queue`;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Email provider abstraction. Defaults to Resend; set EMAIL_PROVIDER="ses" to
+// route every send through Amazon SES (v2 API, SigV4-signed). Switching is a
+// pure config change — no redeploy needed — and Resend stays as instant fallback.
+// SES secrets (only read when active): AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
+// AWS_SES_REGION (falls back to AWS_REGION, then "us-east-1").
+// ─────────────────────────────────────────────────────────────────────────────
+const EMAIL_PROVIDER        = (Deno.env.get("EMAIL_PROVIDER") ?? "resend").toLowerCase();
+const AWS_ACCESS_KEY_ID     = Deno.env.get("AWS_ACCESS_KEY_ID");
+const AWS_SECRET_ACCESS_KEY = Deno.env.get("AWS_SECRET_ACCESS_KEY");
+const AWS_SES_REGION        = Deno.env.get("AWS_SES_REGION") ?? Deno.env.get("AWS_REGION") ?? "us-east-1";
+
+function emailConfigured(): boolean {
+  return EMAIL_PROVIDER === "ses"
+    ? !!(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY)
+    : !!RESEND_API_KEY;
+}
+
+interface SendEmailArgs { from:string; to:string[]; subject:string; html:string; text?:string; replyTo?:string; headers?:Record<string,string>; }
+interface SendEmailResult { ok:boolean; id:string|null; err:string|null; status:number; }
+
+async function sendEmail(a: SendEmailArgs): Promise<SendEmailResult> {
+  if (EMAIL_PROVIDER === "ses") {
+    if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY)
+      return { ok:false, id:null, err:"AWS SES credentials not set", status:500 };
+    try {
+      const { AwsClient } = await import("https://esm.sh/aws4fetch@1.0.20");
+      const aws = new AwsClient({ accessKeyId:AWS_ACCESS_KEY_ID, secretAccessKey:AWS_SECRET_ACCESS_KEY, region:AWS_SES_REGION, service:"ses" });
+      // deno-lint-ignore no-explicit-any
+      const content:any = { Simple:{ Subject:{ Data:a.subject, Charset:"UTF-8" }, Body:{ Html:{ Data:a.html, Charset:"UTF-8" } } } };
+      if (a.text) content.Simple.Body.Text = { Data:a.text, Charset:"UTF-8" };
+      if (a.headers) content.Simple.Headers = Object.entries(a.headers).map(([Name,Value])=>({ Name, Value }));
+      // deno-lint-ignore no-explicit-any
+      const payload:any = { FromEmailAddress:a.from, Destination:{ ToAddresses:a.to }, Content:content };
+      if (a.replyTo) payload.ReplyToAddresses = [a.replyTo];
+      const r = await aws.fetch(`https://email.${AWS_SES_REGION}.amazonaws.com/v2/email/outbound-emails`, {
+        method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify(payload),
+      });
+      if (r.ok) { const d = await r.json().catch(()=>({})); return { ok:true, id:d.MessageId ?? null, err:null, status:r.status }; }
+      return { ok:false, id:null, err:await r.text(), status:r.status };
+    } catch (e) { return { ok:false, id:null, err:String(e), status:500 }; }
+  }
+  if (!RESEND_API_KEY) return { ok:false, id:null, err:"RESEND_API_KEY not set", status:500 };
+  // deno-lint-ignore no-explicit-any
+  const body:any = { from:a.from, to:a.to, subject:a.subject, html:a.html };
+  if (a.text) body.text = a.text;
+  if (a.replyTo) body.reply_to = a.replyTo;
+  if (a.headers) body.headers = a.headers;
+  const r = await fetch("https://api.resend.com/emails", {
+    method:"POST", headers:{ Authorization:`Bearer ${RESEND_API_KEY}`, "Content-Type":"application/json" }, body:JSON.stringify(body),
+  });
+  if (r.ok) { const d = await r.json().catch(()=>({})); return { ok:true, id:d.id ?? null, err:null, status:r.status }; }
+  return { ok:false, id:null, err:await r.text(), status:r.status };
+}
+
 const cors = {
   "Access-Control-Allow-Origin":"*",
   "Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type",
@@ -202,7 +257,7 @@ serve(async (req) => {
     const body=await req.json();
     const{user_id,to_email,castings,is_test}=body;
     if(!castings?.length) return jsonR({error:"No castings"},400);
-    if(!RESEND_API_KEY) return jsonR({error:"RESEND_API_KEY not set"},500);
+    if(!emailConfigured()) return jsonR({error:"Email provider not configured"},500);
     const sb=createClient(SUPABASE_URL,SUPABASE_SERVICE_KEY);
     let email=to_email??null, first="there";
     if(user_id&&!is_test){
@@ -216,16 +271,11 @@ serve(async (req) => {
     const count=castings.length;
     const subject=count===1?"1 new casting match on CastSlate":`${count} new casting matches on CastSlate`;
     const html=buildEmail(first,castings,user_id??"test",count);
-    const r=await fetch("https://api.resend.com/emails",{
-      method:"POST",
-      headers:{Authorization:`Bearer ${RESEND_API_KEY}`,"Content-Type":"application/json"},
-      body:JSON.stringify({from:FROM_EMAIL,to:[email],reply_to:CONTACT_EMAIL,subject,html}),
-    });
-    let pid=null,status="failed",err=null;
-    if(r.ok){const d=await r.json();pid=d.id??null;status="sent";}
-    else{err=await r.text();console.error("[digest-email]",err);}
+    const sent=await sendEmail({from:FROM_EMAIL,to:[email],replyTo:CONTACT_EMAIL,subject,html});
+    const pid=sent.id, status=sent.ok?"sent":"failed", err=sent.err;
+    if(!sent.ok) console.error("[digest-email]",err);
     if(user_id&&!is_test){
-      await sb.from("email_digest_logs").insert({user_id,email,project_ids_included:castings.map((c:any)=>c.id),status,reason:status==="sent"?`Sent ${count} match${count!==1?"es":""}`:"Resend send failed",provider_message_id:pid,error_message:err});
+      await sb.from("email_digest_logs").insert({user_id,email,project_ids_included:castings.map((c:any)=>c.id),status,reason:status==="sent"?`Sent ${count} match${count!==1?"es":""}`:"Email send failed",provider_message_id:pid,error_message:err});
       if(status==="sent"){
         await sb.from("user_casting_email_history").upsert(castings.map((c:any)=>({user_id,casting_id:c.id})),{onConflict:"user_id,casting_id",ignoreDuplicates:true});
         await sb.from("email_preferences").update({last_sent_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("user_id",user_id);

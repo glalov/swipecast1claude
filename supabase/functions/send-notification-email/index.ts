@@ -28,6 +28,61 @@ const TWILIO_SID           = Deno.env.get("TWILIO_ACCOUNT_SID");
 const TWILIO_TOKEN         = Deno.env.get("TWILIO_AUTH_TOKEN");
 const TWILIO_FROM          = Deno.env.get("TWILIO_PHONE_NUMBER");
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Email provider abstraction. Defaults to Resend; set EMAIL_PROVIDER="ses" to
+// route every send through Amazon SES (v2 API, SigV4-signed). Switching is a
+// pure config change — no redeploy needed — and Resend stays as instant fallback.
+// SES secrets (only read when active): AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
+// AWS_SES_REGION (falls back to AWS_REGION, then "us-east-1").
+// ─────────────────────────────────────────────────────────────────────────────
+const EMAIL_PROVIDER        = (Deno.env.get("EMAIL_PROVIDER") ?? "resend").toLowerCase();
+const AWS_ACCESS_KEY_ID     = Deno.env.get("AWS_ACCESS_KEY_ID");
+const AWS_SECRET_ACCESS_KEY = Deno.env.get("AWS_SECRET_ACCESS_KEY");
+const AWS_SES_REGION        = Deno.env.get("AWS_SES_REGION") ?? Deno.env.get("AWS_REGION") ?? "us-east-1";
+
+function emailConfigured(): boolean {
+  return EMAIL_PROVIDER === "ses"
+    ? !!(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY)
+    : !!RESEND_API_KEY;
+}
+
+interface SendEmailArgs { from:string; to:string[]; subject:string; html:string; text?:string; replyTo?:string; headers?:Record<string,string>; }
+interface SendEmailResult { ok:boolean; id:string|null; err:string|null; status:number; }
+
+async function sendEmail(a: SendEmailArgs): Promise<SendEmailResult> {
+  if (EMAIL_PROVIDER === "ses") {
+    if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY)
+      return { ok:false, id:null, err:"AWS SES credentials not set", status:500 };
+    try {
+      const { AwsClient } = await import("https://esm.sh/aws4fetch@1.0.20");
+      const aws = new AwsClient({ accessKeyId:AWS_ACCESS_KEY_ID, secretAccessKey:AWS_SECRET_ACCESS_KEY, region:AWS_SES_REGION, service:"ses" });
+      // deno-lint-ignore no-explicit-any
+      const content:any = { Simple:{ Subject:{ Data:a.subject, Charset:"UTF-8" }, Body:{ Html:{ Data:a.html, Charset:"UTF-8" } } } };
+      if (a.text) content.Simple.Body.Text = { Data:a.text, Charset:"UTF-8" };
+      if (a.headers) content.Simple.Headers = Object.entries(a.headers).map(([Name,Value])=>({ Name, Value }));
+      // deno-lint-ignore no-explicit-any
+      const payload:any = { FromEmailAddress:a.from, Destination:{ ToAddresses:a.to }, Content:content };
+      if (a.replyTo) payload.ReplyToAddresses = [a.replyTo];
+      const r = await aws.fetch(`https://email.${AWS_SES_REGION}.amazonaws.com/v2/email/outbound-emails`, {
+        method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify(payload),
+      });
+      if (r.ok) { const d = await r.json().catch(()=>({})); return { ok:true, id:d.MessageId ?? null, err:null, status:r.status }; }
+      return { ok:false, id:null, err:await r.text(), status:r.status };
+    } catch (e) { return { ok:false, id:null, err:String(e), status:500 }; }
+  }
+  if (!RESEND_API_KEY) return { ok:false, id:null, err:"RESEND_API_KEY not set", status:500 };
+  // deno-lint-ignore no-explicit-any
+  const body:any = { from:a.from, to:a.to, subject:a.subject, html:a.html };
+  if (a.text) body.text = a.text;
+  if (a.replyTo) body.reply_to = a.replyTo;
+  if (a.headers) body.headers = a.headers;
+  const r = await fetch("https://api.resend.com/emails", {
+    method:"POST", headers:{ Authorization:`Bearer ${RESEND_API_KEY}`, "Content-Type":"application/json" }, body:JSON.stringify(body),
+  });
+  if (r.ok) { const d = await r.json().catch(()=>({})); return { ok:true, id:d.id ?? null, err:null, status:r.status }; }
+  return { ok:false, id:null, err:await r.text(), status:r.status };
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -234,8 +289,8 @@ serve(async (req) => {
       : emailMasterEnabled;
 
     if (messageEmailEnabled) {
-      if (!RESEND_API_KEY) {
-        console.warn("[send-notification-email] RESEND_API_KEY not set — skipping email");
+      if (!emailConfigured()) {
+        console.warn("[send-notification-email] email provider not configured — skipping email");
         results.email = "skipped:EMAIL_NOT_CONFIGURED";
       } else {
         const { data: authData, error: authErr } = await supabase.auth.admin.getUserById(to_user_id);
@@ -250,19 +305,11 @@ serve(async (req) => {
             ? inboxMessageHtml(firstName, resolvedFromName, projectName)
             : classInvitationHtml(firstName, class_title?.trim() || "a class");
 
-          const resendRes = await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${RESEND_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ from: FROM_EMAIL, to: [toEmail], reply_to: CONTACT_EMAIL, subject, html }),
-          });
+          const sent = await sendEmail({ from: FROM_EMAIL, to: [toEmail], replyTo: CONTACT_EMAIL, subject, html });
 
-          if (!resendRes.ok) {
-            const detail = await resendRes.text();
-            console.error("[send-notification-email] Resend error:", detail);
-            results.email = `error:${detail}`;
+          if (!sent.ok) {
+            console.error("[send-notification-email] send error:", sent.err);
+            results.email = `error:${sent.err}`;
           } else {
             results.email = "sent";
           }
