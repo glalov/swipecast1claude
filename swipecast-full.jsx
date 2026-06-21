@@ -22895,8 +22895,13 @@ function App(){
   // beacon on each route change; never blocks or errors the UI. Aggregated in admin-stats.
   useEffect(()=>{
     try{
-      // Don't count staff/owner's own browsing in site traffic.
+      // Wait until auth is resolved so we KNOW the viewer's role before counting.
+      // (Previously the beacon fired on first load before myProfile loaded, so staff —
+      //  and /admin pages — slipped into the totals.)
+      if(!authReady)return;
+      // Never count staff/owner browsing, and never count admin pages.
       if(myProfile&&["admin","super_admin"].includes(myProfile.user_type))return;
+      if(typeof window!=="undefined"&&(window.location.pathname||"").startsWith("/admin"))return;
       let sid=localStorage.getItem("sc_sid");
       if(!sid){sid=Date.now().toString(36)+Math.random().toString(36).slice(2,10);localStorage.setItem("sc_sid",sid);}
       const supabaseUrl=window.SC_CONFIG?.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co";
@@ -22905,7 +22910,7 @@ function App(){
       if(navigator.sendBeacon){navigator.sendBeacon(url,new Blob([payload],{type:"text/plain;charset=UTF-8"}));}
       else{fetch(url,{method:"POST",headers:{"Content-Type":"text/plain;charset=UTF-8"},body:payload,keepalive:true}).catch(()=>{});}
     }catch(_){}
-  },[page]);
+  },[page,authReady]);
 
   // If a talent user lands on /dashboard (CD dashboard), redirect them to their Talent Dashboard.
   // This handles direct URL loads, post-login routing, and nav button presses that call navigate("dashboard").
