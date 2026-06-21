@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="robots" content="noindex"/>
+<title>Marquee — Longer Clips Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root{--t1:#1a1a2e;--t2:#555;--t3:#888;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:#F4F1EA;font-family:'DM Sans',sans-serif;color:var(--t1);}
+  .wrap{max-width:1280px;margin:0 auto;padding:48px 0 80px;}
+  .demo-note{max-width:760px;margin:0 auto 30px;padding:0 24px;text-align:center;}
+  .demo-note .label{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--t3);}
+  .demo-note h1{font-family:'Playfair Display',serif;font-weight:700;font-size:26px;margin:8px 0 10px;}
+  .demo-note p{font-size:14px;line-height:1.6;color:var(--t2);margin:0;}
+  .sec-title{text-align:center;font-size:12px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--t3);margin:34px 0 20px;}
+  /* ---- marquee CSS (matches production .fmt-*) ---- */
+  .fmt-reel-wrap{position:relative;}
+  .fmt-reel{overflow:hidden;padding:10px 0 16px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 36px,#000 calc(100% - 36px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 36px,#000 calc(100% - 36px),transparent 100%);}
+  .fmt-track{display:flex;width:max-content;will-change:transform;animation:fmtSlide 52s linear infinite;}
+  @keyframes fmtSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
+  .fmt-card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;margin-right:20px;border-radius:18px;overflow:hidden;cursor:pointer;background:#15151f;transition:transform .45s cubic-bezier(.2,.7,.2,1);outline:none;}
+  .fmt-card:hover{transform:translateY(-8px);}
+  .fmt-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;}
+  .fmt-shade{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,rgba(10,10,18,.05) 0%,rgba(10,10,18,.02) 36%,rgba(10,10,18,.42) 70%,rgba(10,10,18,.78) 100%);}
+  .fmt-body{position:absolute;left:0;right:0;bottom:0;padding:52px 20px 22px;color:#fff;z-index:3;border-bottom-left-radius:18px;border-bottom-right-radius:18px;background:linear-gradient(180deg,rgba(8,8,16,0) 0%,rgba(8,8,16,.55) 55%,rgba(8,8,16,.88) 100%);}
+  .fmt-icon{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;margin-bottom:12px;color:#fff;background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.22);}
+  .fmt-title{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:20px;line-height:1.12;margin:0 0 4px;text-shadow:0 1px 12px rgba(0,0,0,.5);}
+  .fmt-desc{font-size:13px;line-height:1.4;color:rgba(255,255,255,.9);margin:0;text-shadow:0 1px 10px rgba(0,0,0,.55);max-width:92%;}
+  .fmt-reel:hover .fmt-track{animation-play-state:paused;}
+  @media (max-width:768px){.fmt-card{width:80vw;max-width:300px;margin-right:14px;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="demo-note">
+    <div class="label">Demo · not the live site</div>
+    <h1>Marquee with longer clips</h1>
+    <p>Same card design, spacing, and animation as the live marquee — but each card plays a longer stock clip (9–40 seconds of unique footage) instead of the 8-second loop. These are placeholder film-themed clips just to show the longer playback feel.</p>
+  </div>
+  <div class="sec-title">Casting Across Every Format</div>
+  <div class="fmt-reel-wrap">
+    <div class="fmt-reel">
+      <div class="fmt-track" id="track"></div>
+    </div>
+  </div>
+</div>
+<script>
+  var CARDS=[
+    {cat:"Feature Films",desc:"Big stories.",file:"feature",icon:'<path d="M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Z"/><path d="M3 7 6 3l3 4M9 7l3-4 3 4M15 7l3-4 3 4"/>'},
+    {cat:"Theater",desc:"Live performance.",file:"theater",icon:'<path d="M3 4s1.5 1 4 1 4-1 4-1v6a4 4 0 0 1-8 0V4Z"/><path d="M13 8s1.5 1 4 1 4-1 4-1v6a4 4 0 0 1-8 0"/>'},
+    {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials",icon:'<path d="M3 11v2a1 1 0 0 0 1 1h2l3 4 .5-.2V7.2L9 7H6a1 1 0 0 0-1 1"/><path d="M9 7l9-4v18l-9-4"/><path d="M18 8a3 3 0 0 1 0 8"/>'},
+    {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student",icon:'<path d="M12 4 2 9l10 5 10-5-10-5Z"/><path d="M6 11v4c0 1.1 2.7 2.5 6 2.5s6-1.4 6-2.5v-4"/>'},
+    {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover",icon:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>'},
+    {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie",icon:'<path d="M12 3l2.6 5.6L20.5 9.4l-4.2 4 1 5.9L12 16.6 6.7 19.3l1-5.9-4.2-4 5.9-.8L12 3Z"/>'}
+  ];
+  var track=document.getElementById('track');
+  var doubled=CARDS.concat(CARDS);
+  doubled.forEach(function(c,i){
+    var art=document.createElement('article');
+    art.className='fmt-card';
+    art.innerHTML=
+      '<video class="fmt-video" src="/video-formats/demo/'+c.file+'.mp4" muted loop playsinline preload="metadata"></video>'+
+      '<div class="fmt-shade"></div>'+
+      '<div class="fmt-body">'+
+        '<span class="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">'+c.icon+'</svg></span>'+
+        '<h3 class="fmt-title">'+c.cat+'</h3>'+
+        '<p class="fmt-desc">'+c.desc+'</p>'+
+      '</div>';
+    track.appendChild(art);
+  });
+  // Play only visible videos (matches production behavior)
+  var vids=[].slice.call(document.querySelectorAll('.fmt-video'));
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){
+      if(e.isIntersecting){var p=e.target.play();if(p&&p.catch)p.catch(function(){});}
+      else{try{e.target.pause();}catch(_){}}
+    });},{rootMargin:'200px 600px',threshold:0.01});
+    vids.forEach(function(v){io.observe(v);});
+  } else { vids.forEach(function(v){var p=v.play();if(p&&p.catch)p.catch(function(){});}); }
+</script>
+</body>
+</html>
