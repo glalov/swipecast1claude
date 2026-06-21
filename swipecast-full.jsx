@@ -1697,6 +1697,17 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .join-dd-title{display:block;font-size:13px;font-weight:700;color:var(--t1);margin-bottom:2px;}
 .join-dd-desc{display:block;font-size:11px;color:var(--t2);line-height:1.45;}
 @keyframes scSpin{to{transform:rotate(360deg);}}
+/* ─── "Casting now" live badge (pulsing dot + expanding ring) + ARCHIVED stamp.
+       Motion is disabled under prefers-reduced-motion; the dot stays solid. ─── */
+@keyframes scLiveDot{0%,100%{transform:scale(.74);opacity:.6}50%{transform:scale(1);opacity:1}}
+@keyframes scLiveRing{0%{transform:scale(1);opacity:.55}100%{transform:scale(3.1);opacity:0}}
+.cs-live-badge{display:inline-flex;align-items:center;gap:8px;background:#E1F5EE;color:#0F6E56;font-size:11px;font-weight:700;letter-spacing:.01em;padding:5px 12px;border-radius:99px;white-space:nowrap;line-height:1;}
+.cs-live-dot{position:relative;width:10px;height:10px;border-radius:50%;flex:none;display:inline-block;}
+.cs-live-dot::after{content:"";position:absolute;inset:0;border-radius:50%;background:#15a87f;animation:scLiveRing 1.8s ease-out infinite;}
+.cs-live-dot .core{position:absolute;inset:0;border-radius:50%;background:#15a87f;animation:scLiveDot 1.5s ease-in-out infinite;}
+.cs-archived-stamp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-13deg);z-index:6;pointer-events:none;border:4px solid #c0392b;color:#c0392b;font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(22px,4.6vw,38px);letter-spacing:.16em;text-transform:uppercase;padding:6px 22px 8px;border-radius:8px;opacity:.8;background:rgba(255,255,255,0.05);box-shadow:inset 0 0 0 2px rgba(192,57,43,.16);white-space:nowrap;}
+.cs-archived-dim{filter:grayscale(.5);opacity:.6;}
+@media (prefers-reduced-motion: reduce){.cs-live-dot::after{display:none}.cs-live-dot .core{animation:none;background:#15a87f}}
 .mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;}
 .mm-link:last-child{border-bottom:none;}
 .mm-link:hover{color:var(--acc);}
@@ -7744,6 +7755,11 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       {!c.is_admin_created&&cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
     </div>
 
+    {c.status==="archived"&&<div style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",marginBottom:20,background:"rgba(192,57,43,0.06)",border:"1px solid rgba(192,57,43,0.3)",borderRadius:12}}>
+      <span className="cs-archived-stamp" style={{position:"static",transform:"rotate(-6deg)",fontSize:18,padding:"3px 13px 5px",opacity:1,flex:"none"}} aria-hidden="true">Archived</span>
+      <div style={{fontSize:13,color:"#c0392b",fontWeight:600,lineHeight:1.5}}>This role has been filled and is no longer accepting submissions.</div>
+    </div>}
+
     {/* ── Instant-hook strip: surfaces pay, deadline & open-role count above the
            fold, with a primary CTA that jumps straight to the roles. The full
            detail grid (union, shoot dates, audition format) still sits below. ── */}
@@ -7755,10 +7771,13 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <span style={{display:"flex",alignItems:"center",gap:7,color:"var(--t2)",fontSize:14,fontWeight:600}}>
         <span style={{fontSize:15}}>🎭</span>{c.roles?.length||0} {(c.roles?.length||0)===1?"role":"roles"} open
       </span>
-      {c.deadline&&<span style={{display:"flex",alignItems:"center",gap:7,color:"var(--t2)",fontSize:14,fontWeight:600}}>
-        <span style={{fontSize:15}}>📅</span>Apply by {fmtCastingDate(c.deadline)}
-      </span>}
-      <button className="btn-p btn-sm" style={{marginLeft:"auto"}} onClick={()=>document.getElementById("roles-section")?.scrollIntoView({behavior:"smooth",block:"start"})}>View Roles &amp; Apply ↓</button>
+      {(()=>{const cdn=castingCountdown(c.deadline);
+        if(c.status==="archived")return <span style={{display:"flex",alignItems:"center",gap:7,color:"#c0392b",fontSize:14,fontWeight:700}}><span style={{fontSize:15}}>📅</span>Applications closed</span>;
+        if(cdn&&!cdn.expired)return <span style={{display:"flex",alignItems:"center",gap:7,color:cdn.urgent?"#c0392b":"#0F6E56",fontSize:14,fontWeight:700}}><span style={{fontSize:15}}>📅</span>{cdn.label}</span>;
+        return c.deadline?<span style={{display:"flex",alignItems:"center",gap:7,color:"var(--t2)",fontSize:14,fontWeight:600}}><span style={{fontSize:15}}>📅</span>Apply by {fmtCastingDate(c.deadline)}</span>:null;})()}
+      {c.status!=="archived"
+        ?<button className="btn-p btn-sm" style={{marginLeft:"auto"}} onClick={()=>document.getElementById("roles-section")?.scrollIntoView({behavior:"smooth",block:"start"})}>View Roles &amp; Apply ↓</button>
+        :<span className="badge" style={{marginLeft:"auto",background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>Position filled</span>}
     </div>
 
     <CastingImageCarousel images={getCastingImages(c)} title={c.title}/>
@@ -7812,7 +7831,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                 <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65}}>{r.desc}</p>
               </div>
               <div style={{flexShrink:0}}>
-                {applied.has(i)?<span className="tag tag-grn" style={{fontSize:12,fontWeight:700,padding:"8px 14px"}}>{hasInstructions?"✓ Audition Submitted":"✓ Applied"}</span>:<button className="btn-p btn-sm" onClick={()=>handleApply(r,i)}>{!isLoggedIn?"Create a free account to apply":(hasInstructions?"🎬 Audition for This Role":"Apply for This Role")}</button>}
+                {c.status==="archived"?<span className="tag" style={{fontSize:12,fontWeight:700,padding:"8px 14px",background:"rgba(192,57,43,0.08)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>Filled</span>:applied.has(i)?<span className="tag tag-grn" style={{fontSize:12,fontWeight:700,padding:"8px 14px"}}>{hasInstructions?"✓ Audition Submitted":"✓ Applied"}</span>:<button className="btn-p btn-sm" onClick={()=>handleApply(r,i)}>{!isLoggedIn?"Create a free account to apply":(hasInstructions?"🎬 Audition for This Role":"Apply for This Role")}</button>}
               </div>
             </div>
             {/* Audition Instructions block — shown when the CD has set them */}
@@ -8756,6 +8775,23 @@ function fmtCastingDate(val){
   }catch{return String(val);}
 }
 
+// Live "days left to apply" countdown derived from a deadline date (YYYY-MM-DD or
+// ISO). Recomputed against the current clock on every render, so the number rolls
+// down on its own each day until the deadline passes (then `expired:true`).
+// Returns null when there's no deadline.
+function castingCountdown(deadline){
+  if(!deadline)return null;
+  try{
+    const d=(typeof deadline==="string"&&deadline.length===10)?new Date(deadline+"T23:59:59Z"):new Date(deadline);
+    if(isNaN(d))return null;
+    const days=Math.ceil((d-new Date())/(1000*60*60*24));
+    if(days<0)return{days,expired:true,urgent:false,label:"Applications closed"};
+    if(days===0)return{days:0,expired:false,urgent:true,label:"Closes today — apply now"};
+    if(days===1)return{days:1,expired:false,urgent:true,label:"1 day left to apply"};
+    return{days,expired:false,urgent:days<=5,label:`${days} days left to apply`};
+  }catch{return null;}
+}
+
 // Whole-word location match. Naive substring matching is wrong for short
 // tokens — e.g. "la" lives inside "white pLAins" and "is​LAnd", so a bare
 // loc.includes("la") made the Los Angeles filter return New York results.
@@ -8830,7 +8866,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       const {data:cs,error}=await Promise.race([
         window.sb.from("castings")
           .select("*,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(identity_verified,can_post_castings,verification_status)")
-          .eq("status","open").eq("published",true)
+          .in("status",["open","archived"]).eq("published",true)
           .order("featured",{ascending:false})
           .order("created_at",{ascending:false}),
         timeoutPromise
@@ -8968,7 +9004,9 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const allCastings=dbCastings.length>0?dbCastings:[];
   const allTalent=dbTalent.length>0?dbTalent:[];
   const ft=allTalent.filter(t=>{if(q&&!t.name.toLowerCase().includes(q.toLowerCase())&&!t.skills.join(" ").toLowerCase().includes(q.toLowerCase()))return false;if(f.gender&&t.gender!==f.gender)return false;if(f.ethnicity&&!t.ethnicity.toLowerCase().includes(f.ethnicity.toLowerCase()))return false;if(f.location&&!t.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&t.union!==f.union)return false;if(castingTypeIds!==null&&!castingTypeIds.has(t.id))return false;return true;});
-  const fc=allCastings.filter(c=>{if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&c.type!==f.type)return false;if(f.location&&!matchesLocationFilter(c.location,f.location))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;});
+  const fc=allCastings.filter(c=>{if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&c.type!==f.type)return false;if(f.location&&!matchesLocationFilter(c.location,f.location))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;})
+    // Archived (filled) castings sink to the bottom so live, applicable roles lead.
+    .sort((a,b)=>((a.status==="archived")?1:0)-((b.status==="archived")?1:0));
   return(<div className="page page-wide">
     <div className="section-label">{t('search.title')}</div>
     <div className="search-bar"><input className="input" placeholder={t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/><button className="btn-teal">{t('search.searchBtn')}</button></div>
@@ -8995,17 +9033,19 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
             <button className="btn-s btn-sm" onClick={()=>setRefreshTick(tk=>tk+1)} disabled={loading}>{loading?"…":t('search.refresh')}</button>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;const isExpiredCasting=!!(c.expires_at&&new Date(c.expires_at)<new Date());return(
+          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;const isExpiredCasting=!!(c.expires_at&&new Date(c.expires_at)<new Date());const isArchived=c.status==="archived";const cdn=castingCountdown(c.deadline);const isLive=!isArchived&&!isExpiredCasting&&!(cdn&&cdn.expired);return(
             <div key={c.id} style={{
-              padding:0,overflow:"hidden",cursor:"pointer",borderRadius:14,
+              padding:0,overflow:"hidden",cursor:isArchived?"default":"pointer",borderRadius:14,position:"relative",
               background:"var(--s1)",
               border:"1px solid var(--bdr)",
               boxShadow:isFeat?"0 4px 20px rgba(79,138,139,0.14)":"0 1px 4px rgba(26,26,46,0.05)",
               transition:"box-shadow .2s,transform .15s",
             }}
-              onMouseEnter={e=>{e.currentTarget.style.boxShadow=isFeat?"0 8px 32px rgba(79,138,139,0.20)":"0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
-              onMouseLeave={e=>{e.currentTarget.style.boxShadow=isFeat?"0 4px 20px rgba(79,138,139,0.14)":"0 1px 4px rgba(26,26,46,0.05)";e.currentTarget.style.transform="";}}
-              onClick={()=>onViewCasting&&onViewCasting(rawC)}>
+              onMouseEnter={e=>{if(isArchived)return;e.currentTarget.style.boxShadow=isFeat?"0 8px 32px rgba(79,138,139,0.20)":"0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
+              onMouseLeave={e=>{if(isArchived)return;e.currentTarget.style.boxShadow=isFeat?"0 4px 20px rgba(79,138,139,0.14)":"0 1px 4px rgba(26,26,46,0.05)";e.currentTarget.style.transform="";}}
+              onClick={()=>{if(isArchived)return;onViewCasting&&onViewCasting(rawC);}}>
+              {isArchived&&<div className="cs-archived-stamp" aria-hidden="true">Archived</div>}
+              <div className={isArchived?"cs-archived-dim":undefined}>
               {isFeat&&<div style={{background:"var(--teal)",color:"#fff",padding:"10px 24px",display:"flex",alignItems:"center",gap:8,fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:800,letterSpacing:"0.1em",textTransform:"uppercase"}}>★ Cast Slate Pick · Curated by Cast Slate</div>}
               <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
                 <div>
@@ -9013,7 +9053,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{translateCastingType(c.type,lang)}</span>
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.union}</span>
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{(c.roles?.length||1)===1?`1 ${t('search.role')}`:`${c.roles?.length||1} ${t('search.roles')}`}</span>
-                    {isExpiredCasting&&<span className="badge" style={{background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>Expired</span>}
+                    {isExpiredCasting&&!isArchived&&<span className="badge" style={{background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>Expired</span>}
+                    {isLive&&<span className="cs-live-badge"><span className="cs-live-dot"><span className="core"/></span>Casting now — apply today</span>}
                   </div>
                   <h3 style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:4,color:"var(--t1)"}}>{c.title}</h3>
                   {(c.tagline&&c.tagline!==c.prod)
@@ -9024,14 +9065,21 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                   <div style={{display:"flex",gap:20,flexWrap:"wrap",fontSize:12,color:"var(--t2)"}}>
                     <span><strong style={{color:"var(--t1)"}}>{t('search.filterLocation')}</strong> · {c.location}</span>
                     <span><strong style={{color:"var(--t1)"}}>{t('search.pay')}</strong> · {c.pay}</span>
-                    {(c.deadline)&&<span><strong style={{color:"var(--t1)"}}>{t('search.deadline')}</strong> · {fmtCastingDate(c.deadline)}</span>}
-                    {c.created_at&&<span><strong style={{color:"var(--t1)"}}>Posted</strong> · {fmtCastingDate(c.created_at)}</span>}
+                    {isArchived
+                      ?<span style={{color:"#c0392b",fontWeight:600}}>Role filled — no longer accepting</span>
+                      :cdn
+                      ?<span style={{color:cdn.expired?"var(--t3)":(cdn.urgent?"#c0392b":"#0F6E56"),fontWeight:600,display:"inline-flex",alignItems:"center",gap:5}}>{cdn.label}{!cdn.expired&&c.deadline?` · closes ${fmtCastingDate(c.deadline)}`:""}</span>
+                      :(c.deadline)&&<span><strong style={{color:"var(--t1)"}}>{t('search.deadline')}</strong> · {fmtCastingDate(c.deadline)}</span>}
+                    {c.created_at&&<span style={{color:"var(--t3)"}}><strong style={{color:"var(--t3)",fontWeight:600}}>Posted</strong> · {fmtCastingDate(c.created_at)}</span>}
                   </div>
                 </div>
                 <div className="casting-card-row-side" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",minWidth:140}}>
-                  <button className="btn-teal" onClick={e=>{e.stopPropagation();onViewCasting&&onViewCasting(rawC);}}>{t('search.viewRoles')}</button>
+                  {isArchived
+                    ?<span className="badge" style={{background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>Position filled</span>
+                    :<button className="btn-teal" onClick={e=>{e.stopPropagation();onViewCasting&&onViewCasting(rawC);}}>{t('search.viewRoles')}</button>}
                   {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>{t('search.applied')}</span>:null}
                 </div>
+              </div>
               </div>
             </div>);})}</div>
           {fc.length>10&&(()=>{const tp=Math.ceil(fc.length/10);const pages=[];for(let i=1;i<=tp;i++)pages.push(i);return(
@@ -11189,7 +11237,9 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
               {isOpen&&<button className="btn-s btn-sm" style={{fontSize:12}} onClick={()=>openReview(c)}>View Submissions →</button>}
               <button className="btn-s btn-sm" style={{fontSize:12}} onClick={()=>setEditCasting(c)}>✏ Edit</button>
               {isOpen&&<button className="btn-s btn-sm" style={{fontSize:12}} disabled={busy} onClick={()=>busy||toggleCastingStatus(c,"closed")}>{busy?"…":"Close Casting"}</button>}
+              {isOpen&&<button className="btn-s btn-sm" style={{fontSize:12,color:"#c0392b",borderColor:"rgba(192,57,43,0.4)"}} disabled={busy} title="Found your talent? Mark this filled — it stays listed with a red ARCHIVED stamp and stops taking submissions." onClick={()=>{if(busy)return;if(window.confirm("Mark “"+c.title+"” as filled? It will stay listed with a red ARCHIVED stamp and stop accepting new submissions. You can unarchive anytime."))toggleCastingStatus(c,"archived");}}>{busy?"…":"🔴 Mark Filled (Archive)"}</button>}
               {isClosed&&<button className="btn-s btn-sm" style={{fontSize:12}} disabled={busy} onClick={()=>busy||toggleCastingStatus(c,"open")}>{busy?"…":"Reopen"}</button>}
+              {isArchived&&<button className="btn-s btn-sm" style={{fontSize:12}} disabled={busy} onClick={()=>busy||toggleCastingStatus(c,"open")}>{busy?"…":"↩ Unarchive (Reopen)"}</button>}
             </div>
             {isPendingReview&&<div style={{marginTop:10,padding:"8px 12px",background:"rgba(200,137,0,0.08)",border:"1px solid rgba(200,137,0,0.2)",borderRadius:8,fontSize:12,color:"#c88900",lineHeight:1.5}}>
               ⏳ <strong>Under review.</strong> Your casting has been submitted and is waiting for CastSlate approval. It will go live on Browse Castings once approved — typically within 1 business day.
@@ -13569,6 +13619,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
               {sc.union&&<span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{sc.union}</span>}
               <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{sRoles.length===1?"1 Role":`${sRoles.length||1} Roles`}</span>
               {sFirstRole?.name&&<span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{sFirstRole.name}</span>}
+              {(()=>{const cdn=castingCountdown(sc.deadline);return(!cdn||!cdn.expired)?<span className="cs-live-badge"><span className="cs-live-dot"><span className="core"/></span>Casting now — apply today</span>:null;})()}
             </div>
             <h3 style={{fontSize:isCenter?32:24,fontWeight:800,letterSpacing:-1,marginBottom:6,color:"var(--t1)",lineHeight:1.15}}>{sc.title}</h3>
             {sc.tagline&&sc.tagline!==sc.synopsis&&<p style={{color:"var(--t2)",fontSize:15,marginBottom:6,fontWeight:500}}>{sc.tagline}</p>}
@@ -13586,7 +13637,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
             <div style={{display:"flex",gap:24,flexWrap:"wrap",fontSize:13,color:"var(--t2)",marginBottom:22}}>
               {sc.location&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Location</strong> · {sc.location}</span>}
               {sc.pay&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Pay</strong> · {sc.pay}</span>}
-              {sc.deadline&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Deadline</strong> · {sc.deadline}</span>}
+              {(()=>{const cdn=castingCountdown(sc.deadline);if(cdn&&!cdn.expired)return <span style={{color:cdn.urgent?"#c0392b":"#0F6E56",fontWeight:700}}>{cdn.label}{sc.deadline?` · closes ${fmtCastingDate(sc.deadline)}`:""}</span>;return sc.deadline?<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Deadline</strong> · {fmtCastingDate(sc.deadline)}</span>:null;})()}
             </div>
             {isCenter&&<div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
               <button className="btn-teal" onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(sc);}}>View Roles &amp; Apply →</button>
@@ -17341,12 +17392,32 @@ function AdminCastingGenerator({session}){
     showMsg("Listing published and live.");loadAll();
   };
 
+  // Archive = mark filled. Keeps published=true + status='archived' so the casting
+  // stays visible in Browse with a red ARCHIVED stamp instead of disappearing.
   const archiveListing=async(c)=>{
     const key=c.id+":archive";setBusy(key);
-    const {error}=await window.sb.from("castings").update({status:"closed",published:false,updated_at:new Date().toISOString()}).eq("id",c.id);
+    const {error}=await window.sb.from("castings").update({status:"archived",published:true,updated_at:new Date().toISOString()}).eq("id",c.id);
     setBusy(null);
     if(error){showMsg("Archive failed: "+error.message);return;}
-    showMsg("Listing archived.");loadAll();
+    showMsg("Listing archived — now shows a red ARCHIVED stamp in Browse.");loadAll();
+  };
+  const unarchiveListing=async(c)=>{
+    const key=c.id+":unarch";setBusy(key);
+    const {error}=await window.sb.from("castings").update({status:"open",published:true,updated_at:new Date().toISOString()}).eq("id",c.id);
+    setBusy(null);
+    if(error){showMsg("Unarchive failed: "+error.message);return;}
+    showMsg("Listing reopened.");loadAll();
+  };
+  // Bulk: archive every currently-published/open listing in one click.
+  const archiveAllPublished=async()=>{
+    const targets=(listings||[]).filter(x=>effectiveStatus(x)==="open");
+    if(targets.length===0){showMsg("No live published castings to archive.");return;}
+    if(!window.confirm(`Archive all ${targets.length} live published casting(s)? Each will stay listed with a red ARCHIVED stamp and stop accepting submissions. You can unarchive any of them afterward.`))return;
+    setBusy("archive-all");
+    const {error}=await window.sb.from("castings").update({status:"archived",published:true,updated_at:new Date().toISOString()}).eq("status","open").eq("published",true);
+    setBusy(null);
+    if(error){showMsg("Bulk archive failed: "+error.message);return;}
+    showMsg(`Archived ${targets.length} casting(s).`);loadAll();
   };
 
   const deleteListing=async(c)=>{
@@ -17529,8 +17600,13 @@ function AdminCastingGenerator({session}){
       </div>
     </div>
 
-    {/* ── Listing count ── */}
-    <p style={{color:"var(--t3)",fontSize:12,marginBottom:10}}>{filtered.length} of {listings.length} listings</p>
+    {/* ── Listing count + bulk archive ── */}
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap",marginBottom:10}}>
+      <p style={{color:"var(--t3)",fontSize:12,margin:0}}>{filtered.length} of {listings.length} listings</p>
+      {(()=>{const liveN=listings.filter(x=>effectiveStatus(x)==="open").length;return liveN>0?(
+        <button className="btn-s btn-sm" style={{fontSize:12,color:"#c0392b",borderColor:"rgba(192,57,43,0.4)"}} disabled={busy==="archive-all"} title="Mark every live published casting as filled — each keeps its listing with a red ARCHIVED stamp." onClick={archiveAllPublished}>{busy==="archive-all"?"Archiving…":`🔴 Archive all published (${liveN})`}</button>
+      ):null;})()}
+    </div>
 
     {/* ── Listings ── */}
     {loading?<CastSlateLoader size="inline" text="Loading listings…"/>:
@@ -17572,9 +17648,10 @@ function AdminCastingGenerator({session}){
               </>}
               {isActive&&<>
                 <button className="btn-s btn-sm" onClick={()=>setEditDraft(c)}>Edit</button>
-                <button className="btn-s btn-sm" disabled={busy===c.id+":archive"} onClick={()=>archiveListing(c)}>{busy===c.id+":archive"?"…":"Archive"}</button>
+                <button className="btn-s btn-sm" style={{color:"#c0392b",borderColor:"rgba(192,57,43,0.4)"}} title="Mark filled — stays listed in Browse with a red ARCHIVED stamp, stops accepting submissions." disabled={busy===c.id+":archive"} onClick={()=>archiveListing(c)}>{busy===c.id+":archive"?"…":"🔴 Archive"}</button>
                 <button className="btn-s btn-sm" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} disabled={busy===c.id+":del"} onClick={()=>deleteListing(c)}>{busy===c.id+":del"?"…":"Delete"}</button>
               </>}
+              {es==="archived"&&<button className="btn-s btn-sm" disabled={busy===c.id+":unarch"} onClick={()=>unarchiveListing(c)}>{busy===c.id+":unarch"?"…":"↩ Unarchive"}</button>}
               {(isExpired||es==="closed"||es==="archived")&&<>
                 <button className="btn-s btn-sm" disabled={busy===c.id+":del"} onClick={()=>deleteListing(c)} style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}}>{busy===c.id+":del"?"…":"Delete"}</button>
               </>}

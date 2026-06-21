@@ -235,7 +235,9 @@ create policy profiles_delete on public.profiles
 drop policy if exists castings_select on public.castings;
 create policy castings_select on public.castings
   for select using (
-    (published = true and status = 'open')
+    -- Archived (filled) castings stay publicly readable so Browse can show them
+    -- with a red ARCHIVED stamp instead of having them vanish.
+    (published = true and status in ('open','archived'))
     or cd_id = auth.uid()
     or is_admin()
   );
