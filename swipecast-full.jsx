@@ -13626,7 +13626,6 @@ const LANDING_SWIPE_DEMO=[
   {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop&crop=top&q=90",skills:["Military Background","Boxing","Bass Vocals"]},
   {id:3,name:"Owen Fletcher",age:28,gender:"Male",height:"6'0\"",pos:"center 25%",img:"https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Drama","Film & TV","Screen Acting"]},
   {id:11,name:"Georgie Nelson",age:26,gender:"Male",height:"5'11\"",pos:"center 18%",img:"https://images.unsplash.com/photo-1721956514577-f6c15d73e585?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Action","Commercial","Improv"]},
-  {id:15,name:"Janet Almarindo",age:51,gender:"Female",height:"5'5\"",pos:"center 20%",img:"https://images.unsplash.com/photo-1696960181436-1b6d9576354e?w=600&h=800&fit=facearea&facepad=5&q=90",skills:["Bilingual Spanish","Musical Theater","Commercial Print"]},
 ];
 function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your free profile"}={}){
   const demo=LANDING_SWIPE_DEMO;
