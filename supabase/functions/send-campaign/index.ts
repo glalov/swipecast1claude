@@ -157,13 +157,42 @@ serve(async (req) => {
       return res({ ok: true, requeued: count ?? 0 });
     }
 
+    // Re-queue ONLY recipients that failed due to temporary provider limits (rate limit /
+    // daily quota) — recovers dropped recipients without re-emailing anyone already sent.
+    if (action === "requeue_failed") {
+      const { campaign_id } = body;
+      if (!campaign_id) return res({ error: "campaign_id required" }, 400);
+      const { data: rows } = await sb.from("email_campaign_recipients")
+        .select("id,error_message").eq("campaign_id", campaign_id).eq("status", "failed");
+      const ids = (rows || []).filter((r: any) => {
+        const e = (r.error_message || "").toLowerCase();
+        return e.includes("429") || e.includes("rate_limit") || e.includes("too many requests") || e.includes("quota");
+      }).map((r: any) => r.id);
+      for (let i = 0; i < ids.length; i += 500) {
+        await sb.from("email_campaign_recipients")
+          .update({ status: "queued", error_message: null }).in("id", ids.slice(i, i + 500));
+      }
+      if (ids.length) await sb.from("email_campaigns").update({ status: "sending", updated_at: new Date().toISOString() }).eq("id", campaign_id);
+      return res({ ok: true, requeued: ids.length });
+    }
+
     if (action === "send_batch") {
       const { campaign_id } = body;
       if (!campaign_id) return res({ error: "campaign_id required" }, 400);
       const { data: camp, error: ce } = await sb.from("email_campaigns").select("*").eq("id", campaign_id).single();
       if (ce || !camp) return res({ error: "Campaign not found" }, 404);
 
-      const buildHtml = (email: string) => camp.html.replaceAll("{{UNSUB_URL}}", unsubUrl(email, campaign_id));
+      // Auto-tag every castslate.com link with UTM params so clicks from this
+      // campaign are attributable in site analytics (page_views records the query
+      // string). The unsubscribe link points at the functions host, not castslate.com,
+      // so it is never tagged. Links that already carry a utm_source are left alone.
+      const utmCampaign = ((camp.name || "campaign").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40)) || "campaign";
+      const addUtm = (html: string) => html.replace(/href="(https?:\/\/(?:www\.)?castslate\.com[^"]*)"/gi, (_m: string, url: string) => {
+        if (/[?&]utm_source=/i.test(url)) return `href="${url}"`;
+        const sep = url.includes("?") ? "&" : "?";
+        return `href="${url}${sep}utm_source=email&utm_medium=campaign&utm_campaign=${encodeURIComponent(utmCampaign)}"`;
+      });
+      const buildHtml = (email: string) => addUtm(camp.html).replaceAll("{{UNSUB_URL}}", unsubUrl(email, campaign_id));
       const send = async (to: string, html: string) => {
         const r = await fetch("https://api.resend.com/emails", {
           method: "POST",
