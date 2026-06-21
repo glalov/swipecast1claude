@@ -5642,12 +5642,12 @@ function PayTalentPage({onNavigate}){
     {name:"Sofia Moreno",role:"Actor · SAG-AFTRA",img:"https://images.unsplash.com/photo-1541101767792-f9b2b1c4f127?w=500&q=80",amount:"$3,200",paid:true},
   ];
   const stripProfiles=[
-    {name:"Brandon Cole",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&q=80"},
-    {name:"Camille Rousseau",role:"AEA",img:"https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=300&q=80"},
-    {name:"Priya Kapoor",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1614289371518-722f2615943d?w=300&q=80"},
-    {name:"Marcus Webb",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1463453091185-61582044d556?w=300&q=80"},
-    {name:"Lena Fischer",role:"Non-Union",img:"https://images.unsplash.com/photo-1548142813-c348350df52b?w=300&q=80"},
-    {name:"Jordan Banks",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=300&q=80"},
+    {name:"Brandon Cole",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop&crop=faces&q=80"},
+    {name:"Camille Rousseau",role:"AEA",img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=300&fit=crop&crop=faces&q=80"},
+    {name:"David Reyes",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=faces&q=80"},
+    {name:"Lena Fischer",role:"Non-Union",img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop&crop=faces&q=80"},
+    {name:"Owen Pierce",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=300&h=300&fit=crop&crop=faces&q=80"},
+    {name:"Sienna Brooks",role:"SAG-AFTRA",img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=300&fit=crop&crop=faces&q=80"},
   ];
   const features=[
     {icon:"⚡",color:"#f59e0b",bg:"#fef3c7",title:"Fast Talent Payments",desc:"Send payments to booked actors after a shoot, rehearsal, callback, or completed production milestone — without chasing anyone down."},
@@ -5766,9 +5766,6 @@ function PayTalentPage({onNavigate}){
               <div style={{fontSize:11,color:"var(--t3)"}}>{p.role}</div>
             </div>
           ))}
-          <div style={{flexShrink:0,width:90,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <button className="btn-s btn-sm" onClick={()=>onNavigate("search")} style={{whiteSpace:"nowrap",fontSize:11}}>Browse Castings →</button>
-          </div>
         </div>
       </section>
 
