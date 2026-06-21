@@ -18331,7 +18331,14 @@ function AdminOverview({onGoToBookingRequests}){
       <StatTile num={stats.extra?stats.extra.unsubscribes:"—"} label="Email unsubscribes"/>
     </div>
     <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 4px",color:"var(--t2)"}}>Site traffic</h3>
-    <p style={{color:"var(--t3)",fontSize:12,margin:"0 0 12px"}}>Counts from when tracking went live (not backfilled). Visitors = unique browser sessions.</p>
+    <p style={{color:"var(--t3)",fontSize:12,margin:"0 0 12px"}}>Counts from when tracking went live (not backfilled). Excludes staff and bots. Visitors = unique browser sessions.</p>
+    <div className="card" style={{padding:"18px 22px",marginBottom:16,display:"flex",alignItems:"center",gap:16,maxWidth:340,borderLeft:"4px solid var(--teal)"}}>
+      <div style={{fontSize:32,lineHeight:1}} aria-hidden="true">👀</div>
+      <div>
+        <div style={{fontSize:34,fontWeight:800,lineHeight:1.05,color:"var(--t1)"}}>{stats.extra?Number(stats.extra.visitors_total||0).toLocaleString():"—"}</div>
+        <div style={{fontSize:12,fontWeight:800,color:"var(--t3)",textTransform:"uppercase",letterSpacing:0.6}}>Real Visitors</div>
+      </div>
+    </div>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:28}}>
       <StatTile num={stats.extra?stats.extra.visitors_today:"—"} label="Visitors today"/>
       <StatTile num={stats.extra?stats.extra.visitors_7d:"—"} label="Visitors (7d)"/>
