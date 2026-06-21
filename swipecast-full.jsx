@@ -7755,6 +7755,10 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       {!c.is_admin_created&&cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
     </div>
 
+    {(()=>{const cdn=castingCountdown(c.deadline);const expired=c.expires_at&&new Date(c.expires_at)<new Date();const live=c.status!=="archived"&&!expired&&!(cdn&&cdn.expired);return live?<div style={{display:"flex",alignItems:"center",flexWrap:"wrap",marginBottom:22,marginTop:-12}}>
+      <LiveCastingBadge/>
+    </div>:null;})()}
+
     {c.status==="archived"&&<div style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",marginBottom:20,background:"rgba(192,57,43,0.06)",border:"1px solid rgba(192,57,43,0.3)",borderRadius:12}}>
       <span className="cs-archived-stamp" style={{position:"static",transform:"rotate(-6deg)",fontSize:18,padding:"3px 13px 5px",opacity:1,flex:"none"}} aria-hidden="true">Archived</span>
       <div style={{fontSize:13,color:"#c0392b",fontWeight:600,lineHeight:1.5}}>This role has been filled and is no longer accepting submissions.</div>
@@ -9054,7 +9058,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.union}</span>
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{(c.roles?.length||1)===1?`1 ${t('search.role')}`:`${c.roles?.length||1} ${t('search.roles')}`}</span>
                     {isExpiredCasting&&!isArchived&&<span className="badge" style={{background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>Expired</span>}
-                    {isLive&&<span className="cs-live-badge"><span className="cs-live-dot"><span className="core"/></span>Casting now — apply today</span>}
+                    {isLive&&<LiveCastingBadge/>}
                   </div>
                   <h3 style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:4,color:"var(--t1)"}}>{c.title}</h3>
                   {(c.tagline&&c.tagline!==c.prod)
@@ -12575,28 +12579,51 @@ function FixedTooltip({anchorRef,children,width=300}){
   );
 }
 
-// ─── IDVerifiedBadge — "ID Verified" badge with disclaimer tooltip
-//     Shown when identity_verified=true and verification_status="verified".
-//     Does NOT imply a criminal background check.
-function IDVerifiedBadge({size="sm"}){
+// ─── InfoTip — shared, high-visibility circled-"i" info icon with a hover/tap
+//     tooltip. Replaces the faint ⓘ glyph used before so users actually notice
+//     it. Click stops propagation so tapping it inside a clickable casting card
+//     doesn't also open the casting.
+function InfoTip({children,color="var(--t2)",width=300,label="More information"}){
   const [show,setShow]=useState(false);
   const iconRef=useRef(null);
-  return(<span style={{display:"inline-flex",alignItems:"center",gap:3}}>
-    <span style={{background:"rgba(46,204,113,0.12)",color:"#1d7b44",fontSize:size==="xs"?10:11,fontWeight:600,letterSpacing:0,padding:size==="xs"?"3px 8px":"4px 10px",borderRadius:100}}>✓ ID Verified</span>
+  return(<>
     <span
       ref={iconRef}
       onMouseEnter={()=>setShow(true)}
       onMouseLeave={()=>setShow(false)}
       onFocus={()=>setShow(true)}
       onBlur={()=>setShow(false)}
-      onClick={()=>setShow(v=>!v)}
+      onClick={(e)=>{e.stopPropagation();setShow(v=>!v);}}
       tabIndex={0}
-      style={{cursor:"pointer",fontSize:10,color:"var(--t3)",lineHeight:1,userSelect:"none"}}
-      aria-label="ID verification disclaimer"
-    >ⓘ</span>
-    {show&&<FixedTooltip anchorRef={iconRef} width={300}>
+      role="button"
+      aria-label={label}
+      style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:16,height:16,borderRadius:"50%",border:`1.5px solid ${color}`,color,fontSize:11,fontWeight:700,fontStyle:"italic",fontFamily:"Georgia,'Times New Roman',serif",lineHeight:1,cursor:"pointer",userSelect:"none",flex:"none",verticalAlign:"middle"}}
+    >i</span>
+    {show&&<FixedTooltip anchorRef={iconRef} width={width}>{children}</FixedTooltip>}
+  </>);
+}
+
+// ─── LiveCastingBadge — the pulsing "Casting now" badge + an InfoTip explaining
+//     that an older post does NOT mean the role is filled. Used on Browse cards,
+//     the featured slider, and the casting detail page.
+function LiveCastingBadge({text="Casting now — apply today"}){
+  return(<span style={{display:"inline-flex",alignItems:"center",gap:6}}>
+    <span className="cs-live-badge"><span className="cs-live-dot"><span className="core"/></span>{text}</span>
+    <InfoTip color="#0F6E56" width={300} label="Why this casting is still active">
+      <strong style={{color:"var(--t1)"}}>Still actively casting.</strong> The team behind this project is still accepting new submissions and has not archived it yet — so they are actively looking for new actors, no matter whether the casting was posted a month ago or longer. Casting is a complex process and can sometimes take many months to find the right talent, so an older post does not mean the role is taken.
+    </InfoTip>
+  </span>);
+}
+
+// ─── IDVerifiedBadge — "ID Verified" badge with disclaimer tooltip
+//     Shown when identity_verified=true and verification_status="verified".
+//     Does NOT imply a criminal background check.
+function IDVerifiedBadge({size="sm"}){
+  return(<span style={{display:"inline-flex",alignItems:"center",gap:4}}>
+    <span style={{background:"rgba(46,204,113,0.12)",color:"#1d7b44",fontSize:size==="xs"?10:11,fontWeight:600,letterSpacing:0,padding:size==="xs"?"3px 8px":"4px 10px",borderRadius:100}}>✓ ID Verified</span>
+    <InfoTip color="#1d7b44" width={300} label="ID verification disclaimer">
       This casting creator has completed third-party identity verification. Identity verification does not guarantee the legitimacy, safety, conduct, payment, or quality of any project, person, company, audition, job offer, or communication. Always use your own judgment and report suspicious activity.
-    </FixedTooltip>}
+    </InfoTip>
   </span>);
 }
 
@@ -12611,24 +12638,11 @@ function UnverifiedBadge({size="sm"}){
 //     check provider (e.g. Checkr). Admin approve no longer sets this field, so the
 //     badge will not appear until Checkr or equivalent is connected.
 function CastingVerifiedBadge(){
-  const [show,setShow]=useState(false);
-  const iconRef=useRef(null);
-  return(<span style={{display:"inline-flex",alignItems:"center",gap:3}}>
+  return(<span style={{display:"inline-flex",alignItems:"center",gap:4}}>
     <span style={{background:"rgba(41,128,185,0.12)",color:"#1a5276",fontSize:9,fontWeight:800,letterSpacing:0.6,padding:"2px 8px",borderRadius:99}}>✓ Background Checked</span>
-    <span
-      ref={iconRef}
-      onMouseEnter={()=>setShow(true)}
-      onMouseLeave={()=>setShow(false)}
-      onFocus={()=>setShow(true)}
-      onBlur={()=>setShow(false)}
-      onClick={()=>setShow(v=>!v)}
-      tabIndex={0}
-      style={{cursor:"pointer",fontSize:10,color:"var(--t3)",lineHeight:1,userSelect:"none"}}
-      aria-label="Background check disclaimer"
-    >ⓘ</span>
-    {show&&<FixedTooltip anchorRef={iconRef} width={280}>
+    <InfoTip color="#1a5276" width={280} label="Background check disclaimer">
       This casting creator has passed a third-party criminal background check. Background checks do not guarantee the legitimacy, safety, conduct, payment, or quality of any project, individual, company, audition, or communication. Always use your own judgment and report suspicious activity.
-    </FixedTooltip>}
+    </InfoTip>
   </span>);
 }
 
@@ -13619,7 +13633,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
               {sc.union&&<span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{sc.union}</span>}
               <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{sRoles.length===1?"1 Role":`${sRoles.length||1} Roles`}</span>
               {sFirstRole?.name&&<span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{sFirstRole.name}</span>}
-              {(()=>{const cdn=castingCountdown(sc.deadline);return(!cdn||!cdn.expired)?<span className="cs-live-badge"><span className="cs-live-dot"><span className="core"/></span>Casting now — apply today</span>:null;})()}
+              {(()=>{const cdn=castingCountdown(sc.deadline);return(!cdn||!cdn.expired)?<LiveCastingBadge/>:null;})()}
             </div>
             <h3 style={{fontSize:isCenter?32:24,fontWeight:800,letterSpacing:-1,marginBottom:6,color:"var(--t1)",lineHeight:1.15}}>{sc.title}</h3>
             {sc.tagline&&sc.tagline!==sc.synopsis&&<p style={{color:"var(--t2)",fontSize:15,marginBottom:6,fontWeight:500}}>{sc.tagline}</p>}
