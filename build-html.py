@@ -149,9 +149,9 @@ def render_page(title, desc, canonical):
   <meta name="twitter:description" content="{desc}"/>
   <meta name="twitter:image" content="https://www.castslate.com/og-image.png"/>
   <!-- Favicon -->
-  <link rel="icon" href="/favicon.ico?v=3" sizes="any"/>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3"/>
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3"/>
+  <link rel="icon" href="/favicon.ico?v=4" sizes="any"/>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=4"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4"/>
   <!-- Structured Data: WebSite -->
   <script type="application/ld+json">
   {{"@context":"https://schema.org","@type":"WebSite","name":"CastSlate","alternateName":["Cast Slate","CastSlate Casting"],"url":"https://www.castslate.com"}}
