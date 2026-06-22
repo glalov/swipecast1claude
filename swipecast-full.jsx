@@ -7754,36 +7754,39 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       {!c.is_admin_created&&cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
     </div>
 
-    {(()=>{const cdn=castingCountdown(c.deadline);const expired=c.expires_at&&new Date(c.expires_at)<new Date();const live=c.status!=="archived"&&!expired&&!(cdn&&cdn.expired);return live?<div style={{display:"flex",alignItems:"center",flexWrap:"wrap",marginBottom:22,marginTop:-12}}>
-      <LiveCastingBadge/>
-    </div>:null;})()}
-
-    {c.status==="archived"&&<div style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",marginBottom:20,background:"rgba(192,57,43,0.06)",border:"1px solid rgba(192,57,43,0.3)",borderRadius:12}}>
+    {c.status==="archived"&&<div style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",marginBottom:20,marginTop:-4,background:"rgba(192,57,43,0.06)",border:"1px solid rgba(192,57,43,0.3)",borderRadius:12}}>
       <span className="cs-archived-stamp" style={{position:"static",transform:"rotate(-6deg)",fontSize:18,padding:"3px 13px 5px",opacity:1,flex:"none"}} aria-hidden="true">Archived</span>
       <div style={{fontSize:13,color:"#c0392b",fontWeight:600,lineHeight:1.5}}>This role has been filled and is no longer accepting submissions.</div>
     </div>}
 
-    {/* ── Instant-hook strip: at-a-glance pay (short rates only), open-role count
-           & live deadline. Full pay always lives in the details grid below. ── */}
+    {/* ── Unified apply card: status + key facts + real trust signals on the left,
+           role picker + Apply on the right. One card so heights never mismatch. ── */}
     {(()=>{const payText=c.rate||c.pay;const payShort=payText&&payText.length<=42;
       const sortedRoles=(c.roles||[]).slice().sort((a,b)=>compareRolesByType(a.type,a.id,b.type,b.id));
       const expired=c.expires_at&&new Date(c.expires_at)<new Date();
-      const canApply=c.status!=="archived"&&!expired&&sortedRoles.length>0;
+      const archived=c.status==="archived";
+      const cdn=castingCountdown(c.deadline);
+      const live=!archived&&!expired&&!(cdn&&cdn.expired);
+      const canApply=!archived&&!expired&&sortedRoles.length>0;
+      const verified=c.is_admin_created?(c.admin_verified===true):(cdProfile&&cdProfile.identity_verified===true&&cdProfile.can_post_castings===true&&cdProfile.verification_status==="verified");
+      const bgChecked=!c.is_admin_created&&cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed";
+      const showTrust=!archived&&(verified||bgChecked);
       return(
-      <div style={{display:"flex",alignItems:"stretch",gap:16,flexWrap:"wrap",marginBottom:canApply?16:24}}>
-        <div style={{flex:"1 1 300px",display:"flex",alignItems:"center",gap:"10px 18px",flexWrap:"wrap",padding:"14px 18px",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12}}>
-          {payShort&&<div style={{display:"flex",alignItems:"center",gap:7}}>
-            <span style={{fontSize:16}}>💰</span>
-            <span style={{fontSize:15,fontWeight:800,color:"var(--t1)",letterSpacing:-0.2}}>{payText}</span>
+      <div style={{display:"flex",alignItems:"stretch",flexWrap:"wrap",marginBottom:24,marginTop:live?-4:0,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,overflow:"hidden"}}>
+        <div style={{flex:"1 1 320px",display:"flex",flexDirection:"column",justifyContent:"center",gap:13,padding:"18px 22px"}}>
+          {live&&<div><LiveCastingBadge/></div>}
+          <div style={{display:"flex",alignItems:"center",gap:"8px 18px",flexWrap:"wrap"}}>
+            {payShort&&<span style={{display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:16}}>💰</span><span style={{fontSize:15,fontWeight:800,color:"var(--t1)",letterSpacing:-0.2}}>{payText}</span></span>}
+            <span style={{display:"flex",alignItems:"center",gap:7,color:"var(--t2)",fontSize:14,fontWeight:600}}><span style={{fontSize:15}}>🎭</span>{c.roles?.length||0} {(c.roles?.length||0)===1?"role":"roles"} open</span>
+            {archived?<span style={{display:"flex",alignItems:"center",gap:7,color:"#c0392b",fontSize:14,fontWeight:700}}><span style={{fontSize:15}}>📅</span>Applications closed</span>:<span style={{fontSize:14}}><CastingCountdown deadline={c.deadline} emoji={true}/></span>}
+          </div>
+          {showTrust&&<div style={{display:"flex",alignItems:"center",gap:"6px 16px",flexWrap:"wrap",fontSize:12.5,color:"var(--t2)",paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
+            {verified&&<span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{color:"#1d7b44"}}>🛡️</span><span style={{color:"var(--t1)",fontWeight:600}}>Verified casting director</span></span>}
+            <span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{color:"var(--t3)"}}>👁️</span>Reviews every submission personally</span>
+            {bgChecked&&<span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{color:"#1d7b44"}}>✓</span><span style={{color:"var(--t1)",fontWeight:600}}>Background-checked</span></span>}
           </div>}
-          <span style={{display:"flex",alignItems:"center",gap:7,color:"var(--t2)",fontSize:14,fontWeight:600}}>
-            <span style={{fontSize:15}}>🎭</span>{c.roles?.length||0} {(c.roles?.length||0)===1?"role":"roles"} open
-          </span>
-          {c.status==="archived"
-            ?<span style={{display:"flex",alignItems:"center",gap:7,color:"#c0392b",fontSize:14,fontWeight:700}}><span style={{fontSize:15}}>📅</span>Applications closed</span>
-            :<span style={{fontSize:14}}><CastingCountdown deadline={c.deadline} emoji={true}/></span>}
         </div>
-        {canApply&&<div style={{flex:"0 1 250px",minWidth:220,display:"flex",flexDirection:"column",justifyContent:"center",gap:9,padding:"14px 18px",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12}}>
+        {canApply&&<div style={{flex:"0 0 auto",width:262,minWidth:220,display:"flex",flexDirection:"column",justifyContent:"center",gap:9,padding:"18px 22px",borderLeft:"1px solid var(--bdr)"}}>
           <div style={{fontSize:15,fontWeight:800,color:"var(--t1)"}}>Ready to apply?</div>
           <select className="select" value={applyPickIdx} onChange={e=>setApplyPickIdx(e.target.value)} style={{width:"100%"}}>
             <option value="">Select a role…</option>
@@ -7792,17 +7795,6 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           <button className="btn-p" style={{width:"100%"}} onClick={()=>{const idx=applyPickIdx===""?0:parseInt(applyPickIdx,10);handleApply(sortedRoles[idx],idx);}}>{!isLoggedIn?"Create a free account to apply":"Apply for this role"}</button>
         </div>}
       </div>);})()}
-
-    {/* ── Trust row — real signals only: verified CD, every-submission review,
-           background check. Reassurance converts better than urgency theater. ── */}
-    {(()=>{
-      const verified=c.is_admin_created?(c.admin_verified===true):(cdProfile&&cdProfile.identity_verified===true&&cdProfile.can_post_castings===true&&cdProfile.verification_status==="verified");
-      const bgChecked=!c.is_admin_created&&cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed";
-      return(c.status!=="archived")?<div style={{display:"flex",alignItems:"center",gap:"8px 22px",flexWrap:"wrap",padding:"4px 2px",marginBottom:24,fontSize:13,color:"var(--t2)"}}>
-        {verified&&<span style={{display:"inline-flex",alignItems:"center",gap:7}}><span style={{fontSize:15}}>🛡️</span><span style={{color:"var(--t1)",fontWeight:700}}>Verified casting director</span></span>}
-        <span style={{display:"inline-flex",alignItems:"center",gap:7}}><span style={{fontSize:15}}>👁️</span>Reviews <strong style={{color:"var(--t1)",fontWeight:700}}>&nbsp;every submission&nbsp;</strong> personally</span>
-        {bgChecked&&<span style={{display:"inline-flex",alignItems:"center",gap:7}}><span style={{fontSize:14}}>✓</span><span style={{color:"var(--t1)",fontWeight:700}}>Background-checked</span></span>}
-      </div>:null;})()}
 
     <CastingImageCarousel images={getCastingImages(c)} title={c.title}/>
 
