@@ -1456,6 +1456,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .social-btn-dark{background:#1a1a2e;color:#fff;border:none;padding:12px 20px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;letter-spacing:0.1px;}
 .social-btn-dark:hover{background:#2d2d44;transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,26,46,0.18);}
 .page{max-width:1200px;margin:0 auto;padding:40px 40px 0;width:100%;display:flex;flex-direction:column;flex:1 1 auto;min-height:calc(100vh - 80px);}
+/* Kill the mobile tap delay / double-tap-zoom wait so buttons fire on the first tap. */
+button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .page-wide{max-width:1400px;}
 .section-label{font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:12px;}
 .section-title{font-family:'Source Serif 4',serif;font-weight:700;font-size:38px;letter-spacing:-0.5px;margin-bottom:40px;line-height:1.1;}
@@ -1679,6 +1681,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .pricing-cards-grid{max-width:100% !important;}
 }
 .mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:transparent;z-index:150;}
+.mobile-menu.closing{pointer-events:none;}
 .mobile-menu-inner{position:absolute;top:0;left:0;bottom:0;width:100%;max-width:100%;background:var(--s1);padding:18px 16px 22px;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:mmDrop .6s cubic-bezier(.22,.68,.28,1);will-change:transform;}
 .mobile-menu-inner.closing{animation:mmDropUp .6s cubic-bezier(.22,.68,.28,1) forwards;}
 @keyframes mmDrop{from{transform:translateX(-100%);}to{transform:translateX(0);}}
@@ -1912,7 +1915,6 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .member-banner .mb-star{font-size:13px;}
   .member-banner .mb-cta{position:static;transform:none;flex-shrink:0;padding:6px 12px;font-size:11px;}
   .member-banner .mb-cta-price{display:none;}
-  .page{animation:pageFade .26s ease;}
   .mq-stripe{height:24px;}
   .mq-item{font-size:10px;letter-spacing:1.8px;}
   .mq-item::after{margin:0 20px;}
@@ -23121,7 +23123,7 @@ function App(){
   },[page,authReady]);
 
   // Warm the Classes cache once on startup so the first open is instant too.
-  // (Browse Castings warms via its always-mounted SearchPage below.)
+  // (Browse Castings warms via its SearchPage premount on the home page.)
   useEffect(()=>{const id=setTimeout(()=>{prefetchClasses();},1200);return()=>clearTimeout(id);},[]);
 
   // If a talent user lands on /dashboard (CD dashboard), redirect them to their Talent Dashboard.
@@ -23325,7 +23327,7 @@ function App(){
         </button>
       </nav>
       </div>
-      {menuOpen&&<div className="mobile-menu" onClick={closeMenu}>
+      {menuOpen&&<div className={"mobile-menu"+(menuClosing?" closing":"")} onClick={closeMenu}>
         <div className={"mobile-menu-inner"+(menuClosing?" closing":"")} onClick={e=>e.stopPropagation()}>
           <button className="mm-close" aria-label="Close menu" onClick={closeMenu}>×</button>
           <div style={{display:"flex",flexDirection:"column",gap:4}}>
@@ -23363,9 +23365,7 @@ function App(){
         {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"home")}/>}
         {/* SearchPage is pre-mounted on home page too so it's already loaded when the
             user clicks Browse Castings — prevents the fresh-mount loading flash. */}
-        {/* SearchPage stays mounted on every route (hidden unless active) so the
-            castings/talent caches warm at startup and Browse is instant anywhere. */}
-        {true&&
+        {(page==="home"||page==="search"||page==="casting-detail"||page==="casting-gate")&&
           <div style={{display:page==="search"?"flex":"none",flexDirection:"column",flex:"1 1 auto",minHeight:"calc(100vh - 80px)"}} aria-hidden={page!=="search"}>
             <ErrorBoundary label="Search" onReset={()=>navigate("home")}>
               <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")}/>
