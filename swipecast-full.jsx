@@ -7671,7 +7671,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
 
     <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
       {c.featured&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>★ Cast Slate Pick</span>}
-      <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{translateCastingType(c.type,lang)}</span>
+      <span style={{display:"inline-flex",alignItems:"center",padding:"4px 11px",background:"#E3EDFF",color:"#1D4ED8",border:"1px solid #B4CDFF",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>{translateCastingType(c.type,lang)}</span>
     </div>
     <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={isDbCasting?{kind:"casting",id:c.id}:null}/>
 
@@ -7802,7 +7802,6 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.union')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.union}</div></div>
       <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.location')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.location}</div></div>
       {(()=>{const p=c.rate||c.pay;return p&&p.length>42?<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.pay')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{p}</div></div>:null;})()}
-      {c.created_at&&<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>Posted</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{fmtCastingDate(c.created_at)}{c.expires_at&&new Date(c.expires_at)<new Date()?<span style={{marginLeft:8,fontSize:11,fontWeight:700,color:"#c0392b"}}>· Expired</span>:null}</div></div>}
       <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.deadline')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{fmtCastingDate(c.deadline)||"—"}</div></div>
       {c.shoots&&<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.shoots')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.shoots}</div></div>}
       {c.rehearsal&&<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.rehearsal')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.rehearsal}</div></div>}
@@ -7892,8 +7891,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       const roleId=realRoleIds[applyRole.idx];
       const instr=roleId?roleInstructions[roleId]:null;
       const hasInstr=instr&&(instr.sides_pdf_url||instr.direction_notes||instr.slate_instructions||instr.wardrobe_notes);
-      const allowRecord=!instr||instr.submission_type==="both"||instr.submission_type==="record";
-      const allowUpload=!instr||instr.submission_type==="both"||instr.submission_type==="upload";
+      const allowRecord=isPremium&&(!instr||instr.submission_type==="both"||instr.submission_type==="record");
+      const allowUpload=isPremium&&(!instr||instr.submission_type==="both"||instr.submission_type==="upload");
       return(
       <div className="modal-overlay" onClick={()=>!submitting&&setApplyRole(null)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:600,maxHeight:"92vh",overflowY:"auto"}}>
         {applyOk?
@@ -7976,7 +7975,12 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                       setVideoNoteUrl(publicUrl);videoNoteUrlRef.current=publicUrl;
                     }}/>
                   </label>}
-                  {!allowRecord&&!allowUpload&&<p style={{fontSize:13,color:"var(--t3)"}}>No submission format available.</p>}
+                  {!allowRecord&&!allowUpload&&(!isPremium
+                    ?<div style={{background:"rgba(99,60,180,0.05)",border:"1px solid rgba(99,60,180,0.25)",borderRadius:10,padding:"12px 14px"}}>
+                      <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.55,marginBottom:10}}><span style={{marginRight:6}}>🔒</span>Video auditions are a <strong style={{color:"var(--t1)"}}>Premium</strong> feature. Free members apply with a headshot below — upgrade to record or upload an audition video.</div>
+                      <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>{setApplyRole(null);onNavigate&&onNavigate("membership");}}>Upgrade to Premium</button>
+                    </div>
+                    :<p style={{fontSize:13,color:"var(--t3)"}}>No submission format available.</p>)}
                 </div>
               )}
             </div>
