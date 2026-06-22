@@ -4050,6 +4050,28 @@ function useViewportWidth(){
 // Module-level cache so revisiting Classes shows instantly (seeded from the
 // last successful fetch) and revalidates silently — no loader flash.
 let _classesCache=null,_classSlotsCache=null;
+// Warm the classes cache on app startup so even the FIRST open is instant.
+// Mirrors ClassesPage's own fetch+sort+slot-grouping (keep in sync).
+async function prefetchClasses(){
+  if(_classesCache||typeof window==="undefined"||!window.sb)return;
+  try{
+    const{data,error}=await window.sb.from("classes").select("*").eq("active",true).neq("is_visible",false);
+    if(error||!Array.isArray(data))return;
+    const cls=data.sort((a,b)=>{
+      if(a.is_featured&&!b.is_featured)return -1;
+      if(!a.is_featured&&b.is_featured)return 1;
+      const ao=a.display_order??999,bo=b.display_order??999;
+      if(ao!==bo)return ao-bo;
+      return new Date(a.created_at)-new Date(b.created_at);
+    });
+    _classesCache=cls;
+    if(cls.length){
+      const{data:sd}=await window.sb.from("class_time_slots").select("*").in("class_id",cls.map(c=>c.id)).eq("active",true).order("day_of_week");
+      const map={};for(const s of sd||[]){if(!map[s.class_id])map[s.class_id]=[];map[s.class_id].push(s);}
+      _classSlotsCache=map;
+    }
+  }catch(_){/* best-effort warm-up; ClassesPage will fetch on open if this fails */}
+}
 function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClassOpened,invitationId}){
   const t=useT();
   const vpw=useViewportWidth();
@@ -23098,6 +23120,10 @@ function App(){
     }catch(_){}
   },[page,authReady]);
 
+  // Warm the Classes cache once on startup so the first open is instant too.
+  // (Browse Castings warms via its always-mounted SearchPage below.)
+  useEffect(()=>{const id=setTimeout(()=>{prefetchClasses();},1200);return()=>clearTimeout(id);},[]);
+
   // If a talent user lands on /dashboard (CD dashboard), redirect them to their Talent Dashboard.
   // This handles direct URL loads, post-login routing, and nav button presses that call navigate("dashboard").
   useEffect(()=>{
@@ -23337,7 +23363,9 @@ function App(){
         {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"home")}/>}
         {/* SearchPage is pre-mounted on home page too so it's already loaded when the
             user clicks Browse Castings — prevents the fresh-mount loading flash. */}
-        {(page==="home"||page==="search"||page==="casting-detail"||page==="casting-gate")&&
+        {/* SearchPage stays mounted on every route (hidden unless active) so the
+            castings/talent caches warm at startup and Browse is instant anywhere. */}
+        {true&&
           <div style={{display:page==="search"?"flex":"none",flexDirection:"column",flex:"1 1 auto",minHeight:"calc(100vh - 80px)"}} aria-hidden={page!=="search"}>
             <ErrorBoundary label="Search" onReset={()=>navigate("home")}>
               <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")}/>
