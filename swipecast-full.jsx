@@ -7462,6 +7462,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const [applyErr,setApplyErr]=useState("");
   const [applyOk,setApplyOk]=useState(false);
   const [realRoleIds,setRealRoleIds]=useState({});
+  const [applyPickIdx,setApplyPickIdx]=useState(""); // top "Ready to apply?" role picker
   const [roleInstructions,setRoleInstructions]=useState({}); // roleId -> audition instruction fields
   const [myPhotos,setMyPhotos]=useState([]);
   const [selectedPhoto,setSelectedPhoto]=useState("");
@@ -7671,8 +7672,6 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
       {c.featured&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>★ Cast Slate Pick</span>}
       <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{translateCastingType(c.type,lang)}</span>
-      <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.union}</span>
-      <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.location}</span>
     </div>
     <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={isDbCasting?{kind:"casting",id:c.id}:null}/>
 
@@ -7748,7 +7747,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     <h1 style={{fontSize:42,fontWeight:800,letterSpacing:-1.5,marginBottom:8,color:"var(--t1)"}}>{c.title}</h1>
     <p style={{color:"var(--t2)",fontSize:17,marginBottom:4}}>{c.tagline}</p>
     <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:28}}>
-      <p style={{color:"var(--t3)",fontSize:13,margin:0}}>Produced by {c.prod} {c.director?`· Directed by ${c.director}`:""}</p>
+      <p style={{color:"var(--t1)",fontSize:13,margin:0,fontWeight:600}}>Produced by {c.prod} {c.director?`· Directed by ${c.director}`:""}</p>
       {c.is_admin_created
         ? (c.admin_verified===true?<IDVerifiedBadge/>:<UnverifiedBadge/>)
         : (cdProfile&&cdProfile.identity_verified===true&&cdProfile.can_post_castings===true&&cdProfile.verification_status==="verified"&&<IDVerifiedBadge/>)}
@@ -7766,44 +7765,67 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
 
     {/* ── Instant-hook strip: at-a-glance pay (short rates only), open-role count
            & live deadline. Full pay always lives in the details grid below. ── */}
-    {(()=>{const payText=c.rate||c.pay;const payShort=payText&&payText.length<=42;return(
-    <div style={{display:"flex",alignItems:"center",gap:"10px 18px",flexWrap:"wrap",padding:"13px 18px",marginBottom:24,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12}}>
-      {payShort&&<div style={{display:"flex",alignItems:"center",gap:7}}>
-        <span style={{fontSize:16}}>💰</span>
-        <span style={{fontSize:15,fontWeight:800,color:"var(--t1)",letterSpacing:-0.2}}>{payText}</span>
-      </div>}
-      <span style={{display:"flex",alignItems:"center",gap:7,color:"var(--t2)",fontSize:14,fontWeight:600}}>
-        <span style={{fontSize:15}}>🎭</span>{c.roles?.length||0} {(c.roles?.length||0)===1?"role":"roles"} open
-      </span>
-      {c.status==="archived"
-        ?<span style={{display:"flex",alignItems:"center",gap:7,color:"#c0392b",fontSize:14,fontWeight:700}}><span style={{fontSize:15}}>📅</span>Applications closed</span>
-        :<span style={{fontSize:14}}><CastingCountdown deadline={c.deadline} emoji={true}/></span>}
-      {c.status==="archived"&&<span className="badge" style={{marginLeft:"auto",background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>Position filled</span>}
-    </div>);})()}
+    {(()=>{const payText=c.rate||c.pay;const payShort=payText&&payText.length<=42;
+      const sortedRoles=(c.roles||[]).slice().sort((a,b)=>compareRolesByType(a.type,a.id,b.type,b.id));
+      const expired=c.expires_at&&new Date(c.expires_at)<new Date();
+      const canApply=c.status!=="archived"&&!expired&&sortedRoles.length>0;
+      return(
+      <div style={{display:"flex",alignItems:"stretch",gap:16,flexWrap:"wrap",marginBottom:canApply?16:24}}>
+        <div style={{flex:"1 1 300px",display:"flex",alignItems:"center",gap:"10px 18px",flexWrap:"wrap",padding:"14px 18px",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12}}>
+          {payShort&&<div style={{display:"flex",alignItems:"center",gap:7}}>
+            <span style={{fontSize:16}}>💰</span>
+            <span style={{fontSize:15,fontWeight:800,color:"var(--t1)",letterSpacing:-0.2}}>{payText}</span>
+          </div>}
+          <span style={{display:"flex",alignItems:"center",gap:7,color:"var(--t2)",fontSize:14,fontWeight:600}}>
+            <span style={{fontSize:15}}>🎭</span>{c.roles?.length||0} {(c.roles?.length||0)===1?"role":"roles"} open
+          </span>
+          {c.status==="archived"
+            ?<span style={{display:"flex",alignItems:"center",gap:7,color:"#c0392b",fontSize:14,fontWeight:700}}><span style={{fontSize:15}}>📅</span>Applications closed</span>
+            :<span style={{fontSize:14}}><CastingCountdown deadline={c.deadline} emoji={true}/></span>}
+        </div>
+        {canApply&&<div style={{flex:"0 1 250px",minWidth:220,display:"flex",flexDirection:"column",justifyContent:"center",gap:9,padding:"14px 18px",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12}}>
+          <div style={{fontSize:15,fontWeight:800,color:"var(--t1)"}}>Ready to apply?</div>
+          <select className="select" value={applyPickIdx} onChange={e=>setApplyPickIdx(e.target.value)} style={{width:"100%"}}>
+            <option value="">Select a role…</option>
+            {sortedRoles.map((r,i)=><option key={i} value={i}>{r.name}{r.type?` — ${r.type}`:""}</option>)}
+          </select>
+          <button className="btn-p" style={{width:"100%"}} onClick={()=>{const idx=applyPickIdx===""?0:parseInt(applyPickIdx,10);handleApply(sortedRoles[idx],idx);}}>{!isLoggedIn?"Create a free account to apply":"Apply for this role"}</button>
+        </div>}
+      </div>);})()}
+
+    {/* ── Trust row — real signals only: verified CD, every-submission review,
+           background check. Reassurance converts better than urgency theater. ── */}
+    {(()=>{
+      const verified=c.is_admin_created?(c.admin_verified===true):(cdProfile&&cdProfile.identity_verified===true&&cdProfile.can_post_castings===true&&cdProfile.verification_status==="verified");
+      const bgChecked=!c.is_admin_created&&cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed";
+      return(c.status!=="archived")?<div style={{display:"flex",alignItems:"center",gap:"8px 22px",flexWrap:"wrap",padding:"4px 2px",marginBottom:24,fontSize:13,color:"var(--t2)"}}>
+        {verified&&<span style={{display:"inline-flex",alignItems:"center",gap:7}}><span style={{fontSize:15}}>🛡️</span><span style={{color:"var(--t1)",fontWeight:700}}>Verified casting director</span></span>}
+        <span style={{display:"inline-flex",alignItems:"center",gap:7}}><span style={{fontSize:15}}>👁️</span>Reviews <strong style={{color:"var(--t1)",fontWeight:700}}>&nbsp;every submission&nbsp;</strong> personally</span>
+        {bgChecked&&<span style={{display:"inline-flex",alignItems:"center",gap:7}}><span style={{fontSize:14}}>✓</span><span style={{color:"var(--t1)",fontWeight:700}}>Background-checked</span></span>}
+      </div>:null;})()}
 
     <CastingImageCarousel images={getCastingImages(c)} title={c.title}/>
 
     <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,padding:"20px 24px",marginBottom:32,display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"14px 28px"}}>
       <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.union')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.union}</div></div>
       <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.location')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.location}</div></div>
-      <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.pay')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.rate||c.pay}</div></div>
-      <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.deadline')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{fmtCastingDate(c.deadline)||"—"}</div></div>
+      {(()=>{const p=c.rate||c.pay;return p&&p.length>42?<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.pay')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{p}</div></div>:null;})()}
       {c.created_at&&<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>Posted</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{fmtCastingDate(c.created_at)}{c.expires_at&&new Date(c.expires_at)<new Date()?<span style={{marginLeft:8,fontSize:11,fontWeight:700,color:"#c0392b"}}>· Expired</span>:null}</div></div>}
+      <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.deadline')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{fmtCastingDate(c.deadline)||"—"}</div></div>
       {c.shoots&&<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.shoots')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.shoots}</div></div>}
       {c.rehearsal&&<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.rehearsal')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.rehearsal}</div></div>}
       {c.auditionFormat&&<div style={{gridColumn:"1 / -1"}}><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.auditionFormat')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.auditionFormat}</div></div>}
       <div style={{gridColumn:"1 / -1"}}><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>Nudity / Intimate content</div><div style={{fontSize:14,color:c.has_nudity?"#c0392b":"var(--t1)",fontWeight:600}}>{c.has_nudity?"Yes — this project involves nudity or intimate content":"None"}</div></div>
+      {c.casting_website_url&&<div style={{gridColumn:"1 / -1",marginTop:6,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
+        <a href={c.casting_website_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,textDecoration:"none"}}>
+          🔗 Visit Project Website
+        </a>
+      </div>}
     </div>
 
     {c.has_nudity&&<div style={{display:"flex",gap:12,padding:"14px 18px",marginBottom:24,background:"rgba(192,57,43,0.06)",border:"1px solid rgba(192,57,43,0.3)",borderRadius:12,alignItems:"flex-start"}}>
       <span style={{fontSize:18,lineHeight:1.2}}>⚠️</span>
       <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}><strong style={{color:"#c0392b"}}>Contains nudity / intimate content.</strong>{c.nudity_details?<> {c.nudity_details}</>:<> This project involves nudity or intimate scenes. Please make sure you're comfortable with this before applying.</>}</div>
-    </div>}
-
-    {c.casting_website_url&&<div style={{marginBottom:24}}>
-      <a href={c.casting_website_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,textDecoration:"none"}}>
-        🔗 Visit Project Website
-      </a>
     </div>}
 
     <section style={{marginBottom:40}}>
