@@ -1412,7 +1412,10 @@ img,video,iframe{max-width:100%;}
 a{color:inherit;text-decoration:none;}
 h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .site-top{position:fixed;top:0;left:0;right:0;z-index:120;}
-.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;position:relative;z-index:1;background:#FFFFFF;border-bottom:1px solid var(--bdr);}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;position:relative;z-index:1;background:#FFFFFF;border-bottom:1px solid var(--bdr);transition:box-shadow .22s ease;}
+/* Subtle drop-shadow under the nav once the page is scrolled even slightly;
+   none at the very top. Toggled by the .scrolled class (window.scrollY>4). */
+.nav.scrolled{box-shadow:0 6px 18px -6px rgba(10,10,10,.16);}
 .logo{font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--t1);}
 .logo-i{width:30px;height:30px;background:var(--acc);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;}
 .logo-i svg{width:100%;height:100%;display:block;}
@@ -23265,6 +23268,16 @@ function App(){
     return()=>{if(ro)ro.disconnect();window.removeEventListener("resize",apply);};
   },[page,isLoggedIn,myProfile?.user_type,myProfile?.membership_status]);
 
+  // Show a soft shadow under the white nav only after scrolling a hair down;
+  // none at the very top. Matches the Backstage-style scroll affordance.
+  const [navScrolled,setNavScrolled]=useState(false);
+  useEffect(()=>{
+    const onScroll=()=>setNavScrolled(window.scrollY>4);
+    onScroll();
+    window.addEventListener("scroll",onScroll,{passive:true});
+    return()=>window.removeEventListener("scroll",onScroll);
+  },[]);
+
   const navT=(key)=>(TRANSLATIONS[lang]&&TRANSLATIONS[lang][key])||TRANSLATIONS.en[key]||key;
   return(
     <LanguageContext.Provider value={{lang,setLang}}>
@@ -23282,7 +23295,7 @@ function App(){
       {/* Free-tier talent see this red banner above the nav until they
           activate. Hidden for CDs/admins/producers/studios and once active. */}
       <ActivateMembershipBanner myProfile={myProfile} onNavigate={navigate}/>
-      <nav className="nav">
+      <nav className={"nav"+(navScrolled?" scrolled":"")}>
         <div className="logo" onClick={()=>navThen("home")}><div className="logo-i"><LogoMark/></div>CastSlate</div>
         <div className="nav-links">
           <span className={page==="home"?"act":""} onClick={()=>navigate("home")}>{navT('nav.home')}</span>
