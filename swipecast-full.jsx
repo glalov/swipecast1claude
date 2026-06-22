@@ -5364,7 +5364,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
 // PAGE: TAPELINK — Self-tape auditions built into casting
 // ═══════════════════════════════════════════
 function TapeLinkPage({onNavigate}){
-  const TAPE_PHOTO="https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&w=400&h=480&q=80";
+  const TAPE_PHOTO="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=facearea&facepad=3&w=460&h=600&q=80";
 
   // Small reusable Cast Slate logo mark (matches Manager Mode hero badge)
   const CSLogo=({size=36})=>(
@@ -5419,20 +5419,20 @@ function TapeLinkPage({onNavigate}){
 
   // The actor's phone — self-tape recording view with REC indicator
   const PhoneTapeMockup=()=>(
-    <div style={{background:"#1A1A2E",borderRadius:30,padding:"11px 9px 14px",boxShadow:"0 24px 64px rgba(26,26,46,0.32)",border:"2px solid #2D2D44",width:178,flexShrink:0}}>
+    <div style={{background:"#1A1A2E",borderRadius:34,padding:"13px 11px 17px",boxShadow:"0 24px 64px rgba(26,26,46,0.32)",border:"2px solid #2D2D44",width:212,flexShrink:0}}>
       <div style={{width:36,height:4,background:"rgba(255,255,255,0.2)",borderRadius:100,margin:"0 auto 9px"}}/>
       <div style={{background:"#000",borderRadius:20,overflow:"hidden",position:"relative"}}>
-        <img src={TAPE_PHOTO} alt="Actor recording a self-tape" style={{width:"100%",height:230,objectFit:"cover",objectPosition:"center top",display:"block",opacity:0.92}} onError={e=>{e.target.style.display="none";e.target.nextSibling.style.display="flex";}}/>
-        <div style={{width:"100%",height:230,background:"linear-gradient(135deg,#1A1A2E,#2D2D44)",display:"none",alignItems:"center",justifyContent:"center",fontSize:40}}>🎭</div>
+        <img src={TAPE_PHOTO} alt="Actor recording a self-tape" style={{width:"100%",height:280,objectFit:"cover",objectPosition:"center top",display:"block",opacity:0.92}} onError={e=>{e.target.style.display="none";e.target.nextSibling.style.display="flex";}}/>
+        <div style={{width:"100%",height:280,background:"linear-gradient(135deg,#1A1A2E,#2D2D44)",display:"none",alignItems:"center",justifyContent:"center",fontSize:40}}>🎭</div>
         {/* REC pill */}
-        <div style={{position:"absolute",top:10,left:10,display:"flex",alignItems:"center",gap:5,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(4px)",borderRadius:100,padding:"3px 9px"}}>
+        <div style={{position:"absolute",top:13,left:13,display:"flex",alignItems:"center",gap:5,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(4px)",borderRadius:100,padding:"3px 9px"}}>
           <span style={{width:7,height:7,borderRadius:"50%",background:"#FF4136",boxShadow:"0 0 8px #FF4136"}}/>
           <span style={{color:"#fff",fontSize:9,fontWeight:800,letterSpacing:1}}>REC 00:07</span>
         </div>
         {/* Mode badge */}
-        <div style={{position:"absolute",top:10,right:10,background:"rgba(37,99,235,0.85)",borderRadius:100,padding:"3px 9px",color:"#fff",fontSize:8.5,fontWeight:800,letterSpacing:0.5,textTransform:"uppercase"}}>Practice</div>
+        <div style={{position:"absolute",top:13,right:13,background:"rgba(37,99,235,0.85)",borderRadius:100,padding:"3px 9px",color:"#fff",fontSize:8.5,fontWeight:800,letterSpacing:0.5,textTransform:"uppercase"}}>Practice</div>
         {/* Framing guide */}
-        <div style={{position:"absolute",inset:"22px 26px 60px",border:"1.5px dashed rgba(255,255,255,0.35)",borderRadius:8,pointerEvents:"none"}}/>
+        <div style={{position:"absolute",inset:"30px 30px 74px",border:"1.5px dashed rgba(255,255,255,0.35)",borderRadius:8,pointerEvents:"none"}}/>
         {/* Bottom controls */}
         <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"12px 0 16px",background:"linear-gradient(0deg,rgba(0,0,0,0.55),transparent)",display:"flex",alignItems:"center",justifyContent:"center",gap:18}}>
           <span style={{fontSize:14,color:"rgba(255,255,255,0.85)"}}>↺</span>
