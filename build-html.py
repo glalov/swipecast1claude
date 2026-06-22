@@ -158,7 +158,7 @@ def render_page(title, desc, canonical):
   </script>
   <!-- Structured Data: Organization -->
   <script type="application/ld+json">
-  {{"@context":"https://schema.org","@type":"Organization","name":"CastSlate","url":"https://www.castslate.com","logo":"https://www.castslate.com/og-image.png","sameAs":["https://www.facebook.com/people/CastSlate/61590920810941/"]}}
+  {{"@context":"https://schema.org","@type":"Organization","name":"CastSlate","url":"https://www.castslate.com","logo":"https://www.castslate.com/logo-512.png","sameAs":["https://www.facebook.com/people/CastSlate/61590920810941/"]}}
   </script>
   <!-- Structured Data: WebApplication -->
   <script type="application/ld+json">
