@@ -1679,10 +1679,10 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .pricing-cards-grid{max-width:100% !important;}
 }
 .mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:150;backdrop-filter:blur(4px);}
-.mobile-menu-inner{position:relative;background:var(--s1);border-bottom:1px solid var(--bdr);padding:18px 18px 22px;max-width:100%;animation:mmDrop .92s cubic-bezier(.22,.68,.28,1);box-shadow:0 10px 40px rgba(0,0,0,.12);transform-origin:top;will-change:transform;}
-.mobile-menu-inner.closing{animation:mmDropUp .92s cubic-bezier(.22,.68,.28,1) forwards;}
-@keyframes mmDrop{from{transform:translateY(-100%);}to{transform:translateY(0);}}
-@keyframes mmDropUp{from{transform:translateY(0);}to{transform:translateY(-100%);}}
+.mobile-menu-inner{position:absolute;top:0;left:0;bottom:0;width:80%;max-width:340px;background:var(--s1);padding:18px 16px 22px;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:mmDrop .6s cubic-bezier(.22,.68,.28,1);box-shadow:6px 0 28px rgba(0,0,0,.18);will-change:transform;}
+.mobile-menu-inner.closing{animation:mmDropUp .6s cubic-bezier(.22,.68,.28,1) forwards;}
+@keyframes mmDrop{from{transform:translateX(-100%);}to{transform:translateX(0);}}
+@keyframes mmDropUp{from{transform:translateX(0);}to{transform:translateX(-100%);}}
 .mm-close{position:absolute;top:12px;right:12px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;background:none;border:1px solid var(--bdr);border-radius:8px;cursor:pointer;color:var(--t1);font-size:20px;line-height:1;padding:0;}
 .mm-close:hover{background:var(--s2);}
 @keyframes mmFade{from{opacity:0;}to{opacity:1;}}
@@ -1708,8 +1708,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .cs-archived-stamp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-13deg);z-index:6;pointer-events:none;border:4px solid #c0392b;color:#c0392b;font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(22px,4.6vw,38px);letter-spacing:.16em;text-transform:uppercase;padding:6px 22px 8px;border-radius:8px;opacity:.8;background:rgba(255,255,255,0.05);box-shadow:inset 0 0 0 2px rgba(192,57,43,.16);white-space:nowrap;}
 .cs-archived-dim{filter:grayscale(.5);opacity:.6;}
 @media (prefers-reduced-motion: reduce){.cs-live-dot::after{display:none}.cs-live-dot .core{animation:none;background:#15a87f}}
-.mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;}
-.mm-link:last-child{border-bottom:none;}
+.mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-radius:6px;font-family:'DM Sans',sans-serif;}
 .mm-link:hover{color:var(--acc);}
 /* ─── 40px breathing-room spacer rendered right before the footer by the Footer
        component. Inherits the warm .app bg, flex-shrink:0 so it always exists
@@ -23201,7 +23200,7 @@ function App(){
 
   const [menuOpen,setMenuOpen]=useState(false);
   const [menuClosing,setMenuClosing]=useState(false);
-  const closeMenu=useCallback(()=>{setMenuClosing(true);setTimeout(()=>{setMenuOpen(false);setMenuClosing(false);},900);},[]);
+  const closeMenu=useCallback(()=>{setMenuClosing(true);setTimeout(()=>{setMenuOpen(false);setMenuClosing(false);},600);},[]);
   const [joinOpen,setJoinOpen]=useState(false);
   const joinRef=useRef(null);
   useEffect(()=>{
@@ -23303,8 +23302,6 @@ function App(){
             {classesOn&&<button className="mm-link" onClick={()=>navThen("classes")}>{navT('nav.classes')}</button>}
             <button className="mm-link" onClick={()=>navThen("tapelink")}>{navT('nav.tapelink')}</button>
             <button className="mm-link" onClick={()=>navThen("manager-mode")}>{navT('nav.managerMode')}</button>
-            <button className="mm-link" onClick={()=>navThen("blog")}>{navT('nav.blog')}</button>
-            <button className="mm-link" onClick={()=>navThen("resources")}>{navT('nav.resources')}</button>
             <button className="mm-link" onClick={()=>navThen("about")}>{navT('nav.about')}</button>
             <button className="mm-link" onClick={()=>navThen("contact")}>{navT('nav.contact')}</button>
           </div>
