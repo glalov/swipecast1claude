@@ -9067,18 +9067,19 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               padding:0,overflow:"hidden",cursor:isArchived?"default":"pointer",borderRadius:14,position:"relative",
               background:"var(--s1)",
               border:"1px solid var(--bdr)",
-              boxShadow:isFeat?"0 4px 20px rgba(79,138,139,0.14)":"0 1px 4px rgba(26,26,46,0.05)",
+              borderTop:isFeat?"3px solid var(--teal)":"1px solid var(--bdr)",
+              boxShadow:"0 1px 4px rgba(26,26,46,0.05)",
               transition:"box-shadow .2s,transform .15s",
             }}
-              onMouseEnter={e=>{if(isArchived)return;e.currentTarget.style.boxShadow=isFeat?"0 8px 32px rgba(79,138,139,0.20)":"0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
-              onMouseLeave={e=>{if(isArchived)return;e.currentTarget.style.boxShadow=isFeat?"0 4px 20px rgba(79,138,139,0.14)":"0 1px 4px rgba(26,26,46,0.05)";e.currentTarget.style.transform="";}}
+              onMouseEnter={e=>{if(isArchived)return;e.currentTarget.style.boxShadow="0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
+              onMouseLeave={e=>{if(isArchived)return;e.currentTarget.style.boxShadow="0 1px 4px rgba(26,26,46,0.05)";e.currentTarget.style.transform="";}}
               onClick={()=>{if(isArchived)return;onViewCasting&&onViewCasting(rawC);}}>
               {isArchived&&<div className="cs-archived-stamp" aria-hidden="true">Archived</div>}
               <div className={isArchived?"cs-archived-dim":undefined}>
-              {isFeat&&<div style={{background:"var(--teal)",color:"#fff",padding:"10px 24px",display:"flex",alignItems:"center",gap:8,fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:800,letterSpacing:"0.1em",textTransform:"uppercase"}}>★ Cast Slate Pick · Curated by Cast Slate</div>}
               <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
                 <div>
                   <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
+                    {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 11px",borderRadius:100,background:"#E1F0F0",color:"#37696A",border:"1px solid #B7D6D6",fontSize:10,fontWeight:800,letterSpacing:"0.06em",textTransform:"uppercase"}}>★ Cast Slate Pick</span>}
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{translateCastingType(c.type,lang)}</span>
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.union}</span>
                     <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{(c.roles?.length||1)===1?`1 ${t('search.role')}`:`${c.roles?.length||1} ${t('search.roles')}`}</span>
