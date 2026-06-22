@@ -4047,14 +4047,17 @@ function useViewportWidth(){
   return w;
 }
 
+// Module-level cache so revisiting Classes shows instantly (seeded from the
+// last successful fetch) and revalidates silently — no loader flash.
+let _classesCache=null,_classSlotsCache=null;
 function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClassOpened,invitationId}){
   const t=useT();
   const vpw=useViewportWidth();
   const isMobile=vpw<768;
   const isNarrow=vpw<560;
-  const [classes,setClasses]=useState([]);
-  const [slots,setSlots]=useState({}); // {classId:[slot,...]}
-  const [loading,setLoading]=useState(true);
+  const [classes,setClasses]=useState(()=>_classesCache||[]);
+  const [slots,setSlots]=useState(()=>_classSlotsCache||{}); // {classId:[slot,...]}
+  const [loading,setLoading]=useState(()=>!_classesCache);
   const [err,setErr]=useState("");
   const [filter,setFilter]=useState("all");
   const [viewing,setViewing]=useState(null); // class object
@@ -4101,7 +4104,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
         if(ao!==bo)return ao-bo;
         return new Date(a.created_at)-new Date(b.created_at);
       });
-      setClasses(cls);
+      setClasses(cls);_classesCache=cls;
       // Deep-link: open a specific class directly (e.g. from recommendation card)
       if(openClassId){
         const target=cls.find(c=>c.id===openClassId);
@@ -4114,7 +4117,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
         if(!se){
           const map={};
           for(const s of sd||[]){if(!map[s.class_id])map[s.class_id]=[];map[s.class_id].push(s);}
-          setSlots(map);
+          setSlots(map);_classSlotsCache=map;
         }
       }
     }catch(e){setErr(e.message||"Classes could not load.");}
@@ -4156,7 +4159,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
   };
 
   if(loading)return(<div className="page"><CastSlateLoader text="Loading classes…"/></div>);
-  if(err)return(<div className="page" style={{textAlign:"center",padding:"80px 24px"}}><p style={{color:"var(--t2)",marginBottom:16}}>{err}</p><button className="btn-p" onClick={()=>window.location.reload()}>Retry</button><Footer onNavigate={onNavigate}/></div>);
+  if(err&&!classes.length)return(<div className="page" style={{textAlign:"center",padding:"80px 24px"}}><p style={{color:"var(--t2)",marginBottom:16}}>{err}</p><button className="btn-p" onClick={()=>window.location.reload()}>Retry</button><Footer onNavigate={onNavigate}/></div>);
 
   if(viewing){
     const clsSlots=slots[viewing.id]||[];
@@ -8839,6 +8842,9 @@ function matchesLocationFilter(castingLoc,selectedFilter){
   return locHasTerm(loc,sel);
 }
 
+// Module-level cache so Browse Castings shows instantly from any entry point
+// (seeded from the last successful fetch) and revalidates silently — no flash.
+let _castingsCache=null,_talentCache=null;
 function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,castingsVersion=0,session,myProfile}){
   const t=useT();
   const {lang}=useLanguage();
@@ -8852,10 +8858,10 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const [applyTo,setApplyTo]=useState(null);
   const [applied,setApplied]=useState(new Set());
   const [pg,setPg]=useState(1);
-  const [dbCastings,setDbCastings]=useState([]);
-  const [dbTalent,setDbTalent]=useState([]);
+  const [dbCastings,setDbCastings]=useState(()=>_castingsCache||[]);
+  const [dbTalent,setDbTalent]=useState(()=>_talentCache||[]);
   const [refreshTick,setRefreshTick]=useState(0);
-  const [loading,setLoading]=useState(true);          // initial fetch in flight
+  const [loading,setLoading]=useState(()=>!_castingsCache);          // initial fetch in flight
   const [fetchErr,setFetchErr]=useState("");          // surfaced castings fetch error
   const [lastFetchAt,setLastFetchAt]=useState(0);     // timestamp of last successful fetch
   useEffect(()=>{setPg(1);},[q,f.type,f.location,f.union,f.gender,f.ethnicity,f.castingType,mode]);
@@ -8933,7 +8939,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           ethnicity:r.ethnicity||"Any"
         }))
       }));
-      setDbCastings(mapped);
+      setDbCastings(mapped);_castingsCache=mapped;
       setFetchErr("");
       setLastFetchAt(Date.now());
     }catch(e){
@@ -8985,7 +8991,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         social_links:p.social_links||{},
         _db:true
       }));
-      setDbTalent(mapped);
+      setDbTalent(mapped);_talentCache=mapped;
     }catch(e){clearTimeout(tid);console.error("[SearchPage] talent fetch failed:",e);/* keep last good */}
   },[]);
 
