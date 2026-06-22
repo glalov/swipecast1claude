@@ -1678,7 +1678,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   /* Pricing cards compact */
   .pricing-cards-grid{max-width:100% !important;}
 }
-.mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:150;}
+.mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:transparent;z-index:150;}
 .mobile-menu-inner{position:absolute;top:0;left:0;bottom:0;width:100%;max-width:100%;background:var(--s1);padding:18px 16px 22px;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:mmDrop .6s cubic-bezier(.22,.68,.28,1);will-change:transform;}
 .mobile-menu-inner.closing{animation:mmDropUp .6s cubic-bezier(.22,.68,.28,1) forwards;}
 @keyframes mmDrop{from{transform:translateX(-100%);}to{transform:translateX(0);}}
