@@ -836,8 +836,8 @@ html,body{overflow-x:hidden;}
 @media(max-width:820px){
   .login-shell{padding:18px 14px 32px;}
   .login-split{grid-template-columns:1fr;min-height:0;border-radius:22px;}
-  .login-hero{min-height:680px;}
-  .login-hero>img{object-position:center 2%;}
+  .login-hero{min-height:780px;}
+  .login-hero>img{object-position:center top;}
   .login-hero-copy{padding:22px 22px 24px;}
   .login-form-side{padding:34px 22px 38px;}
 }
