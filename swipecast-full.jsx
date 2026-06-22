@@ -1416,6 +1416,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 /* Subtle drop-shadow under the nav once the page is scrolled even slightly;
    none at the very top. Toggled by the .scrolled class (window.scrollY>4). */
 .nav.scrolled{box-shadow:0 6px 18px -6px rgba(10,10,10,.16);}
+@media(max-width:900px){.nav.scrolled{box-shadow:0 5px 16px rgba(10,10,10,.15);}}
 .logo{font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--t1);}
 .logo-i{width:30px;height:30px;background:var(--acc);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;}
 .logo-i svg{width:100%;height:100%;display:block;}
