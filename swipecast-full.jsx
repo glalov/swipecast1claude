@@ -1682,7 +1682,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .mobile-menu-inner{position:absolute;top:0;left:0;bottom:0;width:100%;max-width:100%;background:var(--s1);padding:18px 16px 22px;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:mmDrop .6s cubic-bezier(.22,.68,.28,1);will-change:transform;}
 .mobile-menu-inner.closing{animation:mmDropUp .6s cubic-bezier(.22,.68,.28,1) forwards;}
 @keyframes mmDrop{from{transform:translateX(-100%);}to{transform:translateX(0);}}
-@keyframes mmDropUp{from{transform:translateX(0);}to{transform:translateX(-100%);}}
+@keyframes mmDropUp{from{transform:translateX(0);}to{transform:translateX(100%);}}
 .mm-close{position:absolute;top:12px;right:12px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;background:none;border:1px solid var(--bdr);border-radius:8px;cursor:pointer;color:var(--t1);font-size:20px;line-height:1;padding:0;}
 .mm-close:hover{background:var(--s2);}
 @keyframes mmFade{from{opacity:0;}to{opacity:1;}}
@@ -23209,8 +23209,8 @@ function App(){
     document.addEventListener("mousedown",h);
     return()=>document.removeEventListener("mousedown",h);
   },[joinOpen]);
-  const navThen=useCallback((p)=>{setMenuOpen(false);setJoinOpen(false);navigate(p);},[navigate]);
-  const doSignOut=useCallback(()=>{setMenuOpen(false);setJoinOpen(false);signOut();},[signOut]);
+  const navThen=useCallback((p)=>{setJoinOpen(false);navigate(p);closeMenu();},[navigate,closeMenu]);
+  const doSignOut=useCallback(()=>{setJoinOpen(false);signOut();closeMenu();},[signOut,closeMenu]);
 
   // Fixed top bar (promo + banner + nav): measure its height and offset the
   // page content by exactly that much so nothing hides underneath. Height
