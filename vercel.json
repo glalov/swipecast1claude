@@ -12,6 +12,7 @@
     }
   ],
   "rewrites": [
+    { "source": "/casting/:slug", "destination": "/api/casting-og?slug=:slug" },
     { "source": "/browse-castings", "destination": "/browse-castings.html" },
     { "source": "/pricing", "destination": "/pricing.html" },
     { "source": "/classes", "destination": "/classes.html" },
@@ -28,8 +29,11 @@
     { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/manager-mode", "destination": "/manager-mode.html" },
     { "source": "/tapelink", "destination": "/tapelink.html" },
-    { "source": "/((?!favicon\\.ico|favicon\\.svg|favicon-32x32\\.png|apple-touch-icon\\.png|og-image\\.png|robots\\.txt|sitemap\\.xml|googlec524d5c8d8b80af3\\.html|a6124d7bc19f64d5eba71e5868b9a59a\\.txt|app\\.js|app\\.jsx|video-formats/|assets/|email/).*)", "destination": "/index.html" }
+    { "source": "/((?!favicon\\.ico|favicon\\.svg|favicon-32x32\\.png|apple-touch-icon\\.png|og-image\\.png|robots\\.txt|sitemap\\.xml|googlec524d5c8d8b80af3\\.html|a6124d7bc19f64d5eba71e5868b9a59a\\.txt|app\\.js|app\\.jsx|api/|video-formats/|assets/|email/).*)", "destination": "/index.html" }
   ],
+  "functions": {
+    "api/casting-og.js": { "includeFiles": "index.html" }
+  },
   "headers": [
     {
       "source": "/sitemap.xml",
