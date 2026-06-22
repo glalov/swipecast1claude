@@ -9079,10 +9079,10 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
                 <div>
                   <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
-                    {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 11px",borderRadius:100,background:"#E1F0F0",color:"#37696A",border:"1px solid #B7D6D6",fontSize:10,fontWeight:800,letterSpacing:"0.06em",textTransform:"uppercase"}}>★ Cast Slate Pick</span>}
-                    <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{translateCastingType(c.type,lang)}</span>
-                    <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{c.union}</span>
-                    <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{(c.roles?.length||1)===1?`1 ${t('search.role')}`:`${c.roles?.length||1} ${t('search.roles')}`}</span>
+                    {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 11px",borderRadius:100,background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",fontSize:10,fontWeight:800,letterSpacing:"0.06em",textTransform:"uppercase"}}>★ Cast Slate Pick</span>}
+                    <span className="badge" style={{background:"#E8EEFB",color:"#2D5BA8"}}>{translateCastingType(c.type,lang)}</span>
+                    <span className="badge" style={{background:"#E8EEFB",color:"#2D5BA8"}}>{c.union}</span>
+                    <span className="badge" style={{background:"#E8EEFB",color:"#2D5BA8"}}>{(c.roles?.length||1)===1?`1 ${t('search.role')}`:`${c.roles?.length||1} ${t('search.roles')}`}</span>
                     {isExpiredCasting&&!isArchived&&<span className="badge" style={{background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>Expired</span>}
                     {isLive&&<LiveCastingBadge/>}
                   </div>
@@ -12615,13 +12615,13 @@ function InfoTip({children,color="var(--t2)",width=300,label="More information"}
       ref={iconRef}
       onPointerEnter={(e)=>{if(e.pointerType==="mouse")setShow(true);}}
       onPointerLeave={(e)=>{if(e.pointerType==="mouse")setShow(false);}}
-      onFocus={()=>setShow(true)}
       onBlur={()=>setShow(false)}
       onClick={(e)=>{e.stopPropagation();e.preventDefault();setShow(v=>!v);}}
+      onKeyDown={(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();setShow(v=>!v);}}}
       tabIndex={0}
       role="button"
       aria-label={label}
-      style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:16,height:16,borderRadius:"50%",border:`1.5px solid ${color}`,color,fontSize:11,fontWeight:700,fontStyle:"italic",fontFamily:"Georgia,'Times New Roman',serif",lineHeight:1,cursor:"pointer",userSelect:"none",flex:"none",verticalAlign:"middle"}}
+      style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:16,height:16,borderRadius:"50%",border:`1.5px solid ${color}`,color,fontSize:11,fontWeight:700,fontStyle:"italic",fontFamily:"Georgia,'Times New Roman',serif",lineHeight:1,cursor:"pointer",userSelect:"none",flex:"none",verticalAlign:"middle",touchAction:"manipulation",WebkitTapHighlightColor:"transparent"}}
     >i</span>
     {show&&<FixedTooltip anchorRef={iconRef} width={width}>{children}</FixedTooltip>}
   </>);
