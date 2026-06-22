@@ -7603,7 +7603,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       }
       const roleId=realRoleIds[applyRole.idx];
       if(!roleId){setApplyErr("This role is no longer available. Please refresh the page and try again.");return;}
-      if(myPhotos.length>0&&!selectedPhoto){setApplyErr("Please pick a photo to submit with your application.");return;}
+      if(myPhotos.length===0){setApplyErr("A headshot is required to apply. Add at least one photo to your profile, then submit.");return;}
+      if(!selectedPhoto){setApplyErr("Please pick a photo to submit with your application.");return;}
       if(showVideoRecorder&&!videoNoteUrlRef.current){setApplyErr("You've recorded a video. Please click '✓ Use This Video' to attach it, or '🗑 Delete' to remove it before submitting.");return;}
       console.log("[apply] submitting role:",roleId,"casting:",casting.id,"talent:",s.user.id);
       // Goes through public.submit_application (SECURITY DEFINER) so the
@@ -7792,7 +7793,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             <option value="">Select a role…</option>
             {sortedRoles.map((r,i)=><option key={i} value={i}>{r.name}{r.type?` — ${r.type}`:""}</option>)}
           </select>
-          <button className="btn-p" style={{width:"100%"}} onClick={()=>{const idx=applyPickIdx===""?0:parseInt(applyPickIdx,10);handleApply(sortedRoles[idx],idx);}}>{!isLoggedIn?"Create a free account to apply":"Apply for this role"}</button>
+          <button className="btn-teal" style={{width:"100%"}} onClick={()=>{const idx=applyPickIdx===""?0:parseInt(applyPickIdx,10);handleApply(sortedRoles[idx],idx);}}>{!isLoggedIn?"Create a free account to apply":"Apply for this role"}</button>
         </div>}
       </div>);})()}
 
@@ -7851,7 +7852,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                 <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65}}>{r.desc}</p>
               </div>
               <div style={{flexShrink:0}}>
-                {c.status==="archived"?<span className="tag" style={{fontSize:12,fontWeight:700,padding:"8px 14px",background:"rgba(192,57,43,0.08)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>Filled</span>:applied.has(i)?<span className="tag tag-grn" style={{fontSize:12,fontWeight:700,padding:"8px 14px"}}>{hasInstructions?"✓ Audition Submitted":"✓ Applied"}</span>:<button className="btn-p btn-sm" onClick={()=>handleApply(r,i)}>{!isLoggedIn?"Create a free account to apply":(hasInstructions?"🎬 Audition for This Role":"Apply for This Role")}</button>}
+                {c.status==="archived"?<span className="tag" style={{fontSize:12,fontWeight:700,padding:"8px 14px",background:"rgba(192,57,43,0.08)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>Filled</span>:applied.has(i)?<span className="tag tag-grn" style={{fontSize:12,fontWeight:700,padding:"8px 14px"}}>{hasInstructions?"✓ Audition Submitted":"✓ Applied"}</span>:<button className="btn-teal btn-sm" onClick={()=>handleApply(r,i)}>{!isLoggedIn?"Create a free account to apply":(hasInstructions?"🎬 Audition for This Role":"Apply for This Role")}</button>}
               </div>
             </div>
             {/* Audition Instructions block — shown when the CD has set them */}
@@ -7989,7 +7990,10 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             <div className="form-group">
               <label className="label">Your Headshot / Photo</label>
               {myPhotos.length===0?
-                <div style={{background:"var(--s2)",border:"1px dashed var(--bdr)",borderRadius:10,padding:16,fontSize:13,color:"var(--t3)",textAlign:"center"}}>No photos yet. Upload a headshot from your profile first.</div>:
+                <div style={{background:"rgba(232,144,42,0.07)",border:"1px solid rgba(232,144,42,0.35)",borderRadius:10,padding:16,textAlign:"center"}}>
+                  <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.55,marginBottom:12}}>A headshot is required to apply — it's the first thing the casting director sees. Add one to your profile, then come back to submit.</div>
+                  <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>{setApplyRole(null);onNavigate&&onNavigate("my-profile");}}>Add a headshot</button>
+                </div>:
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(80px,1fr))",gap:8}}>
                   {myPhotos.map((u,pi)=>
                     <div key={pi} onClick={()=>setSelectedPhoto(u)} style={{cursor:"pointer",position:"relative",aspectRatio:"4/5",borderRadius:8,overflow:"hidden",border:selectedPhoto===u?"3px solid var(--acc)":"3px solid transparent",transition:"all .15s"}}>
@@ -8006,7 +8010,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             </div>
 
             <div style={{display:"flex",gap:12,marginTop:20}}>
-              <button className="btn-p" style={{flex:1}} onClick={submitApp} disabled={submitting}>{submitting?"Submitting Audition…":"Submit My Audition →"}</button>
+              <button className="btn-teal" style={{flex:1,opacity:myPhotos.length===0?0.5:1}} onClick={submitApp} disabled={submitting||myPhotos.length===0}>{submitting?"Submitting Audition…":myPhotos.length===0?"Add a headshot to apply":"Submit My Audition →"}</button>
               <button className="btn-s" onClick={()=>setApplyRole(null)} disabled={submitting}>{t('cancel')}</button>
             </div>
           </>
