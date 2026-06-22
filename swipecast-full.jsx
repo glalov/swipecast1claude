@@ -5485,6 +5485,11 @@ function TapeLinkPage({onNavigate}){
             </div>
           </div>
         </div>
+        {/* Mobile: same role card + phone, stacked so they fit a narrow screen. */}
+        <div className="mm-hide-desktop" style={{width:"100%",flexDirection:"column",alignItems:"center",gap:20,marginTop:8}}>
+          <div style={{width:"100%",maxWidth:340,display:"flex",justifyContent:"center"}}><RolePageMockup/></div>
+          <div style={{marginTop:-6}}><PhoneTapeMockup/></div>
+        </div>
       </div>
     </section>
 
