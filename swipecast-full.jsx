@@ -1712,7 +1712,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .cs-archived-dim{filter:grayscale(.5);opacity:.6;}
 @media (prefers-reduced-motion: reduce){.cs-live-dot::after{display:none}.cs-live-dot .core{animation:none;background:#15a87f}}
 .mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-radius:6px;font-family:'DM Sans',sans-serif;}
-.mm-link:hover{color:var(--acc);}
+/* No tap highlight / hover flash on the mobile menu or burger. Hover color
+   only applies with a real pointer (desktop), never on touch. */
+.mobile-menu button,.mm-link,.mm-close,.nav-burger{-webkit-tap-highlight-color:transparent;}
+@media(hover:hover){.mm-link:hover{color:var(--acc);}}
 /* ─── 40px breathing-room spacer rendered right before the footer by the Footer
        component. Inherits the warm .app bg, flex-shrink:0 so it always exists
        even when the page is taller than the viewport. ─── */
