@@ -1528,7 +1528,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @keyframes sw-in-back{0%{transform:translateY(160%) scale(.8);opacity:0}70%{opacity:var(--ro,.3)}100%{transform:var(--rest);opacity:var(--ro,.3)}}
 .sw-pre{opacity:0!important;}
 .sw-intro-top{animation:sw-in-top .68s cubic-bezier(.34,1.4,.5,1) both;}
-.sw-intro-back{animation:sw-in-back .52s cubic-bezier(.2,.75,.25,1) both;animation-delay:var(--d,0s);}
+.sw-intro-back{animation:sw-in-back .62s cubic-bezier(.2,.75,.25,1) both;animation-delay:var(--d,0s);}
 @media(prefers-reduced-motion:reduce){.sw-intro-top,.sw-intro-back{animation:none!important;}}
 .swipe-btns{display:flex;gap:20px;align-items:flex-start;}
 .sw-btn-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;}
@@ -13902,7 +13902,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
   React.useEffect(()=>{
     if(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){setArmed(true);setIntro(false);return;}
     let started=false,endTm,poll,safety;
-    function play(){if(started)return;started=true;setArmed(true);endTm=setTimeout(()=>setIntro(false),1700);}
+    function play(){if(started)return;started=true;setArmed(true);endTm=setTimeout(()=>setIntro(false),2300);}
     const hasSplash=typeof document!=='undefined'&&document.getElementById('cs-intro');
     if(!hasSplash){const k=setTimeout(play,150);return ()=>{clearTimeout(k);clearTimeout(endTm);};}
     poll=setInterval(()=>{if(typeof document!=='undefined'&&!document.getElementById('cs-intro')){clearInterval(poll);play();}},120);
@@ -13949,9 +13949,10 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
         {!intro&&<div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.35,zIndex:1,pointerEvents:"none"}}>
           <img src={nt.img} alt="" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:nt.pos||"center 8%"}}/>
         </div>}
-        {intro&&armed&&[1,2,3,4].map(i=>{const bc=demo[Math.min(i,total-1)];const rest=`translateY(${i*10}px) scale(${(1-i*0.06).toFixed(3)})`;const ro=Math.max(0.08,0.42-(i-1)*0.1).toFixed(2);return(
-          <div key={"swin"+i} className="s-card sw-intro-back" style={{"--rest":rest,"--ro":ro,"--d":`${(0.40+i*0.11).toFixed(2)}s`,zIndex:1,pointerEvents:"none"}}>
+        {intro&&armed&&[1,2,3,4].map(i=>{const bc=demo[Math.min(i,total-1)];const rest=`translateY(${i*10}px) scale(${(1-i*0.06).toFixed(3)})`;const ro=Math.max(0.5,1-i*0.08).toFixed(2);return(
+          <div key={"swin"+i} className="s-card sw-intro-back" style={{"--rest":rest,"--ro":ro,"--d":`${(0.55+i*0.20).toFixed(2)}s`,zIndex:1,pointerEvents:"none"}}>
             <img src={bc.img} alt="" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:bc.pos||"center 8%"}}/>
+            <div style={{position:"absolute",inset:0,background:"#0d0d16",opacity:i*0.06,pointerEvents:"none"}}/>
           </div>);})}
         <div className={"s-card"+(intro?(armed?" sw-intro-top":" sw-pre"):"")}
           style={{transform:cardTransform,transition:cardTransition,zIndex:2,cursor:dragging.current?"grabbing":"grab",touchAction:"pan-y",userSelect:"none"}}
