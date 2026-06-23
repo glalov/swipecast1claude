@@ -1757,10 +1757,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .site-footer-spacer{height:0;flex-shrink:0;background:var(--bg);width:100%;margin-top:auto;}
 /* Floating back-to-top cube — drops in from above the screen at the very bottom,
    shoots back up off-screen when the user scrolls up. Replaces the old bar. */
-.b2t-cube{position:fixed;left:50%;bottom:20px;z-index:130;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:84px;height:74px;background:#0A0A0A;color:#fff;border:1px solid rgba(255,255,255,0.14);border-radius:16px;cursor:pointer;box-shadow:0 14px 30px rgba(0,0,0,0.42);font-family:'DM Sans',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:.2px;transform:translateX(-50%) translateY(-130vh);opacity:0;pointer-events:none;transition:transform .34s cubic-bezier(.4,0,.7,.5),opacity .2s ease .14s;}
-.b2t-cube.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto;transition:transform .5s cubic-bezier(.3,1.24,.5,1),opacity .12s ease;}
-.b2t-cube span{line-height:1;}
-@media(prefers-reduced-motion:reduce){.b2t-cube{transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;}}
+.b2t-cube{position:fixed;left:50%;bottom:22px;z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:96px;height:86px;background:#0A0A0A;color:#fff;border:1px solid rgba(255,255,255,0.14);border-radius:17px;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,0.45);font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(calc(-100vh + 16px));opacity:1;pointer-events:none;transition:transform .42s cubic-bezier(.5,0,.75,.45);}
+.b2t-cube.show{transform:translateX(-50%) translateY(0);pointer-events:auto;transition:transform .58s cubic-bezier(.2,.72,.3,1);}
+.b2t-cube span{line-height:1.1;}
+@media(prefers-reduced-motion:reduce){.b2t-cube{transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}.b2t-cube.show{opacity:1!important;}}
 .site-backtotop{
   display:flex;align-items:center;justify-content:center;gap:8px;
   position:relative;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;
@@ -3104,7 +3104,7 @@ function Footer({onNavigate,noSpacer}){
         icon row, or button ever touches the Back-to-top bar. 96px desktop / 72px mobile. */}
     <div className="site-footer-spacer" style={noSpacer?{height:0}:undefined} aria-hidden="true"></div>
     <button type="button" className={"b2t-cube"+(b2tShow?" show":"")} onClick={scrollTop} aria-label={t('footer.backToTop')}>
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V6M6 12l6-6 6 6"/></svg>
+      <svg width="20" height="16" viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="currentColor"/></svg>
       <span>{t('footer.backToTop')}</span>
     </button>
     <footer className="site-footer">
