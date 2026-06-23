@@ -255,7 +255,7 @@ def render_page(title, desc, canonical):
       position:fixed;top:0;right:0;bottom:0;left:0;background:#0A0A0A;z-index:100000;
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;
       -webkit-justify-content:center;justify-content:center;
-      -webkit-animation:cs-intro-out .4s ease .85s forwards;animation:cs-intro-out .4s ease .85s forwards;
+      -webkit-animation:cs-intro-out .4s ease 1.4s forwards;animation:cs-intro-out .4s ease 1.4s forwards;
     }}
     #cs-intro .cs-intro-mark{{
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:16px;
@@ -272,7 +272,7 @@ def render_page(title, desc, canonical):
   </style>
 </head>
 <body>
-  <!-- Intro reveal — logo fades out of black for ~1.25s, then the site is revealed. Plays on every page load. -->
+  <!-- Intro reveal — logo fades out of black for ~1.8s, then the site is revealed. Plays on every page load. -->
   <div id="cs-intro" aria-hidden="true">
     <div class="cs-intro-mark">
       <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="33" height="33"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
@@ -286,7 +286,7 @@ def render_page(title, desc, canonical):
       var skip=false;
       try{{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true;}}catch(e){{}}
       if(skip){{if(el.parentNode)el.parentNode.removeChild(el);return;}}
-      setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},1300);
+      setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},1850);
     }})();
   </script>
   <!-- Loading indicator — shown until React mounts -->
