@@ -1424,7 +1424,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .nav .logo{perspective:620px;}
 .nav .logo-i{width:38px;height:38px;border-radius:9px;transform-style:preserve-3d;animation:cs-logo-spin 10s cubic-bezier(.6,0,.3,1) infinite;}
 @keyframes cs-logo-spin{0%,70%{transform:rotateY(0deg) scale(1);}82%{transform:rotateY(180deg) scale(1.12);}100%{transform:rotateY(360deg) scale(1);}}
-@media (max-width:768px){.nav .logo-i{width:32px;height:32px;}}
+@media (max-width:768px){.nav .logo-i{width:40px;height:40px;}}
+.nav-join-mobile{display:none;}
 @media (prefers-reduced-motion:reduce){.nav .logo-i{animation:none;}}
 .nav-links{display:flex;gap:4px;align-items:center;}
 .nav-links span{color:#0A0A0A;font-size:13px;font-weight:500;cursor:pointer;padding:8px 12px;border-radius:9px;transition:background-color .18s ease,color .18s ease;}
@@ -1615,7 +1616,9 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   .nav{padding:12px 18px;}
   .nav-links{display:none;}
   .nav-actions{display:none !important;}
-  .nav-burger{display:inline-flex !important;}
+  .nav-burger{display:inline-flex !important;margin-left:10px;}
+  .nav-join-mobile{display:inline-flex !important;margin-left:auto;}
+  .nav .logo-i{width:40px;height:40px;}
   .profile-hero,.swipe-layout{grid-template-columns:1fr;}
   .cb-sidebar{max-height:300px;}
   .results-grid{grid-template-columns:1fr 1fr;gap:12px;}
@@ -23370,9 +23373,10 @@ function App(){
   const closeMenu=useCallback(()=>{setMenuClosing(true);setTimeout(()=>{setMenuOpen(false);setMenuClosing(false);},600);},[]);
   const [joinOpen,setJoinOpen]=useState(false);
   const joinRef=useRef(null);
+  const joinRefM=useRef(null);
   useEffect(()=>{
     if(!joinOpen)return;
-    const h=(e)=>{if(joinRef.current&&!joinRef.current.contains(e.target))setJoinOpen(false);};
+    const h=(e)=>{const inD=joinRef.current&&joinRef.current.contains(e.target);const inM=joinRefM.current&&joinRefM.current.contains(e.target);if(!inD&&!inM)setJoinOpen(false);};
     document.addEventListener("mousedown",h);
     return()=>document.removeEventListener("mousedown",h);
   },[joinOpen]);
@@ -23465,8 +23469,25 @@ function App(){
             <button className={`${page==="login"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navigate("login")}>{navT('nav.signIn')}</button>
           </>}
         </div>
-        <button className="nav-burger" aria-label="Menu" onClick={()=>menuOpen?closeMenu():setMenuOpen(true)} style={{display:"none",background:"none",border:"1px solid var(--bdr)",borderRadius:8,width:40,height:40,cursor:"pointer",alignItems:"center",justifyContent:"center",padding:0}}>
-          <span style={{display:"block",width:18,height:2,background:"var(--t1)",boxShadow:"0 -5px 0 var(--t1), 0 5px 0 var(--t1)"}}></span>
+        {authReady&&!isLoggedIn&&<div className="nav-join-mobile" ref={joinRefM} style={{position:"relative"}}>
+          <button onClick={()=>setJoinOpen(o=>!o)} style={{display:"inline-flex",alignItems:"center",gap:5,height:40,padding:"0 14px",background:"var(--teal)",color:"#fff",border:"none",borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:14,cursor:"pointer"}}>
+            {navT('nav.join')}
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor" style={{transition:"transform .2s",transform:joinOpen?"rotate(180deg)":"rotate(0deg)"}}><path d="M0 0l5 6 5-6z"/></svg>
+          </button>
+          {joinOpen&&<div className="join-dd-menu" style={{left:"auto",right:0,transform:"none"}}>
+            <button className="join-dd-item" onClick={()=>{setJoinOpen(false);navigate("auth-gate");}}>
+              <div className="join-dd-icon">🎭</div>
+              <div><span className="join-dd-title">Join as Talent</span><span className="join-dd-desc">Create your actor profile and start submitting.</span></div>
+            </button>
+            <button className="join-dd-item" onClick={()=>{setJoinOpen(false);navigate("register-cd");}}>
+              <div className="join-dd-icon">🎬</div>
+              <div><span className="join-dd-title">Join as Employer</span><span className="join-dd-desc">Post casting calls and review submissions.</span></div>
+            </button>
+          </div>}
+        </div>}
+        <button className="nav-burger" aria-label="Menu" onClick={()=>menuOpen?closeMenu():setMenuOpen(true)} style={{display:"none",background:"none",border:"none",width:34,height:40,cursor:"pointer",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,padding:0}}>
+          <span style={{display:"block",width:23,height:2,background:"var(--t1)",borderRadius:2}}></span>
+          <span style={{display:"block",width:23,height:2,background:"var(--t1)",borderRadius:2}}></span>
         </button>
       </nav>
       </div>
