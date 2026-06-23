@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Swipe Deck — Entrance Animations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAF7F1;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--grn:#1B873E;--red:#D63B3B;--teal:#4F8A8B;--teal-dk:#37696A;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:var(--t1);padding:44px 20px 80px;}
+h1{font-family:'DM Sans',sans-serif;font-size:25px;font-weight:800;text-align:center;letter-spacing:-0.5px;margin:0 0 8px;}
+.sub{text-align:center;color:var(--t2);font-size:14px;margin:0 auto 52px;max-width:560px;line-height:1.6;}
+.wrap{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:40px;}
+.demo{display:flex;flex-direction:column;align-items:center;background:#fff;border:1px solid var(--bdr);border-radius:22px;padding:30px 24px 26px;box-shadow:0 2px 14px rgba(26,26,46,0.05);}
+.demo-label{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--teal-dk);margin:0 0 4px;}
+.demo-name{font-family:'DM Sans',sans-serif;font-size:18px;font-weight:800;letter-spacing:-0.3px;margin:0 0 2px;}
+.demo-desc{color:var(--t2);font-size:12.5px;line-height:1.5;text-align:center;margin:0 0 22px;min-height:34px;}
+
+/* ── stage + cards (mirrors the real .s-card) ── */
+.stage{position:relative;width:250px;height:400px;margin:0 0 22px;}
+.scard{position:absolute;top:14px;left:0;width:250px;height:372px;border-radius:18px;overflow:hidden;background:var(--s1);border:1px solid var(--bdr);box-shadow:0 8px 30px rgba(0,0,0,0.10);transform:var(--rest);opacity:var(--ro,1);will-change:transform,opacity;backface-visibility:hidden;}
+.scard img{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none;}
+.tc img{height:60%;object-position:center 8%;}
+.veil{position:absolute;inset:0;background:#0d0d16;pointer-events:none;}
+.info{padding:13px 17px;}
+.info h3{font-family:'DM Sans',sans-serif;font-size:17px;font-weight:800;letter-spacing:-0.3px;margin:0 0 3px;}
+.info .m{color:var(--t2);font-size:12px;margin-bottom:9px;}
+.info .tags{display:flex;gap:5px;flex-wrap:wrap;}
+.info .tags span{background:var(--s2);padding:3px 8px;border-radius:5px;font-size:10px;color:var(--t2);font-weight:600;}
+
+.replay{display:inline-flex;align-items:center;gap:7px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;border-radius:11px;padding:11px 22px;border:1px solid var(--bdr);background:#fff;color:var(--t1);cursor:pointer;transition:background .15s,transform .1s;}
+.replay:hover{background:var(--s2);}
+.replay:active{transform:scale(.97);}
+
+/* ── entrance keyframes (final state pulled from each card's --rest/--ro) ── */
+@keyframes d1in{0%{transform:translateY(155%) scale(.82);opacity:0}70%{opacity:var(--ro)}100%{transform:var(--rest);opacity:var(--ro)}}
+@keyframes d1top{0%{transform:translateY(140%) scale(.9);opacity:0}55%{opacity:1}82%{transform:translateY(-12px) scale(1.015)}100%{transform:var(--rest);opacity:1}}
+@keyframes d2in{0%{transform:translateX(165%) rotate(14deg) scale(.82);opacity:0}100%{transform:var(--rest);opacity:var(--ro)}}
+@keyframes d2top{0%{transform:translateX(155%) rotate(12deg) scale(.9);opacity:0}80%{transform:translateX(-14px) rotate(-2deg) scale(1.01)}100%{transform:var(--rest);opacity:1}}
+@keyframes d3in{0%{transform:translateY(-165%) rotate(var(--spin,8deg)) scale(.82);opacity:0}100%{transform:var(--rest);opacity:var(--ro)}}
+@keyframes d3top{0%{transform:translateY(-150%) rotate(-6deg) scale(.9);opacity:0}70%{transform:translateY(9px) scale(1.02)}100%{transform:var(--rest);opacity:1}}
+
+/* idle "tip" — gentle nudge every few seconds, like the live card */
+@keyframes tip{0%,80%,100%{transform:translateX(0) rotate(0)}86%{transform:translateX(10px) rotate(2.4deg)}92%{transform:translateX(-2px) rotate(-.6deg)}}
+
+.run .bc{animation-name:var(--anim);animation-duration:.46s;animation-timing-function:cubic-bezier(.2,.75,.25,1);animation-fill-mode:both;animation-delay:var(--d);}
+.run .tc{animation-name:var(--animTop);animation-duration:.62s;animation-timing-function:cubic-bezier(.34,1.45,.5,1);animation-fill-mode:both;}
+.tc.idle{animation:tip 4.2s ease-in-out infinite;}
+
+[data-demo="1"]{--anim:d1in;--animTop:d1top;}
+[data-demo="2"]{--anim:d2in;--animTop:d2top;}
+[data-demo="3"]{--anim:d3in;--animTop:d3top;}
+
+@media(prefers-reduced-motion:reduce){.run .bc,.run .tc,.tc.idle{animation:none!important;}}
+</style>
+</head>
+<body>
+<h1>Swipe deck — entrance animations</h1>
+<p class="sub">Three takes on bringing the landing-page swipe deck to life on page load. Zara Banks slides in first, the rest of the deck snaps in behind her, then the top card idle-tips every few seconds — exactly as it does live. Hit <strong>Replay</strong> on any card to watch it again.</p>
+
+<div class="wrap">
+  <div class="demo">
+    <div class="demo-label">Demo 1</div>
+    <div class="demo-name">Deal from below</div>
+    <div class="demo-desc">Zara rises and settles, then the deck stacks up beneath her like cards being dealt.</div>
+    <div class="stage" data-demo="1" id="stage1"></div>
+    <button class="replay" onclick="runStage('stage1')">↺ Replay</button>
+  </div>
+
+  <div class="demo">
+    <div class="demo-label">Demo 2</div>
+    <div class="demo-name">Fan in from the right</div>
+    <div class="demo-desc">Zara swoops in from the side, the rest fan in fast behind her into a loose spread.</div>
+    <div class="stage" data-demo="2" id="stage2"></div>
+    <button class="replay" onclick="runStage('stage2')">↺ Replay</button>
+  </div>
+
+  <div class="demo">
+    <div class="demo-label">Demo 3</div>
+    <div class="demo-name">Drop &amp; snap</div>
+    <div class="demo-desc">Cards drop in scattered from above, then snap into a clean aligned stack.</div>
+    <div class="stage" data-demo="3" id="stage3"></div>
+    <button class="replay" onclick="runStage('stage3')">↺ Replay</button>
+  </div>
+</div>
+
+<script>
+var FACES=[
+  {name:"Zara Banks",meta:"27 · Female · 5'7\"",tags:["Drama Training","Voiceover","Stage Combat"],img:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=800&fit=crop&crop=top&q=90"},
+  {img:"https://images.unsplash.com/photo-1587397845856-e6cf49176c70?w=600&h=800&fit=facearea&facepad=3&q=90"},
+  {img:"https://images.unsplash.com/photo-1601412436009-d964bd02edbc?w=600&h=800&fit=facearea&facepad=3&q=90"},
+  {img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90"},
+  {img:"https://images.unsplash.com/photo-1624395213043-fa2e123b2656?w=600&h=800&fit=facearea&facepad=3&q=90"},
+  {img:"https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop"},
+  {img:"https://images.unsplash.com/photo-1542973748-658653fb3d12?w=600&h=800&fit=facearea&facepad=3&q=90"}
+];
+
+function restFor(demo,i){
+  if(demo==="1")return "translateY("+(i*13)+"px) scale("+(1-i*0.05).toFixed(3)+")";
+  if(demo==="2")return "translateX("+(i*7)+"px) translateY("+(i*8)+"px) rotate("+(i*2.6).toFixed(1)+"deg) scale("+(1-i*0.045).toFixed(3)+")";
+  return "translateY("+(-i*12)+"px) scale("+(1-i*0.05).toFixed(3)+")";
+}
+
+function buildStage(id){
+  var stage=document.getElementById(id);
+  var demo=stage.getAttribute("data-demo");
+  var n=FACES.length;
+  // back cards first (rendered behind), top card last (front)
+  for(var i=n-1;i>=1;i--){
+    var f=FACES[i];
+    var c=document.createElement("div");
+    c.className="scard bc";
+    var ro=Math.max(0.5,1-i*0.08).toFixed(2);
+    var spin=(i%2?-1:1)*(6+i*1.6);
+    c.setAttribute("style","--rest:"+restFor(demo,i)+";--ro:"+ro+";--d:"+(0.30+i*0.07).toFixed(2)+"s;--spin:"+spin+"deg;z-index:"+(50-i));
+    c.innerHTML='<img src="'+f.img+'" alt="" loading="lazy"><div class="veil" style="opacity:'+(i*0.06).toFixed(2)+'"></div>';
+    stage.appendChild(c);
+  }
+  var t=FACES[0];
+  var top=document.createElement("div");
+  top.className="scard tc";
+  top.setAttribute("style","--rest:translateY(0) scale(1);--ro:1;z-index:60");
+  top.innerHTML='<img src="'+t.img+'" alt="'+t.name+'">'
+    +'<div class="info"><h3>'+t.name+'</h3><div class="m">'+t.meta+'</div>'
+    +'<div class="tags">'+t.tags.map(function(s){return '<span>'+s+'</span>';}).join('')+'</div></div>';
+  stage.appendChild(top);
+}
+
+function runStage(id){
+  var stage=document.getElementById(id);
+  var top=stage.querySelector(".tc");
+  stage.classList.remove("run");
+  top.classList.remove("idle");
+  void stage.offsetWidth;
+  stage.classList.add("run");
+  clearTimeout(stage._t);
+  stage._t=setTimeout(function(){top.classList.add("idle");},1450);
+}
+
+["stage1","stage2","stage3"].forEach(function(id){buildStage(id);runStage(id);});
+</script>
+</body>
+</html>
