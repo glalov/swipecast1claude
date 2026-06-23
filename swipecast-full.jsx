@@ -1686,6 +1686,23 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 }
 .mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:transparent;z-index:150;}
 .mobile-menu.closing{pointer-events:none;}
+/* Browse Castings slide-in detail sheet (left -> right), dimming the list behind. */
+.cs-sheet-dim{position:fixed;left:0;right:0;bottom:0;top:var(--site-top-h,56px);background:rgba(18,18,28,.42);z-index:114;animation:csDimIn .45s ease;}
+.cs-sheet-dim.closing{animation:csDimOut .45s ease forwards;}
+.cs-sheet{position:fixed;left:0;bottom:0;top:var(--site-top-h,56px);width:min(900px,90%);background:var(--bg);z-index:115;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:18px 0 48px rgba(26,26,46,.34);animation:csSheetIn .5s cubic-bezier(.3,.7,.25,1);}
+.cs-sheet.closing{animation:csSheetOut .46s cubic-bezier(.3,.7,.25,1) forwards;}
+@keyframes csSheetIn{from{transform:translateX(-102%);}to{transform:translateX(0);}}
+@keyframes csSheetOut{from{transform:translateX(0);}to{transform:translateX(-102%);}}
+@keyframes csDimIn{from{background:rgba(18,18,28,0);}to{background:rgba(18,18,28,.42);}}
+@keyframes csDimOut{from{background:rgba(18,18,28,.42);}to{background:rgba(18,18,28,0);}}
+.cs-sheet .site-footer,.cs-sheet .site-footer-spacer,.cs-sheet .site-backtotop,.cs-sheet .page-foot-gap{display:none !important;}
+.cs-sheet .page{padding-top:14px !important;min-height:0 !important;}
+.cs-sheet-bar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:var(--bg);border-bottom:1px solid var(--bdr);}
+.cs-sheet-back{display:inline-flex;align-items:center;gap:6px;background:none;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--acc);cursor:pointer;padding:6px 4px;}
+.cs-sheet-x{width:34px;height:34px;border-radius:9px;border:1px solid var(--bdr);background:var(--bg);font-size:18px;cursor:pointer;color:var(--t1);line-height:1;}
+.cs-sheet-x:hover{background:var(--s2);}
+@media(max-width:768px){.cs-sheet{width:100%;}}
+@media(prefers-reduced-motion:reduce){.cs-sheet,.cs-sheet.closing,.cs-sheet-dim,.cs-sheet-dim.closing{animation:none;}}
 .mobile-menu-inner{position:absolute;top:0;left:0;bottom:0;width:100%;max-width:100%;background:var(--s1);padding:18px 16px 22px;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:mmDrop .6s cubic-bezier(.22,.68,.28,1);will-change:transform;}
 .mobile-menu-inner.closing{animation:mmDropUp .6s cubic-bezier(.22,.68,.28,1) forwards;}
 @keyframes mmDrop{from{transform:translateX(-100%);}to{transform:translateX(0);}}
@@ -8908,6 +8925,19 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const [dbTalent,setDbTalent]=useState(()=>_talentCache||[]);
   const [refreshTick,setRefreshTick]=useState(0);
   const [loading,setLoading]=useState(()=>!_castingsCache);          // initial fetch in flight
+  // Slide-in casting detail sheet (Browse only). Reuses the existing
+  // CastingDetailPage / CastingGatePage so apply + login gating are unchanged.
+  const [sheetCasting,setSheetCasting]=useState(null);
+  const [sheetClosing,setSheetClosing]=useState(false);
+  const openSheet=useCallback((c)=>{setSheetClosing(false);setSheetCasting(c);window.scrollTo(0,0);},[]);
+  const closeSheet=useCallback(()=>{setSheetClosing(true);setTimeout(()=>{setSheetCasting(null);setSheetClosing(false);},460);},[]);
+  useEffect(()=>{
+    if(!sheetCasting)return;
+    const onKey=(e)=>{if(e.key==="Escape")closeSheet();};
+    window.addEventListener("keydown",onKey);
+    const prevOv=document.body.style.overflow;document.body.style.overflow="hidden";
+    return()=>{window.removeEventListener("keydown",onKey);document.body.style.overflow=prevOv;};
+  },[sheetCasting,closeSheet]);
   const [fetchErr,setFetchErr]=useState("");          // surfaced castings fetch error
   const [lastFetchAt,setLastFetchAt]=useState(0);     // timestamp of last successful fetch
   useEffect(()=>{setPg(1);},[q,f.type,f.location,f.union,f.gender,f.ethnicity,f.castingType,mode]);
@@ -9118,7 +9148,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             }}
               onMouseEnter={e=>{if(isArchived)return;e.currentTarget.style.boxShadow="0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
               onMouseLeave={e=>{if(isArchived)return;e.currentTarget.style.boxShadow="0 1px 4px rgba(26,26,46,0.05)";e.currentTarget.style.transform="";}}
-              onClick={()=>{if(isArchived)return;onViewCasting&&onViewCasting(rawC);}}>
+              onClick={()=>{if(isArchived)return;openSheet(rawC);}}>
               {isArchived&&<div className="cs-archived-stamp" aria-hidden="true">Archived</div>}
               <div className={isArchived?"cs-archived-dim":undefined}>
               <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
@@ -9149,7 +9179,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                 <div className="casting-card-row-side" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",minWidth:140}}>
                   {isArchived
                     ?<span className="badge" style={{background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>Position filled</span>
-                    :<button className="btn-teal" onClick={e=>{e.stopPropagation();onViewCasting&&onViewCasting(rawC);}}>{t('search.viewRoles')}</button>}
+                    :<button className="btn-teal" onClick={e=>{e.stopPropagation();openSheet(rawC);}}>{t('search.viewRoles')}</button>}
                   {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>{t('search.applied')}</span>:null}
                 </div>
               </div>
@@ -9165,6 +9195,18 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
     </>
     {applyTo&&<div className="modal-overlay" onClick={()=>setApplyTo(null)}><div className="modal" onClick={e=>e.stopPropagation()}><h2>{t('search.submitForRole')}</h2><div style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:20}}><h4 style={{fontSize:14,fontWeight:700}}>{applyTo.title}</h4><p style={{color:"var(--t2)",fontSize:12,marginTop:2}}>{applyTo.prod} · {applyTo.location}</p></div><div className="form-group"><label className="label">{t('search.coverNote')}</label><textarea className="textarea" placeholder={t('search.coverNotePlaceholder')}></textarea></div><div className="form-group"><label className="label">{t('search.whichHeadshot')}</label><div style={{display:"flex",gap:10,marginTop:8}}><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"2px solid var(--acc)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t2)",textAlign:"center",padding:4}}>{t('search.primary')}</div><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t3)",textAlign:"center",padding:4,cursor:"pointer"}}>{t('search.addPhoto')}</div></div></div><div style={{display:"flex",gap:12,marginTop:24}}><button className="btn-p" style={{flex:1}} onClick={()=>{setApplied(p=>new Set([...p,applyTo.id]));setApplyTo(null);}}>{t('search.submitApp')}</button><button className="btn-s" onClick={()=>setApplyTo(null)}>{t('cancel')}</button></div></div></div>}
     <div className="page-foot-gap" aria-hidden="true"/>
+    {sheetCasting&&<>
+      <div className={"cs-sheet-dim"+(sheetClosing?" closing":"")} onClick={closeSheet} aria-hidden="true"/>
+      <div className={"cs-sheet"+(sheetClosing?" closing":"")} role="dialog" aria-modal="true">
+        <div className="cs-sheet-bar">
+          <button className="cs-sheet-back" onClick={closeSheet}>← {t('search.backToCastings')||'Back to castings'}</button>
+          <button className="cs-sheet-x" onClick={closeSheet} aria-label="Close">×</button>
+        </div>
+        {(isLoggedIn||sheetCasting.featured===true)
+          ? <CastingDetailPage casting={sheetCasting} onBack={closeSheet} onNavigate={(p)=>{setSheetCasting(null);onNavigate(p);}} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} myProfile={myProfile} session={session}/>
+          : <CastingGatePage casting={sheetCasting} onCreateProfile={()=>{setSheetCasting(null);onNavigate("auth-gate");}} onLogin={()=>{setSheetCasting(null);onNavigate("login");}} onBack={closeSheet}/>}
+      </div>
+    </>}
     <Footer onNavigate={onNavigate}/></div>);
 }
 
