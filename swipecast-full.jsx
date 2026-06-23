@@ -1669,7 +1669,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   html{background:#1B1C20 !important;}
   .site-footer{padding-bottom:max(28px,env(safe-area-inset-bottom)) !important;}
   /* Tablet/mobile: lighter but still comfortable gap above the footer */
-  .site-footer-spacer{height:72px;}
+  .site-footer-spacer{height:0;}
   /* Profile hero → single column */
   .my-profile-hero{grid-template-columns:1fr !important;gap:16px !important;}
   .my-profile-hero-photo{max-width:200px !important;margin:0 auto !important;}
@@ -1754,7 +1754,13 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* ─── 40px breathing-room spacer rendered right before the footer by the Footer
        component. Inherits the warm .app bg, flex-shrink:0 so it always exists
        even when the page is taller than the viewport. ─── */
-.site-footer-spacer{height:96px;flex-shrink:0;background:var(--bg);width:100%;margin-top:auto;}
+.site-footer-spacer{height:0;flex-shrink:0;background:var(--bg);width:100%;margin-top:auto;}
+/* Floating back-to-top cube — drops in from above the screen at the very bottom,
+   shoots back up off-screen when the user scrolls up. Replaces the old bar. */
+.b2t-cube{position:fixed;left:50%;bottom:20px;z-index:130;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:84px;height:74px;background:#0A0A0A;color:#fff;border:1px solid rgba(255,255,255,0.14);border-radius:16px;cursor:pointer;box-shadow:0 14px 30px rgba(0,0,0,0.42);font-family:'DM Sans',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:.2px;transform:translateX(-50%) translateY(-130vh);opacity:0;pointer-events:none;transition:transform .34s cubic-bezier(.4,0,.7,.5),opacity .2s ease .14s;}
+.b2t-cube.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto;transition:transform .5s cubic-bezier(.3,1.24,.5,1),opacity .12s ease;}
+.b2t-cube span{line-height:1;}
+@media(prefers-reduced-motion:reduce){.b2t-cube{transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;}}
 .site-backtotop{
   display:flex;align-items:center;justify-content:center;gap:8px;
   position:relative;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;
@@ -3082,12 +3088,25 @@ function Footer({onNavigate,noSpacer}){
   // Amazon-style "back to top" bar — full-bleed, one notch lighter than the
   // footer, smooth-scrolls (not a hard cut) to the top of the page.
   const scrollTop=()=>{try{window.scrollTo({top:0,behavior:'smooth'});}catch(_){window.scrollTo(0,0);}};
+  // Show the floating back-to-top cube only when the page is scrolled to the very
+  // bottom; it drops in from above and shoots back up off-screen on scroll-up.
+  const [b2tShow,setB2tShow]=React.useState(false);
+  React.useEffect(()=>{
+    const check=()=>{try{setB2tShow(window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-4);}catch(_){}};
+    window.addEventListener('scroll',check,{passive:true});
+    window.addEventListener('resize',check);
+    check();
+    return()=>{window.removeEventListener('scroll',check);window.removeEventListener('resize',check);};
+  },[]);
   return(<>
     {/* Global breathing room above the footer on EVERY page. Carries margin-top:auto
         (the sticky-footer push) AND a guaranteed min-height so no page's final card,
         icon row, or button ever touches the Back-to-top bar. 96px desktop / 72px mobile. */}
     <div className="site-footer-spacer" style={noSpacer?{height:0}:undefined} aria-hidden="true"></div>
-    <button type="button" className="site-backtotop" onClick={scrollTop} aria-label={t('footer.backToTop')}>{t('footer.backToTop')} <span className="site-backtotop-arrow" aria-hidden="true">↑</span></button>
+    <button type="button" className={"b2t-cube"+(b2tShow?" show":"")} onClick={scrollTop} aria-label={t('footer.backToTop')}>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V6M6 12l6-6 6 6"/></svg>
+      <span>{t('footer.backToTop')}</span>
+    </button>
     <footer className="site-footer">
       <div className="site-footer-inner">
         <div className="site-footer-grid">
