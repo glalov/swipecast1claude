@@ -13859,6 +13859,10 @@ const LANDING_SWIPE_DEMO=[
   {id:3,name:"Owen Fletcher",age:28,gender:"Male",height:"6'0\"",pos:"center 25%",img:"https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Drama","Film & TV","Screen Acting"]},
   {id:11,name:"Georgie Nelson",age:26,gender:"Male",height:"5'11\"",pos:"center 18%",img:"https://images.unsplash.com/photo-1721956514577-f6c15d73e585?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Action","Commercial","Improv"]},
 ];
+// Plays the entrance once per page load. Module-level so it survives in-app
+// navigation (Home → other page → Home doesn't replay), but resets on a real
+// reload / address-bar entry / new tab — exactly when the logo splash runs too.
+let swipeIntroSeen=false;
 function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your free profile"}={}){
   const demo=LANDING_SWIPE_DEMO;
   const total=demo.length;
@@ -13901,8 +13905,9 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
   // Idle nudge resumes after. Skipped under prefers-reduced-motion.
   React.useEffect(()=>{
     if(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){setArmed(true);setIntro(false);return;}
+    if(swipeIntroSeen){setArmed(true);setIntro(false);return;}
     let started=false,endTm,poll,safety;
-    function play(){if(started)return;started=true;setArmed(true);endTm=setTimeout(()=>setIntro(false),2400);}
+    function play(){if(started)return;started=true;swipeIntroSeen=true;setArmed(true);endTm=setTimeout(()=>setIntro(false),2400);}
     const hasSplash=typeof document!=='undefined'&&document.getElementById('cs-intro');
     if(!hasSplash){const k=setTimeout(play,150);return ()=>{clearTimeout(k);clearTimeout(endTm);};}
     poll=setInterval(()=>{if(typeof document!=='undefined'&&!document.getElementById('cs-intro')){clearInterval(poll);play();}},120);
