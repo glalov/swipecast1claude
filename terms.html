@@ -74,15 +74,15 @@
       };
     }
   </script>
-  <!-- BUILD: 20260623-185755 -->
-  <meta name="build-version" content="20260623-185755"/>
+  <!-- BUILD: 20260623-191217 -->
+  <meta name="build-version" content="20260623-191217"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260623-185755";
+        var B="20260623-191217";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -125,9 +125,9 @@
     #cs-error .err-detail{color:#888;font-size:11px;font-family:monospace;margin-top:10px;padding:10px;background:rgba(255,255,255,0.05);border-radius:6px;text-align:left;max-width:480px;max-height:120px;overflow-y:auto;word-break:break-all;display:none;}
     #cs-error button{background:#6366f1;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:-apple-system,sans-serif;margin-top:8px;}
     /* Intro reveal — logo eases out of black, then the site is revealed.
-       Plays once per browser session (sessionStorage guard in the inline script
-       below removes it instantly on subsequent loads, so navigation and reloads
-       are not delayed by the ~3s splash). */
+       Plays on every page load (refresh, address-bar entry, new tab); the
+       reduced-motion guard in the inline script below skips it for users who
+       prefer reduced motion. */
     #cs-intro{
       position:fixed;top:0;right:0;bottom:0;left:0;background:#0A0A0A;z-index:100000;
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;
@@ -149,7 +149,7 @@
   </style>
 </head>
 <body>
-  <!-- Intro reveal — logo fades out of black for ~3s, then the site is revealed. Plays once per browser session. -->
+  <!-- Intro reveal — logo fades out of black for ~3s, then the site is revealed. Plays on every page load. -->
   <div id="cs-intro" aria-hidden="true">
     <div class="cs-intro-mark">
       <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="33" height="33"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
@@ -162,10 +162,6 @@
       if(!el)return;
       var skip=false;
       try{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true;}catch(e){}
-      try{
-        if(sessionStorage.getItem('sc_intro_seen'))skip=true;
-        else sessionStorage.setItem('sc_intro_seen','1');
-      }catch(e){}
       if(skip){if(el.parentNode)el.parentNode.removeChild(el);return;}
       setTimeout(function(){if(el&&el.parentNode)el.parentNode.removeChild(el);},3150);
     })();
@@ -294,6 +290,6 @@
       })();
     })();
   </script>
-  <script src="/app.js?v=20260623-185755"></script>
+  <script src="/app.js?v=20260623-191217"></script>
 </body>
 </html>
