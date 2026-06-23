@@ -595,8 +595,8 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   transition:opacity .45s cubic-bezier(.4,0,.2,1),transform .45s cubic-bezier(.4,0,.2,1),filter .45s ease,box-shadow .45s ease,border-color .25s ease;
   box-shadow:0 1px 2px rgba(0,0,0,0.02);
 }
-.fcs-card-center{opacity:1;filter:none;transform:scale(1);z-index:2;box-shadow:0 2px 12px rgba(26,26,46,0.06);}
-.fcs-card-center:hover{transform:scale(1.004) translateY(-1px);box-shadow:-10px 10px 24px -9px rgba(26,26,46,0.11),10px 10px 24px -9px rgba(26,26,46,0.11),0 15px 28px -9px rgba(26,26,46,0.12);border-color:var(--bdr);}
+.fcs-card-center{opacity:1;filter:none;transform:scale(1);z-index:2;box-shadow:0 1px 10px rgba(26,26,46,0.05);}
+.fcs-card-center:hover{transform:scale(1.004) translateY(-1px);box-shadow:-12px 10px 30px -16px rgba(26,26,46,0.09),12px 10px 30px -16px rgba(26,26,46,0.09),0 14px 32px -18px rgba(26,26,46,0.08);border-color:var(--bdr);}
 .fcs-card-side{opacity:0.42;filter:grayscale(.12);transform:scale(.92);}
 .fcs-card-side:hover{opacity:0.7;filter:none;transform:scale(.96);}
 .fcs-card-far{opacity:0.18;}
