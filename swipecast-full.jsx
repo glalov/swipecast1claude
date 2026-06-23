@@ -1530,6 +1530,12 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .sw-intro-top{animation:sw-in-top .5s cubic-bezier(.34,1.4,.5,1) both;}
 .sw-intro-back{animation:sw-in-back .62s cubic-bezier(.2,.75,.25,1) both;animation-delay:var(--d,0s);}
 @media(prefers-reduced-motion:reduce){.sw-intro-top,.sw-intro-back{animation:none!important;}}
+.sw-burst{position:absolute;left:50%;top:38%;width:0;height:0;z-index:3;pointer-events:none;}
+.sw-burst .ring{position:absolute;left:0;top:0;width:150px;height:150px;border-radius:50%;border:2px solid var(--amber);animation:sw-ring .6s ease-out forwards;}
+.sw-burst .spark{position:absolute;left:0;top:0;color:var(--amber);line-height:1;animation:sw-spark .7s ease-out forwards;}
+@keyframes sw-ring{0%{opacity:.6;transform:translate(-50%,-50%) scale(.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.3)}}
+@keyframes sw-spark{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}18%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) scale(1)}}
+@media(prefers-reduced-motion:reduce){.sw-burst{display:none;}}
 .swipe-btns{display:flex;gap:20px;align-items:flex-start;}
 .sw-btn-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;}
 .sw-btn-label{font-size:9px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--t3);}
@@ -13863,6 +13869,8 @@ const LANDING_SWIPE_DEMO=[
 // navigation (Home → other page → Home doesn't replay), but resets on a real
 // reload / address-bar entry / new tab — exactly when the logo splash runs too.
 let swipeIntroSeen=false;
+// Gold star-burst particles fired when an actor is shortlisted (the star tier).
+const SW_SPARKS=Array.from({length:14},(_,i)=>{const a=(i/14)*Math.PI*2+(i%2?0.18:-0.12);const r=78+(i%5)*16;return{tx:`${Math.round(Math.cos(a)*r)}px`,ty:`${Math.round(Math.sin(a)*r)}px`,size:`${9+(i%4)*3}px`,dur:`${(0.55+(i%3)*0.12).toFixed(2)}s`,delay:`${((i%3)*0.03).toFixed(2)}s`};});
 function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your free profile"}={}){
   const demo=LANDING_SWIPE_DEMO;
   const total=demo.length;
@@ -13874,6 +13882,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
   const [intro,setIntro]=useState(true);
   const [armed,setArmed]=useState(false);
   const [superFly,setSuperFly]=useState(false);
+  const [burst,setBurst]=useState(false);
   const dragging=useRef(false);
   const startX=useRef(0);
   const startT=useRef(0);
@@ -13935,6 +13944,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
     setNudge(0);
     setAnimating(true);
     setSuperFly(true);
+    setBurst(true);
     setDx(0);
     dragging.current=false;
     setTimeout(()=>{
@@ -13942,8 +13952,9 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
       setSuperFly(false);
       setAnimating(false);
     },320);
+    setTimeout(()=>setBurst(false),720);
   }
-  function reset(){setIdx(0);setAnimating(false);setFlyDir(0);setSuperFly(false);setDx(0);dragging.current=false;}
+  function reset(){setIdx(0);setAnimating(false);setFlyDir(0);setSuperFly(false);setBurst(false);setDx(0);dragging.current=false;}
   if(done){return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:300,minHeight:500,gap:10,textAlign:"center"}}>
       <div style={{fontSize:46,marginBottom:2}}>🎬</div>
@@ -13993,6 +14004,10 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
             <div className="s-card-tags">{t.skills.slice(0,3).map((s,i)=><span key={i}>{s}</span>)}</div>
           </div>
         </div>
+        {burst&&<div className="sw-burst" aria-hidden="true">
+          <div className="ring"/>
+          {SW_SPARKS.map((s,i)=><span key={i} className="spark" style={{"--tx":s.tx,"--ty":s.ty,fontSize:s.size,animationDuration:s.dur,animationDelay:s.delay}}>★</span>)}
+        </div>}
       </div>
       <div className="sw-hint-pill">
         <span className="sw-hint-arrow">↔</span>
@@ -14007,7 +14022,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
         </div>
         <div className="sw-btn-wrap">
           <button className="sw-btn save" title="Shortlist" disabled={animating} onClick={()=>shortlist()}>★</button>
-          <span className="sw-btn-label">Save</span>
+          <span className="sw-btn-label">Shortlist</span>
         </div>
         <div className="sw-btn-wrap">
           <button className="sw-btn yes" title="Callback" disabled={animating} onClick={()=>advance(1)}>✓</button>
