@@ -1538,7 +1538,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .sw-btn.save:hover{border-color:var(--blu);background:rgba(37,99,235,0.07);transform:scale(1.1);}
 .sw-btn.yes:hover{border-color:var(--grn);background:rgba(27,135,62,0.07);transform:scale(1.1);}
 @keyframes sw-sway{0%,100%{transform:translateX(0)}30%{transform:translateX(-7px)}70%{transform:translateX(7px)}}
-@keyframes sw-ring{0%,100%{box-shadow:0 0 0 0 rgba(99,91,255,0)}55%{box-shadow:0 0 0 7px rgba(99,91,255,0.10)}}
+@keyframes sw-ring{0%,100%{box-shadow:0 0 0 0 rgba(99,91,255,0)}55%{box-shadow:0 0 0 10px rgba(99,91,255,0.22)}}
 .sw-hint-pill{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:#fff;border:1px solid var(--bdr);border-radius:100px;margin:8px 0 14px;box-shadow:0 6px 18px rgba(26,26,46,0.10);}
 .sw-hint-arrow{font-size:16px;display:inline-block;animation:sw-sway 2.4s ease-in-out infinite;line-height:1;color:#1A1A2E;}
 .sw-hint-text{font-size:12px;font-weight:700;color:#1A1A2E;}
@@ -13994,7 +13994,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
         </div>
       </div>
       <div className="sw-hint-pill">
-        <span className="sw-hint-arrow">↔</span>
+        <span className="sw-hint-arrow">↔️</span>
         <span className="sw-hint-text">Swipe or tap to review talent</span>
         <span className="sw-hint-text-mobile">Swipe the card or tap below</span>
       </div>
