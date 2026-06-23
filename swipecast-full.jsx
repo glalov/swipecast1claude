@@ -1725,6 +1725,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .join-dropdown{position:relative;display:inline-flex;}
 @keyframes ddFadeIn{from{opacity:0;transform:translateX(-50%) translateY(-6px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
 .join-dd-menu{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--bdr);border-radius:12px;box-shadow:0 8px 32px rgba(26,26,46,0.14);padding:6px;min-width:260px;z-index:300;animation:ddFadeIn .15s ease;}
+/* Right-anchored variant (mobile nav + mobile menu) — same look as desktop, but
+   drops straight down (translateY only) so it doesn't jump in from the side. */
+@keyframes ddFadeInM{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.join-dd-menu-m{position:absolute;top:calc(100% + 10px);right:0;left:auto;background:#fff;border:1px solid var(--bdr);border-radius:12px;box-shadow:0 8px 32px rgba(26,26,46,0.14);padding:6px;min-width:260px;z-index:300;animation:ddFadeInM .15s ease;}
 .join-dd-item{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;}
 .join-dd-item:hover{background:var(--s1);}
 .join-dd-icon{width:34px;height:34px;border-radius:8px;background:var(--s1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;line-height:1;}
@@ -23475,7 +23479,7 @@ function App(){
             {navT('nav.join')}
             <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor" style={{transition:"transform .2s",transform:joinOpen?"rotate(180deg)":"rotate(0deg)"}}><path d="M0 0l5 6 5-6z"/></svg>
           </button>
-          {joinOpen&&<div className="join-dd-menu" style={{left:"auto",right:0,transform:"none"}}>
+          {joinOpen&&<div className="join-dd-menu-m">
             <button className="join-dd-item" onClick={()=>{setJoinOpen(false);navigate("auth-gate");}}>
               <div className="join-dd-icon">🎭</div>
               <div><span className="join-dd-title">Join as Talent</span><span className="join-dd-desc">Create your actor profile and start submitting.</span></div>
@@ -23514,14 +23518,22 @@ function App(){
               <button className="btn-s btn-sm" onClick={()=>navThen("account-settings")}>{navT('nav.accountSettings')}</button>
               <button className="btn-p btn-sm" onClick={doSignOut}>{navT('nav.signOut')}</button>
             </>:<>
-              <button onClick={()=>setMenuJoinOpen(o=>!o)} style={{width:"100%",height:54,background:"var(--teal)",color:"#fff",border:"none",borderRadius:12,fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                {navT('nav.join')}
-                <svg width="12" height="7" viewBox="0 0 10 6" fill="currentColor" style={{transition:"transform .2s",transform:menuJoinOpen?"rotate(180deg)":"rotate(0deg)"}}><path d="M0 0l5 6 5-6z"/></svg>
-              </button>
-              {menuJoinOpen&&<div style={{display:"flex",flexDirection:"column",gap:8,marginTop:-6}}>
-                <button onClick={()=>navThen("auth-gate")} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"13px 15px",background:"var(--s2)",border:"none",borderRadius:11,fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:15,color:"var(--t1)",cursor:"pointer",textAlign:"left"}}>🎭 Join as Talent</button>
-                <button onClick={()=>navThen("register-cd")} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"13px 15px",background:"var(--s2)",border:"none",borderRadius:11,fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:15,color:"var(--t1)",cursor:"pointer",textAlign:"left"}}>🎬 Join as Employer</button>
-              </div>}
+              <div style={{position:"relative"}}>
+                <button onClick={()=>setMenuJoinOpen(o=>!o)} style={{width:"100%",height:54,background:"var(--teal)",color:"#fff",border:"none",borderRadius:12,fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                  {navT('nav.join')}
+                  <svg width="12" height="7" viewBox="0 0 10 6" fill="currentColor" style={{transition:"transform .2s",transform:menuJoinOpen?"rotate(180deg)":"rotate(0deg)"}}><path d="M0 0l5 6 5-6z"/></svg>
+                </button>
+                {menuJoinOpen&&<div className="join-dd-menu-m" style={{left:0,right:0,minWidth:0}}>
+                  <button className="join-dd-item" onClick={()=>navThen("auth-gate")}>
+                    <div className="join-dd-icon">🎭</div>
+                    <div><span className="join-dd-title">Join as Talent</span><span className="join-dd-desc">Create your actor profile and start submitting.</span></div>
+                  </button>
+                  <button className="join-dd-item" onClick={()=>navThen("register-cd")}>
+                    <div className="join-dd-icon">🎬</div>
+                    <div><span className="join-dd-title">Join as Employer</span><span className="join-dd-desc">Post casting calls and review submissions.</span></div>
+                  </button>
+                </div>}
+              </div>
               <button onClick={()=>navThen("register-cd")} style={{width:"100%",height:54,background:"#fff",color:"var(--t1)",border:"1.5px solid var(--t1)",borderRadius:12,fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,cursor:"pointer",boxShadow:"4px 5px 0 0 #0A0A0A"}}>{navT('nav.postCasting')}</button>
               <button onClick={()=>navThen("login")} style={{width:"100%",height:50,background:"none",border:"none",color:"var(--t1)",fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:17,cursor:"pointer"}}>{navT('nav.signIn')}</button>
             </>}
