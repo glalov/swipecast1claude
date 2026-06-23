@@ -13902,7 +13902,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
   React.useEffect(()=>{
     if(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){setArmed(true);setIntro(false);return;}
     let started=false,endTm,poll,safety;
-    function play(){if(started)return;started=true;setArmed(true);endTm=setTimeout(()=>setIntro(false),2300);}
+    function play(){if(started)return;started=true;setArmed(true);endTm=setTimeout(()=>setIntro(false),2400);}
     const hasSplash=typeof document!=='undefined'&&document.getElementById('cs-intro');
     if(!hasSplash){const k=setTimeout(play,150);return ()=>{clearTimeout(k);clearTimeout(endTm);};}
     poll=setInterval(()=>{if(typeof document!=='undefined'&&!document.getElementById('cs-intro')){clearInterval(poll);play();}},120);
@@ -13949,10 +13949,10 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
         {!intro&&<div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.35,zIndex:1,pointerEvents:"none"}}>
           <img src={nt.img} alt="" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:nt.pos||"center 8%"}}/>
         </div>}
-        {intro&&armed&&[1,2,3,4].map(i=>{const bc=demo[Math.min(i,total-1)];const rest=`translateY(${i*10}px) scale(${(1-i*0.06).toFixed(3)})`;const ro=Math.max(0.78,1-i*0.05).toFixed(2);return(
-          <div key={"swin"+i} className="s-card sw-intro-back" style={{"--rest":rest,"--ro":ro,"--d":`${(0.55+i*0.20).toFixed(2)}s`,zIndex:1,pointerEvents:"none"}}>
+        {intro&&armed&&Array.from({length:total-1},(_,k)=>k+1).map(i=>{const bc=demo[Math.min(i,total-1)];const rest=`translateY(${i*5}px) scale(${(1-i*0.03).toFixed(3)})`;const ro=Math.max(0.74,1-i*0.035).toFixed(2);return(
+          <div key={"swin"+i} className="s-card sw-intro-back" style={{"--rest":rest,"--ro":ro,"--d":`${(0.45+i*0.10).toFixed(2)}s`,zIndex:20-i,pointerEvents:"none"}}>
             <img src={bc.img} alt="" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:bc.pos||"center 8%"}}/>
-            <div style={{position:"absolute",inset:0,background:"#0d0d16",opacity:i*0.035,pointerEvents:"none"}}/>
+            <div style={{position:"absolute",inset:0,background:"#0d0d16",opacity:i*0.02,pointerEvents:"none"}}/>
           </div>);})}
         <div className={"s-card"+(intro?(armed?" sw-intro-top":" sw-pre"):"")}
           style={{transform:cardTransform,transition:cardTransition,zIndex:2,cursor:dragging.current?"grabbing":"grab",touchAction:"pan-y",userSelect:"none"}}
