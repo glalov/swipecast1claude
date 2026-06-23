@@ -7503,7 +7503,7 @@ function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,o
   );
 }
 
-function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session,autoApplyRole,onAutoApplyConsumed}){
+function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session,autoApplyRole,onAutoApplyConsumed,inSheet=false}){
   const t=useT();
   const {lang}=useLanguage();
   const [applyRole,setApplyRole]=useState(null);
@@ -7724,8 +7724,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const c=getTranslatedCasting(casting,lang);
   const render=(txt)=>txt.split(/(\*[^*]+\*)/g).map((s,i)=>s.startsWith("*")&&s.endsWith("*")?<em key={i} style={{fontStyle:"italic",color:"var(--t1)"}}>{s.slice(1,-1)}</em>:<span key={i}>{s}</span>);
   return(<div className="page" style={{maxWidth:1080}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:20,flexWrap:"wrap"}}>
-      <button className="btn-s btn-sm" onClick={onBack}>{t('casting.back')}</button>
+    <div style={{display:"flex",justifyContent:inSheet?"flex-end":"space-between",alignItems:"center",gap:10,marginBottom:20,flexWrap:"wrap"}}>
+      {!inSheet&&<button className="btn-s btn-sm" onClick={onBack}>{t('casting.back')}</button>}
       <button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this casting">⚑ Report</button>
     </div>
 
@@ -7944,7 +7944,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     <section style={{padding:"28px 32px",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,marginBottom:32,textAlign:"center"}}>
       <h3 style={{fontSize:18,fontWeight:700,marginBottom:6}}>Think you're right for multiple roles?</h3>
       <p style={{color:"var(--t2)",fontSize:13,marginBottom:14}}>{isTalent&&!isPremium?`Free plan: up to ${FREE_PLAN.submissionsPerDay} submissions per day across all castings. Upgrade to Premium for unlimited.`:"You can submit for as many roles as you'd like."} Each submission is reviewed individually by the casting director.</p>
-      <button className="btn-s btn-sm" onClick={onBack}>{t('casting.back')}</button>
+      {!inSheet&&<button className="btn-s btn-sm" onClick={onBack}>{t('casting.back')}</button>}
     </section>
 
     {applyRole&&(()=>{
@@ -8908,7 +8908,7 @@ function matchesLocationFilter(castingLoc,selectedFilter){
 // Module-level cache so Browse Castings shows instantly from any entry point
 // (seeded from the last successful fetch) and revalidates silently — no flash.
 let _castingsCache=null,_talentCache=null;
-function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,castingsVersion=0,session,myProfile}){
+function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,castingsVersion=0,session,myProfile,active=true}){
   const t=useT();
   const {lang}=useLanguage();
   const [mode,setMode]=useState("castings"); // always open castings, talent directory removed
@@ -8932,6 +8932,10 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const sheetScrollY=useRef(0);
   const openSheet=useCallback((c)=>{sheetScrollY.current=window.scrollY;setSheetClosing(false);setSheetCasting(c);},[]);
   const closeSheet=useCallback(()=>{setSheetClosing(true);setTimeout(()=>{setSheetCasting(null);setSheetClosing(false);window.scrollTo(0,sheetScrollY.current);},460);},[]);
+  // SearchPage stays mounted (display:none on other pages), so the slide-in sheet
+  // state must be force-cleared when the user navigates away via the top nav —
+  // otherwise returning to Browse Castings shows the stale single casting.
+  useEffect(()=>{if(!active){setSheetClosing(false);setSheetCasting(null);}},[active]);
   useEffect(()=>{
     if(!sheetCasting)return;
     const onKey=(e)=>{if(e.key==="Escape")closeSheet();};
@@ -9203,7 +9207,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           <button className="cs-sheet-x" onClick={closeSheet} aria-label="Close">×</button>
         </div>
         {(isLoggedIn||sheetCasting.featured===true)
-          ? <CastingDetailPage casting={sheetCasting} onBack={closeSheet} onNavigate={(p)=>{setSheetCasting(null);onNavigate(p);}} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} myProfile={myProfile} session={session}/>
+          ? <CastingDetailPage casting={sheetCasting} onBack={closeSheet} onNavigate={(p)=>{setSheetCasting(null);onNavigate(p);}} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} myProfile={myProfile} session={session} inSheet={true}/>
           : <CastingGatePage casting={sheetCasting} onCreateProfile={()=>{setSheetCasting(null);onNavigate("auth-gate");}} onLogin={()=>{setSheetCasting(null);onNavigate("login");}} onBack={closeSheet}/>}
       </div>
     </>}
@@ -23455,7 +23459,7 @@ function App(){
         {(page==="home"||page==="search"||page==="casting-detail"||page==="casting-gate")&&
           <div style={{display:page==="search"?"flex":"none",flexDirection:"column",flex:"1 1 auto",minHeight:"calc(100vh - 80px)"}} aria-hidden={page!=="search"}>
             <ErrorBoundary label="Search" onReset={()=>navigate("home")}>
-              <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")}/>
+              <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")} active={page==="search"}/>
             </ErrorBoundary>
           </div>}
         {/* Full casting detail renders ONLY for logged-in users with auth resolved.
