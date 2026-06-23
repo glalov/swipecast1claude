@@ -13873,6 +13873,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
   const [nudge,setNudge]=useState(0);
   const [intro,setIntro]=useState(true);
   const [armed,setArmed]=useState(false);
+  const [superFly,setSuperFly]=useState(false);
   const dragging=useRef(false);
   const startX=useRef(0);
   const startT=useRef(0);
@@ -13927,7 +13928,22 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
       setAnimating(false);
     },260);
   }
-  function reset(){setIdx(0);setAnimating(false);setFlyDir(0);setDx(0);dragging.current=false;}
+  // Shortlist (the star / "super-like" tier): the card flies straight UP with a
+  // gold SHORTLISTED treatment — a standout to revisit, distinct from a callback.
+  function shortlist(){
+    if(animating)return;
+    setNudge(0);
+    setAnimating(true);
+    setSuperFly(true);
+    setDx(0);
+    dragging.current=false;
+    setTimeout(()=>{
+      setIdx(i=>i+1);
+      setSuperFly(false);
+      setAnimating(false);
+    },320);
+  }
+  function reset(){setIdx(0);setAnimating(false);setFlyDir(0);setSuperFly(false);setDx(0);dragging.current=false;}
   if(done){return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:300,minHeight:500,gap:10,textAlign:"center"}}>
       <div style={{fontSize:46,marginBottom:2}}>🎬</div>
@@ -13938,7 +13954,10 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
     </div>
   );}
   let cardTransform,cardTransition;
-  if(flyDir!==0){
+  if(superFly){
+    cardTransform="translateY(-580px) scale(.9) rotate(0deg)";
+    cardTransition="transform .32s cubic-bezier(.4,0,.6,1), opacity .28s";
+  }else if(flyDir!==0){
     cardTransform=`translateX(${flyDir*520}px) rotate(${flyDir*20}deg)`;
     cardTransition="transform .26s cubic-bezier(.4,0,.6,1), opacity .22s";
   }else if(dx!==0){
@@ -13966,6 +13985,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
           onPointerCancel={()=>{if(!dragging.current){setDx(0);return;}const d=dxRef.current;dragging.current=false;if(d>50)advance(1);else if(d<-50)advance(-1);else setDx(0);}}>
           <div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="pass"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>PASS</div>
           <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="yes"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>CALLBACK ✓</div>
+          <div className="sw-overlay" style={{color:"var(--amber)",top:"auto",bottom:"50%",transform:"translateY(50%)",opacity:superFly?1:0,transition:"opacity .12s"}}>★ SHORTLISTED</div>
           <img src={t.img} alt={t.name} draggable="false" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:t.pos||"center 8%"}}/>
           <div className="s-card-info">
             <h3 style={{fontSize:17,margin:"0 0 2px"}}>{t.name}</h3>
@@ -13986,7 +14006,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
           <span className="sw-btn-label">Skip</span>
         </div>
         <div className="sw-btn-wrap">
-          <button className="sw-btn save" title="Shortlist" disabled={animating} onClick={()=>advance(1)}>★</button>
+          <button className="sw-btn save" title="Shortlist" disabled={animating} onClick={()=>shortlist()}>★</button>
           <span className="sw-btn-label">Save</span>
         </div>
         <div className="sw-btn-wrap">
