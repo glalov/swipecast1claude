@@ -252,28 +252,35 @@ def render_page(title, desc, canonical):
        reduced-motion guard in the inline script below skips it for users who
        prefer reduced motion. */
     #cs-intro{{
-      position:fixed;top:0;right:0;bottom:0;left:0;background:#0A0A0A;z-index:100000;
+      position:fixed;top:0;right:0;bottom:0;left:0;z-index:100000;overflow:hidden;
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;
       -webkit-justify-content:center;justify-content:center;
-      -webkit-animation:cs-intro-out .9s cubic-bezier(.76,0,.24,1) 2.05s forwards;animation:cs-intro-out .9s cubic-bezier(.76,0,.24,1) 2.05s forwards;
+    }}
+    #cs-intro-bg{{
+      position:absolute;top:0;right:0;bottom:0;left:0;background:#0A0A0A;z-index:1;
+      -webkit-animation:cs-intro-out 1s linear 2.05s forwards;animation:cs-intro-out 1s linear 2.05s forwards;
     }}
     #cs-intro .cs-intro-mark{{
+      position:relative;z-index:2;
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:16px;
       opacity:0;-webkit-transform:translateY(10px) scale(.965);transform:translateY(10px) scale(.965);
-      -webkit-animation:cs-intro-in .8s cubic-bezier(.2,.7,.2,1) .1s forwards;animation:cs-intro-in .8s cubic-bezier(.2,.7,.2,1) .1s forwards;
+      -webkit-animation:cs-intro-in .8s cubic-bezier(.2,.7,.2,1) .1s forwards, cs-mark-out .5s ease 2.25s forwards;animation:cs-intro-in .8s cubic-bezier(.2,.7,.2,1) .1s forwards, cs-mark-out .5s ease 2.25s forwards;
     }}
     #cs-intro .cs-intro-box{{width:58px;height:58px;background:#fff;border-radius:13px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}}
     #cs-intro .cs-intro-name{{color:#fff;font-size:40px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'DM Sans',sans-serif;letter-spacing:-1px;}}
     @-webkit-keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
     @keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
+    @-webkit-keyframes cs-mark-out{{to{{opacity:0;}}}}
+    @keyframes cs-mark-out{{to{{opacity:0;}}}}
     @-webkit-keyframes cs-intro-out{{to{{-webkit-transform:translateY(101%);transform:translateY(101%);visibility:hidden;}}}}
     @keyframes cs-intro-out{{to{{-webkit-transform:translateY(101%);transform:translateY(101%);visibility:hidden;}}}}
     @media (prefers-reduced-motion: reduce){{#cs-intro{{display:none;}}}}
   </style>
 </head>
 <body>
-  <!-- Intro reveal — logo holds on black, then the black panel slides down (~3s) to reveal the site. Plays on every page load. -->
+  <!-- Intro reveal — logo holds on black, then the black panel slides down at an even pace through the (static) logo to reveal the site (~3s). Plays on every page load. -->
   <div id="cs-intro" aria-hidden="true">
+    <div id="cs-intro-bg"></div>
     <div class="cs-intro-mark">
       <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="33" height="33"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
       <span class="cs-intro-name">CastSlate</span>
@@ -286,7 +293,7 @@ def render_page(title, desc, canonical):
       var skip=false;
       try{{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true;}}catch(e){{}}
       if(skip){{if(el.parentNode)el.parentNode.removeChild(el);return;}}
-      setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},3000);
+      setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},3150);
     }})();
   </script>
   <!-- Loading indicator — shown until React mounts -->
