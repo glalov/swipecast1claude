@@ -1689,7 +1689,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* Browse Castings slide-in detail sheet (left -> right), dimming the list behind. */
 .cs-sheet-dim{position:fixed;left:0;right:0;bottom:0;top:var(--site-top-h,56px);background:rgba(18,18,28,.42);z-index:114;animation:csDimIn .45s ease;}
 .cs-sheet-dim.closing{animation:csDimOut .45s ease forwards;}
-.cs-sheet{position:fixed;left:0;bottom:0;top:var(--site-top-h,56px);width:min(900px,90%);background:var(--bg);z-index:115;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:18px 0 48px rgba(26,26,46,.34);animation:csSheetIn .5s cubic-bezier(.3,.7,.25,1);}
+.cs-sheet{position:fixed;left:0;bottom:0;top:var(--site-top-h,56px);width:min(1500px,75%);background:var(--bg);z-index:115;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:18px 0 48px rgba(26,26,46,.34);animation:csSheetIn .5s cubic-bezier(.3,.7,.25,1);}
 .cs-sheet.closing{animation:csSheetOut .46s cubic-bezier(.3,.7,.25,1) forwards;}
 @keyframes csSheetIn{from{transform:translateX(-102%);}to{transform:translateX(0);}}
 @keyframes csSheetOut{from{transform:translateX(0);}to{transform:translateX(-102%);}}
@@ -1697,7 +1697,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @keyframes csDimOut{from{background:rgba(18,18,28,.42);}to{background:rgba(18,18,28,0);}}
 .cs-sheet .site-footer,.cs-sheet .site-footer-spacer,.cs-sheet .site-backtotop,.cs-sheet .page-foot-gap{display:none !important;}
 .cs-sheet .page{padding-top:14px !important;min-height:0 !important;}
-.cs-sheet-bar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:var(--bg);border-bottom:1px solid var(--bdr);}
+.cs-sheet-bar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:flex-end;padding:11px 16px;background:var(--bg);border-bottom:1px solid var(--bdr);}
 .cs-sheet-back{display:inline-flex;align-items:center;gap:6px;background:none;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--acc);cursor:pointer;padding:6px 4px;}
 .cs-sheet-x{width:34px;height:34px;border-radius:9px;border:1px solid var(--bdr);background:var(--bg);font-size:18px;cursor:pointer;color:var(--t1);line-height:1;}
 .cs-sheet-x:hover{background:var(--s2);}
@@ -7723,7 +7723,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   if(!casting)return(<div className="page"><p>Casting not found.</p><button className="btn-s" onClick={onBack}>{t('casting.back')}</button></div>);
   const c=getTranslatedCasting(casting,lang);
   const render=(txt)=>txt.split(/(\*[^*]+\*)/g).map((s,i)=>s.startsWith("*")&&s.endsWith("*")?<em key={i} style={{fontStyle:"italic",color:"var(--t1)"}}>{s.slice(1,-1)}</em>:<span key={i}>{s}</span>);
-  return(<div className="page" style={{maxWidth:920}}>
+  return(<div className="page" style={{maxWidth:1080}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:20,flexWrap:"wrap"}}>
       <button className="btn-s btn-sm" onClick={onBack}>{t('casting.back')}</button>
       <button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this casting">⚑ Report</button>
@@ -8929,8 +8929,9 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   // CastingDetailPage / CastingGatePage so apply + login gating are unchanged.
   const [sheetCasting,setSheetCasting]=useState(null);
   const [sheetClosing,setSheetClosing]=useState(false);
-  const openSheet=useCallback((c)=>{setSheetClosing(false);setSheetCasting(c);window.scrollTo(0,0);},[]);
-  const closeSheet=useCallback(()=>{setSheetClosing(true);setTimeout(()=>{setSheetCasting(null);setSheetClosing(false);},460);},[]);
+  const sheetScrollY=useRef(0);
+  const openSheet=useCallback((c)=>{sheetScrollY.current=window.scrollY;setSheetClosing(false);setSheetCasting(c);},[]);
+  const closeSheet=useCallback(()=>{setSheetClosing(true);setTimeout(()=>{setSheetCasting(null);setSheetClosing(false);window.scrollTo(0,sheetScrollY.current);},460);},[]);
   useEffect(()=>{
     if(!sheetCasting)return;
     const onKey=(e)=>{if(e.key==="Escape")closeSheet();};
@@ -9199,7 +9200,6 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       <div className={"cs-sheet-dim"+(sheetClosing?" closing":"")} onClick={closeSheet} aria-hidden="true"/>
       <div className={"cs-sheet"+(sheetClosing?" closing":"")} role="dialog" aria-modal="true">
         <div className="cs-sheet-bar">
-          <button className="cs-sheet-back" onClick={closeSheet}>← {t('search.backToCastings')||'Back to castings'}</button>
           <button className="cs-sheet-x" onClick={closeSheet} aria-label="Close">×</button>
         </div>
         {(isLoggedIn||sheetCasting.featured===true)
