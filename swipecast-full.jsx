@@ -1527,7 +1527,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @keyframes sw-in-top{0%{transform:translateY(150%) scale(.86);opacity:0}55%{opacity:1}82%{transform:translateY(-11px) scale(1.012)}100%{transform:translateY(0) scale(1);opacity:1}}
 @keyframes sw-in-back{0%{transform:translateX(190%) rotate(9deg) scale(.84);opacity:0}65%{opacity:var(--ro,.3)}100%{transform:var(--rest);opacity:var(--ro,.3)}}
 .sw-pre{opacity:0!important;}
-.sw-intro-top{animation:sw-in-top .68s cubic-bezier(.34,1.4,.5,1) both;}
+.sw-intro-top{animation:sw-in-top .5s cubic-bezier(.34,1.4,.5,1) both;}
 .sw-intro-back{animation:sw-in-back .62s cubic-bezier(.2,.75,.25,1) both;animation-delay:var(--d,0s);}
 @media(prefers-reduced-motion:reduce){.sw-intro-top,.sw-intro-back{animation:none!important;}}
 .swipe-btns{display:flex;gap:20px;align-items:flex-start;}
@@ -13950,7 +13950,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
           <img src={nt.img} alt="" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:nt.pos||"center 8%"}}/>
         </div>}
         {intro&&armed&&Array.from({length:total-1},(_,k)=>k+1).map(i=>{const bc=demo[Math.min(i,total-1)];const rest=`translateY(${i*5}px) scale(${(1-i*0.03).toFixed(3)})`;const ro=Math.max(0.74,1-i*0.035).toFixed(2);return(
-          <div key={"swin"+i} className="s-card sw-intro-back" style={{"--rest":rest,"--ro":ro,"--d":`${(0.45+i*0.10).toFixed(2)}s`,zIndex:20-i,pointerEvents:"none"}}>
+          <div key={"swin"+i} className="s-card sw-intro-back" style={{"--rest":rest,"--ro":ro,"--d":`${(0.45+i*0.10).toFixed(2)}s`,zIndex:-i,pointerEvents:"none"}}>
             <img src={bc.img} alt="" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:bc.pos||"center 8%"}}/>
             <div style={{position:"absolute",inset:0,background:"#0d0d16",opacity:i*0.02,pointerEvents:"none"}}/>
           </div>);})}
