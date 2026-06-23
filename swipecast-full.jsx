@@ -81,7 +81,7 @@ const TRANSLATIONS = {
     'nav.home':'Home','nav.browse':'Browse Castings','nav.classes':'Classes',
     'nav.pricing':'Pricing','nav.blog':'Blog','nav.dashboard':'Dashboard',
     'nav.myProfile':'My Profile','nav.inbox':'Inbox','nav.admin':'Admin',
-    'nav.signOut':'Sign out','nav.join':'Join','nav.postJob':'Post a Job',
+    'nav.signOut':'Sign out','nav.join':'Join','nav.postJob':'Post a Job','nav.postCasting':'Post a Casting',
     'nav.signIn':'Sign in','nav.accountSettings':'Account Settings',
     'nav.resources':'Resources','nav.successStories':'Success Stories',
     'nav.about':'About','nav.contact':'Contact','nav.joinAsTalent':'Join as Talent',
@@ -329,7 +329,7 @@ const TRANSLATIONS = {
     'nav.home':'Inicio','nav.browse':'Convocatorias','nav.classes':'Clases',
     'nav.pricing':'Precios','nav.blog':'Blog','nav.dashboard':'Panel',
     'nav.myProfile':'Mi perfil','nav.inbox':'Bandeja de entrada','nav.admin':'Admin',
-    'nav.signOut':'Cerrar sesión','nav.join':'Unirse','nav.postJob':'Publicar trabajo',
+    'nav.signOut':'Cerrar sesión','nav.join':'Unirse','nav.postJob':'Publicar trabajo','nav.postCasting':'Publicar casting',
     'nav.signIn':'Iniciar sesión','nav.accountSettings':'Configuración de cuenta',
     'nav.resources':'Recursos','nav.successStories':'Historias de éxito',
     'nav.about':'Acerca de','nav.contact':'Contacto','nav.joinAsTalent':'Unirse como Talento',
@@ -1717,7 +1717,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .mobile-menu-inner.closing{animation:mmDropUp .6s cubic-bezier(.22,.68,.28,1) forwards;}
 @keyframes mmDrop{from{transform:translateX(-100%);}to{transform:translateX(0);}}
 @keyframes mmDropUp{from{transform:translateX(0);}to{transform:translateX(100%);}}
-.mm-close{position:absolute;top:12px;right:12px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;background:none;border:1px solid var(--bdr);border-radius:8px;cursor:pointer;color:var(--t1);font-size:20px;line-height:1;padding:0;}
+.mm-close{position:absolute;top:12px;right:12px;width:42px;height:42px;display:inline-flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:var(--t1);line-height:1;padding:0;}
 .mm-close:hover{background:var(--s2);}
 @keyframes mmFade{from{opacity:0;}to{opacity:1;}}
 @keyframes pageFade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
@@ -1742,7 +1742,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .cs-archived-stamp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-13deg);z-index:6;pointer-events:none;border:4px solid #c0392b;color:#c0392b;font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(22px,4.6vw,38px);letter-spacing:.16em;text-transform:uppercase;padding:6px 22px 8px;border-radius:8px;opacity:.8;background:rgba(255,255,255,0.05);box-shadow:inset 0 0 0 2px rgba(192,57,43,.16);white-space:nowrap;}
 .cs-archived-dim{filter:grayscale(.5);opacity:.6;}
 @media (prefers-reduced-motion: reduce){.cs-live-dot::after{display:none}.cs-live-dot .core{animation:none;background:#15a87f}}
-.mm-link{background:none;border:none;text-align:left;padding:12px 6px;font-size:15px;font-weight:600;color:var(--t1);cursor:pointer;border-radius:6px;font-family:'DM Sans',sans-serif;}
+.mm-link{background:none;border:none;text-align:left;padding:11px 4px;font-size:21px;font-weight:700;color:var(--t1);cursor:pointer;border-radius:6px;font-family:'DM Sans',sans-serif;}
 /* No tap highlight / hover flash on the mobile menu or burger. Hover color
    only applies with a real pointer (desktop), never on touch. */
 .mobile-menu button,.mm-link,.mm-close,.nav-burger{-webkit-tap-highlight-color:transparent;}
@@ -23372,6 +23372,7 @@ function App(){
   const [menuClosing,setMenuClosing]=useState(false);
   const closeMenu=useCallback(()=>{setMenuClosing(true);setTimeout(()=>{setMenuOpen(false);setMenuClosing(false);},600);},[]);
   const [joinOpen,setJoinOpen]=useState(false);
+  const [menuJoinOpen,setMenuJoinOpen]=useState(false);
   const joinRef=useRef(null);
   const joinRefM=useRef(null);
   useEffect(()=>{
@@ -23380,7 +23381,7 @@ function App(){
     document.addEventListener("mousedown",h);
     return()=>document.removeEventListener("mousedown",h);
   },[joinOpen]);
-  const navThen=useCallback((p)=>{setJoinOpen(false);navigate(p);closeMenu();},[navigate,closeMenu]);
+  const navThen=useCallback((p)=>{setJoinOpen(false);setMenuJoinOpen(false);navigate(p);closeMenu();},[navigate,closeMenu]);
   const doSignOut=useCallback(()=>{setJoinOpen(false);signOut();closeMenu();},[signOut,closeMenu]);
 
   // Fixed top bar (promo + banner + nav): measure its height and offset the
@@ -23485,7 +23486,7 @@ function App(){
             </button>
           </div>}
         </div>}
-        <button className="nav-burger" aria-label="Menu" onClick={()=>menuOpen?closeMenu():setMenuOpen(true)} style={{display:"none",background:"none",border:"none",width:34,height:40,cursor:"pointer",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,padding:0}}>
+        <button className="nav-burger" aria-label="Menu" onClick={()=>menuOpen?closeMenu():(setMenuJoinOpen(false),setMenuOpen(true))} style={{display:"none",background:"none",border:"none",width:34,height:40,cursor:"pointer",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,padding:0}}>
           <span style={{display:"block",width:23,height:2,background:"var(--t1)",borderRadius:2}}></span>
           <span style={{display:"block",width:23,height:2,background:"var(--t1)",borderRadius:2}}></span>
         </button>
@@ -23493,17 +23494,17 @@ function App(){
       </div>
       {menuOpen&&<div className={"mobile-menu"+(menuClosing?" closing":"")} onClick={closeMenu}>
         <div className={"mobile-menu-inner"+(menuClosing?" closing":"")} onClick={e=>e.stopPropagation()}>
-          <button className="mm-close" aria-label="Close menu" onClick={closeMenu}>×</button>
+          <button className="mm-close" aria-label="Close menu" onClick={closeMenu}><svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
           <div style={{display:"flex",flexDirection:"column",gap:4}}>
             <button className="mm-link" onClick={()=>navThen("home")}>{navT('nav.home')}</button>
             <button className="mm-link" onClick={()=>navThen("search")}>{navT('nav.browse')}</button>
             {classesOn&&<button className="mm-link" onClick={()=>navThen("classes")}>{navT('nav.classes')}</button>}
             <button className="mm-link" onClick={()=>navThen("tapelink")}>{navT('nav.tapelink')}</button>
-            <button className="mm-link" onClick={()=>navThen("manager-mode")}>{navT('nav.managerMode')}</button>
+            <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("manager-mode")}>{navT('nav.managerMode')}</button>
             <button className="mm-link" onClick={()=>navThen("about")}>{navT('nav.about')}</button>
             <button className="mm-link" onClick={()=>navThen("contact")}>{navT('nav.contact')}</button>
           </div>
-          <div style={{borderTop:"1px solid var(--bdr)",marginTop:12,paddingTop:12,display:"flex",flexDirection:"column",gap:8}}>
+          <div style={{borderTop:"1px solid var(--bdr)",marginTop:14,paddingTop:16,display:"flex",flexDirection:"column",gap:14}}>
             {!authReady?null:isLoggedIn?<>
               {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navThen("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:6}}>{navT('nav.admin')}{adminPendingBookings>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800,lineHeight:1.4}}>{adminPendingBookings}</span>}</button>}
               {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navThen("dashboard")}>{navT('nav.dashboard')}</button>:null}
@@ -23513,12 +23514,16 @@ function App(){
               <button className="btn-s btn-sm" onClick={()=>navThen("account-settings")}>{navT('nav.accountSettings')}</button>
               <button className="btn-p btn-sm" onClick={doSignOut}>{navT('nav.signOut')}</button>
             </>:<>
-              <div style={{display:"flex",flexDirection:"column",gap:4,borderBottom:"1px solid var(--bdr)",paddingBottom:8,marginBottom:4}}>
-                <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:.8,color:"var(--t3)",padding:"2px 4px"}}>Join as</div>
-                <button className={`${["auth-gate","register-talent"].includes(page)?"btn-p":"btn-s"} btn-sm`} style={{display:"flex",alignItems:"center",gap:8,justifyContent:"flex-start"}} onClick={()=>navThen("auth-gate")}>🎭 Join as Talent</button>
-                <button className={`${page==="register-cd"?"btn-p":"btn-s"} btn-sm`} style={{display:"flex",alignItems:"center",gap:8,justifyContent:"flex-start"}} onClick={()=>navThen("register-cd")}>🎬 Join as Employer</button>
-              </div>
-              <button className={`${page==="login"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navThen("login")}>{navT('nav.signIn')}</button>
+              <button onClick={()=>setMenuJoinOpen(o=>!o)} style={{width:"100%",height:54,background:"var(--teal)",color:"#fff",border:"none",borderRadius:12,fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                {navT('nav.join')}
+                <svg width="12" height="7" viewBox="0 0 10 6" fill="currentColor" style={{transition:"transform .2s",transform:menuJoinOpen?"rotate(180deg)":"rotate(0deg)"}}><path d="M0 0l5 6 5-6z"/></svg>
+              </button>
+              {menuJoinOpen&&<div style={{display:"flex",flexDirection:"column",gap:8,marginTop:-6}}>
+                <button onClick={()=>navThen("auth-gate")} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"13px 15px",background:"var(--s2)",border:"none",borderRadius:11,fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:15,color:"var(--t1)",cursor:"pointer",textAlign:"left"}}>🎭 Join as Talent</button>
+                <button onClick={()=>navThen("register-cd")} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"13px 15px",background:"var(--s2)",border:"none",borderRadius:11,fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:15,color:"var(--t1)",cursor:"pointer",textAlign:"left"}}>🎬 Join as Employer</button>
+              </div>}
+              <button onClick={()=>navThen("register-cd")} style={{width:"100%",height:54,background:"#fff",color:"var(--t1)",border:"1.5px solid var(--t1)",borderRadius:12,fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,cursor:"pointer",boxShadow:"4px 5px 0 0 #0A0A0A"}}>{navT('nav.postCasting')}</button>
+              <button onClick={()=>navThen("login")} style={{width:"100%",height:50,background:"none",border:"none",color:"var(--t1)",fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:17,cursor:"pointer"}}>{navT('nav.signIn')}</button>
             </>}
           </div>
         </div>
