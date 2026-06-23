@@ -1523,6 +1523,12 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .s-card-meta{color:var(--t2);font-size:12px;margin-bottom:8px;}
 .s-card-tags{display:flex;gap:5px;flex-wrap:wrap;}
 .s-card-tags span{background:var(--s2);padding:3px 8px;border-radius:5px;font-size:10px;color:var(--t2);}
+/* Landing swipe entrance — Zara settles in, then the deck deals in behind her. */
+@keyframes sw-in-top{0%{transform:translateY(150%) scale(.86);opacity:0}55%{opacity:1}82%{transform:translateY(-11px) scale(1.012)}100%{transform:translateY(0) scale(1);opacity:1}}
+@keyframes sw-in-back{0%{transform:translateY(160%) scale(.8);opacity:0}70%{opacity:var(--ro,.3)}100%{transform:var(--rest);opacity:var(--ro,.3)}}
+.sw-intro-top{animation:sw-in-top .68s cubic-bezier(.34,1.4,.5,1) both;}
+.sw-intro-back{animation:sw-in-back .52s cubic-bezier(.2,.75,.25,1) both;animation-delay:var(--d,0s);}
+@media(prefers-reduced-motion:reduce){.sw-intro-top,.sw-intro-back{animation:none!important;}}
 .swipe-btns{display:flex;gap:20px;align-items:flex-start;}
 .sw-btn-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;}
 .sw-btn-label{font-size:9px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--t3);}
@@ -13860,6 +13866,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
   const [flyDir,setFlyDir]=useState(0);
   const [dx,setDx]=useState(0);
   const [nudge,setNudge]=useState(0);
+  const [intro,setIntro]=useState(true);
   const dragging=useRef(false);
   const startX=useRef(0);
   const startT=useRef(0);
@@ -13874,7 +13881,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
   // Skipped under prefers-reduced-motion.
   React.useEffect(()=>{
     if(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-    if(done)return;
+    if(done||intro)return;
     let iv,inner=[];
     function pulse(){
       if(dragging.current)return;
@@ -13884,7 +13891,15 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
     const first=setTimeout(pulse,1400);
     iv=setInterval(pulse,4000);
     return ()=>{clearTimeout(first);clearInterval(iv);inner.forEach(clearTimeout);};
-  },[idx,done]);
+  },[idx,done,intro]);
+  // Entrance: on first mount Zara's card settles in, then the deck deals in
+  // behind her (Demo 1, lightly slower stagger). Idle nudge resumes after.
+  // Skipped under prefers-reduced-motion.
+  React.useEffect(()=>{
+    if(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){setIntro(false);return;}
+    const tm=setTimeout(()=>setIntro(false),1700);
+    return ()=>clearTimeout(tm);
+  },[]);
   function advance(dir){
     if(animating)return;
     setNudge(0);
@@ -13922,10 +13937,14 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
   return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
       <div style={{position:"relative",width:300,height:450}}>
-        <div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.35,zIndex:1,pointerEvents:"none"}}>
+        {!intro&&<div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.35,zIndex:1,pointerEvents:"none"}}>
           <img src={nt.img} alt="" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:nt.pos||"center 8%"}}/>
-        </div>
-        <div className="s-card"
+        </div>}
+        {intro&&[1,2,3,4].map(i=>{const bc=demo[Math.min(i,total-1)];const rest=`translateY(${i*10}px) scale(${(1-i*0.06).toFixed(3)})`;const ro=Math.max(0.08,0.42-(i-1)*0.1).toFixed(2);return(
+          <div key={"swin"+i} className="s-card sw-intro-back" style={{"--rest":rest,"--ro":ro,"--d":`${(0.40+i*0.11).toFixed(2)}s`,zIndex:1,pointerEvents:"none"}}>
+            <img src={bc.img} alt="" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:bc.pos||"center 8%"}}/>
+          </div>);})}
+        <div className={"s-card"+(intro?" sw-intro-top":"")}
           style={{transform:cardTransform,transition:cardTransition,zIndex:2,cursor:dragging.current?"grabbing":"grab",touchAction:"pan-y",userSelect:"none"}}
           onPointerDown={e=>{if(animating)return;if(nudge!==0)setNudge(0);try{e.currentTarget.setPointerCapture(e.pointerId);}catch(_){}dragging.current=true;startX.current=e.clientX;startT.current=Date.now();dxRef.current=0;}}
           onPointerMove={e=>{if(!dragging.current||animating)return;const d=e.clientX-startX.current;dxRef.current=d;setDx(d);}}
