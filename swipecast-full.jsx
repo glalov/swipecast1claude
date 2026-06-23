@@ -1543,7 +1543,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .sw-hint-arrow{font-size:16px;display:inline-block;animation:sw-sway 2.4s ease-in-out infinite;line-height:1;color:#1A1A2E;}
 .sw-hint-text{font-size:12px;font-weight:700;color:#1A1A2E;}
 .sw-hint-text-mobile{display:none;font-size:12px;font-weight:700;color:#1A1A2E;}
-.sw-btn.save{animation:sw-ring 2.8s ease-in-out infinite;}
+.sw-btn.save{animation:sw-ring 2.8s ease-in-out infinite;color:var(--blu);}
 .sw-btn.save:hover{animation:none;}
 .sw-tagline{margin-top:14px;font-size:11px;color:var(--t3);text-align:center;line-height:1.6;max-width:260px;}
 @media(max-width:600px){.sw-hint-text{display:none;}.sw-hint-text-mobile{display:block;}}
