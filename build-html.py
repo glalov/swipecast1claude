@@ -264,14 +264,12 @@ def render_page(title, desc, canonical):
       position:relative;z-index:2;
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:16px;
       opacity:0;-webkit-transform:translateY(10px) scale(.965);transform:translateY(10px) scale(.965);
-      -webkit-animation:cs-intro-in .8s cubic-bezier(.2,.7,.2,1) .1s forwards, cs-mark-out .5s ease 2.25s forwards;animation:cs-intro-in .8s cubic-bezier(.2,.7,.2,1) .1s forwards, cs-mark-out .5s ease 2.25s forwards;
+      -webkit-animation:cs-intro-in .8s cubic-bezier(.2,.7,.2,1) .1s forwards;animation:cs-intro-in .8s cubic-bezier(.2,.7,.2,1) .1s forwards;
     }}
     #cs-intro .cs-intro-box{{width:58px;height:58px;background:#fff;border-radius:13px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}}
     #cs-intro .cs-intro-name{{color:#fff;font-size:40px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'DM Sans',sans-serif;letter-spacing:-1px;}}
     @-webkit-keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
     @keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
-    @-webkit-keyframes cs-mark-out{{to{{opacity:0;}}}}
-    @keyframes cs-mark-out{{to{{opacity:0;}}}}
     @-webkit-keyframes cs-intro-out{{to{{-webkit-transform:translateY(101%);transform:translateY(101%);visibility:hidden;}}}}
     @keyframes cs-intro-out{{to{{-webkit-transform:translateY(101%);transform:translateY(101%);visibility:hidden;}}}}
     @media (prefers-reduced-motion: reduce){{#cs-intro{{display:none;}}}}
@@ -293,7 +291,7 @@ def render_page(title, desc, canonical):
       var skip=false;
       try{{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true;}}catch(e){{}}
       if(skip){{if(el.parentNode)el.parentNode.removeChild(el);return;}}
-      setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},3150);
+      setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},3100);
     }})();
   </script>
   <!-- Loading indicator — shown until React mounts -->
