@@ -255,7 +255,7 @@ def render_page(title, desc, canonical):
       position:fixed;top:0;right:0;bottom:0;left:0;background:#0A0A0A;z-index:100000;
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;
       -webkit-justify-content:center;justify-content:center;
-      -webkit-animation:cs-intro-out .4s ease 1.4s forwards;animation:cs-intro-out .4s ease 1.4s forwards;
+      -webkit-animation:cs-intro-out .9s cubic-bezier(.76,0,.24,1) 1.05s forwards;animation:cs-intro-out .9s cubic-bezier(.76,0,.24,1) 1.05s forwards;
     }}
     #cs-intro .cs-intro-mark{{
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:16px;
@@ -266,13 +266,13 @@ def render_page(title, desc, canonical):
     #cs-intro .cs-intro-name{{color:#fff;font-size:40px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'DM Sans',sans-serif;letter-spacing:-1px;}}
     @-webkit-keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
     @keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
-    @-webkit-keyframes cs-intro-out{{to{{opacity:0;visibility:hidden;}}}}
-    @keyframes cs-intro-out{{to{{opacity:0;visibility:hidden;}}}}
+    @-webkit-keyframes cs-intro-out{{to{{-webkit-transform:translateY(101%);transform:translateY(101%);visibility:hidden;}}}}
+    @keyframes cs-intro-out{{to{{-webkit-transform:translateY(101%);transform:translateY(101%);visibility:hidden;}}}}
     @media (prefers-reduced-motion: reduce){{#cs-intro{{display:none;}}}}
   </style>
 </head>
 <body>
-  <!-- Intro reveal — logo fades out of black for ~1.8s, then the site is revealed. Plays on every page load. -->
+  <!-- Intro reveal — logo holds on black, then the black panel slides down (~2s) to reveal the site. Plays on every page load. -->
   <div id="cs-intro" aria-hidden="true">
     <div class="cs-intro-mark">
       <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="33" height="33"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
@@ -286,7 +286,7 @@ def render_page(title, desc, canonical):
       var skip=false;
       try{{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true;}}catch(e){{}}
       if(skip){{if(el.parentNode)el.parentNode.removeChild(el);return;}}
-      setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},1850);
+      setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},2000);
     }})();
   </script>
   <!-- Loading indicator — shown until React mounts -->
