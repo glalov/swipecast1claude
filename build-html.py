@@ -266,8 +266,8 @@ def render_page(title, desc, canonical):
       opacity:0;-webkit-transform:translateY(10px) scale(.965);transform:translateY(10px) scale(.965);
       -webkit-animation:cs-intro-in .8s cubic-bezier(.2,.7,.2,1) .1s forwards;animation:cs-intro-in .8s cubic-bezier(.2,.7,.2,1) .1s forwards;
     }}
-    #cs-intro .cs-intro-box{{width:58px;height:58px;background:#fff;border-radius:13px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}}
-    #cs-intro .cs-intro-name{{color:#fff;font-size:40px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'DM Sans',sans-serif;letter-spacing:-1px;}}
+    #cs-intro .cs-intro-box{{width:74px;height:74px;background:#fff;border-radius:16px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}}
+    #cs-intro .cs-intro-name{{color:#fff;font-size:52px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'DM Sans',sans-serif;letter-spacing:-1.2px;}}
     @-webkit-keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
     @keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
     @-webkit-keyframes cs-intro-out{{to{{-webkit-transform:translateY(101%);transform:translateY(101%);visibility:hidden;}}}}
@@ -280,7 +280,7 @@ def render_page(title, desc, canonical):
   <div id="cs-intro" aria-hidden="true">
     <div id="cs-intro-bg"></div>
     <div class="cs-intro-mark">
-      <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="33" height="33"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
+      <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="42" height="42"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
       <span class="cs-intro-name">CastSlate</span>
     </div>
   </div>
