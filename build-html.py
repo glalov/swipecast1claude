@@ -253,15 +253,17 @@ def render_page(title, desc, canonical):
        prefer reduced motion. */
     #cs-intro{{
       position:fixed;top:0;right:0;bottom:0;left:0;z-index:100000;overflow:hidden;
-      display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;
-      -webkit-justify-content:center;justify-content:center;
     }}
     #cs-intro-bg{{
-      position:absolute;top:0;right:0;bottom:0;left:0;background:#0A0A0A;z-index:1;
-      -webkit-animation:cs-intro-out 1s linear 2.05s forwards;animation:cs-intro-out 1s linear 2.05s forwards;
+      position:absolute;top:0;right:0;bottom:0;left:0;background:#0A0A0A;z-index:1;overflow:hidden;
+      -webkit-animation:cs-bg-down 1s linear 2.05s forwards;animation:cs-bg-down 1s linear 2.05s forwards;
+    }}
+    #cs-intro-clip{{
+      position:absolute;top:0;right:0;bottom:0;left:0;
+      display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
+      -webkit-animation:cs-clip-up 1s linear 2.05s forwards;animation:cs-clip-up 1s linear 2.05s forwards;
     }}
     #cs-intro .cs-intro-mark{{
-      position:relative;z-index:2;
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:16px;
       opacity:0;-webkit-transform:translateY(10px) scale(.965);transform:translateY(10px) scale(.965);
       -webkit-animation:cs-intro-in .8s cubic-bezier(.2,.7,.2,1) .1s forwards;animation:cs-intro-in .8s cubic-bezier(.2,.7,.2,1) .1s forwards;
@@ -270,18 +272,23 @@ def render_page(title, desc, canonical):
     #cs-intro .cs-intro-name{{color:#fff;font-size:52px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'DM Sans',sans-serif;letter-spacing:-1.2px;}}
     @-webkit-keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
     @keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
-    @-webkit-keyframes cs-intro-out{{to{{-webkit-transform:translateY(101%);transform:translateY(101%);visibility:hidden;}}}}
-    @keyframes cs-intro-out{{to{{-webkit-transform:translateY(101%);transform:translateY(101%);visibility:hidden;}}}}
+    @-webkit-keyframes cs-bg-down{{to{{-webkit-transform:translateY(101%);transform:translateY(101%);}}}}
+    @keyframes cs-bg-down{{to{{-webkit-transform:translateY(101%);transform:translateY(101%);}}}}
+    @-webkit-keyframes cs-clip-up{{to{{-webkit-transform:translateY(-101%);transform:translateY(-101%);}}}}
+    @keyframes cs-clip-up{{to{{-webkit-transform:translateY(-101%);transform:translateY(-101%);}}}}
     @media (prefers-reduced-motion: reduce){{#cs-intro{{display:none;}}}}
   </style>
 </head>
 <body>
   <!-- Intro reveal — logo holds on black, then the black panel slides down at an even pace through the (static) logo to reveal the site (~3s). Plays on every page load. -->
   <div id="cs-intro" aria-hidden="true">
-    <div id="cs-intro-bg"></div>
-    <div class="cs-intro-mark">
-      <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="42" height="42"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
-      <span class="cs-intro-name">CastSlate</span>
+    <div id="cs-intro-bg">
+      <div id="cs-intro-clip">
+        <div class="cs-intro-mark">
+          <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="42" height="42"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
+          <span class="cs-intro-name">CastSlate</span>
+        </div>
+      </div>
     </div>
   </div>
   <script>
