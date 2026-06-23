@@ -13950,12 +13950,12 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
           <img src={nt.img} alt="" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:nt.pos||"center 8%"}}/>
         </div>}
         {intro&&armed&&Array.from({length:total-1},(_,k)=>k+1).map(i=>{const bc=demo[Math.min(i,total-1)];const rest=`translateY(${i*5}px) scale(${(1-i*0.03).toFixed(3)})`;const ro=Math.max(0.74,1-i*0.035).toFixed(2);return(
-          <div key={"swin"+i} className="s-card sw-intro-back" style={{"--rest":rest,"--ro":ro,"--d":`${(0.45+i*0.10).toFixed(2)}s`,zIndex:-i,pointerEvents:"none"}}>
+          <div key={"swin"+i} className="s-card sw-intro-back" style={{"--rest":rest,"--ro":ro,"--d":`${(0.45+i*0.10).toFixed(2)}s`,zIndex:total-i,pointerEvents:"none"}}>
             <img src={bc.img} alt="" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:bc.pos||"center 8%"}}/>
             <div style={{position:"absolute",inset:0,background:"#0d0d16",opacity:i*0.02,pointerEvents:"none"}}/>
           </div>);})}
         <div className={"s-card"+(intro?(armed?" sw-intro-top":" sw-pre"):"")}
-          style={{transform:cardTransform,transition:cardTransition,zIndex:2,cursor:dragging.current?"grabbing":"grab",touchAction:"pan-y",userSelect:"none"}}
+          style={{transform:cardTransform,transition:cardTransition,zIndex:30,cursor:dragging.current?"grabbing":"grab",touchAction:"pan-y",userSelect:"none"}}
           onPointerDown={e=>{if(animating)return;if(nudge!==0)setNudge(0);try{e.currentTarget.setPointerCapture(e.pointerId);}catch(_){}dragging.current=true;startX.current=e.clientX;startT.current=Date.now();dxRef.current=0;}}
           onPointerMove={e=>{if(!dragging.current||animating)return;const d=e.clientX-startX.current;dxRef.current=d;setDx(d);}}
           onPointerUp={e=>{if(!dragging.current)return;const d=e.clientX-startX.current;const dt=Date.now()-startT.current;const v=Math.abs(d)/Math.max(dt,1);dragging.current=false;const go=Math.abs(d)>55||(Math.abs(d)>24&&v>0.4);if(go&&d>0)advance(1);else if(go&&d<0)advance(-1);else setDx(0);}}
