@@ -1,22 +1,23 @@
 // news-refresh — Supabase Edge Function
 // Auto-collects entertainment-industry news from approved trade RSS feeds,
 // writes a FULL ORIGINAL CastSlate post for each ("Written by CastSlate Staff"),
-// attaches a real movie/cast image via TMDB's official API, and publishes to
-// public.news_articles. A small non-linked "Reported by X" credit is kept.
+// and publishes to public.news_articles. A small non-linked "Reported by X"
+// credit is kept and every card links back to the original post.
 //
-// LEGALLY SAFE BY DESIGN:
-//   • Pulls only headline + short teaser from public RSS feeds (built for syndication).
-//   • Never copies source article text — posts are original CastSlate editorial.
-//   • Never scrapes source photography (Getty/AP/wire). Images come from TMDB's
-//     official API (sanctioned for app display, with TMDB attribution) or a
-//     royalty-free fallback pool.
+// IMAGES — SOURCE-ONLY:
+//   • The ONLY image used is the publisher's OWN thumbnail from its public RSS
+//     feed (media:content / media:thumbnail / enclosure / inline <img>) — the
+//     image built for syndication, shown WITH a source credit + link-back +
+//     no-referrer. No AI images, no stock/royalty-free, no TMDB/Wikipedia.
+//   • A story is only published if it carries a real source image AND that image
+//     is LANDSCAPE (so the 16:10 card frame crops minimally and faces aren't
+//     cut). Square/portrait or image-less items are skipped.
+//   • We never scrape full-res photography off the article pages.
 //   • Backstage is intentionally NOT a source.
 //
 // Optional secrets (Supabase Dashboard → Edge Functions → Secrets):
 //   ANTHROPIC_API_KEY — if set, posts are written by Claude (higher quality).
 //                       Without it, a safe original full-length fallback is used.
-//   TMDB_API_KEY      — if set, attaches real movie/TV/cast imagery via TMDB.
-//                       Without it, falls back to royalty-free images.
 //
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected automatically.
 
@@ -26,10 +27,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-// Real movie stills / cast photos via TMDB's official API (themoviedb.org/settings/api).
-// TMDB is the sanctioned channel for apps to display film/TV/person imagery with
-// TMDB attribution — unlike scraping Getty/AP wire photos from trade sites.
-const TMDB_API_KEY = Deno.env.get("TMDB_API_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -48,37 +45,9 @@ const FEEDS: { name: string; url: string; defaultCat: Category }[] = [
 
 type Category = "Casting" | "Film" | "Theater" | "Industry" | "Actors";
 
-// Royalty-free imagery: cinematic shots of real people / sets / stages (Unsplash
-// license). Used when TMDB has no match. Not source photography. All verified.
-const IMAGES: Record<Category, string[]> = {
-  Casting: [
-    "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=900&q=80&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=900&q=80&auto=format&fit=crop",
-  ],
-  Film: [
-    "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=900&q=80&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=900&q=80&auto=format&fit=crop",
-  ],
-  Theater: [
-    "https://images.unsplash.com/photo-1503095396549-807759245b35?w=900&q=80&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=900&q=80&auto=format&fit=crop",
-  ],
-  Industry: [
-    "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=900&q=80&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=900&q=80&auto=format&fit=crop",
-  ],
-  Actors: [
-    "https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=900&q=80&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1454023492550-5696f8ff10e1?w=900&q=80&auto=format&fit=crop",
-  ],
-};
-// Extra verified royalty-free shots for de-duplication overflow.
-const EXTRA_IMAGES: string[] = [
-  "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=900&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=900&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=900&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=900&q=80&auto=format&fit=crop",
-];
+// Minimum width/height ratio for a source image to count as "landscape" so the
+// 16:10 card frame (cover) crops only thin slivers and centered faces survive.
+const LANDSCAPE_MIN = 1.3;
 
 // Only keep stories relevant to acting / casting / film / TV / theater / industry.
 const RELEVANT = /\b(cast|casting|audition|actor|actress|role|film|movie|cinema|tv|television|series|theater|theatre|stage|broadway|production|studio|director|screen|sag-?aftra|premiere|festival)\b/i;
@@ -108,8 +77,8 @@ interface FeedItem { title: string; link: string; description: string; pubDate: 
 
 // Pull the post's OWN thumbnail out of the RSS <item> (media:content,
 // media:thumbnail, <enclosure type="image/…">, or an inline <img>). This is the
-// image the publisher syndicates with the item; it is used only on the external
-// "link-out" cards, which credit the source and link to the original post.
+// image the publisher syndicates with the item; it is used (with a source credit
+// and a link back to the original post) as the ONLY image for the story.
 function extractFeedImage(b: string): string {
   for (const m of b.matchAll(/<media:content\b[^>]*>/gi)) {
     const tag = m[0];
@@ -149,8 +118,84 @@ function parseRss(xml: string): FeedItem[] {
   return items;
 }
 
-// Claude fallback writer (used only if Gemini is unavailable). Shares the same
-// original-news prompt as Gemini.
+// ─── Source-image dimension check ───────────────────────────────────────────
+// Read intrinsic dimensions from the first bytes of an image so we keep only
+// LANDSCAPE source thumbnails. Supports JPEG / PNG / GIF / WebP. Returns null if
+// it can't determine the size (treated as "not landscape" → skipped).
+function parseDims(b: Uint8Array): { w: number; h: number } | null {
+  // PNG
+  if (b.length >= 24 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4E && b[3] === 0x47) {
+    const w = (b[16] << 24) | (b[17] << 16) | (b[18] << 8) | b[19];
+    const h = (b[20] << 24) | (b[21] << 16) | (b[22] << 8) | b[23];
+    if (w > 0 && h > 0) return { w, h };
+  }
+  // GIF
+  if (b.length >= 10 && b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46) {
+    const w = b[6] | (b[7] << 8);
+    const h = b[8] | (b[9] << 8);
+    if (w > 0 && h > 0) return { w, h };
+  }
+  // WebP (RIFF....WEBP)
+  if (b.length >= 30 && b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 &&
+      b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) {
+    const fourcc = String.fromCharCode(b[12], b[13], b[14], b[15]);
+    if (fourcc === "VP8X") {
+      const w = 1 + (b[24] | (b[25] << 8) | (b[26] << 16));
+      const h = 1 + (b[27] | (b[28] << 8) | (b[29] << 16));
+      if (w > 0 && h > 0) return { w, h };
+    } else if (fourcc === "VP8 ") {
+      const w = (b[26] | (b[27] << 8)) & 0x3FFF;
+      const h = (b[28] | (b[29] << 8)) & 0x3FFF;
+      if (w > 0 && h > 0) return { w, h };
+    } else if (fourcc === "VP8L" && b[20] === 0x2F) {
+      const bits = b[21] | (b[22] << 8) | (b[23] << 16) | (b[24] << 24);
+      const w = (bits & 0x3FFF) + 1;
+      const h = ((bits >> 14) & 0x3FFF) + 1;
+      if (w > 0 && h > 0) return { w, h };
+    }
+  }
+  // JPEG
+  if (b.length >= 4 && b[0] === 0xFF && b[1] === 0xD8) {
+    let i = 2;
+    while (i < b.length - 9) {
+      if (b[i] !== 0xFF) { i++; continue; }
+      const marker = b[i + 1];
+      if (marker >= 0xC0 && marker <= 0xCF && marker !== 0xC4 && marker !== 0xC8 && marker !== 0xCC) {
+        const h = (b[i + 5] << 8) | b[i + 6];
+        const w = (b[i + 7] << 8) | b[i + 8];
+        if (w > 0 && h > 0) return { w, h };
+        break;
+      }
+      const len = (b[i + 2] << 8) | b[i + 3];
+      if (len < 2) break;
+      i += 2 + len;
+    }
+  }
+  return null;
+}
+
+async function isLandscapeImage(url: string): Promise<boolean> {
+  if (!url || !/^https?:\/\//i.test(url)) return false;
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 4500);
+    const r = await fetch(url, {
+      headers: { "Range": "bytes=0-131071", "User-Agent": "CastSlateNewsBot/1.0 (news section images)" },
+      signal: ctrl.signal,
+    });
+    clearTimeout(t);
+    if (!r.ok && r.status !== 206) return false;
+    const buf = new Uint8Array(await r.arrayBuffer());
+    const dims = parseDims(buf);
+    if (!dims) return false;
+    return dims.w / dims.h >= LANDSCAPE_MIN;
+  } catch (_) {
+    return false;
+  }
+}
+
+// ─── Article writers ─────────────────────────────────────────────────────────
+// Claude fallback writer (used only if Gemini is unavailable).
 async function aiRewrite(title: string, desc: string, source: string, category: Category) {
   if (!ANTHROPIC_API_KEY) return null;
   try {
@@ -190,11 +235,10 @@ function parseModelJson(text: string) {
   } catch (_) { return null; }
 }
 
-// Gemini rewrite (Google AI Studio). Key comes from Vault via RPC.
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-// Retries on 429 (free-tier rate limit) with backoff so a burst of stories
-// doesn't get dropped to the fallback.
+// Gemini rewrite (Google AI Studio). Key comes from Vault via RPC. Retries on
+// 429 (free-tier rate limit) with backoff so a burst of stories isn't dropped.
 async function geminiRewrite(key: string, title: string, desc: string, source: string, category: Category, attempt = 0): Promise<{ headline: string; excerpt: string; body: string } | null> {
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`;
@@ -223,7 +267,6 @@ async function geminiRewrite(key: string, title: string, desc: string, source: s
 }
 
 // Safe fallback: an original CastSlate blurb built from the headline only.
-// Never copies the source description verbatim.
 function fallbackRewrite(title: string, source: string, category: Category) {
   const headline = title.replace(/\s*[\|\-–—]\s*[^|\-–—]*$/, "").trim() || title;
   const cat = category.toLowerCase();
@@ -236,82 +279,14 @@ function fallbackRewrite(title: string, source: string, category: Category) {
   return { headline, excerpt, body };
 }
 
-// Find a real, relevant image via TMDB (movie/TV poster/still or person photo).
-// Returns a TMDB image URL or null. Falls back to royalty-free pool when null.
-async function tmdbImage(headline: string): Promise<string | null> {
-  if (!TMDB_API_KEY) return null;
-  // Prefer a quoted title in the headline (e.g. 'The Four Seasons'); else use
-  // the leading words (often a name or show title).
-  const quoted = headline.match(/['"“”‘’]([^'"“”‘’]{2,60})['"“”‘’]/);
-  const query = (quoted ? quoted[1] : headline.split(/\s+/).slice(0, 5).join(" "))
-    .replace(/[^\w\s'-]/g, " ").trim();
-  if (!query) return null;
-  try {
-    const u = `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&include_adult=false&query=${encodeURIComponent(query)}`;
-    const r = await fetch(u);
-    if (!r.ok) return null;
-    const j = await r.json();
-    const results = (j?.results || []) as Array<Record<string, unknown>>;
-    for (const res of results) {
-      const path = (res.poster_path || res.backdrop_path || res.profile_path) as string | undefined;
-      if (path) return `https://image.tmdb.org/t/p/w780${path}`;
-    }
-    return null;
-  } catch (_) {
-    return null;
-  }
-}
-
-// Real, freely-licensed photo of the news subject via Wikipedia. Only returns
-// images hosted on Wikimedia Commons (CC / public-domain) — never non-free
-// local uploads (e.g. posters under /wikipedia/en/). Great for real people.
-async function wikiImage(headline: string): Promise<string | null> {
-  const q = headline.replace(/[^\w\s'&-]/g, " ").split(/\s+/).slice(0, 8).join(" ").trim();
-  if (!q) return null;
-  try {
-    const u = `https://en.wikipedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=3&prop=pageimages&piprop=thumbnail&pithumbsize=900&redirects=1&origin=*`;
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 3500);
-    const r = await fetch(u, { headers: { "User-Agent": "CastSlateNewsBot/1.0 (news section images)" }, signal: ctrl.signal });
-    clearTimeout(t);
-    if (!r.ok) return null;
-    const j = await r.json();
-    const pages = j?.query?.pages;
-    if (!pages) return null;
-    const arr = (Object.values(pages) as Array<Record<string, any>>)
-      .sort((a, b) => (a.index || 0) - (b.index || 0));
-    for (const p of arr) {
-      const src = p?.thumbnail?.source as string | undefined;
-      if (src && /\/\/upload\.wikimedia\.org\/wikipedia\/commons\//.test(src)) return src;
-    }
-    return null;
-  } catch (_) { return null; }
-}
-
-// Choose a non-repeating image: TMDB (if configured) → Wikipedia/Commons (real
-// people, free) → category royalty-free pool → extra pool. Tracks `used` so no
-// two articles in a run share an image.
-async function pickImage(title: string, category: Category, used: Set<string>): Promise<string> {
-  const tryUrl = (u: string | null): string | null => (u && !used.has(u) ? u : null);
-  let img = tryUrl(await tmdbImage(title));
-  if (img) { used.add(img); return img; }
-  img = tryUrl(await wikiImage(title));
-  if (img) { used.add(img); return img; }
-  for (const c of [...(IMAGES[category] || []), ...EXTRA_IMAGES]) {
-    if (!used.has(c)) { used.add(c); return c; }
-  }
-  return (IMAGES[category] || EXTRA_IMAGES)[0]; // last resort (allow repeat)
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   const json = (b: unknown, status = 200) =>
     new Response(JSON.stringify(b), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   // Caller authentication (verify_jwt is off so the cron token can pass).
-  // Allowed: pg_cron via run_news_auto_refresh (Bearer = news_refresh_token
-  // from Vault), server-side calls with the service-role key, and logged-in
-  // admin / super_admin users (the Super Admin "Refresh Now" button).
+  // Allowed: pg_cron (Bearer = news_refresh_token from Vault), server-side calls
+  // with the service-role key, and logged-in admin / super_admin users.
   try {
     const token = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
     if (!token) return json({ ok: false, error: "unauthorized" }, 401);
@@ -345,7 +320,7 @@ serve(async (req) => {
     } catch (_) { /* no key configured */ }
 
     // Per-source cap so one feed can't dominate; overall cap keeps it compact.
-    const PER_SOURCE = 2;
+    const PER_SOURCE = 3;
     const candidates: { item: FeedItem; source: string; category: Category }[] = [];
 
     for (const feed of FEEDS) {
@@ -359,55 +334,58 @@ serve(async (req) => {
           if (taken >= PER_SOURCE) break;
           const hay = `${it.title} ${it.description}`;
           if (!RELEVANT.test(hay)) continue;
+          if (!it.image) continue; // source-only images: skip items with no own image
           candidates.push({ item: it, source: feed.name, category: pickCategory(hay, feed.defaultCat) });
           taken++;
         }
       } catch (_) { /* skip a failing feed, keep going */ }
     }
 
-    // Dedupe against what we already stored (by source_url); also seed the
-    // used-image set with recent images so new posts don't repeat them.
-    const links = candidates.map((c) => c.item.link);
+    // Dedupe against what we already stored (by source_url and by image).
     const existing = new Set<string>();
-    const used = new Set<string>();
+    const usedImg = new Set<string>();
     {
       const { data: recent } = await sb.from("news_articles")
-        .select("source_url,image_url").order("written_at", { ascending: false }).limit(40);
-      for (const r of (recent || []) as Array<{ source_url: string; image_url: string }>) {
+        .select("source_url,image_url,original_image_url").order("written_at", { ascending: false }).limit(60);
+      for (const r of (recent || []) as Array<{ source_url: string; image_url: string; original_image_url: string }>) {
         if (r.source_url) existing.add(r.source_url);
-        if (r.image_url) used.add(r.image_url);
+        if (r.image_url) usedImg.add(r.image_url);
+        if (r.original_image_url) usedImg.add(r.original_image_url);
       }
     }
 
     let added = 0;
-    // Cap new articles per invocation so the run finishes within the function's
-    // 150s limit (Gemini free-tier pacing makes long batches slow). Re-run /
-    // the cron tops the feed up to 12 over subsequent runs (dedup skips existing).
+    let skippedNoImg = 0;
+    // Cap new articles per invocation so the run finishes within the 150s limit.
     const MAX_NEW = 6;
     for (const c of candidates) {
       if (added >= MAX_NEW) break;
       if (existing.has(c.item.link)) continue;
+
+      // SOURCE-ONLY, LANDSCAPE-ONLY image gate (before the costly rewrite).
+      const srcImg = c.item.image;
+      if (!srcImg || usedImg.has(srcImg)) continue;
+      if (!(await isLandscapeImage(srcImg))) { skippedNoImg++; continue; }
+
       const rewritten =
         (geminiKey ? await geminiRewrite(geminiKey, c.item.title, c.item.description, c.source, c.category) : null)
         || (await aiRewrite(c.item.title, c.item.description, c.source, c.category))
         || fallbackRewrite(c.item.title, c.source, c.category);
       const baseSlug = slugify(rewritten.headline) || slugify(c.item.title) || `story-${Date.now()}`;
       const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`;
-      // Real subject image: TMDB → Wikipedia/Commons → royalty-free, de-duplicated.
-      const image = await pickImage(c.item.title, c.category, used);
       const written = new Date().toISOString();
       const fetched = c.item.pubDate ? new Date(c.item.pubDate).toISOString() : written;
+      usedImg.add(srcImg);
       const { error } = await sb.from("news_articles").insert({
         slug,
         headline: rewritten.headline,
         excerpt: rewritten.excerpt,
         body: rewritten.body,
         category: c.category,
-        image_url: image,
-        // Originals — used by the external "link-out" cards (source's own
-        // headline + syndicated thumbnail, linking to the exact post).
+        // Source-only image — the publisher's own RSS thumbnail (landscape).
+        image_url: srcImg,
         original_headline: c.item.title || null,
-        original_image_url: c.item.image || null,
+        original_image_url: srcImg,
         source_name: c.source,
         source_url: c.item.link,
         author: "CastSlate Staff",
@@ -424,7 +402,7 @@ serve(async (req) => {
     // Stamp the run.
     await sb.from("site_settings").update({ news_last_run: new Date().toISOString() }).eq("id", 1);
 
-    return json({ ok: true, added, scanned: candidates.length, model: geminiKey ? "gemini" : (ANTHROPIC_API_KEY ? "claude" : "fallback"), tmdb: !!TMDB_API_KEY });
+    return json({ ok: true, added, scanned: candidates.length, skippedNonLandscape: skippedNoImg, model: geminiKey ? "gemini" : (ANTHROPIC_API_KEY ? "claude" : "fallback") });
   } catch (e) {
     return json({ ok: false, error: String((e as Error)?.message || e) }, 500);
   }
