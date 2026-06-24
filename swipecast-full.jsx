@@ -18508,7 +18508,7 @@ function AdminEmailCampaigns({session}){
   const [selStatus,setSelStatus]=useState(null);
   const [testEmail,setTestEmail]=useState(session?.user?.email||"");
   const [batch,setBatch]=useState("50");
-  const [cap,setCap]=useState("");
+  const [cap,setCap]=useState("200");
   const [sending,setSending]=useState(false);
   const [logLines,setLogLines]=useState([]);
   const stopRef=useRef(false);
@@ -18676,11 +18676,17 @@ function AdminEmailCampaigns({session}){
         <button className="btn-s" disabled={busy||sending} onClick={sendTest}>Send test</button>
       </div>
       <div style={{fontSize:12,color:"var(--t3)",fontWeight:600,marginBottom:6}}>Send to the list</div>
-      {!sending?<div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:8}}>
-        <button className="btn-p" disabled={busy} onClick={()=>startSend(500,"warm-up — recommended first")}>Send warm-up (500)</button>
+      {!sending?<div style={{marginBottom:8}}>
+        <div style={{display:"flex",gap:8,alignItems:"flex-end",flexWrap:"wrap",marginBottom:10,paddingBottom:10,borderBottom:"1px solid var(--bdr)"}}>
+          <div><label style={{fontSize:12,color:"var(--t3)",fontWeight:600,display:"block",marginBottom:4}}>Send a set number (Resend free plan = 200/day)</label><input value={cap} onChange={e=>setCap(e.target.value.replace(/[^0-9]/g,""))} inputMode="numeric" style={{padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14,width:120}}/></div>
+          <button className="btn-p" disabled={busy} onClick={()=>startSend(Math.max(1,parseInt(cap)||200),"daily limit")}>Send {(parseInt(cap)||200).toLocaleString()} now</button>
+        </div>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+        <button className="btn-s" disabled={busy} onClick={()=>startSend(500,"warm-up")}>Send 500</button>
         <button className="btn-s" disabled={busy} onClick={()=>startSend(2000,"next 2,000")}>Send 2,000</button>
         <button className="btn-s" disabled={busy} onClick={()=>startSend(null,"everyone remaining")}>Send everyone remaining</button>
         <button className="btn-s btn-sm" onClick={()=>refreshSel()}>↻ Refresh</button>
+        </div>
       </div>:<div style={{display:"flex",gap:10,alignItems:"center",marginBottom:8}}>
         <button className="btn-s" onClick={()=>{stopRef.current=true;}} style={{color:"#c0392b",borderColor:"#c0392b"}}>■ Stop</button>
         <span style={{fontSize:13,color:"var(--t3)"}}>Sending… (safe to leave this tab open)</span>

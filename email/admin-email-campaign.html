@@ -93,6 +93,11 @@
   <div class="card">
     <h2><span class="step">6</span> Send to everyone</h2>
     <div class="row">
+      <div style="flex:2;"><label>Resume existing campaign by ID <small>(skip steps 2–4 — use this to continue a campaign you already created)</small></label><input id="resumeId" type="text" placeholder="paste campaign id"/></div>
+      <div style="display:flex;align-items:flex-end;"><button id="btnResume" class="secondary">Load campaign</button></div>
+    </div>
+    <div id="resumeInfo" style="margin:6px 0 12px;"></div>
+    <div class="row">
       <div><label>Batch size (per request)</label><input id="batch" type="text" value="50"/></div>
       <div><label>Max to send this run <small>(blank = all remaining)</small></label><input id="cap" type="text" placeholder="e.g. 500 for a warm-up day"/></div>
     </div>
@@ -260,8 +265,23 @@ $("btnStatus").addEventListener("click", refreshStatus);
 
 $("btnStop").addEventListener("click", ()=>{ stopFlag=true; log("Stopping after current batch…"); });
 
+$("btnResume").addEventListener("click", async ()=>{
+  if(!$("secret").value) return alert("Paste your service_role key in step 1 first.");
+  const id=$("resumeId").value.trim();
+  if(!id) return alert("Paste the campaign id to resume.");
+  $("btnResume").disabled=true;
+  try{
+    const s=await call({ action:"status", campaign_id:id });
+    campaignId=id;
+    $("resumeInfo").innerHTML=`<span class="ok">Loaded.</span> sent <b>${s.sent}</b> · queued <b>${s.queued}</b> · failed <b>${s.failed}</b> · unsub-skipped <b>${s.skipped}</b>. Sending will continue from the next queued recipient (already-sent ones are never re-emailed).`;
+    log("Resumed campaign "+id+" — "+s.sent+" sent, "+s.queued+" still queued.","ok");
+    await refreshStatus();
+  }catch(e){ $("resumeInfo").innerHTML='<span class="err">'+e.message+'</span>'; log("Resume error: "+e.message,"err"); }
+  finally{ $("btnResume").disabled=false; }
+});
+
 $("btnSend").addEventListener("click", async ()=>{
-  if(!campaignId) return alert("Create the campaign first (step 4).");
+  if(!campaignId) return alert("Load or create a campaign first (use step 6's “Load campaign”, or steps 2–4).");
   if(!confirm("Start sending real emails to your list? You can Stop anytime.")) return;
   stopFlag=false; $("btnSend").disabled=true; $("btnStop").disabled=false;
   const batch = Math.max(1, Math.min(100, parseInt($("batch").value)||50));

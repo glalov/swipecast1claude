@@ -74,15 +74,15 @@
       };
     }
   </script>
-  <!-- BUILD: 20260624-192915 -->
-  <meta name="build-version" content="20260624-192915"/>
+  <!-- BUILD: 20260624-210346 -->
+  <meta name="build-version" content="20260624-210346"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260624-192915";
+        var B="20260624-210346";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -302,6 +302,6 @@
       })();
     })();
   </script>
-  <script src="/app.js?v=20260624-192915"></script>
+  <script src="/app.js?v=20260624-210346"></script>
 </body>
 </html>
