@@ -3133,7 +3133,11 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
       const f=document.querySelector('.site-footer');
       let threshold=document.documentElement.scrollHeight-4;
       if(f){const r=f.getBoundingClientRect();threshold=r.top+window.scrollY+r.height*0.5;}
-      setB2tShow(vpBottom>=threshold);
+      // Guard against the transient flash when a page is still laying out (e.g.
+      // returning from a casting): only show on genuinely scrollable pages where
+      // the user has actually reached the footer midpoint.
+      const scrollable=document.documentElement.scrollHeight-window.innerHeight;
+      setB2tShow(scrollable>240 && vpBottom>=threshold);
     }catch(_){}};
     window.addEventListener('scroll',check,{passive:true});
     window.addEventListener('resize',check);
@@ -9302,7 +9306,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             }}
               onMouseEnter={e=>{if(isArchived)return;e.currentTarget.style.boxShadow="0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
               onMouseLeave={e=>{if(isArchived)return;e.currentTarget.style.boxShadow="0 1px 4px rgba(26,26,46,0.05)";e.currentTarget.style.transform="";}}
-              onClick={()=>{if(isArchived)return;openSheet(rawC);}}>
+              onClick={()=>{if(isArchived)return;if(window.innerWidth<=768)return;openSheet(rawC);}}>
               {isArchived&&<div className="cs-archived-stamp" aria-hidden="true">Archived</div>}
               <div className={isArchived?"cs-archived-dim":undefined}>
               <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
@@ -12850,6 +12854,9 @@ function FixedTooltip({anchorRef,children,width=300}){
 function InfoTip({children,color="var(--t2)",width=300,label="More information"}){
   const [show,setShow]=useState(false);
   const iconRef=useRef(null);
+  // Dismiss the fixed tooltip on any scroll (it's position:fixed so it would
+  // otherwise hang on screen while the page scrolls beneath it).
+  useEffect(()=>{if(!show)return;const close=()=>setShow(false);window.addEventListener('scroll',close,{passive:true,capture:true});return()=>window.removeEventListener('scroll',close,{capture:true});},[show]);
   return(<>
     <span
       ref={iconRef}
