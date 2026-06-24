@@ -2185,6 +2185,10 @@ html,body{overflow-x:hidden;}
 .cls-credits-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
 .cls-slot-row{display:flex;align-items:center;gap:14px;padding:13px 18px;flex-wrap:wrap;}
 .cls-card-row{display:flex;align-items:stretch;border-radius:14px;overflow:hidden;cursor:pointer;margin-bottom:16px;position:relative;transition:box-shadow 0.15s,transform 0.1s;}
+/* Featured class card — soft amber pulse to draw the eye. */
+@keyframes csFeaturedGlow{0%,100%{box-shadow:0 0 0 1px #EAD9B6,0 0 14px 2px rgba(232,144,42,0.28);}50%{box-shadow:0 0 0 1px #E7BE6F,0 0 30px 7px rgba(232,144,42,0.58);}}
+.cls-featured-glow{animation:csFeaturedGlow 2.8s ease-in-out infinite;}
+@media (prefers-reduced-motion:reduce){.cls-featured-glow{animation:none;box-shadow:0 0 0 1px #E7BE6F,0 0 20px 4px rgba(232,144,42,0.40);}}
 .cls-card-img{width:250px;min-width:250px;position:relative;overflow:hidden;background:#F4F1EA;flex-shrink:0;}
 .cls-card-action{padding:18px 20px;display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:8px;border-left:1px solid var(--bdr);min-width:140px;flex-shrink:0;}
 @media(max-width:768px){
@@ -4520,14 +4524,14 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
     const isFeatured=cls.is_featured||cls.is_highlighted;
     return(
       <div key={cls.id}
-        className="cls-card-row"
+        className={"cls-card-row"+(isFeatured?" cls-featured-glow":"")}
         style={{
-          border:isFeatured?"2px solid var(--acc)":"1px solid var(--bdr)",
+          border:isFeatured?"2px solid #E7C98A":"1px solid var(--bdr)",
           background:"var(--s1)",
-          boxShadow:isFeatured?"0 4px 24px rgba(var(--acc-rgb,99,102,241),0.13)":"0 1px 6px rgba(0,0,0,0.05)",
+          boxShadow:isFeatured?undefined:"0 1px 6px rgba(0,0,0,0.05)",
         }}
-        onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 6px 28px rgba(0,0,0,0.12)";e.currentTarget.style.transform="translateY(-1px)";}}
-        onMouseLeave={e=>{e.currentTarget.style.boxShadow=isFeatured?"0 4px 24px rgba(99,102,241,0.13)":"0 1px 6px rgba(0,0,0,0.05)";e.currentTarget.style.transform="";}}
+        onMouseEnter={e=>{if(!isFeatured)e.currentTarget.style.boxShadow="0 6px 28px rgba(0,0,0,0.12)";e.currentTarget.style.transform="translateY(-1px)";}}
+        onMouseLeave={e=>{if(!isFeatured)e.currentTarget.style.boxShadow="0 1px 6px rgba(0,0,0,0.05)";e.currentTarget.style.transform="";}}
         onClick={()=>{setViewing(cls);window.scrollTo(0,0);}}
       >
         {/* Image / Collage */}
@@ -4544,7 +4548,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
         {/* Details */}
         <div style={{flex:1,padding:"18px 20px",display:"flex",flexDirection:"column",justifyContent:"center",minWidth:0}}>
           {displayDate&&(
-            <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:5}}>
+            <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t2)",marginBottom:5}}>
               {t('classes.starts')} {displayDate}
               {next&&clsSlots[0]&&<span style={{marginLeft:6,fontWeight:500}}>· {fmtTime(clsSlots[0].start_time)}</span>}
             </div>
@@ -4559,10 +4563,10 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
             ):(
               cls.price&&<span style={{fontSize:15,fontWeight:700,color:"var(--t1)"}}>{cls.price}</span>
             )}
-            {cls.level&&<span style={{fontSize:12,color:"var(--t3)",background:"var(--s2)",padding:"2px 8px",borderRadius:10,border:"1px solid var(--bdr)"}}>{cls.level}</span>}
+            {cls.level&&<span style={{fontSize:12,fontWeight:700,color:"#854F0B",background:"#FAEEDA",padding:"3px 10px",borderRadius:20,border:"1px solid #EFB867"}}>{cls.level}</span>}
           </div>
-          {cls.short_description&&<p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6,marginBottom:8,overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{cls.short_description}</p>}
-          <div style={{display:"flex",gap:14,flexWrap:"wrap",fontSize:12,color:"var(--t3)",marginTop:"auto"}}>
+          {cls.short_description&&<p style={{color:"#34343F",fontSize:13.5,lineHeight:1.6,marginBottom:8,overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{cls.short_description}</p>}
+          <div style={{display:"flex",gap:14,flexWrap:"wrap",fontSize:12,color:"var(--t2)",marginTop:"auto"}}>
             {cls.instructor_name&&<span>👤 {cls.instructor_name}</span>}
             {cls.format&&<span>📍 {cls.format.split(" · ")[0]}</span>}
             {cm&&!displayDate&&<span style={{color:"var(--acc)",fontWeight:600}}>{cm.name}</span>}
