@@ -1767,8 +1767,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .site-footer-spacer{min-height:40px;flex-shrink:0;background:var(--bg);width:100%;margin-top:auto;}
 /* Floating back-to-top cube — drops in from above the screen at the very bottom,
    shoots back up off-screen when the user scrolls up. Replaces the old bar. */
-.b2t-cube{position:fixed;left:50%;bottom:22px;z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:96px;height:86px;background:#FFFFFF;color:#1A1A2E;border:1px solid rgba(0,0,0,0.12);border-radius:17px;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,0.30);font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(calc(-100vh + 16px));opacity:1;pointer-events:none;transition:transform 1.17s cubic-bezier(.5,0,.75,.45);}
-.b2t-cube.show{transform:translateX(-50%) translateY(0);pointer-events:auto;transition:transform 1.33s cubic-bezier(.2,.72,.3,1);}
+.b2t-cube{position:fixed;left:50%;bottom:22px;z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:96px;height:86px;background:#FFFFFF;color:#1A1A2E;border:1px solid rgba(0,0,0,0.12);border-radius:17px;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,0.30);font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(calc(-100vh + 16px));opacity:1;pointer-events:none;transition:transform 1.17s cubic-bezier(.5,0,.75,.45),box-shadow .45s ease;}
+.b2t-cube.show{transform:translateX(-50%) translateY(0);pointer-events:auto;transition:transform 1.33s cubic-bezier(.2,.72,.3,1),box-shadow .45s ease;}
+/* White outer glow (25%) around the card outline while it's in motion. */
+.b2t-cube.moving{box-shadow:0 0 0 1px rgba(255,255,255,0.23),0 0 14px 3px rgba(255,255,255,0.21),0 0 30px 8px rgba(255,255,255,0.11),0 16px 34px rgba(0,0,0,0.30);}
 .b2t-cube span{line-height:1.1;}
 @media(prefers-reduced-motion:reduce){.b2t-cube{transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}.b2t-cube.show{opacity:1!important;}}
 .site-backtotop{
@@ -3118,12 +3120,29 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
   // bottom; it drops in from above and shoots back up off-screen on scroll-up.
   const [b2tShow,setB2tShow]=React.useState(false);
   React.useEffect(()=>{
-    const check=()=>{try{setB2tShow(window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-4);}catch(_){}};
+    // Appear earlier — once the viewport bottom reaches the FOOTER'S MIDPOINT,
+    // rather than waiting for the very bottom of the page. Falls back to the old
+    // near-bottom check if the footer element can't be measured yet.
+    const check=()=>{try{
+      const vpBottom=window.innerHeight+window.scrollY;
+      const f=document.querySelector('.site-footer');
+      let threshold=document.documentElement.scrollHeight-4;
+      if(f){const r=f.getBoundingClientRect();threshold=r.top+window.scrollY+r.height*0.5;}
+      setB2tShow(vpBottom>=threshold);
+    }catch(_){}};
     window.addEventListener('scroll',check,{passive:true});
     window.addEventListener('resize',check);
     check();
     return()=>{window.removeEventListener('scroll',check);window.removeEventListener('resize',check);};
   },[]);
+  // White outer glow that blooms while the cube is in motion (drop-in + shoot-up)
+  // and fades back to its resting shadow once it settles.
+  const [b2tMoving,setB2tMoving]=React.useState(false);
+  React.useEffect(()=>{
+    setB2tMoving(true);
+    const id=setTimeout(()=>setB2tMoving(false),1200);
+    return()=>clearTimeout(id);
+  },[b2tShow]);
   return(<>
     {/* Global breathing room above the footer on EVERY page. Carries margin-top:auto
         (the sticky-footer push) AND a guaranteed min-height so no page's final card,
@@ -3132,7 +3151,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     {/* Floating back-to-top cube — only on long pages (home, browse castings,
         tapelink, manager mode). Short pages scroll up in one flick, so the
         drop-down button is just noise there. */}
-    {backToTop&&<button type="button" className={"b2t-cube"+(b2tShow?" show":"")} onClick={scrollTop} aria-label={t('footer.backToTop')}>
+    {backToTop&&<button type="button" className={"b2t-cube"+(b2tShow?" show":"")+(b2tMoving?" moving":"")} onClick={scrollTop} aria-label={t('footer.backToTop')}>
       <svg width="20" height="16" viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="currentColor"/></svg>
       <span>{t('footer.backToTop')}</span>
     </button>}
