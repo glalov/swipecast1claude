@@ -4270,6 +4270,24 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
     }
   },[viewing?.id,session?.user?.id]);
 
+  // Per-class detail view tracking. The top-level pageview beacon only fires on
+  // route changes, so opening a class detail (which stays on /classes) was never
+  // counted — every class looked identical in analytics. Fire a lightweight beacon
+  // here, keyed to the class id, so we can see which class actually drew interest.
+  useEffect(()=>{
+    if(!viewing?.id)return;
+    try{
+      if(myProfile&&["admin","super_admin"].includes(myProfile.user_type))return;
+      let sid=localStorage.getItem("sc_sid");
+      if(!sid){sid=Date.now().toString(36)+Math.random().toString(36).slice(2,10);localStorage.setItem("sc_sid",sid);}
+      const supabaseUrl=window.SC_CONFIG?.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co";
+      const url=`${supabaseUrl}/functions/v1/track-view`;
+      const payload=JSON.stringify({path:`/classes/${viewing.id}`,page:"class-detail",referrer:document.referrer||"",session_id:sid,is_logged_in:!!session?.user});
+      if(navigator.sendBeacon){navigator.sendBeacon(url,new Blob([payload],{type:"text/plain;charset=UTF-8"}));}
+      else{fetch(url,{method:"POST",headers:{"Content-Type":"text/plain;charset=UTF-8"},body:payload,keepalive:true}).catch(()=>{});}
+    }catch(_){}
+  },[viewing?.id]);
+
   const catMeta=(cat)=>CLASS_CATEGORIES.find(c=>c.id===cat);
 
   const handleRequestBooking=(cls,slot,date,invId=null)=>{
