@@ -2189,6 +2189,10 @@ html,body{overflow-x:hidden;}
 @keyframes csFeaturedGlow{0%,100%{box-shadow:0 0 0 1px #EAD9B6,0 0 14px 2px rgba(232,144,42,0.28);}50%{box-shadow:0 0 0 1px #E7BE6F,0 0 30px 7px rgba(232,144,42,0.58);}}
 .cls-featured-glow{animation:csFeaturedGlow 2.8s ease-in-out infinite;}
 @media (prefers-reduced-motion:reduce){.cls-featured-glow{animation:none;box-shadow:0 0 0 1px #E7BE6F,0 0 20px 4px rgba(232,144,42,0.40);}}
+/* Class-card description: clamp to 2 lines on desktop, show in full on mobile
+   (the narrower card needs more lines or the text gets cut mid-word). */
+.cls-card-desc{color:#34343F;font-size:13.5px;line-height:1.6;margin-bottom:8px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+@media (max-width:768px){.cls-card-desc{-webkit-line-clamp:unset;overflow:visible;}}
 .cls-card-img{width:250px;min-width:250px;position:relative;overflow:hidden;background:#F4F1EA;flex-shrink:0;}
 .cls-card-action{padding:18px 20px;display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:8px;border-left:1px solid var(--bdr);min-width:140px;flex-shrink:0;}
 @media(max-width:768px){
@@ -4565,7 +4569,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
             )}
             {cls.level&&<span style={{fontSize:12,fontWeight:700,color:"#854F0B",background:"#FAEEDA",padding:"3px 10px",borderRadius:20,border:"1px solid #EFB867"}}>{cls.level}</span>}
           </div>
-          {cls.short_description&&<p style={{color:"#34343F",fontSize:13.5,lineHeight:1.6,marginBottom:8,overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{cls.short_description}</p>}
+          {cls.short_description&&<p className="cls-card-desc">{cls.short_description}</p>}
           <div style={{display:"flex",gap:14,flexWrap:"wrap",fontSize:12,color:"var(--t2)",marginTop:"auto"}}>
             {cls.instructor_name&&<span>👤 {cls.instructor_name}</span>}
             {cls.format&&<span>📍 {cls.format.split(" · ")[0]}</span>}
