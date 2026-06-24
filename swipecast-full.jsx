@@ -4296,6 +4296,8 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
     });
 
     const locationLabel=isOnlineClass?"Online":(viewing.location_city_state||viewing.location_name||"In-Person");
+    // Whether we have any location info worth showing as its own card in the sidebar.
+    const hasLocation=!!(viewing.location_name||viewing.location_city_state||viewing.location_room||((isOnlineClass||viewing.online_note)&&viewing.online_note));
 
     return(<div className="page">
       <button className="btn-s btn-sm mb-20" onClick={()=>{setViewing(null);setSessionFilter("all");window.scrollTo(0,0);}}>{t('classes.backToClasses')}</button>
@@ -4355,17 +4357,41 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
         )}
 
         {/* Description + Instructor sidebar */}
-        <div className="cls-detail-grid" style={{gridTemplateColumns:isMobile?"1fr":(viewing.instructor_name?"1fr 260px":"1fr"),marginTop:28}}>
+        <div className="cls-detail-grid" style={{gridTemplateColumns:isMobile?"1fr":((viewing.instructor_name||hasLocation)?"1fr 260px":"1fr"),marginTop:28}}>
           <div>
             {(viewing.full_description||viewing.short_description)&&<p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,margin:0,whiteSpace:"pre-line"}}>{viewing.full_description||viewing.short_description}</p>}
           </div>
-          {viewing.instructor_name&&(
-            <div className="card" style={{padding:20}}>
-              <div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:12}}>{t('classes.instructor')}</div>
-              {viewing.instructor_photo_url&&<img src={viewing.instructor_photo_url} alt={viewing.instructor_name} style={{width:52,height:52,borderRadius:"50%",objectFit:"cover",marginBottom:10,display:"block"}}/>}
-              <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>{viewing.instructor_name}</div>
-              {viewing.instructor_bio&&<div style={{color:"var(--t2)",fontSize:12,lineHeight:1.55,marginBottom:8}}>{viewing.instructor_bio}</div>}
-              {viewing.instructor_imdb&&<a href={viewing.instructor_imdb} target="_blank" rel="noopener noreferrer" aria-label={`${viewing.instructor_name} on IMDb`} title="View IMDb profile" style={{display:"inline-flex",alignItems:"center",gap:7,textDecoration:"none",marginTop:2}}><span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",background:"#F5C518",color:"#000000",fontWeight:800,fontSize:13,lineHeight:1,letterSpacing:-0.3,padding:"5px 7px",borderRadius:4,fontFamily:"Arial,Helvetica,sans-serif"}}>IMDb</span><span style={{color:"var(--t2)",fontSize:12,fontWeight:600}}>profile →</span></a>}
+          {(viewing.instructor_name||hasLocation)&&(
+            <div style={{display:"flex",flexDirection:"column",gap:16}}>
+              {viewing.instructor_name&&(
+              <div className="card" style={{padding:20}}>
+                <div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:12}}>{t('classes.instructor')}</div>
+                {viewing.instructor_photo_url&&<img src={viewing.instructor_photo_url} alt={viewing.instructor_name} style={{width:52,height:52,borderRadius:"50%",objectFit:"cover",marginBottom:10,display:"block"}}/>}
+                <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>{viewing.instructor_name}</div>
+                {viewing.instructor_bio&&<div style={{color:"var(--t2)",fontSize:12,lineHeight:1.55,marginBottom:8}}>{viewing.instructor_bio}</div>}
+                {viewing.instructor_imdb&&<a href={viewing.instructor_imdb} target="_blank" rel="noopener noreferrer" aria-label={`${viewing.instructor_name} on IMDb`} title="View IMDb profile" style={{display:"inline-flex",alignItems:"center",gap:7,textDecoration:"none",marginTop:2}}><span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",background:"#F5C518",color:"#000000",fontWeight:800,fontSize:13,lineHeight:1,letterSpacing:-0.3,padding:"5px 7px",borderRadius:4,fontFamily:"Arial,Helvetica,sans-serif"}}>IMDb</span><span style={{color:"var(--t2)",fontSize:12,fontWeight:600}}>profile →</span></a>}
+              </div>
+              )}
+              {/* Location card — surfaces the venue/address admins set under Manager Mode →
+                  Classes. Sits directly under the instructor bio in the sidebar. */}
+              {hasLocation&&(
+              <div className="card" style={{padding:20}}>
+                <div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:12}}>{isOnlineClass?"Where · Online":"Location"}</div>
+                {isOnlineClass?(
+                  <>
+                    <div style={{display:"flex",alignItems:"center",gap:7,fontWeight:700,fontSize:14,marginBottom:viewing.online_note?6:0}}><span aria-hidden="true">💻</span>Online class</div>
+                    {viewing.online_note&&<div style={{color:"var(--t2)",fontSize:12,lineHeight:1.55}}>{viewing.online_note}</div>}
+                  </>
+                ):(
+                  <>
+                    {viewing.location_name&&<div style={{display:"flex",alignItems:"flex-start",gap:7,fontWeight:700,fontSize:14,marginBottom:6,lineHeight:1.4}}><span aria-hidden="true" style={{marginTop:1}}>📍</span><span>{viewing.location_name}</span></div>}
+                    {viewing.location_city_state&&<div style={{color:"var(--t2)",fontSize:12,lineHeight:1.5,marginLeft:viewing.location_name?20:0}}>{viewing.location_city_state}</div>}
+                    {viewing.location_room&&<div style={{color:"var(--t3)",fontSize:12,lineHeight:1.5,marginTop:6,marginLeft:viewing.location_name?20:0}}>{viewing.location_room}</div>}
+                    {viewing.online_note&&<div style={{color:"var(--t2)",fontSize:12,lineHeight:1.55,marginTop:8}}>{viewing.online_note}</div>}
+                  </>
+                )}
+              </div>
+              )}
             </div>
           )}
         </div>
