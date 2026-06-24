@@ -272,7 +272,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   html{background:#1B1C20 !important;}
   .site-footer{padding-bottom:max(28px,env(safe-area-inset-bottom)) !important;}
   /* Tablet/mobile: lighter but still comfortable gap above the footer */
-  .site-footer-spacer{min-height:56px;}
+  .site-footer-spacer{min-height:32px;}
   /* Profile hero → single column */
   .my-profile-hero{grid-template-columns:1fr !important;gap:16px !important;}
   .my-profile-hero-photo{max-width:200px !important;margin:0 auto !important;}
@@ -357,7 +357,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* ─── 40px breathing-room spacer rendered right before the footer by the Footer
        component. Inherits the warm .app bg, flex-shrink:0 so it always exists
        even when the page is taller than the viewport. ─── */
-.site-footer-spacer{min-height:88px;flex-shrink:0;background:var(--bg);width:100%;margin-top:auto;}
+.site-footer-spacer{min-height:40px;flex-shrink:0;background:var(--bg);width:100%;margin-top:auto;}
 /* Floating back-to-top cube — drops in from above the screen at the very bottom,
    shoots back up off-screen when the user scrolls up. Replaces the old bar. */
 .b2t-cube{position:fixed;left:50%;bottom:22px;z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:96px;height:86px;background:#FFFFFF;color:#1A1A2E;border:1px solid rgba(0,0,0,0.12);border-radius:17px;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,0.30);font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(calc(-100vh + 16px));opacity:1;pointer-events:none;transition:transform 1.17s cubic-bezier(.5,0,.75,.45);}
