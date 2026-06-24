@@ -594,8 +594,8 @@ function translateRoleType(type, lang) {
 const ROLE_TYPE_OPTIONS=["Lead","Supporting","Principal","Featured","Co-Star","Guest Star","Recurring","Series Regular","Day Player","Background","Featured Background","Stand-In","Photo Double","Body Double","Stunt Performer","Voiceover","Host","Dancer","Singer","Understudy","Swing","Ensemble"];
 // Best-guess role type from a role name (used to seed auto-generated castings so
 // they don't all default to "Supporting"). Admins can override in the edit form.
-function inferRoleType(name){
-  const n=(name||"").toLowerCase();
+function inferRoleTypeFromText(n){
+  if(!n)return null;
   if(/photo double/.test(n))return"Photo Double";
   if(/body double/.test(n))return"Body Double";
   if(/stunt/.test(n))return"Stunt Performer";
@@ -606,14 +606,24 @@ function inferRoleType(name){
   if(/dancer|movement/.test(n))return"Dancer";
   if(/day player/.test(n))return"Day Player";
   if(/featured/.test(n))return"Featured";
-  if(/lead|protagonist|spokesperson/.test(n))return"Lead";
+  if(/\blead\b|\bleader\b|leading role|protagonist|spokesperson/.test(n))return"Lead";
   if(/supporting|foil|antagonist|straight man/.test(n))return"Supporting";
   if(/ensemble|ensamble|reader|sketch player|house team|workshop participant|reenactor|multiple roles/.test(n))return"Ensemble";
   if(/background|party guest|audience|extra|crew member/.test(n))return"Background";
   if(/guest|panelist|interview subject|storyteller|sidekick/.test(n))return"Guest Star";
   if(/singer|vocalist/.test(n))return"Singer";
   if(/lifestyle|model|figure model/.test(n))return"Principal";
-  return"Supporting";
+  return null;
+}
+// Infer a role's type. The name is most authoritative; if it yields nothing,
+// fall back to the description — casting copy routinely states the billing
+// there ("...25–35. Lead.", "Featured.", "leader of the crew") even when the
+// role name is just a character name (RAYA, DANTE). Without this, every
+// character-named role collapsed to "Supporting".
+function inferRoleType(name,description){
+  return inferRoleTypeFromText((name||"").toLowerCase())
+    || inferRoleTypeFromText((description||"").toLowerCase())
+    || "Supporting";
 }
 
 // Rank used to order roles within a casting: lead/big roles first, background last.
@@ -17668,7 +17678,7 @@ function AdminCastingGenerator({session}){
         const {data:cData,error:cErr}=await window.sb.from("castings").insert(item).select("id").single();
         if(cErr){fail++;console.warn("[ACG] insert failed",cErr);continue;}
         if(roles.length>0){
-          await window.sb.from("roles").insert(roles.map(r=>({casting_id:cData.id,name:r.name,description:r.description,gender:r.gender,role_type:r.role_type||inferRoleType(r.name),age_range:r.age_range,ethnicity:r.ethnicity,pay:r.pay||null})));
+          await window.sb.from("roles").insert(roles.map(r=>({casting_id:cData.id,name:r.name,description:r.description,gender:r.gender,role_type:r.role_type||inferRoleType(r.name,r.description),age_range:r.age_range,ethnicity:r.ethnicity,pay:r.pay||null})));
         }
         ok++;
       }
@@ -17743,7 +17753,7 @@ function AdminCastingGenerator({session}){
     if(!error){
       await window.sb.from("roles").delete().eq("casting_id",c.id);
       if(freshRoles.length>0){
-        await window.sb.from("roles").insert(freshRoles.map(r=>({casting_id:c.id,name:r.name,description:r.description,gender:r.gender,role_type:r.role_type||inferRoleType(r.name),age_range:r.age_range,ethnicity:r.ethnicity,pay:r.pay||null})));
+        await window.sb.from("roles").insert(freshRoles.map(r=>({casting_id:c.id,name:r.name,description:r.description,gender:r.gender,role_type:r.role_type||inferRoleType(r.name,r.description),age_range:r.age_range,ethnicity:r.ethnicity,pay:r.pay||null})));
       }
     }
     setBusy(null);
@@ -17777,7 +17787,7 @@ function AdminCastingGenerator({session}){
       await window.sb.from("roles").delete().eq("casting_id",updated.id);
       const toInsert=(updated.roles||[]).filter(r=>r.name&&r.name.trim());
       if(toInsert.length>0){
-        await window.sb.from("roles").insert(toInsert.map(r=>({casting_id:updated.id,name:r.name.trim(),description:r.description||"",gender:r.gender||"Any",role_type:r.role_type||inferRoleType(r.name),age_range:r.age_range||"",ethnicity:r.ethnicity||"Any ethnicity",pay:r.pay||null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"})));
+        await window.sb.from("roles").insert(toInsert.map(r=>({casting_id:updated.id,name:r.name.trim(),description:r.description||"",gender:r.gender||"Any",role_type:r.role_type||inferRoleType(r.name,r.description),age_range:r.age_range||"",ethnicity:r.ethnicity||"Any ethnicity",pay:r.pay||null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"})));
       }
     }
     showMsg("Draft saved.");setEditDraft(null);loadAll();
