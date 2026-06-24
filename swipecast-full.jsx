@@ -31,7 +31,7 @@ class ErrorBoundary extends React.Component {
       const showDebug=typeof window!=="undefined"&&(window.location.search.includes("debug")||window.location.hash.includes("debug"));
       return(
         <div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:"40px 24px",textAlign:"center"}}>
-          <div style={{fontSize:40,lineHeight:1}}><Ico n="alert-triangle" s={18}/></div>
+          <div style={{fontSize:40,lineHeight:1}}><Ico n="alert-triangle" s={22}/></div>
           <h2 style={{fontSize:20,fontWeight:800,margin:0}}>
             {label?`${label} ran into a problem`:"Something went wrong"}
           </h2>
@@ -569,7 +569,7 @@ const TRANSLATIONS = {
 
 // ─── Ico: professional line-icon (Tabler webfont) replacing emoji UI icons.
 //     Sized for visibility by default; pass s={number|string} to override.
-function Ico({n,s=18,style,...p}){
+function Ico({n,s=22,style,...p}){
   return <i className={"ti ti-"+n} aria-hidden="true"
     style={{fontSize:(typeof s==="number"?s+"px":s),lineHeight:0,verticalAlign:"-0.15em",display:"inline-block",flexShrink:0,...style}} {...p}/>;
 }
@@ -2595,7 +2595,7 @@ function ActivateMembershipBanner({myProfile,onNavigate}){
       boxShadow:"0 1px 0 rgba(0,0,0,0.15)"
     }}>
     <span className="mb-msg">
-      <span className="mb-star" aria-hidden="true"><Ico n="star" s={16}/></span>
+      <span className="mb-star" aria-hidden="true"><Ico n="star" s={24}/></span>
       <span className="mb-text-full">Get seen more — unlock unlimited submissions, Slate Video, Business Card &amp; Manager Mode</span>
       <span className="mb-text-short">Unlock unlimited submissions</span>
     </span>
@@ -2702,14 +2702,14 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
           </div>
           <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>{p.note}</p>
           <ul style={{listStyle:"none",padding:0,margin:"0 0 22px",display:"flex",flexDirection:"column",gap:6}}>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={16}/></span>Unlimited casting submissions</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={16}/></span>Unlimited photos &amp; gallery media</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={16}/></span>Unlimited video uploads</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={16}/></span>Actor Slate Video — 7-sec intro for casting teams</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={16}/></span>Actor Business Card with unique QR code</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={16}/></span>Manager Mode — weekly career check-ins</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={16}/></span>Personalized profile improvement suggestions</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={16}/></span>Cancel anytime</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>Unlimited casting submissions</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>Unlimited photos &amp; gallery media</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>Unlimited video uploads</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>Actor Slate Video — 7-sec intro for casting teams</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>Actor Business Card with unique QR code</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>Manager Mode — weekly career check-ins</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>Personalized profile improvement suggestions</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>Cancel anytime</li>
           </ul>
           <div style={{borderTop:"1px solid var(--bdr)",paddingTop:14,marginBottom:14,fontSize:12,color:"var(--t3)"}}>Total billed: <strong style={{color:"var(--t1)"}}>${p.total.toFixed(2)}</strong>{p.months>1?` for ${p.months} months`:" today"}</div>
           {planCardButton(p)}
@@ -2862,7 +2862,7 @@ function PaymentSuccessPage({session,myProfile,onNavigate,onReload,successType})
 
   if(successType==="class"){
     return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}>
-      <div className="check"><Ico n="check" s={16}/></div>
+      <div className="check"><Ico n="check" s={24}/></div>
       <h3>Payment Confirmed!</h3>
       <p style={{marginBottom:24,color:"var(--t2)"}}>Your class payment was successful. Check your inbox for booking confirmation details from the instructor.</p>
       <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
@@ -2881,14 +2881,14 @@ function PaymentSuccessPage({session,myProfile,onNavigate,onReload,successType})
   }
 
   return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}>
-    <div className="check"><Ico n="check" s={16}/></div>
+    <div className="check"><Ico n="check" s={24}/></div>
     <h3>{isPremium?"Welcome to CastSlate Premium!":"Payment Received"}</h3>
     <p style={{marginBottom:isPremium?8:16}}>
       {isPremium
         ?"Your Premium membership is now active. You have unlimited submissions starting right now."
         :"Your payment was received. Your Premium membership will activate within a minute — refresh the page if it doesn't appear."}
     </p>
-    {isPremium&&<p style={{color:"var(--acc)",fontWeight:700,marginBottom:24,fontSize:15}}>Unlimited submissions unlocked <Ico n="check" s={16}/></p>}
+    {isPremium&&<p style={{color:"var(--acc)",fontWeight:700,marginBottom:24,fontSize:15}}>Unlimited submissions unlocked <Ico n="check" s={24}/></p>}
     <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
       <button className="btn-p" onClick={()=>onNavigate("search")}>Browse Castings →</button>
       <button className="btn-s" onClick={()=>onNavigate("my-profile")}>My Profile</button>
@@ -2949,7 +2949,7 @@ function ReportModal({open,onClose,session,target}){
       {!isAuthed?<>
         <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:14,fontSize:13,color:"var(--t2)",marginBottom:16}}>You need to be signed in to submit a report. This lets us follow up if we need more details.</div>
         <div style={{display:"flex",gap:10}}><button className="btn-s" onClick={onClose} style={{flex:1}}>Close</button></div>
-      </>:done?<div className="success-msg" style={{padding:"24px 20px"}}><div className="check"><Ico n="check" s={16}/></div><h3 style={{marginTop:6}}>Report received</h3><p style={{fontSize:13,color:"var(--t2)"}}>Thanks for flagging this. We'll review it shortly.</p></div>:<>
+      </>:done?<div className="success-msg" style={{padding:"24px 20px"}}><div className="check"><Ico n="check" s={24}/></div><h3 style={{marginTop:6}}>Report received</h3><p style={{fontSize:13,color:"var(--t2)"}}>Thanks for flagging this. We'll review it shortly.</p></div>:<>
         <div className="form-group"><label className="label">Reason</label>
           <select className="select" style={{width:"100%"}} value={reason} onChange={e=>setReason(e.target.value)} disabled={busy}>
             <option value="inappropriate">Inappropriate or unsafe content</option>
@@ -3025,7 +3025,7 @@ function CookieConsentModal({open,onClose}){
         <Row title="Analytics cookies" desc="Help us understand which pages, castings, and features are useful so we can improve the platform. Aggregated and anonymous." on={analytics} onChange={setAnalytics}/>
         <Row title="Marketing cookies" desc="Help us measure the effectiveness of our outreach (e.g. press, ads, partnerships). Off by default — you opt in only if you want to." on={marketing} onChange={setMarketing}/>
       </div>
-      {saved&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.35)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginTop:14,fontWeight:600}}><Ico n="check" s={16}/> Preferences saved on this device.</div>}
+      {saved&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.35)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginTop:14,fontWeight:600}}><Ico n="check" s={24}/> Preferences saved on this device.</div>}
       <div style={{display:"flex",gap:10,marginTop:20,flexWrap:"wrap"}}>
         <button className="btn-s" onClick={handleSave} style={{flex:"1 1 200px"}}>Save Preferences</button>
         <button className="btn-p" onClick={handleAcceptAll} style={{flex:"1 1 200px"}}>Accept All</button>
@@ -3390,7 +3390,7 @@ function RegisterTalent({onNavigate}){
       setErr(`${name} sign-up failed. Please try again.`);
     }
   };
-  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check"><Ico n="check" s={16}/></div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Your free profile is ready. Click the link in that email, then log in to browse castings. You'll only need to activate a membership when you're ready to submit for a role.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}><Ico n="check" s={16}/> Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
+  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check"><Ico n="check" s={24}/></div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Your free profile is ready. Click the link in that email, then log in to browse castings. You'll only need to activate a membership when you're ready to submit for a role.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}><Ico n="check" s={24}/> Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
   if(step===1)return(
     <div className="page"><div className="login-shell"><div className="login-split">
       {/* LEFT: hero */}
@@ -3414,7 +3414,7 @@ function RegisterTalent({onNavigate}){
           <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
             <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
           </div>
-          {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}><Ico n="check" s={16}/> Verification email re-sent — check your inbox.</div>}</div>}
+          {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}><Ico n="check" s={24}/> Verification email re-sent — check your inbox.</div>}</div>}
           <div className="form-row"><div className="form-group"><label className="label">{tr('reg.t.firstName')}</label><input className="input" placeholder={tr('reg.t.firstName')} value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.t.lastName')}</label><input className="input" placeholder={tr('reg.t.lastName')} value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
           <div className="form-group"><label className="label">{tr('reg.t.email')}</label><input className="input" type="email" placeholder="you@email.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
           <div className="form-group"><label className="label">{tr('reg.t.password')}</label><input className="input" type="password" placeholder={tr('reg.t.password')} value={f.password} onChange={e=>up("password",e.target.value)}/></div>
@@ -3430,7 +3430,7 @@ function RegisterTalent({onNavigate}){
   return(
     <div className="page"><div style={{maxWidth:640,margin:"0 auto"}}>
       <div style={{display:"flex",gap:8,marginBottom:32}}>{[1,2,3].map(s=><div key={s} style={{flex:1,height:4,borderRadius:2,background:s<=step?"var(--acc)":"var(--s3)",transition:"background .3s"}}/>)}</div>
-      {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}><Ico n="check" s={16}/> Verification email re-sent — check your inbox.</div>}</div>}
+      {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}><Ico n="check" s={24}/> Verification email re-sent — check your inbox.</div>}</div>}
 
       {step===2&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>2 / 3 — {tr('reg.t.step2')}</h3>
         <div className="form-row"><div className="form-group"><label className="label">{tr('reg.t.gender')}</label><select className="select" style={{width:"100%"}} value={f.gender} onChange={e=>up("gender",e.target.value)}><option value="">Select</option><option>Female</option><option>Male</option><option>Non-Binary</option><option>Other</option></select></div><div className="form-group"><label className="label">{tr('reg.t.age')}</label><input className="input" type="number" placeholder={tr('reg.t.age')} value={f.age} onChange={e=>up("age",e.target.value)}/></div></div>
@@ -3593,7 +3593,7 @@ function RegisterCD({onNavigate}){
       setErr(`${name} sign-up failed. Please try again.`);
     }
   };
-  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check"><Ico n="check" s={16}/></div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Click the link to activate your account. Then log in to post your first casting.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}><Ico n="check" s={16}/> Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
+  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check"><Ico n="check" s={24}/></div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Click the link to activate your account. Then log in to post your first casting.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}><Ico n="check" s={24}/> Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
   return(
     <div className="page"><div className="login-shell"><div className="login-split">
       {/* LEFT: teal info panel */}
@@ -3619,7 +3619,7 @@ function RegisterCD({onNavigate}){
           <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
             <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
           </div>
-          {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}><Ico n="check" s={16}/> Verification email re-sent — check your inbox.</div>}</div>}
+          {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}><Ico n="check" s={24}/> Verification email re-sent — check your inbox.</div>}</div>}
           <div className="form-row"><div className="form-group"><label className="label">{tr('reg.cd.firstName')}</label><input className="input" placeholder={tr('reg.cd.firstName')} value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.cd.lastName')}</label><input className="input" placeholder={tr('reg.cd.lastName')} value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
           <div className="form-group"><label className="label">{tr('reg.cd.email')}</label><input className="input" type="email" placeholder="you@company.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
           <div className="form-group"><label className="label">{tr('reg.cd.password')}</label><input className="input" type="password" placeholder={tr('reg.cd.password')} value={f.password} onChange={e=>up("password",e.target.value)}/></div>
@@ -3739,7 +3739,7 @@ function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice}){
       setErr(`${name} sign-in failed. Please try again.`);
     }
   };
-  if(sentReset)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check"><Ico n="check" s={16}/></div><h3>{t('login.checkEmail')}</h3><p>{t('login.resetSent')} <strong>{email}</strong>.</p><button className="btn-s" style={{marginTop:24}} onClick={()=>{setForgot(false);setSentReset(false);}}>{t('login.backToLoginBtn')}</button></div><Footer onNavigate={onNavigate}/></div>);
+  if(sentReset)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check"><Ico n="check" s={24}/></div><h3>{t('login.checkEmail')}</h3><p>{t('login.resetSent')} <strong>{email}</strong>.</p><button className="btn-s" style={{marginTop:24}} onClick={()=>{setForgot(false);setSentReset(false);}}>{t('login.backToLoginBtn')}</button></div><Footer onNavigate={onNavigate}/></div>);
   return(
     <div className="page"><div className="login-shell"><div className="login-split">
     <div className="login-hero">
@@ -3773,7 +3773,7 @@ function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice}){
       {!forgot&&<p style={{textAlign:"center",color:"var(--t3)",fontSize:12,lineHeight:1.55,margin:"0 0 16px"}}>By continuing, you agree that you have read and agree to CastSlate's <span onClick={()=>onNavigate("terms")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Terms of Service</span> and <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>, and confirm that you are currently at least 18 years old.</p>}
       <button type="submit" className="btn-p" style={{width:"100%"}} disabled={loading}>{loading?(forgot?t('login.sending'):t('login.loggingIn')):(forgot?t('login.sendReset'):t('login.logIn'))}</button>
       {!forgot&&(authNotice||/verify your email/i.test(err))&&<button type="button" className="btn-s" style={{width:"100%",marginTop:8,opacity:(resending||resendCooldown>0)?0.6:1}} disabled={resending||resendCooldown>0} onClick={resendConfirm}>{resending?"Sending…":resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button>}
-      {resentOk&&<div style={{marginTop:8,textAlign:"center",color:"var(--grn)",fontWeight:600,fontSize:13}}><Ico n="check" s={16}/> New confirmation email sent — check your inbox &amp; spam folder.</div>}
+      {resentOk&&<div style={{marginTop:8,textAlign:"center",color:"var(--grn)",fontWeight:600,fontSize:13}}><Ico n="check" s={24}/> New confirmation email sent — check your inbox &amp; spam folder.</div>}
       {forgot&&<button type="button" className="btn-s" style={{width:"100%",marginTop:8}} onClick={()=>{setForgot(false);setErr("");}}>{t('login.backToLogin')}</button>}
       <div style={{textAlign:"center",marginTop:24,fontSize:13,color:"var(--t2)"}}>
         {t('login.noAccount')}<br/>
@@ -3836,7 +3836,7 @@ function ResetPasswordPage({onNavigate,session}){
       setErr(msg);
     }finally{setLoading(false);submittingRef.current=false;}
   };
-  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check"><Ico n="check" s={16}/></div><h3>Password Updated</h3><p style={{marginBottom:24}}>You're all set — your new password is active.</p><button className="btn-p" onClick={()=>onNavigate(session?.user?.email?.toLowerCase()===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase()?"admin":"my-profile")}>Continue →</button></div><Footer onNavigate={onNavigate}/></div>);
+  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check"><Ico n="check" s={24}/></div><h3>Password Updated</h3><p style={{marginBottom:24}}>You're all set — your new password is active.</p><button className="btn-p" onClick={()=>onNavigate(session?.user?.email?.toLowerCase()===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase()?"admin":"my-profile")}>Continue →</button></div><Footer onNavigate={onNavigate}/></div>);
   return(<div className="page"><form onSubmit={submit} style={{maxWidth:440,margin:"60px auto 0"}}>
     <div style={{textAlign:"center",marginBottom:32}}>
       <div className="logo" style={{justifyContent:"center",fontSize:24,marginBottom:12}}><div className="logo-i" style={{width:36,height:36}}><LogoMark/></div>CastSlate</div>
@@ -4429,12 +4429,12 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
                 <div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)",marginBottom:12}}>{isOnlineClass?"Where · Online":"Location"}</div>
                 {isOnlineClass?(
                   <>
-                    <div style={{display:"flex",alignItems:"center",gap:7,fontWeight:700,fontSize:14,marginBottom:viewing.online_note?6:0}}><span aria-hidden="true"><Ico n="device-laptop" s={18}/></span>Online class</div>
+                    <div style={{display:"flex",alignItems:"center",gap:7,fontWeight:700,fontSize:14,marginBottom:viewing.online_note?6:0}}><span aria-hidden="true"><Ico n="device-laptop" s={22}/></span>Online class</div>
                     {viewing.online_note&&<div style={{color:"var(--t2)",fontSize:12,lineHeight:1.55}}>{viewing.online_note}</div>}
                   </>
                 ):(
                   <>
-                    {viewing.location_name&&<div style={{display:"flex",alignItems:"flex-start",gap:7,fontWeight:700,fontSize:14,marginBottom:6,lineHeight:1.4}}><span aria-hidden="true" style={{marginTop:1}}><Ico n="map-pin" s={18}/></span><span>{viewing.location_name}</span></div>}
+                    {viewing.location_name&&<div style={{display:"flex",alignItems:"flex-start",gap:7,fontWeight:700,fontSize:14,marginBottom:6,lineHeight:1.4}}><span aria-hidden="true" style={{marginTop:1}}><Ico n="map-pin" s={22}/></span><span>{viewing.location_name}</span></div>}
                     {viewing.location_city_state&&<div style={{color:"var(--t2)",fontSize:12,lineHeight:1.5,marginLeft:viewing.location_name?20:0}}>{viewing.location_city_state}</div>}
                     {viewing.location_room&&<div style={{color:"var(--t3)",fontSize:12,lineHeight:1.5,marginTop:6,marginLeft:viewing.location_name?20:0}}>{viewing.location_room}</div>}
                     {viewing.online_note&&<div style={{color:"var(--t2)",fontSize:12,lineHeight:1.55,marginTop:8}}>{viewing.online_note}</div>}
@@ -4610,8 +4610,8 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
           </div>
           {cls.short_description&&<p className="cls-card-desc">{cls.short_description}</p>}
           <div style={{display:"flex",gap:14,flexWrap:"wrap",fontSize:12,color:"var(--t2)",marginTop:"auto"}}>
-            {cls.instructor_name&&<span><Ico n="user" s={18}/> {cls.instructor_name}</span>}
-            {cls.format&&<span><Ico n="map-pin" s={18}/> {cls.format.split(" · ")[0]}</span>}
+            {cls.instructor_name&&<span><Ico n="user" s={22}/> {cls.instructor_name}</span>}
+            {cls.format&&<span><Ico n="map-pin" s={22}/> {cls.format.split(" · ")[0]}</span>}
             {cm&&!displayDate&&<span style={{color:"var(--acc)",fontWeight:600}}>{cm.name}</span>}
           </div>
         </div>
@@ -4776,7 +4776,7 @@ function BookingRequestModal({target,myProfile,session,onClose,onSubmitted}){
     <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:560,maxHeight:"90vh",overflowY:"auto"}}>
       {existingRequest&&!done?(
         <div style={{padding:28,textAlign:"center"}}>
-          <div style={{fontSize:40,marginBottom:12}}><Ico n="clipboard" s={18}/></div>
+          <div style={{fontSize:40,marginBottom:12}}><Ico n="clipboard" s={22}/></div>
           <h3 style={{marginBottom:8}}>Request Already Submitted</h3>
           <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6,marginBottom:6}}>
             You have an existing booking request for <strong>{cls.title}</strong> with status: <strong>{EXISTING_STATUS_LABELS[existingRequest.status]||existingRequest.status}</strong>.
@@ -4786,7 +4786,7 @@ function BookingRequestModal({target,myProfile,session,onClose,onSubmitted}){
         </div>
       ):done?(
         <div style={{padding:28,textAlign:"center"}}>
-          <div className="check"><Ico n="check" s={16}/></div>
+          <div className="check"><Ico n="check" s={24}/></div>
           <h3 style={{marginTop:8}}>Booking Request Sent</h3>
           <p style={{color:"var(--t2)",fontSize:14,marginTop:8,marginBottom:20}}>Your booking request has been submitted. You'll be notified after CastSlate reviews it.</p>
           <button className="btn-p" onClick={onSubmitted}>Done</button>
@@ -4866,7 +4866,7 @@ function ContactPage({onNavigate}){
     <div className="section-label">Contact</div>
     <h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:8}}>Get in Touch</h1>
     <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>Questions? Want to partner? Need support? We'd love to hear from you.</p>
-    {sent?<div className="success-msg"><div className="check"><Ico n="check" s={16}/></div><h3>Message sent</h3><p>We'll get back to you soon.</p></div>:<>
+    {sent?<div className="success-msg"><div className="check"><Ico n="check" s={24}/></div><h3>Message sent</h3><p>We'll get back to you soon.</p></div>:<>
       <div className="form-row"><div className="form-group"><label className="label">Name</label><input className="input" placeholder="Your name" value={name} onChange={e=>setName(e.target.value)}/></div><div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)}/></div></div>
       <div className="form-group"><label className="label">I am a...</label><select className="select" style={{width:"100%"}} value={role} onChange={e=>setRole(e.target.value)}><option>Actor / Model / Performer</option><option>Casting Director</option><option>Producer / Director</option><option>Agent / Manager</option><option>Press / Media</option><option>Other</option></select></div>
       <div className="form-group"><label className="label">Subject</label><input className="input" placeholder="What's this about?" value={subject} onChange={e=>setSubject(e.target.value)}/></div>
@@ -4967,11 +4967,11 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan}){
 
   const feat=(f,accent)=>(
     <div key={f} style={{display:"flex",gap:9,alignItems:"flex-start",padding:"7px 0",fontSize:13,color:"var(--t2)",lineHeight:1.4}}>
-      <span style={{color:accent,fontWeight:800,flexShrink:0,fontSize:13,marginTop:1}}><Ico n="check" s={16}/></span>
+      <span style={{color:accent,fontWeight:800,flexShrink:0,fontSize:13,marginTop:1}}><Ico n="check" s={24}/></span>
       <span>{f}</span>
     </div>
   );
-  const featCell=(v)=>v==="yes"?<Ico n="check" s={16}/>:v==="no"?<Ico n="x" s={15} style={{color:"var(--t3)"}}/>:v;
+  const featCell=(v)=>v==="yes"?<Ico n="check" s={24}/>:v==="no"?<Ico n="x" s={19} style={{color:"var(--t3)"}}/>:v;
   const featureRow=(label,free,premium)=>(
     <div style={{display:"grid",gridTemplateColumns:isMobile?"2fr 1fr 1fr":"1fr 1fr 1fr",gap:isMobile?4:8,padding:"10px 0",borderBottom:"1px solid var(--bdr)",fontSize:isMobile?12:13,alignItems:"center"}}>
       <span style={{color:"var(--t2)"}}>{label}</span>
@@ -5228,7 +5228,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
           <div style={{display:"flex",gap:20,marginTop:24,flexWrap:"wrap"}}>
             {["Weekly career check-ins","Profile guidance","One task per week"].map(f=>(
               <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"rgba(255,255,255,0.6)"}}>
-                <span style={{color:"#6EE7B7",fontWeight:800,fontSize:13}}><Ico n="check" s={16}/></span>{f}
+                <span style={{color:"#6EE7B7",fontWeight:800,fontSize:13}}><Ico n="check" s={24}/></span>{f}
               </div>
             ))}
           </div>
@@ -5316,7 +5316,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
         <div style={{padding:"clamp(16px,3vw,28px)",display:"flex",gap:"clamp(16px,3vw,24px)",alignItems:"flex-start",flexWrap:"wrap"}}>
           <div style={{flexShrink:0}}>
             <img src={ACTOR_PHOTO} alt="Riley Morse — Actor Profile" style={{width:88,height:108,borderRadius:12,objectFit:"cover",objectPosition:"center top",display:"block",boxShadow:"0 4px 16px rgba(26,26,46,0.15)"}} onError={e=>{e.target.style.display="none";e.target.nextSibling.style.display="flex";}} />
-            <div style={{width:88,height:108,borderRadius:12,background:"linear-gradient(135deg,#1A1A2E,#2D2D44)",display:"none",alignItems:"center",justifyContent:"center",fontSize:32}}><Ico n="masks-theater" s={18}/></div>
+            <div style={{width:88,height:108,borderRadius:12,background:"linear-gradient(135deg,#1A1A2E,#2D2D44)",display:"none",alignItems:"center",justifyContent:"center",fontSize:32}}><Ico n="masks-theater" s={22}/></div>
           </div>
           <div style={{flex:1,minWidth:200}}>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6,flexWrap:"wrap"}}>
@@ -5425,7 +5425,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
                     {/* Headshot */}
                     <div style={{flexShrink:0,position:"relative"}}>
                       <img src={CARD_PHOTO} alt="Maya Reynolds — Actor Headshot" style={{width:"clamp(64px,12vw,84px)",height:"clamp(80px,15vw,106px)",objectFit:"cover",objectPosition:"center top",borderRadius:10,display:"block",boxShadow:"0 4px 16px rgba(26,26,46,0.22)"}} onError={e=>{e.target.style.display="none";e.target.nextSibling.style.display="flex";}}/>
-                      <div style={{width:"clamp(64px,12vw,84px)",height:"clamp(80px,15vw,106px)",borderRadius:10,background:"linear-gradient(135deg,#1A1A2E,#2D2D44)",display:"none",alignItems:"center",justifyContent:"center",fontSize:28}}><Ico n="masks-theater" s={18}/></div>
+                      <div style={{width:"clamp(64px,12vw,84px)",height:"clamp(80px,15vw,106px)",borderRadius:10,background:"linear-gradient(135deg,#1A1A2E,#2D2D44)",display:"none",alignItems:"center",justifyContent:"center",fontSize:28}}><Ico n="masks-theater" s={22}/></div>
                     </div>
                     {/* Name + info */}
                     <div style={{flex:1,minWidth:0}}>
@@ -5489,7 +5489,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
           <div style={{display:"flex",justifyContent:"center",gap:16,flexWrap:"wrap",marginBottom:32}}>
             {["Weekly career check-ins","Profile improvement notes","Casting lane suggestions","One focused task/week","Industry event suggestions","Actor Business Card + QR code"].map(f=>(
               <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:13,color:"rgba(255,255,255,0.78)"}}>
-                <span style={{color:"#6EE7B7",fontWeight:800,fontSize:14}}><Ico n="check" s={16}/></span>{f}
+                <span style={{color:"#6EE7B7",fontWeight:800,fontSize:14}}><Ico n="check" s={24}/></span>{f}
               </div>
             ))}
           </div>
@@ -5570,7 +5570,7 @@ function TapeLinkPage({onNavigate}){
       <div style={{width:36,height:4,background:"rgba(255,255,255,0.2)",borderRadius:100,margin:"0 auto 9px"}}/>
       <div style={{background:"#000",borderRadius:20,overflow:"hidden",position:"relative"}}>
         <img src={TAPE_PHOTO} alt="Actor recording a self-tape" style={{width:"100%",height:280,objectFit:"cover",objectPosition:"center top",display:"block",opacity:0.92}} onError={e=>{e.target.style.display="none";e.target.nextSibling.style.display="flex";}}/>
-        <div style={{width:"100%",height:280,background:"linear-gradient(135deg,#1A1A2E,#2D2D44)",display:"none",alignItems:"center",justifyContent:"center",fontSize:40}}><Ico n="masks-theater" s={18}/></div>
+        <div style={{width:"100%",height:280,background:"linear-gradient(135deg,#1A1A2E,#2D2D44)",display:"none",alignItems:"center",justifyContent:"center",fontSize:40}}><Ico n="masks-theater" s={22}/></div>
         {/* REC pill */}
         <div style={{position:"absolute",top:13,left:13,display:"flex",alignItems:"center",gap:5,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(4px)",borderRadius:100,padding:"3px 9px"}}>
           <span style={{width:7,height:7,borderRadius:"50%",background:"#FF4136",boxShadow:"0 0 8px #FF4136"}}/>
@@ -5618,7 +5618,7 @@ function TapeLinkPage({onNavigate}){
           <div style={{display:"flex",gap:20,marginTop:24,flexWrap:"wrap"}}>
             {["Attach sides to a role","Practice & re-record","Submit through Cast Slate"].map(f=>(
               <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"rgba(255,255,255,0.6)"}}>
-                <span style={{color:"#6EE7B7",fontWeight:800,fontSize:13}}><Ico n="check" s={16}/></span>{f}
+                <span style={{color:"#6EE7B7",fontWeight:800,fontSize:13}}><Ico n="check" s={24}/></span>{f}
               </div>
             ))}
           </div>
@@ -5690,7 +5690,7 @@ function TapeLinkPage({onNavigate}){
             <div style={{display:"flex",flexDirection:"column",gap:11}}>
               {items.map(it=>(
                 <div key={it} style={{display:"flex",alignItems:"flex-start",gap:10}}>
-                  <span style={{color:accent,fontWeight:800,fontSize:13,flexShrink:0,marginTop:1}}><Ico n="check" s={16}/></span>
+                  <span style={{color:accent,fontWeight:800,fontSize:13,flexShrink:0,marginTop:1}}><Ico n="check" s={24}/></span>
                   <span style={{fontSize:14,color:"var(--t1)",lineHeight:1.45}}>{it}</span>
                 </div>
               ))}
@@ -5710,7 +5710,7 @@ function TapeLinkPage({onNavigate}){
         {/* Practice Mode */}
         <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:18,padding:"clamp(24px,3vw,34px)",boxShadow:"0 1px 2px rgba(26,26,46,0.03)"}}>
           <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
-            <div style={{width:44,height:44,borderRadius:12,background:"rgba(37,99,235,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}><Ico n="movie" s={18}/></div>
+            <div style={{width:44,height:44,borderRadius:12,background:"rgba(37,99,235,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}><Ico n="movie" s={22}/></div>
             <div>
               <div style={{fontSize:10,fontWeight:800,color:"#2563EB",letterSpacing:0.8,textTransform:"uppercase"}}>Practice Mode</div>
               <h3 style={{fontWeight:800,fontSize:18,letterSpacing:-0.4,margin:0}}>Rehearse as much as you want.</h3>
@@ -5726,7 +5726,7 @@ function TapeLinkPage({onNavigate}){
         {/* Submission Mode */}
         <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:18,padding:"clamp(24px,3vw,34px)",boxShadow:"0 1px 2px rgba(26,26,46,0.03)"}}>
           <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
-            <div style={{width:44,height:44,borderRadius:12,background:"rgba(27,135,62,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}><Ico n="send" s={18}/></div>
+            <div style={{width:44,height:44,borderRadius:12,background:"rgba(27,135,62,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}><Ico n="send" s={22}/></div>
             <div>
               <div style={{fontSize:10,fontWeight:800,color:"#1B873E",letterSpacing:0.8,textTransform:"uppercase"}}>Submission Mode</div>
               <h3 style={{fontWeight:800,fontSize:18,letterSpacing:-0.4,margin:0}}>The take that counts.</h3>
@@ -6180,7 +6180,7 @@ function ActorToolkitPage({onNavigate}){
               <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.45) 0%,transparent 60%)"}}/>
               <div style={{position:"absolute",bottom:20,left:20,right:20}}>
                 <div style={{background:"rgba(255,255,255,0.12)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:12,padding:"14px 18px",display:"flex",alignItems:"center",gap:14}}>
-                  <div style={{width:38,height:38,borderRadius:9,background:"var(--acc)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}><Ico n="check" s={16}/></div>
+                  <div style={{width:38,height:38,borderRadius:9,background:"var(--acc)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}><Ico n="check" s={24}/></div>
                   <div>
                     <div style={{color:"#fff",fontWeight:700,fontSize:13,marginBottom:2}}>Profile Checklist Complete</div>
                     <div style={{color:"rgba(255,255,255,0.72)",fontSize:11.5}}>12 of 12 items filled in · Ready to submit</div>
@@ -6190,7 +6190,7 @@ function ActorToolkitPage({onNavigate}){
             </div>
             {/* Floating stat pill */}
             <div style={{position:"absolute",top:-16,right:-16,background:"#fff",border:"1px solid var(--bdr)",borderRadius:12,padding:"10px 16px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)",display:"flex",alignItems:"center",gap:8,whiteSpace:"nowrap"}}>
-              <span style={{fontSize:18}}><Ico n="movie" s={18}/></span>
+              <span style={{fontSize:18}}><Ico n="movie" s={22}/></span>
               <div>
                 <div style={{fontWeight:800,fontSize:13,color:"var(--t1)"}}>7 Sections</div>
                 <div style={{fontSize:11,color:"var(--t3)"}}>Practical tools</div>
@@ -6247,7 +6247,7 @@ function ActorToolkitPage({onNavigate}){
             {selfTapeCards.map(c=>(
               <div key={c.n} className="atk-step-card">
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-                  <div style={{width:36,height:36,borderRadius:9,background:"var(--bg)",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ico n={c.icon} s={20}/></div>
+                  <div style={{width:36,height:36,borderRadius:9,background:"var(--bg)",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ico n={c.icon} s={24}/></div>
                   <span style={{fontSize:11,fontWeight:700,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase"}}>{String(c.n).padStart(2,"0")}</span>
                 </div>
                 <h3 style={{fontWeight:700,fontSize:15,marginBottom:7}}>{c.title}</h3>
@@ -6279,17 +6279,17 @@ function ActorToolkitPage({onNavigate}){
             <ul style={{listStyle:"none",padding:0,margin:"0 0 28px 0"}}>
               {["Use a clear, recent photo","Make sure your face is visible","Avoid heavy filters","Avoid sunglasses, hats, or distracting props","Use natural expression and clean lighting","Upload different looks only if they show believable casting types","Do not use blurry selfies or full-body photos as your main headshot"].map(item=>(
                 <li key={item} style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:9,fontSize:13.5,color:"var(--t2)",lineHeight:1.55}}>
-                  <span style={{color:"var(--acc)",fontWeight:800,flexShrink:0,marginTop:1}}><Ico n="check" s={16}/></span>{item}
+                  <span style={{color:"var(--acc)",fontWeight:800,flexShrink:0,marginTop:1}}><Ico n="check" s={24}/></span>{item}
                 </li>
               ))}
             </ul>
             <div className="atk-headshot-goodavoid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
               <div style={{background:"rgba(16,185,129,0.07)",border:"1px solid rgba(16,185,129,0.2)",borderRadius:12,padding:"16px 18px"}}>
-                <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.2,color:"#10b981",marginBottom:8}}><Ico n="check" s={16}/> Good</div>
+                <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.2,color:"#10b981",marginBottom:8}}><Ico n="check" s={24}/> Good</div>
                 <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,margin:0}}>Clear face, natural light, current look, professional crop.</p>
               </div>
               <div style={{background:"rgba(239,68,68,0.07)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:12,padding:"16px 18px"}}>
-                <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.2,color:"#ef4444",marginBottom:8}}><Ico n="x" s={16}/> Avoid</div>
+                <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.2,color:"#ef4444",marginBottom:8}}><Ico n="x" s={24}/> Avoid</div>
                 <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,margin:0}}>Blurry selfies, heavy filters, old photos, group shots, full-body images as main headshots.</p>
               </div>
             </div>
@@ -6346,7 +6346,7 @@ function ActorToolkitPage({onNavigate}){
           </div>
           {/* Drama Book Shop link card */}
           <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:"24px 28px",display:"flex",alignItems:"center",gap:20,flexWrap:"wrap"}}>
-            <div style={{width:44,height:44,borderRadius:11,background:"rgba(99,91,255,0.1)",border:"1px solid rgba(99,91,255,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}><Ico n="books" s={18}/></div>
+            <div style={{width:44,height:44,borderRadius:11,background:"rgba(99,91,255,0.1)",border:"1px solid rgba(99,91,255,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}><Ico n="books" s={22}/></div>
             <div style={{flex:1,minWidth:200}}>
               <h3 style={{fontWeight:700,fontSize:15,marginBottom:4}}>The Drama Book Shop</h3>
               <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.65,margin:0}}>A long-running New York theater bookstore where actors can find plays, monologues, scripts, and acting books.</p>
@@ -6419,7 +6419,7 @@ function ActorToolkitPage({onNavigate}){
       {/* ─── FINAL CTA ──────────────────────────────────── */}
       <section className="atk-cta-section" style={{background:"var(--s1)",borderTop:"1px solid var(--bdr)",padding:"88px 40px",textAlign:"center"}}>
         <div style={{maxWidth:580,margin:"0 auto"}}>
-          <div style={{width:60,height:60,borderRadius:16,background:"var(--acc)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,margin:"0 auto 24px",boxShadow:"0 4px 18px rgba(99,91,255,0.35)"}}><Ico n="movie" s={18}/></div>
+          <div style={{width:60,height:60,borderRadius:16,background:"var(--acc)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,margin:"0 auto 24px",boxShadow:"0 4px 18px rgba(99,91,255,0.35)"}}><Ico n="movie" s={22}/></div>
           <h2 style={{fontWeight:900,fontSize:"clamp(24px,3vw,40px)",letterSpacing:"-1.8px",marginBottom:18,lineHeight:1.1}}>Build a profile casting teams can actually review.</h2>
           <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,marginBottom:36}}>CastSlate helps actors organize their materials, submit to roles, and show casting teams the information they need without the usual clutter.</p>
           <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:16}}>
@@ -6807,7 +6807,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
 
   if(signupDone)return(<div className="page" style={{maxWidth:640,margin:"0 auto"}}>
     <div style={{background:"rgba(46,204,113,0.08)",border:"1px solid rgba(46,204,113,0.3)",borderRadius:16,padding:"48px 36px",marginTop:40,textAlign:"center"}}>
-      <div style={{fontSize:48,marginBottom:16}}><Ico n="check" s={16}/></div>
+      <div style={{fontSize:48,marginBottom:16}}><Ico n="check" s={24}/></div>
       <h2 style={{fontSize:24,fontWeight:800,marginBottom:10}}>Check your email to confirm</h2>
       <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,marginBottom:8}}>We sent a confirmation link to <strong>{suEmail}</strong>.<br/>Click the link in that email, then log in here to continue your application.</p>
       <p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>
@@ -6816,7 +6816,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
         <strong style={{fontSize:14}}>{c.title}</strong>{r&&<span style={{color:"var(--t2)",fontSize:13}}> · {r.name}</span>}
         <p style={{fontSize:12,color:"var(--t3)",marginTop:4}}>After confirming your email and logging in, you'll be taken directly to the application form.</p>
       </div>}
-      {resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}><Ico n="check" s={16}/> Confirmation email sent again. Please check your inbox and spam folder.</div>}
+      {resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}><Ico n="check" s={24}/> Confirmation email sent again. Please check your inbox and spam folder.</div>}
       {resendErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{resendErr}</div>}
       <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
         <button className="btn-p" onClick={()=>{setMode("login");setSignupDone(false);}}>Log In Now</button>
@@ -7178,7 +7178,7 @@ function VideoRecorder({session,roleId,onVideoReady,onClose,maxSec,primaryLabel,
             <div style={{fontWeight:700,fontSize:14,marginBottom:3}}>Record Video Note</div>
             <div style={{fontSize:12,color:"var(--t3)"}}>Optional. Record up to {MAX_SEC} seconds for this role.</div>
           </div>
-          <button className="btn-s btn-sm" onClick={openCamera} style={{flexShrink:0,whiteSpace:"nowrap"}}><Ico n="video" s={18}/> Open Camera</button>
+          <button className="btn-s btn-sm" onClick={openCamera} style={{flexShrink:0,whiteSpace:"nowrap"}}><Ico n="video" s={22}/> Open Camera</button>
         </div>
         {errMsg&&<div style={{marginTop:10,fontSize:12,color:"#c0392b"}}>{errMsg}</div>}
       </div>
@@ -7387,7 +7387,7 @@ function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,o
   if(submitted){return(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:460,textAlign:'center',padding:'40px 32px'}}>
-        <div style={{width:72,height:72,borderRadius:'50%',background:'rgba(80,200,120,0.15)',color:'#27ae60',display:'flex',alignItems:'center',justifyContent:'center',fontSize:36,margin:'0 auto 20px'}}><Ico n="check" s={16}/></div>
+        <div style={{width:72,height:72,borderRadius:'50%',background:'rgba(80,200,120,0.15)',color:'#27ae60',display:'flex',alignItems:'center',justifyContent:'center',fontSize:36,margin:'0 auto 20px'}}><Ico n="check" s={24}/></div>
         <h2 style={{marginBottom:8,fontSize:22}}>Audition Submitted</h2>
         <p style={{color:'var(--t2)',fontSize:14,lineHeight:1.65,marginBottom:24}}>Your audition for <strong>{role.name}</strong> has been submitted to the casting director.</p>
         <button className="btn-p" onClick={onClose}>Done</button>
@@ -7400,7 +7400,7 @@ function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,o
     <div className="modal-overlay">
       <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:560}}>
         <div style={{background:'rgba(99,60,180,0.08)',border:'1px solid rgba(99,60,180,0.2)',borderRadius:10,padding:'12px 16px',marginBottom:16}}>
-          <div style={{fontWeight:800,fontSize:14,color:'var(--acc)',marginBottom:3}}><Ico n="masks-theater" s={18}/> Practice Mode</div>
+          <div style={{fontWeight:800,fontSize:14,color:'var(--acc)',marginBottom:3}}><Ico n="masks-theater" s={22}/> Practice Mode</div>
           <div style={{fontSize:12,color:'var(--t2)',lineHeight:1.5}}>Re-record as many times as you like. <strong>Practice recordings are not saved or sent to casting.</strong></div>
         </div>
         <VideoRecorder session={session} roleId={`practice-${roleId}`} maxSec={maxSec}
@@ -7485,14 +7485,14 @@ function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,o
 
         {/* Header */}
         <div style={{marginBottom:4,display:'flex',alignItems:'center',gap:8}}>
-          <span style={{fontSize:20}}><Ico n="movie" s={18}/></span>
+          <span style={{fontSize:20}}><Ico n="movie" s={22}/></span>
           <h2 style={{margin:0,fontSize:20,fontWeight:800}}>Audition for {role.name}</h2>
         </div>
         <p style={{color:'var(--t3)',fontSize:12,marginBottom:20}}>{casting.title} · {casting.prod}</p>
 
         {/* "Take N Saved" success notice */}
         {savedNotice>0&&<div style={{background:'rgba(46,204,113,0.12)',border:'1px solid rgba(46,204,113,0.3)',borderRadius:10,padding:'10px 16px',marginBottom:16,display:'flex',alignItems:'center',gap:8}}>
-          <span style={{fontSize:18}}><Ico n="circle-check" s={18}/></span>
+          <span style={{fontSize:18}}><Ico n="circle-check" s={22}/></span>
           <span style={{fontWeight:700,fontSize:13,color:'#1d7b44'}}>Take {savedNotice} saved to your audition.</span>
         </div>}
 
@@ -7502,7 +7502,7 @@ function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,o
           {instr.sides_pdf_url&&<div style={{marginBottom:12}}>
             <div style={{fontSize:11,fontWeight:700,color:'var(--t2)',marginBottom:6,textTransform:'uppercase',letterSpacing:.8}}>Sides</div>
             <a href={instr.sides_pdf_url} target="_blank" rel="noopener noreferrer" style={{display:'inline-flex',alignItems:'center',gap:8,padding:'10px 14px',borderRadius:8,border:'1px solid rgba(99,60,180,0.3)',background:'rgba(99,60,180,0.06)',color:'var(--acc)',fontWeight:700,fontSize:13,textDecoration:'none'}}>
-              <span style={{fontSize:18}}><Ico n="file-text" s={18}/></span> Open / Download Sides PDF
+              <span style={{fontSize:18}}><Ico n="file-text" s={22}/></span> Open / Download Sides PDF
             </a>
           </div>}
           {instr.direction_notes&&<div style={{marginBottom:10}}>
@@ -7539,7 +7539,7 @@ function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,o
                     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
                       <div style={{display:'flex',alignItems:'center',gap:8}}>
                         <span style={{fontWeight:700,fontSize:13,color:'var(--t1)'}}>Take {takeNum}</span>
-                        <span style={{fontSize:11,fontWeight:700,color:'#27ae60',background:'rgba(46,204,113,0.12)',padding:'2px 8px',borderRadius:99}}><Ico n="check" s={16}/> Saved</span>
+                        <span style={{fontSize:11,fontWeight:700,color:'#27ae60',background:'rgba(46,204,113,0.12)',padding:'2px 8px',borderRadius:99}}><Ico n="check" s={24}/> Saved</span>
                       </div>
                       {submissionMode==='best_take'&&(
                         <button className={isSelected?'btn-p btn-sm':'btn-s btn-sm'} style={{fontSize:11}}
@@ -7577,12 +7577,12 @@ function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,o
                 onClick={()=>setConfirmingTake(true)}>
                 ⏺ {officialTakes.length===0?`Start Official Take 1`:`Record Take ${officialTakes.length+1}`}
               </button>
-              <button className="btn-s btn-sm" onClick={()=>setShowPractice(true)}><Ico n="masks-theater" s={18}/> Practice Mode</button>
+              <button className="btn-s btn-sm" onClick={()=>setShowPractice(true)}><Ico n="masks-theater" s={22}/> Practice Mode</button>
             </div>
           </>}
           {allTakesRecorded&&<div style={{marginBottom:10}}>
-            <div style={{fontSize:12,fontWeight:700,color:'#1d7b44',marginBottom:6}}><Ico n="check" s={16}/> All {maxTakes} take{maxTakes!==1?'s':''} recorded</div>
-            <button className="btn-s btn-sm" onClick={()=>setShowPractice(true)}><Ico n="masks-theater" s={18}/> Practice Mode</button>
+            <div style={{fontSize:12,fontWeight:700,color:'#1d7b44',marginBottom:6}}><Ico n="check" s={24}/> All {maxTakes} take{maxTakes!==1?'s':''} recorded</div>
+            <button className="btn-s btn-sm" onClick={()=>setShowPractice(true)}><Ico n="masks-theater" s={22}/> Practice Mode</button>
           </div>}
           <p style={{fontSize:11,color:'var(--t3)',marginBottom:0}}>
             Practice recordings are <strong>not saved</strong> and <strong>not sent to casting</strong>. Rehearse as many times as you like.
@@ -7846,18 +7846,18 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   return(<div className="page" style={{maxWidth:1080}}>
     <div style={{display:"flex",justifyContent:inSheet?"flex-end":"space-between",alignItems:"center",gap:10,marginBottom:20,flexWrap:"wrap"}}>
       {!inSheet&&<button className="btn-s btn-sm" onClick={onBack}>{t('casting.back')}</button>}
-      <button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this casting"><Ico n="flag" s={18}/> Report</button>
+      <button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this casting"><Ico n="flag" s={22}/> Report</button>
     </div>
 
     <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
-      {c.featured&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}><Ico n="star" s={16}/> Cast Slate Pick</span>}
+      {c.featured&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
       <span style={{display:"inline-flex",alignItems:"center",padding:"4px 11px",background:"#E3EDFF",color:"#1D4ED8",border:"1px solid #B4CDFF",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>{translateCastingType(c.type,lang)}</span>
     </div>
     <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={isDbCasting?{kind:"casting",id:c.id}:null}/>
 
     {/* ── Free-actor daily limit upgrade prompt ── */}
     {showUpgradePrompt&&<div className="modal-overlay" onClick={()=>setShowUpgradePrompt(false)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:480,textAlign:"center",padding:"36px 32px"}}>
-      <div style={{fontSize:40,marginBottom:16}}><Ico n="star" s={18}/></div>
+      <div style={{fontSize:40,marginBottom:16}}><Ico n="star" s={22}/></div>
       <h2 style={{fontSize:22,fontWeight:800,marginBottom:10}}>Daily Limit Reached</h2>
       <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,marginBottom:8}}>{UPGRADE_MSG}</p>
       <p style={{color:"var(--t3)",fontSize:12,marginBottom:24}}>Your 3 free submissions reset every day at midnight UTC.</p>
@@ -7956,14 +7956,14 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
         <div style={{flex:"1 1 320px",display:"flex",flexDirection:"column",justifyContent:"center",gap:13,padding:"18px 22px"}}>
           {live&&<div><LiveCastingBadge/></div>}
           <div style={{display:"flex",alignItems:"center",gap:"8px 18px",flexWrap:"wrap"}}>
-            {payShort&&<span style={{display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:16}}><Ico n="coin" s={18}/></span><span style={{fontSize:15,fontWeight:800,color:"var(--t1)",letterSpacing:-0.2}}>{payText}</span></span>}
-            <span style={{display:"flex",alignItems:"center",gap:7,color:"var(--t2)",fontSize:14,fontWeight:600}}><span style={{fontSize:15}}><Ico n="masks-theater" s={18}/></span>{c.roles?.length||0} {(c.roles?.length||0)===1?"role":"roles"} open</span>
-            {archived?<span style={{display:"flex",alignItems:"center",gap:7,color:"#c0392b",fontSize:14,fontWeight:700}}><span style={{fontSize:15}}><Ico n="calendar-event" s={18}/></span>Applications closed</span>:<span style={{fontSize:14}}><CastingCountdown deadline={c.deadline} emoji={true}/></span>}
+            {payShort&&<span style={{display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:16}}><Ico n="coin" s={22}/></span><span style={{fontSize:15,fontWeight:800,color:"var(--t1)",letterSpacing:-0.2}}>{payText}</span></span>}
+            <span style={{display:"flex",alignItems:"center",gap:7,color:"var(--t2)",fontSize:14,fontWeight:600}}><span style={{fontSize:15}}><Ico n="masks-theater" s={22}/></span>{c.roles?.length||0} {(c.roles?.length||0)===1?"role":"roles"} open</span>
+            {archived?<span style={{display:"flex",alignItems:"center",gap:7,color:"#c0392b",fontSize:14,fontWeight:700}}><span style={{fontSize:15}}><Ico n="calendar-event" s={22}/></span>Applications closed</span>:<span style={{fontSize:14}}><CastingCountdown deadline={c.deadline} emoji={true}/></span>}
           </div>
           {showTrust&&<div style={{display:"flex",alignItems:"center",gap:"6px 16px",flexWrap:"wrap",fontSize:12.5,color:"var(--t2)",paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
-            {verified&&<span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{color:"#1d7b44"}}><Ico n="shield-check" s={18}/></span><span style={{color:"var(--t1)",fontWeight:600}}>Verified casting director</span></span>}
-            <span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{color:"var(--t3)"}}><Ico n="eye" s={18}/></span>Reviews every submission personally</span>
-            {bgChecked&&<span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{color:"#1d7b44"}}><Ico n="check" s={16}/></span><span style={{color:"var(--t1)",fontWeight:600}}>Background-checked</span></span>}
+            {verified&&<span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{color:"#1d7b44"}}><Ico n="shield-check" s={22}/></span><span style={{color:"var(--t1)",fontWeight:600}}>Verified casting director</span></span>}
+            <span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{color:"var(--t3)"}}><Ico n="eye" s={22}/></span>Reviews every submission personally</span>
+            {bgChecked&&<span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{color:"#1d7b44"}}><Ico n="check" s={24}/></span><span style={{color:"var(--t1)",fontWeight:600}}>Background-checked</span></span>}
           </div>}
         </div>
         {canApply&&<div style={{flex:"0 0 auto",width:262,minWidth:220,display:"flex",flexDirection:"column",justifyContent:"center",gap:9,padding:"18px 22px",borderLeft:"1px solid var(--bdr)"}}>
@@ -7989,13 +7989,13 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <div style={{gridColumn:"1 / -1"}}><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>Nudity / Intimate content</div><div style={{fontSize:14,color:c.has_nudity?"#c0392b":"var(--t1)",fontWeight:600}}>{c.has_nudity?"Yes — this project involves nudity or intimate content":"None"}</div></div>
       {c.casting_website_url&&<div style={{gridColumn:"1 / -1",marginTop:6,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
         <a href={c.casting_website_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,textDecoration:"none"}}>
-          <Ico n="link" s={18}/> Visit Project Website
+          <Ico n="link" s={22}/> Visit Project Website
         </a>
       </div>}
     </div>
 
     {c.has_nudity&&<div style={{display:"flex",gap:12,padding:"14px 18px",marginBottom:24,background:"rgba(192,57,43,0.06)",border:"1px solid rgba(192,57,43,0.3)",borderRadius:12,alignItems:"flex-start"}}>
-      <span style={{fontSize:18,lineHeight:1.2}}><Ico n="alert-triangle" s={18}/></span>
+      <span style={{fontSize:18,lineHeight:1.2}}><Ico n="alert-triangle" s={22}/></span>
       <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}><strong style={{color:"#c0392b"}}>Contains nudity / intimate content.</strong>{c.nudity_details?<> {c.nudity_details}</>:<> This project involves nudity or intimate scenes. Please make sure you're comfortable with this before applying.</>}</div>
     </div>}
 
@@ -8025,7 +8025,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                   <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{roleGenderLabel(r.gender)}</span>
                   <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{roleAgeLabel(r.ageRange)}</span>
                   <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{roleEthnicityLabel(r.ethnicity)}</span>
-                  {hasInstructions&&<span className="badge" style={{background:"rgba(99,60,180,0.1)",color:"var(--acc)",border:"1px solid rgba(99,60,180,0.25)"}}><Ico n="movie" s={18}/> Self-Tape Required</span>}
+                  {hasInstructions&&<span className="badge" style={{background:"rgba(99,60,180,0.1)",color:"var(--acc)",border:"1px solid rgba(99,60,180,0.25)"}}><Ico n="movie" s={22}/> Self-Tape Required</span>}
                 </div>
                 <h3 style={{fontSize:18,fontWeight:800,letterSpacing:"-0.3px",marginBottom:8,color:"var(--t1)"}}>{r.name}</h3>
                 <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65}}>{r.desc}</p>
@@ -8040,7 +8040,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
               {instr.sides_pdf_url&&<div style={{marginBottom:12}}>
                 <div style={{fontSize:11,fontWeight:700,color:"var(--t2)",marginBottom:6,textTransform:"uppercase",letterSpacing:.8}}>Audition Sides</div>
                 <a href={instr.sides_pdf_url} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:8,border:"1px solid rgba(99,60,180,0.3)",background:"rgba(99,60,180,0.06)",color:"var(--acc)",fontWeight:700,fontSize:13,textDecoration:"none"}}>
-                  <span style={{fontSize:18}}><Ico n="file-text" s={18}/></span> Open / Download Sides PDF
+                  <span style={{fontSize:18}}><Ico n="file-text" s={22}/></span> Open / Download Sides PDF
                 </a>
               </div>}
               {instr.direction_notes&&<div style={{marginBottom:10}}>
@@ -8077,13 +8077,13 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <div className="modal-overlay" onClick={()=>!submitting&&setApplyRole(null)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:600,maxHeight:"92vh",overflowY:"auto"}}>
         {applyOk?
           <div style={{textAlign:"center",padding:"32px 8px"}}>
-            <div style={{width:72,height:72,borderRadius:"50%",background:"rgba(80,200,120,0.15)",color:"#27ae60",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,fontWeight:800,margin:"0 auto 20px"}}><Ico n="check" s={16}/></div>
+            <div style={{width:72,height:72,borderRadius:"50%",background:"rgba(80,200,120,0.15)",color:"#27ae60",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,fontWeight:800,margin:"0 auto 20px"}}><Ico n="check" s={24}/></div>
             <h2 style={{marginBottom:8,fontSize:22}}>Audition Submitted</h2>
             <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65}}>Your audition for <strong>{applyRole.name}</strong> has been submitted to the casting director. This is your first-round audition — no meeting required.</p>
           </div>:
           <>
             <div style={{marginBottom:4,display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:20}}><Ico n="movie" s={18}/></span>
+              <span style={{fontSize:20}}><Ico n="movie" s={22}/></span>
               <h2 style={{margin:0,fontSize:20,fontWeight:800}}>Audition for {applyRole.name}</h2>
             </div>
             <p style={{color:"var(--t3)",fontSize:12,marginBottom:16}}>{c.title} · {c.prod}</p>
@@ -8094,7 +8094,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
               {instr.sides_pdf_url&&<div style={{marginBottom:10}}>
                 <div style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8,marginBottom:5}}>Audition Sides</div>
                 <a href={instr.sides_pdf_url} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,padding:"8px 12px",borderRadius:8,border:"1px solid rgba(99,60,180,0.3)",background:"rgba(99,60,180,0.06)",color:"var(--acc)",fontWeight:700,fontSize:12,textDecoration:"none"}}>
-                  <span style={{fontSize:16}}><Ico n="file-text" s={18}/></span> Open / Download Sides PDF
+                  <span style={{fontSize:16}}><Ico n="file-text" s={22}/></span> Open / Download Sides PDF
                 </a>
               </div>}
               {instr.direction_notes&&<div style={{marginBottom:8}}>
@@ -8104,7 +8104,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
               <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
                 {instr.slate_instructions&&<div><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Slate: </span><span style={{fontSize:12,color:"var(--t2)"}}>{instr.slate_instructions}</span></div>}
                 {instr.video_length_limit&&<div><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Max: </span><span style={{fontSize:12,color:"var(--t2)"}}>{instr.video_length_limit<60?`${instr.video_length_limit}s`:instr.video_length_limit%60===0?`${instr.video_length_limit/60} min`:`${Math.floor(instr.video_length_limit/60)}m ${instr.video_length_limit%60}s`}</span></div>}
-                {instr.official_takes_allowed===1&&<div style={{color:"#c88900",fontSize:12,fontWeight:700}}><Ico n="bolt" s={18}/> One take only</div>}
+                {instr.official_takes_allowed===1&&<div style={{color:"#c88900",fontSize:12,fontWeight:700}}><Ico n="bolt" s={22}/> One take only</div>}
               </div>
               {instr.wardrobe_notes&&<div style={{marginTop:8,paddingTop:8,borderTop:"1px solid rgba(99,60,180,0.15)"}}>
                 <span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Wardrobe/Framing: </span>
@@ -8122,13 +8122,13 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
               </label>
               {videoNoteUrl?(
                 <div style={{background:"var(--s2)",borderRadius:12,padding:14}}>
-                  <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:"#27ae60"}}><Ico n="check" s={16}/> Audition video attached</div>
+                  <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:"#27ae60"}}><Ico n="check" s={24}/> Audition video attached</div>
                   <div style={{borderRadius:8,overflow:"hidden",marginBottom:10}}>
                     <video src={videoNoteUrl} controls playsInline style={{display:"block",width:"100%",maxHeight:240,objectFit:"contain",background:"var(--s2)"}}/>
                   </div>
                   <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                     {allowRecord&&<button className="btn-s btn-sm" style={{fontSize:11}} onClick={()=>{setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(true);}}>↺ Re-record</button>}
-                    <button className="btn-s btn-sm" style={{fontSize:11,color:"#c0392b"}} onClick={()=>{setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(false);}}><Ico n="trash" s={18}/> Remove</button>
+                    <button className="btn-s btn-sm" style={{fontSize:11,color:"#c0392b"}} onClick={()=>{setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(false);}}><Ico n="trash" s={22}/> Remove</button>
                   </div>
                 </div>
               ):showVideoRecorder?(
@@ -8141,9 +8141,9 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                 />
               ):(
                 <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                  {allowRecord&&<button className="btn-p btn-sm" style={{fontSize:12,display:"flex",alignItems:"center",gap:6}} onClick={()=>setShowVideoRecorder(true)}><Ico n="video" s={18}/> Record Audition</button>}
+                  {allowRecord&&<button className="btn-p btn-sm" style={{fontSize:12,display:"flex",alignItems:"center",gap:6}} onClick={()=>setShowVideoRecorder(true)}><Ico n="video" s={22}/> Record Audition</button>}
                   {allowUpload&&<label style={{cursor:"pointer",display:"inline-flex",alignItems:"center",gap:6,fontSize:12,padding:"7px 14px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s2)",color:"var(--t2)",fontWeight:600,fontFamily:"inherit"}}>
-                    <Ico n="arrow-up" s={16}/> Upload Video
+                    <Ico n="arrow-up" s={24}/> Upload Video
                     <input type="file" accept="video/*" style={{display:"none"}} onChange={async e=>{
                       const file=e.target.files?.[0];if(!file)return;
                       if(file.size>200*1024*1024){setApplyErr("Video must be under 200 MB.");return;}
@@ -8157,7 +8157,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                   </label>}
                   {!allowRecord&&!allowUpload&&(!isPremium
                     ?<div style={{background:"rgba(99,60,180,0.05)",border:"1px solid rgba(99,60,180,0.25)",borderRadius:10,padding:"12px 14px"}}>
-                      <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.55,marginBottom:10}}><span style={{marginRight:6}}><Ico n="lock" s={18}/></span>Video auditions are a <strong style={{color:"var(--t1)"}}>Premium</strong> feature. Free members apply with a headshot below — upgrade to record or upload an audition video.</div>
+                      <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.55,marginBottom:10}}><span style={{marginRight:6}}><Ico n="lock" s={22}/></span>Video auditions are a <strong style={{color:"var(--t1)"}}>Premium</strong> feature. Free members apply with a headshot below — upgrade to record or upload an audition video.</div>
                       <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>{setApplyRole(null);onNavigate&&onNavigate("membership");}}>Upgrade to Premium</button>
                     </div>
                     :<p style={{fontSize:13,color:"var(--t3)"}}>No submission format available.</p>)}
@@ -8177,7 +8177,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                   {myPhotos.map((u,pi)=>
                     <div key={pi} onClick={()=>setSelectedPhoto(u)} style={{cursor:"pointer",position:"relative",aspectRatio:"4/5",borderRadius:8,overflow:"hidden",border:selectedPhoto===u?"3px solid var(--acc)":"3px solid transparent",transition:"all .15s"}}>
                       <img src={u} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-                      {selectedPhoto===u&&<div style={{position:"absolute",top:4,right:4,background:"var(--acc)",color:"#fff",width:18,height:18,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800}}><Ico n="check" s={16}/></div>}
+                      {selectedPhoto===u&&<div style={{position:"absolute",top:4,right:4,background:"var(--acc)",color:"#fff",width:18,height:18,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800}}><Ico n="check" s={24}/></div>}
                     </div>)}
                 </div>}
             </div>
@@ -8627,13 +8627,13 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
   return(<div className="page">
     {isOwnProfile&&(
       <div style={{background:"#111",border:"1px solid #333",borderRadius:10,padding:"10px 16px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
-        <div style={{fontSize:13,color:"#fff",fontWeight:600}}><Ico n="eye" s={18}/> Previewing your public profile — this is how casting directors see you.</div>
+        <div style={{fontSize:13,color:"#fff",fontWeight:600}}><Ico n="eye" s={22}/> Previewing your public profile — this is how casting directors see you.</div>
         <button style={{background:"#fff",color:"#111",border:"none",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}} onClick={onBack}>← Back to Edit Profile</button>
       </div>
     )}
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:16,flexWrap:"wrap"}}>
       {!isOwnProfile&&<button className="btn-s btn-sm" onClick={onBack}>← Back</button>}
-      {!isOwnProfile&&talent?.id&&<button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this profile"><Ico n="flag" s={18}/> Report</button>}
+      {!isOwnProfile&&talent?.id&&<button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this profile"><Ico n="flag" s={22}/> Report</button>}
     </div>
     <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={talent?.id?{kind:"profile",id:talent.id}:null}/>
 
@@ -8778,13 +8778,13 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
           <div style={{borderTop:"1px solid var(--bdr)",paddingTop:14,marginTop:2}}>
             {viewerIsCd?(
               <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                <button className="btn-p btn-sm" onClick={()=>setCdAction("invite")}><Ico n="mail" s={18}/> Invite to a Casting</button>
-                <button className="btn-s btn-sm" onClick={()=>setCdAction("selftape")}><Ico n="video" s={18}/> Request Self-Tape</button>
-                <button className="btn-s btn-sm" onClick={()=>setCdAction("dm")}><Ico n="message-circle" s={18}/> Message</button>
-                <button className="btn-s btn-sm" onClick={()=>setCdAction("save")}><Ico n="star" s={16}/> Save</button>
+                <button className="btn-p btn-sm" onClick={()=>setCdAction("invite")}><Ico n="mail" s={22}/> Invite to a Casting</button>
+                <button className="btn-s btn-sm" onClick={()=>setCdAction("selftape")}><Ico n="video" s={22}/> Request Self-Tape</button>
+                <button className="btn-s btn-sm" onClick={()=>setCdAction("dm")}><Ico n="message-circle" s={22}/> Message</button>
+                <button className="btn-s btn-sm" onClick={()=>setCdAction("save")}><Ico n="star" s={24}/> Save</button>
               </div>
             ):session?(
-              <button className="btn-s btn-sm" onClick={()=>setCdAction("dm")}><Ico n="message-circle" s={18}/> Message {talentFirst}</button>
+              <button className="btn-s btn-sm" onClick={()=>setCdAction("dm")}><Ico n="message-circle" s={22}/> Message {talentFirst}</button>
             ):(
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
                 <div style={{minWidth:0}}>
@@ -8813,7 +8813,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     {hasStructuredCredits&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:8}}>
         {sectionHead("Credits & Experience")}
-        {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}><Ico n="file-text" s={18}/> Resume</a>}
+        {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}><Ico n="file-text" s={22}/> Resume</a>}
       </div>
       <div className="credits-list">{CREDIT_CATEGORIES.filter(cat=>creditsByCategory[cat]).map(cat=>(
         <div key={cat} style={{marginBottom:20}}>
@@ -8837,7 +8837,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
     {!hasStructuredCredits&&(legacyCredits.length>0||resumeUrl)&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:8}}>
         {sectionHead("Credits & Experience")}
-        {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}><Ico n="file-text" s={18}/> Resume</a>}
+        {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}><Ico n="file-text" s={22}/> Resume</a>}
       </div>
       {legacyCredits.length>0
         ?<div className="credits-list">
@@ -8907,7 +8907,7 @@ function PublicTalentProfilePage({slug,onNavigate,session,myProfile}){
   if(loading)return <PageLoader/>;
   if(notFound||!talent)return(
     <div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12,padding:24}}>
-      <div style={{fontSize:48}}><Ico n="masks-theater" s={18}/></div>
+      <div style={{fontSize:48}}><Ico n="masks-theater" s={22}/></div>
       <h2 style={{fontSize:20,fontWeight:700}}>Profile Not Found</h2>
       <p style={{color:"var(--t3)",fontSize:14,textAlign:"center"}}>This profile link may be invalid or the profile is no longer available.</p>
       <button className="btn-p btn-sm" onClick={()=>onNavigate("home")}>Back to Home</button>
@@ -8930,7 +8930,7 @@ function PublicProfileButtons({slug}){
     <button style={{background:"var(--s2)",color:"var(--t2)",border:"1px solid var(--bdr)",borderRadius:7,padding:"8px 14px",fontSize:12,fontWeight:600,cursor:"pointer",transition:"color .15s"}} onClick={copy}>
       {copied?"Link copied!":"Copy Profile Link"}
     </button>
-    <button style={{background:"#111",color:"#fff",border:"1px solid #333",borderRadius:7,padding:"8px 18px",fontSize:13,fontWeight:700,cursor:"pointer",letterSpacing:"0.02em"}} onClick={()=>window.open(`/talent/${encodeURIComponent(slug)}`,"_blank")}><Ico n="eye" s={18}/> View Public Profile →</button>
+    <button style={{background:"#111",color:"#fff",border:"1px solid #333",borderRadius:7,padding:"8px 18px",fontSize:13,fontWeight:700,cursor:"pointer",letterSpacing:"0.02em"}} onClick={()=>window.open(`/talent/${encodeURIComponent(slug)}`,"_blank")}><Ico n="eye" s={22}/> View Public Profile →</button>
   </>);
 }
 
@@ -8948,7 +8948,7 @@ function CastingGatePage({casting,onCreateProfile,onLogin,onBack}){
         {casting&&(
           <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:12,padding:"16px 20px",marginBottom:20}}>
             <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap"}}>
-              {casting.featured&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}><Ico n="star" s={16}/> Cast Slate Pick</span>}
+              {casting.featured&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
               {casting.type&&<span className="badge" style={{background:"var(--s3)",color:"var(--t2)"}}>{casting.type}</span>}
               {casting.union&&<span className="badge" style={{background:"var(--s3)",color:"var(--t2)"}}>{casting.union}</span>}
             </div>
@@ -8957,7 +8957,7 @@ function CastingGatePage({casting,onCreateProfile,onLogin,onBack}){
           </div>
         )}
         <div className="card" style={{textAlign:"center",padding:"36px 28px"}}>
-          <div style={{fontSize:40,marginBottom:16,lineHeight:1}}><Ico n="masks-theater" s={18}/></div>
+          <div style={{fontSize:40,marginBottom:16,lineHeight:1}}><Ico n="masks-theater" s={22}/></div>
           <h2 style={{fontSize:21,fontWeight:800,color:"var(--t1)",marginBottom:12,lineHeight:1.35}}>Create your free actor profile to view full project details.</h2>
           <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,margin:"0 auto 28px",maxWidth:360}}>CastSlate keeps full role information available to real actor profiles so casting pages stay cleaner, safer, and easier to manage.</p>
           <button className="btn-p" style={{width:"100%",marginBottom:12,fontSize:15,padding:"13px 20px",fontWeight:700}} onClick={onCreateProfile}>Create Free Actor Profile</button>
@@ -9308,7 +9308,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
                 <div>
                   <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
-                    {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 11px",borderRadius:100,background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",fontSize:10,fontWeight:800,letterSpacing:"0.06em",textTransform:"uppercase"}}><Ico n="star" s={16}/> Cast Slate Pick</span>}
+                    {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 11px",borderRadius:100,background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",fontSize:10,fontWeight:800,letterSpacing:"0.06em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
                     <span className="badge" style={{background:"#E8EEFB",color:"#2D5BA8"}}>{translateCastingType(c.type,lang)}</span>
                     <span className="badge" style={{background:"#E8EEFB",color:"#2D5BA8"}}>{c.union}</span>
                     <span className="badge" style={{background:"#E8EEFB",color:"#2D5BA8"}}>{(c.roles?.length||1)===1?`1 ${t('search.role')}`:`${c.roles?.length||1} ${t('search.roles')}`}</span>
@@ -9455,7 +9455,7 @@ function ProfileImprovementCard({profile,isPremium,onNavigate,dbCredits,mediaIte
       </div>
       {allDone?(
         <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"rgba(27,135,62,0.06)",border:"1px solid rgba(27,135,62,0.2)",borderRadius:8}}>
-          <span style={{fontSize:18}}><Ico n="check" s={16}/></span>
+          <span style={{fontSize:18}}><Ico n="check" s={24}/></span>
           <div>
             <div style={{fontWeight:700,fontSize:13,color:"var(--t1)",marginBottom:2}}>Your profile is in great shape.</div>
             <div style={{fontSize:12,color:"var(--t2)"}}>It contains all the key information casting directors look for.</div>
@@ -9788,7 +9788,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         {APP_TABS.map(t=>{const cnt=tabCounts[t];return(<button key={t} onClick={()=>setAppsTab(t)} style={{padding:"10px 14px",fontSize:12,fontWeight:600,cursor:"pointer",flexShrink:0,border:"none",background:"none",fontFamily:"inherit",textTransform:"capitalize",whiteSpace:"nowrap",color:appsTab===t?"var(--acc)":"var(--t2)",borderBottom:appsTab===t?"2px solid var(--acc)":"2px solid transparent",transition:"color .15s",display:"flex",alignItems:"center",gap:5}}>{t}{cnt!=null&&cnt>0&&<span style={{fontSize:10,fontWeight:700,padding:"1px 5px",borderRadius:8,background:appsTab===t?"var(--acc)":"var(--s2)",color:appsTab===t?"#fff":"var(--t2)"}}>{cnt}</span>}</button>);})}
       </div>
       <div style={{padding:24}}>
-        {appsLoading?(<CastSlateLoader size="inline" text="Loading applications…"/>):appsErr?(<div style={{textAlign:"center",padding:"28px 0"}}><p style={{color:"var(--red)",fontSize:13,marginBottom:12}}>Applications could not load. Please try again.</p><button className="btn-s btn-sm" onClick={loadApps}>Retry</button></div>):filteredApps.length===0?(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:32,marginBottom:10}}><Ico n="clipboard" s={18}/></div><p style={{color:"var(--t2)",fontSize:14,marginBottom:16,fontWeight:500}}>{appsTab==="all"?"You don't have any applications here yet.":appsTab==="invites"?"No casting invites yet.":appsTab==="drafts"?"No saved drafts.":appsTab==="submitted"?"No submitted applications.":appsTab==="auditions"?"No audition requests yet.":"No archived applications."}</p>{(appsTab==="all"||appsTab==="submitted")&&<button className="btn-p btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>}</div>):(<div style={{display:"flex",flexDirection:"column",gap:10}}>{filteredApps.map(app=>{const st=STATUS_LABELS[app.status]||{label:app.status,color:"var(--t2)",bg:"var(--s2)"};const dl=app.castings?.deadline?fmtDeadline(app.castings.deadline):null;return(<div key={app.id} style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",padding:"14px 16px",background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:10,gap:12,flexWrap:"wrap",transition:"border-color .15s",width:"100%",boxSizing:"border-box"}}><div style={{flex:1,minWidth:0,overflow:"hidden"}}><div style={{fontWeight:700,fontSize:14,color:"var(--t1)",marginBottom:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{app.castings?.title||"Unknown Project"}</div><div style={{fontSize:12,color:"var(--t2)",display:"flex",flexWrap:"wrap",gap:"4px 10px"}}><span>Role: <strong style={{color:"var(--t1)"}}>{app.roles?.name||"—"}</strong></span>{app.castings?.type&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.type&&<span>{app.castings.type}</span>}{app.castings?.location&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.location&&<span>{app.castings.location}</span>}</div><div style={{fontSize:11,color:"var(--t3)",marginTop:3}}>Submitted {fmtDate(app.created_at)}{dl&&<span style={{marginLeft:8,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>}</div></div><div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",flexShrink:0,maxWidth:isMobile?"100%":"none"}}><span style={{fontSize:11,fontWeight:600,padding:"4px 8px",borderRadius:6,background:st.bg,color:st.color,border:`1px solid ${st.color}33`,whiteSpace:"nowrap"}}>{st.label}</span>{app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px",whiteSpace:"nowrap"}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View →</button>}</div></div>);})}</div>)}
+        {appsLoading?(<CastSlateLoader size="inline" text="Loading applications…"/>):appsErr?(<div style={{textAlign:"center",padding:"28px 0"}}><p style={{color:"var(--red)",fontSize:13,marginBottom:12}}>Applications could not load. Please try again.</p><button className="btn-s btn-sm" onClick={loadApps}>Retry</button></div>):filteredApps.length===0?(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:32,marginBottom:10}}><Ico n="clipboard" s={22}/></div><p style={{color:"var(--t2)",fontSize:14,marginBottom:16,fontWeight:500}}>{appsTab==="all"?"You don't have any applications here yet.":appsTab==="invites"?"No casting invites yet.":appsTab==="drafts"?"No saved drafts.":appsTab==="submitted"?"No submitted applications.":appsTab==="auditions"?"No audition requests yet.":"No archived applications."}</p>{(appsTab==="all"||appsTab==="submitted")&&<button className="btn-p btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>}</div>):(<div style={{display:"flex",flexDirection:"column",gap:10}}>{filteredApps.map(app=>{const st=STATUS_LABELS[app.status]||{label:app.status,color:"var(--t2)",bg:"var(--s2)"};const dl=app.castings?.deadline?fmtDeadline(app.castings.deadline):null;return(<div key={app.id} style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",padding:"14px 16px",background:"var(--bg)",border:"1px solid var(--bdr)",borderRadius:10,gap:12,flexWrap:"wrap",transition:"border-color .15s",width:"100%",boxSizing:"border-box"}}><div style={{flex:1,minWidth:0,overflow:"hidden"}}><div style={{fontWeight:700,fontSize:14,color:"var(--t1)",marginBottom:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{app.castings?.title||"Unknown Project"}</div><div style={{fontSize:12,color:"var(--t2)",display:"flex",flexWrap:"wrap",gap:"4px 10px"}}><span>Role: <strong style={{color:"var(--t1)"}}>{app.roles?.name||"—"}</strong></span>{app.castings?.type&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.type&&<span>{app.castings.type}</span>}{app.castings?.location&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.location&&<span>{app.castings.location}</span>}</div><div style={{fontSize:11,color:"var(--t3)",marginTop:3}}>Submitted {fmtDate(app.created_at)}{dl&&<span style={{marginLeft:8,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>}</div></div><div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",flexShrink:0,maxWidth:isMobile?"100%":"none"}}><span style={{fontSize:11,fontWeight:600,padding:"4px 8px",borderRadius:6,background:st.bg,color:st.color,border:`1px solid ${st.color}33`,whiteSpace:"nowrap"}}>{st.label}</span>{app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px",whiteSpace:"nowrap"}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View →</button>}</div></div>);})}</div>)}
       </div>
     </div>
   </div>);}
@@ -9803,7 +9803,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     </div>
     <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
       <div style={{padding:24}}>
-        {savedLoading?(<CastSlateLoader size="inline" text="Loading saved castings…"/>):savedCastings.length===0?(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:32,marginBottom:10}}><Ico n="bookmark" s={18}/></div><p style={{color:"var(--t2)",fontSize:14,marginBottom:16}}>You haven't saved any castings yet.</p><button className="btn-p btn-sm" onClick={()=>{setDashView(null);onNavigate("search");}}>Browse Castings</button></div>):(<div style={{display:"flex",flexDirection:"column",gap:10}}>{savedCastings.map(s=>{const c=s.castings;const dl=c?.deadline?fmtDeadline(c.deadline):null;return(<div key={s.casting_id} style={{padding:"12px 14px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",width:"100%",boxSizing:"border-box"}}><div style={{minWidth:0,flex:1}}><div style={{fontWeight:600,fontSize:13,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c?.title||"Unknown"}</div><div style={{fontSize:11,color:"var(--t3)",marginTop:2}}>{c?.type}{c?.location?` · ${c.location}`:""}{dl?<span style={{marginLeft:6,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>:null}</div></div><div style={{display:"flex",gap:6,flexShrink:0}}><button className="btn-p btn-sm" style={{fontSize:11}} onClick={()=>onViewCastingById?onViewCastingById(s.casting_id):onNavigate("search")}>View</button><button className="btn-s btn-sm" style={{fontSize:11,color:"var(--red)"}} onClick={()=>toggleSave(s.casting_id)}>Remove</button></div></div>);})}</div>)}
+        {savedLoading?(<CastSlateLoader size="inline" text="Loading saved castings…"/>):savedCastings.length===0?(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:32,marginBottom:10}}><Ico n="bookmark" s={22}/></div><p style={{color:"var(--t2)",fontSize:14,marginBottom:16}}>You haven't saved any castings yet.</p><button className="btn-p btn-sm" onClick={()=>{setDashView(null);onNavigate("search");}}>Browse Castings</button></div>):(<div style={{display:"flex",flexDirection:"column",gap:10}}>{savedCastings.map(s=>{const c=s.castings;const dl=c?.deadline?fmtDeadline(c.deadline):null;return(<div key={s.casting_id} style={{padding:"12px 14px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",width:"100%",boxSizing:"border-box"}}><div style={{minWidth:0,flex:1}}><div style={{fontWeight:600,fontSize:13,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c?.title||"Unknown"}</div><div style={{fontSize:11,color:"var(--t3)",marginTop:2}}>{c?.type}{c?.location?` · ${c.location}`:""}{dl?<span style={{marginLeft:6,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>:null}</div></div><div style={{display:"flex",gap:6,flexShrink:0}}><button className="btn-p btn-sm" style={{fontSize:11}} onClick={()=>onViewCastingById?onViewCastingById(s.casting_id):onNavigate("search")}>View</button><button className="btn-s btn-sm" style={{fontSize:11,color:"var(--red)"}} onClick={()=>toggleSave(s.casting_id)}>Remove</button></div></div>);})}</div>)}
       </div>
     </div>
   </div>);}
@@ -9820,7 +9820,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       <div style={{padding:24}}>
         {invLoading?(<CastSlateLoader size="inline" text="Loading…"/>):classInvitations.length===0?(
           <div style={{textAlign:"center",padding:"40px 0"}}>
-            <div style={{fontSize:32,marginBottom:10}}><Ico n="school" s={18}/></div>
+            <div style={{fontSize:32,marginBottom:10}}><Ico n="school" s={22}/></div>
             <p style={{color:"var(--t2)",fontSize:14,margin:0}}>No active class invitations.</p>
           </div>
         ):(
@@ -9886,7 +9886,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         <div style={{padding:24}}>
           {sysNotifLoading?(<CastSlateLoader size="inline" text="Loading…"/>):sysNotifications.length===0?(
             <div style={{textAlign:"center",padding:"40px 0"}}>
-              <div style={{fontSize:32,marginBottom:10}}><Ico n="bell" s={18}/></div>
+              <div style={{fontSize:32,marginBottom:10}}><Ico n="bell" s={22}/></div>
               <p style={{color:"var(--t2)",fontSize:14,margin:0}}>No notifications yet.</p>
             </div>
           ):(
@@ -9940,7 +9940,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             boxShadow:"0 6px 20px rgba(26,107,66,0.3)"
           }}>
             <div style={{display:"flex",alignItems:"center",gap:14}}>
-              <span style={{fontSize:28,lineHeight:1,flexShrink:0}}><Ico n="confetti" s={18}/></span>
+              <span style={{fontSize:28,lineHeight:1,flexShrink:0}}><Ico n="confetti" s={22}/></span>
               <div>
                 <div style={{fontWeight:800,fontSize:16,color:"#fff",marginBottom:3}}>Your class booking was approved!</div>
                 <div style={{fontSize:13,color:"rgba(255,255,255,0.85)",lineHeight:1.4}}>
@@ -10041,7 +10041,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                         )
                       ):(
                         <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#c8d8d4,#d8e8e0)"}}>
-                          <span style={{fontSize:48,opacity:0.2}}><Ico n="movie" s={18}/></span>
+                          <span style={{fontSize:48,opacity:0.2}}><Ico n="movie" s={22}/></span>
                         </div>
                       )}
                       {/* Right-edge fade into card background on desktop */}
@@ -10073,7 +10073,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                           padding:"3px 8px",borderRadius:7,lineHeight:1,
                           fontFamily:"inherit",
                         }}
-                      ><Ico n="x" s={16}/></button>
+                      ><Ico n="x" s={24}/></button>
 
                       {/* Badge */}
                       <div style={{marginBottom:12}}>
@@ -10111,7 +10111,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                             background:"rgba(30,65,60,0.1)",border:"1px solid rgba(30,65,60,0.15)",
                             color:"#1e4140",fontSize:11,fontWeight:600,
                             padding:"4px 10px",borderRadius:20,
-                          }}><Ico n="user" s={18}/> {cls.instructor_name}</span>
+                          }}><Ico n="user" s={22}/> {cls.instructor_name}</span>
                         )}
                         {cls?.level&&(
                           <span style={{
@@ -10226,7 +10226,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 </div>
               ):applications.length===0?(
                 <div style={{textAlign:"center",padding:"40px 0"}}>
-                  <div style={{fontSize:32,marginBottom:10}}><Ico n="clipboard" s={18}/></div>
+                  <div style={{fontSize:32,marginBottom:10}}><Ico n="clipboard" s={22}/></div>
                   <p style={{color:"var(--t2)",fontSize:14,marginBottom:16,fontWeight:500}}>You don't have any applications yet.</p>
                   <button className="btn-p btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>
                 </div>
@@ -10280,7 +10280,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 <CastSlateLoader size="inline" text="Loading messages…"/>
               ):threads.length===0?(
                 <div style={{textAlign:"center",padding:"28px 0"}}>
-                  <div style={{fontSize:32,marginBottom:8}}><Ico n="mail" s={18}/></div>
+                  <div style={{fontSize:32,marginBottom:8}}><Ico n="mail" s={22}/></div>
                   <p style={{color:"var(--t2)",fontSize:14,margin:0}}>No messages yet.</p>
                   <p style={{color:"var(--t3)",fontSize:12,margin:"6px 0 0"}}>When a casting director reaches out, it'll appear here.</p>
                 </div>
@@ -10381,7 +10381,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 <CastSlateLoader size="inline" text="Loading saved castings…"/>
               ):savedCastings.length===0?(
                 <div style={{textAlign:"center",padding:"28px 0"}}>
-                  <div style={{fontSize:28,marginBottom:8}}><Ico n="bookmark" s={18}/></div>
+                  <div style={{fontSize:28,marginBottom:8}}><Ico n="bookmark" s={22}/></div>
                   <p style={{color:"var(--t2)",fontSize:14,marginBottom:14,margin:"0 0 14px"}}>You haven't saved any castings yet.</p>
                   <button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>
                 </div>
@@ -10446,7 +10446,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               </>
             ):(
               <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(27,135,62,0.06)",border:"1px solid rgba(27,135,62,0.2)",borderRadius:8,marginBottom:14}}>
-                <span style={{fontSize:18}}><Ico n="check" s={16}/></span>
+                <span style={{fontSize:18}}><Ico n="check" s={24}/></span>
                 <p style={{fontSize:13,color:"var(--t2)",margin:0}}>Your profile is visible to casting directors browsing talent.</p>
               </div>
             )}
@@ -10485,7 +10485,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:4}}>
                   {["Unlimited submissions","Unlimited photos, videos & Cast Me As","Actor Slate Video","Actor Business Card","Manager Mode","Profile improvement suggestions"].map((f,i)=>(
                     <div key={i} style={{display:"flex",alignItems:"center",gap:7,fontSize:12,color:"var(--t2)"}}>
-                      <span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={16}/></span>{f}
+                      <span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>{f}
                     </div>
                   ))}
                 </div>
@@ -10513,7 +10513,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <span style={{width:6,height:6,borderRadius:'50%',background:'var(--amber)',boxShadow:'0 0 8px var(--amber)'}}/>{isPremium?'Premium Feature':'Free Preview'}
             </p>
             <div style={{position:'relative',display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
-              <span style={{fontSize:20,display:'flex',alignItems:'center',justifyContent:'center',width:36,height:36,borderRadius:10,background:'rgba(255,255,255,0.14)'}}><Ico n="credit-card" s={18}/></span>
+              <span style={{fontSize:20,display:'flex',alignItems:'center',justifyContent:'center',width:36,height:36,borderRadius:10,background:'rgba(255,255,255,0.14)'}}><Ico n="credit-card" s={22}/></span>
               <h3 style={{fontWeight:800,fontSize:15.5,color:'#fff',margin:0,fontFamily:"'DM Sans',sans-serif",letterSpacing:-0.2}}>Actor Business Card</h3>
             </div>
             <p style={{position:'relative',fontSize:13,color:'rgba(255,255,255,.85)',margin:'0 0 16px',lineHeight:1.55}}>Create a downloadable actor card with your headshot and a unique QR code linking to your Cast Slate profile.</p>
@@ -11146,7 +11146,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           onPointerUp={end} onPointerCancel={end}>
           <div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="reject"?1:0}}>REJECT</div>
           <div className="sw-overlay" style={{color:"#c88900",opacity:ac==="hold"?1:0}}>HOLD</div>
-          <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="select"?1:0}}>SELECT <Ico n="check" s={16}/></div>
+          <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="select"?1:0}}>SELECT <Ico n="check" s={24}/></div>
           <img src={img} alt={t.display_name} draggable="false" style={fsMode?{height:"65%"}:{}}/>
           {/* Slate video button — upper-right of image, stopPropagation prevents swipe */}
           {t.slate_video_url&&(
@@ -11166,9 +11166,9 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             {credits&&<p style={{marginTop:8,fontSize:fsMode?13:12,color:"var(--t2)"}}>{credits.slice(0,fsMode?200:140)}{credits.length>(fsMode?200:140)?"…":""}</p>}
             {app.cover_note&&<p style={{marginTop:8,fontSize:fsMode?13:12,color:"var(--t2)",fontStyle:"italic"}}>"{String(app.cover_note).slice(0,fsMode?220:160)}{String(app.cover_note).length>(fsMode?220:160)?"…":""}"</p>}
             {/* Audition takes (official self-tape system) */}
-            {(()=>{const sub=app.audition_submissions;if(!sub)return null;const allTakes=(sub.audition_takes||[]).sort((a,b)=>a.take_number-b.take_number);const displayTakes=sub.submission_mode==='best_take'&&sub.selected_take_id?allTakes.filter(t=>t.id===sub.selected_take_id):allTakes;if(!displayTakes.length)return null;return(<div style={{marginTop:10,background:"rgba(99,60,180,0.08)",border:"1px solid rgba(99,60,180,0.25)",borderRadius:10,padding:"8px 12px"}}><div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:6}}><Ico n="movie" s={18}/> Audition Take{displayTakes.length>1?'s':''}</div>{displayTakes.map(tk=>(<button key={tk.id} onPointerDown={e=>e.stopPropagation()} onClick={e=>{e.stopPropagation();setAppVideoViewer({url:tk.video_url,name:t.display_name||"Applicant",takeLabel:`Take ${tk.take_number}`});}} style={{display:"flex",alignItems:"center",gap:6,fontSize:fsMode?13:12,fontWeight:700,padding:"6px 12px",borderRadius:8,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center",marginBottom:4}}>▶ Watch Take {tk.take_number}</button>))}</div>);})()}
+            {(()=>{const sub=app.audition_submissions;if(!sub)return null;const allTakes=(sub.audition_takes||[]).sort((a,b)=>a.take_number-b.take_number);const displayTakes=sub.submission_mode==='best_take'&&sub.selected_take_id?allTakes.filter(t=>t.id===sub.selected_take_id):allTakes;if(!displayTakes.length)return null;return(<div style={{marginTop:10,background:"rgba(99,60,180,0.08)",border:"1px solid rgba(99,60,180,0.25)",borderRadius:10,padding:"8px 12px"}}><div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:6}}><Ico n="movie" s={22}/> Audition Take{displayTakes.length>1?'s':''}</div>{displayTakes.map(tk=>(<button key={tk.id} onPointerDown={e=>e.stopPropagation()} onClick={e=>{e.stopPropagation();setAppVideoViewer({url:tk.video_url,name:t.display_name||"Applicant",takeLabel:`Take ${tk.take_number}`});}} style={{display:"flex",alignItems:"center",gap:6,fontSize:fsMode?13:12,fontWeight:700,padding:"6px 12px",borderRadius:8,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center",marginBottom:4}}>▶ Watch Take {tk.take_number}</button>))}</div>);})()}
             {!app.audition_submissions&&app.video_note_url&&<div style={{marginTop:10,background:"rgba(99,60,180,0.08)",border:"1px solid rgba(99,60,180,0.25)",borderRadius:10,padding:"8px 12px"}}>
-              <div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:6}}><Ico n="video" s={18}/> Video Note Included</div>
+              <div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:6}}><Ico n="video" s={22}/> Video Note Included</div>
               <button
                 onPointerDown={e=>e.stopPropagation()}
                 onClick={e=>{e.stopPropagation();setAppVideoViewer({url:app.video_note_url,name:t.display_name||"Applicant"});}}
@@ -11210,9 +11210,9 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           </div>}
           {a.cover_note&&<p style={{fontSize:11,color:"var(--t3)",fontStyle:"italic",margin:"4px 0 0",overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>"{a.cover_note}"</p>}
           {/* Audition takes */}
-          {(()=>{const sub=a.audition_submissions;if(!sub)return null;const allTakes=(sub.audition_takes||[]).sort((a,b)=>a.take_number-b.take_number);const displayTakes=sub.submission_mode==='best_take'&&sub.selected_take_id?allTakes.filter(t=>t.id===sub.selected_take_id):allTakes;if(!displayTakes.length)return null;return(<div style={{marginTop:8,background:"rgba(99,60,180,0.07)",border:"1px solid rgba(99,60,180,0.22)",borderRadius:9,padding:"7px 10px"}}><div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:5}}><Ico n="movie" s={18}/> Audition Take{displayTakes.length>1?'s':''}</div>{displayTakes.map(tk=>(<button key={tk.id} style={{display:"flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,padding:"5px 10px",borderRadius:7,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center",marginBottom:3}} onClick={()=>setAppVideoViewer({url:tk.video_url,name:tp.display_name||"Applicant",takeLabel:`Take ${tk.take_number}`})}>▶ Watch Take {tk.take_number}</button>))}</div>);})()}
+          {(()=>{const sub=a.audition_submissions;if(!sub)return null;const allTakes=(sub.audition_takes||[]).sort((a,b)=>a.take_number-b.take_number);const displayTakes=sub.submission_mode==='best_take'&&sub.selected_take_id?allTakes.filter(t=>t.id===sub.selected_take_id):allTakes;if(!displayTakes.length)return null;return(<div style={{marginTop:8,background:"rgba(99,60,180,0.07)",border:"1px solid rgba(99,60,180,0.22)",borderRadius:9,padding:"7px 10px"}}><div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:5}}><Ico n="movie" s={22}/> Audition Take{displayTakes.length>1?'s':''}</div>{displayTakes.map(tk=>(<button key={tk.id} style={{display:"flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,padding:"5px 10px",borderRadius:7,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center",marginBottom:3}} onClick={()=>setAppVideoViewer({url:tk.video_url,name:tp.display_name||"Applicant",takeLabel:`Take ${tk.take_number}`})}>▶ Watch Take {tk.take_number}</button>))}</div>);})()}
           {!a.audition_submissions&&a.video_note_url&&<div style={{marginTop:8,background:"rgba(99,60,180,0.07)",border:"1px solid rgba(99,60,180,0.22)",borderRadius:9,padding:"7px 10px"}}>
-            <div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:5}}><Ico n="video" s={18}/> Video Note Included</div>
+            <div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:5}}><Ico n="video" s={22}/> Video Note Included</div>
             <button style={{display:"flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,padding:"6px 12px",borderRadius:7,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center"}} onClick={()=>setAppVideoViewer({url:a.video_note_url,name:tp.display_name||"Applicant"})}>▶ Play Video Note</button>
           </div>}
           {/* Action buttons */}
@@ -11220,7 +11220,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             {a.status!=='selected'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"5px 9px"}} onClick={()=>moveTo(a.id,'select')}>→ Select</button>}
             {a.status!=='hold'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"5px 9px"}} onClick={()=>moveTo(a.id,'hold')}>→ Hold</button>}
             {a.status!=='rejected'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"5px 9px"}} onClick={()=>moveTo(a.id,'reject')}>→ Reject</button>}
-            {a.status==='selected'&&<button className="btn-p btn-sm" style={{fontSize:11,padding:"5px 9px",marginLeft:"auto"}} onClick={()=>handleMsgClick(a)}><Ico n="message-circle" s={18}/> Message</button>}
+            {a.status==='selected'&&<button className="btn-p btn-sm" style={{fontSize:11,padding:"5px 9px",marginLeft:"auto"}} onClick={()=>handleMsgClick(a)}><Ico n="message-circle" s={22}/> Message</button>}
           </div>
         </div>
       </div>
@@ -11295,10 +11295,10 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         <div style={{display:"flex",gap:8,padding:"12px 16px",borderTop:"1px solid var(--bdr)",flexWrap:"wrap",alignItems:"center"}}>
           <button className="btn-s btn-sm" style={{fontSize:12,padding:"7px 14px"}} onClick={()=>onViewProfile(a)}>View Profile</button>
           <div style={{flex:1}}/>
-          {a.status!=='selected'&&<button onClick={()=>onDecide('select',a)} style={{fontSize:12,padding:"7px 16px",borderRadius:8,border:"none",background:"rgba(46,204,113,0.15)",color:"#1d7b44",cursor:"pointer",fontWeight:700,fontFamily:"inherit"}}><Ico n="check" s={16}/> Shortlist</button>}
+          {a.status!=='selected'&&<button onClick={()=>onDecide('select',a)} style={{fontSize:12,padding:"7px 16px",borderRadius:8,border:"none",background:"rgba(46,204,113,0.15)",color:"#1d7b44",cursor:"pointer",fontWeight:700,fontFamily:"inherit"}}><Ico n="check" s={24}/> Shortlist</button>}
           {a.status!=='hold'&&<button onClick={()=>onDecide('hold',a)} style={{fontSize:12,padding:"7px 16px",borderRadius:8,border:"none",background:"rgba(200,137,0,0.12)",color:"#c88900",cursor:"pointer",fontWeight:700,fontFamily:"inherit"}}>⏸ Maybe</button>}
-          {a.status!=='rejected'&&<button onClick={()=>onDecide('reject',a)} style={{fontSize:12,padding:"7px 16px",borderRadius:8,border:"none",background:"rgba(192,57,43,0.08)",color:"#c0392b",cursor:"pointer",fontWeight:700,fontFamily:"inherit"}}><Ico n="x" s={16}/> Reject</button>}
-          {a.status==='selected'&&<button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>onMessage(a)}><Ico n="message-circle" s={18}/> Message</button>}
+          {a.status!=='rejected'&&<button onClick={()=>onDecide('reject',a)} style={{fontSize:12,padding:"7px 16px",borderRadius:8,border:"none",background:"rgba(192,57,43,0.08)",color:"#c0392b",cursor:"pointer",fontWeight:700,fontFamily:"inherit"}}><Ico n="x" s={24}/> Reject</button>}
+          {a.status==='selected'&&<button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>onMessage(a)}><Ico n="message-circle" s={22}/> Message</button>}
         </div>
       </div>
     );
@@ -11387,15 +11387,15 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           {submissions.length===0?
             <div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No submissions for this role yet.</p></div>:
            counts.pending===0?
-            <div className="success-msg"><div className="check"><Ico n="check" s={16}/></div><h3>All Caught Up</h3><p>No pending submissions for this role. Check Selected, Hold, or Rejected to see your decisions.</p></div>:
+            <div className="success-msg"><div className="check"><Ico n="check" s={24}/></div><h3>All Caught Up</h3><p>No pending submissions for this role. Check Selected, Hold, or Rejected to see your decisions.</p></div>:
             <div className={fsMode?"":"swipe-layout"} style={fsMode?{position:"fixed",inset:0,zIndex:9100,background:"var(--bg)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start",overflowY:"auto",padding:"60px 24px 32px"}:{}}>
               {fsMode&&<button onClick={()=>setFsMode(false)} style={{position:"fixed",top:12,right:12,zIndex:9101,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:8,padding:"8px 16px",fontSize:13,fontWeight:700,cursor:"pointer",color:"var(--t1)",display:"flex",alignItems:"center",gap:6,boxShadow:"0 2px 8px rgba(0,0,0,0.12)"}}>⊡ Exit Full Screen</button>}
               <div className="swipe-area" style={fsMode?{width:"100%",maxWidth:720}:{}}>
                 <ReviewCard key={(fsMode?"fs:":"") + (pendingList[si]?.id||si)}/>
                 <div className="swipe-btns" style={fsMode?{gap:24,marginTop:8}:{}}>
-                  <button className="sw-btn pass" onClick={()=>decide('reject')} title="Reject (swipe left)" style={fsMode?{width:68,height:68,fontSize:26}:{}}><Ico n="x" s={16}/></button>
+                  <button className="sw-btn pass" onClick={()=>decide('reject')} title="Reject (swipe left)" style={fsMode?{width:68,height:68,fontSize:26}:{}}><Ico n="x" s={24}/></button>
                   <button className="sw-btn save" style={fsMode?{background:"rgba(200,137,0,0.15)",color:"#c88900",width:68,height:68,fontSize:26}:{background:"rgba(200,137,0,0.15)",color:"#c88900"}} onClick={()=>decide('hold')} title="Hold (swipe up)">⏸</button>
-                  <button className="sw-btn yes" onClick={()=>decide('select')} title="Select (swipe right)" style={fsMode?{width:68,height:68,fontSize:26}:{}}><Ico n="check" s={16}/></button>
+                  <button className="sw-btn yes" onClick={()=>decide('select')} title="Select (swipe right)" style={fsMode?{width:68,height:68,fontSize:26}:{}}><Ico n="check" s={24}/></button>
                 </div>
                 <div style={{textAlign:"center",marginTop:12,display:"flex",gap:10,justifyContent:"center",alignItems:"center",flexWrap:"wrap"}}>
                   <button className="btn-s btn-sm" onClick={()=>{if(!pendingList[si])return;if(fsMode)setFsMode(false);setCdProfileOverlay(buildTalentView(pendingList[si]));}} >View full profile</button>
@@ -11406,7 +11406,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
               </div>
               {!fsMode&&<div className="cb-sidebar">
                 <h3>Selected <span className="tag tag-grn">{counts.selected}</span></h3>
-                {counts.selected===0?<div className="cb-empty">Swipe right or press <Ico n="check" s={16}/> to shortlist.</div>:
+                {counts.selected===0?<div className="cb-empty">Swipe right or press <Ico n="check" s={24}/> to shortlist.</div>:
                 submissions.filter(s=>s.status==='selected').slice(0,10).map((a,i)=>
                   <div key={a.id||i} className="cb-item" style={{flexDirection:"column",alignItems:"stretch"}}>
                     <div style={{display:"flex",gap:10,alignItems:"center",cursor:"pointer"}} onClick={()=>setCdProfileOverlay(buildTalentView(a))}>
@@ -11414,7 +11414,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
                       <div className="cb-item-info" style={{flex:1}}><h4>{a.profiles?.display_name||"Applicant"}</h4><p>{[a.profiles?.age,a.profiles?.gender,a.profiles?.location].filter(Boolean).join(" · ")}</p></div>
                     </div>
                     <div style={{display:"flex",gap:6,marginTop:8}}>
-                      <button className="btn-p btn-sm" style={{flex:1,fontSize:11,padding:"6px 10px"}} onClick={()=>handleMsgClick(a)}><Ico n="message-circle" s={18}/> Message</button>
+                      <button className="btn-p btn-sm" style={{flex:1,fontSize:11,padding:"6px 10px"}} onClick={()=>handleMsgClick(a)}><Ico n="message-circle" s={22}/> Message</button>
                     </div>
                   </div>)}
               </div>}
@@ -11503,7 +11503,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             </div>
             <div style={{display:"flex",gap:8,marginTop:10,flexWrap:"wrap",borderTop:"1px solid var(--bdr)",paddingTop:10}}>
               {isOpen&&<button className="btn-s btn-sm" style={{fontSize:12}} onClick={()=>openReview(c)}>View Submissions →</button>}
-              <button className="btn-s btn-sm" style={{fontSize:12}} onClick={()=>setEditCasting(c)}><Ico n="pencil" s={18}/> Edit</button>
+              <button className="btn-s btn-sm" style={{fontSize:12}} onClick={()=>setEditCasting(c)}><Ico n="pencil" s={22}/> Edit</button>
               {isOpen&&<button className="btn-s btn-sm" style={{fontSize:12}} disabled={busy} onClick={()=>busy||toggleCastingStatus(c,"closed")}>{busy?"…":"Close Casting"}</button>}
               {isOpen&&<button className="btn-s btn-sm" style={{fontSize:12,color:"#c0392b",borderColor:"rgba(192,57,43,0.4)"}} disabled={busy} title="Found your talent? Mark this filled — it stays listed with a red ARCHIVED stamp and stops taking submissions." onClick={()=>{if(busy)return;if(window.confirm("Mark “"+c.title+"” as filled? It will stay listed with a red ARCHIVED stamp and stop accepting new submissions. You can unarchive anytime."))toggleCastingStatus(c,"archived");}}>{busy?"…":"Mark Filled (Archive)"}</button>}
               {isClosed&&<button className="btn-s btn-sm" style={{fontSize:12}} disabled={busy} onClick={()=>busy||toggleCastingStatus(c,"open")}>{busy?"…":"Reopen"}</button>}
@@ -11513,7 +11513,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
               ⏳ <strong>Under review.</strong> Your casting has been submitted and is waiting for CastSlate approval. It will go live on Browse Castings once approved — typically within 1 business day.
             </div>}
             {isRejected&&<div style={{marginTop:10,padding:"8px 12px",background:"rgba(192,57,43,0.07)",border:"1px solid rgba(192,57,43,0.2)",borderRadius:8,fontSize:12,color:"#c0392b",lineHeight:1.5}}>
-              <Ico n="x" s={16}/> <strong>Not approved.</strong> This casting was not approved. Edit it to address any issues, then resubmit for review.
+              <Ico n="x" s={24}/> <strong>Not approved.</strong> This casting was not approved. Edit it to address any issues, then resubmit for review.
             </div>}
           </div>);
         })}</div>}
@@ -11552,7 +11552,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
                   <h4 onClick={()=>setCdProfileOverlay(tv)} style={{cursor:"pointer"}}>{tv.name}</h4>
                   <p>{[p.age,p.gender,p.location].filter(Boolean).join(" · ")||"—"}</p>
                   <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
-                    <button className="btn-p btn-sm" style={{fontSize:11,padding:"6px 10px"}} onClick={()=>setComposeDmTo({id:m.talent_id,name:tv.name})}><Ico n="message-circle" s={18}/> Message</button>
+                    <button className="btn-p btn-sm" style={{fontSize:11,padding:"6px 10px"}} onClick={()=>setComposeDmTo({id:m.talent_id,name:tv.name})}><Ico n="message-circle" s={22}/> Message</button>
                     <button className="btn-s btn-sm" style={{fontSize:11,padding:"6px 10px",color:"#c0392b",borderColor:"rgba(255,100,100,0.35)"}} onClick={()=>removeFromList(activeList.id,m.talent_id)}>Remove</button>
                   </div>
                 </div>
@@ -11574,7 +11574,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             </div>}
             {savedListsLoading?<CastSlateLoader size="inline" text="Loading your lists…"/>:savedLists.length===0?<div className="card" style={{padding:48,textAlign:"center"}}>
               <p style={{color:"var(--t3)",marginBottom:16}}>No saved lists yet.</p>
-              <p style={{color:"var(--t3)",fontSize:13}}>Open any talent profile and click <strong><Ico n="star" s={16}/> Save to List</strong> to start organizing.</p>
+              <p style={{color:"var(--t3)",fontSize:13}}>Open any talent profile and click <strong><Ico n="star" s={24}/> Save to List</strong> to start organizing.</p>
             </div>:<div className="card-flat">{savedLists.map(l=>
               <div key={l.id} className="casting-row" onClick={()=>setActiveList(l)} style={{cursor:"pointer"}}>
                 <div className="casting-row-left">
@@ -11680,7 +11680,7 @@ function MessageModal({app,fromId,castingTitle,onClose,onSent}){
     finally{setBusy(false);}
   };
   return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:540}}>
-    {sent?<div className="success-msg"><div className="check"><Ico n="check" s={16}/></div><h3>Message Sent</h3><p>{t.display_name} will see it in their inbox.</p></div>:<>
+    {sent?<div className="success-msg"><div className="check"><Ico n="check" s={24}/></div><h3>Message Sent</h3><p>{t.display_name} will see it in their inbox.</p></div>:<>
       <h2>Message {t.display_name}</h2>
       <div style={{background:"var(--s2)",borderRadius:10,padding:14,marginBottom:16,display:"flex",gap:10,alignItems:"center"}}>
         <img src={app.selected_photo_url||t.headshot_url||"https://placehold.co/60x75/e5e5e5/999?text=?"} style={{width:44,height:55,objectFit:"cover",borderRadius:6}}/>
@@ -11689,7 +11689,7 @@ function MessageModal({app,fromId,castingTitle,onClose,onSent}){
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{err}</div>}
       <div className="form-group"><label className="label">Message</label><textarea className="textarea" rows="4" placeholder="Hi! Loved your submission — would love to bring you in for a callback…" value={body} onChange={e=>setBody(e.target.value)}></textarea></div>
       <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:10,padding:16,marginBottom:16}}>
-        <div style={{fontSize:12,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,fontWeight:700,marginBottom:10}}><Ico n="calendar-event" s={18}/> Schedule Audition (Optional)</div>
+        <div style={{fontSize:12,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,fontWeight:700,marginBottom:10}}><Ico n="calendar-event" s={22}/> Schedule Audition (Optional)</div>
         <div className="form-group" style={{marginBottom:10}}><label className="label">Date & Time</label><input className="input" type="datetime-local" value={auditionAt} onChange={e=>setAuditionAt(e.target.value)}/></div>
         <div className="form-group" style={{marginBottom:0}}><label className="label">Location / Details</label><input className="input" placeholder="e.g. 1420 Broadway, Studio 7 · bring sides" value={auditionNote} onChange={e=>setAuditionNote(e.target.value)}/></div>
       </div>
@@ -11770,7 +11770,7 @@ function SaveToListModal({cdId,talentId,talentName,onClose}){
     <h2>Save {talentName}</h2>
     <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:18}}>Add this talent to one of your saved lists, or create a new one. Tap a list to add or remove.</p>
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{err}</div>}
-    {done&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.35)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}><Ico n="check" s={16}/> Saved! Find your lists in your Dashboard under the <strong>Saved Lists</strong> tab.</div>}
+    {done&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.35)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}><Ico n="check" s={24}/> Saved! Find your lists in your Dashboard under the <strong>Saved Lists</strong> tab.</div>}
     {loading?<CastSlateLoader size="inline" text="Loading your lists…"/>:<>
       {lists.length===0&&!showCreate&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:14}}>You don't have any lists yet. Create your first one below.</p>}
       {lists.length>0&&<div style={{maxHeight:280,overflowY:"auto",border:"1px solid var(--bdr)",borderRadius:10,marginBottom:12}}>
@@ -11838,7 +11838,7 @@ function InviteToProjectModal({cdId,talentId,talentName,onClose}){
   };
 
   return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:560}}>
-    {sent?<div className="success-msg"><div className="check"><Ico n="check" s={16}/></div><h3>Invite Sent</h3><p>{talentName} will see your invite in their inbox.</p></div>:<>
+    {sent?<div className="success-msg"><div className="check"><Ico n="check" s={24}/></div><h3>Invite Sent</h3><p>{talentName} will see your invite in their inbox.</p></div>:<>
       <h2>Invite {talentName}</h2>
       <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:18}}>Pick a casting and (optionally) a role. The talent gets a project invite they can accept or decline from their inbox.</p>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{err}</div>}
@@ -11910,7 +11910,7 @@ function ComposeDMModal({fromId,toId,toName,onClose,initialBody,title,intro}){
     finally{setBusy(false);}
   };
   return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:520}}>
-    {sent?<div className="success-msg"><div className="check"><Ico n="check" s={16}/></div><h3>Message Sent</h3><p>{toName} will see it in their inbox.</p></div>:<>
+    {sent?<div className="success-msg"><div className="check"><Ico n="check" s={24}/></div><h3>Message Sent</h3><p>{toName} will see it in their inbox.</p></div>:<>
       <h2>{title||`Message ${toName}`}</h2>
       <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:18}}>{intro||"Direct message — no application or audition attached. Use this for quick check-ins or follow-ups."}</p>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{err}</div>}
@@ -12183,7 +12183,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
                    <div style={{fontSize:10,fontWeight:700,letterSpacing:0.4,color:"var(--t3)",textTransform:"uppercase",padding:"0 4px"}}>{fromLabel} · {time}</div>
                    <div className="msg-bubble" style={{background:mine?"var(--acc)":"#fff",color:mine?"#fff":"var(--t1)",border:mine?"none":"1px solid var(--bdr)",padding:"10px 14px",borderRadius:14,fontSize:14,lineHeight:1.5,whiteSpace:"pre-wrap",wordBreak:"break-word"}}>
                      {m.body}
-                     {isAdmin&&<button onClick={()=>deleteOne(m.id)} title="Delete this message" className="msg-del-btn" style={{position:"absolute",top:-8,[mine?"left":"right"]:-8,width:22,height:22,borderRadius:"50%",border:"1px solid var(--bdr)",background:"#fff",color:"var(--t3)",fontSize:11,cursor:"pointer",padding:0}}><Ico n="x" s={16}/></button>}
+                     {isAdmin&&<button onClick={()=>deleteOne(m.id)} title="Delete this message" className="msg-del-btn" style={{position:"absolute",top:-8,[mine?"left":"right"]:-8,width:22,height:22,borderRadius:"50%",border:"1px solid var(--bdr)",background:"#fff",color:"var(--t3)",fontSize:11,cursor:"pointer",padding:0}}><Ico n="x" s={24}/></button>}
                    </div>
                    {m.to_id===sessionUid&&!m.read_at&&<span style={{fontSize:9,fontWeight:800,color:"var(--acc)",letterSpacing:1,padding:"0 4px"}}>NEW</span>}
                  </div>
@@ -12405,7 +12405,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile,onViewCastingById})
           <div className="card" style={{padding:0,overflow:"hidden",border:"1px solid var(--acc)",borderRadius:12}}>
             <div onClick={()=>setOpenCheckin(latest)} style={{display:"grid",gridTemplateColumns:"auto 1fr auto",gap:14,padding:"16px 22px",cursor:"pointer",alignItems:"center",background:isUnread?"rgba(26,26,200,0.04)":"transparent",transition:"background 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--s2)"} onMouseLeave={e=>e.currentTarget.style.background=isUnread?"rgba(26,26,200,0.04)":"transparent"}>
               <div style={{position:"relative"}}>
-                <div style={{width:52,height:52,borderRadius:"50%",background:"linear-gradient(135deg,var(--acc),#1a1a6e)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}><Ico n="clipboard" s={18}/></div>
+                <div style={{width:52,height:52,borderRadius:"50%",background:"linear-gradient(135deg,var(--acc),#1a1a6e)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}><Ico n="clipboard" s={22}/></div>
                 {isUnread&&<span style={{position:"absolute",top:-2,right:-2,background:"var(--acc)",color:"#fff",borderRadius:"50%",minWidth:20,height:20,padding:"0 5px",fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid var(--s1)"}}>1</span>}
               </div>
               <div style={{minWidth:0}}>
@@ -12653,7 +12653,7 @@ function CheckInViewModal({message,onClose,onNavigate,onRead}){
         {/* Header */}
         <div style={{display:"flex",alignItems:"center",gap:14,padding:"18px 22px",borderBottom:"1px solid var(--bdr)",flexShrink:0}}>
           <button className="btn-s btn-sm" onClick={onClose}>←</button>
-          <div style={{width:44,height:44,borderRadius:"50%",background:"linear-gradient(135deg,var(--acc),#1a1a6e)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}><Ico n="clipboard" s={18}/></div>
+          <div style={{width:44,height:44,borderRadius:"50%",background:"linear-gradient(135deg,var(--acc),#1a1a6e)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}><Ico n="clipboard" s={22}/></div>
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontWeight:800,fontSize:15,letterSpacing:"-0.2px"}}>Cast Slate Career Team</div>
             <div style={{fontSize:10,letterSpacing:1,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,marginTop:2}}>WEEKLY CAREER NOTE</div>
@@ -12898,7 +12898,7 @@ function CastingCountdown({deadline,emoji=false,baseColor="#0F6E56"}){
   },[within48]);
   if(end==null)return null;
   const ms=end-now;
-  const pre=emoji?<span style={{fontSize:15}}><Ico n="calendar-event" s={18}/></span>:null;
+  const pre=emoji?<span style={{fontSize:15}}><Ico n="calendar-event" s={22}/></span>:null;
   const wrap=(color,weight,content)=>(<span style={{display:"inline-flex",alignItems:"center",gap:emoji?7:5,color,fontWeight:weight}}>{pre}{content}</span>);
   if(ms<=0)return wrap("var(--t3)",600,"Applications closed");
   if(within48){
@@ -12916,7 +12916,7 @@ function CastingCountdown({deadline,emoji=false,baseColor="#0F6E56"}){
 //     Does NOT imply a criminal background check.
 function IDVerifiedBadge({size="sm"}){
   return(<span style={{display:"inline-flex",alignItems:"center",gap:4}}>
-    <span style={{background:"rgba(46,204,113,0.12)",color:"#1d7b44",fontSize:size==="xs"?10:11,fontWeight:600,letterSpacing:0,padding:size==="xs"?"3px 8px":"4px 10px",borderRadius:100}}><Ico n="check" s={16}/> ID Verified</span>
+    <span style={{background:"rgba(46,204,113,0.12)",color:"#1d7b44",fontSize:size==="xs"?10:11,fontWeight:600,letterSpacing:0,padding:size==="xs"?"3px 8px":"4px 10px",borderRadius:100}}><Ico n="check" s={24}/> ID Verified</span>
     <InfoTip color="#1d7b44" width={300} label="ID verification disclaimer">
       This casting creator has completed third-party identity verification. Identity verification does not guarantee the legitimacy, safety, conduct, payment, or quality of any project, person, company, audition, job offer, or communication. Always use your own judgment and report suspicious activity.
     </InfoTip>
@@ -12935,7 +12935,7 @@ function UnverifiedBadge({size="sm"}){
 //     badge will not appear until Checkr or equivalent is connected.
 function CastingVerifiedBadge(){
   return(<span style={{display:"inline-flex",alignItems:"center",gap:4}}>
-    <span style={{background:"rgba(41,128,185,0.12)",color:"#1a5276",fontSize:9,fontWeight:800,letterSpacing:0.6,padding:"2px 8px",borderRadius:99}}><Ico n="check" s={16}/> Background Checked</span>
+    <span style={{background:"rgba(41,128,185,0.12)",color:"#1a5276",fontSize:9,fontWeight:800,letterSpacing:0.6,padding:"2px 8px",borderRadius:99}}><Ico n="check" s={24}/> Background Checked</span>
     <InfoTip color="#1a5276" width={280} label="Background check disclaimer">
       This casting creator has passed a third-party criminal background check. Background checks do not guarantee the legitimacy, safety, conduct, payment, or quality of any project, individual, company, audition, or communication. Always use your own judgment and report suspicious activity.
     </InfoTip>
@@ -13052,7 +13052,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
   // Security: only the owner (or admin) may edit
   if(!isAdmin&&casting.cd_id!==uid){
     return(<div className="modal-overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:480,textAlign:"center",padding:"40px 32px"}}>
-      <div style={{fontSize:44,marginBottom:16}}><Ico n="lock" s={18}/></div>
+      <div style={{fontSize:44,marginBottom:16}}><Ico n="lock" s={22}/></div>
       <h2 style={{marginBottom:10}}>Access Denied</h2>
       <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>You can only edit castings you created.</p>
       <button className="btn-p" onClick={onClose}>Close</button>
@@ -13273,7 +13273,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
         {castingImages.map((img,i)=>(
           <div key={i} style={{position:"relative",width:90,flexShrink:0}}>
             <img src={img.url} alt={`Image ${i+1}`} style={{width:90,height:110,objectFit:"contain",borderRadius:8,background:"var(--s2)",display:"block",border:"1px solid var(--bdr)"}}/>
-            <div style={{position:"absolute",top:3,right:3,background:"rgba(0,0,0,0.55)",borderRadius:99,width:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,color:"#fff",lineHeight:1}} onClick={()=>setCastingImages(p=>p.filter((_,j)=>j!==i))}><Ico n="x" s={16}/></div>
+            <div style={{position:"absolute",top:3,right:3,background:"rgba(0,0,0,0.55)",borderRadius:99,width:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,color:"#fff",lineHeight:1}} onClick={()=>setCastingImages(p=>p.filter((_,j)=>j!==i))}><Ico n="x" s={24}/></div>
             {i===0&&<div style={{position:"absolute",bottom:3,left:0,right:0,textAlign:"center",fontSize:9,fontWeight:700,color:"#fff",background:"rgba(0,0,0,0.5)",borderRadius:4,padding:"1px 0"}}>COVER</div>}
           </div>
         ))}
@@ -13288,7 +13288,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     <div style={{borderTop:"1px solid var(--bdr)",paddingTop:20,marginTop:4}}>
       <div className="flex-between" style={{marginBottom:12}}><h3 style={{fontSize:16,fontWeight:700}}>Roles</h3><button className="btn-s btn-sm" onClick={addRole} type="button">+ Add Role</button></div>
       {roles.map((r,i)=>{const isLast=i===roles.length-1;return(<div key={r.id||`new-${i}`} ref={isLast?lastRoleRef:null} style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:12}}>
-        <div className="flex-between" style={{marginBottom:10}}><strong style={{fontSize:13}}>Role {i+1} {r.id?"":<span style={{color:"var(--acc)",fontSize:11}}>(new)</span>}</strong>{(roles.length>1||r.id===null)&&<button onClick={()=>removeRole(i)} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12}}><Ico n="x" s={16}/> Remove</button>}</div>
+        <div className="flex-between" style={{marginBottom:10}}><strong style={{fontSize:13}}>Role {i+1} {r.id?"":<span style={{color:"var(--acc)",fontSize:11}}>(new)</span>}</strong>{(roles.length>1||r.id===null)&&<button onClick={()=>removeRole(i)} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12}}><Ico n="x" s={24}/> Remove</button>}</div>
         <div className="form-group" style={{marginBottom:10}}><label className="label">Role Name *</label><input className="input" value={r.name} onChange={e=>setRole(i,"name",e.target.value)} placeholder="e.g. Sarah — Lead"/></div>
           <div className="form-group" style={{marginBottom:10}}><label className="label">Role Type</label><select className="select" style={{width:"100%"}} value={r.role_type||"Supporting"} onChange={e=>setRole(i,"role_type",e.target.value)}>{ROLE_TYPE_OPTIONS.map(rt=><option key={rt} value={rt}>{rt}</option>)}</select></div>
         <div className="form-row">
@@ -13308,7 +13308,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
           {/* Audition Instructions section */}
           <div style={{marginTop:14,borderTop:"1px solid var(--bdr)",paddingTop:12}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",marginBottom:r._showAudInstr?12:0}} onClick={()=>setRole(i,"_showAudInstr",!r._showAudInstr)}>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--t2)",display:"flex",alignItems:"center",gap:6}}><Ico n="movie" s={18}/> Audition Instructions</span>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--t2)",display:"flex",alignItems:"center",gap:6}}><Ico n="movie" s={22}/> Audition Instructions</span>
               <span style={{fontSize:11,color:"var(--acc)",fontWeight:600}}>{r._showAudInstr?"Hide ▲":"Set Instructions ▼"}</span>
             </div>
             {r._showAudInstr&&<>
@@ -13317,12 +13317,12 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
                 <p style={{fontSize:11,color:"var(--t3)",marginTop:2,marginBottom:8}}>Maximum allowed: 1-page PDF screenplay scene.</p>
                 {r.sides_pdf_url?(
                   <div style={{display:"flex",alignItems:"center",gap:8,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:8,padding:"10px 12px"}}>
-                    <span style={{fontSize:20}}><Ico n="file-text" s={18}/></span>
+                    <span style={{fontSize:20}}><Ico n="file-text" s={22}/></span>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:13,fontWeight:600,color:"var(--t1)",marginBottom:2}}>Sides PDF attached</div>
                       <a href={r.sides_pdf_url} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:"var(--acc)"}}>View PDF →</a>
                     </div>
-                    <button type="button" onClick={()=>setRole(i,"sides_pdf_url","")} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12,fontWeight:700,padding:"4px 8px"}}><Ico n="x" s={16}/> Remove</button>
+                    <button type="button" onClick={()=>setRole(i,"sides_pdf_url","")} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12,fontWeight:700,padding:"4px 8px"}}><Ico n="x" s={24}/> Remove</button>
                   </div>
                 ):(
                   <label style={{cursor:r._uploadingPdf?"default":"pointer",display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:8,border:"2px dashed var(--bdr)",background:"var(--s2)",color:r._uploadingPdf?"var(--t3)":"var(--t2)",fontWeight:600,fontSize:13}}>
@@ -13489,7 +13489,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   // Blocked — verification required
   if(!canPost){
     return(<div className="modal-overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:520,textAlign:"center",padding:"44px 36px"}}>
-      <div style={{fontSize:44,marginBottom:16}}><Ico n="lock" s={18}/></div>
+      <div style={{fontSize:44,marginBottom:16}}><Ico n="lock" s={22}/></div>
       <h2 style={{fontSize:22,fontWeight:800,marginBottom:10}}>Verification Required</h2>
       <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,marginBottom:8}}>To protect actors and performers, all casting creators must complete identity verification before publishing casting calls. Some accounts may require additional manual review.</p>
       <p style={{color:"var(--t3)",fontSize:13,marginBottom:verifyMsg?12:28}}>Your current status: <strong style={{color:"var(--acc)"}}>{myProfile?.verification_status||"not started"}</strong></p>
@@ -13574,7 +13574,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   };
   return(<div className="modal-overlay" onClick={handleClose}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"90vh",overflowY:"auto"}}>
     {step===2?<div className="success-msg">
-      <div className="check"><Ico n="check" s={16}/></div>
+      <div className="check"><Ico n="check" s={24}/></div>
       <h3>Casting Submitted</h3>
       <p>Your casting has been submitted for admin review. It will appear publicly once approved.</p>
       <button type="button" className="btn-p mt-20" onClick={()=>{clearDraft();onPosted(inserted);}}>Back to Dashboard</button>
@@ -13622,7 +13622,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
           {castingImages.map((img,i)=>(
             <div key={i} style={{position:"relative",width:90,flexShrink:0}}>
               <img src={img.url} alt={`Image ${i+1}`} style={{width:90,height:110,objectFit:"contain",borderRadius:8,background:"var(--s2)",display:"block",border:"1px solid var(--bdr)"}}/>
-              <div style={{position:"absolute",top:3,right:3,background:"rgba(0,0,0,0.55)",borderRadius:99,width:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,color:"#fff",lineHeight:1}} onClick={()=>setCastingImages(p=>p.filter((_,j)=>j!==i))}><Ico n="x" s={16}/></div>
+              <div style={{position:"absolute",top:3,right:3,background:"rgba(0,0,0,0.55)",borderRadius:99,width:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,color:"#fff",lineHeight:1}} onClick={()=>setCastingImages(p=>p.filter((_,j)=>j!==i))}><Ico n="x" s={24}/></div>
               {i===0&&<div style={{position:"absolute",bottom:3,left:0,right:0,textAlign:"center",fontSize:9,fontWeight:700,color:"#fff",background:"rgba(0,0,0,0.5)",borderRadius:4,padding:"1px 0"}}>COVER</div>}
             </div>
           ))}
@@ -13637,7 +13637,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
       <div style={{borderTop:"1px solid var(--bdr)",paddingTop:20,marginTop:20}}>
         <div className="flex-between" style={{marginBottom:12}}><h3 style={{fontSize:16,fontWeight:700}}>Roles</h3><button type="button" className="btn-s btn-sm" onClick={addRole}>+ Add Role</button></div>
         {roles.map((r,i)=><div key={i} style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:12}}>
-          <div className="flex-between" style={{marginBottom:10}}><strong style={{fontSize:13}}>Role {i+1}</strong>{roles.length>1&&<button type="button" onClick={()=>removeRole(i)} style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:12}}><Ico n="x" s={16}/> Remove</button>}</div>
+          <div className="flex-between" style={{marginBottom:10}}><strong style={{fontSize:13}}>Role {i+1}</strong>{roles.length>1&&<button type="button" onClick={()=>removeRole(i)} style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:12}}><Ico n="x" s={24}/> Remove</button>}</div>
           <div className="form-group" style={{marginBottom:10}}><label className="label">Role Name *</label><input className="input" value={r.name} onChange={e=>setRole(i,"name",e.target.value)} placeholder="e.g. Sarah — Lead"/></div>
           <div className="form-group" style={{marginBottom:10}}><label className="label">Role Type</label><select className="select" style={{width:"100%"}} value={r.role_type||"Supporting"} onChange={e=>setRole(i,"role_type",e.target.value)}>{ROLE_TYPE_OPTIONS.map(rt=><option key={rt} value={rt}>{rt}</option>)}</select></div>
           <div className="form-row">
@@ -13661,7 +13661,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
           {/* Audition Instructions section */}
           <div style={{marginTop:14,borderTop:"1px solid var(--bdr)",paddingTop:12}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",marginBottom:r._showAudInstr?12:0}} onClick={()=>setRole(i,"_showAudInstr",!r._showAudInstr)}>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--t2)",display:"flex",alignItems:"center",gap:6}}><Ico n="movie" s={18}/> Audition Instructions</span>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--t2)",display:"flex",alignItems:"center",gap:6}}><Ico n="movie" s={22}/> Audition Instructions</span>
               <span style={{fontSize:11,color:"var(--acc)",fontWeight:600}}>{r._showAudInstr?"Hide ▲":"Set Instructions ▼"}</span>
             </div>
             {r._showAudInstr&&<>
@@ -13670,12 +13670,12 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
                 <p style={{fontSize:11,color:"var(--t3)",marginTop:2,marginBottom:8}}>Maximum allowed: 1-page PDF screenplay scene.</p>
                 {r.sides_pdf_url?(
                   <div style={{display:"flex",alignItems:"center",gap:8,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:8,padding:"10px 12px"}}>
-                    <span style={{fontSize:20}}><Ico n="file-text" s={18}/></span>
+                    <span style={{fontSize:20}}><Ico n="file-text" s={22}/></span>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:13,fontWeight:600,color:"var(--t1)",marginBottom:2}}>Sides PDF attached</div>
                       <a href={r.sides_pdf_url} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:"var(--acc)"}}>View PDF →</a>
                     </div>
-                    <button type="button" onClick={()=>setRole(i,"sides_pdf_url","")} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12,fontWeight:700,padding:"4px 8px"}}><Ico n="x" s={16}/> Remove</button>
+                    <button type="button" onClick={()=>setRole(i,"sides_pdf_url","")} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12,fontWeight:700,padding:"4px 8px"}}><Ico n="x" s={24}/> Remove</button>
                   </div>
                 ):(
                   <label style={{cursor:r._uploadingPdf?"default":"pointer",display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:8,border:"2px dashed var(--bdr)",background:"var(--s2)",color:r._uploadingPdf?"var(--t3)":"var(--t2)",fontWeight:600,fontSize:13}}>
@@ -14109,7 +14109,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
   function reset(){setIdx(0);setAnimating(false);setFlyDir(0);setSuperFly(false);setDx(0);dragging.current=false;}
   if(done){return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:300,minHeight:500,gap:10,textAlign:"center"}}>
-      <div style={{fontSize:46,marginBottom:2}}><Ico n="movie" s={18}/></div>
+      <div style={{fontSize:46,marginBottom:2}}><Ico n="movie" s={22}/></div>
       <p style={{fontWeight:800,fontSize:20,margin:0,letterSpacing:-0.3}}>That's CastSlate.</p>
       <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.6,margin:"2px 0 16px",maxWidth:230}}>One actor at a time, full-screen — no crowded grids. This is how casting should feel.</p>
       <button className="btn-p" style={{padding:"13px 26px",fontSize:14}} onClick={()=>{if(onNavigate)onNavigate(ctaTo);}}>{ctaLabel}</button>
@@ -14147,7 +14147,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
           onPointerUp={e=>{if(!dragging.current)return;const d=e.clientX-startX.current;const dt=Date.now()-startT.current;const v=Math.abs(d)/Math.max(dt,1);dragging.current=false;const go=Math.abs(d)>55||(Math.abs(d)>24&&v>0.4);if(go&&d>0)advance(1);else if(go&&d<0)advance(-1);else setDx(0);}}
           onPointerCancel={()=>{if(!dragging.current){setDx(0);return;}const d=dxRef.current;dragging.current=false;if(d>50)advance(1);else if(d<-50)advance(-1);else setDx(0);}}>
           <div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="pass"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>PASS</div>
-          <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="yes"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>CALLBACK <Ico n="check" s={16}/></div>
+          <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="yes"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>CALLBACK <Ico n="check" s={24}/></div>
           <img src={t.img} alt={t.name} draggable="false" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:t.pos||"center 8%"}}/>
           <div className="s-card-info">
             <h3 style={{fontSize:17,margin:"0 0 2px"}}>{t.name}</h3>
@@ -14164,15 +14164,15 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
       <div style={{fontSize:11,color:"var(--t3)",margin:"0 0 10px",letterSpacing:.5}}>{idx+1} / {total}</div>
       <div className="swipe-btns">
         <div className="sw-btn-wrap">
-          <button className="sw-btn pass" title="Pass" disabled={animating} onClick={()=>advance(-1)}><Ico n="x" s={16}/></button>
+          <button className="sw-btn pass" title="Pass" disabled={animating} onClick={()=>advance(-1)}><Ico n="x" s={24}/></button>
           <span className="sw-btn-label">Skip</span>
         </div>
         <div className="sw-btn-wrap">
-          <button className="sw-btn save" title="Shortlist" disabled={animating} onClick={()=>shortlist()}><Ico n="star" s={16}/></button>
+          <button className="sw-btn save" title="Shortlist" disabled={animating} onClick={()=>shortlist()}><Ico n="star" s={24}/></button>
           <span className="sw-btn-label">Shortlist</span>
         </div>
         <div className="sw-btn-wrap">
-          <button className="sw-btn yes" title="Callback" disabled={animating} onClick={()=>advance(1)}><Ico n="check" s={16}/></button>
+          <button className="sw-btn yes" title="Callback" disabled={animating} onClick={()=>advance(1)}><Ico n="check" s={24}/></button>
           <span className="sw-btn-label">Select</span>
         </div>
       </div>
@@ -14501,7 +14501,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <h1 className="landing-hero-title" style={{fontFamily:"'Source Serif 4',serif",fontWeight:700,fontSize:58,lineHeight:1.12,letterSpacing:-0.1,marginBottom:20}}>{tr('landing.heroTitle')} <span style={{color:"var(--acc)"}}>{tr('landing.heroAccent')}</span></h1>
       <p className="landing-hero-desc">{tr('landing.heroDesc')}</p>
       <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate(heroPrimary.to)}>{heroPrimary.label}</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14,background:"#fff",color:"#1A1A2E"}} onClick={()=>onNavigate(heroSecondary.to)}>{heroSecondary.label}</button></div>
-      <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={16}/></span> {tr('landing.freeAccount')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={16}/></span> {tr('landing.noCreditCard')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={16}/></span> {tr('landing.quickSignup')}</span></div>
+      <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={24}/></span> {tr('landing.freeAccount')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={24}/></span> {tr('landing.noCreditCard')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={24}/></span> {tr('landing.quickSignup')}</span></div>
     </div>
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:14}}>
       <LandingSwipe onNavigate={onNavigate} ctaTo={heroPrimary.to} ctaLabel={heroPrimary.label}/>
@@ -14770,7 +14770,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           <div style={{display:"flex",gap:20,marginTop:20,flexWrap:"wrap"}}>
             {["Weekly career check-ins","Profile improvement guidance","One focused task per week"].map(f=>(
               <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"rgba(255,255,255,0.65)"}}>
-                <span style={{color:"#6EE7B7",fontWeight:800}}><Ico n="check" s={16}/></span>{f}
+                <span style={{color:"#6EE7B7",fontWeight:800}}><Ico n="check" s={24}/></span>{f}
               </div>
             ))}
           </div>
@@ -14807,9 +14807,9 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           <button onClick={()=>onNavigate("register-cd")} style={{padding:"14px 28px",borderRadius:100,border:"1px solid rgba(255,255,255,0.3)",background:"transparent",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",letterSpacing:0.3}}>Post a Casting</button>
         </div>
         <div style={{display:"flex",justifyContent:"center",gap:32,marginTop:40,fontSize:12,color:"rgba(255,255,255,0.6)",flexWrap:"wrap"}}>
-          <span><Ico n="lock" s={18}/> Your data, your control</span>
-          <span><Ico n="mail" s={18}/> We never sell emails</span>
-          <span><Ico n="bolt" s={18}/> Profiles are free forever</span>
+          <span><Ico n="lock" s={22}/> Your data, your control</span>
+          <span><Ico n="mail" s={22}/> We never sell emails</span>
+          <span><Ico n="bolt" s={22}/> Profiles are free forever</span>
         </div>
       </div>
     </section>}
@@ -14981,7 +14981,7 @@ function CastingFitDNAEditor({session,isPremium,onNavigate}){
     <div style={{background:isPremium?"rgba(99,60,180,0.07)":"rgba(26,26,46,0.06)",border:"1px solid var(--bdr)",borderRadius:10,padding:"14px 18px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
       <span style={{fontSize:13,color:"var(--t2)"}}>
         {isPremium
-          ?<><Ico n="star" s={18}/> <strong>Premium:</strong> unlimited casting types · 1 mood clip + {PREMIUM_PLAN.castingSupportingPhotos} supporting photos per type</>
+          ?<><Ico n="star" s={22}/> <strong>Premium:</strong> unlimited casting types · 1 mood clip + {PREMIUM_PLAN.castingSupportingPhotos} supporting photos per type</>
           :<>Free Plan: up to {FREE_PLAN.castingTypes} casting types · no clips or photos. <strong>Upgrade for full Cast Me As.</strong></>}
       </span>
       {!isPremium&&<button className="btn-s btn-sm btn-amber-hover" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade — {PREMIUM_PRICE}</button>}
@@ -15001,7 +15001,7 @@ function CastingFitDNAEditor({session,isPremium,onNavigate}){
     </div>}
 
     {entries.length===0&&<div className="card" style={{padding:40,textAlign:"center",color:"var(--t3)"}}>
-      <p style={{fontSize:22,marginBottom:8}}><Ico n="masks-theater" s={18}/></p>
+      <p style={{fontSize:22,marginBottom:8}}><Ico n="masks-theater" s={22}/></p>
       <p style={{fontWeight:700,marginBottom:4}}>No casting types yet</p>
       <p style={{fontSize:13}}>{isPremium?"Add unlimited casting types that describe what you're best cast as.":"Choose up to "+maxTypes+" types that describe what you're best cast as."}</p>
     </div>}
@@ -15638,7 +15638,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
             <p style={{fontSize:12,color:"var(--t3)",marginTop:-4,marginBottom:10}}>Casting directors can download this directly from your profile and from every submission you send.</p>
             {profile.resume_url?(
               <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
-                <a href={profile.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none"}}><Ico n="file-text" s={18}/> View current resume</a>
+                <a href={profile.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none"}}><Ico n="file-text" s={22}/> View current resume</a>
                 <label className="btn-s btn-sm" style={{cursor:"pointer"}}>{uploading?"Uploading…":"Replace"}<input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style={{display:"none"}} onChange={e=>uploadResume(e.target.files?.[0])}/></label>
                 <button className="btn-s btn-sm" onClick={removeResume}>Remove</button>
               </div>
@@ -15667,7 +15667,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
           </div>
           {!isPremium?(
             <div style={{marginTop:14,background:"rgba(99,60,180,0.05)",border:"1px solid rgba(99,60,180,0.18)",borderRadius:10,padding:"16px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
-              <div style={{fontSize:13,color:"var(--t2)"}}><Ico n="lock" s={18}/> Upgrade to Premium to record and upload your actor slate video.</div>
+              <div style={{fontSize:13,color:"var(--t2)"}}><Ico n="lock" s={22}/> Upgrade to Premium to record and upload your actor slate video.</div>
               <button className="btn-p btn-sm" onClick={()=>onNavigate("membership")}>Upgrade — {PREMIUM_PRICE}</button>
             </div>
           ):(
@@ -15682,19 +15682,19 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
                     <video src={slateVideoUrl} controls playsInline preload="metadata" style={{display:"block",width:"auto",height:"auto",maxWidth:"min(340px,100%)",maxHeight:440,borderRadius:12}}/>
                   </div>
                   <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
-                    <button className="btn-s btn-sm" onClick={()=>setShowSlateRecorder(true)}><Ico n="video" s={18}/> Replace Slate Video</button>
+                    <button className="btn-s btn-sm" onClick={()=>setShowSlateRecorder(true)}><Ico n="video" s={22}/> Replace Slate Video</button>
                     <label className="btn-s btn-sm" style={{cursor:slateUploading?"not-allowed":"pointer"}}>
                       {slateUploading?"Uploading…":"Upload New Slate"}
                       <input type="file" accept="video/mp4,video/quicktime,video/webm,video/*" style={{display:"none"}} disabled={slateUploading} onChange={e=>{const f=e.target.files?.[0];if(f)uploadSlate(f);e.target.value="";}}/>
                     </label>
-                    <button className="btn-s btn-sm" style={{color:"#c0392b"}} onClick={async()=>{if(confirm("Delete your slate video?"))await saveSlateUrl("");}}><Ico n="trash" s={18}/> Delete Slate</button>
+                    <button className="btn-s btn-sm" style={{color:"#c0392b"}} onClick={async()=>{if(confirm("Delete your slate video?"))await saveSlateUrl("");}}><Ico n="trash" s={22}/> Delete Slate</button>
                   </div>
                 </div>
               )}
               {showSlateRecorder&&(
                 <div>
                   <div style={{background:"rgba(99,60,180,0.06)",border:"1px solid rgba(99,60,180,0.18)",borderRadius:8,padding:"10px 14px",marginBottom:12,fontSize:12,color:"var(--acc)",fontWeight:600}}>
-                    <Ico n="video" s={18}/> Max 7 seconds — recording stops automatically
+                    <Ico n="video" s={22}/> Max 7 seconds — recording stops automatically
                   </div>
                   <VideoRecorder
                     session={session}
@@ -15709,7 +15709,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
               {!slateVideoUrl&&!showSlateRecorder&&(
                 <div>
                   <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>
-                    <button className="btn-p btn-sm" style={{display:"flex",alignItems:"center",gap:6}} onClick={()=>setShowSlateRecorder(true)}><Ico n="video" s={18}/> Record Slate Video</button>
+                    <button className="btn-p btn-sm" style={{display:"flex",alignItems:"center",gap:6}} onClick={()=>setShowSlateRecorder(true)}><Ico n="video" s={22}/> Record Slate Video</button>
                     <label className="btn-s btn-sm" style={{cursor:slateUploading?"not-allowed":"pointer",display:"inline-flex",alignItems:"center",gap:6}}>
                       {slateUploading?"Uploading…":"Upload Slate Video"}
                       <input type="file" accept="video/mp4,video/quicktime,video/webm,video/*" style={{display:"none"}} disabled={slateUploading} onChange={e=>{const f=e.target.files?.[0];if(f)uploadSlate(f);e.target.value="";}}/>
@@ -15770,7 +15770,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         {/* Free user with no headshot: prominent upload area */}
         {!isPremium&&!profile.headshot_url&&(
           <label style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,padding:"40px 24px",background:"var(--s2)",borderRadius:10,border:"2px dashed var(--bdr)",cursor:"pointer",textAlign:"center",color:"var(--t2)"}}>
-            <div style={{fontSize:40}}><Ico n="camera" s={18}/></div>
+            <div style={{fontSize:40}}><Ico n="camera" s={22}/></div>
             <div style={{fontWeight:700,fontSize:15,color:"var(--t1)"}}>Upload Your Headshot</div>
             <div style={{fontSize:13}}>Your headshot is the first thing casting directors see. Click to upload.</div>
             <span className="btn-p btn-sm" style={{pointerEvents:"none",marginTop:4}}>{uploading?"Uploading…":"Choose Photo"}</span>
@@ -15797,7 +15797,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
                 style={{position:"relative",borderRadius:8,overflow:"hidden",border:dragPhotoIdx===i?"2px dashed var(--acc)":"1px solid var(--bdr)",cursor:isPremium?"grab":"default",opacity:dragPhotoIdx===i?0.5:1}}>
                 {isPremium&&<div style={{position:"absolute",top:4,left:4,background:"rgba(0,0,0,0.55)",color:"#fff",fontSize:9,fontWeight:700,borderRadius:4,padding:"2px 6px",letterSpacing:1,pointerEvents:"none"}}>#{i+1}</div>}
                 <img src={url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",display:"block"}}/>
-                <button onClick={()=>removePhoto(url)} style={{position:"absolute",top:4,right:4,background:"rgba(0,0,0,0.6)",border:"none",color:"#fff",borderRadius:"50%",width:22,height:22,cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n="x" s={16}/></button>
+                <button onClick={()=>removePhoto(url)} style={{position:"absolute",top:4,right:4,background:"rgba(0,0,0,0.6)",border:"none",color:"#fff",borderRadius:"50%",width:22,height:22,cursor:"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n="x" s={24}/></button>
               </div>
             ))}
             {/* Premium: empty add-photo slots */}
@@ -15825,7 +15825,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       )}
       {isPremium&&(
         <div style={{padding:"10px 14px",background:"#111",border:"1px solid #333",borderRadius:8,fontSize:12,color:"#fff",marginTop:8}}>
-          <Ico n="star" s={16}/> <strong>Showcase tip:</strong> Go to the <strong>Showcase Order</strong> tab to arrange which photos and videos appear first on your public profile.
+          <Ico n="star" s={24}/> <strong>Showcase tip:</strong> Go to the <strong>Showcase Order</strong> tab to arrange which photos and videos appear first on your public profile.
         </div>
       )}
     </>}
@@ -15835,7 +15835,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Video Uploads</h3>
       {!isPremium?(
         <div style={{textAlign:"center",padding:"40px 24px"}}>
-          <div style={{fontSize:36,marginBottom:12}}><Ico n="movie" s={18}/></div>
+          <div style={{fontSize:36,marginBottom:12}}><Ico n="movie" s={22}/></div>
           <h4 style={{fontSize:16,fontWeight:700,marginBottom:8}}>Premium Feature</h4>
           <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.7,marginBottom:20,maxWidth:360,margin:"0 auto 20px"}}>Upgrade to Premium to upload unlimited videos. Videos are stored and played directly on your profile.</p>
           <button className="btn-p" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium — {PREMIUM_PRICE}</button>
@@ -15844,7 +15844,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         <>
           <p style={{fontSize:12,color:"var(--t3)",marginBottom:8}}>Upload videos (MP4, MOV, WebM · max 100 MB each). They appear on your public profile.</p>
           <div style={{marginBottom:16,padding:"10px 14px",background:"#111",border:"1px solid #333",borderRadius:8,fontSize:12,color:"#fff"}}>
-            <Ico n="star" s={16}/> <strong>Showcase tip:</strong> Go to the <strong>Showcase Order</strong> tab to arrange which videos and photos appear first on your public profile.
+            <Ico n="star" s={24}/> <strong>Showcase tip:</strong> Go to the <strong>Showcase Order</strong> tab to arrange which videos and photos appear first on your public profile.
           </div>
           {/* Existing uploaded videos */}
           {mediaItems.length>0&&<div style={{marginBottom:16,display:"grid",gap:10}}>
@@ -15860,7 +15860,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
                     await window.sb.from("profile_media").delete().eq("id",item.id);
                     loadMediaItems();
                   }catch(e){showErr(e.message||"Delete failed.");}
-                }} style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:18,padding:4}} title="Delete"><Ico n="x" s={16}/></button>
+                }} style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:18,padding:4}} title="Delete"><Ico n="x" s={24}/></button>
               </div>
             ))}
           </div>}
@@ -16157,7 +16157,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
             {a.castings?.prod} · {a.castings?.location} · {new Date(a.created_at).toLocaleDateString()}
           </div>
           {a.cover_note&&<div style={{fontSize:12,color:"var(--t2)",marginTop:2,fontStyle:"italic"}}>"{a.cover_note.slice(0,80)}{a.cover_note.length>80?"…":""}"</div>}
-          {a.audition_at&&<div style={{fontSize:12,color:"#1d7b44",marginTop:4,fontWeight:600}}><Ico n="calendar-event" s={18}/> Audition: {new Date(a.audition_at).toLocaleString()}{a.audition_note?` · ${a.audition_note}`:""}</div>}
+          {a.audition_at&&<div style={{fontSize:12,color:"#1d7b44",marginTop:4,fontWeight:600}}><Ico n="calendar-event" s={22}/> Audition: {new Date(a.audition_at).toLocaleString()}{a.audition_note?` · ${a.audition_note}`:""}</div>}
         </div>
         <span className="tag" style={{background:a.status==="selected"?"rgba(46,204,113,0.15)":a.status==="rejected"?"rgba(255,100,100,0.1)":a.status==="hold"?"rgba(200,137,0,0.15)":"var(--s2)",color:a.status==="selected"?"#1d7b44":a.status==="rejected"?"#c0392b":a.status==="hold"?"#c88900":"var(--t2)",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{a.status==="pending"?"UNDER REVIEW":a.status==="selected"?"SHORTLISTED":a.status==="hold"?"ON HOLD":a.status==="rejected"?"NOT SELECTED":String(a.status||"").toUpperCase()}</span>
       </div>)}
@@ -16603,7 +16603,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
         {["cd","producer","studio","creator"].includes(role)&&(
           <div style={{borderTop:"1px solid var(--bdr)",paddingTop:16}}>
             <p style={{color:"var(--t2)",fontSize:13}}>Casting creator account. Verification status: <strong>{profile?.verification_status||"not_started"}</strong>.</p>
-            {profile?.can_post_castings&&<p style={{color:"var(--grn)",fontSize:13,marginTop:4,fontWeight:600}}><Ico n="check" s={16}/> Approved to post castings.</p>}
+            {profile?.can_post_castings&&<p style={{color:"var(--grn)",fontSize:13,marginTop:4,fontWeight:600}}><Ico n="check" s={24}/> Approved to post castings.</p>}
             {!profile?.can_post_castings&&<p style={{color:"var(--t3)",fontSize:13,marginTop:4}}>Posting castings requires identity verification. Visit your Dashboard to begin.</p>}
           </div>
         )}
@@ -16642,7 +16642,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
       {isActivePaidSub&&(
         <div className="card" style={{padding:"24px"}}>
           <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
-            <div style={{fontSize:28}}><Ico n="credit-card" s={18}/></div>
+            <div style={{fontSize:28}}><Ico n="credit-card" s={22}/></div>
             <div>
               <div style={{fontWeight:700,fontSize:16}}>Stripe Billing Connected</div>
               <div style={{color:"var(--t2)",fontSize:13,marginTop:2}}>Your subscription is active and managed through Stripe.</div>
@@ -16661,7 +16661,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
       {/* State 2: Admin/Test override — premium but no Stripe */}
       {isOverride&&(
         <div className="card" style={{textAlign:"center",padding:"40px 24px"}}>
-          <div style={{fontSize:36,marginBottom:12}}><Ico n="key" s={18}/></div>
+          <div style={{fontSize:36,marginBottom:12}}><Ico n="key" s={22}/></div>
           <div style={{fontWeight:700,fontSize:16,marginBottom:8}}>Premium Access: Admin/Test Override</div>
           <div style={{color:"var(--t2)",fontSize:13,maxWidth:440,margin:"0 auto"}}>
             This account has Premium access via an admin or test override. No real Stripe subscription is attached — there is nothing to manage here.
@@ -16687,7 +16687,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
       {/* Free Plan — no active subscription */}
       {!isPremiumMember&&!isCanceled&&(
         <div className="card" style={{textAlign:"center",padding:"40px 24px"}}>
-          <div style={{fontSize:36,marginBottom:12}}><Ico n="building-bank" s={18}/></div>
+          <div style={{fontSize:36,marginBottom:12}}><Ico n="building-bank" s={22}/></div>
           <div style={{fontWeight:700,fontSize:16,marginBottom:8}}>No active paid subscription</div>
           <div style={{color:"var(--t2)",fontSize:13,maxWidth:400,margin:"0 auto 16px"}}>
             You're currently on the Free Plan. You do not have an active paid subscription.
@@ -17087,7 +17087,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     return(
       <div style={{minHeight:"60vh",display:"flex",alignItems:"center",justifyContent:"center"}}>
         <div style={{textAlign:"center"}}>
-          <div style={{fontSize:32,marginBottom:16}}><Ico n="lock" s={18}/></div>
+          <div style={{fontSize:32,marginBottom:16}}><Ico n="lock" s={22}/></div>
           <div style={{fontWeight:700,marginBottom:8}}>Sign in required</div>
           <button className="btn-p btn-sm" onClick={()=>onNavigate("login")}>Sign In</button>
         </div>
@@ -18217,7 +18217,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
   return(<div className="modal-overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"94vh",overflowY:"auto"}}>
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18}}>
       <h2 style={{marginBottom:0,fontSize:20}}>{isDraft?"Review & Edit Draft":"Edit Listing"}</h2>
-      <button onClick={onClose} style={{background:"none",border:"none",fontSize:18,cursor:"pointer",color:"var(--t3)",fontFamily:"inherit"}}><Ico n="x" s={16}/></button>
+      <button onClick={onClose} style={{background:"none",border:"none",fontSize:18,cursor:"pointer",color:"var(--t3)",fontFamily:"inherit"}}><Ico n="x" s={24}/></button>
     </div>
 
     <div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:12,color:"var(--t2)",marginBottom:16,lineHeight:1.6}}>
@@ -18248,7 +18248,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     <div className="form-group" style={{marginBottom:16}}>
       <label className="label">Verification Badge</label>
       <div style={{display:"flex",gap:8,marginTop:4}}>
-        <button type="button" onClick={()=>set("admin_verified",true)} style={{flex:1,padding:"10px 12px",borderRadius:8,border:form.admin_verified?"1px solid #1d7b44":"1px solid var(--bdr)",background:form.admin_verified?"rgba(46,204,113,0.12)":"var(--s2)",color:form.admin_verified?"#1d7b44":"var(--t2)",fontWeight:700,fontSize:13,cursor:"pointer"}}><Ico n="check" s={16}/> ID Verified</button>
+        <button type="button" onClick={()=>set("admin_verified",true)} style={{flex:1,padding:"10px 12px",borderRadius:8,border:form.admin_verified?"1px solid #1d7b44":"1px solid var(--bdr)",background:form.admin_verified?"rgba(46,204,113,0.12)":"var(--s2)",color:form.admin_verified?"#1d7b44":"var(--t2)",fontWeight:700,fontSize:13,cursor:"pointer"}}><Ico n="check" s={24}/> ID Verified</button>
         <button type="button" onClick={()=>set("admin_verified",false)} style={{flex:1,padding:"10px 12px",borderRadius:8,border:!form.admin_verified?"1px solid #c88900":"1px solid var(--bdr)",background:!form.admin_verified?"rgba(200,137,0,0.12)":"var(--s2)",color:!form.admin_verified?"#c88900":"var(--t2)",fontWeight:700,fontSize:13,cursor:"pointer"}}>Not Verified</button>
       </div>
       <p style={{fontSize:11,color:"var(--t3)",marginTop:6,marginBottom:0}}>Sets the badge on this platform listing — green “ID Verified” or yellow “Not Verified”. Real CD-posted castings are unaffected (they use their own identity verification).</p>
@@ -18297,7 +18297,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
         {castingImages.map((img,i)=>(
           <div key={i} style={{position:"relative",width:90,flexShrink:0}}>
             <img src={img.url} alt={`Image ${i+1}`} style={{width:90,height:110,objectFit:"contain",borderRadius:8,background:"var(--s2)",display:"block",border:"1px solid var(--bdr)"}}/>
-            <div style={{position:"absolute",top:3,right:3,background:"rgba(0,0,0,0.55)",borderRadius:99,width:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,color:"#fff",lineHeight:1}} onClick={()=>setCastingImages(p=>p.filter((_,j)=>j!==i))}><Ico n="x" s={16}/></div>
+            <div style={{position:"absolute",top:3,right:3,background:"rgba(0,0,0,0.55)",borderRadius:99,width:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,color:"#fff",lineHeight:1}} onClick={()=>setCastingImages(p=>p.filter((_,j)=>j!==i))}><Ico n="x" s={24}/></div>
             {i===0&&<div style={{position:"absolute",bottom:3,left:0,right:0,textAlign:"center",fontSize:9,fontWeight:700,color:"#fff",background:"rgba(0,0,0,0.5)",borderRadius:4,padding:"1px 0"}}>COVER</div>}
           </div>
         ))}
@@ -18374,7 +18374,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
           {/* Audition Instructions (matches CD form) */}
           <div style={{marginTop:14,borderTop:"1px solid var(--bdr)",paddingTop:12}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",marginBottom:role._showAudInstr?12:0}} onClick={()=>updateRole(i,"_showAudInstr",!role._showAudInstr)}>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--t2)",display:"flex",alignItems:"center",gap:6}}><Ico n="movie" s={18}/> Audition Instructions</span>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--t2)",display:"flex",alignItems:"center",gap:6}}><Ico n="movie" s={22}/> Audition Instructions</span>
               <span style={{fontSize:11,color:"var(--acc)",fontWeight:600}}>{role._showAudInstr?"Hide ▲":"Set Instructions ▼"}</span>
             </div>
             {role._showAudInstr&&<>
@@ -18382,12 +18382,12 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
                 <label className="label" style={{fontSize:11}}>Audition Sides / Scene <span style={{fontWeight:400,color:"var(--t3)",fontSize:11}}>(PDF only)</span></label>
                 {role.sides_pdf_url?(
                   <div style={{display:"flex",alignItems:"center",gap:8,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:8,padding:"10px 12px"}}>
-                    <span style={{fontSize:20}}><Ico n="file-text" s={18}/></span>
+                    <span style={{fontSize:20}}><Ico n="file-text" s={22}/></span>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:13,fontWeight:600,color:"var(--t1)",marginBottom:2}}>Sides PDF attached</div>
                       <a href={role.sides_pdf_url} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:"var(--acc)"}}>View PDF →</a>
                     </div>
-                    <button type="button" onClick={()=>updateRole(i,"sides_pdf_url","")} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12,fontWeight:700,padding:"4px 8px"}}><Ico n="x" s={16}/> Remove</button>
+                    <button type="button" onClick={()=>updateRole(i,"sides_pdf_url","")} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12,fontWeight:700,padding:"4px 8px"}}><Ico n="x" s={24}/> Remove</button>
                   </div>
                 ):(
                   <label style={{cursor:role._uploadingPdf?"default":"pointer",display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:8,border:"2px dashed var(--bdr)",background:"var(--s1)",color:role._uploadingPdf?"var(--t3)":"var(--t2)",fontWeight:600,fontSize:13}}>
@@ -18710,7 +18710,7 @@ function AdminEmailCampaigns({session}){
       {(()=>{ const st=selStatus||{queued:selCamp.queued,sent:selCamp.sent,failed:selCamp.failed,skipped:selCamp.skipped};
         const total=st.queued+st.sent+st.failed+st.skipped; const done=st.sent+st.failed+st.skipped; const pct=total?Math.round(done/total*100):0;
         return(<div style={{marginBottom:16}}>
-          <div style={{fontSize:14,color:"var(--t1)",marginBottom:6}}><strong>{(st.sent||0).toLocaleString()}</strong> emailed · <strong>{(st.queued||0).toLocaleString()}</strong> still to email{st.queued===0?<span style={{color:"#15803d",fontWeight:700}}> · <Ico n="circle-check" s={18}/> everyone has been emailed</span>:""}</div>
+          <div style={{fontSize:14,color:"var(--t1)",marginBottom:6}}><strong>{(st.sent||0).toLocaleString()}</strong> emailed · <strong>{(st.queued||0).toLocaleString()}</strong> still to email{st.queued===0?<span style={{color:"#15803d",fontWeight:700}}> · <Ico n="circle-check" s={22}/> everyone has been emailed</span>:""}</div>
           <div style={{height:14,background:"var(--bdr)",borderRadius:7,overflow:"hidden"}}><div style={{height:"100%",width:pct+"%",background:"var(--acc)",transition:"width .3s"}}/></div>
         </div>);
       })()}
@@ -18830,7 +18830,7 @@ function AdminOverview({onGoToBookingRequests}){
     <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 4px",color:"var(--t2)"}}>Site traffic</h3>
     <p style={{color:"var(--t3)",fontSize:12,margin:"0 0 12px"}}>Counts from when tracking went live (not backfilled). Excludes staff and bots. Visitors = unique browser sessions.</p>
     <div className="card" style={{padding:"18px 22px",marginBottom:16,display:"flex",alignItems:"center",gap:16,maxWidth:340,borderLeft:"4px solid var(--teal)"}}>
-      <div style={{fontSize:32,lineHeight:1}} aria-hidden="true"><Ico n="eye" s={18}/></div>
+      <div style={{fontSize:32,lineHeight:1}} aria-hidden="true"><Ico n="eye" s={22}/></div>
       <div>
         <div style={{fontSize:34,fontWeight:800,lineHeight:1.05,color:"var(--t1)"}}>{stats.extra?Number(stats.extra.visitors_total||0).toLocaleString():"—"}</div>
         <div style={{fontSize:12,fontWeight:800,color:"var(--t3)",textTransform:"uppercase",letterSpacing:0.6}}>Real Visitors</div>
@@ -18850,7 +18850,7 @@ function AdminOverview({onGoToBookingRequests}){
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
           <div>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
-              <span style={{fontSize:22,lineHeight:1}}><Ico n="mailbox" s={18}/></span>
+              <span style={{fontSize:22,lineHeight:1}}><Ico n="mailbox" s={22}/></span>
               <h3 style={{fontSize:17,fontWeight:800,margin:0,color:"var(--acc)"}}>{pendingBookings} pending class booking request{pendingBookings!==1?"s":""}</h3>
             </div>
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>Talent has submitted booking requests that need your review. Approve or decline each request to move the flow forward.</p>
@@ -18950,7 +18950,7 @@ function AdminCDVerification(){
                 <div style={{fontWeight:600,fontSize:14,display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
                   {u.display_name||"—"}
                   <span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:99,background:STATUS_COLOR[vs]+"22",color:STATUS_COLOR[vs]}}>{STATUS_LABEL[vs]||vs}</span>
-                  {u.can_post_castings&&<span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:99,background:"rgba(46,204,113,0.12)",color:"#1d7b44"}}><Ico n="check" s={16}/> Can Post</span>}
+                  {u.can_post_castings&&<span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:99,background:"rgba(46,204,113,0.12)",color:"#1d7b44"}}><Ico n="check" s={24}/> Can Post</span>}
                 </div>
                 <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{u.email}{u.company_name?` · ${u.company_name}`:""}{u.company_role?` · ${u.company_role}`:""}</div>
               </div>
@@ -18970,9 +18970,9 @@ function AdminCDVerification(){
               </div>
               {u.verification_notes&&<div style={{fontSize:12,color:"var(--t2)",marginBottom:14,background:"var(--s2)",borderRadius:8,padding:"8px 12px"}}><strong>Notes:</strong> {u.verification_notes}</div>}
               <div style={{display:"flex",gap:8,flexWrap:"wrap",pointerEvents:busy?"none":"auto",opacity:busy?0.5:1}}>
-                {vs!=="verified"&&<button className="btn-p btn-sm" disabled={busy} onClick={()=>setReasonPrompt({user:u,action:"approve"})}><Ico n="check" s={16}/> Approve</button>}
-                {vs!=="rejected"&&<button className="btn-s btn-sm" disabled={busy} style={{color:"#c0392b",borderColor:"#e8c6c6"}} onClick={()=>setReasonPrompt({user:u,action:"reject"})}><Ico n="x" s={16}/> Reject</button>}
-                {vs!=="needs_review"&&<button className="btn-s btn-sm" disabled={busy} style={{color:"#8e44ad"}} onClick={()=>setReasonPrompt({user:u,action:"needs_review"})}><Ico n="flag" s={18}/> Needs Review</button>}
+                {vs!=="verified"&&<button className="btn-p btn-sm" disabled={busy} onClick={()=>setReasonPrompt({user:u,action:"approve"})}><Ico n="check" s={24}/> Approve</button>}
+                {vs!=="rejected"&&<button className="btn-s btn-sm" disabled={busy} style={{color:"#c0392b",borderColor:"#e8c6c6"}} onClick={()=>setReasonPrompt({user:u,action:"reject"})}><Ico n="x" s={24}/> Reject</button>}
+                {vs!=="needs_review"&&<button className="btn-s btn-sm" disabled={busy} style={{color:"#8e44ad"}} onClick={()=>setReasonPrompt({user:u,action:"needs_review"})}><Ico n="flag" s={22}/> Needs Review</button>}
                 <button className="btn-s btn-sm" disabled={busy} onClick={()=>reset(u)}>↺ Reset</button>
               </div>
             </div>}
@@ -19112,13 +19112,13 @@ function UserRow({u,isSuperAdmin,self,busy,onSetRole,onToggleVerified,onToggleSu
   const statusBadges=[];
   if(u.banned)statusBadges.push(<span key="b" style={{color:"#fff",background:"#c0392b",fontSize:10,fontWeight:700,padding:"2px 6px",borderRadius:4,marginLeft:6}}>BANNED</span>);
   if(u.suspended)statusBadges.push(<span key="s" style={{color:"#c0392b",fontSize:10,fontWeight:700,marginLeft:6}}>SUSPENDED</span>);
-  if(u.verified)statusBadges.push(<span key="v" style={{color:"#1d7b44",fontSize:10,fontWeight:700,marginLeft:6}}><Ico n="check" s={16}/> VERIFIED</span>);
-  if(u.featured)statusBadges.push(<span key="f" style={{color:"var(--acc)",fontSize:10,fontWeight:700,marginLeft:6}}><Ico n="star" s={16}/> FEATURED</span>);
+  if(u.verified)statusBadges.push(<span key="v" style={{color:"#1d7b44",fontSize:10,fontWeight:700,marginLeft:6}}><Ico n="check" s={24}/> VERIFIED</span>);
+  if(u.featured)statusBadges.push(<span key="f" style={{color:"var(--acc)",fontSize:10,fontWeight:700,marginLeft:6}}><Ico n="star" s={24}/> FEATURED</span>);
   const isCdType=(u.user_type==="cd"||u.user_type==="admin"||u.user_type==="super_admin");
   const vsColor={not_started:"#c88900",pending:"#2980b9",verified:"#1d7b44",rejected:"#c0392b",needs_review:"#8e44ad"}[u.verification_status]||"var(--t3)";
   const vsLabel={not_started:"Verification: Not started",pending:"Verification: Pending",verified:"Verification: ",rejected:"Verification: Rejected",needs_review:"Verification: Needs review"}[u.verification_status];
   if(isCdType&&vsLabel)statusBadges.push(<span key="vs" style={{color:vsColor,fontSize:10,fontWeight:700,marginLeft:6}}>{vsLabel}</span>);
-  if(isCdType&&u.can_post_castings)statusBadges.push(<span key="cp" style={{color:"#1d7b44",fontSize:10,fontWeight:700,marginLeft:6}}><Ico n="check" s={16}/> Can Post</span>);
+  if(isCdType&&u.can_post_castings)statusBadges.push(<span key="cp" style={{color:"#1d7b44",fontSize:10,fontWeight:700,marginLeft:6}}><Ico n="check" s={24}/> Can Post</span>);
   return(<div style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"center",opacity:u.banned?0.45:u.suspended?0.7:1}}>
     <div>
       <div style={{fontWeight:600,fontSize:14}}>{u.display_name||"—"} {self&&<span style={{color:"var(--acc)",fontSize:10,fontWeight:700,marginLeft:6}}>(YOU)</span>}{statusBadges}</div>
@@ -19180,8 +19180,8 @@ function AdminCDProfileView({u,session,myProfile,onBack}){
             <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:4}}>
               <h2 style={{fontWeight:800,fontSize:22,margin:0}}>{u.display_name||"—"}</h2>
               <span style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:4,background:"var(--s3)",color:"var(--t2)",textTransform:"uppercase"}}>{u.user_type}</span>
-              {u.verified&&<span style={{fontSize:11,fontWeight:700,color:"#1d7b44"}}><Ico n="check" s={16}/> Verified</span>}
-              {u.can_post_castings&&<span style={{fontSize:11,fontWeight:700,color:"#1d7b44"}}><Ico n="check" s={16}/> Can Post</span>}
+              {u.verified&&<span style={{fontSize:11,fontWeight:700,color:"#1d7b44"}}><Ico n="check" s={24}/> Verified</span>}
+              {u.can_post_castings&&<span style={{fontSize:11,fontWeight:700,color:"#1d7b44"}}><Ico n="check" s={24}/> Can Post</span>}
             </div>
             <div style={{fontSize:13,color:"var(--t3)",marginBottom:8}}>{u.email}{u.location?` · ${u.location}`:""}{u.company_name?` · ${u.company_name}`:""}</div>
             {isCdType&&<div style={{fontSize:12,marginBottom:4}}><span style={{color:"var(--t3)"}}>ID verification: </span><span style={{fontWeight:700,color:vsColor}}>{vsLabel}</span></div>}
@@ -19338,7 +19338,7 @@ function AdminCastings({onPendingCountChange}){
     <input className="input" placeholder="Search title, production, location, CD…" value={q} onChange={e=>setQ(e.target.value)} style={{marginBottom:14}}/>
 
     {tab==="pending"&&pending.length===0&&!loading&&<div style={{background:"rgba(46,204,113,0.08)",border:"1px solid rgba(46,204,113,0.25)",borderRadius:10,padding:"20px 24px",textAlign:"center",color:"#1d7b44",fontSize:14,fontWeight:600,marginBottom:14}}>
-      <Ico n="check" s={16}/> No castings pending review — you're all caught up.
+      <Ico n="check" s={24}/> No castings pending review — you're all caught up.
     </div>}
 
     {loading?<CastSlateLoader size="inline" text="Loading…"/>:
@@ -19356,7 +19356,7 @@ function AdminCastings({onPendingCountChange}){
             <div>
               <div style={{fontWeight:600,fontSize:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
                 {c.title}
-                {c.featured&&<span style={{color:"var(--acc)",fontSize:10,fontWeight:700}}><Ico n="star" s={16}/> FEATURED</span>}
+                {c.featured&&<span style={{color:"var(--acc)",fontSize:10,fontWeight:700}}><Ico n="star" s={24}/> FEATURED</span>}
                 <span style={{color:statusColor,background:statusBg,fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:99}}>{statusLabel}</span>
               </div>
               <div style={{fontSize:12,color:"var(--t3)",marginTop:3,lineHeight:1.6}}>
@@ -19445,16 +19445,16 @@ function AdminCastings({onPendingCountChange}){
           {r.direction_notes&&<p style={{color:"var(--t3)",fontSize:11}}><strong>Direction:</strong> {r.direction_notes}</p>}
           {r.slate_instructions&&<p style={{color:"var(--t3)",fontSize:11}}><strong>Slate instructions:</strong> {r.slate_instructions}</p>}
           {r.wardrobe_notes&&<p style={{color:"var(--t3)",fontSize:11}}><strong>Wardrobe:</strong> {r.wardrobe_notes}</p>}
-          {r.sides_pdf_url&&<a href={r.sides_pdf_url} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--acc)"}}><Ico n="paperclip" s={18}/> Audition sides (PDF)</a>}
+          {r.sides_pdf_url&&<a href={r.sides_pdf_url} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--acc)"}}><Ico n="paperclip" s={22}/> Audition sides (PDF)</a>}
         </div>)}
       </div>
 
       {/* Action buttons */}
       <div style={{display:"flex",gap:10,marginTop:20,paddingTop:16,borderTop:"1px solid var(--bdr)",flexWrap:"wrap"}}>
-        <button className="btn-s" onClick={()=>{setEditCasting(viewCasting);setViewCasting(null);}}><Ico n="pencil" s={18}/> Edit</button>
+        <button className="btn-s" onClick={()=>{setEditCasting(viewCasting);setViewCasting(null);}}><Ico n="pencil" s={22}/> Edit</button>
         {viewCasting.status==="pending_review"&&<>
-          <button className="btn-s" style={{color:"#fff",background:"#1d7b44",borderColor:"#1d7b44",fontWeight:700}} onClick={()=>{publishCasting(viewCasting);setViewCasting(null);}}><Ico n="check" s={16}/> Publish</button>
-          <button className="btn-s" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} onClick={()=>{setStatus(viewCasting,"rejected");setViewCasting(null);}}><Ico n="x" s={16}/> Reject</button>
+          <button className="btn-s" style={{color:"#fff",background:"#1d7b44",borderColor:"#1d7b44",fontWeight:700}} onClick={()=>{publishCasting(viewCasting);setViewCasting(null);}}><Ico n="check" s={24}/> Publish</button>
+          <button className="btn-s" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} onClick={()=>{setStatus(viewCasting,"rejected");setViewCasting(null);}}><Ico n="x" s={24}/> Reject</button>
         </>}
         <button className="btn-p" style={{marginLeft:"auto"}} onClick={()=>setViewCasting(null)}>Close</button>
       </div>
@@ -19674,7 +19674,7 @@ function AdminSelfImprovement(){
       <div style={{fontSize:10,color:"var(--t3)",fontWeight:700,textTransform:"uppercase",letterSpacing:0.6,marginTop:2}}>{label}</div>
     </div>);
   return(<>
-    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}><Ico n="tools" s={18}/> Self Improvement</h1>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}><Ico n="tools" s={22}/> Self Improvement</h1>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:16,lineHeight:1.6}}>CastSlate's maintenance &amp; intelligence board. Bugs, fixes, security findings, design/SEO/strategy/legal suggestions, and QA results — logged by work sessions and scheduled audits. Items marked <strong>needs approval</strong> wait for your decision.</p>
     {msg&&<div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
     <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:16}}>
@@ -20002,7 +20002,7 @@ function AdminLegalPages(){
 
     {/* Status banner */}
     {isSaved&&<div style={{background:"#1a7a3a",color:"#fff",borderRadius:8,padding:"10px 16px",fontSize:13,fontWeight:600,marginBottom:16,display:"flex",alignItems:"center",gap:8}}>
-      <Ico n="check" s={16}/> Saved. This page is now updated on the live website.
+      <Ico n="check" s={24}/> Saved. This page is now updated on the live website.
     </div>}
     {isErr&&<div style={{background:"#7a1a1a",color:"#fff",borderRadius:8,padding:"10px 16px",fontSize:13,marginBottom:16}}>
       {status.slice(6)}
@@ -20531,7 +20531,7 @@ function AdminWeeklyCheckIns({session}){
     <div style={{display:"flex",gap:10,marginBottom:20,flexWrap:"wrap",alignItems:"center"}}>
       <span style={{padding:"5px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:statusBg,color:statusColor}}>{statusLabel}</span>
       {settings?.checkin_last_run_at&&<span style={{fontSize:12,color:"var(--t3)"}}>Last run: {fmt(settings.checkin_last_run_at)}</span>}
-      {form.checkin_test_mode&&<span style={{padding:"5px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:"rgba(200,120,0,0.08)",color:"#b36b00"}}><Ico n="flask" s={18}/> TEST MODE</span>}
+      {form.checkin_test_mode&&<span style={{padding:"5px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:"rgba(200,120,0,0.08)",color:"#b36b00"}}><Ico n="flask" s={22}/> TEST MODE</span>}
     </div>
 
     {/* Stats row */}
@@ -20935,7 +20935,7 @@ function AdminEditClass({cls,onClose}){
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <input type="checkbox" id="cls-featured" checked={!!f.is_featured} onChange={e=>{up("is_featured",e.target.checked);up("is_highlighted",e.target.checked);}}/>
-            <label htmlFor="cls-featured" style={{fontSize:14,fontWeight:600,cursor:"pointer"}}><Ico n="star" s={16}/> Featured / Highlighted</label>
+            <label htmlFor="cls-featured" style={{fontSize:14,fontWeight:600,cursor:"pointer"}}><Ico n="star" s={24}/> Featured / Highlighted</label>
           </div>
         </div>
       </div>
@@ -21232,16 +21232,16 @@ function AdminAllBookingRequests(){
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
                     {req.talent?.headshot_url
                       ?<img src={req.talent.headshot_url} alt="headshot" style={{width:48,height:48,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
-                      :<div style={{width:48,height:48,borderRadius:"50%",background:"var(--s2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}><Ico n="user" s={18}/></div>
+                      :<div style={{width:48,height:48,borderRadius:"50%",background:"var(--s2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}><Ico n="user" s={22}/></div>
                     }
                     <div>
                       <div style={{fontWeight:700,fontSize:15}}>{talentName}</div>
                       <div style={{fontSize:12,color:"var(--t2)"}}>{talentEmail}</div>
                     </div>
                   </div>
-                  <div style={{fontSize:13,fontWeight:600,marginBottom:3}}><Ico n="books" s={18}/> {classTitle}</div>
+                  <div style={{fontSize:13,fontWeight:600,marginBottom:3}}><Ico n="books" s={22}/> {classTitle}</div>
                   {req.class?.instructor_name&&<div style={{fontSize:12,color:"var(--t3)",marginBottom:4}}>Instructor: {req.class.instructor_name}</div>}
-                  {slotStr&&<div style={{fontSize:13,color:"var(--t2)",marginBottom:4}}><Ico n="clock" s={18}/> {slotStr}</div>}
+                  {slotStr&&<div style={{fontSize:13,color:"var(--t2)",marginBottom:4}}><Ico n="clock" s={22}/> {slotStr}</div>}
                   <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginTop:6}}>
                     <span style={{display:"inline-block",fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:5,
                       background:`${STATUS_COLOR[req.status]||"var(--t3)"}22`,color:STATUS_COLOR[req.status]||"var(--t3)"
@@ -21305,7 +21305,7 @@ function AdminAllBookingRequests(){
                     {req.resume_url?(
                       <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
                         <a href={req.resume_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm" style={{display:"inline-flex",alignItems:"center",gap:5}}>
-                          <Ico n="file-text" s={18}/> Open / Download Resume ↗
+                          <Ico n="file-text" s={22}/> Open / Download Resume ↗
                         </a>
                         <span style={{fontSize:11,color:"var(--t3)"}}>PDF — opens in new tab</span>
                       </div>
@@ -21869,7 +21869,7 @@ function EditCastingModal({casting,onClose,onSaved}){
         {castingImages.map((img,i)=>(
           <div key={i} style={{position:"relative",width:80,flexShrink:0}}>
             <img src={img.url} alt={`Image ${i+1}`} style={{width:80,height:100,objectFit:"contain",borderRadius:8,background:"var(--s2)",display:"block",border:"1px solid var(--bdr)"}}/>
-            <div style={{position:"absolute",top:3,right:3,background:"rgba(0,0,0,0.55)",borderRadius:99,width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:11,color:"#fff",lineHeight:1}} onClick={()=>setCastingImages(p=>p.filter((_,j)=>j!==i))}><Ico n="x" s={16}/></div>
+            <div style={{position:"absolute",top:3,right:3,background:"rgba(0,0,0,0.55)",borderRadius:99,width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:11,color:"#fff",lineHeight:1}} onClick={()=>setCastingImages(p=>p.filter((_,j)=>j!==i))}><Ico n="x" s={24}/></div>
           </div>
         ))}
       </div>}
@@ -21882,7 +21882,7 @@ function EditCastingModal({casting,onClose,onSaved}){
     <div style={{borderTop:"1px solid var(--bdr)",paddingTop:20,marginTop:12}}>
       <div className="flex-between" style={{marginBottom:12}}><h3 style={{fontSize:16,fontWeight:700}}>Roles</h3><button className="btn-s btn-sm" onClick={addRole} type="button">+ Add Role</button></div>
       {roles.map((r,i)=><div key={r.id||`new-${i}`} style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:12}}>
-        <div className="flex-between" style={{marginBottom:10}}><strong style={{fontSize:13}}>Role {i+1} {r.id?"":<span style={{color:"var(--acc)",fontSize:11}}>(new)</span>}</strong><button onClick={()=>removeRole(i)} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12}}><Ico n="x" s={16}/> Remove</button></div>
+        <div className="flex-between" style={{marginBottom:10}}><strong style={{fontSize:13}}>Role {i+1} {r.id?"":<span style={{color:"var(--acc)",fontSize:11}}>(new)</span>}</strong><button onClick={()=>removeRole(i)} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12}}><Ico n="x" s={24}/> Remove</button></div>
         <div className="form-group" style={{marginBottom:10}}><label className="label">Role Name *</label><input className="input" value={r.name} onChange={e=>setRole(i,"name",e.target.value)}/></div>
         <div className="form-group" style={{marginBottom:10}}><label className="label">Role Type</label><select className="select" style={{width:"100%"}} value={r.role_type||"Supporting"} onChange={e=>setRole(i,"role_type",e.target.value)}>{ROLE_TYPE_OPTIONS.map(rt=><option key={rt} value={rt}>{rt}</option>)}</select></div>
         <div className="form-row">
@@ -21893,7 +21893,7 @@ function EditCastingModal({casting,onClose,onSaved}){
         <div className="form-group" style={{marginTop:10,marginBottom:0}}><label className="label">Role Description</label><textarea className="textarea" value={r.description} onChange={e=>setRole(i,"description",e.target.value)}/></div>
         <div style={{marginTop:14,borderTop:"1px solid var(--bdr)",paddingTop:12}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",marginBottom:r._showAudInstr?12:0}} onClick={()=>setRole(i,"_showAudInstr",!r._showAudInstr)}>
-            <span style={{fontSize:12,fontWeight:700,color:"var(--t2)",display:"flex",alignItems:"center",gap:6}}><Ico n="movie" s={18}/> Audition Instructions</span>
+            <span style={{fontSize:12,fontWeight:700,color:"var(--t2)",display:"flex",alignItems:"center",gap:6}}><Ico n="movie" s={22}/> Audition Instructions</span>
             <span style={{fontSize:11,color:"var(--acc)",fontWeight:600}}>{r._showAudInstr?"Hide ▲":"Set Instructions ▼"}</span>
           </div>
           {r._showAudInstr&&<>
@@ -21901,12 +21901,12 @@ function EditCastingModal({casting,onClose,onSaved}){
               <label className="label">Audition Sides / Scene <span style={{fontWeight:400,color:"var(--t3)",fontSize:11}}>(PDF only)</span></label>
               {r.sides_pdf_url?(
                 <div style={{display:"flex",alignItems:"center",gap:8,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:8,padding:"10px 12px"}}>
-                  <span style={{fontSize:20}}><Ico n="file-text" s={18}/></span>
+                  <span style={{fontSize:20}}><Ico n="file-text" s={22}/></span>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:13,fontWeight:600,color:"var(--t1)",marginBottom:2}}>Sides PDF attached</div>
                     <a href={r.sides_pdf_url} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:"var(--acc)"}}>View PDF →</a>
                   </div>
-                  <button type="button" onClick={()=>setRole(i,"sides_pdf_url","")} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12,fontWeight:700,padding:"4px 8px"}}><Ico n="x" s={16}/> Remove</button>
+                  <button type="button" onClick={()=>setRole(i,"sides_pdf_url","")} style={{background:"none",border:"none",color:"#c0392b",cursor:"pointer",fontSize:12,fontWeight:700,padding:"4px 8px"}}><Ico n="x" s={24}/> Remove</button>
                 </div>
               ):(
                 <label style={{cursor:r._uploadingPdf?"default":"pointer",display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:8,border:"2px dashed var(--bdr)",background:"var(--s2)",color:r._uploadingPdf?"var(--t3)":"var(--t2)",fontWeight:600,fontSize:13}}>
@@ -22077,7 +22077,7 @@ function ActorCardPreview({displayName,headline,showLocation,location,tags,showU
             </div>
           </>
         ):(
-          <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:36,color:'#C0C0D0'}}><Ico n="user" s={18}/></div>
+          <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:36,color:'#C0C0D0'}}><Ico n="user" s={22}/></div>
         )}
       </div>
       {/* Info */}
@@ -22358,7 +22358,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
     return(
       <div className="page">
         <div style={{maxWidth:560,margin:'60px auto',padding:'0 20px',textAlign:'center'}}>
-          <div style={{fontSize:40,marginBottom:16}}><Ico n="credit-card" s={18}/></div>
+          <div style={{fontSize:40,marginBottom:16}}><Ico n="credit-card" s={22}/></div>
           <h2 style={{fontWeight:800,fontSize:22,marginBottom:10}}>Complete your profile first</h2>
           <p style={{color:'var(--t2)',marginBottom:20,fontSize:14}}>You need a public profile to generate your actor business card. Finish setting up your profile to get started.</p>
           <button className="btn-p" onClick={()=>onNavigate('my-profile')}>Complete My Profile →</button>
@@ -22485,7 +22485,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
                 {qrLoading?'⏳ Generating your QR code…':qrDataUrl?'Your unique QR code is ready':'Your Unique QR Code'}
               </div>
               <div style={{fontSize:11.5,color:'var(--t2)',lineHeight:1.5,wordBreak:'break-all'}}>Links to: <span style={{fontFamily:'monospace',color:'var(--t1)',fontWeight:600}}>{profileUrl}</span></div>
-              {qrErr&&<div style={{fontSize:11,color:'var(--red)',marginTop:6}}><Ico n="alert-triangle" s={18}/> Could not load QR. Check your connection and refresh.</div>}
+              {qrErr&&<div style={{fontSize:11,color:'var(--red)',marginTop:6}}><Ico n="alert-triangle" s={22}/> Could not load QR. Check your connection and refresh.</div>}
             </div>
 
             {/* Download section */}
@@ -22499,7 +22499,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
               <div style={{display:'flex',flexDirection:'column',gap:10}}>
                 <div style={{fontSize:12,color:'var(--t3)',marginBottom:2}}>Your A4 PDF will include 10 copies of your actor card on one sheet, with cut guides for trimming after printing.</div>
                 <button className="btn-p" onClick={handleDownloadPDF} disabled={pdfGenerating||qrLoading||allPhotos.length===0} style={{padding:'15px 20px',fontSize:15,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',gap:9,borderRadius:10,opacity:(pdfGenerating||qrLoading||allPhotos.length===0)?0.65:1}}>
-                  {pdfGenerating?<>⏳ Generating print sheet…</>:<><Ico n="arrow-down" s={16}/> Print / Save A4 Sheet PDF</>}
+                  {pdfGenerating?<>⏳ Generating print sheet…</>:<><Ico n="arrow-down" s={24}/> Print / Save A4 Sheet PDF</>}
                 </button>
                 <button className="btn-s btn-sm" onClick={handleDownloadPNG} disabled={generating||qrLoading||allPhotos.length===0} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:7,opacity:(generating||qrLoading||allPhotos.length===0)?0.6:1}}>
                   {generating?'Generating…':'Download Single Card PNG'}
@@ -23638,7 +23638,7 @@ function App(){
               <span>{navT('nav.inbox')}</span>
               {globalUnread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800,minWidth:20,textAlign:"center",lineHeight:1.2}}>{globalUnread>99?"99+":globalUnread}</span>}
             </button>
-            <button className="btn-s btn-sm" onClick={()=>navigate("account-settings")} title={navT('nav.accountSettings')}>{myProfile?.display_name?.split(" ")[0]||navT('nav.accountSettings').split(" ")[0]} <Ico n="settings" s={18}/></button>
+            <button className="btn-s btn-sm" onClick={()=>navigate("account-settings")} title={navT('nav.accountSettings')}>{myProfile?.display_name?.split(" ")[0]||navT('nav.accountSettings').split(" ")[0]} <Ico n="settings" s={22}/></button>
             <button className="btn-p btn-sm" onClick={signOut}>{navT('nav.signOut')}</button>
           </>:<>
             <div className="join-dropdown" ref={joinRef}>
@@ -23648,11 +23648,11 @@ function App(){
               </button>
               {joinOpen&&<div className="join-dd-menu">
                 <button className="join-dd-item" onClick={()=>{setJoinOpen(false);navigate("auth-gate");}}>
-                  <div className="join-dd-icon"><Ico n="masks-theater" s={18}/></div>
+                  <div className="join-dd-icon"><Ico n="masks-theater" s={22}/></div>
                   <div><span className="join-dd-title">Join as Talent</span><span className="join-dd-desc">Create your actor profile and start submitting.</span></div>
                 </button>
                 <button className="join-dd-item" onClick={()=>{setJoinOpen(false);navigate("register-cd");}}>
-                  <div className="join-dd-icon"><Ico n="movie" s={18}/></div>
+                  <div className="join-dd-icon"><Ico n="movie" s={22}/></div>
                   <div><span className="join-dd-title">Join as Employer</span><span className="join-dd-desc">Post casting calls and review submissions.</span></div>
                 </button>
               </div>}
@@ -23668,11 +23668,11 @@ function App(){
           </button>
           {joinOpen&&<div className="join-dd-menu-m">
             <button className="join-dd-item" onClick={()=>{setJoinOpen(false);navigate("auth-gate");}}>
-              <div className="join-dd-icon"><Ico n="masks-theater" s={18}/></div>
+              <div className="join-dd-icon"><Ico n="masks-theater" s={22}/></div>
               <div><span className="join-dd-title">Join as Talent</span><span className="join-dd-desc">Create your actor profile and start submitting.</span></div>
             </button>
             <button className="join-dd-item" onClick={()=>{setJoinOpen(false);navigate("register-cd");}}>
-              <div className="join-dd-icon"><Ico n="movie" s={18}/></div>
+              <div className="join-dd-icon"><Ico n="movie" s={22}/></div>
               <div><span className="join-dd-title">Join as Employer</span><span className="join-dd-desc">Post casting calls and review submissions.</span></div>
             </button>
           </div>}
@@ -23712,11 +23712,11 @@ function App(){
                 </button>
                 {menuJoinOpen&&<div className="join-dd-menu-m" style={{left:0,right:0,minWidth:0}}>
                   <button className="join-dd-item" onClick={()=>navThen("auth-gate")}>
-                    <div className="join-dd-icon"><Ico n="masks-theater" s={18}/></div>
+                    <div className="join-dd-icon"><Ico n="masks-theater" s={22}/></div>
                     <div><span className="join-dd-title">Join as Talent</span><span className="join-dd-desc">Create your actor profile and start submitting.</span></div>
                   </button>
                   <button className="join-dd-item" onClick={()=>navThen("register-cd")}>
-                    <div className="join-dd-icon"><Ico n="movie" s={18}/></div>
+                    <div className="join-dd-icon"><Ico n="movie" s={22}/></div>
                     <div><span className="join-dd-title">Join as Employer</span><span className="join-dd-desc">Post casting calls and review submissions.</span></div>
                   </button>
                 </div>}
