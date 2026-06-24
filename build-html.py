@@ -285,7 +285,7 @@ def render_page(title, desc, canonical):
     <div id="cs-intro-bg">
       <div id="cs-intro-clip">
         <div class="cs-intro-mark">
-          <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="42" height="42"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
+          <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="74" height="74" style="display:block;width:100%;height:100%"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
           <span class="cs-intro-name">CastSlate</span>
         </div>
       </div>

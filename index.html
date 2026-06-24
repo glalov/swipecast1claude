@@ -74,15 +74,15 @@
       };
     }
   </script>
-  <!-- BUILD: 20260624-160340 -->
-  <meta name="build-version" content="20260624-160340"/>
+  <!-- BUILD: 20260624-161249 -->
+  <meta name="build-version" content="20260624-161249"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260624-160340";
+        var B="20260624-161249";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -162,7 +162,7 @@
     <div id="cs-intro-bg">
       <div id="cs-intro-clip">
         <div class="cs-intro-mark">
-          <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="42" height="42"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
+          <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="74" height="74" style="display:block;width:100%;height:100%"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
           <span class="cs-intro-name">CastSlate</span>
         </div>
       </div>
@@ -302,6 +302,6 @@
       })();
     })();
   </script>
-  <script src="/app.js?v=20260624-160340"></script>
+  <script src="/app.js?v=20260624-161249"></script>
 </body>
 </html>
