@@ -3125,24 +3125,25 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
   // bottom; it drops in from above and shoots back up off-screen on scroll-up.
   const [b2tShow,setB2tShow]=React.useState(false);
   React.useEffect(()=>{
-    // Appear earlier — once the viewport bottom reaches the FOOTER'S MIDPOINT,
-    // rather than waiting for the very bottom of the page. Falls back to the old
-    // near-bottom check if the footer element can't be measured yet.
+    // Appear once the viewport bottom reaches the FOOTER'S MIDPOINT, on long
+    // pages only. A short mount suppression prevents the flash that happened
+    // when scroll settles after returning from a casting (the page scroll-
+    // restores / scrolls to top, which briefly looked like "reached the footer").
+    let ready=false;
     const check=()=>{try{
+      if(!ready){setB2tShow(false);return;}
       const vpBottom=window.innerHeight+window.scrollY;
       const f=document.querySelector('.site-footer');
       let threshold=document.documentElement.scrollHeight-4;
       if(f){const r=f.getBoundingClientRect();threshold=r.top+window.scrollY+r.height*0.5;}
-      // Guard against the transient flash when a page is still laying out (e.g.
-      // returning from a casting): only show on genuinely scrollable pages where
-      // the user has actually reached the footer midpoint.
       const scrollable=document.documentElement.scrollHeight-window.innerHeight;
       setB2tShow(scrollable>240 && vpBottom>=threshold);
     }catch(_){}};
+    const armTimer=setTimeout(()=>{ready=true;check();},700);
     window.addEventListener('scroll',check,{passive:true});
     window.addEventListener('resize',check);
     check();
-    return()=>{window.removeEventListener('scroll',check);window.removeEventListener('resize',check);};
+    return()=>{clearTimeout(armTimer);window.removeEventListener('scroll',check);window.removeEventListener('resize',check);};
   },[]);
   return(<>
     {/* Global breathing room above the footer on EVERY page. Carries margin-top:auto
