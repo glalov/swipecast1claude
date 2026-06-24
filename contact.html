@@ -29,6 +29,9 @@
   <link rel="icon" href="/favicon.ico?v=4" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=4"/>
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4"/>
+  <!-- Tabler line-icon webfont (replaces emoji UI icons) -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/>
   <!-- Structured Data: WebSite -->
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"WebSite","name":"CastSlate","alternateName":["Cast Slate","CastSlate Casting"],"url":"https://www.castslate.com"}
@@ -74,15 +77,15 @@
       };
     }
   </script>
-  <!-- BUILD: 20260624-223145 -->
-  <meta name="build-version" content="20260624-223145"/>
+  <!-- BUILD: 20260624-231820 -->
+  <meta name="build-version" content="20260624-231820"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260624-223145";
+        var B="20260624-231820";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -302,6 +305,6 @@
       })();
     })();
   </script>
-  <script src="/app.js?v=20260624-223145"></script>
+  <script src="/app.js?v=20260624-231820"></script>
 </body>
 </html>

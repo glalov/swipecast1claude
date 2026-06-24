@@ -152,6 +152,9 @@ def render_page(title, desc, canonical):
   <link rel="icon" href="/favicon.ico?v=4" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=4"/>
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4"/>
+  <!-- Tabler line-icon webfont (replaces emoji UI icons) -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/>
   <!-- Structured Data: WebSite -->
   <script type="application/ld+json">
   {{"@context":"https://schema.org","@type":"WebSite","name":"CastSlate","alternateName":["Cast Slate","CastSlate Casting"],"url":"https://www.castslate.com"}}
