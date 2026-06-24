@@ -3847,7 +3847,7 @@ function AboutPage({onNavigate}){
         <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>Manager Mode — also a first</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>We're also the first platform to offer Manager Mode — individual, hands-on managing for each member. Most sites take your subscription and forget you exist. We do the opposite: personalized guidance to help you sharpen your craft, strengthen your profile, and make smarter career moves over time. Real support for your growth, not just a place to park a headshot.</p></div>
       </div>
     </div>
-    <div style={{maxWidth:900,margin:"0 auto"}}>
+    <div style={{maxWidth:900,margin:"0 auto 60px"}}>
       <div style={{textAlign:"center",marginBottom:40}}>
         <h2 style={{fontSize:28,fontWeight:800,marginBottom:12}}>Built by an Industry Collective</h2>
         <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.65,maxWidth:620,margin:"0 auto"}}>CastSlate was founded from the shared experience of filmmakers, producers, casting directors, actors, and product builders who believe casting should be faster, fairer, and more transparent.</p>
@@ -4541,9 +4541,6 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
         {/* Image / Collage */}
         <div className="cls-card-img">
           <ClassPosterCollage posters={cls.instructor_poster_urls} imageUrl={cls.image_url} title={cls.title} variant="card" bg="#111322"/>
-          {isFeatured&&(
-            <div style={{position:"absolute",top:10,left:10,background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:0.8,textTransform:"uppercase",padding:"3px 8px",borderRadius:20,lineHeight:1.4}}>{t('classes.featured')}</div>
-          )}
           {hasSale&&(
             <div style={{position:"absolute",bottom:10,left:10,background:"#e74c3c",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:0.6,padding:"3px 8px",borderRadius:20,lineHeight:1.4}}>{t('classes.sale')}</div>
           )}
