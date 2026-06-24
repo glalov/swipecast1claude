@@ -13018,6 +13018,27 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     submission_mode:r.submission_mode||"best_take",_showAudInstr:!!(r.sides_pdf_url||r.direction_notes||r.slate_instructions||r.wardrobe_notes),
     _uploadingPdf:false,
   })));
+  // Reload roles fresh from the DB on open so a stale casting prop can't make
+  // the form show the wrong role_type and overwrite the live value on save.
+  useEffect(()=>{
+    if(!casting?.id)return;
+    let cancelled=false;
+    (async()=>{
+      const {data}=await window.sb.from("roles").select("id,name,description,gender,age_range,ethnicity,role_type,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,official_takes_allowed,submission_mode").eq("casting_id",casting.id).order("created_at");
+      if(cancelled||!data)return;
+      setRoles(data.map(r=>({
+        id:r.id,name:r.name||"",description:r.description||"",gender:r.gender||"Any",
+        role_type:r.role_type||"Supporting",
+        age_range:r.age_range||"",ethnicity:r.ethnicity||"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",
+        sides_pdf_url:r.sides_pdf_url||"",direction_notes:r.direction_notes||"",slate_instructions:r.slate_instructions||"",
+        video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||"",
+        wardrobe_notes:r.wardrobe_notes||"",official_takes_allowed:r.official_takes_allowed||2,
+        submission_mode:r.submission_mode||"best_take",_showAudInstr:!!(r.sides_pdf_url||r.direction_notes||r.slate_instructions||r.wardrobe_notes),
+        _uploadingPdf:false,
+      })));
+    })();
+    return()=>{cancelled=true;};
+  },[casting?.id]);
   const setField=(k,v)=>setF(p=>({...p,[k]:v}));
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
   const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",role_type:"Supporting",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false}]);
@@ -21630,6 +21651,31 @@ function EditCastingModal({casting,onClose,onSaved}){
     _showAudInstr:!!(r.sides_pdf_url||r.direction_notes||r.slate_instructions||r.wardrobe_notes),
     _uploadingPdf:false,
   })));
+  // Always reload roles from the DB when the editor opens. The casting object
+  // passed in can be stale (it was loaded into the list earlier, before another
+  // edit or a data correction). Save deletes/re-inserts every role, so a stale
+  // role_type here would silently overwrite the real, live value — exactly the
+  // "I set it to Lead, saved, and everything reverted to Supporting" bug.
+  useEffect(()=>{
+    if(!casting?.id)return;
+    let cancelled=false;
+    (async()=>{
+      const {data}=await window.sb.from("roles").select("id,name,description,gender,age_range,ethnicity,role_type,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,official_takes_allowed,submission_mode").eq("casting_id",casting.id).order("created_at");
+      if(cancelled||!data)return;
+      setRoles(data.map(r=>({
+        id:r.id,name:r.name||"",description:r.description||"",gender:r.gender||"Any",
+        role_type:r.role_type||"Supporting",
+        age_range:r.age_range||"",ethnicity:r.ethnicity||"Any",
+        sides_pdf_url:r.sides_pdf_url||"",direction_notes:r.direction_notes||"",
+        slate_instructions:r.slate_instructions||"",video_length_limit:r.video_length_limit||60,
+        audition_deadline:r.audition_deadline||"",wardrobe_notes:r.wardrobe_notes||"",
+        official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take",
+        _showAudInstr:!!(r.sides_pdf_url||r.direction_notes||r.slate_instructions||r.wardrobe_notes),
+        _uploadingPdf:false,
+      })));
+    })();
+    return()=>{cancelled=true;};
+  },[casting?.id]);
   const setField=(k,v)=>setF(p=>({...p,[k]:v}));
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
   const addRole=()=>setRoles(p=>[...p,{id:null,name:"",description:"",gender:"Any",role_type:"Supporting",age_range:"",ethnicity:"Any",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false}]);
