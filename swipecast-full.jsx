@@ -2193,6 +2193,14 @@ html,body{overflow-x:hidden;}
    (the narrower card needs more lines or the text gets cut mid-word). */
 .cls-card-desc{color:#34343F;font-size:13.5px;line-height:1.6;margin-bottom:8px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
 @media (max-width:768px){.cls-card-desc{-webkit-line-clamp:unset;overflow:visible;}}
+/* Casting role cards on mobile: stack the header so the long apply button drops
+   below the text instead of squeezing the description into a tiny column. */
+@media (max-width:600px){
+  .role-card{padding:18px 18px !important;}
+  .role-card-head{flex-direction:column;gap:12px !important;}
+  .role-card-head>div:last-child{width:100%;}
+  .role-card-head .btn-teal,.role-card-head .tag{display:block;width:100%;text-align:center;box-sizing:border-box;}
+}
 .cls-card-img{width:250px;min-width:250px;position:relative;overflow:hidden;background:#F4F1EA;flex-shrink:0;}
 .cls-card-action{padding:18px 20px;display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:8px;border-left:1px solid var(--bdr);min-width:140px;flex-shrink:0;}
 @media(max-width:768px){
@@ -7974,8 +7982,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           const instr=roleId?roleInstructions[roleId]:null;
           const hasInstructions=instr&&(instr.sides_pdf_url||instr.direction_notes||instr.slate_instructions||instr.wardrobe_notes);
           return(
-          <div key={i} className="card" style={{padding:"22px 26px"}}>
-            <div className="flex-between" style={{marginBottom:10,alignItems:"flex-start",gap:16}}>
+          <div key={i} className="card role-card" style={{padding:"22px 26px"}}>
+            <div className="flex-between role-card-head" style={{marginBottom:10,alignItems:"flex-start",gap:16}}>
               <div style={{flex:1}}>
                 <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap"}}>
                   <span className="badge tag-acc">{r.type}</span>
