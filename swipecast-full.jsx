@@ -1757,8 +1757,8 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .site-footer-spacer{height:0;flex-shrink:0;background:var(--bg);width:100%;margin-top:auto;}
 /* Floating back-to-top cube — drops in from above the screen at the very bottom,
    shoots back up off-screen when the user scrolls up. Replaces the old bar. */
-.b2t-cube{position:fixed;left:50%;bottom:22px;z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:96px;height:86px;background:#FFFFFF;color:#1A1A2E;border:1px solid rgba(0,0,0,0.12);border-radius:17px;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,0.30);font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(calc(-100vh + 16px));opacity:1;pointer-events:none;transition:transform .42s cubic-bezier(.5,0,.75,.45);}
-.b2t-cube.show{transform:translateX(-50%) translateY(0);pointer-events:auto;transition:transform .58s cubic-bezier(.2,.72,.3,1);}
+.b2t-cube{position:fixed;left:50%;bottom:22px;z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:96px;height:86px;background:#FFFFFF;color:#1A1A2E;border:1px solid rgba(0,0,0,0.12);border-radius:17px;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,0.30);font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(calc(-100vh + 16px));opacity:1;pointer-events:none;transition:transform 1.17s cubic-bezier(.5,0,.75,.45);}
+.b2t-cube.show{transform:translateX(-50%) translateY(0);pointer-events:auto;transition:transform 1.33s cubic-bezier(.2,.72,.3,1);}
 .b2t-cube span{line-height:1.1;}
 @media(prefers-reduced-motion:reduce){.b2t-cube{transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}.b2t-cube.show{opacity:1!important;}}
 .site-backtotop{
@@ -8963,19 +8963,48 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const [sheetCasting,setSheetCasting]=useState(null);
   const [sheetClosing,setSheetClosing]=useState(false);
   const sheetScrollY=useRef(0);
-  const openSheet=useCallback((c)=>{sheetScrollY.current=window.scrollY;setSheetClosing(false);setSheetCasting(c);},[]);
-  const closeSheet=useCallback(()=>{setSheetClosing(true);setTimeout(()=>{setSheetCasting(null);setSheetClosing(false);window.scrollTo(0,sheetScrollY.current);},460);},[]);
+  // True when openSheet pushed a /casting/<slug> history entry that closeSheet
+  // must pop back off to restore the /browse-castings URL.
+  const sheetPushedRef=useRef(false);
+  const animateClose=useCallback(()=>{setSheetClosing(true);setTimeout(()=>{setSheetCasting(null);setSheetClosing(false);window.scrollTo(0,sheetScrollY.current);},460);},[]);
+  const openSheet=useCallback((c)=>{
+    sheetScrollY.current=window.scrollY;
+    setSheetClosing(false);
+    // Give the slide-in sheet its own shareable URL (/casting/<slug-or-id>) so a
+    // link posted to Facebook etc. opens this specific casting. Without this the
+    // URL stayed /browse-castings and every casting shared the same address.
+    try{
+      const slug=c&&(c.slug||(c.id!=null?String(c.id):""));
+      if(slug){
+        window.history.pushState({swipecast:true,page:"casting-detail",castingSlug:slug,fromSheet:true},"",`/casting/${encodeURIComponent(slug)}`);
+        sheetPushedRef.current=true;
+      }else{sheetPushedRef.current=false;}
+    }catch(_){sheetPushedRef.current=false;}
+    setSheetCasting(c);
+  },[]);
+  const closeSheet=useCallback(()=>{
+    // If we pushed a /casting/<slug> entry on open, step back so the URL returns
+    // to /browse-castings; the popstate listener below runs the close animation.
+    if(sheetPushedRef.current){
+      sheetPushedRef.current=false;
+      try{window.history.back();return;}catch(_){}
+    }
+    animateClose();
+  },[animateClose]);
   // SearchPage stays mounted (display:none on other pages), so the slide-in sheet
   // state must be force-cleared when the user navigates away via the top nav —
   // otherwise returning to Browse Castings shows the stale single casting.
-  useEffect(()=>{if(!active){setSheetClosing(false);setSheetCasting(null);}},[active]);
+  useEffect(()=>{if(!active){setSheetClosing(false);setSheetCasting(null);sheetPushedRef.current=false;}},[active]);
   useEffect(()=>{
     if(!sheetCasting)return;
     const onKey=(e)=>{if(e.key==="Escape")closeSheet();};
+    // Browser Back while the sheet is open dismisses it (and restores the URL).
+    const onPop=()=>{sheetPushedRef.current=false;animateClose();};
     window.addEventListener("keydown",onKey);
+    window.addEventListener("popstate",onPop);
     const prevOv=document.body.style.overflow;document.body.style.overflow="hidden";
-    return()=>{window.removeEventListener("keydown",onKey);document.body.style.overflow=prevOv;};
-  },[sheetCasting,closeSheet]);
+    return()=>{window.removeEventListener("keydown",onKey);window.removeEventListener("popstate",onPop);document.body.style.overflow=prevOv;};
+  },[sheetCasting,closeSheet,animateClose]);
   const [fetchErr,setFetchErr]=useState("");          // surfaced castings fetch error
   const [lastFetchAt,setLastFetchAt]=useState(0);     // timestamp of last successful fetch
   useEffect(()=>{setPg(1);},[q,f.type,f.location,f.union,f.gender,f.ethnicity,f.castingType,mode]);
