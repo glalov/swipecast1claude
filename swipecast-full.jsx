@@ -3073,7 +3073,7 @@ function PageLoader({text}){
 // ═══════════════════════════════════════════
 // FOOTER (shared across all pages)
 // ═══════════════════════════════════════════
-function Footer({onNavigate,noSpacer}){
+function Footer({onNavigate,noSpacer,backToTop=false}){
   const t=useT();
   const {lang,setLang}=useLanguage();
   // Reusable footer link — every link inherits the same hover treatment via .site-footer-link.
@@ -3113,10 +3113,13 @@ function Footer({onNavigate,noSpacer}){
         (the sticky-footer push) AND a guaranteed min-height so no page's final card,
         icon row, or button ever touches the Back-to-top bar. 96px desktop / 72px mobile. */}
     <div className="site-footer-spacer" style={noSpacer?{height:0}:undefined} aria-hidden="true"></div>
-    <button type="button" className={"b2t-cube"+(b2tShow?" show":"")} onClick={scrollTop} aria-label={t('footer.backToTop')}>
+    {/* Floating back-to-top cube — only on long pages (home, browse castings,
+        tapelink, manager mode). Short pages scroll up in one flick, so the
+        drop-down button is just noise there. */}
+    {backToTop&&<button type="button" className={"b2t-cube"+(b2tShow?" show":"")} onClick={scrollTop} aria-label={t('footer.backToTop')}>
       <svg width="20" height="16" viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="currentColor"/></svg>
       <span>{t('footer.backToTop')}</span>
-    </button>
+    </button>}
     <footer className="site-footer">
       <div className="site-footer-inner">
         <div className="site-footer-grid">
@@ -5426,7 +5429,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
       <p style={{fontSize:12.5,color:"var(--t3)",lineHeight:1.75}}>Manager Mode is designed to help improve your profile and may help you present yourself more clearly to casting directors. It helps actors become more castable and is designed to help you focus your weekly profile improvement. Cast Slate does not guarantee bookings, callbacks, representation, auditions, or career outcomes. The Actor Business Card is a downloadable digital asset for personal use. Event suggestions are informational and not guaranteed to be available in all locations.</p>
     </section>
 
-    <Footer onNavigate={onNavigate}/>
+    <Footer onNavigate={onNavigate} backToTop/>
   </div>);
 }
 
@@ -5699,7 +5702,7 @@ function TapeLinkPage({onNavigate}){
       <p style={{fontSize:12.5,color:"var(--t3)",lineHeight:1.75}}>TapeLink is designed to make self-tape casting faster and more direct. Available self-tape options, take limits, recording, and upload features depend on each casting director's settings for a given role. Cast Slate does not guarantee auditions, callbacks, bookings, or career outcomes.</p>
     </section>
 
-    <Footer onNavigate={onNavigate}/>
+    <Footer onNavigate={onNavigate} backToTop/>
   </div>);
 }
 
@@ -5715,7 +5718,7 @@ function StudiosPage({onNavigate}){
       )}</div>
       <div style={{textAlign:"center",marginTop:48}}><button className="btn-p" onClick={()=>onNavigate("contact")}>Contact Sales</button><p style={{color:"var(--t3)",fontSize:12,marginTop:8}}>Custom enterprise pricing tailored to your production needs</p></div>
     </div>
-    <Footer onNavigate={onNavigate}/></div>);
+    <Footer onNavigate={onNavigate} backToTop/></div>);
 }
 
 // ═══════════════════════════════════════════
@@ -9283,7 +9286,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           : <CastingGatePage casting={sheetCasting} onCreateProfile={()=>{setSheetCasting(null);onNavigate("auth-gate");}} onLogin={()=>{setSheetCasting(null);onNavigate("login");}} onBack={closeSheet}/>}
       </div>
     </>}
-    <Footer onNavigate={onNavigate}/></div>);
+    <Footer onNavigate={onNavigate} backToTop/></div>);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -14737,7 +14740,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       </div>
     </section>}
 
-    <Footer onNavigate={onNavigate} noSpacer/>
+    <Footer onNavigate={onNavigate} noSpacer backToTop/>
   </>);
 }
 
