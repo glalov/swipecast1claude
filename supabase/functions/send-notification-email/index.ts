@@ -1,19 +1,5 @@
 // send-notification-email — Supabase Edge Function
-// Sends transactional notifications via Resend (email) and Twilio (SMS).
-// Called fire-and-forget from the frontend after message sends.
-//
-// Required secrets (Supabase Dashboard → Edge Functions → Secrets):
-//   RESEND_API_KEY        — Resend API key (resend.com — free tier available)
-//   NOTIFY_FROM_EMAIL     — sender, e.g. "CastSlate <notifications@castslate.com>"
-//                           (domain must be verified in Resend)
-//   APP_URL               — public URL, e.g. "https://www.castslate.com"
-//
-// Optional SMS secrets (Twilio):
-//   TWILIO_ACCOUNT_SID    — Twilio account SID
-//   TWILIO_AUTH_TOKEN     — Twilio auth token
-//   TWILIO_PHONE_NUMBER   — your Twilio number, e.g. "+15005550006"
-//
-// SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected automatically.
+// Sends transactional notifications via email (Resend or Amazon SES) and Twilio (SMS).
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -28,13 +14,8 @@ const TWILIO_SID           = Deno.env.get("TWILIO_ACCOUNT_SID");
 const TWILIO_TOKEN         = Deno.env.get("TWILIO_AUTH_TOKEN");
 const TWILIO_FROM          = Deno.env.get("TWILIO_PHONE_NUMBER");
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Email provider abstraction. Defaults to Resend; set EMAIL_PROVIDER="ses" to
-// route every send through Amazon SES (v2 API, SigV4-signed). Switching is a
-// pure config change — no redeploy needed — and Resend stays as instant fallback.
-// SES secrets (only read when active): AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
-// AWS_SES_REGION (falls back to AWS_REGION, then "us-east-1").
-// ─────────────────────────────────────────────────────────────────────────────
+// route every send through Amazon SES (v2 API, SigV4-signed). Resend stays as fallback.
 const EMAIL_PROVIDER        = (Deno.env.get("EMAIL_PROVIDER") ?? "resend").toLowerCase();
 const AWS_ACCESS_KEY_ID     = Deno.env.get("AWS_ACCESS_KEY_ID");
 const AWS_SECRET_ACCESS_KEY = Deno.env.get("AWS_SECRET_ACCESS_KEY");
@@ -90,15 +71,19 @@ const corsHeaders = {
 
 interface NotifyRequest {
   to_user_id: string;
-  type: "inbox_message" | "class_invitation";
+  type: "inbox_message" | "class_invitation" | "booking_approved" | "booking_declined";
   from_id?: string;
   from_name?: string;
   application_id?: string;
   casting_id?: string;
   class_title?: string;
+  // booking_* extras
+  slot_label?: string;
+  admin_note?: string;
+  class_price?: string;
+  class_id?: string;
 }
 
-// Minimal HTML escape for any user-controlled string interpolated into the email.
 function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -181,6 +166,100 @@ function classInvitationHtml(firstName: string, classTitle: string): string {
 </html>`;
 }
 
+function bookingApprovedHtml(firstName: string, classTitle: string, slotLabel?: string, classPrice?: string, classId?: string): string {
+  const slotLine = slotLabel
+    ? `<p style="margin:0 0 4px;font-size:14px;color:#555">Session: <strong>${esc(slotLabel)}</strong></p>`
+    : "";
+  const priceLine = classPrice
+    ? `<p style="margin:0 0 24px;font-size:14px;color:#555">Price: <strong>${esc(classPrice)}</strong></p>`
+    : `<p style="margin:0 0 24px"></p>`;
+  // Deep-link straight to the class so the "Complete Payment" banner is right there.
+  const payUrl = classId ? `${APP_URL}/classes?class=${encodeURIComponent(classId)}` : `${APP_URL}/classes`;
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"/></head>
+<body style="margin:0;padding:0;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f7;padding:40px 20px">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:560px;width:100%">
+        <tr><td style="background:linear-gradient(135deg,#1a0533,#2d1052);padding:28px 32px">
+          <div style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-0.5px">CastSlate</div>
+        </td></tr>
+        <tr><td style="padding:36px 32px 28px">
+          <h1 style="margin:0 0 16px;font-size:24px;font-weight:800;color:#111;letter-spacing:-0.5px">You're approved — complete your booking</h1>
+          <p style="margin:0 0 8px;font-size:16px;line-height:1.6;color:#555">
+            Hi ${firstName}, good news — your booking request was approved for:
+          </p>
+          <p style="margin:0 0 12px;font-size:17px;font-weight:700;color:#2d1052;line-height:1.4">
+            ${classTitle}
+          </p>
+          ${slotLine}
+          ${priceLine}
+          <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#555">
+            Your spot is reserved for <strong>48 hours</strong>. Complete payment now to lock it in.
+          </p>
+          <a href="${payUrl}"
+             style="display:inline-block;background:linear-gradient(90deg,#6b3ecb,#8b5cf6);color:#fff;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:15px;letter-spacing:0.1px">
+            Complete Payment →
+          </a>
+        </td></tr>
+        <tr><td style="padding:20px 32px 32px;border-top:1px solid #f0f0f0">
+          <p style="margin:0;font-size:12px;color:#aaa;line-height:1.6">
+            You're receiving this because you requested a class booking on CastSlate.<br/>
+            To manage notifications, visit <a href="${APP_URL}/account-settings" style="color:#8b5cf6;text-decoration:none">Account Settings → Notifications</a>.
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+function bookingDeclinedHtml(firstName: string, classTitle: string, adminNote?: string): string {
+  const noteLine = adminNote
+    ? `<p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#555">${esc(adminNote)}</p>`
+    : "";
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"/></head>
+<body style="margin:0;padding:0;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f7;padding:40px 20px">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:560px;width:100%">
+        <tr><td style="background:linear-gradient(135deg,#1a0533,#2d1052);padding:28px 32px">
+          <div style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-0.5px">CastSlate</div>
+        </td></tr>
+        <tr><td style="padding:36px 32px 28px">
+          <h1 style="margin:0 0 16px;font-size:24px;font-weight:800;color:#111;letter-spacing:-0.5px">Update on your class booking request</h1>
+          <p style="margin:0 0 8px;font-size:16px;line-height:1.6;color:#555">
+            Hi ${firstName}, thanks for your interest in:
+          </p>
+          <p style="margin:0 0 16px;font-size:17px;font-weight:700;color:#2d1052;line-height:1.4">
+            ${classTitle}
+          </p>
+          <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#555">
+            Unfortunately your request wasn't approved at this time.
+          </p>
+          ${noteLine}
+          <a href="${APP_URL}/classes"
+             style="display:inline-block;background:linear-gradient(90deg,#6b3ecb,#8b5cf6);color:#fff;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:15px;letter-spacing:0.1px">
+            Browse Classes →
+          </a>
+        </td></tr>
+        <tr><td style="padding:20px 32px 32px;border-top:1px solid #f0f0f0">
+          <p style="margin:0;font-size:12px;color:#aaa;line-height:1.6">
+            You're receiving this because you requested a class booking on CastSlate.<br/>
+            To manage notifications, visit <a href="${APP_URL}/account-settings" style="color:#8b5cf6;text-decoration:none">Account Settings → Notifications</a>.
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
 async function sendSms(toPhone: string, body: string): Promise<{ ok: boolean; error?: string }> {
   if (!TWILIO_SID || !TWILIO_TOKEN || !TWILIO_FROM) {
     return { ok: false, error: "SMS_NOT_CONFIGURED" };
@@ -214,7 +293,7 @@ serve(async (req) => {
     });
 
   try {
-    const { to_user_id, type, from_id, from_name: rawFromName, application_id, casting_id, class_title } = (await req.json()) as NotifyRequest;
+    const { to_user_id, type, from_id, from_name: rawFromName, application_id, casting_id, class_title, slot_label, admin_note, class_price, class_id } = (await req.json()) as NotifyRequest;
 
     if (!to_user_id || !type) {
       return json({ error: "Missing to_user_id or type" }, 400);
@@ -222,7 +301,6 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-    // Load recipient profile: display_name, notification prefs, phone
     const { data: profile, error: profileErr } = await supabase
       .from("profiles")
       .select("display_name, notification_email, notification_messages, notification_marketing, notification_sms, phone")
@@ -233,8 +311,42 @@ serve(async (req) => {
       return json({ error: "User profile not found" }, 404);
     }
 
-    // Resolve the related casting (for the project name + casting-aware sender
-    // name). Prefer the application's casting, fall back to an explicit casting_id.
+    // ── Booking lifecycle notifications (approved / declined) ──────────────
+    // Transactional & payment-critical: respect only the master email toggle,
+    // not the per-message preference. This is what tells talent to go pay.
+    if (type === "booking_approved" || type === "booking_declined") {
+      const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
+      const emailMasterEnabled = profile.notification_email !== false;
+
+      if (!emailMasterEnabled) {
+        return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
+      }
+      if (!emailConfigured()) {
+        console.warn("[send-notification-email] email provider not configured — skipping booking email");
+        return json({ ok: true, results: { email: "skipped:EMAIL_NOT_CONFIGURED" } });
+      }
+
+      const { data: authData, error: authErr } = await supabase.auth.admin.getUserById(to_user_id);
+      if (authErr || !authData?.user?.email) {
+        return json({ ok: false, results: { email: "error:could_not_retrieve_user_email" } });
+      }
+      const toEmail = authData.user.email;
+      const ct = class_title?.trim() || "your class";
+      const subject = type === "booking_approved"
+        ? "You're approved — complete your CastSlate booking"
+        : "Update on your CastSlate class booking";
+      const html = type === "booking_approved"
+        ? bookingApprovedHtml(firstName, ct, slot_label?.trim() || undefined, class_price?.trim() || undefined, class_id?.trim() || undefined)
+        : bookingDeclinedHtml(firstName, ct, admin_note?.trim() || undefined);
+
+      const sent = await sendEmail({ from: FROM_EMAIL, to: [toEmail], replyTo: CONTACT_EMAIL, subject, html });
+      if (!sent.ok) {
+        console.error("[send-notification-email] booking send error:", sent.err);
+        return json({ ok: false, results: { email: `error:${sent.err}` } });
+      }
+      return json({ ok: true, results: { email: "sent" } });
+    }
+
     let casting:
       | { title: string | null; prod: string | null; is_admin_created: boolean | null; cd_id: string | null }
       | null = null;
@@ -259,10 +371,6 @@ serve(async (req) => {
     }
     const projectName = casting?.title?.trim() || undefined;
 
-    // Resolve sender display name: prefer explicit from_name, then derive from the
-    // casting + sender. Mirrors the client posterDisplayName rule: an admin-generated
-    // casting surfaces the Production Company (prod) instead of the platform/admin
-    // account name; a real CD surfaces their own name.
     let resolvedFromName = rawFromName?.trim() || undefined;
     if (!resolvedFromName && from_id) {
       const { data: senderProfile } = await supabase
@@ -282,7 +390,6 @@ serve(async (req) => {
     const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
     const results: Record<string, unknown> = {};
 
-    // ── Email notification ──────────────────────────────────────────────────
     const emailMasterEnabled = profile.notification_email !== false;
     const messageEmailEnabled = type === "inbox_message"
       ? emailMasterEnabled && profile.notification_messages !== false
@@ -319,7 +426,6 @@ serve(async (req) => {
       results.email = "skipped:notifications_disabled_by_user";
     }
 
-    // ── SMS notification ────────────────────────────────────────────────────
     const smsEnabled = profile.notification_sms === true;
     const rawPhone = (profile.phone ?? "").trim();
     const validPhone = /^\+?[1-9]\d{7,14}$/.test(rawPhone.replace(/[\s\-().]/g, ""));

@@ -23012,6 +23012,24 @@ function App(){
       setPage("success");
       try{window.history.replaceState({swipecast:true,page:"success"},"","/success");}catch(_){}
     }
+    // Deep-link from booking emails: /classes?class=<id> opens that class detail
+    // directly so the "Complete Payment" banner is right there. Works logged in or
+    // out; when logged out we stash the return URL so login lands back on the class.
+    try{
+      const _dlPath=(window.location.pathname||"").replace(/\/+$/,"");
+      if(_dlPath==="/classes"){
+        const _dlp=new URLSearchParams(qs||"");
+        const _dlClass=_dlp.get("class");
+        if(_dlClass){
+          const _dlInv=_dlp.get("inv");
+          try{sessionStorage.setItem("sc_return_to","/classes?class="+encodeURIComponent(_dlClass)+(_dlInv?("&inv="+encodeURIComponent(_dlInv)):""));}catch(_){}
+          setOpenClassId(_dlClass);
+          if(_dlInv)setOpenClassInvitationId(_dlInv);
+          setPage("classes");
+          try{window.history.replaceState({swipecast:true,page:"classes"},"","/classes");}catch(_){}
+        }
+      }
+    }catch(_){}
     // Seed browser history with current URL so back-button works after refresh
     try{
       const curPage=urlToPage();
@@ -23392,6 +23410,16 @@ function App(){
         // Navigate to the saved URL (the router will read it via urlToPage on the next render)
         try{window.history.replaceState({swipecast:true,page:urlToPage()/*will re-derive below*/},"",returnTo);}catch(_){}
         const rpage=urlToPage();
+        // Deep-link: returning to /classes?class=<id> should open that class detail
+        // (e.g. talent logged in to complete payment from the approval email).
+        try{
+          const _qi=returnTo.indexOf("?");
+          if(rpage==="classes"&&_qi>=0){
+            const _rp=new URLSearchParams(returnTo.slice(_qi+1).split("#")[0]);
+            const _rc=_rp.get("class");
+            if(_rc){setOpenClassId(_rc);if(_rp.get("inv"))setOpenClassInvitationId(_rp.get("inv"));}
+          }
+        }catch(_){}
         setPage(rpage);
       }else if(isAd)navigate("admin");
       else if(data?.user_type==="cd")navigate("dashboard");
