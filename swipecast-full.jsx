@@ -4368,11 +4368,17 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
       <button className="btn-s btn-sm mb-20" onClick={()=>{setViewing(null);setSessionFilter("all");window.scrollTo(0,0);}}>{t('classes.backToClasses')}</button>
       {/* Complete Payment banner — shown when the user has an approved booking and the class has a price */}
       {myBookingRequest&&myBookingRequest.status==="approved"&&myBookingRequest.payment_status!=="paid"&&(viewing.price||viewing.sale_price)&&(
-        <div style={{marginBottom:20,padding:18,background:"rgba(99,102,241,0.07)",border:"1px solid rgba(99,102,241,0.25)",borderRadius:12}}>
-          <div style={{fontWeight:700,fontSize:15,marginBottom:4}}>{t('classes.paymentApproved')}</div>
-          <div style={{color:"var(--t2)",fontSize:13,marginBottom:12}}>Price: {viewing.sale_price||viewing.price}. Your spot is reserved for 48 hours.</div>
-          {classPayErr&&<div style={{color:"#c0392b",fontSize:13,marginBottom:10}}>{classPayErr}</div>}
-          <button className="btn-p btn-sm" disabled={classPayBusy} onClick={()=>handleClassPayment(viewing)}>{classPayBusy?t('classes.openingCheckout'):t('classes.completePayment')}</button>
+        <div style={{marginBottom:20,padding:20,background:"linear-gradient(135deg,rgba(26,107,66,0.10),rgba(30,128,80,0.05))",border:"1px solid rgba(26,107,66,0.30)",borderRadius:14,display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
+          <div style={{flexShrink:0,width:42,height:42,borderRadius:"50%",background:"rgba(26,107,66,0.14)",display:"flex",alignItems:"center",justifyContent:"center",color:"#1a6b42"}}><Ico n="circle-check" s={24}/></div>
+          <div style={{flex:1,minWidth:200}}>
+            <div style={{fontWeight:800,fontSize:15.5,color:"var(--t1)",marginBottom:3,letterSpacing:-0.2}}>{t('classes.paymentApproved')}</div>
+            <div style={{color:"var(--t2)",fontSize:13}}>Price: {viewing.sale_price||viewing.price}. Your spot is reserved for 48 hours.</div>
+            {classPayErr&&<div style={{color:"#c0392b",fontSize:13,marginTop:8}}>{classPayErr}</div>}
+          </div>
+          <button disabled={classPayBusy} onClick={()=>handleClassPayment(viewing)}
+            style={{flexShrink:0,background:classPayBusy?"#3a8a5f":"linear-gradient(90deg,#1a6b42,#1e8050)",color:"#fff",fontWeight:800,fontSize:14,padding:"13px 28px",borderRadius:10,border:"none",cursor:classPayBusy?"default":"pointer",fontFamily:"inherit",whiteSpace:"nowrap",boxShadow:"0 4px 14px rgba(26,107,66,0.32)",opacity:classPayBusy?0.8:1}}>
+            {classPayBusy?t('classes.openingCheckout'):t('classes.completePayment')}
+          </button>
         </div>
       )}
       {myBookingRequest&&myBookingRequest.payment_status==="paid"&&(
