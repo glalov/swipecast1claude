@@ -100,6 +100,26 @@ Deno.serve(async (req: Request) => {
           if (error) console.error("Failed to activate premium:", error);
           else console.log(`Premium activated for user: ${userId}, plan: ${planKey}`);
 
+          // One-time "Welcome to Premium" email. Guarded by premium_welcome_sent_at
+          // so renewals / re-subscribes never re-send it. Fire-and-forget; non-fatal.
+          try {
+            const { data: prof } = await supabase
+              .from("profiles").select("premium_welcome_sent_at").eq("id", userId).maybeSingle();
+            if (!prof?.premium_welcome_sent_at) {
+              await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-notification-email`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ to_user_id: userId, type: "premium_welcome" }),
+              });
+              await supabase.from("profiles")
+                .update({ premium_welcome_sent_at: new Date().toISOString() })
+                .eq("id", userId);
+              console.log(`Premium welcome email dispatched for user: ${userId}`);
+            }
+          } catch (e) {
+            console.error("Premium welcome email failed (non-fatal):", e);
+          }
+
         } else if (session.metadata?.type === "class_payment" && session.mode === "payment") {
           const classId = session.metadata?.class_id;
           if (classId) {
