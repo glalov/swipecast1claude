@@ -21189,6 +21189,23 @@ function AdminAllBookingRequests(){
     }
   };
 
+  const cancelRequest=async(req)=>{
+    if(!window.confirm("Cancel this approved booking? This releases the talent's reserved time slot and removes their \"Complete Payment\" prompt. This can't be undone."))return;
+    setBusy(req.id);setResolveMsg(null);
+    try{
+      const{data,error}=await window.sb.rpc("cancel_class_booking_request",{p_request_id:req.id});
+      if(error)throw error;
+      if(data?.error)throw new Error(data.error);
+      setStatusFilter("cancelled");
+      setExpanded(req.id);
+      setResolveMsg({ok:true,text:"Booking cancelled. The time slot has been released and the talent's payment prompt removed."});
+    }catch(e){
+      setResolveMsg({ok:false,text:"Error: "+e.message});
+    }finally{
+      setBusy(null);reload();
+    }
+  };
+
   const STATUS_COLOR={pending_review:"var(--acc)",approved:"var(--grn)",declined:"#c0392b",rejected:"#c0392b",payment_pending:"#e67e22",paid:"var(--grn)",cancelled:"var(--t3)"};
   const STATUS_LABEL={pending_review:"Pending Review",approved:"Approved — Awaiting Payment",declined:"Declined",rejected:"Rejected",payment_pending:"Payment Pending",paid:"Paid",cancelled:"Cancelled"};
   const FILTER_LABEL={pending_review:"Pending Review",all:"All",approved:"Approved",declined:"Declined",payment_pending:"Payment Pending",paid:"Paid",cancelled:"Cancelled"};
@@ -21284,6 +21301,11 @@ function AdminAllBookingRequests(){
                       {busy===req.id?"Processing…":"Decline"}
                     </button>
                   </>)}
+                  {(isApproved||req.status==="payment_pending")&&(
+                    <button className="btn-s btn-sm" disabled={busy===req.id} onClick={()=>cancelRequest(req)} style={{color:"#c0392b",borderColor:"#c0392b"}}>
+                      {busy===req.id?"Processing…":"Cancel Booking"}
+                    </button>
+                  )}
                   <button className="btn-s btn-sm" onClick={()=>setExpanded(expanded===req.id?null:req.id)}>
                     {expanded===req.id?"Hide Details":"View Details"}
                   </button>
