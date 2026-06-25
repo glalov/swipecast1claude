@@ -4265,6 +4265,16 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
     finally{setLoading(false);}
   })();},[]);
 
+  // Deep-link watcher: open the target class whenever openClassId arrives AFTER
+  // the initial fetch already ran (e.g. landing directly on /classes?class=<id>
+  // from a booking email, where the page is already mounted when the id is set).
+  useEffect(()=>{
+    if(!openClassId||!classes.length)return;
+    const target=classes.find(c=>c.id===openClassId);
+    if(target){setViewing(target);window.scrollTo(0,0);}
+    if(onClassOpened)onClassOpened();
+  },[openClassId,classes]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Fetch booked session occurrences whenever the user opens a class detail
   useEffect(()=>{
     if(!viewing){setBookedSessions(new Set());setMyBookingRequest(null);setClassPayErr("");return;}
