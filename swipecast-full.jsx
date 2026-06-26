@@ -17205,6 +17205,367 @@ const ACG = (()=>{
   const PAY_VOICEOVER_B="$50–$300 for most paid session projects. Some educational or spec content is credit-only. All rates disclosed up front.";
   const PAY_THEATER="Most workshop sessions are unpaid or offer a small stipend ($25–$75/day). Some funded workshops offer rehearsal pay. Details shared per project.";
   const PAY_COMMERCIAL="Day rates range from $150–$600 for paid commercial projects. Spec and student commercial work may be copy/credit only.";
+  const LS_KEYS={titles:"cs_acg_titles_v2",prods:"cs_acg_prods_v2",roles:"cs_acg_roles_v2",stories:"cs_acg_stories_v2",pays:"cs_acg_pays_v2",firsts:"cs_acg_firsts_v2",lasts:"cs_acg_lasts_v2"};
+  const FIRST_F=["Ari","Mara","Nina","Leah","Sofia","Ruth","June","Celia","Nadine","Tessa","Mina","Priya","Dani","Elise","Val","Maya","Jo","Raina","Clara","Simone","Noor","Iris","Frances","Greta","Anika","Lucia","Mae","Helena","Jules","Vera","Lena","Naomi","Maris","Teresa","Lydia","Renata","Adina","Bea","Camille","Daphne","Elora","Faye","Gia","Hana","Imani","Katya","Liora","Maren","Nell","Opal","Petra","Romy","Sabine","Thea","Uma","Vivian","Willa","Yara","Zadie","Alma","Blythe","Carmen","Delia","Esther","Flora","Gwen","Hester","Ines","Jana","Keira","Lina","Miriam","Nora","Orla","Phoebe","Quinta","Rhea","Selene","Talia","Una","Veda","Winona"];
+  const FIRST_M=["Ben","Ray","Noah","Andre","Samir","Malcolm","Marco","Trevor","Cal","Martin","Morris","Eli","Graham","Owen","Theo","Julian","Darius","Leo","Mateo","Simon","Rafael","Harris","Victor","Miles","Nico","Jonah","Arthur","Wes","Isaac","Evan","Micah","Sol","Caleb","Roman","Dominic","Felix","Adrian","Bashir","Cole","Desmond","Enzo","Ford","Gideon","Hugo","Ivan","Jasper","Kian","Luca","Milo","Nestor","Oscar","Paolo","Quentin","Remy","Silas","Tobias","Uri","Vincent","Wyatt","Xavier","Yosef","Zeke","Arlo","Bruno","Cassian","Dante","Emil","Finn","Galen","Heath","Idris","Kai","Leon","Magnus","Nolan","Otis","Pierce","Reid","Soren","Tariq","Vaughn"];
+  const FIRST_N=["Alex","Rowan","Casey","Jordan","Quinn","Riley","Taylor","Morgan","Sage","Avery","Hayden","Emery","Reese","Jamie","Devon","Shay","Remy","Parker","Elliot","Sky","Marion","Lane","Robin","Ellis","Arden","Briar","Cameron","Drew","Eden","Finley","Gray","Harper","Indigo","Jules","Kit","Lennox","Marlowe","Noel","Oakley","Perry","River","Sawyer","Teagan","Val","Winter"];
+  const LAST_NAMES=["Vale","Bell","Rios","Cho","Ellis","Perez","Leung","Hart","Voss","Alvarez","Bennett","Okafor","Cruz","Farrell","Stone","Sato","Doyle","Haddad","Mercer","Ibrahim","Navarro","Kline","Reed","Bishop","Moreno","Lin","Kapoor","Walsh","Duarte","Hale","Moretti","Singh","Becker","Nolan","Park","Vega","Mason","Kowalski","Adler","Hayes","Tan","Greer","Rosen","Foster","Kim","Santos","Brooks","Rahman","Owens","Silva","Adebayo","Batra","Caruso","Delaney","Escobar","Fontaine","Givens","Hollis","Ivers","Jafari","Kaur","Lombardi","Mendez","Novak","Osei","Paz","Quintana","Rashid","Serrano","Torres","Usman","Varela","Whitlock","Yamamoto","Zeller","Ames","Bello","Chandler","Dawson","Eames","Farrow","Guerra","Hunt","Irving","Jensen","Keene","Lowell","Morrow","Nadir","Ochoa","Pike","Quill","Roth","Sawyer","Talbot","Upton","Vossler","Wexler","Yoon","Zamora"];
+  const COMPANY_A=["Blue Hour","Northline","Harbor Cut","Paper Lantern","Signal House","West 43","Third Floor","Cinderblock","Juniper Lake","Lighthouse","Crescent Alley","Slate Window","Market Street","Blackbox","Little Yard","Second Bell","Subway Light","Turnpike","Green Room","Afterimage","Bright Cart","Corner Store","Half Moon","Downtown","Riverglass","Side Street","Stage Door","Red Hook","Lakefront","Copper Rail"];
+  const COMPANY_B=["Pictures","Films","Creative Studio","Content Lab","Theatre Lab","New Works","Productions","Motion","Workshop Collective","Capstone Unit","Media Works","Independent Pictures","Commercial Unit","Cinema","Story Lab","Stage Company","Film Group","Development Lab","Project Studio"];
+  const TITLE_A=["Last","Blue","Spare","Ninth","Soft","North","No","Perfect","Quiet","Second","Small","Wrong","Late","Borrowed","Empty","Good","Night","Bright","Missing","Open","Cold","Side","Long","False","Early","Broken","Hidden","Ordinary"];
+  const TITLE_B=["Room","Table","Receipt","Signal","Checkout","Stop","Key","Window","Chair","Route","Ledger","Shift","Lobby","House","Floor","Weekend","Driver","Account","Dress Rehearsal","Invoice","Call Sheet","Light","Suitcase","Counter","Booth","Platform","Hallway","Register"];
+  const TITLE_LONG=[
+    "Please Do Not Feed the Actors",
+    "Everything We Said in the Parking Lot",
+    "I Think Your Mother Called Again",
+    "The Day We Lost Sound",
+    "Three Blocks from the Good Hospital",
+    "No One Here Is Actually Fine",
+    "What the Location Manager Knew",
+    "Someone Left the Back Door Open",
+    "Before the Notes Meeting",
+    "The Last Clean Shirt in Queens",
+    "All the Ways This Could Go Wrong",
+    "My Father Keeps the Receipts",
+    "We Are Not Calling It a Pilot Yet",
+    "A Presentation for People With Money",
+    "This Is Only a Proof of Concept",
+    "The Short We Shoot Before the Feature",
+    "Nobody Say Streaming Platform",
+    "The Pitch Deck Has Feelings",
+    "Budget Pending",
+    "If the Grant Comes Through"
+  ];
+  const STORY_DETAILS=[
+    "an unpaid invoice that changes who has power in the room",
+    "a voice message no one was supposed to hear",
+    "a missing set of keys that forces two characters to tell the truth",
+    "a weather delay that turns a simple job into a confession",
+    "a rehearsal note that exposes an old family argument",
+    "a mistaken delivery that links strangers across the same block",
+    "a half-finished documentary that catches everyone behaving badly",
+    "a closing-night speech that goes off script",
+    "a background check form that reveals the wrong secret",
+    "a phone with one percent battery and the only proof anyone has",
+    "a borrowed costume that becomes evidence of a larger lie",
+    "a locked office where the most practical person finally loses patience",
+    "a group text accidentally sent to the one person it was about",
+    "a meal order that exposes who has been paying for everyone",
+    "a prop that should have been harmless but keeps returning to the scene",
+    "a neighbor who knows more about the production than the producer does",
+    "a grant deadline that makes every character choose between art and rent",
+    "an understudy's private notes becoming more useful than the script",
+    "a child actor's parent asking the question the adults avoided",
+    "a damaged location agreement that threatens the whole shoot"
+  ];
+  const REQ_BITS=["a grounded dramatic reel","a conversational self-tape","a 90-second scene with a clear shift","a comedic or dramatic clip that feels current","a simple slate plus one prepared scene","recent theater or on-camera material","a naturalistic self-tape without heavy editing"];
+  const AVAIL_BITS=["local-hire status","weekday and weekend availability","night-shoot availability","comfort with rehearsal and rewrites","any improv or movement experience","any commercial conflicts","travel limitations","guardian availability for minors","comfort with food or prop handling"];
+  const VOICE_STYLES=[
+    {
+      key:"friendly",
+      line:d=>`The team is keeping this one small and actor-friendly: clear call times, no mystery around the material, and room for performers to bring human detail. The main wrinkle is ${d}.`,
+      role:"Warm, open, and specific. The actor should make the scene feel lived-in, not polished flat."
+    },
+    {
+      key:"professional",
+      line:d=>`Casting is focused on reliability, clean preparation, and actors who can adjust quickly on set. The production hinge is ${d}, and the scenes need performers who understand stakes without overplaying them.`,
+      role:"Needs a prepared, technically reliable actor who can take direction fast and keep continuity clean."
+    },
+    {
+      key:"plainspoken",
+      line:d=>`This is not looking for glossy performances. The director wants people who can show up, listen, and make ${d} feel like something that would actually happen on a bad day.`,
+      role:"Keep it honest. No big actor choices unless the scene earns them."
+    },
+    {
+      key:"downtown",
+      line:d=>`The writing has a downtown-room quality: funny until it is not, casual until someone says the wrong thing. Everything turns on ${d}.`,
+      role:"Dry timing helps. So does comfort with silence, interruptions, and scenes that turn sideways."
+    },
+    {
+      key:"casting-office",
+      line:d=>`Seeking grounded, camera-ready performers for a practical shoot with limited time to find the moment. Please read the breakdown carefully; ${d} is central to the story engine.`,
+      role:"Casting is prioritizing clarity, availability, and a strong first read."
+    },
+    {
+      key:"student-director",
+      line:d=>`This is a student or emerging-director project with a specific point of view and limited resources. The piece depends on ${d}, so actors should be comfortable helping the scene find its shape.`,
+      role:"A collaborative actor will do well here. The role may shift in rehearsal."
+    }
+  ];
+  const SYNOPSIS_LENGTHS=["very_short","short","medium","long","extended"];
+  const ROLE_LENGTHS=["tiny","short","medium","long"];
+  const BACKGROUND_ROLE_BANK=[
+    {name:"Featured Restaurant Background",role_type:"Background",description:"Patrons and staff for a busy practical location. Looking for real behavior, not mugging.",gender:"All genders",age_range:"18-70",ethnicity:"All ethnicities",pay:""},
+    {name:"Street / Transit Background",role_type:"Background",description:"Commuters, passersby, platform riders, and sidewalk traffic. Must be patient with resets.",gender:"All genders",age_range:"18-75",ethnicity:"All ethnicities",pay:""},
+    {name:"Workshop Audience",role_type:"Background",description:"Audience members for staged reading or workshop scenes. Quiet reactions and natural listening needed.",gender:"All genders",age_range:"18-80",ethnicity:"All ethnicities",pay:""},
+    {name:"Crew / Set Atmosphere",role_type:"Background",description:"Film crew, extras holding, and practical set atmosphere. Prior set experience helpful.",gender:"All genders",age_range:"18-65",ethnicity:"All ethnicities",pay:""},
+    {name:"Store Customers",role_type:"Background",description:"Neighborhood customer bits with natural, everyday behavior. Some featured business may be improvised.",gender:"All genders",age_range:"18-80",ethnicity:"All ethnicities",pay:""}
+  ];
+  const STANDIN_ROLE_BANK=[
+    {name:"Principal Stand-In",role_type:"Stand-In",description:"Stand-in for camera and lighting setups. Similar height/build to a principal role; set experience preferred.",gender:"All genders",age_range:"18-60",ethnicity:"All ethnicities",pay:""},
+    {name:"Photo Double / Stand-In",role_type:"Stand-In",description:"May be used for over-the-shoulder framing, simple movement, and lighting setups. Must match general look requested after booking.",gender:"All genders",age_range:"18-55",ethnicity:"All ethnicities",pay:""},
+    {name:"Commercial Stand-In",role_type:"Stand-In",description:"Stand-in for product/action coverage. Patient, punctual, and comfortable repeating simple marks.",gender:"All genders",age_range:"18-65",ethnicity:"All ethnicities",pay:""}
+  ];
+  function clean(v){return String(v||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();}
+  function fp(v){return clean(v).replace(/\s+/g,"-");}
+  function rand(min,max,step=25){const n=Math.floor((max-min)/step)+1;return min+Math.floor(Math.random()*n)*step;}
+  function sent(text,n){
+    const parts=String(text||"").replace(/\s*\n+\s*/g," ").match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[text];
+    return parts.map(x=>x.trim()).filter(Boolean).slice(0,n).join(" ");
+  }
+  function paras(text){return String(text||"").split(/\n{2,}/).map(x=>x.trim()).filter(Boolean);}
+  function varySynopsis(base,type,detail,voice){
+    const ps=paras(base);
+    const first=ps[0]||base;
+    const second=ps[1]||"";
+    const len=pick(SYNOPSIS_LENGTHS);
+    const line=voice.line(detail);
+    const process=pick([
+      "The schedule is practical and lean, so the casting team is more interested in believable choices than showy audition tricks.",
+      "The production is looking for actors who understand behavior: small hesitations, private jokes, and the way people cover when they are nervous.",
+      "Rehearsal may be light, but the director plans to talk through backstory and scene pressure before cameras roll.",
+      "The material should feel found, not manufactured. If the performance announces itself too loudly, it is probably wrong for this one.",
+      "There is room for humor, but the casting should not drift into sketch unless the specific role calls for it."
+    ]);
+    const human=pick([
+      "Small note from the team: they know the budget is not glamorous, but they are trying to run the room respectfully.",
+      "The director has a real thing about pauses, bad coffee, and people pretending not to care.",
+      "This may still change after casting. That is not a red flag here; they are building around the people they find.",
+      "The producer is being upfront that some logistics are still moving. Dates are real, but exact times may shift.",
+      "Not every role is large. A few parts are there because the world needs to feel populated by actual people.",
+      "The tone reference is less prestige drama and more something overheard while everyone is trying to stay polite.",
+      "There is one scene the team cares about more than the rest. They will probably know who is right from that tape.",
+      "The project is rough-edged on purpose. Clean, expensive-looking acting will probably feel wrong."
+    ]);
+    if(len==="very_short")return `${sent(first,2)}\n\n${line}`;
+    if(len==="short")return `${first}\n\n${pick([line,process,human])}`;
+    if(len==="medium")return `${first}\n\n${line}\n\n${sent(second||process,2)} ${Math.random()<0.45?human:""}`.trim();
+    if(len==="long")return `${first}\n\n${second||line}\n\n${line} ${process}\n\n${human}`;
+    return `${first}\n\n${second||process}\n\n${line}\n\n${pick([
+      "Scenes may be rewritten around the final cast, so actors should bring a clear point of view without locking the room into one interpretation.",
+      "The casting team is open to unexpected reads if they feel truthful to the world of the project.",
+      "Please submit material that shows listening and adjustment; the most useful tapes for this are not always the most dramatic ones."
+    ])}\n\n${human}`;
+  }
+  function localSet(k){
+    try{return new Set(JSON.parse(localStorage.getItem(k)||"[]").map(clean).filter(Boolean));}
+    catch(_){return new Set();}
+  }
+  function saveLocalSet(k,set){
+    try{localStorage.setItem(k,JSON.stringify([...set].filter(Boolean).slice(-5000)));}
+    catch(_){}
+  }
+  function addUsed(set,v){const x=clean(v);if(x)set.add(x);}
+  function nameParts(v){
+    const raw=String(v||"").trim();
+    if(!raw||/background|stand-in|double|ensemble|patrons|regulars|guests|riders|audience|crew|customers|students/i.test(raw))return null;
+    const parts=raw.split(/\s+/).map(x=>x.replace(/[^A-Za-z'-]/g,"")).filter(Boolean);
+    if(parts.length<2)return null;
+    return{first:parts[0],last:parts[parts.length-1]};
+  }
+  function addNameUsed(h,name){
+    addUsed(h.roles,name);
+    const p=nameParts(name);
+    if(p){addUsed(h.firsts,p.first);addUsed(h.lasts,p.last);}
+  }
+  function candidateUnique(candidates,used,reserved,fallback){
+    for(const c of candidates){
+      const n=clean(c);
+      if(n&&!used.has(n)&&!reserved.has(n)){reserved.add(n);return c;}
+    }
+    for(let i=0;i<400;i++){
+      const c=fallback(i);
+      const n=clean(c);
+      if(n&&!used.has(n)&&!reserved.has(n)){reserved.add(n);return c;}
+    }
+    const c=fallback(Date.now()%100000);
+    reserved.add(clean(c));
+    return c;
+  }
+  function storyBaseKey(tpl){return fp(tpl.titles&&tpl.titles[0]||tpl.type);}
+  function buildHistory(existing=[]){
+    const h={titles:localSet(LS_KEYS.titles),prods:localSet(LS_KEYS.prods),roles:localSet(LS_KEYS.roles),stories:localSet(LS_KEYS.stories),pays:localSet(LS_KEYS.pays),firsts:localSet(LS_KEYS.firsts),lasts:localSet(LS_KEYS.lasts)};
+    (existing||[]).forEach(c=>{
+      addUsed(h.titles,c.title);addUsed(h.prods,c.prod);addUsed(h.prods,c.posted_by_label);addUsed(h.pays,c.pay);
+      addUsed(h.stories,c.title+" "+(c.synopsis||"").slice(0,180));
+      (c.roles||[]).forEach(r=>addNameUsed(h,r.name));
+      if(typeof CONCEPTS!=="undefined"){
+        CONCEPTS.forEach(t=>{
+          const base=storyBaseKey(t);
+          if((t.titles||[]).some(x=>clean(x)===clean(c.title))||clean(c.prod)===clean(t.postedBy)||clean(c.posted_by_label)===clean(t.postedBy)){
+            addUsed(h.stories,base);
+          }
+        });
+      }
+    });
+    return h;
+  }
+  function rememberGenerated(items){
+    const titles=localSet(LS_KEYS.titles),prods=localSet(LS_KEYS.prods),roles=localSet(LS_KEYS.roles),stories=localSet(LS_KEYS.stories),pays=localSet(LS_KEYS.pays),firsts=localSet(LS_KEYS.firsts),lasts=localSet(LS_KEYS.lasts);
+    (items||[]).forEach(item=>{
+      addUsed(titles,item.title);addUsed(prods,item.prod);addUsed(prods,item.posted_by_label);addUsed(pays,item.pay);
+      addUsed(stories,item._baseKey);addUsed(stories,item._storyKey);addUsed(stories,item.title+" "+(item.synopsis||"").slice(0,180));
+      (item._roles||[]).forEach(r=>{addUsed(roles,r.name);const p=nameParts(r.name);if(p){addUsed(firsts,p.first);addUsed(lasts,p.last);}});
+    });
+    saveLocalSet(LS_KEYS.titles,titles);saveLocalSet(LS_KEYS.prods,prods);saveLocalSet(LS_KEYS.roles,roles);saveLocalSet(LS_KEYS.stories,stories);saveLocalSet(LS_KEYS.pays,pays);saveLocalSet(LS_KEYS.firsts,firsts);saveLocalSet(LS_KEYS.lasts,lasts);
+  }
+  function uniqueCompany(tpl,city,h,res){
+    const cands=[
+      tpl.postedBy,
+      `${city.short} ${pick(COMPANY_A)} ${pick(COMPANY_B)}`,
+      `${pick(COMPANY_A)} ${pick(COMPANY_B)}`,
+      `${pick(COMPANY_A)} ${pick(["North","South","East","West","Downtown","Uptown"])} ${pick(COMPANY_B)}`
+    ];
+    return candidateUnique(cands,h.prods,res.prods,()=>`${pick(COMPANY_A)} ${pick(COMPANY_A)} ${pick(COMPANY_B)}`);
+  }
+  function uniqueTitle(tpl,city,h,res){
+    const place=pick(["the Lobby","Table Nine","Gate Four","Closing","First Light","the Blue Hour","the Loading Dock","the Wrong Exit","Tech Rehearsal","Holding","the Notes Call","the Van"]);
+    const cands=[
+      ...tpl.titles,
+      pick(TITLE_LONG),
+      pick(TITLE_LONG),
+      `${pick(TITLE_A)} ${pick(TITLE_B)}`,
+      `The ${pick(TITLE_A)} ${pick(TITLE_B)}`,
+      `${pick(TITLE_B)}`,
+      `${city.short} ${pick(TITLE_B)}`,
+      `${pick(TITLE_B)} at ${place}`,
+      `${pick(["After","Before","Under","Past"])} ${place}`,
+      `${pick(["A","The"])} ${pick(["Very Small","Probably Bad","Completely Reasonable","Not Exactly Legal","Almost Funded"])} ${pick(["Plan","Film","Reading","Meeting","Favor"])}`
+    ];
+    return candidateUnique(cands,h.titles,res.titles,()=>`${pick(TITLE_LONG)} ${pick(["No. 2","After Dark","in Winter","on Tuesday","at Closing","Before Dawn"])}`);
+  }
+  function uniqueStory(tpl,city,h,res){
+    const base=storyBaseKey(tpl);
+    const detail=pick(STORY_DETAILS);
+    const storyKey=fp(`${base}-${city.short}-${detail}`);
+    const baseSynopsis=typeof tpl.synopsis==="function"?tpl.synopsis(city):pick(tpl.synopses(city));
+    const voice=pick(VOICE_STYLES);
+    const synopsis=varySynopsis(baseSynopsis,tpl.type,detail,voice);
+    const reserveKey=clean(storyKey);
+    res.stories.add(clean(base));
+    res.stories.add(reserveKey);
+    return{baseKey:base,storyKey,synopsis,voice};
+  }
+  function uniquePay(type,roleCount,h,res){
+    const travel=pick(["local transportation considered for select roles","parking or transit support provided where possible","travel support discussed for non-local principals","no travel covered except pre-approved principals"]);
+    const meals=pick(["meals and copy provided","meals, copy, and credit provided","meals, digital copy, and festival/commercial usage notes provided"]);
+    const mode=pick(["no_pay","copy_meals","tiny","deferred","pitch","low","mid","high","vague"]);
+    let cands=[];
+    if(mode==="no_pay"){
+      cands.push(`No pay. Copy, credit, meals, and honest communication about schedule. Best for actors who want footage or a relationship with the filmmakers.`);
+      cands.push(`Unpaid. The team can offer meals, credit, and edited footage only. Please submit only if that works for you.`);
+    }else if(mode==="copy_meals"){
+      cands.push(`Copy/credit/meals. Small crew, no cash budget for performers at this stage. Travel is not covered.`);
+      cands.push(`No day rate; meals, credit, and a private screener provided. A small thank-you stipend may be added if the location budget comes in under target.`);
+    }else if(mode==="tiny"){
+      cands.push(`Micro-budget. $${rand(25,75,25)}-$${rand(100,175,25)}/day depending on role size; meals and copy included.`);
+      cands.push(`Very low pay. Most roles $${rand(50,100,25)}/day, with $${rand(125,200,25)}/day for the largest parts. Meals and credit provided.`);
+    }else if(mode==="deferred"){
+      cands.push(`Deferred/contingent compensation. No guaranteed upfront pay; copy, credit, meals, and written deferred terms if financing or sale happens.`);
+      cands.push(`Currently unpaid with deferred terms. The team is applying for completion funds and will confirm any upgrade in writing before production.`);
+    }else if(mode==="pitch"){
+      cands.push(`Pitch/proof-of-concept stage. $${rand(75,150,25)}-$${rand(175,300,25)}/day for principals if the presentation budget closes; otherwise copy, meals, and credit. Not attached to a streamer or studio yet.`);
+      cands.push(`Presentation shoot for a larger package. Limited upfront stipends, footage/credit provided, and potential re-casting if the project is financed later. No studio or platform attachment is being claimed.`);
+    }else if(mode==="high"&&(type==="Commercials & Branded Content"||type==="Feature Film")){
+      cands.push(`Funded production. Principal roles $${rand(650,1200,50)}-$${rand(1300,2500,100)}/day; supporting roles $${rand(300,600,50)}-$${rand(650,950,50)}/day; usage/contract terms disclosed before booking.`);
+      cands.push(`Higher-budget ${type.toLowerCase()}. Day rates range from $${rand(500,900,50)} to $${rand(1500,3000,100)} depending on role and usage. Travel and lodging considered for principals.`);
+    }else if(mode==="vague"){
+      cands.push(`Compensation is being finalized. Expect either a small stipend or copy/credit/meals; exact terms will be shared before any booking is accepted.`);
+      cands.push(`Budget not fully locked. The team is being transparent: some roles may pay, some may be credit/meals only. No one will be booked without confirmed terms.`);
+    }else if(type==="Commercials & Branded Content"){
+      cands.push(`Paid digital/commercial shoot. Principals $${rand(375,750,25)}-$${rand(800,1200,50)}/day; featured/background $${rand(125,250,25)}-$${rand(275,450,25)}/day. Usage terms disclosed before booking; ${travel}.`);
+    }else if(type==="Theater & Musicals"){
+      cands.push(`Developmental workshop stipend. $${rand(200,450,25)}-$${rand(500,900,50)} total depending on role and schedule; rehearsal dates confirmed before offer; ${meals}.`);
+    }else if(type==="Student Film"){
+      cands.push(`Student production stipend. Principal roles $${rand(75,150,25)}-$${rand(175,275,25)}/day; supporting roles $${rand(50,100,25)}-$${rand(125,175,25)}/day; ${meals}.`);
+    }else if(type==="Feature Film"){
+      cands.push(`Low-budget feature. Leads $${rand(225,400,25)}-$${rand(425,650,25)}/day; supporting/day players $${rand(100,175,25)}-$${rand(200,325,25)}/day; ${meals}; ${travel}.`);
+    }else{
+      cands.push(`Independent production. Principal roles $${rand(125,250,25)}-$${rand(275,425,25)}/day; supporting/day players $${rand(50,125,25)}-$${rand(150,225,25)}/day; ${meals}.`);
+    }
+    cands.push(`${type} casting with ${roleCount} roles currently open. Compensation varies by role size, from $${rand(75,175,25)}/day to $${rand(300,700,50)}/day; final rate confirmed before booking; ${meals}.`);
+    return candidateUnique(cands,h.pays,res.pays,()=>`${type} paid opportunity. Role rates $${rand(75,250,25)}-$${rand(275,850,25)}/day depending on part size; ${meals}; generated rate code ${Math.floor(Math.random()*9000)+1000}.`);
+  }
+  function uniqueReq(type){
+    const extras=[pick(AVAIL_BITS),pick(AVAIL_BITS)].filter((v,i,a)=>a.indexOf(v)===i).join(" and ");
+    return pick([
+      `Submit headshot, resume, and ${pick(REQ_BITS)}. Include ${extras}.`,
+      `Please send a current headshot, resume, and ${pick(REQ_BITS)}. Add a short note with ${extras}.`,
+      `Headshot and resume required. Tape can be ${pick(REQ_BITS)}; keep it simple. Please mention ${extras}.`,
+      `Send materials that look like you now: headshot, resume, and ${pick(REQ_BITS)}. Include ${extras}; long cover letters are not needed.`
+    ]);
+  }
+  function roleName(r,h,res){
+    const generic=/background|ensemble|customers|students|crew|passenger|reader|group|patron|neighbor/i.test(r.name+" "+r.role_type);
+    const pool=r.gender==="Female"?FIRST_F:r.gender==="Male"?FIRST_M:FIRST_N.concat(FIRST_F,FIRST_M);
+    if(generic){
+      const cands=[`${pick(["Lobby","Market","Transit","Campus","Workshop","Street","Office","Neighborhood","Theater","Location"])} ${pick(["Ensemble","Regulars","Patrons","Background","Guests","Crew","Neighbors","Riders"])}`];
+      return candidateUnique(cands,h.roles,res.roles,()=>`${pick(["Late-Night","Opening-Night","Field-Trip","Corner-Store","Workshop","Holding-Area","Bus-Stop","Storefront"])} ${pick(["Ensemble","Background","Patrons","Crew","Regulars","Audience"])}`);
+    }
+    for(let i=0;i<1200;i++){
+      const first=pick(pool);
+      const last=pick(LAST_NAMES);
+      const full=`${first} ${last}`;
+      if(!h.roles.has(clean(full))&&!res.roles.has(clean(full))&&!h.firsts.has(clean(first))&&!res.firsts.has(clean(first))&&!h.lasts.has(clean(last))&&!res.lasts.has(clean(last))){
+        res.roles.add(clean(full));res.firsts.add(clean(first));res.lasts.add(clean(last));
+        return full;
+      }
+    }
+    const syllA=["Aven","Bren","Calo","Demi","Ero","Fia","Galen","Hala","Ivo","Jora","Kesa","Lio","Mira","Naro","Olin","Pera","Quin","Rilo","Sena","Tavo","Una","Viro","Wesa","Yani","Zora"];
+    const syllB=["Mar","Vale","Soren","Kade","Luz","Nox","Paz","Rell","Tarin","Voss","Wynn","Zane","Miro","Dax","Hale","Rin","Soto","Kell"];
+    for(let i=0;i<500;i++){
+      const first=`${pick(syllA)}${i%7===0?"a":""}`;
+      const last=`${pick(syllB)}${i%5===0?"ton":""}`;
+      const full=`${first} ${last}`;
+      if(!h.roles.has(clean(full))&&!res.roles.has(clean(full))&&!h.firsts.has(clean(first))&&!res.firsts.has(clean(first))&&!h.lasts.has(clean(last))&&!res.lasts.has(clean(last))){
+        res.roles.add(clean(full));res.firsts.add(clean(first));res.lasts.add(clean(last));
+        return full;
+      }
+    }
+    return candidateUnique([`${pick(pool)} ${pick(LAST_NAMES)}`],h.roles,res.roles,()=>`${pick(pool)} ${pick(LAST_NAMES)} ${Math.floor(Math.random()*9000)+1000}`);
+  }
+  function varyRoleDescription(r,original,voice){
+    const base=String(r.description||"").trim();
+    const len=pick(ROLE_LENGTHS);
+    const first=sent(base,1);
+    const second=sent(base,2);
+    const color=pick([
+      "Specific relationship to the other characters matters more than resume size.",
+      "A lived-in read will beat a theatrical one here.",
+      "Should feel like a person with a day before and after this scene.",
+      "The role has room for humor if it stays grounded.",
+      "Strong listening is more important than a perfect line read.",
+      "Please avoid making the character a type; the casting team wants detail."
+    ]);
+    if(len==="tiny")return first||base;
+    if(len==="short")return second||base;
+    if(len==="medium")return `${base} ${voice.role}`;
+    return `${base} ${color} ${voice.role} Original breakdown function: ${original}.`;
+  }
+  function rolePay(type,roleType){
+    const rt=clean(roleType);
+    if(rt.includes("background"))return pick(["$75-$125/day","$100/day","Copy/credit/meals","$125/day"]);
+    if(rt.includes("stand"))return pick(["$125-$200/day","$150/day","$175/day"]);
+    if(type==="Commercials & Branded Content")return pick(["$400-$750/day","$500/day plus usage terms","$300-$600/day","$150-$300/day"]);
+    if(type==="Theater & Musicals")return pick(["Workshop stipend","$250-$600 total","Development stipend"]);
+    return pick(["$125-$250/day","$150-$300/day","$75-$175/day","Rate based on role size"]);
+  }
+  function extraRolesFor(type){
+    const extras=[];
+    if(Math.random()<0.48)extras.push({...pick(BACKGROUND_ROLE_BANK)});
+    if(Math.random()<0.24)extras.push({...pick(STANDIN_ROLE_BANK)});
+    if(type==="Commercials & Branded Content"&&Math.random()<0.28)extras.push({...pick(BACKGROUND_ROLE_BANK)});
+    return extras.slice(0,pick([1,1,2]));
+  }
+  function uniqueRoles(baseRoles,h,res,type,voice){
+    const withExtras=[...(baseRoles||[]),...extraRolesFor(type)];
+    return withExtras.map(r=>{
+      const original=r.name;
+      const name=roleName(r,h,res);
+      const roleType=r.role_type||inferRoleType(original,r.description);
+      return{...r,name,description:varyRoleDescription(r,original,voice),role_type:roleType,pay:r.pay||rolePay(type,roleType)};
+    });
+  }
 
   const TYPES=[
     {
@@ -17509,22 +17870,264 @@ const ACG = (()=>{
       ]
     }
   ];
-  function generateOne(adminUserId){
+  const CONCEPTS=[
+    {
+      type:"Feature Film",
+      postedBy:"Blue Hour Independent Pictures",
+      titles:["Mile Marker 37","The Last Motel Before Jersey","Night Clerk on Route 6"],
+      taglines:["A grounded road feature about a stranded family, a missing driver, and the people awake after midnight.","Character-driven indie thriller set across one long night at a roadside motel."],
+      cityShorts:["NYC","Boston","Chicago"],
+      synopsis:(c)=>`Independent feature filming in and around ${c.name}. The story follows a motel night clerk, a young mother traveling with her teenage son, and a retired tow-truck driver after a late-night accident leaves several strangers waiting out a storm together. What begins as a practical delay turns into a quiet mystery when one guest's car is found abandoned near the highway and no one can agree on when he last came through the lobby.\n\nThe tone is naturalistic and tense rather than flashy: long conversations, awkward silences, small discoveries, and characters trying to decide how much truth they owe each other. Looking for actors who can play behavior honestly, hold close-ups without pushing, and make ordinary people feel specific. Estimated 12-15 shoot days, mostly nights and interiors, with a small professional crew.`,
+      pay:"Low-budget feature. Paid roles range from $125-$350/day depending on role size; copy, credit, meals, and travel support provided.",
+      union:"SAG-AFTRA Micro-Budget / Non-Union welcome",
+      req:"Submit headshot, resume, and a dramatic reel or 90-second self-tape. Naturalistic material preferred. Note night-shoot availability and whether you can work as a local hire.",
+      months:()=>pick([1,2]),
+      roles:[
+        {name:"Mara Ellis",role_type:"Lead",description:"Motel night clerk in her late 30s to 50s. Dry, observant, tired of being underestimated. Carries the film through withheld emotion and very small shifts in trust.",gender:"Female",age_range:"35-55",ethnicity:"All ethnicities",pay:"$250-$350/day"},
+        {name:"Dani Perez",role_type:"Lead",description:"Single parent traveling under pressure. Protective, funny when cornered, hiding a practical emergency from her son. Needs grounded dramatic range.",gender:"Female",age_range:"28-45",ethnicity:"All ethnicities",pay:"$250-$350/day"},
+        {name:"Eli",role_type:"Supporting",description:"Teen son who notices more than adults think. Smart, defensive, not a generic moody teenager. Must be comfortable with night shoots.",gender:"Male",age_range:"14-17",ethnicity:"All ethnicities",pay:"$150-$250/day"},
+        {name:"Ray Voss",role_type:"Supporting",description:"Retired tow-truck driver with a soft voice and a complicated history in the town. Warmth with an edge.",gender:"Male",age_range:"55-75",ethnicity:"All ethnicities",pay:"$175-$275/day"},
+        {name:"State Trooper Leung",role_type:"Day Player",description:"Practical local officer trying to keep the situation contained. One strong scene; calm authority without cop-show performance.",gender:"All genders",age_range:"30-55",ethnicity:"All ethnicities",pay:"$125-$200/day"}
+      ]
+    },
+    {
+      type:"Short Film",
+      postedBy:"Third Floor Walk-Up Films",
+      titles:["The Spare Room","Sublet for One Week","Everything We Left in Queens"],
+      taglines:["A quiet short about rent, grief, and two strangers negotiating the same impossible room.","A tense, humane chamber piece set inside a half-empty apartment."],
+      cityShorts:["NYC"],
+      synopsis:(c)=>`Short film shooting in ${c.name}. A recently divorced tenant rents out her spare room for one week to a traveling home-health aide. The arrangement is supposed to be transactional, but the apartment still contains boxes from a marriage that ended badly, and the guest keeps receiving calls from a family she cannot afford to visit. Over seven days, the two women develop a fragile, unsentimental intimacy while trying not to ask too much of each other.\n\nThe piece is written for performance first: two-handers, subtext, humor in uncomfortable places, and scenes where the conflict lives in what characters choose not to say. The director is building a festival cut and wants actors comfortable with rehearsal, improvisational looseness inside scripted scenes, and minimal coverage.`,
+      pay:"Paid short. $150-$250/day for principal roles; $75-$125/day for smaller roles. Copy, credit, meals, and festival updates provided.",
+      union:"Non-Union",
+      req:"Submit headshot, resume, and a dramatic or conversational self-tape under 2 minutes. Include local-hire status and weekday availability.",
+      months:()=>1,
+      roles:[
+        {name:"Tessa",role_type:"Lead",description:"Apartment tenant, newly divorced, brittle but not cold. Needs an actor who can play avoidance, dry humor, and eventual vulnerability without sentimentality.",gender:"Female",age_range:"35-50",ethnicity:"All ethnicities",pay:"$200-$250/day"},
+        {name:"Nadine",role_type:"Lead",description:"Traveling home-health aide. Practical, emotionally perceptive, carrying private financial and family stress. Warm but guarded.",gender:"Female",age_range:"30-48",ethnicity:"All ethnicities",pay:"$200-$250/day"},
+        {name:"Marco",role_type:"Supporting",description:"Tessa's ex, seen during one tense handoff. Not a villain; charming enough that the history feels believable.",gender:"Male",age_range:"35-55",ethnicity:"All ethnicities",pay:"$100-$150/day"},
+        {name:"Upstairs Neighbor",role_type:"Day Player",description:"Comic relief with real specificity. Brief hallway scene that turns unexpectedly tender.",gender:"All genders",age_range:"25-70",ethnicity:"All ethnicities",pay:"$75-$125/day"}
+      ]
+    },
+    {
+      type:"Commercials & Branded Content",
+      postedBy:"Northline Creative Studio",
+      titles:["Neighborhood Bank: First Keys","Local Credit Union Lifestyle Campaign","Small Business Banking Spot"],
+      taglines:["Warm, documentary-style commercial spots about first apartments, family shops, and money conversations that feel real."],
+      cityShorts:["NYC","Boston","Chicago","LA"],
+      synopsis:(c)=>`Casting a set of short commercial scenes for a regional banking and credit-union style campaign shooting in ${c.name}. The spots follow ordinary financial milestones: a couple picking up keys to their first apartment, a daughter helping her father modernize a neighborhood store, and a freelancer explaining why she finally opened a business account. The client wants the performances to feel lived-in and documentary-adjacent, not glossy spokesperson work.\n\nActors should be comfortable with light improvisation, natural overlapping dialogue, and repeated resets for product/action coverage. No banking experience needed. Wardrobe will be everyday contemporary; talent may be asked to bring simple options. Looking for faces with warmth, specificity, and believable relationships.`,
+      pay:"Paid commercial-style shoot. $300-$650/day depending on role; usage is digital/regional for 12 months unless renegotiated.",
+      union:"Non-Union",
+      req:"Submit headshot, commercial reel or 30-second intro, and any real-life small business, parent, or customer-service experience if relevant. Include full availability for one shoot day.",
+      months:()=>pick([1,2]),
+      roles:[
+        {name:"First Apartment Partner A",role_type:"Principal",description:"Excited but trying to act practical while walking through a new apartment. Natural chemistry required with scene partner.",gender:"All genders",age_range:"24-38",ethnicity:"All ethnicities",pay:"$450-$650/day"},
+        {name:"First Apartment Partner B",role_type:"Principal",description:"More cautious half of the couple; warm, funny, detail-oriented. Must feel like a real person, not an ad archetype.",gender:"All genders",age_range:"24-38",ethnicity:"All ethnicities",pay:"$450-$650/day"},
+        {name:"Shop Owner Parent",role_type:"Principal",description:"Longtime neighborhood business owner learning new systems from an adult child. Pride, humor, and resistance in equal measure.",gender:"All genders",age_range:"50-72",ethnicity:"All ethnicities",pay:"$450-$650/day"},
+        {name:"Adult Child / Business Helper",role_type:"Principal",description:"Patient, capable, affectionate without being sugary. Helps a parent update the store's finances.",gender:"All genders",age_range:"28-45",ethnicity:"All ethnicities",pay:"$450-$650/day"},
+        {name:"Freelancer",role_type:"Principal",description:"Creative professional explaining a small money win directly to camera in a relaxed, conversational way.",gender:"All genders",age_range:"27-45",ethnicity:"All ethnicities",pay:"$450-$650/day"},
+        {name:"Cafe / Street Background",role_type:"Background",description:"Featured lifestyle background with natural behavior. Must be comfortable in active commercial set environments.",gender:"All genders",age_range:"18-70",ethnicity:"All ethnicities",pay:"$150-$250/day"}
+      ]
+    },
+    {
+      type:"Student Film",
+      postedBy:"Graduate Thesis Film Unit",
+      titles:["Sound Check at 2 A.M.","Room Tone","The Woman Holding the Boom"],
+      taglines:["A graduate thesis film about a production sound mixer who starts hearing a missing actor in her headphones."],
+      cityShorts:["NYC","LA","Chicago","Boston"],
+      synopsis:(c)=>`Graduate thesis short filming in ${c.name}. During the overnight shoot of a low-budget movie, an exhausted production sound mixer begins hearing lines in her headphones from an actor who disappeared from set earlier that evening. The crew assumes she is sleep-deprived, but each recording reveals practical details that only the missing actor would know. The film blends workplace comedy, slow-burn mystery, and a portrait of the invisible labor that keeps a set moving.\n\nThis is a student production with a serious festival plan and a faculty-supervised crew. The tone should feel specific to real film sets: messy call times, tired jokes, frayed patience, and people trying to stay professional while something impossible may be happening. Actors with crew experience are especially welcome.`,
+      pay:"Student thesis project. Principal roles receive $75-$150/day stipend plus meals, copy, credit, and festival materials.",
+      union:"Non-Union",
+      req:"Submit headshot, resume, and a reel or self-tape. Mention any real production/set experience, audio experience, or comfort with overnight filming.",
+      months:()=>1,
+      roles:[
+        {name:"June",role_type:"Lead",description:"Production sound mixer. Smart, sleep-deprived, quietly furious at being ignored. Carries the film through restraint and mounting panic.",gender:"Female",age_range:"25-40",ethnicity:"All ethnicities",pay:"$125-$150/day"},
+        {name:"Cal",role_type:"Supporting",description:"First AD trying to keep the night on schedule. Funny, impatient, not cruel. Needs fast workplace dialogue.",gender:"All genders",age_range:"25-45",ethnicity:"All ethnicities",pay:"$75-$125/day"},
+        {name:"Mika",role_type:"Supporting",description:"The missing actor, heard in recordings and seen in fragments. Charismatic, anxious, with a sense of private danger.",gender:"All genders",age_range:"20-35",ethnicity:"All ethnicities",pay:"$75-$125/day"},
+        {name:"Director",role_type:"Supporting",description:"Young filmmaker losing control of the set while pretending everything is intentional. Comedy with insecurity underneath.",gender:"All genders",age_range:"22-35",ethnicity:"All ethnicities",pay:"$75-$125/day"},
+        {name:"Background Crew",role_type:"Background",description:"Crew members, extras, and set atmosphere. Real set experience a plus but not required.",gender:"All genders",age_range:"18-60",ethnicity:"All ethnicities",pay:"Meals/copy/credit"}
+      ]
+    },
+    {
+      type:"Theater & Musicals",
+      postedBy:"West 43 Workshop Collective",
+      titles:["Off-Broadway Workshop: The Ninth Table","New Play Workshop: House Seats","Developmental Reading: The Ninth Table"],
+      taglines:["A fast, sharp ensemble play set in the lobby bar of an Off-Broadway theater after a disastrous opening night."],
+      cityShorts:["NYC"],
+      synopsis:(c)=>`Developmental theater workshop in ${c.name} for a new Off-Broadway-aimed ensemble play. The story takes place over ninety minutes in the lobby bar of a small theater after opening night goes badly: a critic has walked out, the playwright's family is fighting at table nine, an understudy may have saved the show, and the artistic director is trying to decide whether honesty or survival matters more.\n\nThis is a text-forward room with quick pivots between comedy and bruised sincerity. Actors should be comfortable with table work, rewrites, and staged reading conditions. The workshop is not a full production yet; the goal is to hear the play with strong actors and develop it toward a future showcase.`,
+      pay:"Workshop stipend. $150-$400 total depending on role and rehearsal/read schedule.",
+      union:"AEA showcase/workshop rules where applicable; non-union welcome",
+      req:"Submit headshot, theater resume, and a contemporary monologue under 2 minutes. Include singing only if you want to be considered for musical-development tracks later.",
+      months:()=>pick([1,2]),
+      roles:[
+        {name:"Ruth Bell",role_type:"Lead",description:"Artistic director of the theater. Brilliant, exhausted, politically careful, still capable of being moved by good work.",gender:"Female",age_range:"45-70",ethnicity:"All ethnicities",pay:"Workshop stipend"},
+        {name:"Noah Vale",role_type:"Lead",description:"Playwright on opening night. Funny, defensive, terrified that the play is both too personal and not personal enough.",gender:"Male",age_range:"28-45",ethnicity:"All ethnicities",pay:"Workshop stipend"},
+        {name:"Celia",role_type:"Supporting",description:"Understudy who went on unexpectedly and may have changed the whole production. Precise comic timing and emotional intelligence.",gender:"Female",age_range:"24-38",ethnicity:"All ethnicities",pay:"Workshop stipend"},
+        {name:"Martin",role_type:"Supporting",description:"Longtime subscriber and donor who thinks he understands theater better than the artists do. Charming, dangerous, funny.",gender:"Male",age_range:"55-80",ethnicity:"All ethnicities",pay:"Workshop stipend"},
+        {name:"Lobby Bartender",role_type:"Supporting",description:"Observes everything and says very little until the exact wrong moment. Deadpan presence with stage clarity.",gender:"All genders",age_range:"30-60",ethnicity:"All ethnicities",pay:"Workshop stipend"},
+        {name:"Reading Ensemble",role_type:"Ensemble",description:"Multiple smaller roles: family members, patrons, assistant director, critic's assistant. Strong cold readers needed.",gender:"All genders",age_range:"18-70",ethnicity:"All ethnicities",pay:"Workshop stipend"}
+      ]
+    },
+    {
+      type:"Low-Budget Indie Film",
+      postedBy:"Corner Store Cinema",
+      titles:["Receipts","The Day the Register Broke","Corner Store Summer"],
+      taglines:["A low-budget ensemble indie about one impossible day inside a family-run corner store."],
+      cityShorts:["NYC","LA","Chicago","Boston"],
+      synopsis:(c)=>`Low-budget independent feature/long short shooting in ${c.name}. Set almost entirely inside a family-run corner store during the hottest day of the year, the film follows siblings who must keep the business open after their father is hospitalized and the point-of-sale system crashes. Customers arrive with petty problems, old debts, flirtations, complaints, and secrets that slowly reveal the store's place in the neighborhood.\n\nThe style is loose, funny, and emotionally grounded: ensemble scenes, overlapping dialogue, real-time pressure, and characters who feel observed rather than invented. The production is small and practical, built around one main location. Looking for actors who can bring specificity to everyday behavior and make community dynamics feel real.`,
+      pay:"Micro-budget indie. Principals $100-$225/day; supporting/day players $50-$125/day; meals, copy, credit.",
+      union:"Non-Union",
+      req:"Submit headshot, resume, and reel or self-tape. Improv comfort and multilingual ability are welcome but not required. Local hires strongly preferred.",
+      months:()=>pick([1,2]),
+      roles:[
+        {name:"Samir",role_type:"Lead",description:"Older sibling trying to act like a manager for the first time. Responsible, impatient, emotionally avoidant.",gender:"Male",age_range:"25-38",ethnicity:"All ethnicities",pay:"$150-$225/day"},
+        {name:"Leila",role_type:"Lead",description:"Younger sibling with sharper instincts and less patience for family mythology. Funny, blunt, secretly scared.",gender:"Female",age_range:"20-32",ethnicity:"All ethnicities",pay:"$150-$225/day"},
+        {name:"Mr. Alvarez",role_type:"Supporting",description:"Regular customer who treats the store like a second living room. Warm, nosy, with one surprising dramatic scene.",gender:"Male",age_range:"55-80",ethnicity:"All ethnicities",pay:"$75-$125/day"},
+        {name:"Nia",role_type:"Supporting",description:"Delivery driver and Leila's almost-ex. Quick, guarded, chemistry-heavy role with unresolved history.",gender:"Female",age_range:"22-35",ethnicity:"All ethnicities",pay:"$75-$125/day"},
+        {name:"Health Inspector",role_type:"Day Player",description:"Unexpected bureaucratic pressure in the middle of chaos. Can be comedic without becoming broad.",gender:"All genders",age_range:"30-60",ethnicity:"All ethnicities",pay:"$50-$100/day"},
+        {name:"Neighborhood Customers",role_type:"Background",description:"Featured customer bits with real behavior: lottery regulars, students, parents, commuters, late-day rush.",gender:"All genders",age_range:"18-80",ethnicity:"All ethnicities",pay:"Copy/credit/meals"}
+      ]
+    },
+    {
+      type:"Feature Film",
+      postedBy:"Juniper Lake Films",
+      titles:["Soft Launch","The Beta Testers","Terms and Conditions"],
+      taglines:["A satirical feature about a failing wellness app, its human test subjects, and one founder trying not to unravel."],
+      cityShorts:["LA","NYC"],
+      synopsis:(c)=>`Independent satirical feature casting in ${c.name}. A struggling wellness-tech startup recruits a small group of paid beta testers for a mindfulness app that begins sending strangely personal daily assignments. The founder insists the recommendations are algorithmic, but the testers start recognizing details from their private lives, and the company's cheerful branding begins to look more like surveillance with better fonts.\n\nThe film sits between workplace comedy and psychological drama. It needs actors who can play contemporary absurdity without winking at it: founders who believe their own pitch decks, customers who are lonely enough to follow bad advice, and employees who know the product is broken but need the health insurance. Table read and rehearsal planned before shoot.`,
+      pay:"Low-budget feature. Principal roles $200-$450/day; supporting $125-$250/day; copy, credit, meals.",
+      union:"SAG-AFTRA Micro-Budget / Non-Union welcome",
+      req:"Submit headshot, resume, and a reel showing comedy or grounded contemporary dialogue. Include any tech/startup or improv experience if relevant.",
+      months:()=>pick([2,3]),
+      roles:[
+        {name:"Ari Vale",role_type:"Lead",description:"Startup founder, charismatic and fraying. Believes the product can save people and refuses to see the harm it may be doing.",gender:"All genders",age_range:"30-45",ethnicity:"All ethnicities",pay:"$300-$450/day"},
+        {name:"Mina Cho",role_type:"Lead",description:"Beta tester, recently unemployed, drawn into the app because it seems to understand her. Dry humor, quiet vulnerability.",gender:"Female",age_range:"28-42",ethnicity:"All ethnicities",pay:"$250-$400/day"},
+        {name:"Trevor",role_type:"Supporting",description:"Head of growth. Smooth, funny, allergic to accountability. Needs fast comic instincts and corporate fluency.",gender:"Male",age_range:"28-45",ethnicity:"All ethnicities",pay:"$150-$250/day"},
+        {name:"Priya",role_type:"Supporting",description:"Engineer who knows exactly what is wrong and cannot get anyone to listen. Precise, moral, exhausted.",gender:"Female",age_range:"25-40",ethnicity:"All ethnicities",pay:"$150-$250/day"},
+        {name:"Beta Tester Ensemble",role_type:"Ensemble",description:"A range of app users in interviews, group sessions, and late-film confrontations. Specific real-world types, not sketches.",gender:"All genders",age_range:"22-70",ethnicity:"All ethnicities",pay:"$100-$175/day"}
+      ]
+    },
+    {
+      type:"Short Film",
+      postedBy:"Harbor Cut Productions",
+      titles:["The Blue Room at the Aquarium","After the School Trip","Sea Glass"],
+      taglines:["A contained short about two chaperones, one missing backpack, and a lie that gets harder to maintain."],
+      cityShorts:["Boston","NYC","Chicago"],
+      synopsis:(c)=>`Short film shooting in ${c.name}. After a chaotic elementary school aquarium trip, two parent chaperones are left behind in a closed exhibit room with a lost backpack that may belong to a child neither of them remembers checking onto the bus. As they retrace the day, their polite conversation becomes a negotiation over blame, memory, parenting, and the quiet terror of being responsible for other people's children.\n\nThis is a contained suspense-drama with humor and no sensationalism. The project relies on two strong adult performances, specific supporting children/parent roles, and a believable institutional setting. Actors should be comfortable with precise blocking, low-volume tension, and scenes built around listening.`,
+      pay:"Paid short. Principal roles $175-$275/day; supporting $75-$150/day. Copy, credit, meals.",
+      union:"Non-Union",
+      req:"Submit headshot, resume, and a dramatic reel or self-tape. Parent/teacher experience useful but not required. Minors must have guardian availability.",
+      months:()=>1,
+      roles:[
+        {name:"Erin",role_type:"Lead",description:"Parent chaperone, organized to the point of brittleness. Her confidence begins to collapse as details stop adding up.",gender:"Female",age_range:"35-50",ethnicity:"All ethnicities",pay:"$200-$275/day"},
+        {name:"Malcolm",role_type:"Lead",description:"Parent chaperone, affable, conflict-avoidant, more observant than he first seems. Needs subtle shifts from warmth to alarm.",gender:"Male",age_range:"35-55",ethnicity:"All ethnicities",pay:"$200-$275/day"},
+        {name:"Aquarium Educator",role_type:"Supporting",description:"Employee trying to close the building while handling increasingly serious adults. Calm professionalism with tension underneath.",gender:"All genders",age_range:"24-45",ethnicity:"All ethnicities",pay:"$100-$150/day"},
+        {name:"Teacher",role_type:"Supporting",description:"Seen in phone/video fragments and one exterior scene. Warm, distracted, credible authority.",gender:"All genders",age_range:"28-55",ethnicity:"All ethnicities",pay:"$75-$125/day"},
+        {name:"Students",role_type:"Background",description:"Elementary-age field trip group for brief controlled scenes. Guardian must be present.",gender:"All genders",age_range:"7-11",ethnicity:"All ethnicities",pay:"Copy/credit/meals"}
+      ]
+    },
+    {
+      type:"Commercials & Branded Content",
+      postedBy:"Bright Cart Content Lab",
+      titles:["Grocery Delivery: The Substitute Shopper","Meal Kit Launch: Tuesday Night","Neighborhood Market Digital Spots"],
+      taglines:["A comedic branded-content campaign about grocery substitutions, family dinners, and tiny domestic negotiations."],
+      cityShorts:["LA","NYC","Chicago"],
+      synopsis:(c)=>`Casting a digital-first branded comedy campaign shooting in ${c.name}. The spots center on a grocery delivery app and the small emotional stakes of substitutions: oat milk instead of almond, cilantro instead of parsley, birthday candles with the wrong number, and one shopper who becomes weirdly invested in getting a family's Tuesday dinner exactly right.\n\nThe style is bright but not fake. Think grounded comedy, real family rhythms, and quick reaction beats. Actors should be comfortable with short-form scripts, fast resets, food props, and small improvisational buttons at the end of scenes. Families do not need to be real families, but believable chemistry is important.`,
+      pay:"Paid digital campaign. Principal roles $400-$750/day; featured/background $150-$300/day. Digital usage terms disclosed before booking.",
+      union:"Non-Union",
+      req:"Submit headshot, commercial reel or short comedic self-tape, and availability for callbacks. Note food allergies and comfort handling groceries/meal props.",
+      months:()=>pick([1,2]),
+      roles:[
+        {name:"Delivery Shopper",role_type:"Principal",description:"Overly conscientious app shopper who narrates substitutions like a personal mission. Strong comedic timing, warm presence.",gender:"All genders",age_range:"22-40",ethnicity:"All ethnicities",pay:"$500-$750/day"},
+        {name:"Parent One",role_type:"Principal",description:"Trying to cook while managing family chaos. Fast, natural reactions; grounded domestic comedy.",gender:"All genders",age_range:"30-50",ethnicity:"All ethnicities",pay:"$400-$650/day"},
+        {name:"Parent Two",role_type:"Principal",description:"More relaxed partner who accidentally escalates every tiny grocery issue. Must feel real, not sitcom broad.",gender:"All genders",age_range:"30-50",ethnicity:"All ethnicities",pay:"$400-$650/day"},
+        {name:"Teen",role_type:"Principal",description:"Dry, observant teenager with a few sharp lines. Guardian required if under 18.",gender:"All genders",age_range:"14-19",ethnicity:"All ethnicities",pay:"$300-$500/day"},
+        {name:"Neighbor",role_type:"Featured",description:"Drops in at exactly the wrong time and benefits from the grocery mistake. One memorable comic beat.",gender:"All genders",age_range:"25-70",ethnicity:"All ethnicities",pay:"$150-$300/day"}
+      ]
+    },
+    {
+      type:"Theater & Musicals",
+      postedBy:"Downtown New Works Lab",
+      titles:["New Musical Lab: The Night Bus","Off-Broadway Development: The Night Bus","Musical Workshop: Last Stop Before Dawn"],
+      taglines:["A contemporary musical workshop set on an overnight bus route, with songs about work, missed chances, and getting home."],
+      cityShorts:["NYC"],
+      synopsis:(c)=>`Casting a developmental lab for a contemporary chamber musical in ${c.name}. The piece follows passengers and a driver on an overnight bus that keeps circling because of a citywide transit shutdown. Each stop introduces someone trying to get home, leave home, or avoid going home. The score blends contemporary musical theater, folk-pop, and spoken rhythm sections built from real transit announcements.\n\nThis is a workshop/lab, not a full production. The team is looking for actor-singers who can help shape character, handle new music, and stay flexible through rewrites. Strong acting is as important as vocals. Movement is simple and character-based rather than dance-heavy.`,
+      pay:"Developmental lab stipend. $250-$600 total depending on role and schedule.",
+      union:"AEA lab/workshop terms where applicable; non-union welcome",
+      req:"Submit headshot, resume, 16-32 bars of contemporary musical theater or folk-pop, and a short monologue or scene clip. Include vocal range.",
+      months:()=>pick([1,2]),
+      roles:[
+        {name:"Val",role_type:"Lead",description:"Night bus driver, alto/mezzo or flexible vocal range. Funny, lonely, carries the practical spine of the story.",gender:"Female",age_range:"35-60",ethnicity:"All ethnicities",pay:"Lab stipend"},
+        {name:"Andre",role_type:"Lead",description:"Nurse coming off a double shift, bari-tenor/baritone. Warm, guarded, emotionally direct when music opens him up.",gender:"Male",age_range:"28-45",ethnicity:"All ethnicities",pay:"Lab stipend"},
+        {name:"Lena",role_type:"Supporting",description:"College student with a suitcase and a secret plan, soprano/mezzo. Restless, funny, more scared than she admits.",gender:"Female",age_range:"18-26",ethnicity:"All ethnicities",pay:"Lab stipend"},
+        {name:"Morris",role_type:"Supporting",description:"Retired doorman, baritone. Storyteller energy, comic timing, and one tender solo.",gender:"Male",age_range:"60-80",ethnicity:"All ethnicities",pay:"Lab stipend"},
+        {name:"Passenger Ensemble",role_type:"Ensemble",description:"Actor-singers covering multiple riders, announcement voices, and rhythmic ensemble sections. All vocal types.",gender:"All genders",age_range:"18-70",ethnicity:"All ethnicities",pay:"Lab stipend"}
+      ]
+    },
+    {
+      type:"Student Film",
+      postedBy:"Senior Capstone Film Team",
+      titles:["A Perfectly Good Chair","Office Hours","The Chair Nobody Wanted"],
+      taglines:["A deadpan student short about a professor, a thrown-away chair, and a campus conflict that gets absurdly personal."],
+      cityShorts:["Boston","Chicago","NYC","LA"],
+      synopsis:(c)=>`Senior capstone comedy short filming in ${c.name}. A burned-out adjunct professor rescues an abandoned office chair from the hallway and accidentally triggers a campus-wide dispute over budget cuts, workplace dignity, and who gets to decide what counts as trash. The story is small, specific, and dry: faculty emails, passive-aggressive hallway encounters, a student documentary crew, and one chair treated like contraband.\n\nThe tone is deadpan but humane. Looking for actors who can handle precise comic rhythm without overplaying. The team is seeking strong adult performers for faculty roles and students who can play documentary-style campus scenes naturally.`,
+      pay:"Student capstone. Stipends $50-$125/day for principal adult roles; copy, credit, meals for all roles.",
+      union:"Non-Union",
+      req:"Submit headshot and a comedic or conversational reel/self-tape. Faculty/teacher energy welcome. Local hires preferred.",
+      months:()=>1,
+      roles:[
+        {name:"Dr. Elise Hart",role_type:"Lead",description:"Adjunct professor, brilliant and underpaid, attaching all her dignity to one salvaged chair. Dry, restrained comedy.",gender:"Female",age_range:"35-60",ethnicity:"All ethnicities",pay:"$75-$125/day"},
+        {name:"Department Chair",role_type:"Supporting",description:"Conflict-avoidant administrator who speaks entirely in soft institutional language. Comic precision required.",gender:"All genders",age_range:"40-70",ethnicity:"All ethnicities",pay:"$50-$100/day"},
+        {name:"Student Documentarian",role_type:"Supporting",description:"Student filming the chair dispute for a media class and slowly realizing the story is darker than expected.",gender:"All genders",age_range:"18-25",ethnicity:"All ethnicities",pay:"Copy/credit/meals"},
+        {name:"Facilities Worker",role_type:"Supporting",description:"The only practical person in the story. Knows the building, the politics, and where the chair came from.",gender:"All genders",age_range:"30-65",ethnicity:"All ethnicities",pay:"$50-$100/day"},
+        {name:"Campus Ensemble",role_type:"Background",description:"Students, faculty, staff, and hallway traffic for documentary-style scenes.",gender:"All genders",age_range:"18-75",ethnicity:"All ethnicities",pay:"Copy/credit/meals"}
+      ]
+    },
+    {
+      type:"Low-Budget Indie Film",
+      postedBy:"Paper Lantern Motion",
+      titles:["No Reception","The House with One Bar","Family Plan"],
+      taglines:["A low-budget family drama set at a mountain rental where nobody can get service and everyone has something to say."],
+      cityShorts:["LA","Chicago","Boston","NYC"],
+      synopsis:(c)=>`Low-budget ensemble indie casting in ${c.name} with travel to a nearby rental location. Three adult siblings bring their partners to a weekend house to discuss selling their late mother's property, only to discover the area has almost no cell reception and the buyer is arriving a day early. With no easy exits, the family has to negotiate money, memory, care work, old resentments, and who gets to tell the story of the parent they lost.\n\nThis is a talky, actor-driven film with humor, friction, and long ensemble scenes. The production is looking for performers who can make family history feel lived-in quickly, overlap dialogue naturally, and play conflict without turning every scene into a shouting match.`,
+      pay:"Micro-budget feature/long-form indie. Principals $125-$300/day; supporting $75-$175/day; lodging/meals for travel days when applicable.",
+      union:"Non-Union",
+      req:"Submit headshot, resume, and reel/self-tape with family or ensemble drama. Note comfort with travel, shared location shooting, and weekend availability.",
+      months:()=>pick([2,3]),
+      roles:[
+        {name:"Jo",role_type:"Lead",description:"Oldest sibling, responsible by habit and resentful about it. Needs emotional control, dry humor, and slow-burn anger.",gender:"Female",age_range:"38-55",ethnicity:"All ethnicities",pay:"$200-$300/day"},
+        {name:"Ben",role_type:"Lead",description:"Middle sibling, charming, financially unstable, always reframing the truth. Must be likable and frustrating at once.",gender:"Male",age_range:"35-50",ethnicity:"All ethnicities",pay:"$200-$300/day"},
+        {name:"Maya",role_type:"Lead",description:"Youngest sibling who left town first and gets judged for it. Smart, guarded, carrying private guilt.",gender:"Female",age_range:"28-42",ethnicity:"All ethnicities",pay:"$200-$300/day"},
+        {name:"Ruth",role_type:"Supporting",description:"Jo's wife, not born into the family but sees it most clearly. Calm, funny, eventually direct.",gender:"Female",age_range:"35-55",ethnicity:"All ethnicities",pay:"$100-$175/day"},
+        {name:"Graham",role_type:"Supporting",description:"Potential buyer who arrives early and accidentally witnesses too much. Polite menace or awkward innocence, depending on casting.",gender:"All genders",age_range:"40-70",ethnicity:"All ethnicities",pay:"$75-$150/day"}
+      ]
+    }
+  ];
+  function pickConcept(h,res){
     const city=pickCity();
-    const tpl=pick(TYPES);
+    let pool=CONCEPTS.filter(x=>!x.cityShorts||x.cityShorts.includes(city.short));
+    const unused=pool.filter(x=>!h.stories.has(clean(storyBaseKey(x)))&&!res.stories.has(clean(storyBaseKey(x))));
+    if(unused.length>0)pool=unused;
+    if(pool.length===0)pool=CONCEPTS;
+    return{city,tpl:pick(pool)};
+  }
+  function generateOne(adminUserId,h,res){
+    const {city,tpl}=pickConcept(h,res);
     const exMonths=tpl.months();
-    const titleStr=pick(tpl.titles(city));
-    const synopsisStr=pick(tpl.synopses(city));
-    const payStr=pick(tpl.pays);
-    const reqStr=pick(tpl.reqs);
-    const rolesArr=tpl.roles();
+    const titleStr=uniqueTitle(tpl,city,h,res);
+    const prodStr=uniqueCompany(tpl,city,h,res);
+    const story=uniqueStory(tpl,city,h,res);
+    const baseRoles=typeof tpl.roles==="function"?tpl.roles():tpl.roles;
+    const rolesArr=uniqueRoles(baseRoles,h,res,tpl.type,story.voice);
+    const payStr=uniquePay(tpl.type,rolesArr.length,h,res);
+    const reqStr=uniqueReq(tpl.type);
     return {
       cd_id:adminUserId,
       title:titleStr,
       type:tpl.type,
-      prod:tpl.postedBy,
-      posted_by_label:tpl.postedBy,
-      synopsis:synopsisStr,
+      prod:prodStr,
+      posted_by_label:prodStr,
+      tagline:Array.isArray(tpl.taglines)?pick(tpl.taglines):tpl.tagline||null,
+      synopsis:story.synopsis,
       location:city.name,
       pay:payStr,
       union_status:tpl.union,
@@ -17534,20 +18137,24 @@ const ACG = (()=>{
       submission_requirements:reqStr,
       expires_at:expiresAt(exMonths),
       deadline:new Date(expiresAt(exMonths)).toISOString().slice(0,10),
+      _baseKey:story.baseKey,
+      _storyKey:story.storyKey,
       _roles:rolesArr
     };
   }
-  function generateBatch(adminUserId){
+  function generateBatch(adminUserId,existing=[]){
     const count=3+Math.floor(Math.random()*2);
-    const used=new Set();
+    const h=buildHistory(existing);
+    const res={titles:new Set(),prods:new Set(),roles:new Set(),stories:new Set(),pays:new Set(),firsts:new Set(),lasts:new Set()};
     const out=[];
     let attempts=0;
-    while(out.length<count&&attempts<30){
+    while(out.length<count&&attempts<60){
       attempts++;
-      const item=generateOne(adminUserId);
-      const key=item.type+"|"+item.location;
-      if(!used.has(key)){used.add(key);out.push(item);}
+      const item=generateOne(adminUserId,h,res);
+      const key=clean(item.type+"|"+item.location+"|"+item.title);
+      if(!h.stories.has(clean(item._storyKey))&&!res.stories.has(key)){res.stories.add(key);out.push(item);}
     }
+    rememberGenerated(out);
     return out;
   }
   return{generateBatch};
@@ -17767,13 +18374,17 @@ function AdminCastingGenerator({session}){
 
   const loadAll=useCallback(async()=>{
     setLoading(true);
-    const [{data:ss},{data:cs,error:ce}]=await Promise.all([
+    const [{data:ss},{data:cs,error:ce},{data:rs,error:re}]=await Promise.all([
       window.sb.from("site_settings").select("casting_generator_enabled,casting_generator_last_run").eq("id",1).maybeSingle(),
-      window.sb.from("castings").select("id,title,type,prod,posted_by_label,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,submission_requirements,synopsis,tagline,has_nudity,nudity_details,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured").order("created_at",{ascending:false}).limit(2000)
+      window.sb.from("castings").select("id,title,type,prod,posted_by_label,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,submission_requirements,synopsis,tagline,has_nudity,nudity_details,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured").order("created_at",{ascending:false}).limit(2000),
+      window.sb.from("roles").select("casting_id,name,description,gender,role_type,age_range,ethnicity,pay").limit(5000)
     ]);
     if(ss){setGenEnabled(!!ss.casting_generator_enabled);setLastRun(ss.casting_generator_last_run);}
     if(ce)showMsg("Failed to load castings: "+ce.message);
-    setListings(cs||[]);
+    if(re)console.warn("[ACG] role history unavailable",re);
+    const byCasting={};
+    (rs||[]).forEach(r=>{(byCasting[r.casting_id]||(byCasting[r.casting_id]=[])).push(r);});
+    setListings((cs||[]).map(c=>({...c,roles:byCasting[c.id]||[]})));
     setLoading(false);
   },[]);
 
@@ -17792,11 +18403,13 @@ function AdminCastingGenerator({session}){
     if(!adminId){showMsg("No admin session — reload and try again.");return;}
     setGenerating(true);setMsg("");
     try{
-      const batch=ACG.generateBatch(adminId);
+      const batch=ACG.generateBatch(adminId,listings);
       let ok=0;let fail=0;
       for(const item of batch){
         const roles=item._roles||[];
         delete item._roles;
+        delete item._baseKey;
+        delete item._storyKey;
         const {data:cData,error:cErr}=await window.sb.from("castings").insert(item).select("id").single();
         if(cErr){fail++;console.warn("[ACG] insert failed",cErr);continue;}
         if(roles.length>0){
@@ -17862,13 +18475,15 @@ function AdminCastingGenerator({session}){
     if(!confirm(`Regenerate "${c.title}"?\n\nThis will replace the title, description, roles, location, and compensation with a freshly generated draft. Your manual edits will be lost.`))return;
     if(!adminId)return;
     const key=c.id+":regen";setBusy(key);
-    const batch=ACG.generateBatch(adminId);
+    const batch=ACG.generateBatch(adminId,listings.filter(x=>x.id!==c.id));
     const fresh=batch[0];
     const freshRoles=fresh._roles||[];
     delete fresh._roles;
+    delete fresh._baseKey;
+    delete fresh._storyKey;
     const {error}=await window.sb.from("castings").update({
       title:fresh.title,type:fresh.type,prod:fresh.prod,posted_by_label:fresh.posted_by_label,
-      synopsis:fresh.synopsis,location:fresh.location,pay:fresh.pay,union_status:fresh.union_status,
+      tagline:fresh.tagline||null,synopsis:fresh.synopsis,location:fresh.location,pay:fresh.pay,union_status:fresh.union_status,
       submission_requirements:fresh.submission_requirements,expires_at:fresh.expires_at,
       status:"draft",published:false,updated_at:new Date().toISOString()
     }).eq("id",c.id);
