@@ -1772,9 +1772,9 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
        component. Inherits the warm .app bg, flex-shrink:0 so it always exists
        even when the page is taller than the viewport. ─── */
 .site-footer-spacer{min-height:40px;flex-shrink:0;background:var(--bg);width:100%;margin-top:auto;}
-/* Floating back-to-top cube — drops from behind the fixed nav when the footer is
-   reached, then tumbles back up underneath the nav when the user scrolls away. */
-.b2t-cube{--b2t-away:calc(-100vh + var(--site-top-h,74px) + 18px);position:fixed;left:50%;bottom:22px;z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:96px;height:86px;background:#FFFFFF;color:#1A1A2E;border:1px solid rgba(0,0,0,0.12);border-radius:17px;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,0.30);font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(var(--b2t-away));opacity:1;pointer-events:none;transform-style:preserve-3d;backface-visibility:visible;will-change:transform;transition:transform 1.17s cubic-bezier(.5,0,.75,.45);}
+/* Floating back-to-top cube — stays fully off-screen until the footer midpoint
+   is reached, then tumbles down/up with the original live timing. */
+.b2t-cube{--b2t-away:calc(-100vh + 16px);position:fixed;left:50%;bottom:22px;z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:96px;height:86px;background:#FFFFFF;color:#1A1A2E;border:1px solid rgba(0,0,0,0.12);border-radius:17px;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,0.30);font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(var(--b2t-away));opacity:1;pointer-events:none;transform-style:preserve-3d;backface-visibility:visible;will-change:transform;transition:transform 1.17s cubic-bezier(.5,0,.75,.45);}
 .b2t-cube.show{transform:translateX(-50%) translateY(0);pointer-events:auto;transition:transform 1.33s cubic-bezier(.2,.72,.3,1);animation:b2tTumbleDown 1.33s cubic-bezier(.2,.72,.3,1) both;}
 .b2t-cube.was-shown:not(.show){animation:b2tTumbleUp 1.17s cubic-bezier(.5,0,.75,.45) both;}
 .b2t-cube span{line-height:1.1;}
