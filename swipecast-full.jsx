@@ -1777,6 +1777,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .b2t-cube{--b2t-away:calc(-100vh + 16px);position:fixed;left:50%;bottom:22px;z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:96px;height:86px;background:#FFFFFF;color:#1A1A2E;border:1px solid rgba(0,0,0,0.12);border-radius:17px;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,0.30);font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(var(--b2t-away));opacity:1;pointer-events:none;transform-style:preserve-3d;backface-visibility:visible;will-change:transform;transition:none;}
 .b2t-cube.show{transform:translateX(-50%) translateY(0);pointer-events:auto;animation:b2tTumbleDown 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
 .b2t-cube.was-shown:not(.show){animation:b2tTumbleUp 1.17s cubic-bezier(.5,0,.75,.45) both;}
+.b2t-cube .mark{width:24px;height:20px;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;}
+.b2t-cube .mark svg{display:block;width:24px;height:20px;}
+.b2t-cube.show .mark{animation:b2tLogoSpinIn 1.08s cubic-bezier(.18,.82,.26,1.05) both;}
+.b2t-cube.was-shown:not(.show) .mark{animation:b2tLogoSpinOut .82s cubic-bezier(.5,0,.75,.45) both;}
 .b2t-cube span{line-height:1.1;}
 @keyframes b2tTumbleDown{
   0%{transform:translateX(-50%) translateY(var(--b2t-away)) perspective(780px) rotateY(-900deg) rotateX(5deg) rotateZ(-5deg) scale(.88);}
@@ -1787,7 +1791,16 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   0%{transform:translateX(-50%) translateY(0) perspective(780px) rotateY(0deg) rotateX(0) rotateZ(0) scale(1);}
   100%{transform:translateX(-50%) translateY(var(--b2t-away)) perspective(780px) rotateY(540deg) rotateX(-4deg) rotateZ(5deg) scale(.88);}
 }
-@media(prefers-reduced-motion:reduce){.b2t-cube{animation:none!important;transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}.b2t-cube.show{opacity:1!important;}}
+@keyframes b2tLogoSpinIn{
+  0%{transform:rotate(-220deg) scale(.78);opacity:.65;}
+  72%{transform:rotate(390deg) scale(1.08);opacity:1;}
+  100%{transform:rotate(360deg) scale(1);opacity:1;}
+}
+@keyframes b2tLogoSpinOut{
+  0%{transform:rotate(360deg) scale(1);opacity:1;}
+  100%{transform:rotate(-170deg) scale(.76);opacity:.7;}
+}
+@media(prefers-reduced-motion:reduce){.b2t-cube{animation:none!important;transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}.b2t-cube.show{opacity:1!important;}.b2t-cube .mark{animation:none!important;}}
 .site-backtotop{
   display:flex;align-items:center;justify-content:center;gap:8px;
   position:relative;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;
@@ -3167,7 +3180,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
         tapelink, manager mode). Short pages scroll up in one flick, so the
         drop-down button is just noise there. */}
     {backToTop&&<button type="button" className={"b2t-cube"+(b2tShow?" show":"")+(b2tWasShown?" was-shown":"")} onClick={scrollTop} aria-label={t('footer.backToTop')}>
-      <svg width="20" height="16" viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="currentColor"/></svg>
+      <span className="mark"><svg width="20" height="16" viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="currentColor"/></svg></span>
       <span>{t('footer.backToTop')}</span>
     </button>}
     <footer className="site-footer">
