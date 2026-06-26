@@ -22369,12 +22369,21 @@ function EditCastingModal({casting,onClose,onSaved}){
   useEffect(()=>{
     window.sb.auth.getSession().then(({data})=>{setAdminUid(data?.session?.user?.id||null);});
   },[]);
+  const dateInputValue=(v)=>{
+    if(!v)return "";
+    const d=new Date(v);
+    if(Number.isNaN(d.getTime()))return "";
+    return d.toISOString().slice(0,10);
+  };
+  const originalPostedDate=dateInputValue(casting.created_at);
+  const [showPostedDateEditor,setShowPostedDateEditor]=useState(false);
   const [f,setF]=useState({
     title:casting.title||"",prod:casting.prod||"",type:casting.type||"Film",
     location:casting.location||"",pay:casting.pay||"",union_status:casting.union_status||"Non-Union",
     deadline:casting.deadline||"",tagline:casting.tagline||"",synopsis:casting.synopsis||"",
     has_nudity:!!casting.has_nudity,nudity_details:casting.nudity_details||"",
     casting_website_url:casting.casting_website_url||"",
+    created_at:originalPostedDate,
   });
   const ADMIN_MAX_IMAGES=5;
   const [castingImages,setCastingImages]=useState(()=>{
@@ -22472,7 +22481,7 @@ function EditCastingModal({casting,onClose,onSaved}){
     if(f.casting_website_url.trim()&&!/^https?:\/\//i.test(f.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
     setBusy(true);
     try{
-      const patch={title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,pay:f.pay||null,union_status:f.union_status||null,deadline:f.deadline||null,has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,tagline:f.tagline||null,synopsis:f.synopsis||null,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages};
+      const patch={title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,pay:f.pay||null,union_status:f.union_status||null,deadline:f.deadline||null,created_at:f.created_at?new Date(f.created_at+"T12:00:00Z").toISOString():casting.created_at,has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,tagline:f.tagline||null,synopsis:f.synopsis||null,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages};
       const {error:cErr}=await window.sb.from("castings").update(patch).eq("id",casting.id);
       if(cErr)throw cErr;
       // Diff roles: update existing, insert new, delete removed
@@ -22513,6 +22522,25 @@ function EditCastingModal({casting,onClose,onSaved}){
     <div className="form-row">
       <div><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union_status} onChange={e=>setField("union_status",e.target.value)}><option>SAG-AFTRA</option><option>AEA</option><option>Non-Union</option><option>SAG-AFTRA / Non-Union</option></select></div>
       <div><label className="label">Deadline</label><input className="input" type="date" value={f.deadline||""} onChange={e=>setField("deadline",e.target.value)}/></div>
+    </div>
+    <div className="form-group" style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 14px"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+        <div>
+          <div className="label" style={{marginBottom:2}}>Date Posted</div>
+          <div style={{fontSize:13,color:"var(--t2)"}}>
+            Current: <strong style={{color:"var(--t1)"}}>{f.created_at?new Date(f.created_at+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"Original date"}</strong>
+          </div>
+        </div>
+        <button type="button" className="btn-s btn-sm" onClick={()=>setShowPostedDateEditor(v=>!v)} style={{fontWeight:700}}>
+          {showPostedDateEditor?"Hide Date Editor":"Change Posted Date"}
+        </button>
+      </div>
+      {showPostedDateEditor&&<div style={{marginTop:12,display:"grid",gridTemplateColumns:"1fr auto auto",gap:8,alignItems:"center"}}>
+        <input className="input" type="date" value={f.created_at||""} onChange={e=>setField("created_at",e.target.value)}/>
+        <button type="button" className="btn-s btn-sm" onClick={()=>setField("created_at",new Date().toISOString().slice(0,10))}>Today</button>
+        <button type="button" className="btn-s btn-sm" onClick={()=>setField("created_at",originalPostedDate)}>Original</button>
+        <p style={{gridColumn:"1 / -1",fontSize:11,color:"var(--t3)",margin:0}}>This changes the posted/submitted date shown in admin, Browse Castings, and the public casting page after you save.</p>
+      </div>}
     </div>
     <div className="form-group">
       <label className="label">Contains nudity or intimate content?</label>
