@@ -443,6 +443,7 @@ ROUTES = [
     ("classes.html",          "/classes",         "Acting Classes | CastSlate", "Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."),
     ("actor-toolkit.html",    "/actor-toolkit",   "Actor Toolkit | CastSlate", "Free tools, guides, and resources for working actors — headshot advice, self-tape setup, audition prep, and more."),
     ("resources.html",        "/resources",       "Resources | CastSlate", "Guides and resources for actors and casting directors on the CastSlate platform."),
+    ("trust-safety.html",     "/trust-safety",    "Trust & Safety | CastSlate", "CastSlate trust and safety guidance for actors, models, casting teams, and producers, including audition fee warnings, compensation labels, privacy protections, and how to report suspicious activity."),
     ("pay-talent.html",       "/pay-talent",      "Pay Talent | CastSlate", "Fast, secure talent payments for casting directors and producers. Pay actors directly through CastSlate."),
     ("about.html",            "/about",           "About | CastSlate", "CastSlate is a modern casting platform built for working actors and the industry professionals who discover them."),
     ("blog.html",             "/blog",            "Blog | CastSlate", "Casting industry news, actor tips, and platform updates from the CastSlate team."),

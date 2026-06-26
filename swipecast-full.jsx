@@ -3173,6 +3173,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             <L to="tapelink">TapeLink</L>
             {(typeof window==="undefined"||window.__SC_CLASSES_ON!==false)&&<L to="classes">{t('footer.classes')}</L>}
             <L to="resources">{t('footer.resources')}</L>
+            <L to="trust-safety">Trust & Safety</L>
           </div>
           <div>
             <h4 className="site-footer-heading">{t('footer.industry')}</h4>
@@ -4948,6 +4949,133 @@ function ResourcesPage({onNavigate}){
     <p style={{color:"var(--t2)",fontSize:15,marginBottom:48,maxWidth:600}}>Everything you need to build your career on CastSlate.</p>
     {R.map(([cat,items])=><div key={cat} style={{marginBottom:40}}><h3 style={{fontSize:18,fontWeight:700,marginBottom:16}}>{cat}</h3><div className="grid-3">{items.map(([t,d])=><div key={t} className="card" style={{cursor:"pointer"}} onClick={()=>{setViewing(t);window.scrollTo(0,0);}}><h4 style={{fontSize:15,fontWeight:700,marginBottom:6}}>{t}</h4><p style={{color:"var(--t2)",fontSize:13,lineHeight:1.5}}>{d}</p><span style={{color:"var(--acc)",fontSize:12,fontWeight:600,marginTop:8,display:"inline-block"}}>Read more →</span></div>)}</div></div>)}
     <Footer onNavigate={onNavigate}/></div>);
+}
+
+// ═══════════════════════════════════════════
+// PAGE: TRUST & SAFETY
+// ═══════════════════════════════════════════
+function TrustSafetyPage({onNavigate}){
+  const promiseCards=[
+    ["No audition fees","A performer should not be required to pay a casting director, producer, agent, or third party just to audition, submit, or be considered for a role."],
+    ["Suspicious castings are removed","CastSlate may review, restrict, hide, or remove listings, messages, accounts, or behavior that appears misleading, unsafe, exploitative, or inconsistent with platform standards."],
+    ["Personal information is protected","Users should only share what is necessary for casting. Sensitive documents, financial details, addresses, or private identity information should not be sent to unknown contacts."],
+    ["Report inappropriate contact","If someone pressures you, sends explicit material, requests private photos, asks to move into unsafe communication, or makes you uncomfortable, report it and stop responding."],
+    ["Paid services stay separate","Any paid CastSlate tools, upgrades, or optional services are separate from whether a performer is eligible to submit to a casting notice."],
+    ["No job guarantee","CastSlate helps organize discovery and communication. It does not guarantee auditions, callbacks, employment, bookings, payment, representation, or final production decisions."]
+  ];
+  const compensation=[
+    ["Paid","The listing indicates a stated payment, rate, stipend, or compensation structure. Confirm exact terms in writing before accepting work."],
+    ["Unpaid","The listing indicates no monetary compensation. Review time commitment, travel, footage, credit, meals, and whether the opportunity still makes sense for you."],
+    ["Deferred","Payment may depend on financing, distribution, sales, festival outcomes, or future revenue. Treat it as uncertain unless a written agreement says otherwise."],
+    ["Not confirmed","Some early-stage, student, pitch, presentation, or development listings may still be organizing budget. Ask clear questions before committing."]
+  ];
+  const redFlags=[
+    ["Upfront agent or manager fees","A legitimate representative generally earns from commission after you book paid work. Be cautious if someone says you must pay monthly representation fees, pay a setup fee, or buy required services before they will be your agent."],
+    ["Requests to undress or perform nudity without process","No one should surprise you with nudity, sexual material, or intimate physical direction during an audition. Any intimate content should be disclosed in advance, documented in writing, and handled with consent, boundaries, and professional safeguards."],
+    ["Filming or recording without consent","You should know when you are being recorded, who will view the material, how it may be used, and whether it will be stored or shared. Do not continue if recording is hidden, pressured, or unexplained."],
+    ["Private or unsafe audition locations","Be cautious with hotel rooms, private homes, late-night meetings, isolated locations, or requests to attend alone. Professional casting should provide clear location details, company identity, and reasonable safety expectations."],
+    ["Money movement schemes","Do not deposit checks for strangers, forward money, buy gift cards, pay for travel through a required vendor, or send banking details to claim a role. These are common scam patterns."],
+    ["Pressure to leave the platform immediately","Moving to email, text, encrypted apps, or social DMs can be normal later, but urgency, secrecy, disappearing messages, or refusal to identify the production are warning signs."],
+    ["Vague authority or fake urgency","Be careful with people claiming studio, streamer, agency, or celebrity access while avoiding verifiable names, company emails, contracts, or basic production details."],
+    ["Minors contacted without guardians","Performers under 18 should involve a parent or guardian. Any adult asking a minor to communicate privately, travel alone, or keep contact secret should be reported."]
+  ];
+  const reportSteps=[
+    ["Save the evidence","Keep screenshots, profile names, listing titles, email addresses, phone numbers, payment requests, and message timestamps."],
+    ["Stop the interaction","You do not need to continue a conversation that feels unsafe, coercive, sexually inappropriate, financially suspicious, or misleading."],
+    ["Report it to CastSlate","Send the details through the contact page so CastSlate can review the listing, account, message history, and any related platform activity."],
+    ["Use outside help when needed","If there is immediate danger, harassment, threats, stalking, financial theft, or exploitation of a minor, contact local authorities or a trusted professional resource."]
+  ];
+  const Card=({title,children,accent})=>(
+    <div className="card" style={{padding:24,borderTop:`3px solid ${accent||"var(--acc)"}`}}>
+      <h3 style={{fontSize:16,fontWeight:800,marginBottom:8,color:"var(--t1)"}}>{title}</h3>
+      <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,margin:0}}>{children}</p>
+    </div>
+  );
+  return(<div className="page">
+    <div className="info-hero" style={{maxWidth:900}}>
+      <div className="section-label">Trust & Safety</div>
+      <h1>Audition smarter.<br/>Stay protected.</h1>
+      <p>CastSlate is built to help actors, models, casting teams, and producers connect with more clarity. This page explains the safety standards performers should expect, the warning signs to watch for, and how casting eligibility stays separate from paid platform services.</p>
+      <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginTop:26}}>
+        <button className="btn-p" onClick={()=>onNavigate("contact")}>Report a Concern</button>
+        <button className="btn-s" onClick={()=>onNavigate("search")}>Browse Castings</button>
+      </div>
+    </div>
+
+    <section style={{maxWidth:1040,margin:"0 auto 54px"}}>
+      <div className="section-label">Platform Standards</div>
+      <h2 style={{fontSize:30,fontWeight:800,letterSpacing:-1,marginBottom:18}}>What CastSlate expects from casting activity</h2>
+      <div className="grid-3">
+        {promiseCards.map(([title,body],i)=><Card key={title} title={title} accent={i%2?"#257d76":"var(--acc)"}>{body}</Card>)}
+      </div>
+    </section>
+
+    <section style={{maxWidth:980,margin:"0 auto 54px"}}>
+      <div className="card" style={{padding:30,background:"linear-gradient(135deg,rgba(37,125,118,0.08),rgba(255,255,255,0.94))"}}>
+        <div className="section-label">Paid Services vs Casting Eligibility</div>
+        <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-0.8,marginBottom:12}}>You do not pay to be eligible to audition.</h2>
+        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,marginBottom:14}}>CastSlate may offer optional paid tools, premium profile features, workflow services, or other platform products. Those services are separate from whether a performer may submit to a casting notice or be considered by a casting professional.</p>
+        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,margin:0}}>If a person claiming to represent a role says you must pay them personally, subscribe to their private service, buy photos from a specific vendor, or send money before you can audition, treat that as a serious warning sign and report it.</p>
+      </div>
+    </section>
+
+    <section style={{maxWidth:1040,margin:"0 auto 54px"}}>
+      <div className="section-label">Compensation Labels</div>
+      <h2 style={{fontSize:30,fontWeight:800,letterSpacing:-1,marginBottom:18}}>Listings should make pay expectations clear.</h2>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))",gap:16}}>
+        {compensation.map(([title,body],i)=><div key={title} className="card" style={{padding:22}}>
+          <div style={{fontSize:11,fontWeight:900,textTransform:"uppercase",letterSpacing:1.1,color:i===0?"var(--grn)":i===1?"var(--t3)":i===2?"#a56a00":"var(--acc)",marginBottom:10}}>{title}</div>
+          <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6,margin:0}}>{body}</p>
+        </div>)}
+      </div>
+    </section>
+
+    <section id="red-flags" style={{maxWidth:1040,margin:"0 auto 54px"}}>
+      <div className="section-label">Actor Red Flags</div>
+      <h2 style={{fontSize:30,fontWeight:800,letterSpacing:-1,marginBottom:10}}>If something feels off, slow down.</h2>
+      <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.7,maxWidth:760,marginBottom:22}}>Real productions can move quickly, but professional urgency still has names, dates, boundaries, written terms, and respect. These patterns deserve extra caution.</p>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:16}}>
+        {redFlags.map(([title,body])=><div key={title} className="card" style={{padding:22}}>
+          <h3 style={{fontSize:15,fontWeight:800,marginBottom:8,color:"var(--t1)"}}>{title}</h3>
+          <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.65,margin:0}}>{body}</p>
+        </div>)}
+      </div>
+    </section>
+
+    <section style={{maxWidth:1040,margin:"0 auto 54px"}}>
+      <div className="section-label">Privacy & Contact Boundaries</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:18}}>
+        <Card title="Protect private information" accent="#257d76">Do not send Social Security numbers, bank logins, full home addresses, passport images, explicit photos, or sensitive identity documents to unknown contacts. A legitimate hiring process should explain why any sensitive information is needed and when it is collected.</Card>
+        <Card title="Keep communication professional" accent="var(--acc)">Casting communication should stay about role fit, audition material, scheduling, availability, rates, releases, and production details. Sexualized messages, intimidation, insults, threats, or pressure to hide communication are not acceptable.</Card>
+        <Card title="Use written terms" accent="#b56620">Before work starts, make sure dates, location, pay, usage, travel, meals, wardrobe, intimacy requirements, and cancellation expectations are clear. If terms change, get the change in writing.</Card>
+      </div>
+    </section>
+
+    <section style={{maxWidth:980,margin:"0 auto 54px"}}>
+      <div className="section-label">How to Report</div>
+      <h2 style={{fontSize:30,fontWeight:800,letterSpacing:-1,marginBottom:18}}>What to do when a listing or contact seems unsafe</h2>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:14}}>
+        {reportSteps.map(([title,body],i)=><div key={title} className="card" style={{padding:22}}>
+          <div style={{width:30,height:30,borderRadius:10,background:"var(--acc)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:13,marginBottom:12}}>{i+1}</div>
+          <h3 style={{fontSize:15,fontWeight:800,marginBottom:8}}>{title}</h3>
+          <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6,margin:0}}>{body}</p>
+        </div>)}
+      </div>
+      <div style={{textAlign:"center",marginTop:24}}>
+        <button className="btn-p" onClick={()=>onNavigate("contact")}>Contact CastSlate Safety</button>
+      </div>
+    </section>
+
+    <section style={{maxWidth:980,margin:"0 auto"}}>
+      <div className="card" style={{padding:30,border:"1.5px solid rgba(180,72,72,0.25)",background:"rgba(180,72,72,0.05)"}}>
+        <div className="section-label" style={{color:"#a43b3b"}}>When in Doubt</div>
+        <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.8,marginBottom:10}}>A real opportunity can withstand basic safety questions.</h2>
+        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,margin:0}}>Ask who is producing the project, where the audition is held, whether pay is confirmed, what material will be recorded, who will see it, whether intimate content is involved, and what agreement applies. If the answer is pressure, secrecy, shame, or money first, pause and report it.</p>
+      </div>
+    </section>
+
+    <Footer onNavigate={onNavigate}/>
+  </div>);
 }
 
 // ═══════════════════════════════════════════
@@ -23288,7 +23416,7 @@ const PAGE_PATH={
   "inbox":"/inbox","membership":"/membership","plan-summary":"/plan-summary",
   "login":"/login","register-talent":"/register-talent","register-cd":"/register-cd",
   "reset-password":"/reset-password","about":"/about","blog":"/blog",
-  "classes":"/classes","contact":"/contact","resources":"/resources",
+  "classes":"/classes","contact":"/contact","resources":"/resources","trust-safety":"/trust-safety",
   "faq":"/faq","success-stories":"/success-stories","studios":"/studios",
   "api-info":"/api-info","terms":"/terms","privacy":"/privacy","careers":"/careers",
   "auth-gate":"/auth-gate","account-settings":"/account-settings",
@@ -23311,6 +23439,7 @@ const PAGE_SEO={
   "classes":{title:"Acting Classes | CastSlate",desc:"Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."},
   "actor-toolkit":{title:"Actor Toolkit | CastSlate",desc:"Free tools, guides, and resources for working actors — headshot advice, self-tape setup, audition prep, and more."},
   "resources":{title:"Resources | CastSlate",desc:"Guides and resources for actors and casting directors on the CastSlate platform."},
+  "trust-safety":{title:"Trust & Safety | CastSlate",desc:"CastSlate trust and safety guidance for actors, models, casting teams, and producers, including audition fee warnings, compensation labels, privacy protections, and how to report suspicious activity."},
   "pay-talent":{title:"Pay Talent | CastSlate",desc:"Fast, secure talent payments for casting directors and producers. Pay actors directly through CastSlate."},
   "about":{title:"About | CastSlate",desc:"CastSlate is a modern casting platform built for working actors and the industry professionals who discover them."},
   "blog":{title:"Blog | CastSlate",desc:"Casting industry news, actor tips, and platform updates from the CastSlate team."},
@@ -24548,6 +24677,7 @@ function App(){
         {page==="classes"&&(classesOn?<ClassesPage onNavigate={navigate} session={session} myProfile={myProfile} isLoggedIn={isLoggedIn} openClassId={openClassId} onClassOpened={()=>{setOpenClassId(null);}} invitationId={openClassInvitationId}/>:<div className="page"><div style={{textAlign:"center",padding:"80px 24px",maxWidth:520,margin:"0 auto"}}><h2 style={{fontSize:24,fontWeight:800,marginBottom:10}}>Classes are unavailable</h2><p style={{color:"var(--t2)",marginBottom:24}}>The classes section is currently turned off. Please check back soon.</p><button className="btn-p" onClick={()=>navigate("home")}>Back to Home</button></div><Footer onNavigate={navigate}/></div>)}
         {page==="contact"&&<ContactPage onNavigate={navigate}/>}
         {page==="resources"&&<ResourcesPage onNavigate={navigate}/>}
+        {page==="trust-safety"&&<TrustSafetyPage onNavigate={navigate}/>}
         {page==="faq"&&<FaqPage onNavigate={navigate}/>}
         {page==="success-stories"&&<SuccessStoriesPage onNavigate={navigate}/>}
         {page==="pricing"&&<PricingPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}}/>}

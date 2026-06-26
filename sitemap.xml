@@ -41,6 +41,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.castslate.com/trust-safety</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.castslate.com/pay-talent</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
