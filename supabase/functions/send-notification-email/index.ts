@@ -132,7 +132,7 @@ function inboxMessageHtml(firstName: string, fromName?: string, projectName?: st
 
 function classInvitationHtml(firstName: string, classTitle: string, instructorName?: string): string {
   const withLine = instructorName
-    ? `<p style="margin:0 0 6px;font-size:15px;color:#555">with <strong style="color:#2d1052">${esc(instructorName)}</strong></p>`
+    ? `<p style="margin:0 0 6px;font-size:15px;color:#555">with <strong style="color:#0f4d34">${esc(instructorName)}</strong></p>`
     : "";
   return `<!DOCTYPE html>
 <html>
@@ -141,33 +141,33 @@ function classInvitationHtml(firstName: string, classTitle: string, instructorNa
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f7;padding:40px 20px">
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;width:100%">
-        <tr><td style="background:linear-gradient(135deg,#1a0533,#2d1052);padding:30px 36px">
-          <img src="https://www.castslate.com/favicon-512.png" alt="CastSlate" width="40" height="40" style="display:inline-block;vertical-align:middle;border-radius:10px"/>
+        <tr><td style="background:linear-gradient(135deg,#0f4d34,#1a6b42);padding:20px 36px">
+          <img src="https://www.castslate.com/favicon-512.png" alt="CastSlate" width="38" height="38" style="display:inline-block;vertical-align:middle;border-radius:10px"/>
           <span style="display:inline-block;vertical-align:middle;margin-left:12px;font-size:21px;font-weight:800;color:#ffffff;letter-spacing:-0.5px">CastSlate</span>
-          <div style="margin-top:14px;display:inline-block;background:rgba(139,92,246,0.25);color:#d7c4ff;font-size:12px;font-weight:700;letter-spacing:0.4px;padding:4px 12px;border-radius:20px;text-transform:uppercase">Personal Invitation</div>
+          <div style="margin-top:12px;display:inline-block;background:rgba(255,255,255,0.16);color:#d7f0e2;font-size:12px;font-weight:700;letter-spacing:0.4px;padding:4px 12px;border-radius:20px;text-transform:uppercase">Private Invitation</div>
         </td></tr>
-        <tr><td style="padding:36px 36px 28px">
-          <h1 style="margin:0 0 16px;font-size:24px;font-weight:800;color:#111;letter-spacing:-0.5px">You've been personally invited, ${firstName} 🎬</h1>
+        <tr><td style="padding:32px 36px 28px">
+          <h1 style="margin:0 0 16px;font-size:24px;font-weight:800;color:#111;letter-spacing:-0.5px">You've been selected for a private invitation, ${firstName}</h1>
           <p style="margin:0 0 14px;font-size:16px;line-height:1.65;color:#555">
-            Our team at CastSlate hand-picked you for an exclusive invitation to train with a top industry professional. This was chosen specifically for your profile — it isn't a mass mailing, and spots like this are limited.
+            Our team at CastSlate reviewed your profile and selected you for a private invitation to train one-on-one with a top industry professional. This is not a public class or mass mailing — spots are limited and offered only to selected actors.
           </p>
-          <div style="margin:0 0 22px;padding:18px 20px;background:#f6f3ff;border:1px solid #e7defc;border-radius:12px">
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#8b5cf6;margin:0 0 6px">Your invitation</div>
-            <p style="margin:0 0 4px;font-size:18px;font-weight:800;color:#2d1052;line-height:1.35">${classTitle}</p>
+          <div style="margin:0 0 22px;padding:18px 20px;background:#eef7f1;border:1px solid #cfe9da;border-radius:12px">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#1a6b42;margin:0 0 6px">Private Invitation</div>
+            <p style="margin:0 0 4px;font-size:18px;font-weight:800;color:#0f4d34;line-height:1.35">${classTitle}</p>
             ${withLine}
           </div>
           <p style="margin:0 0 26px;font-size:15px;line-height:1.65;color:#555">
-            <strong>Log in to CastSlate and open your Dashboard</strong> to view your special invitation, choose an available time slot, and request your spot before it's gone.
+            Log in to your CastSlate Dashboard to view your invitation, choose an available time, and request your spot.
           </p>
           <a href="${APP_URL}/talent-dashboard"
-             style="display:inline-block;background:linear-gradient(90deg,#6b3ecb,#8b5cf6);color:#fff;text-decoration:none;padding:15px 38px;border-radius:10px;font-weight:800;font-size:15px;letter-spacing:0.1px">
+             style="display:inline-block;background:linear-gradient(90deg,#1a6b42,#1e8050);color:#fff;text-decoration:none;padding:15px 38px;border-radius:10px;font-weight:800;font-size:15px;letter-spacing:0.1px">
             View My Invitation →
           </a>
         </td></tr>
         <tr><td style="padding:20px 36px 32px;border-top:1px solid #f0f0f0">
           <p style="margin:0;font-size:12px;color:#aaa;line-height:1.6">
             You're receiving this because a class invitation was sent to your CastSlate account.<br/>
-            To manage notifications, visit <a href="${APP_URL}/account-settings" style="color:#8b5cf6;text-decoration:none">Account Settings → Notifications</a>.
+            To manage notifications, visit <a href="${APP_URL}/account-settings" style="color:#1a6b42;text-decoration:none">Account Settings → Notifications</a>.
           </p>
         </td></tr>
       </table>
@@ -481,7 +481,7 @@ serve(async (req) => {
           const toEmail = authData.user.email;
           const subject = type === "inbox_message"
             ? "New message on CastSlate"
-            : `Your personal class invitation, ${firstName} — CastSlate`;
+            : `${firstName}, you've been personally invited — CastSlate`;
           const html = type === "inbox_message"
             ? inboxMessageHtml(firstName, resolvedFromName, projectName)
             : classInvitationHtml(firstName, class_title?.trim() || "a class", instructor_name?.trim() || undefined);
