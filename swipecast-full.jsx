@@ -8114,7 +8114,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:28}}>
       <p style={{color:"var(--t1)",fontSize:13,margin:0,fontWeight:600}}>Produced by {c.prod} {c.director?`· Directed by ${c.director}`:""}</p>
       {c.is_admin_created
-        ? (c.admin_verified===true?<IDVerifiedBadge/>:<UnverifiedBadge/>)
+        ? (adminBadgeState(c.admin_verified)===true?<IDVerifiedBadge/>:adminBadgeState(c.admin_verified)===false?<UnverifiedBadge/>:null)
         : (cdProfile&&cdProfile.identity_verified===true&&cdProfile.can_post_castings===true&&cdProfile.verification_status==="verified"&&<IDVerifiedBadge/>)}
       {!c.is_admin_created&&cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
     </div>
@@ -9339,7 +9339,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         casting_images:Array.isArray(c.casting_images)?c.casting_images:[],
         casting_website_url:c.casting_website_url||null,
         is_admin_created:c.is_admin_created===true,
-        admin_verified:c.admin_verified===true,
+        admin_verified:adminBadgeState(c.admin_verified),
         creator_verified:c.is_admin_created===true
           ? c.admin_verified===true
           : (c.profiles?.identity_verified===true&&c.profiles?.can_post_castings===true&&c.profiles?.verification_status==="verified"),
@@ -9504,7 +9504,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                   {(c.tagline&&c.tagline!==c.prod)
                     ?<p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{c.tagline}</p>
                     :c.type?<p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{translateCastingType(c.type,lang)}</p>:null}
-                  {c.prod&&<p style={{color:"var(--t3)",fontSize:12,marginBottom:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.prod}{c.creator_verified?<IDVerifiedBadge size="xs"/>:(c.is_admin_created&&<UnverifiedBadge size="xs"/>)}</p>}
+                  {c.prod&&<p style={{color:"var(--t3)",fontSize:12,marginBottom:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.prod}{c.is_admin_created?(adminBadgeState(c.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(c.admin_verified)===false?<UnverifiedBadge size="xs"/>:null):(c.creator_verified&&<IDVerifiedBadge size="xs"/>)}</p>}
                   <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6,marginBottom:16,maxWidth:620}}>{c.synopsis?c.synopsis.replace(/\*/g,"").slice(0,200)+(c.synopsis.length>200?"…":""):c.desc}</p>
                   <div style={{display:"flex",gap:20,flexWrap:"wrap",fontSize:12,color:"var(--t2)"}}>
                     <span><strong style={{color:"var(--t1)"}}>{t('search.filterLocation')}</strong> · {c.location}</span>
@@ -13114,7 +13114,16 @@ function IDVerifiedBadge({size="sm"}){
 // ─── UnverifiedBadge — yellow "Not Verified" pill (admin-generated castings the
 //     admin has not marked ID-verified).
 function UnverifiedBadge({size="sm"}){
-  return <span title="This caster has not completed identity verification" style={{background:"rgba(200,137,0,0.12)",color:"#c88900",fontSize:size==="xs"?10:11,fontWeight:700,letterSpacing:0.3,padding:size==="xs"?"3px 8px":"4px 10px",borderRadius:100}}>Not Verified</span>;
+  return(<span style={{display:"inline-flex",alignItems:"center",gap:4}}>
+    <span style={{background:"rgba(200,137,0,0.12)",color:"#c88900",fontSize:size==="xs"?10:11,fontWeight:700,letterSpacing:0.3,padding:size==="xs"?"3px 8px":"4px 10px",borderRadius:100}}>Not Verified</span>
+    <InfoTip color="#c88900" width={320} label="Not verified explanation">
+      This does not mean the casting is not legitimate. It means the employer or creator posting this casting has not yet completed an identity verification process. CastSlate encourages creators to complete an ID check or a simple criminal background check to help protect talent safety.
+    </InfoTip>
+  </span>);
+}
+
+function adminBadgeState(v){
+  return v===true?true:(v===false?false:null);
 }
 
 // ─── CastingVerifiedBadge — "Background Checked" badge
@@ -13970,7 +13979,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         submissions:0,
         cd_id:c.cd_id||null,
         is_admin_created:c.is_admin_created===true,
-        admin_verified:c.admin_verified===true,
+        admin_verified:adminBadgeState(c.admin_verified),
         creator_verified:c.is_admin_created===true
           ? c.admin_verified===true
           : (c.profiles?.identity_verified===true&&c.profiles?.can_post_castings===true&&c.profiles?.verification_status==="verified"),
@@ -14161,11 +14170,11 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
             {(sCdName||sc.prod)&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:14,fontWeight:500,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
               <span>{sCdName?`Posted by ${sCdName}`:""}{sCdName&&sc.prod?" · ":""}{sc.prod||""}</span>
               {sc.is_admin_created
-                ? (sc.admin_verified===true?<IDVerifiedBadge size="xs"/>:<UnverifiedBadge size="xs"/>)
+                ? (adminBadgeState(sc.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(sc.admin_verified)===false?<UnverifiedBadge size="xs"/>:null)
                 : <>
                     {(sCd.identity_verified===true&&sCd.can_post_castings===true&&sCd.verification_status==="verified")&&<IDVerifiedBadge size="xs"/>}
                     {(sCd.identity_verified===true&&sCd.background_check_status==="passed")&&<CastingVerifiedBadge/>}
-                    {!(sCd.identity_verified===true&&sCd.can_post_castings===true)&&sCdName&&<span style={{background:"rgba(200,137,0,0.12)",color:"#c88900",fontSize:9,fontWeight:800,letterSpacing:0.6,padding:"2px 8px",borderRadius:99}} title="This caster has not yet completed identity verification">UNVERIFIED</span>}
+                    {!(sCd.identity_verified===true&&sCd.can_post_castings===true)&&sCdName&&<UnverifiedBadge size="xs"/>}
                   </>}
             </p>}
             {sDesc&&<p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:18,maxWidth:680}}>{sDesc}</p>}
@@ -18673,7 +18682,7 @@ function AdminCastingGenerator({session}){
       casting_image_url:updated.casting_image_url||null,casting_image_path:updated.casting_image_path||null,
       casting_images:updated.casting_images||[],
       expires_at:updated.expires_at,
-      admin_verified:updated.admin_verified===true,
+      admin_verified:adminBadgeState(updated.admin_verified),
       has_nudity:!!updated.has_nudity,
       nudity_details:updated.has_nudity?(updated.nudity_details||null):null,
       deadline:updated.deadline||(updated.expires_at?new Date(updated.expires_at).toISOString().slice(0,10):null),
@@ -18915,7 +18924,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     expires_at:listing.expires_at?new Date(listing.expires_at).toISOString().slice(0,10):"",
     created_at:listing.created_at?new Date(listing.created_at).toISOString().slice(0,10):"",
     status:listing.status||"draft",
-    admin_verified:listing.admin_verified===true,
+    admin_verified:adminBadgeState(listing.admin_verified),
   });
   const [castingImages,setCastingImages]=useState(Array.isArray(listing.casting_images)?listing.casting_images:(listing.casting_image_url?[{url:listing.casting_image_url,path:listing.casting_image_path||""}]:[]));
   const [uploadingImg,setUploadingImg]=useState(false);
@@ -19050,11 +19059,12 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
 
     <div className="form-group" style={{marginBottom:16}}>
       <label className="label">Verification Badge</label>
-      <div style={{display:"flex",gap:8,marginTop:4}}>
-        <button type="button" onClick={()=>set("admin_verified",true)} style={{flex:1,padding:"10px 12px",borderRadius:8,border:form.admin_verified?"1px solid #1d7b44":"1px solid var(--bdr)",background:form.admin_verified?"rgba(46,204,113,0.12)":"var(--s2)",color:form.admin_verified?"#1d7b44":"var(--t2)",fontWeight:700,fontSize:13,cursor:"pointer"}}><Ico n="check" s={24}/> ID Verified</button>
-        <button type="button" onClick={()=>set("admin_verified",false)} style={{flex:1,padding:"10px 12px",borderRadius:8,border:!form.admin_verified?"1px solid #c88900":"1px solid var(--bdr)",background:!form.admin_verified?"rgba(200,137,0,0.12)":"var(--s2)",color:!form.admin_verified?"#c88900":"var(--t2)",fontWeight:700,fontSize:13,cursor:"pointer"}}>Not Verified</button>
+      <div style={{display:"flex",gap:8,marginTop:4,flexWrap:"wrap"}}>
+        <button type="button" onClick={()=>set("admin_verified",true)} style={{flex:"1 1 150px",padding:"10px 12px",borderRadius:8,border:form.admin_verified===true?"1px solid #1d7b44":"1px solid var(--bdr)",background:form.admin_verified===true?"rgba(46,204,113,0.12)":"var(--s2)",color:form.admin_verified===true?"#1d7b44":"var(--t2)",fontWeight:700,fontSize:13,cursor:"pointer"}}><Ico n="check" s={24}/> ID Verified</button>
+        <button type="button" onClick={()=>set("admin_verified",false)} style={{flex:"1 1 150px",padding:"10px 12px",borderRadius:8,border:form.admin_verified===false?"1px solid #c88900":"1px solid var(--bdr)",background:form.admin_verified===false?"rgba(200,137,0,0.12)":"var(--s2)",color:form.admin_verified===false?"#c88900":"var(--t2)",fontWeight:700,fontSize:13,cursor:"pointer"}}>Not Verified</button>
+        <button type="button" onClick={()=>set("admin_verified",null)} style={{flex:"1 1 150px",padding:"10px 12px",borderRadius:8,border:form.admin_verified===null?"1px solid var(--t2)":"1px solid var(--bdr)",background:form.admin_verified===null?"rgba(26,26,46,0.06)":"var(--s2)",color:form.admin_verified===null?"var(--t1)":"var(--t2)",fontWeight:700,fontSize:13,cursor:"pointer"}}>No Badge</button>
       </div>
-      <p style={{fontSize:11,color:"var(--t3)",marginTop:6,marginBottom:0}}>Sets the badge on this platform listing — green “ID Verified” or yellow “Not Verified”. Real CD-posted castings are unaffected (they use their own identity verification).</p>
+      <p style={{fontSize:11,color:"var(--t3)",marginTop:6,marginBottom:0}}>Sets the badge on this platform listing — green “ID Verified”, yellow “Not Verified”, or no badge. Real CD-posted castings are unaffected (they use their own identity verification).</p>
     </div>
 
     <div className="form-row">
@@ -24222,7 +24232,7 @@ function App(){
         location:data.location||"",pay:data.pay||"",rate:data.pay||"",
         deadline:data.deadline||(data.expires_at?data.expires_at.slice(0,10):""),union:data.union_status||"",submissions:0,
         created_at:data.created_at||null,expires_at:data.expires_at||null,
-        featured:data.featured===true,is_admin_created:data.is_admin_created===true,admin_verified:data.admin_verified===true,
+        featured:data.featured===true,is_admin_created:data.is_admin_created===true,admin_verified:adminBadgeState(data.admin_verified),
         cd_id:data.cd_id,profiles:data.profiles||null,_cd:data.profiles||null,
         casting_image_url:data.casting_image_url||null,
         casting_image_path:data.casting_image_path||null,
@@ -24389,7 +24399,7 @@ function App(){
           prod:data.prod||"",tagline:data.tagline||"",synopsis:data.synopsis||"",
           desc:data.synopsis||data.tagline||"",location:data.location||"",
           pay:data.pay||"",rate:data.pay||"",deadline:data.deadline||(data.expires_at?data.expires_at.slice(0,10):""),
-          union:data.union_status||"",submissions:0,created_at:data.created_at||null,expires_at:data.expires_at||null,featured:data.featured===true,is_admin_created:data.is_admin_created===true,admin_verified:data.admin_verified===true,
+          union:data.union_status||"",submissions:0,created_at:data.created_at||null,expires_at:data.expires_at||null,featured:data.featured===true,is_admin_created:data.is_admin_created===true,admin_verified:adminBadgeState(data.admin_verified),
           cd_id:data.cd_id,profiles:data.profiles||null,_cd:data.profiles||null,
           casting_image_url:data.casting_image_url||null,
           casting_image_path:data.casting_image_path||null,
