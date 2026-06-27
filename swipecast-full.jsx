@@ -2367,9 +2367,9 @@ html,body{overflow-x:hidden;}
 .mm-live-stage::before{content:"";position:absolute;inset:20px -12px auto;height:420px;border-radius:36px;background:linear-gradient(135deg,rgba(110,231,183,.22),rgba(37,99,235,.16) 46%,rgba(232,144,42,.11));filter:blur(18px);opacity:.72;animation:mmHaloShift 7s ease-in-out infinite;z-index:0;pointer-events:none;}
 .mm-live-tab{position:relative;}
 .mm-live-tab::after{content:"";position:absolute;left:16px;right:16px;bottom:-1px;height:2px;background:#1A1A2E;transform:scaleX(0);transform-origin:left;animation:mmUnderline var(--mm-loop) ease-in-out infinite;}
-.mm-live-preview{display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;animation:mmPreviewType var(--mm-loop) steps(48,end) infinite;}
-.mm-live-message{overflow:hidden;animation:mmMessageReveal var(--mm-loop) ease-in-out infinite;}
-.mm-live-card{opacity:0;transform:translateY(12px);position:relative;overflow:hidden;animation:mmCardIn var(--mm-loop) cubic-bezier(.22,1,.36,1) infinite;}
+.mm-live-preview{display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;}
+.mm-live-message{overflow:hidden;}
+.mm-live-card{position:relative;overflow:hidden;transition:opacity .55s cubic-bezier(.22,1,.36,1),transform .55s cubic-bezier(.22,1,.36,1);}
 .mm-live-card::after{content:"";position:absolute;inset:0 auto 0 -48%;width:42%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.72),transparent);transform:skewX(-16deg);animation:mmCardSheen var(--mm-loop) ease-in-out infinite;}
 .mm-live-card:nth-of-type(2){animation-delay:0s;}
 .mm-live-card:nth-of-type(2)::after{animation-delay:0s;}
@@ -2379,7 +2379,7 @@ html,body{overflow-x:hidden;}
 .mm-live-card:nth-of-type(4)::after{animation-delay:1.4s;}
 .mm-live-card:nth-of-type(5){animation-delay:2.1s;}
 .mm-live-card:nth-of-type(5)::after{animation-delay:2.1s;}
-.mm-live-task{opacity:0;transform:translateY(10px);animation:mmTaskPop var(--mm-loop) cubic-bezier(.22,1,.36,1) infinite;}
+.mm-live-task{transition:opacity .55s cubic-bezier(.22,1,.36,1),transform .55s cubic-bezier(.22,1,.36,1),box-shadow .55s ease;}
 .mm-spark{position:absolute;width:16px;height:16px;border-radius:5px;background:#E8902A;box-shadow:0 0 24px rgba(232,144,42,.92);opacity:0;z-index:3;pointer-events:none;animation:mmSparkFloat 5.8s ease-in-out infinite;}
 .mm-spark-1{right:26px;top:134px;animation-delay:4.6s;}
 .mm-spark-2{right:104px;top:56px;width:14px;height:14px;background:#6EE7B7;box-shadow:0 0 24px rgba(110,231,183,.82);animation-delay:7.8s;}
@@ -5347,6 +5347,46 @@ function ManagerModePage({onNavigate,session,myProfile}){
   const isLoggedIn=!!session;
   const cardCTA=()=>{if(isPremium)onNavigate("my-profile");else if(isLoggedIn)onNavigate("membership");else onNavigate("pricing");};
   const cardCTALabel=isPremium?"Create My Actor Card":isLoggedIn?"Upgrade to Create Your Card":"Create My Actor Card";
+  const MM_PREVIEW_TEXT="Riley, your profile is moving in the right direction...";
+  const MM_BODY_TEXT="Hi Riley, your profile is moving in the right direction. Your headshot gives a strong first impression. Adding a slate video will make your profile significantly more competitive.";
+  const [mmPreview,setMmPreview]=useState(MM_PREVIEW_TEXT);
+  const [mmBody,setMmBody]=useState(MM_BODY_TEXT);
+  const [mmCards,setMmCards]=useState(4);
+  const [mmTaskVisible,setMmTaskVisible]=useState(true);
+
+  useEffect(()=>{
+    if(typeof window==="undefined")return;
+    let timers=[];
+    let interval;
+    const add=(fn,delay)=>{const t=window.setTimeout(fn,delay);timers.push(t);return t;};
+    const typeText=(setter,text,startDelay,speed,done)=>{
+      add(()=>{
+        let i=0;
+        const step=()=>{
+          setter(text.slice(0,i));
+          i+=1;
+          if(i<=text.length)add(step,speed);
+          else if(done)done();
+        };
+        step();
+      },startDelay);
+    };
+    const clear=()=>{timers.forEach(t=>window.clearTimeout(t));timers=[];};
+    const run=()=>{
+      clear();
+      setMmPreview("");
+      setMmBody("");
+      setMmCards(0);
+      setMmTaskVisible(false);
+      typeText(setMmPreview,MM_PREVIEW_TEXT,650,62);
+      typeText(setMmBody,MM_BODY_TEXT,1700,38);
+      [0,1,2,3].forEach((_,i)=>add(()=>setMmCards(i+1),7600+(i*700)));
+      add(()=>setMmTaskVisible(true),10600);
+    };
+    add(run,120);
+    interval=window.setInterval(run,20000);
+    return()=>{clear();window.clearInterval(interval);};
+  },[]);
 
   const CSLogo=({size=36,className=""})=>(
     <div className={className} style={{width:size,height:size,background:"rgba(255,255,255,0.13)",borderRadius:Math.round(size*0.24),display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:"1px solid rgba(255,255,255,0.2)"}}>
@@ -5404,20 +5444,20 @@ function ManagerModePage({onNavigate,session,myProfile}){
               <span style={{background:"rgba(27,135,62,0.1)",border:"1px solid rgba(27,135,62,0.25)",color:"#1B873E",fontSize:fs(8,7),fontWeight:700,padding:"1px 5px",borderRadius:4,letterSpacing:0.3,textTransform:"uppercase"}}>Private</span>
             </div>
             <div style={{fontSize:fs(11,9),color:"#5A5A72",fontWeight:600,marginBottom:1}}>Your Weekly Actor Check-In</div>
-            <div className={mobile?"":"mm-live-preview"} style={{fontSize:fs(10,8),color:"#8E8EA0"}}>Riley, your profile is moving in the right direction...</div>
+            <div className={mobile?"":"mm-live-preview"} style={{fontSize:fs(10,8),color:"#8E8EA0"}}>{mobile?MM_PREVIEW_TEXT:mmPreview}</div>
           </div>
           <div style={{fontSize:fs(9,7.5),color:"#8E8EA0",flexShrink:0,whiteSpace:"nowrap"}}>Today</div>
         </div>
         <div style={{padding:pd("16px 18px","11px 13px")}}>
-          <div className={mobile?"":"mm-live-message"} style={{fontSize:fs(12,9.5),color:"#1A1A2E",lineHeight:1.65,marginBottom:pd(12,8),fontWeight:400}}>Hi Riley, your profile is moving in the right direction. Your headshot gives a strong first impression. Adding a slate video will make your profile significantly more competitive.</div>
-          {[["What you're doing well","Your headshot is clear and professional — strong first impression.","#1B873E","rgba(27,135,62,0.06)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.06)"],["Casting lane to focus on","Young professional / commercial friend","#2563EB","rgba(37,99,235,0.06)"],["Your task this week","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.04)"]].map(([label,val,col,bg])=>(
-            <div key={label} className={mobile?"":"mm-live-card"} style={{background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4)}}>
+          <div className={mobile?"":"mm-live-message"} style={{fontSize:fs(12,9.5),color:"#1A1A2E",lineHeight:1.65,marginBottom:pd(12,8),fontWeight:400,minHeight:mobile?"auto":70}}>{mobile?MM_BODY_TEXT:mmBody}</div>
+          {[["What you're doing well","Your headshot is clear and professional — strong first impression.","#1B873E","rgba(27,135,62,0.06)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.06)"],["Casting lane to focus on","Young professional / commercial friend","#2563EB","rgba(37,99,235,0.06)"],["Your task this week","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.04)"]].map(([label,val,col,bg],idx)=>(
+            <div key={label} className={mobile?"":"mm-live-card"} style={{background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4),opacity:mobile||idx<mmCards?1:0,transform:mobile||idx<mmCards?"translateY(0)":"translateY(12px)"}}>
               <div style={{fontSize:fs(9,7),fontWeight:700,color:col,letterSpacing:0.6,textTransform:"uppercase",marginBottom:2}}>{label}</div>
               <div style={{fontSize:fs(11,8.5),color:"#1A1A2E",fontWeight:500,lineHeight:1.45}}>{val}</div>
             </div>
           ))}
           <div style={{marginTop:pd(12,8),display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-            <div className={mobile?"":"mm-live-task"} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:"0 2px 8px rgba(26,26,46,0.2)"}}>Complete This Week's Task</div>
+            <div className={mobile?"":"mm-live-task"} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:mmTaskVisible?"0 2px 8px rgba(26,26,46,0.2),0 0 0 4px rgba(26,26,46,0.06)":"0 2px 8px rgba(26,26,46,0.2)",opacity:mobile||mmTaskVisible?1:0,transform:mobile||mmTaskVisible?"translateY(0)":"translateY(10px)"}}>Complete This Week's Task</div>
           </div>
           <div style={{marginTop:pd(8,6),fontSize:fs(9,7.5),color:"#8E8EA0",fontStyle:"italic"}}>Replies are not available for this message.</div>
         </div>
