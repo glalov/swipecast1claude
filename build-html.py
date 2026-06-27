@@ -149,11 +149,11 @@ def render_page(title, desc, canonical):
   <meta name="twitter:description" content="{desc}"/>
   <meta name="twitter:image" content="https://www.castslate.com/og-image.png"/>
   <!-- Favicon -->
-  <link rel="icon" href="/favicon.ico?v=5" sizes="any"/>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=5"/>
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=5"/>
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=5"/>
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=5"/>
+  <link rel="icon" href="/favicon.ico?v=6" sizes="any"/>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=6"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=6"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=6"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=6"/>
   <!-- Tabler line-icon webfont (replaces emoji UI icons) -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/>
@@ -439,23 +439,23 @@ def render_page(title, desc, canonical):
 # title/desc are copied verbatim from PAGE_SEO in swipecast-full.jsx so the
 # server HTML and the client-side setPageSEO() agree exactly.
 ROUTES = [
-    ("index.html",            "/",                "CastSlate | Casting, Finally Built for Actors", "CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."),
-    ("browse-castings.html",  "/browse-castings", "Browse Castings | CastSlate", "Browse open casting calls for film, TV, theater, and commercials. Submit your actor profile to roles that match your look and skills."),
-    ("pricing.html",          "/pricing",         "Pricing | CastSlate", "CastSlate is free forever for actors. Upgrade to Premium at $9.99/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, and more. See all plans and what's included."),
-    ("classes.html",          "/classes",         "Acting Classes | CastSlate", "Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."),
-    ("actor-toolkit.html",    "/actor-toolkit",   "Actor Toolkit | CastSlate", "Free tools, guides, and resources for working actors — headshot advice, self-tape setup, audition prep, and more."),
-    ("resources.html",        "/resources",       "Resources | CastSlate", "Guides and resources for actors and casting directors on the CastSlate platform."),
-    ("trust-safety.html",     "/trust-safety",    "Trust & Safety | CastSlate", "CastSlate trust and safety guidance for actors, models, casting teams, and producers, including audition fee warnings, compensation labels, privacy protections, and how to report suspicious activity."),
-    ("pay-talent.html",       "/pay-talent",      "Pay Talent | CastSlate", "Fast, secure talent payments for casting directors and producers. Pay actors directly through CastSlate."),
-    ("about.html",            "/about",           "About | CastSlate", "CastSlate is a modern casting platform built for working actors and the industry professionals who discover them."),
-    ("blog.html",             "/blog",            "Blog | CastSlate", "Casting industry news, actor tips, and platform updates from the CastSlate team."),
-    ("careers.html",          "/careers",         "Careers | CastSlate", "Join the team building the future of casting. Open roles at CastSlate."),
-    ("contact.html",          "/contact",         "Contact | CastSlate", "Get in touch with the CastSlate team. We're here to help actors, casting directors, and production companies."),
-    ("faq.html",              "/faq",             "FAQ | CastSlate", "Frequently asked questions about CastSlate — how it works, account types, submissions, and pricing."),
-    ("success-stories.html",  "/success-stories", "Success Stories | CastSlate", "Real actors, real results. Read how CastSlate members booked roles through the platform."),
-    ("terms.html",            "/terms",           "Terms of Use | CastSlate", "CastSlate Terms of Use — the rules and guidelines for using the CastSlate casting platform."),
-    ("privacy.html",          "/privacy",         "Privacy Policy | CastSlate", "CastSlate Privacy Policy — how we collect, use, and protect your personal information."),
-    ("manager-mode.html",     "/manager-mode",    "Manager Mode | CastSlate", "Cast Slate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."),
+    ("index.html",            "/",                "CastSlate", "CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."),
+    ("browse-castings.html",  "/browse-castings", "Browse Castings", "Browse open casting calls for film, TV, theater, and commercials. Submit your actor profile to roles that match your look and skills."),
+    ("pricing.html",          "/pricing",         "Pricing", "CastSlate is free forever for actors. Upgrade to Premium at $9.99/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, and more. See all plans and what's included."),
+    ("classes.html",          "/classes",         "Acting Classes", "Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."),
+    ("actor-toolkit.html",    "/actor-toolkit",   "Actor Toolkit", "Free tools, guides, and resources for working actors — headshot advice, self-tape setup, audition prep, and more."),
+    ("resources.html",        "/resources",       "Resources", "Guides and resources for actors and casting directors on the CastSlate platform."),
+    ("trust-safety.html",     "/trust-safety",    "Trust & Safety", "CastSlate trust and safety guidance for actors, models, casting teams, and producers, including audition fee warnings, compensation labels, privacy protections, and how to report suspicious activity."),
+    ("pay-talent.html",       "/pay-talent",      "Pay Talent", "Fast, secure talent payments for casting directors and producers. Pay actors directly through CastSlate."),
+    ("about.html",            "/about",           "About", "CastSlate is a modern casting platform built for working actors and the industry professionals who discover them."),
+    ("blog.html",             "/blog",            "Blog", "Casting industry news, actor tips, and platform updates from the CastSlate team."),
+    ("careers.html",          "/careers",         "Careers", "Join the team building the future of casting. Open roles at CastSlate."),
+    ("contact.html",          "/contact",         "Contact", "Get in touch with the CastSlate team. We're here to help actors, casting directors, and production companies."),
+    ("faq.html",              "/faq",             "FAQ", "Frequently asked questions about CastSlate — how it works, account types, submissions, and pricing."),
+    ("success-stories.html",  "/success-stories", "Success Stories", "Real actors, real results. Read how CastSlate members booked roles through the platform."),
+    ("terms.html",            "/terms",           "Terms of Use", "CastSlate Terms of Use — the rules and guidelines for using the CastSlate casting platform."),
+    ("privacy.html",          "/privacy",         "Privacy Policy", "CastSlate Privacy Policy — how we collect, use, and protect your personal information."),
+    ("manager-mode.html",     "/manager-mode",    "Manager Mode", "Cast Slate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."),
     ("tapelink.html",         "/tapelink",        "TapeLink: Self-Tape Auditions Built Into Casting", "TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."),
 ]
 

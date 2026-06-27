@@ -23526,47 +23526,47 @@ const PAGE_PATH={
 
 // SEO metadata per page — title + description updated dynamically on navigation
 const PAGE_SEO={
-  "home":{title:"CastSlate | Casting, Finally Built for Actors",desc:"CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."},
-  "search":{title:"Browse Castings | CastSlate",desc:"Browse open casting calls for film, TV, theater, and commercials. Submit your actor profile to roles that match your look and skills."},
-  "pricing":{title:"Pricing | CastSlate",desc:"CastSlate is free forever for actors. Upgrade to Premium at $9.99/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, and more. See all plans and what's included."},
-  "classes":{title:"Acting Classes | CastSlate",desc:"Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."},
-  "actor-toolkit":{title:"Actor Toolkit | CastSlate",desc:"Free tools, guides, and resources for working actors — headshot advice, self-tape setup, audition prep, and more."},
-  "resources":{title:"Resources | CastSlate",desc:"Guides and resources for actors and casting directors on the CastSlate platform."},
-  "trust-safety":{title:"Trust & Safety | CastSlate",desc:"CastSlate trust and safety guidance for actors, models, casting teams, and producers, including audition fee warnings, compensation labels, privacy protections, and how to report suspicious activity."},
-  "pay-talent":{title:"Pay Talent | CastSlate",desc:"Fast, secure talent payments for casting directors and producers. Pay actors directly through CastSlate."},
-  "about":{title:"About | CastSlate",desc:"CastSlate is a modern casting platform built for working actors and the industry professionals who discover them."},
-  "blog":{title:"Blog | CastSlate",desc:"Casting industry news, actor tips, and platform updates from the CastSlate team."},
-  "careers":{title:"Careers | CastSlate",desc:"Join the team building the future of casting. Open roles at CastSlate."},
-  "contact":{title:"Contact | CastSlate",desc:"Get in touch with the CastSlate team. We're here to help actors, casting directors, and production companies."},
-  "faq":{title:"FAQ | CastSlate",desc:"Frequently asked questions about CastSlate — how it works, account types, submissions, and pricing."},
-  "success-stories":{title:"Success Stories | CastSlate",desc:"Real actors, real results. Read how CastSlate members booked roles through the platform."},
-  "terms":{title:"Terms of Use | CastSlate",desc:"CastSlate Terms of Use — the rules and guidelines for using the CastSlate casting platform."},
-  "privacy":{title:"Privacy Policy | CastSlate",desc:"CastSlate Privacy Policy — how we collect, use, and protect your personal information."},
-  "studios":{title:"For Studios | CastSlate",desc:"CastSlate for studios and production companies. Post castings, review talent, and hire fast."},
-  "manager-mode":{title:"Manager Mode | CastSlate",desc:"Cast Slate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."},
+  "home":{title:"CastSlate",desc:"CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."},
+  "search":{title:"Browse Castings",desc:"Browse open casting calls for film, TV, theater, and commercials. Submit your actor profile to roles that match your look and skills."},
+  "pricing":{title:"Pricing",desc:"CastSlate is free forever for actors. Upgrade to Premium at $9.99/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, and more. See all plans and what's included."},
+  "classes":{title:"Acting Classes",desc:"Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."},
+  "actor-toolkit":{title:"Actor Toolkit",desc:"Free tools, guides, and resources for working actors — headshot advice, self-tape setup, audition prep, and more."},
+  "resources":{title:"Resources",desc:"Guides and resources for actors and casting directors on the CastSlate platform."},
+  "trust-safety":{title:"Trust & Safety",desc:"CastSlate trust and safety guidance for actors, models, casting teams, and producers, including audition fee warnings, compensation labels, privacy protections, and how to report suspicious activity."},
+  "pay-talent":{title:"Pay Talent",desc:"Fast, secure talent payments for casting directors and producers. Pay actors directly through CastSlate."},
+  "about":{title:"About",desc:"CastSlate is a modern casting platform built for working actors and the industry professionals who discover them."},
+  "blog":{title:"Blog",desc:"Casting industry news, actor tips, and platform updates from the CastSlate team."},
+  "careers":{title:"Careers",desc:"Join the team building the future of casting. Open roles at CastSlate."},
+  "contact":{title:"Contact",desc:"Get in touch with the CastSlate team. We're here to help actors, casting directors, and production companies."},
+  "faq":{title:"FAQ",desc:"Frequently asked questions about CastSlate — how it works, account types, submissions, and pricing."},
+  "success-stories":{title:"Success Stories",desc:"Real actors, real results. Read how CastSlate members booked roles through the platform."},
+  "terms":{title:"Terms of Use",desc:"CastSlate Terms of Use — the rules and guidelines for using the CastSlate casting platform."},
+  "privacy":{title:"Privacy Policy",desc:"CastSlate Privacy Policy — how we collect, use, and protect your personal information."},
+  "studios":{title:"For Studios",desc:"CastSlate for studios and production companies. Post castings, review talent, and hire fast."},
+  "manager-mode":{title:"Manager Mode",desc:"Cast Slate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."},
   "tapelink":{title:"TapeLink: Self-Tape Auditions Built Into Casting",desc:"TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."},
-  "actor-business-card":{title:"Actor Business Card | CastSlate",desc:"Create your personalized actor business card with your headshot, casting details, and a unique QR code linking directly to your Cast Slate profile. Download an A4 print-ready sheet."},
-  "login":{title:"Sign In | CastSlate",desc:"Sign in to your CastSlate account to browse castings, manage your profile, and submit to roles."},
-  "register-talent":{title:"Create Actor Profile | CastSlate",desc:"Create your free CastSlate actor profile. Get seen by casting directors for film, TV, theater, and commercial roles."},
-  "register-cd":{title:"Post a Casting | CastSlate",desc:"Post your casting call on CastSlate and review actor submissions one at a time. Start for free."},
+  "actor-business-card":{title:"Actor Business Card",desc:"Create your personalized actor business card with your headshot, casting details, and a unique QR code linking directly to your Cast Slate profile. Download an A4 print-ready sheet."},
+  "login":{title:"Sign In",desc:"Sign in to your CastSlate account to browse castings, manage your profile, and submit to roles."},
+  "register-talent":{title:"Create Actor Profile",desc:"Create your free CastSlate actor profile. Get seen by casting directors for film, TV, theater, and commercial roles."},
+  "register-cd":{title:"Post a Casting",desc:"Post your casting call on CastSlate and review actor submissions one at a time. Start for free."},
 };
 
 function setPageSEO(page,opts){
   const seo=PAGE_SEO[page];
-  let title=seo?seo.title:"CastSlate | Casting, Finally Built for Actors";
+  let title=seo?seo.title:"CastSlate";
   let desc=seo?seo.desc:"CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time.";
   let url="https://www.castslate.com"+(PAGE_PATH[page]||"/");
 
   if(page==="casting-detail"&&opts?.title){
-    title=`${opts.title} | CastSlate`;
+    title=opts.title;
     desc=`Apply to ${opts.title} on CastSlate. ${opts.prod?`Produced by ${opts.prod}. `:""}${opts.type?`${opts.type} casting call. `:""}Submit your actor profile.`;
     url=`https://www.castslate.com/casting/${encodeURIComponent(opts.slug||"")}`;
   }else if(page==="talent-public"&&opts?.name){
-    title=`${opts.name} | Actor Profile | CastSlate`;
+    title=opts.name;
     desc=`View ${opts.name}'s actor profile on CastSlate.`;
     url=`https://www.castslate.com/talent/${encodeURIComponent(opts.slug||"")}`;
   }else if(page==="news-article"&&opts?.title){
-    title=`${opts.title} | CastSlate News`;
+    title=opts.title;
     desc=`${opts.title} — industry news summarized by CastSlate Staff.`;
     url=`https://www.castslate.com/news/${encodeURIComponent(opts.slug||"")}`;
   }
