@@ -2362,6 +2362,8 @@ html,body{overflow-x:hidden;}
 .mm-inbox-wrap{width:100%;max-width:460px;flex-shrink:1;min-width:0;}
 .mm-live-hero{--mm-loop:20s;}
 .mm-hero-logo{animation:mmHeroLogoPulse var(--mm-loop) ease-in-out infinite;}
+.mm-premium-pill{animation:mmPremiumPillBreathe 3.2s ease-in-out infinite;}
+.mm-premium-pill-dot{animation:mmPremiumDotGlow 3.2s ease-in-out infinite;}
 .mm-live-inbox{position:relative;z-index:2;animation:mmInboxFloat var(--mm-loop) ease-in-out infinite;}
 .mm-live-stage{isolation:isolate;}
 .mm-live-stage::before{content:"";position:absolute;inset:20px -12px auto;height:420px;border-radius:36px;background:linear-gradient(135deg,rgba(110,231,183,.22),rgba(37,99,235,.16) 46%,rgba(232,144,42,.11));filter:blur(18px);opacity:.72;animation:mmHaloShift 7s ease-in-out infinite;z-index:0;pointer-events:none;}
@@ -2369,7 +2371,7 @@ html,body{overflow-x:hidden;}
 .mm-live-tab::after{content:"";position:absolute;left:16px;right:16px;bottom:-1px;height:2px;background:#1A1A2E;transform:scaleX(0);transform-origin:left;animation:mmUnderline var(--mm-loop) ease-in-out infinite;}
 .mm-live-preview{display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;}
 .mm-live-message{overflow:hidden;}
-.mm-live-card{position:relative;overflow:hidden;transition:opacity .55s cubic-bezier(.22,1,.36,1),transform .55s cubic-bezier(.22,1,.36,1);}
+.mm-live-card{position:relative;overflow:hidden;transition:opacity .55s cubic-bezier(.22,1,.36,1),transform .55s cubic-bezier(.22,1,.36,1);will-change:opacity,transform;}
 .mm-live-card::after{content:"";position:absolute;inset:0 auto 0 -48%;width:42%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.72),transparent);transform:skewX(-16deg);animation:mmCardSheen var(--mm-loop) ease-in-out infinite;}
 .mm-live-card:nth-of-type(2){animation-delay:0s;}
 .mm-live-card:nth-of-type(2)::after{animation-delay:0s;}
@@ -2379,7 +2381,7 @@ html,body{overflow-x:hidden;}
 .mm-live-card:nth-of-type(4)::after{animation-delay:1.4s;}
 .mm-live-card:nth-of-type(5){animation-delay:2.1s;}
 .mm-live-card:nth-of-type(5)::after{animation-delay:2.1s;}
-.mm-live-task{transition:opacity .55s cubic-bezier(.22,1,.36,1),transform .55s cubic-bezier(.22,1,.36,1),box-shadow .55s ease;}
+.mm-live-task{transition:opacity .9s cubic-bezier(.22,1,.36,1),transform .9s cubic-bezier(.22,1,.36,1),box-shadow .55s ease;will-change:opacity,transform;}
 .mm-spark{position:absolute;width:16px;height:16px;border-radius:5px;background:#E8902A;box-shadow:0 0 24px rgba(232,144,42,.92);opacity:0;z-index:3;pointer-events:none;animation:mmSparkFloat 5.8s ease-in-out infinite;}
 .mm-spark-1{right:26px;top:134px;animation-delay:4.6s;}
 .mm-spark-2{right:104px;top:56px;width:14px;height:14px;background:#6EE7B7;box-shadow:0 0 24px rgba(110,231,183,.82);animation-delay:7.8s;}
@@ -2393,6 +2395,8 @@ html,body{overflow-x:hidden;}
 .mm-ring-2{left:376px;top:279px;border-color:rgba(37,99,235,.72);animation:mmClickRing2 var(--mm-loop) ease infinite;}
 .mm-ring-3{left:27px;bottom:25px;border-color:rgba(232,144,42,.78);animation:mmClickRing3 var(--mm-loop) ease infinite;}
 .mm-logo-click-ring{position:absolute;left:clamp(16px,5vw,60px);top:clamp(56px,8vw,96px);width:54px;height:54px;border:2px solid rgba(110,231,183,.86);border-radius:16px;opacity:0;transform:translate(-8px,-8px);pointer-events:none;z-index:7;animation:mmLogoClickRing var(--mm-loop) ease infinite;}
+@keyframes mmPremiumPillBreathe{0%,100%{box-shadow:0 0 0 0 rgba(110,231,183,0);}50%{box-shadow:0 0 0 5px rgba(110,231,183,.09),0 0 22px rgba(110,231,183,.22);}}
+@keyframes mmPremiumDotGlow{0%,100%{box-shadow:0 0 10px #6EE7B7;transform:scale(1);}50%{box-shadow:0 0 18px #6EE7B7;transform:scale(1.12);}}
 @keyframes mmInboxFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
 @keyframes mmHaloShift{0%,100%{transform:translate3d(0,0,0) scale(1);opacity:.62;}50%{transform:translate3d(-16px,10px,0) scale(1.04);opacity:.82;}}
 @keyframes mmUnderline{0%,9%{transform:scaleX(0);}13%,96%{transform:scaleX(1);}100%{transform:scaleX(0);}}
@@ -5349,10 +5353,10 @@ function ManagerModePage({onNavigate,session,myProfile}){
   const cardCTALabel=isPremium?"Create My Actor Card":isLoggedIn?"Upgrade to Create Your Card":"Create My Actor Card";
   const MM_PREVIEW_TEXT="Riley, your profile is moving in the right direction...";
   const MM_BODY_TEXT="Hi Riley, your profile is moving in the right direction. Your headshot gives a strong first impression. Adding a slate video will make your profile significantly more competitive.";
-  const [mmPreview,setMmPreview]=useState(MM_PREVIEW_TEXT);
-  const [mmBody,setMmBody]=useState(MM_BODY_TEXT);
-  const [mmCards,setMmCards]=useState(4);
-  const [mmTaskVisible,setMmTaskVisible]=useState(true);
+  const [mmPreview,setMmPreview]=useState("");
+  const [mmBody,setMmBody]=useState("");
+  const [mmCards,setMmCards]=useState(0);
+  const [mmTaskVisible,setMmTaskVisible]=useState(false);
 
   useEffect(()=>{
     if(typeof window==="undefined")return;
@@ -5378,12 +5382,12 @@ function ManagerModePage({onNavigate,session,myProfile}){
       setMmBody("");
       setMmCards(0);
       setMmTaskVisible(false);
-      typeText(setMmPreview,MM_PREVIEW_TEXT,650,62);
-      typeText(setMmBody,MM_BODY_TEXT,1700,38);
-      [0,1,2,3].forEach((_,i)=>add(()=>setMmCards(i+1),7600+(i*700)));
-      add(()=>setMmTaskVisible(true),10600);
+      typeText(setMmPreview,MM_PREVIEW_TEXT,2700,62);
+      typeText(setMmBody,MM_BODY_TEXT,5200,38);
+      [0,1,2,3].forEach((_,i)=>add(()=>setMmCards(i+1),11750+(i*700)));
+      add(()=>setMmTaskVisible(true),14650);
     };
-    add(run,120);
+    run();
     interval=window.setInterval(run,20000);
     return()=>{clear();window.clearInterval(interval);};
   },[]);
@@ -5451,13 +5455,13 @@ function ManagerModePage({onNavigate,session,myProfile}){
         <div style={{padding:pd("16px 18px","11px 13px")}}>
           <div className={mobile?"":"mm-live-message"} style={{fontSize:fs(12,9.5),color:"#1A1A2E",lineHeight:1.65,marginBottom:pd(12,8),fontWeight:400,minHeight:mobile?"auto":70}}>{mobile?MM_BODY_TEXT:mmBody}</div>
           {[["What you're doing well","Your headshot is clear and professional — strong first impression.","#1B873E","rgba(27,135,62,0.06)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.06)"],["Casting lane to focus on","Young professional / commercial friend","#2563EB","rgba(37,99,235,0.06)"],["Your task this week","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.04)"]].map(([label,val,col,bg],idx)=>(
-            <div key={label} className={mobile?"":"mm-live-card"} style={{background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4),opacity:mobile||idx<mmCards?1:0,transform:mobile||idx<mmCards?"translateY(0)":"translateY(12px)"}}>
+            <div key={label} className={mobile?"":"mm-live-card"} style={{background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4),opacity:mobile||idx<mmCards?1:0.001,transform:mobile||idx<mmCards?"translateY(0)":"translateY(12px)"}}>
               <div style={{fontSize:fs(9,7),fontWeight:700,color:col,letterSpacing:0.6,textTransform:"uppercase",marginBottom:2}}>{label}</div>
               <div style={{fontSize:fs(11,8.5),color:"#1A1A2E",fontWeight:500,lineHeight:1.45}}>{val}</div>
             </div>
           ))}
           <div style={{marginTop:pd(12,8),display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-            <div className={mobile?"":"mm-live-task"} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:mmTaskVisible?"0 2px 8px rgba(26,26,46,0.2),0 0 0 4px rgba(26,26,46,0.06)":"0 2px 8px rgba(26,26,46,0.2)",opacity:mobile||mmTaskVisible?1:0,transform:mobile||mmTaskVisible?"translateY(0)":"translateY(10px)"}}>Complete This Week's Task</div>
+            <div className={mobile?"":"mm-live-task"} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:mmTaskVisible?"0 2px 8px rgba(26,26,46,0.2),0 0 0 4px rgba(26,26,46,0.06)":"0 2px 8px rgba(26,26,46,0.2)",opacity:mobile||mmTaskVisible?1:0.001,transform:mobile||mmTaskVisible?"translateY(0)":"translateY(10px)"}}>Complete This Week's Task</div>
           </div>
           <div style={{marginTop:pd(8,6),fontSize:fs(9,7.5),color:"#8E8EA0",fontStyle:"italic"}}>Replies are not available for this message.</div>
         </div>
@@ -5482,8 +5486,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
               <div style={{fontSize:11,color:"rgba(255,255,255,0.5)",letterSpacing:0.2}}>castslate.com</div>
             </div>
           </div>
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(110,231,183,0.1)",border:"1px solid rgba(110,231,183,0.3)",padding:"6px 16px",borderRadius:100,fontSize:11,color:"#6EE7B7",fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",marginBottom:24}}>
-            <span style={{width:6,height:6,borderRadius:"50%",background:"#6EE7B7",boxShadow:"0 0 10px #6EE7B7"}}/>Premium Feature
+          <div className="mm-premium-pill" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(110,231,183,0.1)",border:"1px solid rgba(110,231,183,0.3)",padding:"6px 16px",borderRadius:100,fontSize:11,color:"#6EE7B7",fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",marginBottom:24}}>
+            <span className="mm-premium-pill-dot" style={{width:6,height:6,borderRadius:"50%",background:"#6EE7B7",boxShadow:"0 0 10px #6EE7B7"}}/>Premium Feature
           </div>
           <h1 style={{fontWeight:800,fontSize:"clamp(30px,4.5vw,54px)",lineHeight:1.07,letterSpacing:-1.8,marginBottom:18,color:"#fff"}}>Cast Slate becomes your talent manager before you have a talent manager.</h1>
           <p style={{fontSize:"clamp(15px,2vw,19px)",lineHeight:1.65,color:"rgba(255,255,255,0.72)",marginBottom:32,maxWidth:520}}>Cast Slate doesn't just help actors find auditions. It helps actors become more castable.</p>
