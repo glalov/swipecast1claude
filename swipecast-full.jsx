@@ -2422,7 +2422,6 @@ html,body{overflow-x:hidden;}
   .mm-bcard-row{flex-direction:column !important;align-items:center !important;}
   .mm-bcard-text{min-width:0 !important;width:100% !important;}
   .mm-events-row{flex-direction:column !important;}
-  .mm-checkin-row{flex-direction:column !important;align-items:stretch !important;}
 }
 @media(max-width:560px){
   .mm-card-outer{border-radius:14px !important;}
@@ -5571,30 +5570,10 @@ function ManagerModePage({onNavigate,session,myProfile}){
 
     {/* ══════ SAMPLE CHECK-IN ══════ */}
     <section style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,88px)",maxWidth:1140,margin:"0 auto"}}>
-      <div style={{textAlign:"center",marginBottom:52}}>
+      <div style={{textAlign:"center",marginBottom:34}}>
         <div className="section-label">Sample Weekly Check-In</div>
         <h2 style={{fontWeight:800,fontSize:"clamp(24px,3.2vw,38px)",letterSpacing:-1.2,lineHeight:1.08}}>See what lands in your inbox.</h2>
         <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.65,maxWidth:520,margin:"14px auto 0"}}>Every week, your private Cast Slate career note arrives with personalized guidance and one focused task — written specifically for your profile.</p>
-      </div>
-
-      {/* Split: Desktop mockup + mobile mockup — responsive */}
-      <div className="mm-checkin-row" style={{display:"flex",alignItems:"flex-start",gap:"clamp(20px,4vw,48px)",flexWrap:"wrap",justifyContent:"center",marginBottom:48,width:"100%",boxSizing:"border-box"}}>
-        {/* Desktop inbox — hidden on narrow screens */}
-        <div className="mm-show-desktop" style={{flexDirection:"column",alignItems:"center",gap:12,flex:"1 1 320px",minWidth:0,maxWidth:480}}>
-          <InboxMockup mobile={false}/>
-          <span style={{fontSize:11,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase",fontWeight:600}}>Desktop inbox view</span>
-        </div>
-
-        {/* Mobile frame — always visible */}
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12,flexShrink:0}}>
-          <div style={{background:"#1A1A2E",borderRadius:32,padding:"12px 10px 16px",boxShadow:"0 24px 64px rgba(26,26,46,0.30)",border:"2px solid #2D2D44"}}>
-            <div style={{width:40,height:4,background:"rgba(255,255,255,0.2)",borderRadius:100,margin:"0 auto 10px"}}/>
-            <div style={{background:"#000",borderRadius:22,overflow:"hidden"}}>
-              <InboxMockup mobile={true}/>
-            </div>
-          </div>
-          <span style={{fontSize:11,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase",fontWeight:600}}>Mobile view</span>
-        </div>
       </div>
 
       {/* Actor profile card with real photo */}
