@@ -77,6 +77,7 @@ interface NotifyRequest {
   application_id?: string;
   casting_id?: string;
   class_title?: string;
+  instructor_name?: string;
   // booking_* extras
   slot_label?: string;
   admin_note?: string;
@@ -129,34 +130,44 @@ function inboxMessageHtml(firstName: string, fromName?: string, projectName?: st
 </html>`;
 }
 
-function classInvitationHtml(firstName: string, classTitle: string): string {
+function classInvitationHtml(firstName: string, classTitle: string, instructorName?: string): string {
+  const withLine = instructorName
+    ? `<p style="margin:0 0 6px;font-size:15px;color:#555">with <strong style="color:#2d1052">${esc(instructorName)}</strong></p>`
+    : "";
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"/></head>
 <body style="margin:0;padding:0;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f7;padding:40px 20px">
     <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:560px;width:100%">
-        <tr><td style="background:linear-gradient(135deg,#1a3d38,#254f49);padding:28px 32px">
-          <div style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-0.5px">CastSlate</div>
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;width:100%">
+        <tr><td style="background:linear-gradient(135deg,#1a0533,#2d1052);padding:30px 36px">
+          <img src="https://www.castslate.com/favicon-512.png" alt="CastSlate" width="40" height="40" style="display:inline-block;vertical-align:middle;border-radius:10px"/>
+          <span style="display:inline-block;vertical-align:middle;margin-left:12px;font-size:21px;font-weight:800;color:#ffffff;letter-spacing:-0.5px">CastSlate</span>
+          <div style="margin-top:14px;display:inline-block;background:rgba(139,92,246,0.25);color:#d7c4ff;font-size:12px;font-weight:700;letter-spacing:0.4px;padding:4px 12px;border-radius:20px;text-transform:uppercase">Personal Invitation</div>
         </td></tr>
-        <tr><td style="padding:36px 32px 28px">
-          <h1 style="margin:0 0 16px;font-size:24px;font-weight:800;color:#111;letter-spacing:-0.5px">A class was selected for you</h1>
-          <p style="margin:0 0 8px;font-size:16px;line-height:1.6;color:#555">
-            Hi ${firstName}, CastSlate selected a class that may be a strong fit for your profile:
+        <tr><td style="padding:36px 36px 28px">
+          <h1 style="margin:0 0 16px;font-size:24px;font-weight:800;color:#111;letter-spacing:-0.5px">You've been personally invited, ${firstName} 🎬</h1>
+          <p style="margin:0 0 14px;font-size:16px;line-height:1.65;color:#555">
+            Our team at CastSlate hand-picked you for an exclusive invitation to train with a top industry professional. This was chosen specifically for your profile — it isn't a mass mailing, and spots like this are limited.
           </p>
-          <p style="margin:0 0 28px;font-size:17px;font-weight:700;color:#1a3d38;line-height:1.4">
-            ${classTitle}
+          <div style="margin:0 0 22px;padding:18px 20px;background:#f6f3ff;border:1px solid #e7defc;border-radius:12px">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#8b5cf6;margin:0 0 6px">Your invitation</div>
+            <p style="margin:0 0 4px;font-size:18px;font-weight:800;color:#2d1052;line-height:1.35">${classTitle}</p>
+            ${withLine}
+          </div>
+          <p style="margin:0 0 26px;font-size:15px;line-height:1.65;color:#555">
+            <strong>Log in to CastSlate and open your Dashboard</strong> to view your special invitation, choose an available time slot, and request your spot before it's gone.
           </p>
           <a href="${APP_URL}/talent-dashboard"
-             style="display:inline-block;background:linear-gradient(90deg,#1a3d38,#254f49);color:#f0f8f6;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:15px;letter-spacing:0.1px">
-            Go to Dashboard →
+             style="display:inline-block;background:linear-gradient(90deg,#6b3ecb,#8b5cf6);color:#fff;text-decoration:none;padding:15px 38px;border-radius:10px;font-weight:800;font-size:15px;letter-spacing:0.1px">
+            View My Invitation →
           </a>
         </td></tr>
-        <tr><td style="padding:20px 32px 32px;border-top:1px solid #f0f0f0">
+        <tr><td style="padding:20px 36px 32px;border-top:1px solid #f0f0f0">
           <p style="margin:0;font-size:12px;color:#aaa;line-height:1.6">
-            You're receiving this because you have an account on CastSlate.<br/>
-            To manage notifications, visit <a href="${APP_URL}/account-settings" style="color:#6b3ecb;text-decoration:none">Account Settings → Notifications</a>.
+            You're receiving this because a class invitation was sent to your CastSlate account.<br/>
+            To manage notifications, visit <a href="${APP_URL}/account-settings" style="color:#8b5cf6;text-decoration:none">Account Settings → Notifications</a>.
           </p>
         </td></tr>
       </table>
@@ -329,7 +340,7 @@ serve(async (req) => {
     });
 
   try {
-    const { to_user_id, type, from_id, from_name: rawFromName, application_id, casting_id, class_title, slot_label, admin_note, class_price, class_id } = (await req.json()) as NotifyRequest;
+    const { to_user_id, type, from_id, from_name: rawFromName, application_id, casting_id, class_title, instructor_name, slot_label, admin_note, class_price, class_id } = (await req.json()) as NotifyRequest;
 
     if (!to_user_id || !type) {
       return json({ error: "Missing to_user_id or type" }, 400);
@@ -470,10 +481,10 @@ serve(async (req) => {
           const toEmail = authData.user.email;
           const subject = type === "inbox_message"
             ? "New message on CastSlate"
-            : "CastSlate selected a class for you";
+            : `Your personal class invitation, ${firstName} — CastSlate`;
           const html = type === "inbox_message"
             ? inboxMessageHtml(firstName, resolvedFromName, projectName)
-            : classInvitationHtml(firstName, class_title?.trim() || "a class");
+            : classInvitationHtml(firstName, class_title?.trim() || "a class", instructor_name?.trim() || undefined);
 
           const sent = await sendEmail({ from: FROM_EMAIL, to: [toEmail], replyTo: CONTACT_EMAIL, subject, html });
 
