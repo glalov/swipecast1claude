@@ -1453,7 +1453,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .nav-links span.mm-attn:hover{background:rgba(232,144,42,.16);animation:none;}
 .nav-links span.mm-attn.act{background:rgba(232,144,42,.16);color:var(--amber-dk);}
 @keyframes mm-breathe{0%,100%{box-shadow:0 0 0 0 rgba(232,144,42,0);background:rgba(232,144,42,.08);}50%{box-shadow:0 0 16px 1px rgba(232,144,42,.50);background:rgba(232,144,42,.16);}}
-@media(prefers-reduced-motion:reduce){.nav-links span.mm-attn{animation:none;}}
+@media(prefers-reduced-motion:reduce){.nav-links span.mm-attn{animation:none;}.mm-live-hero *,.mm-live-hero *::before,.mm-live-hero *::after{animation:none!important;}.mm-live-preview{width:auto;}.mm-live-message{clip-path:none;}.mm-live-card,.mm-live-task{opacity:1;transform:none;}.mm-live-cursor,.mm-restart-cursor,.mm-click-ring,.mm-logo-click-ring,.mm-spark{display:none!important;}}
 /* Free-plan upgrade stripe (ActivateMembershipBanner) — darker purple, centered full-width text, ghost CTA (fills black on hover) w/ shimmer, twinkling star */
 .mb-msg{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;text-align:center;font-size:13px;font-weight:700;color:#fff;letter-spacing:0.2px;padding:0 24px;}
 .mb-text-short{display:none;}
@@ -2360,6 +2360,55 @@ html,body{overflow-x:hidden;}
 .mm-show-desktop{display:flex;}
 .mm-hide-desktop{display:none;}
 .mm-inbox-wrap{width:100%;max-width:460px;flex-shrink:1;min-width:0;}
+.mm-live-hero{--mm-loop:20s;}
+.mm-hero-logo{animation:mmHeroLogoPulse var(--mm-loop) ease-in-out infinite;}
+.mm-live-inbox{position:relative;z-index:2;animation:mmInboxFloat var(--mm-loop) ease-in-out infinite;}
+.mm-live-stage{isolation:isolate;}
+.mm-live-stage::before{content:"";position:absolute;inset:20px -12px auto;height:420px;border-radius:36px;background:linear-gradient(135deg,rgba(110,231,183,.22),rgba(37,99,235,.16) 46%,rgba(232,144,42,.11));filter:blur(18px);opacity:.72;animation:mmHaloShift 7s ease-in-out infinite;z-index:0;pointer-events:none;}
+.mm-live-tab{position:relative;}
+.mm-live-tab::after{content:"";position:absolute;left:16px;right:16px;bottom:-1px;height:2px;background:#1A1A2E;transform:scaleX(0);transform-origin:left;animation:mmUnderline var(--mm-loop) ease-in-out infinite;}
+.mm-live-preview{display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;animation:mmPreviewType var(--mm-loop) steps(48,end) infinite;}
+.mm-live-message{overflow:hidden;animation:mmMessageReveal var(--mm-loop) ease-in-out infinite;}
+.mm-live-card{opacity:0;transform:translateY(12px);position:relative;overflow:hidden;animation:mmCardIn var(--mm-loop) cubic-bezier(.22,1,.36,1) infinite;}
+.mm-live-card::after{content:"";position:absolute;inset:0 auto 0 -48%;width:42%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.72),transparent);transform:skewX(-16deg);animation:mmCardSheen var(--mm-loop) ease-in-out infinite;}
+.mm-live-card:nth-of-type(2){animation-delay:0s;}
+.mm-live-card:nth-of-type(2)::after{animation-delay:0s;}
+.mm-live-card:nth-of-type(3){animation-delay:.7s;}
+.mm-live-card:nth-of-type(3)::after{animation-delay:.7s;}
+.mm-live-card:nth-of-type(4){animation-delay:1.4s;}
+.mm-live-card:nth-of-type(4)::after{animation-delay:1.4s;}
+.mm-live-card:nth-of-type(5){animation-delay:2.1s;}
+.mm-live-card:nth-of-type(5)::after{animation-delay:2.1s;}
+.mm-live-task{opacity:0;transform:translateY(10px);animation:mmTaskPop var(--mm-loop) cubic-bezier(.22,1,.36,1) infinite;}
+.mm-spark{position:absolute;width:16px;height:16px;border-radius:5px;background:#E8902A;box-shadow:0 0 24px rgba(232,144,42,.92);opacity:0;z-index:3;pointer-events:none;animation:mmSparkFloat 5.8s ease-in-out infinite;}
+.mm-spark-1{right:26px;top:134px;animation-delay:4.6s;}
+.mm-spark-2{right:104px;top:56px;width:14px;height:14px;background:#6EE7B7;box-shadow:0 0 24px rgba(110,231,183,.82);animation-delay:7.8s;}
+.mm-spark-3{right:76px;bottom:112px;width:18px;height:18px;background:#7AA2FF;box-shadow:0 0 25px rgba(122,162,255,.82);animation-delay:11.6s;}
+.mm-spark-4{right:414px;top:202px;width:13px;height:13px;animation-delay:14.2s;}
+.mm-live-cursor,.mm-restart-cursor{position:absolute;width:38px;height:38px;color:#fff;filter:drop-shadow(0 8px 13px rgba(0,0,0,.38));opacity:0;z-index:8;pointer-events:none;}
+.mm-live-cursor{left:calc(50% + 430px);top:calc(50% + 210px);animation:mmCursorPath var(--mm-loop) cubic-bezier(.22,1,.36,1) infinite;}
+.mm-restart-cursor{left:0;top:0;animation:mmRestartCursor var(--mm-loop) cubic-bezier(.22,1,.36,1) infinite;}
+.mm-click-ring{position:absolute;width:42px;height:42px;border:2px solid rgba(110,231,183,.8);border-radius:50%;opacity:0;pointer-events:none;z-index:4;}
+.mm-ring-1{left:66px;top:64px;animation:mmClickRing var(--mm-loop) ease infinite;}
+.mm-ring-2{left:376px;top:279px;border-color:rgba(37,99,235,.72);animation:mmClickRing2 var(--mm-loop) ease infinite;}
+.mm-ring-3{left:27px;bottom:25px;border-color:rgba(232,144,42,.78);animation:mmClickRing3 var(--mm-loop) ease infinite;}
+.mm-logo-click-ring{position:absolute;left:clamp(16px,5vw,60px);top:clamp(56px,8vw,96px);width:54px;height:54px;border:2px solid rgba(110,231,183,.86);border-radius:16px;opacity:0;transform:translate(-8px,-8px);pointer-events:none;z-index:7;animation:mmLogoClickRing var(--mm-loop) ease infinite;}
+@keyframes mmInboxFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+@keyframes mmHaloShift{0%,100%{transform:translate3d(0,0,0) scale(1);opacity:.62;}50%{transform:translate3d(-16px,10px,0) scale(1.04);opacity:.82;}}
+@keyframes mmUnderline{0%,9%{transform:scaleX(0);}13%,96%{transform:scaleX(1);}100%{transform:scaleX(0);}}
+@keyframes mmPreviewType{0%,13%{width:0;}27%,96%{width:38ch;}100%{width:0;}}
+@keyframes mmMessageReveal{0%,25%{clip-path:inset(0 0 100% 0);opacity:.65;}54%,96%{clip-path:inset(0 0 0 0);opacity:1;}100%{clip-path:inset(0 0 100% 0);opacity:.65;}}
+@keyframes mmCardIn{0%,58%{opacity:0;transform:translateY(12px);}63%,96%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(12px);}}
+@keyframes mmCardSheen{0%,60%{left:-48%;}69%,100%{left:115%;}}
+@keyframes mmTaskPop{0%,72%{opacity:0;transform:translateY(10px) scale(1);}76%{opacity:1;transform:translateY(0) scale(1.06);}80%,96%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(10px) scale(1);}}
+@keyframes mmSparkFloat{0%{opacity:0;transform:translateY(14px) scale(.45) rotate(0deg);}28%{opacity:1;}70%{opacity:.75;}100%{opacity:0;transform:translateY(-28px) scale(1.1) rotate(90deg);}}
+@keyframes mmCursorPath{0%,3%{opacity:0;transform:translate3d(-230px,-80px,0) rotate(-14deg);}8%{opacity:1;}16%{opacity:1;transform:translate3d(-304px,-338px,0) rotate(-10deg);}18%{transform:translate3d(-304px,-338px,0) rotate(-10deg) scale(.88);}22%{transform:translate3d(-282px,-322px,0) rotate(-9deg) scale(1);}42%{transform:translate3d(-100px,-202px,0) rotate(-12deg);}45%{transform:translate3d(-100px,-202px,0) rotate(-12deg) scale(.88);}50%{transform:translate3d(-82px,-190px,0) rotate(-12deg) scale(1);}72%{opacity:1;transform:translate3d(-276px,-50px,0) rotate(-13deg);}75%{opacity:1;transform:translate3d(-276px,-50px,0) rotate(-13deg) scale(.88);}79%{opacity:1;transform:translate3d(-242px,-38px,0) rotate(-12deg) scale(1);}82%,100%{opacity:0;transform:translate3d(-220px,-28px,0) rotate(-12deg) scale(1);}}
+@keyframes mmRestartCursor{0%,78%{opacity:0;transform:translate3d(1120px,560px,0) rotate(-14deg) scale(1);}82%{opacity:1;transform:translate3d(1030px,520px,0) rotate(-14deg) scale(1);}92.5%{opacity:1;transform:translate3d(68px,64px,0) rotate(-13deg) scale(1);}94%{opacity:1;transform:translate3d(68px,64px,0) rotate(-13deg) scale(.86);}96%{opacity:1;transform:translate3d(76px,70px,0) rotate(-13deg) scale(1);}100%{opacity:0;transform:translate3d(82px,74px,0) rotate(-13deg) scale(1);}}
+@keyframes mmClickRing{0%,13.8%{opacity:0;transform:scale(.28);}14.2%{opacity:.9;transform:scale(.28);}19%{opacity:0;transform:scale(1.5);}100%{opacity:0;}}
+@keyframes mmClickRing2{0%,46.5%{opacity:0;transform:scale(.28);}47%{opacity:.9;transform:scale(.28);}52%{opacity:0;transform:scale(1.5);}100%{opacity:0;}}
+@keyframes mmClickRing3{0%,72.5%{opacity:0;transform:scale(.28);}73%{opacity:.9;transform:scale(.28);}78%{opacity:0;transform:scale(1.5);}100%{opacity:0;}}
+@keyframes mmLogoClickRing{0%,92.8%{opacity:0;transform:translate(-8px,-8px) scale(.45);}93.2%{opacity:.95;transform:translate(-8px,-8px) scale(.45);}98%{opacity:0;transform:translate(-8px,-8px) scale(1.45);}100%{opacity:0;}}
+@keyframes mmHeroLogoPulse{0%,92%{transform:scale(1);box-shadow:inset 0 0 14px rgba(255,255,255,.06);}94%{transform:scale(.92);box-shadow:inset 0 0 14px rgba(255,255,255,.06),0 0 0 7px rgba(110,231,183,.13),0 0 28px rgba(110,231,183,.35);}98%,100%{transform:scale(1);box-shadow:inset 0 0 14px rgba(255,255,255,.06);}}
 .mm-card-outer{width:100%;overflow:hidden;}
 @media(max-width:860px){
   .mm-show-desktop{display:none !important;}
@@ -5299,8 +5348,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
   const cardCTA=()=>{if(isPremium)onNavigate("my-profile");else if(isLoggedIn)onNavigate("membership");else onNavigate("pricing");};
   const cardCTALabel=isPremium?"Create My Actor Card":isLoggedIn?"Upgrade to Create Your Card":"Create My Actor Card";
 
-  const CSLogo=({size=36})=>(
-    <div style={{width:size,height:size,background:"rgba(255,255,255,0.13)",borderRadius:Math.round(size*0.24),display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:"1px solid rgba(255,255,255,0.2)"}}>
+  const CSLogo=({size=36,className=""})=>(
+    <div className={className} style={{width:size,height:size,background:"rgba(255,255,255,0.13)",borderRadius:Math.round(size*0.24),display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:"1px solid rgba(255,255,255,0.2)"}}>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={Math.round(size*0.58)} height={Math.round(size*0.58)}>
         <path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/>
       </svg>
@@ -5333,7 +5382,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
     const fs=(d,m)=>mobile?m:d;
     const pd=(d,m)=>mobile?m:d;
     return(
-      <div style={{background:"#fff",border:"1px solid #E2E2E7",borderRadius:mobile?16:20,overflow:"hidden",boxShadow:mobile?"0 8px 28px rgba(26,26,46,0.12)":"0 20px 56px rgba(26,26,46,0.15)",width:"100%",maxWidth:mobile?264:460,minWidth:0,flexShrink:1}}>
+      <div className={mobile?"":"mm-live-inbox"} style={{background:"#fff",border:"1px solid #E2E2E7",borderRadius:mobile?16:20,overflow:"hidden",boxShadow:mobile?"0 8px 28px rgba(26,26,46,0.12)":"0 20px 56px rgba(26,26,46,0.15)",width:"100%",maxWidth:mobile?264:460,minWidth:0,flexShrink:1}}>
         <div style={{background:"#1A1A2E",padding:pd("13px 18px","9px 13px"),display:"flex",alignItems:"center",gap:8}}>
           <div style={{display:"flex",gap:5,flexShrink:0}}>
             {["rgba(255,90,80,0.7)","rgba(255,190,0,0.7)","rgba(40,200,100,0.7)"].map((c,i)=><div key={i} style={{width:mobile?7:8,height:mobile?7:8,borderRadius:"50%",background:c}}/>)}
@@ -5342,7 +5391,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
         </div>
         <div style={{background:"#F7F7F8",padding:pd("3px 0","2px 0"),borderBottom:"1px solid #E2E2E7"}}>
           {["Career Team","This week","Profile Tips"].map((lbl,i)=>(
-            <span key={lbl} style={{display:"inline-block",padding:pd("8px 16px","6px 11px"),fontSize:fs(11,9),fontWeight:i===0?700:500,color:i===0?"#1A1A2E":"#8E8EA0",borderBottom:i===0?"2px solid #1A1A2E":"2px solid transparent",cursor:"pointer"}}>{lbl}</span>
+            <span key={lbl} className={!mobile&&i===0?"mm-live-tab":""} style={{display:"inline-block",padding:pd("8px 16px","6px 11px"),fontSize:fs(11,9),fontWeight:i===0?700:500,color:i===0?"#1A1A2E":"#8E8EA0",borderBottom:i===0?"2px solid #1A1A2E":"2px solid transparent",cursor:"pointer"}}>{lbl}</span>
           ))}
         </div>
         <div style={{padding:pd("14px 18px","10px 13px"),borderBottom:"1px solid #EDEDF0",background:"rgba(26,26,46,0.025)",display:"flex",alignItems:"flex-start",gap:mobile?8:10}}>
@@ -5355,20 +5404,20 @@ function ManagerModePage({onNavigate,session,myProfile}){
               <span style={{background:"rgba(27,135,62,0.1)",border:"1px solid rgba(27,135,62,0.25)",color:"#1B873E",fontSize:fs(8,7),fontWeight:700,padding:"1px 5px",borderRadius:4,letterSpacing:0.3,textTransform:"uppercase"}}>Private</span>
             </div>
             <div style={{fontSize:fs(11,9),color:"#5A5A72",fontWeight:600,marginBottom:1}}>Your Weekly Actor Check-In</div>
-            <div style={{fontSize:fs(10,8),color:"#8E8EA0"}}>Riley, your profile is moving in the right direction…</div>
+            <div className={mobile?"":"mm-live-preview"} style={{fontSize:fs(10,8),color:"#8E8EA0"}}>Riley, your profile is moving in the right direction...</div>
           </div>
           <div style={{fontSize:fs(9,7.5),color:"#8E8EA0",flexShrink:0,whiteSpace:"nowrap"}}>Today</div>
         </div>
         <div style={{padding:pd("16px 18px","11px 13px")}}>
-          <div style={{fontSize:fs(12,9.5),color:"#1A1A2E",lineHeight:1.65,marginBottom:pd(12,8),fontWeight:400}}>Hi Riley, your profile is moving in the right direction. Your headshot gives a strong first impression. Adding a slate video will make your profile significantly more competitive.</div>
+          <div className={mobile?"":"mm-live-message"} style={{fontSize:fs(12,9.5),color:"#1A1A2E",lineHeight:1.65,marginBottom:pd(12,8),fontWeight:400}}>Hi Riley, your profile is moving in the right direction. Your headshot gives a strong first impression. Adding a slate video will make your profile significantly more competitive.</div>
           {[["What you're doing well","Your headshot is clear and professional — strong first impression.","#1B873E","rgba(27,135,62,0.06)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.06)"],["Casting lane to focus on","Young professional / commercial friend","#2563EB","rgba(37,99,235,0.06)"],["Your task this week","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.04)"]].map(([label,val,col,bg])=>(
-            <div key={label} style={{background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4)}}>
+            <div key={label} className={mobile?"":"mm-live-card"} style={{background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4)}}>
               <div style={{fontSize:fs(9,7),fontWeight:700,color:col,letterSpacing:0.6,textTransform:"uppercase",marginBottom:2}}>{label}</div>
               <div style={{fontSize:fs(11,8.5),color:"#1A1A2E",fontWeight:500,lineHeight:1.45}}>{val}</div>
             </div>
           ))}
           <div style={{marginTop:pd(12,8),display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-            <div style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:"0 2px 8px rgba(26,26,46,0.2)"}}>Complete This Week's Task</div>
+            <div className={mobile?"":"mm-live-task"} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:"0 2px 8px rgba(26,26,46,0.2)"}}>Complete This Week's Task</div>
           </div>
           <div style={{marginTop:pd(8,6),fontSize:fs(9,7.5),color:"#8E8EA0",fontStyle:"italic"}}>Replies are not available for this message.</div>
         </div>
@@ -5379,12 +5428,15 @@ function ManagerModePage({onNavigate,session,myProfile}){
   return(<div className="page">
 
     {/* ══════ HERO ══════ */}
-    <section style={{background:"linear-gradient(155deg,#0D0D1A 0%,#1A1A2E 40%,#0f2347 100%)",color:"#fff",padding:"clamp(56px,8vw,96px) clamp(16px,5vw,60px) clamp(48px,7vw,80px)",position:"relative",overflow:"hidden"}}>
+    <section className="mm-live-hero" style={{background:"linear-gradient(155deg,#0D0D1A 0%,#1A1A2E 40%,#0f2347 100%)",color:"#fff",padding:"clamp(56px,8vw,96px) clamp(16px,5vw,60px) clamp(48px,7vw,80px)",position:"relative",overflow:"hidden"}}>
+      <div className="mm-logo-click-ring"/>
+      <svg className="mm-live-cursor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 4 31 24 20 26 15 37 8 4Z" fill="white"/><path d="M8 4 31 24 20 26 15 37 8 4Z" fill="none" stroke="#1A1A2E" strokeWidth="2" strokeLinejoin="round"/></svg>
+      <svg className="mm-restart-cursor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 4 31 24 20 26 15 37 8 4Z" fill="white"/><path d="M8 4 31 24 20 26 15 37 8 4Z" fill="none" stroke="#1A1A2E" strokeWidth="2" strokeLinejoin="round"/></svg>
       <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 15% 60%,rgba(99,102,241,0.18) 0%,transparent 55%),radial-gradient(ellipse at 85% 15%,rgba(37,99,235,0.14) 0%,transparent 50%),radial-gradient(ellipse at 50% 100%,rgba(110,231,183,0.06) 0%,transparent 50%)",pointerEvents:"none"}}/>
       <div className="mm-hero-row" style={{maxWidth:1160,margin:"0 auto",position:"relative",display:"flex",alignItems:"center",gap:"clamp(32px,5vw,72px)",flexWrap:"wrap"}}>
         <div style={{flex:"1 1 300px",minWidth:0,width:"100%"}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:24}}>
-            <CSLogo size={38}/>
+            <CSLogo size={38} className="mm-hero-logo"/>
             <div>
               <div style={{fontSize:13,fontWeight:800,color:"#fff",letterSpacing:0.3}}>Cast Slate</div>
               <div style={{fontSize:11,color:"rgba(255,255,255,0.5)",letterSpacing:0.2}}>castslate.com</div>
@@ -5408,7 +5460,14 @@ function ManagerModePage({onNavigate,session,myProfile}){
           </div>
         </div>
         <div className="mm-show-desktop mm-inbox-wrap" style={{justifyContent:"center",flex:"1 1 300px",minWidth:0}}>
-          <div style={{position:"relative",width:"100%"}}>
+          <div className="mm-live-stage" style={{position:"relative",width:"100%"}}>
+            <span className="mm-spark mm-spark-1"/>
+            <span className="mm-spark mm-spark-2"/>
+            <span className="mm-spark mm-spark-3"/>
+            <span className="mm-spark mm-spark-4"/>
+            <span className="mm-click-ring mm-ring-1"/>
+            <span className="mm-click-ring mm-ring-2"/>
+            <span className="mm-click-ring mm-ring-3"/>
             <div style={{position:"absolute",inset:-1,background:"linear-gradient(135deg,rgba(110,231,183,0.3),rgba(99,102,241,0.2),transparent 60%)",borderRadius:22,filter:"blur(1px)"}}/>
             <InboxMockup mobile={false}/>
           </div>
