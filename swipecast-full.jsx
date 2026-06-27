@@ -2371,30 +2371,25 @@ html,body{overflow-x:hidden;}
 .mm-live-tab::after{content:"";position:absolute;left:16px;right:16px;bottom:-1px;height:2px;background:#1A1A2E;transform:scaleX(0);transform-origin:left;animation:mmUnderline var(--mm-loop) ease-in-out infinite;}
 .mm-live-preview{display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;}
 .mm-live-message{overflow:hidden;}
-.mm-live-card{position:relative;overflow:hidden;transition:opacity .55s cubic-bezier(.22,1,.36,1),transform .55s cubic-bezier(.22,1,.36,1);will-change:opacity,transform;}
-.mm-live-card::after{content:"";position:absolute;inset:0 auto 0 -48%;width:42%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.72),transparent);transform:skewX(-16deg);animation:mmCardSheen var(--mm-loop) ease-in-out infinite;}
-.mm-live-card:nth-of-type(2){animation-delay:0s;}
-.mm-live-card:nth-of-type(2)::after{animation-delay:0s;}
-.mm-live-card:nth-of-type(3){animation-delay:.7s;}
-.mm-live-card:nth-of-type(3)::after{animation-delay:.7s;}
-.mm-live-card:nth-of-type(4){animation-delay:1.4s;}
-.mm-live-card:nth-of-type(4)::after{animation-delay:1.4s;}
-.mm-live-card:nth-of-type(5){animation-delay:2.1s;}
-.mm-live-card:nth-of-type(5)::after{animation-delay:2.1s;}
-.mm-live-task{transition:opacity .9s cubic-bezier(.22,1,.36,1),transform .9s cubic-bezier(.22,1,.36,1),box-shadow .55s ease;will-change:opacity,transform;}
+.mm-live-card{position:relative;overflow:hidden;opacity:.001;transform:translateY(12px);will-change:opacity,transform;}
+.mm-live-card.mm-live-card-in{animation:mmCardManualIn .55s cubic-bezier(.22,1,.36,1) forwards;}
+.mm-live-card::after{content:"";position:absolute;inset:0 auto 0 -48%;width:42%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.72),transparent);transform:skewX(-16deg);}
+.mm-live-card.mm-live-card-in::after{animation:mmCardManualSheen 1.2s ease forwards;}
+.mm-live-task{opacity:.001;transform:translateY(10px);will-change:opacity,transform,box-shadow;}
+.mm-live-task.mm-live-task-in{animation:mmTaskManualPop .9s cubic-bezier(.22,1,.36,1) forwards,mmTaskPulse 3.2s ease-in-out .9s infinite;}
 .mm-spark{position:absolute;width:16px;height:16px;border-radius:5px;background:#E8902A;box-shadow:0 0 24px rgba(232,144,42,.92);opacity:0;z-index:3;pointer-events:none;animation:mmSparkFloat 5.8s ease-in-out infinite;}
 .mm-spark-1{right:26px;top:134px;animation-delay:4.6s;}
 .mm-spark-2{right:104px;top:56px;width:14px;height:14px;background:#6EE7B7;box-shadow:0 0 24px rgba(110,231,183,.82);animation-delay:7.8s;}
 .mm-spark-3{right:76px;bottom:112px;width:18px;height:18px;background:#7AA2FF;box-shadow:0 0 25px rgba(122,162,255,.82);animation-delay:11.6s;}
 .mm-spark-4{right:414px;top:202px;width:13px;height:13px;animation-delay:14.2s;}
-.mm-live-cursor,.mm-restart-cursor{position:absolute;width:38px;height:38px;color:#fff;filter:drop-shadow(0 8px 13px rgba(0,0,0,.38));opacity:0;z-index:8;pointer-events:none;}
+.mm-live-cursor,.mm-restart-cursor{position:absolute;width:38px;height:38px;color:#fff;filter:drop-shadow(0 8px 13px rgba(0,0,0,.38));opacity:0;z-index:8;pointer-events:none;transform-origin:8px 4px;}
 .mm-live-cursor{left:calc(50% + 430px);top:calc(50% + 210px);animation:mmCursorPath var(--mm-loop) cubic-bezier(.22,1,.36,1) infinite;}
-.mm-restart-cursor{left:0;top:0;animation:mmRestartCursor var(--mm-loop) cubic-bezier(.22,1,.36,1) infinite;}
+.mm-restart-cursor{left:0;top:0;z-index:9;animation:mmRestartCursor var(--mm-loop) cubic-bezier(.22,1,.36,1) infinite;}
 .mm-click-ring{position:absolute;width:42px;height:42px;border:2px solid rgba(110,231,183,.8);border-radius:50%;opacity:0;pointer-events:none;z-index:4;}
 .mm-ring-1{left:66px;top:64px;animation:mmClickRing var(--mm-loop) ease infinite;}
 .mm-ring-2{left:376px;top:279px;border-color:rgba(37,99,235,.72);animation:mmClickRing2 var(--mm-loop) ease infinite;}
 .mm-ring-3{left:27px;bottom:25px;border-color:rgba(232,144,42,.78);animation:mmClickRing3 var(--mm-loop) ease infinite;}
-.mm-logo-click-ring{position:absolute;left:clamp(16px,5vw,60px);top:clamp(56px,8vw,96px);width:54px;height:54px;border:2px solid rgba(110,231,183,.86);border-radius:16px;opacity:0;transform:translate(-8px,-8px);pointer-events:none;z-index:7;animation:mmLogoClickRing var(--mm-loop) ease infinite;}
+.mm-logo-click-ring{position:absolute;left:0;top:0;width:54px;height:54px;border:2px solid rgba(110,231,183,.86);border-radius:16px;opacity:0;transform:translate(-8px,-8px);pointer-events:none;z-index:8;animation:mmLogoClickRing var(--mm-loop) ease infinite;}
 @keyframes mmPremiumPillBreathe{0%,100%{box-shadow:0 0 0 0 rgba(110,231,183,0);}50%{box-shadow:0 0 0 5px rgba(110,231,183,.09),0 0 22px rgba(110,231,183,.22);}}
 @keyframes mmPremiumDotGlow{0%,100%{box-shadow:0 0 10px #6EE7B7;transform:scale(1);}50%{box-shadow:0 0 18px #6EE7B7;transform:scale(1.12);}}
 @keyframes mmInboxFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
@@ -2403,11 +2398,15 @@ html,body{overflow-x:hidden;}
 @keyframes mmPreviewType{0%,13%{width:0;}27%,96%{width:38ch;}100%{width:0;}}
 @keyframes mmMessageReveal{0%,25%{clip-path:inset(0 0 100% 0);opacity:.65;}54%,96%{clip-path:inset(0 0 0 0);opacity:1;}100%{clip-path:inset(0 0 100% 0);opacity:.65;}}
 @keyframes mmCardIn{0%,58%{opacity:0;transform:translateY(12px);}63%,96%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(12px);}}
+@keyframes mmCardManualIn{0%{opacity:.001;transform:translateY(12px);}100%{opacity:1;transform:translateY(0);}}
 @keyframes mmCardSheen{0%,60%{left:-48%;}69%,100%{left:115%;}}
+@keyframes mmCardManualSheen{0%{left:-48%;}100%{left:115%;}}
 @keyframes mmTaskPop{0%,72%{opacity:0;transform:translateY(10px) scale(1);}76%{opacity:1;transform:translateY(0) scale(1.06);}80%,96%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(10px) scale(1);}}
+@keyframes mmTaskManualPop{0%{opacity:.001;transform:translateY(10px) scale(1);}70%{opacity:1;transform:translateY(0) scale(1.06);}100%{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes mmTaskPulse{0%,100%{box-shadow:0 0 0 0 rgba(26,26,46,0);}50%{box-shadow:0 0 0 5px rgba(26,26,46,.08),0 8px 18px -12px rgba(26,26,46,.7);}}
 @keyframes mmSparkFloat{0%{opacity:0;transform:translateY(14px) scale(.45) rotate(0deg);}28%{opacity:1;}70%{opacity:.75;}100%{opacity:0;transform:translateY(-28px) scale(1.1) rotate(90deg);}}
 @keyframes mmCursorPath{0%,3%{opacity:0;transform:translate3d(-230px,-80px,0) rotate(-14deg);}8%{opacity:1;}16%{opacity:1;transform:translate3d(-304px,-338px,0) rotate(-10deg);}18%{transform:translate3d(-304px,-338px,0) rotate(-10deg) scale(.88);}22%{transform:translate3d(-282px,-322px,0) rotate(-9deg) scale(1);}42%{transform:translate3d(-100px,-202px,0) rotate(-12deg);}45%{transform:translate3d(-100px,-202px,0) rotate(-12deg) scale(.88);}50%{transform:translate3d(-82px,-190px,0) rotate(-12deg) scale(1);}72%{opacity:1;transform:translate3d(-276px,-50px,0) rotate(-13deg);}75%{opacity:1;transform:translate3d(-276px,-50px,0) rotate(-13deg) scale(.88);}79%{opacity:1;transform:translate3d(-242px,-38px,0) rotate(-12deg) scale(1);}82%,100%{opacity:0;transform:translate3d(-220px,-28px,0) rotate(-12deg) scale(1);}}
-@keyframes mmRestartCursor{0%,78%{opacity:0;transform:translate3d(1120px,560px,0) rotate(-14deg) scale(1);}82%{opacity:1;transform:translate3d(1030px,520px,0) rotate(-14deg) scale(1);}92.5%{opacity:1;transform:translate3d(68px,64px,0) rotate(-13deg) scale(1);}94%{opacity:1;transform:translate3d(68px,64px,0) rotate(-13deg) scale(.86);}96%{opacity:1;transform:translate3d(76px,70px,0) rotate(-13deg) scale(1);}100%{opacity:0;transform:translate3d(82px,74px,0) rotate(-13deg) scale(1);}}
+@keyframes mmRestartCursor{0%,78%{opacity:0;transform:translate3d(1120px,560px,0) rotate(-14deg) scale(1);}82%{opacity:1;transform:translate3d(1030px,520px,0) rotate(-14deg) scale(1);}92.5%{opacity:1;transform:translate3d(11px,15px,0) rotate(-13deg) scale(1);}94%{opacity:1;transform:translate3d(11px,15px,0) rotate(-13deg) scale(.86);}96%{opacity:1;transform:translate3d(15px,18px,0) rotate(-13deg) scale(1);}100%{opacity:0;transform:translate3d(18px,20px,0) rotate(-13deg) scale(1);}}
 @keyframes mmClickRing{0%,13.8%{opacity:0;transform:scale(.28);}14.2%{opacity:.9;transform:scale(.28);}19%{opacity:0;transform:scale(1.5);}100%{opacity:0;}}
 @keyframes mmClickRing2{0%,46.5%{opacity:0;transform:scale(.28);}47%{opacity:.9;transform:scale(.28);}52%{opacity:0;transform:scale(1.5);}100%{opacity:0;}}
 @keyframes mmClickRing3{0%,72.5%{opacity:0;transform:scale(.28);}73%{opacity:.9;transform:scale(.28);}78%{opacity:0;transform:scale(1.5);}100%{opacity:0;}}
@@ -5455,13 +5454,13 @@ function ManagerModePage({onNavigate,session,myProfile}){
         <div style={{padding:pd("16px 18px","11px 13px")}}>
           <div className={mobile?"":"mm-live-message"} style={{fontSize:fs(12,9.5),color:"#1A1A2E",lineHeight:1.65,marginBottom:pd(12,8),fontWeight:400,minHeight:mobile?"auto":70}}>{mobile?MM_BODY_TEXT:mmBody}</div>
           {[["What you're doing well","Your headshot is clear and professional — strong first impression.","#1B873E","rgba(27,135,62,0.06)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.06)"],["Casting lane to focus on","Young professional / commercial friend","#2563EB","rgba(37,99,235,0.06)"],["Your task this week","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.04)"]].map(([label,val,col,bg],idx)=>(
-            <div key={label} className={mobile?"":"mm-live-card"} style={{background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4),opacity:mobile||idx<mmCards?1:0.001,transform:mobile||idx<mmCards?"translateY(0)":"translateY(12px)"}}>
+            <div key={label} className={mobile?"":`mm-live-card ${idx<mmCards?"mm-live-card-in":""}`} style={{background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4),opacity:mobile?1:undefined,transform:mobile?"translateY(0)":undefined}}>
               <div style={{fontSize:fs(9,7),fontWeight:700,color:col,letterSpacing:0.6,textTransform:"uppercase",marginBottom:2}}>{label}</div>
               <div style={{fontSize:fs(11,8.5),color:"#1A1A2E",fontWeight:500,lineHeight:1.45}}>{val}</div>
             </div>
           ))}
           <div style={{marginTop:pd(12,8),display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-            <div className={mobile?"":"mm-live-task"} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:mmTaskVisible?"0 2px 8px rgba(26,26,46,0.2),0 0 0 4px rgba(26,26,46,0.06)":"0 2px 8px rgba(26,26,46,0.2)",opacity:mobile||mmTaskVisible?1:0.001,transform:mobile||mmTaskVisible?"translateY(0)":"translateY(10px)"}}>Complete This Week's Task</div>
+            <div className={mobile?"":`mm-live-task ${mmTaskVisible?"mm-live-task-in":""}`} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:"0 2px 8px rgba(26,26,46,0.2)",opacity:mobile?1:undefined,transform:mobile?"translateY(0)":undefined}}>Complete This Week's Task</div>
           </div>
           <div style={{marginTop:pd(8,6),fontSize:fs(9,7.5),color:"#8E8EA0",fontStyle:"italic"}}>Replies are not available for this message.</div>
         </div>
@@ -5473,13 +5472,13 @@ function ManagerModePage({onNavigate,session,myProfile}){
 
     {/* ══════ HERO ══════ */}
     <section className="mm-live-hero" style={{background:"linear-gradient(155deg,#0D0D1A 0%,#1A1A2E 40%,#0f2347 100%)",color:"#fff",padding:"clamp(56px,8vw,96px) clamp(16px,5vw,60px) clamp(48px,7vw,80px)",position:"relative",overflow:"hidden"}}>
-      <div className="mm-logo-click-ring"/>
       <svg className="mm-live-cursor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 4 31 24 20 26 15 37 8 4Z" fill="white"/><path d="M8 4 31 24 20 26 15 37 8 4Z" fill="none" stroke="#1A1A2E" strokeWidth="2" strokeLinejoin="round"/></svg>
-      <svg className="mm-restart-cursor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 4 31 24 20 26 15 37 8 4Z" fill="white"/><path d="M8 4 31 24 20 26 15 37 8 4Z" fill="none" stroke="#1A1A2E" strokeWidth="2" strokeLinejoin="round"/></svg>
       <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 15% 60%,rgba(99,102,241,0.18) 0%,transparent 55%),radial-gradient(ellipse at 85% 15%,rgba(37,99,235,0.14) 0%,transparent 50%),radial-gradient(ellipse at 50% 100%,rgba(110,231,183,0.06) 0%,transparent 50%)",pointerEvents:"none"}}/>
       <div className="mm-hero-row" style={{maxWidth:1160,margin:"0 auto",position:"relative",display:"flex",alignItems:"center",gap:"clamp(32px,5vw,72px)",flexWrap:"wrap"}}>
         <div style={{flex:"1 1 300px",minWidth:0,width:"100%"}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:24}}>
+          <div className="mm-hero-brand" style={{display:"flex",alignItems:"center",gap:10,marginBottom:24,position:"relative"}}>
+            <div className="mm-logo-click-ring"/>
+            <svg className="mm-restart-cursor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 4 31 24 20 26 15 37 8 4Z" fill="white"/><path d="M8 4 31 24 20 26 15 37 8 4Z" fill="none" stroke="#1A1A2E" strokeWidth="2" strokeLinejoin="round"/></svg>
             <CSLogo size={38} className="mm-hero-logo"/>
             <div>
               <div style={{fontSize:13,fontWeight:800,color:"#fff",letterSpacing:0.3}}>Cast Slate</div>
