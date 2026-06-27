@@ -142,7 +142,7 @@ function classInvitationHtml(firstName: string, classTitle: string, instructorNa
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;width:100%">
         <tr><td style="background:linear-gradient(135deg,#0f4d34,#1a6b42);padding:20px 36px">
-          <img src="https://www.castslate.com/favicon-512.png" alt="CastSlate" width="38" height="38" style="display:inline-block;vertical-align:middle;border-radius:10px"/>
+          <img src="https://www.castslate.com/logo-email.png" alt="CastSlate" width="38" height="38" style="display:inline-block;vertical-align:middle;border-radius:9px"/>
           <span style="display:inline-block;vertical-align:middle;margin-left:12px;font-size:21px;font-weight:800;color:#ffffff;letter-spacing:-0.5px">CastSlate</span>
           <div style="margin-top:12px;display:inline-block;background:rgba(255,255,255,0.16);color:#d7f0e2;font-size:12px;font-weight:700;letter-spacing:0.4px;padding:4px 12px;border-radius:20px;text-transform:uppercase">Private Invitation</div>
         </td></tr>
@@ -278,7 +278,7 @@ function premiumWelcomeHtml(firstName: string): string {
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f7;padding:40px 20px"><tr><td align="center">
     <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;width:100%">
       <tr><td style="background:linear-gradient(135deg,#1a0533,#2d1052);padding:30px 36px">
-        <img src="https://www.castslate.com/favicon-512.png" alt="CastSlate" width="40" height="40" style="display:inline-block;vertical-align:middle;border-radius:10px"/>
+        <img src="https://www.castslate.com/logo-email.png" alt="CastSlate" width="40" height="40" style="display:inline-block;vertical-align:middle;border-radius:9px"/>
         <span style="display:inline-block;vertical-align:middle;margin-left:12px;font-size:21px;font-weight:800;color:#ffffff;letter-spacing:-0.5px">CastSlate</span>
         <div style="margin-top:14px;display:inline-block;background:rgba(139,92,246,0.25);color:#d7c4ff;font-size:12px;font-weight:700;letter-spacing:0.4px;padding:4px 12px;border-radius:20px;text-transform:uppercase">Premium</div>
       </td></tr>
