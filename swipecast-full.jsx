@@ -13968,7 +13968,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   // Same select shape as SearchPage so the click navigates seamlessly into CastingDetailPage.
   const fetchCastings=useCallback(async()=>{
     const _d=window.__SC_DBG=window.__SC_DBG||{};
-    _d.fcsQuery="status=open,published=true,limit=12";
+    _d.fcsQuery="status=open,published=true,limit=48,filter=not-expired,take=12";
     _d.fcsError="";
     let tid;
     try{
@@ -13979,7 +13979,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
           .eq("status","open").eq("published",true)
           .order("featured",{ascending:false})
           .order("created_at",{ascending:false})
-          .limit(12),
+          .limit(48),
         timeout
       ]);
       clearTimeout(tid);
@@ -14027,7 +14027,13 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
           ethnicity:r.ethnicity||"Any"
         }))
       }));
-      setCastings(mapped.slice().sort((a,b)=>castingSortBucket(a)-castingSortBucket(b)));
+      const liveCastings=mapped
+        .filter(c=>c.status!=="archived"&&!castingIsExpired(c))
+        .slice()
+        .sort((a,b)=>castingSortBucket(a)-castingSortBucket(b))
+        .slice(0,12);
+      _d.fcsLiveCount=liveCastings.length;
+      setCastings(liveCastings);
       setErr("");
     }catch(e){
       clearTimeout(tid);
@@ -14064,6 +14070,30 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       if(ch){try{window.sb.removeChannel(ch);}catch(_){}}
     };
   },[fetchCastings]);
+
+  // If a displayed casting expires while the visitor is already on the landing page,
+  // refetch immediately after that deadline so the carousel swaps in a live card.
+  useEffect(()=>{
+    if(!castings.length)return;
+    const now=Date.now();
+    const nextExpiry=castings.reduce((soon,c)=>{
+      let ts=null;
+      if(c.expires_at){
+        const d=new Date(c.expires_at);
+        if(!isNaN(d))ts=d.getTime();
+      }
+      if(ts==null&&c.deadline){
+        const d=(typeof c.deadline==="string"&&c.deadline.length===10)?new Date(c.deadline+"T23:59:59"):new Date(c.deadline);
+        if(!isNaN(d))ts=d.getTime();
+      }
+      if(ts==null||ts<=now)return soon;
+      return soon==null?ts:Math.min(soon,ts);
+    },null);
+    if(nextExpiry==null)return;
+    const delay=Math.min(Math.max(nextExpiry-now+1200,1200),2147483647);
+    const tid=setTimeout(fetchCastings,delay);
+    return()=>clearTimeout(tid);
+  },[castings,fetchCastings]);
 
   // Auto-advance every 5s — paused only when the cursor is over an arrow button,
   // or during a touch swipe. Loops forever: end → wraps back to first card.
