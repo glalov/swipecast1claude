@@ -2371,12 +2371,10 @@ html,body{overflow-x:hidden;}
 .mm-live-tab::after{content:"";position:absolute;left:16px;right:16px;bottom:-1px;height:2px;background:#1A1A2E;transform:scaleX(0);transform-origin:left;animation:mmUnderline var(--mm-loop) ease-in-out infinite;}
 .mm-live-preview{display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;}
 .mm-live-message{overflow:hidden;}
-.mm-live-card{position:relative;overflow:hidden;opacity:.001;transform:translateY(12px);will-change:opacity,transform;}
-.mm-live-card.mm-live-card-in{animation:mmCardManualIn .55s cubic-bezier(.22,1,.36,1) forwards;}
-.mm-live-card::after{content:"";position:absolute;inset:0 auto 0 -48%;width:42%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.72),transparent);transform:skewX(-16deg);}
-.mm-live-card.mm-live-card-in::after{animation:mmCardManualSheen 1.2s ease forwards;}
-.mm-live-task{opacity:.001;transform:translateY(10px);will-change:opacity,transform,box-shadow;}
-.mm-live-task.mm-live-task-in{animation:mmTaskManualPop .9s cubic-bezier(.22,1,.36,1) forwards,mmTaskPulse 3.2s ease-in-out .9s infinite;}
+.mm-live-card{position:relative;overflow:hidden;transition:opacity .95s cubic-bezier(.16,1,.3,1),transform .95s cubic-bezier(.16,1,.3,1);will-change:opacity,transform;}
+.mm-live-card::after{content:"";position:absolute;inset:0 auto 0 -48%;width:42%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.72),transparent);transform:skewX(-16deg);opacity:0;transition:left 1.2s ease,opacity .25s ease;}
+.mm-live-card.is-visible::after{left:115%;opacity:1;}
+.mm-live-task{transition:opacity .95s cubic-bezier(.16,1,.3,1),transform .95s cubic-bezier(.16,1,.3,1),box-shadow .55s ease;will-change:opacity,transform,box-shadow;}
 .mm-spark{position:absolute;width:16px;height:16px;border-radius:5px;background:#E8902A;box-shadow:0 0 24px rgba(232,144,42,.92);opacity:0;z-index:3;pointer-events:none;animation:mmSparkFloat 5.8s ease-in-out infinite;}
 .mm-spark-1{right:26px;top:134px;animation-delay:4.6s;}
 .mm-spark-2{right:104px;top:56px;width:14px;height:14px;background:#6EE7B7;box-shadow:0 0 24px rgba(110,231,183,.82);animation-delay:7.8s;}
@@ -2398,12 +2396,8 @@ html,body{overflow-x:hidden;}
 @keyframes mmPreviewType{0%,13%{width:0;}27%,96%{width:38ch;}100%{width:0;}}
 @keyframes mmMessageReveal{0%,25%{clip-path:inset(0 0 100% 0);opacity:.65;}54%,96%{clip-path:inset(0 0 0 0);opacity:1;}100%{clip-path:inset(0 0 100% 0);opacity:.65;}}
 @keyframes mmCardIn{0%,58%{opacity:0;transform:translateY(12px);}63%,96%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(12px);}}
-@keyframes mmCardManualIn{0%{opacity:.001;transform:translateY(12px);}100%{opacity:1;transform:translateY(0);}}
 @keyframes mmCardSheen{0%,60%{left:-48%;}69%,100%{left:115%;}}
-@keyframes mmCardManualSheen{0%{left:-48%;}100%{left:115%;}}
 @keyframes mmTaskPop{0%,72%{opacity:0;transform:translateY(10px) scale(1);}76%{opacity:1;transform:translateY(0) scale(1.06);}80%,96%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(10px) scale(1);}}
-@keyframes mmTaskManualPop{0%{opacity:.001;transform:translateY(10px) scale(1);}70%{opacity:1;transform:translateY(0) scale(1.06);}100%{opacity:1;transform:translateY(0) scale(1);}}
-@keyframes mmTaskPulse{0%,100%{box-shadow:0 0 0 0 rgba(26,26,46,0);}50%{box-shadow:0 0 0 5px rgba(26,26,46,.08),0 8px 18px -12px rgba(26,26,46,.7);}}
 @keyframes mmSparkFloat{0%{opacity:0;transform:translateY(14px) scale(.45) rotate(0deg);}28%{opacity:1;}70%{opacity:.75;}100%{opacity:0;transform:translateY(-28px) scale(1.1) rotate(90deg);}}
 @keyframes mmCursorPath{0%,3%{opacity:0;transform:translate3d(-230px,-80px,0) rotate(-14deg);}8%{opacity:1;}16%{opacity:1;transform:translate3d(-304px,-338px,0) rotate(-10deg);}18%{transform:translate3d(-304px,-338px,0) rotate(-10deg) scale(.88);}22%{transform:translate3d(-282px,-322px,0) rotate(-9deg) scale(1);}42%{transform:translate3d(-100px,-202px,0) rotate(-12deg);}45%{transform:translate3d(-100px,-202px,0) rotate(-12deg) scale(.88);}50%{transform:translate3d(-82px,-190px,0) rotate(-12deg) scale(1);}72%{opacity:1;transform:translate3d(-276px,-50px,0) rotate(-13deg);}75%{opacity:1;transform:translate3d(-276px,-50px,0) rotate(-13deg) scale(.88);}79%{opacity:1;transform:translate3d(-242px,-38px,0) rotate(-12deg) scale(1);}82%,100%{opacity:0;transform:translate3d(-220px,-28px,0) rotate(-12deg) scale(1);}}
 @keyframes mmRestartCursor{0%,78%{opacity:0;transform:translate3d(1120px,560px,0) rotate(-14deg) scale(1);}82%{opacity:1;transform:translate3d(1030px,520px,0) rotate(-14deg) scale(1);}92.5%{opacity:1;transform:translate3d(11px,15px,0) rotate(-13deg) scale(1);}94%{opacity:1;transform:translate3d(11px,15px,0) rotate(-13deg) scale(.86);}96%{opacity:1;transform:translate3d(15px,18px,0) rotate(-13deg) scale(1);}100%{opacity:0;transform:translate3d(18px,20px,0) rotate(-13deg) scale(1);}}
@@ -5454,13 +5448,13 @@ function ManagerModePage({onNavigate,session,myProfile}){
         <div style={{padding:pd("16px 18px","11px 13px")}}>
           <div className={mobile?"":"mm-live-message"} style={{fontSize:fs(12,9.5),color:"#1A1A2E",lineHeight:1.65,marginBottom:pd(12,8),fontWeight:400,minHeight:mobile?"auto":70}}>{mobile?MM_BODY_TEXT:mmBody}</div>
           {[["What you're doing well","Your headshot is clear and professional — strong first impression.","#1B873E","rgba(27,135,62,0.06)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.06)"],["Casting lane to focus on","Young professional / commercial friend","#2563EB","rgba(37,99,235,0.06)"],["Your task this week","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.04)"]].map(([label,val,col,bg],idx)=>(
-            <div key={label} className={mobile?"":`mm-live-card ${idx<mmCards?"mm-live-card-in":""}`} style={{background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4),opacity:mobile?1:undefined,transform:mobile?"translateY(0)":undefined}}>
+            <div key={label} className={mobile?"":`mm-live-card ${idx<mmCards?"is-visible":""}`} style={{background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4),opacity:mobile||idx<mmCards?1:0.001,transform:mobile||idx<mmCards?"translate3d(0,0,0) scale(1)":"translate3d(0,14px,0) scale(.985)"}}>
               <div style={{fontSize:fs(9,7),fontWeight:700,color:col,letterSpacing:0.6,textTransform:"uppercase",marginBottom:2}}>{label}</div>
               <div style={{fontSize:fs(11,8.5),color:"#1A1A2E",fontWeight:500,lineHeight:1.45}}>{val}</div>
             </div>
           ))}
           <div style={{marginTop:pd(12,8),display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-            <div className={mobile?"":`mm-live-task ${mmTaskVisible?"mm-live-task-in":""}`} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:"0 2px 8px rgba(26,26,46,0.2)",opacity:mobile?1:undefined,transform:mobile?"translateY(0)":undefined}}>Complete This Week's Task</div>
+            <div className={mobile?"":"mm-live-task"} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:mmTaskVisible?"0 2px 8px rgba(26,26,46,0.2),0 0 0 4px rgba(26,26,46,0.06)":"0 2px 8px rgba(26,26,46,0.2)",opacity:mobile||mmTaskVisible?1:0.001,transform:mobile||mmTaskVisible?"translate3d(0,0,0) scale(1)":"translate3d(0,10px,0) scale(.985)"}}>Complete This Week's Task</div>
           </div>
           <div style={{marginTop:pd(8,6),fontSize:fs(9,7.5),color:"#8E8EA0",fontStyle:"italic"}}>Replies are not available for this message.</div>
         </div>
