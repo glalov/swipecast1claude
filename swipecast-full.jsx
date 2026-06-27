@@ -3199,7 +3199,6 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             <L to="tapelink">TapeLink</L>
             {(typeof window==="undefined"||window.__SC_CLASSES_ON!==false)&&<L to="classes">{t('footer.classes')}</L>}
             <L to="resources">{t('footer.resources')}</L>
-            <L to="trust-safety">Trust & Safety</L>
           </div>
           <div>
             <h4 className="site-footer-heading">{t('footer.industry')}</h4>
