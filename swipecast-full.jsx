@@ -7814,7 +7814,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const [applyRole,setApplyRole]=useState(null);
   const autoOpenedRef=useRef(false);
   useEffect(()=>{
-    if(autoApplyRole&&isLoggedIn&&!autoOpenedRef.current){
+    if(autoApplyRole&&isLoggedIn&&!autoOpenedRef.current&&casting?.status!=="archived"&&!castingIsExpired(casting)){
       autoOpenedRef.current=true;
       setApplyRole(autoApplyRole);
       onAutoApplyConsumed?.();
@@ -7850,6 +7850,11 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const isPremium=myProfile?.membership_status==="active";
   const dailyLimit=isPremium?PREMIUM_PLAN.submissionsPerDay:FREE_PLAN.submissionsPerDay;
   const handleApply=(r,i)=>{
+    if(casting?.status==="archived"||castingIsExpired(casting)){
+      setApplyRole(null);
+      setApplyErr("Applications are closed for this casting.");
+      return;
+    }
     if(!isLoggedIn){onRequireAuth&&onRequireAuth(casting,{...r,idx:i});return;}
     // Free actors hit their 3/day cap → show upgrade prompt instead of apply modal.
     if(isTalent&&!isPremium&&todayCount>=FREE_PLAN.submissionsPerDay){
@@ -7957,6 +7962,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     try{
       const {data:{session:s}}=await window.sb.auth.getSession();
       if(!s?.user){setApplyErr("Your session has expired. Please log in again to apply.");return;}
+      if(casting?.status==="archived"||castingIsExpired(casting)){setApplyErr("Applications are closed for this casting.");return;}
       if(!isDbCasting){
         // demo/mock casting (seeded landing data, not a real row) — still acknowledge locally
         console.log("[apply] demo casting, local-only mark applied");
@@ -8027,6 +8033,9 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   };
   if(!casting)return(<div className="page"><p>Casting not found.</p><button className="btn-s" onClick={onBack}>{t('casting.back')}</button></div>);
   const c=getTranslatedCasting(casting,lang);
+  const castingExpired=castingIsExpired(c);
+  const castingArchived=c.status==="archived";
+  const applicationsClosed=castingArchived||castingExpired;
   const render=(txt)=>txt.split(/(\*[^*]+\*)/g).map((s,i)=>s.startsWith("*")&&s.endsWith("*")?<em key={i} style={{fontStyle:"italic",color:"var(--t1)"}}>{s.slice(1,-1)}</em>:<span key={i}>{s}</span>);
   return(<div className="page" style={{maxWidth:1080}}>
     <div style={{display:"flex",justifyContent:inSheet?"flex-end":"space-between",alignItems:"center",gap:10,marginBottom:20,flexWrap:"wrap"}}>
@@ -8119,31 +8128,29 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       {!c.is_admin_created&&cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
     </div>
 
-    {c.status==="archived"&&<div style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",marginBottom:20,marginTop:-4,background:"rgba(192,57,43,0.06)",border:"1px solid rgba(192,57,43,0.3)",borderRadius:12}}>
-      <span className="cs-archived-stamp" style={{position:"static",transform:"rotate(-6deg)",fontSize:18,padding:"3px 13px 5px",opacity:1,flex:"none"}} aria-hidden="true">Archived</span>
-      <div style={{fontSize:13,color:"#c0392b",fontWeight:600,lineHeight:1.5}}>This role has been filled and is no longer accepting submissions.</div>
+    {applicationsClosed&&<div style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",marginBottom:20,marginTop:-4,background:"rgba(192,57,43,0.06)",border:"1px solid rgba(192,57,43,0.3)",borderRadius:12}}>
+      {castingArchived&&<span className="cs-archived-stamp" style={{position:"static",transform:"rotate(-6deg)",fontSize:18,padding:"3px 13px 5px",opacity:1,flex:"none"}} aria-hidden="true">Archived</span>}
+      <div style={{fontSize:13,color:"#c0392b",fontWeight:600,lineHeight:1.5}}>{castingArchived?"This role has been filled and is no longer accepting submissions.":"This casting has expired and is no longer accepting applications."}</div>
     </div>}
 
     {/* ── Unified apply card: status + key facts + real trust signals on the left,
            role picker + Apply on the right. One card so heights never mismatch. ── */}
     {(()=>{const payText=c.rate||c.pay;const payShort=payText&&payText.length<=42;
       const sortedRoles=(c.roles||[]).slice().sort((a,b)=>compareRolesByType(a.type,a.id,b.type,b.id));
-      const expired=c.expires_at&&new Date(c.expires_at)<new Date();
-      const archived=c.status==="archived";
       const cdn=castingCountdown(c.deadline);
-      const live=!archived&&!expired&&!(cdn&&cdn.expired);
-      const canApply=!archived&&!expired&&sortedRoles.length>0;
+      const live=!applicationsClosed;
+      const canApply=!applicationsClosed&&sortedRoles.length>0;
       const verified=c.is_admin_created?(c.admin_verified===true):(cdProfile&&cdProfile.identity_verified===true&&cdProfile.can_post_castings===true&&cdProfile.verification_status==="verified");
       const bgChecked=!c.is_admin_created&&cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed";
-      const showTrust=!archived&&(verified||bgChecked);
+      const showTrust=!applicationsClosed&&(verified||bgChecked);
       return(
       <div style={{display:"flex",alignItems:"stretch",flexWrap:"wrap",marginBottom:24,marginTop:live?-4:0,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,overflow:"hidden"}}>
         <div style={{flex:"1 1 320px",display:"flex",flexDirection:"column",justifyContent:"center",gap:13,padding:"18px 22px"}}>
           {live&&<div><LiveCastingBadge/></div>}
           <div style={{display:"flex",alignItems:"center",gap:"8px 18px",flexWrap:"wrap"}}>
             {payShort&&<span style={{display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:16}}><Ico n="coin" s={22}/></span><span style={{fontSize:15,fontWeight:800,color:"var(--t1)",letterSpacing:-0.2}}>{payText}</span></span>}
-            <span style={{display:"flex",alignItems:"center",gap:7,color:"var(--t2)",fontSize:14,fontWeight:600}}><span style={{fontSize:15}}><Ico n="masks-theater" s={22}/></span>{c.roles?.length||0} {(c.roles?.length||0)===1?"role":"roles"} open</span>
-            {archived?<span style={{display:"flex",alignItems:"center",gap:7,color:"#c0392b",fontSize:14,fontWeight:700}}><span style={{fontSize:15}}><Ico n="calendar-event" s={22}/></span>Applications closed</span>:<span style={{fontSize:14}}><CastingCountdown deadline={c.deadline} emoji={true}/></span>}
+            <span style={{display:"flex",alignItems:"center",gap:7,color:"var(--t2)",fontSize:14,fontWeight:600}}><span style={{fontSize:15}}><Ico n="masks-theater" s={22}/></span>{c.roles?.length||0} {(c.roles?.length||0)===1?"role":"roles"} {applicationsClosed?"listed":"open"}</span>
+            {applicationsClosed?<span style={{display:"flex",alignItems:"center",gap:7,color:"#c0392b",fontSize:14,fontWeight:700}}><span style={{fontSize:15}}><Ico n="calendar-event" s={22}/></span>Applications closed</span>:<span style={{fontSize:14}}><CastingCountdown deadline={c.deadline} emoji={true}/></span>}
           </div>
           {showTrust&&<div style={{display:"flex",alignItems:"center",gap:"6px 16px",flexWrap:"wrap",fontSize:12.5,color:"var(--t2)",paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
             {verified&&<span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{color:"#1d7b44"}}><Ico n="shield-check" s={22}/></span><span style={{color:"var(--t1)",fontWeight:600}}>Verified casting director</span></span>}
@@ -8193,7 +8200,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <div className="flex-between" style={{marginBottom:16}}>
         <div>
           <div className="section-label">{t('casting.roles')}</div>
-          <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginTop:4}}>{c.roles?.length||0} {(c.roles?.length||0)===1?t('search.role'):t('search.roles')} Open</h2>
+          <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginTop:4}}>{c.roles?.length||0} {(c.roles?.length||0)===1?t('search.role'):t('search.roles')} {applicationsClosed?"Listed":"Open"}</h2>
         </div>
       </div>
       <div style={{display:"flex",flexDirection:"column",gap:14}}>
@@ -8216,7 +8223,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                 <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65}}>{r.desc}</p>
               </div>
               <div style={{flexShrink:0}}>
-                {c.status==="archived"?<span className="tag" style={{fontSize:12,fontWeight:700,padding:"8px 14px",background:"rgba(192,57,43,0.08)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>Filled</span>:applied.has(i)?<span className="tag tag-grn" style={{fontSize:12,fontWeight:700,padding:"8px 14px"}}>{hasInstructions?"Audition Submitted":"Applied"}</span>:<button className="btn-teal btn-sm" onClick={()=>handleApply(r,i)}>{!isLoggedIn?"Create a free account to apply":(hasInstructions?"Audition for This Role":"Apply for This Role")}</button>}
+                {applicationsClosed?<span className="tag" style={{fontSize:12,fontWeight:700,padding:"8px 14px",background:"rgba(192,57,43,0.08)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>{castingArchived?"Filled":"Applications closed"}</span>:applied.has(i)?<span className="tag tag-grn" style={{fontSize:12,fontWeight:700,padding:"8px 14px"}}>{hasInstructions?"Audition Submitted":"Applied"}</span>:<button className="btn-teal btn-sm" onClick={()=>handleApply(r,i)}>{!isLoggedIn?"Create a free account to apply":(hasInstructions?"Audition for This Role":"Apply for This Role")}</button>}
               </div>
             </div>
             {/* Audition Instructions block — shown when the CD has set them */}
@@ -9185,6 +9192,24 @@ function castingCountdown(deadline){
   }catch{return null;}
 }
 
+function castingIsExpired(casting){
+  if(!casting)return false;
+  try{
+    if(casting.expires_at){
+      const d=new Date(casting.expires_at);
+      if(!isNaN(d)&&d<new Date())return true;
+    }
+    const cdn=castingCountdown(casting.deadline);
+    return !!(cdn&&cdn.expired);
+  }catch{return false;}
+}
+
+function castingSortBucket(casting){
+  if(casting?.status==="archived")return 2;
+  if(castingIsExpired(casting))return 1;
+  return 0;
+}
+
 // Whole-word location match. Naive substring matching is wrong for short
 // tokens — e.g. "la" lives inside "white pLAins" and "is​LAnd", so a bare
 // loc.includes("la") made the Los Angeles filter return New York results.
@@ -9330,6 +9355,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         pay:c.pay||"",
         rate:c.pay||"",
         deadline:c.deadline||(c.expires_at?c.expires_at.slice(0,10):""),
+        status:c.status||"open",
         created_at:c.created_at||null,
         expires_at:c.expires_at||null,
         union:c.union_status||"",
@@ -9448,8 +9474,9 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const allTalent=dbTalent.length>0?dbTalent:[];
   const ft=allTalent.filter(t=>{if(q&&!t.name.toLowerCase().includes(q.toLowerCase())&&!t.skills.join(" ").toLowerCase().includes(q.toLowerCase()))return false;if(f.gender&&t.gender!==f.gender)return false;if(f.ethnicity&&!t.ethnicity.toLowerCase().includes(f.ethnicity.toLowerCase()))return false;if(f.location&&!t.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&t.union!==f.union)return false;if(castingTypeIds!==null&&!castingTypeIds.has(t.id))return false;return true;});
   const fc=allCastings.filter(c=>{if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&c.type!==f.type)return false;if(f.location&&!matchesLocationFilter(c.location,f.location))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;})
-    // Archived (filled) castings sink to the bottom so live, applicable roles lead.
-    .sort((a,b)=>((a.status==="archived")?1:0)-((b.status==="archived")?1:0));
+    // Closed castings sink to the bottom so live, applicable roles lead.
+    // Bucket order: live/open first, expired next, archived/filled last.
+    .sort((a,b)=>castingSortBucket(a)-castingSortBucket(b));
   return(<div className="page page-wide">
     <div className="section-label">{t('search.title')}</div>
     <div className="search-bar"><input className="input" placeholder={t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/><button className="btn-teal">{t('search.searchBtn')}</button></div>
@@ -9476,18 +9503,18 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
             <button className="btn-s btn-sm" onClick={()=>setRefreshTick(tk=>tk+1)} disabled={loading}>{loading?"…":t('search.refresh')}</button>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;const isExpiredCasting=!!(c.expires_at&&new Date(c.expires_at)<new Date());const isArchived=c.status==="archived";const cdn=castingCountdown(c.deadline);const isLive=!isArchived&&!isExpiredCasting&&!(cdn&&cdn.expired);return(
+          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;return(
             <div key={c.id} style={{
-              padding:0,overflow:"hidden",cursor:isArchived?"default":"pointer",borderRadius:14,position:"relative",
+              padding:0,overflow:"hidden",cursor:isClosedCard?"default":"pointer",borderRadius:14,position:"relative",
               background:"var(--s1)",
               border:"1px solid var(--bdr)",
               borderTop:isFeat?"3px solid var(--teal)":"1px solid var(--bdr)",
               boxShadow:"0 1px 4px rgba(26,26,46,0.05)",
               transition:"box-shadow .2s,transform .15s",
             }}
-              onMouseEnter={e=>{if(isArchived)return;e.currentTarget.style.boxShadow="0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
-              onMouseLeave={e=>{if(isArchived)return;e.currentTarget.style.boxShadow="0 1px 4px rgba(26,26,46,0.05)";e.currentTarget.style.transform="";}}
-              onClick={()=>{if(isArchived)return;if(window.innerWidth<=768)return;openSheet(rawC);}}>
+              onMouseEnter={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow="0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
+              onMouseLeave={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow="0 1px 4px rgba(26,26,46,0.05)";e.currentTarget.style.transform="";}}
+              onClick={()=>{if(isClosedCard)return;if(window.innerWidth<=768)return;openSheet(rawC);}}>
               {isArchived&&<div className="cs-archived-stamp" aria-hidden="true">Archived</div>}
               <div className={isArchived?"cs-archived-dim":undefined}>
               <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
@@ -9516,8 +9543,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                   </div>
                 </div>
                 <div className="casting-card-row-side" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",minWidth:140}}>
-                  {isArchived
-                    ?<span className="badge" style={{background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>Position filled</span>
+                  {isArchived||isExpiredCasting
+                    ?<span className="badge" style={{background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>{isArchived?"Position filled":"Applications closed"}</span>
                     :<button className="btn-teal" onClick={e=>{e.stopPropagation();openSheet(rawC);}}>{t('search.viewRoles')}</button>}
                   {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>{t('search.applied')}</span>:null}
                 </div>
@@ -13972,6 +13999,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         pay:c.pay||"",
         rate:c.pay||"",
         deadline:c.deadline||(c.expires_at?c.expires_at.slice(0,10):""),
+        status:c.status||"open",
         created_at:c.created_at||null,
         expires_at:c.expires_at||null,
         union:c.union_status||"",
@@ -13999,7 +14027,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
           ethnicity:r.ethnicity||"Any"
         }))
       }));
-      setCastings(mapped);
+      setCastings(mapped.slice().sort((a,b)=>castingSortBucket(a)-castingSortBucket(b)));
       setErr("");
     }catch(e){
       clearTimeout(tid);
