@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <!-- Navy rounded square background — matches the CastSlate nav logo mark -->
-  <rect width="32" height="32" rx="7" fill="#1A1A2E"/>
-  <!-- White double-headed arrow -->
-  <path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#FFFFFF"/>
+  <!-- White cube background — fills the favicon canvas with minimal inset. -->
+  <rect x="0.5" y="0.5" width="31" height="31" rx="6" fill="#FFFFFF"/>
+  <rect x="0.5" y="0.5" width="31" height="31" rx="6" fill="none" stroke="#D8DAE5" stroke-width="1"/>
+  <!-- Black double-headed arrow -->
+  <path d="M2.8,16 L11.7,7.9 L11.7,11.3 L20.3,11.3 L20.3,7.9 L29.2,16 L20.3,24.1 L20.3,20.7 L11.7,20.7 L11.7,24.1 Z" fill="#111122"/>
 </svg>
