@@ -5355,13 +5355,16 @@ function ManagerModePage({onNavigate,session,myProfile}){
   const [mmPreview,setMmPreview]=useState("");
   const [mmBody,setMmBody]=useState("");
   const [mmCycle,setMmCycle]=useState(0);
-  const [mmVisibleCards,setMmVisibleCards]=useState(0);
-  const [mmTaskVisible,setMmTaskVisible]=useState(false);
+  const [mmPhaseMs,setMmPhaseMs]=useState(0);
+  const mmVisibleCards=mmPhaseMs>=13850?4:mmPhaseMs>=13150?3:mmPhaseMs>=12450?2:mmPhaseMs>=11750?1:0;
+  const mmTaskVisible=mmPhaseMs>=14650;
 
   useEffect(()=>{
     if(typeof window==="undefined")return;
     let timers=[];
     let interval;
+    let phaseInterval;
+    let cycleStart=Date.now();
     const add=(fn,delay)=>{const t=window.setTimeout(fn,delay);timers.push(t);return t;};
     const typeText=(setter,text,startDelay,speed,done)=>{
       add(()=>{
@@ -5378,19 +5381,18 @@ function ManagerModePage({onNavigate,session,myProfile}){
     const clear=()=>{timers.forEach(t=>window.clearTimeout(t));timers=[];};
     const run=()=>{
       clear();
+      cycleStart=Date.now();
       setMmPreview("");
       setMmBody("");
-      setMmVisibleCards(0);
-      setMmTaskVisible(false);
+      setMmPhaseMs(0);
       setMmCycle(c=>c+1);
       typeText(setMmPreview,MM_PREVIEW_TEXT,2700,62);
       typeText(setMmBody,MM_BODY_TEXT,5200,38);
-      [11750,12450,13150,13850].forEach((delay,idx)=>add(()=>setMmVisibleCards(idx+1),delay));
-      add(()=>setMmTaskVisible(true),14650);
     };
     run();
+    phaseInterval=window.setInterval(()=>setMmPhaseMs((Date.now()-cycleStart)%20000),100);
     interval=window.setInterval(run,20000);
-    return()=>{clear();window.clearInterval(interval);};
+    return()=>{clear();window.clearInterval(interval);window.clearInterval(phaseInterval);};
   },[]);
 
   const CSLogo=({size=36,className=""})=>(
