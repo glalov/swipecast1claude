@@ -2371,9 +2371,12 @@ html,body{overflow-x:hidden;}
 .mm-live-tab::after{content:"";position:absolute;left:16px;right:16px;bottom:-1px;height:2px;background:#1A1A2E;transform:scaleX(0);transform-origin:left;animation:mmUnderline var(--mm-loop) ease-in-out infinite;}
 .mm-live-preview{display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;}
 .mm-live-message{overflow:hidden;}
-.mm-live-card{position:relative;overflow:hidden;opacity:.001;transform:translateY(12px);animation-name:mmCardDemoIn;animation-duration:.55s;animation-timing-function:cubic-bezier(.22,1,.36,1);animation-delay:var(--mm-card-delay,0s);animation-fill-mode:forwards;will-change:opacity,transform;}
-.mm-live-card::after{content:"";position:absolute;inset:0 auto 0 -48%;width:42%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.72),transparent);transform:skewX(-16deg);animation-name:mmCardDemoSheen;animation-duration:1.2s;animation-timing-function:ease;animation-delay:var(--mm-card-delay,0s);animation-fill-mode:forwards;}
-.mm-live-task{opacity:.001;transform:translateY(10px);animation-name:mmTaskDemoPop;animation-duration:.9s;animation-timing-function:cubic-bezier(.22,1,.36,1);animation-delay:14.65s;animation-fill-mode:forwards;will-change:opacity,transform;}
+.mm-live-card{position:relative;overflow:hidden;opacity:.001;transform:translateY(12px);transition:opacity .55s cubic-bezier(.22,1,.36,1),transform .55s cubic-bezier(.22,1,.36,1);will-change:opacity,transform;}
+.mm-live-card.mm-card-visible{opacity:1;transform:translateY(0);}
+.mm-live-card::after{content:"";position:absolute;inset:0 auto 0 -48%;width:42%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.72),transparent);transform:skewX(-16deg);opacity:0;}
+.mm-live-card.mm-card-visible::after{opacity:1;animation:mmCardDemoSheen 1.2s ease .05s forwards;}
+.mm-live-task{opacity:.001;transform:translateY(10px) scale(1);transition:opacity .62s cubic-bezier(.22,1,.36,1),transform .62s cubic-bezier(.22,1,.36,1);will-change:opacity,transform;}
+.mm-live-task.mm-task-visible{opacity:1;transform:translateY(0) scale(1);}
 .mm-spark{position:absolute;width:16px;height:16px;border-radius:5px;background:#E8902A;box-shadow:0 0 24px rgba(232,144,42,.92);opacity:0;z-index:3;pointer-events:none;animation:mmSparkFloat 5.8s ease-in-out infinite;}
 .mm-spark-1{right:26px;top:134px;animation-delay:4.6s;}
 .mm-spark-2{right:104px;top:56px;width:14px;height:14px;background:#6EE7B7;box-shadow:0 0 24px rgba(110,231,183,.82);animation-delay:7.8s;}
@@ -5351,6 +5354,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
   const [mmPreview,setMmPreview]=useState("");
   const [mmBody,setMmBody]=useState("");
   const [mmCycle,setMmCycle]=useState(0);
+  const [mmVisibleCards,setMmVisibleCards]=useState(0);
+  const [mmTaskVisible,setMmTaskVisible]=useState(false);
 
   useEffect(()=>{
     if(typeof window==="undefined")return;
@@ -5374,9 +5379,13 @@ function ManagerModePage({onNavigate,session,myProfile}){
       clear();
       setMmPreview("");
       setMmBody("");
+      setMmVisibleCards(0);
+      setMmTaskVisible(false);
       setMmCycle(c=>c+1);
       typeText(setMmPreview,MM_PREVIEW_TEXT,2700,62);
       typeText(setMmBody,MM_BODY_TEXT,5200,38);
+      [11750,12450,13150,13850].forEach((delay,idx)=>add(()=>setMmVisibleCards(idx+1),delay));
+      add(()=>setMmTaskVisible(true),14650);
     };
     run();
     interval=window.setInterval(run,20000);
@@ -5446,13 +5455,13 @@ function ManagerModePage({onNavigate,session,myProfile}){
         <div style={{padding:pd("16px 18px","11px 13px")}}>
           <div className={mobile?"":"mm-live-message"} style={{fontSize:fs(12,9.5),color:"#1A1A2E",lineHeight:1.65,marginBottom:pd(12,8),fontWeight:400,minHeight:mobile?"auto":70}}>{mobile?MM_BODY_TEXT:mmBody}</div>
           {[["What you're doing well","Your headshot is clear and professional — strong first impression.","#1B873E","rgba(27,135,62,0.06)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.06)"],["Casting lane to focus on","Young professional / commercial friend","#2563EB","rgba(37,99,235,0.06)"],["Your task this week","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.04)"]].map(([label,val,col,bg],idx)=>(
-            <div key={`${mmCycle}-${label}`} className={mobile?"":"mm-live-card"} style={{background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4),...(mobile?{}:{"--mm-card-delay":`${11.75+(idx*0.7)}s`})}}>
+            <div key={`${mmCycle}-${label}`} className={mobile?"":`mm-live-card ${idx<mmVisibleCards?"mm-card-visible":""}`} style={{background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4)}}>
               <div style={{fontSize:fs(9,7),fontWeight:700,color:col,letterSpacing:0.6,textTransform:"uppercase",marginBottom:2}}>{label}</div>
               <div style={{fontSize:fs(11,8.5),color:"#1A1A2E",fontWeight:500,lineHeight:1.45}}>{val}</div>
             </div>
           ))}
           <div style={{marginTop:pd(12,8),display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-            <div key={`task-${mmCycle}`} className={mobile?"":"mm-live-task"} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:"0 2px 8px rgba(26,26,46,0.2)"}}>Complete This Week's Task</div>
+            <div key={`task-${mmCycle}`} className={mobile?"":`mm-live-task ${mmTaskVisible?"mm-task-visible":""}`} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:"0 2px 8px rgba(26,26,46,0.2)"}}>Complete This Week's Task</div>
           </div>
           <div style={{marginTop:pd(8,6),fontSize:fs(9,7.5),color:"#8E8EA0",fontStyle:"italic"}}>Replies are not available for this message.</div>
         </div>
