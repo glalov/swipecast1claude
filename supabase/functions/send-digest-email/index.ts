@@ -17,15 +17,18 @@ const UNSUB_BASE           = `${SUPABASE_URL}/functions/v1/process-digest-queue`
 // SES secrets (only read when active): AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
 // AWS_SES_REGION (falls back to AWS_REGION, then "us-east-1").
 // ─────────────────────────────────────────────────────────────────────────────
-const EMAIL_PROVIDER        = (Deno.env.get("EMAIL_PROVIDER") ?? "resend").toLowerCase();
+const SENDER_API_KEY        = Deno.env.get("SENDER_API_KEY");
+// Bulk senders (digest + campaigns) can route independently of transactional mail
+// via BULK_EMAIL_PROVIDER (e.g. "sender"); falls back to EMAIL_PROVIDER, then resend.
+const EMAIL_PROVIDER        = (Deno.env.get("BULK_EMAIL_PROVIDER") ?? Deno.env.get("EMAIL_PROVIDER") ?? "resend").toLowerCase();
 const AWS_ACCESS_KEY_ID     = Deno.env.get("AWS_ACCESS_KEY_ID");
 const AWS_SECRET_ACCESS_KEY = Deno.env.get("AWS_SECRET_ACCESS_KEY");
 const AWS_SES_REGION        = Deno.env.get("AWS_SES_REGION") ?? Deno.env.get("AWS_REGION") ?? "us-east-1";
 
 function emailConfigured(): boolean {
-  return EMAIL_PROVIDER === "ses"
-    ? !!(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY)
-    : !!RESEND_API_KEY;
+  if (EMAIL_PROVIDER === "ses")    return !!(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY);
+  if (EMAIL_PROVIDER === "sender") return !!SENDER_API_KEY;
+  return !!RESEND_API_KEY;
 }
 
 interface SendEmailArgs { from:string; to:string[]; subject:string; html:string; text?:string; replyTo?:string; headers?:Record<string,string>; }
@@ -51,6 +54,22 @@ async function sendEmail(a: SendEmailArgs): Promise<SendEmailResult> {
       if (r.ok) { const d = await r.json().catch(()=>({})); return { ok:true, id:d.MessageId ?? null, err:null, status:r.status }; }
       return { ok:false, id:null, err:await r.text(), status:r.status };
     } catch (e) { return { ok:false, id:null, err:String(e), status:500 }; }
+  }
+  if (EMAIL_PROVIDER === "sender") {
+    if (!SENDER_API_KEY) return { ok:false, id:null, err:"SENDER_API_KEY not set", status:500 };
+    // Sender.net wants {email,name} objects; parse "Name <email>" or a bare address.
+    const parseAddr = (s:string) => {
+      const m = s.match(/^\s*(.*?)\s*<([^>]+)>\s*$/);
+      return m ? { email:m[2].trim(), name:(m[1].replace(/^"|"$/g,"").trim()||undefined) } : { email:s.trim() };
+    };
+    // deno-lint-ignore no-explicit-any
+    const sbody:any = { from:parseAddr(a.from), to:parseAddr(a.to[0]), subject:a.subject, html:a.html };
+    if (a.text) sbody.text = a.text;
+    const r = await fetch("https://api.sender.net/v2/message/send", {
+      method:"POST", headers:{ Authorization:`Bearer ${SENDER_API_KEY}`, "Content-Type":"application/json", Accept:"application/json" }, body:JSON.stringify(sbody),
+    });
+    if (r.ok) { const d = await r.json().catch(()=>({})); return { ok:true, id:(d.message_id ?? d.id ?? null), err:null, status:r.status }; }
+    return { ok:false, id:null, err:await r.text(), status:r.status };
   }
   if (!RESEND_API_KEY) return { ok:false, id:null, err:"RESEND_API_KEY not set", status:500 };
   // deno-lint-ignore no-explicit-any
@@ -261,9 +280,14 @@ serve(async (req) => {
     const sb=createClient(SUPABASE_URL,SUPABASE_SERVICE_KEY);
     let email=to_email??null, first="there";
     if(user_id&&!is_test){
-      const{data:a}=await sb.auth.admin.getUserById(user_id);
-      if(!a?.user?.email) return jsonR({error:"User not found"},404);
-      email=a.user.email;
+      // Prefer the address the caller already resolved from auth.users
+      // (process-digest-queue passes to_email). Only fall back to the GoTrue
+      // Admin API when no address was supplied — that API was silently dropping
+      // newer accounts, so we no longer hard-depend on it for delivery.
+      if(!email){
+        const{data:a}=await sb.auth.admin.getUserById(user_id);
+        email=a?.user?.email??null;
+      }
       const{data:p}=await sb.from("profiles").select("display_name").eq("id",user_id).maybeSingle();
       first=(p?.display_name??"").split(" ")[0].trim()||"there";
     }
