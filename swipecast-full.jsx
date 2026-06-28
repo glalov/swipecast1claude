@@ -2307,11 +2307,10 @@ html,body{overflow-x:hidden;}
 }
 .cinema-feature{max-width:1100px;margin:0 auto 52px;padding:0 clamp(16px,4vw,40px);}
 .cinema-feature-inner{background:#fff;border:1px solid var(--bdr);border-radius:22px;box-shadow:0 12px 38px -22px rgba(26,26,46,.24),0 2px 8px rgba(26,26,46,.04);padding:clamp(16px,2.4vw,26px);display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1fr);gap:clamp(22px,3.2vw,44px);align-items:center;}
-/* Backstage-style long card: the FULL photo is inset on the LEFT with its own
-   rounded corners, shown at natural ratio (width:100%/height:auto) so it is
-   NEVER cropped and has no black/white bars. Copy sits on the right, centered. */
-.cinema-feature-img{line-height:0;}
-.cinema-feature-img img{width:100%;height:auto;display:block;border-radius:14px;}
+/* Backstage-style long card: real set footage is inset on the left with rounded
+   corners. Copy sits on the right, centered. */
+.cinema-feature-img{line-height:0;position:relative;overflow:hidden;border-radius:14px;background:var(--s3);}
+.cinema-feature-img video{width:100%;aspect-ratio:16/9;height:auto;display:block;object-fit:cover;border-radius:14px;}
 .cinema-feature-copy{padding:6px clamp(4px,1vw,14px) 6px 0;display:flex;flex-direction:column;justify-content:center;gap:14px;}
 .cinema-feature-copy .cf-label{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--acc);font-weight:700;font-family:'DM Sans',sans-serif;margin:0;}
 .cinema-feature-copy h2{font-weight:800;font-size:clamp(22px,2.8vw,30px);letter-spacing:-0.8px;line-height:1.15;margin:0;}
@@ -15027,7 +15026,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="cinema-feature">
       <div className="cinema-feature-inner">
         <div className="cinema-feature-img">
-          <img src="https://images.pexels.com/photos/3062539/pexels-photo-3062539.jpeg?auto=compress&cs=tinysrgb&w=1600" alt="Film crew filming an actress on an outdoor movie set with cinema camera" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+          <video src="/assets/video/actor-journey-set.mp4" poster="/assets/video/actor-journey-set-poster.jpg" aria-label="Real film set footage showing crew preparing a camera setup" autoPlay muted loop playsInline preload="metadata"/>
         </div>
         <div className="cinema-feature-copy">
           <p className="cf-label">The actor journey</p>
