@@ -2273,12 +2273,19 @@ html,body{overflow-x:hidden;}
 @media(max-width:860px){.ios-teaser-phone-col{display:none !important;}}
 
 /* ── Landing: Single cinematic feature image section ── */
-.landing-stats-live{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:clamp(18px,5vw,62px);max-width:900px;margin:0 auto;padding:56px 40px;text-align:center;align-items:start;}
-.landing-stat-live{position:relative;min-height:98px;padding:12px 10px 14px;border-radius:16px;}
-.landing-stat-live::before{content:"";position:absolute;inset:0;border:1px solid rgba(81,143,145,.18);border-radius:16px;opacity:0;pointer-events:none;}
+.landing-stats-live{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:clamp(18px,5vw,62px);max-width:900px;margin:0 auto;padding:56px 40px;text-align:center;align-items:start;perspective:1200px;}
+.landing-stat-live{position:relative;min-height:122px;padding:16px 10px 18px;border-radius:18px;border:1px solid rgba(24,24,45,.08);box-shadow:0 18px 42px -34px rgba(24,24,45,.58);transform-style:preserve-3d;will-change:transform;}
+.landing-stat-live::before{content:"";position:absolute;inset:0;border:1px solid rgba(255,255,255,.74);border-radius:inherit;opacity:.78;pointer-events:none;}
+.landing-stat-live::after{content:"";position:absolute;left:18px;right:18px;bottom:-10px;height:16px;border-radius:999px;background:rgba(24,24,45,.14);filter:blur(12px);opacity:.52;pointer-events:none;}
 .landing-stat-live.is-on::before{animation:cs-stat-frame 1.2s ease forwards;}
-.landing-stat-value{display:inline-flex;align-items:baseline;justify-content:center;min-width:126px;height:58px;color:var(--t1);font-family:'DM Sans',sans-serif;font-size:clamp(38px,5vw,52px);line-height:1;font-weight:900;letter-spacing:0;}
-.landing-stat-pulse{width:82px;height:5px;margin:3px auto 0;border-radius:999px;background:#e5ded4;overflow:hidden;}
+.landing-stat-live:nth-child(1){background:linear-gradient(160deg,rgba(76,141,255,.14),rgba(255,255,255,.76));animation:cs-card-float-a 5.8s ease-in-out infinite;}
+.landing-stat-live:nth-child(2){background:linear-gradient(160deg,rgba(225,74,91,.12),rgba(255,255,255,.78));animation:cs-card-float-b 6.4s ease-in-out infinite;}
+.landing-stat-live:nth-child(3){background:linear-gradient(160deg,rgba(46,166,116,.13),rgba(255,255,255,.78));animation:cs-card-float-c 6s ease-in-out infinite;}
+.landing-stat-live:nth-child(4){background:linear-gradient(160deg,rgba(120,124,140,.14),rgba(255,255,255,.78));animation:cs-card-float-d 6.8s ease-in-out infinite;}
+.landing-stat-live.spin-once{animation:cs-stat-3d-spin .9s cubic-bezier(.2,.8,.24,1) both;}
+.landing-stat-value,.landing-stat-label,.landing-stat-pulse{position:relative;z-index:1;}
+.landing-stat-value{display:inline-flex;align-items:baseline;justify-content:center;min-width:126px;height:58px;color:var(--t1);font-family:'DM Sans',sans-serif;font-size:clamp(38px,5vw,52px);line-height:1;font-weight:900;letter-spacing:0;text-shadow:0 10px 24px rgba(24,24,45,.1);}
+.landing-stat-pulse{width:82px;height:5px;margin:3px auto 0;border-radius:999px;background:rgba(24,24,45,.09);overflow:hidden;}
 .landing-stat-pulse span{display:block;width:34%;height:100%;border-radius:inherit;background:var(--teal);transform:translateX(-100%);}
 .landing-stat-live.is-on .landing-stat-pulse span{animation:cs-stat-sweep 1.26s ease forwards;}
 .landing-stat-live:nth-child(1)::before,.landing-stat-live:nth-child(1) .landing-stat-pulse span{animation-delay:.04s;}
@@ -2288,8 +2295,14 @@ html,body{overflow-x:hidden;}
 .landing-stat-label{margin-top:9px;color:var(--t2);font-size:14px;line-height:1.35;font-weight:700;letter-spacing:0;}
 @keyframes cs-stat-frame{0%{opacity:0;transform:scale(.96);}35%{opacity:1;transform:scale(1.02);}100%{opacity:1;transform:scale(1);}}
 @keyframes cs-stat-sweep{0%{transform:translateX(-100%);}55%{transform:translateX(205%);}100%{transform:translateX(192%);}}
+@keyframes cs-card-float-a{0%,100%{transform:translate3d(0,0,0) rotateX(0deg) rotateY(0deg);}50%{transform:translate3d(0,-9px,0) rotateX(2deg) rotateY(-3deg);}}
+@keyframes cs-card-float-b{0%,100%{transform:translate3d(0,0,0) rotateX(0deg) rotateY(0deg);}50%{transform:translate3d(0,-7px,0) rotateX(-2deg) rotateY(3deg);}}
+@keyframes cs-card-float-c{0%,100%{transform:translate3d(0,0,0) rotateX(0deg) rotateY(0deg);}50%{transform:translate3d(0,-10px,0) rotateX(2deg) rotateY(2deg);}}
+@keyframes cs-card-float-d{0%,100%{transform:translate3d(0,0,0) rotateX(0deg) rotateY(0deg);}50%{transform:translate3d(0,-6px,0) rotateX(-1deg) rotateY(-3deg);}}
+@keyframes cs-stat-3d-spin{0%{transform:translate3d(0,0,0) rotateY(0deg) rotateX(0deg) scale(1);}45%{transform:translate3d(0,-12px,28px) rotateY(178deg) rotateX(7deg) scale(1.025);}100%{transform:translate3d(0,0,0) rotateY(360deg) rotateX(0deg) scale(1);}}
 @media(max-width:760px){
   .landing-stats-live{grid-template-columns:repeat(2,minmax(120px,1fr));gap:28px 12px;padding:44px 20px 48px;}
+  .landing-stat-live{min-height:118px;}
   .landing-stat-value{min-width:112px;font-size:38px;}
 }
 .cinema-feature{max-width:1100px;margin:0 auto 52px;padding:0 clamp(16px,4vw,40px);}
@@ -14836,6 +14849,7 @@ function LandingStats(){
   ];
   const[active,setActive]=React.useState(false);
   const[values,setValues]=React.useState(()=>stats.map(()=>0));
+  const[spinIndex,setSpinIndex]=React.useState(-1);
   const wrapRef=React.useRef(null);
   React.useEffect(()=>{
     const el=wrapRef.current;
@@ -14872,6 +14886,22 @@ function LandingStats(){
     io.observe(el);
     return()=>{io.disconnect();cancelAnimationFrame(raf);};
   },[]);
+  React.useEffect(()=>{
+    const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(reduce)return;
+    let lastIndex=-1;
+    let clearTimer=0;
+    const interval=setInterval(()=>{
+      let index=Math.floor(Math.random()*stats.length);
+      if(stats.length>1&&index===lastIndex)index=(index+1)%stats.length;
+      lastIndex=index;
+      setSpinIndex(-1);
+      requestAnimationFrame(()=>setSpinIndex(index));
+      clearTimeout(clearTimer);
+      clearTimer=setTimeout(()=>setSpinIndex(-1),980);
+    },3000);
+    return()=>{clearInterval(interval);clearTimeout(clearTimer);};
+  },[]);
   const format=(stat,value)=>{
     const n=stat.decimals>0?value.toFixed(stat.decimals):String(Math.round(value));
     return `${stat.prefix||""}${n}${stat.suffix||""}`;
@@ -14879,7 +14909,7 @@ function LandingStats(){
   return(
     <div className="landing-stats-live" ref={wrapRef}>
       {stats.map((stat,i)=>(
-        <div key={stat.label} className={`landing-stat-live ${active?"is-on":""}`}>
+        <div key={stat.label} className={`landing-stat-live ${active?"is-on":""} ${spinIndex===i?"spin-once":""}`}>
           <div className="landing-stat-value">{format(stat,values[i])}</div>
           <div className="landing-stat-pulse"><span/></div>
           <div className="landing-stat-label">{stat.label}</div>
