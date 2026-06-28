@@ -2273,6 +2273,25 @@ html,body{overflow-x:hidden;}
 @media(max-width:860px){.ios-teaser-phone-col{display:none !important;}}
 
 /* ── Landing: Single cinematic feature image section ── */
+.landing-stats-live{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:clamp(18px,5vw,62px);max-width:900px;margin:0 auto;padding:56px 40px;text-align:center;align-items:start;}
+.landing-stat-live{position:relative;min-height:98px;padding:12px 10px 14px;border-radius:16px;}
+.landing-stat-live::before{content:"";position:absolute;inset:0;border:1px solid rgba(81,143,145,.18);border-radius:16px;opacity:0;pointer-events:none;}
+.landing-stat-live.is-on::before{animation:cs-stat-frame 1.2s ease forwards;}
+.landing-stat-value{display:inline-flex;align-items:baseline;justify-content:center;min-width:126px;height:58px;color:var(--t1);font-family:'DM Sans',sans-serif;font-size:clamp(38px,5vw,52px);line-height:1;font-weight:900;letter-spacing:0;}
+.landing-stat-pulse{width:82px;height:5px;margin:3px auto 0;border-radius:999px;background:#e5ded4;overflow:hidden;}
+.landing-stat-pulse span{display:block;width:34%;height:100%;border-radius:inherit;background:var(--teal);transform:translateX(-100%);}
+.landing-stat-live.is-on .landing-stat-pulse span{animation:cs-stat-sweep 1.26s ease forwards;}
+.landing-stat-live:nth-child(1)::before,.landing-stat-live:nth-child(1) .landing-stat-pulse span{animation-delay:.04s;}
+.landing-stat-live:nth-child(2)::before,.landing-stat-live:nth-child(2) .landing-stat-pulse span{animation-delay:.18s;}
+.landing-stat-live:nth-child(3)::before,.landing-stat-live:nth-child(3) .landing-stat-pulse span{animation-delay:.32s;}
+.landing-stat-live:nth-child(4)::before,.landing-stat-live:nth-child(4) .landing-stat-pulse span{animation-delay:.46s;}
+.landing-stat-label{margin-top:9px;color:var(--t2);font-size:14px;line-height:1.35;font-weight:700;letter-spacing:0;}
+@keyframes cs-stat-frame{0%{opacity:0;transform:scale(.96);}35%{opacity:1;transform:scale(1.02);}100%{opacity:1;transform:scale(1);}}
+@keyframes cs-stat-sweep{0%{transform:translateX(-100%);}55%{transform:translateX(205%);}100%{transform:translateX(192%);}}
+@media(max-width:760px){
+  .landing-stats-live{grid-template-columns:repeat(2,minmax(120px,1fr));gap:28px 12px;padding:44px 20px 48px;}
+  .landing-stat-value{min-width:112px;font-size:38px;}
+}
 .cinema-feature{max-width:1100px;margin:0 auto 52px;padding:0 clamp(16px,4vw,40px);}
 .cinema-feature-inner{background:#fff;border:1px solid var(--bdr);border-radius:22px;box-shadow:0 12px 38px -22px rgba(26,26,46,.24),0 2px 8px rgba(26,26,46,.04);padding:clamp(16px,2.4vw,26px);display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1fr);gap:clamp(22px,3.2vw,44px);align-items:center;}
 /* Backstage-style long card: the FULL photo is inset on the LEFT with its own
@@ -14808,6 +14827,68 @@ function FormatReel(){
   );
 }
 
+function LandingStats(){
+  const stats=[
+    {target:100,suffix:"%",label:"Of submissions reviewed",decimals:0},
+    {target:9.99,prefix:"$",label:"/mo · cheapest in casting",decimals:2},
+    {target:3.2,suffix:"×",label:"Faster to callback",decimals:1},
+    {target:72,suffix:"hr",label:"Avg. response time",decimals:0},
+  ];
+  const[active,setActive]=React.useState(false);
+  const[values,setValues]=React.useState(()=>stats.map(()=>0));
+  const wrapRef=React.useRef(null);
+  React.useEffect(()=>{
+    const el=wrapRef.current;
+    if(!el)return;
+    const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(reduce){
+      setValues(stats.map(s=>s.target));
+      setActive(true);
+      return;
+    }
+    let raf=0;
+    let started=false;
+    const run=()=>{
+      if(started)return;
+      started=true;
+      setActive(false);
+      setValues(stats.map(()=>0));
+      requestAnimationFrame(()=>setActive(true));
+      const start=performance.now();
+      const duration=1100;
+      const tick=(now)=>{
+        const raw=Math.min((now-start)/duration,1);
+        const eased=1-Math.pow(1-raw,3);
+        setValues(stats.map(s=>s.target*eased));
+        if(raw<1)raf=requestAnimationFrame(tick);
+        else setValues(stats.map(s=>s.target));
+      };
+      raf=requestAnimationFrame(tick);
+    };
+    if(!("IntersectionObserver" in window)){run();return()=>cancelAnimationFrame(raf);}
+    const io=new IntersectionObserver(entries=>{
+      entries.forEach(e=>{if(e.isIntersecting){run();io.disconnect();}});
+    },{threshold:.45});
+    io.observe(el);
+    return()=>{io.disconnect();cancelAnimationFrame(raf);};
+  },[]);
+  const format=(stat,value)=>{
+    const n=stat.decimals>0?value.toFixed(stat.decimals):String(Math.round(value));
+    return `${stat.prefix||""}${n}${stat.suffix||""}`;
+  };
+  return(
+    <div className="landing-stats-live" ref={wrapRef}>
+      {stats.map((stat,i)=>(
+        <div key={stat.label} className={`landing-stat-live ${active?"is-on":""}`}>
+          <div className="landing-stat-value">{format(stat,values[i])}</div>
+          <div className="landing-stat-pulse"><span/></div>
+          <div className="landing-stat-label">{stat.label}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════
 // LANDING PAGE
 // ═══════════════════════════════════════════
@@ -14839,36 +14920,6 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     io.observe(el);
     return()=>io.disconnect();
   },[taglineOn]);
-  // Stat count-up ONLY. Never touches opacity/visibility, so it can never hide
-  // content. Numbers tick up from zero when the stat band scrolls into view.
-  // Respects prefers-reduced-motion.
-  React.useEffect(()=>{
-    if(typeof window==='undefined'||!('IntersectionObserver'in window))return;
-    if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-    let killed=false;
-    function setup(){
-      if(killed)return;
-      const h1=[].slice.call(document.querySelectorAll('h1')).find(h=>/Casting, finally/i.test(h.textContent));
-      if(!h1){ setTimeout(setup,200); return; }
-      let n=h1; while(n&&n.parentElement&&n.parentElement.children.length<6){ n=n.parentElement; }
-      const stack=n&&n.parentElement; if(!stack)return;
-      const kids=[].slice.call(stack.children);
-      const parse=t=>{ const m=t.trim().match(/^(\D*)([\d.]+)(\D*)$/); return m?{pre:m[1],num:parseFloat(m[2]),suf:m[3],dec:(m[2].split('.')[1]||'').length}:null; };
-      const band=kids.find(k=>/100%/.test(k.textContent)&&/72hr/.test(k.textContent));
-      if(!band)return;
-      [].slice.call(band.querySelectorAll('div')).filter(d=>d.children.length===0&&parseInt(getComputedStyle(d).fontSize)>=30&&parse(d.textContent)).forEach(el=>{
-        if(el.dataset.cu)return; el.dataset.cu='1';
-        const info=parse(el.textContent),to=info.num,final=el.textContent;
-        const o=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ o.unobserve(el); const dur=1200,s=performance.now();
-          (function tk(now){ const t=Math.min((now-s)/dur,1),k=1-Math.pow(1-t,3),v=info.dec?(to*k).toFixed(info.dec):Math.round(to*k);
-            el.textContent=info.pre+v+info.suf; if(t<1)requestAnimationFrame(tk); else el.textContent=final; })(s);
-        } }),{threshold:.5});
-        o.observe(el);
-      });
-    }
-    setup();
-    return ()=>{ killed=true; };
-  },[]);
   // Logged-in-aware destinations — talents go to My Profile / Browse, CDs and
   // admins go to Dashboard / Browse. Replaces the old "Start My 7-Day Free
   // Trial" CTA which was gaslighting existing users.
@@ -14940,7 +14991,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <FeaturedCastingsSlider onViewCasting={onViewCasting} onNavigate={onNavigate} castingsVersion={castingsVersion}/>
 
     {/* ───────── STATS ───────── */}
-    <div style={{display:"flex",justifyContent:"center",gap:"clamp(32px,6vw,80px)",padding:"56px 40px",maxWidth:1200,margin:"0 auto",flexWrap:"wrap"}}>{[["100%","Of submissions reviewed"],["$9.99","/mo · cheapest in casting"],["3.2×","Faster to callback"],["72hr","Avg. response time"]].map(([n,l])=><div key={l} style={{textAlign:"center"}}><div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:42,color:"var(--acc)",letterSpacing:-1}}>{n}</div><div style={{color:"var(--t2)",fontSize:12,marginTop:4,letterSpacing:0.3}}>{l}</div></div>)}</div>
+    <LandingStats/>
 
     {/* ───────── CINEMATIC FEATURE CARD ───────── */}
     <div className="cinema-feature">
