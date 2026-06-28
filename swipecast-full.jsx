@@ -1455,9 +1455,9 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @keyframes mm-breathe{0%,100%{box-shadow:0 0 0 0 rgba(232,144,42,0);background:rgba(232,144,42,.08);}50%{box-shadow:0 0 16px 1px rgba(232,144,42,.50);background:rgba(232,144,42,.16);}}
 @media(prefers-reduced-motion:reduce){.nav-links span.mm-attn{animation:none;}.mm-live-hero *,.mm-live-hero *::before,.mm-live-hero *::after{animation:none!important;}.mm-live-preview{width:auto;}.mm-live-message{clip-path:none;}.mm-live-card,.mm-live-task{opacity:1;transform:none;}.mm-live-cursor,.mm-restart-cursor,.mm-click-ring,.mm-logo-click-ring,.mm-spark{display:none!important;}}
 /* Free-plan upgrade stripe (ActivateMembershipBanner) — darker purple, centered full-width text, ghost CTA (fills black on hover) w/ shimmer, twinkling star */
-.mb-msg{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;text-align:center;font-size:13px;font-weight:700;color:#fff;letter-spacing:0.2px;padding:0 24px;}
+.mb-msg{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;text-align:center;font-size:12px;font-weight:800;color:#fff8eb;letter-spacing:0.1px;padding:0 16px;}
 .mb-text-short{display:none;}
-.mb-star{display:inline-block;color:#E8B65A;font-size:15px;line-height:1;transform-origin:center;animation:mb-glint 3.6s ease-in-out infinite;flex-shrink:0;}
+.mb-star{display:inline-block;color:#FFD77A;font-size:15px;line-height:1;transform-origin:center;animation:mb-glint 3.6s ease-in-out infinite;flex-shrink:0;filter:drop-shadow(0 0 7px rgba(255,215,122,.78));}
 .mb-cta{position:absolute;right:14px;top:50%;transform:translateY(-50%);overflow:hidden;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:6px 15px;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;background:transparent;color:#fff;transition:background .2s,border-color .2s,color .2s;}
 .mb-cta .mb-arr{display:inline-block;transition:transform .25s;}
 .mb-cta:hover{background:#15162B;border-color:#15162B;color:#fff;}
@@ -2695,13 +2695,13 @@ function ActivateMembershipBanner({myProfile,onNavigate}){
     onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onNavigate&&onNavigate("membership");}}}
     style={{
       position:"relative",width:"100%",cursor:"pointer",
-      background:"#37696A",color:"#fff",fontFamily:"'DM Sans',sans-serif",
-      padding:"5px 18px",minHeight:34,
+      background:"linear-gradient(180deg,#C46F79 0%,#A94F5C 100%)",color:"#fff8eb",fontFamily:"'DM Sans',sans-serif",
+      padding:"0 18px",minHeight:24,height:24,
       display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",
       boxShadow:"0 1px 0 rgba(0,0,0,0.15)"
     }}>
     <span className="mb-msg">
-      <span className="mb-star" aria-hidden="true"><Ico n="star" s={24}/></span>
+      <span className="mb-star" aria-hidden="true"><Ico n="star" s={17}/></span>
       <span className="mb-text-full">Get seen more — unlock unlimited submissions, Slate Video, Business Card &amp; Manager Mode</span>
       <span className="mb-text-short">Unlock unlimited submissions</span>
     </span>
