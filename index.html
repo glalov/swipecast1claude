@@ -79,15 +79,15 @@
       };
     }
   </script>
-  <!-- BUILD: 20260627-220114 -->
-  <meta name="build-version" content="20260627-220114"/>
+  <!-- BUILD: 20260628-153943 -->
+  <meta name="build-version" content="20260628-153943"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260627-220114";
+        var B="20260628-153943";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -142,6 +142,14 @@
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
       -webkit-animation:cs-bg-down 1s cubic-bezier(.6,0,.2,1) 2.75s forwards;animation:cs-bg-down 1s cubic-bezier(.6,0,.2,1) 2.75s forwards;
     }
+    /* Counter-moving holder: it rises at the exact speed the curtain (#cs-intro-bg)
+       falls, so the logo stays perfectly still on screen while the curtain's
+       overflow:hidden edge cuts down through it. Logo never travels with the curtain. */
+    #cs-intro .cs-intro-hold{
+      position:absolute;top:0;right:0;bottom:0;left:0;
+      display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
+      -webkit-animation:cs-mark-up 1s cubic-bezier(.6,0,.2,1) 2.75s forwards;animation:cs-mark-up 1s cubic-bezier(.6,0,.2,1) 2.75s forwards;
+    }
     #cs-intro .cs-intro-mark{
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:16px;
       opacity:0;-webkit-transform:translateY(10px) scale(.965);transform:translateY(10px) scale(.965);
@@ -155,18 +163,26 @@
     @keyframes cs-mark-out{to{opacity:0;}}
     @-webkit-keyframes cs-bg-down{to{-webkit-transform:translateY(101%);transform:translateY(101%);}}
     @keyframes cs-bg-down{to{-webkit-transform:translateY(101%);transform:translateY(101%);}}
+    @-webkit-keyframes cs-mark-up{to{-webkit-transform:translateY(-101%);transform:translateY(-101%);}}
+    @keyframes cs-mark-up{to{-webkit-transform:translateY(-101%);transform:translateY(-101%);}}
     @-webkit-keyframes cs-spin{from{-webkit-transform:rotate(0);transform:rotate(0);}to{-webkit-transform:rotate(360deg);transform:rotate(360deg);}}
     @keyframes cs-spin{from{-webkit-transform:rotate(0);transform:rotate(0);}to{-webkit-transform:rotate(360deg);transform:rotate(360deg);}}
     @media (prefers-reduced-motion: reduce){#cs-intro{display:none;}}
   </style>
 </head>
 <body>
-  <!-- Intro reveal — logo holds on black, then the black panel slides down at an even pace through the (static) logo to reveal the site (~3s). Plays on every page load. -->
+  <!-- Intro reveal — logo fades in & the cube spins, then the black curtain (#cs-intro-bg)
+       slides down at an even pace. The logo sits in a counter-moving holder so it stays
+       perfectly still; the curtain's clipping edge cuts down through the logo, wiping it
+       away top-down (no fade, no movement) while revealing the site (~3s). The whole
+       overlay is removed from the DOM afterward so nothing can linger. Plays on every page load. -->
   <div id="cs-intro" aria-hidden="true">
     <div id="cs-intro-bg">
-      <div class="cs-intro-mark">
-        <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="74" height="74" style="display:block;width:100%;height:100%"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
-        <span class="cs-intro-name">CastSlate</span>
+      <div class="cs-intro-hold">
+        <div class="cs-intro-mark">
+          <div class="cs-intro-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="74" height="74" style="display:block;width:100%;height:100%"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg></div>
+          <span class="cs-intro-name">CastSlate</span>
+        </div>
       </div>
     </div>
   </div>
@@ -304,6 +320,6 @@
       })();
     })();
   </script>
-  <script src="/app.js?v=20260627-220114"></script>
+  <script src="/app.js?v=20260628-153943"></script>
 </body>
 </html>
