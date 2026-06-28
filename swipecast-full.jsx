@@ -4280,6 +4280,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
   const [filter,setFilter]=useState("all");
   const [viewing,setViewing]=useState(null); // class object
   const [sessionFilter,setSessionFilter]=useState("all");
+  const [weekOffset,setWeekOffset]=useState(0); // weekly-grid pager (0 = current week)
   const [bookingTarget,setBookingTarget]=useState(null); // {cls,slot,date}
   const [bookedSessions,setBookedSessions]=useState(new Set()); // "slotId_date" keys for booked occurrences
   const [myBookingRequest,setMyBookingRequest]=useState(null); // approved booking for current class
@@ -4414,9 +4415,12 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
     const isOnlineClass=viewing.format&&/online|virtual|zoom/i.test(viewing.format);
     const hasHeroMedia=(viewing.image_url||(Array.isArray(viewing.instructor_poster_urls)&&viewing.instructor_poster_urls.length>0));
 
-    // Build sorted list of all upcoming occurrences across all slots
+    // Build sorted list of all upcoming occurrences across all slots.
+    // 8-week window = current month + following month, so a recurring weekly
+    // schedule "auto-renews" forward indefinitely with no monthly job.
+    const PROJECT_WEEKS=8;
     const allSessions=clsSlots.flatMap(slot=>
-      upcomingDates(slot.day_of_week,4).map(date=>({slot,date}))
+      upcomingDates(slot.day_of_week,PROJECT_WEEKS).map(date=>({slot,date}))
     ).sort((a,b)=>a.date-b.date);
 
     const SESSION_FILTERS=[
@@ -4442,7 +4446,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
     const hasLocation=!!(viewing.location_name||viewing.location_city_state||viewing.location_room||((isOnlineClass||viewing.online_note)&&viewing.online_note));
 
     return(<div className="page">
-      <button className="btn-s btn-sm mb-20" onClick={()=>{setViewing(null);setSessionFilter("all");window.scrollTo(0,0);}}>{t('classes.backToClasses')}</button>
+      <button className="btn-s btn-sm mb-20" onClick={()=>{setViewing(null);setSessionFilter("all");setWeekOffset(0);window.scrollTo(0,0);}}>{t('classes.backToClasses')}</button>
       {/* Complete Payment banner — shown when the user has an approved booking and the class has a price */}
       {myBookingRequest&&myBookingRequest.status==="approved"&&myBookingRequest.payment_status!=="paid"&&(viewing.price||viewing.sale_price)&&(
         <div style={{marginBottom:20,padding:20,background:"linear-gradient(135deg,rgba(26,107,66,0.10),rgba(30,128,80,0.05))",border:"1px solid rgba(26,107,66,0.30)",borderRadius:14,display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
@@ -4568,7 +4572,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
               {SESSION_FILTERS.map(f=>(
                 <button key={f.id} className="btn-s btn-sm"
                   style={sessionFilter===f.id?{background:"var(--acc)",color:"#fff",borderColor:"var(--acc)"}:{}}
-                  onClick={()=>setSessionFilter(f.id)}>{f.label}</button>
+                  onClick={()=>{setSessionFilter(f.id);setWeekOffset(0);}}>{f.label}</button>
               ))}
             </div>
           </div>
@@ -4578,7 +4582,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
               <p style={{color:"var(--t2)",fontSize:14,margin:0}}>{t('classes.noSessionsMatch')}</p>
             </div>
           ):(()=>{
-            // Group sessions by date
+            // Group sessions by date (shared by both layouts)
             const dateGroups=[];
             const seenDates={};
             for(const {slot,date} of filteredSessions){
@@ -4586,45 +4590,104 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
               if(seenDates[dateStr]===undefined){seenDates[dateStr]=dateGroups.length;dateGroups.push({date,dateStr,entries:[]});}
               dateGroups[seenDates[dateStr]].entries.push({slot,date});
             }
-            return(
-              <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                {dateGroups.map(({date,dateStr,entries})=>{
-                  const fullDate=date.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
-                  return(
-                    <div key={dateStr} style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,boxShadow:"0 1px 4px rgba(0,0,0,0.06)",overflow:"hidden"}}>
-                      {/* ── Date header ── */}
-                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 18px",borderBottom:"1px solid var(--bdr)",background:"var(--s2)"}}>
-                        <div style={{fontWeight:700,fontSize:15,color:"var(--t1)"}}>{fullDate}</div>
-                        <span style={{flexShrink:0,marginLeft:8,fontSize:10,fontWeight:700,letterSpacing:0.4,padding:"3px 9px",borderRadius:20,whiteSpace:"nowrap",background:isOnlineClass?"rgba(99,102,241,0.09)":"rgba(34,197,94,0.09)",color:isOnlineClass?"var(--acc)":"#15803d",border:isOnlineClass?"1px solid rgba(99,102,241,0.22)":"1px solid rgba(34,197,94,0.22)"}}>{locationLabel}</span>
+            const renderPrice=()=>hasSale?(
+              <><span style={{color:"#e74c3c"}}>{viewing.sale_price}</span>{" "}<span style={{fontSize:11,color:"var(--t3)",textDecoration:"line-through",fontWeight:400}}>{viewing.price}</span></>
+            ):(viewing.price||"");
+            const locationPill=(
+              <span style={{flexShrink:0,fontSize:10,fontWeight:700,letterSpacing:0.4,padding:"3px 9px",borderRadius:20,whiteSpace:"nowrap",background:isOnlineClass?"rgba(99,102,241,0.09)":"rgba(34,197,94,0.09)",color:isOnlineClass?"var(--acc)":"#15803d",border:isOnlineClass?"1px solid rgba(99,102,241,0.22)":"1px solid rgba(34,197,94,0.22)"}}>{locationLabel}</span>
+            );
+
+            // ── Mobile: stacked date cards ──
+            if(isNarrow){
+              return(
+                <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                  {dateGroups.map(({date,dateStr,entries})=>{
+                    const fullDate=date.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+                    return(
+                      <div key={dateStr} style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,boxShadow:"0 1px 4px rgba(0,0,0,0.06)",overflow:"hidden"}}>
+                        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 18px",borderBottom:"1px solid var(--bdr)",background:"var(--s2)"}}>
+                          <div style={{fontWeight:700,fontSize:15,color:"var(--t1)"}}>{fullDate}</div>
+                          {locationPill}
+                        </div>
+                        {entries.map(({slot},idx)=>{
+                          const isBooked=bookedSessions.has(`${slot.id}_${dateStr}`);
+                          return(
+                            <React.Fragment key={slot.id}>
+                              {idx>0&&<div style={{height:1,background:"var(--bdr)",margin:"0 18px"}}/>}
+                              <div className="cls-slot-row" style={{opacity:isBooked?0.6:1}}>
+                                <div style={{flex:1,minWidth:0}}>
+                                  <div style={{fontSize:15,fontWeight:700,color:"var(--t1)"}}>{fmtTime(slot.start_time)} – {fmtTime(slot.end_time)}</div>
+                                  {slot.note&&<div style={{fontSize:11,color:"var(--t2)",marginTop:2,lineHeight:1.4}}>{slot.note}</div>}
+                                </div>
+                                <div style={{fontSize:13,fontWeight:700,color:"var(--t1)",flexShrink:0}}>{renderPrice()}</div>
+                                {isBooked?(
+                                  <div className="slot-btn" style={{fontSize:11,fontWeight:700,padding:"6px 12px",borderRadius:8,background:"rgba(192,57,43,0.07)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.18)",flexShrink:0,whiteSpace:"nowrap"}}>{t('classes.fullyBooked')}</div>
+                                ):(
+                                  <button className="btn-p btn-sm slot-btn" style={{whiteSpace:"nowrap",flexShrink:0}} onClick={()=>handleRequestBooking(viewing,slot,date)}>{t('classes.requestBooking')}</button>
+                                )}
+                              </div>
+                            </React.Fragment>
+                          );
+                        })}
                       </div>
-                      {/* ── Time slot rows ── */}
-                      {entries.map(({slot},idx)=>{
+                    );
+                  })}
+                </div>
+              );
+            }
+
+            // ── Desktop: weekly grid with a week pager ──
+            // Bucket dateGroups into weeks (week starts Monday).
+            const weekStartOf=(d)=>{const x=new Date(d);x.setHours(0,0,0,0);const day=x.getDay();x.setDate(x.getDate()+(day===0?-6:1-day));return x;};
+            const weeks=[];const seenW={};
+            for(const g of dateGroups){
+              const ws=weekStartOf(g.date);const wk=ws.toISOString().split("T")[0];
+              if(seenW[wk]===undefined){seenW[wk]=weeks.length;weeks.push({weekStart:ws,key:wk,days:[]});}
+              weeks[seenW[wk]].days.push(g);
+            }
+            const wi=Math.min(Math.max(weekOffset,0),weeks.length-1);
+            const cur=weeks[wi];
+            const weekEnd=cur.days[cur.days.length-1].date;
+            const rangeLabel=`${cur.weekStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${weekEnd.toLocaleDateString("en-US",{month:"short",day:"numeric"})}`;
+            return(
+              <div>
+                {/* ── Week pager ── */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,marginBottom:16}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <button className="btn-s btn-sm" disabled={wi<=0} style={{opacity:wi<=0?0.4:1,padding:"6px 11px"}} onClick={()=>setWeekOffset(wi-1)} aria-label="Previous week">←</button>
+                    <span style={{fontSize:14,fontWeight:700,color:"var(--t1)",minWidth:150,textAlign:"center"}}>{rangeLabel}</span>
+                    <button className="btn-s btn-sm" disabled={wi>=weeks.length-1} style={{opacity:wi>=weeks.length-1?0.4:1,padding:"6px 11px"}} onClick={()=>setWeekOffset(wi+1)} aria-label="Next week">→</button>
+                  </div>
+                  {locationPill}
+                </div>
+                {/* ── Weekday columns ── */}
+                <div style={{display:"grid",gridTemplateColumns:`repeat(${cur.days.length},minmax(0,1fr))`,gap:10}}>
+                  {cur.days.map(({date,dateStr,entries})=>(
+                    <div key={dateStr} style={{minWidth:0}}>
+                      <div style={{padding:"0 0 8px",borderBottom:"1px solid var(--bdr)",marginBottom:10}}>
+                        <div style={{fontSize:13,fontWeight:700,color:"var(--t1)"}}>{date.toLocaleDateString("en-US",{weekday:"short"})}</div>
+                        <div style={{fontSize:11,color:"var(--t2)"}}>{date.toLocaleDateString("en-US",{month:"short",day:"numeric"})}</div>
+                      </div>
+                      {entries.map(({slot})=>{
                         const isBooked=bookedSessions.has(`${slot.id}_${dateStr}`);
                         return(
-                          <React.Fragment key={slot.id}>
-                            {idx>0&&<div style={{height:1,background:"var(--bdr)",margin:"0 18px"}}/>}
-                            <div className="cls-slot-row" style={{opacity:isBooked?0.6:1}}>
-                              <div style={{flex:1,minWidth:0}}>
-                                <div style={{fontSize:15,fontWeight:700,color:"var(--t1)"}}>{fmtTime(slot.start_time)} – {fmtTime(slot.end_time)}</div>
-                                {slot.note&&<div style={{fontSize:11,color:"var(--t2)",marginTop:2,lineHeight:1.4}}>{slot.note}</div>}
-                              </div>
-                              <div style={{fontSize:13,fontWeight:700,color:"var(--t1)",flexShrink:0}}>
-                                {hasSale?(
-                                  <><span style={{color:"#e74c3c"}}>{viewing.sale_price}</span>{" "}<span style={{fontSize:11,color:"var(--t3)",textDecoration:"line-through",fontWeight:400}}>{viewing.price}</span></>
-                                ):(viewing.price||"")}
-                              </div>
-                              {isBooked?(
-                                <div className="slot-btn" style={{fontSize:11,fontWeight:700,padding:"6px 12px",borderRadius:8,background:"rgba(192,57,43,0.07)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.18)",flexShrink:0,whiteSpace:"nowrap"}}>{t('classes.fullyBooked')}</div>
-                              ):(
-                                <button className="btn-p btn-sm slot-btn" style={{whiteSpace:"nowrap",flexShrink:0}} onClick={()=>handleRequestBooking(viewing,slot,date)}>{t('classes.requestBooking')}</button>
-                              )}
-                            </div>
-                          </React.Fragment>
+                          <button key={slot.id} disabled={isBooked} onClick={()=>handleRequestBooking(viewing,slot,date)}
+                            title={isBooked?t('classes.fullyBooked'):t('classes.requestBooking')}
+                            style={{display:"block",width:"100%",textAlign:"left",marginBottom:8,padding:"9px 10px",borderRadius:9,cursor:isBooked?"default":"pointer",fontFamily:"inherit",opacity:isBooked?0.55:1,background:"var(--s1)",border:`1px solid ${isBooked?"var(--bdr)":"rgba(99,102,241,0.28)"}`}}>
+                            <div style={{fontSize:13,fontWeight:700,color:"var(--t1)",lineHeight:1.25}}>{fmtTime(slot.start_time)}</div>
+                            <div style={{fontSize:10.5,color:"var(--t2)",marginBottom:5}}>– {fmtTime(slot.end_time)}</div>
+                            {isBooked?(
+                              <div style={{fontSize:10.5,fontWeight:700,color:"#c0392b"}}>{t('classes.fullyBooked')}</div>
+                            ):(
+                              <div style={{fontSize:11.5,fontWeight:700,color:"var(--acc)"}}>{renderPrice()}</div>
+                            )}
+                            {slot.note&&!isBooked&&<div style={{fontSize:10,color:"var(--t3)",marginTop:3,lineHeight:1.35}}>{slot.note}</div>}
+                          </button>
                         );
                       })}
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
             );
           })()}
@@ -5395,10 +5458,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
   },[]);
 
   const CSLogo=({size=36,className=""})=>(
-    <div className={className} style={{width:size,height:size,background:"rgba(255,255,255,0.13)",borderRadius:Math.round(size*0.24),display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:"1px solid rgba(255,255,255,0.2)"}}>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={Math.round(size*0.58)} height={Math.round(size*0.58)}>
-        <path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/>
-      </svg>
+    <div className={className} style={{width:size,height:size,background:"rgba(255,255,255,0.13)",borderRadius:Math.round(size*0.24),display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:"1px solid rgba(255,255,255,0.2)",color:"#fff",overflow:"hidden"}}>
+      <LogoMark/>
     </div>
   );
 
@@ -5439,10 +5500,10 @@ function ManagerModePage({onNavigate,session,myProfile}){
           {["Career Team","This week","Profile Tips"].map((lbl,i)=>(
             <span key={lbl} className={!mobile&&i===0?"mm-live-tab":""} style={{display:"inline-block",padding:pd("8px 16px","6px 11px"),fontSize:fs(11,9),fontWeight:i===0?700:500,color:i===0?"#1A1A2E":"#8E8EA0",borderBottom:i===0?"2px solid #1A1A2E":"2px solid transparent",cursor:"pointer"}}>{lbl}</span>
           ))}
-        </div>
-        <div style={{padding:pd("14px 18px","10px 13px"),borderBottom:"1px solid #EDEDF0",background:"rgba(26,26,46,0.025)",display:"flex",alignItems:"flex-start",gap:mobile?8:10}}>
-          <div style={{width:mobile?28:34,height:mobile?28:34,borderRadius:"50%",background:"#1A1A2E",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 2px 8px rgba(26,26,46,0.25)"}}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={mobile?14:17} height={mobile?14:17}><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg>
+          </div>
+          <div style={{padding:pd("14px 18px","10px 13px"),borderBottom:"1px solid #EDEDF0",background:"rgba(26,26,46,0.025)",display:"flex",alignItems:"flex-start",gap:mobile?8:10}}>
+            <div style={{width:mobile?28:34,height:mobile?28:34,borderRadius:"50%",background:"#1A1A2E",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 2px 8px rgba(26,26,46,0.25)"}}>
+            <span style={{display:"block",width:mobile?22:27,height:mobile?22:27,color:"#fff"}}><LogoMark/></span>
           </div>
           <div style={{flex:1,minWidth:0}}>
             <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
@@ -5534,8 +5595,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
     {/* ══════ PERSONAL ATTENTION ══════ */}
     <section style={{padding:"clamp(48px,7vw,80px) clamp(16px,5vw,40px)",background:"var(--s1)",borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)"}}>
       <div style={{maxWidth:900,margin:"0 auto",display:"flex",alignItems:"center",gap:"clamp(20px,4vw,48px)",flexWrap:"wrap",justifyContent:"center"}}>
-        <div style={{flexShrink:0,width:56,height:56,borderRadius:14,background:"#1A1A2E",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 8px 24px rgba(26,26,46,0.18)"}}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg>
+        <div style={{flexShrink:0,width:56,height:56,borderRadius:14,background:"#1A1A2E",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 8px 24px rgba(26,26,46,0.18)",color:"#fff",overflow:"hidden"}}>
+          <LogoMark/>
         </div>
         <div style={{flex:"1 1 260px",minWidth:0,textAlign:"left"}}>
           <h3 style={{fontWeight:800,fontSize:"clamp(18px,2.5vw,26px)",letterSpacing:-0.8,marginBottom:10,lineHeight:1.2}}>Your profile doesn't sit in a pile.</h3>
@@ -5579,7 +5640,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
       {/* Actor profile card with real photo */}
       <div className="mm-card-outer" style={{maxWidth:700,margin:"0 auto",background:"#fff",border:"1px solid var(--bdr)",borderRadius:20,overflow:"hidden",boxShadow:"0 8px 32px rgba(26,26,46,0.07)"}}>
         <div style={{background:"linear-gradient(135deg,#1A1A2E,#16213e)",padding:"14px 20px",display:"flex",alignItems:"center",gap:8}}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="16" height="16"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg>
+          <span style={{display:"block",width:16,height:16,color:"#fff",flexShrink:0}}><LogoMark/></span>
           <span style={{color:"rgba(255,255,255,0.7)",fontSize:12,fontWeight:600,letterSpacing:0.3}}>Cast Slate — Manager Mode Profile View</span>
         </div>
         <div style={{padding:"clamp(16px,3vw,28px)",display:"flex",gap:"clamp(16px,3vw,24px)",alignItems:"flex-start",flexWrap:"wrap"}}>
@@ -5699,8 +5760,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
                     {/* Name + info */}
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
-                        <div style={{width:16,height:16,background:"#1A1A2E",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="10" height="10"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg>
+                        <div style={{width:16,height:16,background:"#1A1A2E",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:"#fff",overflow:"hidden"}}>
+                          <LogoMark/>
                         </div>
                         <span style={{fontSize:8,fontWeight:700,color:"#8E8EA0",letterSpacing:1,textTransform:"uppercase"}}>CastSlate</span>
                       </div>
@@ -5748,8 +5809,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
         <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 50% 0%,rgba(99,102,241,0.18) 0%,transparent 60%)",pointerEvents:"none"}}/>
         <div style={{position:"relative"}}>
           <div style={{display:"flex",justifyContent:"center",marginBottom:20}}>
-            <div style={{width:52,height:52,background:"rgba(255,255,255,0.08)",borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",border:"1px solid rgba(255,255,255,0.14)"}}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="26" height="26"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg>
+            <div style={{width:52,height:52,background:"rgba(255,255,255,0.08)",borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",border:"1px solid rgba(255,255,255,0.14)",color:"#fff",overflow:"hidden"}}>
+              <LogoMark/>
             </div>
           </div>
           <div style={{display:"inline-block",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.14)",color:"rgba(255,255,255,0.8)",fontSize:10,fontWeight:800,letterSpacing:2,padding:"5px 14px",borderRadius:100,marginBottom:18,textTransform:"uppercase"}}>Included With Premium</div>
