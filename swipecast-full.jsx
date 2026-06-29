@@ -2328,6 +2328,7 @@ html,body{overflow-x:hidden;}
    natural ratio (width:100%/height:auto) — never cropped, no bars. Copy right. */
 .hiw-card-img{line-height:0;}
 .hiw-card-img img{width:100%;height:auto;display:block;border-radius:14px;}
+.hiw-card-img video{width:100%;aspect-ratio:16/9;height:auto;display:block;border-radius:14px;object-fit:cover;background:var(--s3);}
 .hiw-card-body{padding:6px clamp(4px,1vw,14px) 6px 0;display:flex;flex-direction:column;justify-content:center;gap:14px;}
 .hiw-card-steps{display:flex;flex-direction:column;gap:10px;margin:4px 0;}
 .hiw-card-step{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--t2);line-height:1.5;}
@@ -15102,7 +15103,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="hiw-card">
       <div className="hiw-card-inner">
         <div className="hiw-card-img">
-          <img src="https://images.pexels.com/photos/4612886/pexels-photo-4612886.jpeg?auto=compress&cs=tinysrgb&w=1600" alt="Single actor performing in front of a film camera during a casting screen test" loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+          <video src="/assets/video/casting-director-set.mp4" poster="/assets/video/casting-director-set-poster.jpg" aria-label="Realistic stock footage of a filmmaker recording on a professional set with lights and camera equipment" autoPlay muted loop playsInline preload="metadata" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
         </div>
         <div className="hiw-card-body">
           <p style={{fontSize:10,letterSpacing:1.8,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,margin:0,fontFamily:"'DM Sans',sans-serif"}}>For Casting Directors</p>
