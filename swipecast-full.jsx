@@ -2375,6 +2375,26 @@ html,body{overflow-x:hidden;}
 @keyframes homeCtaDetailRight{0%{transform:translateX(280px);clip-path:inset(0 0 0 100%);}62%{transform:translateX(-8px);clip-path:inset(0 0 0 0);}100%{transform:translateX(0);clip-path:inset(0 0 0 0);}}
 @keyframes homeCtaDetailBottom{0%{transform:translateY(170px);clip-path:inset(100% 0 0 0);}62%{transform:translateY(-8px);clip-path:inset(0 0 0 0);}100%{transform:translateY(0);clip-path:inset(0 0 0 0);}}
 @media (prefers-reduced-motion:reduce){.home-cta-construct:not(.is-in) .home-cta-inner,.home-cta-construct:not(.is-in) .home-cta-eyebrow,.home-cta-construct:not(.is-in) .home-cta-inner h2,.home-cta-construct:not(.is-in) .home-cta-lede,.home-cta-construct:not(.is-in) .home-cta-primary,.home-cta-construct:not(.is-in) .home-cta-sub{transform:none;clip-path:none;}.home-cta-construct.is-in .home-cta-inner,.home-cta-construct.is-in .home-cta-eyebrow,.home-cta-construct.is-in .home-cta-inner h2,.home-cta-construct.is-in .home-cta-lede,.home-cta-construct.is-in .home-cta-primary,.home-cta-construct.is-in .home-cta-sub{animation:none;}}
+.guarantee-construct{overflow:hidden;}
+.guarantee-card-construct{will-change:transform;}
+.guarantee-construct:not(.is-in) .guarantee-card-construct{transform:translateX(-115%) scale(.98);}
+.guarantee-construct:not(.is-in) .guarantee-glow-left,.guarantee-construct:not(.is-in) .guarantee-title{transform:translateX(-220px);clip-path:inset(0 100% 0 0);}
+.guarantee-construct:not(.is-in) .guarantee-glow-right,.guarantee-construct:not(.is-in) .guarantee-rule{transform:translateX(220px);clip-path:inset(0 0 0 100%);}
+.guarantee-construct:not(.is-in) .guarantee-badge{transform:translateY(-120px);clip-path:inset(0 0 100% 0);}
+.guarantee-construct:not(.is-in) .guarantee-copy{transform:translateY(140px);clip-path:inset(100% 0 0 0);}
+.guarantee-construct.is-in .guarantee-card-construct{animation:guaranteeCardLeftIn .76s cubic-bezier(.18,.86,.24,1) backwards;}
+.guarantee-construct.is-in .guarantee-glow-left{animation:guaranteeDetailLeft .62s .65s cubic-bezier(.18,.86,.24,1) backwards;}
+.guarantee-construct.is-in .guarantee-glow-right{animation:guaranteeDetailRight .62s .72s cubic-bezier(.18,.86,.24,1) backwards;}
+.guarantee-construct.is-in .guarantee-badge{animation:guaranteeDetailTop .56s .78s cubic-bezier(.18,.86,.24,1) backwards;}
+.guarantee-construct.is-in .guarantee-title{animation:guaranteeDetailLeft .64s .9s cubic-bezier(.18,.86,.24,1) backwards;}
+.guarantee-construct.is-in .guarantee-rule{animation:guaranteeDetailRight .62s 1.04s cubic-bezier(.18,.86,.24,1) backwards;}
+.guarantee-construct.is-in .guarantee-copy{animation:guaranteeDetailBottom .66s 1.16s cubic-bezier(.18,.86,.24,1) backwards;}
+@keyframes guaranteeCardLeftIn{0%{transform:translateX(-115%) scale(.98);}72%{transform:translateX(10px) scale(.98);}100%{transform:translateX(0) scale(1);}}
+@keyframes guaranteeDetailLeft{0%{transform:translateX(-220px);clip-path:inset(0 100% 0 0);}62%{transform:translateX(8px);clip-path:inset(0 0 0 0);}100%{transform:translateX(0);clip-path:inset(0 0 0 0);}}
+@keyframes guaranteeDetailRight{0%{transform:translateX(220px);clip-path:inset(0 0 0 100%);}62%{transform:translateX(-8px);clip-path:inset(0 0 0 0);}100%{transform:translateX(0);clip-path:inset(0 0 0 0);}}
+@keyframes guaranteeDetailTop{0%{transform:translateY(-120px);clip-path:inset(0 0 100% 0);}62%{transform:translateY(7px);clip-path:inset(0 0 0 0);}100%{transform:translateY(0);clip-path:inset(0 0 0 0);}}
+@keyframes guaranteeDetailBottom{0%{transform:translateY(140px);clip-path:inset(100% 0 0 0);}62%{transform:translateY(-8px);clip-path:inset(0 0 0 0);}100%{transform:translateY(0);clip-path:inset(0 0 0 0);}}
+@media (prefers-reduced-motion:reduce){.guarantee-construct:not(.is-in) .guarantee-card-construct,.guarantee-construct:not(.is-in) .guarantee-glow-left,.guarantee-construct:not(.is-in) .guarantee-glow-right,.guarantee-construct:not(.is-in) .guarantee-badge,.guarantee-construct:not(.is-in) .guarantee-title,.guarantee-construct:not(.is-in) .guarantee-rule,.guarantee-construct:not(.is-in) .guarantee-copy{transform:none;clip-path:none;}.guarantee-construct.is-in .guarantee-card-construct,.guarantee-construct.is-in .guarantee-glow-left,.guarantee-construct.is-in .guarantee-glow-right,.guarantee-construct.is-in .guarantee-badge,.guarantee-construct.is-in .guarantee-title,.guarantee-construct.is-in .guarantee-rule,.guarantee-construct.is-in .guarantee-copy{animation:none;}}
 @media(max-width:640px){
   .home-cta-sub{flex-direction:column;gap:14px;}
   .home-cta-sub .txt{text-align:center;align-items:center;}
@@ -14980,6 +15000,18 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     io.observe(el);
     return()=>io.disconnect();
   },[]);
+  const guaranteeRef=React.useRef(null);
+  const[guaranteeIn,setGuaranteeIn]=React.useState(false);
+  React.useEffect(()=>{
+    const el=guaranteeRef.current;
+    if(!el)return;
+    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches){setGuaranteeIn(true);return;}
+    const io=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{if(e.isIntersecting){setGuaranteeIn(true);io.disconnect();}});
+    },{threshold:0.32,rootMargin:"0px 0px -10% 0px"});
+    io.observe(el);
+    return()=>io.disconnect();
+  },[]);
   // Logged-in-aware destinations — talents go to My Profile / Browse, CDs and
   // admins go to Dashboard / Browse. Replaces the old "Start My 7-Day Free
   // Trial" CTA which was gaslighting existing users.
@@ -15079,24 +15111,24 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </div>
 
     {/* ───────── THE GUARANTEE ───────── */}
-    <div style={{maxWidth:880,margin:"24px auto 64px",padding:"0 24px"}}>
-      <div style={{position:"relative",overflow:"hidden",background:"#fff",border:"1px solid var(--bdr)",borderRadius:24,padding:"clamp(36px,5vw,60px) clamp(24px,5vw,52px)",textAlign:"center",boxShadow:"0 24px 60px -36px rgba(26,26,46,.35),0 2px 8px rgba(26,26,46,.05)"}}>
+    <div ref={guaranteeRef} className={`guarantee-construct${guaranteeIn?" is-in":""}`} style={{maxWidth:880,margin:"24px auto 64px",padding:"0 24px"}}>
+      <div className="guarantee-card-construct" style={{position:"relative",overflow:"hidden",background:"#fff",border:"1px solid var(--bdr)",borderRadius:24,padding:"clamp(36px,5vw,60px) clamp(24px,5vw,52px)",textAlign:"center",boxShadow:"0 24px 60px -36px rgba(26,26,46,.35),0 2px 8px rgba(26,26,46,.05)"}}>
         {/* colorful glow blobs */}
-        <span style={{position:"absolute",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle,rgba(79,138,139,.22),transparent 70%)",top:-110,left:-50,pointerEvents:"none"}}/>
-        <span style={{position:"absolute",width:280,height:280,borderRadius:"50%",background:"radial-gradient(circle,rgba(232,144,42,.20),transparent 70%)",bottom:-100,right:-40,pointerEvents:"none"}}/>
-        <div style={{position:"relative",display:"inline-flex",alignItems:"center",gap:7,background:"linear-gradient(135deg,#5C9FA0,#3B6E6F)",color:"#fff",fontSize:10.5,fontWeight:800,letterSpacing:1.5,padding:"6px 14px",borderRadius:100,marginBottom:22,fontFamily:"'DM Sans',sans-serif",boxShadow:"0 8px 18px -8px rgba(79,138,139,.6)"}}>
+        <span className="guarantee-glow-left" style={{position:"absolute",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle,rgba(79,138,139,.22),transparent 70%)",top:-110,left:-50,pointerEvents:"none"}}/>
+        <span className="guarantee-glow-right" style={{position:"absolute",width:280,height:280,borderRadius:"50%",background:"radial-gradient(circle,rgba(232,144,42,.20),transparent 70%)",bottom:-100,right:-40,pointerEvents:"none"}}/>
+        <div className="guarantee-badge" style={{position:"relative",display:"inline-flex",alignItems:"center",gap:7,background:"linear-gradient(135deg,#5C9FA0,#3B6E6F)",color:"#fff",fontSize:10.5,fontWeight:800,letterSpacing:1.5,padding:"6px 14px",borderRadius:100,marginBottom:22,fontFamily:"'DM Sans',sans-serif",boxShadow:"0 8px 18px -8px rgba(79,138,139,.6)"}}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z"/><path d="M9 12l2 2 4-4"/></svg>
           THE CASTSLATE GUARANTEE
         </div>
-        <h3 style={{position:"relative",fontFamily:"'Source Serif 4',serif",fontWeight:700,fontSize:"clamp(30px,4.8vw,48px)",letterSpacing:-0.5,lineHeight:1.08,margin:0}}>Your headshot gets <span style={{background:"linear-gradient(90deg,var(--teal),var(--amber))",WebkitBackgroundClip:"text",backgroundClip:"text",color:"transparent"}}>seen.</span> Period.</h3>
-        <div style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center",gap:14,maxWidth:520,margin:"26px auto 24px"}}>
+        <h3 className="guarantee-title" style={{position:"relative",fontFamily:"'Source Serif 4',serif",fontWeight:700,fontSize:"clamp(30px,4.8vw,48px)",letterSpacing:-0.5,lineHeight:1.08,margin:0}}>Your headshot gets <span style={{background:"linear-gradient(90deg,var(--teal),var(--amber))",WebkitBackgroundClip:"text",backgroundClip:"text",color:"transparent"}}>seen.</span> Period.</h3>
+        <div className="guarantee-rule" style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center",gap:14,maxWidth:520,margin:"26px auto 24px"}}>
           <span style={{flex:1,height:2,borderRadius:2,background:"linear-gradient(90deg,rgba(79,138,139,0) 0%,rgba(79,138,139,.55) 100%)"}}/>
           <span style={{flexShrink:0,display:"inline-flex"}}>
             <svg width="40" height="40" viewBox="0 0 24 24"><defs><linearGradient id="guarantee-shield" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#4F8A8B"/><stop offset="1" stopColor="#E8902A"/></linearGradient></defs><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z" fill="url(#guarantee-shield)"/><path d="M9 12l2 2 4-4" fill="none" stroke="#fff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </span>
           <span style={{flex:1,height:2,borderRadius:2,background:"linear-gradient(90deg,rgba(232,144,42,.55) 0%,rgba(232,144,42,0) 100%)"}}/>
         </div>
-        <p style={{position:"relative",color:"var(--t2)",fontSize:"clamp(15px,1.7vw,17.5px)",lineHeight:1.65,maxWidth:660,margin:"0 auto"}}>On legacy platforms, your submission is one face in a grid of 80. Directors scan in seconds. On CastSlate, every submission is <strong style={{color:"var(--teal)"}}>full-screen</strong>. The CD <strong style={{color:"var(--t1)"}}>must</strong> decide: pass or callback. No grids. No skipping. Your shot, actually taken.</p>
+        <p className="guarantee-copy" style={{position:"relative",color:"var(--t2)",fontSize:"clamp(15px,1.7vw,17.5px)",lineHeight:1.65,maxWidth:660,margin:"0 auto"}}>On legacy platforms, your submission is one face in a grid of 80. Directors scan in seconds. On CastSlate, every submission is <strong style={{color:"var(--teal)"}}>full-screen</strong>. The CD <strong style={{color:"var(--t1)"}}>must</strong> decide: pass or callback. No grids. No skipping. Your shot, actually taken.</p>
       </div>
     </div>
 
