@@ -5774,13 +5774,29 @@ function ManagerModePage({onNavigate,session,myProfile}){
       </div>
       <div className="grid-2 mm-card-outer" style={{gap:20,maxWidth:900,margin:"0 auto"}}>
         {[
-          {city:"New York",flag:"building-skyscraper",color:"#1A1A2E",accent:"rgba(99,102,241,0.08)",border:"rgba(99,102,241,0.2)",events:["Industry mixers & networking nights","Actor showcases & casting showcases","SAG-AFTRA member events","Workshop series with working CDs","Off-Broadway opening night events","Commercial acting intensives"]},
-          {city:"Los Angeles",flag:"map-pin",color:"#0f2347",accent:"rgba(37,99,235,0.07)",border:"rgba(37,99,235,0.2)",events:["Film festival industry parties","Pilot season prep events","Agent & manager meet-and-greets","TV studio open calls & showcases","Commercial union member events","Industry workshop weekends"]}
-        ].map(({city,flag,color,accent,border,events})=>(
+          {city:"New York",icon:"ny",color:"#1A1A2E",accent:"rgba(99,102,241,0.08)",border:"rgba(99,102,241,0.2)",events:["Industry mixers & networking nights","Actor showcases & casting showcases","SAG-AFTRA member events","Workshop series with working CDs","Off-Broadway opening night events","Commercial acting intensives"]},
+          {city:"Los Angeles",icon:"la",color:"#0f2347",accent:"rgba(37,99,235,0.07)",border:"rgba(37,99,235,0.2)",events:["Film festival industry parties","Pilot season prep events","Agent & manager meet-and-greets","TV studio open calls & showcases","Commercial union member events","Industry workshop weekends"]}
+        ].map(({city,icon,color,accent,border,events})=>{
+          const EventIcon = ({large=false}) => (
+            <svg viewBox="0 0 24 24" aria-hidden="true" style={{width:large?80:24,height:large?80:24,display:"block",fill:"none",stroke:"currentColor",strokeWidth:2.15,strokeLinecap:"round",strokeLinejoin:"round"}}>
+              {icon==="ny" ? <>
+                <path d="M7 19V9a5 5 0 0 1 10 0v10"/>
+                <path d="M5 19h14"/>
+                <path d="M9 12h6"/>
+                <path d="M9 16h6"/>
+              </> : <>
+                <path d="M4 18h16"/>
+                <path d="M7 18l5-12 5 12"/>
+                <path d="M9.2 13h5.6"/>
+                <path d="M12 6v12"/>
+              </>}
+            </svg>
+          );
+          return (
           <div key={city} className="mm-event-card" style={{background:accent,border:`1px solid ${border}`,borderRadius:18,padding:"clamp(20px,3vw,28px)",overflow:"hidden",position:"relative"}}>
-            <div style={{position:"absolute",top:-20,right:-20,opacity:0.06,lineHeight:1,pointerEvents:"none"}}><Ico n={flag} s={80}/></div>
+            <div style={{position:"absolute",top:-20,right:-20,opacity:0.06,lineHeight:1,pointerEvents:"none",color}}><EventIcon large /></div>
             <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
-              <div className="mm-event-icon" style={{width:44,height:44,borderRadius:12,background:color,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ico n={flag} s={24}/></div>
+              <div className="mm-event-icon" style={{width:44,height:44,borderRadius:12,background:color,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><EventIcon /></div>
               <div>
                 <h3 style={{fontWeight:800,fontSize:18,margin:0,letterSpacing:-0.4}}>{city}</h3>
                 <p style={{fontSize:12,color:"var(--t3)",margin:0,fontWeight:500}}>Monthly event suggestions</p>
@@ -5795,7 +5811,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
               ))}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
       <div style={{textAlign:"center",marginTop:28}}>
         <p style={{fontSize:13,color:"var(--t3)",lineHeight:1.6,maxWidth:520,margin:"0 auto"}}>Event suggestions are included in your one-time monthly Cast Slate career check-in. Manager Mode recommends events relevant to your location, casting lane, and current career stage.</p>
