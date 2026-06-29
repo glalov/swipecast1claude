@@ -2357,6 +2357,24 @@ html,body{overflow-x:hidden;}
 .home-cta-blob{position:absolute;border-radius:50%;pointer-events:none;}
 .home-cta-blob.b1{width:520px;height:520px;background:radial-gradient(circle,rgba(232,144,42,.30),transparent 70%);top:-140px;right:-60px;}
 .home-cta-blob.b2{width:400px;height:400px;background:radial-gradient(circle,rgba(255,255,255,.14),transparent 70%);bottom:-110px;left:-40px;}
+.home-cta-construct{overflow:hidden;}
+.home-cta-construct:not(.is-in) .home-cta-inner{transform:translateX(115%) scale(.98);}
+.home-cta-construct:not(.is-in) .home-cta-eyebrow{transform:translateY(-150px);clip-path:inset(0 0 100% 0);}
+.home-cta-construct:not(.is-in) .home-cta-inner h2{transform:translateX(-280px);clip-path:inset(0 100% 0 0);}
+.home-cta-construct:not(.is-in) .home-cta-lede{transform:translateX(280px);clip-path:inset(0 0 0 100%);}
+.home-cta-construct:not(.is-in) .home-cta-primary,.home-cta-construct:not(.is-in) .home-cta-sub{transform:translateY(170px);clip-path:inset(100% 0 0 0);}
+.home-cta-construct.is-in .home-cta-inner{animation:homeCtaShellIn .82s cubic-bezier(.18,.86,.24,1) backwards;}
+.home-cta-construct.is-in .home-cta-eyebrow{animation:homeCtaDetailTop .56s .74s cubic-bezier(.18,.86,.24,1) backwards;}
+.home-cta-construct.is-in .home-cta-inner h2{animation:homeCtaDetailLeft .64s .86s cubic-bezier(.18,.86,.24,1) backwards;}
+.home-cta-construct.is-in .home-cta-lede{animation:homeCtaDetailRight .64s .98s cubic-bezier(.18,.86,.24,1) backwards;}
+.home-cta-construct.is-in .home-cta-primary{animation:homeCtaDetailBottom .62s 1.12s cubic-bezier(.18,.86,.24,1) backwards;}
+.home-cta-construct.is-in .home-cta-sub{animation:homeCtaDetailBottom .68s 1.26s cubic-bezier(.18,.86,.24,1) backwards;}
+@keyframes homeCtaShellIn{0%{transform:translateX(115%) scale(.98);}72%{transform:translateX(-10px) scale(.98);}100%{transform:translateX(0) scale(1);}}
+@keyframes homeCtaDetailTop{0%{transform:translateY(-150px);clip-path:inset(0 0 100% 0);}62%{transform:translateY(7px);clip-path:inset(0 0 0 0);}100%{transform:translateY(0);clip-path:inset(0 0 0 0);}}
+@keyframes homeCtaDetailLeft{0%{transform:translateX(-280px);clip-path:inset(0 100% 0 0);}62%{transform:translateX(8px);clip-path:inset(0 0 0 0);}100%{transform:translateX(0);clip-path:inset(0 0 0 0);}}
+@keyframes homeCtaDetailRight{0%{transform:translateX(280px);clip-path:inset(0 0 0 100%);}62%{transform:translateX(-8px);clip-path:inset(0 0 0 0);}100%{transform:translateX(0);clip-path:inset(0 0 0 0);}}
+@keyframes homeCtaDetailBottom{0%{transform:translateY(170px);clip-path:inset(100% 0 0 0);}62%{transform:translateY(-8px);clip-path:inset(0 0 0 0);}100%{transform:translateY(0);clip-path:inset(0 0 0 0);}}
+@media (prefers-reduced-motion:reduce){.home-cta-construct:not(.is-in) .home-cta-inner,.home-cta-construct:not(.is-in) .home-cta-eyebrow,.home-cta-construct:not(.is-in) .home-cta-inner h2,.home-cta-construct:not(.is-in) .home-cta-lede,.home-cta-construct:not(.is-in) .home-cta-primary,.home-cta-construct:not(.is-in) .home-cta-sub{transform:none;clip-path:none;}.home-cta-construct.is-in .home-cta-inner,.home-cta-construct.is-in .home-cta-eyebrow,.home-cta-construct.is-in .home-cta-inner h2,.home-cta-construct.is-in .home-cta-lede,.home-cta-construct.is-in .home-cta-primary,.home-cta-construct.is-in .home-cta-sub{animation:none;}}
 @media(max-width:640px){
   .home-cta-sub{flex-direction:column;gap:14px;}
   .home-cta-sub .txt{text-align:center;align-items:center;}
@@ -14950,6 +14968,18 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     io.observe(el);
     return()=>io.disconnect();
   },[taglineOn]);
+  const homeCtaRef=React.useRef(null);
+  const[homeCtaIn,setHomeCtaIn]=React.useState(false);
+  React.useEffect(()=>{
+    const el=homeCtaRef.current;
+    if(!el)return;
+    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches){setHomeCtaIn(true);return;}
+    const io=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{if(e.isIntersecting){setHomeCtaIn(true);io.disconnect();}});
+    },{threshold:0.28,rootMargin:"0px 0px -10% 0px"});
+    io.observe(el);
+    return()=>io.disconnect();
+  },[]);
   // Logged-in-aware destinations — talents go to My Profile / Browse, CDs and
   // admins go to Dashboard / Browse. Replaces the old "Start My 7-Day Free
   // Trial" CTA which was gaslighting existing users.
@@ -15125,7 +15155,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </div>
 
     {/* ───────── Home CTA card (warm teal block; full plans live on /pricing) ───────── */}
-    <section className="home-cta">
+    <section ref={homeCtaRef} className={`home-cta home-cta-construct${homeCtaIn?" is-in":""}`}>
       <div className="home-cta-inner">
         <span className="home-cta-blob b1"/><span className="home-cta-blob b2"/>
         <p className="home-cta-eyebrow"><span className="dot"/>Free to submit</p>
