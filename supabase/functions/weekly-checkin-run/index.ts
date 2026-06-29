@@ -322,6 +322,16 @@ serve(async (req) => {
       await admin.from("weekly_checkin_logs").insert({ talent_id: t.id, message_id: msg.id, week_start: week, status: "sent", task_action: content.cta_action || null, profile_snapshot: flags });
       sent++;
 
+      // Fire the premium weekly check-in email nudge (non-fatal). Drives the
+      // member back into the app to read the note; gated on their email prefs server-side.
+      try {
+        await fetch(`${SUPABASE_URL}/functions/v1/send-notification-email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${SERVICE_KEY}` },
+          body: JSON.stringify({ to_user_id: t.id, type: "weekly_checkin", task: content.task }),
+        });
+      } catch (e) { console.error("[weekly-checkin] email nudge failed", t.id, String(e)); }
+
       // Pace AI calls to stay under provider per-minute limits.
       if (geminiKey && i < eligible.length - 1) await sleep(2500);
     }

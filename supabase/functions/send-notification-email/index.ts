@@ -71,7 +71,7 @@ const corsHeaders = {
 
 interface NotifyRequest {
   to_user_id: string;
-  type: "inbox_message" | "class_invitation" | "booking_approved" | "booking_declined" | "premium_welcome";
+  type: "inbox_message" | "class_invitation" | "booking_approved" | "booking_declined" | "premium_welcome" | "weekly_checkin";
   from_id?: string;
   from_name?: string;
   application_id?: string;
@@ -83,6 +83,8 @@ interface NotifyRequest {
   admin_note?: string;
   class_price?: string;
   class_id?: string;
+  // weekly_checkin extra — this week's task (the email hook)
+  task?: string;
 }
 
 function esc(s: string): string {
@@ -271,6 +273,13 @@ function bookingDeclinedHtml(firstName: string, classTitle: string, adminNote?: 
 </html>`;
 }
 
+function weeklyCheckinHtml(firstName: string, task?: string): string {
+  const taskBlock = task
+    ? `<div style="margin:0 0 24px;padding:16px 18px;background:#f4f1fb;border:1px solid #e2daf5;border-radius:12px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#6b3ecb;margin:0 0 6px">This week's task</div><p style="margin:0;font-size:15px;line-height:1.6;color:#2d1052;font-weight:500">${esc(task)}</p></div>`
+    : "";
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="margin:0;padding:0;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f7;padding:40px 20px"><tr><td align="center"><table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:560px;width:100%"><tr><td style="background:#1a0533;padding:22px 32px"><img src="https://www.castslate.com/logo-email.png" alt="CastSlate" width="38" height="38" style="display:inline-block;vertical-align:middle;border-radius:9px"/><span style="display:inline-block;vertical-align:middle;margin-left:12px;font-size:21px;font-weight:800;color:#ffffff;letter-spacing:-0.5px">CastSlate</span><div style="margin-top:12px;display:inline-block;background:rgba(139,92,246,0.25);color:#d7c4ff;font-size:11px;font-weight:700;letter-spacing:0.4px;padding:4px 12px;border-radius:20px;text-transform:uppercase">Manager Mode &middot; Weekly check-in</div></td></tr><tr><td style="padding:32px 32px 12px"><h1 style="margin:0 0 14px;font-size:23px;font-weight:800;color:#111;letter-spacing:-0.5px">Your weekly career note is ready, ${firstName}</h1><p style="margin:0 0 20px;font-size:16px;line-height:1.65;color:#555">Your personalized Manager Mode check-in for this week is waiting in your CastSlate inbox — one focused step to keep your profile moving and keep you castable.</p>${taskBlock}<a href="${APP_URL}/inbox" style="display:inline-block;background:#6b3ecb;color:#fff;text-decoration:none;padding:14px 34px;border-radius:10px;font-weight:700;font-size:15px;letter-spacing:0.1px">Open my note &rarr;</a><p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:#888">Your full note includes what you're doing well, your casting lane, and this week's focus — open it in the app to read it and mark your task done.</p></td></tr><tr><td style="padding:20px 32px 28px;border-top:1px solid #f0f0f0"><p style="margin:0;font-size:12px;color:#aaa;line-height:1.6">You're receiving this because you're a CastSlate Premium member with Manager Mode.<br/>To manage notifications, visit <a href="${APP_URL}/account-settings" style="color:#8b5cf6;text-decoration:none">Account Settings &rarr; Notifications</a>.</p></td></tr></table></td></tr></table></body></html>`;
+}
+
 function premiumWelcomeHtml(firstName: string): string {
   const row = (title: string, body: string) =>
     `<tr><td style="padding:0 0 18px"><div style="font-size:15px;font-weight:700;color:#2d1052;margin:0 0 2px">${title}</div><div style="font-size:14px;line-height:1.6;color:#555;margin:0">${body}</div></td></tr>`;
@@ -340,7 +349,7 @@ serve(async (req) => {
     });
 
   try {
-    const { to_user_id, type, from_id, from_name: rawFromName, application_id, casting_id, class_title, instructor_name, slot_label, admin_note, class_price, class_id } = (await req.json()) as NotifyRequest;
+    const { to_user_id, type, from_id, from_name: rawFromName, application_id, casting_id, class_title, instructor_name, slot_label, admin_note, class_price, class_id, task } = (await req.json()) as NotifyRequest;
 
     if (!to_user_id || !type) {
       return json({ error: "Missing to_user_id or type" }, 400);
@@ -416,6 +425,34 @@ serve(async (req) => {
       });
       if (!sent.ok) {
         console.error("[send-notification-email] premium welcome send error:", sent.err);
+        return json({ ok: false, results: { email: `error:${sent.err}` } });
+      }
+      return json({ ok: true, results: { email: "sent" } });
+    }
+
+    // ── Weekly Manager Mode check-in nudge (premium-only; fired alongside the
+    //    in-app note). Short email that drives the member back into the app. ──
+    if (type === "weekly_checkin") {
+      const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
+      const emailMasterEnabled = profile.notification_email !== false;
+      if (!emailMasterEnabled) {
+        return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
+      }
+      if (!emailConfigured()) {
+        console.warn("[send-notification-email] email provider not configured — skipping weekly check-in");
+        return json({ ok: true, results: { email: "skipped:EMAIL_NOT_CONFIGURED" } });
+      }
+      const { data: authData, error: authErr } = await supabase.auth.admin.getUserById(to_user_id);
+      if (authErr || !authData?.user?.email) {
+        return json({ ok: false, results: { email: "error:could_not_retrieve_user_email" } });
+      }
+      const sent = await sendEmail({
+        from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
+        subject: "Your weekly CastSlate career note is ready",
+        html: weeklyCheckinHtml(firstName, task?.trim() || undefined),
+      });
+      if (!sent.ok) {
+        console.error("[send-notification-email] weekly check-in send error:", sent.err);
         return json({ ok: false, results: { email: `error:${sent.err}` } });
       }
       return json({ ok: true, results: { email: "sent" } });

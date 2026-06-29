@@ -21652,6 +21652,11 @@ function AdminWeeklyCheckIns({session}){
               status:"sent",
               task_action:content.cta_action
             });
+            // Fire the premium weekly check-in email nudge (non-fatal). Gated on
+            // the recipient's email prefs server-side; drives them back into the app.
+            window.sb.functions.invoke("send-notification-email",{
+              body:{to_user_id:talent.id,type:"weekly_checkin",task:content.task}
+            }).catch(e=>console.warn("[checkin-email]",e?.message||e));
             sent++;
           }catch(e){
             console.warn("[checkin] failed for",talent.id,e.message);
