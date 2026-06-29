@@ -5716,7 +5716,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
           {icon:"credit-card",accent:"#0891B2",title:"Actor Business Card",body:"Create a personalized actor business card with your headshot and a unique QR code linking directly to your Cast Slate profile. Walk into any room with a card that opens your full profile in seconds."}
         ].map(({icon,accent,title,body})=>(
           <div key={title} className="card" style={{padding:"28px 26px",display:"flex",flexDirection:"column",gap:14,borderLeft:`3px solid ${accent}`,transition:"all 0.25s"}}>
-            <div style={{width:44,height:44,borderRadius:12,background:`${accent}12`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{icon}</div>
+            <div style={{width:44,height:44,borderRadius:12,background:`${accent}12`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}><Ico n={icon} s={22} style={{color:accent}}/></div>
             <h3 style={{fontWeight:700,fontSize:16,letterSpacing:-0.3,margin:0,lineHeight:1.3}}>{title}</h3>
             <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.65,margin:0}}>{body}</p>
           </div>
@@ -5845,7 +5845,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
                   {icon:"arrow-down",title:"Download & Print",body:"Premium members can download a print-ready version and print it anywhere."}
                 ].map(({icon,title,body})=>(
                   <div key={title} style={{display:"flex",alignItems:"flex-start",gap:12}}>
-                    <span style={{fontSize:18,flexShrink:0,marginTop:1}}>{icon}</span>
+                    <Ico n={icon} s={18} style={{flexShrink:0,marginTop:2,color:"#6EE7B7"}}/>
                     <div>
                       <span style={{fontSize:13.5,fontWeight:700,color:"rgba(255,255,255,0.9)"}}>{title}</span>
                       <span style={{fontSize:13,color:"rgba(255,255,255,0.55)",marginLeft:6}}>{body}</span>
