@@ -1454,6 +1454,19 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .nav-links span.mm-attn.act{background:rgba(232,144,42,.16);color:var(--amber-dk);}
 @keyframes mm-breathe{0%,100%{box-shadow:0 0 0 0 rgba(232,144,42,0);background:rgba(232,144,42,.08);}50%{box-shadow:0 0 16px 1px rgba(232,144,42,.50);background:rgba(232,144,42,.16);}}
 @media(prefers-reduced-motion:reduce){.nav-links span.mm-attn{animation:none;}.mm-live-hero *,.mm-live-hero *::before,.mm-live-hero *::after{animation:none!important;}.mm-live-preview{width:auto;}.mm-live-message{clip-path:none;}.mm-live-card,.mm-live-task{opacity:1;transform:none;}.mm-live-cursor,.mm-restart-cursor,.mm-click-ring,.mm-logo-click-ring,.mm-spark{display:none!important;}}
+
+.mm-event-card{isolation:isolate;animation:mm-event-card-float 10.5s cubic-bezier(.45,0,.2,1) infinite;}
+.mm-event-card:nth-child(2){animation-delay:-5.25s;}
+.mm-event-card::before{content:"";position:absolute;inset:-70%;z-index:0;background:linear-gradient(115deg,transparent 0%,transparent 43%,rgba(122,111,240,.055) 49%,rgba(255,255,255,.11) 50%,rgba(122,111,240,.05) 51%,transparent 57%,transparent 100%);opacity:.42;transform:translateX(-42%);animation:mm-event-card-scan 10.8s linear infinite;pointer-events:none;}
+.mm-event-card:nth-child(2)::before{animation-delay:-5.4s;}
+.mm-event-card>*{position:relative;z-index:1;}
+.mm-event-icon{position:relative;overflow:hidden;box-shadow:0 14px 26px -18px rgba(16,25,54,.9),0 0 0 1px rgba(255,255,255,.06) inset;}
+.mm-event-icon::after{content:"";position:absolute;top:-20%;bottom:-20%;width:32%;left:-65%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.11),transparent);transform:skewX(-16deg);animation:mm-event-icon-shine 9.4s linear infinite;pointer-events:none;}
+.mm-event-card:nth-child(2) .mm-event-icon::after{animation-delay:-4.7s;}
+@keyframes mm-event-card-scan{0%{transform:translateX(-42%);}100%{transform:translateX(42%);}}
+@keyframes mm-event-card-float{0%,100%{transform:translate3d(0,0,0);box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 18px 34px -28px rgba(74,69,129,.42);}33%{transform:translate3d(0,-2px,0);}66%{transform:translate3d(0,-4px,0);box-shadow:inset 0 1px 0 rgba(255,255,255,.78),0 24px 38px -30px rgba(74,69,129,.47);}}
+@keyframes mm-event-icon-shine{0%{left:-65%;}100%{left:122%;}}
+@media(prefers-reduced-motion:reduce){.mm-event-card,.mm-event-card::before,.mm-event-icon::after{animation:none!important;}}
 /* Free-plan upgrade stripe (ActivateMembershipBanner) — darker purple, centered full-width text, ghost CTA (fills black on hover) w/ shimmer, twinkling star */
 .mb-msg{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;text-align:center;font-size:12px;font-weight:800;color:#fff8eb;letter-spacing:0.1px;padding:0 16px;}
 .mb-text-short{display:none;}
@@ -5761,16 +5774,16 @@ function ManagerModePage({onNavigate,session,myProfile}){
       </div>
       <div className="grid-2 mm-card-outer" style={{gap:20,maxWidth:900,margin:"0 auto"}}>
         {[
-          {city:"New York",flag:"map-pin",color:"#1A1A2E",accent:"rgba(99,102,241,0.08)",border:"rgba(99,102,241,0.2)",events:["Industry mixers & networking nights","Actor showcases & casting showcases","SAG-AFTRA member events","Workshop series with working CDs","Off-Broadway opening night events","Commercial acting intensives"]},
+          {city:"New York",flag:"building-skyscraper",color:"#1A1A2E",accent:"rgba(99,102,241,0.08)",border:"rgba(99,102,241,0.2)",events:["Industry mixers & networking nights","Actor showcases & casting showcases","SAG-AFTRA member events","Workshop series with working CDs","Off-Broadway opening night events","Commercial acting intensives"]},
           {city:"Los Angeles",flag:"map-pin",color:"#0f2347",accent:"rgba(37,99,235,0.07)",border:"rgba(37,99,235,0.2)",events:["Film festival industry parties","Pilot season prep events","Agent & manager meet-and-greets","TV studio open calls & showcases","Commercial union member events","Industry workshop weekends"]}
         ].map(({city,flag,color,accent,border,events})=>(
-          <div key={city} style={{background:accent,border:`1px solid ${border}`,borderRadius:18,padding:"clamp(20px,3vw,28px)",overflow:"hidden",position:"relative"}}>
+          <div key={city} className="mm-event-card" style={{background:accent,border:`1px solid ${border}`,borderRadius:18,padding:"clamp(20px,3vw,28px)",overflow:"hidden",position:"relative"}}>
             <div style={{position:"absolute",top:-20,right:-20,opacity:0.06,lineHeight:1,pointerEvents:"none"}}><Ico n={flag} s={80}/></div>
             <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
-              <div style={{width:44,height:44,borderRadius:12,background:color,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ico n={flag} s={24}/></div>
+              <div className="mm-event-icon" style={{width:44,height:44,borderRadius:12,background:color,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Ico n={flag} s={24}/></div>
               <div>
                 <h3 style={{fontWeight:800,fontSize:18,margin:0,letterSpacing:-0.4}}>{city}</h3>
-                <p style={{fontSize:12,color:"var(--t3)",margin:0,fontWeight:500}}>Weekly event suggestions</p>
+                <p style={{fontSize:12,color:"var(--t3)",margin:0,fontWeight:500}}>Monthly event suggestions</p>
               </div>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -5785,7 +5798,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
         ))}
       </div>
       <div style={{textAlign:"center",marginTop:28}}>
-        <p style={{fontSize:13,color:"var(--t3)",lineHeight:1.6,maxWidth:520,margin:"0 auto"}}>Event suggestions are included in your weekly Cast Slate career check-in. Manager Mode recommends events relevant to your location, casting lane, and current career stage.</p>
+        <p style={{fontSize:13,color:"var(--t3)",lineHeight:1.6,maxWidth:520,margin:"0 auto"}}>Event suggestions are included in your one-time monthly Cast Slate career check-in. Manager Mode recommends events relevant to your location, casting lane, and current career stage.</p>
       </div>
     </section>
 
@@ -10206,10 +10219,12 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
 
   const STATUS_LABELS={
     pending:{label:"Submitted",color:"var(--t2)",bg:"var(--s2)"},
-    viewed:{label:"Viewed",color:"#2563eb",bg:"rgba(37,99,235,0.08)"},
+    // "Viewed" (CD opened your submission) is intentionally NOT surfaced to actors — show it as plain "Submitted".
+    viewed:{label:"Submitted",color:"var(--t2)",bg:"var(--s2)"},
     hold:{label:"On Hold",color:"#d97706",bg:"rgba(217,119,6,0.08)"},
     selected:{label:"Selected",color:"var(--grn)",bg:"rgba(27,135,62,0.08)"},
-    rejected:{label:"Not Selected",color:"var(--red)",bg:"rgba(220,38,38,0.08)"},
+    // Rejections are not shown to actors as "Not Selected" — surface as a neutral "Archived" instead.
+    rejected:{label:"Archived",color:"var(--t3)",bg:"var(--s2)"},
     audition_requested:{label:"Audition Requested",color:"var(--acc)",bg:"rgba(99,60,180,0.08)"},
     archived:{label:"Archived",color:"var(--t3)",bg:"var(--s2)"},
   };
