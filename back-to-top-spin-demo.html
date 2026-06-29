@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CastSlate Back to Top Motion Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#F6F1EA;
+      --ink:#1A1A2E;
+      --muted:#6F7078;
+      --soft:#FFFDF9;
+      --line:#E5DDD2;
+      --purple:#6366F1;
+      --teal:#257D76;
+      --footer:#1B1C20;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:"DM Sans",system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+      letter-spacing:0;
+    }
+    .nav{
+      position:sticky;
+      top:0;
+      z-index:20;
+      height:74px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 34px;
+      background:rgba(246,241,234,.9);
+      backdrop-filter:blur(18px);
+      border-bottom:1px solid rgba(0,0,0,.06);
+    }
+    .logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:20px;letter-spacing:-.4px}
+    .logo-i{
+      width:34px;height:34px;border-radius:8px;background:var(--ink);color:#fff;
+      display:flex;align-items:center;justify-content:center;flex:none;
+    }
+    .logo-i svg{display:block;width:68%;height:68%}
+    .nav-pill{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:999px;
+      padding:8px 13px;
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+    }
+    main{min-height:150vh}
+    .hero{
+      max-width:980px;
+      margin:0 auto;
+      padding:86px 24px 54px;
+      text-align:center;
+    }
+    .label{
+      color:var(--purple);
+      font-size:11px;
+      line-height:1;
+      text-transform:uppercase;
+      letter-spacing:1.6px;
+      font-weight:900;
+      margin-bottom:14px;
+    }
+    h1{
+      font-size:clamp(42px,8vw,86px);
+      line-height:.93;
+      letter-spacing:-3px;
+      margin:0 0 22px;
+      font-weight:900;
+    }
+    .hero p{
+      max-width:660px;
+      margin:0 auto;
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.75;
+    }
+    .controls{
+      max-width:940px;
+      margin:0 auto 60px;
+      padding:0 24px;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+    }
+    .demo-actions{
+      max-width:940px;
+      margin:-42px auto 58px;
+      padding:0 24px;
+      display:flex;
+      justify-content:center;
+    }
+    .replay-btn{
+      height:42px;
+      border:1px solid var(--ink);
+      background:var(--ink);
+      color:#fff;
+      border-radius:10px;
+      padding:0 18px;
+      font-family:inherit;
+      font-size:13px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:4px 5px 0 rgba(0,0,0,.18);
+    }
+    .replay-btn:hover{transform:translateY(-1px)}
+    .choice{
+      border:1.5px solid var(--line);
+      background:#fff;
+      border-radius:14px;
+      padding:18px;
+      text-align:left;
+      cursor:pointer;
+      color:var(--ink);
+      box-shadow:0 8px 22px rgba(0,0,0,.06);
+      font-family:inherit;
+      transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+    }
+    .choice:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(0,0,0,.1)}
+    .choice.active{border-color:var(--purple);box-shadow:0 0 0 3px rgba(99,102,241,.13),0 14px 28px rgba(0,0,0,.1)}
+    .choice strong{display:block;font-size:14px;margin-bottom:7px}
+    .choice span{display:block;color:var(--muted);font-size:12.5px;line-height:1.55}
+    .content{
+      max-width:980px;
+      margin:0 auto 70px;
+      padding:0 24px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+    }
+    .card{
+      min-height:190px;
+      border:1px solid var(--line);
+      background:var(--soft);
+      border-radius:8px;
+      padding:24px;
+      box-shadow:0 6px 20px rgba(0,0,0,.05);
+    }
+    .card h3{margin:0 0 10px;font-size:16px}
+    .card p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.65}
+    .scroll-note{
+      max-width:720px;
+      margin:0 auto 180px;
+      padding:0 24px;
+      text-align:center;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.7;
+    }
+    .site-footer-spacer{height:80px}
+    .site-footer{
+      background:var(--footer);
+      color:#fff;
+      padding:64px 34px 32px;
+      min-height:440px;
+    }
+    .footer-inner{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:2fr repeat(4,1fr);gap:42px}
+    .footer-inner p{color:#9A9BA5;font-size:13px;line-height:1.7;max-width:280px}
+    .footer-inner h4{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 17px}
+    .footer-inner a{display:block;color:#9A9BA5;font-size:13px;text-decoration:none;padding:5px 0}
+    .b2t-cube{
+      position:fixed;
+      left:50%;
+      bottom:22px;
+      z-index:110;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:5px;
+      width:96px;
+      height:86px;
+      background:#fff;
+      color:var(--ink);
+      border:1px solid rgba(0,0,0,.12);
+      border-radius:17px;
+      cursor:pointer;
+      box-shadow:0 16px 34px rgba(0,0,0,.30);
+      font-family:"DM Sans",sans-serif;
+      font-weight:900;
+      font-size:10.5px;
+      letter-spacing:.7px;
+      text-transform:uppercase;
+      opacity:1;
+      pointer-events:none;
+      transform:translateX(-50%) translateY(calc(-100vh + 16px));
+      transition:transform 1.08s cubic-bezier(.5,0,.75,.45), box-shadow .2s ease;
+      transform-origin:50% 50%;
+      transform-style:preserve-3d;
+      backface-visibility:visible;
+      perspective:760px;
+    }
+    .b2t-cube .mark{
+      width:24px;
+      height:20px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transform-origin:50% 50%;
+    }
+    .b2t-cube .mark svg{display:block;width:24px;height:20px}
+    .b2t-cube span{line-height:1.1}
+    .b2t-shell{display:contents}
+    .b2t-face-front{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%}
+    .b2t-face-back{display:none}
+    .b2t-cube.show{
+      pointer-events:auto;
+      transform:translateX(-50%) translateY(0);
+      transition:transform 1.18s cubic-bezier(.18,.82,.26,1.08), box-shadow .2s ease;
+    }
+    .b2t-cube:hover{box-shadow:0 19px 38px rgba(0,0,0,.34)}
+    .b2t-cube:hover .mark{animation:b2t-hover-twist .48s cubic-bezier(.2,.8,.2,1)}
+
+    .b2t-cube.motion-card.show{animation:b2t-card-spin-in 1.18s cubic-bezier(.18,.82,.26,1.08) both}
+    .b2t-cube.motion-card:not(.show){animation:b2t-card-spin-out 1.08s cubic-bezier(.5,0,.75,.45) both}
+
+    .b2t-cube.motion-logo.show .mark{animation:b2t-logo-spin-in 1.08s cubic-bezier(.18,.82,.26,1.05) both}
+    .b2t-cube.motion-logo:not(.show) .mark{animation:b2t-logo-spin-out .82s cubic-bezier(.5,0,.75,.45) both}
+
+    .b2t-cube.motion-pop.show{
+      animation:b2t-card-pop-in 1.16s cubic-bezier(.18,.82,.24,1.08) both;
+      border-radius:18px;
+    }
+    .b2t-cube.motion-pop.show .mark{animation:b2t-logo-spin-in .96s cubic-bezier(.18,.82,.26,1.05) both}
+    .b2t-cube.motion-pop:not(.show){animation:b2t-card-pop-out .92s cubic-bezier(.5,0,.75,.45) both}
+
+    .b2t-cube.motion-flip{
+      background:transparent;
+      border:none;
+      box-shadow:none;
+      overflow:visible;
+    }
+    .b2t-cube.motion-flip .b2t-face-front,
+    .b2t-cube.motion-flip .b2t-face-back{
+      position:absolute;
+      inset:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:5px;
+      border-radius:17px;
+      border:1px solid rgba(0,0,0,.12);
+      box-shadow:0 16px 34px rgba(0,0,0,.30);
+      backface-visibility:hidden;
+      transform-style:preserve-3d;
+    }
+    .b2t-cube.motion-flip .b2t-shell{
+      position:absolute;
+      inset:0;
+      display:block;
+      transform-style:preserve-3d;
+      backface-visibility:visible;
+    }
+    .b2t-cube.motion-flip .b2t-face-front{
+      background:linear-gradient(180deg,#fff 0%,#fff 72%,#eee9ff 100%);
+      color:var(--ink);
+      transform:translateZ(8px);
+      border-color:rgba(99,102,241,.55);
+    }
+    .b2t-cube.motion-flip .b2t-face-front::before{
+      content:"3D FLIP";
+      position:absolute;
+      top:8px;
+      left:50%;
+      transform:translateX(-50%);
+      color:var(--purple);
+      font-size:8px;
+      font-weight:900;
+      letter-spacing:1.1px;
+    }
+    .b2t-cube.motion-flip .b2t-face-back{
+      background:linear-gradient(135deg,#111226,#2d2f7a);
+      color:#fff;
+      transform:rotateY(180deg) translateZ(8px);
+      border-color:rgba(255,255,255,.18);
+    }
+    .b2t-cube.motion-flip .b2t-face-back .back-logo{
+      width:36px;
+      height:36px;
+      border-radius:10px;
+      background:#fff;
+      color:#1A1A2E;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom:5px;
+    }
+    .b2t-cube.motion-flip.show{
+      animation:b2t-flip-drop-in 1.45s cubic-bezier(.16,.82,.22,1.05) both;
+    }
+    .b2t-cube.motion-flip:not(.show){
+      animation:b2t-flip-drop-out .92s cubic-bezier(.5,0,.75,.45) both;
+    }
+    .b2t-cube.motion-flip::before{
+      content:"";
+      position:absolute;
+      top:9px;
+      bottom:9px;
+      left:50%;
+      width:11px;
+      border-radius:999px;
+      background:linear-gradient(90deg,rgba(255,255,255,.9),rgba(26,26,46,.55),rgba(255,255,255,.72));
+      opacity:0;
+      transform:translateX(-50%) translateZ(0);
+      pointer-events:none;
+      z-index:3;
+    }
+    .b2t-cube.motion-flip.show::before{
+      animation:b2t-edge-flash 1.45s cubic-bezier(.16,.82,.22,1.05) both;
+    }
+    .b2t-cube.motion-flip.show .b2t-shell{
+      animation:b2t-shell-flip-in 1.45s cubic-bezier(.16,.82,.22,1.05) both;
+    }
+    .b2t-cube.motion-flip:not(.show) .b2t-shell{
+      animation:b2t-shell-flip-out .92s cubic-bezier(.5,0,.75,.45) both;
+    }
+
+    @keyframes b2t-card-spin-in{
+      0%{transform:translateX(-50%) translateY(calc(-100vh + 16px)) rotate(-28deg) scale(.92)}
+      78%{transform:translateX(-50%) translateY(8px) rotate(370deg) scale(1.02)}
+      100%{transform:translateX(-50%) translateY(0) rotate(360deg) scale(1)}
+    }
+    @keyframes b2t-card-spin-out{
+      0%{transform:translateX(-50%) translateY(0) rotate(360deg) scale(1)}
+      100%{transform:translateX(-50%) translateY(calc(-100vh + 16px)) rotate(-24deg) scale(.92)}
+    }
+    @keyframes b2t-logo-spin-in{
+      0%{transform:rotate(-220deg) scale(.78);opacity:.65}
+      72%{transform:rotate(390deg) scale(1.08);opacity:1}
+      100%{transform:rotate(360deg) scale(1);opacity:1}
+    }
+    @keyframes b2t-logo-spin-out{
+      0%{transform:rotate(360deg) scale(1);opacity:1}
+      100%{transform:rotate(-170deg) scale(.76);opacity:.7}
+    }
+    @keyframes b2t-card-pop-in{
+      0%{transform:translateX(-50%) translateY(calc(-100vh + 16px)) rotate(-10deg) scale(.86)}
+      65%{transform:translateX(-50%) translateY(10px) rotate(8deg) scale(1.04)}
+      84%{transform:translateX(-50%) translateY(-4px) rotate(-3deg) scale(.99)}
+      100%{transform:translateX(-50%) translateY(0) rotate(0) scale(1)}
+    }
+    @keyframes b2t-card-pop-out{
+      0%{transform:translateX(-50%) translateY(0) rotate(0) scale(1)}
+      100%{transform:translateX(-50%) translateY(calc(-100vh + 16px)) rotate(12deg) scale(.88)}
+    }
+    @keyframes b2t-flip-drop-in{
+      0%{transform:translateX(-50%) translateY(calc(-100vh + 16px)) scale(.9)}
+      62%{transform:translateX(-50%) translateY(18px) scale(1.04)}
+      80%{transform:translateX(-50%) translateY(-6px) scale(.995)}
+      100%{transform:translateX(-50%) translateY(0) scale(1)}
+    }
+    @keyframes b2t-flip-drop-out{
+      0%{transform:translateX(-50%) translateY(0) scale(1)}
+      100%{transform:translateX(-50%) translateY(calc(-100vh + 16px)) scale(.9)}
+    }
+    @keyframes b2t-shell-flip-in{
+      0%{transform:rotateY(-900deg) rotateZ(-10deg)}
+      20%{transform:rotateY(-720deg) rotateZ(8deg)}
+      40%{transform:rotateY(-540deg) rotateZ(-6deg)}
+      60%{transform:rotateY(-360deg) rotateZ(4deg)}
+      78%{transform:rotateY(-150deg) rotateZ(-2deg)}
+      90%{transform:rotateY(24deg) rotateZ(1.5deg)}
+      100%{transform:rotateY(0deg) rotateZ(0)}
+    }
+    @keyframes b2t-shell-flip-out{
+      0%{transform:rotateY(0deg) rotateZ(0)}
+      100%{transform:rotateY(720deg) rotateZ(8deg)}
+    }
+    @keyframes b2t-edge-flash{
+      0%,15%,100%{opacity:0;transform:translateX(-50%) scaleY(.5)}
+      24%,38%,54%,66%{opacity:.95;transform:translateX(-50%) scaleY(1)}
+      78%{opacity:.3;transform:translateX(-50%) scaleY(.85)}
+    }
+    @keyframes b2t-hover-twist{
+      0%{transform:rotate(0) scale(1)}
+      50%{transform:rotate(180deg) scale(1.1)}
+      100%{transform:rotate(360deg) scale(1)}
+    }
+    @media (max-width:760px){
+      .controls,.content{grid-template-columns:1fr}
+      .footer-inner{grid-template-columns:1fr 1fr}
+      .nav{padding:0 18px}
+      .b2t-cube{width:88px;height:80px;bottom:18px}
+    }
+    @media (prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      .b2t-cube,.b2t-cube.show{animation:none!important;transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important}
+      .b2t-cube.show{opacity:1!important}
+      .b2t-cube .mark{animation:none!important}
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="logo">
+      <div class="logo-i">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"/></svg>
+      </div>
+      CastSlate
+    </div>
+    <div class="nav-pill">Motion demo</div>
+  </nav>
+
+  <main id="top">
+    <section class="hero">
+      <div class="label">Back to top preview</div>
+      <h1>Same card.<br>More alive.</h1>
+      <p>Scroll until the footer is reached. The floating Back to top control appears exactly where the live site shows it, but this demo lets you compare three motion styles.</p>
+    </section>
+
+    <section class="controls" aria-label="Motion options">
+      <button class="choice active" data-motion="motion-logo">
+        <strong>Option 1: Logo spin</strong>
+        <span>The card drops cleanly, while the CastSlate arrow spins. This is the most polished and least distracting.</span>
+      </button>
+      <button class="choice" data-motion="motion-card">
+        <strong>Option 2: Whole card spin</strong>
+        <span>The entire card rotates while falling. More noticeable, but it can feel a little playful.</span>
+      </button>
+      <button class="choice" data-motion="motion-pop">
+        <strong>Option 3: Pop and settle</strong>
+        <span>A small wobble and icon spin. Most alive, still close to the current brand shape.</span>
+      </button>
+      <button class="choice" data-motion="motion-flip">
+        <strong>Option 4: 3D card tumble</strong>
+        <span>A much more visible horizontal flip with a side-edge flash, then a slower premium settle.</span>
+      </button>
+    </section>
+    <div class="demo-actions">
+      <button class="replay-btn" id="replay" type="button">Replay selected motion</button>
+    </div>
+
+    <section class="content">
+      <div class="card"><h3>Current behavior kept</h3><p>The trigger still waits until the footer area is reached, so the control is not floating around the whole page.</p></div>
+      <div class="card"><h3>Branded shape</h3><p>The rounded square feels connected to the CastSlate logo mark and site cards, so it reads as intentional.</p></div>
+      <div class="card"><h3>Motion only on arrival</h3><p>The animation happens when it appears, exits, and on hover. It does not spin forever.</p></div>
+    </section>
+
+    <p class="scroll-note">Keep scrolling down. When the footer midpoint enters the viewport, the card will drop from above. Scroll slightly back up to watch it leave, then down again to replay the motion.</p>
+  </main>
+
+  <div class="site-footer-spacer"></div>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <div class="logo">
+          <div class="logo-i" style="background:#fff;color:#1A1A2E">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"/></svg>
+          </div>
+          CastSlate
+        </div>
+        <p>A modern casting platform where actors get seen and casting teams review talent one profile at a time.</p>
+      </div>
+      <div><h4>Talent</h4><a>Browse Castings</a><a>Actor Toolkit</a><a>Trust & Safety</a></div>
+      <div><h4>Industry</h4><a>Post Casting</a><a>Pricing</a><a>Pay Talent</a></div>
+      <div><h4>Company</h4><a>About</a><a>Blog</a><a>Contact</a></div>
+      <div><h4>Support</h4><a>FAQ</a><a>Terms</a><a>Privacy</a></div>
+    </div>
+  </footer>
+
+  <button type="button" class="b2t-cube motion-logo" id="b2t" aria-label="Back to top">
+    <span class="b2t-shell">
+      <span class="b2t-face-front">
+        <span class="mark">
+          <svg width="20" height="16" viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="currentColor"/></svg>
+        </span>
+        <span>Back<br>to top</span>
+      </span>
+      <span class="b2t-face-back" aria-hidden="true">
+        <span class="back-logo">
+          <svg viewBox="0 0 32 32" width="23" height="23"><path fill="currentColor" d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"/></svg>
+        </span>
+        <span>CastSlate</span>
+      </span>
+    </span>
+  </button>
+
+  <script>
+    const b2t=document.getElementById("b2t");
+    const footer=document.querySelector(".site-footer");
+    const choices=[...document.querySelectorAll(".choice")];
+    let ready=false;
+    let motion="motion-logo";
+
+    function setMotion(next){
+      const wasShowing=b2t.classList.contains("show");
+      motion=next;
+      b2t.className="b2t-cube "+motion+(b2t.classList.contains("show")?" show":"");
+      choices.forEach(c=>c.classList.toggle("active",c.dataset.motion===motion));
+      if(wasShowing) replayMotion();
+    }
+    choices.forEach(c=>c.addEventListener("click",()=>setMotion(c.dataset.motion)));
+
+    function replayMotion(){
+      b2t.classList.remove("show");
+      void b2t.offsetWidth;
+      setTimeout(()=>b2t.classList.add("show"),120);
+    }
+
+    function check(){
+      if(!ready){b2t.classList.remove("show");return;}
+      const vpBottom=window.innerHeight+window.scrollY;
+      const rect=footer.getBoundingClientRect();
+      const threshold=rect.top+window.scrollY+rect.height*.5;
+      const scrollable=document.documentElement.scrollHeight-window.innerHeight;
+      b2t.classList.toggle("show",scrollable>240&&vpBottom>=threshold);
+    }
+    setTimeout(()=>{ready=true;check();},500);
+    window.addEventListener("scroll",check,{passive:true});
+    window.addEventListener("resize",check);
+    b2t.addEventListener("click",()=>window.scrollTo({top:0,behavior:"smooth"}));
+    document.getElementById("replay").addEventListener("click",replayMotion);
+    check();
+  </script>
+</body>
+</html>

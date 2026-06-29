@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CastSlate Human Generator Preview</title>
+  <style>
+    :root{--ink:#151515;--muted:#666;--line:#dedbd2;--paper:#fbfaf6;--panel:#fff;--accent:#1f5f5b}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    header{position:sticky;top:0;z-index:2;background:rgba(251,250,246,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(10px)}
+    .wrap{max-width:1180px;margin:0 auto;padding:22px}
+    .top{display:flex;gap:16px;align-items:flex-start;justify-content:space-between}
+    h1{font-size:28px;margin:0 0 6px;font-weight:850;letter-spacing:0}
+    .lede{margin:0;color:var(--muted);max-width:760px;line-height:1.55}
+    button{border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:8px;padding:11px 15px;font-weight:800;cursor:pointer;box-shadow:3px 4px 0 rgba(0,0,0,.18);white-space:nowrap}
+    main.wrap{padding-top:26px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:18px}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.05)}
+    .meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+    .pill{font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);background:#eaf3ef;border:1px solid #cfe1da;border-radius:999px;padding:4px 8px}
+    .pill.gray{color:#555;background:#f3f1ea;border-color:#e4e0d5}
+    h2{font-size:22px;line-height:1.15;margin:0 0 4px;font-weight:850}
+    .prod{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:10px}
+    .pay{font-size:13px;line-height:1.55;color:#363636;background:#f7f6f1;border:1px solid #eceae2;border-radius:7px;padding:10px 12px;margin-bottom:14px}
+    .synopsis{font-size:14px;line-height:1.65;color:#303030;white-space:pre-line;margin:0 0 16px}
+    .roles{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:9px}
+    .role{background:#f7f6f1;border:1px solid #eceae2;border-radius:7px;padding:10px 12px}
+    .role strong{display:block;font-size:13px;margin-bottom:3px}
+    .role span{display:block;font-size:12px;color:var(--muted);line-height:1.5}
+    .note{margin:18px 0 0;color:var(--muted);font-size:12px;line-height:1.5}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap top">
+      <div>
+        <h1>Human Generator Preview</h1>
+        <p class="lede">Local preview only. This version avoids repeated first names, last names, titles, companies, and pay text while mixing project budget levels, pitch-stage listings, no-pay projects, and different writing voices.</p>
+      </div>
+      <button id="generate">Generate Another Batch</button>
+    </div>
+  </header>
+  <main class="wrap">
+    <div id="grid" class="grid"></div>
+    <p class="note">This does not publish anything. The real admin generator was updated separately in the existing admin template and workflow.</p>
+  </main>
+  <script>
+    const types=["Feature Film","Short Film","Commercials & Branded Content","Student Film","Theater & Musicals","Low-Budget Indie Film","Experimental / Proof of Concept"];
+    const cities=["New York, NY","Los Angeles, CA","Chicago, IL","Boston, MA"];
+    const first=["Mara","Noah","Leah","Andre","Ruth","Nadine","Samir","Priya","Cal","Mina","Theo","Raina","Jonah","Lucia","Miles","Noor","Tessa","Darius","Clara","Mateo","Iris","Felix","Adina","Bashir","Camille","Desmond","Elora","Ford","Gia","Hugo","Imani","Jasper","Katya","Luca","Maren","Nestor","Opal","Paolo","Quinn","Romy","Silas","Talia","Uri","Veda","Wyatt","Yara","Zeke"];
+    const last=["Vale","Bell","Rios","Cho","Ellis","Perez","Leung","Hart","Voss","Alvarez","Okafor","Cruz","Farrell","Sato","Mercer","Navarro","Reed","Kapoor","Vega","Tan","Adebayo","Batra","Caruso","Delaney","Escobar","Fontaine","Givens","Hollis","Ivers","Jafari","Kaur","Lombardi","Mendez","Novak","Osei","Paz","Quintana","Rashid","Serrano","Whitlock","Yamamoto","Zeller"];
+    const companies=["Blue Hour Pictures","Harbor Cut Films","Paper Lantern Motion","Signal House Content Lab","Cinderblock Productions","Market Street Story Lab","Second Bell Cinema","Green Room Workshop Collective","Corner Store Cinema","Riverglass Media Works","Side Street Project Studio","Copper Rail Pictures"];
+    const titles=["Please Do Not Feed the Actors","Everything We Said in the Parking Lot","I Think Your Mother Called Again","The Day We Lost Sound","Three Blocks from the Good Hospital","No One Here Is Actually Fine","What the Location Manager Knew","Someone Left the Back Door Open","We Are Not Calling It a Pilot Yet","A Presentation for People With Money","This Is Only a Proof of Concept","The Short We Shoot Before the Feature","Nobody Say Streaming Platform","The Pitch Deck Has Feelings","Budget Pending","If the Grant Comes Through","Holding","The Wrong Exit","Before the Notes Call","A Very Small Favor"];
+    const storyBits=["a call sheet with the wrong address","a neighbor who refuses to sign the location release","a grant deadline nobody admits they missed","a family receipt that proves someone has been paying in secret","a prop knife that goes missing during a table read","a voice note from an actor who quit before rehearsal","a broken register during the busiest hour of the day","a stand-in who notices continuity is hiding a lie","a child actor's parent asking the question adults avoided","a pitch meeting that may or may not happen"];
+    const voices=[
+      ["friendly",d=>`Small team, clean communication, actor-friendly process. The story turns on ${d}. They are not looking for perfect polish; they want people who can make a normal moment feel personal.`,"Warm and unfussy. Bring a real person, not a showcase piece."],
+      ["professional",d=>`Casting is focused on preparation and reliability. ${d} is the engine of the piece, so every role needs clean stakes and strong continuity discipline.`,"Prepared, technically reliable, and able to take direction quickly."],
+      ["plainspoken",d=>`No glossy acting wanted here. The director wants the weirdness of ${d} to feel like it happened on an otherwise normal day.`,"Keep it honest. Do not oversell the scene."],
+      ["scrappy",d=>`This is a no-frills situation. The team has a location, a plan, and not much cushion. Everything depends on ${d}.`,"Show up ready. The role should feel useful, not decorative."],
+      ["pitch-stage",d=>`This is being made as a presentation piece, not a finished full production yet. The hope is to use it to raise money or package the larger version. The sample scene turns on ${d}.`,"Play the reality of the scene, not the ambition around it."]
+    ];
+    const used={titles:new Set(),companies:new Set(),roles:new Set(),firsts:new Set(),lasts:new Set(),pays:new Set()};
+    const pick=a=>a[Math.floor(Math.random()*a.length)];
+    const norm=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+    function uniq(set, maker){for(let i=0;i<500;i++){const v=maker();const n=norm(v);if(!set.has(n)){set.add(n);return v;}}return maker()+" "+Math.floor(Math.random()*9999)}
+    function person(){
+      for(let i=0;i<600;i++){
+        const f=pick(first), l=pick(last), full=`${f} ${l}`;
+        if(!used.firsts.has(norm(f))&&!used.lasts.has(norm(l))&&!used.roles.has(norm(full))){
+          used.firsts.add(norm(f));used.lasts.add(norm(l));used.roles.add(norm(full));return full;
+        }
+      }
+      const f=`${pick(["Aven","Bren","Calo","Demi","Ero","Fia","Galen","Hala"])}${Math.floor(Math.random()*90)}`;
+      const l=`${pick(["Mar","Vale","Soren","Kade","Luz","Nox","Paz","Rell"])}${Math.floor(Math.random()*90)}`;
+      used.firsts.add(norm(f));used.lasts.add(norm(l));used.roles.add(norm(`${f} ${l}`));return `${f} ${l}`;
+    }
+    function pay(type){
+      return uniq(used.pays,()=>{
+        const mode=pick(["none","copy","tiny","deferred","pitch","low","mid","high","vague"]);
+        if(mode==="none")return "No pay. Copy, credit, meals, and honest communication about schedule. Only submit if that works for you.";
+        if(mode==="copy")return "Copy/credit/meals. No cash budget for performers at this stage; travel is not covered.";
+        if(mode==="tiny")return `Very low pay. Most roles $${50+Math.floor(Math.random()*4)*25}/day, with $${125+Math.floor(Math.random()*4)*25}/day for larger parts.`;
+        if(mode==="deferred")return "Deferred/contingent compensation. No guaranteed upfront pay; written deferred terms if financing or sale happens.";
+        if(mode==="pitch")return "Pitch/proof-of-concept stage. Limited stipends if the presentation budget closes; not attached to a studio or streamer yet.";
+        if(mode==="high")return `Funded production. Principal roles $${650+Math.floor(Math.random()*8)*100}-$${1500+Math.floor(Math.random()*10)*100}/day; usage or contract terms disclosed before booking.`;
+        if(mode==="vague")return "Budget not fully locked. Some roles may pay, some may be credit/meals only. Terms confirmed before booking.";
+        if(type.includes("Commercial"))return `Paid digital/commercial shoot. Principals $${400+Math.floor(Math.random()*7)*50}-$${850+Math.floor(Math.random()*6)*50}/day; usage disclosed before booking.`;
+        return `Independent production. Principal roles $${125+Math.floor(Math.random()*8)*25}-$${300+Math.floor(Math.random()*6)*25}/day; smaller roles vary.`;
+      });
+    }
+    function synopsis(type,voice,bit){
+      const len=pick(["very short","short","medium","long","very long"]);
+      const base=`${type} casting in ${pick(cities)}.`;
+      const human=pick(["The producer admits the schedule is still a little annoying.","The director cares more about awkward pauses than pretty coverage.","One scene may change once they see who reads best.","There are small roles here because the world needs to feel populated.","The tone should feel overheard, not announced."]);
+      let text=base+" "+voice[1](bit);
+      if(len==="short")text+=`\n\n${human}`;
+      if(len==="medium")text+=`\n\nThe project is trying to feel specific rather than big. Submit something simple that shows listening. ${human}`;
+      if(len==="long")text+=`\n\nThe team is avoiding generic casting energy. Some roles are practical, some are emotional, and a few are there because real locations are full of people who do not know they are in the story.\n\n${human}`;
+      if(len==="very long")text+=`\n\nThe project may still shift depending on who is cast and what money comes through. That is part of the point: it should feel like a real independent process, not a polished fake breakdown.\n\nThe team wants tapes that are clean and direct. No heavy music, no montage, no pretending this is bigger than it is. ${human}`;
+      return [len,text];
+    }
+    function roles(type,voice){
+      const core=[
+        [person(),"Lead",`${pick(["Primary pressure point of the story","Person trying to keep the day from getting worse","The one who knows more than they say"])}. ${voice[2]}`],
+        [person(),"Supporting",pick(["Scene partner with leverage. Not huge, but important.","A practical person who makes the lead's problem harder.","Funny if played dry; annoying if played broad."])],
+        [person(),"Supporting",pick(["Needs a point of view and real listening.","Should feel like someone with a day before and after this scene.","A small role that can steal the scene if it stays truthful."])],
+        [person(),"Day Player",pick(["One strong scene. Keep it grounded.","Short scene, very specific energy.","Practical, memorable, not broad."])]
+      ];
+      if(Math.random()<0.55)core.push([uniq(used.roles,()=>`${pick(["Market","Lobby","Transit","Campus","Workshop","Street"])} ${pick(["Background","Regulars","Patrons","Riders","Audience"])}`),"Background",pick(["Natural background for a practical location.","Featured background with real behavior. No mugging.","Atmosphere for a busy location; patient with resets."])]);
+      if(Math.random()<0.28)core.push([uniq(used.roles,()=>`${pick(["Principal","Commercial","Photo Double"])} Stand-In`),"Stand-In",pick(["Stand-in for lighting and camera setups.","Patient, punctual stand-in for marks and simple movement.","May be used for over-the-shoulder framing."])]);
+      return core;
+    }
+    function one(){
+      const type=pick(types), voice=pick(voices), bit=pick(storyBits), s=synopsis(type,voice,bit);
+      return{type,city:pick(cities),voice:voice[0],len:s[0],title:uniq(used.titles,()=>pick(titles)),prod:uniq(used.companies,()=>pick(companies)),pay:pay(type),synopsis:s[1],roles:roles(type,voice)};
+    }
+    function render(){
+      const batch=Array.from({length:5},one);
+      document.getElementById("grid").innerHTML=batch.map(c=>`
+        <article class="card">
+          <div class="meta"><span class="pill">${c.type}</span><span class="pill">${c.city}</span><span class="pill gray">${c.len}</span><span class="pill gray">${c.voice}</span></div>
+          <h2>${c.title}</h2>
+          <div class="prod">${c.prod}</div>
+          <div class="pay">${c.pay}</div>
+          <p class="synopsis">${c.synopsis}</p>
+          <div class="roles">${c.roles.map(r=>`<div class="role"><strong>${r[0]} <em style="font-weight:600;color:#777">(${r[1]})</em></strong><span>${r[2]}</span></div>`).join("")}</div>
+        </article>
+      `).join("");
+    }
+    document.getElementById("generate").addEventListener("click",render);
+    render();
+  </script>
+</body>
+</html>

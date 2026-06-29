@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trust & Safety | CastSlate Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/>
+  <style>
+    :root{
+      --bg:#FFFFFF;--s1:#F8F8FA;--s2:#F2F2F5;--s3:#E8E8EF;
+      --t1:#1A1A2E;--t2:#555566;--t3:#8A8A99;--bdr:#E2E2EA;
+      --acc:#6366F1;--teal:#18A999;--red:#C0392B;--amber:#C88900;
+      --green:#1D7B44;--blue:#2563EB;--ink:#0A0A0A;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--t1);font-family:"DM Sans",system-ui,-apple-system,sans-serif;line-height:1.55}
+    button,a{font-family:inherit}
+    a{color:inherit}
+    .nav{height:74px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;padding:0 40px;background:rgba(255,255,255,.92);position:sticky;top:0;z-index:10;backdrop-filter:blur(14px)}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:19px;letter-spacing:-.5px}
+    .mark{width:34px;height:34px;background:var(--t1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex:none}
+    .mark svg{width:22px;height:22px}
+    .nav-links{display:flex;align-items:center;gap:22px;font-size:13px;color:var(--t2);font-weight:700}
+    .btn{border:none;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+    .btn-p{background:var(--acc);color:#fff;box-shadow:0 8px 20px rgba(99,102,241,.2)}
+    .btn-s{background:#fff;color:var(--t1);border:1px solid var(--bdr)}
+    .hero{background:var(--s1);border-bottom:1px solid var(--bdr);padding:54px 40px 42px}
+    .hero-inner{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:end}
+    .section-label{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:12px}
+    h1{font-family:"Source Serif 4",serif;font-size:clamp(38px,6vw,72px);line-height:.98;letter-spacing:-1.2px;margin:0 0 18px}
+    .lead{font-size:17px;color:var(--t2);line-height:1.8;max-width:720px;margin:0 0 24px}
+    .hero-panel{background:#fff;border:1px solid var(--bdr);border-radius:8px;padding:22px;box-shadow:0 14px 40px rgba(20,20,35,.07)}
+    .safety-score{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+    .score{background:var(--s1);border:1px solid var(--bdr);border-radius:8px;padding:12px}
+    .score strong{display:block;font-size:18px;margin-bottom:2px}
+    .score span{font-size:12px;color:var(--t3)}
+    .page{max-width:1160px;margin:0 auto;padding:48px 40px 70px}
+    .band{margin:0 -40px;padding:42px 40px;background:#11121A;color:#fff}
+    .band-inner{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+    .promise{border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:18px;background:rgba(255,255,255,.055)}
+    .promise i{font-size:25px;color:#fff;opacity:.92}
+    .promise h3{font-size:15px;margin:10px 0 6px}
+    .promise p{font-size:13px;color:rgba(255,255,255,.68);margin:0;line-height:1.65}
+    h2{font-size:28px;letter-spacing:-.7px;margin:0 0 14px;font-weight:900}
+    .sub{color:var(--t2);font-size:15px;line-height:1.75;max-width:760px;margin:0 0 24px}
+    .grid{display:grid;gap:14px}
+    .grid.two{grid-template-columns:repeat(2,1fr)}
+    .grid.three{grid-template-columns:repeat(3,1fr)}
+    .card{background:#fff;border:1px solid var(--bdr);border-radius:8px;padding:22px;box-shadow:0 2px 14px rgba(20,20,35,.04)}
+    .card h3{font-size:16px;margin:0 0 8px;font-weight:850;letter-spacing:-.2px;display:flex;align-items:center;gap:8px}
+    .card h3 i{font-size:22px;color:var(--acc)}
+    .card p{color:var(--t2);font-size:14px;line-height:1.72;margin:0}
+    .card ul{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+    .card li{font-size:13.5px;color:var(--t2);line-height:1.6;display:flex;gap:9px;align-items:flex-start}
+    .card li i{color:var(--green);font-size:18px;line-height:1.3;flex:none}
+    .warning{border-left:4px solid var(--red);background:rgba(192,57,43,.06)}
+    .warning h3 i{color:var(--red)}
+    .amber{border-left:4px solid var(--amber);background:rgba(200,137,0,.06)}
+    .amber h3 i{color:var(--amber)}
+    .green{border-left:4px solid var(--green);background:rgba(29,123,68,.06)}
+    .green h3 i{color:var(--green)}
+    .section{padding:48px 0;border-bottom:1px solid var(--bdr)}
+    .section:last-child{border-bottom:none}
+    .checklist{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .check{display:flex;gap:12px;align-items:flex-start;background:var(--s1);border:1px solid var(--bdr);border-radius:8px;padding:14px}
+    .check i{font-size:22px;color:var(--green);flex:none}
+    .check strong{display:block;font-size:14px;margin-bottom:3px}
+    .check span{font-size:12.5px;color:var(--t2);line-height:1.6}
+    .steps{counter-reset:step;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .step{background:var(--s1);border:1px solid var(--bdr);border-radius:8px;padding:16px;position:relative}
+    .step:before{counter-increment:step;content:counter(step);display:flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--t1);color:#fff;border-radius:8px;font-weight:900;font-size:13px;margin-bottom:10px}
+    .step h3{font-size:14px;margin:0 0 5px}
+    .step p{font-size:12.5px;color:var(--t2);line-height:1.6;margin:0}
+    .comp-table{border:1px solid var(--bdr);border-radius:8px;overflow:hidden;background:#fff}
+    .row{display:grid;grid-template-columns:170px 1fr;border-bottom:1px solid var(--bdr)}
+    .row:last-child{border-bottom:none}
+    .row .tag{padding:16px;font-weight:900;font-size:13px;display:flex;align-items:center;gap:8px}
+    .row .desc{padding:16px;color:var(--t2);font-size:13.5px;line-height:1.7;background:var(--s1)}
+    .pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:900;border-radius:999px;padding:4px 9px}
+    .paid{background:rgba(29,123,68,.12);color:var(--green)}
+    .unpaid{background:rgba(138,138,153,.16);color:var(--t2)}
+    .deferred{background:rgba(200,137,0,.14);color:var(--amber)}
+    .notfound{background:rgba(37,99,235,.1);color:var(--blue)}
+    .callout{background:var(--t1);color:#fff;border-radius:8px;padding:24px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+    .callout h2{margin:0 0 6px;color:#fff}
+    .callout p{color:rgba(255,255,255,.72);margin:0;max-width:690px;font-size:14px;line-height:1.7}
+    .footer{background:#11121A;color:#fff;padding:46px 40px}
+    .footer-inner{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1.2fr repeat(3,1fr);gap:32px}
+    .footer h4{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.45);margin:0 0 12px}
+    .footer a,.footer p{display:block;color:rgba(255,255,255,.68);font-size:13px;text-decoration:none;margin:0 0 9px;line-height:1.65}
+    .footer .brand{color:#fff;margin-bottom:10px}
+    @media(max-width:860px){
+      .nav{padding:0 18px}.nav-links{display:none}
+      .hero{padding:42px 22px 34px}.hero-inner,.grid.two,.grid.three,.band-inner,.checklist,.steps,.footer-inner{grid-template-columns:1fr}
+      .page{padding:34px 22px 54px}.band{margin:0 -22px;padding:32px 22px}
+      .row{grid-template-columns:1fr}.row .desc{border-top:1px solid var(--bdr)}
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 32 32"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#fff"/></svg></div>
+      CastSlate
+    </div>
+    <nav class="nav-links">
+      <span>Browse</span><span>Classes</span><span>Resources</span><span>FAQ</span>
+      <a class="btn btn-s" href="#">Sign In</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="section-label">Trust & Safety</div>
+        <h1>Audition smarter. Stay protected.</h1>
+        <p class="lead">CastSlate is built to help actors find opportunities without blurring the line between casting, paid services, representation, and unsafe requests. This page explains what should be free, what should be questioned, and what should be reported immediately.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <a class="btn btn-p" href="#report"><i class="ti ti-flag"></i> Report a concern</a>
+          <a class="btn btn-s" href="#red-flags"><i class="ti ti-shield"></i> Review red flags</a>
+        </div>
+      </div>
+      <aside class="hero-panel">
+        <div class="section-label" style="margin-bottom:8px">Core Rule</div>
+        <h2 style="font-size:24px;margin-bottom:8px">You never pay to audition.</h2>
+        <p style="color:var(--t2);font-size:14px;margin:0;line-height:1.75">A casting opportunity should not require an application fee, audition fee, callback fee, reading fee, or monthly payment to be eligible for the role. Paid CastSlate services, if any, are separate from casting eligibility.</p>
+        <div class="safety-score">
+          <div class="score"><strong>No fees</strong><span>for audition eligibility</span></div>
+          <div class="score"><strong>Report tools</strong><span>for unsafe contact</span></div>
+          <div class="score"><strong>Clear pay labels</strong><span>paid, unpaid, deferred</span></div>
+          <div class="score"><strong>Privacy-first</strong><span>limited data sharing</span></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <main class="page">
+    <section class="band">
+      <div class="band-inner">
+        <div class="promise"><i class="ti ti-cash-off"></i><h3>No payment to audition</h3><p>Submitting for a role should not require paying the casting party, agent, manager, filmmaker, or any third party.</p></div>
+        <div class="promise"><i class="ti ti-alert-triangle"></i><h3>Suspicious castings removed</h3><p>Listings may be hidden, archived, or removed when they appear misleading, unsafe, inappropriate, or unverifiable.</p></div>
+        <div class="promise"><i class="ti ti-lock"></i><h3>Personal information protected</h3><p>CastSlate limits exposure of sensitive profile and contact information and encourages users to keep communications on-platform.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">Platform Standards</div>
+      <h2>What CastSlate separates clearly</h2>
+      <p class="sub">Actors should never have to guess whether they are applying for a role, buying a service, joining a class, paying for promotion, or communicating with someone outside the platform.</p>
+      <div class="grid three">
+        <div class="card green"><h3><i class="ti ti-check"></i> Casting eligibility</h3><p>Your ability to be considered for a casting must not depend on paying the casting party. If a role requires money to submit, audition, read, hold a callback, or stay eligible, report it.</p></div>
+        <div class="card amber"><h3><i class="ti ti-receipt"></i> Paid services</h3><p>Memberships, classes, profile tools, coaching, business cards, or other paid products must be presented separately from whether a casting team can consider you for a role.</p></div>
+        <div class="card"><h3><i class="ti ti-briefcase"></i> No employment guarantee</h3><p>CastSlate can help organize discovery and submissions, but it does not guarantee auditions, callbacks, representation, employment, payment, bookings, or career outcomes.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">Compensation Clarity</div>
+      <h2>Every listing should make compensation easier to understand</h2>
+      <p class="sub">Castings may vary widely: some pay a day rate, some are student or no-budget projects, some offer copy/credit/meals, and some are deferred. What matters is that actors are not misled about what is known.</p>
+      <div class="comp-table">
+        <div class="row"><div class="tag"><span class="pill paid"><i class="ti ti-currency-dollar"></i> Paid</span></div><div class="desc">The listing states a rate, range, stipend, contract structure, usage terms, or paid classification. Actors should still confirm the final rate before accepting work.</div></div>
+        <div class="row"><div class="tag"><span class="pill unpaid"><i class="ti ti-file-text"></i> Unpaid</span></div><div class="desc">The project does not offer cash compensation. It may offer copy, credit, meals, footage, experience, festival exposure, or other non-cash value. Actors decide whether that is acceptable.</div></div>
+        <div class="row"><div class="tag"><span class="pill deferred"><i class="ti ti-clock-dollar"></i> Deferred</span></div><div class="desc">Payment may depend on future financing, sale, distribution, grant funding, or revenue. Deferred pay should not be treated as guaranteed unless a written agreement confirms the terms.</div></div>
+        <div class="row"><div class="tag"><span class="pill notfound"><i class="ti ti-help"></i> Not yet confirmed</span></div><div class="desc">When compensation is unclear, users should ask for written clarification before auditioning, traveling, performing, signing releases, or providing additional materials.</div></div>
+      </div>
+    </section>
+
+    <section id="red-flags" class="section">
+      <div class="section-label">Actor Scam Red Flags</div>
+      <h2>Requests actors should question immediately</h2>
+      <p class="sub">Not every unusual request is malicious, but the following patterns are common in scams, coercive casting situations, fake representation offers, or unsafe auditions.</p>
+      <div class="grid two">
+        <div class="card warning">
+          <h3><i class="ti ti-cash-off"></i> “Pay me to represent you”</h3>
+          <p>Legitimate agents generally earn commission from work they help you book. Be cautious of anyone claiming to be an agent who asks for upfront representation fees, monthly payments, activation fees, or “pay me $200 a month and I will be your agent.” That is not standard agency representation.</p>
+          <ul>
+            <li><i class="ti ti-check"></i><span>Real representation should be documented in a clear agreement.</span></li>
+            <li><i class="ti ti-check"></i><span>Agents typically earn only when you earn, subject to applicable law and contract terms.</span></li>
+            <li><i class="ti ti-check"></i><span>Paid coaching, photography, classes, or management services must be clearly separated from representation.</span></li>
+          </ul>
+        </div>
+        <div class="card warning">
+          <h3><i class="ti ti-shirt-off"></i> Undressing or sexualized audition requests</h3>
+          <p>No one should pressure you to undress, remove clothing, perform sexual material, show private body parts, simulate intimacy, or record intimate material during an audition unless the project has clearly disclosed intimacy/nudity requirements and appropriate safety protocols in advance.</p>
+          <ul>
+            <li><i class="ti ti-check"></i><span>Never comply with surprise nudity or private “prove you are comfortable” requests.</span></li>
+            <li><i class="ti ti-check"></i><span>Ask whether an intimacy coordinator, closed set, written disclosure, and consent process are in place.</span></li>
+            <li><i class="ti ti-check"></i><span>Minors should never be asked for sexual, nude, or intimate audition material.</span></li>
+          </ul>
+        </div>
+        <div class="card warning">
+          <h3><i class="ti ti-camera-off"></i> Filming without consent</h3>
+          <p>You should know when you are being recorded, what the recording is for, who will see it, and whether it will be stored or shared. Secret filming, pressure to send private videos, or refusal to explain recording use should be reported.</p>
+        </div>
+        <div class="card warning">
+          <h3><i class="ti ti-map-pin-exclamation"></i> Unsafe locations or private meetings</h3>
+          <p>Be cautious about auditions in hotel rooms, private apartments, isolated locations, cars, late-night meetings, or locations that do not match the production details. When possible, bring a trusted person, tell someone where you are going, and keep communications documented.</p>
+        </div>
+        <div class="card amber">
+          <h3><i class="ti ti-credit-card-off"></i> Checks, deposits, and money movement</h3>
+          <p>Do not cash a check and send money back. Do not buy equipment from a “required vendor” before meeting a verified team. Do not provide banking details, tax forms, or identity documents until you have verified the production and understand why the information is required.</p>
+        </div>
+        <div class="card amber">
+          <h3><i class="ti ti-message-report"></i> Pressure to leave the platform</h3>
+          <p>Moving to email, text, or social media is not always wrong, but suspicious users often push actors off-platform quickly to avoid reporting systems. Keep records and report inappropriate contact, harassment, threats, payment demands, or sexual requests.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">Privacy & Contact</div>
+      <h2>Personal information should stay controlled</h2>
+      <div class="checklist">
+        <div class="check"><i class="ti ti-lock"></i><div><strong>Share only what is needed</strong><span>Use your profile, reel, resume, and normal professional contact details. Be careful with home addresses, Social Security numbers, passport scans, banking details, and private family information.</span></div></div>
+        <div class="check"><i class="ti ti-mail-shield"></i><div><strong>Keep communication traceable</strong><span>When possible, keep early conversations on CastSlate or in written channels. Avoid verbal-only promises about payment, travel, roles, nudity, usage, or production identity.</span></div></div>
+        <div class="check"><i class="ti ti-user-exclamation"></i><div><strong>Report inappropriate contact</strong><span>Harassment, sexual pressure, discrimination, threats, manipulation, requests for money, and unsafe meeting requests should be reported to CastSlate.</span></div></div>
+        <div class="check"><i class="ti ti-shield-check"></i><div><strong>Verified still means verify</strong><span>Badges and platform signals can help, but actors should independently confirm important details before travel, performance, contracts, or off-platform payment arrangements.</span></div></div>
+      </div>
+    </section>
+
+    <section id="report" class="section">
+      <div class="section-label">Reporting</div>
+      <h2>How suspicious castings are handled</h2>
+      <p class="sub">CastSlate may review, hide, edit, archive, reject, or remove castings and accounts when they appear unsafe, misleading, fraudulent, exploitative, discriminatory, sexually inappropriate, or inconsistent with platform rules.</p>
+      <div class="steps">
+        <div class="step"><h3>Capture details</h3><p>Save the casting title, messages, usernames, screenshots, phone numbers, emails, payment requests, and any off-platform links.</p></div>
+        <div class="step"><h3>Report in context</h3><p>Use the report option on the listing, profile, message, or support channel so the team can locate the exact issue faster.</p></div>
+        <div class="step"><h3>Stop engaging</h3><p>If a request feels unsafe or coercive, do not continue the conversation while waiting for review. Do not send money or private material.</p></div>
+        <div class="step"><h3>Escalate danger</h3><p>If there is immediate danger, threats, stalking, exploitation, or a minor is involved, contact local emergency services or appropriate authorities.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">Parent & Minor Safety</div>
+      <h2>Extra caution for performers under 18</h2>
+      <div class="grid two">
+        <div class="card"><h3><i class="ti ti-users"></i> Guardian involvement</h3><p>Minors should use CastSlate only with parent or guardian consent and supervision. A parent or guardian should review listings, communications, locations, role requirements, and any requested materials.</p></div>
+        <div class="card warning"><h3><i class="ti ti-ban"></i> Hard stop requests</h3><p>Minors should never be asked for nude, sexual, intimate, secret, private, or coercive audition material. Any such request should be treated as serious and reported immediately.</p></div>
+      </div>
+    </section>
+
+    <section class="callout">
+      <div>
+        <h2>When in doubt, pause.</h2>
+        <p>No role is worth compromising your safety, identity, money, consent, or personal boundaries. A legitimate production can answer reasonable questions about who they are, what they are filming, where it happens, what it pays, and why they need your information.</p>
+      </div>
+      <a class="btn btn-p" href="#"><i class="ti ti-flag"></i> Report a safety issue</a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <div class="brand"><div class="mark" style="background:#fff"><svg viewBox="0 0 32 32"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#11121A"/></svg></div>CastSlate</div>
+        <p>Modern casting tools for actors and casting teams, with clearer safety expectations for submissions, auditions, and professional contact.</p>
+      </div>
+      <div><h4>Actors</h4><a>Browse Castings</a><a>Actor Toolkit</a><a>TapeLink</a><a>Trust & Safety</a></div>
+      <div><h4>Company</h4><a>About</a><a>Resources</a><a>Contact</a><a>Careers</a></div>
+      <div><h4>Legal</h4><a>Terms of Use</a><a>Privacy Policy</a><a>FAQ</a><a>Report a Concern</a></div>
+    </div>
+  </footer>
+</body>
+</html>

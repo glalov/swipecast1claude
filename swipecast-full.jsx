@@ -19669,6 +19669,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {isSuperAdmin&&<AdminNavLink current={section} target="email-digests" label="Email Digests" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="email-campaigns" label="Email Campaigns" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="weekly-checkins" label="Weekly Check-Ins" onClick={goToSection}/>}
+      {isSuperAdmin&&<AdminNavLink current={section} target="manager-mode" label="Manager Mode" onClick={goToSection}/>}
       {/* Direct jump to the CD dashboard — admins inherit CD capabilities, so they post + review
           submissions from there using the exact same interface as regular casting directors. */}
       <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
@@ -19700,6 +19701,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="email-digests"&&isSuperAdmin&&<AdminEmailDigests/>}
       {section==="email-campaigns"&&isSuperAdmin&&<AdminEmailCampaigns session={session}/>}
       {section==="weekly-checkins"&&isSuperAdmin&&<AdminWeeklyCheckIns session={session}/>}
+      {section==="manager-mode"&&isSuperAdmin&&<AdminManagerMode session={session}/>}
       <div style={{marginTop:40}}><Footer onNavigate={onNavigate}/></div>
     </div>
   </div>);
@@ -21548,7 +21550,7 @@ function AdminWeeklyCheckIns({session}){
   };
 
   const runSendNow=async()=>{
-    if(!window.confirm("Send weekly check-ins now to all eligible talent accounts that haven't received one this week?"))return;
+    if(!window.confirm("Send weekly check-ins now to all Premium talent accounts that haven't received one this week? (Free accounts are never included.)"))return;
     setBusy(true);setMsg("");setSendProgress("Loading talent accounts…");
     try{
       const weekStart=getWeekStart();
@@ -21560,11 +21562,13 @@ function AdminWeeklyCheckIns({session}){
       const{data:alreadySent}=await window.sb.from("weekly_checkin_logs").select("talent_id").eq("week_start",weekStart);
       const sentSet=new Set((alreadySent||[]).map(r=>r.talent_id));
 
-      // All active talent
-      setSendProgress("Loading talent profiles…");
+      // All active PREMIUM talent — Manager Mode is a premium-only feature, so weekly
+      // check-ins go ONLY to paying/premium members (membership_status='active'), never free accounts.
+      setSendProgress("Loading Premium talent profiles…");
       const{data:talents,error:tErr}=await window.sb.from("profiles")
-        .select("id,display_name,user_type,account_status,banned,suspended,headshot_url,bio,skills,resume_url,reel_url,video_links,additional_photos,union_status")
+        .select("id,display_name,user_type,account_status,membership_status,banned,suspended,headshot_url,bio,skills,resume_url,reel_url,video_links,additional_photos,union_status")
         .eq("user_type","talent")
+        .eq("membership_status","active")
         .eq("account_status","active")
         .neq("banned",true)
         .neq("suspended",true)
@@ -21692,7 +21696,7 @@ function AdminWeeklyCheckIns({session}){
 
   return(<>
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Weekly Actor Check-Ins</h1>
-    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Automatic weekly career notes delivered to every active talent inbox. One per actor per week. No reply. No admin approval needed.</p>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Automatic weekly career notes delivered to every <strong>Premium</strong> talent inbox (premium-only feature — free accounts never receive these). One per actor per week. No reply. No admin approval needed.</p>
 
     {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,borderLeft:"3px solid var(--acc)"}}>{msg}</div>}
     {sendProgress&&<div style={{background:"rgba(26,26,200,0.07)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,borderLeft:"3px solid var(--acc)",fontWeight:600}}>{sendProgress}</div>}
@@ -21773,7 +21777,7 @@ function AdminWeeklyCheckIns({session}){
         </button>
       </div>
       <p style={{fontSize:12,color:"var(--t3)",marginTop:10}}>
-        "Send Now" sends to all active talent who have not received a check-in this week. Safe to run multiple times — duplicates are blocked by a unique constraint.
+        "Send Now" sends to all Premium talent who have not received a check-in this week. Free accounts are never included. Safe to run multiple times — duplicates are blocked by a unique constraint.
       </p>
     </div>
 
@@ -21840,6 +21844,188 @@ function AdminWeeklyCheckIns({session}){
           </tbody>
         </table>
       </div>}
+    </div>
+  </>);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN: MANAGER MODE  (monthly weekly-check-in delivery graph)
+// ═══════════════════════════════════════════════════════════════
+// Premium-only Manager Mode = the weekly career check-in. The real schedule is the
+// pg_cron job "weekly-checkins": every Monday at 14:00 UTC (10:00 AM America/New_York).
+// This dashboard shows, month by month, each Monday's send: how many Premium
+// subscribers were successfully sent, at what time, plus the next scheduled Mondays.
+const MM_SEND_HOUR_UTC=14;            // pg_cron jobid 5 fires at 0 14 * * 1 (UTC)
+const MM_MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+function AdminManagerMode({session}){
+  const[rowsByWeek,setRowsByWeek]=useState({});   // { 'YYYY-MM-DD': {count, firstSentAt} }
+  const[premiumCount,setPremiumCount]=useState(0);
+  const[loading,setLoading]=useState(true);
+  const now=new Date();
+  const[cursor,setCursor]=useState({y:now.getUTCFullYear(),m:now.getUTCMonth()}); // viewed month (UTC)
+
+  useEffect(()=>{(async()=>{
+    setLoading(true);
+    const[lRes,pRes]=await Promise.all([
+      // Only count recipients who are currently Premium — Manager Mode is premium-only.
+      window.sb.from("weekly_checkin_logs")
+        .select("week_start,sent_at,status,talent_id,profiles:talent_id(membership_status)")
+        .eq("status","sent").order("sent_at",{ascending:true}).limit(5000),
+      window.sb.from("profiles").select("id",{count:"exact",head:true})
+        .eq("user_type","talent").eq("membership_status","active")
+    ]);
+    const agg={};
+    (lRes.data||[]).forEach(r=>{
+      if(r.profiles?.membership_status!=="active")return; // premium-only tally
+      const k=r.week_start;if(!k)return;
+      if(!agg[k])agg[k]={count:0,firstSentAt:r.sent_at};
+      agg[k].count++;
+      if(r.sent_at&&(!agg[k].firstSentAt||r.sent_at<agg[k].firstSentAt))agg[k].firstSentAt=r.sent_at;
+    });
+    setRowsByWeek(agg);
+    setPremiumCount(pRes.count||0);
+    setLoading(false);
+  })();},[]);
+
+  // All Mondays whose date falls inside the viewed UTC month, as YYYY-MM-DD strings.
+  const mondaysOfMonth=(y,m)=>{
+    const out=[];const d=new Date(Date.UTC(y,m,1));
+    while(d.getUTCDay()!==1)d.setUTCDate(d.getUTCDate()+1);
+    while(d.getUTCMonth()===m){out.push(d.toISOString().slice(0,10));d.setUTCDate(d.getUTCDate()+7);}
+    return out;
+  };
+  // The exact send moment for a given Monday date string = that day 14:00 UTC.
+  const sendMoment=(ymd)=>new Date(ymd+`T${String(MM_SEND_HOUR_UTC).padStart(2,"0")}:00:00Z`);
+  const fmtTimeET=(iso)=>{try{return new Date(iso).toLocaleString("en-US",{timeZone:"America/New_York",hour:"numeric",minute:"2-digit",timeZoneName:"short"});}catch(_){return"—";}};
+  const fmtDate=(ymd)=>{try{return new Date(ymd+"T12:00:00Z").toLocaleDateString("en-US",{timeZone:"UTC",month:"short",day:"numeric"});}catch(_){return ymd;}};
+
+  // Next scheduled send = next Monday 14:00 UTC strictly in the future.
+  const nextSend=(()=>{
+    const d=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate(),MM_SEND_HOUR_UTC,0,0));
+    while(d.getUTCDay()!==1||d.getTime()<=Date.now())d.setUTCDate(d.getUTCDate()+1);
+    return d;
+  })();
+
+  const goMonth=(delta)=>setCursor(c=>{let m=c.m+delta,y=c.y;if(m<0){m=11;y--;}if(m>11){m=0;y++;}return{y,m};});
+  const isCurrentMonth=cursor.y===now.getUTCFullYear()&&cursor.m===now.getUTCMonth();
+
+  if(loading)return(<CastSlateLoader size="inline" text="Loading Manager Mode delivery history…"/>);
+
+  const mondays=mondaysOfMonth(cursor.y,cursor.m);
+  const bars=mondays.map(ymd=>{
+    const data=rowsByWeek[ymd];
+    const moment=sendMoment(ymd);
+    const isPast=moment.getTime()<=Date.now();
+    return{ymd,count:data?data.count:0,sentAt:data?data.firstSentAt:null,isPast,scheduledAt:moment.toISOString()};
+  });
+  const maxCount=Math.max(1,...bars.map(b=>b.count));
+  const monthSent=bars.reduce((a,b)=>a+b.count,0);
+
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Manager Mode</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Premium-only weekly career check-ins. Every <strong>Monday at 10:00&nbsp;AM ET</strong> (14:00 UTC), each Premium subscriber receives one personalized note. This view shows, month by month, how many paid subscribers were successfully sent on each of the month's Mondays and the upcoming schedule.</p>
+
+    {/* Top stat cards */}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:22}}>
+      {[
+        ["Premium subscribers",premiumCount,"Currently eligible"],
+        ["Sent this month",monthSent,`${MM_MONTHS[cursor.m]} ${cursor.y}`],
+        ["Next send",nextSend.toLocaleDateString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric"}),fmtTimeET(nextSend.toISOString())]
+      ].map(([label,val,sub])=>(
+        <div key={label} className="card" style={{padding:"16px 18px",textAlign:"center"}}>
+          <div style={{fontSize:26,fontWeight:800,color:"var(--acc)"}}>{val}</div>
+          <div style={{fontSize:11,color:"var(--t3)",marginTop:2,fontWeight:700,textTransform:"uppercase",letterSpacing:0.7}}>{label}</div>
+          <div style={{fontSize:11,color:"var(--t2)",marginTop:3}}>{sub}</div>
+        </div>
+      ))}
+    </div>
+
+    {/* Month navigator + graph */}
+    <div className="card" style={{padding:24,marginBottom:16}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+        <button className="btn-s btn-sm" onClick={()=>goMonth(-1)}>← Prev</button>
+        <div style={{fontWeight:800,fontSize:18}}>{MM_MONTHS[cursor.m]} {cursor.y}</div>
+        <button className="btn-s btn-sm" onClick={()=>goMonth(1)} disabled={isCurrentMonth} style={isCurrentMonth?{opacity:0.4,cursor:"not-allowed"}:{}}>Next →</button>
+      </div>
+      <div style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginBottom:18}}>Each month resets to its own Mondays — typically 4, sometimes 5.</div>
+
+      {/* Bar graph */}
+      <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-around",gap:10,height:200,padding:"0 4px",borderBottom:"2px solid var(--bdr)"}}>
+        {bars.map((b,i)=>{
+          const h=b.count>0?Math.max(8,Math.round((b.count/maxCount)*150)):0;
+          const future=!b.isPast;
+          return(<div key={b.ymd} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",height:"100%",minWidth:0}}>
+            <div style={{fontSize:13,fontWeight:800,color:future?"var(--t3)":"var(--acc)",marginBottom:4}}>{b.isPast?b.count:"—"}</div>
+            {future?(
+              <div title="Scheduled" style={{width:"58%",maxWidth:54,height:64,borderRadius:"8px 8px 0 0",border:"2px dashed var(--bdr)",background:"repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(0,0,0,0.03) 5px,rgba(0,0,0,0.03) 10px)"}}/>
+            ):(
+              <div style={{width:"58%",maxWidth:54,height:h,borderRadius:"8px 8px 0 0",background:b.count>0?"linear-gradient(180deg,var(--acc),rgba(26,26,200,0.65))":"var(--bdr)"}}/>
+            )}
+          </div>);
+        })}
+      </div>
+      {/* X-axis labels (week #, date) */}
+      <div style={{display:"flex",justifyContent:"space-around",gap:10,marginTop:8}}>
+        {bars.map((b,i)=>(
+          <div key={b.ymd} style={{flex:1,textAlign:"center",minWidth:0}}>
+            <div style={{fontSize:11,fontWeight:700,color:"var(--t2)"}}>Week {i+1}</div>
+            <div style={{fontSize:11,color:"var(--t3)"}}>Mon {fmtDate(b.ymd)}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Per-Monday detail table */}
+    <div className="card" style={{padding:24,marginBottom:16}}>
+      <div style={{fontWeight:700,fontSize:16,marginBottom:12}}>{MM_MONTHS[cursor.m]} {cursor.y} — Monday-by-Monday</div>
+      <div style={{overflowX:"auto"}}>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+          <thead>
+            <tr style={{borderBottom:"2px solid var(--bdr)"}}>
+              {["Week","Monday","Premium subscribers sent","Send time","Status"].map(h=>(
+                <th key={h} style={{textAlign:"left",padding:"9px 10px",fontWeight:700,color:"var(--t2)",fontSize:11,textTransform:"uppercase",letterSpacing:0.6,whiteSpace:"nowrap"}}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {bars.map((b,i)=>{
+              const future=!b.isPast;
+              const statusBadge=future
+                ?{label:"Scheduled",bg:"rgba(26,26,200,0.06)",color:"var(--acc)"}
+                :b.count>0?{label:"Sent",bg:"rgba(27,135,62,0.08)",color:"var(--grn)"}
+                :{label:"No sends",bg:"rgba(214,59,59,0.07)",color:"var(--red)"};
+              return(<tr key={b.ymd} style={{borderBottom:"1px solid var(--bdr)"}}>
+                <td style={{padding:"11px 10px",fontWeight:700}}>Week {i+1}</td>
+                <td style={{padding:"11px 10px",color:"var(--t2)",whiteSpace:"nowrap"}}>{fmtDate(b.ymd)}, {cursor.y}</td>
+                <td style={{padding:"11px 10px",fontWeight:800,color:future?"var(--t3)":"var(--acc)"}}>{future?"—":b.count}</td>
+                <td style={{padding:"11px 10px",color:"var(--t3)",whiteSpace:"nowrap"}}>{future?`${fmtTimeET(b.scheduledAt)} (scheduled)`:b.sentAt?fmtTimeET(b.sentAt):"—"}</td>
+                <td style={{padding:"11px 10px"}}>
+                  <span style={{padding:"3px 9px",borderRadius:10,fontSize:10,fontWeight:700,background:statusBadge.bg,color:statusBadge.color,textTransform:"uppercase",letterSpacing:0.5}}>{statusBadge.label}</span>
+                </td>
+              </tr>);
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {/* Upcoming schedule */}
+    <div className="card" style={{padding:24}}>
+      <div style={{fontWeight:700,fontSize:16,marginBottom:4}}>Upcoming schedule</div>
+      <div style={{fontSize:12,color:"var(--t3)",marginBottom:14}}>Automatic — runs every Monday at 10:00&nbsp;AM ET (14:00 UTC). No action needed.</div>
+      {(()=>{
+        const upcoming=[];const d=new Date(nextSend.getTime());
+        for(let i=0;i<4;i++){upcoming.push(new Date(d.getTime()));d.setUTCDate(d.getUTCDate()+7);}
+        return upcoming.map((u,i)=>(
+          <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:i<3?"1px solid var(--bdr)":"none"}}>
+            <div style={{width:8,height:8,borderRadius:"50%",background:i===0?"var(--acc)":"var(--bdr)"}}/>
+            <div style={{flex:1,fontWeight:i===0?700:600,fontSize:14}}>{u.toLocaleDateString("en-US",{timeZone:"America/New_York",weekday:"long",month:"long",day:"numeric"})}</div>
+            <div style={{fontSize:13,color:"var(--t2)"}}>{fmtTimeET(u.toISOString())}</div>
+            {i===0&&<span style={{padding:"3px 9px",borderRadius:10,fontSize:10,fontWeight:700,background:"rgba(26,26,200,0.06)",color:"var(--acc)",textTransform:"uppercase",letterSpacing:0.5}}>Next</span>}
+          </div>
+        ));
+      })()}
     </div>
   </>);
 }

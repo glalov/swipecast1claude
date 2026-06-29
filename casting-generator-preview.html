@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CastSlate Casting Generator Preview</title>
+  <style>
+    :root{
+      --ink:#151515;
+      --muted:#646464;
+      --line:#dfded8;
+      --paper:#fbfaf6;
+      --panel:#fff;
+      --accent:#1f5f5b;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--ink);
+      background:var(--paper);
+    }
+    header{
+      position:sticky;
+      top:0;
+      z-index:2;
+      background:rgba(251,250,246,.94);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:blur(10px);
+    }
+    .wrap{max-width:1120px;margin:0 auto;padding:24px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    h1{font-size:28px;letter-spacing:0;margin:0 0 6px;font-weight:850}
+    p{line-height:1.65}
+    .lede{color:var(--muted);margin:0;max-width:760px}
+    button{
+      border:1px solid var(--ink);
+      background:var(--ink);
+      color:#fff;
+      border-radius:8px;
+      padding:11px 16px;
+      font-weight:750;
+      cursor:pointer;
+      box-shadow:3px 4px 0 rgba(0,0,0,.18);
+      white-space:nowrap;
+    }
+    main.wrap{padding-top:28px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:20px;
+      box-shadow:0 10px 30px rgba(0,0,0,.05);
+    }
+    .meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+    .pill{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:#eaf3ef;border:1px solid #cfe1da;border-radius:999px;padding:4px 8px}
+    h2{font-size:22px;line-height:1.15;margin:0 0 4px;font-weight:850}
+    .prod{font-size:13px;color:var(--muted);font-weight:650;margin-bottom:12px}
+    .synopsis{font-size:14px;color:#303030;margin:0 0 16px;white-space:pre-line}
+    .roles{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:10px}
+    .role{padding:10px 12px;background:#f7f6f1;border:1px solid #eceae2;border-radius:7px}
+    .role strong{display:block;font-size:13px;margin-bottom:3px}
+    .role span{display:block;font-size:12px;color:var(--muted);line-height:1.5}
+    .note{font-size:12px;color:var(--muted);margin-top:16px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap top">
+      <div>
+        <h1>Casting Generator Preview</h1>
+        <p class="lede">Local preview only. These are examples of the new richer direction: more specific project premises, longer descriptions, and multiple roles per casting.</p>
+      </div>
+      <button id="shuffle">Shuffle Examples</button>
+    </div>
+  </header>
+  <main class="wrap">
+    <div id="grid" class="grid"></div>
+    <p class="note">This page does not publish anything and does not write to Supabase. It is only for reviewing the new generator style before deployment.</p>
+  </main>
+  <script>
+    const concepts=[
+      {
+        type:"Feature Film", location:"New York, NY", title:"Mile Marker 37", prod:"Blue Hour Independent Pictures",
+        synopsis:"Independent feature about a motel night clerk, a young mother traveling with her teenage son, and a retired tow-truck driver after a late-night accident leaves several strangers waiting out a storm together. What begins as a practical delay turns into a quiet mystery when one guest's car is found abandoned near the highway.\n\nThe tone is naturalistic and tense rather than flashy: long conversations, awkward silences, small discoveries, and characters deciding how much truth they owe each other.",
+        roles:[
+          ["Mara Ellis","Lead, 35-55. Motel night clerk: dry, observant, tired of being underestimated."],
+          ["Dani Perez","Lead, 28-45. Single parent traveling under pressure, funny when cornered."],
+          ["Eli","Supporting, 14-17. Teen son who notices more than adults think."],
+          ["Ray Voss","Supporting, 55-75. Retired tow-truck driver with warmth and an edge."],
+          ["State Trooper Leung","Day player, 30-55. Calm authority without cop-show performance."]
+        ]
+      },
+      {
+        type:"Short Film", location:"New York, NY", title:"The Spare Room", prod:"Third Floor Walk-Up Films",
+        synopsis:"A recently divorced tenant rents out her spare room for one week to a traveling home-health aide. The arrangement is supposed to be transactional, but the apartment still contains boxes from a marriage that ended badly, and the guest keeps receiving calls from a family she cannot afford to visit.\n\nThe piece is written for performance first: two-handers, subtext, humor in uncomfortable places, and scenes where the conflict lives in what characters choose not to say.",
+        roles:[
+          ["Tessa","Lead, 35-50. Brittle but not cold; dry humor and eventual vulnerability."],
+          ["Nadine","Lead, 30-48. Practical home-health aide carrying private family stress."],
+          ["Marco","Supporting, 35-55. Tessa's ex; charming enough that the history feels believable."],
+          ["Upstairs Neighbor","Day player, 25-70. Comic hallway scene that turns unexpectedly tender."]
+        ]
+      },
+      {
+        type:"Commercials & Branded Content", location:"Los Angeles, CA", title:"Grocery Delivery: The Substitute Shopper", prod:"Bright Cart Content Lab",
+        synopsis:"Digital-first branded comedy campaign centered on grocery substitutions: oat milk instead of almond, cilantro instead of parsley, birthday candles with the wrong number, and one shopper who becomes weirdly invested in getting a family's Tuesday dinner exactly right.\n\nThe style is bright but not fake: grounded comedy, real family rhythms, quick reaction beats, fast resets, food props, and small improvisational buttons at the end of scenes.",
+        roles:[
+          ["Delivery Shopper","Principal, 22-40. Overly conscientious app shopper with strong comic timing."],
+          ["Parent One","Principal, 30-50. Trying to cook while managing family chaos."],
+          ["Parent Two","Principal, 30-50. Relaxed partner who escalates tiny grocery issues."],
+          ["Teen","Principal, 14-19. Dry, observant, with a few sharp lines."],
+          ["Neighbor","Featured, 25-70. One memorable comic beat."]
+        ]
+      },
+      {
+        type:"Student Film", location:"Boston, MA", title:"A Perfectly Good Chair", prod:"Senior Capstone Film Team",
+        synopsis:"A burned-out adjunct professor rescues an abandoned office chair from the hallway and accidentally triggers a campus-wide dispute over budget cuts, workplace dignity, and who gets to decide what counts as trash. The story is small, specific, and dry: faculty emails, passive-aggressive hallway encounters, a student documentary crew, and one chair treated like contraband.\n\nThe tone is deadpan but humane, built around precise comic rhythm instead of broad jokes.",
+        roles:[
+          ["Dr. Elise Hart","Lead, 35-60. Brilliant and underpaid, attaching all her dignity to one chair."],
+          ["Department Chair","Supporting, 40-70. Conflict-avoidant administrator speaking in institutional language."],
+          ["Student Documentarian","Supporting, 18-25. Slowly realizes the story is darker than expected."],
+          ["Facilities Worker","Supporting, 30-65. The only practical person in the story."],
+          ["Campus Ensemble","Background, 18-75. Students, faculty, staff, hallway traffic."]
+        ]
+      },
+      {
+        type:"Theater & Musicals", location:"New York, NY", title:"Off-Broadway Workshop: The Ninth Table", prod:"West 43 Workshop Collective",
+        synopsis:"Developmental theater workshop for a new Off-Broadway-aimed ensemble play. The story takes place over ninety minutes in the lobby bar of a small theater after opening night goes badly: a critic has walked out, the playwright's family is fighting at table nine, an understudy may have saved the show, and the artistic director is trying to decide whether honesty or survival matters more.\n\nThis is a text-forward room with quick pivots between comedy and bruised sincerity.",
+        roles:[
+          ["Ruth Bell","Lead, 45-70. Artistic director: brilliant, exhausted, politically careful."],
+          ["Noah Vale","Lead, 28-45. Playwright on opening night; funny, defensive, terrified."],
+          ["Celia","Supporting, 24-38. Understudy who may have changed the production."],
+          ["Martin","Supporting, 55-80. Longtime donor, charming and dangerous."],
+          ["Reading Ensemble","Ensemble, 18-70. Strong cold readers for multiple roles."]
+        ]
+      },
+      {
+        type:"Low-Budget Indie Film", location:"Chicago, IL", title:"Receipts", prod:"Corner Store Cinema",
+        synopsis:"Low-budget ensemble indie set almost entirely inside a family-run corner store during the hottest day of the year. Siblings must keep the business open after their father is hospitalized and the point-of-sale system crashes. Customers arrive with petty problems, old debts, flirtations, complaints, and secrets that slowly reveal the store's place in the neighborhood.\n\nThe style is loose, funny, and emotionally grounded: ensemble scenes, overlapping dialogue, real-time pressure, and characters who feel observed rather than invented.",
+        roles:[
+          ["Samir","Lead, 25-38. Older sibling trying to act like a manager for the first time."],
+          ["Leila","Lead, 20-32. Younger sibling with sharper instincts and less patience."],
+          ["Mr. Alvarez","Supporting, 55-80. Regular customer with one surprising dramatic scene."],
+          ["Nia","Supporting, 22-35. Delivery driver and Leila's almost-ex."],
+          ["Neighborhood Customers","Background, 18-80. Featured customer bits with real behavior."]
+        ]
+      }
+    ];
+    const grid=document.getElementById("grid");
+    function sample(items,count){
+      const copy=items.slice();
+      for(let i=copy.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [copy[i],copy[j]]=[copy[j],copy[i]];
+      }
+      return copy.slice(0,count);
+    }
+    function render(){
+      grid.innerHTML=sample(concepts,4).map(c=>`
+        <article class="card">
+          <div class="meta"><span class="pill">${c.type}</span><span class="pill">${c.location}</span></div>
+          <h2>${c.title}</h2>
+          <div class="prod">${c.prod}</div>
+          <p class="synopsis">${c.synopsis}</p>
+          <div class="roles">
+            ${c.roles.map(r=>`<div class="role"><strong>${r[0]}</strong><span>${r[1]}</span></div>`).join("")}
+          </div>
+        </article>
+      `).join("");
+    }
+    document.getElementById("shuffle").addEventListener("click",render);
+    render();
+  </script>
+</body>
+</html>

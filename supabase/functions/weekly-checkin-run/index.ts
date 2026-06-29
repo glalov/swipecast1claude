@@ -266,10 +266,11 @@ serve(async (req) => {
     const week = weekStartUTC();
     const weekStartIso = week + "T00:00:00Z";
 
-    // Eligible talent
+    // Eligible talent — Manager Mode is a PREMIUM feature, so weekly check-ins go
+    // ONLY to paying/premium members (membership_status='active'), never free accounts.
     const { data: talents } = await admin.from("profiles")
       .select("id,display_name,headshot_url,bio,skills,resume_url,reel_url,video_links,additional_photos,union_status,location")
-      .eq("user_type", "talent").eq("account_status", "active").neq("banned", true).neq("suspended", true).limit(5000);
+      .eq("user_type", "talent").eq("membership_status", "active").eq("account_status", "active").neq("banned", true).neq("suspended", true).limit(5000);
     const { data: sentLogs } = await admin.from("weekly_checkin_logs").select("talent_id").eq("week_start", week);
     const sentSet = new Set((sentLogs || []).map((r) => r.talent_id));
     const eligible = (talents || []).filter((t) => !sentSet.has(t.id) && !pausedIds.has(t.id));

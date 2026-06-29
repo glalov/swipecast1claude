@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CastSlate Generator Variety Preview</title>
+  <style>
+    :root{--ink:#151515;--muted:#666;--line:#dfded8;--paper:#fbfaf6;--panel:#fff;--accent:#1f5f5b}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    header{position:sticky;top:0;z-index:2;background:rgba(251,250,246,.95);border-bottom:1px solid var(--line);backdrop-filter:blur(10px)}
+    .wrap{max-width:1180px;margin:0 auto;padding:22px}
+    .top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+    h1{font-size:28px;margin:0 0 6px;font-weight:850;letter-spacing:0}
+    .lede{margin:0;max-width:780px;color:var(--muted);line-height:1.55}
+    button{border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:8px;padding:11px 15px;font-weight:800;cursor:pointer;box-shadow:3px 4px 0 rgba(0,0,0,.18);white-space:nowrap}
+    main.wrap{padding-top:26px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:18px}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.05)}
+    .meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+    .pill{font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);background:#eaf3ef;border:1px solid #cfe1da;border-radius:999px;padding:4px 8px}
+    .pill.gray{color:#555;background:#f3f1ea;border-color:#e4e0d5}
+    h2{font-size:22px;line-height:1.15;margin:0 0 4px;font-weight:850}
+    .prod{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:10px}
+    .pay{font-size:13px;line-height:1.55;color:#363636;background:#f7f6f1;border:1px solid #eceae2;border-radius:7px;padding:10px 12px;margin-bottom:14px}
+    .synopsis{font-size:14px;line-height:1.65;color:#303030;white-space:pre-line;margin:0 0 16px}
+    .roles{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:9px}
+    .role{background:#f7f6f1;border:1px solid #eceae2;border-radius:7px;padding:10px 12px}
+    .role strong{display:block;font-size:13px;margin-bottom:3px}
+    .role span{display:block;font-size:12px;color:var(--muted);line-height:1.5}
+    .note{margin:18px 0 0;color:var(--muted);font-size:12px;line-height:1.5}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap top">
+      <div>
+        <h1>Generator Variety Preview</h1>
+        <p class="lede">Local preview only. This demonstrates the new behavior: uneven description lengths, different writing voices, occasional background/stand-in roles, and less generic role language.</p>
+      </div>
+      <button id="generate">Generate Another Batch</button>
+    </div>
+  </header>
+  <main class="wrap">
+    <div id="grid" class="grid"></div>
+    <p class="note">This page does not publish anything. The real admin generator uses the same direction while keeping the existing admin template and edit/publish workflow.</p>
+  </main>
+  <script>
+    const types=["Feature Film","Short Film","Commercials & Branded Content","Student Film","Theater & Musicals","Low-Budget Indie Film"];
+    const cities=["New York, NY","Los Angeles, CA","Chicago, IL","Boston, MA"];
+    const titleA=["Late","Borrowed","False","Blue","Perfect","Second","Quiet","North","Broken","Small","Hidden","Ordinary","Good","Wrong"];
+    const titleB=["Room","Signal","Chair","Route","Invoice","Call Sheet","Lobby","Register","Suitcase","Table","Window","Weekend","Platform"];
+    const companyA=["Blue Hour","Harbor Cut","Paper Lantern","Signal House","Cinderblock","Market Street","Second Bell","Green Room","Corner Store","Riverglass","Side Street","Copper Rail"];
+    const companyB=["Pictures","Films","Creative Studio","Content Lab","New Works","Productions","Motion","Workshop Collective","Cinema","Story Lab"];
+    const first=["Mara","Noah","Leah","Andre","Ruth","Nadine","Samir","Priya","Cal","Mina","Theo","Raina","Jonah","Lucia","Miles","Noor","Tessa","Darius","Clara","Mateo","Iris","Felix"];
+    const last=["Vale","Bell","Rios","Cho","Ellis","Perez","Leung","Hart","Voss","Alvarez","Okafor","Cruz","Farrell","Sato","Mercer","Navarro","Reed","Kapoor","Vega","Tan"];
+    const storyBits=[
+      "a call sheet with the wrong address",
+      "a neighbor who refuses to sign the location release",
+      "a grant deadline nobody admits they missed",
+      "a family receipt that proves someone has been paying in secret",
+      "a prop knife that goes missing during a table read",
+      "a voice note from an actor who quit before rehearsal",
+      "a broken register during the busiest hour of the day",
+      "a stand-in who notices continuity is hiding a lie",
+      "a child actor's parent asking the one question adults avoided"
+    ];
+    const voices=[
+      {
+        name:"friendly",
+        project:d=>`Small team, clean communication, actor-friendly process. The story turns on ${d}. They are not looking for perfect polish; they want people who can make a normal moment feel personal.`,
+        role:"Warm and unfussy. Bring a real person, not a showcase piece."
+      },
+      {
+        name:"professional",
+        project:d=>`Casting is focused on preparation and reliability. ${d} is the engine of the piece, so every role needs clean stakes and strong continuity discipline.`,
+        role:"Prepared, technically reliable, and able to take direction quickly."
+      },
+      {
+        name:"plainspoken",
+        project:d=>`No glossy acting wanted here. The director wants the weirdness of ${d} to feel like it happened on an otherwise normal day.`,
+        role:"Keep it honest. Do not oversell the scene."
+      },
+      {
+        name:"downtown",
+        project:d=>`The piece has a downtown-room feeling: funny until it is not, casual until someone says the wrong thing. Everything tilts because of ${d}.`,
+        role:"Dry timing helps. Silence and interruptions are part of the rhythm."
+      },
+      {
+        name:"not too friendly",
+        project:d=>`This is a lean production. Come prepared. The material is built around ${d}, and the team does not have time for vague reads or overproduced tapes.`,
+        role:"Specific choices only. The role should not become a type."
+      }
+    ];
+    const baseFrames={
+      "Feature Film":"Independent feature following several people forced into the same problem over one bad night.",
+      "Short Film":"Contained short built around pressure, subtext, and one uncomfortable decision.",
+      "Commercials & Branded Content":"Digital campaign with everyday situations, fast resets, and natural relationship comedy.",
+      "Student Film":"Faculty-supervised thesis/capstone project with limited resources and a specific director point of view.",
+      "Theater & Musicals":"Developmental workshop for new material, built around rewrites, table work, and actors who can shape a room.",
+      "Low-Budget Indie Film":"Actor-driven indie built around one main location, overlapping dialogue, and practical neighborhood stakes."
+    };
+    const lengths=["very short","short","medium","long","very long"];
+    const used={titles:new Set(),companies:new Set(),roles:new Set()};
+    const pick=a=>a[Math.floor(Math.random()*a.length)];
+    const norm=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+    function uniq(set,maker){for(let i=0;i<300;i++){const v=maker();const n=norm(v);if(!set.has(n)){set.add(n);return v;}}return maker()+" "+Math.floor(Math.random()*999);}
+    function name(){return uniq(used.roles,()=>`${pick(first)} ${pick(last)}`);}
+    function title(){return uniq(used.titles,()=>`${pick(titleA)} ${pick(titleB)}`);}
+    function company(){return uniq(used.companies,()=>`${pick(companyA)} ${pick(companyB)}`);}
+    function synopsis(type,voice,len,bit){
+      const base=baseFrames[type];
+      if(len==="very short")return `${base}\n\n${voice.project(bit)}`;
+      if(len==="short")return `${base} The production is keeping the footprint small and practical.\n\n${voice.project(bit)}`;
+      if(len==="medium")return `${base} Scenes are written for behavior more than plot explanation, with room for actors to bring small, believable details.\n\n${voice.project(bit)}\n\nSubmissions should show listening and adjustment, not just a strong final line.`;
+      if(len==="long")return `${base} The script gives the characters ordinary jobs, errands, and social obligations before it lets the larger conflict surface. Nothing should feel like genre acting, even when the situation gets strange.\n\n${voice.project(bit)}\n\nThe team wants actors who can track private stakes across multiple scenes. Rehearsal may be light, but the director plans to talk through backstory and scene pressure before shooting.`;
+      return `${base} The script gives the characters ordinary jobs, errands, family obligations, and bad timing before it lets the larger conflict surface. The goal is a production that feels observed rather than invented.\n\n${voice.project(bit)}\n\nSome scenes may be rewritten around the final cast. The director is open to unexpected reads if they feel truthful to the world of the project. The most useful auditions for this are simple: clean eyeline, real listening, no montage, no heavy music.\n\nThe tone can hold humor, but it should not drift into sketch unless the specific role asks for it.`;
+    }
+    function roleDesc(label,voice){
+      const options=[
+        `${label}. ${voice.role}`,
+        `${label}.`,
+        `${label}. Needs clear behavior and a playable relationship to the other roles. ${voice.role}`,
+        `${label}. Specific relationship history matters more than resume size. Should feel like someone with a day before and after this scene.`,
+        `${label}. The role can be short on screen but still needs a point of view.`
+      ];
+      return pick(options);
+    }
+    function roles(type,voice){
+      const core=[
+        [name(),"Lead",roleDesc("Primary role carrying the central pressure of the piece",voice)],
+        [name(),"Supporting",roleDesc("Scene partner with real leverage in the story",voice)],
+        [name(),"Supporting",roleDesc("Character who changes the room by withholding information",voice)],
+        [name(),"Day Player",roleDesc("One or two strong scenes; practical, memorable, not broad",voice)]
+      ];
+      if(Math.random()<0.55)core.push([uniq(used.roles,()=>`${pick(["Market","Lobby","Transit","Campus","Workshop","Street"])} ${pick(["Background","Regulars","Patrons","Riders","Audience"])}`),"Background",pick(["Natural background for a practical location. Patient with resets.","Featured background with real behavior. No mugging.","Atmosphere for a busy location; some simple crosses and reactions."])]);
+      if(Math.random()<0.28)core.push([uniq(used.roles,()=>`${pick(["Principal","Commercial","Photo Double"])} Stand-In`),"Stand-In",pick(["Stand-in for lighting and camera setups. Similar height/build details confirmed after booking.","Patient, punctual stand-in for product/action coverage and marks.","May be used for over-the-shoulder framing and simple movement."])]);
+      return core;
+    }
+    function pay(type){
+      if(type==="Commercials & Branded Content")return `Principals $${400+Math.floor(Math.random()*7)*50}-$${800+Math.floor(Math.random()*6)*50}/day; featured/background $${125+Math.floor(Math.random()*5)*25}-$${275+Math.floor(Math.random()*5)*25}/day. Usage disclosed before booking.`;
+      if(type==="Theater & Musicals")return `Workshop stipend: $${200+Math.floor(Math.random()*8)*25}-$${550+Math.floor(Math.random()*8)*50} total depending on schedule and role size.`;
+      if(type==="Student Film")return `Student production stipend: leads $${75+Math.floor(Math.random()*5)*25}-$${175+Math.floor(Math.random()*4)*25}/day; supporting roles may be copy, credit, meals, or small stipend.`;
+      return `Independent production. Principal roles $${125+Math.floor(Math.random()*8)*25}-$${300+Math.floor(Math.random()*6)*25}/day; smaller roles $${50+Math.floor(Math.random()*5)*25}-$${150+Math.floor(Math.random()*4)*25}/day.`;
+    }
+    function one(){
+      const type=pick(types), city=pick(cities), voice=pick(voices), len=pick(lengths), bit=pick(storyBits), r=roles(type,voice);
+      return{type,city,voice:voice.name,len,title:title(),prod:company(),pay:pay(type),synopsis:synopsis(type,voice,len,bit),roles:r};
+    }
+    function render(){
+      const batch=Array.from({length:5},one);
+      document.getElementById("grid").innerHTML=batch.map(c=>`
+        <article class="card">
+          <div class="meta"><span class="pill">${c.type}</span><span class="pill">${c.city}</span><span class="pill gray">${c.len}</span><span class="pill gray">${c.voice}</span></div>
+          <h2>${c.title}</h2>
+          <div class="prod">${c.prod}</div>
+          <div class="pay">${c.pay}</div>
+          <p class="synopsis">${c.synopsis}</p>
+          <div class="roles">${c.roles.map(r=>`<div class="role"><strong>${r[0]} <em style="font-weight:600;color:#777">(${r[1]})</em></strong><span>${r[2]}</span></div>`).join("")}</div>
+        </article>
+      `).join("");
+    }
+    document.getElementById("generate").addEventListener("click",render);
+    render();
+  </script>
+</body>
+</html>

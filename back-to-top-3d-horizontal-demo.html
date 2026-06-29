@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CastSlate Back to Top 3D Horizontal Spin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#F6F1EA;
+      --ink:#1A1A2E;
+      --muted:#6F7078;
+      --line:#E4DCD0;
+      --purple:#6366F1;
+      --footer:#1B1C20;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:"DM Sans",system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+      letter-spacing:0;
+    }
+    .nav{
+      position:sticky;
+      top:0;
+      z-index:10;
+      height:74px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 34px;
+      background:rgba(246,241,234,.92);
+      backdrop-filter:blur(18px);
+      border-bottom:1px solid rgba(0,0,0,.06);
+    }
+    .logo{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:900;letter-spacing:-.4px}
+    .logo-i{
+      width:34px;height:34px;border-radius:8px;background:var(--ink);color:#fff;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .logo-i svg{width:68%;height:68%;display:block}
+    .tag{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:8px 13px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:900;
+    }
+    main{min-height:160vh}
+    .hero{
+      max-width:920px;
+      margin:0 auto;
+      padding:86px 24px 44px;
+      text-align:center;
+    }
+    .label{
+      color:var(--purple);
+      font-size:11px;
+      line-height:1;
+      text-transform:uppercase;
+      letter-spacing:1.6px;
+      font-weight:900;
+      margin-bottom:14px;
+    }
+    h1{
+      margin:0 0 18px;
+      font-size:clamp(42px,8vw,84px);
+      line-height:.94;
+      letter-spacing:-3px;
+      font-weight:900;
+    }
+    .hero p{
+      max-width:670px;
+      margin:0 auto;
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.75;
+    }
+    .demo-panel{
+      max-width:820px;
+      margin:0 auto 70px;
+      padding:0 24px;
+      text-align:center;
+    }
+    .replay-btn{
+      height:44px;
+      border:0;
+      border-radius:10px;
+      background:var(--ink);
+      color:#fff;
+      padding:0 20px;
+      font-family:inherit;
+      font-size:13px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:4px 5px 0 rgba(0,0,0,.18);
+    }
+    .replay-btn:hover{transform:translateY(-1px)}
+    .cards{
+      max-width:960px;
+      margin:0 auto 170px;
+      padding:0 24px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+    }
+    .card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:24px;
+      min-height:180px;
+      box-shadow:0 8px 22px rgba(0,0,0,.055);
+    }
+    .card h3{margin:0 0 9px;font-size:16px}
+    .card p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.65}
+    .site-footer-spacer{height:90px}
+    .site-footer{
+      min-height:460px;
+      padding:64px 34px 34px;
+      background:var(--footer);
+      color:#fff;
+    }
+    .footer-grid{
+      max-width:1120px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:2fr repeat(4,1fr);
+      gap:42px;
+    }
+    .footer-grid p{max-width:280px;color:#9A9BA5;font-size:13px;line-height:1.7}
+    .footer-grid h4{margin:0 0 16px;font-size:11px;text-transform:uppercase;letter-spacing:1.5px}
+    .footer-grid a{display:block;color:#9A9BA5;font-size:13px;text-decoration:none;padding:5px 0}
+
+    /* Position/drop wrapper. This moves down from above the viewport. */
+    .b2t-wrap{
+      position:fixed;
+      left:50%;
+      bottom:22px;
+      z-index:100;
+      width:96px;
+      height:86px;
+      transform:translateX(-50%) translateY(calc(-100vh + 16px));
+      pointer-events:none;
+      perspective:900px;
+      transition:transform 1.08s cubic-bezier(.5,0,.75,.45);
+    }
+    .b2t-wrap.show{
+      transform:translateX(-50%) translateY(0);
+      pointer-events:auto;
+      transition:transform 1.18s cubic-bezier(.18,.82,.26,1.06);
+    }
+
+    /* This is the whole cube/card. The whole object spins sideways in 3D. */
+    .b2t-cube3d{
+      position:relative;
+      width:96px;
+      height:86px;
+      transform-style:preserve-3d;
+      transform-origin:50% 50%;
+      cursor:pointer;
+    }
+    .b2t-wrap.show .b2t-cube3d{
+      animation:whole-card-horizontal-spin 1.18s cubic-bezier(.18,.82,.26,1.06) both;
+    }
+    .b2t-wrap.leaving .b2t-cube3d{
+      animation:whole-card-horizontal-spin-out .8s cubic-bezier(.5,0,.75,.45) both;
+    }
+
+    .face{
+      position:absolute;
+      inset:0;
+      border-radius:17px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:5px;
+      font-size:10.5px;
+      line-height:1.1;
+      font-weight:900;
+      letter-spacing:.7px;
+      text-transform:uppercase;
+      backface-visibility:hidden;
+      border:1px solid rgba(0,0,0,.12);
+      box-shadow:0 16px 34px rgba(0,0,0,.30);
+    }
+    .front{
+      background:#fff;
+      color:var(--ink);
+      transform:translateZ(8px);
+    }
+    .back{
+      background:linear-gradient(135deg,#111226,#30339A);
+      color:#fff;
+      transform:rotateY(180deg) translateZ(8px);
+      border-color:rgba(255,255,255,.18);
+    }
+    .side{
+      position:absolute;
+      top:8px;
+      bottom:8px;
+      width:16px;
+      border-radius:6px;
+      background:linear-gradient(180deg,#f4f2ff,#7c7fe8,#16172c);
+      box-shadow:0 10px 22px rgba(0,0,0,.22);
+    }
+    .side.left{left:-8px;transform:rotateY(90deg) translateZ(0)}
+    .side.right{right:-8px;transform:rotateY(90deg) translateZ(0)}
+    .arrow svg{display:block;width:24px;height:20px}
+    .back-logo{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      background:#fff;
+      color:var(--ink);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom:4px;
+    }
+    .back-logo svg{width:22px;height:22px}
+
+    @keyframes whole-card-horizontal-spin{
+      0%{transform:rotateY(-900deg) rotateX(6deg) rotateZ(-5deg) scale(.86)}
+      35%{transform:rotateY(-540deg) rotateX(-3deg) rotateZ(4deg) scale(.94)}
+      63%{transform:rotateY(-180deg) rotateX(2deg) rotateZ(-2deg) scale(1.06)}
+      82%{transform:rotateY(24deg) rotateX(0) rotateZ(1deg) scale(.995)}
+      100%{transform:rotateY(0deg) rotateX(0) rotateZ(0) scale(1)}
+    }
+    @keyframes whole-card-horizontal-spin-out{
+      0%{transform:rotateY(0deg) rotateX(0) rotateZ(0) scale(1)}
+      100%{transform:rotateY(540deg) rotateX(-4deg) rotateZ(5deg) scale(.88)}
+    }
+
+    @media(max-width:760px){
+      .cards{grid-template-columns:1fr}
+      .footer-grid{grid-template-columns:1fr 1fr}
+      .nav{padding:0 18px}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .b2t-wrap,.b2t-wrap.show{transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0}
+      .b2t-wrap.show{opacity:1}
+      .b2t-cube3d{animation:none!important}
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="logo">
+      <div class="logo-i">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"/></svg>
+      </div>
+      CastSlate
+    </div>
+    <div class="tag">Whole cube 3D spin</div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="label">Corrected motion demo</div>
+      <h1>The whole card spins sideways.</h1>
+      <p>This version does not animate only the triangle. The entire Back to top cube has a front, back, and side edge, then the whole object flips horizontally in 3D as it drops down.</p>
+    </section>
+
+    <div class="demo-panel">
+      <button class="replay-btn" id="replay" type="button">Replay the whole-card 3D spin</button>
+    </div>
+
+    <section class="cards">
+      <div class="card"><h3>Whole object rotates</h3><p>The fixed wrapper drops down, while the child cube rotates on the Y axis like a physical card turning sideways.</p></div>
+      <div class="card"><h3>Front and back faces</h3><p>The white Back to top face flips away and a dark CastSlate back face passes through so the 3D motion is obvious.</p></div>
+      <div class="card"><h3>Not a circular spin</h3><p>This is not a flat wheel rotation. It is a horizontal side-to-side 3D flip of the entire card.</p></div>
+    </section>
+  </main>
+
+  <div class="site-footer-spacer"></div>
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div>
+        <div class="logo">
+          <div class="logo-i" style="background:#fff;color:#1A1A2E">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"/></svg>
+          </div>
+          CastSlate
+        </div>
+        <p>A modern casting platform where actors get seen and casting teams review talent one profile at a time.</p>
+      </div>
+      <div><h4>Talent</h4><a>Browse Castings</a><a>Actor Toolkit</a><a>Trust & Safety</a></div>
+      <div><h4>Industry</h4><a>Post Casting</a><a>Pricing</a><a>Pay Talent</a></div>
+      <div><h4>Company</h4><a>About</a><a>Blog</a><a>Contact</a></div>
+      <div><h4>Support</h4><a>FAQ</a><a>Terms</a><a>Privacy</a></div>
+    </div>
+  </footer>
+
+  <button type="button" class="b2t-wrap" id="b2t" aria-label="Back to top">
+    <span class="b2t-cube3d">
+      <span class="face front">
+        <span class="arrow">
+          <svg width="20" height="16" viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="currentColor"/></svg>
+        </span>
+        <span>Back<br>to top</span>
+      </span>
+      <span class="face back" aria-hidden="true">
+        <span class="back-logo">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z"/></svg>
+        </span>
+        <span>CastSlate</span>
+      </span>
+      <span class="side left" aria-hidden="true"></span>
+      <span class="side right" aria-hidden="true"></span>
+    </span>
+  </button>
+
+  <script>
+    const b2t=document.getElementById("b2t");
+    const footer=document.querySelector(".site-footer");
+    let ready=false;
+
+    function replay(){
+      b2t.classList.remove("show");
+      b2t.classList.add("leaving");
+      void b2t.offsetWidth;
+      setTimeout(()=>{
+        b2t.classList.remove("leaving");
+        b2t.classList.add("show");
+      },180);
+    }
+
+    function check(){
+      if(!ready){b2t.classList.remove("show");return;}
+      const vpBottom=window.innerHeight+window.scrollY;
+      const rect=footer.getBoundingClientRect();
+      const threshold=rect.top+window.scrollY+rect.height*.5;
+      const shouldShow=(document.documentElement.scrollHeight-window.innerHeight)>240 && vpBottom>=threshold;
+      if(shouldShow&&!b2t.classList.contains("show")){
+        b2t.classList.remove("leaving");
+        b2t.classList.add("show");
+      }else if(!shouldShow&&b2t.classList.contains("show")){
+        b2t.classList.remove("show");
+        b2t.classList.add("leaving");
+      }
+    }
+
+    setTimeout(()=>{ready=true;check();},500);
+    window.addEventListener("scroll",check,{passive:true});
+    window.addEventListener("resize",check);
+    b2t.addEventListener("click",()=>window.scrollTo({top:0,behavior:"smooth"}));
+    document.getElementById("replay").addEventListener("click",replay);
+    check();
+  </script>
+</body>
+</html>
