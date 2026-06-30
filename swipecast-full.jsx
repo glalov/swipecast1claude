@@ -3307,7 +3307,26 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
   // still guarantees the gap).
   // Amazon-style "back to top" bar — full-bleed, one notch lighter than the
   // footer, smooth-scrolls (not a hard cut) to the top of the page.
-  const scrollTop=()=>{try{window.scrollTo({top:0,behavior:'smooth'});}catch(_){window.scrollTo(0,0);}};
+  // Reliable scroll-to-top. Native {behavior:'smooth'} is a NO-OP on this site
+  // because <html> is the overflow-y:auto scroller — that's why the button used to
+  // need several taps to "shoot up". We animate with rAF using instant scrollTo on
+  // each frame (which always works here), so it's smooth AND fires on the first tap.
+  const scrollTop=()=>{try{
+    const startY=window.scrollY||document.documentElement.scrollTop||0;
+    if(startY<=0)return;
+    const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+    const hardTop=()=>{window.scrollTo(0,0);document.documentElement.scrollTop=0;};
+    if(reduce){hardTop();return;}
+    const t0=performance.now();
+    const dur=Math.min(600,Math.max(320,startY*0.5));
+    const ease=t=>1-Math.pow(1-t,3); // easeOutCubic
+    const step=(now)=>{
+      const p=Math.min(1,(now-t0)/dur);
+      window.scrollTo(0,Math.round(startY*(1-ease(p))));
+      if(p<1)requestAnimationFrame(step); else hardTop();
+    };
+    requestAnimationFrame(step);
+  }catch(_){try{window.scrollTo(0,0);}catch(__){}}};
   // Show the floating back-to-top cube only when the page is scrolled to the very
   // bottom; it drops in from above and shoots back up off-screen on scroll-up.
   const [b2tShow,setB2tShow]=React.useState(false);
