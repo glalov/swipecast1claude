@@ -1876,12 +1876,26 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .site-footer-social{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#9A9BA5;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);text-decoration:none;transition:color .18s ease,background .18s ease,transform .18s ease,border-color .18s ease;}
 .site-footer-social:hover{color:#fff;background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.16);transform:translateY(-2px);}
 .site-footer-bottom{border-top:1px solid rgba(255,255,255,0.08);padding-top:22px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:11.5px;color:#6F7078;}
-.site-footer-bottom-links{display:flex;gap:18px;flex-wrap:wrap;align-items:center;}
+.site-footer-bottom-links{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:flex-end;}
+.site-footer-plain-links{display:flex;gap:18px;flex-wrap:wrap;align-items:center;}
 .site-footer-bottom-links span{cursor:pointer;transition:color .18s ease;}
 .site-footer-bottom-links span:hover{color:#fff;}
-.lang-toggle-btn{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.35);border-radius:100px;padding:7px 16px;font-size:12.5px;color:#fff;cursor:pointer;font-weight:700;letter-spacing:0.3px;transition:background .2s,border-color .2s,color .2s;line-height:1;font-family:inherit;flex-shrink:0;white-space:nowrap;}
-.lang-toggle-btn:hover{background:rgba(214,175,87,0.18);border-color:#D6AF57;color:#D6AF57;}
-.lang-toggle-btn svg{flex-shrink:0;}
+.footer-cookie-card,.lang-toggle-btn{position:relative;display:inline-flex;align-items:center;overflow:hidden;isolation:isolate;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;flex-shrink:0;}
+.footer-cookie-card{min-height:66px;gap:11px;padding:12px 20px 12px 12px;border-radius:20px;background:linear-gradient(135deg,#22304f 0%,#1f7f86 48%,#d98928 100%);color:#fff;box-shadow:0 20px 38px -29px rgba(31,127,134,1),inset 0 1px 0 rgba(255,255,255,.3);animation:footerBadgeEnter 4.4s ease-in-out infinite;}
+.footer-cookie-card::before,.lang-toggle-btn::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(110deg,transparent 0 34%,rgba(255,255,255,.32) 45%,transparent 57% 100%);transform:translateX(-130%);animation:footerControlSheen 3.8s ease-in-out infinite;}
+.footer-cookie-icon{position:relative;flex:0 0 auto;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.18);}
+.footer-cookie-icon svg{width:22px;height:22px;}
+.footer-cookie-title{display:block;color:#fff;font-size:13px;font-weight:900;line-height:1.1;white-space:nowrap;}
+.footer-cookie-sub{display:block;margin-top:3px;color:rgba(255,255,255,.73);font-size:10.5px;font-weight:750;white-space:nowrap;}
+.lang-toggle-btn{min-height:54px;gap:9px;padding:8px 16px 8px 9px;border-radius:999px;background:linear-gradient(135deg,#c61f32 0%,#df7b1f 48%,#f4c13d 100%);color:#fff;font-size:13px;font-weight:900;letter-spacing:.2px;line-height:1;box-shadow:0 18px 34px -28px rgba(244,193,61,.8);animation:footerFlagPulse 2.8s ease-in-out infinite .25s;}
+.footer-flag-es{position:relative;overflow:hidden;flex:0 0 auto;width:38px;height:27px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),0 5px 10px rgba(0,0,0,.18);background:linear-gradient(180deg,#c61f32 0 25%,#f4c13d 25% 75%,#c61f32 75% 100%);}
+.footer-flag-es::after{content:"";position:absolute;left:11px;top:9px;width:6px;height:8px;border-radius:2px;background:#b98324;box-shadow:0 0 0 1px rgba(255,255,255,.38);}
+.lang-toggle-btn svg{flex-shrink:0;width:16px;height:16px;}
+@keyframes footerControlSheen{0%,44%{transform:translateX(-130%);opacity:0;}55%{opacity:1;}78%,100%{transform:translateX(130%);opacity:0;}}
+@keyframes footerBadgeEnter{0%,100%{transform:translateY(0) rotate(0);}48%{transform:translateY(-3px) rotate(-.45deg);}55%{transform:translateY(-3px) rotate(.45deg);}62%{transform:translateY(-2px) rotate(0);}}
+@keyframes footerFlagPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.035);}}
+@media(hover:hover){.footer-cookie-card:hover,.lang-toggle-btn:hover{transform:translateY(-3px);filter:brightness(1.05) saturate(1.1);}}
+@media(prefers-reduced-motion:reduce){.footer-cookie-card,.footer-cookie-card::before,.lang-toggle-btn,.lang-toggle-btn::before{animation:none!important;}}
 @media (max-width:900px){
   .site-footer-grid{grid-template-columns:1fr 1fr;gap:32px;}
   .site-footer-brand{grid-column:1/-1;}
@@ -1890,6 +1904,9 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @media (max-width:520px){
   .site-footer-grid{grid-template-columns:1fr;gap:28px;}
   .site-footer-bottom{flex-direction:column;align-items:flex-start;}
+  .site-footer-bottom-links{width:100%;align-items:stretch;flex-direction:column;justify-content:flex-start;}
+  .site-footer-plain-links{gap:12px 16px;}
+  .footer-cookie-card,.lang-toggle-btn{width:100%;justify-content:center;}
 }
 /* ─── Yearly promo stripe — large, premium banner above the main nav on homepage.
        Navy CastSlate palette + warm cream highlights, capsule-shaped actor image
@@ -3463,16 +3480,29 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
         <div className="site-footer-bottom">
           <span>{t('footer.copyright').replace('{year}', year)}</span>
           <div className="site-footer-bottom-links">
-            <span onClick={()=>onNavigate("privacy")}>{t('footer.privacyLink')}</span>
-            <span onClick={()=>onNavigate("terms")}>{t('footer.termsLink')}</span>
-            <span onClick={()=>onNavigate("contact")}>{t('footer.contactLink')}</span>
-            <span onClick={openCookies}>{t('footer.cookiePrefs')}</span>
-            {/* ── Language toggle — prominent pill, always visible ── */}
+            <div className="site-footer-plain-links">
+              <span onClick={()=>onNavigate("privacy")}>{t('footer.privacyLink')}</span>
+              <span onClick={()=>onNavigate("terms")}>{t('footer.termsLink')}</span>
+              <span onClick={()=>onNavigate("contact")}>{t('footer.contactLink')}</span>
+            </div>
+            <button className="footer-cookie-card" type="button" onClick={openCookies}>
+              <span className="footer-cookie-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 3a9 9 0 1 0 9 9 4 4 0 0 1-5-5 4 4 0 0 1-4-4Z"/>
+                  <path d="M8 11h.01M12 16h.01M16 13h.01"/>
+                </svg>
+              </span>
+              <span>
+                <span className="footer-cookie-title">{t('footer.cookiePrefs')}</span>
+                <span className="footer-cookie-sub">Review consent settings</span>
+              </span>
+            </button>
             <button
               className="lang-toggle-btn"
               onClick={()=>setLang(l=>l==='en'?'es':'en')}
               aria-label={lang==='en'?'Switch to Spanish':'Switch to English'}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <span className="footer-flag-es" aria-hidden="true"></span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
               </svg>
