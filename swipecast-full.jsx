@@ -17919,7 +17919,25 @@ const ACG = (()=>{
     {key:"ferry-terminal",place:"a ferry terminal after the final crossing is canceled",titles:["No Last Boat","Terminal Coffee","Standby List"],roles:["ticket agent","commuter with nowhere to go","tourist hiding bad news","captain's spouse","student with an audition bag"]},
     {key:"dance-rehearsal-room",place:"a dance rehearsal room rented for one final hour",titles:["Eight Counts Left","Studio B","Shoes Off"],roles:["choreographer","returning dancer","assistant keeping time","performer with an injury","producer checking the budget"]},
     {key:"corporate-training-room",place:"a corporate training room during a fake crisis drill",titles:["Module Four","Roleplay Emergency","Attendance Sheet"],roles:["trainer","employee who takes it too seriously","HR observer","contract actor","department manager"]},
-    {key:"table-read-backroom",place:"a borrowed back room before a table read loses its lead",titles:["Table Read at Four","The Empty Chair","Pages 17 to 32"],roles:["writer","replacement reader","producer with one investor call","actor who knows the secret","assistant printing revised pages"]}
+    {key:"table-read-backroom",place:"a borrowed back room before a table read loses its lead",titles:["Table Read at Four","The Empty Chair","Pages 17 to 32"],roles:["writer","replacement reader","producer with one investor call","actor who knows the secret","assistant printing revised pages"]},
+    {key:"school-board-meeting",place:"a school board meeting after the livestream fails",titles:["Public Comment","The Hot Mic","Agenda Item Seven"],roles:["board aide","parent speaker","student reporter","principal","camera volunteer"]},
+    {key:"farmers-market-stall",place:"a farmers market stall during a surprise inspection",titles:["Market Day","Stall Permit","The Last Peaches"],roles:["vendor","market manager","food inspector","regular customer","assistant with the cash box"]},
+    {key:"ice-rink-offseason",place:"an off-season ice rink rented for one camera test",titles:["Cold Floor","Rink Lights","After Public Skate"],roles:["rink manager","skater returning after years away","camera operator","teen employee","sponsor rep"]},
+    {key:"escape-room-lobby",place:"an escape-room lobby when the staff room locks from inside",titles:["Hint Button","Lobby Puzzle","Sixty Minutes"],roles:["game master","birthday parent","off-duty locksmith","teen guest","owner watching cameras"]},
+    {key:"mobile-blood-drive",place:"a mobile blood drive parked outside a corporate office",titles:["Donation Window","Bus Three","After the Screening"],roles:["intake nurse","office manager","nervous donor","driver","employee organizing the signup sheet"]},
+    {key:"trade-show-booth",place:"a trade-show booth where the demo unit stops working",titles:["Booth 412","Floor Sample","Badge Scan"],roles:["brand ambassador","engineer hiding panic","sales lead","curious buyer","event coordinator"]},
+    {key:"vr-demo-suite",place:"a VR demo suite before an investor walk-through",titles:["Headset One","Demo Mode","The Calibration Room"],roles:["demo host","motion performer","technical director","investor assistant","tester who gets motion sick"]},
+    {key:"train-station-cafe",place:"a train station cafe during a platform closure",titles:["Track Change","Platform Coffee","The Delay Board"],roles:["barista","commuter with an audition bag","station announcer","tour manager","regular who reads every delay"]},
+    {key:"thrift-store-donation",place:"a thrift store donation desk after a jacket arrives with cash inside",titles:["Donation Receipt","Jacket Pocket","Store Credit"],roles:["donation sorter","store manager","person trying to reclaim the jacket","volunteer","regular shopper"]},
+    {key:"apartment-mailroom",place:"an apartment mailroom where every package has the wrong label",titles:["Package Room","Unit 5C","Returned to Sender"],roles:["building concierge","new tenant","delivery driver","neighbor with a clipboard","property manager"]},
+    {key:"hotel-banquet-prep",place:"a hotel banquet room two hours before a memorial lunch",titles:["Banquet B","Place Cards","The Wrong Toast"],roles:["banquet captain","family organizer","server on trial shift","musician","hotel sales manager"]},
+    {key:"rooftop-garden",place:"a rooftop garden before a fundraiser loses power",titles:["Rooftop Power","String Lights","Garden Level"],roles:["event producer","building super","donor guest","caterer","artist asked to speak"]},
+    {key:"wedding-dress-alteration",place:"a wedding dress alteration shop with the wrong dress bag",titles:["Final Fitting","The Ivory Bag","Pinned at the Waist"],roles:["tailor","bride's sibling","messenger","shop owner","client waiting behind the curtain"]},
+    {key:"community-radio-drive",place:"a community radio station during pledge-drive hour",titles:["Pledge Hour","Line Two Is Live","Underwriting Copy"],roles:["host","station manager","caller who knows too much","volunteer phone operator","sponsor liaison"]},
+    {key:"bookstore-event",place:"a bookstore event where the author misses the train",titles:["Author Table","Signed Stock","The Empty Reading"],roles:["bookseller","stand-in reader","publicist","regular customer","local critic"]},
+    {key:"delivery-dispatch",place:"a delivery dispatch office when every route changes at once",titles:["Route 19","Dispatch Hold","Wrong Address"],roles:["dispatcher","new driver","warehouse runner","customer on speaker","operations manager"]},
+    {key:"reality-holding-room",place:"a reality casting holding room after the waiver packet changes",titles:["Holding Room C","Confessional Setup","The New Waiver"],roles:["casting producer","applicant with a strategy","camera assistant","friend dragged along","field coordinator"]},
+    {key:"beauty-counter-closing",place:"a department-store beauty counter after closing time",titles:["Tester Drawer","Shade Match","After the Mall Closes"],roles:["counter manager","model arriving late","security guard","brand trainer","shopper with a return"]}
   ];
   const STORY_CATALYSTS=[
     "a misdelivered envelope that names the wrong person","a phone recording that should have been deleted","a no-show performer who left one useful clue","a payment that clears under someone else's name","a weather delay that traps people who planned to avoid each other",
@@ -18044,7 +18062,7 @@ const ACG = (()=>{
       let shared=0;
       const bs=new Set(b);
       a.forEach(w=>{if(bs.has(w))shared++;});
-      if(shared>=10&&shared/Math.min(a.length,b.length)>0.42)return true;
+      if(shared>=7&&shared/Math.min(a.length,b.length)>0.34)return true;
     }
     return false;
   }
@@ -18089,9 +18107,25 @@ const ACG = (()=>{
       `${personFullName()} ${pick(["Casting","Creative","Producing"])} Office`
     ];
   }
+  function creatorKindsForType(type){
+    if(/background|extras|stand-in|photo double|body double|specialty talent/i.test(type))return ["Casting Director","Background Casting Director","Casting Associate","Casting Agency","Extras Casting Company","Talent Scout","Talent Manager"];
+    if(/commercial|ad|brand|product demo|testimonial|promo|sizzle|trailer|public service/i.test(type))return ["Commercial Casting Director","Commercial Producer","Advertising Agency","Marketing Agency","Brand / Company","Production Company","Creative Director"];
+    if(/print|fashion|beauty|model|e-commerce|catalog|hand model/i.test(type))return ["Print Casting Director","Modeling Agency","Photography Studio","E-Commerce Brand","Creative Director","Commercial Producer"];
+    if(/voiceover|audiobook|animation|video game/i.test(type))return ["Voiceover Casting Director","Casting Director","Game Studio","Producer","Creative Director"];
+    if(/podcast|interview|hosting/i.test(type))return ["Podcast Producer","Talent Producer","Content Creator","Producer","Casting Associate"];
+    if(/reality|docuseries|documentary/i.test(type))return ["Reality Casting Producer","Documentary Producer","Talent Producer","Producer","Executive Producer"];
+    if(/theater|musical|stage|table read/i.test(type))return ["Theater Director","Theater Producer","Theater Company","Stage Manager","Casting Director"];
+    if(/music video|dance/i.test(type))return ["Music Video Producer","Director","Creative Director","Producer","Content Creator"];
+    if(/live event|trade show|brand ambassador/i.test(type))return ["Event Producer","Live Event Company","Brand / Company","Talent Producer","Marketing Agency"];
+    if(/motion capture|performance capture|vr|ar/i.test(type))return ["Motion Capture Studio","Game Studio","Creative Director","Director","Producer"];
+    if(/student|film school/i.test(type))return ["Student Filmmaker","Film School Project","Independent Filmmaker","Director","Producer"];
+    return ["Casting Director","Producer","Executive Producer","Film Producer","Director","Independent Filmmaker","Production Company"];
+  }
   function freshCreator(city,type,h,res){
+    const preferred=creatorKindsForType(type);
+    const unusedPreferred=preferred.filter(k=>!h.creatorKinds.has(clean(k))&&!res.creatorKinds.has(clean(k)));
     const unusedKinds=CREATOR_TYPES.filter(k=>!h.creatorKinds.has(clean(k))&&!res.creatorKinds.has(clean(k)));
-    const kind=pick(unusedKinds.length?unusedKinds:CREATOR_TYPES);
+    const kind=pick(unusedPreferred.length?unusedPreferred:unusedKinds.length?unusedKinds:preferred.length?preferred:CREATOR_TYPES);
     const label=candidateUnique(creatorCandidates(kind,city,type),h.prods,res.prods,()=>`${personFullName()} ${kind} ${Math.floor(Math.random()*9000)+1000}`);
     addUsed(res.creatorKinds,kind);
     return{kind,label};
@@ -18132,14 +18166,17 @@ const ACG = (()=>{
   }
   function freshTagline(type,setting,catalyst,stakes){
     return pick([
-      `A ${type.toLowerCase()} built around ${setting.place}, ${catalyst}, and ${stakes}.`,
+      `${articleFor(type)} ${type.toLowerCase()} built around ${setting.place}, ${catalyst}, and ${stakes}.`,
       `${setting.place} becomes the center of a new ${type.toLowerCase()} about ${stakes}.`,
       `A grounded ${type.toLowerCase()} where ${catalyst} forces everyone to choose what they can admit.`
     ]);
   }
+  function articleFor(text){
+    return /^[aeiou]/i.test(clean(text))?"An":"A";
+  }
   function freshSynopsis(city,type,setting,catalyst,stakes,relationship,voice,length){
     const opener=pick([
-      `Casting a ${type.toLowerCase()} in ${city.name} set around ${setting.place}.`,
+      `Casting ${articleFor(type).toLowerCase()} ${type.toLowerCase()} in ${city.name} set around ${setting.place}.`,
       `${type} casting in ${city.name}. The story begins around ${setting.place}.`,
       `Seeking performers for a ${type.toLowerCase()} shooting in ${city.name}. The project is centered on ${setting.place}.`,
       `Now casting ${type.toLowerCase()} talent in ${city.name} for a story built around ${setting.place}.`
@@ -18212,19 +18249,25 @@ const ACG = (()=>{
       const length=pick(FRESH_LENGTHS);
       const roleCount=chooseRoleCount(type,h,res);
       const rootKey=fp([type,setting.key,catalyst,stakes,relationship,voice.key,roleCount].join("|"));
-      if(h.stories.has(clean(rootKey))||res.stories.has(clean(rootKey))||h.traits.has(clean(rootKey))||res.traits.has(clean(rootKey)))continue;
+      const settingKey=clean("setting "+setting.key);
+      const catalystKey=clean("catalyst "+catalyst);
+      if(h.stories.has(clean(rootKey))||res.stories.has(clean(rootKey))||h.traits.has(clean(rootKey))||res.traits.has(clean(rootKey))||h.traits.has(settingKey)||res.traits.has(settingKey)||h.traits.has(catalystKey)||res.traits.has(catalystKey))continue;
       const creator=freshCreator(city,type,h,res);
       const synopsis=freshSynopsis(city,type,setting,catalyst,stakes,relationship,voice,length);
       const text=`${type} ${setting.place} ${catalyst} ${stakes} ${relationship} ${synopsis}`;
       if(tooSimilarStory(text,h.storyTexts)||tooSimilarStory(text,res.storyTexts))continue;
       addUsed(res.traits,"type "+type);
       addUsed(res.traits,rootKey);
+      addUsed(res.traits,settingKey);
+      addUsed(res.traits,catalystKey);
       addUsed(res.roleCounts,String(roleCount));
       return{
         type,
         postedBy:creator.label,
         creatorKind:creator.kind,
         rootKey,
+        settingKey,
+        catalystKey,
         storyDetail:catalyst,
         freshStory:true,
         voice,
@@ -18249,6 +18292,9 @@ const ACG = (()=>{
       addUsed(h.storyTexts,`${c.title||""} ${c.tagline||""} ${c.synopsis||""}`.slice(0,1200));
       addUsed(h.traits,"type "+c.type);
       addUsed(h.traits,`${c.type||""} ${c.location||""} ${(c.synopsis||"").slice(0,120)}`);
+      const storyBlob=clean(`${c.title||""} ${c.tagline||""} ${c.synopsis||""}`);
+      STORY_SETTINGS.forEach(s=>{if(storyBlob.includes(clean(s.place)))addUsed(h.traits,"setting "+s.key);});
+      STORY_CATALYSTS.forEach(s=>{if(storyBlob.includes(clean(s)))addUsed(h.traits,"catalyst "+s);});
       addUsed(h.stories,c.title+" "+(c.synopsis||"").slice(0,180));
       if((c.roles||[]).length)addUsed(h.roleCounts,String((c.roles||[]).length));
       (c.roles||[]).forEach(r=>{addNameUsed(h,r.name);addUsed(h.ages,r.age_range);});
@@ -18269,7 +18315,7 @@ const ACG = (()=>{
       addUsed(titles,item.title);addUsed(prods,item.prod);addUsed(prods,item.posted_by_label);addUsed(pays,item.pay);
       addUsed(stories,item._baseKey);addUsed(stories,item._storyKey);addUsed(stories,item.title+" "+(item.synopsis||"").slice(0,180));
       addUsed(storyTexts,`${item.title||""} ${item.tagline||""} ${item.synopsis||""}`.slice(0,1200));
-      addUsed(traits,item._traitKey);addUsed(traits,"type "+item.type);addUsed(creatorKinds,item._creatorKind);
+      addUsed(traits,item._traitKey);addUsed(traits,item._settingKey);addUsed(traits,item._catalystKey);addUsed(traits,"type "+item.type);addUsed(creatorKinds,item._creatorKind);
       addUsed(roleCounts,item._roleCountKey);
       (item._roles||[]).forEach(r=>{addUsed(roles,r.name);addUsed(ages,r.age_range);const p=nameParts(r.name);if(p){addUsed(firsts,p.first);addUsed(lasts,p.last);}});
     });
@@ -18427,8 +18473,8 @@ const ACG = (()=>{
     if(type==="Commercials & Branded Content"&&Math.random()<0.28)extras.push({...pick(BACKGROUND_ROLE_BANK)});
     return extras.slice(0,pick([1,1,2]));
   }
-  function uniqueRoles(baseRoles,h,res,type,voice){
-    const withExtras=[...(baseRoles||[]),...extraRolesFor(type)];
+  function uniqueRoles(baseRoles,h,res,type,voice,allowExtras=true){
+    const withExtras=[...(baseRoles||[]),...(allowExtras?extraRolesFor(type):[])];
     return withExtras.map(r=>{
       const original=r.name;
       const name=roleName(r,h,res);
@@ -18974,6 +19020,8 @@ const ACG = (()=>{
   ];
   function pickConcept(h,res){
     const city=pickCity();
+    const fresh=buildFreshConcept(city,h,res);
+    if(fresh)return{city,tpl:fresh};
     let pool=CONCEPTS.filter(x=>!x.cityShorts||x.cityShorts.includes(city.short));
     const unused=pool.filter(x=>!h.stories.has(clean(storyBaseKey(x)))&&!res.stories.has(clean(storyBaseKey(x))));
     if(unused.length>0)pool=unused;
@@ -18987,9 +19035,12 @@ const ACG = (()=>{
     const prodStr=uniqueCompany(tpl,city,h,res);
     const story=uniqueStory(tpl,city,h,res);
     const baseRoles=typeof tpl.roles==="function"?tpl.roles():tpl.roles;
-    const rolesArr=uniqueRoles(baseRoles,h,res,tpl.type,story.voice);
+    const rolesArr=uniqueRoles(baseRoles,h,res,tpl.type,story.voice,!tpl.freshStory);
     const payStr=uniquePay(tpl.type,rolesArr.length,h,res);
     const reqStr=uniqueReq(tpl.type);
+    const ageKey=fp(rolesArr.map(r=>r.age_range).join("|"));
+    const roleCountKey=String(rolesArr.length);
+    const traitKey=fp([tpl.type,city.short,tpl.creatorKind||"creator",story.storyKey,roleCountKey,ageKey].join("|"));
     return {
       cd_id:adminUserId,
       title:titleStr,
@@ -19009,20 +19060,43 @@ const ACG = (()=>{
       deadline:new Date(expiresAt(exMonths)).toISOString().slice(0,10),
       _baseKey:story.baseKey,
       _storyKey:story.storyKey,
+      _storyTextKey:`${titleStr||""} ${tpl.type||""} ${story.synopsis||""}`.slice(0,1200),
+      _traitKey:traitKey,
+      _ageKey:ageKey,
+      _roleCountKey:roleCountKey,
+      _creatorKind:tpl.creatorKind||null,
+      _settingKey:tpl.settingKey||null,
+      _catalystKey:tpl.catalystKey||null,
       _roles:rolesArr
     };
+  }
+  function itemFreshEnough(item,h,res){
+    const storyText=item._storyTextKey||`${item.title||""} ${item.synopsis||""}`;
+    if(h.stories.has(clean(item._storyKey))||h.traits.has(clean(item._traitKey)))return false;
+    if(tooSimilarStory(storyText,h.storyTexts)||tooSimilarStory(storyText,res.storyTexts))return false;
+    return true;
   }
   function generateBatch(adminUserId,existing=[]){
     const count=3+Math.floor(Math.random()*2);
     const h=buildHistory(existing);
-    const res={titles:new Set(),prods:new Set(),roles:new Set(),stories:new Set(),pays:new Set(),firsts:new Set(),lasts:new Set()};
+    const res={titles:new Set(),prods:new Set(),roles:new Set(),stories:new Set(),pays:new Set(),firsts:new Set(),lasts:new Set(),storyTexts:new Set(),traits:new Set(),ages:new Set(),roleCounts:new Set(),creatorKinds:new Set()};
     const out=[];
     let attempts=0;
-    while(out.length<count&&attempts<60){
+    while(out.length<count&&attempts<160){
       attempts++;
       const item=generateOne(adminUserId,h,res);
       const key=clean(item.type+"|"+item.location+"|"+item.title);
-      if(!h.stories.has(clean(item._storyKey))&&!res.stories.has(key)){res.stories.add(key);out.push(item);}
+      if(itemFreshEnough(item,h,res)&&!res.stories.has(key)){
+        res.stories.add(key);
+        addUsed(res.storyTexts,item._storyTextKey);
+        addUsed(res.traits,item._traitKey);
+        addUsed(res.traits,item._settingKey);
+        addUsed(res.traits,item._catalystKey);
+        addUsed(res.roleCounts,item._roleCountKey);
+        addUsed(res.creatorKinds,item._creatorKind);
+        (item._roles||[]).forEach(r=>addUsed(res.ages,r.age_range));
+        out.push(item);
+      }
     }
     rememberGenerated(out);
     return out;
@@ -19277,9 +19351,7 @@ function AdminCastingGenerator({session}){
       let ok=0;let fail=0;
       for(const item of batch){
         const roles=item._roles||[];
-        delete item._roles;
-        delete item._baseKey;
-        delete item._storyKey;
+        Object.keys(item).forEach(k=>{if(k[0]==="_")delete item[k];});
         const {data:cData,error:cErr}=await window.sb.from("castings").insert(item).select("id").single();
         if(cErr){fail++;console.warn("[ACG] insert failed",cErr);continue;}
         if(roles.length>0){
@@ -19348,9 +19420,7 @@ function AdminCastingGenerator({session}){
     const batch=ACG.generateBatch(adminId,listings.filter(x=>x.id!==c.id));
     const fresh=batch[0];
     const freshRoles=fresh._roles||[];
-    delete fresh._roles;
-    delete fresh._baseKey;
-    delete fresh._storyKey;
+    Object.keys(fresh).forEach(k=>{if(k[0]==="_")delete fresh[k];});
     const {error}=await window.sb.from("castings").update({
       title:fresh.title,type:fresh.type,prod:fresh.prod,posted_by_label:fresh.posted_by_label,
       tagline:fresh.tagline||null,synopsis:fresh.synopsis,location:fresh.location,pay:fresh.pay,union_status:fresh.union_status,
