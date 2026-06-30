@@ -1787,13 +1787,19 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .site-footer-spacer{min-height:40px;flex-shrink:0;background:var(--bg);width:100%;margin-top:auto;}
 /* Floating back-to-top cube — stays fully off-screen until the footer midpoint
    is reached, then tumbles down/up with the original live timing. */
-.b2t-cube{--b2t-away:calc(-100vh + 16px);position:fixed;left:50%;bottom:22px;z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:96px;height:86px;background:#FFFFFF;color:#1A1A2E;border:1px solid rgba(0,0,0,0.12);border-radius:17px;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,0.30);font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(var(--b2t-away));opacity:1;pointer-events:none;transform-style:preserve-3d;backface-visibility:visible;will-change:transform;transition:none;}
-.b2t-cube.show{transform:translateX(-50%) translateY(0);pointer-events:auto;animation:b2tTumbleDown 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
-.b2t-cube.was-shown:not(.show){animation:b2tTumbleUp 1.17s cubic-bezier(.5,0,.75,.45) both;}
+.b2t-cube{--b2t-away:calc(-100vh + 16px);position:fixed;left:50%;bottom:22px;z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:96px;height:86px;background:#FFFFFF;color:#1A1A2E;border:1px solid rgba(0,0,0,0.12);border-radius:17px;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,0.30);font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(var(--b2t-away));opacity:1;pointer-events:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:none;}
+/* Resting (settled) state — plain 2D transform, NO 3D context, so the tap hit-box
+   lines up exactly with the rendered button. The tumble's perspective/preserve-3d
+   used to linger in the resting state and offset the touch target on mobile, which
+   is why it took 3–5 taps to register. The 3D is now applied ONLY while animating
+   (.dropping / .leaving), and cleared the moment the cube settles. */
+.b2t-cube.show{transform:translateX(-50%) translateY(0);pointer-events:auto;}
+.b2t-cube.dropping{transform-style:preserve-3d;backface-visibility:visible;will-change:transform;animation:b2tTumbleDown 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
+.b2t-cube.leaving{transform-style:preserve-3d;backface-visibility:visible;will-change:transform;animation:b2tTumbleUp 1.17s cubic-bezier(.5,0,.75,.45) both;}
 .b2t-cube .mark{width:24px;height:20px;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;}
 .b2t-cube .mark svg{display:block;width:24px;height:20px;}
-.b2t-cube.show .mark{animation:b2tLogoSpinIn 1.08s cubic-bezier(.18,.82,.26,1.05) both;}
-.b2t-cube.was-shown:not(.show) .mark{animation:b2tLogoSpinOut .82s cubic-bezier(.5,0,.75,.45) both;}
+.b2t-cube.dropping .mark{animation:b2tLogoSpinIn 1.08s cubic-bezier(.18,.82,.26,1.05) both;}
+.b2t-cube.leaving .mark{animation:b2tLogoSpinOut .82s cubic-bezier(.5,0,.75,.45) both;}
 .b2t-cube span{line-height:1.1;}
 @keyframes b2tTumbleDown{
   0%{transform:translateX(-50%) translateY(var(--b2t-away)) perspective(780px) rotateY(-900deg) rotateX(5deg) rotateZ(-5deg) scale(.88);}
@@ -1814,6 +1820,14 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   100%{transform:rotate(-170deg) scale(.76);opacity:.7;}
 }
 @media(prefers-reduced-motion:reduce){.b2t-cube{animation:none!important;transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}.b2t-cube.show{opacity:1!important;}.b2t-cube .mark{animation:none!important;}}
+/* ── Mobile: lift the cube clear of the footer's bottom links/buttons. It now lands
+   in open space above the "© … all rights reserved" line and never covers the
+   Privacy / Terms / Contact / Cookie or language buttons. A matching gap is opened
+   above the copyright row so the cube rests in clear space, not over any text. ── */
+@media(max-width:640px){
+  .b2t-cube{width:84px;height:66px;bottom:120px;font-size:9.5px;border-radius:15px;}
+  .site-footer .site-footer-bottom{margin-top:96px;}
+}
 .site-backtotop{
   display:flex;align-items:center;justify-content:center;gap:8px;
   position:relative;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;
@@ -3293,7 +3307,8 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
   // Show the floating back-to-top cube only when the page is scrolled to the very
   // bottom; it drops in from above and shoots back up off-screen on scroll-up.
   const [b2tShow,setB2tShow]=React.useState(false);
-  const [b2tWasShown,setB2tWasShown]=React.useState(false);
+  const [b2tAnim,setB2tAnim]=React.useState(null); // 'in' | 'out' | null — drives the tumble animation only
+  const b2tShownRef=React.useRef(false);
   React.useEffect(()=>{
     // Appear once the viewport bottom reaches the FOOTER'S MIDPOINT, on long
     // pages only. A short mount suppression prevents the flash that happened
@@ -3301,15 +3316,27 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     // restores / scrolls to top, which briefly looked like "reached the footer").
     let ready=false;
     const check=()=>{try{
-      if(!ready){setB2tShow(false);return;}
+      if(!ready){
+        if(b2tShownRef.current){b2tShownRef.current=false;setB2tShow(false);setB2tAnim('out');}
+        return;
+      }
       const vpBottom=window.innerHeight+window.scrollY;
       const f=document.querySelector('.site-footer');
       let threshold=document.documentElement.scrollHeight-4;
       if(f){const r=f.getBoundingClientRect();threshold=r.top+window.scrollY+r.height*0.5;}
       const scrollable=document.documentElement.scrollHeight-window.innerHeight;
-      const nextShow=scrollable>240 && vpBottom>=threshold;
-      if(nextShow)setB2tWasShown(true);
-      setB2tShow(nextShow);
+      // Hysteresis: once the cube is showing, keep it showing until the viewport
+      // bottom climbs a good bit (90px) back above the footer midpoint. Without
+      // this, scroll jitter / the mobile address-bar collapse flickered the cube
+      // off for a frame — dropping pointer-events mid-tap — which is what forced
+      // the 3–5 taps before a tap landed.
+      const margin=b2tShownRef.current?90:0;
+      const nextShow=scrollable>240 && vpBottom>=(threshold-margin);
+      if(nextShow!==b2tShownRef.current){
+        b2tShownRef.current=nextShow;
+        setB2tShow(nextShow);
+        setB2tAnim(nextShow?'in':'out');
+      }
     }catch(_){}};
     const armTimer=setTimeout(()=>{ready=true;check();},700);
     window.addEventListener('scroll',check,{passive:true});
@@ -3317,6 +3344,14 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     check();
     return()=>{clearTimeout(armTimer);window.removeEventListener('scroll',check);window.removeEventListener('resize',check);};
   },[]);
+  // Safety net: always clear the animation class shortly after it starts, even if
+  // the animationend event is missed (it can be, mid-scroll on mobile). Settling
+  // to the plain .show state is what makes the tap target reliable.
+  React.useEffect(()=>{
+    if(!b2tAnim)return;
+    const id=setTimeout(()=>setB2tAnim(null),1500);
+    return()=>clearTimeout(id);
+  },[b2tAnim]);
   return(<>
     {/* Global breathing room above the footer on EVERY page. Carries margin-top:auto
         (the sticky-footer push) AND a guaranteed min-height so no page's final card,
@@ -3325,7 +3360,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     {/* Floating back-to-top cube — only on long pages (home, browse castings,
         tapelink, manager mode). Short pages scroll up in one flick, so the
         drop-down button is just noise there. */}
-    {backToTop&&<button type="button" className={"b2t-cube"+(b2tShow?" show":"")+(b2tWasShown?" was-shown":"")} onClick={scrollTop} aria-label={t('footer.backToTop')}>
+    {backToTop&&<button type="button" className={"b2t-cube"+(b2tShow?" show":"")+(b2tAnim==='in'?" dropping":"")+(b2tAnim==='out'?" leaving":"")} onClick={scrollTop} onAnimationEnd={(e)=>{if(e.target===e.currentTarget)setB2tAnim(null);}} aria-label={t('footer.backToTop')}>
       <span className="mark"><svg width="20" height="16" viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="currentColor"/></svg></span>
       <span>{t('footer.backToTop')}</span>
     </button>}
