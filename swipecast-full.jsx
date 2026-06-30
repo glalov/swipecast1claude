@@ -3320,12 +3320,16 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     const t0=performance.now();
     const dur=Math.min(600,Math.max(320,startY*0.5));
     const ease=t=>1-Math.pow(1-t,3); // easeOutCubic
+    let done=false;
     const step=(now)=>{
       const p=Math.min(1,(now-t0)/dur);
       window.scrollTo(0,Math.round(startY*(1-ease(p))));
-      if(p<1)requestAnimationFrame(step); else hardTop();
+      if(p<1)requestAnimationFrame(step); else {done=true;hardTop();}
     };
     requestAnimationFrame(step);
+    // Safety: if rAF is throttled (backgrounded tab, etc.) and the glide never
+    // settles, still guarantee we land at the very top.
+    setTimeout(()=>{if(!done)hardTop();},dur+260);
   }catch(_){try{window.scrollTo(0,0);}catch(__){}}};
   // Show the floating back-to-top cube only when the page is scrolled to the very
   // bottom; it drops in from above and shoots back up off-screen on scroll-up.
