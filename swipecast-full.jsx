@@ -3363,12 +3363,17 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
   React.useEffect(()=>{
     if(!backToTop)return;
     const setRest=()=>{try{
-      const f=document.querySelector('.site-footer');
       const b=document.querySelector('.site-footer-bottom');
-      if(!f||!b)return;
-      const pb=parseFloat(getComputedStyle(f).paddingBottom)||0;
-      const hb=b.offsetHeight||0;
-      document.documentElement.style.setProperty('--b2t-rest',(pb+hb+14)+'px');
+      if(!b)return;
+      // Distance from the very bottom of the page up to the TOP of the copyright/
+      // links block. Using the block's document position (not reconstructed from
+      // paddings) automatically accounts for every nested padding below it
+      // (.site-footer-inner + .site-footer + iOS safe-area). +14px = small gap so
+      // the cube floats just clear of the "© … all rights reserved" row.
+      const rect=b.getBoundingClientRect();
+      const blockTopDoc=rect.top+window.scrollY;
+      const docH=document.documentElement.scrollHeight;
+      document.documentElement.style.setProperty('--b2t-rest',Math.round(docH-blockTopDoc)+14+'px');
     }catch(_){}};
     setRest();
     const t=setTimeout(setRest,800); // recompute once fonts/layout settle
