@@ -1825,7 +1825,11 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
    Privacy / Terms / Contact / Cookie or language buttons. A matching gap is opened
    above the copyright row so the cube rests in clear space, not over any text. ── */
 @media(max-width:640px){
-  .b2t-cube{width:84px;height:66px;bottom:120px;font-size:9.5px;border-radius:15px;}
+  /* --b2t-rest is measured in JS = footer padding-bottom + the copyright/links
+     block height + 14px, so the cube parks just above the "© … all rights
+     reserved" row no matter how the links wrap on a given phone. The 96px gap
+     opened above that row is the clear space the cube lands in. */
+  .b2t-cube{width:84px;height:66px;bottom:var(--b2t-rest,150px);font-size:9.5px;border-radius:15px;}
   .site-footer .site-footer-bottom{margin-top:96px;}
 }
 .site-backtotop{
@@ -3352,6 +3356,25 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     const id=setTimeout(()=>setB2tAnim(null),1500);
     return()=>clearTimeout(id);
   },[b2tAnim]);
+  // Mobile only (used by the <=640px rule): measure where the footer's
+  // copyright/links block sits and park the cube's resting position just above
+  // it, so it never lands on the © line, the Privacy/Terms/Contact/Cookie links,
+  // or the language button — regardless of how those links wrap on a given phone.
+  React.useEffect(()=>{
+    if(!backToTop)return;
+    const setRest=()=>{try{
+      const f=document.querySelector('.site-footer');
+      const b=document.querySelector('.site-footer-bottom');
+      if(!f||!b)return;
+      const pb=parseFloat(getComputedStyle(f).paddingBottom)||0;
+      const hb=b.offsetHeight||0;
+      document.documentElement.style.setProperty('--b2t-rest',(pb+hb+14)+'px');
+    }catch(_){}};
+    setRest();
+    const t=setTimeout(setRest,800); // recompute once fonts/layout settle
+    window.addEventListener('resize',setRest);
+    return()=>{clearTimeout(t);window.removeEventListener('resize',setRest);};
+  },[backToTop]);
   return(<>
     {/* Global breathing room above the footer on EVERY page. Carries margin-top:auto
         (the sticky-footer push) AND a guaranteed min-height so no page's final card,
