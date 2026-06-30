@@ -13359,7 +13359,7 @@ function LiveCastingBadge({text="Casting now — apply today"}){
   return(<span style={{display:"inline-flex",alignItems:"center",gap:6}}>
     <span className="cs-live-badge"><span className="cs-live-dot"><span className="core"/></span>{text}</span>
     <InfoTip color="#0F6E56" width={300} label="Why this casting is still active">
-      <strong style={{color:"var(--t1)"}}>Still actively casting.</strong> The team behind this project is still accepting new submissions and has not archived it yet — so they are actively looking for new actors, no matter whether the casting was posted a month ago or longer. Casting is a complex process and can sometimes take many months to find the right talent, so an older post does not mean the role is taken.
+      <strong style={{color:"var(--t1)"}}>Still actively casting.</strong> The team behind this project is still accepting new submissions and has not archived it yet — so they are actively looking for new actors, no matter whether the casting was posted a month ago or longer. Casting is a complex process and can sometimes take many months to find the right talent, so an older post does not mean the role is taken. For example, <em>Gone with the Wind</em> took around 2 years of casting before the right actors were found, and <em>Harry Potter and the Philosopher's Stone</em> took roughly 8 months to a year, with 40,000+ children considered.
     </InfoTip>
   </span>);
 }
