@@ -17779,7 +17779,7 @@ const ACG = (()=>{
   const PAY_VOICEOVER_B="$50–$300 for most paid session projects. Some educational or spec content is credit-only. All rates disclosed up front.";
   const PAY_THEATER="Most workshop sessions are unpaid or offer a small stipend ($25–$75/day). Some funded workshops offer rehearsal pay. Details shared per project.";
   const PAY_COMMERCIAL="Day rates range from $150–$600 for paid commercial projects. Spec and student commercial work may be copy/credit only.";
-  const LS_KEYS={titles:"cs_acg_titles_v2",prods:"cs_acg_prods_v2",roles:"cs_acg_roles_v2",stories:"cs_acg_stories_v2",pays:"cs_acg_pays_v2",firsts:"cs_acg_firsts_v2",lasts:"cs_acg_lasts_v2"};
+  const LS_KEYS={titles:"cs_acg_titles_v2",prods:"cs_acg_prods_v2",roles:"cs_acg_roles_v2",stories:"cs_acg_stories_v2",pays:"cs_acg_pays_v2",firsts:"cs_acg_firsts_v2",lasts:"cs_acg_lasts_v2",storyTexts:"cs_acg_story_texts_v1",traits:"cs_acg_traits_v1",ages:"cs_acg_ages_v1",roleCounts:"cs_acg_role_counts_v1",creatorKinds:"cs_acg_creator_kinds_v1"};
   const FIRST_F=["Ari","Mara","Nina","Leah","Sofia","Ruth","June","Celia","Nadine","Tessa","Mina","Priya","Dani","Elise","Val","Maya","Jo","Raina","Clara","Simone","Noor","Iris","Frances","Greta","Anika","Lucia","Mae","Helena","Jules","Vera","Lena","Naomi","Maris","Teresa","Lydia","Renata","Adina","Bea","Camille","Daphne","Elora","Faye","Gia","Hana","Imani","Katya","Liora","Maren","Nell","Opal","Petra","Romy","Sabine","Thea","Uma","Vivian","Willa","Yara","Zadie","Alma","Blythe","Carmen","Delia","Esther","Flora","Gwen","Hester","Ines","Jana","Keira","Lina","Miriam","Nora","Orla","Phoebe","Quinta","Rhea","Selene","Talia","Una","Veda","Winona"];
   const FIRST_M=["Ben","Ray","Noah","Andre","Samir","Malcolm","Marco","Trevor","Cal","Martin","Morris","Eli","Graham","Owen","Theo","Julian","Darius","Leo","Mateo","Simon","Rafael","Harris","Victor","Miles","Nico","Jonah","Arthur","Wes","Isaac","Evan","Micah","Sol","Caleb","Roman","Dominic","Felix","Adrian","Bashir","Cole","Desmond","Enzo","Ford","Gideon","Hugo","Ivan","Jasper","Kian","Luca","Milo","Nestor","Oscar","Paolo","Quentin","Remy","Silas","Tobias","Uri","Vincent","Wyatt","Xavier","Yosef","Zeke","Arlo","Bruno","Cassian","Dante","Emil","Finn","Galen","Heath","Idris","Kai","Leon","Magnus","Nolan","Otis","Pierce","Reid","Soren","Tariq","Vaughn"];
   const FIRST_N=["Alex","Rowan","Casey","Jordan","Quinn","Riley","Taylor","Morgan","Sage","Avery","Hayden","Emery","Reese","Jamie","Devon","Shay","Remy","Parker","Elliot","Sky","Marion","Lane","Robin","Ellis","Arden","Briar","Cameron","Drew","Eden","Finley","Gray","Harper","Indigo","Jules","Kit","Lennox","Marlowe","Noel","Oakley","Perry","River","Sawyer","Teagan","Val","Winter"];
@@ -17880,6 +17880,81 @@ const ACG = (()=>{
     {name:"Photo Double / Stand-In",role_type:"Stand-In",description:"May be used for over-the-shoulder framing, simple movement, and lighting setups. Must match general look requested after booking.",gender:"All genders",age_range:"18-55",ethnicity:"All ethnicities",pay:""},
     {name:"Commercial Stand-In",role_type:"Stand-In",description:"Stand-in for product/action coverage. Patient, punctual, and comfortable repeating simple marks.",gender:"All genders",age_range:"18-65",ethnicity:"All ethnicities",pay:""}
   ];
+  const CREATOR_TYPES=[
+    "Casting Director","Casting Associate","Casting Assistant","Casting Agency","Background Casting Director","Extras Casting Company","Commercial Casting Director","Print Casting Director","Voiceover Casting Director","Reality Casting Producer",
+    "Talent Producer","Producer","Executive Producer","Line Producer","Film Producer","TV Producer","Commercial Producer","Director","Film Director","Theater Director",
+    "Creative Director","Production Company","Film Production Company","TV Production Company","Commercial Production Company","Advertising Agency","Marketing Agency","Brand / Company","Content Creator","Influencer / Creator Team",
+    "Student Filmmaker","Film School Project","Independent Filmmaker","Theater Company","Theater Producer","Stage Manager","Music Video Producer","Event Producer","Live Event Company","Modeling Agency",
+    "Photography Studio","E-Commerce Brand","Corporate Video Producer","Documentary Producer","Podcast Producer","Game Studio","Motion Capture Studio","Talent Scout","Talent Manager","Talent Agency"
+  ];
+  const PROJECT_TYPES=[
+    "Feature Film","Short Film","Student Film","Independent Film","TV Series","Streaming Series","Pilot","Web Series","Commercial","Digital Commercial",
+    "Social Media Ad","Branded Content","UGC Ad","Product Demo","Testimonial Video","Corporate Video","Training Video","Educational Video","Explainer Video","Industrial Video",
+    "Print Campaign","Lifestyle Print","Fashion Shoot","Beauty Shoot","E-Commerce Shoot","Catalog Shoot","Modeling","Voiceover","Podcast","Audiobook",
+    "Animation Voiceover","Video Game Voiceover","Theater","Musical Theater","Stage Reading","Live Event","Brand Ambassador","Trade Show","Music Video","Dance Project",
+    "Background / Extras","Stand-In","Photo Double","Body Double","Hand Model","Specialty Talent","Reality TV","Docuseries","Documentary","Motion Capture",
+    "Performance Capture","VR / AR Project","Influencer Campaign","Hosting / Presenter","Interview Project","Public Service Announcement","Promo Video","Sizzle Reel","Trailer","Table Read"
+  ];
+  const PERSON_CREATOR_HINT=/director|producer|assistant|associate|coordinator|manager|scout|filmmaker|creator|stage manager/i;
+  const ORG_CREATOR_HINT=/company|agency|studio|brand|school|team|project|theater company|production company/i;
+  const STORY_SETTINGS=[
+    {key:"laundromat-after-hours",place:"a laundromat after the last dryer jams",titles:["Spin Cycle at Midnight","The Last Load","Quarter Machine"],roles:["owner's adult child","night-shift attendant","customer with a taped-up suitcase","building inspector","regular who knows everyone's schedule"]},
+    {key:"probate-office",place:"a county probate office on a Friday afternoon",titles:["The Missing Signature","Window Twelve","Estate Pending"],roles:["clerk who has seen every family argument","half-sibling no one expected","caregiver with a receipt folder","attorney's assistant","quiet cousin with the key"]},
+    {key:"museum-loading-dock",place:"a museum loading dock before a donor preview",titles:["Crate 14","The Donor Preview","White Gloves"],roles:["collections assistant","security guard","artist's ex-partner","museum trustee","freelance art handler"]},
+    {key:"airport-hotel-shuttle",place:"an airport hotel shuttle during a weather shutdown",titles:["Courtesy Shuttle","Terminal Weather","Room Block"],roles:["driver nearing the end of a double shift","stranded consultant","runaway bridesmaid","pilot out of uniform","hotel desk lead"]},
+    {key:"city-pool",place:"a city pool on the day inspections fail",titles:["Adult Swim","The Deep End Is Closed","Pool Rules"],roles:["aquatics director","teen lifeguard","parent advocate","maintenance worker","council aide"]},
+    {key:"local-news-desk",place:"a small local news desk during a breaking false alarm",titles:["Live at Six","Lower Third","Unconfirmed"],roles:["field reporter","assignment editor","camera operator","mayor's press aide","neighbor with phone footage"]},
+    {key:"funeral-flower-shop",place:"a funeral flower shop with two orders for the same name",titles:["Sympathy Arrangement","Two Wreaths","Card Enclosed"],roles:["florist","widower who is not the widower","delivery driver","estranged daughter","funeral director"]},
+    {key:"mocap-volume",place:"a motion-capture volume during a creature test",titles:["Reference Pass","The Suit Needs Markers","Volume Notes"],roles:["mocap performer","game director","animation lead","stunt coordinator","new performer in the capture suit"]},
+    {key:"podcast-studio",place:"a podcast studio after the guest cancels",titles:["Open Mic Three","The Guest Chair","Cut This Part"],roles:["producer who books the wrong guest","host pretending not to panic","walk-in expert","audio engineer","sponsor rep"]},
+    {key:"ecommerce-warehouse",place:"an e-commerce warehouse during a holiday return surge",titles:["Return Window","Wrong Size Twice","Packed by Hand"],roles:["warehouse lead","seasonal worker","brand founder","quality-control associate","customer-service voice on speakerphone"]},
+    {key:"court-marriage-bureau",place:"a courthouse marriage bureau with a broken printer",titles:["License Pending","Room 3B","Witness Available"],roles:["clerk with a stack of forms","couple on a deadline","paid witness","older sibling trying to stop it","city hall photographer"]},
+    {key:"theater-costume-shop",place:"a theater costume shop during tech week",titles:["Hemmed by Hand","Quick Change Booth","Opening-Night Thread"],roles:["costume supervisor","understudy called in late","actor hiding a stain","stage manager","volunteer seamstress"]},
+    {key:"used-car-lot",place:"a used-car lot after a trade-in goes missing",titles:["As-Is","Temporary Plates","The Lemon Lot"],roles:["sales manager","mechanic","customer who wants the old car back","finance clerk","teen lot attendant"]},
+    {key:"clinic-waiting-room",place:"an urgent-care waiting room during a systems outage",titles:["Clipboard Names","Waiting Room B","Insurance Pending"],roles:["front-desk lead","patient trying to stay calm","nurse practitioner","delivery courier","relative with too much information"]},
+    {key:"apartment-open-house",place:"an apartment open house where everyone knows the landlord",titles:["Open House Sunday","Rent Stabilized","The Good Light"],roles:["broker","tenant who refuses to leave quietly","couple stretching their budget","neighbor with building history","superintendent"]},
+    {key:"public-access-studio",place:"a public-access TV studio before a live call-in show",titles:["Channel 18","Please Hold for Air","Local Segment"],roles:["host","floor manager","caller brought into studio","city volunteer","camera trainee"]},
+    {key:"church-basement-fundraiser",place:"a church basement fundraiser missing the cash box",titles:["Pancake Money","Basement Key","After the Raffle"],roles:["event organizer","teen volunteer","choir director","bookkeeper","neighbor who counted the envelope"]},
+    {key:"photo-studio-catalog",place:"a catalog photo studio with a late product shipment",titles:["Sample Size","Look 23","The Missing Rack"],roles:["photographer","model who can save the day","stylist","brand assistant","client watching the monitor"]},
+    {key:"ferry-terminal",place:"a ferry terminal after the final crossing is canceled",titles:["No Last Boat","Terminal Coffee","Standby List"],roles:["ticket agent","commuter with nowhere to go","tourist hiding bad news","captain's spouse","student with an audition bag"]},
+    {key:"dance-rehearsal-room",place:"a dance rehearsal room rented for one final hour",titles:["Eight Counts Left","Studio B","Shoes Off"],roles:["choreographer","returning dancer","assistant keeping time","performer with an injury","producer checking the budget"]},
+    {key:"corporate-training-room",place:"a corporate training room during a fake crisis drill",titles:["Module Four","Roleplay Emergency","Attendance Sheet"],roles:["trainer","employee who takes it too seriously","HR observer","contract actor","department manager"]},
+    {key:"table-read-backroom",place:"a borrowed back room before a table read loses its lead",titles:["Table Read at Four","The Empty Chair","Pages 17 to 32"],roles:["writer","replacement reader","producer with one investor call","actor who knows the secret","assistant printing revised pages"]}
+  ];
+  const STORY_CATALYSTS=[
+    "a misdelivered envelope that names the wrong person","a phone recording that should have been deleted","a no-show performer who left one useful clue","a payment that clears under someone else's name","a weather delay that traps people who planned to avoid each other",
+    "a child asking the only direct question in the room","a sponsor pulling out an hour before cameras roll","a fake emergency drill becoming the real conversation","a lost prop that turns out to be personal","a casting tape sent to the wrong thread",
+    "a grant deadline landing before anyone is ready","a customer complaint that exposes a private favor","a missing key ring with three impossible labels","a donor visit happening before the room is cleaned","a product sample arriving with the wrong face printed on it",
+    "a cancellation that forces the assistant to become the lead","a voicemail played on speaker by mistake","a background actor recognizing the location from childhood","a contract clause nobody read until wrap day","a printed schedule that lists a person who died last year",
+    "a rehearsal note that sounds like an accusation","a social post going live before approval","a family photo found in a rented costume pocket","a wrong-size garment threatening the whole shoot","an investor arriving early and asking to see the scene now",
+    "a return label addressed to a person no one admits knowing","a witness form that needs one more signature","a brand script that accidentally tells the truth","an access badge that still opens a closed office","a hold music loop with a private argument recorded underneath"
+  ];
+  const STORY_STAKES=[
+    "saving a small business without admitting how close it is to closing","getting one clean take before the location is lost","protecting a family member from a truth they already suspect","keeping a job that no longer feels worth keeping","finishing a proof-of-concept before money disappears",
+    "deciding whether the public version of the story is a lie","keeping a performer safe while the room asks too much","turning a bad commercial brief into something human","choosing between a better role and a better apology","making a public event look calm while everyone backstage knows it is not",
+    "getting home before a promise is broken","stopping a stranger from taking the blame","making an ordinary object feel like evidence","holding a group together after the person in charge quits","using comedy to avoid a conversation that cannot wait",
+    "letting a documentary subject control their own ending","delivering work for a client who keeps changing the truth","rehearsing a scene that is too close to someone's real life","finding a replacement without making them feel like one","deciding who gets paid first when the budget is too small"
+  ];
+  const STORY_RELATIONSHIPS=[
+    "siblings who share a business but not a memory of childhood","a former teacher and student now meeting as adults","neighbors who only know each other through complaints","a producer and assistant with reversed instincts","a parent and adult child negotiating who is allowed to be tired",
+    "two actors who auditioned for the same role ten years apart","a manager and seasonal hire who understand the room differently","an ex-couple forced to behave professionally","a director and performer realizing they made different projects","a host and guest who both need the segment to work",
+    "a clerk and customer who remember the same day differently","a founder and model who both know the brand promise is fake","a stage manager and understudy solving the problem quietly","a casting associate and walk-in talent trying to save the session","a line producer and creative director fighting over what can be afforded",
+    "a photographer and subject trying not to expose each other","a volunteer and donor with unequal power in a small room","a sound engineer and speaker hearing the truth at the same time","a talent scout and performer unsure who is using whom","a student filmmaker and local actor building trust in public"
+  ];
+  const FRESH_VOICES=[
+    {key:"budget-honest",note:"Plain and budget-aware. No hype, just the useful facts.",line:"The notice should sound direct, practical, and respectful of actors' time."},
+    {key:"warm-casting-director",note:"Warm casting-director voice with clear taste.",line:"The team should sound like they know the tone but still want actors to bring ideas."},
+    {key:"student-sincere",note:"Sincere emerging-filmmaker voice, simple and specific.",line:"The copy should admit the project is small without making it feel careless."},
+    {key:"brand-practical",note:"Clean commercial voice, friendly but not glossy.",line:"The writing should feel organized, client-safe, and still human."},
+    {key:"theater-room",note:"Theater-development voice with table-work detail.",line:"The room should feel collaborative, text-first, and actor-led."},
+    {key:"documentary-field",note:"Documentary field-producer voice.",line:"The listing should sound observant, flexible, and built around real people."},
+    {key:"coordinator-quick",note:"Fast coordinator voice with short sentences.",line:"The language should move quickly and make the logistics feel real."},
+    {key:"producer-careful",note:"Careful producer voice that avoids overpromising.",line:"The copy should be transparent about scope, pay, and what is still moving."},
+    {key:"creative-director",note:"Visual creative-director voice, simple imagery.",line:"The notice should explain the look without drifting into fancy wording."},
+    {key:"no-nonsense",note:"No-nonsense casting office voice.",line:"The copy should be concise, clear, and easy to submit against."}
+  ];
+  const FRESH_LENGTHS=["micro","very_short","short","medium","uneven","detailed","long"];
+  const ROLE_AGE_BANDS=["7-11","10-13","13-17","16-20","18-24","18-30","20-28","21-35","24-32","25-38","28-42","30-45","32-50","35-55","40-60","45-70","50-75","60-85","18-65","25-70","All ages 18+"]; 
   function clean(v){return String(v||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();}
   function fp(v){return clean(v).replace(/\s+/g,"-");}
   function rand(min,max,step=25){const n=Math.floor((max-min)/step)+1;return min+Math.floor(Math.random()*n)*step;}
@@ -17956,13 +18031,227 @@ const ACG = (()=>{
     reserved.add(clean(c));
     return c;
   }
-  function storyBaseKey(tpl){return fp(tpl.titles&&tpl.titles[0]||tpl.type);}
+  function meaningTerms(v){
+    const stop=new Set("about after again against also because before being between casting credit current day days each every from into local looking meals most need needs only other please project projects roles shoot should submit their there these they this through under with without work works would".split(" "));
+    return clean(v).split(/\s+/).filter(w=>w.length>3&&!stop.has(w));
+  }
+  function tooSimilarStory(text,set){
+    const a=[...new Set(meaningTerms(text))];
+    if(a.length<12)return false;
+    for(const old of set||[]){
+      const b=[...new Set(meaningTerms(old))];
+      if(b.length<12)continue;
+      let shared=0;
+      const bs=new Set(b);
+      a.forEach(w=>{if(bs.has(w))shared++;});
+      if(shared>=10&&shared/Math.min(a.length,b.length)>0.42)return true;
+    }
+    return false;
+  }
+  function isPersonCreator(kind){
+    return PERSON_CREATOR_HINT.test(kind)&&!ORG_CREATOR_HINT.test(kind);
+  }
+  function personFullName(){
+    return `${pick(FIRST_F.concat(FIRST_M,FIRST_N))} ${pick(LAST_NAMES)}`;
+  }
+  function creatorCandidates(kind,city,type){
+    const companyCore=`${pick(COMPANY_A)} ${pick(COMPANY_B)}`;
+    if(isPersonCreator(kind)){
+      const name=personFullName();
+      const name2=personFullName();
+      return [
+        `${name}, ${kind}`,
+        `${name} - ${kind}`,
+        `${name} Casting`,
+        `${name2}, ${type} ${kind}`,
+        `${name2} Projects`
+      ];
+    }
+    if(/brand/i.test(kind)){
+      return [
+        `${pick(["Juniper","Northline","Cedar","Blue Cart","Luna","Market Row","Westfield","Bright Table"])} ${pick(["Home","Foods","Beauty","Outdoors","Studio","Market"])} ${kind}`,
+        `${city.short} ${pick(["Wellness","Transit","Dining","Retail","Arts"])} Brand Team`,
+        `${companyCore} for ${pick(["Regional Brand","E-Commerce Launch","Lifestyle Campaign"])}`
+      ];
+    }
+    if(/school|student/i.test(kind)){
+      return [
+        `${city.short} Film School ${pick(["Thesis Unit","Senior Project","Capstone Team","Production Lab"])}`,
+        `${pick(["Graduate","Senior","First-Year","Evening"]) } Film School Project`,
+        `${personFullName()}, Student Filmmaker`
+      ];
+    }
+    return [
+      `${city.short} ${companyCore}`,
+      `${companyCore}`,
+      `${pick(COMPANY_A)} ${kind}`,
+      `${pick(["North","South","West","East","Downtown","Uptown"])} ${pick(COMPANY_A)} ${kind}`,
+      `${personFullName()} ${pick(["Casting","Creative","Producing"])} Office`
+    ];
+  }
+  function freshCreator(city,type,h,res){
+    const unusedKinds=CREATOR_TYPES.filter(k=>!h.creatorKinds.has(clean(k))&&!res.creatorKinds.has(clean(k)));
+    const kind=pick(unusedKinds.length?unusedKinds:CREATOR_TYPES);
+    const label=candidateUnique(creatorCandidates(kind,city,type),h.prods,res.prods,()=>`${personFullName()} ${kind} ${Math.floor(Math.random()*9000)+1000}`);
+    addUsed(res.creatorKinds,kind);
+    return{kind,label};
+  }
+  function pickFreshProjectType(h,res){
+    const unused=PROJECT_TYPES.filter(t=>!h.traits.has(clean("type "+t))&&!res.traits.has(clean("type "+t)));
+    return pick(unused.length?unused:PROJECT_TYPES);
+  }
+  function chooseRoleCount(type,h,res){
+    let options=/background|extras|trade show|live event/i.test(type)?[5,6,7,8]:/feature|series|musical|theater/i.test(type)?[4,5,6,7]:/voiceover|podcast|hand model|photo double|stand-in/i.test(type)?[2,3,4]:[3,4,5,6];
+    let pool=options.filter(n=>!h.roleCounts.has(clean(String(n)))&&!res.roleCounts.has(clean(String(n))));
+    if(pool.length===0)pool=options.filter(n=>!res.roleCounts.has(clean(String(n))));
+    return pick(pool.length?pool:options);
+  }
+  function chooseAge(h,res,usedLocal){
+    let pool=ROLE_AGE_BANDS.filter(a=>!h.ages.has(clean(a))&&!res.ages.has(clean(a))&&!usedLocal.has(clean(a)));
+    if(pool.length===0)pool=ROLE_AGE_BANDS.filter(a=>!usedLocal.has(clean(a)));
+    const age=pick(pool.length?pool:ROLE_AGE_BANDS);
+    usedLocal.add(clean(age));
+    addUsed(res.ages,age);
+    return age;
+  }
+  function projectUnion(type){
+    if(/feature|film|series|pilot/i.test(type))return pick(["SAG-AFTRA Micro-Budget / Non-Union welcome","Non-Union","Union and non-union welcome"]);
+    if(/theater|musical|stage|table read/i.test(type))return pick(["AEA showcase/workshop terms where applicable; non-union welcome","Non-Union","Union and non-union welcome"]);
+    if(/commercial|ad|brand|print|model|e-commerce/i.test(type))return pick(["Non-Union","Union and non-union welcome","Commercial terms disclosed before booking"]);
+    return UNION;
+  }
+  function freshTitles(setting,type){
+    const stem=pick(setting.titles);
+    return [
+      stem,
+      `${stem}: ${pick(["First Pass","One Day Only","After Hours","Hold for Notes","Final Check"])}`,
+      `${pick(["The","A"]) } ${pick(TITLE_A)} ${pick(TITLE_B)}`,
+      `${type}: ${pick(setting.titles)}`,
+      `${pick(["Before","After","Inside","Under"])} ${pick(setting.titles)}`
+    ];
+  }
+  function freshTagline(type,setting,catalyst,stakes){
+    return pick([
+      `A ${type.toLowerCase()} built around ${setting.place}, ${catalyst}, and ${stakes}.`,
+      `${setting.place} becomes the center of a new ${type.toLowerCase()} about ${stakes}.`,
+      `A grounded ${type.toLowerCase()} where ${catalyst} forces everyone to choose what they can admit.`
+    ]);
+  }
+  function freshSynopsis(city,type,setting,catalyst,stakes,relationship,voice,length){
+    const opener=pick([
+      `Casting a ${type.toLowerCase()} in ${city.name} set around ${setting.place}.`,
+      `${type} casting in ${city.name}. The story begins around ${setting.place}.`,
+      `Seeking performers for a ${type.toLowerCase()} shooting in ${city.name}. The project is centered on ${setting.place}.`,
+      `Now casting ${type.toLowerCase()} talent in ${city.name} for a story built around ${setting.place}.`
+    ]);
+    const story=`The root of the piece is ${relationship}. What changes the day is ${catalyst}, and the pressure underneath is ${stakes}.`;
+    const tone=pick([
+      `The style is ${voice.note.toLowerCase()} Performances should feel simple, observant, and specific.`,
+      `The writing should stay clear and human. ${voice.line}`,
+      `The team wants grounded choices, clean behavior, and no complicated acting language.`,
+      `This should feel like a real workday or family day that went slightly off course.`
+    ]);
+    const logistics=pick([
+      `Dates, exact call times, and final rate will be confirmed before booking.`,
+      `Local hires are preferred, and the team is trying to keep the process organized and direct.`,
+      `Actors should be comfortable with practical locations, quick resets, and small changes on the day.`,
+      `The casting team is open to unexpected reads as long as the tape feels honest.`
+    ]);
+    const submit=pick([
+      `Submit current materials only; a clean, simple tape is better than a heavily edited one.`,
+      `A short tape or reel is enough. The team is watching for listening, timing, and a believable point of view.`,
+      `Please keep submissions plain and current. Long cover letters are not needed.`,
+      `If you have relevant real-life experience, mention it in one sentence.`
+    ]);
+    if(length==="micro")return `${opener} ${story}`;
+    if(length==="very_short")return `${opener}\n\n${story}`;
+    if(length==="short")return `${opener}\n\n${story}\n\n${logistics}`;
+    if(length==="medium")return `${opener}\n\n${story}\n\n${tone}`;
+    if(length==="uneven")return `${opener} ${story}\n\n${tone}\n\n${submit}`;
+    if(length==="detailed")return `${opener}\n\n${story}\n\n${tone} ${logistics}\n\n${submit}`;
+    return `${opener}\n\n${story}\n\n${tone}\n\n${logistics}\n\n${submit}`;
+  }
+  function freshRoleType(type,i){
+    if(/background|extras/i.test(type))return i<2?"Featured":"Background";
+    if(/stand-in/i.test(type))return "Stand-In";
+    if(/photo double|body double/i.test(type))return "Double";
+    if(/print|fashion|beauty|model|e-commerce|catalog|hand model/i.test(type))return i===0?"Principal":"Model";
+    if(/voiceover|audiobook|podcast/i.test(type))return i===0?"Principal Voice":"Voiceover";
+    if(/theater|musical|stage|table read/i.test(type))return i<2?"Lead":"Supporting";
+    if(/commercial|ad|brand|promo|sizzle|trailer|testimonial|demo/i.test(type))return i<2?"Principal":"Featured";
+    return i<2?"Lead":i<4?"Supporting":"Day Player";
+  }
+  function freshRoleBlueprints(type,setting,catalyst,stakes,relationship,count,h,res){
+    const usedAges=new Set();
+    return Array.from({length:count}).map((_,i)=>{
+      const roleLabel=setting.roles[i%setting.roles.length];
+      const roleType=freshRoleType(type,i);
+      const short=pick([
+        `Connected to ${setting.place}. The role has to make ${catalyst} feel believable.`,
+        `Part of the ${relationship}. Needs grounded reactions and clear listening.`,
+        `A practical, specific role in the story pressure around ${stakes}.`,
+        `Should feel like a real person with a private life outside the scene.`
+      ]);
+      const detail=pick([
+        `The casting team wants behavior, not a type. Small choices will matter more than a big read.`,
+        `Some improvisational looseness may be used, but the performance should stay clean and simple.`,
+        `Comfort with quick adjustments and natural overlap will help.`,
+        `Bring one specific point of view; do not overcomplicate the character.`
+      ]);
+      return{name:roleLabel,role_type:roleType,description:`${short} ${detail}`,gender:"All genders",age_range:chooseAge(h,res,usedAges),ethnicity:"All ethnicities",pay:""};
+    });
+  }
+  function buildFreshConcept(city,h,res){
+    for(let i=0;i<500;i++){
+      const type=pickFreshProjectType(h,res);
+      const setting=pick(STORY_SETTINGS);
+      const catalyst=pick(STORY_CATALYSTS);
+      const stakes=pick(STORY_STAKES);
+      const relationship=pick(STORY_RELATIONSHIPS);
+      const voice=pick(FRESH_VOICES);
+      const length=pick(FRESH_LENGTHS);
+      const roleCount=chooseRoleCount(type,h,res);
+      const rootKey=fp([type,setting.key,catalyst,stakes,relationship,voice.key,roleCount].join("|"));
+      if(h.stories.has(clean(rootKey))||res.stories.has(clean(rootKey))||h.traits.has(clean(rootKey))||res.traits.has(clean(rootKey)))continue;
+      const creator=freshCreator(city,type,h,res);
+      const synopsis=freshSynopsis(city,type,setting,catalyst,stakes,relationship,voice,length);
+      const text=`${type} ${setting.place} ${catalyst} ${stakes} ${relationship} ${synopsis}`;
+      if(tooSimilarStory(text,h.storyTexts)||tooSimilarStory(text,res.storyTexts))continue;
+      addUsed(res.traits,"type "+type);
+      addUsed(res.traits,rootKey);
+      addUsed(res.roleCounts,String(roleCount));
+      return{
+        type,
+        postedBy:creator.label,
+        creatorKind:creator.kind,
+        rootKey,
+        storyDetail:catalyst,
+        freshStory:true,
+        voice,
+        synopsis:()=>synopsis,
+        titles:freshTitles(setting,type),
+        taglines:[freshTagline(type,setting,catalyst,stakes)],
+        cityShorts:[city.short],
+        pay:"",
+        union:projectUnion(type),
+        req:"",
+        months:()=>pick([1,1,2,2,3]),
+        roles:()=>freshRoleBlueprints(type,setting,catalyst,stakes,relationship,roleCount,h,res)
+      };
+    }
+    return null;
+  }
+  function storyBaseKey(tpl){return fp(tpl.rootKey||tpl.titles&&tpl.titles[0]||tpl.type);}
   function buildHistory(existing=[]){
-    const h={titles:localSet(LS_KEYS.titles),prods:localSet(LS_KEYS.prods),roles:localSet(LS_KEYS.roles),stories:localSet(LS_KEYS.stories),pays:localSet(LS_KEYS.pays),firsts:localSet(LS_KEYS.firsts),lasts:localSet(LS_KEYS.lasts)};
+    const h={titles:localSet(LS_KEYS.titles),prods:localSet(LS_KEYS.prods),roles:localSet(LS_KEYS.roles),stories:localSet(LS_KEYS.stories),pays:localSet(LS_KEYS.pays),firsts:localSet(LS_KEYS.firsts),lasts:localSet(LS_KEYS.lasts),storyTexts:localSet(LS_KEYS.storyTexts),traits:localSet(LS_KEYS.traits),ages:localSet(LS_KEYS.ages),roleCounts:localSet(LS_KEYS.roleCounts),creatorKinds:localSet(LS_KEYS.creatorKinds)};
     (existing||[]).forEach(c=>{
       addUsed(h.titles,c.title);addUsed(h.prods,c.prod);addUsed(h.prods,c.posted_by_label);addUsed(h.pays,c.pay);
+      addUsed(h.storyTexts,`${c.title||""} ${c.tagline||""} ${c.synopsis||""}`.slice(0,1200));
+      addUsed(h.traits,"type "+c.type);
+      addUsed(h.traits,`${c.type||""} ${c.location||""} ${(c.synopsis||"").slice(0,120)}`);
       addUsed(h.stories,c.title+" "+(c.synopsis||"").slice(0,180));
-      (c.roles||[]).forEach(r=>addNameUsed(h,r.name));
+      if((c.roles||[]).length)addUsed(h.roleCounts,String((c.roles||[]).length));
+      (c.roles||[]).forEach(r=>{addNameUsed(h,r.name);addUsed(h.ages,r.age_range);});
       if(typeof CONCEPTS!=="undefined"){
         CONCEPTS.forEach(t=>{
           const base=storyBaseKey(t);
@@ -17975,15 +18264,22 @@ const ACG = (()=>{
     return h;
   }
   function rememberGenerated(items){
-    const titles=localSet(LS_KEYS.titles),prods=localSet(LS_KEYS.prods),roles=localSet(LS_KEYS.roles),stories=localSet(LS_KEYS.stories),pays=localSet(LS_KEYS.pays),firsts=localSet(LS_KEYS.firsts),lasts=localSet(LS_KEYS.lasts);
+    const titles=localSet(LS_KEYS.titles),prods=localSet(LS_KEYS.prods),roles=localSet(LS_KEYS.roles),stories=localSet(LS_KEYS.stories),pays=localSet(LS_KEYS.pays),firsts=localSet(LS_KEYS.firsts),lasts=localSet(LS_KEYS.lasts),storyTexts=localSet(LS_KEYS.storyTexts),traits=localSet(LS_KEYS.traits),ages=localSet(LS_KEYS.ages),roleCounts=localSet(LS_KEYS.roleCounts),creatorKinds=localSet(LS_KEYS.creatorKinds);
     (items||[]).forEach(item=>{
       addUsed(titles,item.title);addUsed(prods,item.prod);addUsed(prods,item.posted_by_label);addUsed(pays,item.pay);
       addUsed(stories,item._baseKey);addUsed(stories,item._storyKey);addUsed(stories,item.title+" "+(item.synopsis||"").slice(0,180));
-      (item._roles||[]).forEach(r=>{addUsed(roles,r.name);const p=nameParts(r.name);if(p){addUsed(firsts,p.first);addUsed(lasts,p.last);}});
+      addUsed(storyTexts,`${item.title||""} ${item.tagline||""} ${item.synopsis||""}`.slice(0,1200));
+      addUsed(traits,item._traitKey);addUsed(traits,"type "+item.type);addUsed(creatorKinds,item._creatorKind);
+      addUsed(roleCounts,item._roleCountKey);
+      (item._roles||[]).forEach(r=>{addUsed(roles,r.name);addUsed(ages,r.age_range);const p=nameParts(r.name);if(p){addUsed(firsts,p.first);addUsed(lasts,p.last);}});
     });
-    saveLocalSet(LS_KEYS.titles,titles);saveLocalSet(LS_KEYS.prods,prods);saveLocalSet(LS_KEYS.roles,roles);saveLocalSet(LS_KEYS.stories,stories);saveLocalSet(LS_KEYS.pays,pays);saveLocalSet(LS_KEYS.firsts,firsts);saveLocalSet(LS_KEYS.lasts,lasts);
+    saveLocalSet(LS_KEYS.titles,titles);saveLocalSet(LS_KEYS.prods,prods);saveLocalSet(LS_KEYS.roles,roles);saveLocalSet(LS_KEYS.stories,stories);saveLocalSet(LS_KEYS.pays,pays);saveLocalSet(LS_KEYS.firsts,firsts);saveLocalSet(LS_KEYS.lasts,lasts);saveLocalSet(LS_KEYS.storyTexts,storyTexts);saveLocalSet(LS_KEYS.traits,traits);saveLocalSet(LS_KEYS.ages,ages);saveLocalSet(LS_KEYS.roleCounts,roleCounts);saveLocalSet(LS_KEYS.creatorKinds,creatorKinds);
   }
   function uniqueCompany(tpl,city,h,res){
+    if(tpl.creatorKind&&tpl.postedBy){
+      addUsed(res.prods,tpl.postedBy);
+      return tpl.postedBy;
+    }
     const cands=[
       tpl.postedBy,
       `${city.short} ${pick(COMPANY_A)} ${pick(COMPANY_B)}`,
@@ -18010,11 +18306,11 @@ const ACG = (()=>{
   }
   function uniqueStory(tpl,city,h,res){
     const base=storyBaseKey(tpl);
-    const detail=pick(STORY_DETAILS);
-    const storyKey=fp(`${base}-${city.short}-${detail}`);
+    const detail=tpl.storyDetail||pick(STORY_DETAILS);
+    const voice=tpl.voice||pick(VOICE_STYLES);
+    const storyKey=fp(`${base}-${city.short}-${detail}-${voice.key}`);
     const baseSynopsis=typeof tpl.synopsis==="function"?tpl.synopsis(city):pick(tpl.synopses(city));
-    const voice=pick(VOICE_STYLES);
-    const synopsis=varySynopsis(baseSynopsis,tpl.type,detail,voice);
+    const synopsis=tpl.freshStory?baseSynopsis:varySynopsis(baseSynopsis,tpl.type,detail,voice);
     const reserveKey=clean(storyKey);
     res.stories.add(clean(base));
     res.stories.add(reserveKey);
@@ -19725,7 +20021,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       </div>
     </aside>
     <div>
-      {section==="overview"&&<AdminOverview onGoToBookingRequests={()=>goToSection("booking-requests")}/>}
+      {section==="overview"&&<AdminOverview onGoToBookingRequests={()=>goToSection("booking-requests")} session={session} myProfile={profile}/>}
       {section==="self-improvement"&&<AdminSelfImprovement/>}
       {section==="users"&&<AdminUsers isSuperAdmin={isSuperAdmin} session={session} myProfile={profile}/>}
       {section==="cd-verification"&&<AdminCDVerification/>}
@@ -19961,15 +20257,20 @@ function AdminEmailCampaigns({session}){
 }
 
 // ─── Overview: counts + recent audit activity
-function AdminOverview({onGoToBookingRequests}){
+function AdminOverview({onGoToBookingRequests,session,myProfile}){
   const [stats,setStats]=useState(null);
   const [audit,setAudit]=useState([]);
   const [pendingBookings,setPendingBookings]=useState(null);
   const [err,setErr]=useState("");
+  // Member drill-down: clicking the Premium / Paid tiles opens a list of those members.
+  const [members,setMembers]=useState({premium:[],paid:[]});
+  const [memberList,setMemberList]=useState(null); // {title, rows} when the list modal is open
+  const [viewingProfile,setViewingProfile]=useState(null); // full profile row when viewing a member
+  const [openingId,setOpeningId]=useState(null); // member id whose profile is being fetched
   useEffect(()=>{(async()=>{
     try{
       const [p,c,a,au,br,xs]=await Promise.all([
-        window.sb.from("profiles").select("user_type,banned,suspended,verified,featured,verification_status,can_post_castings,membership_status,plan_type,subscription_status",{count:"exact"}).limit(5000),
+        window.sb.from("profiles").select("id,display_name,email,headshot_url,user_type,banned,suspended,verified,featured,verification_status,can_post_castings,membership_status,plan_type,subscription_status,created_at",{count:"exact"}).limit(5000),
         window.sb.from("castings").select("status,featured",{count:"exact"}).limit(5000),
         window.sb.from("applications").select("status",{count:"exact"}).limit(10000),
         window.sb.from("audit_logs").select("*").order("created_at",{ascending:false}).limit(10),
@@ -20005,11 +20306,49 @@ function AdminOverview({onGoToBookingRequests}){
         plan_yearly:pu.filter(x=>x.plan_type==="yearly").length,
         extra:(xs&&!xs.error&&xs.data)?xs.data:null
       });
+      const byNewest=(arr)=>arr.slice().sort((x,y)=>new Date(y.created_at||0)-new Date(x.created_at||0));
+      setMembers({
+        premium:byNewest(pu.filter(x=>x.membership_status==="active")),
+        paid:byNewest(pu.filter(x=>x.subscription_status==="active")),
+      });
       setAudit(au.data||[]);
     }catch(e){setErr(e.message||String(e));}
   })();},[]);
+  // Fetch the full profile row on demand, then render it with the same views the Users tab uses.
+  const openProfile=async(id)=>{
+    setOpeningId(id);
+    const {data,error}=await window.sb.from("profiles").select("*").eq("id",id).single();
+    setOpeningId(null);
+    if(error||!data){alert("Could not load profile: "+(error?.message||"not found"));return;}
+    setMemberList(null);
+    setViewingProfile(data);
+  };
   if(err)return(<div style={{color:"#c0392b",fontSize:13}}>Error loading overview: {err}</div>);
   if(!stats)return(<CastSlateLoader size="inline" text="Loading overview…"/>);
+  // Viewing a single member's profile — mirrors the AdminUsers "View Profile" flow.
+  if(viewingProfile){
+    const isCd=(viewingProfile.user_type==="cd"||viewingProfile.user_type==="admin"||viewingProfile.user_type==="super_admin");
+    if(isCd)return <AdminCDProfileView u={viewingProfile} session={session} myProfile={myProfile} onBack={()=>setViewingProfile(null)}/>;
+    const additional=Array.isArray(viewingProfile.additional_photos)?viewingProfile.additional_photos:[];
+    const mainPhoto=viewingProfile.headshot_url||"";
+    const seen=new Set();const allPhotos=[];
+    [mainPhoto,...additional].forEach(url=>{if(url&&!seen.has(url)){seen.add(url);allPhotos.push(url);}});
+    const talentObj={
+      ...viewingProfile,
+      id:viewingProfile.id,
+      name:viewingProfile.display_name||viewingProfile.email||"Unknown",
+      display_name:viewingProfile.display_name||viewingProfile.email||"Unknown",
+      img:mainPhoto||"https://placehold.co/400x500/e5e5e5/999?text=No+Headshot",
+      type:"Talent",
+      union:viewingProfile.union_status||"Non-Union",
+      skills:Array.isArray(viewingProfile.skills)?viewingProfile.skills:[],
+      additional_photos:additional,
+      video_links:Array.isArray(viewingProfile.video_links)?viewingProfile.video_links:[],
+      credits:viewingProfile.credits||"",
+      _allPhotos:allPhotos,
+    };
+    return <TalentProfile talent={talentObj} onBack={()=>setViewingProfile(null)} onNavigate={()=>{}} session={session} myProfile={myProfile}/>;
+  }
   return(<>
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Overview</h1>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:24}}>Platform health at a glance.</p>
@@ -20037,8 +20376,8 @@ function AdminOverview({onGoToBookingRequests}){
     <h3 style={{fontWeight:800,fontSize:15,margin:"0 0 12px",color:"var(--t2)"}}>Membership &amp; subscriptions</h3>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:28}}>
       <StatTile num={stats.free_members} label="Free members"/>
-      <StatTile num={stats.premium_members} label="Premium members"/>
-      <StatTile num={stats.paid_subs} label="Paid subscriptions"/>
+      <StatTile num={stats.premium_members} label="Premium members" onClick={()=>setMemberList({title:"Premium members",rows:members.premium})}/>
+      <StatTile num={stats.paid_subs} label="Paid subscriptions" onClick={()=>setMemberList({title:"Paid subscriptions",rows:members.paid})}/>
       <StatTile num={stats.plan_monthly} label="Monthly plan"/>
       <StatTile num={stats.plan_yearly} label="Yearly plan"/>
       <StatTile num={stats.extra?stats.extra.unsubscribes:"—"} label="Email unsubscribes"/>
@@ -20084,10 +20423,52 @@ function AdminOverview({onGoToBookingRequests}){
         </div>)
       }
     </div>
+    {memberList&&<MemberListModal title={memberList.title} rows={memberList.rows} openingId={openingId} onViewProfile={openProfile} onClose={()=>setMemberList(null)}/>}
   </>);
 }
-function StatTile({num,label,danger}){
-  return(<div className="dash-stat" style={{borderColor:danger?"#c0392b":undefined}}><div className="dash-stat-num" style={{color:danger?"#c0392b":undefined}}>{num}</div><div className="dash-stat-label">{label}</div></div>);
+function StatTile({num,label,danger,onClick}){
+  const clickable=!!onClick;
+  return(<div className="dash-stat" onClick={onClick} role={clickable?"button":undefined} tabIndex={clickable?0:undefined} onKeyDown={clickable?(e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onClick();}}):undefined} style={{borderColor:danger?"#c0392b":undefined,cursor:clickable?"pointer":undefined}}><div className="dash-stat-num" style={{color:danger?"#c0392b":undefined}}>{num}</div><div className="dash-stat-label">{label}{clickable&&<span style={{marginLeft:5,color:"var(--acc)",fontWeight:700}} aria-hidden="true">›</span>}</div></div>);
+}
+// ─── Member list modal: shows the names/emails behind the Premium & Paid tiles, with profile access.
+function MemberListModal({title,rows,openingId,onViewProfile,onClose}){
+  const [q,setQ]=useState("");
+  const list=(rows||[]).filter(u=>{
+    if(!q)return true;
+    const needle=q.toLowerCase();
+    return [u.display_name,u.email].some(x=>x&&x.toLowerCase().includes(needle));
+  });
+  const planBadge=(u)=>{
+    const items=[];
+    if(u.plan_type)items.push(<span key="pl" style={{fontSize:10,fontWeight:700,color:"var(--acc)",background:"rgba(99,102,241,0.1)",padding:"2px 7px",borderRadius:4,textTransform:"capitalize"}}>{u.plan_type}</span>);
+    if(u.subscription_status==="active")items.push(<span key="sub" style={{fontSize:10,fontWeight:700,color:"#1d7b44",background:"rgba(46,204,113,0.12)",padding:"2px 7px",borderRadius:4}}>Subscribed</span>);
+    if(u.membership_status==="active")items.push(<span key="prem" style={{fontSize:10,fontWeight:700,color:"#b8860b",background:"rgba(184,134,11,0.12)",padding:"2px 7px",borderRadius:4}}>Premium</span>);
+    return items;
+  };
+  return(<div className="modal-overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:560,width:"100%",maxHeight:"80vh",display:"flex",flexDirection:"column"}}>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,marginBottom:6}}>
+      <h2 style={{margin:0}}>{title}</h2>
+      <button className="btn-s btn-sm" onClick={onClose}>Close</button>
+    </div>
+    <p style={{color:"var(--t2)",fontSize:13,margin:"0 0 12px"}}>{rows.length} member{rows.length!==1?"s":""}. Click a name to open their full profile.</p>
+    <input className="input" placeholder="Search by name or email…" value={q} onChange={e=>setQ(e.target.value)} style={{marginBottom:12}}/>
+    <div style={{overflow:"auto",flex:1,border:"1px solid var(--bdr)",borderRadius:8}}>
+      {list.length===0?<div style={{padding:30,textAlign:"center",color:"var(--t3)",fontSize:13}}>{rows.length===0?"No members in this group yet.":"No members match."}</div>:
+        list.map(u=>{
+          const name=u.display_name||u.email||"Unknown";
+          const busy=openingId===u.id;
+          return(<div key={u.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",borderBottom:"1px solid var(--bdr)"}}>
+            <img src={u.headshot_url||"https://placehold.co/80x80/e5e5e5/999?text=—"} alt="" style={{width:38,height:38,borderRadius:"50%",objectFit:"cover",flexShrink:0,background:"var(--bg2)"}}/>
+            <div style={{minWidth:0,flex:1}}>
+              <div style={{fontWeight:600,fontSize:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{name}{planBadge(u)}</div>
+              <div style={{fontSize:12,color:"var(--t3)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{u.email||"—"}</div>
+            </div>
+            <button className="btn-s btn-sm" disabled={busy} onClick={()=>onViewProfile(u.id)} style={{flexShrink:0}}>{busy?"…":"View Profile"}</button>
+          </div>);
+        })
+      }
+    </div>
+  </div></div>);
 }
 
 // ─── AdminCDVerification — full casting creator verification management
