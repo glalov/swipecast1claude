@@ -1787,8 +1787,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .site-footer-spacer{min-height:40px;flex-shrink:0;background:var(--bg);width:100%;margin-top:auto;}
 /* Floating back-to-top cube — stays fully off-screen until the footer midpoint
    is reached, then tumbles down/up with the original live timing. */
-.b2t-cube{--b2t-away:calc(-100vh + 16px);position:fixed;left:50%;bottom:22px;z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:96px;height:86px;background:#FFFFFF;color:#1A1A2E;border:1px solid rgba(0,0,0,0.12);border-radius:17px;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,0.30);font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(var(--b2t-away));opacity:1;pointer-events:none;transform-style:preserve-3d;backface-visibility:visible;will-change:transform;transition:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;}
-.b2t-cube-mobile,.b2t-cube-mobile-slot{display:none;}
+.b2t-cube{--b2t-away:calc(-100vh + 16px);position:fixed;left:50%;bottom:22px;z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:96px;height:86px;background:#FFFFFF;color:#1A1A2E;border:1px solid rgba(0,0,0,0.12);border-radius:17px;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,0.30);font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(var(--b2t-away));opacity:1;pointer-events:none;transform-style:preserve-3d;backface-visibility:visible;will-change:transform;transition:none;}
 .b2t-cube.show{transform:translateX(-50%) translateY(0);pointer-events:auto;animation:b2tTumbleDown 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
 .b2t-cube.was-shown:not(.show){animation:b2tTumbleUp 1.17s cubic-bezier(.5,0,.75,.45) both;}
 .b2t-cube .mark{width:24px;height:20px;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;}
@@ -1814,19 +1813,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   0%{transform:rotate(360deg) scale(1);opacity:1;}
   100%{transform:rotate(-170deg) scale(.76);opacity:.7;}
 }
-@keyframes b2tMobileDrop{
-  0%{opacity:0;transform:translateY(-18px) scale(.96);}
-  100%{opacity:1;transform:translateY(0) scale(1);}
-}
 @media(prefers-reduced-motion:reduce){.b2t-cube{animation:none!important;transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}.b2t-cube.show{opacity:1!important;}.b2t-cube .mark{animation:none!important;}}
-@media (max-width:520px){
-  .b2t-cube-desktop{display:none;}
-  .b2t-cube-mobile-slot{display:block;min-height:112px;padding:0 0 26px;}
-  .b2t-cube.b2t-cube-mobile{display:flex;position:relative;left:auto;bottom:auto;z-index:1;margin:0 auto;transform:translateY(-12px) scale(.98);opacity:0;pointer-events:none;animation:none;transition:opacity .18s ease,transform .18s ease;}
-  .b2t-cube.b2t-cube-mobile.show{transform:translateY(0) scale(1);opacity:1;pointer-events:auto;animation:b2tMobileDrop .38s cubic-bezier(.18,.82,.26,1.02) both;}
-  .b2t-cube.b2t-cube-mobile.was-shown:not(.show){transform:translateY(-10px) scale(.98);opacity:0;animation:none;}
-  .b2t-cube.b2t-cube-mobile .mark{animation:none!important;}
-}
 .site-backtotop{
   display:flex;align-items:center;justify-content:center;gap:8px;
   position:relative;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;
@@ -3300,29 +3287,13 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
   // margin-top:auto behavior. On short pages: 40px spacer + auto warm gap + footer.
   // On long pages: 40px spacer + footer (auto collapses to 0 — but the spacer
   // still guarantees the gap).
-  const [b2tShow,setB2tShow]=React.useState(false);
-  const [b2tWasShown,setB2tWasShown]=React.useState(false);
-  // Amazon-style "back to top" bar — use an immediate jump plus a couple of
-  // follow-up writes so mobile Safari does not swallow the first tap during
-  // dynamic toolbar or momentum-scroll changes.
-  const scrollTop=(event)=>{
-    try{event?.preventDefault?.();event?.stopPropagation?.();}catch(_){}
-    const forceTop=()=>{try{
-      const scroller=document.scrollingElement||document.documentElement;
-      if(scroller?.scrollTo)scroller.scrollTo({top:0,left:0,behavior:'auto'});
-      if(scroller)scroller.scrollTop=0;
-      document.documentElement.scrollTop=0;
-      if(document.body)document.body.scrollTop=0;
-      window.scrollTo(0,0);
-    }catch(_){try{window.scrollTo(0,0);}catch(__){}}};
-    setB2tShow(false);
-    forceTop();
-    try{requestAnimationFrame(forceTop);}catch(_){}
-    setTimeout(forceTop,80);
-    return false;
-  };
+  // Amazon-style "back to top" bar — full-bleed, one notch lighter than the
+  // footer, smooth-scrolls (not a hard cut) to the top of the page.
+  const scrollTop=()=>{try{window.scrollTo({top:0,behavior:'smooth'});}catch(_){window.scrollTo(0,0);}};
   // Show the floating back-to-top cube only when the page is scrolled to the very
   // bottom; it drops in from above and shoots back up off-screen on scroll-up.
+  const [b2tShow,setB2tShow]=React.useState(false);
+  const [b2tWasShown,setB2tWasShown]=React.useState(false);
   React.useEffect(()=>{
     // Appear once the viewport bottom reaches the FOOTER'S MIDPOINT, on long
     // pages only. A short mount suppression prevents the flash that happened
@@ -3354,7 +3325,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     {/* Floating back-to-top cube — only on long pages (home, browse castings,
         tapelink, manager mode). Short pages scroll up in one flick, so the
         drop-down button is just noise there. */}
-    {backToTop&&<button type="button" className={"b2t-cube b2t-cube-desktop"+(b2tShow?" show":"")+(b2tWasShown?" was-shown":"")} onClick={scrollTop} onPointerUp={scrollTop} onTouchEnd={scrollTop} tabIndex={b2tShow?0:-1} aria-label={t('footer.backToTop')}>
+    {backToTop&&<button type="button" className={"b2t-cube"+(b2tShow?" show":"")+(b2tWasShown?" was-shown":"")} onClick={scrollTop} aria-label={t('footer.backToTop')}>
       <span className="mark"><svg width="20" height="16" viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="currentColor"/></svg></span>
       <span>{t('footer.backToTop')}</span>
     </button>}
@@ -3403,12 +3374,6 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
         <div className="site-footer-social-row">
           <Social label="Facebook" href="https://www.facebook.com/people/CastSlate/61590920810941/" d="M22 12.07C22 6.51 17.52 2 12 2S2 6.51 2 12.07c0 5.02 3.66 9.18 8.44 9.93v-7.02H7.9v-2.91h2.54V9.84c0-2.51 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.87h2.78l-.44 2.91h-2.34V22c4.78-.75 8.44-4.91 8.44-9.93Z"/>
         </div>
-        {backToTop&&<div className="b2t-cube-mobile-slot" aria-hidden={!b2tShow}>
-          <button type="button" className={"b2t-cube b2t-cube-mobile"+(b2tShow?" show":"")+(b2tWasShown?" was-shown":"")} onClick={scrollTop} onPointerUp={scrollTop} onTouchEnd={scrollTop} tabIndex={b2tShow?0:-1} aria-label={t('footer.backToTop')}>
-            <span className="mark"><svg width="20" height="16" viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="currentColor"/></svg></span>
-            <span>{t('footer.backToTop')}</span>
-          </button>
-        </div>}
         <div className="site-footer-bottom">
           <span>{t('footer.copyright').replace('{year}', year)}</span>
           <div className="site-footer-bottom-links">
