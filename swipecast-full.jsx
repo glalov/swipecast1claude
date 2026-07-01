@@ -18157,7 +18157,26 @@ const ACG = (()=>{
     {key:"no-nonsense",note:"No-nonsense casting office voice.",line:"The copy should be concise, clear, and easy to submit against."}
   ];
   const FRESH_LENGTHS=["micro","very_short","short","medium","uneven","detailed","long"];
-  const ROLE_AGE_BANDS=["7-11","10-13","13-17","16-20","18-24","18-30","20-28","21-35","24-32","25-38","28-42","30-45","32-50","35-55","40-60","45-70","50-75","60-85","18-65","25-70","All ages 18+"]; 
+  const ROLE_AGE_BANDS=["7-11","10-13","13-17","16-20","18-24","18-30","20-28","21-35","24-32","25-38","28-42","30-45","32-50","35-55","40-60","45-70","50-75","60-85","18-65","25-70","All ages 18+"];
+  // Role-aware age bands: keeps generated ages plausible for what the role actually
+  // is (a "teen lifeguard" shouldn't roll 60-85) without touching the unrelated
+  // no-repeat bookkeeping in chooseAge().
+  const AGE_BAND_GROUPS={
+    child:["7-11","10-13"],
+    teen:["13-17","16-20"],
+    youngAdult:["18-24","18-30","20-28"],
+    midCareer:["28-42","30-45","32-50","24-32"],
+    senior:["45-70","50-75","60-85"]
+  };
+  function roleAgeHint(label){
+    const s=clean(label);
+    if(/\b(child|kid|elementary|field trip)\b/.test(s))return "child";
+    if(/\b(teen|teenager|high school|lifeguard)\b/.test(s))return "teen";
+    if(/\b(college|student|freshman|undergrad|intern)\b/.test(s))return "youngAdult";
+    if(/\b(retired|grandparent|elder|elderly|senior|longtime|veteran|doorman|widower)\b/.test(s))return "senior";
+    if(/\b(parent|manager|director|owner|founder|supervisor|superintendent|principal|professor|chair|trustee|captain)\b/.test(s))return "midCareer";
+    return null;
+  }
   function clean(v){return String(v||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();}
   function fp(v){return clean(v).replace(/\s+/g,"-");}
   function rand(min,max,step=25){const n=Math.floor((max-min)/step)+1;return min+Math.floor(Math.random()*n)*step;}
@@ -18326,10 +18345,12 @@ const ACG = (()=>{
     if(pool.length===0)pool=options.filter(n=>!res.roleCounts.has(clean(String(n))));
     return pick(pool.length?pool:options);
   }
-  function chooseAge(h,res,usedLocal){
-    let pool=ROLE_AGE_BANDS.filter(a=>!h.ages.has(clean(a))&&!res.ages.has(clean(a))&&!usedLocal.has(clean(a)));
-    if(pool.length===0)pool=ROLE_AGE_BANDS.filter(a=>!usedLocal.has(clean(a)));
-    const age=pick(pool.length?pool:ROLE_AGE_BANDS);
+  function chooseAge(h,res,usedLocal,roleLabel){
+    const hint=roleLabel?roleAgeHint(roleLabel):null;
+    const base=(hint&&AGE_BAND_GROUPS[hint])?AGE_BAND_GROUPS[hint]:ROLE_AGE_BANDS;
+    let pool=base.filter(a=>!h.ages.has(clean(a))&&!res.ages.has(clean(a))&&!usedLocal.has(clean(a)));
+    if(pool.length===0)pool=base.filter(a=>!usedLocal.has(clean(a)));
+    const age=pick(pool.length?pool:base);
     usedLocal.add(clean(age));
     addUsed(res.ages,age);
     return age;
@@ -18355,7 +18376,7 @@ const ACG = (()=>{
     return pick([
       `${articleFor(label)} ${label} built around ${setting.place} and one clear problem: ${plan.catalyst}.`,
       `${setting.place} becomes the center of a new ${label} about ${plan.stakes}.`,
-      `A grounded ${label} where ${plan.relationship} has to deal with ${plan.catalyst}.`
+      `A grounded ${label} where ${plan.relationship} has to deal with ${plan.catalystPhrase||plan.catalyst}.`
     ]);
   }
   function articleFor(text){
@@ -18377,7 +18398,9 @@ const ACG = (()=>{
       const screen=SCREEN_STAGE_SETTINGS.filter(s=>/tv|pilot|streaming|writers|precinct|holding|audition-studio|office/.test(s.key));
       return screen.length?screen:SCREEN_STAGE_SETTINGS;
     }
-    const film=SCREEN_STAGE_SETTINGS.filter(s=>/film|feature|short|indie|student|cafe|bodega|subway|walkup|laundromat|apartment|rooftop|queens-family/.test(s.key));
+    // STORY_SETTINGS (39 grounded, everyday-NY scenes) folds in here so the most
+    // common project types draw from ~60 unique locations instead of ~7.
+    const film=SCREEN_STAGE_SETTINGS.filter(s=>/film|feature|short|indie|student|cafe|bodega|subway|walkup|laundromat|apartment|rooftop|queens-family/.test(s.key)).concat(STORY_SETTINGS);
     return film.length?film:SCREEN_STAGE_SETTINGS;
   }
   function capFirst(text){
@@ -18387,140 +18410,57 @@ const ACG = (()=>{
   function rolePhrase(label){
     return String(label||"scene partner").replace(/^(a|an|the)\s+/i,"").trim();
   }
-  function buildStoryPlan(type,setting){
+  // Draws catalyst/stakes/relationship independently from the large word banks
+  // above (STORY_CATALYSTS/STAKES/RELATIONSHIPS + SIMPLE_* variants, ~45/35/35
+  // options) instead of picking one of only 1-3 fixed, hardcoded story beats
+  // per category. h/res-aware so a given catalyst/stakes/relationship, once
+  // used, is never picked again (mirrors the existing title/name dedup pattern).
+  function pickFreshBeat(pool,tag,h,res){
+    const unused=pool.filter(v=>!h.traits.has(clean(tag+" "+v))&&!res.traits.has(clean(tag+" "+v)));
+    return pick(unused.length?unused:pool);
+  }
+  function buildStoryPlan(type,setting,h,res){
     const roles=[...(setting.roles||[])].map(rolePhrase);
     while(roles.length<5)roles.push(pick(["scene partner","outside witness","producer","neighbor","assistant"]));
     const [a,b,c,d,e]=roles;
     const stage=/theater|musical|stage|table read|broadway/i.test(type);
     const tv=/tv|series|pilot|streaming|web series|sizzle|pitch trailer/i.test(type);
-    const film=/feature|short|student|independent|experimental|documentary|proof/i.test(type);
-    const plans=stage?[
-      {
-        catalyst:`${b} is asked to step in before the room is ready`,
-        stakes:`keeping the reading honest without embarrassing anyone`,
-        relationship:`the ${a} and the ${b} trying to trust each other under pressure`,
-        roleLines:[
-          `${capFirst(a)} is trying to keep the room steady while the replacement settles in.`,
-          `${capFirst(b)} has to take over fast and still make the scene feel personal.`,
-          `${capFirst(c)} notices the problem nobody wants to say out loud.`,
-          `${capFirst(d)} adds time pressure and forces a practical decision.`,
-          `${capFirst(e)} brings the outside consequence into the room.`
-        ]
-      },
-      {
-        catalyst:`the ending changes during rehearsal`,
-        stakes:`deciding what version of the play can survive tonight`,
-        relationship:`the ${a} and the ${c} disagreeing about what the scene really means`,
-        roleLines:[
-          `${capFirst(a)} carries the old version of the scene and does not want to lose it.`,
-          `${capFirst(b)} is caught between loyalty to the room and fear of being replaced.`,
-          `${capFirst(c)} pushes for the new ending because the first one no longer feels true.`,
-          `${capFirst(d)} keeps track of what can actually be staged before doors open.`,
-          `${capFirst(e)} sees how the change will land for people outside the rehearsal.`
-        ]
-      },
-      {
-        catalyst:`a private note is read at the wrong time`,
-        stakes:`protecting the work without hiding the truth`,
-        relationship:`the ${a} and the ${d} handling a mistake that changes the room`,
-        roleLines:[
-          `${capFirst(a)} has to decide whether to stop rehearsal or let the mistake breathe.`,
-          `${capFirst(b)} becomes the person everyone watches after the note is read.`,
-          `${capFirst(c)} tries to make the practical fix before feelings take over.`,
-          `${capFirst(d)} knows why the note matters and cannot fully explain it.`,
-          `${capFirst(e)} turns a small embarrassment into a real choice.`
-        ]
-      }
+    const simple=/student|table read|workshop|staged reading|sizzle|pitch trailer/i.test(type);
+    const catalystPool=simple?SIMPLE_STORY_CATALYSTS.concat(STORY_CATALYSTS):STORY_CATALYSTS.concat(SIMPLE_STORY_CATALYSTS);
+    const stakesPool=simple?SIMPLE_STORY_STAKES.concat(STORY_STAKES):STORY_STAKES.concat(SIMPLE_STORY_STAKES);
+    const relPool=simple?SIMPLE_STORY_RELATIONSHIPS.concat(STORY_RELATIONSHIPS):STORY_RELATIONSHIPS.concat(SIMPLE_STORY_RELATIONSHIPS);
+    const catalyst=pickFreshBeat(catalystPool,"catalyst",h,res);
+    const stakes=pickFreshBeat(stakesPool,"stakes",h,res);
+    const relationship=pickFreshBeat(relPool,"relationship",h,res);
+    // STORY_CATALYSTS entries are noun phrases ("a misdelivered envelope that
+    // names the wrong person"); SIMPLE_STORY_CATALYSTS entries are full clauses
+    // ("a lead performer drops out at the last minute"). Both need to fit
+    // grammatically after "when"/"once", so noun phrases get a "there is" wrapper;
+    // clauses are used as-is. catalystPhrase is the noun-safe form for slots like
+    // "has to deal with X" (used in freshTagline).
+    const catalystIsClause=SIMPLE_STORY_CATALYSTS.indexOf(catalyst)>-1;
+    const catalystClause=catalystIsClause?catalyst:`there is ${catalyst}`;
+    const catalystPhrase=catalystIsClause?`the fact that ${catalyst}`:catalyst;
+    const roleLines=stage?[
+      `${capFirst(a)} is trying to keep the room steady when ${catalystClause}.`,
+      `${capFirst(b)} is closest to it and has to decide fast.`,
+      `${capFirst(c)} notices what nobody else catches once ${catalystClause}.`,
+      `${capFirst(d)} adds the practical pressure that forces a choice.`,
+      `${capFirst(e)} feels the outside consequence once ${catalystClause}.`
     ]:tv?[
-      {
-        catalyst:`one revised page changes the scene's meaning`,
-        stakes:`getting the right read before the room moves on`,
-        relationship:`the ${a} and the ${d} trying to keep the scene clear from opposite sides of the room`,
-        roleLines:[
-          `${capFirst(a)} is under pressure when the revised page changes the scene.`,
-          `${capFirst(b)} keeps the callback room moving while the mistake spreads.`,
-          `${capFirst(c)} has the authority to fix the read but waits too long.`,
-          `${capFirst(d)} becomes the detail everyone in the room has to answer to.`,
-          `${capFirst(e)} shows how the rushed choice affects someone without power.`
-        ]
-      },
-      {
-        catalyst:`a detail from the pilot script suddenly matches real life`,
-        stakes:`deciding whether to keep shooting or change the scene`,
-        relationship:`the ${a} and the ${c} realizing they are not making the same show`,
-        roleLines:[
-          `${capFirst(a)} wants the scene to stay simple even after the real detail appears.`,
-          `${capFirst(b)} tries to keep the set calm without knowing the full story.`,
-          `${capFirst(c)} sees the script problem first and has to choose when to speak.`,
-          `${capFirst(d)} brings in the piece of information that makes the scene click.`,
-          `${capFirst(e)} is close enough to the family or workplace to make the stakes real.`
-        ]
-      },
-      {
-        catalyst:`the final take exposes a lie in the scene`,
-        stakes:`finishing the proof of concept without making it false`,
-        relationship:`the ${a} and the ${b} deciding what kind of show this is`,
-        roleLines:[
-          `${capFirst(a)} is trying to land the scene cleanly while the truth keeps shifting.`,
-          `${capFirst(b)} pushes the room toward a sharper choice than planned.`,
-          `${capFirst(c)} knows the schedule will break if the argument continues.`,
-          `${capFirst(d)} hears the lie first and changes the energy of the room.`,
-          `${capFirst(e)} gives the moment a public cost beyond the set.`
-        ]
-      }
-    ]:film?[
-      {
-        catalyst:`someone arrives with information that changes why the scene is happening`,
-        stakes:`telling the truth before the day is lost`,
-        relationship:`the ${a} and the ${b} trying to stay polite while the story shifts`,
-        roleLines:[
-          `${capFirst(a)} is trying to finish the day without admitting how much has changed.`,
-          `${capFirst(b)} brings the information that makes the old plan impossible.`,
-          `${capFirst(c)} notices the lie before anyone is ready to name it.`,
-          `${capFirst(d)} creates the practical pressure: time, access, money, or rules.`,
-          `${capFirst(e)} shows how the choice affects someone outside the main conflict.`
-        ]
-      },
-      {
-        catalyst:`a small mistake makes the private conflict public`,
-        stakes:`deciding who gets protected and who gets blamed`,
-        relationship:`the ${a} and the ${c} remembering the same day differently`,
-        roleLines:[
-          `${capFirst(a)} wants to keep the mistake quiet but keeps making it worse.`,
-          `${capFirst(b)} is the first person to connect the mistake to the real conflict.`,
-          `${capFirst(c)} remembers the old version of events and refuses to smooth it over.`,
-          `${capFirst(d)} has a rule-bound job that suddenly matters to the story.`,
-          `${capFirst(e)} carries the outside pressure that makes silence harder.`
-        ]
-      },
-      {
-        catalyst:`the location is about to close before the hardest conversation happens`,
-        stakes:`getting one honest moment before everyone leaves`,
-        relationship:`the ${a} and the ${e} needing different endings to the same day`,
-        roleLines:[
-          `${capFirst(a)} is holding the day together and running out of ways to delay.`,
-          `${capFirst(b)} says the practical thing that makes the emotional problem clear.`,
-          `${capFirst(c)} has one detail that changes how the audience reads the scene.`,
-          `${capFirst(d)} guards the rules of the place and becomes part of the pressure.`,
-          `${capFirst(e)} needs the conversation to end differently than everyone expects.`
-        ]
-      }
+      `${capFirst(a)} is under pressure the moment ${catalystClause}.`,
+      `${capFirst(b)} tries to keep things moving while it plays out.`,
+      `${capFirst(c)} has the authority to smooth it over but hesitates.`,
+      `${capFirst(d)} is the one everyone answers to once ${catalystClause}.`,
+      `${capFirst(e)} feels the cost when ${catalystClause}.`
     ]:[
-      {
-        catalyst:`a simple plan stops working in public`,
-        stakes:`making one clear choice before the chance is gone`,
-        relationship:`the ${a} and the ${b} handling the same problem from different sides`,
-        roleLines:[
-          `${capFirst(a)} is closest to the problem and tries to keep it contained.`,
-          `${capFirst(b)} makes the problem harder by saying the quiet part clearly.`,
-          `${capFirst(c)} sees the useful detail other people miss.`,
-          `${capFirst(d)} brings the practical limit that forces action.`,
-          `${capFirst(e)} gives the ending a human cost.`
-        ]
-      }
+      `${capFirst(a)} is closest to it when ${catalystClause}.`,
+      `${capFirst(b)} makes it harder by saying the quiet part out loud.`,
+      `${capFirst(c)} notices the one detail that changes things once ${catalystClause}.`,
+      `${capFirst(d)} brings the practical limit that forces action.`,
+      `${capFirst(e)} feels the weight of it when ${catalystClause}.`
     ];
-    const plan=pick(plans);
-    return{...plan,key:fp([setting.key,plan.catalyst,plan.stakes,plan.relationship].join("|"))};
+    return{catalyst,stakes,relationship,roleLines,catalystClause,catalystPhrase,key:fp([setting.key,catalyst,stakes,relationship].join("|"))};
   }
   function freshSynopsis(city,type,setting,plan,voice,length){
     const label=projectLabel(type);
@@ -18530,7 +18470,7 @@ const ACG = (()=>{
       `Seeking performers for ${articleFor(label).toLowerCase()} ${label} shooting in ${city.name}. The main location is ${setting.place}.`,
       `Now casting ${label} talent in ${city.name} for a simple story set around ${setting.place}.`
     ]);
-    const story=`The story follows ${plan.relationship}. A problem starts when ${plan.catalyst}. The main choice is about ${plan.stakes}.`;
+    const story=`The story follows ${plan.relationship}. A problem starts when ${plan.catalystClause||plan.catalyst}. The main choice is about ${plan.stakes}.`;
     const tone=pick([
       `The tone is grounded and easy to follow. Performances should feel real, clear, and specific.`,
       `The team wants simple acting, honest listening, and no overly complicated choices.`,
@@ -18567,27 +18507,48 @@ const ACG = (()=>{
     if(/commercial|ad|brand|promo|sizzle|trailer|testimonial|demo/i.test(type))return i<2?"Principal":"Featured";
     return i<2?"Lead":i<4?"Supporting":"Day Player";
   }
+  // Named individual roles get a specific gender (varied, not all-identical);
+  // group/background roles (e.g. "Neighborhood Customers") stay "All genders"
+  // since there's no single person to gender.
+  const GROUP_ROLE_HINT=/background|ensemble|customers|students|crew|passenger|reader|group|patron|neighbor|riders|guests|audience/i;
+  // isGroup must be known BEFORE genders are assigned/corrected — otherwise a
+  // later "this label is a group role, force All genders" override can silently
+  // erase the only Female or only Male pick and undo the variety guarantee.
+  function pickRoleGenders(count,isGroup){
+    const out=Array.from({length:count}).map((_,i)=>isGroup[i]?"All genders":pick(["Female","Male","Female","Male","All genders"]));
+    const namedIdx=[];
+    for(let i=0;i<count;i++)if(!isGroup[i])namedIdx.push(i);
+    if(namedIdx.length>=2&&!(out.indexOf("Female")>-1&&out.indexOf("Male")>-1)){
+      out[namedIdx[0]]="Female";
+      out[namedIdx[1]]="Male";
+    }
+    return out;
+  }
   function freshRoleBlueprints(type,setting,plan,count,h,res){
     const usedAges=new Set();
-    return Array.from({length:count}).map((_,i)=>{
-      const roleLabel=setting.roles[i%setting.roles.length];
+    const roleLabels=Array.from({length:count}).map((_,i)=>setting.roles[i%setting.roles.length]);
+    const isGroup=roleLabels.map(label=>GROUP_ROLE_HINT.test(label));
+    const genders=pickRoleGenders(count,isGroup);
+    return roleLabels.map((roleLabel,i)=>{
       const roleType=freshRoleType(type,i);
       const line=plan.roleLines[i%plan.roleLines.length]||`${capFirst(rolePhrase(roleLabel))} has a direct reason to be in this story.`;
-      return{name:roleLabel,role_type:roleType,description:line,gender:"All genders",age_range:chooseAge(h,res,usedAges),ethnicity:"All ethnicities",pay:"",_keepDescription:true};
+      return{name:roleLabel,role_type:roleType,description:line,gender:genders[i],age_range:chooseAge(h,res,usedAges,roleLabel),ethnicity:"All ethnicities",pay:"",_keepDescription:true};
     });
   }
   function buildFreshConcept(city,h,res){
     for(let i=0;i<500;i++){
       const type=pickFreshProjectType(h,res);
       const setting=pick(settingsForType(type));
-      const plan=buildStoryPlan(type,setting);
+      const plan=buildStoryPlan(type,setting,h,res);
       const voice=pick(FRESH_VOICES);
       const length=pick(FRESH_LENGTHS);
       const roleCount=Math.max(3,Math.min(chooseRoleCount(type,h,res),(setting.roles||[]).length||5));
       const rootKey=fp([type,setting.key,plan.key,voice.key,roleCount].join("|"));
       const settingKey=clean("setting "+setting.key);
       const catalystKey=clean("catalyst "+plan.catalyst);
-      if(h.stories.has(clean(rootKey))||res.stories.has(clean(rootKey))||h.traits.has(clean(rootKey))||res.traits.has(clean(rootKey))||res.traits.has(settingKey)||res.traits.has(catalystKey))continue;
+      const stakesKey=clean("stakes "+plan.stakes);
+      const relationshipKey=clean("relationship "+plan.relationship);
+      if(h.stories.has(clean(rootKey))||res.stories.has(clean(rootKey))||h.traits.has(clean(rootKey))||res.traits.has(clean(rootKey))||res.traits.has(settingKey)||res.traits.has(catalystKey)||res.traits.has(stakesKey)||res.traits.has(relationshipKey))continue;
       const creator=freshCreator(city,type,h,res);
       const synopsis=freshSynopsis(city,type,setting,plan,voice,length);
       const text=`${type} ${setting.place} ${plan.catalyst} ${plan.stakes} ${plan.relationship} ${synopsis}`;
@@ -18596,6 +18557,8 @@ const ACG = (()=>{
       addUsed(res.traits,rootKey);
       addUsed(res.traits,settingKey);
       addUsed(res.traits,catalystKey);
+      addUsed(res.traits,stakesKey);
+      addUsed(res.traits,relationshipKey);
       addUsed(res.roleCounts,String(roleCount));
       return{
         type,
@@ -18631,6 +18594,8 @@ const ACG = (()=>{
       const storyBlob=clean(`${c.title||""} ${c.tagline||""} ${c.synopsis||""}`);
       STORY_SETTINGS.concat(SCREEN_STAGE_SETTINGS).forEach(s=>{if(storyBlob.includes(clean(s.place)))addUsed(h.traits,"setting "+s.key);});
       STORY_CATALYSTS.concat(SIMPLE_STORY_CATALYSTS).forEach(s=>{if(storyBlob.includes(clean(s)))addUsed(h.traits,"catalyst "+s);});
+      STORY_STAKES.concat(SIMPLE_STORY_STAKES).forEach(s=>{if(storyBlob.includes(clean(s)))addUsed(h.traits,"stakes "+s);});
+      STORY_RELATIONSHIPS.concat(SIMPLE_STORY_RELATIONSHIPS).forEach(s=>{if(storyBlob.includes(clean(s)))addUsed(h.traits,"relationship "+s);});
       addUsed(h.stories,c.title+" "+(c.synopsis||"").slice(0,180));
       if((c.roles||[]).length)addUsed(h.roleCounts,String((c.roles||[]).length));
       (c.roles||[]).forEach(r=>{addNameUsed(h,r.name);addUsed(h.ages,r.age_range);});
