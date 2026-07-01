@@ -263,7 +263,7 @@ def render_page(title, desc, canonical):
     #cs-intro-bg{{
       position:absolute;top:0;right:0;bottom:0;left:0;background:#0A0A0A;z-index:1;overflow:hidden;
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
-      -webkit-animation:cs-bg-down 1s linear 2.75s forwards;animation:cs-bg-down 1s linear 2.75s forwards;
+      -webkit-animation:cs-bg-down 1.5s linear 2.75s forwards;animation:cs-bg-down 1.5s linear 2.75s forwards;
     }}
     /* Counter-moving holder: it rises at the exact speed the curtain (#cs-intro-bg)
        falls, so the logo stays perfectly still on screen while the curtain's
@@ -271,7 +271,7 @@ def render_page(title, desc, canonical):
     #cs-intro .cs-intro-hold{{
       position:absolute;top:0;right:0;bottom:0;left:0;
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
-      -webkit-animation:cs-mark-up 1s linear 2.75s forwards;animation:cs-mark-up 1s linear 2.75s forwards;
+      -webkit-animation:cs-mark-up 1.5s linear 2.75s forwards;animation:cs-mark-up 1.5s linear 2.75s forwards;
     }}
     #cs-intro .cs-intro-mark{{
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:16px;
@@ -297,7 +297,7 @@ def render_page(title, desc, canonical):
   <!-- Intro reveal — logo fades in & the cube spins, then the black curtain (#cs-intro-bg)
        slides down at an even pace. The logo sits in a counter-moving holder so it stays
        perfectly still; the curtain's clipping edge cuts down through the logo, wiping it
-       away top-down (no fade, no movement) while revealing the site (~3.75s). The whole
+       away top-down (no fade, no movement) while revealing the site (~4.25s). The whole
        overlay is removed from the DOM afterward so nothing can linger. Plays on every page load. -->
   <div id="cs-intro" aria-hidden="true">
     <div id="cs-intro-bg">
@@ -316,7 +316,7 @@ def render_page(title, desc, canonical):
       var skip=false;
       try{{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true;}}catch(e){{}}
       if(skip){{if(el.parentNode)el.parentNode.removeChild(el);return;}}
-      setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},3850);
+      setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},4450);
     }})();
   </script>
   <!-- Loading indicator — shown until React mounts -->
