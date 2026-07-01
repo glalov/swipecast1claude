@@ -1576,6 +1576,14 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .sw-hint-text-mobile{display:none;font-size:12px;font-weight:700;color:#1A1A2E;}
 .sw-btn.save{animation:sw-ring 2.8s ease-in-out infinite;color:var(--blu);}
 .sw-btn.save:hover{animation:none;}
+.sw-star-wrap{position:relative;width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
+.sw-star-fill{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;animation:sw-star-fill 2.8s ease-in-out infinite;}
+.sw-star-glow{position:absolute;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle, rgba(99,91,255,.35) 0%, rgba(99,91,255,0) 72%);animation:sw-star-glow 2.8s ease-in-out infinite;pointer-events:none;}
+.sw-btn.save:hover .sw-star-fill,.sw-btn.save:hover .sw-star-glow{animation:none;}
+.sw-btn.save:hover .sw-star-fill{opacity:1;transform:scale(1);}
+.sw-btn.save:hover .sw-star-glow{opacity:0;}
+@keyframes sw-star-fill{0%,100%{opacity:1;transform:scale(1);}55%{opacity:0;transform:scale(.45);}}
+@keyframes sw-star-glow{0%,100%{opacity:1;transform:scale(1);}55%{opacity:0;transform:scale(.3);}}
 .sw-tagline{margin-top:14px;font-size:11px;color:var(--t3);text-align:center;line-height:1.6;max-width:260px;}
 @media(max-width:600px){.sw-hint-text{display:none;}.sw-hint-text-mobile{display:block;}}
 .sw-overlay{position:absolute;top:16px;left:0;right:0;text-align:center;font-family:'DM Sans',sans-serif;font-weight:800;font-size:28px;letter-spacing:-0.5px;pointer-events:none;z-index:10;text-shadow:0 2px 10px rgba(0,0,0,.4);}
@@ -14833,7 +14841,13 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
           <span className="sw-btn-label">Skip</span>
         </div>
         <div className="sw-btn-wrap">
-          <button className="sw-btn save" title="Shortlist" disabled={animating} onClick={()=>shortlist()}><Ico n="star" s={24}/></button>
+          <button className="sw-btn save" title="Shortlist" disabled={animating} onClick={()=>shortlist()}>
+            <span className="sw-star-wrap" aria-hidden="true">
+              <span className="sw-star-glow"></span>
+              <Ico n="star" s={24}/>
+              <span className="sw-star-fill"><Ico n="star-filled" s={24}/></span>
+            </span>
+          </button>
           <span className="sw-btn-label">Shortlist</span>
         </div>
         <div className="sw-btn-wrap">
