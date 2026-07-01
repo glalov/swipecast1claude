@@ -171,7 +171,10 @@ def render_page(title, desc, canonical):
   </script>
   <script src="/vendor/react.production.min.js" defer></script>
   <script src="/vendor/react-dom.production.min.js" defer></script>
-  <script src="/vendor/supabase.min.js" defer></script>
+  <!-- NOT deferred: the synchronous inline init below calls supabase.createClient(),
+       so the library MUST execute before this tag's following script. Adding defer
+       here makes window.supabase undefined at init time -> "Supabase unavailable". -->
+  <script src="/vendor/supabase.min.js"></script>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 {babel_cdn}
   <script>
