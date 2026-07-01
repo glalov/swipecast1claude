@@ -18160,7 +18160,14 @@ const ACG = (()=>{
   const ROLE_AGE_BANDS=["7-11","10-13","13-17","16-20","18-24","18-30","20-28","21-35","24-32","25-38","28-42","30-45","32-50","35-55","40-60","45-70","50-75","60-85","18-65","25-70","All ages 18+"];
   // Role-aware age bands: keeps generated ages plausible for what the role actually
   // is (a "teen lifeguard" shouldn't roll 60-85) without touching the unrelated
-  // no-repeat bookkeeping in chooseAge().
+  // no-repeat bookkeeping in chooseAge(). Most role labels are ordinary jobs
+  // ("food inspector", "casting producer", "building super") with nothing that
+  // signals age at all — the default MUST be adult-only, not "any of the 21
+  // bands," otherwise plain job roles randomly roll a child/teen band purely by
+  // chance (a 10-year-old "casting producer"). Child/teen bands are only used
+  // when the label explicitly says so.
+  const CHILD_TEEN_BANDS=["7-11","10-13","13-17","16-20"];
+  const ADULT_BANDS=ROLE_AGE_BANDS.filter(a=>CHILD_TEEN_BANDS.indexOf(a)===-1);
   const AGE_BAND_GROUPS={
     child:["7-11","10-13"],
     teen:["13-17","16-20"],
@@ -18175,7 +18182,7 @@ const ACG = (()=>{
     if(/\b(college|student|freshman|undergrad|intern)\b/.test(s))return "youngAdult";
     if(/\b(retired|grandparent|elder|elderly|senior|longtime|veteran|doorman|widower)\b/.test(s))return "senior";
     if(/\b(parent|manager|director|owner|founder|supervisor|superintendent|principal|professor|chair|trustee|captain)\b/.test(s))return "midCareer";
-    return null;
+    return "adult";
   }
   function clean(v){return String(v||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();}
   function fp(v){return clean(v).replace(/\s+/g,"-");}
@@ -18346,8 +18353,8 @@ const ACG = (()=>{
     return pick(pool.length?pool:options);
   }
   function chooseAge(h,res,usedLocal,roleLabel){
-    const hint=roleLabel?roleAgeHint(roleLabel):null;
-    const base=(hint&&AGE_BAND_GROUPS[hint])?AGE_BAND_GROUPS[hint]:ROLE_AGE_BANDS;
+    const hint=roleLabel?roleAgeHint(roleLabel):"adult";
+    const base=(hint&&AGE_BAND_GROUPS[hint])?AGE_BAND_GROUPS[hint]:ADULT_BANDS;
     let pool=base.filter(a=>!h.ages.has(clean(a))&&!res.ages.has(clean(a))&&!usedLocal.has(clean(a)));
     if(pool.length===0)pool=base.filter(a=>!usedLocal.has(clean(a)));
     const age=pick(pool.length?pool:base);
@@ -18455,24 +18462,48 @@ const ACG = (()=>{
     const catalystIsClause=SIMPLE_STORY_CATALYSTS.indexOf(catalyst)>-1;
     const catalystClause=catalystIsClause?catalyst:`there is ${catalyst}`;
     const catalystPhrase=catalystIsClause?`the fact that ${catalyst}`:catalyst;
-    const roleLines=stage?[
-      `${capFirst(a)} is trying to keep the room steady when ${catalystClause}.`,
-      `${capFirst(b)} is closest to it and has to decide fast.`,
-      `${capFirst(c)} notices what nobody else catches once ${catalystClause}.`,
-      `${capFirst(d)} adds the practical pressure that forces a choice.`,
-      `${capFirst(e)} feels the outside consequence once ${catalystClause}.`
+    // Each role gets one of several alternate phrasings (not one fixed sentence
+    // forever) so different castings don't read like they were stamped from the
+    // same template. Positions 0/2/4 name the catalyst directly (the role is
+    // implicated in the actual problem); 1/3 stay short connective beats.
+    const catalystTemplates=stage?[
+      name=>`${name} is trying to keep the room steady when ${catalystClause}.`,
+      name=>`${name} is the one who has to respond once ${catalystClause}.`,
+      name=>`${name} feels it first when ${catalystClause}.`,
+      name=>`${name} can't ignore it once ${catalystClause}.`
     ]:tv?[
-      `${capFirst(a)} is under pressure the moment ${catalystClause}.`,
-      `${capFirst(b)} tries to keep things moving while it plays out.`,
-      `${capFirst(c)} has the authority to smooth it over but hesitates.`,
-      `${capFirst(d)} is the one everyone answers to once ${catalystClause}.`,
-      `${capFirst(e)} feels the cost when ${catalystClause}.`
+      name=>`${name} is under pressure the moment ${catalystClause}.`,
+      name=>`${name} is the one who has to respond once ${catalystClause}.`,
+      name=>`${name} feels the shift the moment ${catalystClause}.`,
+      name=>`${name} can't sidestep it once ${catalystClause}.`
     ]:[
-      `${capFirst(a)} is closest to it when ${catalystClause}.`,
-      `${capFirst(b)} makes it harder by saying the quiet part out loud.`,
-      `${capFirst(c)} notices the one detail that changes things once ${catalystClause}.`,
-      `${capFirst(d)} brings the practical limit that forces action.`,
-      `${capFirst(e)} feels the weight of it when ${catalystClause}.`
+      name=>`${name} is closest to it when ${catalystClause}.`,
+      name=>`${name} is the one who ends up dealing with it once ${catalystClause}.`,
+      name=>`${name} gets pulled in the moment ${catalystClause}.`,
+      name=>`${name} can't avoid it once ${catalystClause}.`
+    ];
+    const connectiveTemplates=stage?[
+      name=>`${name} is closest to it and has to decide fast.`,
+      name=>`${name} is the one everyone looks to for the next move.`,
+      name=>`${name} keeps the room from falling apart.`,
+      name=>`${name} adds pressure nobody asked for.`
+    ]:tv?[
+      name=>`${name} tries to keep things moving while it plays out.`,
+      name=>`${name} has the authority to smooth it over but hesitates.`,
+      name=>`${name} is trying to keep the day on schedule.`,
+      name=>`${name} is the one everyone checks in with.`
+    ]:[
+      name=>`${name} makes it harder by saying the quiet part out loud.`,
+      name=>`${name} keeps things from falling apart, barely.`,
+      name=>`${name} is the one holding the day together.`,
+      name=>`${name} adds a complication nobody asked for.`
+    ];
+    const roleLines=[
+      pick(catalystTemplates)(capFirst(a)),
+      pick(connectiveTemplates)(capFirst(b)),
+      pick(catalystTemplates)(capFirst(c)),
+      pick(connectiveTemplates)(capFirst(d)),
+      pick(catalystTemplates)(capFirst(e))
     ];
     return{catalyst,stakes,relationship,roleLines,catalystClause,catalystPhrase,key:fp([setting.key,catalyst,stakes,relationship].join("|"))};
   }
@@ -18484,7 +18515,13 @@ const ACG = (()=>{
       `Seeking performers for ${articleFor(label).toLowerCase()} ${label} shooting in ${city.name}. The main location is ${setting.place}.`,
       `Now casting ${label} talent in ${city.name} for a simple story set around ${setting.place}.`
     ]);
-    const story=`The story follows ${plan.relationship}. A problem starts when ${plan.catalystClause||plan.catalyst}. The main choice is about ${plan.stakes}.`;
+    const cc=plan.catalystClause||plan.catalyst;
+    const story=pick([
+      `The story follows ${plan.relationship}. A problem starts when ${cc}. The main choice is about ${plan.stakes}.`,
+      `This is a story about ${plan.relationship}. Everything shifts when ${cc}, and it comes down to ${plan.stakes}.`,
+      `At the center of it: ${plan.relationship}. The trouble starts when ${cc}. From there, it's about ${plan.stakes}.`,
+      `The setup is simple: ${plan.relationship}. Then ${cc}, and the story turns on ${plan.stakes}.`
+    ]);
     const tone=pick([
       `The tone is grounded and easy to follow. Performances should feel real, clear, and specific.`,
       `The team wants simple acting, honest listening, and no overly complicated choices.`,
