@@ -18415,6 +18415,20 @@ const ACG = (()=>{
   // options) instead of picking one of only 1-3 fixed, hardcoded story beats
   // per category. h/res-aware so a given catalyst/stakes/relationship, once
   // used, is never picked again (mirrors the existing title/name dedup pattern).
+  // A handful of catalyst/stakes/relationship lines use words that only make
+  // sense for one medium — "workshop"+"song" implies a musical rehearsal,
+  // "wrap day"/"the shoot"/"cameras roll" implies a film/TV set. Drawing one of
+  // these into the wrong category produces a non-sequitur (e.g. a laundromat
+  // short-film story whose "problem" is a song getting cut from a workshop).
+  // Filtering by category keeps every drawn beat compatible with the setting.
+  const STAGE_ONLY_BEATS=new Set(["a song is cut from the workshop","making a public event look calm while everyone backstage knows it is not","getting through opening night","a stage manager and understudy solving the problem quietly","a stage manager and understudy solving a problem"].map(clean));
+  const SCREEN_ONLY_BEATS=new Set(["a sponsor pulling out an hour before cameras roll","a product sample arriving with the wrong face printed on it","a background actor recognizing the location from childhood","a contract clause nobody read until wrap day","a wrong-size garment threatening the whole shoot","an investor arriving early and asking to see the scene now","a brand script that accidentally tells the truth","a producer needs one clean take before the location closes","a neighbor interrupts the shoot at the worst time","getting one clean take before the location is lost","finishing a proof-of-concept before money disappears","turning a bad commercial brief into something human","a founder and model who both know the brand promise is fake","neighbors pulled into the same film shoot"].map(clean));
+  function onTopic(pool,stage){
+    return pool.filter(v=>{
+      const k=clean(v);
+      return stage?!SCREEN_ONLY_BEATS.has(k):!STAGE_ONLY_BEATS.has(k);
+    });
+  }
   function pickFreshBeat(pool,tag,h,res){
     const unused=pool.filter(v=>!h.traits.has(clean(tag+" "+v))&&!res.traits.has(clean(tag+" "+v)));
     return pick(unused.length?unused:pool);
@@ -18426,9 +18440,9 @@ const ACG = (()=>{
     const stage=/theater|musical|stage|table read|broadway/i.test(type);
     const tv=/tv|series|pilot|streaming|web series|sizzle|pitch trailer/i.test(type);
     const simple=/student|table read|workshop|staged reading|sizzle|pitch trailer/i.test(type);
-    const catalystPool=simple?SIMPLE_STORY_CATALYSTS.concat(STORY_CATALYSTS):STORY_CATALYSTS.concat(SIMPLE_STORY_CATALYSTS);
-    const stakesPool=simple?SIMPLE_STORY_STAKES.concat(STORY_STAKES):STORY_STAKES.concat(SIMPLE_STORY_STAKES);
-    const relPool=simple?SIMPLE_STORY_RELATIONSHIPS.concat(STORY_RELATIONSHIPS):STORY_RELATIONSHIPS.concat(SIMPLE_STORY_RELATIONSHIPS);
+    const catalystPool=onTopic(simple?SIMPLE_STORY_CATALYSTS.concat(STORY_CATALYSTS):STORY_CATALYSTS.concat(SIMPLE_STORY_CATALYSTS),stage);
+    const stakesPool=onTopic(simple?SIMPLE_STORY_STAKES.concat(STORY_STAKES):STORY_STAKES.concat(SIMPLE_STORY_STAKES),stage);
+    const relPool=onTopic(simple?SIMPLE_STORY_RELATIONSHIPS.concat(STORY_RELATIONSHIPS):STORY_RELATIONSHIPS.concat(SIMPLE_STORY_RELATIONSHIPS),stage);
     const catalyst=pickFreshBeat(catalystPool,"catalyst",h,res);
     const stakes=pickFreshBeat(stakesPool,"stakes",h,res);
     const relationship=pickFreshBeat(relPool,"relationship",h,res);
