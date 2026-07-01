@@ -14737,7 +14737,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
   },[idx,done,intro]);
   // Entrance: Zara's card settles in, then the deck deals in behind her
   // (Demo 1, lightly slower stagger). The black logo splash (#cs-intro) covers
-  // the page for ~4.45s on load, so we hold the entrance until that splash is gone
+  // the page for ~4.05s on load, so we hold the entrance until that splash is gone
   // and only then play it — otherwise it finishes unseen behind the overlay.
   // Idle nudge resumes after. Skipped under prefers-reduced-motion.
   React.useEffect(()=>{
@@ -14748,7 +14748,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
     const hasSplash=typeof document!=='undefined'&&document.getElementById('cs-intro');
     if(!hasSplash){const k=setTimeout(play,150);return ()=>{clearTimeout(k);clearTimeout(endTm);};}
     poll=setInterval(()=>{if(typeof document!=='undefined'&&!document.getElementById('cs-intro')){clearInterval(poll);play();}},120);
-    safety=setTimeout(()=>{clearInterval(poll);play();},4900);
+    safety=setTimeout(()=>{clearInterval(poll);play();},4500);
     return ()=>{clearInterval(poll);clearTimeout(safety);clearTimeout(endTm);};
   },[]);
   function advance(dir){

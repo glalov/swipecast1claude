@@ -263,7 +263,7 @@ def render_page(title, desc, canonical):
     #cs-intro-bg{{
       position:absolute;top:0;right:0;bottom:0;left:0;background:#0A0A0A;z-index:1;overflow:hidden;
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
-      -webkit-animation:cs-bg-down 1.5s linear 2.95s forwards;animation:cs-bg-down 1.5s linear 2.95s forwards;
+      -webkit-animation:cs-bg-down 1.5s linear 2.55s forwards;animation:cs-bg-down 1.5s linear 2.55s forwards;
     }}
     /* Counter-moving holder: it rises at the exact speed the curtain (#cs-intro-bg)
        falls, so the logo stays perfectly still on screen while the curtain's
@@ -271,14 +271,14 @@ def render_page(title, desc, canonical):
     #cs-intro .cs-intro-hold{{
       position:absolute;top:0;right:0;bottom:0;left:0;
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
-      -webkit-animation:cs-mark-up 1.5s linear 2.95s forwards;animation:cs-mark-up 1.5s linear 2.95s forwards;
+      -webkit-animation:cs-mark-up 1.5s linear 2.55s forwards;animation:cs-mark-up 1.5s linear 2.55s forwards;
     }}
     #cs-intro .cs-intro-mark{{
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:16px;
-      opacity:0;-webkit-transform:translateY(40px) scale(.965);transform:translateY(40px) scale(.965);
-      -webkit-animation:cs-intro-in 1s cubic-bezier(.16,.8,.24,1) .1s forwards;animation:cs-intro-in 1s cubic-bezier(.16,.8,.24,1) .1s forwards;
+      opacity:0;-webkit-transform:translateY(28px) scale(.965);transform:translateY(28px) scale(.965);
+      -webkit-animation:cs-intro-in .6s cubic-bezier(.2,.7,.2,1) .1s forwards;animation:cs-intro-in .6s cubic-bezier(.2,.7,.2,1) .1s forwards;
     }}
-    #cs-intro .cs-intro-box{{width:74px;height:74px;background:#fff;border-radius:16px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);-webkit-animation:cs-spin .6s cubic-bezier(.5,.05,.2,1) 2.25s both;animation:cs-spin .6s cubic-bezier(.5,.05,.2,1) 2.25s both;}}
+    #cs-intro .cs-intro-box{{width:74px;height:74px;background:#fff;border-radius:16px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);-webkit-animation:cs-spin .6s cubic-bezier(.5,.05,.2,1) 1.85s both;animation:cs-spin .6s cubic-bezier(.5,.05,.2,1) 1.85s both;}}
     #cs-intro .cs-intro-name{{color:#fff;font-size:52px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'DM Sans',sans-serif;letter-spacing:-1.2px;}}
     @-webkit-keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
     @keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
@@ -297,7 +297,7 @@ def render_page(title, desc, canonical):
   <!-- Intro reveal — logo fades in & the cube spins, then the black curtain (#cs-intro-bg)
        slides down at an even pace. The logo sits in a counter-moving holder so it stays
        perfectly still; the curtain's clipping edge cuts down through the logo, wiping it
-       away top-down (no fade, no movement) while revealing the site (~4.45s). The whole
+       away top-down (no fade, no movement) while revealing the site (~4.05s). The whole
        overlay is removed from the DOM afterward so nothing can linger. Plays on every page load. -->
   <div id="cs-intro" aria-hidden="true">
     <div id="cs-intro-bg">
@@ -316,7 +316,7 @@ def render_page(title, desc, canonical):
       var skip=false;
       try{{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true;}}catch(e){{}}
       if(skip){{if(el.parentNode)el.parentNode.removeChild(el);return;}}
-      setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},4650);
+      setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},4250);
     }})();
   </script>
   <!-- Loading indicator — shown until React mounts -->
