@@ -1787,7 +1787,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .site-footer-spacer{min-height:40px;flex-shrink:0;background:var(--bg);width:100%;margin-top:auto;}
 /* Floating back-to-top cube — stays fully off-screen until the footer midpoint
    is reached, then tumbles down/up with the original live timing. */
-.b2t-cube{--b2t-away:calc(-100vh + 16px);position:fixed;left:50%;bottom:22px;z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:96px;height:86px;background:#FFFFFF;color:#1A1A2E;border:1px solid rgba(0,0,0,0.12);border-radius:17px;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,0.30);font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(var(--b2t-away));opacity:1;pointer-events:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:none;}
+.b2t-cube{--b2t-away:calc(-100vh + 16px);position:fixed;left:50%;bottom:var(--b2t-rest,150px);z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:96px;height:86px;background:#FFFFFF;color:#1A1A2E;border:1px solid rgba(0,0,0,0.12);border-radius:17px;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,0.30);font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(var(--b2t-away));opacity:1;pointer-events:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:none;}
 /* Resting (settled) state — plain 2D transform, NO 3D context, so the tap hit-box
    lines up exactly with the rendered button. The tumble's perspective/preserve-3d
    used to linger in the resting state and offset the touch target on mobile, which
@@ -1829,8 +1829,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
      social (Facebook) row + 14px, so the cube parks just ABOVE the Facebook icon
      and never lands on top of it. The 96px gap opened above the social row is the
      clear space the cube drops into. */
-  .b2t-cube{width:84px;height:66px;bottom:var(--b2t-rest,150px);font-size:9.5px;border-radius:15px;}
-  .site-footer .site-footer-social-row{margin-top:96px;border-top:none;}
+  .b2t-cube{width:84px;height:66px;font-size:9.5px;border-radius:15px;}
 }
 .site-backtotop{
   display:flex;align-items:center;justify-content:center;gap:8px;
@@ -1872,12 +1871,13 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .site-footer-heading{font-family:'DM Sans',sans-serif;color:#fff;font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:18px;}
 .site-footer-link{display:block;color:#9A9BA5;font-size:13px;padding:5px 0;cursor:pointer;transition:color .18s ease,transform .18s ease;font-family:'DM Sans',sans-serif;}
 .site-footer-link:hover{color:#fff;transform:translateX(2px);}
-.site-footer-social-row{display:flex;gap:14px;align-items:center;padding:18px 0 22px;border-top:1px solid rgba(255,255,255,0.05);margin-top:-12px;}
+.site-footer-social-row{display:flex;gap:14px;align-items:center;justify-content:center;padding:18px 0 22px;border-top:none;margin-top:0;}
+.site-footer.has-b2t .site-footer-social-row{margin-top:96px;}
 .site-footer-social{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#9A9BA5;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);text-decoration:none;transition:color .18s ease,background .18s ease,transform .18s ease,border-color .18s ease;}
 .site-footer-social:hover{color:#fff;background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.16);transform:translateY(-2px);}
-.site-footer-bottom{border-top:1px solid rgba(255,255,255,0.08);padding-top:22px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:11.5px;color:#6F7078;}
-.site-footer-bottom-links{display:flex;gap:11px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-left:auto;}
-.site-footer-plain-links{display:flex;gap:18px;flex-wrap:wrap;align-items:center;}
+.site-footer-bottom{border-top:1px solid rgba(255,255,255,0.08);padding-top:22px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;flex-wrap:wrap;font-size:12px;color:#6F7078;}
+.site-footer-bottom-links{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:center;width:100%;margin-left:0;}
+.site-footer-plain-links{display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:center;flex-basis:100%;}
 .site-footer-bottom-links span{cursor:pointer;transition:color .18s ease;}
 .site-footer-bottom-links span:hover{color:#fff;}
 .footer-cookie-card,.lang-toggle-btn{position:relative;display:inline-flex;align-items:center;overflow:hidden;isolation:isolate;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;flex-shrink:0;}
@@ -1887,10 +1887,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .footer-cookie-icon svg{width:18px;height:18px;}
 .footer-cookie-title{display:block;color:#fff;font-size:12.5px;font-weight:900;line-height:1.1;white-space:nowrap;}
 .footer-cookie-sub{display:block;margin-top:2px;color:rgba(255,255,255,.72);font-size:10px;font-weight:750;white-space:nowrap;}
-.lang-toggle-btn{min-height:52px;gap:8px;padding:6px 15px 6px 8px;border-radius:999px;background:linear-gradient(135deg,#25283f,#34395d);color:#fff;font-size:12.5px;font-weight:900;letter-spacing:.2px;line-height:1;box-shadow:0 14px 26px -22px rgba(0,0,0,.95),inset 0 0 0 1px rgba(255,255,255,.15);animation:footerLangLift 3.4s ease-in-out infinite .35s;}
-.footer-flag-es{position:relative;overflow:hidden;flex:0 0 auto;width:28px;height:20px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),0 5px 10px rgba(0,0,0,.18);background:linear-gradient(180deg,#c61f32 0 25%,#f4c13d 25% 75%,#c61f32 75% 100%);}
-.footer-flag-es::after{content:"";position:absolute;left:8px;top:7px;width:5px;height:6px;border-radius:2px;background:#b98324;box-shadow:0 0 0 1px rgba(255,255,255,.38);}
-.lang-toggle-btn svg{flex-shrink:0;width:15px;height:15px;}
+.lang-toggle-btn{min-height:52px;gap:8px;padding:0 15px 0 9px;border-radius:999px;background:linear-gradient(135deg,#25283f,#34395d);color:#fff;font-size:13px;font-weight:900;letter-spacing:.2px;line-height:1;box-shadow:0 14px 26px -22px rgba(0,0,0,.95),inset 0 0 0 1px rgba(255,255,255,.15);animation:footerLangLift 3.4s ease-in-out infinite .35s;}
+.footer-flag-es{position:relative;overflow:hidden;flex:0 0 auto;width:30px;height:21px;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),0 5px 10px rgba(0,0,0,.18);background:linear-gradient(180deg,#c61f32 0 25%,#f4c13d 25% 75%,#c61f32 75% 100%);}
+.footer-flag-es::after{content:"";position:absolute;left:9px;top:7px;width:5px;height:7px;border-radius:2px;background:#b98324;box-shadow:0 0 0 1px rgba(255,255,255,.38);}
+.lang-toggle-btn svg{flex-shrink:0;width:16px;height:16px;}
 @keyframes footerControlSheen{0%,44%{transform:translateX(-130%);opacity:0;}55%{opacity:1;}78%,100%{transform:translateX(130%);opacity:0;}}
 @keyframes footerCardFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
 @keyframes footerLangLift{0%,100%{transform:translateY(0);}50%{transform:translateY(-2px);}}
@@ -3435,7 +3435,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
       <span className="mark"><svg width="20" height="16" viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="currentColor"/></svg></span>
       <span>{t('footer.backToTop')}</span>
     </button>}
-    <footer className="site-footer">
+    <footer className={"site-footer"+(backToTop?" has-b2t":"")}>
       <div className="site-footer-inner">
         <div className="site-footer-grid">
           <div className="site-footer-brand">
