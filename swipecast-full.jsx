@@ -1825,12 +1825,12 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
    Privacy / Terms / Contact / Cookie or language buttons. A matching gap is opened
    above the copyright row so the cube rests in clear space, not over any text. ── */
 @media(max-width:640px){
-  /* --b2t-rest is measured in JS = footer padding-bottom + the copyright/links
-     block height + 14px, so the cube parks just above the "© … all rights
-     reserved" row no matter how the links wrap on a given phone. The 96px gap
-     opened above that row is the clear space the cube lands in. */
+  /* --b2t-rest is measured in JS = distance from page bottom up to the TOP of the
+     social (Facebook) row + 14px, so the cube parks just ABOVE the Facebook icon
+     and never lands on top of it. The 96px gap opened above the social row is the
+     clear space the cube drops into. */
   .b2t-cube{width:84px;height:66px;bottom:var(--b2t-rest,150px);font-size:9.5px;border-radius:15px;}
-  .site-footer .site-footer-bottom{margin-top:96px;}
+  .site-footer .site-footer-social-row{margin-top:96px;border-top:none;}
 }
 .site-backtotop{
   display:flex;align-items:center;justify-content:center;gap:8px;
@@ -1903,10 +1903,12 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 }
 @media (max-width:520px){
   .site-footer-grid{grid-template-columns:1fr;gap:28px;}
-  .site-footer-bottom{flex-direction:column;align-items:flex-start;}
-  .site-footer-bottom-links{width:100%;align-items:center;flex-direction:row;justify-content:flex-start;margin-left:0;gap:10px;}
-  .site-footer-plain-links{flex-basis:100%;}
-  .site-footer-plain-links{gap:12px 16px;}
+  /* Mobile: centered stack — Facebook, then © line, then Privacy/Terms/Contact,
+     then the Cookie + language badges, all centered under one another. */
+  .site-footer-social-row{justify-content:center;}
+  .site-footer-bottom{flex-direction:column;align-items:center;text-align:center;}
+  .site-footer-bottom-links{width:100%;align-items:center;flex-direction:row;justify-content:center;margin-left:0;gap:12px;}
+  .site-footer-plain-links{flex-basis:100%;justify-content:center;gap:12px 16px;}
   .footer-cookie-card,.lang-toggle-btn{width:auto;justify-content:center;}
 }
 /* ─── Yearly promo stripe — large, premium banner above the main nav on homepage.
@@ -3397,20 +3399,20 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     const id=setTimeout(()=>setB2tAnim(null),1500);
     return()=>clearTimeout(id);
   },[b2tAnim]);
-  // Mobile only (used by the <=640px rule): measure where the footer's
-  // copyright/links block sits and park the cube's resting position just above
-  // it, so it never lands on the © line, the Privacy/Terms/Contact/Cookie links,
-  // or the language button — regardless of how those links wrap on a given phone.
+  // Mobile only (used by the <=640px rule): measure where the footer's social
+  // (Facebook) row sits and park the cube's resting position just ABOVE it, so it
+  // lands in the clear gap above the Facebook icon and never covers it, the © line,
+  // the Privacy/Terms/Contact/Cookie links, or the language button.
   React.useEffect(()=>{
     if(!backToTop)return;
     const setRest=()=>{try{
-      const b=document.querySelector('.site-footer-bottom');
+      const b=document.querySelector('.site-footer-social-row')||document.querySelector('.site-footer-bottom');
       if(!b)return;
-      // Distance from the very bottom of the page up to the TOP of the copyright/
-      // links block. Using the block's document position (not reconstructed from
-      // paddings) automatically accounts for every nested padding below it
+      // Distance from the very bottom of the page up to the TOP of the social row.
+      // Using the block's document position (not reconstructed from paddings)
+      // automatically accounts for every nested padding below it
       // (.site-footer-inner + .site-footer + iOS safe-area). +14px = small gap so
-      // the cube floats just clear of the "© … all rights reserved" row.
+      // the cube floats just clear of the Facebook icon.
       const rect=b.getBoundingClientRect();
       const blockTopDoc=rect.top+window.scrollY;
       const docH=document.documentElement.scrollHeight;
