@@ -462,21 +462,21 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .site-footer-social{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#9A9BA5;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);text-decoration:none;transition:color .18s ease,background .18s ease,transform .18s ease,border-color .18s ease;}
 .site-footer-social:hover{color:#fff;background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.16);transform:translateY(-2px);}
 .site-footer-bottom{border-top:1px solid rgba(255,255,255,0.08);padding-top:22px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:11.5px;color:#6F7078;}
-.site-footer-bottom-links{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:flex-end;}
+.site-footer-bottom-links{display:flex;gap:11px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-left:auto;}
 .site-footer-plain-links{display:flex;gap:18px;flex-wrap:wrap;align-items:center;}
 .site-footer-bottom-links span{cursor:pointer;transition:color .18s ease;}
 .site-footer-bottom-links span:hover{color:#fff;}
 .footer-cookie-card,.lang-toggle-btn{position:relative;display:inline-flex;align-items:center;overflow:hidden;isolation:isolate;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;flex-shrink:0;}
-.footer-cookie-card{min-height:66px;gap:11px;padding:12px 20px 12px 12px;border-radius:20px;background:linear-gradient(135deg,#22304f 0%,#1f7f86 48%,#d98928 100%);color:#fff;box-shadow:0 20px 38px -29px rgba(31,127,134,1),inset 0 1px 0 rgba(255,255,255,.3);animation:footerBadgeEnter 4.4s ease-in-out infinite;}
+.footer-cookie-card{min-height:50px;gap:9px;padding:9px 15px 9px 9px;border-radius:16px;background:linear-gradient(135deg,#22304f 0%,#1f7f86 48%,#d98928 100%);color:#fff;box-shadow:0 16px 30px -25px rgba(31,127,134,1),inset 0 1px 0 rgba(255,255,255,.3);animation:footerBadgeEnter 4.4s ease-in-out infinite;}
 .footer-cookie-card::before,.lang-toggle-btn::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(110deg,transparent 0 34%,rgba(255,255,255,.32) 45%,transparent 57% 100%);transform:translateX(-130%);animation:footerControlSheen 3.8s ease-in-out infinite;}
-.footer-cookie-icon{position:relative;flex:0 0 auto;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.18);}
-.footer-cookie-icon svg{width:22px;height:22px;}
-.footer-cookie-title{display:block;color:#fff;font-size:13px;font-weight:900;line-height:1.1;white-space:nowrap;}
-.footer-cookie-sub{display:block;margin-top:3px;color:rgba(255,255,255,.73);font-size:10.5px;font-weight:750;white-space:nowrap;}
-.lang-toggle-btn{min-height:54px;gap:9px;padding:8px 16px 8px 9px;border-radius:999px;background:linear-gradient(135deg,#c61f32 0%,#df7b1f 48%,#f4c13d 100%);color:#fff;font-size:13px;font-weight:900;letter-spacing:.2px;line-height:1;box-shadow:0 18px 34px -28px rgba(244,193,61,.8);animation:footerFlagPulse 2.8s ease-in-out infinite .25s;}
-.footer-flag-es{position:relative;overflow:hidden;flex:0 0 auto;width:38px;height:27px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),0 5px 10px rgba(0,0,0,.18);background:linear-gradient(180deg,#c61f32 0 25%,#f4c13d 25% 75%,#c61f32 75% 100%);}
-.footer-flag-es::after{content:"";position:absolute;left:11px;top:9px;width:6px;height:8px;border-radius:2px;background:#b98324;box-shadow:0 0 0 1px rgba(255,255,255,.38);}
-.lang-toggle-btn svg{flex-shrink:0;width:16px;height:16px;}
+.footer-cookie-icon{position:relative;flex:0 0 auto;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:rgba(255,255,255,.18);}
+.footer-cookie-icon svg{width:18px;height:18px;}
+.footer-cookie-title{display:block;color:#fff;font-size:11.5px;font-weight:900;line-height:1.1;white-space:nowrap;}
+.footer-cookie-sub{display:block;margin-top:2px;color:rgba(255,255,255,.73);font-size:9px;font-weight:750;white-space:nowrap;}
+.lang-toggle-btn{min-height:42px;gap:7px;padding:6px 12px 6px 7px;border-radius:999px;background:linear-gradient(135deg,#c61f32 0%,#df7b1f 48%,#f4c13d 100%);color:#fff;font-size:11.5px;font-weight:900;letter-spacing:.2px;line-height:1;box-shadow:0 14px 28px -24px rgba(244,193,61,.8);animation:footerFlagPulse 2.8s ease-in-out infinite .25s;}
+.footer-flag-es{position:relative;overflow:hidden;flex:0 0 auto;width:28px;height:20px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),0 5px 10px rgba(0,0,0,.18);background:linear-gradient(180deg,#c61f32 0 25%,#f4c13d 25% 75%,#c61f32 75% 100%);}
+.footer-flag-es::after{content:"";position:absolute;left:8px;top:7px;width:5px;height:6px;border-radius:2px;background:#b98324;box-shadow:0 0 0 1px rgba(255,255,255,.38);}
+.lang-toggle-btn svg{flex-shrink:0;width:13px;height:13px;}
 @keyframes footerControlSheen{0%,44%{transform:translateX(-130%);opacity:0;}55%{opacity:1;}78%,100%{transform:translateX(130%);opacity:0;}}
 @keyframes footerBadgeEnter{0%,100%{transform:translateY(0) rotate(0);}48%{transform:translateY(-3px) rotate(-.45deg);}55%{transform:translateY(-3px) rotate(.45deg);}62%{transform:translateY(-2px) rotate(0);}}
 @keyframes footerFlagPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.035);}}
@@ -490,9 +490,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @media (max-width:520px){
   .site-footer-grid{grid-template-columns:1fr;gap:28px;}
   .site-footer-bottom{flex-direction:column;align-items:flex-start;}
-  .site-footer-bottom-links{width:100%;align-items:stretch;flex-direction:column;justify-content:flex-start;}
+  .site-footer-bottom-links{width:100%;align-items:center;flex-direction:row;justify-content:flex-start;margin-left:0;gap:10px;}
+  .site-footer-plain-links{flex-basis:100%;}
   .site-footer-plain-links{gap:12px 16px;}
-  .footer-cookie-card,.lang-toggle-btn{width:100%;justify-content:center;}
+  .footer-cookie-card,.lang-toggle-btn{width:auto;justify-content:center;}
 }
 /* ─── Yearly promo stripe — large, premium banner above the main nav on homepage.
        Navy CastSlate palette + warm cream highlights, capsule-shaped actor image
