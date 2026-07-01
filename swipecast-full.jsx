@@ -1796,11 +1796,28 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .b2t-cube.show{transform:translateX(-50%) translateY(0);pointer-events:auto;}
 .b2t-cube.dropping{transform-style:preserve-3d;backface-visibility:visible;will-change:transform;animation:b2tTumbleDown 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
 .b2t-cube.leaving{transform-style:preserve-3d;backface-visibility:visible;will-change:transform;animation:b2tTumbleUp 1.17s cubic-bezier(.5,0,.75,.45) both;}
-.b2t-cube .mark{width:24px;height:20px;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;}
+.b2t-cube .mark{width:24px;height:20px;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;perspective:200px;}
 .b2t-cube .mark svg{display:block;width:24px;height:20px;}
 .b2t-cube.dropping .mark{animation:b2tLogoSpinIn 1.08s cubic-bezier(.18,.82,.26,1.05) both;}
 .b2t-cube.leaving .mark{animation:b2tLogoSpinOut .82s cubic-bezier(.5,0,.75,.45) both;}
+.b2t-cube .pyramid{width:24px;height:20px;position:relative;transform-style:preserve-3d;animation:b2tPyramidIdle 6.4s cubic-bezier(.65,0,.35,1) infinite;}
+.b2t-cube .pyramid .face{position:absolute;inset:0;backface-visibility:hidden;}
+.b2t-cube .pyramid .face svg{display:block;width:24px;height:20px;}
+.b2t-cube .pyramid .face.black{transform:rotateY(0deg) translateZ(7px);}
+.b2t-cube .pyramid .face.yellow{transform:rotateY(120deg) translateZ(7px);}
+.b2t-cube .pyramid .face.red{transform:rotateY(240deg) translateZ(7px);}
+.b2t-cube.dropping .pyramid,.b2t-cube.leaving .pyramid{animation-play-state:paused;}
 .b2t-cube span{line-height:1.1;}
+@keyframes b2tPyramidIdle{
+  0%{transform:rotateY(0deg);}
+  34%{transform:rotateY(0deg);}
+  42%{transform:rotateY(-120deg);}
+  58%{transform:rotateY(-120deg);}
+  66%{transform:rotateY(-240deg);}
+  82%{transform:rotateY(-240deg);}
+  90%{transform:rotateY(-360deg);}
+  100%{transform:rotateY(-360deg);}
+}
 @keyframes b2tTumbleDown{
   0%{transform:translateX(-50%) translateY(var(--b2t-away)) perspective(780px) rotateY(-900deg) rotateX(5deg) rotateZ(-5deg) scale(.88);}
   78%{transform:translateX(-50%) translateY(8px) perspective(780px) rotateY(-110deg) rotateX(2deg) rotateZ(-2deg) scale(1.035);}
@@ -1819,7 +1836,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   0%{transform:rotate(360deg) scale(1);opacity:1;}
   100%{transform:rotate(-170deg) scale(.76);opacity:.7;}
 }
-@media(prefers-reduced-motion:reduce){.b2t-cube{animation:none!important;transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}.b2t-cube.show{opacity:1!important;}.b2t-cube .mark{animation:none!important;}}
+@media(prefers-reduced-motion:reduce){.b2t-cube{animation:none!important;transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}.b2t-cube.show{opacity:1!important;}.b2t-cube .mark{animation:none!important;}.b2t-cube .pyramid{animation:none!important;}}
 /* ── Mobile: lift the cube clear of the footer's bottom links/buttons. It now lands
    in open space above the "© … all rights reserved" line and never covers the
    Privacy / Terms / Contact / Cookie or language buttons. A matching gap is opened
@@ -3432,7 +3449,11 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
         tapelink, manager mode). Short pages scroll up in one flick, so the
         drop-down button is just noise there. */}
     {backToTop&&<button type="button" className={"b2t-cube"+(b2tShow?" show":"")+(b2tAnim==='in'?" dropping":"")+(b2tAnim==='out'?" leaving":"")} onClick={scrollTop} onAnimationEnd={(e)=>{if(e.target===e.currentTarget)setB2tAnim(null);}} aria-label={t('footer.backToTop')}>
-      <span className="mark"><svg width="20" height="16" viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="currentColor"/></svg></span>
+      <span className="mark"><span className="pyramid">
+        <span className="face black"><svg viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="#1A1A2E"/></svg></span>
+        <span className="face yellow"><svg viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="#F5C518"/></svg></span>
+        <span className="face red"><svg viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="#E2394D"/></svg></span>
+      </span></span>
       <span>{t('footer.backToTop')}</span>
     </button>}
     <footer className={"site-footer"+(backToTop?" has-b2t":"")}>
