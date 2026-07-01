@@ -17915,12 +17915,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
 // ── Generation data: city weights, listing types, copy templates ──
 const ACG = (()=>{
   const CITIES=[
-    {name:"New York, NY",short:"NYC",w:78},
-    {name:"Brooklyn, NY",short:"NYC",w:8},
-    {name:"Queens, NY",short:"NYC",w:5},
-    {name:"Los Angeles, CA",short:"LA",w:4},
-    {name:"Chicago, IL",short:"Chicago",w:3},
-    {name:"Boston, MA",short:"Boston",w:2}
+    {name:"New York, NY",short:"NYC",w:100}
   ];
   function pickCity(){const total=CITIES.reduce((s,c)=>s+(c.w||1),0);let r=Math.random()*total;for(const c of CITIES){r-=c.w||1;if(r<=0)return c;}return CITIES[0];}
   function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
@@ -18355,12 +18350,12 @@ const ACG = (()=>{
       `${pick(["Before","After","Inside","Under"])} ${pick(setting.titles)}`
     ];
   }
-  function freshTagline(type,setting,catalyst,stakes){
+  function freshTagline(type,setting,plan){
     const label=projectLabel(type);
     return pick([
-      `${articleFor(label)} ${label} built around ${setting.place}, ${catalyst}, and ${stakes}.`,
-      `${setting.place} becomes the center of a new ${label} about ${stakes}.`,
-      `A grounded ${label} where ${catalyst} forces everyone to choose what they can admit.`
+      `${articleFor(label)} ${label} built around ${setting.place} and one clear problem: ${plan.catalyst}.`,
+      `${setting.place} becomes the center of a new ${label} about ${plan.stakes}.`,
+      `A grounded ${label} where ${plan.relationship} has to deal with ${plan.catalyst}.`
     ]);
   }
   function articleFor(text){
@@ -18385,7 +18380,149 @@ const ACG = (()=>{
     const film=SCREEN_STAGE_SETTINGS.filter(s=>/film|feature|short|indie|student|cafe|bodega|subway|walkup|laundromat|apartment|rooftop|queens-family/.test(s.key));
     return film.length?film:SCREEN_STAGE_SETTINGS;
   }
-  function freshSynopsis(city,type,setting,catalyst,stakes,relationship,voice,length){
+  function capFirst(text){
+    const s=String(text||"").trim();
+    return s?s.charAt(0).toUpperCase()+s.slice(1):"Role";
+  }
+  function rolePhrase(label){
+    return String(label||"scene partner").replace(/^(a|an|the)\s+/i,"").trim();
+  }
+  function buildStoryPlan(type,setting){
+    const roles=[...(setting.roles||[])].map(rolePhrase);
+    while(roles.length<5)roles.push(pick(["scene partner","outside witness","producer","neighbor","assistant"]));
+    const [a,b,c,d,e]=roles;
+    const stage=/theater|musical|stage|table read|broadway/i.test(type);
+    const tv=/tv|series|pilot|streaming|web series|sizzle|pitch trailer/i.test(type);
+    const film=/feature|short|student|independent|experimental|documentary|proof/i.test(type);
+    const plans=stage?[
+      {
+        catalyst:`${b} is asked to step in before the room is ready`,
+        stakes:`keeping the reading honest without embarrassing anyone`,
+        relationship:`the ${a} and the ${b} trying to trust each other under pressure`,
+        roleLines:[
+          `${capFirst(a)} is trying to keep the room steady while the replacement settles in.`,
+          `${capFirst(b)} has to take over fast and still make the scene feel personal.`,
+          `${capFirst(c)} notices the problem nobody wants to say out loud.`,
+          `${capFirst(d)} adds time pressure and forces a practical decision.`,
+          `${capFirst(e)} brings the outside consequence into the room.`
+        ]
+      },
+      {
+        catalyst:`the ending changes during rehearsal`,
+        stakes:`deciding what version of the play can survive tonight`,
+        relationship:`the ${a} and the ${c} disagreeing about what the scene really means`,
+        roleLines:[
+          `${capFirst(a)} carries the old version of the scene and does not want to lose it.`,
+          `${capFirst(b)} is caught between loyalty to the room and fear of being replaced.`,
+          `${capFirst(c)} pushes for the new ending because the first one no longer feels true.`,
+          `${capFirst(d)} keeps track of what can actually be staged before doors open.`,
+          `${capFirst(e)} sees how the change will land for people outside the rehearsal.`
+        ]
+      },
+      {
+        catalyst:`a private note is read at the wrong time`,
+        stakes:`protecting the work without hiding the truth`,
+        relationship:`the ${a} and the ${d} handling a mistake that changes the room`,
+        roleLines:[
+          `${capFirst(a)} has to decide whether to stop rehearsal or let the mistake breathe.`,
+          `${capFirst(b)} becomes the person everyone watches after the note is read.`,
+          `${capFirst(c)} tries to make the practical fix before feelings take over.`,
+          `${capFirst(d)} knows why the note matters and cannot fully explain it.`,
+          `${capFirst(e)} turns a small embarrassment into a real choice.`
+        ]
+      }
+    ]:tv?[
+      {
+        catalyst:`one revised page changes the scene's meaning`,
+        stakes:`getting the right read before the room moves on`,
+        relationship:`the ${a} and the ${d} trying to keep the scene clear from opposite sides of the room`,
+        roleLines:[
+          `${capFirst(a)} is under pressure when the revised page changes the scene.`,
+          `${capFirst(b)} keeps the callback room moving while the mistake spreads.`,
+          `${capFirst(c)} has the authority to fix the read but waits too long.`,
+          `${capFirst(d)} becomes the detail everyone in the room has to answer to.`,
+          `${capFirst(e)} shows how the rushed choice affects someone without power.`
+        ]
+      },
+      {
+        catalyst:`a detail from the pilot script suddenly matches real life`,
+        stakes:`deciding whether to keep shooting or change the scene`,
+        relationship:`the ${a} and the ${c} realizing they are not making the same show`,
+        roleLines:[
+          `${capFirst(a)} wants the scene to stay simple even after the real detail appears.`,
+          `${capFirst(b)} tries to keep the set calm without knowing the full story.`,
+          `${capFirst(c)} sees the script problem first and has to choose when to speak.`,
+          `${capFirst(d)} brings in the piece of information that makes the scene click.`,
+          `${capFirst(e)} is close enough to the family or workplace to make the stakes real.`
+        ]
+      },
+      {
+        catalyst:`the final take exposes a lie in the scene`,
+        stakes:`finishing the proof of concept without making it false`,
+        relationship:`the ${a} and the ${b} deciding what kind of show this is`,
+        roleLines:[
+          `${capFirst(a)} is trying to land the scene cleanly while the truth keeps shifting.`,
+          `${capFirst(b)} pushes the room toward a sharper choice than planned.`,
+          `${capFirst(c)} knows the schedule will break if the argument continues.`,
+          `${capFirst(d)} hears the lie first and changes the energy of the room.`,
+          `${capFirst(e)} gives the moment a public cost beyond the set.`
+        ]
+      }
+    ]:film?[
+      {
+        catalyst:`someone arrives with information that changes why the scene is happening`,
+        stakes:`telling the truth before the day is lost`,
+        relationship:`the ${a} and the ${b} trying to stay polite while the story shifts`,
+        roleLines:[
+          `${capFirst(a)} is trying to finish the day without admitting how much has changed.`,
+          `${capFirst(b)} brings the information that makes the old plan impossible.`,
+          `${capFirst(c)} notices the lie before anyone is ready to name it.`,
+          `${capFirst(d)} creates the practical pressure: time, access, money, or rules.`,
+          `${capFirst(e)} shows how the choice affects someone outside the main conflict.`
+        ]
+      },
+      {
+        catalyst:`a small mistake makes the private conflict public`,
+        stakes:`deciding who gets protected and who gets blamed`,
+        relationship:`the ${a} and the ${c} remembering the same day differently`,
+        roleLines:[
+          `${capFirst(a)} wants to keep the mistake quiet but keeps making it worse.`,
+          `${capFirst(b)} is the first person to connect the mistake to the real conflict.`,
+          `${capFirst(c)} remembers the old version of events and refuses to smooth it over.`,
+          `${capFirst(d)} has a rule-bound job that suddenly matters to the story.`,
+          `${capFirst(e)} carries the outside pressure that makes silence harder.`
+        ]
+      },
+      {
+        catalyst:`the location is about to close before the hardest conversation happens`,
+        stakes:`getting one honest moment before everyone leaves`,
+        relationship:`the ${a} and the ${e} needing different endings to the same day`,
+        roleLines:[
+          `${capFirst(a)} is holding the day together and running out of ways to delay.`,
+          `${capFirst(b)} says the practical thing that makes the emotional problem clear.`,
+          `${capFirst(c)} has one detail that changes how the audience reads the scene.`,
+          `${capFirst(d)} guards the rules of the place and becomes part of the pressure.`,
+          `${capFirst(e)} needs the conversation to end differently than everyone expects.`
+        ]
+      }
+    ]:[
+      {
+        catalyst:`a simple plan stops working in public`,
+        stakes:`making one clear choice before the chance is gone`,
+        relationship:`the ${a} and the ${b} handling the same problem from different sides`,
+        roleLines:[
+          `${capFirst(a)} is closest to the problem and tries to keep it contained.`,
+          `${capFirst(b)} makes the problem harder by saying the quiet part clearly.`,
+          `${capFirst(c)} sees the useful detail other people miss.`,
+          `${capFirst(d)} brings the practical limit that forces action.`,
+          `${capFirst(e)} gives the ending a human cost.`
+        ]
+      }
+    ];
+    const plan=pick(plans);
+    return{...plan,key:fp([setting.key,plan.catalyst,plan.stakes,plan.relationship].join("|"))};
+  }
+  function freshSynopsis(city,type,setting,plan,voice,length){
     const label=projectLabel(type);
     const opener=pick([
       `Casting ${articleFor(label).toLowerCase()} ${label} in ${city.name}. The story is set around ${setting.place}.`,
@@ -18393,7 +18530,7 @@ const ACG = (()=>{
       `Seeking performers for ${articleFor(label).toLowerCase()} ${label} shooting in ${city.name}. The main location is ${setting.place}.`,
       `Now casting ${label} talent in ${city.name} for a simple story set around ${setting.place}.`
     ]);
-    const story=`The story follows ${relationship}. A problem starts when ${catalyst}. The main choice is about ${stakes}.`;
+    const story=`The story follows ${plan.relationship}. A problem starts when ${plan.catalyst}. The main choice is about ${plan.stakes}.`;
     const tone=pick([
       `The tone is grounded and easy to follow. Performances should feel real, clear, and specific.`,
       `The team wants simple acting, honest listening, and no overly complicated choices.`,
@@ -18430,43 +18567,30 @@ const ACG = (()=>{
     if(/commercial|ad|brand|promo|sizzle|trailer|testimonial|demo/i.test(type))return i<2?"Principal":"Featured";
     return i<2?"Lead":i<4?"Supporting":"Day Player";
   }
-  function freshRoleBlueprints(type,setting,catalyst,stakes,relationship,count,h,res){
+  function freshRoleBlueprints(type,setting,plan,count,h,res){
     const usedAges=new Set();
     return Array.from({length:count}).map((_,i)=>{
       const roleLabel=setting.roles[i%setting.roles.length];
       const roleType=freshRoleType(type,i);
-      const short=pick([
-        `Connected to ${setting.place}. The role has to make ${catalyst} feel believable.`,
-        `Part of the ${relationship}. Needs grounded reactions and clear listening.`,
-        `A practical, specific role in the story pressure around ${stakes}.`,
-        `Should feel like a real person with a private life outside the scene.`
-      ]);
-      const detail=pick([
-        `The casting team wants behavior, not a type. Small choices will matter more than a big read.`,
-        `Some improvisational looseness may be used, but the performance should stay clean and simple.`,
-        `Comfort with quick adjustments and natural overlap will help.`,
-        `Bring one specific point of view; do not overcomplicate the character.`
-      ]);
-      return{name:roleLabel,role_type:roleType,description:`${short} ${detail}`,gender:"All genders",age_range:chooseAge(h,res,usedAges),ethnicity:"All ethnicities",pay:""};
+      const line=plan.roleLines[i%plan.roleLines.length]||`${capFirst(rolePhrase(roleLabel))} has a direct reason to be in this story.`;
+      return{name:roleLabel,role_type:roleType,description:line,gender:"All genders",age_range:chooseAge(h,res,usedAges),ethnicity:"All ethnicities",pay:"",_keepDescription:true};
     });
   }
   function buildFreshConcept(city,h,res){
     for(let i=0;i<500;i++){
       const type=pickFreshProjectType(h,res);
       const setting=pick(settingsForType(type));
-      const catalyst=pick(SIMPLE_STORY_CATALYSTS);
-      const stakes=pick(SIMPLE_STORY_STAKES);
-      const relationship=pick(SIMPLE_STORY_RELATIONSHIPS);
+      const plan=buildStoryPlan(type,setting);
       const voice=pick(FRESH_VOICES);
       const length=pick(FRESH_LENGTHS);
-      const roleCount=chooseRoleCount(type,h,res);
-      const rootKey=fp([type,setting.key,catalyst,stakes,relationship,voice.key,roleCount].join("|"));
+      const roleCount=Math.max(3,Math.min(chooseRoleCount(type,h,res),(setting.roles||[]).length||5));
+      const rootKey=fp([type,setting.key,plan.key,voice.key,roleCount].join("|"));
       const settingKey=clean("setting "+setting.key);
-      const catalystKey=clean("catalyst "+catalyst);
+      const catalystKey=clean("catalyst "+plan.catalyst);
       if(h.stories.has(clean(rootKey))||res.stories.has(clean(rootKey))||h.traits.has(clean(rootKey))||res.traits.has(clean(rootKey))||res.traits.has(settingKey)||res.traits.has(catalystKey))continue;
       const creator=freshCreator(city,type,h,res);
-      const synopsis=freshSynopsis(city,type,setting,catalyst,stakes,relationship,voice,length);
-      const text=`${type} ${setting.place} ${catalyst} ${stakes} ${relationship} ${synopsis}`;
+      const synopsis=freshSynopsis(city,type,setting,plan,voice,length);
+      const text=`${type} ${setting.place} ${plan.catalyst} ${plan.stakes} ${plan.relationship} ${synopsis}`;
       if(tooSimilarStory(text,h.storyTexts)||tooSimilarStory(text,res.storyTexts))continue;
       addUsed(res.traits,"type "+type);
       addUsed(res.traits,rootKey);
@@ -18480,18 +18604,18 @@ const ACG = (()=>{
         rootKey,
         settingKey,
         catalystKey,
-        storyDetail:catalyst,
+        storyDetail:plan.catalyst,
         freshStory:true,
         voice,
         synopsis:()=>synopsis,
         titles:freshTitles(setting,type),
-        taglines:[freshTagline(type,setting,catalyst,stakes)],
+        taglines:[freshTagline(type,setting,plan)],
         cityShorts:[city.short],
         pay:"",
         union:projectUnion(type),
         req:"",
         months:()=>pick([1,1,2,2,3]),
-        roles:()=>freshRoleBlueprints(type,setting,catalyst,stakes,relationship,roleCount,h,res)
+        roles:()=>freshRoleBlueprints(type,setting,plan,roleCount,h,res)
       };
     }
     return null;
@@ -18575,46 +18699,32 @@ const ACG = (()=>{
     return{baseKey:base,storyKey,synopsis,voice};
   }
   function uniquePay(type,roleCount,h,res){
-    const travel=pick(["local transportation considered for select roles","parking or transit support provided where possible","travel support discussed for non-local principals","no travel covered except pre-approved principals"]);
-    const meals=pick(["meals and copy provided","meals, copy, and credit provided","meals, digital copy, and festival/commercial usage notes provided"]);
-    const mode=pick(["no_pay","copy_meals","tiny","deferred","pitch","low","mid","high","vague"]);
+    const meals=pick(["meals and copy provided","meals, copy, and credit provided","meals and a private screener provided"]);
+    const travel=pick(["local hire preferred","local transportation support discussed for select roles","no travel covered unless approved before booking"]);
     let cands=[];
-    if(mode==="no_pay"){
-      cands.push(`No pay. Copy, credit, meals, and honest communication about schedule. Best for actors who want footage or a relationship with the filmmakers.`);
-      cands.push(`Unpaid. The team can offer meals, credit, and edited footage only. Please submit only if that works for you.`);
-    }else if(mode==="copy_meals"){
-      cands.push(`Copy/credit/meals. Small crew, no cash budget for performers at this stage. Travel is not covered.`);
-      cands.push(`No day rate; meals, credit, and a private screener provided. A small thank-you stipend may be added if the location budget comes in under target.`);
-    }else if(mode==="tiny"){
-      cands.push(`Micro-budget. $${rand(25,75,25)}-$${rand(100,175,25)}/day depending on role size; meals and copy included.`);
-      cands.push(`Very low pay. Most roles $${rand(50,100,25)}/day, with $${rand(125,200,25)}/day for the largest parts. Meals and credit provided.`);
-    }else if(mode==="deferred"){
-      cands.push(`Deferred/contingent compensation. No guaranteed upfront pay; copy, credit, meals, and written deferred terms if financing or sale happens.`);
-      cands.push(`Currently unpaid with deferred terms. The team is applying for completion funds and will confirm any upgrade in writing before production.`);
-    }else if(mode==="pitch"){
-      cands.push(`Pitch/proof-of-concept stage. $${rand(75,150,25)}-$${rand(175,300,25)}/day for principals if the presentation budget closes; otherwise copy, meals, and credit. Not attached to a streamer or studio yet.`);
-      cands.push(`Presentation shoot for a larger package. Limited upfront stipends, footage/credit provided, and potential re-casting if the project is financed later. No studio or platform attachment is being claimed.`);
-    }else if(mode==="high"&&(/commercial|ad|brand/i.test(type)||/feature|independent film|tv|series|pilot|streaming/i.test(type))){
-      cands.push(`Funded production. Principal roles $${rand(650,1200,50)}-$${rand(1300,2500,100)}/day; supporting roles $${rand(300,600,50)}-$${rand(650,950,50)}/day; usage/contract terms disclosed before booking.`);
-      cands.push(`Higher-budget ${type.toLowerCase()}. Day rates range from $${rand(500,900,50)} to $${rand(1500,3000,100)} depending on role and usage. Travel and lodging considered for principals.`);
-    }else if(mode==="vague"){
-      cands.push(`Compensation is being finalized. Expect either a small stipend or copy/credit/meals; exact terms will be shared before any booking is accepted.`);
-      cands.push(`Budget not fully locked. The team is being transparent: some roles may pay, some may be credit/meals only. No one will be booked without confirmed terms.`);
-    }else if(/commercial|ad|brand/i.test(type)){
-      cands.push(`Paid digital/commercial shoot. Principals $${rand(375,750,25)}-$${rand(800,1200,50)}/day; featured/background $${rand(125,250,25)}-$${rand(275,450,25)}/day. Usage terms disclosed before booking; ${travel}.`);
+    if(/student/i.test(type)){
+      cands.push(`Student production stipend. Leads $${rand(75,125,25)}-$${rand(150,225,25)}/day; supporting roles $${rand(50,75,25)}-$${rand(100,150,25)}/day; ${meals}; ${travel}.`);
+      cands.push(`Student film rates. Principal parts $${rand(100,150,25)}-$${rand(175,250,25)}/day; smaller roles $${rand(50,75,25)}-$${rand(100,125,25)}/day; ${meals}.`);
     }else if(/theater|musical|stage|table read|broadway/i.test(type)){
-      cands.push(`Developmental workshop stipend. $${rand(200,450,25)}-$${rand(500,900,50)} total depending on role and schedule; rehearsal dates confirmed before offer; ${meals}.`);
-    }else if(/student/i.test(type)){
-      cands.push(`Student production stipend. Principal roles $${rand(75,150,25)}-$${rand(175,275,25)}/day; supporting roles $${rand(50,100,25)}-$${rand(125,175,25)}/day; ${meals}.`);
-    }else if(/feature|independent film|short film|experimental film|documentary|proof of concept/i.test(type)){
-      cands.push(`Low-budget feature. Leads $${rand(225,400,25)}-$${rand(425,650,25)}/day; supporting/day players $${rand(100,175,25)}-$${rand(200,325,25)}/day; ${meals}; ${travel}.`);
-    }else if(/tv|series|pilot|streaming|web series|sizzle|pitch trailer/i.test(type)){
-      cands.push(`Low-budget screen project. Principals $${rand(250,450,25)}-$${rand(500,900,50)}/day; supporting/day players $${rand(125,225,25)}-$${rand(250,400,25)}/day; final terms confirmed before booking.`);
+      cands.push(`Developmental theater stipend. Leads $${rand(350,500,50)}-$${rand(650,900,50)} total; supporting and ensemble $${rand(150,250,25)}-$${rand(300,500,50)} total; schedule confirmed before offer.`);
+      cands.push(`Workshop/read-through compensation. Principal roles $${rand(300,450,50)}-$${rand(550,800,50)} total; supporting roles $${rand(150,250,25)}-$${rand(300,450,50)} total; AEA terms used where applicable.`);
+    }else if(/tv|series|pilot|streaming|web series/i.test(type)){
+      cands.push(`Low-budget series or pilot rates. Principals $${rand(300,450,50)}-$${rand(600,900,50)}/day; supporting/day players $${rand(150,225,25)}-$${rand(275,425,25)}/day; ${meals}; ${travel}.`);
+      cands.push(`Independent TV-style project. Leads $${rand(350,500,50)}-$${rand(650,950,50)}/day; supporting roles $${rand(175,250,25)}-$${rand(300,450,25)}/day; final terms confirmed before booking.`);
+    }else if(/sizzle|pitch trailer|proof of concept/i.test(type)){
+      cands.push(`Proof-of-concept rates. Principal roles $${rand(175,275,25)}-$${rand(350,550,50)}/day; supporting roles $${rand(100,150,25)}-$${rand(200,300,25)}/day; no studio attachment is being claimed.`);
+      cands.push(`Presentation shoot compensation. Leads $${rand(200,300,25)}-$${rand(400,600,50)}/day; day players $${rand(100,150,25)}-$${rand(175,275,25)}/day; ${meals}.`);
+    }else if(/feature|independent film/i.test(type)){
+      cands.push(`Low-budget feature rates. Leads $${rand(225,350,25)}-$${rand(450,650,25)}/day; supporting/day players $${rand(125,175,25)}-$${rand(225,325,25)}/day; ${meals}; ${travel}.`);
+      cands.push(`Independent feature compensation. Principal roles $${rand(250,375,25)}-$${rand(500,700,50)}/day; supporting roles $${rand(125,200,25)}-$${rand(250,350,25)}/day; terms confirmed before booking.`);
+    }else if(/short film|experimental film|documentary/i.test(type)){
+      cands.push(`Independent short/documentary rates. Leads $${rand(150,225,25)}-$${rand(275,400,25)}/day; supporting roles $${rand(75,125,25)}-$${rand(150,250,25)}/day; ${meals}.`);
+      cands.push(`Small production compensation. Principal roles $${rand(125,200,25)}-$${rand(250,375,25)}/day; smaller parts $${rand(75,100,25)}-$${rand(125,200,25)}/day; copy and meals included.`);
     }else{
-      cands.push(`Independent production. Principal roles $${rand(125,250,25)}-$${rand(275,425,25)}/day; supporting/day players $${rand(50,125,25)}-$${rand(150,225,25)}/day; ${meals}.`);
+      cands.push(`Independent production. Principal roles $${rand(125,250,25)}-$${rand(275,425,25)}/day; supporting/day players $${rand(75,125,25)}-$${rand(150,225,25)}/day; ${meals}.`);
     }
-    cands.push(`${type} casting with ${roleCount} roles currently open. Compensation varies by role size, from $${rand(75,175,25)}/day to $${rand(300,700,50)}/day; final rate confirmed before booking; ${meals}.`);
-    return candidateUnique(cands,h.pays,res.pays,()=>`${type} paid opportunity. Role rates $${rand(75,250,25)}-$${rand(275,850,25)}/day depending on part size; ${meals}; generated rate code ${Math.floor(Math.random()*9000)+1000}.`);
+    cands.push(`${type} casting with ${roleCount} roles open. Role rates run from $${rand(75,150,25)}/day to $${rand(300,650,50)}/day depending on part size; exact terms confirmed before booking; ${meals}.`);
+    return candidateUnique(cands,h.pays,res.pays,()=>`${type} compensation. Principal roles $${rand(125,300,25)}-$${rand(350,700,50)}/day; smaller roles $${rand(75,125,25)}-$${rand(150,250,25)}/day; ${meals}.`);
   }
   function uniqueReq(type){
     const extras=[pick(AVAIL_BITS),pick(AVAIL_BITS)].filter((v,i,a)=>a.indexOf(v)===i).join(" and ");
@@ -18626,7 +18736,7 @@ const ACG = (()=>{
     ]);
   }
   function roleName(r,h,res){
-    const generic=/background|ensemble|customers|students|crew|passenger|reader|group|patron|neighbor/i.test(r.name+" "+r.role_type);
+    const generic=!r._keepDescription&&/background|ensemble|customers|students|crew|passenger|reader|group|patron|neighbor/i.test(r.name+" "+r.role_type);
     const pool=r.gender==="Female"?FIRST_F:r.gender==="Male"?FIRST_M:FIRST_N.concat(FIRST_F,FIRST_M);
     if(generic){
       const cands=[`${pick(["Lobby","Market","Transit","Campus","Workshop","Street","Office","Neighborhood","Theater","Location"])} ${pick(["Ensemble","Regulars","Patrons","Background","Guests","Crew","Neighbors","Riders"])}`];
@@ -18656,6 +18766,7 @@ const ACG = (()=>{
   }
   function varyRoleDescription(r,original,voice){
     const base=String(r.description||"").trim();
+    if(r._keepDescription)return sent(base,1)||base;
     const len=pick(ROLE_LENGTHS);
     const first=sent(base,1);
     const second=sent(base,2);
@@ -18674,12 +18785,30 @@ const ACG = (()=>{
   }
   function rolePay(type,roleType){
     const rt=clean(roleType);
-    if(rt.includes("background"))return pick(["$75-$125/day","$100/day","Copy/credit/meals","$125/day"]);
+    if(rt.includes("background"))return pick(["$100-$150/day","$125/day","$150/day"]);
     if(rt.includes("stand"))return pick(["$125-$200/day","$150/day","$175/day"]);
+    if(/theater|musical|stage|table read|broadway/i.test(type)){
+      if(/lead|principal/i.test(roleType))return pick(["$400-$800 total","$500 total","Workshop stipend"]);
+      return pick(["$200-$450 total","$250 total","Workshop stipend"]);
+    }
+    if(/student/i.test(type)){
+      if(/lead|principal/i.test(roleType))return pick(["$100-$225/day","$125/day","$150/day"]);
+      return pick(["$50-$150/day","$75/day","$100/day"]);
+    }
+    if(/tv|series|pilot|streaming|web series/i.test(type)){
+      if(/lead|principal/i.test(roleType))return pick(["$350-$850/day","$500/day","$650/day"]);
+      return pick(["$200-$375/day","$250/day","$325/day"]);
+    }
+    if(/feature|independent film/i.test(type)){
+      if(/lead|principal/i.test(roleType))return pick(["$300-$625/day","$350/day","$500/day"]);
+      return pick(["$175-$275/day","$200/day","$250/day"]);
+    }
+    if(/short film|experimental film|documentary|proof|sizzle|pitch/i.test(type)){
+      if(/lead|principal/i.test(roleType))return pick(["$150-$325/day","$200/day","$275/day"]);
+      return pick(["$100-$175/day","$125/day","$150/day"]);
+    }
     if(/commercial|ad|brand/i.test(type))return pick(["$400-$750/day","$500/day plus usage terms","$300-$600/day","$150-$300/day"]);
-    if(/theater|musical|stage|table read|broadway/i.test(type))return pick(["Workshop stipend","$250-$600 total","Development stipend","AEA showcase terms where applicable"]);
-    if(/feature|short film|student film|independent film|experimental film|documentary|tv|series|pilot|streaming|web series|proof|sizzle|pitch/i.test(type))return pick(["$125-$250/day","$150-$300/day","$75-$175/day","Rate based on role size"]);
-    return pick(["$125-$250/day","$150-$300/day","$75-$175/day","Rate based on role size"]);
+    return pick(["$125-$250/day","$150-$300/day","$75-$175/day"]);
   }
   function extraRolesFor(type){
     const extras=[];
