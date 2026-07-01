@@ -46,9 +46,9 @@
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"WebApplication","name":"CastSlate","url":"https://www.castslate.com","applicationCategory":"EntertainmentApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD","description":"Free actor account. Premium at $9.99/month."},"description":"A modern casting platform where actors submit to roles and casting directors review talent one profile at a time."}
   </script>
-  <script src="/vendor/react.production.min.js"></script>
-  <script src="/vendor/react-dom.production.min.js"></script>
-  <script src="/vendor/supabase.min.js"></script>
+  <script src="/vendor/react.production.min.js" defer></script>
+  <script src="/vendor/react-dom.production.min.js" defer></script>
+  <script src="/vendor/supabase.min.js" defer></script>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
   <script>
@@ -79,15 +79,15 @@
       };
     }
   </script>
-  <!-- BUILD: 20260701-062645 -->
-  <meta name="build-version" content="20260701-062645"/>
+  <!-- BUILD: 20260701-155849 -->
+  <meta name="build-version" content="20260701-155849"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260701-062645";
+        var B="20260701-155849";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -320,6 +320,6 @@
       })();
     })();
   </script>
-  <script src="/app.js?v=20260701-062645"></script>
+  <script src="/app.js?v=20260701-155849" defer></script>
 </body>
 </html>

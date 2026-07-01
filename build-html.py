@@ -103,13 +103,13 @@ if not USE_BABEL_RUNTIME:
     APP_FILE = "app.js"
     open(APP_FILE, "w", encoding="utf-8").write(compiled_js)
     # Plain compiled JS, loaded in order after the React/Supabase CDN scripts.
-    app_tag = f'  <script src="/app.js?v={BUILD_VERSION}"></script>'
+    app_tag = f'  <script src="/app.js?v={BUILD_VERSION}" defer></script>'
     babel_cdn = ''
 else:
     APP_FILE = "app.jsx"
     open(APP_FILE, "w", encoding="utf-8").write(jsx_raw)
     # Babel standalone supports `src` on text/babel scripts.
-    app_tag = f'  <script type="text/babel" data-presets="react" src="/app.jsx?v={BUILD_VERSION}"></script>'
+    app_tag = f'  <script type="text/babel" data-presets="react" src="/app.jsx?v={BUILD_VERSION}" defer></script>'
     babel_cdn = '  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>'
 
 pre_compiled_flag = str(not USE_BABEL_RUNTIME).lower()
@@ -169,9 +169,9 @@ def render_page(title, desc, canonical):
   <script type="application/ld+json">
   {{"@context":"https://schema.org","@type":"WebApplication","name":"CastSlate","url":"https://www.castslate.com","applicationCategory":"EntertainmentApplication","operatingSystem":"Web","offers":{{"@type":"Offer","price":"0","priceCurrency":"USD","description":"Free actor account. Premium at $9.99/month."}},"description":"A modern casting platform where actors submit to roles and casting directors review talent one profile at a time."}}
   </script>
-  <script src="/vendor/react.production.min.js"></script>
-  <script src="/vendor/react-dom.production.min.js"></script>
-  <script src="/vendor/supabase.min.js"></script>
+  <script src="/vendor/react.production.min.js" defer></script>
+  <script src="/vendor/react-dom.production.min.js" defer></script>
+  <script src="/vendor/supabase.min.js" defer></script>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 {babel_cdn}
   <script>
