@@ -1881,21 +1881,21 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .site-footer-bottom-links span{cursor:pointer;transition:color .18s ease;}
 .site-footer-bottom-links span:hover{color:#fff;}
 .footer-cookie-card,.lang-toggle-btn{position:relative;display:inline-flex;align-items:center;overflow:hidden;isolation:isolate;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;flex-shrink:0;}
-.footer-cookie-card{min-height:50px;gap:9px;padding:9px 15px 9px 9px;border-radius:16px;background:linear-gradient(135deg,#22304f 0%,#1f7f86 48%,#d98928 100%);color:#fff;box-shadow:0 16px 30px -25px rgba(31,127,134,1),inset 0 1px 0 rgba(255,255,255,.3);animation:footerBadgeEnter 4.4s ease-in-out infinite;}
-.footer-cookie-card::before,.lang-toggle-btn::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(110deg,transparent 0 34%,rgba(255,255,255,.32) 45%,transparent 57% 100%);transform:translateX(-130%);animation:footerControlSheen 3.8s ease-in-out infinite;}
-.footer-cookie-icon{position:relative;flex:0 0 auto;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:rgba(255,255,255,.18);}
+.footer-cookie-card{min-height:50px;gap:10px;padding:9px 15px 9px 9px;border-radius:16px;background:linear-gradient(135deg,#4f8a8b 0%,#596bd8 52%,#d76a87 100%);color:#fff;box-shadow:0 16px 30px -24px rgba(91,106,216,.9),inset 0 1px 0 rgba(255,255,255,.28);animation:footerCardFloat 3.2s ease-in-out infinite;}
+.footer-cookie-card::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(110deg,transparent 0 34%,rgba(255,255,255,.32) 45%,transparent 57% 100%);transform:translateX(-130%);animation:footerControlSheen 3.8s ease-in-out infinite;}
+.footer-cookie-icon{position:relative;flex:0 0 auto;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:rgba(255,255,255,.18);}
 .footer-cookie-icon svg{width:18px;height:18px;}
-.footer-cookie-title{display:block;color:#fff;font-size:11.5px;font-weight:900;line-height:1.1;white-space:nowrap;}
-.footer-cookie-sub{display:block;margin-top:2px;color:rgba(255,255,255,.73);font-size:9px;font-weight:750;white-space:nowrap;}
-.lang-toggle-btn{min-height:42px;gap:7px;padding:6px 12px 6px 7px;border-radius:999px;background:linear-gradient(135deg,#c61f32 0%,#df7b1f 48%,#f4c13d 100%);color:#fff;font-size:11.5px;font-weight:900;letter-spacing:.2px;line-height:1;box-shadow:0 14px 28px -24px rgba(244,193,61,.8);animation:footerFlagPulse 2.8s ease-in-out infinite .25s;}
+.footer-cookie-title{display:block;color:#fff;font-size:12.5px;font-weight:900;line-height:1.1;white-space:nowrap;}
+.footer-cookie-sub{display:block;margin-top:2px;color:rgba(255,255,255,.72);font-size:10px;font-weight:750;white-space:nowrap;}
+.lang-toggle-btn{min-height:52px;gap:8px;padding:6px 15px 6px 8px;border-radius:999px;background:linear-gradient(135deg,#25283f,#34395d);color:#fff;font-size:12.5px;font-weight:900;letter-spacing:.2px;line-height:1;box-shadow:0 14px 26px -22px rgba(0,0,0,.95),inset 0 0 0 1px rgba(255,255,255,.15);animation:footerLangLift 3.4s ease-in-out infinite .35s;}
 .footer-flag-es{position:relative;overflow:hidden;flex:0 0 auto;width:28px;height:20px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),0 5px 10px rgba(0,0,0,.18);background:linear-gradient(180deg,#c61f32 0 25%,#f4c13d 25% 75%,#c61f32 75% 100%);}
 .footer-flag-es::after{content:"";position:absolute;left:8px;top:7px;width:5px;height:6px;border-radius:2px;background:#b98324;box-shadow:0 0 0 1px rgba(255,255,255,.38);}
-.lang-toggle-btn svg{flex-shrink:0;width:13px;height:13px;}
+.lang-toggle-btn svg{flex-shrink:0;width:15px;height:15px;}
 @keyframes footerControlSheen{0%,44%{transform:translateX(-130%);opacity:0;}55%{opacity:1;}78%,100%{transform:translateX(130%);opacity:0;}}
-@keyframes footerBadgeEnter{0%,100%{transform:translateY(0) rotate(0);}48%{transform:translateY(-3px) rotate(-.45deg);}55%{transform:translateY(-3px) rotate(.45deg);}62%{transform:translateY(-2px) rotate(0);}}
-@keyframes footerFlagPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.035);}}
+@keyframes footerCardFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
+@keyframes footerLangLift{0%,100%{transform:translateY(0);}50%{transform:translateY(-2px);}}
 @media(hover:hover){.footer-cookie-card:hover,.lang-toggle-btn:hover{transform:translateY(-3px);filter:brightness(1.05) saturate(1.1);}}
-@media(prefers-reduced-motion:reduce){.footer-cookie-card,.footer-cookie-card::before,.lang-toggle-btn,.lang-toggle-btn::before{animation:none!important;}}
+@media(prefers-reduced-motion:reduce){.footer-cookie-card,.footer-cookie-card::before,.lang-toggle-btn{animation:none!important;}}
 @media (max-width:900px){
   .site-footer-grid{grid-template-columns:1fr 1fr;gap:32px;}
   .site-footer-brand{grid-column:1/-1;}
@@ -3497,7 +3497,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
               </span>
               <span>
                 <span className="footer-cookie-title">{t('footer.cookiePrefs')}</span>
-                <span className="footer-cookie-sub">Review consent settings</span>
+                <span className="footer-cookie-sub">Privacy controls</span>
               </span>
             </button>
             <button
