@@ -18060,7 +18060,7 @@ const ACG = (()=>{
     {key:"theater-costume-shop",place:"a theater costume shop during tech week",titles:["Hemmed by Hand","Quick Change Booth","Opening-Night Thread"],roles:["costume supervisor","understudy called in late","actor hiding a stain","stage manager","volunteer seamstress"]},
     {key:"used-car-lot",place:"a used-car lot after a trade-in goes missing",titles:["As-Is","Temporary Plates","The Lemon Lot"],roles:["sales manager","mechanic","customer who wants the old car back","finance clerk","teen lot attendant"]},
     {key:"clinic-waiting-room",place:"an urgent-care waiting room during a systems outage",titles:["Clipboard Names","Waiting Room B","Insurance Pending"],roles:["front-desk lead","patient trying to stay calm","nurse practitioner","delivery courier","relative with too much information"]},
-    {key:"apartment-open-house",place:"an apartment open house where everyone knows the landlord",titles:["Open House Sunday","Rent Stabilized","The Good Light"],roles:["broker","tenant who refuses to leave quietly","couple stretching their budget","neighbor with building history","superintendent"]},
+    {key:"apartment-open-house",place:"an apartment open house",titles:["Open House Sunday","Rent Stabilized","The Good Light"],roles:["broker","tenant who refuses to leave quietly","couple stretching their budget","neighbor with building history","superintendent"]},
     {key:"public-access-studio",place:"a public-access TV studio before a live call-in show",titles:["Channel 18","Please Hold for Air","Local Segment"],roles:["host","floor manager","caller brought into studio","city volunteer","camera trainee"]},
     {key:"church-basement-fundraiser",place:"a church basement fundraiser missing the cash box",titles:["Pancake Money","Basement Key","After the Raffle"],roles:["event organizer","teen volunteer","choir director","bookkeeper","neighbor who counted the envelope"]},
     {key:"photo-studio-catalog",place:"a catalog photo studio with a late product shipment",titles:["Sample Size","Look 23","The Missing Rack"],roles:["photographer","model who can save the day","stylist","brand assistant","client watching the monitor"]},
@@ -18073,16 +18073,16 @@ const ACG = (()=>{
     {key:"ice-rink-offseason",place:"an off-season ice rink rented for one camera test",titles:["Cold Floor","Rink Lights","After Public Skate"],roles:["rink manager","skater returning after years away","camera operator","teen employee","sponsor rep"]},
     {key:"escape-room-lobby",place:"an escape-room lobby when the staff room locks from inside",titles:["Hint Button","Lobby Puzzle","Sixty Minutes"],roles:["game master","birthday parent","off-duty locksmith","teen guest","owner watching cameras"]},
     {key:"mobile-blood-drive",place:"a mobile blood drive parked outside a corporate office",titles:["Donation Window","Bus Three","After the Screening"],roles:["intake nurse","office manager","nervous donor","driver","employee organizing the signup sheet"]},
-    {key:"trade-show-booth",place:"a trade-show booth where the demo unit stops working",titles:["Booth 412","Floor Sample","Badge Scan"],roles:["brand ambassador","engineer hiding panic","sales lead","curious buyer","event coordinator"]},
+    {key:"trade-show-booth",place:"a trade-show booth",titles:["Booth 412","Floor Sample","Badge Scan"],roles:["brand ambassador","engineer hiding panic","sales lead","curious buyer","event coordinator"]},
     {key:"vr-demo-suite",place:"a VR demo suite before an investor walk-through",titles:["Headset One","Demo Mode","The Calibration Room"],roles:["demo host","motion performer","technical director","investor assistant","tester who gets motion sick"]},
     {key:"train-station-cafe",place:"a train station cafe during a platform closure",titles:["Track Change","Platform Coffee","The Delay Board"],roles:["barista","commuter with an audition bag","station announcer","tour manager","regular who reads every delay"]},
     {key:"thrift-store-donation",place:"a thrift store donation desk after a jacket arrives with cash inside",titles:["Donation Receipt","Jacket Pocket","Store Credit"],roles:["donation sorter","store manager","person trying to reclaim the jacket","volunteer","regular shopper"]},
-    {key:"apartment-mailroom",place:"an apartment mailroom where every package has the wrong label",titles:["Package Room","Unit 5C","Returned to Sender"],roles:["building concierge","new tenant","delivery driver","neighbor with a clipboard","property manager"]},
+    {key:"apartment-mailroom",place:"an apartment mailroom",titles:["Package Room","Unit 5C","Returned to Sender"],roles:["building concierge","new tenant","delivery driver","neighbor with a clipboard","property manager"]},
     {key:"hotel-banquet-prep",place:"a hotel banquet room two hours before a memorial lunch",titles:["Banquet B","Place Cards","The Wrong Toast"],roles:["banquet captain","family organizer","server on trial shift","musician","hotel sales manager"]},
     {key:"rooftop-garden",place:"a rooftop garden before a fundraiser loses power",titles:["Rooftop Power","String Lights","Garden Level"],roles:["event producer","building super","donor guest","caterer","artist asked to speak"]},
     {key:"wedding-dress-alteration",place:"a wedding dress alteration shop with the wrong dress bag",titles:["Final Fitting","The Ivory Bag","Pinned at the Waist"],roles:["tailor","bride's sibling","messenger","shop owner","client waiting behind the curtain"]},
     {key:"community-radio-drive",place:"a community radio station during pledge-drive hour",titles:["Pledge Hour","Line Two Is Live","Underwriting Copy"],roles:["host","station manager","caller who knows too much","volunteer phone operator","sponsor liaison"]},
-    {key:"bookstore-event",place:"a bookstore event where the author misses the train",titles:["Author Table","Signed Stock","The Empty Reading"],roles:["bookseller","stand-in reader","publicist","regular customer","local critic"]},
+    {key:"bookstore-event",place:"a bookstore event",titles:["Author Table","Signed Stock","The Empty Reading"],roles:["bookseller","stand-in reader","publicist","regular customer","local critic"]},
     {key:"delivery-dispatch",place:"a delivery dispatch office when every route changes at once",titles:["Route 19","Dispatch Hold","Wrong Address"],roles:["dispatcher","new driver","warehouse runner","customer on speaker","operations manager"]},
     {key:"reality-holding-room",place:"a reality casting holding room after the waiver packet changes",titles:["Holding Room C","Confessional Setup","The New Waiver"],roles:["casting producer","applicant with a strategy","camera assistant","friend dragged along","field coordinator"]},
     {key:"beauty-counter-closing",place:"a department-store beauty counter after closing time",titles:["Tester Drawer","Shade Match","After the Mall Closes"],roles:["counter manager","model arriving late","security guard","brand trainer","shopper with a return"]}
@@ -18177,6 +18177,9 @@ const ACG = (()=>{
   };
   function roleAgeHint(label){
     const s=clean(label);
+    // "adult child"/"grown child" means a grown son or daughter, not a minor —
+    // must be checked before the plain "child" match below.
+    if(/\b(adult|grown)\s+child\b/.test(s))return "midCareer";
     if(/\b(child|kid|elementary|field trip)\b/.test(s))return "child";
     if(/\b(teen|teenager|high school|lifeguard)\b/.test(s))return "teen";
     if(/\b(college|student|freshman|undergrad|intern)\b/.test(s))return "youngAdult";
@@ -18385,11 +18388,10 @@ const ACG = (()=>{
   // used internally so a given combination is never repeated).
   function freshTagline(type,setting,plan){
     const label=projectLabel(type);
-    const cc=plan.catalystClause||plan.catalyst;
     return pick([
-      `${articleFor(label)} ${label} at ${setting.place}, where ${cc}.`,
-      `Set at ${setting.place} — a new ${label} where ${cc}.`,
-      `A grounded ${label} at ${setting.place}, where ${cc}.`
+      `${articleFor(label)} ${label} at ${setting.place}.`,
+      `${capFirst(setting.place)}.`,
+      `A grounded ${label} at ${setting.place}.`
     ]);
   }
   function articleFor(text){
@@ -18468,41 +18470,40 @@ const ACG = (()=>{
     const catalystIsClause=SIMPLE_STORY_CATALYSTS.indexOf(catalyst)>-1;
     const catalystClause=catalystIsClause?catalyst:`there is ${catalyst}`;
     const catalystPhrase=catalystIsClause?`the fact that ${catalyst}`:catalyst;
-    // Each role gets one of several alternate phrasings (not one fixed sentence
-    // forever) so different castings don't read like they were stamped from the
-    // same template. Positions 0/2/4 name the catalyst directly (the role is
-    // implicated in the actual problem); 1/3 stay short connective beats.
+    // Character descriptions stay a handful of words each — no embedded
+    // catalyst clause (that made every line long). Positions 0/2/4 read as
+    // directly caught up in the problem; 1/3 are short connective beats.
     const catalystTemplates=stage?[
-      name=>`${name} is trying to keep the room steady when ${catalystClause}.`,
-      name=>`${name} is the one who has to respond once ${catalystClause}.`,
-      name=>`${name} feels it first when ${catalystClause}.`,
-      name=>`${name} can't ignore it once ${catalystClause}.`
+      name=>`${name} is at the center of it.`,
+      name=>`${name} has to respond fast.`,
+      name=>`${name} feels it first.`,
+      name=>`${name} can't ignore it.`
     ]:tv?[
-      name=>`${name} is under pressure the moment ${catalystClause}.`,
-      name=>`${name} is the one who has to respond once ${catalystClause}.`,
-      name=>`${name} feels the shift the moment ${catalystClause}.`,
-      name=>`${name} can't sidestep it once ${catalystClause}.`
+      name=>`${name} is under pressure fast.`,
+      name=>`${name} has to respond fast.`,
+      name=>`${name} feels the shift first.`,
+      name=>`${name} can't sidestep it.`
     ]:[
-      name=>`${name} is closest to it when ${catalystClause}.`,
-      name=>`${name} is the one who ends up dealing with it once ${catalystClause}.`,
-      name=>`${name} gets pulled in the moment ${catalystClause}.`,
-      name=>`${name} can't avoid it once ${catalystClause}.`
+      name=>`${name} is closest to it.`,
+      name=>`${name} ends up dealing with it.`,
+      name=>`${name} gets pulled in fast.`,
+      name=>`${name} can't avoid it.`
     ];
     const connectiveTemplates=stage?[
-      name=>`${name} is closest to it and has to decide fast.`,
-      name=>`${name} is the one everyone looks to for the next move.`,
-      name=>`${name} keeps the room from falling apart.`,
-      name=>`${name} adds pressure nobody asked for.`
+      name=>`${name} decides fast.`,
+      name=>`${name} steadies the room.`,
+      name=>`${name} keeps it from falling apart.`,
+      name=>`${name} adds pressure.`
     ]:tv?[
-      name=>`${name} tries to keep things moving while it plays out.`,
-      name=>`${name} has the authority to smooth it over but hesitates.`,
-      name=>`${name} is trying to keep the day on schedule.`,
-      name=>`${name} is the one everyone checks in with.`
+      name=>`${name} keeps things moving.`,
+      name=>`${name} hesitates.`,
+      name=>`${name} keeps the day on schedule.`,
+      name=>`${name} checks in with everyone.`
     ]:[
-      name=>`${name} makes it harder by saying the quiet part out loud.`,
-      name=>`${name} keeps things from falling apart, barely.`,
-      name=>`${name} is the one holding the day together.`,
-      name=>`${name} adds a complication nobody asked for.`
+      name=>`${name} says the quiet part.`,
+      name=>`${name} barely holds it together.`,
+      name=>`${name} holds the day together.`,
+      name=>`${name} adds a complication.`
     ];
     const roleLines=[
       pick(catalystTemplates)(capFirst(a)),
@@ -18513,36 +18514,22 @@ const ACG = (()=>{
     ];
     return{catalyst,stakes,relationship,roleLines,catalystClause,catalystPhrase,key:fp([setting.key,catalyst,stakes,relationship].join("|"))};
   }
-  // Deliberately short and one-track: a place, the one concrete thing that
-  // happens there, and a short closing line — nothing else. Earlier versions
-  // stitched in the abstract "relationship"/"stakes" phrases and multiple
-  // extra paragraphs (tone/logistics/submit), which made every synopsis a
-  // multi-clause run-on that read as confusing rather than a real, short
-  // casting notice. plan.stakes/plan.relationship are still computed (see
-  // buildStoryPlan) purely so a given combination is never reused — they're
-  // no longer printed.
+  // One sentence, full stop: the place plus the one concrete thing that
+  // happens there. Earlier versions stitched in the abstract "relationship"/
+  // "stakes" phrases and extra paragraphs (tone/logistics/submit), which made
+  // every synopsis a multi-clause run-on that read as confusing rather than
+  // a real, short casting notice. plan.stakes/plan.relationship are still
+  // computed (see buildStoryPlan) purely so a given combination is never
+  // reused — they're no longer printed.
   function freshSynopsis(city,type,setting,plan,voice,length){
     const label=projectLabel(type);
-    const opener=pick([
-      `Casting ${articleFor(label).toLowerCase()} ${label} in ${city.name}, set at ${setting.place}.`,
-      `${type} casting in ${city.name}. The story takes place at ${setting.place}.`,
-      `Now casting ${label} talent in ${city.name} for a simple story at ${setting.place}.`,
-      `Seeking performers for ${articleFor(label).toLowerCase()} ${label} at ${setting.place} in ${city.name}.`
-    ]);
     const cc=plan.catalystClause||plan.catalyst;
-    const beat=pick([
-      `Things start to unravel when ${cc}.`,
-      `The story kicks off when ${cc}.`,
-      `Everything changes when ${cc}.`,
-      `It all starts when ${cc}.`
+    return pick([
+      `Casting ${articleFor(label).toLowerCase()} ${label} in ${city.name} at ${setting.place}, where ${cc}.`,
+      `${type} casting in ${city.name} at ${setting.place}, where ${cc}.`,
+      `Now casting ${label} talent in ${city.name} at ${setting.place}, where ${cc}.`,
+      `Seeking performers for ${articleFor(label).toLowerCase()} ${label} in ${city.name}, at ${setting.place}, where ${cc}.`
     ]);
-    const ask=pick([
-      `Looking for actors who can keep it simple and honest.`,
-      `The team wants clear, natural performances — nothing overplayed.`,
-      `A short, honest self-tape is all that's needed.`,
-      `Keep it grounded; no need to overplay the scene.`
-    ]);
-    return `${opener} ${beat} ${ask}`;
   }
   function freshRoleType(type,i){
     if(/background|extras/i.test(type))return i<2?"Featured":"Background";
