@@ -17915,12 +17915,14 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
 // ── Generation data: city weights, listing types, copy templates ──
 const ACG = (()=>{
   const CITIES=[
-    {name:"New York, NY",short:"NYC",w:40},
-    {name:"Los Angeles, CA",short:"LA",w:40},
-    {name:"Chicago, IL",short:"Chicago",w:10},
-    {name:"Boston, MA",short:"Boston",w:10}
+    {name:"New York, NY",short:"NYC",w:78},
+    {name:"Brooklyn, NY",short:"NYC",w:8},
+    {name:"Queens, NY",short:"NYC",w:5},
+    {name:"Los Angeles, CA",short:"LA",w:4},
+    {name:"Chicago, IL",short:"Chicago",w:3},
+    {name:"Boston, MA",short:"Boston",w:2}
   ];
-  function pickCity(){let r=Math.random()*100;for(const c of CITIES){r-=c.w;if(r<=0)return c;}return CITIES[0];}
+  function pickCity(){const total=CITIES.reduce((s,c)=>s+(c.w||1),0);let r=Math.random()*total;for(const c of CITIES){r-=c.w||1;if(r<=0)return c;}return CITIES[0];}
   function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
   function expiresAt(months){const d=new Date();d.setMonth(d.getMonth()+months);return d.toISOString();}
 
@@ -18042,12 +18044,9 @@ const ACG = (()=>{
     "Photography Studio","E-Commerce Brand","Corporate Video Producer","Documentary Producer","Podcast Producer","Game Studio","Motion Capture Studio","Talent Scout","Talent Manager","Talent Agency"
   ];
   const PROJECT_TYPES=[
-    "Feature Film","Short Film","Student Film","Independent Film","TV Series","Streaming Series","Pilot","Web Series","Commercial","Digital Commercial",
-    "Social Media Ad","Branded Content","UGC Ad","Product Demo","Testimonial Video","Corporate Video","Training Video","Educational Video","Explainer Video","Industrial Video",
-    "Print Campaign","Lifestyle Print","Fashion Shoot","Beauty Shoot","E-Commerce Shoot","Catalog Shoot","Modeling","Voiceover","Podcast","Audiobook",
-    "Animation Voiceover","Video Game Voiceover","Theater","Musical Theater","Stage Reading","Live Event","Brand Ambassador","Trade Show","Music Video","Dance Project",
-    "Background / Extras","Stand-In","Photo Double","Body Double","Hand Model","Specialty Talent","Reality TV","Docuseries","Documentary","Motion Capture",
-    "Performance Capture","VR / AR Project","Influencer Campaign","Hosting / Presenter","Interview Project","Public Service Announcement","Promo Video","Sizzle Reel","Trailer","Table Read"
+    "Feature Film","Short Film","Student Film","Independent Film","Experimental Film","Documentary","Proof of Concept",
+    "TV Series","TV Pilot","Streaming Series","Web Series","Sizzle Reel","Pitch Trailer",
+    "Theater","Off-Broadway Theater","Off-Off-Broadway Theater","Musical Theater","Workshop / Staged Reading","Table Read"
   ];
   const PERSON_CREATOR_HINT=/director|producer|assistant|associate|coordinator|manager|scout|filmmaker|creator|stage manager/i;
   const ORG_CREATOR_HINT=/company|agency|studio|brand|school|team|project|theater company|production company/i;
@@ -18112,6 +18111,43 @@ const ACG = (()=>{
     "two actors who auditioned for the same role ten years apart","a manager and seasonal hire who understand the room differently","an ex-couple forced to behave professionally","a director and performer realizing they made different projects","a host and guest who both need the segment to work",
     "a clerk and customer who remember the same day differently","a founder and model who both know the brand promise is fake","a stage manager and understudy solving the problem quietly","a casting associate and walk-in talent trying to save the session","a line producer and creative director fighting over what can be afforded",
     "a photographer and subject trying not to expose each other","a volunteer and donor with unequal power in a small room","a sound engineer and speaker hearing the truth at the same time","a talent scout and performer unsure who is using whom","a student filmmaker and local actor building trust in public"
+  ];
+  const SCREEN_STAGE_SETTINGS=[
+    {key:"queens-apartment-rehearsal",place:"a Queens apartment used for one rehearsal night",titles:["Rehearsal Keys","The Apartment Scene","Queens Night Rehearsal"],roles:["actor hosting the rehearsal","scene partner arriving late","director with new pages","neighbor hearing every line","producer watching the clock"]},
+    {key:"brooklyn-tv-holding",place:"a Brooklyn holding room before a TV callback",titles:["Callback Room","Holding in Brooklyn","Second Read"],roles:["actor waiting to read","casting assistant keeping order","showrunner dropping in early","reader covering three parts","parent of a young performer"]},
+    {key:"off-broadway-tech",place:"an Off-Broadway theater during tech week",titles:["Ten Minutes to Places","Tech Table","The Cue Light"],roles:["stage manager","understudy going on tonight","lead actor protecting the show","lighting assistant","producer in the back row"]},
+    {key:"student-film-rooftop",place:"a student film rooftop shoot in Manhattan",titles:["Rooftop Scene","Last Shot Before Wrap","Manhattan Roof"],roles:["director trying to finish before sunset","lead actor with one hard scene","sound mixer fighting wind","friend doing background","building super"]},
+    {key:"indie-feature-bodega",place:"a bodega after closing in upper Manhattan",titles:["After the Register","Closing Time Bodega","The Night Receipt"],roles:["cashier closing the store","regular customer with bad news","owner's adult child","delivery worker","neighbor asking for credit"]},
+    {key:"tv-family-kitchen",place:"a family kitchen scene for a TV pilot",titles:["Kitchen Table Pilot","The Family Scene","Dinner Before the News"],roles:["older sibling","younger sibling","parent trying to stay calm","neighbor who interrupts","family friend"]},
+    {key:"black-box-reading",place:"a black box theater before a new play reading",titles:["Pages on Music Stands","Black Box Reading","The Empty Chair"],roles:["playwright","actor replacing the lead","director running notes","stage reader","producer with one phone call"]},
+    {key:"brooklyn-short-film-cafe",place:"a Brooklyn cafe before a short film night shoot",titles:["Cafe Night Shoot","Table by the Window","One More Take"],roles:["barista with a secret","actor playing a regular customer","director watching the door","camera assistant","friend asked to sit in"]},
+    {key:"network-procedural-precinct",place:"a simple precinct set for a network procedural",titles:["Precinct Scene","Desk Report","The Witness Chair"],roles:["detective with one clear question","witness trying to leave","desk officer","public defender","neighbor with the missing detail"]},
+    {key:"off-off-broadway-basement",place:"an Off-Off-Broadway basement theater after rehearsal",titles:["Basement Notes","After Rehearsal","The Last Monologue"],roles:["actor staying late","director giving notes","stage manager locking up","writer changing the ending","friend waiting outside"]},
+    {key:"film-school-subway-platform",place:"a controlled subway-platform scene for a film school project",titles:["Platform Scene","Last Train Home","The Missed Stop"],roles:["commuter with an audition bag","stranger who recognizes them","student director","camera operator","transit worker"]},
+    {key:"streaming-series-office",place:"a small office set for a streaming series proof of concept",titles:["Office Proof","Conference Room B","The Rewrite"],roles:["assistant covering for the boss","manager hiding a mistake","coworker who knows the truth","client on speakerphone","producer checking continuity"]},
+    {key:"musical-workshop-piano-room",place:"a piano room during a new musical workshop",titles:["Piano Room","Sixteen Bars Later","The Workshop Song"],roles:["actor-singer learning a new song","composer at the piano","book writer with cuts","stage manager","ensemble member"]},
+    {key:"indie-film-audition-studio",place:"a small audition studio near Times Square",titles:["Room 406","The Reader","Second Slate"],roles:["actor asked to read again","casting associate","director behind the table","reader who knows the scene","assistant timing the room"]},
+    {key:"queens-family-short",place:"a Queens family apartment for a short film",titles:["Sunday in Queens","The Small Bedroom","Family Scene"],roles:["adult child returning home","parent avoiding the topic","younger cousin","neighbor bringing food","aunt who says too much"]},
+    {key:"theater-dressing-room",place:"a dressing room before an Off-Broadway preview",titles:["Dressing Room Light","Preview Night","Half Hour Call"],roles:["lead actor getting ready","understudy listening closely","dresser","stage manager at the door","producer with notes"]},
+    {key:"pilot-writers-room",place:"a borrowed writers room for a TV pilot table read",titles:["Pilot Table Read","Room for Notes","The Cold Open"],roles:["writer defending the scene","actor reading the lead","producer asking for cuts","assistant printing pages","guest reader"]},
+    {key:"feature-film-walkup",place:"a walk-up apartment used for an indie feature",titles:["Walk-Up Scene","Third Floor Landing","Rent Day"],roles:["tenant trying to move out","landlord's nephew","best friend carrying boxes","neighbor on the stairs","superintendent"]},
+    {key:"theater-lobby-audition",place:"a theater lobby during open auditions",titles:["Lobby List","Open Call Morning","Name on the Sheet"],roles:["actor first on the list","monitor calling names","director arriving late","parent with a young actor","performer who missed the slot"]},
+    {key:"short-film-laundromat",place:"a laundromat in Brooklyn during a short film scene",titles:["Spin Cycle","The Last Dryer","Laundromat Scene"],roles:["night attendant","regular customer","actor playing a tired parent","student director","background customer"]}
+  ];
+  const SIMPLE_STORY_CATALYSTS=[
+    "someone misses an important callback","a rehearsal has to move to a new room","one actor gets the wrong pages","a family secret comes up during a quiet scene","a lead performer drops out at the last minute",
+    "the director changes the ending","a prop goes missing before the scene","a small lie becomes hard to ignore","two characters have to share one honest conversation","an old argument comes back during rehearsal",
+    "a producer needs one clean take before the location closes","a witness changes their story","a song is cut from the workshop","a callback reader recognizes one of the actors","a neighbor interrupts the shoot at the worst time"
+  ];
+  const SIMPLE_STORY_STAKES=[
+    "finishing the scene before the day is lost","telling the truth without hurting the wrong person","getting through opening night","saving a small production with very little money","deciding whether to take the role",
+    "keeping a family together for one more day","making the table read work","protecting a performer who is under pressure","finding the right replacement quickly","choosing between career and loyalty",
+    "getting one strong audition tape","holding the room together after bad news","making a simple apology before it is too late","showing up for someone who feels alone","turning a small moment into the whole story"
+  ];
+  const SIMPLE_STORY_RELATIONSHIPS=[
+    "two siblings trying to talk like adults","an actor and director who do not see the scene the same way","a parent and adult child avoiding one subject","two actors up for the same role","a stage manager and understudy solving a problem",
+    "a writer and performer testing new pages","a producer and assistant trying to keep the day moving","old friends meeting on set after years apart","a teacher and former student in the same audition room","neighbors pulled into the same film shoot",
+    "a family trying to act normal for one dinner","a lead actor and reader finding the scene together","a director and producer making a hard budget choice","an actor and parent deciding what is worth sacrificing","a small ensemble trying to trust each other"
   ];
   const FRESH_VOICES=[
     {key:"budget-honest",note:"Plain and budget-aware. No hype, just the useful facts.",line:"The notice should sound direct, practical, and respectful of actors' time."},
@@ -18204,7 +18240,7 @@ const ACG = (()=>{
     return c;
   }
   function meaningTerms(v){
-    const stop=new Set("about after again against also because before being between casting credit current day days each every from into local looking meals most need needs only other please project projects roles shoot should submit their there these they this through under with without work works would".split(" "));
+    const stop=new Set("about actor actors after again against also around because before being between booking casting choice credit current dates days each every exact final follows from honest into local location looking main most need needs only other performers please problem process project projects roles scene scenes shoot shooting should story submit talent team their there these they this through under with without work works would".split(" "));
     return clean(v).split(/\s+/).filter(w=>w.length>3&&!stop.has(w));
   }
   function tooSimilarStory(text,set){
@@ -18216,7 +18252,7 @@ const ACG = (()=>{
       let shared=0;
       const bs=new Set(b);
       a.forEach(w=>{if(bs.has(w))shared++;});
-      if(shared>=7&&shared/Math.min(a.length,b.length)>0.34)return true;
+      if(shared>=11&&shared/Math.min(a.length,b.length)>0.48)return true;
     }
     return false;
   }
@@ -18263,11 +18299,12 @@ const ACG = (()=>{
   }
   function creatorKindsForType(type){
     if(/background|extras|stand-in|photo double|body double|specialty talent/i.test(type))return ["Casting Director","Background Casting Director","Casting Associate","Casting Agency","Extras Casting Company","Talent Scout","Talent Manager"];
-    if(/commercial|ad|brand|product demo|testimonial|promo|sizzle|trailer|public service/i.test(type))return ["Commercial Casting Director","Commercial Producer","Advertising Agency","Marketing Agency","Brand / Company","Production Company","Creative Director"];
+    if(/commercial|ad|brand|product demo|testimonial|promo|public service/i.test(type))return ["Commercial Casting Director","Commercial Producer","Advertising Agency","Marketing Agency","Brand / Company","Production Company","Creative Director"];
     if(/print|fashion|beauty|model|e-commerce|catalog|hand model/i.test(type))return ["Print Casting Director","Modeling Agency","Photography Studio","E-Commerce Brand","Creative Director","Commercial Producer"];
     if(/voiceover|audiobook|animation|video game/i.test(type))return ["Voiceover Casting Director","Casting Director","Game Studio","Producer","Creative Director"];
     if(/podcast|interview|hosting/i.test(type))return ["Podcast Producer","Talent Producer","Content Creator","Producer","Casting Associate"];
     if(/reality|docuseries|documentary/i.test(type))return ["Reality Casting Producer","Documentary Producer","Talent Producer","Producer","Executive Producer"];
+    if(/tv|series|pilot|streaming|web series|sizzle|trailer|proof of concept/i.test(type))return ["Casting Director","Casting Associate","TV Producer","Executive Producer","Director","Production Company"];
     if(/theater|musical|stage|table read/i.test(type))return ["Theater Director","Theater Producer","Theater Company","Stage Manager","Casting Director"];
     if(/music video|dance/i.test(type))return ["Music Video Producer","Director","Creative Director","Producer","Content Creator"];
     if(/live event|trade show|brand ambassador/i.test(type))return ["Event Producer","Live Event Company","Brand / Company","Talent Producer","Marketing Agency"];
@@ -18319,28 +18356,49 @@ const ACG = (()=>{
     ];
   }
   function freshTagline(type,setting,catalyst,stakes){
+    const label=projectLabel(type);
     return pick([
-      `${articleFor(type)} ${type.toLowerCase()} built around ${setting.place}, ${catalyst}, and ${stakes}.`,
-      `${setting.place} becomes the center of a new ${type.toLowerCase()} about ${stakes}.`,
-      `A grounded ${type.toLowerCase()} where ${catalyst} forces everyone to choose what they can admit.`
+      `${articleFor(label)} ${label} built around ${setting.place}, ${catalyst}, and ${stakes}.`,
+      `${setting.place} becomes the center of a new ${label} about ${stakes}.`,
+      `A grounded ${label} where ${catalyst} forces everyone to choose what they can admit.`
     ]);
   }
   function articleFor(text){
     return /^[aeiou]/i.test(clean(text))?"An":"A";
   }
+  function projectLabel(type){
+    const t=String(type||"project");
+    if(/theater|musical|stage|table read|broadway/i.test(t))return `${t.toLowerCase()} project`;
+    if(/tv|series|pilot|streaming|web series|sizzle|pitch trailer/i.test(t))return `${t.toLowerCase()} project`;
+    return t.toLowerCase();
+  }
+  function settingsForType(type){
+    const t=String(type||"");
+    if(/theater|musical|stage|table read|broadway/i.test(t)){
+      const theater=SCREEN_STAGE_SETTINGS.filter(s=>/theater|broadway|black-box|musical|piano|dressing|lobby|tech|reading|table-read|basement/.test(s.key));
+      return theater.length?theater:SCREEN_STAGE_SETTINGS;
+    }
+    if(/tv|series|pilot|streaming|web series|sizzle|pitch trailer/i.test(t)){
+      const screen=SCREEN_STAGE_SETTINGS.filter(s=>/tv|pilot|streaming|writers|precinct|holding|audition-studio|office/.test(s.key));
+      return screen.length?screen:SCREEN_STAGE_SETTINGS;
+    }
+    const film=SCREEN_STAGE_SETTINGS.filter(s=>/film|feature|short|indie|student|cafe|bodega|subway|walkup|laundromat|apartment|rooftop|queens-family/.test(s.key));
+    return film.length?film:SCREEN_STAGE_SETTINGS;
+  }
   function freshSynopsis(city,type,setting,catalyst,stakes,relationship,voice,length){
+    const label=projectLabel(type);
     const opener=pick([
-      `Casting ${articleFor(type).toLowerCase()} ${type.toLowerCase()} in ${city.name} set around ${setting.place}.`,
-      `${type} casting in ${city.name}. The story begins around ${setting.place}.`,
-      `Seeking performers for a ${type.toLowerCase()} shooting in ${city.name}. The project is centered on ${setting.place}.`,
-      `Now casting ${type.toLowerCase()} talent in ${city.name} for a story built around ${setting.place}.`
+      `Casting ${articleFor(label).toLowerCase()} ${label} in ${city.name}. The story is set around ${setting.place}.`,
+      `${type} casting in ${city.name}. Most of the story happens around ${setting.place}.`,
+      `Seeking performers for ${articleFor(label).toLowerCase()} ${label} shooting in ${city.name}. The main location is ${setting.place}.`,
+      `Now casting ${label} talent in ${city.name} for a simple story set around ${setting.place}.`
     ]);
-    const story=`The root of the piece is ${relationship}. What changes the day is ${catalyst}, and the pressure underneath is ${stakes}.`;
+    const story=`The story follows ${relationship}. A problem starts when ${catalyst}. The main choice is about ${stakes}.`;
     const tone=pick([
-      `The style is ${voice.note.toLowerCase()} Performances should feel simple, observant, and specific.`,
-      `The writing should stay clear and human. ${voice.line}`,
-      `The team wants grounded choices, clean behavior, and no complicated acting language.`,
-      `This should feel like a real workday or family day that went slightly off course.`
+      `The tone is grounded and easy to follow. Performances should feel real, clear, and specific.`,
+      `The team wants simple acting, honest listening, and no overly complicated choices.`,
+      `This should feel like a real New York workday, rehearsal, or family moment that goes slightly wrong.`,
+      `The writing is direct. The scene should make sense right away and leave room for small human details.`
     ]);
     const logistics=pick([
       `Dates, exact call times, and final rate will be confirmed before booking.`,
@@ -18395,17 +18453,17 @@ const ACG = (()=>{
   function buildFreshConcept(city,h,res){
     for(let i=0;i<500;i++){
       const type=pickFreshProjectType(h,res);
-      const setting=pick(STORY_SETTINGS);
-      const catalyst=pick(STORY_CATALYSTS);
-      const stakes=pick(STORY_STAKES);
-      const relationship=pick(STORY_RELATIONSHIPS);
+      const setting=pick(settingsForType(type));
+      const catalyst=pick(SIMPLE_STORY_CATALYSTS);
+      const stakes=pick(SIMPLE_STORY_STAKES);
+      const relationship=pick(SIMPLE_STORY_RELATIONSHIPS);
       const voice=pick(FRESH_VOICES);
       const length=pick(FRESH_LENGTHS);
       const roleCount=chooseRoleCount(type,h,res);
       const rootKey=fp([type,setting.key,catalyst,stakes,relationship,voice.key,roleCount].join("|"));
       const settingKey=clean("setting "+setting.key);
       const catalystKey=clean("catalyst "+catalyst);
-      if(h.stories.has(clean(rootKey))||res.stories.has(clean(rootKey))||h.traits.has(clean(rootKey))||res.traits.has(clean(rootKey))||h.traits.has(settingKey)||res.traits.has(settingKey)||h.traits.has(catalystKey)||res.traits.has(catalystKey))continue;
+      if(h.stories.has(clean(rootKey))||res.stories.has(clean(rootKey))||h.traits.has(clean(rootKey))||res.traits.has(clean(rootKey))||res.traits.has(settingKey)||res.traits.has(catalystKey))continue;
       const creator=freshCreator(city,type,h,res);
       const synopsis=freshSynopsis(city,type,setting,catalyst,stakes,relationship,voice,length);
       const text=`${type} ${setting.place} ${catalyst} ${stakes} ${relationship} ${synopsis}`;
@@ -18447,8 +18505,8 @@ const ACG = (()=>{
       addUsed(h.traits,"type "+c.type);
       addUsed(h.traits,`${c.type||""} ${c.location||""} ${(c.synopsis||"").slice(0,120)}`);
       const storyBlob=clean(`${c.title||""} ${c.tagline||""} ${c.synopsis||""}`);
-      STORY_SETTINGS.forEach(s=>{if(storyBlob.includes(clean(s.place)))addUsed(h.traits,"setting "+s.key);});
-      STORY_CATALYSTS.forEach(s=>{if(storyBlob.includes(clean(s)))addUsed(h.traits,"catalyst "+s);});
+      STORY_SETTINGS.concat(SCREEN_STAGE_SETTINGS).forEach(s=>{if(storyBlob.includes(clean(s.place)))addUsed(h.traits,"setting "+s.key);});
+      STORY_CATALYSTS.concat(SIMPLE_STORY_CATALYSTS).forEach(s=>{if(storyBlob.includes(clean(s)))addUsed(h.traits,"catalyst "+s);});
       addUsed(h.stories,c.title+" "+(c.synopsis||"").slice(0,180));
       if((c.roles||[]).length)addUsed(h.roleCounts,String((c.roles||[]).length));
       (c.roles||[]).forEach(r=>{addNameUsed(h,r.name);addUsed(h.ages,r.age_range);});
@@ -18536,20 +18594,22 @@ const ACG = (()=>{
     }else if(mode==="pitch"){
       cands.push(`Pitch/proof-of-concept stage. $${rand(75,150,25)}-$${rand(175,300,25)}/day for principals if the presentation budget closes; otherwise copy, meals, and credit. Not attached to a streamer or studio yet.`);
       cands.push(`Presentation shoot for a larger package. Limited upfront stipends, footage/credit provided, and potential re-casting if the project is financed later. No studio or platform attachment is being claimed.`);
-    }else if(mode==="high"&&(type==="Commercials & Branded Content"||type==="Feature Film")){
+    }else if(mode==="high"&&(/commercial|ad|brand/i.test(type)||/feature|independent film|tv|series|pilot|streaming/i.test(type))){
       cands.push(`Funded production. Principal roles $${rand(650,1200,50)}-$${rand(1300,2500,100)}/day; supporting roles $${rand(300,600,50)}-$${rand(650,950,50)}/day; usage/contract terms disclosed before booking.`);
       cands.push(`Higher-budget ${type.toLowerCase()}. Day rates range from $${rand(500,900,50)} to $${rand(1500,3000,100)} depending on role and usage. Travel and lodging considered for principals.`);
     }else if(mode==="vague"){
       cands.push(`Compensation is being finalized. Expect either a small stipend or copy/credit/meals; exact terms will be shared before any booking is accepted.`);
       cands.push(`Budget not fully locked. The team is being transparent: some roles may pay, some may be credit/meals only. No one will be booked without confirmed terms.`);
-    }else if(type==="Commercials & Branded Content"){
+    }else if(/commercial|ad|brand/i.test(type)){
       cands.push(`Paid digital/commercial shoot. Principals $${rand(375,750,25)}-$${rand(800,1200,50)}/day; featured/background $${rand(125,250,25)}-$${rand(275,450,25)}/day. Usage terms disclosed before booking; ${travel}.`);
-    }else if(type==="Theater & Musicals"){
+    }else if(/theater|musical|stage|table read|broadway/i.test(type)){
       cands.push(`Developmental workshop stipend. $${rand(200,450,25)}-$${rand(500,900,50)} total depending on role and schedule; rehearsal dates confirmed before offer; ${meals}.`);
-    }else if(type==="Student Film"){
+    }else if(/student/i.test(type)){
       cands.push(`Student production stipend. Principal roles $${rand(75,150,25)}-$${rand(175,275,25)}/day; supporting roles $${rand(50,100,25)}-$${rand(125,175,25)}/day; ${meals}.`);
-    }else if(type==="Feature Film"){
+    }else if(/feature|independent film|short film|experimental film|documentary|proof of concept/i.test(type)){
       cands.push(`Low-budget feature. Leads $${rand(225,400,25)}-$${rand(425,650,25)}/day; supporting/day players $${rand(100,175,25)}-$${rand(200,325,25)}/day; ${meals}; ${travel}.`);
+    }else if(/tv|series|pilot|streaming|web series|sizzle|pitch trailer/i.test(type)){
+      cands.push(`Low-budget screen project. Principals $${rand(250,450,25)}-$${rand(500,900,50)}/day; supporting/day players $${rand(125,225,25)}-$${rand(250,400,25)}/day; final terms confirmed before booking.`);
     }else{
       cands.push(`Independent production. Principal roles $${rand(125,250,25)}-$${rand(275,425,25)}/day; supporting/day players $${rand(50,125,25)}-$${rand(150,225,25)}/day; ${meals}.`);
     }
@@ -18610,14 +18670,15 @@ const ACG = (()=>{
     if(len==="tiny")return first||base;
     if(len==="short")return second||base;
     if(len==="medium")return `${base} ${voice.role}`;
-    return `${base} ${color} ${voice.role} Original breakdown function: ${original}.`;
+    return `${base} ${color} ${voice.role}`;
   }
   function rolePay(type,roleType){
     const rt=clean(roleType);
     if(rt.includes("background"))return pick(["$75-$125/day","$100/day","Copy/credit/meals","$125/day"]);
     if(rt.includes("stand"))return pick(["$125-$200/day","$150/day","$175/day"]);
-    if(type==="Commercials & Branded Content")return pick(["$400-$750/day","$500/day plus usage terms","$300-$600/day","$150-$300/day"]);
-    if(type==="Theater & Musicals")return pick(["Workshop stipend","$250-$600 total","Development stipend"]);
+    if(/commercial|ad|brand/i.test(type))return pick(["$400-$750/day","$500/day plus usage terms","$300-$600/day","$150-$300/day"]);
+    if(/theater|musical|stage|table read|broadway/i.test(type))return pick(["Workshop stipend","$250-$600 total","Development stipend","AEA showcase terms where applicable"]);
+    if(/feature|short film|student film|independent film|experimental film|documentary|tv|series|pilot|streaming|web series|proof|sizzle|pitch/i.test(type))return pick(["$125-$250/day","$150-$300/day","$75-$175/day","Rate based on role size"]);
     return pick(["$125-$250/day","$150-$300/day","$75-$175/day","Rate based on role size"]);
   }
   function extraRolesFor(type){
@@ -19230,13 +19291,13 @@ const ACG = (()=>{
     if(tooSimilarStory(storyText,h.storyTexts)||tooSimilarStory(storyText,res.storyTexts))return false;
     return true;
   }
-  function generateBatch(adminUserId,existing=[]){
-    const count=3+Math.floor(Math.random()*2);
+  function generateBatch(adminUserId,existing=[],targetCount=5){
+    const count=Math.max(1,Math.floor(Number(targetCount)||5));
     const h=buildHistory(existing);
     const res={titles:new Set(),prods:new Set(),roles:new Set(),stories:new Set(),pays:new Set(),firsts:new Set(),lasts:new Set(),storyTexts:new Set(),traits:new Set(),ages:new Set(),roleCounts:new Set(),creatorKinds:new Set()};
     const out=[];
     let attempts=0;
-    while(out.length<count&&attempts<160){
+    while(out.length<count&&attempts<260){
       attempts++;
       const item=generateOne(adminUserId,h,res);
       const key=clean(item.type+"|"+item.location+"|"+item.title);
@@ -19501,21 +19562,36 @@ function AdminCastingGenerator({session}){
     if(!adminId){showMsg("No admin session — reload and try again.");return;}
     setGenerating(true);setMsg("");
     try{
-      const batch=ACG.generateBatch(adminId,listings);
-      let ok=0;let fail=0;
-      for(const item of batch){
-        const roles=item._roles||[];
-        Object.keys(item).forEach(k=>{if(k[0]==="_")delete item[k];});
-        const {data:cData,error:cErr}=await window.sb.from("castings").insert(item).select("id").single();
-        if(cErr){fail++;console.warn("[ACG] insert failed",cErr);continue;}
-        if(roles.length>0){
-          await window.sb.from("roles").insert(roles.map(r=>({casting_id:cData.id,name:r.name,description:r.description,gender:r.gender,role_type:r.role_type||inferRoleType(r.name,r.description),age_range:r.age_range,ethnicity:r.ethnicity,pay:r.pay||null})));
+      const target=5;
+      let ok=0;let fail=0;let rounds=0;
+      const errors=[];
+      const seenThisRun=[...(listings||[])];
+      while(ok<target&&rounds<5){
+        rounds++;
+        const batch=ACG.generateBatch(adminId,seenThisRun,target-ok);
+        if(!batch.length)break;
+        for(const raw of batch){
+          if(ok>=target)break;
+          const roles=raw._roles||[];
+          const item=Object.fromEntries(Object.entries(raw).filter(([k])=>k[0]!=="_"));
+          const {data:cData,error:cErr}=await window.sb.from("castings").insert(item).select("id").single();
+          if(cErr){fail++;errors.push(cErr.message);console.warn("[ACG] casting insert failed",cErr,item);continue;}
+          const roleRows=roles.map(r=>({casting_id:cData.id,name:r.name,description:r.description,gender:r.gender,role_type:r.role_type||inferRoleType(r.name,r.description),age_range:r.age_range,ethnicity:r.ethnicity,pay:r.pay||null}));
+          if(roleRows.length>0){
+            const {error:rErr}=await window.sb.from("roles").insert(roleRows);
+            if(rErr){
+              fail++;errors.push(rErr.message);console.warn("[ACG] role insert failed",rErr,roleRows);
+              await window.sb.from("castings").delete().eq("id",cData.id);
+              continue;
+            }
+          }
+          ok++;
+          seenThisRun.push({...raw,id:cData.id,roles});
         }
-        ok++;
       }
-      // Record today's run date
-      await window.sb.rpc("admin_record_casting_generator_run");
-      showMsg(`Generated ${ok} draft listing${ok!==1?"s":""}.${fail?` (${fail} failed)`:""}`,6000);
+      if(ok>0)await window.sb.rpc("admin_record_casting_generator_run");
+      const suffix=ok<target?` Could only save ${ok} of ${target}${errors.length?`: ${errors[errors.length-1]}`:"."}`:fail?` (${fail} failed but were retried)`:"";
+      showMsg(`Generated ${ok} draft listing${ok!==1?"s":""}.${suffix}`,8000);
       loadAll();
     }catch(e){showMsg("Generation error: "+e.message);}
     setGenerating(false);
@@ -19571,7 +19647,7 @@ function AdminCastingGenerator({session}){
     if(!confirm(`Regenerate "${c.title}"?\n\nThis will replace the title, description, roles, location, and compensation with a freshly generated draft. Your manual edits will be lost.`))return;
     if(!adminId)return;
     const key=c.id+":regen";setBusy(key);
-    const batch=ACG.generateBatch(adminId,listings.filter(x=>x.id!==c.id));
+    const batch=ACG.generateBatch(adminId,listings.filter(x=>x.id!==c.id),1);
     const fresh=batch[0];
     const freshRoles=fresh._roles||[];
     Object.keys(fresh).forEach(k=>{if(k[0]==="_")delete fresh[k];});
@@ -19693,7 +19769,7 @@ function AdminCastingGenerator({session}){
             {todayGenerated
               ?"Today's drafts have already been generated. You can generate more if needed."
               :"Today's drafts have not been generated yet."}
-            {" "}Generates 3–4 varied draft listings for review.
+            {" "}Generates 5 New York-leaning film, TV, and theater draft listings for review.
           </div>
         </div>
         <button
