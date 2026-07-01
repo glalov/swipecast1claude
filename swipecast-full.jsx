@@ -18378,12 +18378,18 @@ const ACG = (()=>{
       `${pick(["Before","After","Inside","Under"])} ${pick(setting.titles)}`
     ];
   }
+  // Kept to one clause naming the setting + the single concrete thing that
+  // happens. Earlier versions also stapled in the abstract "stakes"/
+  // "relationship" phrases here, which read like disconnected mad-libs
+  // instead of a real logline — dropped from the visible text (they're still
+  // used internally so a given combination is never repeated).
   function freshTagline(type,setting,plan){
     const label=projectLabel(type);
+    const cc=plan.catalystClause||plan.catalyst;
     return pick([
-      `${articleFor(label)} ${label} built around ${setting.place} and one clear problem: ${plan.catalyst}.`,
-      `${setting.place} becomes the center of a new ${label} about ${plan.stakes}.`,
-      `A grounded ${label} where ${plan.relationship} has to deal with ${plan.catalystPhrase||plan.catalyst}.`
+      `${articleFor(label)} ${label} at ${setting.place}, where ${cc}.`,
+      `Set at ${setting.place} — a new ${label} where ${cc}.`,
+      `A grounded ${label} at ${setting.place}, where ${cc}.`
     ]);
   }
   function articleFor(text){
@@ -18507,46 +18513,36 @@ const ACG = (()=>{
     ];
     return{catalyst,stakes,relationship,roleLines,catalystClause,catalystPhrase,key:fp([setting.key,catalyst,stakes,relationship].join("|"))};
   }
+  // Deliberately short and one-track: a place, the one concrete thing that
+  // happens there, and a short closing line — nothing else. Earlier versions
+  // stitched in the abstract "relationship"/"stakes" phrases and multiple
+  // extra paragraphs (tone/logistics/submit), which made every synopsis a
+  // multi-clause run-on that read as confusing rather than a real, short
+  // casting notice. plan.stakes/plan.relationship are still computed (see
+  // buildStoryPlan) purely so a given combination is never reused — they're
+  // no longer printed.
   function freshSynopsis(city,type,setting,plan,voice,length){
     const label=projectLabel(type);
     const opener=pick([
-      `Casting ${articleFor(label).toLowerCase()} ${label} in ${city.name}. The story is set around ${setting.place}.`,
-      `${type} casting in ${city.name}. Most of the story happens around ${setting.place}.`,
-      `Seeking performers for ${articleFor(label).toLowerCase()} ${label} shooting in ${city.name}. The main location is ${setting.place}.`,
-      `Now casting ${label} talent in ${city.name} for a simple story set around ${setting.place}.`
+      `Casting ${articleFor(label).toLowerCase()} ${label} in ${city.name}, set at ${setting.place}.`,
+      `${type} casting in ${city.name}. The story takes place at ${setting.place}.`,
+      `Now casting ${label} talent in ${city.name} for a simple story at ${setting.place}.`,
+      `Seeking performers for ${articleFor(label).toLowerCase()} ${label} at ${setting.place} in ${city.name}.`
     ]);
     const cc=plan.catalystClause||plan.catalyst;
-    const story=pick([
-      `The story follows ${plan.relationship}. A problem starts when ${cc}. The main choice is about ${plan.stakes}.`,
-      `This is a story about ${plan.relationship}. Everything shifts when ${cc}, and it comes down to ${plan.stakes}.`,
-      `At the center of it: ${plan.relationship}. The trouble starts when ${cc}. From there, it's about ${plan.stakes}.`,
-      `The setup is simple: ${plan.relationship}. Then ${cc}, and the story turns on ${plan.stakes}.`
+    const beat=pick([
+      `Things start to unravel when ${cc}.`,
+      `The story kicks off when ${cc}.`,
+      `Everything changes when ${cc}.`,
+      `It all starts when ${cc}.`
     ]);
-    const tone=pick([
-      `The tone is grounded and easy to follow. Performances should feel real, clear, and specific.`,
-      `The team wants simple acting, honest listening, and no overly complicated choices.`,
-      `This should feel like a real New York workday, rehearsal, or family moment that goes slightly wrong.`,
-      `The writing is direct. The scene should make sense right away and leave room for small human details.`
+    const ask=pick([
+      `Looking for actors who can keep it simple and honest.`,
+      `The team wants clear, natural performances — nothing overplayed.`,
+      `A short, honest self-tape is all that's needed.`,
+      `Keep it grounded; no need to overplay the scene.`
     ]);
-    const logistics=pick([
-      `Dates, exact call times, and final rate will be confirmed before booking.`,
-      `Local hires are preferred, and the team is trying to keep the process organized and direct.`,
-      `Actors should be comfortable with practical locations, quick resets, and small changes on the day.`,
-      `The casting team is open to unexpected reads as long as the tape feels honest.`
-    ]);
-    const submit=pick([
-      `Submit current materials only; a clean, simple tape is better than a heavily edited one.`,
-      `A short tape or reel is enough. The team is watching for listening, timing, and a believable point of view.`,
-      `Please keep submissions plain and current. Long cover letters are not needed.`,
-      `If you have relevant real-life experience, mention it in one sentence.`
-    ]);
-    if(length==="micro")return `${opener} ${story}`;
-    if(length==="very_short")return `${opener}\n\n${story}`;
-    if(length==="short")return `${opener}\n\n${story}\n\n${logistics}`;
-    if(length==="medium")return `${opener}\n\n${story}\n\n${tone}`;
-    if(length==="uneven")return `${opener} ${story}\n\n${tone}\n\n${submit}`;
-    if(length==="detailed")return `${opener}\n\n${story}\n\n${tone} ${logistics}\n\n${submit}`;
-    return `${opener}\n\n${story}\n\n${tone}\n\n${logistics}\n\n${submit}`;
+    return `${opener} ${beat} ${ask}`;
   }
   function freshRoleType(type,i){
     if(/background|extras/i.test(type))return i<2?"Featured":"Background";
