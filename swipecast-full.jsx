@@ -2054,6 +2054,45 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .fcs-compact-label{font-size:9.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:#FFD79A;line-height:1.2;white-space:nowrap;}
 .fcs-compact-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:16px;line-height:1.15;color:#fff;text-shadow:0 1px 7px rgba(0,0,0,0.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .fcs-compact-btn{flex-shrink:0;background:#F0B860;color:#231706;border:none;border-radius:8px;padding:9px 18px;font-size:12px;font-weight:800;line-height:1;letter-spacing:.2px;cursor:pointer;white-space:nowrap;}
+/* ── Banner code intro (homepage, once per session). Matrix-style code rain
+   fills the featured-class banner; the site statement decodes out of the rain
+   character-by-character in fixed-width cells (zero layout jitter), holds
+   clean, swells once with power (no strobing), collapses into a singularity,
+   and a soft light bloom dissolves the overlay to reveal the real banner
+   artwork underneath. Smooth-cut timings throughout — every beat eases into
+   the next. Decorative only: pointer-events:none + aria-hidden, skipped for
+   prefers-reduced-motion, and the banner stays clickable the whole time. ── */
+.bci-overlay{position:absolute;inset:0;z-index:4;overflow:hidden;background:#020804;pointer-events:none;line-height:normal;}
+.bci-overlay.bci-out{animation:bciDissolve 1.3s cubic-bezier(.45,.05,.55,.95) forwards;}
+@keyframes bciDissolve{from{opacity:1;}to{opacity:0;}}
+.bci-canvas{position:absolute;inset:0;width:100%;height:100%;}
+.bci-zoom{animation:bciZoom 12s linear both;}
+@keyframes bciZoom{0%{transform:scale(1);}100%{transform:scale(1.12);}}
+.bci-phrase{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;padding:0 24px;font-family:'Courier New',ui-monospace,Menlo,monospace;font-weight:900;font-size:30px;line-height:1.45;white-space:nowrap;text-shadow:0 0 14px rgba(110,255,185,.9),0 0 52px rgba(60,255,160,.45),0 0 110px rgba(40,220,130,.25);opacity:0;
+  animation:bciIn 1.1s cubic-bezier(.22,.61,.36,1) .5s both,bciSwell 1.2s cubic-bezier(.45,.05,.55,.95) 7s both,bciSuck .9s cubic-bezier(.45,0,.55,1) 8.2s forwards;}
+.bci-text{display:block;text-align:center;}
+.bci-dc{display:inline-block;width:.68em;text-align:center;color:#57d792;}
+.bci-dc.sp{width:.45em;}
+.bci-dc.on{color:#eafff5;animation:bciCharLock .55s cubic-bezier(.25,.1,.25,1) both;}
+@keyframes bciCharLock{0%{transform:scale(1.14);filter:brightness(1.9);}100%{transform:scale(1);filter:brightness(1);}}
+@keyframes bciIn{0%{opacity:0;transform:scale(.92) translateY(14px);filter:blur(14px);}100%{opacity:1;transform:scale(1) translateY(0);filter:blur(0);}}
+@keyframes bciSwell{0%{transform:scale(1);filter:brightness(1) saturate(1);}100%{transform:scale(1.04);filter:brightness(1.5) saturate(1.3);}}
+@keyframes bciSuck{0%{transform:scale(1.04);opacity:1;filter:blur(0) brightness(1.5) saturate(1.3);}100%{transform:scale(.05);opacity:0;filter:blur(10px) brightness(2.2) saturate(1.1);}}
+.bci-core{position:absolute;left:50%;top:50%;z-index:2;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:radial-gradient(circle,#fff 0%,rgba(100,255,180,.9) 40%,transparent 75%);opacity:0;animation:bciCore 1.4s cubic-bezier(.4,.05,.6,.95) 8.1s both;}
+@keyframes bciCore{0%{transform:scale(1);opacity:0;filter:blur(0);}30%{opacity:.5;}100%{transform:scale(16);opacity:1;filter:blur(5px);}}
+.bci-glow{position:absolute;left:50%;top:50%;z-index:3;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:26px solid rgba(140,255,200,.5);filter:blur(18px);opacity:0;transform:scale(.1);animation:bciGlow 1.6s cubic-bezier(.33,.1,.25,1) 9.4s both;}
+@keyframes bciGlow{0%{transform:scale(.1);opacity:.85;}70%{opacity:.45;}100%{transform:scale(10);opacity:0;}}
+.bci-rays{position:absolute;inset:-60%;z-index:3;border-radius:50%;opacity:0;mix-blend-mode:screen;background:conic-gradient(from 0deg,transparent 0deg 10deg,rgba(160,255,205,.3) 10deg 14deg,transparent 14deg 40deg,rgba(160,255,205,.22) 40deg 44deg,transparent 44deg 80deg,rgba(255,255,255,.22) 80deg 84deg,transparent 84deg 120deg,rgba(160,255,205,.2) 120deg 124deg,transparent 124deg 160deg,rgba(255,255,255,.24) 160deg 164deg,transparent 164deg 200deg,rgba(160,255,205,.22) 200deg 204deg,transparent 204deg 240deg,rgba(255,255,255,.24) 240deg 244deg,transparent 244deg 280deg,rgba(160,255,205,.24) 280deg 284deg,transparent 284deg 320deg,rgba(255,255,255,.2) 320deg 324deg,transparent 324deg 360deg);animation:bciRays 2.4s cubic-bezier(.25,.1,.25,1) 9.4s both;}
+@keyframes bciRays{0%{transform:rotate(0deg) scale(.35);opacity:0;}35%{opacity:.8;}100%{transform:rotate(50deg) scale(1.9);opacity:0;}}
+.bci-ember{z-index:5;}
+.bci-bloom{position:absolute;inset:0;z-index:4;background:radial-gradient(circle at 50% 50%,#fff 0%,rgba(255,250,240,1) 20%,rgba(200,235,225,.88) 44%,transparent 72%);opacity:0;animation:bciBloom 1.4s cubic-bezier(.45,.05,.55,.95) 9.3s both;}
+@keyframes bciBloom{0%{opacity:0;}30%{opacity:.85;}100%{opacity:0;}}
+.bci-ring{position:absolute;left:50%;top:50%;z-index:6;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;border:3px solid rgba(100,216,189,.8);opacity:0;animation:bciRing 1.8s cubic-bezier(.25,.5,.3,1) 9.5s both;}
+.bci-ring.r2{border-color:rgba(140,165,240,.8);animation:bciRing 2.1s cubic-bezier(.25,.5,.3,1) 9.7s both;}
+.bci-ring.r3{animation:bciRing 2.4s cubic-bezier(.25,.5,.3,1) 9.9s both;}
+@keyframes bciRing{0%{transform:scale(.2);opacity:.8;border-width:4px;}60%{opacity:.35;}100%{transform:scale(11);opacity:0;border-width:.5px;}}
+@media(max-width:768px){.bci-phrase{padding:0 14px;}}
+@media(prefers-reduced-motion:reduce){.bci-overlay{display:none;}}
 /* ── Marquee stripe: thin sliding announcement bar directly above the
    featured-class banner (homepage). Folds to 0 height in sync with the
    banner on scroll. Seamless left→right loop via two duplicated groups
@@ -2669,6 +2708,156 @@ function calculateYearlySavings(monthlyPrice,yearlyTotal){
   return{annualAtMonthly,dollarsSaved,percentSaved};
 }
 
+// ─── Banner code intro. Matrix-style opening beat played over the featured
+//     class banner on the homepage: live code rain (canvas), the site
+//     statement decodes out of the rain glyph-by-glyph, holds, swells, then
+//     collapses into a singularity whose light bloom dissolves the overlay to
+//     reveal the real banner artwork underneath (~11s total). Once per browser
+//     session via sessionStorage; skipped when prefers-reduced-motion. The
+//     overlay never intercepts clicks and unmounts fully when finished, so the
+//     rAF loops stop and the banner behaves exactly as before.
+const BCI_STATEMENT='A visual-first platform\nwhere indie filmmakers and\nundiscovered talent meet.';
+const BCI_GLYPHS='ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ0123456789ACDEFHKLMNPRSTUVXZ$+*<>=';
+function bciGlyph(){return BCI_GLYPHS[Math.floor(Math.random()*BCI_GLYPHS.length)];}
+function BannerCodeIntro({onDone}){
+  const rootRef=useRef(null);
+  const rainRef=useRef(null);
+  const emberRef=useRef(null);
+  const textRef=useRef(null);
+  useEffect(()=>{
+    const root=rootRef.current,rain=rainRef.current,ember=emberRef.current,textEl=textRef.current;
+    if(!root||!rain||!ember||!textEl){if(onDone)onDone();return;}
+    textEl.innerHTML="";
+    let alive=true;
+    const cancels=[];
+    const later=(ms,fn)=>{const t=setTimeout(fn,ms);cancels.push(()=>clearTimeout(t));};
+
+    // Fit the statement inside the banner: never wraps, never overflows —
+    // constrained by both banner width (longest line) and banner height (3 lines).
+    const phrase=textEl.parentElement;
+    const fit=()=>{
+      const w=root.clientWidth-48,h=root.clientHeight;
+      let maxEm=0;
+      BCI_STATEMENT.split("\n").forEach(line=>{
+        let em=0;for(let i=0;i<line.length;i++)em+=line[i]===" "?0.45:0.68;
+        if(em>maxEm)maxEm=em;
+      });
+      const fs=Math.max(9,Math.floor(Math.min(30,w/maxEm,(h*0.72)/(3*1.45))));
+      phrase.style.fontSize=fs+"px";
+    };
+    fit();
+    window.addEventListener("resize",fit);
+
+    // Fixed-width character cells: glyphs swap freely with zero layout jitter.
+    const spans=[];
+    BCI_STATEMENT.split("").forEach(ch=>{
+      if(ch==="\n"){textEl.appendChild(document.createElement("br"));return;}
+      const s=document.createElement("span");
+      if(ch===" "){s.className="bci-dc sp";s.textContent=" ";}
+      else{s.className="bci-dc";s.textContent=bciGlyph();s.dataset.f=ch;spans.push(s);}
+      textEl.appendChild(s);
+    });
+
+    // Code rain + ember canvases. One rAF loop drives both; `alive` stops it
+    // for good when the intro unmounts.
+    const rctx=rain.getContext("2d"),ectx=ember.getContext("2d");
+    let mode="rain",drops=[],streaks=[];
+    const sizeCanvases=()=>{
+      [rain,ember].forEach(c=>{const r=c.getBoundingClientRect();c.width=Math.max(1,Math.round(r.width));c.height=Math.max(1,Math.round(r.height));});
+      rctx.fillStyle="#020804";rctx.fillRect(0,0,rain.width,rain.height);
+      drops=[];
+      const n=Math.round(rain.width/9);
+      for(let i=0;i<n;i++)drops.push({x:Math.random()*rain.width,y:Math.random()*rain.height,z:.3+Math.random()*.8,sp:1.4+Math.random()*3.4});
+    };
+    sizeCanvases();
+    window.addEventListener("resize",sizeCanvases);
+    const frame=()=>{
+      if(!alive)return;
+      rctx.fillStyle=mode==="converge"?"rgba(2,8,4,.30)":"rgba(2,8,4,.16)";
+      rctx.fillRect(0,0,rain.width,rain.height);
+      const cx=rain.width/2,cy=rain.height/2;
+      drops.forEach(d=>{
+        if(mode==="rain"){d.y+=d.sp*d.z*2.1;if(d.y>rain.height+24){d.y=-20-Math.random()*40;d.x=Math.random()*rain.width;}}
+        else{d.x+=(cx-d.x)*.09;d.y+=(cy-d.y)*.09;}
+        const fs=6+13*d.z;
+        rctx.font="700 "+fs.toFixed(0)+'px "Courier New",monospace';
+        const a=.35+.6*d.z;
+        rctx.fillStyle=Math.random()<.08?"rgba(220,255,235,"+a.toFixed(2)+")":"rgba(80,255,150,"+(a*.85).toFixed(2)+")";
+        rctx.fillText(bciGlyph(),d.x,d.y);
+      });
+      if(mode==="converge"){
+        const g=rctx.createRadialGradient(cx,cy,0,cx,cy,90);
+        g.addColorStop(0,"rgba(220,255,235,.5)");g.addColorStop(.4,"rgba(90,255,170,.28)");g.addColorStop(1,"rgba(0,0,0,0)");
+        rctx.fillStyle=g;rctx.fillRect(cx-90,cy-90,180,180);
+      }
+      ectx.clearRect(0,0,ember.width,ember.height);
+      if(streaks.length){
+        ectx.save();ectx.globalCompositeOperation="lighter";
+        streaks.forEach(s=>{
+          const x1=s.cx+Math.cos(s.ang)*s.r,y1=s.cy+Math.sin(s.ang)*s.r;
+          s.r+=s.sp;s.life-=.018;
+          const x2=s.cx+Math.cos(s.ang)*s.r,y2=s.cy+Math.sin(s.ang)*s.r;
+          if(s.life>0){ectx.strokeStyle="rgba(100,255,170,"+Math.max(s.life,0).toFixed(3)+")";ectx.lineWidth=1.6;ectx.beginPath();ectx.moveTo(x1,y1);ectx.lineTo(x2,y2);ectx.stroke();}
+        });
+        ectx.restore();
+        streaks=streaks.filter(s=>s.life>0);
+      }
+      requestAnimationFrame(frame);
+    };
+    frame();
+    const burst=n=>{const cx=ember.width/2,cy=ember.height/2;for(let i=0;i<n;i++)streaks.push({ang:Math.random()*Math.PI*2,r:Math.random()*8,sp:Math.random()*4.5+3,life:1,cx:cx,cy:cy});};
+
+    // Decode: scramble locks into English mostly left→right, full sentence by
+    // ~3.5s, holds clean until the power swell at 7s (CSS drives the rest).
+    later(700,()=>{
+      const start=performance.now(),dur=2800;
+      const lockAt=spans.map((s,i)=>(i/spans.length)*.6+Math.random()*.25);
+      const iv=setInterval(()=>{
+        const t=(performance.now()-start)/dur;
+        if(t>=1){spans.forEach(s=>{if(!s.dataset.done){s.textContent=s.dataset.f;s.classList.add("on");s.dataset.done="1";}});clearInterval(iv);return;}
+        spans.forEach((s,i)=>{
+          if(s.dataset.done)return;
+          if(t>=lockAt[i]){s.textContent=s.dataset.f;s.classList.add("on");s.dataset.done="1";}
+          else if(Math.random()<.45)s.textContent=bciGlyph();
+        });
+      },60);
+      cancels.push(()=>clearInterval(iv));
+    });
+    later(8300,()=>{mode="converge";});
+    later(9500,()=>burst(40));
+    later(9950,()=>burst(24));
+    later(9600,()=>{root.classList.add("bci-out");});
+    // The session flag is written on COMPLETION, not on mount: the app
+    // re-renders/remounts the banner while auth state resolves right after
+    // load, and a mount-time flag made that second mount skip the intro
+    // entirely. Completion-time writing lets the intro survive remounts (it
+    // just restarts within its first second) and still play once per session.
+    later(11000,()=>{
+      alive=false;
+      try{sessionStorage.setItem("cs_banner_intro_done","1");}catch(e){}
+      if(onDone)onDone();
+    });
+    return()=>{
+      alive=false;
+      cancels.forEach(c=>c());
+      window.removeEventListener("resize",fit);
+      window.removeEventListener("resize",sizeCanvases);
+    };
+  },[]);
+  return(<div ref={rootRef} className="bci-overlay" aria-hidden="true">
+    <canvas ref={rainRef} className="bci-canvas bci-zoom"/>
+    <span className="bci-phrase"><span ref={textRef} className="bci-text"></span></span>
+    <div className="bci-core"></div>
+    <div className="bci-glow"></div>
+    <div className="bci-rays"></div>
+    <canvas ref={emberRef} className="bci-canvas bci-ember"/>
+    <div className="bci-bloom"></div>
+    <div className="bci-ring"></div>
+    <div className="bci-ring r2"></div>
+    <div className="bci-ring r3"></div>
+  </div>);
+}
+
 // ─── Yearly promo stripe. Sits above the main nav on the home page only.
 //     Calculates savings dynamically from MEMBERSHIP_PLANS so the headline
 //     stays in sync with the pricing config. Hidden for users who already
@@ -2683,6 +2872,16 @@ function FeaturedClassBanner({onNavigate}){
   const ref=useRef(null);
   const [collapsed,setCollapsed]=useState(false);
   const [fullH,setFullH]=useState(null);
+  // Matrix code intro over the banner: first homepage view of the session
+  // only, never for reduced-motion users. Read-only check here — the flag is
+  // written inside BannerCodeIntro on mount, so re-renders can't re-trigger it.
+  const [introOn,setIntroOn]=useState(()=>{
+    try{
+      if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return false;
+      if(sessionStorage.getItem("cs_banner_intro_done"))return false;
+      return true;
+    }catch(e){return false;}
+  });
   // Desktop: measure the banner's natural (full) height from the image's
   // intrinsic aspect ratio so we can animate height -> 60px on scroll and
   // back. Mobile keeps its existing fixed 148px/54px CSS heights instead.
@@ -2723,6 +2922,7 @@ function FeaturedClassBanner({onNavigate}){
         <span className="fcs-m-title">Scene Study Workshop</span>
         <button type="button" className="fcs-m-btn" onClick={go}>View Classes →</button>
       </div>
+      {introOn&&<BannerCodeIntro onDone={()=>setIntroOn(false)}/>}
     </div>
     {/* Compact state — purpose-built thin strip shown once scrolled. */}
     <div className="fcs-compact" aria-hidden={!collapsed}>
