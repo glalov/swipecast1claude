@@ -2076,7 +2076,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .bci-glowdub{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center;padding:0 24px;white-space:nowrap;line-height:1.45;text-shadow:0 0 14px rgba(110,255,185,.9),0 0 52px rgba(60,255,160,.45),0 0 110px rgba(40,220,130,.25);opacity:0;will-change:opacity;transition:opacity .7s ease;pointer-events:none;}
 .bci-glowdub .bci-dc{color:transparent;}
 .bci-phrase.bci-lit .bci-glowdub{opacity:1;}
-.bci-go .bci-phrase{animation:bciIn 1.1s cubic-bezier(.22,.61,.36,1) .5s both,bciSwell 1.2s cubic-bezier(.45,.05,.55,.95) 7s both,bciSuck .9s cubic-bezier(.45,0,.55,1) 8.2s forwards;}
+.bci-go .bci-phrase{animation:bciIn 1.1s cubic-bezier(.22,.61,.36,1) .5s both,bciSwell 1.2s cubic-bezier(.45,.05,.55,.95) 7s both,bciStreak .6s cubic-bezier(.55,.05,.7,.4) 8.2s forwards;}
 .bci-text{display:block;text-align:center;position:relative;z-index:1;}
 .bci-dc{display:inline-block;width:.68em;text-align:center;color:#57d792;}
 .bci-dc.sp{width:.45em;}
@@ -2084,7 +2084,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @keyframes bciCharLock{0%{transform:scale(1.22);}100%{transform:scale(1);}}
 @keyframes bciIn{0%{opacity:0;transform:scale(.92) translateY(14px);filter:blur(14px);}100%{opacity:1;transform:scale(1) translateY(0);filter:blur(0);}}
 @keyframes bciSwell{0%{transform:scale(1);filter:brightness(1) saturate(1);}100%{transform:scale(1.04);filter:brightness(1.5) saturate(1.3);}}
-@keyframes bciSuck{0%{transform:scale(1.04);opacity:1;filter:blur(0) brightness(1.5) saturate(1.3);}100%{transform:scale(.05);opacity:0;filter:blur(10px) brightness(2.2) saturate(1.1);}}
+@keyframes bciStreak{0%{transform:scale(1.04);opacity:1;filter:brightness(1.5);}55%{transform:scaleX(3.4) scaleY(.3);opacity:.95;filter:brightness(2.1);}100%{transform:scaleX(9) scaleY(.02);opacity:0;filter:brightness(3);}}
+@keyframes bciFlare{0%{transform:translate(-50%,-50%) scaleX(.08);opacity:0;}22%{opacity:1;}100%{transform:translate(-50%,-50%) scaleX(1.15);opacity:0;}}
+.bci-flare{position:absolute;top:50%;left:50%;width:150%;height:3px;z-index:5;pointer-events:none;transform:translate(-50%,-50%) scaleX(0);mix-blend-mode:screen;opacity:0;filter:blur(.5px);will-change:transform,opacity;background:linear-gradient(90deg,transparent,rgba(160,255,205,.9) 30%,#fff 50%,rgba(160,255,205,.9) 70%,transparent);}
+.bci-go .bci-flare{animation:bciFlare 1s cubic-bezier(.3,.4,.3,1) 8.5s both;}
 .bci-core{position:absolute;left:50%;top:50%;z-index:2;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:radial-gradient(circle,#fff 0%,rgba(100,255,180,.9) 40%,transparent 75%);opacity:0;filter:blur(1.5px);will-change:transform,opacity;}
 .bci-go .bci-core{animation:bciCore 1.4s cubic-bezier(.4,.05,.6,.95) 8.1s both;}
 @keyframes bciCore{0%{transform:scale(1);opacity:0;}30%{opacity:.5;}100%{transform:scale(16);opacity:1;}}
@@ -2800,7 +2803,8 @@ function BannerCodeIntro({onDone}){
       rctx.fillStyle="#020804";rctx.fillRect(0,0,rain.width,rain.height);
       drops=[];
       const n=Math.min(150,Math.round(rain.width/9));
-      for(let i=0;i<n;i++)drops.push({x:Math.random()*rain.width,y:Math.random()*rain.height,z:.3+Math.random()*.8,sp:1.4+Math.random()*3.4});
+      for(let i=0;i<n;i++){const z=.3+Math.random()*.8;drops.push({x:Math.random()*rain.width,y:Math.random()*rain.height,z:z,sp:1.4+Math.random()*3.4,fs:Math.round(6+13*z),a:.35+.6*z});}
+      drops.sort((p,q)=>p.fs-q.fs);   // group by size -> one ctx.font per size, not per glyph
     };
     sizeCanvases();
     window.addEventListener("resize",sizeCanvases);
@@ -2809,15 +2813,15 @@ function BannerCodeIntro({onDone}){
       rctx.fillStyle=mode==="converge"?"rgba(2,8,4,.30)":"rgba(2,8,4,.16)";
       rctx.fillRect(0,0,rain.width,rain.height);
       const cx=rain.width/2,cy=rain.height/2;
-      drops.forEach(d=>{
+      let curFs=-1;
+      for(let i=0;i<drops.length;i++){
+        const d=drops[i];
         if(mode==="rain"){d.y+=d.sp*d.z*2.1;if(d.y>rain.height+24){d.y=-20-Math.random()*40;d.x=Math.random()*rain.width;}}
         else{d.x+=(cx-d.x)*.09;d.y+=(cy-d.y)*.09;}
-        const fs=6+13*d.z;
-        rctx.font="700 "+fs.toFixed(0)+'px "Courier New",monospace';
-        const a=.35+.6*d.z;
-        rctx.fillStyle=Math.random()<.08?"rgba(220,255,235,"+a.toFixed(2)+")":"rgba(80,255,150,"+(a*.85).toFixed(2)+")";
+        if(d.fs!==curFs){curFs=d.fs;rctx.font="700 "+curFs+'px "Courier New",monospace';}
+        rctx.fillStyle=Math.random()<.08?"rgba(220,255,235,"+d.a.toFixed(2)+")":"rgba(80,255,150,"+(d.a*.85).toFixed(2)+")";
         rctx.fillText(bciGlyph(),d.x,d.y);
-      });
+      }
       if(mode==="converge"){
         const g=rctx.createRadialGradient(cx,cy,0,cx,cy,90);
         g.addColorStop(0,"rgba(220,255,235,.5)");g.addColorStop(.4,"rgba(90,255,170,.28)");g.addColorStop(1,"rgba(0,0,0,0)");
@@ -2919,6 +2923,7 @@ function BannerCodeIntro({onDone}){
     <canvas ref={rainRef} className="bci-canvas bci-zoom"/>
     <span className="bci-phrase"><span ref={textRef} className="bci-text"></span></span>
     <div className="bci-core"></div>
+    <div className="bci-flare"></div>
     <div className="bci-glow"></div>
     <div className="bci-rays"></div>
     <canvas ref={emberRef} className="bci-canvas bci-ember"/>
