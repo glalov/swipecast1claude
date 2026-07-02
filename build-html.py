@@ -203,6 +203,16 @@ def render_page(title, desc, canonical):
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=6"/>
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=6"/>
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=6"/>
+  <!-- Site webfonts, warmed during the intro: preconnect + async CSS so the
+       fonts are downloaded while the logo/curtain plays and text never
+       re-flows ("fonts appearing" stutter) after the site is revealed. The
+       app CSS @imports these same URLs, which are already cached by then. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&amp;display=swap" onload="this.onload=null;this.rel='stylesheet'"/>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap" onload="this.onload=null;this.rel='stylesheet'"/>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&amp;display=swap" onload="this.onload=null;this.rel='stylesheet'"/>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,900&amp;display=swap" onload="this.onload=null;this.rel='stylesheet'"/>
   <!-- Tabler line-icon webfont (replaces emoji UI icons). Loaded async so a
        slow CDN can never block the first paint — the intro must start
        instantly; icons are only consumed after React mounts anyway. -->

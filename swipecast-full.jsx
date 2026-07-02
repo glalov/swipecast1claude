@@ -1558,8 +1558,8 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @keyframes sw-in-top{0%{transform:translateY(150%) scale(.86);opacity:0}55%{opacity:1}82%{transform:translateY(-11px) scale(1.012)}100%{transform:translateY(0) scale(1);opacity:1}}
 @keyframes sw-in-back{0%{transform:translateX(190%) rotate(9deg) scale(.84);opacity:0}65%{opacity:var(--ro,.3)}100%{transform:var(--rest);opacity:var(--ro,.3)}}
 .sw-pre{opacity:0!important;}
-.sw-intro-top{animation:sw-in-top .5s cubic-bezier(.34,1.4,.5,1) both;}
-.sw-intro-back{animation:sw-in-back .62s cubic-bezier(.2,.75,.25,1) both;animation-delay:var(--d,0s);}
+.sw-intro-top{animation:sw-in-top .5s cubic-bezier(.34,1.4,.5,1) both;will-change:transform,opacity;}
+.sw-intro-back{animation:sw-in-back .62s cubic-bezier(.2,.75,.25,1) both;animation-delay:var(--d,0s);will-change:transform,opacity;}
 @media(prefers-reduced-motion:reduce){.sw-intro-top,.sw-intro-back{animation:none!important;}}
 .swipe-btns{display:flex;gap:20px;align-items:flex-start;}
 .sw-btn-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;}
@@ -2062,41 +2062,41 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
    artwork underneath. Smooth-cut timings throughout — every beat eases into
    the next. Decorative only: pointer-events:none + aria-hidden, skipped for
    prefers-reduced-motion, and the banner stays clickable the whole time. ── */
-.bci-overlay{position:absolute;inset:0;z-index:4;overflow:hidden;background:#020804;pointer-events:none;line-height:normal;}
+.bci-overlay{position:absolute;inset:0;z-index:4;overflow:hidden;background:#020804;pointer-events:none;line-height:normal;will-change:opacity;}
 .bci-overlay.bci-out{animation:bciDissolve 1.3s cubic-bezier(.45,.05,.55,.95) forwards;}
 @keyframes bciDissolve{from{opacity:1;}to{opacity:0;}}
-.bci-canvas{position:absolute;inset:0;width:100%;height:100%;}
+.bci-canvas{position:absolute;inset:0;width:100%;height:100%;will-change:transform;}
 .bci-go .bci-zoom{animation:bciZoom 12s linear both;}
 @keyframes bciZoom{0%{transform:scale(1);}100%{transform:scale(1.12);}}
-.bci-phrase{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;padding:0 24px;font-family:'Courier New',ui-monospace,Menlo,monospace;font-weight:900;font-size:30px;line-height:1.45;white-space:nowrap;text-shadow:0 0 14px rgba(110,255,185,.9),0 0 52px rgba(60,255,160,.45),0 0 110px rgba(40,220,130,.25);opacity:0;}
+.bci-phrase{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;will-change:transform,opacity,filter;padding:0 24px;font-family:'Courier New',ui-monospace,Menlo,monospace;font-weight:900;font-size:30px;line-height:1.45;white-space:nowrap;text-shadow:0 0 14px rgba(110,255,185,.9),0 0 52px rgba(60,255,160,.45),0 0 110px rgba(40,220,130,.25);opacity:0;}
 .bci-go .bci-phrase{animation:bciIn 1.1s cubic-bezier(.22,.61,.36,1) .5s both,bciSwell 1.2s cubic-bezier(.45,.05,.55,.95) 7s both,bciSuck .9s cubic-bezier(.45,0,.55,1) 8.2s forwards;}
 .bci-text{display:block;text-align:center;}
 .bci-dc{display:inline-block;width:.68em;text-align:center;color:#57d792;}
 .bci-dc.sp{width:.45em;}
 .bci-dc.on{color:#eafff5;animation:bciCharLock .55s cubic-bezier(.25,.1,.25,1) both;}
-@keyframes bciCharLock{0%{transform:scale(1.14);filter:brightness(1.9);}100%{transform:scale(1);filter:brightness(1);}}
+@keyframes bciCharLock{0%{transform:scale(1.22);}100%{transform:scale(1);}}
 @keyframes bciIn{0%{opacity:0;transform:scale(.92) translateY(14px);filter:blur(14px);}100%{opacity:1;transform:scale(1) translateY(0);filter:blur(0);}}
 @keyframes bciSwell{0%{transform:scale(1);filter:brightness(1) saturate(1);}100%{transform:scale(1.04);filter:brightness(1.5) saturate(1.3);}}
 @keyframes bciSuck{0%{transform:scale(1.04);opacity:1;filter:blur(0) brightness(1.5) saturate(1.3);}100%{transform:scale(.05);opacity:0;filter:blur(10px) brightness(2.2) saturate(1.1);}}
-.bci-core{position:absolute;left:50%;top:50%;z-index:2;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:radial-gradient(circle,#fff 0%,rgba(100,255,180,.9) 40%,transparent 75%);opacity:0;}
+.bci-core{position:absolute;left:50%;top:50%;z-index:2;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:radial-gradient(circle,#fff 0%,rgba(100,255,180,.9) 40%,transparent 75%);opacity:0;filter:blur(1.5px);will-change:transform,opacity;}
 .bci-go .bci-core{animation:bciCore 1.4s cubic-bezier(.4,.05,.6,.95) 8.1s both;}
-@keyframes bciCore{0%{transform:scale(1);opacity:0;filter:blur(0);}30%{opacity:.5;}100%{transform:scale(16);opacity:1;filter:blur(5px);}}
-.bci-glow{position:absolute;left:50%;top:50%;z-index:3;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:26px solid rgba(140,255,200,.5);filter:blur(18px);opacity:0;transform:scale(.1);}
+@keyframes bciCore{0%{transform:scale(1);opacity:0;}30%{opacity:.5;}100%{transform:scale(16);opacity:1;}}
+.bci-glow{position:absolute;left:50%;top:50%;z-index:3;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:26px solid rgba(140,255,200,.5);filter:blur(18px);opacity:0;transform:scale(.1);will-change:transform,opacity;}
 .bci-go .bci-glow{animation:bciGlow 1.6s cubic-bezier(.33,.1,.25,1) 9.4s both;}
 @keyframes bciGlow{0%{transform:scale(.1);opacity:.85;}70%{opacity:.45;}100%{transform:scale(10);opacity:0;}}
-.bci-rays{position:absolute;inset:-60%;z-index:3;border-radius:50%;opacity:0;mix-blend-mode:screen;background:conic-gradient(from 0deg,transparent 0deg 10deg,rgba(160,255,205,.3) 10deg 14deg,transparent 14deg 40deg,rgba(160,255,205,.22) 40deg 44deg,transparent 44deg 80deg,rgba(255,255,255,.22) 80deg 84deg,transparent 84deg 120deg,rgba(160,255,205,.2) 120deg 124deg,transparent 124deg 160deg,rgba(255,255,255,.24) 160deg 164deg,transparent 164deg 200deg,rgba(160,255,205,.22) 200deg 204deg,transparent 204deg 240deg,rgba(255,255,255,.24) 240deg 244deg,transparent 244deg 280deg,rgba(160,255,205,.24) 280deg 284deg,transparent 284deg 320deg,rgba(255,255,255,.2) 320deg 324deg,transparent 324deg 360deg);}
+.bci-rays{position:absolute;inset:-60%;z-index:3;border-radius:50%;opacity:0;mix-blend-mode:screen;background:conic-gradient(from 0deg,transparent 0deg 10deg,rgba(160,255,205,.3) 10deg 14deg,transparent 14deg 40deg,rgba(160,255,205,.22) 40deg 44deg,transparent 44deg 80deg,rgba(255,255,255,.22) 80deg 84deg,transparent 84deg 120deg,rgba(160,255,205,.2) 120deg 124deg,transparent 124deg 160deg,rgba(255,255,255,.24) 160deg 164deg,transparent 164deg 200deg,rgba(160,255,205,.22) 200deg 204deg,transparent 204deg 240deg,rgba(255,255,255,.24) 240deg 244deg,transparent 244deg 280deg,rgba(160,255,205,.24) 280deg 284deg,transparent 284deg 320deg,rgba(255,255,255,.2) 320deg 324deg,transparent 324deg 360deg);will-change:transform,opacity;}
 .bci-go .bci-rays{animation:bciRays 2.4s cubic-bezier(.25,.1,.25,1) 9.4s both;}
 @keyframes bciRays{0%{transform:rotate(0deg) scale(.35);opacity:0;}35%{opacity:.8;}100%{transform:rotate(50deg) scale(1.9);opacity:0;}}
 .bci-ember{z-index:5;}
-.bci-bloom{position:absolute;inset:0;z-index:4;background:radial-gradient(circle at 50% 50%,#fff 0%,rgba(255,250,240,1) 20%,rgba(200,235,225,.88) 44%,transparent 72%);opacity:0;}
+.bci-bloom{position:absolute;inset:0;z-index:4;background:radial-gradient(circle at 50% 50%,#fff 0%,rgba(255,250,240,1) 20%,rgba(200,235,225,.88) 44%,transparent 72%);opacity:0;will-change:opacity;}
 .bci-go .bci-bloom{animation:bciBloom 1.4s cubic-bezier(.45,.05,.55,.95) 9.3s both;}
 @keyframes bciBloom{0%{opacity:0;}30%{opacity:.85;}100%{opacity:0;}}
-.bci-ring{position:absolute;left:50%;top:50%;z-index:6;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;border:3px solid rgba(100,216,189,.8);opacity:0;}
+.bci-ring{position:absolute;left:50%;top:50%;z-index:6;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;border:3px solid rgba(100,216,189,.8);opacity:0;will-change:transform,opacity;}
 .bci-go .bci-ring{animation:bciRing 1.8s cubic-bezier(.25,.5,.3,1) 9.5s both;}
 .bci-ring.r2{border-color:rgba(140,165,240,.8);}
 .bci-go .bci-ring.r2{animation:bciRing 2.1s cubic-bezier(.25,.5,.3,1) 9.7s both;}
 .bci-go .bci-ring.r3{animation:bciRing 2.4s cubic-bezier(.25,.5,.3,1) 9.9s both;}
-@keyframes bciRing{0%{transform:scale(.2);opacity:.8;border-width:4px;}60%{opacity:.35;}100%{transform:scale(11);opacity:0;border-width:.5px;}}
+@keyframes bciRing{0%{transform:scale(.2);opacity:.8;}60%{opacity:.35;}100%{transform:scale(11);opacity:0;}}
 @media(max-width:768px){.bci-phrase{padding:0 14px;}}
 @media(prefers-reduced-motion:reduce){.bci-overlay{display:none;}}
 /* ── Marquee stripe: thin sliding announcement bar directly above the
@@ -2772,7 +2772,7 @@ function BannerCodeIntro({onDone}){
       [rain,ember].forEach(c=>{const r=c.getBoundingClientRect();c.width=Math.max(1,Math.round(r.width));c.height=Math.max(1,Math.round(r.height));});
       rctx.fillStyle="#020804";rctx.fillRect(0,0,rain.width,rain.height);
       drops=[];
-      const n=Math.round(rain.width/9);
+      const n=Math.min(150,Math.round(rain.width/9));
       for(let i=0;i<n;i++)drops.push({x:Math.random()*rain.width,y:Math.random()*rain.height,z:.3+Math.random()*.8,sp:1.4+Math.random()*3.4});
     };
     sizeCanvases();
@@ -2873,7 +2873,7 @@ function BannerCodeIntro({onDone}){
           spans.forEach((s,i)=>{
             if(s.dataset.done)return;
             if(t>=lockAt[i]){s.textContent=s.dataset.f;s.classList.add("on");s.dataset.done="1";}
-            else if(Math.random()<.45)s.textContent=bciGlyph();
+            else if(Math.random()<.35)s.textContent=bciGlyph();
           });
         }
       }
@@ -14986,6 +14986,10 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
   React.useEffect(()=>{
     if(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){setArmed(true);setIntro(false);return;}
     if(swipeIntroSeen){setArmed(true);setIntro(false);return;}
+    // Warm every deck photo now, while the curtain still covers the page —
+    // the back cards only enter the DOM when the deal-in starts, and cold
+    // image fetch+decode mid-animation was a visible desktop stutter.
+    try{demo.forEach(d=>{const im=new Image();im.decoding="async";im.src=d.img;});}catch(e){}
     let started=false,endTm,poll,safety;
     function play(){if(started)return;started=true;swipeIntroSeen=true;setArmed(true);endTm=setTimeout(()=>setIntro(false),2400);}
     const hasSplash=typeof document!=='undefined'&&document.getElementById('cs-intro');
@@ -15050,11 +15054,11 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
     <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
       <div style={{position:"relative",width:300,height:450}}>
         {!intro&&<div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.35,zIndex:1,pointerEvents:"none"}}>
-          <img src={nt.img} alt="" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:nt.pos||"center 8%"}}/>
+          <img src={nt.img} alt="" decoding="async" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:nt.pos||"center 8%"}}/>
         </div>}
         {intro&&armed&&Array.from({length:total-1},(_,k)=>k+1).map(i=>{const bc=demo[Math.min(i,total-1)];const rest=`translateY(${i*5}px) scale(${(1-i*0.03).toFixed(3)})`;const ro=Math.max(0.74,1-i*0.035).toFixed(2);return(
           <div key={"swin"+i} className="s-card sw-intro-back" style={{"--rest":rest,"--ro":ro,"--d":`${(0.45+i*0.10).toFixed(2)}s`,zIndex:total-i,pointerEvents:"none",boxShadow:"none"}}>
-            <img src={bc.img} alt="" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:bc.pos||"center 8%"}}/>
+            <img src={bc.img} alt="" decoding="async" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:bc.pos||"center 8%"}}/>
           </div>);})}
         <div className={"s-card"+(intro?(armed?" sw-intro-top":" sw-pre"):"")}
           style={{transform:cardTransform,transition:cardTransition,zIndex:30,cursor:dragging.current?"grabbing":"grab",touchAction:"pan-y",userSelect:"none"}}
@@ -15064,7 +15068,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
           onPointerCancel={()=>{if(!dragging.current){setDx(0);return;}const d=dxRef.current;dragging.current=false;if(d>50)advance(1);else if(d<-50)advance(-1);else setDx(0);}}>
           <div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="pass"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>PASS</div>
           <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="yes"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>CALLBACK <Ico n="check" s={24}/></div>
-          <img src={t.img} alt={t.name} draggable="false" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:t.pos||"center 8%"}}/>
+          <img src={t.img} alt={t.name} draggable="false" decoding="async" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:t.pos||"center 8%"}}/>
           <div className="s-card-info">
             <h3 style={{fontSize:17,margin:"0 0 2px"}}>{t.name}</h3>
             <div className="s-card-meta">{t.age} · {t.gender} · {t.height}</div>
