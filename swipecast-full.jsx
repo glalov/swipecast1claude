@@ -2063,7 +2063,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
    the next. Decorative only: pointer-events:none + aria-hidden, skipped for
    prefers-reduced-motion, and the banner stays clickable the whole time. ── */
 .bci-overlay{position:absolute;inset:0;z-index:4;overflow:hidden;background:#020804;pointer-events:none;line-height:normal;will-change:opacity;}
-.bci-overlay.bci-out{animation:bciDissolve 1.3s cubic-bezier(.45,.05,.55,.95) forwards;}
+.bci-overlay.bci-out{animation:bciDissolve 1.2s cubic-bezier(.45,.05,.55,.95) forwards;}
 @keyframes bciDissolve{from{opacity:1;}to{opacity:0;}}
 .bci-canvas{position:absolute;inset:0;width:100%;height:100%;will-change:transform;}
 .bci-go .bci-zoom{animation:bciZoom 12s linear both;}
@@ -2082,30 +2082,30 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .bci-dc.sp{width:.45em;}
 .bci-dc.on{color:#eafff5;animation:bciCharLock .55s cubic-bezier(.25,.1,.25,1) both;}
 @keyframes bciCharLock{0%{transform:scale(1.22);}100%{transform:scale(1);}}
-@keyframes bciIn{0%{opacity:0;transform:scale(.92) translateY(14px);filter:blur(14px);}100%{opacity:1;transform:scale(1) translateY(0);filter:blur(0);}}
+@keyframes bciIn{0%{opacity:0;transform:scale(.94) translateY(12px);}100%{opacity:1;transform:scale(1) translateY(0);}}
 @keyframes bciSwell{0%{transform:scale(1);filter:brightness(1) saturate(1);}100%{transform:scale(1.04);filter:brightness(1.5) saturate(1.3);}}
 @keyframes bciStreak{0%{transform:scale(1.04);opacity:1;filter:brightness(1.5);}55%{transform:scaleX(3.4) scaleY(.3);opacity:.95;filter:brightness(2.1);}100%{transform:scaleX(9) scaleY(.02);opacity:0;filter:brightness(3);}}
 @keyframes bciFlare{0%{transform:translate(-50%,-50%) scaleX(.08);opacity:0;}22%{opacity:1;}100%{transform:translate(-50%,-50%) scaleX(1.15);opacity:0;}}
 .bci-flare{position:absolute;top:50%;left:50%;width:150%;height:3px;z-index:5;pointer-events:none;transform:translate(-50%,-50%) scaleX(0);mix-blend-mode:screen;opacity:0;filter:blur(.5px);will-change:transform,opacity;background:linear-gradient(90deg,transparent,rgba(160,255,205,.9) 30%,#fff 50%,rgba(160,255,205,.9) 70%,transparent);}
-.bci-go .bci-flare{animation:bciFlare 1s cubic-bezier(.3,.4,.3,1) 8.5s both;}
+.bci-go .bci-flare{animation:bciFlare .9s cubic-bezier(.3,.4,.3,1) 8.45s both;}
 .bci-core{position:absolute;left:50%;top:50%;z-index:2;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:radial-gradient(circle,#fff 0%,rgba(100,255,180,.9) 40%,transparent 75%);opacity:0;filter:blur(1.5px);will-change:transform,opacity;}
-.bci-go .bci-core{animation:bciCore 1.4s cubic-bezier(.4,.05,.6,.95) 8.1s both;}
+.bci-go .bci-core{animation:bciCore .8s cubic-bezier(.4,.05,.6,.95) 8.2s both;}
 @keyframes bciCore{0%{transform:scale(1);opacity:0;}30%{opacity:.5;}100%{transform:scale(16);opacity:1;}}
 .bci-glow{position:absolute;left:50%;top:50%;z-index:3;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:26px solid rgba(140,255,200,.5);filter:blur(18px);opacity:0;transform:scale(.1);will-change:transform,opacity;}
-.bci-go .bci-glow{animation:bciGlow 1.6s cubic-bezier(.33,.1,.25,1) 9.4s both;}
+.bci-go .bci-glow{animation:bciGlow 1.4s cubic-bezier(.33,.1,.25,1) 8.7s both;}
 @keyframes bciGlow{0%{transform:scale(.1);opacity:.85;}70%{opacity:.45;}100%{transform:scale(10);opacity:0;}}
 .bci-rays{position:absolute;inset:-60%;z-index:3;border-radius:50%;opacity:0;mix-blend-mode:screen;background:conic-gradient(from 0deg,transparent 0deg 10deg,rgba(160,255,205,.3) 10deg 14deg,transparent 14deg 40deg,rgba(160,255,205,.22) 40deg 44deg,transparent 44deg 80deg,rgba(255,255,255,.22) 80deg 84deg,transparent 84deg 120deg,rgba(160,255,205,.2) 120deg 124deg,transparent 124deg 160deg,rgba(255,255,255,.24) 160deg 164deg,transparent 164deg 200deg,rgba(160,255,205,.22) 200deg 204deg,transparent 204deg 240deg,rgba(255,255,255,.24) 240deg 244deg,transparent 244deg 280deg,rgba(160,255,205,.24) 280deg 284deg,transparent 284deg 320deg,rgba(255,255,255,.2) 320deg 324deg,transparent 324deg 360deg);will-change:transform,opacity;}
-.bci-go .bci-rays{animation:bciRays 2.4s cubic-bezier(.25,.1,.25,1) 9.4s both;}
+.bci-go .bci-rays{animation:bciRays 2s cubic-bezier(.25,.1,.25,1) 8.65s both;}
 @keyframes bciRays{0%{transform:rotate(0deg) scale(.35);opacity:0;}35%{opacity:.8;}100%{transform:rotate(50deg) scale(1.9);opacity:0;}}
 .bci-ember{z-index:5;}
 .bci-bloom{position:absolute;inset:0;z-index:4;background:radial-gradient(circle at 50% 50%,#fff 0%,rgba(255,250,240,1) 20%,rgba(200,235,225,.88) 44%,transparent 72%);opacity:0;will-change:opacity;}
-.bci-go .bci-bloom{animation:bciBloom 1.4s cubic-bezier(.45,.05,.55,.95) 9.3s both;}
+.bci-go .bci-bloom{animation:bciBloom 1.2s cubic-bezier(.45,.05,.55,.95) 8.55s both;}
 @keyframes bciBloom{0%{opacity:0;}30%{opacity:.85;}100%{opacity:0;}}
 .bci-ring{position:absolute;left:50%;top:50%;z-index:6;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;border:3px solid rgba(100,216,189,.8);opacity:0;will-change:transform,opacity;}
-.bci-go .bci-ring{animation:bciRing 1.8s cubic-bezier(.25,.5,.3,1) 9.5s both;}
+.bci-go .bci-ring{animation:bciRing 1.7s cubic-bezier(.25,.5,.3,1) 8.7s both;}
 .bci-ring.r2{border-color:rgba(140,165,240,.8);}
-.bci-go .bci-ring.r2{animation:bciRing 2.1s cubic-bezier(.25,.5,.3,1) 9.7s both;}
-.bci-go .bci-ring.r3{animation:bciRing 2.4s cubic-bezier(.25,.5,.3,1) 9.9s both;}
+.bci-go .bci-ring.r2{animation:bciRing 2s cubic-bezier(.25,.5,.3,1) 8.85s both;}
+.bci-go .bci-ring.r3{animation:bciRing 2.3s cubic-bezier(.25,.5,.3,1) 9s both;}
 @keyframes bciRing{0%{transform:scale(.2);opacity:.8;}60%{opacity:.35;}100%{transform:scale(11);opacity:0;}}
 @media(max-width:768px){.bci-phrase{padding:0 14px;}}
 @media(prefers-reduced-motion:reduce){.bci-overlay{display:none;}}
@@ -2860,11 +2860,11 @@ function BannerCodeIntro({onDone}){
     let decodeDone=false;
     let lockAt=null;
     const beats=[
-      {at:8300,fn:()=>{mode="converge";}},
-      {at:9500,fn:()=>burst(40)},
-      {at:9600,fn:()=>root.classList.add("bci-out")},
-      {at:9950,fn:()=>burst(24)},
-      {at:11000,fn:()=>{
+      {at:8250,fn:()=>{mode="converge";}},
+      {at:8700,fn:()=>burst(40)},
+      {at:8750,fn:()=>root.classList.add("bci-out")},
+      {at:9050,fn:()=>burst(24)},
+      {at:10300,fn:()=>{
         alive=false;
         // Flag written on COMPLETION, not on mount: the app remounts the
         // banner while auth resolves right after load, and a mount-time flag
