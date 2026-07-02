@@ -2066,10 +2066,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .bci-overlay.bci-out{animation:bciDissolve 1.3s cubic-bezier(.45,.05,.55,.95) forwards;}
 @keyframes bciDissolve{from{opacity:1;}to{opacity:0;}}
 .bci-canvas{position:absolute;inset:0;width:100%;height:100%;}
-.bci-zoom{animation:bciZoom 12s linear both;}
+.bci-go .bci-zoom{animation:bciZoom 12s linear both;}
 @keyframes bciZoom{0%{transform:scale(1);}100%{transform:scale(1.12);}}
-.bci-phrase{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;padding:0 24px;font-family:'Courier New',ui-monospace,Menlo,monospace;font-weight:900;font-size:30px;line-height:1.45;white-space:nowrap;text-shadow:0 0 14px rgba(110,255,185,.9),0 0 52px rgba(60,255,160,.45),0 0 110px rgba(40,220,130,.25);opacity:0;
-  animation:bciIn 1.1s cubic-bezier(.22,.61,.36,1) .5s both,bciSwell 1.2s cubic-bezier(.45,.05,.55,.95) 7s both,bciSuck .9s cubic-bezier(.45,0,.55,1) 8.2s forwards;}
+.bci-phrase{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;padding:0 24px;font-family:'Courier New',ui-monospace,Menlo,monospace;font-weight:900;font-size:30px;line-height:1.45;white-space:nowrap;text-shadow:0 0 14px rgba(110,255,185,.9),0 0 52px rgba(60,255,160,.45),0 0 110px rgba(40,220,130,.25);opacity:0;}
+.bci-go .bci-phrase{animation:bciIn 1.1s cubic-bezier(.22,.61,.36,1) .5s both,bciSwell 1.2s cubic-bezier(.45,.05,.55,.95) 7s both,bciSuck .9s cubic-bezier(.45,0,.55,1) 8.2s forwards;}
 .bci-text{display:block;text-align:center;}
 .bci-dc{display:inline-block;width:.68em;text-align:center;color:#57d792;}
 .bci-dc.sp{width:.45em;}
@@ -2078,18 +2078,24 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @keyframes bciIn{0%{opacity:0;transform:scale(.92) translateY(14px);filter:blur(14px);}100%{opacity:1;transform:scale(1) translateY(0);filter:blur(0);}}
 @keyframes bciSwell{0%{transform:scale(1);filter:brightness(1) saturate(1);}100%{transform:scale(1.04);filter:brightness(1.5) saturate(1.3);}}
 @keyframes bciSuck{0%{transform:scale(1.04);opacity:1;filter:blur(0) brightness(1.5) saturate(1.3);}100%{transform:scale(.05);opacity:0;filter:blur(10px) brightness(2.2) saturate(1.1);}}
-.bci-core{position:absolute;left:50%;top:50%;z-index:2;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:radial-gradient(circle,#fff 0%,rgba(100,255,180,.9) 40%,transparent 75%);opacity:0;animation:bciCore 1.4s cubic-bezier(.4,.05,.6,.95) 8.1s both;}
+.bci-core{position:absolute;left:50%;top:50%;z-index:2;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:radial-gradient(circle,#fff 0%,rgba(100,255,180,.9) 40%,transparent 75%);opacity:0;}
+.bci-go .bci-core{animation:bciCore 1.4s cubic-bezier(.4,.05,.6,.95) 8.1s both;}
 @keyframes bciCore{0%{transform:scale(1);opacity:0;filter:blur(0);}30%{opacity:.5;}100%{transform:scale(16);opacity:1;filter:blur(5px);}}
-.bci-glow{position:absolute;left:50%;top:50%;z-index:3;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:26px solid rgba(140,255,200,.5);filter:blur(18px);opacity:0;transform:scale(.1);animation:bciGlow 1.6s cubic-bezier(.33,.1,.25,1) 9.4s both;}
+.bci-glow{position:absolute;left:50%;top:50%;z-index:3;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:26px solid rgba(140,255,200,.5);filter:blur(18px);opacity:0;transform:scale(.1);}
+.bci-go .bci-glow{animation:bciGlow 1.6s cubic-bezier(.33,.1,.25,1) 9.4s both;}
 @keyframes bciGlow{0%{transform:scale(.1);opacity:.85;}70%{opacity:.45;}100%{transform:scale(10);opacity:0;}}
-.bci-rays{position:absolute;inset:-60%;z-index:3;border-radius:50%;opacity:0;mix-blend-mode:screen;background:conic-gradient(from 0deg,transparent 0deg 10deg,rgba(160,255,205,.3) 10deg 14deg,transparent 14deg 40deg,rgba(160,255,205,.22) 40deg 44deg,transparent 44deg 80deg,rgba(255,255,255,.22) 80deg 84deg,transparent 84deg 120deg,rgba(160,255,205,.2) 120deg 124deg,transparent 124deg 160deg,rgba(255,255,255,.24) 160deg 164deg,transparent 164deg 200deg,rgba(160,255,205,.22) 200deg 204deg,transparent 204deg 240deg,rgba(255,255,255,.24) 240deg 244deg,transparent 244deg 280deg,rgba(160,255,205,.24) 280deg 284deg,transparent 284deg 320deg,rgba(255,255,255,.2) 320deg 324deg,transparent 324deg 360deg);animation:bciRays 2.4s cubic-bezier(.25,.1,.25,1) 9.4s both;}
+.bci-rays{position:absolute;inset:-60%;z-index:3;border-radius:50%;opacity:0;mix-blend-mode:screen;background:conic-gradient(from 0deg,transparent 0deg 10deg,rgba(160,255,205,.3) 10deg 14deg,transparent 14deg 40deg,rgba(160,255,205,.22) 40deg 44deg,transparent 44deg 80deg,rgba(255,255,255,.22) 80deg 84deg,transparent 84deg 120deg,rgba(160,255,205,.2) 120deg 124deg,transparent 124deg 160deg,rgba(255,255,255,.24) 160deg 164deg,transparent 164deg 200deg,rgba(160,255,205,.22) 200deg 204deg,transparent 204deg 240deg,rgba(255,255,255,.24) 240deg 244deg,transparent 244deg 280deg,rgba(160,255,205,.24) 280deg 284deg,transparent 284deg 320deg,rgba(255,255,255,.2) 320deg 324deg,transparent 324deg 360deg);}
+.bci-go .bci-rays{animation:bciRays 2.4s cubic-bezier(.25,.1,.25,1) 9.4s both;}
 @keyframes bciRays{0%{transform:rotate(0deg) scale(.35);opacity:0;}35%{opacity:.8;}100%{transform:rotate(50deg) scale(1.9);opacity:0;}}
 .bci-ember{z-index:5;}
-.bci-bloom{position:absolute;inset:0;z-index:4;background:radial-gradient(circle at 50% 50%,#fff 0%,rgba(255,250,240,1) 20%,rgba(200,235,225,.88) 44%,transparent 72%);opacity:0;animation:bciBloom 1.4s cubic-bezier(.45,.05,.55,.95) 9.3s both;}
+.bci-bloom{position:absolute;inset:0;z-index:4;background:radial-gradient(circle at 50% 50%,#fff 0%,rgba(255,250,240,1) 20%,rgba(200,235,225,.88) 44%,transparent 72%);opacity:0;}
+.bci-go .bci-bloom{animation:bciBloom 1.4s cubic-bezier(.45,.05,.55,.95) 9.3s both;}
 @keyframes bciBloom{0%{opacity:0;}30%{opacity:.85;}100%{opacity:0;}}
-.bci-ring{position:absolute;left:50%;top:50%;z-index:6;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;border:3px solid rgba(100,216,189,.8);opacity:0;animation:bciRing 1.8s cubic-bezier(.25,.5,.3,1) 9.5s both;}
-.bci-ring.r2{border-color:rgba(140,165,240,.8);animation:bciRing 2.1s cubic-bezier(.25,.5,.3,1) 9.7s both;}
-.bci-ring.r3{animation:bciRing 2.4s cubic-bezier(.25,.5,.3,1) 9.9s both;}
+.bci-ring{position:absolute;left:50%;top:50%;z-index:6;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;border:3px solid rgba(100,216,189,.8);opacity:0;}
+.bci-go .bci-ring{animation:bciRing 1.8s cubic-bezier(.25,.5,.3,1) 9.5s both;}
+.bci-ring.r2{border-color:rgba(140,165,240,.8);}
+.bci-go .bci-ring.r2{animation:bciRing 2.1s cubic-bezier(.25,.5,.3,1) 9.7s both;}
+.bci-go .bci-ring.r3{animation:bciRing 2.4s cubic-bezier(.25,.5,.3,1) 9.9s both;}
 @keyframes bciRing{0%{transform:scale(.2);opacity:.8;border-width:4px;}60%{opacity:.35;}100%{transform:scale(11);opacity:0;border-width:.5px;}}
 @media(max-width:768px){.bci-phrase{padding:0 14px;}}
 @media(prefers-reduced-motion:reduce){.bci-overlay{display:none;}}
@@ -2809,34 +2815,71 @@ function BannerCodeIntro({onDone}){
 
     // Decode: scramble locks into English mostly left→right, full sentence by
     // ~3.5s, holds clean until the power swell at 7s (CSS drives the rest).
-    later(700,()=>{
-      const start=performance.now(),dur=2800;
-      const lockAt=spans.map((s,i)=>(i/spans.length)*.6+Math.random()*.25);
-      const iv=setInterval(()=>{
-        const t=(performance.now()-start)/dur;
-        if(t>=1){spans.forEach(s=>{if(!s.dataset.done){s.textContent=s.dataset.f;s.classList.add("on");s.dataset.done="1";}});clearInterval(iv);return;}
-        spans.forEach((s,i)=>{
-          if(s.dataset.done)return;
-          if(t>=lockAt[i]){s.textContent=s.dataset.f;s.classList.add("on");s.dataset.done="1";}
-          else if(Math.random()<.45)s.textContent=bciGlyph();
-        });
-      },60);
-      cancels.push(()=>clearInterval(iv));
-    });
-    later(8300,()=>{mode="converge";});
-    later(9500,()=>burst(40));
-    later(9950,()=>burst(24));
-    later(9600,()=>{root.classList.add("bci-out");});
-    // The session flag is written on COMPLETION, not on mount: the app
-    // re-renders/remounts the banner while auth state resolves right after
-    // load, and a mount-time flag made that second mount skip the intro
-    // entirely. Completion-time writing lets the intro survive remounts (it
-    // just restarts within its first second) and still play once per session.
-    later(11000,()=>{
-      alive=false;
-      try{sessionStorage.setItem("cs_banner_intro_done","1");}catch(e){}
-      if(onDone)onDone();
-    });
+    // The site's logo/curtain intro (#cs-intro) covers the screen for ~4s on
+    // every page load. Only the code rain runs during that window; the whole
+    // decode timeline (.bci-go) begins when the curtain is gone, so the
+    // decode is the "second beat" the user actually watches, never hidden.
+    //
+    // Timing architecture: everything runs off ONE heartbeat interval created
+    // right here at effect time (timer nesting 0) plus a MutationObserver for
+    // the curtain. Browsers aggressively throttle timers created inside
+    // chained timer callbacks on hidden tabs — a setTimeout-chain poll here
+    // silently froze the decode when the tab loaded in the background.
+    let goAt=null;
+    let decodeDone=false;
+    let lockAt=null;
+    const beats=[
+      {at:8300,fn:()=>{mode="converge";}},
+      {at:9500,fn:()=>burst(40)},
+      {at:9600,fn:()=>root.classList.add("bci-out")},
+      {at:9950,fn:()=>burst(24)},
+      {at:11000,fn:()=>{
+        alive=false;
+        // Flag written on COMPLETION, not on mount: the app remounts the
+        // banner while auth resolves right after load, and a mount-time flag
+        // made that second mount skip the intro entirely. Completion-time
+        // writing lets the intro survive remounts (it just restarts within
+        // its first second) and still play once per session.
+        try{sessionStorage.setItem("cs_banner_intro_done","1");}catch(e){}
+        if(onDone)onDone();
+      }}
+    ];
+    let beatIdx=0;
+    const armGo=()=>{
+      if(goAt!==null||!alive)return;
+      goAt=performance.now();
+      root.classList.add("bci-go");
+      lockAt=spans.map((s,i)=>(i/spans.length)*.6+Math.random()*.25);
+    };
+    if(!document.getElementById("cs-intro")){
+      armGo();
+    }else{
+      const obs=new MutationObserver(()=>{if(!document.getElementById("cs-intro"))armGo();});
+      obs.observe(document.body,{childList:true});
+      cancels.push(()=>obs.disconnect());
+      later(6000,armGo);   // safety net: never wait forever for the curtain
+    }
+    const hb=setInterval(()=>{
+      if(goAt===null||!alive)return;
+      const el=performance.now()-goAt;
+      // decode: scramble locks into English mostly left-to-right; full
+      // sentence guaranteed by t>=1 even if ticks arrive late
+      if(!decodeDone){
+        const t=(el-700)/2800;
+        if(t>=1){
+          spans.forEach(s=>{if(!s.dataset.done){s.textContent=s.dataset.f;s.classList.add("on");s.dataset.done="1";}});
+          decodeDone=true;
+        }else if(t>=0){
+          spans.forEach((s,i)=>{
+            if(s.dataset.done)return;
+            if(t>=lockAt[i]){s.textContent=s.dataset.f;s.classList.add("on");s.dataset.done="1";}
+            else if(Math.random()<.45)s.textContent=bciGlyph();
+          });
+        }
+      }
+      while(beatIdx<beats.length&&el>=beats[beatIdx].at){beats[beatIdx].fn();beatIdx++;}
+    },80);
+    cancels.push(()=>clearInterval(hb));
     return()=>{
       alive=false;
       cancels.forEach(c=>c());
