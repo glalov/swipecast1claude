@@ -102,14 +102,63 @@ else:
 if not USE_BABEL_RUNTIME:
     APP_FILE = "app.js"
     open(APP_FILE, "w", encoding="utf-8").write(compiled_js)
-    # Plain compiled JS, loaded in order after the React/Supabase CDN scripts.
-    app_tag = f'  <script src="/app.js?v={BUILD_VERSION}" defer></script>'
+    # Sequenced boot (see loader below): the intro owns the main thread for
+    # its opening beat. All payloads start DOWNLOADING at t=0 via preload
+    # hints; EXECUTION of react -> react-dom -> supabase -> client init ->
+    # app.js begins ~0.9s after the first painted frame, so compiling the
+    # multi-MB app can never eat the logo fade. The ready-gated curtain
+    # absorbs the wait, so total time-to-site is unchanged.
+    BOOT_LOADER = '''  <script>
+    (function(){
+      var STEPS=[
+        "/vendor/react.production.min.js",
+        "/vendor/react-dom.production.min.js",
+        "/vendor/supabase.min.js",
+        "INIT",
+        "__APPSRC__"
+      ];
+      function step(){
+        var it=STEPS.shift();
+        if(it===undefined)return;
+        if(it==="INIT"){
+          try{window.__CS_INIT_SB();}catch(e){}
+          step();
+          return;
+        }
+        var sc=document.createElement('script');
+        sc.src=it;
+        sc.onload=step;
+        sc.onerror=step;   /* keep booting; init + app have their own guards */
+        document.body.appendChild(sc);
+      }
+      var fired=false;
+      function once(){if(fired)return;fired=true;step();}
+      var noHold=false;
+      try{noHold=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){}
+      if(noHold||!document.getElementById('cs-intro')){once();return;}
+      requestAnimationFrame(function(){setTimeout(once,900);});
+      setTimeout(once,1600);   /* hidden tab: rAF never fires - boot anyway */
+    })();
+  </script>'''
+    app_tag = BOOT_LOADER.replace("__APPSRC__", f"/app.js?v={BUILD_VERSION}")
+    head_vendor = ''
+    preload_tags = f'''  <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
+  <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
+  <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
+  <link rel="preload" as="script" href="/app.js?v={BUILD_VERSION}"/>'''
+    sb_tag = ''
     babel_cdn = ''
 else:
     APP_FILE = "app.jsx"
     open(APP_FILE, "w", encoding="utf-8").write(jsx_raw)
     # Babel standalone supports `src` on text/babel scripts.
-    app_tag = f'  <script type="text/babel" data-presets="react" src="/app.jsx?v={BUILD_VERSION}" defer></script>'
+    # Dev fallback: original immediate tags, init runs right after supabase.
+    app_tag = ('  <script>window.__CS_INIT_SB();</script>\n'
+               f'  <script type="text/babel" data-presets="react" src="/app.jsx?v={BUILD_VERSION}" defer></script>')
+    head_vendor = ('  <script src="/vendor/react.production.min.js" defer></script>\n'
+                   '  <script src="/vendor/react-dom.production.min.js" defer></script>')
+    preload_tags = ''
+    sb_tag = '  <script src="/vendor/supabase.min.js"></script>\n'
     babel_cdn = '  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>'
 
 pre_compiled_flag = str(not USE_BABEL_RUNTIME).lower()
@@ -172,8 +221,7 @@ def render_page(title, desc, canonical):
   <script type="application/ld+json">
   {{"@context":"https://schema.org","@type":"WebApplication","name":"CastSlate","url":"https://www.castslate.com","applicationCategory":"EntertainmentApplication","operatingSystem":"Web","offers":{{"@type":"Offer","price":"0","priceCurrency":"USD","description":"Free actor account. Premium at $9.99/month."}},"description":"A modern casting platform where actors submit to roles and casting directors review talent one profile at a time."}}
   </script>
-  <script src="/vendor/react.production.min.js" defer></script>
-  <script src="/vendor/react-dom.production.min.js" defer></script>
+{head_vendor}{preload_tags}
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 {babel_cdn}
   <!-- BUILD: {BUILD_VERSION} -->
@@ -252,9 +300,15 @@ def render_page(title, desc, canonical):
     #cs-intro .cs-intro-mark{{
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:16px;
       opacity:0;-webkit-transform:translateY(28px) scale(.965);transform:translateY(28px) scale(.965);
+    }}
+    /* Animations begin only on .cs-ready — added on the second painted frame,
+       so the fade always starts from a frame the user actually saw and can
+       never be silently eaten by early main-thread work. */
+    #cs-intro.cs-ready .cs-intro-mark{{
       -webkit-animation:cs-intro-in .6s cubic-bezier(.2,.7,.2,1) .1s forwards,cs-breathe 2.6s ease-in-out 2.1s infinite alternate;animation:cs-intro-in .6s cubic-bezier(.2,.7,.2,1) .1s forwards,cs-breathe 2.6s ease-in-out 2.1s infinite alternate;
     }}
-    #cs-intro .cs-intro-box{{width:74px;height:74px;background:#fff;border-radius:16px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);-webkit-animation:cs-spin .6s cubic-bezier(.5,.05,.2,1) 1.2s both;animation:cs-spin .6s cubic-bezier(.5,.05,.2,1) 1.2s both;}}
+    #cs-intro .cs-intro-box{{width:74px;height:74px;background:#fff;border-radius:16px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}}
+    #cs-intro.cs-ready .cs-intro-box{{-webkit-animation:cs-spin .6s cubic-bezier(.5,.05,.2,1) 1.2s both;animation:cs-spin .6s cubic-bezier(.5,.05,.2,1) 1.2s both;}}
     #cs-intro .cs-intro-name{{color:#fff;font-size:52px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'DM Sans',sans-serif;letter-spacing:-1.2px;}}
     @-webkit-keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
     @keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
@@ -294,6 +348,11 @@ def render_page(title, desc, canonical):
       var skip=false;
       try{{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true;}}catch(e){{}}
       if(skip){{if(el.parentNode)el.parentNode.removeChild(el);return;}}
+      /* Start the logo animations from the second painted frame so the fade
+         is always visible; fallback covers hidden tabs where rAF never fires. */
+      var raf=window.requestAnimationFrame||function(f){{setTimeout(f,16);}};
+      raf(function(){{raf(function(){{el.classList.add('cs-ready');}});}});
+      setTimeout(function(){{el.classList.add('cs-ready');}},400);
       /* The curtain falls only when BOTH are true: the minimum beat has
          played (logo rise + cube spin, 2.9s) AND the app behind it has
          actually painted. On a slow connection the logo simply keeps
@@ -444,15 +503,12 @@ def render_page(title, desc, canonical):
       }})();
     }})();
   </script>
-  <!-- Supabase loads HERE, at end of body, NOT in <head>: as a synchronous
-       head script it blocked the very first paint on slow connections, so the
-       intro started late and the whole entrance looked broken. Down here the
-       intro paints instantly and this still executes before app.js (defer
-       scripts run only after document parsing completes). Do NOT add defer to
-       this tag — the inline init right below needs window.supabase already
-       defined (the Jul 1 "Supabase unavailable" login outage, commit 3a5088b). -->
-  <script src="/vendor/supabase.min.js"></script>
-  <script>
+{sb_tag}  <script>
+    /* Supabase client init — invoked by the sequenced boot loader below (or
+       immediately in the runtime-Babel dev fallback) after the library has
+       executed and before app.js runs. Supabase must never load with defer —
+       see the Jul 1 "Supabase unavailable" login outage (commit 3a5088b). */
+    window.__CS_INIT_SB = function(){{
     window.SC_CONFIG = {{
       SUPABASE_URL: "https://mvqhqbjjvgkftninjcby.supabase.co",
       SUPABASE_ANON_KEY: "sb_publishable_J8nl68IlCex_G9sjNQX1kQ_vsb7AzNc",
@@ -479,6 +535,7 @@ def render_page(title, desc, canonical):
         removeChannel: function(){{}}
       }};
     }}
+    }};
   </script>
 {app_tag}
 </body>
