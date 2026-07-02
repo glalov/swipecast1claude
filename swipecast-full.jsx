@@ -2068,7 +2068,8 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .bci-canvas{position:absolute;inset:0;width:100%;height:100%;will-change:transform;}
 .bci-go .bci-zoom{animation:bciZoom 12s linear both;}
 @keyframes bciZoom{0%{transform:scale(1);}100%{transform:scale(1.12);}}
-.bci-phrase{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;will-change:transform,opacity,filter;padding:0 24px;font-family:'Courier New',ui-monospace,Menlo,monospace;font-weight:900;font-size:30px;line-height:1.45;white-space:nowrap;text-shadow:0 0 14px rgba(110,255,185,.9),0 0 52px rgba(60,255,160,.45),0 0 110px rgba(40,220,130,.25);opacity:0;}
+.bci-phrase{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;will-change:transform,opacity,filter;padding:0 24px;font-family:'Courier New',ui-monospace,Menlo,monospace;font-weight:900;font-size:30px;line-height:1.45;white-space:nowrap;text-shadow:0 0 12px rgba(110,255,185,.8);transition:text-shadow .7s ease;opacity:0;}
+.bci-phrase.bci-lit{text-shadow:0 0 14px rgba(110,255,185,.9),0 0 52px rgba(60,255,160,.45),0 0 110px rgba(40,220,130,.25);}
 .bci-go .bci-phrase{animation:bciIn 1.1s cubic-bezier(.22,.61,.36,1) .5s both,bciSwell 1.2s cubic-bezier(.45,.05,.55,.95) 7s both,bciSuck .9s cubic-bezier(.45,0,.55,1) 8.2s forwards;}
 .bci-text{display:block;text-align:center;}
 .bci-dc{display:inline-block;width:.68em;text-align:center;color:#57d792;}
@@ -2869,11 +2870,12 @@ function BannerCodeIntro({onDone}){
         if(t>=1){
           spans.forEach(s=>{if(!s.dataset.done){s.textContent=s.dataset.f;s.classList.add("on");s.dataset.done="1";}});
           decodeDone=true;
+          phrase.classList.add("bci-lit");   // full glow blooms over the finished line
         }else if(t>=0){
           spans.forEach((s,i)=>{
             if(s.dataset.done)return;
             if(t>=lockAt[i]){s.textContent=s.dataset.f;s.classList.add("on");s.dataset.done="1";}
-            else if(Math.random()<.35)s.textContent=bciGlyph();
+            else if(Math.random()<.25)s.textContent=bciGlyph();
           });
         }
       }
@@ -14989,14 +14991,15 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
     // Warm every deck photo now, while the curtain still covers the page —
     // the back cards only enter the DOM when the deal-in starts, and cold
     // image fetch+decode mid-animation was a visible desktop stutter.
-    try{demo.forEach(d=>{const im=new Image();im.decoding="async";im.src=d.img;});}catch(e){}
+    try{demo.forEach(d=>{const im=new Image();im.decoding="async";im.src=d.img;if(im.decode)im.decode().catch(()=>{});});}catch(e){}
     let started=false,endTm,poll,safety;
     function play(){if(started)return;started=true;swipeIntroSeen=true;setArmed(true);endTm=setTimeout(()=>setIntro(false),2400);}
     const hasSplash=typeof document!=='undefined'&&document.getElementById('cs-intro');
     if(!hasSplash){const k=setTimeout(play,150);return ()=>{clearTimeout(k);clearTimeout(endTm);};}
-    poll=setInterval(()=>{if(typeof document!=='undefined'&&!document.getElementById('cs-intro')){clearInterval(poll);play();}},120);
-    safety=setTimeout(()=>{clearInterval(poll);play();},4450);
-    return ()=>{clearInterval(poll);clearTimeout(safety);clearTimeout(endTm);};
+    let breathe;
+    poll=setInterval(()=>{if(typeof document!=='undefined'&&!document.getElementById('cs-intro')){clearInterval(poll);breathe=setTimeout(play,250);}},120);
+    safety=setTimeout(()=>{clearInterval(poll);play();},16000);
+    return ()=>{clearInterval(poll);clearTimeout(safety);clearTimeout(breathe);clearTimeout(endTm);};
   },[]);
   function advance(dir){
     if(animating)return;
@@ -15056,8 +15059,8 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
         {!intro&&<div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.35,zIndex:1,pointerEvents:"none"}}>
           <img src={nt.img} alt="" decoding="async" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:nt.pos||"center 8%"}}/>
         </div>}
-        {intro&&armed&&Array.from({length:total-1},(_,k)=>k+1).map(i=>{const bc=demo[Math.min(i,total-1)];const rest=`translateY(${i*5}px) scale(${(1-i*0.03).toFixed(3)})`;const ro=Math.max(0.74,1-i*0.035).toFixed(2);return(
-          <div key={"swin"+i} className="s-card sw-intro-back" style={{"--rest":rest,"--ro":ro,"--d":`${(0.45+i*0.10).toFixed(2)}s`,zIndex:total-i,pointerEvents:"none",boxShadow:"none"}}>
+        {intro&&Array.from({length:total-1},(_,k)=>k+1).map(i=>{const bc=demo[Math.min(i,total-1)];const rest=`translateY(${i*5}px) scale(${(1-i*0.03).toFixed(3)})`;const ro=Math.max(0.74,1-i*0.035).toFixed(2);return(
+          <div key={"swin"+i} className={"s-card "+(armed?"sw-intro-back":"sw-pre")} style={{"--rest":rest,"--ro":ro,"--d":`${(0.45+i*0.10).toFixed(2)}s`,zIndex:total-i,pointerEvents:"none",boxShadow:"none"}}>
             <img src={bc.img} alt="" decoding="async" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:bc.pos||"center 8%"}}/>
           </div>);})}
         <div className={"s-card"+(intro?(armed?" sw-intro-top":" sw-pre"):"")}
