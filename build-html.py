@@ -154,9 +154,12 @@ def render_page(title, desc, canonical):
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=6"/>
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=6"/>
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=6"/>
-  <!-- Tabler line-icon webfont (replaces emoji UI icons) -->
+  <!-- Tabler line-icon webfont (replaces emoji UI icons). Loaded async so a
+       slow CDN can never block the first paint — the intro must start
+       instantly; icons are only consumed after React mounts anyway. -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/>
+  <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" onload="this.onload=null;this.rel='stylesheet'"/>
+  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/></noscript>
   <!-- Structured Data: WebSite -->
   <script type="application/ld+json">
   {{"@context":"https://schema.org","@type":"WebSite","name":"CastSlate","alternateName":["Cast Slate","CastSlate Casting"],"url":"https://www.castslate.com"}}
@@ -171,40 +174,8 @@ def render_page(title, desc, canonical):
   </script>
   <script src="/vendor/react.production.min.js" defer></script>
   <script src="/vendor/react-dom.production.min.js" defer></script>
-  <!-- NOT deferred: the synchronous inline init below calls supabase.createClient(),
-       so the library MUST execute before this tag's following script. Adding defer
-       here makes window.supabase undefined at init time -> "Supabase unavailable". -->
-  <script src="/vendor/supabase.min.js"></script>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 {babel_cdn}
-  <script>
-    window.SC_CONFIG = {{
-      SUPABASE_URL: "https://mvqhqbjjvgkftninjcby.supabase.co",
-      SUPABASE_ANON_KEY: "sb_publishable_J8nl68IlCex_G9sjNQX1kQ_vsb7AzNc",
-      ADMIN_EMAIL: "officecasting01@gmail.com"
-    }};
-    /* Guard against CDN failure — createClient is a no-op stub if Supabase didn't load */
-    try {{
-      window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
-    }} catch(e) {{
-      console.error("[CastSlate] Supabase CDN failed to load:", e.message);
-      window.sb = {{
-        from: function(){{ return {{select:function(){{return Promise.resolve({{data:[],error:new Error("Supabase unavailable")}});}},insert:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}},update:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}},delete:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}},eq:function(){{return this;}},neq:function(){{return this;}},single:function(){{return this;}},maybeSingle:function(){{return Promise.resolve({{data:null,error:null}});}},order:function(){{return this;}},limit:function(){{return this;}},in:function(){{return this;}},contains:function(){{return this;}},ilike:function(){{return this;}},is:function(){{return this;}},or:function(){{return this;}},count:function(){{return this;}},head:function(){{return this;}}}}}},
-        auth: {{
-          getSession:function(){{return Promise.resolve({{data:{{session:null}},error:null}});}},
-          getUser:function(){{return Promise.resolve({{data:{{user:null}},error:null}});}},
-          signInWithPassword:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}},
-          signUp:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}},
-          signOut:function(){{return Promise.resolve({{error:null}});}},
-          onAuthStateChange:function(cb){{return {{data:{{subscription:{{unsubscribe:function(){{}}}}}}}};}},
-          updateUser:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}}
-        }},
-        functions: {{ invoke: function(){{ return Promise.resolve({{data:null,error:null}}); }} }},
-        channel: function(){{ return {{on:function(){{return this;}},subscribe:function(){{return this;}},unsubscribe:function(){{}}}}; }},
-        removeChannel: function(){{}}
-      }};
-    }}
-  </script>
   <!-- BUILD: {BUILD_VERSION} -->
   <meta name="build-version" content="{BUILD_VERSION}"/>
   <script>
@@ -266,25 +237,29 @@ def render_page(title, desc, canonical):
     #cs-intro-bg{{
       position:absolute;top:0;right:0;bottom:0;left:0;background:#0A0A0A;z-index:1;overflow:hidden;
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
-      -webkit-animation:cs-bg-down 1.1s cubic-bezier(0,0,.2,1) 2.9s forwards;animation:cs-bg-down 1.1s cubic-bezier(0,0,.2,1) 2.9s forwards;
+      will-change:transform;
     }}
+    #cs-intro.cs-go #cs-intro-bg{{-webkit-animation:cs-bg-down 1.1s cubic-bezier(0,0,.2,1) forwards;animation:cs-bg-down 1.1s cubic-bezier(0,0,.2,1) forwards;}}
     /* Counter-moving holder: it rises at the exact speed the curtain (#cs-intro-bg)
        falls, so the logo stays perfectly still on screen while the curtain's
        overflow:hidden edge cuts down through it. Logo never travels with the curtain. */
     #cs-intro .cs-intro-hold{{
       position:absolute;top:0;right:0;bottom:0;left:0;
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
-      -webkit-animation:cs-mark-up 1.1s cubic-bezier(0,0,.2,1) 2.9s forwards;animation:cs-mark-up 1.1s cubic-bezier(0,0,.2,1) 2.9s forwards;
+      will-change:transform;
     }}
+    #cs-intro.cs-go .cs-intro-hold{{-webkit-animation:cs-mark-up 1.1s cubic-bezier(0,0,.2,1) forwards;animation:cs-mark-up 1.1s cubic-bezier(0,0,.2,1) forwards;}}
     #cs-intro .cs-intro-mark{{
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:16px;
       opacity:0;-webkit-transform:translateY(28px) scale(.965);transform:translateY(28px) scale(.965);
-      -webkit-animation:cs-intro-in .6s cubic-bezier(.2,.7,.2,1) .1s forwards;animation:cs-intro-in .6s cubic-bezier(.2,.7,.2,1) .1s forwards;
+      -webkit-animation:cs-intro-in .6s cubic-bezier(.2,.7,.2,1) .1s forwards,cs-breathe 2.6s ease-in-out 2.1s infinite alternate;animation:cs-intro-in .6s cubic-bezier(.2,.7,.2,1) .1s forwards,cs-breathe 2.6s ease-in-out 2.1s infinite alternate;
     }}
     #cs-intro .cs-intro-box{{width:74px;height:74px;background:#fff;border-radius:16px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);-webkit-animation:cs-spin .6s cubic-bezier(.5,.05,.2,1) 1.2s both;animation:cs-spin .6s cubic-bezier(.5,.05,.2,1) 1.2s both;}}
     #cs-intro .cs-intro-name{{color:#fff;font-size:52px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'DM Sans',sans-serif;letter-spacing:-1.2px;}}
     @-webkit-keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
     @keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
+    @-webkit-keyframes cs-breathe{{from{{-webkit-transform:scale(1);transform:scale(1);}}to{{-webkit-transform:scale(1.016);transform:scale(1.016);}}}}
+    @keyframes cs-breathe{{from{{-webkit-transform:scale(1);transform:scale(1);}}to{{-webkit-transform:scale(1.016);transform:scale(1.016);}}}}
     @-webkit-keyframes cs-mark-out{{to{{opacity:0;}}}}
     @keyframes cs-mark-out{{to{{opacity:0;}}}}
     @-webkit-keyframes cs-bg-down{{to{{-webkit-transform:translateY(101%);transform:translateY(101%);}}}}
@@ -319,7 +294,30 @@ def render_page(title, desc, canonical):
       var skip=false;
       try{{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true;}}catch(e){{}}
       if(skip){{if(el.parentNode)el.parentNode.removeChild(el);return;}}
-      setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},4200);
+      /* The curtain falls only when BOTH are true: the minimum beat has
+         played (logo rise + cube spin, 2.9s) AND the app behind it has
+         actually painted. On a slow connection the logo simply keeps
+         breathing until the site is ready, so the reveal always lands on
+         a live page — never on a loading spinner or a half-built layout.
+         Hard 15s cap so a failed boot can never trap the curtain. */
+      var t0=Date.now(),MIN=2900,CAP=15000,gone=false;
+      function appReady(){{
+        if(window.__CS_REACT_MOUNTED)return true;
+        var r=document.getElementById('root');
+        return !!(r&&r.childElementCount>0);
+      }}
+      function go(){{
+        if(gone)return;
+        gone=true;
+        el.classList.add('cs-go');
+        setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},1300);
+      }}
+      (function poll(){{
+        if(gone)return;
+        var e=Date.now()-t0;
+        if((e>=MIN&&appReady())||e>=CAP){{go();return;}}
+        setTimeout(poll,120);
+      }})();
     }})();
   </script>
   <!-- Loading indicator — shown until React mounts -->
@@ -445,6 +443,42 @@ def render_page(title, desc, canonical):
         setTimeout(poll, 400);
       }})();
     }})();
+  </script>
+  <!-- Supabase loads HERE, at end of body, NOT in <head>: as a synchronous
+       head script it blocked the very first paint on slow connections, so the
+       intro started late and the whole entrance looked broken. Down here the
+       intro paints instantly and this still executes before app.js (defer
+       scripts run only after document parsing completes). Do NOT add defer to
+       this tag — the inline init right below needs window.supabase already
+       defined (the Jul 1 "Supabase unavailable" login outage, commit 3a5088b). -->
+  <script src="/vendor/supabase.min.js"></script>
+  <script>
+    window.SC_CONFIG = {{
+      SUPABASE_URL: "https://mvqhqbjjvgkftninjcby.supabase.co",
+      SUPABASE_ANON_KEY: "sb_publishable_J8nl68IlCex_G9sjNQX1kQ_vsb7AzNc",
+      ADMIN_EMAIL: "officecasting01@gmail.com"
+    }};
+    /* Guard against CDN failure — createClient is a no-op stub if Supabase didn't load */
+    try {{
+      window.sb = window.supabase.createClient(window.SC_CONFIG.SUPABASE_URL, window.SC_CONFIG.SUPABASE_ANON_KEY);
+    }} catch(e) {{
+      console.error("[CastSlate] Supabase CDN failed to load:", e.message);
+      window.sb = {{
+        from: function(){{ return {{select:function(){{return Promise.resolve({{data:[],error:new Error("Supabase unavailable")}});}},insert:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}},update:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}},delete:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}},eq:function(){{return this;}},neq:function(){{return this;}},single:function(){{return this;}},maybeSingle:function(){{return Promise.resolve({{data:null,error:null}});}},order:function(){{return this;}},limit:function(){{return this;}},in:function(){{return this;}},contains:function(){{return this;}},ilike:function(){{return this;}},is:function(){{return this;}},or:function(){{return this;}},count:function(){{return this;}},head:function(){{return this;}}}}}},
+        auth: {{
+          getSession:function(){{return Promise.resolve({{data:{{session:null}},error:null}});}},
+          getUser:function(){{return Promise.resolve({{data:{{user:null}},error:null}});}},
+          signInWithPassword:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}},
+          signUp:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}},
+          signOut:function(){{return Promise.resolve({{error:null}});}},
+          onAuthStateChange:function(cb){{return {{data:{{subscription:{{unsubscribe:function(){{}}}}}}}};}},
+          updateUser:function(){{return Promise.resolve({{data:null,error:new Error("Supabase unavailable")}});}}
+        }},
+        functions: {{ invoke: function(){{ return Promise.resolve({{data:null,error:null}}); }} }},
+        channel: function(){{ return {{on:function(){{return this;}},subscribe:function(){{return this;}},unsubscribe:function(){{}}}}; }},
+        removeChannel: function(){{}}
+      }};
+    }}
   </script>
 {app_tag}
 </body>
