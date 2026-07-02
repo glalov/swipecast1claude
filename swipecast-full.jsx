@@ -2068,10 +2068,16 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .bci-canvas{position:absolute;inset:0;width:100%;height:100%;will-change:transform;}
 .bci-go .bci-zoom{animation:bciZoom 12s linear both;}
 @keyframes bciZoom{0%{transform:scale(1);}100%{transform:scale(1.12);}}
-.bci-phrase{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;will-change:transform,opacity,filter;padding:0 24px;font-family:'Courier New',ui-monospace,Menlo,monospace;font-weight:900;font-size:30px;line-height:1.45;white-space:nowrap;text-shadow:0 0 12px rgba(110,255,185,.8);transition:text-shadow .7s ease;opacity:0;}
-.bci-phrase.bci-lit{text-shadow:0 0 14px rgba(110,255,185,.9),0 0 52px rgba(60,255,160,.45),0 0 110px rgba(40,220,130,.25);}
+.bci-phrase{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;will-change:transform,opacity,filter;padding:0 24px;font-family:'Courier New',ui-monospace,Menlo,monospace;font-weight:900;font-size:30px;line-height:1.45;white-space:nowrap;text-shadow:0 0 12px rgba(110,255,185,.8);opacity:0;}
+/* Full-glow duplicate of the finished sentence: transparent glyphs carrying
+   the deep triple shadow, rasterized ONCE and faded in by opacity (pure GPU)
+   when the decode completes. Transitioning text-shadow itself re-rendered
+   the whole glowing line every frame — that was the post-decode stutter. */
+.bci-glowdub{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center;padding:0 24px;white-space:nowrap;line-height:1.45;text-shadow:0 0 14px rgba(110,255,185,.9),0 0 52px rgba(60,255,160,.45),0 0 110px rgba(40,220,130,.25);opacity:0;will-change:opacity;transition:opacity .7s ease;pointer-events:none;}
+.bci-glowdub .bci-dc{color:transparent;}
+.bci-phrase.bci-lit .bci-glowdub{opacity:1;}
 .bci-go .bci-phrase{animation:bciIn 1.1s cubic-bezier(.22,.61,.36,1) .5s both,bciSwell 1.2s cubic-bezier(.45,.05,.55,.95) 7s both,bciSuck .9s cubic-bezier(.45,0,.55,1) 8.2s forwards;}
-.bci-text{display:block;text-align:center;}
+.bci-text{display:block;text-align:center;position:relative;z-index:1;}
 .bci-dc{display:inline-block;width:.68em;text-align:center;color:#57d792;}
 .bci-dc.sp{width:.45em;}
 .bci-dc.on{color:#eafff5;animation:bciCharLock .55s cubic-bezier(.25,.1,.25,1) both;}
@@ -2735,6 +2741,26 @@ function BannerCodeIntro({onDone}){
     const root=rootRef.current,rain=rainRef.current,ember=emberRef.current,textEl=textRef.current;
     if(!root||!rain||!ember||!textEl){if(onDone)onDone();return;}
     textEl.innerHTML="";
+    // Pre-build the full-glow duplicate of the finished sentence (see
+    // .bci-glowdub) so lighting it up at decode-completion is a single
+    // opacity fade on an already-rasterized layer.
+    const phraseEl=textEl.parentElement;
+    const oldDub=phraseEl.querySelector(".bci-glowdub");
+    if(oldDub)oldDub.remove();
+    const dub=document.createElement("span");
+    dub.className="bci-glowdub";
+    dub.setAttribute("aria-hidden","true");
+    const dubText=document.createElement("span");
+    dubText.className="bci-text";
+    BCI_STATEMENT.split("").forEach(ch=>{
+      if(ch==="\n"){dubText.appendChild(document.createElement("br"));return;}
+      const g=document.createElement("span");
+      g.className=ch===" "?"bci-dc sp":"bci-dc";
+      g.textContent=ch===" "?" ":ch;
+      dubText.appendChild(g);
+    });
+    dub.appendChild(dubText);
+    phraseEl.appendChild(dub);
     let alive=true;
     const cancels=[];
     const later=(ms,fn)=>{const t=setTimeout(fn,ms);cancels.push(()=>clearTimeout(t));};
