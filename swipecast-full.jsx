@@ -2961,16 +2961,17 @@ function FeaturedClassBanner({onNavigate}){
   const ref=useRef(null);
   const [collapsed,setCollapsed]=useState(false);
   const [fullH,setFullH]=useState(null);
-  // Matrix code intro over the banner: first homepage view of the session
-  // only, never for reduced-motion users. Read-only check here — the flag is
-  // written inside BannerCodeIntro on mount, so re-renders can't re-trigger it.
-  const [introOn,setIntroOn]=useState(()=>{
-    try{
-      if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return false;
-      if(sessionStorage.getItem("cs_banner_intro_done"))return false;
-      return true;
-    }catch(e){return false;}
-  });
+  // Matrix code intro over the banner — DISABLED. It delayed task-focused
+  // visitors (actors here to submit, CDs here to review) with no measured
+  // signup/subscription benefit, so it's off while we grow the funnel. The
+  // BannerCodeIntro component + CSS are intentionally left intact: to bring
+  // it back, restore the original session-gated initializer below.
+  //   try{
+  //     if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return false;
+  //     if(sessionStorage.getItem("cs_banner_intro_done"))return false;
+  //     return true;
+  //   }catch(e){return false;}
+  const [introOn,setIntroOn]=useState(false);
   // Desktop: measure the banner's natural (full) height from the image's
   // intrinsic aspect ratio so we can animate height -> 60px on scroll and
   // back. Mobile keeps its existing fixed 148px/54px CSS heights instead.
