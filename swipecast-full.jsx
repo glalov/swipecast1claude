@@ -2078,7 +2078,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .bci-phrase.bci-lit .bci-glowdub{opacity:1;}
 .bci-go .bci-phrase{animation:bciIn .7s cubic-bezier(.22,.61,.36,1) .35s both,bciSwell .9s cubic-bezier(.45,.05,.55,.95) 3.4s both,bciStreak .5s cubic-bezier(.55,.05,.7,.4) 4.3s forwards;}
 .bci-text{display:block;text-align:center;position:relative;z-index:1;}
-.bci-dc{display:inline-block;width:.68em;text-align:center;color:#57d792;}
+.bci-dc{display:inline-block;width:.68em;text-align:center;color:#57d792;contain:layout style;}
 .bci-dc.sp{width:.45em;}
 .bci-dc.on{color:#eafff5;animation:bciCharLock .55s cubic-bezier(.25,.1,.25,1) both;}
 @keyframes bciCharLock{0%{transform:scale(1.22);}100%{transform:scale(1);}}
@@ -2735,6 +2735,7 @@ function calculateYearlySavings(monthlyPrice,yearlyTotal){
 const BCI_STATEMENT='A visual-first platform\nwhere indie filmmakers and\nundiscovered talent meet.';
 const BCI_GLYPHS='ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ0123456789ACDEFHKLMNPRSTUVXZ$+*<>=';
 function bciGlyph(){return BCI_GLYPHS[Math.floor(Math.random()*BCI_GLYPHS.length)];}
+const RAIN_HEAD="rgba(220,255,235,.92)";   // bright leading-glyph colour, allocated once
 function BannerCodeIntro({onDone}){
   const rootRef=useRef(null);
   const rainRef=useRef(null);
@@ -2797,14 +2798,28 @@ function BannerCodeIntro({onDone}){
     // Code rain + ember canvases. One rAF loop drives both; `alive` stops it
     // for good when the intro unmounts.
     const rctx=rain.getContext("2d"),ectx=ember.getContext("2d");
-    let mode="rain",drops=[],streaks=[];
+    let mode="rain",drops=[],streaks=[],convergeGrad=null;
     const sizeCanvases=()=>{
       [rain,ember].forEach(c=>{const r=c.getBoundingClientRect();c.width=Math.max(1,Math.round(r.width));c.height=Math.max(1,Math.round(r.height));});
       rctx.fillStyle="#020804";rctx.fillRect(0,0,rain.width,rain.height);
       drops=[];
-      const n=Math.min(150,Math.round(rain.width/9));
-      for(let i=0;i<n;i++){const z=.3+Math.random()*.8;drops.push({x:Math.random()*rain.width,y:Math.random()*rain.height,z:z,sp:1.4+Math.random()*3.4,fs:Math.round(6+13*z),a:.35+.6*z});}
-      drops.sort((p,q)=>p.fs-q.fs);   // group by size -> one ctx.font per size, not per glyph
+      // Sparser on wide desktop banners; each drop's font + colour string are
+      // precomputed ONCE here (alpha quantised to the rounded font size so all
+      // same-size drops share one string). The frame loop then does zero
+      // per-glyph string building or colour parsing — that allocation+parse
+      // storm (~95 cols x 60fps) was the desktop stutter.
+      const n=Math.min(120,Math.round(rain.width/11));
+      for(let i=0;i<n;i++){
+        const z=.3+Math.random()*.8;
+        const fs=Math.round(6+13*z);
+        const a=(.35+.6*((fs-6)/13))*.85;
+        drops.push({x:Math.random()*rain.width,y:Math.random()*rain.height,z:z,sp:1.4+Math.random()*3.4,fs:fs,font:'700 '+fs+'px "Courier New",monospace',green:'rgba(80,255,150,'+a.toFixed(2)+')'});
+      }
+      drops.sort((p,q)=>p.fs-q.fs);   // group by size -> one ctx.font + fillStyle per size, not per glyph
+      // singularity glow built once per resize, not allocated every frame
+      const gcx=rain.width/2,gcy=rain.height/2;
+      convergeGrad=rctx.createRadialGradient(gcx,gcy,0,gcx,gcy,90);
+      convergeGrad.addColorStop(0,"rgba(220,255,235,.5)");convergeGrad.addColorStop(.4,"rgba(90,255,170,.28)");convergeGrad.addColorStop(1,"rgba(0,0,0,0)");
     };
     sizeCanvases();
     window.addEventListener("resize",sizeCanvases);
@@ -2818,14 +2833,12 @@ function BannerCodeIntro({onDone}){
         const d=drops[i];
         if(mode==="rain"){d.y+=d.sp*d.z*2.1;if(d.y>rain.height+24){d.y=-20-Math.random()*40;d.x=Math.random()*rain.width;}}
         else{d.x+=(cx-d.x)*.09;d.y+=(cy-d.y)*.09;}
-        if(d.fs!==curFs){curFs=d.fs;rctx.font="700 "+curFs+'px "Courier New",monospace';}
-        rctx.fillStyle=Math.random()<.08?"rgba(220,255,235,"+d.a.toFixed(2)+")":"rgba(80,255,150,"+(d.a*.85).toFixed(2)+")";
-        rctx.fillText(bciGlyph(),d.x,d.y);
+        if(d.fs!==curFs){curFs=d.fs;rctx.font=d.font;rctx.fillStyle=d.green;}
+        if(Math.random()<.06){rctx.fillStyle=RAIN_HEAD;rctx.fillText(bciGlyph(),d.x,d.y);rctx.fillStyle=d.green;}
+        else rctx.fillText(bciGlyph(),d.x,d.y);
       }
-      if(mode==="converge"){
-        const g=rctx.createRadialGradient(cx,cy,0,cx,cy,90);
-        g.addColorStop(0,"rgba(220,255,235,.5)");g.addColorStop(.4,"rgba(90,255,170,.28)");g.addColorStop(1,"rgba(0,0,0,0)");
-        rctx.fillStyle=g;rctx.fillRect(cx-90,cy-90,180,180);
+      if(mode==="converge"&&convergeGrad){
+        rctx.fillStyle=convergeGrad;rctx.fillRect(cx-90,cy-90,180,180);
       }
       ectx.clearRect(0,0,ember.width,ember.height);
       if(streaks.length){
