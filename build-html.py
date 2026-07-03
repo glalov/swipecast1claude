@@ -181,6 +181,22 @@ def render_page(title, desc, canonical):
   <meta name="theme-color" content="#6366f1"/>
   <meta name="google-site-verification" content="yMDmFzYmFlDLSIqxjBMRSD-Lzmsk57k9rr2UZUdjBbM"/>
   <meta name="msvalidate.01" content="A52953180F28A4CBCD8D5EB0B1928C68"/>
+  <!-- Meta Pixel Code (Facebook / Instagram ads — pixel ID 771635836224410) -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {{if(f.fbq)return;n=f.fbq=function(){{n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)}};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '771635836224410');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=771635836224410&amp;ev=PageView&amp;noscript=1"/></noscript>
+  <!-- End Meta Pixel Code -->
   <link rel="canonical" href="{canonical}"/>
   <!-- Open Graph -->
   <meta property="og:site_name" content="CastSlate"/>

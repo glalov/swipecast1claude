@@ -9,6 +9,22 @@
   <meta name="theme-color" content="#6366f1"/>
   <meta name="google-site-verification" content="yMDmFzYmFlDLSIqxjBMRSD-Lzmsk57k9rr2UZUdjBbM"/>
   <meta name="msvalidate.01" content="A52953180F28A4CBCD8D5EB0B1928C68"/>
+  <!-- Meta Pixel Code (Facebook / Instagram ads — pixel ID 771635836224410) -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '771635836224410');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=771635836224410&amp;ev=PageView&amp;noscript=1"/></noscript>
+  <!-- End Meta Pixel Code -->
   <link rel="canonical" href="https://www.castslate.com/terms"/>
   <!-- Open Graph -->
   <meta property="og:site_name" content="CastSlate"/>
@@ -62,18 +78,18 @@
   <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20260703-003923"/>
+  <link rel="preload" as="script" href="/app.js?v=20260703-231211"/>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
-  <!-- BUILD: 20260703-003923 -->
-  <meta name="build-version" content="20260703-003923"/>
+  <!-- BUILD: 20260703-231211 -->
+  <meta name="build-version" content="20260703-231211"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260703-003923";
+        var B="20260703-231211";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -385,7 +401,7 @@
         "/vendor/react-dom.production.min.js",
         "/vendor/supabase.min.js",
         "INIT",
-        "/app.js?v=20260703-003923"
+        "/app.js?v=20260703-231211"
       ];
       function step(){
         var it=STEPS.shift();
