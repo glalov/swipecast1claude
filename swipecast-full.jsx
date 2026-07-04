@@ -3370,6 +3370,15 @@ function PaymentSuccessPage({session,myProfile,onNavigate,onReload,successType})
       try{
         const{data}=await window.sb.from("profiles").select("membership_status").eq("id",userId).single();
         if(data?.membership_status==="active"){
+          // Meta Pixel: subscription confirmed active after Stripe checkout.
+          // sessionStorage guard prevents double-firing on page revisits/reloads.
+          try{
+            if(window.fbq&&!sessionStorage.getItem("sc_fbq_sub_fired")){
+              sessionStorage.setItem("sc_fbq_sub_fired","1");
+              window.fbq('track','StartTrial',{value:9.99,currency:'USD',predicted_ltv:9.99});
+              window.fbq('track','Subscribe',{value:9.99,currency:'USD'});
+            }
+          }catch(_){}
           setIsPremium(true);setActivating(false);
           if(onReload)onReload();
           return;
@@ -3963,6 +3972,8 @@ function RegisterTalent({onNavigate}){
         setErr("An account with this email already exists. If you never received the verification email, resend it below — otherwise log in.");
         window.scrollTo(0,0);setLoading(false);submittingRef.current=false;return;
       }
+      // Meta Pixel: signup succeeded — guarded so a blocked/missing pixel can never break the flow
+      try{if(window.fbq)window.fbq('track','CompleteRegistration');}catch(_){}
       // Profile row is created by the public.handle_new_user trigger using the
       // metadata we passed above — no separate client-side update() call needed
       // (and the old one ran unauthenticated and was silently dropped by RLS).
@@ -4170,6 +4181,8 @@ function RegisterCD({onNavigate}){
         setErr("An account with this email already exists. If you never received the verification email, resend it below — otherwise log in.");
         setLoading(false);submittingRef.current=false;return;
       }
+      // Meta Pixel: CD signup succeeded — guarded so a blocked/missing pixel can never break the flow
+      try{if(window.fbq)window.fbq('track','CompleteRegistration');}catch(_){}
       // The handle_new_user trigger now populates the profile row from the
       // signup metadata atomically. Belt-and-braces: if a session was issued,
       // run the backfill RPC too.
@@ -7820,8 +7833,9 @@ function CastingImageCarousel({images=[],title=""}){
     <div style={{position:"relative",marginBottom:28,borderRadius:12,overflow:"hidden"}}>
       <img
         key={clampedIdx}
-        src={images[clampedIdx]}
+        src={sbImg(images[clampedIdx],1000,82)}
         alt={title?`${title} — image ${clampedIdx+1}`:"Casting poster"}
+        loading="eager" decoding="async" fetchpriority="high"
         style={{width:"100%",height:"auto",display:"block",borderRadius:12}}
       />
       {multi&&<>
@@ -8722,6 +8736,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
         return;
       }
       console.log("[apply] success for role:",roleId);
+      // Meta Pixel: application submitted — key funnel event for ads optimization
+      try{if(window.fbq)window.fbq('trackCustom','SubmitApplication');}catch(_){}
       setApplied(p=>new Set([...p,applyRole.idx]));
       setWeekCount(n=>n+1);
       setApplyOk(true);
@@ -21749,7 +21765,7 @@ function AdminCastings({onPendingCountChange}){
         <div className="label">Casting Images</div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:6}}>
           {(viewCasting.casting_images?.length>0?viewCasting.casting_images:[{url:viewCasting.casting_image_url}]).map((img,i)=>(
-            <img key={i} src={img.url||img} alt="" style={{width:100,height:70,objectFit:"cover",borderRadius:6,border:"1px solid var(--bdr)"}}/>
+            <img key={i} src={sbImg(img.url||img,200,72)} alt="" loading="lazy" decoding="async" style={{width:100,height:70,objectFit:"cover",borderRadius:6,border:"1px solid var(--bdr)"}}/>
           ))}
         </div>
       </div>}
