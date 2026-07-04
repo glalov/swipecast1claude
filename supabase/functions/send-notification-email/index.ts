@@ -71,7 +71,7 @@ const corsHeaders = {
 
 interface NotifyRequest {
   to_user_id: string;
-  type: "inbox_message" | "class_invitation" | "booking_approved" | "booking_declined" | "premium_welcome" | "weekly_checkin";
+  type: "inbox_message" | "class_invitation" | "booking_approved" | "booking_declined" | "premium_welcome" | "weekly_checkin" | "application_selected";
   from_id?: string;
   from_name?: string;
   application_id?: string;
@@ -85,6 +85,9 @@ interface NotifyRequest {
   class_id?: string;
   // weekly_checkin extra — this week's task (the email hook)
   task?: string;
+  // application_selected extras (the "you've been shortlisted" email)
+  project_name?: string;
+  role_name?: string;
 }
 
 function esc(s: string): string {
@@ -316,6 +319,50 @@ function premiumWelcomeHtml(firstName: string): string {
 </body></html>`;
 }
 
+function applicationSelectedHtml(firstName: string, projectName?: string, roleName?: string): string {
+  const forRole = roleName ? ` for <strong>${esc(roleName)}</strong>` : "";
+  const onProject = projectName
+    ? `<div style="margin:0 0 22px;padding:18px 20px;background:#f4f1fb;border:1px solid #e2daf5;border-radius:12px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#6b3ecb;margin:0 0 6px">Shortlisted</div><p style="margin:0;font-size:18px;font-weight:800;color:#2d1052;line-height:1.35">${esc(projectName)}${roleName ? ` &middot; ${esc(roleName)}` : ""}</p></div>`
+    : "";
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"/></head>
+<body style="margin:0;padding:0;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f7;padding:40px 20px">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:560px;width:100%">
+        <tr><td style="background:linear-gradient(135deg,#1a0533,#2d1052);padding:22px 32px">
+          <img src="https://www.castslate.com/logo-email.png" alt="CastSlate" width="38" height="38" style="display:inline-block;vertical-align:middle;border-radius:9px"/>
+          <span style="display:inline-block;vertical-align:middle;margin-left:12px;font-size:21px;font-weight:800;color:#ffffff;letter-spacing:-0.5px">CastSlate</span>
+          <div style="margin-top:12px;display:inline-block;background:rgba(255,215,154,0.2);color:#ffd79a;font-size:11px;font-weight:700;letter-spacing:0.4px;padding:4px 12px;border-radius:20px;text-transform:uppercase">Good news</div>
+        </td></tr>
+        <tr><td style="padding:34px 32px 12px">
+          <h1 style="margin:0 0 14px;font-size:24px;font-weight:800;color:#111;letter-spacing:-0.5px">You've been shortlisted, ${firstName}</h1>
+          <p style="margin:0 0 20px;font-size:16px;line-height:1.65;color:#555">
+            A casting director just shortlisted you${forRole} on CastSlate. That means your submission stood out and you're on their short list to move forward.
+          </p>
+          ${onProject}
+          <p style="margin:0 0 26px;font-size:15px;line-height:1.65;color:#555">
+            Keep your profile sharp — a complete profile, fresh headshots and an up-to-date slate are what turn a shortlist into a callback. If the casting director wants to move forward, you'll hear from them right here in your inbox.
+          </p>
+          <a href="${APP_URL}/talent-dashboard"
+             style="display:inline-block;background:linear-gradient(90deg,#6b3ecb,#8b5cf6);color:#fff;text-decoration:none;padding:14px 34px;border-radius:10px;font-weight:800;font-size:15px;letter-spacing:0.1px">
+            View My Applications →
+          </a>
+        </td></tr>
+        <tr><td style="padding:20px 32px 32px;border-top:1px solid #f0f0f0">
+          <p style="margin:0;font-size:12px;color:#aaa;line-height:1.6">
+            You're receiving this because a casting director took action on one of your CastSlate submissions.<br/>
+            To manage notifications, visit <a href="${APP_URL}/account-settings" style="color:#8b5cf6;text-decoration:none">Account Settings → Notifications</a>.
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
 async function sendSms(toPhone: string, body: string): Promise<{ ok: boolean; error?: string }> {
   if (!TWILIO_SID || !TWILIO_TOKEN || !TWILIO_FROM) {
     return { ok: false, error: "SMS_NOT_CONFIGURED" };
@@ -349,7 +396,7 @@ serve(async (req) => {
     });
 
   try {
-    const { to_user_id, type, from_id, from_name: rawFromName, application_id, casting_id, class_title, instructor_name, slot_label, admin_note, class_price, class_id, task } = (await req.json()) as NotifyRequest;
+    const { to_user_id, type, from_id, from_name: rawFromName, application_id, casting_id, class_title, instructor_name, slot_label, admin_note, class_price, class_id, task, project_name, role_name } = (await req.json()) as NotifyRequest;
 
     if (!to_user_id || !type) {
       return json({ error: "Missing to_user_id or type" }, 400);
@@ -359,7 +406,7 @@ serve(async (req) => {
 
     const { data: profile, error: profileErr } = await supabase
       .from("profiles")
-      .select("display_name, notification_email, notification_messages, notification_marketing, notification_sms, phone")
+      .select("display_name, notification_email, notification_messages, notification_applications, notification_marketing, notification_sms, phone")
       .eq("id", to_user_id)
       .maybeSingle();
 
@@ -398,6 +445,36 @@ serve(async (req) => {
       const sent = await sendEmail({ from: FROM_EMAIL, to: [toEmail], replyTo: CONTACT_EMAIL, subject, html });
       if (!sent.ok) {
         console.error("[send-notification-email] booking send error:", sent.err);
+        return json({ ok: false, results: { email: `error:${sent.err}` } });
+      }
+      return json({ ok: true, results: { email: "sent" } });
+    }
+
+    // ── Application shortlisted (fired when a CD selects/shortlists talent) ──
+    // The one "loud" positive signal in the review flow. Respects the master
+    // email toggle AND the per-type application preference. Passes (holds) and
+    // rejections never reach this function — they stay silent by design.
+    if (type === "application_selected") {
+      const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
+      const emailEnabled = profile.notification_email !== false && profile.notification_applications !== false;
+      if (!emailEnabled) {
+        return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
+      }
+      if (!emailConfigured()) {
+        console.warn("[send-notification-email] email provider not configured — skipping shortlist email");
+        return json({ ok: true, results: { email: "skipped:EMAIL_NOT_CONFIGURED" } });
+      }
+      const { data: authData, error: authErr } = await supabase.auth.admin.getUserById(to_user_id);
+      if (authErr || !authData?.user?.email) {
+        return json({ ok: false, results: { email: "error:could_not_retrieve_user_email" } });
+      }
+      const sent = await sendEmail({
+        from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
+        subject: `${firstName}, you've been shortlisted on CastSlate`,
+        html: applicationSelectedHtml(firstName, project_name?.trim() || undefined, role_name?.trim() || undefined),
+      });
+      if (!sent.ok) {
+        console.error("[send-notification-email] shortlist send error:", sent.err);
         return json({ ok: false, results: { email: `error:${sent.err}` } });
       }
       return json({ ok: true, results: { email: "sent" } });

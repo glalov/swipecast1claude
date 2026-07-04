@@ -10809,7 +10809,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   </div>);}
 
   if(dashView==="notifications"){
-    const NOTIF_TYPE_ICONS={class_invitation:"school",booking_request_received:"mailbox",booking_approved:"circle-check",booking_declined:"x"};
+    const NOTIF_TYPE_ICONS={class_invitation:"school",booking_request_received:"mailbox",booking_approved:"circle-check",booking_declined:"x",application_selected:"star"};
     return(<div className="td-dash-outer">
       <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
         <button className="btn-s btn-sm" onClick={()=>setDashView(null)} style={{display:"flex",alignItems:"center",gap:6}}>← Dashboard</button>
@@ -10848,6 +10848,12 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                       <button className="btn-p btn-sm" style={{marginTop:10,fontSize:12}}
                         onClick={()=>{if(n.related_class_id)onNavigate("classes",{classId:n.related_class_id,invitationId:n.related_invitation_id||null});else onNavigate("classes");}}>
                         View Class →
+                      </button>
+                    )}
+                    {n.type==="application_selected"&&(
+                      <button className="btn-p btn-sm" style={{marginTop:10,fontSize:12}}
+                        onClick={()=>setDashView("applications")}>
+                        View My Applications →
                       </button>
                     )}
                   </div>
@@ -11980,7 +11986,9 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     setLastUndo({appId:app.id,prevStatus,newStatus:nextStatus,name:app.profiles?.display_name||"applicant"});
     console.log("[review] decide:",app.id,prevStatus,"→",nextStatus);
 
-    const {error}=await window.sb.from("applications").update({status:nextStatus,reviewed_at:ts}).eq("id",app.id);
+    // decide_application enforces CD ownership and, on a "selected" transition,
+    // notifies the talent (in-app + email). hold/reject/pending stay silent.
+    const {error}=await window.sb.rpc("decide_application",{p_application:app.id,p_status:nextStatus});
     decidingRef.current=false;
 
     if(error){
@@ -12000,7 +12008,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     // Optimistic revert
     setSubmissions(p=>p.map(a=>a.id===u.appId?{...a,status:u.prevStatus}:a));
     console.log("[review] undo:",u.appId,u.newStatus,"→",u.prevStatus);
-    const {error}=await window.sb.from("applications").update({status:u.prevStatus,reviewed_at:u.prevStatus==='pending'?null:new Date().toISOString()}).eq("id",u.appId);
+    const {error}=await window.sb.rpc("decide_application",{p_application:u.appId,p_status:u.prevStatus});
     if(error){
       console.warn("[review] undo error:",error.message);
       setSubmissions(p=>p.map(a=>a.id===u.appId?{...a,status:u.newStatus}:a));
