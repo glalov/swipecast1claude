@@ -20981,11 +20981,14 @@ function AdminEmailCampaigns({session}){
     try{
       while(!stopRef.current){
         const r=await fnCall("send_batch",{campaign_id:sel,batch_size:b});
+        const progressed=(r.sent+r.failed+r.skipped)>0;
         done+=(r.sent+r.failed+r.skipped);
         addLog("sent "+r.sent+", failed "+r.failed+", skipped "+r.skipped+" — "+r.remaining.toLocaleString()+" still to go");
         await refreshSel();
         if(r.remaining===0){addLog("=== ALL DONE — everyone has been emailed ===");break;}
+        if(r.quota_hit){addLog("=== Resend daily limit reached — sent all we can for now. "+r.remaining.toLocaleString()+" left; come back tomorrow. Nobody gets emailed twice. ===");break;}
         if(done>=capN){addLog("=== Reached this run's limit ("+capN+"). "+r.remaining.toLocaleString()+" left — come back and send more anytime. ===");break;}
+        if(!progressed&&!r.timed_out){addLog("=== No sendable recipients right now — "+r.remaining.toLocaleString()+" left. Try again later. ===");break;}
         await new Promise(res=>setTimeout(res,400));
       }
       if(stopRef.current)addLog("=== Stopped. Nobody gets emailed twice — pick up where you left off anytime. ===");

@@ -298,8 +298,16 @@ serve(async (req) => {
       const { data: unsubs } = await sb.from("email_unsubscribes").select("email").in("email", emails);
       const unsubSet = new Set((unsubs || []).map((u: any) => u.email));
 
-      let sent = 0, failed = 0, skipped = 0, deferred = 0, quotaHit = false;
+      // Hard wall-clock budget: return well before Supabase's ~150s gateway timeout so a
+      // long batch can never surface as HTTP 504. Whatever is left stays "queued" and the
+      // client loop simply calls the next batch — nobody is emailed twice.
+      const started = Date.now();
+      const TIME_BUDGET_MS = 110_000;
+
+      let sent = 0, failed = 0, skipped = 0, deferred = 0, quotaHit = false, timedOut = false;
+      let rateLimitStreak = 0;
       for (const r of recips) {
+        if (Date.now() - started > TIME_BUDGET_MS) { timedOut = true; break; }
         if (unsubSet.has(r.email)) {
           await sb.from("email_campaign_recipients").update({ status: "skipped_unsub" }).eq("id", r.id);
           skipped++; continue;
@@ -307,26 +315,30 @@ serve(async (req) => {
         const out = await send(r.email, buildHtml(r.email));
         if (out.ok) {
           await sb.from("email_campaign_recipients").update({ status: "sent", provider_message_id: out.id, sent_at: new Date().toISOString(), error_message: null }).eq("id", r.id);
-          sent++;
+          sent++; rateLimitStreak = 0;
         } else {
           // Distinguish TEMPORARY provider limits (rate limit / daily quota) from real
           // failures. Temporary ones must NOT be marked "failed" — that permanently drops
           // the recipient. We leave them "queued" so a later run retries them.
           const e = (out.err || "").toLowerCase();
-          const temporary = out.status === 429 || e.includes("rate_limit") || e.includes("too many requests") || e.includes("quota") || e.includes("throttl") || e.includes("sending rate");
+          const temporary = out.status === 429 || e.includes("rate_limit") || e.includes("rate limit")
+            || e.includes("too many requests") || e.includes("quota") || e.includes("throttl") || e.includes("sending rate");
           if (temporary) {
-            deferred++;
-            // Daily quota exhausted → stop this run; everything else fails the same way.
-            // Recipient stays "queued" so the admin just resumes later / after a plan bump.
-            if (e.includes("quota") || e.includes("daily")) { quotaHit = true; break; }
-            // Rate limited → back off and keep going; recipient stays queued for retry.
-            await new Promise((res2) => setTimeout(res2, 1200));
+            deferred++; rateLimitStreak++;
+            // Daily/plan quota exhausted → stop this run cleanly; every remaining send would
+            // fail identically. Detect it explicitly (quota/daily) OR after several back-to-back
+            // limits (a per-second spike clears in one retry; a daily cap never does). This is
+            // what kills the old 504: previously each capped recipient burned a 1.2s backoff and
+            // the loop ground on until the gateway (150s) killed the whole request.
+            if (e.includes("quota") || e.includes("daily") || rateLimitStreak >= 3) { quotaHit = true; break; }
+            // Transient per-second spike → brief back off and keep going; recipient stays queued.
+            await new Promise((res2) => setTimeout(res2, 1000));
             continue;
           }
           await sb.from("email_campaign_recipients").update({ status: "failed", error_message: out.err }).eq("id", r.id);
-          failed++;
+          failed++; rateLimitStreak = 0;
         }
-        // ~4 sends/sec — safely under Resend's 5 requests/sec hard limit.
+        // ~4 sends/sec — safely under Resend's requests/sec hard limit.
         await new Promise((res2) => setTimeout(res2, 250));
       }
 
@@ -334,7 +346,7 @@ serve(async (req) => {
         .select("*", { count: "exact", head: true }).eq("campaign_id", campaign_id).eq("status", status)).count ?? 0;
       const [totalSent, totalFailed, remaining] = await Promise.all([cnt("sent"), cnt("failed"), cnt("queued")]);
       await sb.from("email_campaigns").update({ sent_count: totalSent, failed_count: totalFailed, status: remaining === 0 ? "sent" : "sending", updated_at: new Date().toISOString() }).eq("id", campaign_id);
-      return res({ sent, failed, skipped, deferred, quota_hit: quotaHit, remaining });
+      return res({ sent, failed, skipped, deferred, quota_hit: quotaHit, timed_out: timedOut, remaining });
     }
 
     return res({ error: "Unknown action" }, 400);
