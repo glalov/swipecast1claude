@@ -116,6 +116,7 @@ create table if not exists public.castings (
   featured boolean default false,
   has_nudity boolean not null default false,   -- project contains nudity / intimate content
   nudity_details text,                          -- optional CD description of the nudity/intimacy expectations
+  go_live_at timestamptz,                       -- scheduled publishing: absolute instant (UTC) the casting becomes public. Chosen in America/New_York wall time, stored as UTC. NULL = live immediately.
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -123,6 +124,7 @@ create index if not exists castings_cd_id_idx on public.castings(cd_id);
 create index if not exists castings_status_idx on public.castings(status);
 create index if not exists castings_type_idx on public.castings(type);
 create index if not exists castings_slug_idx on public.castings(slug);
+create index if not exists castings_go_live_at_idx on public.castings(go_live_at);
 
 -- ═══════════════════════════════
 -- ROLES (a casting has many roles)
@@ -239,7 +241,12 @@ create policy castings_select on public.castings
   for select using (
     -- Archived (filled) castings stay publicly readable so Browse can show them
     -- with a red ARCHIVED stamp instead of having them vanish.
-    (published = true and status in ('open','archived'))
+    -- Scheduled publishing: a casting with a future go_live_at stays hidden from
+    -- the public until that instant. now() is UTC and compared against the UTC
+    -- go_live_at, so the gate opens automatically at the scheduled New York time.
+    -- The owner (cd_id) and admins bypass the gate so scheduled castings still
+    -- show in their dashboards.
+    (published = true and status in ('open','archived') and (go_live_at is null or go_live_at <= now()))
     or cd_id = auth.uid()
     or is_admin()
   );

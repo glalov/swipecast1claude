@@ -8764,7 +8764,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const c=getTranslatedCasting(casting,lang);
   const castingExpired=castingIsExpired(c);
   const castingArchived=c.status==="archived";
-  const applicationsClosed=castingArchived||castingExpired;
+  const castingScheduled=castingIsScheduled(c);
+  const applicationsClosed=castingArchived||castingExpired||castingScheduled;
   const render=(txt)=>txt.split(/(\*[^*]+\*)/g).map((s,i)=>s.startsWith("*")&&s.endsWith("*")?<em key={i} style={{fontStyle:"italic",color:"var(--t1)"}}>{s.slice(1,-1)}</em>:<span key={i}>{s}</span>);
   return(<div className="page" style={{maxWidth:1080}}>
     <div style={{display:"flex",justifyContent:inSheet?"flex-end":"space-between",alignItems:"center",gap:10,marginBottom:20,flexWrap:"wrap"}}>
@@ -8777,6 +8778,12 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <span style={{display:"inline-flex",alignItems:"center",padding:"4px 11px",background:"#E3EDFF",color:"#1D4ED8",border:"1px solid #B4CDFF",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>{translateCastingType(c.type,lang)}</span>
     </div>
     <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={isDbCasting?{kind:"casting",id:c.id}:null}/>
+
+    {/* Scheduled preview banner — only owner/admin can reach a not-yet-live casting. */}
+    {castingScheduled&&<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,padding:"12px 16px",background:"rgba(var(--acc-rgb,100,149,237),0.08)",border:"1px solid rgba(var(--acc-rgb,100,149,237),0.25)",borderRadius:10,fontSize:13,color:"var(--acc)",lineHeight:1.5}}>
+      <Ico n="clock" s={18}/>
+      <span><strong>Scheduled — not yet public.</strong> This casting is hidden from the public until <strong>{formatNYDateTime(c.go_live_at)}</strong> (New York time), when it goes live automatically. You can see it because you created it or you're an admin.</span>
+    </div>}
 
     {/* ── Free-actor daily limit upgrade prompt ── */}
     {showUpgradePrompt&&<div className="modal-overlay" onClick={()=>setShowUpgradePrompt(false)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:480,textAlign:"center",padding:"36px 32px"}}>
@@ -8857,7 +8864,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       {!c.is_admin_created&&cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
     </div>
 
-    {applicationsClosed&&<div style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",marginBottom:20,marginTop:-4,background:"rgba(192,57,43,0.06)",border:"1px solid rgba(192,57,43,0.3)",borderRadius:12}}>
+    {(castingArchived||castingExpired)&&<div style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",marginBottom:20,marginTop:-4,background:"rgba(192,57,43,0.06)",border:"1px solid rgba(192,57,43,0.3)",borderRadius:12}}>
       {castingArchived&&<span className="cs-archived-stamp" style={{position:"static",transform:"rotate(-6deg)",fontSize:18,padding:"3px 13px 5px",opacity:1,flex:"none"}} aria-hidden="true">Archived</span>}
       <div style={{fontSize:13,color:"#c0392b",fontWeight:600,lineHeight:1.5}}>{castingArchived?"This role has been filled and is no longer accepting submissions.":"This casting has expired and is no longer accepting applications."}</div>
     </div>}
@@ -9933,6 +9940,62 @@ function castingIsExpired(casting){
   }catch{return false;}
 }
 
+// ─── Scheduled publishing (go-live) ──────────────────────────────────────────
+// A casting can be scheduled to appear publicly at an exact date/time chosen by
+// the Casting Director (or admin). The chosen time is always New York wall-clock
+// time (America/New_York); we store it as an absolute UTC instant (go_live_at)
+// and compare it against the real current time everywhere. Because everything is
+// compared as absolute instants, DST and the viewer's own timezone never matter.
+const NY_TZ="America/New_York";
+// Offset in ms to ADD to a UTC instant to get its New York local time, for that
+// specific instant (handles EST/EDT correctly). The runtime-local offset cancels.
+function nyOffsetMs(date){
+  const utc=new Date(date.toLocaleString("en-US",{timeZone:"UTC"}));
+  const ny=new Date(date.toLocaleString("en-US",{timeZone:NY_TZ}));
+  return ny.getTime()-utc.getTime();
+}
+// "2026-07-10T14:30" read as NEW YORK wall time → UTC ISO string (or null).
+function nyLocalToUTCISO(localStr){
+  if(!localStr)return null;
+  const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(localStr));
+  if(!m)return null;
+  const y=+m[1],mo=+m[2],d=+m[3],h=+m[4],mi=+m[5];
+  const asUTC=Date.UTC(y,mo-1,d,h,mi,0);
+  const off=nyOffsetMs(new Date(asUTC));
+  let utc=asUTC-off;
+  const off2=nyOffsetMs(new Date(utc)); // refine once across DST boundaries
+  if(off2!==off)utc=asUTC-off2;
+  const dt=new Date(utc);
+  return isNaN(dt)?null:dt.toISOString();
+}
+// UTC ISO → "2026-07-10T14:30" NEW YORK wall time for a datetime-local input (or "").
+function utcISOToNYLocal(iso){
+  if(!iso)return "";
+  const d=new Date(iso);
+  if(isNaN(d))return "";
+  try{
+    const p=new Intl.DateTimeFormat("en-CA",{timeZone:NY_TZ,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false})
+      .formatToParts(d).reduce((a,x)=>(a[x.type]=x.value,a),{});
+    const hh=p.hour==="24"?"00":p.hour; // some engines emit "24" for midnight
+    return `${p.year}-${p.month}-${p.day}T${hh}:${p.minute}`;
+  }catch(_){return "";}
+}
+// Human-readable New York time, e.g. "Jul 10, 2026, 2:30 PM ET".
+function formatNYDateTime(iso){
+  if(!iso)return "";
+  const d=new Date(iso);
+  if(isNaN(d))return "";
+  try{return d.toLocaleString("en-US",{timeZone:NY_TZ,month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})+" ET";}catch(_){return "";}
+}
+// True when a casting has a go-live time that is still in the future → not yet public.
+function castingIsScheduled(casting){
+  if(!casting||!casting.go_live_at)return false;
+  try{const d=new Date(casting.go_live_at);return !isNaN(d)&&d>new Date();}catch(_){return false;}
+}
+// Default go-live for the create form: right now (New York), so leaving it as-is
+// publishes as soon as the casting is approved / published.
+function defaultGoLiveNYLocal(){return utcISOToNYLocal(new Date().toISOString());}
+
 function castingSortBucket(casting){
   if(casting?.status==="archived")return 2;
   if(castingIsExpired(casting))return 1;
@@ -10064,6 +10127,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         window.sb.from("castings")
           .select("*,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(identity_verified,can_post_castings,verification_status)")
           .in("status",["open","archived"]).eq("published",true)
+          // Scheduled publishing: hide castings whose go-live time is still in the future.
+          .or("go_live_at.is.null,go_live_at.lte."+new Date().toISOString())
           .order("featured",{ascending:false})
           .order("created_at",{ascending:false}),
         timeoutPromise
@@ -10087,6 +10152,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         status:c.status||"open",
         created_at:c.created_at||null,
         expires_at:c.expires_at||null,
+        go_live_at:c.go_live_at||null,
         union:c.union_status||"",
         featured:c.featured===true,
         casting_image_url:c.casting_image_url||null,
@@ -10202,7 +10268,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const allCastings=dbCastings.length>0?dbCastings:[];
   const allTalent=dbTalent.length>0?dbTalent:[];
   const ft=allTalent.filter(t=>{if(q&&!t.name.toLowerCase().includes(q.toLowerCase())&&!t.skills.join(" ").toLowerCase().includes(q.toLowerCase()))return false;if(f.gender&&t.gender!==f.gender)return false;if(f.ethnicity&&!t.ethnicity.toLowerCase().includes(f.ethnicity.toLowerCase()))return false;if(f.location&&!t.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&t.union!==f.union)return false;if(castingTypeIds!==null&&!castingTypeIds.has(t.id))return false;return true;});
-  const fc=allCastings.filter(c=>{if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&c.type!==f.type)return false;if(f.location&&!matchesLocationFilter(c.location,f.location))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;})
+  const fc=allCastings.filter(c=>{if(castingIsScheduled(c))return false;if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&c.type!==f.type)return false;if(f.location&&!matchesLocationFilter(c.location,f.location))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;})
     // Closed castings sink to the bottom so live, applicable roles lead.
     // Bucket order: live/open first, expired next, archived/filled last.
     .sort((a,b)=>castingSortBucket(a)-castingSortBucket(b));
@@ -12492,10 +12558,13 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           const isOpen=c.status==="open";
           const isClosed=c.status==="closed";
           const isArchived=c.status==="archived";
+          const isScheduled=castingIsScheduled(c);
           const statusBadge=isPendingReview
             ?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"rgba(200,137,0,0.12)",color:"#c88900"}}>PENDING REVIEW</span>
             :isRejected
             ?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>REJECTED</span>
+            :isScheduled
+            ?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"rgba(var(--acc-rgb,100,149,237),0.14)",color:"var(--acc)"}}>SCHEDULED</span>
             :isOpen
             ?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"rgba(46,204,113,0.12)",color:"#1d7b44"}}>LIVE</span>
             :isClosed
@@ -12523,6 +12592,9 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
               {isClosed&&<button className="btn-s btn-sm" style={{fontSize:12}} disabled={busy} onClick={()=>busy||toggleCastingStatus(c,"open")}>{busy?"…":"Reopen"}</button>}
               {isArchived&&<button className="btn-s btn-sm" style={{fontSize:12}} disabled={busy} onClick={()=>busy||toggleCastingStatus(c,"open")}>{busy?"…":"↩ Unarchive (Reopen)"}</button>}
             </div>
+            {isScheduled&&<div style={{marginTop:10,padding:"8px 12px",background:"rgba(var(--acc-rgb,100,149,237),0.08)",border:"1px solid rgba(var(--acc-rgb,100,149,237),0.22)",borderRadius:8,fontSize:12,color:"var(--acc)",lineHeight:1.5}}>
+              <Ico n="clock" s={14}/> <strong>Scheduled.</strong> Hidden from the public until <strong>{formatNYDateTime(c.go_live_at)}</strong> (New York time), then it goes live automatically.
+            </div>}
             {isPendingReview&&<div style={{marginTop:10,padding:"8px 12px",background:"rgba(200,137,0,0.08)",border:"1px solid rgba(200,137,0,0.2)",borderRadius:8,fontSize:12,color:"#c88900",lineHeight:1.5}}>
               ⏳ <strong>Under review.</strong> Your casting has been submitted and is waiting for CastSlate approval. It will go live on Browse Castings once approved — typically within 1 business day.
             </div>}
@@ -14115,6 +14187,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     deadline:casting.deadline||"",tagline:casting.tagline||"",synopsis:casting.synopsis||"",
     has_nudity:!!casting.has_nudity,nudity_details:casting.nudity_details||"",
     casting_website_url:casting.casting_website_url||"",
+    go_live_at:utcISOToNYLocal(casting.go_live_at),
   });
   const MAX_IMAGES=5;
   const [castingImages,setCastingImages]=useState(()=>{
@@ -14223,6 +14296,9 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     if(!f.title.trim()){setErr("Title is required.");return;}
     const urlErr=validateWebsite(f.casting_website_url);
     if(urlErr){setErr(urlErr);return;}
+    if(!f.go_live_at){setErr("Go Live Date & Time is required.");return;}
+    const goLiveISO=nyLocalToUTCISO(f.go_live_at);
+    if(!goLiveISO){setErr("Go Live Date & Time is invalid.");return;}
     setBusy(true);
     try{
       // Determine new status: open → open; pending_review → pending_review; rejected + resubmit → pending_review
@@ -14230,7 +14306,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
       if(resubmit&&casting.status==="rejected")newStatus="pending_review";
       const patch={
         title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,
-        pay:f.pay||null,union_status:f.union||null,deadline:f.deadline||null,
+        pay:f.pay||null,union_status:f.union||null,deadline:f.deadline||null,go_live_at:goLiveISO,
         has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,
         tagline:f.tagline||null,synopsis:f.synopsis||null,
         casting_website_url:f.casting_website_url.trim()||null,
@@ -14289,6 +14365,11 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     <div className="form-row">
       <div><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union} onChange={e=>setField("union",e.target.value)}><option>SAG-AFTRA</option><option>AEA</option><option>Non-Union</option><option>SAG-AFTRA / Non-Union</option></select></div>
       <div><label className="label">Deadline</label><input className="input" type="date" value={f.deadline||""} onChange={e=>setField("deadline",e.target.value)}/></div>
+    </div>
+    <div className="form-group">
+      <label className="label">Go Live Date &amp; Time <span style={{color:"#c0392b"}}>*</span> <span style={{display:"inline-block",marginLeft:6,fontSize:10,fontWeight:800,letterSpacing:0.4,color:"var(--acc)",background:"rgba(var(--acc-rgb,100,149,237),0.12)",borderRadius:99,padding:"2px 8px",textTransform:"uppercase"}}>New York Time</span></label>
+      <input className="input" type="datetime-local" value={f.go_live_at||""} onChange={e=>setField("go_live_at",e.target.value)}/>
+      <p style={{fontSize:11,color:"var(--t3)",marginTop:4,lineHeight:1.5}}>When this casting becomes visible to the public. It stays hidden until this moment, then goes live automatically. All times are <strong>New York time (ET)</strong>.</p>
     </div>
     <div className="form-group">
       <label className="label">Contains nudity or intimate content?</label>
@@ -14415,10 +14496,10 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   const [err,setErr]=useState("");
   const [busy,setBusy]=useState(false);
   const DRAFT_KEY="sc_new_casting_draft";
-  const BLANK_F={title:"",prod:"",type:"Film & TV",location:"",pay:"",union:"SAG-AFTRA",deadline:"",tagline:"",synopsis:"",casting_website_url:""};
+  const BLANK_F={title:"",prod:"",type:"Film & TV",location:"",pay:"",union:"SAG-AFTRA",deadline:"",tagline:"",synopsis:"",casting_website_url:"",go_live_at:""};
   const BLANK_ROLE={name:"",description:"",gender:"Any",role_type:"Supporting",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false};
   // Initialize form from localStorage draft so a remount (e.g. background refresh) restores what the user typed.
-  const [f,setF]=useState(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(p?.f?.title!==undefined)return p.f;}}catch(_){}return BLANK_F;});
+  const [f,setF]=useState(()=>{let base=BLANK_F;try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(p?.f?.title!==undefined)base=p.f;}}catch(_){}if(!base.go_live_at)base={...base,go_live_at:defaultGoLiveNYLocal()};return base;});
   const [roles,setRoles]=useState(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(Array.isArray(p?.roles)&&p.roles.length)return p.roles;}}catch(_){}return[BLANK_ROLE];});
   const [castingImages,setCastingImages]=useState([]); // [{url,path}] up to 5
   const [uploadingImg,setUploadingImg]=useState(false);
@@ -14586,9 +14667,12 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
     if(!f.title.trim()){setErr("Title required.");return;}
     if(!roles.length||!roles[0].name.trim()){setErr("At least one role with a name is required.");return;}
     if(f.casting_website_url.trim()&&!/^https?:\/\//i.test(f.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
+    if(!f.go_live_at){setErr("Go Live Date & Time is required.");return;}
+    const goLiveISO=nyLocalToUTCISO(f.go_live_at);
+    if(!goLiveISO){setErr("Go Live Date & Time is invalid.");return;}
     setBusy(true);
     try{
-      const payload={cd_id:uid,title:f.title.trim(),type:f.type,prod:f.prod||null,tagline:f.tagline||null,synopsis:f.synopsis||null,location:f.location||null,pay:f.pay||null,union_status:f.union,deadline:f.deadline||null,has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,status:"pending_review",published:false,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages};
+      const payload={cd_id:uid,title:f.title.trim(),type:f.type,prod:f.prod||null,tagline:f.tagline||null,synopsis:f.synopsis||null,location:f.location||null,pay:f.pay||null,union_status:f.union,deadline:f.deadline||null,go_live_at:goLiveISO,has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,status:"pending_review",published:false,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages};
       const {data:casting,error:cErr}=await window.sb.from("castings").insert(payload).select().single();
       if(cErr)throw cErr;
       const rolePayload=roles.filter(r=>r.name.trim()).map(r=>{
@@ -14638,6 +14722,11 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
       <div className="form-row">
         <div><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union} onChange={e=>setField("union",e.target.value)}><option>SAG-AFTRA</option><option>AEA</option><option>Non-Union</option><option>SAG-AFTRA / Non-Union</option></select></div>
         <div><label className="label">Deadline</label><input className="input" type="date" value={f.deadline} onChange={e=>setField("deadline",e.target.value)}/></div>
+      </div>
+      <div className="form-group">
+        <label className="label">Go Live Date &amp; Time <span style={{color:"#c0392b"}}>*</span> <span style={{display:"inline-block",marginLeft:6,fontSize:10,fontWeight:800,letterSpacing:0.4,color:"var(--acc)",background:"rgba(var(--acc-rgb,100,149,237),0.12)",borderRadius:99,padding:"2px 8px",textTransform:"uppercase"}}>New York Time</span></label>
+        <input className="input" type="datetime-local" value={f.go_live_at||""} onChange={e=>setField("go_live_at",e.target.value)}/>
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:4,lineHeight:1.5}}>Choose exactly when this casting becomes visible to the public. It stays hidden until this moment, then goes live automatically. All times are <strong>New York time (ET)</strong>. Leave as now to publish as soon as it's approved.</p>
       </div>
       <div className="form-group">
         <label className="label">Does this project contain nudity or intimate content?</label>
@@ -14790,8 +14879,10 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("FCS timed out after 10s")),10000);});
       const {data,error}=await Promise.race([
         window.sb.from("castings")
-          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq("status","open").eq("published",true)
+          // Scheduled publishing: exclude castings whose go-live time hasn't arrived yet.
+          .or("go_live_at.is.null,go_live_at.lte."+new Date().toISOString())
           .order("featured",{ascending:false})
           .order("created_at",{ascending:false})
           .limit(48),
@@ -14817,6 +14908,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         status:c.status||"open",
         created_at:c.created_at||null,
         expires_at:c.expires_at||null,
+        go_live_at:c.go_live_at||null,
         union:c.union_status||"",
         featured:c.featured===true,
         submissions:0,
@@ -14843,7 +14935,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         }))
       }));
       const liveCastings=mapped
-        .filter(c=>c.status!=="archived"&&!castingIsExpired(c))
+        .filter(c=>c.status!=="archived"&&!castingIsExpired(c)&&!castingIsScheduled(c))
         .slice()
         .sort((a,b)=>castingSortBucket(a)-castingSortBucket(b))
         .slice(0,12);
@@ -20069,7 +20161,7 @@ function AdminCastingGenerator({session}){
     setLoading(true);
     const [{data:ss},{data:cs,error:ce},{data:rs,error:re}]=await Promise.all([
       window.sb.from("site_settings").select("casting_generator_enabled,casting_generator_last_run").eq("id",1).maybeSingle(),
-      window.sb.from("castings").select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,submission_requirements,synopsis,tagline,has_nudity,nudity_details,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured").order("created_at",{ascending:false}).limit(2000),
+      window.sb.from("castings").select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,go_live_at,submission_requirements,synopsis,tagline,has_nudity,nudity_details,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured").order("created_at",{ascending:false}).limit(2000),
       window.sb.from("roles").select("casting_id,name,description,gender,role_type,age_range,ethnicity,pay").limit(5000)
     ]);
     if(ss){setGenEnabled(!!ss.casting_generator_enabled);setLastRun(ss.casting_generator_last_run);}
@@ -20213,6 +20305,7 @@ function AdminCastingGenerator({session}){
       casting_image_url:updated.casting_image_url||null,casting_image_path:updated.casting_image_path||null,
       casting_images:updated.casting_images||[],
       expires_at:updated.expires_at,
+      go_live_at:updated.go_live_at||null,
       admin_verified:adminBadgeState(updated.admin_verified),
       has_nudity:!!updated.has_nudity,
       nudity_details:updated.has_nudity?(updated.nudity_details||null):null,
@@ -20369,6 +20462,7 @@ function AdminCastingGenerator({session}){
           const isDraft=es==="draft"||es==="pending_review";
           const isExpired=es==="expired";
           const isActive=es==="open";
+          const isScheduled=castingIsScheduled(c);
           const expDate=c.expires_at?new Date(c.expires_at).toLocaleDateString():null;
           return(<div key={c.id} style={{padding:"14px 18px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"start",borderLeft:isDraft?"3px solid #c88900":isExpired?"3px solid #c0392b":isActive?"3px solid #1d7b44":"3px solid transparent",opacity:isExpired||es==="closed"?0.7:1}}>
             <div>
@@ -20376,6 +20470,7 @@ function AdminCastingGenerator({session}){
                 {c.title}
                 {c.is_admin_created&&<span style={{marginLeft:6,fontSize:9,fontWeight:700,background:"rgba(var(--acc-rgb,100,149,237),0.15)",color:"var(--acc)",borderRadius:4,padding:"1px 5px"}}>PLATFORM</span>}
                 <span style={{marginLeft:6,fontSize:10,fontWeight:700,color:sc,background:sc+"1a",borderRadius:99,padding:"2px 7px"}}>{sl}</span>
+                {isScheduled&&<span style={{marginLeft:6,fontSize:10,fontWeight:700,color:"var(--acc)",background:"rgba(var(--acc-rgb,100,149,237),0.14)",borderRadius:99,padding:"2px 7px"}}>SCHEDULED</span>}
               </div>
               <div style={{fontSize:12,color:"var(--t3)",lineHeight:1.6}}>
                 <span>{c.type||"—"}</span>
@@ -20386,6 +20481,7 @@ function AdminCastingGenerator({session}){
                 {expDate&&<><span style={{margin:"0 5px"}}>·</span><span style={{color:isExpired?"#c0392b":"var(--t3)"}}>Expires {expDate}</span></>}
                 <span style={{margin:"0 5px"}}>·</span>
                 <span>Posted {new Date(c.created_at).toLocaleDateString()}</span>
+                {isScheduled&&<><span style={{margin:"0 5px"}}>·</span><span style={{color:"var(--acc)",fontWeight:600}}>Goes live {formatNYDateTime(c.go_live_at)}</span></>}
               </div>
               {c.pay&&<div style={{fontSize:12,color:"var(--t2)",marginTop:2,maxWidth:520,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}><em>{c.pay.slice(0,100)}{c.pay.length>100?"…":""}</em></div>}
             </div>
@@ -20454,6 +20550,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     submission_requirements:listing.submission_requirements||"",
     expires_at:listing.expires_at?new Date(listing.expires_at).toISOString().slice(0,10):"",
     created_at:listing.created_at?new Date(listing.created_at).toISOString().slice(0,10):"",
+    go_live_at:utcISOToNYLocal(listing.go_live_at),
     status:listing.status||"draft",
     admin_verified:adminBadgeState(listing.admin_verified),
   });
@@ -20535,6 +20632,8 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     });
     return {...form,roles:computedRoles,
       expires_at:form.expires_at?new Date(form.expires_at).toISOString():null,
+      // Go-live is picked in New York wall time → store as an absolute UTC instant.
+      go_live_at:nyLocalToUTCISO(form.go_live_at),
       // Posted date (created_at) — anchor at noon UTC so the displayed day doesn't
       // shift across timezones. Empty input leaves the original timestamp untouched.
       created_at:form.created_at?new Date(form.created_at+"T12:00:00Z").toISOString():null,
@@ -20661,6 +20760,11 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
       <div className="form-group"><label className="label">Expiration Date</label>
         <input className="input" type="date" value={form.expires_at} onChange={e=>set("expires_at",e.target.value)}/>
         <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Leave blank or set 1–3 months out. Expired listings are hidden from active castings.</p></div>
+
+      <div className="form-group" style={{gridColumn:"1 / -1"}}>
+        <label className="label">Go Live Date &amp; Time <span style={{display:"inline-block",marginLeft:6,fontSize:10,fontWeight:800,letterSpacing:0.4,color:"var(--acc)",background:"rgba(var(--acc-rgb,100,149,237),0.12)",borderRadius:99,padding:"2px 8px",textTransform:"uppercase"}}>New York Time</span></label>
+        <input className="input" type="datetime-local" value={form.go_live_at||""} onChange={e=>set("go_live_at",e.target.value)}/>
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Schedule when this listing becomes public. It stays hidden until this moment (even after you publish), then goes live automatically. All times are <strong>New York time (ET)</strong>. Leave blank to go live immediately when published.</p></div>
 
       <div className="form-group"><label className="label">Status</label>
         <div style={{padding:"10px 14px",background:"var(--s2)",borderRadius:8,fontSize:13,color:"var(--t2)"}}>
@@ -21792,9 +21896,11 @@ function AdminCastings({onPendingCountChange}){
                 {c.title}
                 {c.featured&&<span style={{color:"var(--acc)",fontSize:10,fontWeight:700}}><Ico n="star" s={24}/> FEATURED</span>}
                 <span style={{color:statusColor,background:statusBg,fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:99}}>{statusLabel}</span>
+                {castingIsScheduled(c)&&<span style={{color:"var(--acc)",background:"rgba(var(--acc-rgb,100,149,237),0.14)",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:99}}>SCHEDULED</span>}
               </div>
               <div style={{fontSize:12,color:"var(--t3)",marginTop:3,lineHeight:1.6}}>
                 {c.type||"—"} · {c.location||"—"} · {c.roles?.length||0} role{c.roles?.length===1?"":"s"} · {c.pay||"—"} · {c.union_status||"—"}
+                {castingIsScheduled(c)&&<span style={{color:"var(--acc)",fontWeight:600}}> · Goes live {formatNYDateTime(c.go_live_at)}</span>}
               </div>
               <div style={{fontSize:12,color:"var(--t3)",marginTop:1}}>
                 By <strong style={{color:"var(--t2)"}}>{c.profiles?.display_name||c.profiles?.email||"—"}</strong>
@@ -24368,6 +24474,7 @@ function EditCastingModal({casting,onClose,onSaved}){
     has_nudity:!!casting.has_nudity,nudity_details:casting.nudity_details||"",
     casting_website_url:casting.casting_website_url||"",
     created_at:originalPostedDate,
+    go_live_at:utcISOToNYLocal(casting.go_live_at),
   });
   const ADMIN_MAX_IMAGES=5;
   const [castingImages,setCastingImages]=useState(()=>{
@@ -24465,7 +24572,7 @@ function EditCastingModal({casting,onClose,onSaved}){
     if(f.casting_website_url.trim()&&!/^https?:\/\//i.test(f.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
     setBusy(true);
     try{
-      const patch={title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,pay:f.pay||null,union_status:f.union_status||null,deadline:f.deadline||null,created_at:f.created_at?new Date(f.created_at+"T12:00:00Z").toISOString():casting.created_at,has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,tagline:f.tagline||null,synopsis:f.synopsis||null,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages};
+      const patch={title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,pay:f.pay||null,union_status:f.union_status||null,deadline:f.deadline||null,go_live_at:nyLocalToUTCISO(f.go_live_at),created_at:f.created_at?new Date(f.created_at+"T12:00:00Z").toISOString():casting.created_at,has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,tagline:f.tagline||null,synopsis:f.synopsis||null,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages};
       const {error:cErr}=await window.sb.from("castings").update(patch).eq("id",casting.id);
       if(cErr)throw cErr;
       // Diff roles: update existing, insert new, delete removed
@@ -24506,6 +24613,11 @@ function EditCastingModal({casting,onClose,onSaved}){
     <div className="form-row">
       <div><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union_status} onChange={e=>setField("union_status",e.target.value)}><option>SAG-AFTRA</option><option>AEA</option><option>Non-Union</option><option>SAG-AFTRA / Non-Union</option></select></div>
       <div><label className="label">Deadline</label><input className="input" type="date" value={f.deadline||""} onChange={e=>setField("deadline",e.target.value)}/></div>
+    </div>
+    <div className="form-group">
+      <label className="label">Go Live Date &amp; Time <span style={{display:"inline-block",marginLeft:6,fontSize:10,fontWeight:800,letterSpacing:0.4,color:"var(--acc)",background:"rgba(var(--acc-rgb,100,149,237),0.12)",borderRadius:99,padding:"2px 8px",textTransform:"uppercase"}}>New York Time</span></label>
+      <input className="input" type="datetime-local" value={f.go_live_at||""} onChange={e=>setField("go_live_at",e.target.value)}/>
+      <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>When this casting becomes public. It stays hidden until this moment, then goes live automatically. All times are <strong>New York time (ET)</strong>. Leave blank to keep it live immediately.</p>
     </div>
     <div className="form-group" style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 14px"}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
@@ -26033,7 +26145,7 @@ function App(){
     if(!castingId)return;
     try{
       const{data,error}=await window.sb.from("castings")
-        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
         .eq("id",castingId).maybeSingle();
       if(error||!data)return;
       const c={
@@ -26041,7 +26153,7 @@ function App(){
         tagline:data.tagline||"",synopsis:data.synopsis||"",desc:data.synopsis||data.tagline||"",
         location:data.location||"",pay:data.pay||"",rate:data.pay||"",
         deadline:data.deadline||(data.expires_at?data.expires_at.slice(0,10):""),union:data.union_status||"",submissions:0,
-        created_at:data.created_at||null,expires_at:data.expires_at||null,
+        created_at:data.created_at||null,expires_at:data.expires_at||null,go_live_at:data.go_live_at||null,
         featured:data.featured===true,is_admin_created:data.is_admin_created===true,admin_verified:adminBadgeState(data.admin_verified),
         cd_id:data.cd_id,profiles:data.profiles||null,_cd:data.profiles||null,
         casting_image_url:data.casting_image_url||null,
@@ -26189,12 +26301,13 @@ function App(){
         const isUUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
         const field=isUUID?"id":"slug";
         const {data,error}=await window.sb.from("castings")
-          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,status,published,has_nudity,nudity_details,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,status,published,has_nudity,nudity_details,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq(field,slug).maybeSingle();
         if(cancelled||error||!data)return;
-        // Guard: hide pending/unpublished castings from the public.
-        // Only the casting owner and admins may view a casting that isn't live.
-        const isLive=data.status==="open"&&data.published===true;
+        // Guard: hide pending/unpublished AND not-yet-live (scheduled) castings from
+        // the public. Only the casting owner and admins may view one that isn't live.
+        const notYetLive=data.go_live_at&&new Date(data.go_live_at)>new Date();
+        const isLive=data.status==="open"&&data.published===true&&!notYetLive;
         if(!isLive){
           // Grab current session to check ownership / admin role
           const {data:{session:sess}}=await window.sb.auth.getSession();
@@ -26209,7 +26322,7 @@ function App(){
           prod:data.prod||"",tagline:data.tagline||"",synopsis:data.synopsis||"",
           desc:data.synopsis||data.tagline||"",location:data.location||"",
           pay:data.pay||"",rate:data.pay||"",deadline:data.deadline||(data.expires_at?data.expires_at.slice(0,10):""),
-          union:data.union_status||"",submissions:0,created_at:data.created_at||null,expires_at:data.expires_at||null,featured:data.featured===true,is_admin_created:data.is_admin_created===true,admin_verified:adminBadgeState(data.admin_verified),
+          union:data.union_status||"",submissions:0,created_at:data.created_at||null,expires_at:data.expires_at||null,go_live_at:data.go_live_at||null,featured:data.featured===true,is_admin_created:data.is_admin_created===true,admin_verified:adminBadgeState(data.admin_verified),
           cd_id:data.cd_id,profiles:data.profiles||null,_cd:data.profiles||null,
           casting_image_url:data.casting_image_url||null,
           casting_image_path:data.casting_image_path||null,
