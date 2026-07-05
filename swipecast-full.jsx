@@ -10941,6 +10941,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           :hasUnread("booking_approved")?"booking approved — tap to view"
           :hasUnread("class_invitation")?"private invitation — tap to view"
           :unreadNotifs>0?"tap to view":"all caught up";
+        const notifHot=hasUnread("application_selected")||hasUnread("audition_requested")||hasUnread("booking_approved")||hasUnread("class_invitation");
         return(
         <div className="td-stats">
           {[
@@ -10955,7 +10956,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             <div key={i} onClick={s.onClick||undefined} style={{background:"var(--s1)",border:`1px solid ${s.accent?"var(--acc)":"var(--bdr)"}`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:4,cursor:s.onClick?"pointer":"default"}}>
               <div style={{fontSize:11,fontWeight:600,color:s.accent?"var(--acc)":"var(--t3)",textTransform:"uppercase",letterSpacing:0.6}}>{s.label}</div>
               <div style={{fontSize:26,fontWeight:800,color:s.accent?"var(--acc)":"var(--t1)",letterSpacing:-0.5,lineHeight:1}}>{s.value}</div>
-              <div style={{fontSize:11,color:hasApprovalNotif&&s.label==="Notifications"?"#1a6b42":"var(--t3)",fontWeight:hasApprovalNotif&&s.label==="Notifications"?700:400}}>{s.sub}</div>
+              <div style={{fontSize:11,color:notifHot&&s.label==="Notifications"?"#1a6b42":"var(--t3)",fontWeight:notifHot&&s.label==="Notifications"?700:400}}>{s.sub}</div>
             </div>
           ))}
         </div>
