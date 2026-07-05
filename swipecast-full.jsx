@@ -10455,13 +10455,14 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
 
   const fmtDate=(s)=>{if(!s)return"—";const d=new Date(s);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
   const fmtDeadline=(s)=>{if(!s)return null;try{const d=new Date(s);const now=new Date();const diff=Math.ceil((d-now)/(1000*60*60*24));if(diff<0)return{label:"Closed",urgent:false};if(diff===0)return{label:"Closes today",urgent:true};if(diff<=3)return{label:`${diff}d left`,urgent:true};return{label:`${diff}d left`,urgent:false};}catch{return null;}};
+  const castingDecisionName=(casting)=>String(casting?.casting_director_name||casting?.posted_by_label||casting?.prod||"").trim()||"A casting director";
 
   const loadApps=useCallback(async()=>{
     if(!uid){setAppsLoading(false);return;}
     setAppsLoading(true);
     try{
       const{data,error}=await window.sb.from("applications")
-        .select("id,status,created_at,casting_id,role_id,castings(id,title,type,location,deadline),roles(id,name)")
+        .select("id,status,created_at,reviewed_at,casting_id,role_id,castings(id,title,type,location,deadline,prod,posted_by_label,casting_director_name,is_admin_created),roles(id,name)")
         .eq("talent_id",uid)
         .order("created_at",{ascending:false});
       if(error)throw error;
@@ -10738,7 +10739,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         {APP_TABS.map(t=>{const cnt=tabCounts[t];return(<button key={t} onClick={()=>setAppsTab(t)} style={{padding:"10px 14px",fontSize:12,fontWeight:600,cursor:"pointer",flexShrink:0,border:"none",background:"none",fontFamily:"inherit",textTransform:"capitalize",whiteSpace:"nowrap",color:appsTab===t?"var(--acc)":"var(--t2)",borderBottom:appsTab===t?"2px solid var(--acc)":"2px solid transparent",transition:"color .15s",display:"flex",alignItems:"center",gap:5}}>{t}{cnt!=null&&cnt>0&&<span style={{fontSize:10,fontWeight:700,padding:"1px 5px",borderRadius:8,background:appsTab===t?"var(--acc)":"var(--s2)",color:appsTab===t?"#fff":"var(--t2)"}}>{cnt}</span>}</button>);})}
       </div>
       <div style={{padding:24}}>
-        {appsLoading?(<CastSlateLoader size="inline" text="Loading applications…"/>):appsErr?(<div style={{textAlign:"center",padding:"28px 0"}}><p style={{color:"var(--red)",fontSize:13,marginBottom:12}}>Applications could not load. Please try again.</p><button className="btn-s btn-sm" onClick={loadApps}>Retry</button></div>):filteredApps.length===0?(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:32,marginBottom:10}}><Ico n="clipboard" s={22}/></div><p style={{color:"var(--t2)",fontSize:14,marginBottom:16,fontWeight:500}}>{appsTab==="all"?"You don't have any applications here yet.":appsTab==="invites"?"No casting invites yet.":appsTab==="drafts"?"No saved drafts.":appsTab==="submitted"?"No submitted applications.":appsTab==="auditions"?"No audition requests yet.":"No archived applications."}</p>{(appsTab==="all"||appsTab==="submitted")&&<button className="btn-p btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>}</div>):(<div style={{display:"flex",flexDirection:"column",gap:12}}>{filteredApps.map(app=>{const ui=APP_CARD_UI[app.status]||APP_CARD_UI.pending;const dl=app.castings?.deadline?fmtDeadline(app.castings.deadline):null;const win=ui.tier==="win",warm=ui.tier==="warm",faded=ui.tier==="faded";const fresh=(win||warm)&&app.reviewed_at&&(Date.now()-new Date(app.reviewed_at).getTime()<3*24*60*60*1000);return(<div key={app.id} style={{position:"relative",display:"flex",alignItems:"center",gap:14,padding:win?"16px 18px":"14px 16px",background:ui.cardBg,border:(win?"1.5px":"1px")+" solid "+ui.cardBorder,borderRadius:14,overflow:"hidden",boxSizing:"border-box",width:"100%",opacity:faded?0.62:1,transition:"border-color .15s"}}>{win&&<div style={{position:"absolute",top:0,left:0,height:"100%",width:6,background:ui.accent}}/>}<div style={{flexShrink:0,width:win?46:faded?34:40,height:win?46:faded?34:40,borderRadius:"50%",background:ui.iconBg,color:ui.iconColor,display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n={ui.icon} s={win?24:faded?17:20} style={win?{animation:"csAppStar 2.6s ease-in-out infinite"}:undefined}/></div><div style={{flex:1,minWidth:0,overflow:"hidden"}}><div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}><div style={{fontWeight:faded?600:700,fontSize:win?17:faded?15:16,color:faded?"var(--t2)":"var(--t1)",letterSpacing:-0.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"100%"}}>{app.castings?.title||"Unknown Project"}</div>{fresh&&<span style={{fontSize:10,fontWeight:700,color:ui.accent,background:ui.accentBg,padding:"2px 7px",borderRadius:20,letterSpacing:.4,flexShrink:0}}>NEW</span>}</div>{ui.micro&&!faded&&<div style={{fontSize:12.5,fontWeight:600,color:ui.accent,marginTop:3}}>{win&&<Ico n="confetti" s={14} style={{marginRight:4,verticalAlign:"-2px"}}/>}{ui.micro}</div>}<div style={{fontSize:12,color:"var(--t2)",marginTop:4,display:"flex",flexWrap:"wrap",gap:"3px 8px"}}><span>Role: <strong style={{color:faded?"var(--t2)":"var(--t1)"}}>{app.roles?.name||"—"}</strong></span>{app.castings?.type&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.type&&<span>{app.castings.type}</span>}{app.castings?.location&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.location&&<span>{app.castings.location}</span>}</div>{!faded&&<div style={{fontSize:11,color:"var(--t3)",marginTop:3}}>Submitted {fmtDate(app.created_at)}{dl&&<span style={{marginLeft:8,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>}</div>}</div><div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:8,flexShrink:0}}>{win?<span style={{fontSize:12,fontWeight:700,color:"#fff",background:"linear-gradient(100deg,"+ui.accent+","+ui.accentLight+","+ui.accent+")",backgroundSize:"220% 100%",padding:"6px 14px",borderRadius:20,whiteSpace:"nowrap",animation:"csAppSheen 3.4s ease-in-out infinite"}}>{ui.label}</span>:<span style={{fontSize:11,fontWeight:warm?700:600,color:faded?"var(--t3)":ui.accent,background:faded?"transparent":ui.accentBg,border:faded?"1px solid var(--bdr)":"none",padding:"5px 12px",borderRadius:20,whiteSpace:"nowrap"}}>{ui.label}</span>}{app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px",whiteSpace:"nowrap",...(win?{borderColor:ui.accent,color:ui.accent}:{})}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View →</button>}</div></div>);})}</div>)}
+        {appsLoading?(<CastSlateLoader size="inline" text="Loading applications…"/>):appsErr?(<div style={{textAlign:"center",padding:"28px 0"}}><p style={{color:"var(--red)",fontSize:13,marginBottom:12}}>Applications could not load. Please try again.</p><button className="btn-s btn-sm" onClick={loadApps}>Retry</button></div>):filteredApps.length===0?(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:32,marginBottom:10}}><Ico n="clipboard" s={22}/></div><p style={{color:"var(--t2)",fontSize:14,marginBottom:16,fontWeight:500}}>{appsTab==="all"?"You don't have any applications here yet.":appsTab==="invites"?"No casting invites yet.":appsTab==="drafts"?"No saved drafts.":appsTab==="submitted"?"No submitted applications.":appsTab==="auditions"?"No audition requests yet.":"No archived applications."}</p>{(appsTab==="all"||appsTab==="submitted")&&<button className="btn-p btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>}</div>):(<div style={{display:"flex",flexDirection:"column",gap:12}}>{filteredApps.map(app=>{const ui=APP_CARD_UI[app.status]||APP_CARD_UI.pending;const dl=app.castings?.deadline?fmtDeadline(app.castings.deadline):null;const win=ui.tier==="win",warm=ui.tier==="warm",faded=ui.tier==="faded";const fresh=(win||warm)&&app.reviewed_at&&(Date.now()-new Date(app.reviewed_at).getTime()<3*24*60*60*1000);const reviewer=castingDecisionName(app.castings);const micro=app.status==="selected"?`${reviewer} shortlisted you`:app.status==="hold"?`${reviewer} is considering you`:ui.micro;return(<div key={app.id} style={{position:"relative",display:"flex",alignItems:"center",gap:14,padding:win?"16px 18px":"14px 16px",background:ui.cardBg,border:(win?"1.5px":"1px")+" solid "+ui.cardBorder,borderRadius:14,overflow:"hidden",boxSizing:"border-box",width:"100%",opacity:faded?0.62:1,transition:"border-color .15s"}}>{win&&<div style={{position:"absolute",top:0,left:0,height:"100%",width:6,background:ui.accent}}/>}<div style={{flexShrink:0,width:win?46:faded?34:40,height:win?46:faded?34:40,borderRadius:"50%",background:ui.iconBg,color:ui.iconColor,display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n={ui.icon} s={win?24:faded?17:20} style={win?{animation:"csAppStar 2.6s ease-in-out infinite"}:undefined}/></div><div style={{flex:1,minWidth:0,overflow:"hidden"}}><div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}><div style={{fontWeight:faded?600:700,fontSize:win?17:faded?15:16,color:faded?"var(--t2)":"var(--t1)",letterSpacing:-0.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"100%"}}>{app.castings?.title||"Unknown Project"}</div>{fresh&&<span style={{fontSize:10,fontWeight:700,color:ui.accent,background:ui.accentBg,padding:"2px 7px",borderRadius:20,letterSpacing:.4,flexShrink:0}}>NEW</span>}</div>{micro&&!faded&&<div style={{fontSize:12.5,fontWeight:600,color:ui.accent,marginTop:3}}>{win&&<Ico n="confetti" s={14} style={{marginRight:4,verticalAlign:"-2px"}}/>}{micro}</div>}<div style={{fontSize:12,color:"var(--t2)",marginTop:4,display:"flex",flexWrap:"wrap",gap:"3px 8px"}}><span>Role: <strong style={{color:faded?"var(--t2)":"var(--t1)"}}>{app.roles?.name||"—"}</strong></span>{app.castings?.type&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.type&&<span>{app.castings.type}</span>}{app.castings?.location&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.location&&<span>{app.castings.location}</span>}</div>{!faded&&<div style={{fontSize:11,color:"var(--t3)",marginTop:3}}>Submitted {fmtDate(app.created_at)}{dl&&<span style={{marginLeft:8,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>}</div>}</div><div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:8,flexShrink:0}}>{win?<span style={{fontSize:12,fontWeight:700,color:"#fff",background:"linear-gradient(100deg,"+ui.accent+","+ui.accentLight+","+ui.accent+")",backgroundSize:"220% 100%",padding:"6px 14px",borderRadius:20,whiteSpace:"nowrap",animation:"csAppSheen 3.4s ease-in-out infinite",display:"inline-flex",alignItems:"center",gap:6}}>{ui.label}<StatusInfoTip status={app.status} label={ui.label} color="#fff" width={300}/></span>:<span style={{fontSize:11,fontWeight:warm?700:600,color:faded?"var(--t3)":ui.accent,background:faded?"transparent":ui.accentBg,border:faded?"1px solid var(--bdr)":"none",padding:"5px 12px",borderRadius:20,whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:6}}>{ui.label}<StatusInfoTip status={app.status} label={ui.label} color={faded?"var(--t3)":ui.accent} width={300}/></span>}{app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px",whiteSpace:"nowrap",...(win?{borderColor:ui.accent,color:ui.accent}:{})}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View →</button>}</div></div>);})}</div>)}
       </div>
     </div>
   </div>);}
@@ -10823,7 +10824,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   </div>);}
 
   if(dashView==="notifications"){
-    const NOTIF_TYPE_ICONS={class_invitation:"school",booking_request_received:"mailbox",booking_approved:"circle-check",booking_declined:"x",application_selected:"star"};
+    const NOTIF_TYPE_ICONS={class_invitation:"school",booking_request_received:"mailbox",booking_approved:"circle-check",booking_declined:"x",application_selected:"star",application_profile_viewed:"user-search",application_video_viewed:"video"};
     return(<div className="td-dash-outer">
       <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
         <button className="btn-s btn-sm" onClick={()=>setDashView(null)} style={{display:"flex",alignItems:"center",gap:6}}>← Dashboard</button>
@@ -10864,7 +10865,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                         View Class →
                       </button>
                     )}
-                    {n.type==="application_selected"&&(
+                    {["application_selected","application_profile_viewed","application_video_viewed"].includes(n.type)&&(
                       <button className="btn-p btn-sm" style={{marginTop:10,fontSize:12}}
                         onClick={()=>setDashView("applications")}>
                         View My Applications →
@@ -11194,6 +11195,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                       const dl=app.castings?.deadline?fmtDeadline(app.castings.deadline):null;
                       const win=ui.tier==="win",warm=ui.tier==="warm",faded=ui.tier==="faded";
                       const fresh=(win||warm)&&app.reviewed_at&&(Date.now()-new Date(app.reviewed_at).getTime()<3*24*60*60*1000);
+                      const reviewer=castingDecisionName(app.castings);
+                      const micro=app.status==="selected"?`${reviewer} shortlisted you`:app.status==="hold"?`${reviewer} is considering you`:ui.micro;
                       return(
                         <div key={app.id} style={{position:"relative",display:"flex",alignItems:"center",gap:14,padding:win?"16px 18px":"14px 16px",background:ui.cardBg,border:(win?"1.5px":"1px")+" solid "+ui.cardBorder,borderRadius:14,overflow:"hidden",boxSizing:"border-box",width:"100%",opacity:faded?0.62:1}}>
                           {win&&<div style={{position:"absolute",top:0,left:0,height:"100%",width:6,background:ui.accent}}/>}
@@ -11203,7 +11206,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                               <div style={{fontWeight:faded?600:700,fontSize:win?17:faded?15:16,color:faded?"var(--t2)":"var(--t1)",letterSpacing:-0.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"100%"}}>{app.castings?.title||"Unknown Project"}</div>
                               {fresh&&<span style={{fontSize:10,fontWeight:700,color:ui.accent,background:ui.accentBg,padding:"2px 7px",borderRadius:20,letterSpacing:.4,flexShrink:0}}>NEW</span>}
                             </div>
-                            {ui.micro&&!faded&&<div style={{fontSize:12.5,fontWeight:600,color:ui.accent,marginTop:3}}>{win&&<Ico n="confetti" s={14} style={{marginRight:4,verticalAlign:"-2px"}}/>}{ui.micro}</div>}
+                            {micro&&!faded&&<div style={{fontSize:12.5,fontWeight:600,color:ui.accent,marginTop:3}}>{win&&<Ico n="confetti" s={14} style={{marginRight:4,verticalAlign:"-2px"}}/>}{micro}</div>}
                             <div style={{fontSize:12,color:"var(--t2)",marginTop:4,display:"flex",flexWrap:"wrap",gap:"3px 8px"}}>
                               <span>Role: <strong style={{color:faded?"var(--t2)":"var(--t1)"}}>{app.roles?.name||"—"}</strong></span>
                               {app.castings?.type&&<span style={{color:"var(--t3)"}}>·</span>}
@@ -11214,7 +11217,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                             {!faded&&<div style={{fontSize:11,color:"var(--t3)",marginTop:3}}>Submitted {fmtDate(app.created_at)}{dl&&<span style={{marginLeft:8,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>}</div>}
                           </div>
                           <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:8,flexShrink:0}}>
-                            {win?<span style={{fontSize:12,fontWeight:700,color:"#fff",background:"linear-gradient(100deg,"+ui.accent+","+ui.accentLight+","+ui.accent+")",backgroundSize:"220% 100%",padding:"6px 14px",borderRadius:20,whiteSpace:"nowrap",animation:"csAppSheen 3.4s ease-in-out infinite"}}>{ui.label}</span>:<span style={{fontSize:11,fontWeight:warm?700:600,color:faded?"var(--t3)":ui.accent,background:faded?"transparent":ui.accentBg,border:faded?"1px solid var(--bdr)":"none",padding:"5px 12px",borderRadius:20,whiteSpace:"nowrap"}}>{ui.label}</span>}
+                            {win?<span style={{fontSize:12,fontWeight:700,color:"#fff",background:"linear-gradient(100deg,"+ui.accent+","+ui.accentLight+","+ui.accent+")",backgroundSize:"220% 100%",padding:"6px 14px",borderRadius:20,whiteSpace:"nowrap",animation:"csAppSheen 3.4s ease-in-out infinite",display:"inline-flex",alignItems:"center",gap:6}}>{ui.label}<StatusInfoTip status={app.status} label={ui.label} color="#fff" width={300}/></span>:<span style={{fontSize:11,fontWeight:warm?700:600,color:faded?"var(--t3)":ui.accent,background:faded?"transparent":ui.accentBg,border:faded?"1px solid var(--bdr)":"none",padding:"5px 12px",borderRadius:20,whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:6}}>{ui.label}<StatusInfoTip status={app.status} label={ui.label} color={faded?"var(--t3)":ui.accent} width={300}/></span>}
                             {app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px",whiteSpace:"nowrap",...(win?{borderColor:ui.accent,color:ui.accent}:{})}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View →</button>}
                           </div>
                         </div>
@@ -11661,6 +11664,23 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       _coverNote:a?.cover_note||"",
       _roleName:a?.roles?.name||""
     };
+  };
+  const notifyAdminGeneratedApplicationActivity=async(app,activity)=>{
+    if(!app?.id||!activity)return;
+    try{
+      const {error}=await window.sb.rpc("notify_admin_generated_application_activity",{p_application:app.id,p_activity:activity});
+      if(error)console.warn("[review] activity notification skipped:",error.message);
+    }catch(e){console.warn("[review] activity notification skipped:",e?.message||e);}
+  };
+  const openTalentProfileFromApp=(app)=>{
+    if(!app)return;
+    notifyAdminGeneratedApplicationActivity(app,"profile_view");
+    setCdProfileOverlay(buildTalentView(app));
+  };
+  const openApplicationVideoFromApp=(app,viewer)=>{
+    if(!viewer)return;
+    notifyAdminGeneratedApplicationActivity(app,"video_view");
+    setAppVideoViewer(viewer);
   };
 
   // ─── Load castings + aggregate stats (and cross-casting Selected list)
@@ -12118,7 +12138,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           {t.slate_video_url&&(
             <button
               onPointerDown={e=>e.stopPropagation()}
-              onClick={e=>{e.stopPropagation();setAppVideoViewer({url:t.slate_video_url,name:t.display_name||"Applicant",takeLabel:"Slate"});}}
+              onClick={e=>{e.stopPropagation();openApplicationVideoFromApp(app,{url:t.slate_video_url,name:t.display_name||"Applicant",takeLabel:"Slate"});}}
               style={{position:"absolute",top:10,right:10,zIndex:15,display:"flex",alignItems:"center",gap:4,padding:"5px 10px",borderRadius:20,background:"rgba(0,0,0,0.65)",color:"#fff",fontSize:11,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"inherit",letterSpacing:.4,backdropFilter:"blur(3px)",WebkitBackdropFilter:"blur(3px)"}}
             >▶ Slate</button>
           )}
@@ -12132,12 +12152,12 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             {credits&&<p style={{marginTop:8,fontSize:fsMode?13:12,color:"var(--t2)"}}>{credits.slice(0,fsMode?200:140)}{credits.length>(fsMode?200:140)?"…":""}</p>}
             {app.cover_note&&<p style={{marginTop:8,fontSize:fsMode?13:12,color:"var(--t2)",fontStyle:"italic"}}>"{String(app.cover_note).slice(0,fsMode?220:160)}{String(app.cover_note).length>(fsMode?220:160)?"…":""}"</p>}
             {/* Audition takes (official self-tape system) */}
-            {(()=>{const sub=app.audition_submissions;if(!sub)return null;const allTakes=(sub.audition_takes||[]).sort((a,b)=>a.take_number-b.take_number);const displayTakes=sub.submission_mode==='best_take'&&sub.selected_take_id?allTakes.filter(t=>t.id===sub.selected_take_id):allTakes;if(!displayTakes.length)return null;return(<div style={{marginTop:10,background:"rgba(99,60,180,0.08)",border:"1px solid rgba(99,60,180,0.25)",borderRadius:10,padding:"8px 12px"}}><div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:6}}><Ico n="movie" s={22}/> Audition Take{displayTakes.length>1?'s':''}</div>{displayTakes.map(tk=>(<button key={tk.id} onPointerDown={e=>e.stopPropagation()} onClick={e=>{e.stopPropagation();setAppVideoViewer({url:tk.video_url,name:t.display_name||"Applicant",takeLabel:`Take ${tk.take_number}`});}} style={{display:"flex",alignItems:"center",gap:6,fontSize:fsMode?13:12,fontWeight:700,padding:"6px 12px",borderRadius:8,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center",marginBottom:4}}>▶ Watch Take {tk.take_number}</button>))}</div>);})()}
+            {(()=>{const sub=app.audition_submissions;if(!sub)return null;const allTakes=(sub.audition_takes||[]).sort((a,b)=>a.take_number-b.take_number);const displayTakes=sub.submission_mode==='best_take'&&sub.selected_take_id?allTakes.filter(t=>t.id===sub.selected_take_id):allTakes;if(!displayTakes.length)return null;return(<div style={{marginTop:10,background:"rgba(99,60,180,0.08)",border:"1px solid rgba(99,60,180,0.25)",borderRadius:10,padding:"8px 12px"}}><div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:6}}><Ico n="movie" s={22}/> Audition Take{displayTakes.length>1?'s':''}</div>{displayTakes.map(tk=>(<button key={tk.id} onPointerDown={e=>e.stopPropagation()} onClick={e=>{e.stopPropagation();openApplicationVideoFromApp(app,{url:tk.video_url,name:t.display_name||"Applicant",takeLabel:`Take ${tk.take_number}`});}} style={{display:"flex",alignItems:"center",gap:6,fontSize:fsMode?13:12,fontWeight:700,padding:"6px 12px",borderRadius:8,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center",marginBottom:4}}>▶ Watch Take {tk.take_number}</button>))}</div>);})()}
             {!app.audition_submissions&&app.video_note_url&&<div style={{marginTop:10,background:"rgba(99,60,180,0.08)",border:"1px solid rgba(99,60,180,0.25)",borderRadius:10,padding:"8px 12px"}}>
               <div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:6}}><Ico n="video" s={22}/> Video Note Included</div>
               <button
                 onPointerDown={e=>e.stopPropagation()}
-                onClick={e=>{e.stopPropagation();setAppVideoViewer({url:app.video_note_url,name:t.display_name||"Applicant"});}}
+                onClick={e=>{e.stopPropagation();openApplicationVideoFromApp(app,{url:app.video_note_url,name:t.display_name||"Applicant"});}}
                 style={{display:"flex",alignItems:"center",gap:6,fontSize:fsMode?13:12,fontWeight:700,padding:"7px 14px",borderRadius:8,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center"}}>
                 ▶ Play Video Note
               </button>
@@ -12156,30 +12176,30 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     return(
       <div style={{display:"flex",flexDirection:"column",borderRadius:16,overflow:"hidden",background:"var(--s1)",border:"1px solid var(--bdr)",boxShadow:"0 4px 16px rgba(0,0,0,0.06)"}}>
         {/* Headshot */}
-        <div style={{position:"relative",aspectRatio:"3/4",overflow:"hidden",background:"var(--s2)",cursor:"pointer"}} onClick={()=>setCdProfileOverlay(buildTalentView(a))}>
+        <div style={{position:"relative",aspectRatio:"3/4",overflow:"hidden",background:"var(--s2)",cursor:"pointer"}} onClick={()=>openTalentProfileFromApp(a)}>
           <img src={img} alt={tp.display_name||""} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} draggable="false"/>
           <span style={{position:"absolute",top:10,right:10,fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:.8,padding:"3px 8px",borderRadius:99,background:statusColor.bg,color:statusColor.color}}>{a.status}</span>
           {/* Slate button — bottom-left so it doesn't overlap status badge */}
           {tp.slate_video_url&&(
             <button
-              onClick={e=>{e.stopPropagation();setAppVideoViewer({url:tp.slate_video_url,name:tp.display_name||"Applicant",takeLabel:"Slate"});}}
+              onClick={e=>{e.stopPropagation();openApplicationVideoFromApp(a,{url:tp.slate_video_url,name:tp.display_name||"Applicant",takeLabel:"Slate"});}}
               style={{position:"absolute",bottom:8,left:8,display:"flex",alignItems:"center",gap:4,padding:"4px 9px",borderRadius:18,background:"rgba(0,0,0,0.65)",color:"#fff",fontSize:10,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"inherit",letterSpacing:.4,backdropFilter:"blur(3px)",WebkitBackdropFilter:"blur(3px)"}}
             >▶ Slate</button>
           )}
         </div>
         {/* Info */}
         <div style={{padding:"12px 14px 14px",display:"flex",flexDirection:"column",gap:3,flex:1}}>
-          <h4 style={{fontSize:15,fontWeight:800,cursor:"pointer",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",margin:0}} onClick={()=>setCdProfileOverlay(buildTalentView(a))}>{tp.display_name||"Applicant"}</h4>
+          <h4 style={{fontSize:15,fontWeight:800,cursor:"pointer",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",margin:0}} onClick={()=>openTalentProfileFromApp(a)}>{tp.display_name||"Applicant"}</h4>
           <p style={{fontSize:12,color:"var(--t2)",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{[tp.age,tp.gender,tp.location,tp.union_status].filter(Boolean).join(" · ")||"—"}</p>
           {(tp.skills||[]).length>0&&<div style={{display:"flex",gap:4,flexWrap:"wrap",marginTop:2}}>
             {(tp.skills||[]).slice(0,3).map((s,i)=><span key={i} style={{background:"#F1EFE8",border:"1px solid #DDD8CC",padding:"2px 7px",borderRadius:10,fontSize:10,color:"#171724",fontWeight:500}}>{s}</span>)}
           </div>}
           {a.cover_note&&<p style={{fontSize:11,color:"var(--t3)",fontStyle:"italic",margin:"4px 0 0",overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>"{a.cover_note}"</p>}
           {/* Audition takes */}
-          {(()=>{const sub=a.audition_submissions;if(!sub)return null;const allTakes=(sub.audition_takes||[]).sort((a,b)=>a.take_number-b.take_number);const displayTakes=sub.submission_mode==='best_take'&&sub.selected_take_id?allTakes.filter(t=>t.id===sub.selected_take_id):allTakes;if(!displayTakes.length)return null;return(<div style={{marginTop:8,background:"rgba(99,60,180,0.07)",border:"1px solid rgba(99,60,180,0.22)",borderRadius:9,padding:"7px 10px"}}><div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:5}}><Ico n="movie" s={22}/> Audition Take{displayTakes.length>1?'s':''}</div>{displayTakes.map(tk=>(<button key={tk.id} style={{display:"flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,padding:"5px 10px",borderRadius:7,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center",marginBottom:3}} onClick={()=>setAppVideoViewer({url:tk.video_url,name:tp.display_name||"Applicant",takeLabel:`Take ${tk.take_number}`})}>▶ Watch Take {tk.take_number}</button>))}</div>);})()}
+          {(()=>{const sub=a.audition_submissions;if(!sub)return null;const allTakes=(sub.audition_takes||[]).sort((a,b)=>a.take_number-b.take_number);const displayTakes=sub.submission_mode==='best_take'&&sub.selected_take_id?allTakes.filter(t=>t.id===sub.selected_take_id):allTakes;if(!displayTakes.length)return null;return(<div style={{marginTop:8,background:"rgba(99,60,180,0.07)",border:"1px solid rgba(99,60,180,0.22)",borderRadius:9,padding:"7px 10px"}}><div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:5}}><Ico n="movie" s={22}/> Audition Take{displayTakes.length>1?'s':''}</div>{displayTakes.map(tk=>(<button key={tk.id} style={{display:"flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,padding:"5px 10px",borderRadius:7,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center",marginBottom:3}} onClick={()=>openApplicationVideoFromApp(a,{url:tk.video_url,name:tp.display_name||"Applicant",takeLabel:`Take ${tk.take_number}`})}>▶ Watch Take {tk.take_number}</button>))}</div>);})()}
           {!a.audition_submissions&&a.video_note_url&&<div style={{marginTop:8,background:"rgba(99,60,180,0.07)",border:"1px solid rgba(99,60,180,0.22)",borderRadius:9,padding:"7px 10px"}}>
             <div style={{fontSize:9,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:5}}><Ico n="video" s={22}/> Video Note Included</div>
-            <button style={{display:"flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,padding:"6px 12px",borderRadius:7,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center"}} onClick={()=>setAppVideoViewer({url:a.video_note_url,name:tp.display_name||"Applicant"})}>▶ Play Video Note</button>
+            <button style={{display:"flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,padding:"6px 12px",borderRadius:7,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center"}} onClick={()=>openApplicationVideoFromApp(a,{url:a.video_note_url,name:tp.display_name||"Applicant"})}>▶ Play Video Note</button>
           </div>}
           {/* Action buttons */}
           <div style={{display:"flex",gap:5,marginTop:10,flexWrap:"wrap",alignItems:"center"}}>
@@ -12217,7 +12237,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
               <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:statusColor.bg,color:statusColor.color,textTransform:"uppercase",letterSpacing:.5}}>{a.status}</span>
               {tp.slate_video_url&&(
                 <button
-                  onClick={()=>setAppVideoViewer({url:tp.slate_video_url,name:tp.display_name||"Applicant",takeLabel:"Slate"})}
+                  onClick={()=>openApplicationVideoFromApp(a,{url:tp.slate_video_url,name:tp.display_name||"Applicant",takeLabel:"Slate"})}
                   style={{display:"inline-flex",alignItems:"center",gap:4,padding:"3px 9px",borderRadius:16,background:"rgba(0,0,0,0.08)",color:"var(--t1)",fontSize:10,fontWeight:700,border:"1px solid var(--bdr)",cursor:"pointer",fontFamily:"inherit",letterSpacing:.3}}
                 >▶ Slate 7s</button>
               )}
@@ -12230,7 +12250,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
 
         {/* Audition Video — the whole point */}
         {/* Audition takes — official self-tape system */}
-        {(()=>{const sub=a.audition_submissions;if(!sub)return null;const allTakes=(sub.audition_takes||[]).sort((x,y)=>x.take_number-y.take_number);const displayTakes=sub.submission_mode==='best_take'&&sub.selected_take_id?allTakes.filter(t=>t.id===sub.selected_take_id):allTakes;if(!displayTakes.length)return null;return displayTakes.map((tk,ti)=>(<div key={tk.id} style={{background:"#000",position:"relative",borderTop:ti>0?"1px solid #111":"none"}}><div style={{padding:"6px 14px",background:"rgba(99,60,180,0.8)",fontSize:11,fontWeight:700,color:"#fff",letterSpacing:.5}}>Take {tk.take_number}{displayTakes.length>1?` · ${ti+1}/${displayTakes.length}`:""}</div><video key={tk.id} src={tk.video_url} controls playsInline preload="metadata" style={{display:"block",width:"100%",maxHeight:320,objectFit:"contain",background:"#000"}}/></div>));})()}
+        {(()=>{const sub=a.audition_submissions;if(!sub)return null;const allTakes=(sub.audition_takes||[]).sort((x,y)=>x.take_number-y.take_number);const displayTakes=sub.submission_mode==='best_take'&&sub.selected_take_id?allTakes.filter(t=>t.id===sub.selected_take_id):allTakes;if(!displayTakes.length)return null;return displayTakes.map((tk,ti)=>(<div key={tk.id} style={{background:"#000",position:"relative",borderTop:ti>0?"1px solid #111":"none"}}><div style={{padding:"6px 14px",background:"rgba(99,60,180,0.8)",fontSize:11,fontWeight:700,color:"#fff",letterSpacing:.5}}>Take {tk.take_number}{displayTakes.length>1?` · ${ti+1}/${displayTakes.length}`:""}</div><video key={tk.id} src={tk.video_url} controls playsInline preload="metadata" onPlay={()=>openApplicationVideoFromApp(a,{url:tk.video_url,name:tp.display_name||"Applicant",takeLabel:`Take ${tk.take_number}`})} style={{display:"block",width:"100%",maxHeight:320,objectFit:"contain",background:"#000"}}/></div>));})()}
         {/* Legacy video note (pre-audition-system) */}
         {!a.audition_submissions&&<div style={{background:"#000",position:"relative"}}>
           {a.video_note_url?(
@@ -12240,6 +12260,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
               controls
               playsInline
               preload="metadata"
+              onPlay={()=>openApplicationVideoFromApp(a,{url:a.video_note_url,name:tp.display_name||"Applicant"})}
               style={{display:"block",width:"100%",maxHeight:340,objectFit:"contain",background:"#000"}}
             />
           ):(
@@ -12332,7 +12353,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
                 total={submissions.length}
                 onDecide={(action,app)=>decide(action,app)}
                 onMessage={(app)=>handleMsgClick(app)}
-                onViewProfile={(app)=>setCdProfileOverlay(buildTalentView(app))}
+                onViewProfile={(app)=>openTalentProfileFromApp(app)}
               />
             ))}
           </div>
@@ -12364,7 +12385,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
                   <button className="sw-btn yes" onClick={()=>decide('select')} title="Select (swipe right)" style={fsMode?{width:68,height:68,fontSize:26}:{}}><Ico n="check" s={24}/></button>
                 </div>
                 <div style={{textAlign:"center",marginTop:12,display:"flex",gap:10,justifyContent:"center",alignItems:"center",flexWrap:"wrap"}}>
-                  <button className="btn-s btn-sm" onClick={()=>{if(!pendingList[si])return;if(fsMode)setFsMode(false);setCdProfileOverlay(buildTalentView(pendingList[si]));}} >View full profile</button>
+                  <button className="btn-s btn-sm" onClick={()=>{if(!pendingList[si])return;if(fsMode)setFsMode(false);openTalentProfileFromApp(pendingList[si]);}} >View full profile</button>
                   <button className="btn-s btn-sm" onClick={()=>{const next=!fsMode;setFsMode(next);if(!next)setCdProfileOverlay(null);}} title={fsMode?"Return to normal view":"Review actors in distraction-free full screen"}>{fsMode?"⊡ Normal View":"Full Screen"}</button>
                   {lastUndo&&<button className="btn-s btn-sm" onClick={undo}>↩ Undo — {lastUndo.name} ({lastUndo.newStatus})</button>}
                 </div>
@@ -12375,7 +12396,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
                 {counts.selected===0?<div className="cb-empty">Swipe right or press <Ico n="check" s={24}/> to shortlist.</div>:
                 submissions.filter(s=>s.status==='selected').slice(0,10).map((a,i)=>
                   <div key={a.id||i} className="cb-item" style={{flexDirection:"column",alignItems:"stretch"}}>
-                    <div style={{display:"flex",gap:10,alignItems:"center",cursor:"pointer"}} onClick={()=>setCdProfileOverlay(buildTalentView(a))}>
+                    <div style={{display:"flex",gap:10,alignItems:"center",cursor:"pointer"}} onClick={()=>openTalentProfileFromApp(a)}>
                       <img src={a.selected_photo_url||a.profiles?.headshot_url||"https://placehold.co/80x100/e5e5e5/999?text=?"} alt={a.profiles?.display_name||""} style={{width:52,height:66,objectFit:"cover",borderRadius:6}}/>
                       <div className="cb-item-info" style={{flex:1}}><h4>{a.profiles?.display_name||"Applicant"}</h4><p>{[a.profiles?.age,a.profiles?.gender,a.profiles?.location].filter(Boolean).join(" · ")}</p></div>
                     </div>
@@ -12486,7 +12507,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         </>:
         tab==="allSelected"?
           (allSelected.length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No selected talent yet. Review your pending submissions to build your shortlist.</p></div>:
-          <div className="results-grid">{allSelected.map((a,i)=>{const p=a.profiles||{};return(<div key={a.id||i} className="talent-thumb" onClick={()=>setCdProfileOverlay(buildTalentView(a))}><img src={a.selected_photo_url||p.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?"} alt={p.display_name||""}/><div className="talent-thumb-info"><h4>{p.display_name||"Applicant"}</h4><p>{[p.age,p.location].filter(Boolean).join(" · ")}</p></div></div>);})}</div>):
+          <div className="results-grid">{allSelected.map((a,i)=>{const p=a.profiles||{};return(<div key={a.id||i} className="talent-thumb" onClick={()=>openTalentProfileFromApp(a)}><img src={a.selected_photo_url||p.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?"} alt={p.display_name||""}/><div className="talent-thumb-info"><h4>{p.display_name||"Applicant"}</h4><p>{[p.age,p.location].filter(Boolean).join(" · ")}</p></div></div>);})}</div>):
         // ─── Saved Lists tab: index of lists, then drill-down to members ───
         <>
           {savedListsErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{savedListsErr}</div>}
@@ -13834,6 +13855,19 @@ function InfoTip({children,color="var(--t2)",width=300,label="More information"}
     >i</span>
     {show&&<FixedTooltip anchorRef={iconRef} width={width}>{children}</FixedTooltip>}
   </>);
+}
+
+const APPLICATION_STATUS_EXPLAINERS={
+  selected:"Shortlisted means the casting team moved your submission into their selected group. It is not a booking yet, but your profile stood out.",
+  audition_requested:"Audition requested means the casting team wants an audition, self-tape, or next-step material from you.",
+  hold:"In consideration means the casting team is still reviewing you for the role. It is not a booking or a rejection.",
+  pending:"Submitted means your application is in the casting team's review queue.",
+  viewed:"Submitted means your application is in the casting team's review queue."
+};
+function StatusInfoTip({status,label,color="var(--t2)",width=300}){
+  const text=APPLICATION_STATUS_EXPLAINERS[status];
+  if(!text)return null;
+  return <InfoTip color={color} width={width} label={`${label||status} status explanation`}>{text}</InfoTip>;
 }
 
 // ─── LiveCastingBadge — the pulsing "Casting now" badge + an InfoTip explaining
@@ -16369,7 +16403,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     if(profile?.user_type==="talent"){
       loadCredits();
       loadMediaItems();
-      const {data}=await window.sb.from("applications").select("id,status,created_at,reviewed_at,cover_note,selected_photo_url,audition_at,audition_note,casting_id,role_id,castings(title,prod,type,location),roles(name)").eq("talent_id",session.user.id).order("created_at",{ascending:false});
+      const {data}=await window.sb.from("applications").select("id,status,created_at,reviewed_at,cover_note,selected_photo_url,audition_at,audition_note,casting_id,role_id,castings(title,prod,posted_by_label,casting_director_name,is_admin_created,type,location),roles(name)").eq("talent_id",session.user.id).order("created_at",{ascending:false});
       setMyApps(data||[]);
       // Project invites the talent has received from CDs (any status — show pending first)
       try{
@@ -17241,7 +17275,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     {tab==="applications"&&!isCD&&<div className="card" style={{padding:24}}>
       <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>My Applications ({myApps.length})</h3>
       {myApps.length===0?<p style={{color:"var(--t3)",fontSize:14}}>Nothing yet. Browse castings and apply — your submissions show up here.</p>:
-      myApps.map(a=><div key={a.id} style={{padding:"14px 0",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:12,alignItems:"center"}}>
+      myApps.map(a=>{const statusLabel=a.status==="pending"?"UNDER REVIEW":a.status==="selected"?"SHORTLISTED":a.status==="hold"?"ON HOLD":a.status==="rejected"?"NOT SELECTED":String(a.status||"").toUpperCase();const statusColor=a.status==="selected"?"#1d7b44":a.status==="rejected"?"#c0392b":a.status==="hold"?"#c88900":"var(--t2)";return <div key={a.id} style={{padding:"14px 0",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:12,alignItems:"center"}}>
         {a.selected_photo_url&&<img src={a.selected_photo_url} style={{width:44,height:56,objectFit:"cover",borderRadius:6}}/>}
         <div>
           <div style={{fontWeight:600,fontSize:14}}>{a.castings?.title||"—"}</div>
@@ -17252,8 +17286,11 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
           {a.cover_note&&<div style={{fontSize:12,color:"var(--t2)",marginTop:2,fontStyle:"italic"}}>"{a.cover_note.slice(0,80)}{a.cover_note.length>80?"…":""}"</div>}
           {a.audition_at&&<div style={{fontSize:12,color:"#1d7b44",marginTop:4,fontWeight:600}}><Ico n="calendar-event" s={22}/> Audition: {new Date(a.audition_at).toLocaleString()}{a.audition_note?` · ${a.audition_note}`:""}</div>}
         </div>
-        <span className="tag" style={{background:a.status==="selected"?"rgba(46,204,113,0.15)":a.status==="rejected"?"rgba(255,100,100,0.1)":a.status==="hold"?"rgba(200,137,0,0.15)":"var(--s2)",color:a.status==="selected"?"#1d7b44":a.status==="rejected"?"#c0392b":a.status==="hold"?"#c88900":"var(--t2)",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{a.status==="pending"?"UNDER REVIEW":a.status==="selected"?"SHORTLISTED":a.status==="hold"?"ON HOLD":a.status==="rejected"?"NOT SELECTED":String(a.status||"").toUpperCase()}</span>
-      </div>)}
+        <span style={{display:"inline-flex",alignItems:"center",gap:6,justifySelf:"end"}}>
+          <span className="tag" style={{background:a.status==="selected"?"rgba(46,204,113,0.15)":a.status==="rejected"?"rgba(255,100,100,0.1)":a.status==="hold"?"rgba(200,137,0,0.15)":"var(--s2)",color:statusColor,fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{statusLabel}</span>
+          <StatusInfoTip status={a.status} label={statusLabel} color={statusColor} width={300}/>
+        </span>
+      </div>;})}
     </div>}
 
     {/* ── CAST ME AS TAB ── */}
@@ -19731,6 +19768,7 @@ const ACG = (()=>{
       type:tpl.type,
       prod:prodStr,
       posted_by_label:prodStr,
+      casting_director_name:prodStr,
       tagline:Array.isArray(tpl.taglines)?pick(tpl.taglines):tpl.tagline||null,
       synopsis:story.synopsis,
       location:city.name,
@@ -20004,7 +20042,7 @@ function AdminCastingGenerator({session}){
     setLoading(true);
     const [{data:ss},{data:cs,error:ce},{data:rs,error:re}]=await Promise.all([
       window.sb.from("site_settings").select("casting_generator_enabled,casting_generator_last_run").eq("id",1).maybeSingle(),
-      window.sb.from("castings").select("id,title,type,prod,posted_by_label,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,submission_requirements,synopsis,tagline,has_nudity,nudity_details,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured").order("created_at",{ascending:false}).limit(2000),
+      window.sb.from("castings").select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,submission_requirements,synopsis,tagline,has_nudity,nudity_details,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured").order("created_at",{ascending:false}).limit(2000),
       window.sb.from("roles").select("casting_id,name,description,gender,role_type,age_range,ethnicity,pay").limit(5000)
     ]);
     if(ss){setGenEnabled(!!ss.casting_generator_enabled);setLastRun(ss.casting_generator_last_run);}
@@ -20121,7 +20159,7 @@ function AdminCastingGenerator({session}){
     const freshRoles=fresh._roles||[];
     Object.keys(fresh).forEach(k=>{if(k[0]==="_")delete fresh[k];});
     const {error}=await window.sb.from("castings").update({
-      title:fresh.title,type:fresh.type,prod:fresh.prod,posted_by_label:fresh.posted_by_label,
+      title:fresh.title,type:fresh.type,prod:fresh.prod,posted_by_label:fresh.posted_by_label,casting_director_name:fresh.casting_director_name||fresh.posted_by_label||fresh.prod,
       tagline:fresh.tagline||null,synopsis:fresh.synopsis,location:fresh.location,pay:fresh.pay,union_status:fresh.union_status,
       submission_requirements:fresh.submission_requirements,expires_at:fresh.expires_at,
       status:"draft",published:false,updated_at:new Date().toISOString()
@@ -20142,7 +20180,7 @@ function AdminCastingGenerator({session}){
     // "posted by" line and prod stay in sync, matching how CD castings display.
     const postedBy=updated.prod||updated.posted_by_label||null;
     const patch={
-      title:updated.title,type:updated.type,prod:postedBy,posted_by_label:postedBy,
+      title:updated.title,type:updated.type,prod:postedBy,posted_by_label:postedBy,casting_director_name:postedBy,
       tagline:updated.tagline||null,synopsis:updated.synopsis,location:updated.location,pay:updated.pay,union_status:updated.union_status,
       submission_requirements:updated.submission_requirements,casting_website_url:updated.casting_website_url||null,
       casting_image_url:updated.casting_image_url||null,casting_image_path:updated.casting_image_path||null,
