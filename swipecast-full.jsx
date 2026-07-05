@@ -14296,9 +14296,11 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     if(!f.title.trim()){setErr("Title is required.");return;}
     const urlErr=validateWebsite(f.casting_website_url);
     if(urlErr){setErr(urlErr);return;}
-    if(!f.go_live_at){setErr("Go Live Date & Time is required.");return;}
-    const goLiveISO=nyLocalToUTCISO(f.go_live_at);
-    if(!goLiveISO){setErr("Go Live Date & Time is invalid.");return;}
+    // Go-live is optional when EDITING — older/already-published posts have no
+    // schedule, so a blank field just means "live now / keep as-is". Only validate
+    // if the user actually entered a value.
+    let goLiveISO=null;
+    if(f.go_live_at){goLiveISO=nyLocalToUTCISO(f.go_live_at);if(!goLiveISO){setErr("Go Live Date & Time is invalid.");return;}}
     setBusy(true);
     try{
       // Determine new status: open → open; pending_review → pending_review; rejected + resubmit → pending_review
@@ -14367,9 +14369,12 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
       <div><label className="label">Deadline</label><input className="input" type="date" value={f.deadline||""} onChange={e=>setField("deadline",e.target.value)}/></div>
     </div>
     <div className="form-group">
-      <label className="label">Go Live Date &amp; Time <span style={{color:"#c0392b"}}>*</span> <span style={{display:"inline-block",marginLeft:6,fontSize:10,fontWeight:800,letterSpacing:0.4,color:"var(--acc)",background:"rgba(var(--acc-rgb,100,149,237),0.12)",borderRadius:99,padding:"2px 8px",textTransform:"uppercase"}}>New York Time</span></label>
-      <input className="input" type="datetime-local" value={f.go_live_at||""} onChange={e=>setField("go_live_at",e.target.value)}/>
-      <p style={{fontSize:11,color:"var(--t3)",marginTop:4,lineHeight:1.5}}>When this casting becomes visible to the public. It stays hidden until this moment, then goes live automatically. All times are <strong>New York time (ET)</strong>.</p>
+      <label className="label">Go Live Date &amp; Time <span style={{fontWeight:500,color:"var(--t3)"}}>(optional)</span> <span style={{display:"inline-block",marginLeft:6,fontSize:10,fontWeight:800,letterSpacing:0.4,color:"var(--acc)",background:"rgba(var(--acc-rgb,100,149,237),0.12)",borderRadius:99,padding:"2px 8px",textTransform:"uppercase"}}>New York Time</span></label>
+      <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+        <input className="input" type="datetime-local" value={f.go_live_at||""} onChange={e=>setField("go_live_at",e.target.value)} style={{flex:1,minWidth:200}}/>
+        {f.go_live_at&&<button type="button" className="btn-s btn-sm" onClick={()=>setField("go_live_at","")}>Clear</button>}
+      </div>
+      <p style={{fontSize:11,color:"var(--t3)",marginTop:4,lineHeight:1.5}}>Optional. Set a future <strong>New York time (ET)</strong> to schedule when this casting goes public — it stays hidden until then, then goes live automatically. Leave blank to keep it live now.</p>
     </div>
     <div className="form-group">
       <label className="label">Contains nudity or intimate content?</label>
