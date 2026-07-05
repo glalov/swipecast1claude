@@ -10450,6 +10450,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const [classInvitations,setClassInvitations]=useState([]);
   const [invLoading,setInvLoading]=useState(true);
   const [sysNotifications,setSysNotifications]=useState([]);
+  const [routineNotifOpen,setRoutineNotifOpen]=useState(false); // collapse routine "reviewed/watched" notifs
   const [sysNotifLoading,setSysNotifLoading]=useState(true);
   const [dashDbCredits,setDashDbCredits]=useState([]);
 
@@ -10824,7 +10825,32 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   </div>);}
 
   if(dashView==="notifications"){
-    const NOTIF_TYPE_ICONS={class_invitation:"school",booking_request_received:"mailbox",booking_approved:"circle-check",booking_declined:"x",application_selected:"star",application_profile_viewed:"user-search",application_video_viewed:"video"};
+    const NOTIF_TYPE_ICONS={class_invitation:"school",booking_request_received:"mailbox",booking_approved:"circle-check",booking_declined:"x",application_selected:"star",audition_requested:"calendar-event",application_profile_viewed:"user-search",application_video_viewed:"video"};
+    // Tiering: wins (shortlist/audition/booking/invite) are elevated + colored;
+    // routine "reviewed/watched" activity is collapsed into one group so it can't
+    // bury the career-moment notifications or spam the bell.
+    const NOTIF_WIN={application_selected:{accent:"#1d7b44",tint:"#f3faf5"},audition_requested:{accent:"#5b3ea6",tint:"#f7f4fd"},booking_approved:{accent:"#1a6b42",tint:"#f3faf5"},class_invitation:{accent:"#5b3ea6",tint:"#f7f4fd"}};
+    const ROUTINE_TYPES=["application_profile_viewed","application_video_viewed"];
+    const winNotifs=sysNotifications.filter(n=>NOTIF_WIN[n.type]);
+    const routineNotifs=sysNotifications.filter(n=>ROUTINE_TYPES.includes(n.type));
+    const otherNotifs=sysNotifications.filter(n=>!NOTIF_WIN[n.type]&&!ROUTINE_TYPES.includes(n.type));
+    const rpCount=routineNotifs.filter(n=>n.type==="application_profile_viewed").length;
+    const rvCount=routineNotifs.filter(n=>n.type==="application_video_viewed").length;
+    const routineSummary=[rpCount>0?`${rpCount} profile review${rpCount>1?"s":""}`:null,rvCount>0?`${rvCount} tape view${rvCount>1?"s":""}`:null].filter(Boolean).join(" · ")||"Recent profile activity";
+    const notifCard=(n)=>{const win=NOTIF_WIN[n.type];return(
+      <div key={n.id} style={{position:"relative",padding:win?"15px 16px 15px 20px":"14px 16px",borderRadius:12,border:win?`1.5px solid ${win.accent}`:`1px solid ${n.is_read?"var(--bdr)":"var(--acc)33"}`,background:win?win.tint:(n.is_read?"var(--bg)":"rgba(99,60,180,0.04)"),display:"flex",gap:12,alignItems:"flex-start",overflow:"hidden"}}>
+        {win&&<div style={{position:"absolute",top:0,left:0,height:"100%",width:5,background:win.accent}}/>}
+        <div style={{flexShrink:0,lineHeight:1.2,color:win?win.accent:"var(--t2)"}}><Ico n={NOTIF_TYPE_ICONS[n.type]||"bell"} s={win?24:22}/></div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontWeight:700,fontSize:win?15:14,color:win?win.accent:"var(--t1)",marginBottom:3}}>{n.title}</div>
+          <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}>{n.body}</div>
+          <div style={{fontSize:11,color:"var(--t3)",marginTop:6}}>{new Date(n.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})}</div>
+          {n.type==="booking_approved"&&(<button className="btn-p btn-sm" style={{marginTop:10,fontSize:12,background:"#1a6b42",borderColor:"#1a6b42"}} onClick={()=>{const inv=classInvitations.find(i=>i.status==="approved_pending_payment"&&i.class_id===n.related_class_id);if(n.related_class_id)onNavigate("classes",{classId:n.related_class_id,invitationId:inv?.id||n.related_invitation_id||null});else onNavigate("classes");}}>Complete Payment →</button>)}
+          {n.type==="class_invitation"&&n.link_url&&(<button className="btn-p btn-sm" style={{marginTop:10,fontSize:12}} onClick={()=>{if(n.related_class_id)onNavigate("classes",{classId:n.related_class_id,invitationId:n.related_invitation_id||null});else onNavigate("classes");}}>View Class →</button>)}
+          {["application_selected","audition_requested","application_profile_viewed","application_video_viewed"].includes(n.type)&&(<button className="btn-p btn-sm" style={{marginTop:10,fontSize:12}} onClick={()=>setDashView("applications")}>View My Applications →</button>)}
+        </div>
+        {!n.is_read&&<div style={{width:8,height:8,borderRadius:"50%",background:win?win.accent:"var(--acc)",flexShrink:0,marginTop:4}}/>}
+      </div>);};
     return(<div className="td-dash-outer">
       <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
         <button className="btn-s btn-sm" onClick={()=>setDashView(null)} style={{display:"flex",alignItems:"center",gap:6}}>← Dashboard</button>
@@ -10842,39 +10868,22 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             </div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {sysNotifications.map(n=>(
-                <div key={n.id} style={{padding:"14px 16px",borderRadius:10,border:`1px solid ${n.is_read?"var(--bdr)":"var(--acc)33"}`,background:n.is_read?"var(--bg)":"rgba(99,60,180,0.04)",display:"flex",gap:12,alignItems:"flex-start"}}>
-                  <div style={{flexShrink:0,lineHeight:1.2}}><Ico n={NOTIF_TYPE_ICONS[n.type]||"bell"} s={22}/></div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",marginBottom:3}}>{n.title}</div>
-                    <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}>{n.body}</div>
-                    <div style={{fontSize:11,color:"var(--t3)",marginTop:6}}>{new Date(n.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})}</div>
-                    {n.type==="booking_approved"&&(
-                      <button className="btn-p btn-sm" style={{marginTop:10,fontSize:12,background:"#1a6b42",borderColor:"#1a6b42"}}
-                        onClick={()=>{
-                          const inv=classInvitations.find(i=>i.status==="approved_pending_payment"&&i.class_id===n.related_class_id);
-                          if(n.related_class_id)onNavigate("classes",{classId:n.related_class_id,invitationId:inv?.id||n.related_invitation_id||null});
-                          else onNavigate("classes");
-                        }}>
-                        Complete Payment →
-                      </button>
-                    )}
-                    {n.type==="class_invitation"&&n.link_url&&(
-                      <button className="btn-p btn-sm" style={{marginTop:10,fontSize:12}}
-                        onClick={()=>{if(n.related_class_id)onNavigate("classes",{classId:n.related_class_id,invitationId:n.related_invitation_id||null});else onNavigate("classes");}}>
-                        View Class →
-                      </button>
-                    )}
-                    {["application_selected","application_profile_viewed","application_video_viewed"].includes(n.type)&&(
-                      <button className="btn-p btn-sm" style={{marginTop:10,fontSize:12}}
-                        onClick={()=>setDashView("applications")}>
-                        View My Applications →
-                      </button>
-                    )}
-                  </div>
-                  {!n.is_read&&<div style={{width:8,height:8,borderRadius:"50%",background:"var(--acc)",flexShrink:0,marginTop:4}}/>}
+              {winNotifs.map(notifCard)}
+              {otherNotifs.map(notifCard)}
+              {routineNotifs.length>0&&(
+                <div style={{borderRadius:12,border:"1px solid var(--bdr)",background:"var(--bg)",overflow:"hidden"}}>
+                  <button onClick={()=>setRoutineNotifOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",gap:12,padding:"14px 16px",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit",textAlign:"left"}}>
+                    <div style={{flexShrink:0,color:"var(--t2)"}}><Ico n="eye" s={22}/></div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontWeight:700,fontSize:14,color:"var(--t1)"}}>{routineSummary}</div>
+                      <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>Casting directors opened your materials · tap to {routineNotifOpen?"hide":"see all"}</div>
+                    </div>
+                    {routineNotifs.some(n=>!n.is_read)&&<div style={{width:8,height:8,borderRadius:"50%",background:"var(--acc)",flexShrink:0}}/>}
+                    <Ico n={routineNotifOpen?"chevron-up":"chevron-down"} s={18} style={{color:"var(--t3)",flexShrink:0}}/>
+                  </button>
+                  {routineNotifOpen&&<div style={{display:"flex",flexDirection:"column",gap:8,padding:"0 14px 14px"}}>{routineNotifs.map(notifCard)}</div>}
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>
@@ -10925,14 +10934,20 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       {/* ── Quick stats row ── */}
       {(()=>{
         const unreadNotifs=sysNotifications.filter(n=>!n.is_read).length;
-        const hasApprovalNotif=sysNotifications.some(n=>n.type==="booking_approved"&&!n.is_read);
+        const hasUnread=(tp)=>sysNotifications.some(n=>n.type===tp&&!n.is_read);
+        // Lead with the best news, not just the latest — a shortlist outranks a booking.
+        const notifHeadline=hasUnread("application_selected")?"you've been shortlisted — tap to view"
+          :hasUnread("audition_requested")?"audition requested — tap to view"
+          :hasUnread("booking_approved")?"booking approved — tap to view"
+          :hasUnread("class_invitation")?"private invitation — tap to view"
+          :unreadNotifs>0?"tap to view":"all caught up";
         return(
         <div className="td-stats">
           {[
             {label:"Applications",value:appsLoading?"…":applications.length,sub:"total submitted",accent:false,onClick:null},
             {label:"Audition Requests",value:appsLoading?"…":auditionCount,sub:auditionCount>0?"action needed":"none pending",accent:auditionCount>0,onClick:null},
             {label:"Notifications",value:sysNotifLoading?"…":unreadNotifs,
-              sub:hasApprovalNotif?"booking approved — tap to view":unreadNotifs>0?"tap to view":"all caught up",
+              sub:notifHeadline,
               accent:unreadNotifs>0,
               onClick:()=>{setDashView("notifications");markNotificationsRead();}},
             {label:"Profile",value:isProfileComplete?"Live":`${profilePct}%`,sub:isProfileComplete?"visible to CDs":"complete your profile",accent:!isProfileComplete&&profilePct<60,onClick:null},
@@ -11264,7 +11279,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                             <span style={{fontWeight:t.unread>0?700:500,fontSize:13,color:"var(--t1)"}}>{posterDisplayName(t.profile,t.casting,"Unknown")}</span>
                             {t.castingTitle&&<span style={{fontSize:10,color:"var(--t3)",background:"var(--s2)",padding:"1px 6px",borderRadius:4,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:160}}>{t.castingTitle}</span>}
                           </div>
-                          <div style={{fontSize:12,color:"var(--t2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{(t.latest?.body||"").slice(0,72)}{(t.latest?.body||"").length>72?"…":""}</div>
+                          <div style={{fontSize:12,color:"var(--t2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{(()=>{const raw=t.latest?.body||"";let txt=raw;if(/^\s*\{/.test(raw)){try{const c=JSON.parse(raw);txt=(c.note||c.task||"Your weekly Cast Slate career note is ready.").toString();}catch(_){}}return txt.slice(0,72)+(txt.length>72?"…":"");})()}</div>
                         </div>
                         <div style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
                           <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap"}}>{fmtDate(t.latest?.created_at)}</span>
