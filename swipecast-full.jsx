@@ -12042,6 +12042,12 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       return;
     }
     setReloadTick(t=>t+1); // refresh stats
+    // Deciding on a submission IS reviewing it. For admin-generated castings this
+    // tells the talent "<casting director> reviewed your profile" (the RPC no-ops
+    // for real-CD castings and dedups per application). This is what makes the
+    // "who reviewed me" signal actually fire during the normal swipe-review flow —
+    // admins decide from the deck without ever clicking "View full profile".
+    notifyAdminGeneratedApplicationActivity(app,"profile_view");
   };
 
   const undo=async()=>{
