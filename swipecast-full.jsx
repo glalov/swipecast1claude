@@ -3099,7 +3099,12 @@ function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){
 // ─── Red sticky banner shown at the very top of every page when the user is
 //     a free-tier talent (CDs / producers / admins / studios are unaffected).
 //     Click anywhere → /membership.
-function ActivateMembershipBanner({myProfile,onNavigate}){
+function ActivateMembershipBanner({myProfile,session,page,onNavigate}){
+  // Never show without a live logged-in session — prevents a stale myProfile
+  // from flashing the upsell after logout — and never on the auth pages.
+  const AUTH_PAGES=["login","register-talent","register-cd","reset-password","auth-gate"];
+  if(!session?.user)return null;
+  if(AUTH_PAGES.includes(page))return null;
   const userType=(myProfile?.user_type||"").toLowerCase();
   const isTalent=["talent","actor"].includes(userType);
   const status=myProfile?.membership_status||"free";
@@ -26311,7 +26316,7 @@ function App(){
       {page==="home"&&<FeaturedClassBanner onNavigate={navigate}/>}
       {/* Free-tier talent see this red banner above the nav until they
           activate. Hidden for CDs/admins/producers/studios and once active. */}
-      <ActivateMembershipBanner myProfile={myProfile} onNavigate={navigate}/>
+      <ActivateMembershipBanner myProfile={myProfile} session={session} page={page} onNavigate={navigate}/>
       <nav className={"nav"+(navScrolled?" scrolled":"")}>
         <div className="logo" onClick={()=>navThen("home")}><div className="logo-i"><LogoMark/></div>CastSlate</div>
         <div className="nav-links">
