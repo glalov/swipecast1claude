@@ -10701,8 +10701,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     pending:{label:"Submitted",color:"var(--t2)",bg:"var(--s2)"},
     // "Viewed" (CD opened your submission) is intentionally NOT surfaced to actors — show it as plain "Submitted".
     viewed:{label:"Submitted",color:"var(--t2)",bg:"var(--s2)"},
-    hold:{label:"On Hold",color:"#d97706",bg:"rgba(217,119,6,0.08)"},
-    selected:{label:"Selected",color:"var(--grn)",bg:"rgba(27,135,62,0.08)"},
+    hold:{label:"In consideration",color:"#d97706",bg:"rgba(217,119,6,0.08)"},
+    selected:{label:"Shortlisted",color:"var(--grn)",bg:"rgba(27,135,62,0.08)"},
     // Rejections are not shown to actors as "Not Selected" — surface as a neutral "Archived" instead.
     rejected:{label:"Archived",color:"var(--t3)",bg:"var(--s2)"},
     audition_requested:{label:"Audition Requested",color:"var(--acc)",bg:"rgba(99,60,180,0.08)"},
@@ -10712,7 +10712,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   // ranked to the emotional stakes: wins (selected / audition) shout, "in
   // consideration" is warm-hopeful, submitted stays calm, archived fades back.
   const APP_CARD_UI={
-    selected:{tier:"win",label:"Selected",micro:"A casting director shortlisted you",icon:"star",accent:"#1d7b44",accentLight:"#2fae6b",accentBg:"#d8efe1",cardBg:"#f3faf5",cardBorder:"#2e9e6b",iconBg:"#1d7b44",iconColor:"#fff"},
+    selected:{tier:"win",label:"Shortlisted",micro:"A casting director shortlisted you",icon:"star",accent:"#1d7b44",accentLight:"#2fae6b",accentBg:"#d8efe1",cardBg:"#f3faf5",cardBorder:"#2e9e6b",iconBg:"#1d7b44",iconColor:"#fff"},
     audition_requested:{tier:"win",label:"Audition requested",micro:"A casting director wants to see your audition",icon:"calendar-event",accent:"#5b3ea6",accentLight:"#8b6fd6",accentBg:"#ece5fb",cardBg:"#f7f4fd",cardBorder:"#c3b2ee",iconBg:"#5b3ea6",iconColor:"#fff"},
     hold:{tier:"warm",label:"In consideration",micro:"A casting director is considering you",icon:"eye",accent:"#b57d10",accentLight:"#d99e2a",accentBg:"#fae6c2",cardBg:"#fdf8ee",cardBorder:"#ecd9b0",iconBg:"#faedd4",iconColor:"#b57d10"},
     pending:{tier:"calm",label:"Submitted",micro:"Awaiting casting director review",icon:"send",accent:"#77746c",accentLight:"#77746c",accentBg:"#f0eee5",cardBg:"var(--bg)",cardBorder:"var(--bdr)",iconBg:"#f0eee5",iconColor:"#8a877d"},
@@ -13885,7 +13885,7 @@ function InfoTip({children,color="var(--t2)",width=300,label="More information"}
 }
 
 const APPLICATION_STATUS_EXPLAINERS={
-  selected:"Shortlisted means the casting team moved your submission into their selected group. It is not a booking yet, but your profile stood out.",
+  selected:"Shortlisted means the casting team moved your submission onto their shortlist. It is not a booking yet, but your profile stood out.",
   audition_requested:"Audition requested means the casting team wants an audition, self-tape, or next-step material from you.",
   hold:"In consideration means the casting team is still reviewing you for the role. It is not a booking or a rejection.",
   pending:"Submitted means your application is in the casting team's review queue.",
@@ -17302,7 +17302,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     {tab==="applications"&&!isCD&&<div className="card" style={{padding:24}}>
       <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>My Applications ({myApps.length})</h3>
       {myApps.length===0?<p style={{color:"var(--t3)",fontSize:14}}>Nothing yet. Browse castings and apply — your submissions show up here.</p>:
-      myApps.map(a=>{const statusLabel=a.status==="pending"?"UNDER REVIEW":a.status==="selected"?"SHORTLISTED":a.status==="hold"?"ON HOLD":a.status==="rejected"?"NOT SELECTED":String(a.status||"").toUpperCase();const statusColor=a.status==="selected"?"#1d7b44":a.status==="rejected"?"#c0392b":a.status==="hold"?"#c88900":"var(--t2)";return <div key={a.id} style={{padding:"14px 0",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:12,alignItems:"center"}}>
+      myApps.map(a=>{const statusLabel=a.status==="pending"?"SUBMITTED":a.status==="selected"?"SHORTLISTED":a.status==="hold"?"IN CONSIDERATION":a.status==="rejected"?"ARCHIVED":String(a.status||"").toUpperCase();const statusColor=a.status==="selected"?"#1d7b44":a.status==="hold"?"#c88900":"var(--t2)";return <div key={a.id} style={{padding:"14px 0",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:12,alignItems:"center"}}>
         {a.selected_photo_url&&<img src={a.selected_photo_url} style={{width:44,height:56,objectFit:"cover",borderRadius:6}}/>}
         <div>
           <div style={{fontWeight:600,fontSize:14}}>{a.castings?.title||"—"}</div>
@@ -17314,7 +17314,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
           {a.audition_at&&<div style={{fontSize:12,color:"#1d7b44",marginTop:4,fontWeight:600}}><Ico n="calendar-event" s={22}/> Audition: {new Date(a.audition_at).toLocaleString()}{a.audition_note?` · ${a.audition_note}`:""}</div>}
         </div>
         <span style={{display:"inline-flex",alignItems:"center",gap:6,justifySelf:"end"}}>
-          <span className="tag" style={{background:a.status==="selected"?"rgba(46,204,113,0.15)":a.status==="rejected"?"rgba(255,100,100,0.1)":a.status==="hold"?"rgba(200,137,0,0.15)":"var(--s2)",color:statusColor,fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{statusLabel}</span>
+          <span className="tag" style={{background:a.status==="selected"?"rgba(46,204,113,0.15)":a.status==="hold"?"rgba(200,137,0,0.15)":"var(--s2)",color:statusColor,fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>{statusLabel}</span>
           <StatusInfoTip status={a.status} label={statusLabel} color={statusColor} width={300}/>
         </span>
       </div>;})}
