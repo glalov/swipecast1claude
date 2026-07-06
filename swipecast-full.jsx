@@ -9512,6 +9512,15 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
       ...freshAdditional.slice(showcasePhotos.length).map(u=>({_tile:"photo",url:u})),
     ];
   }
+  // Always fill the 2×2 grid: if the showcase resolved to fewer than 4 tiles but
+  // more media exists, promote the next item(s) — video or photo — into the grid
+  // so it renders a full 1 main + 4 instead of leaving an empty quarter while
+  // media hides under "View More". Preserves chosen order; only fills gaps.
+  if(showcaseTiles.length<4&&extraMedia.length>0){
+    const _need=4-showcaseTiles.length;
+    showcaseTiles=[...showcaseTiles,...extraMedia.slice(0,_need)];
+    extraMedia=extraMedia.slice(_need);
+  }
   const hasShowcase=showcaseTiles.length>0;
   const hasExtraMedia=extraMedia.length>0;
 
