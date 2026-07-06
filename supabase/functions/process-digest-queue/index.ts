@@ -42,9 +42,11 @@ const UNSUB_BASE           = `${SUPABASE_URL}/functions/v1/process-digest-queue`
 // ── Email provider (mirrors send-digest-email): Resend default, SES optional ──
 const RESEND_API_KEY        = Deno.env.get("RESEND_API_KEY");
 const SENDER_API_KEY        = Deno.env.get("SENDER_API_KEY");
-// Bulk senders (digest + campaigns) can route independently of transactional mail
-// via BULK_EMAIL_PROVIDER (e.g. "sender"); falls back to EMAIL_PROVIDER, then resend.
-const EMAIL_PROVIDER        = (Deno.env.get("BULK_EMAIL_PROVIDER") ?? Deno.env.get("EMAIL_PROVIDER") ?? "resend").toLowerCase();
+// Forced to Resend: the Sender.net/SES bulk paths are dormant/unverified and were
+// silently dropping the daily digest (accepting sends but never delivering). Revert
+// this line to `(Deno.env.get("BULK_EMAIL_PROVIDER") ?? Deno.env.get("EMAIL_PROVIDER")
+// ?? "resend").toLowerCase()` to restore multi-provider routing.
+const EMAIL_PROVIDER        = "resend";
 const AWS_ACCESS_KEY_ID     = Deno.env.get("AWS_ACCESS_KEY_ID");
 const AWS_SECRET_ACCESS_KEY = Deno.env.get("AWS_SECRET_ACCESS_KEY");
 const AWS_SES_REGION        = Deno.env.get("AWS_SES_REGION") ?? Deno.env.get("AWS_REGION") ?? "us-east-1";
