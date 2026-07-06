@@ -9393,7 +9393,7 @@ function ShowcaseVideoTile({v,onOpen}){
 // ═══════════════════════════════════════════
 // PAGE: TALENT PROFILE VIEW
 // ═══════════════════════════════════════════
-function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
+function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const vpw=useViewportWidth();
   const isMobile=vpw<768;
   const viewerIsCd=!!myProfile&&(myProfile.user_type==="cd"||myProfile.user_type==="admin"||myProfile.user_type==="super_admin");
@@ -9569,7 +9569,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile}){
       </div>
     )}
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:16,flexWrap:"wrap"}}>
-      {!isOwnProfile&&<button className="btn-s btn-sm" onClick={onBack}>← Back</button>}
+      {!isOwnProfile&&!hideBack&&<button className="btn-s btn-sm" onClick={onBack}>← Back</button>}
       {!isOwnProfile&&talent?.id&&<button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this profile"><Ico n="flag" s={22}/> Report</button>}
     </div>
     <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={talent?.id?{kind:"profile",id:talent.id}:null}/>
@@ -20944,6 +20944,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       <AdminNavLink current={section} target="overview" label="Overview" onClick={goToSection}/>
       <AdminNavLink current={section} target="self-improvement" label="Self Improvement" onClick={goToSection}/>
       <AdminNavLink current={section} target="users" label="Users" onClick={goToSection}/>
+      <AdminNavLink current={section} target="catalog" label="Headshot Catalog" onClick={goToSection}/>
       <AdminNavLink current={section} target="cd-verification" label="CD Verification" onClick={goToSection}/>
       <AdminNavLink current={section} target="castings" label="Castings" badge={pendingCastingCount} onClick={goToSection}/>
       <AdminNavLink current={section} target="applications" label="Applications" onClick={goToSection}/>
@@ -20976,6 +20977,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="overview"&&<AdminOverview onGoToBookingRequests={()=>goToSection("booking-requests")} session={session} myProfile={profile}/>}
       {section==="self-improvement"&&<AdminSelfImprovement/>}
       {section==="users"&&<AdminUsers isSuperAdmin={isSuperAdmin} session={session} myProfile={profile}/>}
+      {section==="catalog"&&<AdminHeadshotCatalog session={session} myProfile={profile}/>}
       {section==="cd-verification"&&<AdminCDVerification/>}
       {section==="castings"&&<AdminCastings onPendingCountChange={setPendingCastingCount}/>}
       {section==="applications"&&<AdminApplications/>}
@@ -21764,6 +21766,137 @@ function AdminCDProfileView({u,session,myProfile,onBack}){
       </div>
     </div>
   );
+}
+
+// ─── Headshot Catalog: live visual grid of every talent who uploaded a headshot.
+//     Click a card → the full profile (reused TalentProfile) + their casting
+//     applications. Realtime-subscribed + polling backstop so new sign-ups and
+//     freshly-uploaded headshots appear without a manual refresh.
+function AdminHeadshotCatalog({session,myProfile}){
+  const [profiles,setProfiles]=useState([]);
+  const [appCounts,setAppCounts]=useState({});
+  const [q,setQ]=useState("");
+  const [loading,setLoading]=useState(true);
+  const [msg,setMsg]=useState("");
+  const [viewing,setViewing]=useState(null);
+  const load=useCallback(async()=>{
+    // Every talent with a non-empty headshot, newest first. No visible/suspended
+    // filter — admins get full visibility (suspended/banned are flagged on the card).
+    const {data,error}=await window.sb.from("profiles")
+      .select("id,display_name,email,location,union_status,headshot_url,additional_photos,verified,featured,banned,suspended,created_at")
+      .eq("user_type","talent")
+      .not("headshot_url","is",null)
+      .neq("headshot_url","")
+      .order("created_at",{ascending:false})
+      .limit(2000);
+    if(error){setMsg("Load failed: "+error.message);setLoading(false);return;}
+    setProfiles(data||[]);setMsg("");
+    // Lightweight one-column pull → application counts grouped by talent (card pills).
+    try{
+      const {data:apps}=await window.sb.from("applications").select("talent_id").limit(20000);
+      const counts={};(apps||[]).forEach(a=>{if(a.talent_id)counts[a.talent_id]=(counts[a.talent_id]||0)+1;});
+      setAppCounts(counts);
+    }catch(_){}
+    setLoading(false);
+  },[]);
+  useEffect(()=>{load();},[load]);
+  // Realtime subscription + 45s polling backstop + focus refetch — same defensive
+  // pattern as the featured-castings slider, so the catalog stays current even if
+  // realtime isn't enabled for these tables.
+  useEffect(()=>{
+    let cancelled=false,ch=null;
+    try{
+      ch=window.sb.channel("admin-headshot-catalog")
+        .on("postgres_changes",{event:"*",schema:"public",table:"profiles"},()=>{if(!cancelled)load();})
+        .on("postgres_changes",{event:"*",schema:"public",table:"applications"},()=>{if(!cancelled)load();})
+        .subscribe();
+    }catch(_){/* realtime optional */}
+    const tid=setInterval(()=>{if(!cancelled)load();},45000);
+    const onFocus=()=>{if(!cancelled)load();};
+    window.addEventListener("focus",onFocus);
+    return()=>{cancelled=true;clearInterval(tid);window.removeEventListener("focus",onFocus);if(ch){try{window.sb.removeChannel(ch);}catch(_){}}};
+  },[load]);
+  const filtered=profiles.filter(u=>{
+    if(!q)return true;
+    const needle=q.toLowerCase();
+    return [u.display_name,u.email,u.location].some(x=>x&&x.toLowerCase().includes(needle));
+  });
+  if(viewing)return <AdminTalentCatalogDetail u={viewing} session={session} myProfile={myProfile} onBack={()=>setViewing(null)}/>;
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Headshot Catalog</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{filtered.length} of {profiles.length} actors with a headshot · <span style={{color:"var(--acc)",fontWeight:600}}>updates live</span></p>
+    {msg&&<div style={{background:"rgba(192,57,43,0.1)",color:"#c0392b",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+    <input className="input" placeholder="Search by name, email, location…" value={q} onChange={e=>setQ(e.target.value)} style={{width:"100%",marginBottom:16}}/>
+    {loading?<CastSlateLoader size="inline" text="Loading catalog…"/>:
+      filtered.length===0?<div className="card" style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No actors with headshots match.</div>:
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(190px,1fr))",gap:16}}>
+        {filtered.map(u=><CatalogCard key={u.id} u={u} appCount={appCounts[u.id]||0} onOpen={()=>setViewing(u)}/>)}
+      </div>
+    }
+  </>);
+}
+function CatalogCard({u,appCount,onOpen}){
+  const dim=u.banned?0.4:u.suspended?0.65:1;
+  return(<div onClick={onOpen} style={{cursor:"pointer",borderRadius:14,overflow:"hidden",border:"1px solid var(--bdr)",background:"var(--s1)",opacity:dim,display:"flex",flexDirection:"column",transition:"transform .15s,box-shadow .15s"}}
+    onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.boxShadow="0 10px 26px rgba(0,0,0,0.14)";}}
+    onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="";}}>
+    <div style={{position:"relative",width:"100%",aspectRatio:"3/4",background:"var(--s3)"}}>
+      <img src={u.headshot_url} alt={u.display_name||"Headshot"} loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+      <div style={{position:"absolute",top:8,right:8,display:"flex",flexDirection:"column",gap:4,alignItems:"flex-end"}}>
+        {u.verified&&<span style={{background:"rgba(29,123,68,0.92)",color:"#fff",fontSize:9,fontWeight:800,padding:"2px 6px",borderRadius:4,letterSpacing:.4}}>VERIFIED</span>}
+        {u.featured&&<span style={{background:"rgba(0,0,0,0.72)",color:"#fff",fontSize:9,fontWeight:800,padding:"2px 6px",borderRadius:4,letterSpacing:.4}}>★ FEATURED</span>}
+        {u.banned&&<span style={{background:"#c0392b",color:"#fff",fontSize:9,fontWeight:800,padding:"2px 6px",borderRadius:4}}>BANNED</span>}
+        {!u.banned&&u.suspended&&<span style={{background:"rgba(192,57,43,0.85)",color:"#fff",fontSize:9,fontWeight:800,padding:"2px 6px",borderRadius:4}}>SUSPENDED</span>}
+      </div>
+      <div style={{position:"absolute",bottom:8,left:8,background:appCount>0?"var(--acc)":"rgba(0,0,0,0.6)",color:"#fff",fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:20}}>{appCount} {appCount===1?"application":"applications"}</div>
+    </div>
+    <div style={{padding:"10px 12px"}}>
+      <div style={{fontWeight:700,fontSize:14,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{u.display_name||u.email||"Unknown"}</div>
+      <div style={{fontSize:12,color:"var(--t3)",marginTop:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{[u.location,u.union_status].filter(Boolean).join(" · ")||"—"}</div>
+      <div style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Joined {u.created_at?new Date(u.created_at).toLocaleDateString():"—"}</div>
+    </div>
+  </div>);
+}
+function AdminTalentCatalogDetail({u,session,myProfile,onBack}){
+  const [apps,setApps]=useState(null);
+  useEffect(()=>{
+    if(!u?.id)return;
+    (async()=>{
+      const {data}=await window.sb.from("applications")
+        .select("id,status,created_at,casting_id,role_id,castings(title,prod,type,location),roles(name)")
+        .eq("talent_id",u.id).order("created_at",{ascending:false});
+      setApps(data||[]);
+    })();
+  },[u?.id]);
+  // Build the object TalentProfile expects (mirrors the AdminUsers "View Profile" flow).
+  const additional=Array.isArray(u.additional_photos)?u.additional_photos:[];
+  const mainPhoto=u.headshot_url||"";
+  const seen=new Set();const allPhotos=[];
+  [mainPhoto,...additional].forEach(url=>{if(url&&!seen.has(url)){seen.add(url);allPhotos.push(url);}});
+  const talentObj={...u,id:u.id,name:u.display_name||u.email||"Unknown",display_name:u.display_name||u.email||"Unknown",img:mainPhoto||"https://placehold.co/400x500/e5e5e5/999?text=No+Headshot",type:"Talent",union:u.union_status||"Non-Union",skills:Array.isArray(u.skills)?u.skills:[],additional_photos:additional,video_links:Array.isArray(u.video_links)?u.video_links:[],credits:u.credits||"",_allPhotos:allPhotos};
+  const stColor=(s)=>({selected:"#1d7b44",shortlisted:"#1d7b44",hold:"#c88900",pending:"#2980b9",rejected:"#c0392b"})[s]||"var(--t3)";
+  return(<div>
+    <button className="btn-s btn-sm" style={{marginBottom:16}} onClick={onBack}>← Back to Catalog</button>
+    <div className="card" style={{padding:"20px 24px",marginBottom:20}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",marginBottom:14}}>
+        <h3 style={{fontWeight:700,fontSize:16,margin:0}}>Casting Activity</h3>
+        <span style={{fontSize:12,color:"var(--t3)"}}>{apps==null?"…":`${apps.length} application${apps.length===1?"":"s"}`}</span>
+      </div>
+      {apps==null?<CastSlateLoader size="inline" text="Loading applications…"/>:
+        apps.length===0?<p style={{color:"var(--t3)",fontSize:13,margin:0}}>This actor hasn't applied to any castings yet.</p>:
+        <div style={{display:"flex",flexDirection:"column"}}>
+          {apps.map(a=>(<div key={a.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,padding:"10px 0",borderBottom:"1px solid var(--bdr)"}}>
+            <div style={{minWidth:0}}>
+              <div style={{fontWeight:600,fontSize:14,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{a.castings?.title||"—"}{a.roles?.name?<span style={{color:"var(--t3)",fontWeight:400}}> · {a.roles.name}</span>:""}</div>
+              <div style={{fontSize:12,color:"var(--t3)"}}>{[a.castings?.prod,a.castings?.type,a.castings?.location].filter(Boolean).join(" · ")||"—"} · {a.created_at?new Date(a.created_at).toLocaleDateString():""}</div>
+            </div>
+            <span style={{fontSize:11,fontWeight:700,color:stColor(a.status),textTransform:"uppercase",whiteSpace:"nowrap"}}>{a.status||"pending"}</span>
+          </div>))}
+        </div>
+      }
+    </div>
+    <TalentProfile talent={talentObj} onBack={onBack} onNavigate={()=>{}} session={session} myProfile={myProfile} hideBack/>
+  </div>);
 }
 
 // ─── Castings: feature/close/reopen/edit/delete, still uses existing EditCastingModal
