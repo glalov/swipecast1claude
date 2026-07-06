@@ -9456,12 +9456,19 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const rawSocialLinks=freshProfile?.social_links??talent.social_links;
   const socialLinks=(rawSocialLinks&&typeof rawSocialLinks==="object")?rawSocialLinks:{};
 
+  // Social links are a Premium-only feature: they surface off-platform galleries
+  // (e.g. an actor's full Instagram) that would otherwise bypass the paid tier,
+  // so only render them when the profile OWNER is Premium. Keyed on the owner's
+  // membership, not the viewer's.
+  const ownerIsPremium=(freshProfile?.membership_status||talent.membership_status)==="active";
   const allSocialLinks=[];
-  SOCIAL_LINK_FIELDS.forEach(({key,label})=>{
-    const v=socialLinks[key];
-    if(v&&v.trim())allSocialLinks.push({key,label,url:v.trim()});
-  });
-  if(!socialLinks.instagram_url&&talent.instagram)allSocialLinks.unshift({key:"instagram",label:"Instagram",url:talent.instagram.startsWith("http")?talent.instagram:`https://instagram.com/${talent.instagram.replace(/^@/,"")}`});
+  if(ownerIsPremium){
+    SOCIAL_LINK_FIELDS.forEach(({key,label})=>{
+      const v=socialLinks[key];
+      if(v&&v.trim())allSocialLinks.push({key,label,url:v.trim()});
+    });
+    if(!socialLinks.instagram_url&&talent.instagram)allSocialLinks.unshift({key:"instagram",label:"Instagram",url:talent.instagram.startsWith("http")?talent.instagram:`https://instagram.com/${talent.instagram.replace(/^@/,"")}`});
+  }
 
   const creditsByCategory={};
   if(dbCredits&&dbCredits.length){
@@ -16842,7 +16849,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       {!isCD&&<button className={`tab ${tab==="showcase"?"active":""}`} onClick={()=>setTab("showcase")}>Showcase Order</button>}
       {!isCD&&<button className={`tab ${tab==="skills"?"active":""}`} onClick={()=>setTab("skills")}>Skills ({selectedSkills.length})</button>}
       {!isCD&&<button className={`tab ${tab==="credits"?"active":""}`} onClick={()=>setTab("credits")}>Credits ({dbCredits.length})</button>}
-      {!isCD&&<button className={`tab ${tab==="social"?"active":""}`} onClick={()=>setTab("social")}>Social Links</button>}
+      {!isCD&&<button className={`tab ${tab==="social"?"active":""}`} onClick={()=>setTab("social")}>Social Links{!isPremium?" · Premium":""}</button>}
       {!isCD&&<button className={`tab ${tab==="applications"?"active":""}`} onClick={()=>setTab("applications")}>Applications ({myApps.length})</button>}
       {!isCD&&<button className={`tab ${tab==="cast-me-as"?"active":""}`} onClick={()=>setTab("cast-me-as")}>Cast Me As</button>}
       {!isCD&&<button className={`tab ${tab==="improve"?"active":""}`} onClick={()=>setTab("improve")}>Improve Profile</button>}
@@ -17367,8 +17374,16 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       }
     </>}
 
-    {/* ── SOCIAL LINKS TAB ── */}
-    {tab==="social"&&!isCD&&<div className="card" style={{padding:24}}>
+    {/* ── SOCIAL LINKS TAB ── (Premium only) */}
+    {tab==="social"&&!isCD&&!isPremium&&<div className="card" style={{padding:24}}>
+      <div style={{textAlign:"center",padding:"40px 24px"}}>
+        <div style={{fontSize:36,marginBottom:12}}><Ico n="link" s={22}/></div>
+        <h4 style={{fontSize:16,fontWeight:700,marginBottom:8}}>Premium Feature</h4>
+        <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.7,marginBottom:20,maxWidth:380,margin:"0 auto 20px"}}>Upgrade to Premium to add your website and social media links (Instagram, Facebook, and more). They'll appear on your public profile so casting directors can find you everywhere.</p>
+        <button className="btn-p" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium — {PREMIUM_PRICE}</button>
+      </div>
+    </div>}
+    {tab==="social"&&!isCD&&isPremium&&<div className="card" style={{padding:24}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4,flexWrap:"wrap",gap:8}}>
         <h3 style={{fontSize:15,fontWeight:700}}>Websites & Social Media</h3>
         {(()=>{const count=SOCIAL_LINK_FIELDS.filter(({key})=>(socialLinks[key]||"").trim()).length;return count>0&&<span style={{fontSize:12,color:"var(--t3)"}}>{count} social link{count!==1?"s":""} added</span>;})()}
