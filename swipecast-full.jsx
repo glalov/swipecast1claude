@@ -20976,6 +20976,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {isSuperAdmin&&<AdminNavLink current={section} target="legal-pages" label="Legal Pages" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="email-digests" label="Email Digests" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="email-campaigns" label="Email Campaigns" onClick={goToSection}/>}
+      {isSuperAdmin&&<AdminNavLink current={section} target="monthly-event" label="Monthly Event Email" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="weekly-checkins" label="Weekly Check-Ins" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="manager-mode" label="Manager Mode" onClick={goToSection}/>}
       {/* Direct jump to the CD dashboard — admins inherit CD capabilities, so they post + review
@@ -21009,6 +21010,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="legal-pages"&&isSuperAdmin&&<AdminLegalPages/>}
       {section==="email-digests"&&isSuperAdmin&&<AdminEmailDigests/>}
       {section==="email-campaigns"&&isSuperAdmin&&<AdminEmailCampaigns session={session}/>}
+      {section==="monthly-event"&&isSuperAdmin&&<AdminMonthlyEvent session={session}/>}
       {section==="weekly-checkins"&&isSuperAdmin&&<AdminWeeklyCheckIns session={session}/>}
       {section==="manager-mode"&&isSuperAdmin&&<AdminManagerMode session={session}/>}
       <div style={{marginTop:40}}><Footer onNavigate={onNavigate}/></div>
@@ -21225,6 +21227,216 @@ function AdminEmailCampaigns({session}){
         <p style={{fontSize:11,color:"var(--t3)",margin:"6px 0 0",lineHeight:1.5}}>Use this only when you want to email the entire list again from scratch. Unsubscribed people stay excluded.</p>
       </div>
     </div>}
+  </>);
+}
+
+// ─── Monthly Event Email: a saved Manager-Mode event template + one-click send to
+//     all premium members. Personalizes each recipient's first name and routes
+//     through Resend (via the send-campaign provider override) so a monthly blast
+//     takes minutes: edit the event fields, preview, test, send. Field values are
+//     remembered in localStorage so next month starts from last month's content.
+const MONTHLY_EVENT_DEFAULTS={
+  subject:"Your event pick this month — a free NYC industry mixer",
+  eyebrow:"Your monthly event pick",
+  title:"Get in the room this month",
+  heroSub:"Roles come from relationships. Each month your CastSlate manager hand-picks one NYC event worth showing up for — here's this month's.",
+  intro:"showing up in person is one of the highest-leverage things an actor can do between auditions. This one is free, it's in Chelsea, and the room is full of exactly the people you want to know: casting-adjacent creatives, filmmakers, and fellow performers.",
+  dateLabel:"FRI, JULY 10",
+  timeLabel:"8:30–11:00 PM",
+  costBadge:"FREE ADMISSION",
+  eventTitle:"Media & Entertainment Industry Networking Night",
+  venue:"The Rose · 160 West 25th Street, Manhattan",
+  tags:"NETWORKING MIXER, ACTORS · FILM · MODELS, DRINK SPECIALS",
+  description:"An easy, low-pressure gathering that brings people across the arts & media — actors, musicians, comedians, models, and journalists — together to swap experiences, leads, and opportunities. Come as you are, bring your reel energy, and leave with a few new names in your phone.",
+  bonus:"a free comedy show runs 6:30–8:00 PM at the same venue — come early and make a night of it.",
+  host:"New York Film & Fashion Professionals",
+  rsvpUrl:"https://www.meetup.com/new-york-film-and-fashion/events/314966888/",
+};
+function buildMonthlyEventHtml(f){
+  const esc=(s)=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const url=String(f.rsvpUrl||"").replace(/"/g,"%22");
+  const pill=["background:#eef2ff;color:#4338ca;","background:#f8fafc;color:#475569;","background:#f0fdf4;color:#15803d;"];
+  const tags=String(f.tags||"").split(",").map(t=>t.trim()).filter(Boolean).slice(0,4)
+    .map((t,i)=>`<span style="display:inline-block;${pill[i%pill.length]}padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;margin:0 5px 5px 0;">${esc(t)}</span>`).join("");
+  const bonus=String(f.bonus||"").trim()?`<table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;margin:6px 0 16px;background:#f8fafc;border-radius:10px;"><tr><td style="padding:12px 16px;"><span style="font-size:12px;color:#64748b;">&#127908;&nbsp;<strong style="color:#0f172a;">Bonus:</strong> ${esc(f.bonus)}</span></td></tr></table>`:"";
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="color-scheme" content="light"/><title>${esc(f.subject)}</title></head>
+<body style="margin:0;padding:0;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;">
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#f5f5f7;padding:28px 16px;"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;max-width:600px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,0.09);">
+<tr><td style="background:#1a1b2e;padding:14px 24px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+<td style="vertical-align:middle;"><a href="https://www.castslate.com" style="text-decoration:none;"><table cellpadding="0" cellspacing="0" role="presentation"><tr><td style="vertical-align:middle;padding-right:10px;"><img src="https://www.castslate.com/email/castslate-logo.png?v=1" width="32" height="32" alt="CastSlate" style="display:block;border-radius:7px;border:none;"/></td><td style="vertical-align:middle;"><span style="font-size:18px;font-weight:800;color:#ffffff;letter-spacing:-0.4px;">CastSlate</span></td></tr></table></a></td>
+<td style="text-align:right;vertical-align:middle;"><span style="font-size:10px;font-weight:700;color:#5dcaa5;letter-spacing:1.5px;text-transform:uppercase;">Manager Mode</span></td>
+</tr></table></td></tr>
+<tr><td style="background:#141527;padding:38px 30px;text-align:center;">
+<div style="display:inline-block;background:rgba(93,202,165,0.14);color:#5dcaa5;padding:5px 15px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:16px;">${esc(f.eyebrow)}</div>
+<h1 style="margin:0 0 12px;font-size:26px;font-weight:900;color:#ffffff;letter-spacing:-0.5px;line-height:1.25;">${esc(f.title)}</h1>
+<p style="margin:0 auto;font-size:15px;line-height:1.7;color:#cbd5e1;max-width:430px;">${esc(f.heroSub)}</p></td></tr>
+<tr><td style="background:#ffffff;padding:26px 30px 8px;"><p style="margin:0;font-size:15px;line-height:1.75;color:#334155;">Hi {{FIRST_NAME}} &mdash; ${esc(f.intro)}</p></td></tr>
+<tr><td style="background:#ffffff;padding:12px 30px 8px;">
+<table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;border-radius:14px;overflow:hidden;border:1px solid #e2e8f0;">
+<tr><td style="background:#0F6B66;padding:14px 22px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+<td style="vertical-align:middle;"><span style="font-size:12px;font-weight:800;color:#ffffff;letter-spacing:0.4px;">${esc(f.dateLabel)}</span><span style="font-size:12px;color:rgba(255,255,255,0.75);">&nbsp;&middot;&nbsp;${esc(f.timeLabel)}</span></td>
+<td style="text-align:right;vertical-align:middle;"><span style="display:inline-block;background:#ffffff;color:#0F6B66;border-radius:20px;padding:3px 12px;font-size:11px;font-weight:800;">${esc(f.costBadge)}</span></td>
+</tr></table></td></tr>
+<tr><td style="padding:22px 24px;background:#ffffff;">
+<div style="font-size:19px;font-weight:800;color:#0f172a;line-height:1.3;margin-bottom:6px;">${esc(f.eventTitle)}</div>
+<div style="font-size:13px;color:#94a3b8;margin-bottom:14px;">&#128205;&nbsp;${esc(f.venue)}</div>
+<div style="margin:0 0 14px;">${tags}</div>
+<p style="margin:0 0 14px;font-size:14px;color:#475569;line-height:1.7;">${esc(f.description)}</p>
+${bonus}
+<a href="${url}" style="display:inline-block;background:#0F6B66;color:#ffffff;text-decoration:none;padding:13px 30px;border-radius:12px;font-size:14px;font-weight:800;">RSVP on Meetup &rarr;</a>
+<div style="font-size:11px;color:#94a3b8;margin-top:12px;">Hosted by ${esc(f.host)}</div>
+</td></tr></table></td></tr>
+<tr><td style="background:#ffffff;padding:22px 30px 8px;">
+<div style="font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#0F6B66;margin-bottom:12px;">Work the room like a pro</div>
+<table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+<tr><td style="padding:6px 0;border-bottom:1px solid #f1f5f9;"><span style="font-size:14px;color:#334155;line-height:1.6;"><strong style="color:#0f172a;">Know your one-liner.</strong> Who you are and what you're up for, in ten seconds.</span></td></tr>
+<tr><td style="padding:6px 0;border-bottom:1px solid #f1f5f9;"><span style="font-size:14px;color:#334155;line-height:1.6;"><strong style="color:#0f172a;">Have your profile ready.</strong> Share your CastSlate page instead of fumbling for a headshot.</span></td></tr>
+<tr><td style="padding:6px 0;"><span style="font-size:14px;color:#334155;line-height:1.6;"><strong style="color:#0f172a;">Follow up within 48 hours.</strong> A short message the next day is where the real connection sticks.</span></td></tr>
+</table></td></tr>
+<tr><td style="background:#ffffff;padding:22px 30px 28px;">
+<table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;background:#0f172a;border-radius:14px;"><tr><td style="padding:30px 28px;text-align:center;">
+<div style="font-size:19px;font-weight:800;color:#ffffff;margin-bottom:8px;">Walk in with your best profile</div>
+<p style="margin:0 auto 22px;max-width:420px;font-size:14px;line-height:1.7;color:#cbd5e1;">Before you go, make sure your headshot, reel, and credits are current — the people you meet will look you up.</p>
+<a href="https://www.castslate.com/my-profile" style="display:inline-block;background:#0F6B66;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:12px;font-size:15px;font-weight:800;">Update My Profile</a>
+</td></tr></table></td></tr>
+<tr><td style="padding:0 24px;background:#ffffff;"><div style="height:1px;background:#e2e8f0;"></div></td></tr>
+<tr><td style="background:#ffffff;padding:18px 28px 24px;">
+<p style="margin:0 0 8px;font-size:11px;line-height:1.7;color:#94a3b8;">You're getting this because you're a <strong style="color:#64748b;">CastSlate Premium</strong> member — Manager Mode sends you one curated NYC event each month to help you stay in the room and in front of the right people.</p>
+<p style="margin:0;font-size:11px;line-height:1.7;color:#94a3b8;">Event details are set by the external host and can change — please confirm before you head out. <a href="{{UNSUB_URL}}" style="color:#94a3b8;text-decoration:underline;">Unsubscribe from event announcements</a>.</p>
+</td></tr>
+</table></td></tr></table></body></html>`;
+}
+function EventField({f,set,label,k,area,ph}){
+  return(<div style={{marginBottom:10}}>
+    <label style={{fontSize:12,color:"var(--t3)",fontWeight:600,display:"block",marginBottom:4}}>{label}</label>
+    {area
+      ?<textarea value={f[k]||""} onChange={e=>set(k,e.target.value)} placeholder={ph} style={{width:"100%",minHeight:68,padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:13,fontFamily:"inherit",boxSizing:"border-box"}}/>
+      :<input value={f[k]||""} onChange={e=>set(k,e.target.value)} placeholder={ph} style={{width:"100%",padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14,boxSizing:"border-box"}}/>}
+  </div>);
+}
+function AdminMonthlyEvent({session}){
+  const SUPA=(window.SC_CONFIG?.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co");
+  const LS_KEY="cs_monthly_event_fields_v1";
+  const [f,setF]=useState(()=>{try{const s=localStorage.getItem(LS_KEY);if(s)return{...MONTHLY_EVENT_DEFAULTS,...JSON.parse(s)};}catch(_){}return{...MONTHLY_EVENT_DEFAULTS};});
+  const [premiumCount,setPremiumCount]=useState(null);
+  const [busy,setBusy]=useState(false);
+  const [sending,setSending]=useState(false);
+  const [log,setLog]=useState([]);
+  const [showPreview,setShowPreview]=useState(true);
+  const campRef=useRef({id:null,html:null});
+  const addLog=(m)=>setLog(l=>[...l.slice(-120),`[${new Date().toLocaleTimeString()}] ${m}`]);
+  const set=(k,v)=>setF(prev=>{const n={...prev,[k]:v};try{localStorage.setItem(LS_KEY,JSON.stringify(n));}catch(_){}campRef.current={id:null,html:null};return n;});
+
+  const html=buildMonthlyEventHtml(f);
+  const previewHtml=html.replaceAll("{{FIRST_NAME}}","Georgi").replaceAll("{{UNSUB_URL}}","#");
+
+  const fnCall=useCallback(async(action,extra={})=>{
+    const {data:{session:s}}=await window.sb.auth.getSession();
+    const r=await fetch(SUPA+"/functions/v1/send-campaign",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+(s?.access_token||"")},body:JSON.stringify({action,...extra})});
+    const d=await r.json().catch(()=>({error:"bad response"}));
+    if(!r.ok)throw new Error(d.error||("HTTP "+r.status));
+    return d;
+  },[SUPA]);
+
+  const loadPremium=useCallback(async()=>{
+    try{const {count}=await window.sb.from("profiles").select("id",{count:"exact",head:true}).eq("membership_status","active");setPremiumCount(count||0);}catch(_){setPremiumCount(0);}
+  },[]);
+  useEffect(()=>{loadPremium();},[loadPremium]);
+
+  const fetchPremiumRecipients=async()=>{
+    const {data}=await window.sb.from("profiles").select("email,display_name,banned").eq("membership_status","active").limit(5000);
+    const re=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;const seen=new Set();const out=[];
+    (data||[]).forEach(p=>{const email=(p.email||"").toLowerCase().trim();if(!email||!re.test(email)||p.banned||seen.has(email))return;seen.add(email);out.push({email,name:(p.display_name||"").trim()});});
+    return out;
+  };
+  const ensureCampaign=async(curHtml)=>{
+    if(campRef.current.id&&campRef.current.html===curHtml)return campRef.current.id;
+    const c=await fnCall("create_campaign",{name:"Manager Mode event — "+new Date().toLocaleDateString(),subject:f.subject,html:curHtml,from_email:"CastSlate Manager Mode <notifications@castslate.com>"});
+    campRef.current={id:c.id,html:curHtml};return c.id;
+  };
+
+  const sendTest=async()=>{
+    const to=(session?.user?.email||"").trim();if(!to){addLog("No admin email on file.");return;}
+    setBusy(true);
+    try{
+      const id=await ensureCampaign(html);
+      addLog("Sending test to "+to+" via Resend…");
+      const r=await fnCall("send_batch",{campaign_id:id,test_email:to,test_name:"Georgi",provider:"resend"});
+      addLog(r.ok?("✓ Test sent to "+to+" — check your inbox."):("Test failed: "+(r.error||"")));
+    }catch(e){addLog("ERROR: "+e.message);}finally{setBusy(false);}
+  };
+  const sendAll=async()=>{
+    setBusy(true);
+    try{
+      const recips=await fetchPremiumRecipients();
+      if(!recips.length){addLog("No premium recipients found.");setBusy(false);return;}
+      if(!window.confirm("Send this event email to all "+recips.length+" premium member"+(recips.length===1?"":"s")+" now?\n\nSend a test to yourself first if you haven't.")){setBusy(false);return;}
+      const id=await ensureCampaign(html);
+      addLog("Importing "+recips.length+" premium recipients…");
+      for(let i=0;i<recips.length;i+=2000)await fnCall("import_recipients",{campaign_id:id,recipients:recips.slice(i,i+2000)});
+      setSending(true);
+      addLog("=== Sending to premium members via Resend ===");
+      let guard=0;
+      while(guard++<300){
+        const r=await fnCall("send_batch",{campaign_id:id,batch_size:100,provider:"resend"});
+        addLog("sent "+r.sent+", failed "+r.failed+", skipped "+r.skipped+" — "+r.remaining+" to go");
+        if(r.remaining===0){addLog("=== ✓ DONE — all premium members emailed ===");break;}
+        if(r.quota_hit){addLog("=== Resend daily limit hit — "+r.remaining+" left; run again tomorrow (nobody is emailed twice). ===");break;}
+        if((r.sent+r.failed+r.skipped)===0&&!r.timed_out){addLog("=== No more sendable recipients — "+r.remaining+" left. ===");break;}
+        await new Promise(res=>setTimeout(res,400));
+      }
+    }catch(e){addLog("ERROR: "+e.message);}finally{setBusy(false);setSending(false);loadPremium();}
+  };
+
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Monthly Event Email</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Your saved Manager-Mode event template. Edit the details, preview, send yourself a test, then send to all premium members — each personalized with their first name and delivered through Resend. Your content is saved automatically for next month.</p>
+    <div className="card" style={{padding:"12px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+      <div style={{fontSize:13}}><strong>{premiumCount==null?"…":premiumCount}</strong> premium member{premiumCount===1?"":"s"} will receive this.</div>
+      <button className="btn-s btn-sm" onClick={loadPremium}>↻ Refresh count</button>
+      <button className="btn-s btn-sm" onClick={()=>{if(window.confirm("Reset all fields to the saved default template?")){try{localStorage.removeItem(LS_KEY);}catch(_){}setF({...MONTHLY_EVENT_DEFAULTS});campRef.current={id:null,html:null};}}}>Reset to template</button>
+    </div>
+
+    <div className="card" style={{padding:18,marginBottom:14}}>
+      <h3 style={{fontSize:14,fontWeight:800,margin:"0 0 12px"}}>Event details</h3>
+      <EventField f={f} set={set} label="Subject line" k="subject"/>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <EventField f={f} set={set} label="Hero eyebrow" k="eyebrow"/>
+        <EventField f={f} set={set} label="Hero headline" k="title"/>
+      </div>
+      <EventField f={f} set={set} label="Hero subtext" k="heroSub" area/>
+      <EventField f={f} set={set} label={"Intro (comes after “Hi {FIRST NAME} —”)"} k="intro" area/>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+        <EventField f={f} set={set} label="Date label" k="dateLabel"/>
+        <EventField f={f} set={set} label="Time label" k="timeLabel"/>
+        <EventField f={f} set={set} label="Cost badge" k="costBadge"/>
+      </div>
+      <EventField f={f} set={set} label="Event title" k="eventTitle"/>
+      <EventField f={f} set={set} label="Venue / address" k="venue"/>
+      <EventField f={f} set={set} label="Tags (comma-separated, up to 4)" k="tags"/>
+      <EventField f={f} set={set} label="Description" k="description" area/>
+      <EventField f={f} set={set} label="Bonus line (optional — leave blank to hide)" k="bonus" area/>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <EventField f={f} set={set} label="Host" k="host"/>
+        <EventField f={f} set={set} label="RSVP button link" k="rsvpUrl"/>
+      </div>
+    </div>
+
+    <div className="card" style={{padding:16,marginBottom:14}}>
+      <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:10}}>
+        <button className="btn-s" disabled={busy||sending} onClick={sendTest}>Send test to me</button>
+        <button className="btn-p" disabled={busy||sending} onClick={sendAll}>{sending?"Sending…":("Send to all premium ("+(premiumCount==null?"…":premiumCount)+")")}</button>
+      </div>
+      <div style={{fontSize:11,color:"var(--t3)"}}>Test goes to <strong>{session?.user?.email||"your admin email"}</strong>. “Send to all premium” imports current premium members and sends via Resend — each gets their own first name. Safe to re-run; nobody is emailed twice.</div>
+      {log.length>0&&<div style={{marginTop:12,background:"#0f172a",color:"#cbd5e1",borderRadius:8,padding:"10px 12px",fontSize:11,fontFamily:"monospace",maxHeight:180,overflowY:"auto",lineHeight:1.6}}>{log.map((l,i)=><div key={i}>{l}</div>)}</div>}
+    </div>
+
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+      <h3 style={{fontSize:14,fontWeight:800,margin:0}}>Live preview</h3>
+      <button className="btn-s btn-sm" onClick={()=>setShowPreview(p=>!p)}>{showPreview?"Hide":"Show"}</button>
+    </div>
+    {showPreview&&<iframe title="Email preview" srcDoc={previewHtml} style={{width:"100%",height:820,border:"1px solid var(--bdr)",borderRadius:12,background:"#f5f5f7"}}/>}
   </>);
 }
 
