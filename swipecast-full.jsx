@@ -21496,8 +21496,8 @@ function AdminTermsAcceptance({session}){
     const w=window.open("","_blank","width=820,height=940");
     if(!w){alert("Please allow pop-ups to generate the certificate.");return;}
     const h=(s)=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Terms Acceptance Certificate — ${h(name)}</title>
-<style>body{font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;color:#0f172a;max-width:720px;margin:40px auto;padding:0 32px;line-height:1.6;}
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="color-scheme" content="light"/><title>Terms Acceptance Certificate — ${h(name)}</title>
+<style>html{background:#ffffff;color-scheme:light;}body{background:#ffffff;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;color:#0f172a;max-width:720px;margin:40px auto;padding:0 32px;line-height:1.6;}
 h1{font-size:20px;letter-spacing:-0.4px;margin:0 0 4px;} .muted{color:#64748b;font-size:13px;margin:0 0 18px;}
 table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px;} td{padding:8px 0;border-bottom:1px solid #e2e8f0;vertical-align:top;}
 td.k{color:#64748b;width:190px;} .mono{font-family:ui-monospace,Menlo,monospace;font-size:12px;word-break:break-all;}
