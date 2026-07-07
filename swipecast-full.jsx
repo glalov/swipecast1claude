@@ -20974,6 +20974,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {isSuperAdmin&&<AdminNavLink current={section} target="casting-generator" label="Casting Generator" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="news-controls" label="News Controls" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="legal-pages" label="Legal Pages" onClick={goToSection}/>}
+      {isSuperAdmin&&<AdminNavLink current={section} target="terms-acceptance" label="Terms Acceptance" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="email-digests" label="Email Digests" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="email-campaigns" label="Email Campaigns" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="monthly-event" label="Monthly Event Email" onClick={goToSection}/>}
@@ -21008,6 +21009,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="casting-generator"&&isSuperAdmin&&<AdminCastingGenerator session={session}/>}
       {section==="news-controls"&&isSuperAdmin&&<AdminNews session={session}/>}
       {section==="legal-pages"&&isSuperAdmin&&<AdminLegalPages/>}
+      {section==="terms-acceptance"&&isSuperAdmin&&<AdminTermsAcceptance session={session}/>}
       {section==="email-digests"&&isSuperAdmin&&<AdminEmailDigests/>}
       {section==="email-campaigns"&&isSuperAdmin&&<AdminEmailCampaigns session={session}/>}
       {section==="monthly-event"&&isSuperAdmin&&<AdminMonthlyEvent session={session}/>}
@@ -21437,6 +21439,130 @@ function AdminMonthlyEvent({session}){
       <button className="btn-s btn-sm" onClick={()=>setShowPreview(p=>!p)}>{showPreview?"Hide":"Show"}</button>
     </div>
     {showPreview&&<iframe title="Email preview" srcDoc={previewHtml} style={{width:"100%",height:820,border:"1px solid var(--bdr)",borderRadius:12,background:"#f5f5f7"}}/>}
+  </>);
+}
+
+// ─── Terms Acceptance: legal evidence view over the append-only terms_acceptances
+//     log + the immutable legal_page_versions archive. Search, CSV export for bulk,
+//     and a per-user printable "acceptance certificate" (Save as PDF) for a dispute.
+function AdminTermsAcceptance({session}){
+  const [rows,setRows]=useState(null);
+  const [names,setNames]=useState({});
+  const [versions,setVersions]=useState([]);
+  const [q,setQ]=useState("");
+  const [vFilter,setVFilter]=useState("all");
+  const [err,setErr]=useState("");
+  const fmt=(t)=>t?new Date(t).toLocaleString("en-US",{timeZone:"America/New_York",dateStyle:"medium",timeStyle:"medium"}):"—";
+  const load=useCallback(async()=>{
+    try{
+      const {data,error}=await window.sb.from("terms_acceptances")
+        .select("id,user_id,email,terms_version,terms_hash,method,accepted_at,ip,user_agent")
+        .order("accepted_at",{ascending:false}).limit(10000);
+      if(error)throw error;
+      setRows(data||[]);setErr("");
+      const ids=[...new Set((data||[]).map(r=>r.user_id).filter(Boolean))];
+      const nm={};
+      for(let i=0;i<ids.length;i+=400){
+        const {data:ps}=await window.sb.from("profiles").select("id,display_name").in("id",ids.slice(i,i+400));
+        (ps||[]).forEach(p=>{nm[p.id]=p.display_name;});
+      }
+      setNames(nm);
+      const {data:vs}=await window.sb.from("legal_page_versions").select("slug,title,version_label,content_hash,effective_from,archived_at").order("archived_at",{ascending:false});
+      setVersions(vs||[]);
+    }catch(e){setErr(e.message||String(e));setRows([]);}
+  },[]);
+  useEffect(()=>{load();},[load]);
+
+  const versionCounts={};(rows||[]).forEach(r=>{versionCounts[r.terms_version]=(versionCounts[r.terms_version]||0)+1;});
+  const filtered=(rows||[]).filter(r=>{
+    if(vFilter!=="all"&&r.terms_version!==vFilter)return false;
+    if(!q)return true;const n=q.toLowerCase();
+    return [r.email,names[r.user_id],r.user_id,r.terms_version].some(x=>x&&String(x).toLowerCase().includes(n));
+  });
+
+  const exportCsv=()=>{
+    const esc=(v)=>{const s=v==null?"":String(v);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
+    const header=["name","email","user_id","terms_version","terms_sha256","method","accepted_at_utc","accepted_at_new_york"];
+    const lines=[header.join(",")];
+    filtered.forEach(r=>lines.push([esc(names[r.user_id]||""),esc(r.email),esc(r.user_id),esc(r.terms_version),esc(r.terms_hash),esc(r.method),esc(r.accepted_at),esc(fmt(r.accepted_at))].join(",")));
+    const blob=new Blob([lines.join("\n")],{type:"text/csv;charset=utf-8"});
+    const url=URL.createObjectURL(blob);const a=document.createElement("a");
+    a.href=url;a.download="castslate-terms-acceptances-"+new Date().toISOString().slice(0,10)+".csv";
+    document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  };
+
+  const printCert=(r)=>{
+    const name=names[r.user_id]||r.email||r.user_id||"Unknown user";
+    const w=window.open("","_blank","width=820,height=940");
+    if(!w){alert("Please allow pop-ups to generate the certificate.");return;}
+    const h=(s)=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Terms Acceptance Certificate — ${h(name)}</title>
+<style>body{font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;color:#0f172a;max-width:720px;margin:40px auto;padding:0 32px;line-height:1.6;}
+h1{font-size:20px;letter-spacing:-0.4px;margin:0 0 4px;} .muted{color:#64748b;font-size:13px;margin:0 0 18px;}
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px;} td{padding:8px 0;border-bottom:1px solid #e2e8f0;vertical-align:top;}
+td.k{color:#64748b;width:190px;} .mono{font-family:ui-monospace,Menlo,monospace;font-size:12px;word-break:break-all;}
+.seal{margin-top:24px;padding:16px 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;color:#475569;}
+@media print{.noprint{display:none;}}</style></head><body>
+<h1>CastSlate — Terms of Service Acceptance Certificate</h1>
+<p class="muted">Generated ${h(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}))} (America/New_York) from CastSlate's append-only acceptance log.</p>
+<table>
+<tr><td class="k">User</td><td>${h(name)}</td></tr>
+<tr><td class="k">Email</td><td>${h(r.email)}</td></tr>
+<tr><td class="k">Account ID</td><td class="mono">${h(r.user_id)}</td></tr>
+<tr><td class="k">Accepted (UTC)</td><td class="mono">${h(r.accepted_at)}</td></tr>
+<tr><td class="k">Accepted (New York)</td><td>${h(fmt(r.accepted_at))}</td></tr>
+<tr><td class="k">Terms version</td><td>${h(r.terms_version)}</td></tr>
+<tr><td class="k">Terms SHA-256</td><td class="mono">${h(r.terms_hash||"(version predates content hashing)")}</td></tr>
+<tr><td class="k">Acceptance method</td><td>${h(r.method)}</td></tr>
+<tr><td class="k">Log record ID</td><td class="mono">${h(r.id)}</td></tr>
+</table>
+<div class="seal">At account creation this user was shown a conspicuous notice stating that by continuing they had read and agreed to CastSlate's Terms of Service and Privacy Policy and confirmed they were at least 18 years old, and took the affirmative step of creating the account. This certificate is drawn from CastSlate's append-only acceptance log. The SHA-256 hash above identifies the exact Terms of Service document in effect at the time of acceptance, retained in CastSlate's immutable legal version archive.</div>
+<p class="noprint" style="margin-top:24px;"><button onclick="window.print()" style="padding:10px 22px;font-size:14px;border-radius:8px;border:none;background:#0F6B66;color:#fff;font-weight:700;cursor:pointer;">Print / Save as PDF</button></p>
+</body></html>`);
+    w.document.close();
+  };
+
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Terms Acceptance</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Append-only evidence log of every account's agreement to the Terms — name, email, exact timestamp, and the Terms version (SHA-256) in effect when they accepted. Export CSV for bulk records, or generate a per-user certificate you can Save as PDF for a specific dispute. Records survive account deletion and cannot be edited.</p>
+    {err&&<div style={{background:"rgba(192,57,43,0.1)",color:"#c0392b",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{err}</div>}
+    {rows===null?<CastSlateLoader size="inline" text="Loading acceptance log…"/>:<>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:10,marginBottom:16}}>
+        <StatTile num={rows.length} label="Total acceptances"/>
+        {Object.entries(versionCounts).sort((a,b)=>b[1]-a[1]).map(([v,n])=><StatTile key={v} num={n} label={"v "+v}/>)}
+      </div>
+      <div className="card" style={{padding:"14px 16px",marginBottom:16}}>
+        <div style={{fontSize:12,fontWeight:800,letterSpacing:1,textTransform:"uppercase",color:"var(--t3)",marginBottom:10}}>Archived Terms versions (immutable)</div>
+        {versions.length===0?<p style={{fontSize:13,color:"var(--t3)"}}>No versions archived yet.</p>:
+          <div style={{display:"flex",flexDirection:"column",gap:6}}>
+            {versions.map((v,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",gap:12,fontSize:12,alignItems:"center",flexWrap:"wrap",borderBottom:i<versions.length-1?"1px solid var(--bdr)":"none",paddingBottom:6}}>
+              <span><strong>{v.slug}</strong> · v {v.version_label}{v.effective_from?" · effective "+new Date(v.effective_from).toLocaleDateString():""}</span>
+              <span className="mono" style={{fontFamily:"ui-monospace,Menlo,monospace",fontSize:10,color:"var(--t3)",wordBreak:"break-all"}}>SHA-256 {String(v.content_hash||"").slice(0,24)}…</span>
+            </div>)}
+          </div>}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 200px auto",gap:10,marginBottom:14}}>
+        <input className="input" placeholder="Search name, email, account ID…" value={q} onChange={e=>setQ(e.target.value)}/>
+        <select className="select" value={vFilter} onChange={e=>setVFilter(e.target.value)}>
+          <option value="all">All versions</option>
+          {Object.keys(versionCounts).map(v=><option key={v} value={v}>{v}</option>)}
+        </select>
+        <button className="btn-p btn-sm" onClick={exportCsv}>Export CSV ({filtered.length})</button>
+      </div>
+      <div className="card" style={{padding:0,overflow:"hidden"}}>
+        {filtered.slice(0,1000).map(r=>(
+          <div key={r.id} style={{padding:"12px 16px",borderBottom:"1px solid var(--bdr)",display:"grid",gridTemplateColumns:"1fr auto",gap:12,alignItems:"center"}}>
+            <div style={{minWidth:0}}>
+              <div style={{fontWeight:600,fontSize:14}}>{names[r.user_id]||"—"} <span style={{color:"var(--t3)",fontWeight:400,fontSize:13}}>· {r.email||"(no email)"}</span></div>
+              <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>v {r.terms_version} · {r.method} · {fmt(r.accepted_at)}</div>
+            </div>
+            <button className="btn-s btn-sm" onClick={()=>printCert(r)}>Certificate</button>
+          </div>
+        ))}
+        {filtered.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No acceptance records match.</div>}
+        {filtered.length>1000&&<div style={{padding:"10px 16px",fontSize:12,color:"var(--t3)"}}>Showing first 1,000 — narrow the search or use Export CSV for the full set.</div>}
+      </div>
+    </>}
   </>);
 }
 
