@@ -90,8 +90,8 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:24px;transition:all .3s;box-shadow:0 1px 2px rgba(26,26,46,0.03);}
 .card:hover{border-color:var(--acc);box-shadow:0 4px 20px rgba(26,26,46,0.06);}
 .card-flat{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;}
-/* Talent-dashboard card elevation ("Option A") — soft shadow so white cards separate from the cream page bg */
-.td-dash-outer div[style*="var(--s1)"][style*="var(--bdr)"]{box-shadow:0 6px 20px -8px rgba(60,48,24,.16),0 1px 2px rgba(60,48,24,.05);}
+/* Talent-dashboard card elevation ("Option A") — soft but clearly visible shadow so white cards separate from the cream page bg */
+.td-dash-outer div[style*="var(--s1)"][style*="var(--bdr)"]{box-shadow:0 2px 5px rgba(41,35,22,.07),0 12px 30px -8px rgba(41,35,22,.22);}
 .tag{background:var(--s2);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:500;color:var(--t2);display:inline-block;}
 .tag-acc{background:rgba(26,26,46,0.08);color:var(--acc);}
 .tag-grn{background:rgba(27,135,62,0.08);color:var(--grn);}
