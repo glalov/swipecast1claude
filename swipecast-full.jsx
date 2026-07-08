@@ -1937,6 +1937,13 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @keyframes abc-pulse{0%,100%{box-shadow:0 0 6px var(--amber);opacity:.75;}50%{box-shadow:0 0 14px var(--amber);opacity:1;}}
 @keyframes abc-btnshine{0%{left:-60%;}55%,100%{left:130%;}}
 @media(prefers-reduced-motion:reduce){.abc-prem,.abc-prem::after,.abc-prem .abc-glow-o,.abc-prem .abc-dot,.abc-prem .abc-cta::before{animation:none!important;}.abc-prem::after{display:none;}}
+/* Free-actor submission-cap upgrade modal — premium dark treatment (fires at 3/3) */
+.capm{width:520px;max-width:92%;max-height:90vh;overflow-y:auto;background:radial-gradient(120% 120% at 50% 0%,#2a2a3d,#15151f);border-radius:20px;padding:26px;position:relative;box-shadow:0 40px 90px -30px rgba(0,0,0,.8);animation:capm-pop .32s cubic-bezier(.2,.8,.2,1);}
+.capm-cta{position:relative;overflow:hidden;}
+.capm-cta::after{content:"";position:absolute;top:0;left:-60%;width:45%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-18deg);animation:capm-shine 3.6s ease-in-out infinite;pointer-events:none;}
+@keyframes capm-pop{from{opacity:0;transform:translateY(14px) scale(.96);}to{opacity:1;transform:none;}}
+@keyframes capm-shine{0%{left:-60%;}55%,100%{left:130%;}}
+@media(prefers-reduced-motion:reduce){.capm{animation:none;}.capm-cta::after{animation:none;}}
 @media (max-width:900px){
   .site-footer-grid{grid-template-columns:1fr 1fr;gap:32px;}
   .site-footer-brand{grid-column:1/-1;}
@@ -8576,6 +8583,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const videoNoteUrlRef=useRef(""); // ref mirror so submitApp always reads freshest value
   const [showVideoRecorder,setShowVideoRecorder]=useState(false);
   const [showUpgradePrompt,setShowUpgradePrompt]=useState(false);
+  const [upgradeRole,setUpgradeRole]=useState(null); // role name the free actor was about to apply to (for the cap modal)
   const [weekCount,setWeekCount]=useState(0); // free actor's submission count this week (resets Mon 6 AM ET)
   const [cdProfile,setCdProfile]=useState(null); // CD's profile for verification badges
   const [isSaved,setIsSaved]=useState(false);
@@ -8599,6 +8607,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     if(!isLoggedIn){onRequireAuth&&onRequireAuth(casting,{...r,idx:i});return;}
     // Free actors hit their 3/week cap → show upgrade prompt instead of apply modal.
     if(isTalent&&!isPremium&&weekCount>=FREE_PLAN.submissionsPerWeek){
+      setUpgradeRole(r?.name||null);
       setShowUpgradePrompt(true);
       return;
     }
@@ -8733,6 +8742,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
         const code=(error.code||"").toLowerCase();
         if(raw.includes("submission limit")){
           if(!isPremium){
+            setUpgradeRole(applyRole?.name||null);
             setApplyRole(null);
             setWeekCount(FREE_PLAN.submissionsPerWeek);
             setShowUpgradePrompt(true);
@@ -8799,16 +8809,29 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <span><strong>Scheduled — not yet public.</strong> This casting is hidden from the public until <strong>{formatNYDateTime(c.go_live_at)}</strong> (New York time), when it goes live automatically. You can see it because you created it or you're an admin.</span>
     </div>}
 
-    {/* ── Free-actor daily limit upgrade prompt ── */}
-    {showUpgradePrompt&&<div className="modal-overlay" onClick={()=>setShowUpgradePrompt(false)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:480,textAlign:"center",padding:"36px 32px"}}>
-      <div style={{fontSize:40,marginBottom:16}}><Ico n="star" s={22}/></div>
-      <h2 style={{fontSize:22,fontWeight:800,marginBottom:10}}>Daily Limit Reached</h2>
-      <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,marginBottom:8}}>{UPGRADE_MSG}</p>
-      <p style={{color:"var(--t3)",fontSize:12,marginBottom:24}}>Your 3 free submissions reset every Monday at 6 AM ET.</p>
-      <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-        <button className="btn-p" onClick={()=>{setShowUpgradePrompt(false);onNavigate&&onNavigate("membership");}}>View Premium Plans — {PREMIUM_PRICE}</button>
-        <button className="btn-s" onClick={()=>setShowUpgradePrompt(false)}>Maybe Later</button>
+    {/* ── Free-actor weekly-cap upgrade modal — premium treatment, fires at 3/3 ── */}
+    {showUpgradePrompt&&<div className="modal-overlay" onClick={()=>setShowUpgradePrompt(false)}><div className="capm" onClick={e=>e.stopPropagation()}>
+      <button aria-label="Close" onClick={()=>setShowUpgradePrompt(false)} style={{position:"absolute",top:16,right:16,background:"none",border:"none",color:"rgba(255,255,255,.5)",cursor:"pointer",padding:4,lineHeight:0}}><Ico n="x" s={20}/></button>
+      <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(229,83,60,.14)",border:"1px solid rgba(229,83,60,.4)",color:"#ff9c8a",fontSize:11.5,fontWeight:800,letterSpacing:.4,padding:"6px 12px",borderRadius:999,marginBottom:16}}>
+        <span style={{display:"flex",gap:3}}><span style={{width:16,height:6,borderRadius:3,background:"#E5533C"}}/><span style={{width:16,height:6,borderRadius:3,background:"#E5533C"}}/><span style={{width:16,height:6,borderRadius:3,background:"#E5533C"}}/></span>
+        {FREE_PLAN.submissionsPerWeek} / {FREE_PLAN.submissionsPerWeek} submissions used this week
       </div>
+      <h2 style={{color:"#fff",fontSize:22,fontWeight:800,letterSpacing:-.5,lineHeight:1.15,margin:"0 0 8px"}}>Don't let this one get away.</h2>
+      <p style={{color:"rgba(255,255,255,.62)",fontSize:13.5,lineHeight:1.55,margin:"0 0 18px"}}>You're out of submissions for this week. The role you were about to apply to is still open:</p>
+      <div style={{display:"flex",gap:13,alignItems:"center",background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)",borderRadius:13,padding:13,marginBottom:16}}>
+        <span style={{width:52,height:52,borderRadius:10,flexShrink:0,background:"linear-gradient(135deg,#5C9FA0,#3B6E6F)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff"}}><Ico n="star" s={24}/></span>
+        <div style={{minWidth:0}}>
+          <div style={{color:"#fff",fontSize:13.5,fontWeight:700}}>{casting?.title||"This casting"}</div>
+          <div style={{color:"rgba(255,255,255,.55)",fontSize:11.5,marginTop:2}}>{[upgradeRole,casting?.type,casting?.location].filter(Boolean).join(" · ")||"Still accepting submissions"}</div>
+        </div>
+        <span style={{marginLeft:"auto",color:"#F3B24E",flexShrink:0,lineHeight:0}}><Ico n="lock" s={18}/></span>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:8,color:"#FFD9A0",fontSize:12.5,fontWeight:600,margin:"0 0 20px"}}>
+        <Ico n="clock" s={16}/><span>Your free submissions reset Monday at 6&nbsp;AM ET. Premium is unlimited — starting now.</span>
+      </div>
+      <button className="capm-cta" onClick={()=>{setShowUpgradePrompt(false);onNavigate&&onNavigate("membership");}} style={{width:"100%",border:"none",cursor:"pointer",fontWeight:800,fontSize:13.5,color:"#1A1A2E",background:"linear-gradient(180deg,#F8B65E 0%,#EC942A 100%)",padding:"14px 16px",borderRadius:11,marginBottom:9,boxShadow:"0 10px 24px -10px rgba(240,160,60,.85),inset 0 1px 0 rgba(255,255,255,.4)"}}>Go unlimited — {PREMIUM_PRICE} →</button>
+      <button onClick={()=>setShowUpgradePrompt(false)} style={{width:"100%",background:"transparent",border:"1px solid rgba(255,255,255,.16)",color:"rgba(255,255,255,.6)",cursor:"pointer",fontWeight:700,fontSize:12.5,padding:"12px 14px",borderRadius:11}}>No thanks, I'll wait until Monday</button>
+      <div style={{textAlign:"center",color:"rgba(255,255,255,.4)",fontSize:10.5,marginTop:12}}>Cancel anytime · Unlimited submissions, video &amp; Manager Mode</div>
     </div></div>}
 
     {/* ── Free-actor submissions remaining badge ── */}
