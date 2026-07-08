@@ -21326,6 +21326,12 @@ function AdminMonthlyEvent({session}){
   const [sending,setSending]=useState(false);
   const [log,setLog]=useState([]);
   const [showPreview,setShowPreview]=useState(true);
+  const [members,setMembers]=useState(null);
+  const [membersErr,setMembersErr]=useState("");
+  const [memberQ,setMemberQ]=useState("");
+  const [sel,setSel]=useState({});
+  const [oneEmail,setOneEmail]=useState("");
+  const [oneName,setOneName]=useState("");
   const campRef=useRef({id:null,html:null});
   const addLog=(m)=>setLog(l=>[...l.slice(-120),`[${new Date().toLocaleTimeString()}] ${m}`]);
   const set=(k,v)=>setF(prev=>{const n={...prev,[k]:v};try{localStorage.setItem(LS_KEY,JSON.stringify(n));}catch(_){}campRef.current={id:null,html:null};return n;});
@@ -21391,6 +21397,62 @@ function AdminMonthlyEvent({session}){
     }catch(e){addLog("ERROR: "+e.message);}finally{setBusy(false);setSending(false);loadPremium();}
   };
 
+  // ── Send to specific people: one-off personalized sends (same path as the test
+  //    send) so a member who joined after the last blast can get this email without
+  //    re-emailing everyone. These are NOT tracked for de-duplication.
+  const relTime=(t)=>{if(!t)return"—";const d=new Date(t);const diff=Date.now()-d.getTime();if(isNaN(diff))return"—";const day=86400000;const days=Math.floor(diff/day);if(days<=0)return"today";if(days===1)return"yesterday";if(days<30)return days+" days ago";return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
+  const loadMembers=useCallback(async()=>{
+    setMembersErr("");
+    try{
+      const {data,error}=await window.sb.from("profiles").select("email,display_name,banned,premium_started_at,created_at").eq("membership_status","active").limit(5000);
+      if(error)throw error;
+      const re=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;const seen=new Set();const out=[];
+      (data||[]).forEach(p=>{const email=(p.email||"").toLowerCase().trim();if(!email||!re.test(email)||p.banned||seen.has(email))return;seen.add(email);out.push({email,name:(p.display_name||"").trim(),since:p.premium_started_at||p.created_at});});
+      out.sort((a,b)=>new Date(b.since||0)-new Date(a.since||0));
+      setMembers(out);
+    }catch(e){setMembersErr(e.message||String(e));setMembers([]);}
+  },[]);
+  useEffect(()=>{loadMembers();},[loadMembers]);
+
+  const sendToRecipients=async(recips)=>{
+    const re=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;const seen=new Set();const clean=[];
+    recips.forEach(r=>{const email=(r.email||"").toLowerCase().trim();if(!re.test(email)||seen.has(email))return;seen.add(email);clean.push({email,name:(r.name||"").trim()});});
+    if(!clean.length){addLog("No valid recipient.");return;}
+    const preview=clean.slice(0,10).map(r=>"• "+(r.name?r.name+" <"+r.email+">":r.email)).join("\n")+(clean.length>10?"\n…and "+(clean.length-10)+" more":"");
+    if(!window.confirm("Send this event email to "+clean.length+" "+(clean.length===1?"person":"people")+" now?\n\n"+preview+"\n\nNote: individual sends aren't de-duplicated — only send to people who haven't already received it."))return;
+    setBusy(true);
+    try{
+      const id=await ensureCampaign(html);
+      let ok=0,fail=0;
+      addLog("=== Sending to "+clean.length+" individual recipient"+(clean.length===1?"":"s")+" via Resend ===");
+      for(const r of clean){
+        try{
+          const res=await fnCall("send_batch",{campaign_id:id,test_email:r.email,test_name:r.name,provider:"resend"});
+          if(res.ok){ok++;addLog("✓ sent to "+(r.name?r.name+" ":"")+"<"+r.email+">");}
+          else{fail++;addLog("✗ failed "+r.email+": "+(res.error||""));}
+        }catch(e){fail++;addLog("✗ error "+r.email+": "+e.message);}
+        await new Promise(res2=>setTimeout(res2,350));
+      }
+      addLog("=== ✓ Done — "+ok+" sent, "+fail+" failed ===");
+      setSel({});
+    }catch(e){addLog("ERROR: "+e.message);}finally{setBusy(false);}
+  };
+  const sendManual=()=>{
+    const email=oneEmail.trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){addLog("Enter a valid email address.");return;}
+    sendToRecipients([{email,name:oneName.trim()}]);
+  };
+  const sendSelected=()=>{
+    const rs=(members||[]).filter(m=>sel[m.email]);
+    if(!rs.length){addLog("Select at least one member first.");return;}
+    sendToRecipients(rs);
+  };
+
+  const mq=memberQ.trim().toLowerCase();
+  const filteredMembers=(members||[]).filter(m=>!mq||m.email.includes(mq)||(m.name||"").toLowerCase().includes(mq));
+  const selCount=(members||[]).filter(m=>sel[m.email]).length;
+  const inpStyle={width:"100%",padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14,boxSizing:"border-box"};
+
   return(<>
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Monthly Event Email</h1>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Your saved Manager-Mode event template. Edit the details, preview, send yourself a test, then send to all premium members — each personalized with their first name and delivered through Resend. Your content is saved automatically for next month.</p>
@@ -21432,6 +21494,47 @@ function AdminMonthlyEvent({session}){
       </div>
       <div style={{fontSize:11,color:"var(--t3)"}}>Test goes to <strong>{session?.user?.email||"your admin email"}</strong>. “Send to all premium” imports current premium members and sends via Resend — each gets their own first name. Safe to re-run; nobody is emailed twice.</div>
       {log.length>0&&<div style={{marginTop:12,background:"#0f172a",color:"#cbd5e1",borderRadius:8,padding:"10px 12px",fontSize:11,fontFamily:"monospace",maxHeight:180,overflowY:"auto",lineHeight:1.6}}>{log.map((l,i)=><div key={i}>{l}</div>)}</div>}
+    </div>
+
+    <div className="card" style={{padding:16,marginBottom:14}}>
+      <h3 style={{fontSize:14,fontWeight:800,margin:"0 0 4px"}}>Send to specific people</h3>
+      <p style={{color:"var(--t3)",fontSize:12,margin:"0 0 12px"}}>Send this same email to just one or a few members — e.g. someone who joined after your last blast — without re-emailing everyone. Each is personalized with their first name. These one-off sends don't affect the “Send to all premium” batch and aren't de-duplicated, so only send to people who haven't already received it.</p>
+
+      <div style={{display:"grid",gridTemplateColumns:"1.4fr 1fr auto",gap:8,alignItems:"end",marginBottom:16}}>
+        <div>
+          <label style={{fontSize:12,color:"var(--t3)",fontWeight:600,display:"block",marginBottom:4}}>Email address</label>
+          <input value={oneEmail} onChange={e=>setOneEmail(e.target.value)} placeholder="name@example.com" style={inpStyle}/>
+        </div>
+        <div>
+          <label style={{fontSize:12,color:"var(--t3)",fontWeight:600,display:"block",marginBottom:4}}>First name (optional)</label>
+          <input value={oneName} onChange={e=>setOneName(e.target.value)} placeholder="e.g. Thomas" style={inpStyle}/>
+        </div>
+        <button className="btn-s" disabled={busy||sending} onClick={sendManual} style={{whiteSpace:"nowrap"}}>Send to this address</button>
+      </div>
+
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,flexWrap:"wrap"}}>
+        <input value={memberQ} onChange={e=>setMemberQ(e.target.value)} placeholder="Search premium members by name or email…" style={{...inpStyle,flex:1,minWidth:180}}/>
+        <button className="btn-s btn-sm" onClick={loadMembers}>↻ Refresh</button>
+      </div>
+      {membersErr&&<div style={{color:"#dc2626",fontSize:12,marginBottom:8}}>{membersErr}</div>}
+      <div style={{border:"1px solid var(--bdr)",borderRadius:10,maxHeight:280,overflowY:"auto"}}>
+        {members==null?<div style={{padding:14,fontSize:13,color:"var(--t3)"}}>Loading premium members…</div>
+         :filteredMembers.length===0?<div style={{padding:14,fontSize:13,color:"var(--t3)"}}>{members.length===0?"No active premium members found.":"No members match your search."}</div>
+         :filteredMembers.map(m=>(
+           <label key={m.email} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderBottom:"1px solid var(--bdr)",cursor:"pointer"}}>
+             <input type="checkbox" checked={!!sel[m.email]} onChange={()=>setSel(s=>({...s,[m.email]:!s[m.email]}))} style={{width:16,height:16,flexShrink:0}}/>
+             <div style={{flex:1,minWidth:0}}>
+               <div style={{fontSize:13,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{m.name||"(no name)"}</div>
+               <div style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{m.email}</div>
+             </div>
+             <div style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap",flexShrink:0}}>joined {relTime(m.since)}</div>
+           </label>
+         ))}
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginTop:10,flexWrap:"wrap"}}>
+        <button className="btn-p" disabled={busy||sending||selCount===0} onClick={sendSelected}>{"Send to selected ("+selCount+")"}</button>
+        {selCount>0&&<button className="btn-s btn-sm" onClick={()=>setSel({})}>Clear selection</button>}
+      </div>
     </div>
 
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
