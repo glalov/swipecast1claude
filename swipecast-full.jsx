@@ -1504,8 +1504,8 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:24px;transition:all .3s;box-shadow:0 1px 2px rgba(26,26,46,0.03);}
 .card:hover{border-color:var(--acc);box-shadow:0 4px 20px rgba(26,26,46,0.06);}
 .card-flat{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;}
-/* Talent-dashboard card elevation ("Option A") — soft but clearly visible shadow so white cards separate from the cream page bg */
-.td-dash-outer div[style*="var(--s1)"][style*="var(--bdr)"]{box-shadow:0 2px 5px rgba(41,35,22,.07),0 12px 30px -8px rgba(41,35,22,.22);}
+/* Talent + CD dashboard card elevation ("Option A") — soft but clearly visible shadow so white cards separate from the cream page bg */
+.td-dash-outer div[style*="var(--s1)"][style*="var(--bdr)"],.cd-dash-outer div[style*="var(--s1)"][style*="var(--bdr)"]{box-shadow:0 2px 5px rgba(41,35,22,.07),0 12px 30px -8px rgba(41,35,22,.22);}
 .tag{background:var(--s2);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:500;color:var(--t2);display:inline-block;}
 .tag-acc{background:rgba(26,26,46,0.08);color:var(--acc);}
 .tag-grn{background:rgba(27,135,62,0.08);color:var(--grn);}
@@ -12442,7 +12442,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   if(!uid)return(<div className="page page-wide"><p>Not logged in.</p></div>);
   if(loading&&!editModalOpenRef.current)return(<div className="page page-wide" style={{justifyContent:"center"}}><CastSlateLoader text="Loading your dashboard…"/></div>);
 
-  return(<div className="page page-wide">
+  return(<div className="page page-wide cd-dash-outer">
     <div className="flex-between mb-20">
       <div style={{minWidth:0,flex:1,overflow:"hidden"}}>
         <div className="section-label">{t('cd.title')}</div>
