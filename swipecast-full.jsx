@@ -18465,6 +18465,12 @@ const ACG = (()=>{
   const COMPANY_B=["Pictures","Films","Creative Studio","Content Lab","Theatre Lab","New Works","Productions","Motion","Workshop Collective","Capstone Unit","Media Works","Independent Pictures","Commercial Unit","Cinema","Story Lab","Stage Company","Film Group","Development Lab","Project Studio"];
   const TITLE_A=["Last","Blue","Spare","Ninth","Soft","North","No","Perfect","Quiet","Second","Small","Wrong","Late","Borrowed","Empty","Good","Night","Bright","Missing","Open","Cold","Side","Long","False","Early","Broken","Hidden","Ordinary"];
   const TITLE_B=["Room","Table","Receipt","Signal","Checkout","Stop","Key","Window","Chair","Route","Ledger","Shift","Lobby","House","Floor","Weekend","Driver","Account","Dress Rehearsal","Invoice","Call Sheet","Light","Suitcase","Counter","Booth","Platform","Hallway","Register"];
+  // Colon-suffix pool for titles. Kept large so that when the same setting stem is
+  // reused across sessions the fallback suffix isn't drawn from a tiny set (which
+  // produced ": After Hours" / ": Hold for Notes" / ": One Day Only" on multiple
+  // live listings). This is only a last-resort candidate in freshTitles().
+  const TITLE_SUFFIXES=["First Pass","One Day Only","After Hours","Hold for Notes","Final Check","Night Notes","Take Two","Last Look","Second Slate","On Hold","The Callback","Day Of","One Take","Room Tone","Cold Read","Rewrites","The Short List","Open Call","Table Notes","Wrap Notes","The Rehearsal","Understudy","Sides Only","No Notes"];
+  function cgShuffle(arr){const a=[...(arr||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
   const TITLE_LONG=[
     "Please Do Not Feed the Actors",
     "Everything We Said in the Parking Lot",
@@ -18619,7 +18625,9 @@ const ACG = (()=>{
     "a grant deadline landing before anyone is ready","a customer complaint that exposes a private favor","a missing key ring with three impossible labels","a donor visit happening before the room is cleaned","a product sample arriving with the wrong face printed on it",
     "a cancellation that forces the assistant to become the lead","a voicemail played on speaker by mistake","a background actor recognizing the location from childhood","a contract clause nobody read until wrap day","a printed schedule that lists a person who died last year",
     "a rehearsal note that sounds like an accusation","a social post going live before approval","a family photo found in a rented costume pocket","a wrong-size garment threatening the whole shoot","an investor arriving early and asking to see the scene now",
-    "a return label addressed to a person no one admits knowing","a witness form that needs one more signature","a brand script that accidentally tells the truth","an access badge that still opens a closed office","a hold music loop with a private argument recorded underneath"
+    "a return label addressed to a person no one admits knowing","a witness form that needs one more signature","a brand script that accidentally tells the truth","an access badge that still opens a closed office","a hold music loop with a private argument recorded underneath",
+    "a signed release that names the wrong project","a call sheet with two people assigned the same slot","a deposit that everyone assumed had already cleared","a reference photo that shows more than it should","a group message that reached one person too many",
+    "a schedule change that nobody remembers approving","a name badge belonging to someone who already left","a receipt that proves a favor no one wanted recorded","a shipping label with an address that should not exist","a budget line that quietly went missing"
   ];
   const STORY_STAKES=[
     "saving a small business without admitting how close it is to closing","getting one clean take before the location is lost","protecting a family member from a truth they already suspect","keeping a job that no longer feels worth keeping","finishing a proof-of-concept before money disappears",
@@ -18642,10 +18650,10 @@ const ACG = (()=>{
     {key:"tv-family-kitchen",place:"a family kitchen scene for a TV pilot",titles:["Kitchen Table Pilot","The Family Scene","Dinner Before the News"],roles:["older sibling","younger sibling","parent trying to stay calm","neighbor who interrupts","family friend"]},
     {key:"black-box-reading",place:"a black box theater before a new play reading",titles:["Pages on Music Stands","Black Box Reading","The Empty Chair"],roles:["playwright","actor replacing the lead","director running notes","stage reader","producer with one phone call"]},
     {key:"brooklyn-short-film-cafe",place:"a Brooklyn cafe before a short film night shoot",titles:["Cafe Night Shoot","Table by the Window","One More Take"],roles:["barista with a secret","actor playing a regular customer","director watching the door","camera assistant","friend asked to sit in"]},
-    {key:"network-procedural-precinct",place:"a simple precinct set for a network procedural",titles:["Precinct Scene","Desk Report","The Witness Chair"],roles:["detective with one clear question","witness trying to leave","desk officer","public defender","neighbor with the missing detail"]},
+    {key:"network-procedural-precinct",place:"a simple precinct built for a network procedural",titles:["Precinct Scene","Desk Report","The Witness Chair"],roles:["detective with one clear question","witness trying to leave","desk officer","public defender","neighbor with the missing detail"]},
     {key:"off-off-broadway-basement",place:"an Off-Off-Broadway basement theater after rehearsal",titles:["Basement Notes","After Rehearsal","The Last Monologue"],roles:["actor staying late","director giving notes","stage manager locking up","writer changing the ending","friend waiting outside"]},
     {key:"film-school-subway-platform",place:"a controlled subway-platform scene for a film school project",titles:["Platform Scene","Last Train Home","The Missed Stop"],roles:["commuter with an audition bag","stranger who recognizes them","student director","camera operator","transit worker"]},
-    {key:"streaming-series-office",place:"a small office set for a streaming series proof of concept",titles:["Office Proof","Conference Room B","The Rewrite"],roles:["assistant covering for the boss","manager hiding a mistake","coworker who knows the truth","client on speakerphone","producer checking continuity"]},
+    {key:"streaming-series-office",place:"a small office built for a streaming series proof of concept",titles:["Office Proof","Conference Room B","The Rewrite"],roles:["assistant covering for the boss","manager hiding a mistake","coworker who knows the truth","client on speakerphone","producer checking continuity"]},
     {key:"musical-workshop-piano-room",place:"a piano room during a new musical workshop",titles:["Piano Room","Sixteen Bars Later","The Workshop Song"],roles:["actor-singer learning a new song","composer at the piano","book writer with cuts","stage manager","ensemble member"]},
     {key:"indie-film-audition-studio",place:"a small audition studio near Times Square",titles:["Room 406","The Reader","Second Slate"],roles:["actor asked to read again","casting associate","director behind the table","reader who knows the scene","assistant timing the room"]},
     {key:"queens-family-short",place:"a Queens family apartment for a short film",titles:["Sunday in Queens","The Small Bedroom","Family Scene"],roles:["adult child returning home","parent avoiding the topic","younger cousin","neighbor bringing food","aunt who says too much"]},
@@ -18658,7 +18666,10 @@ const ACG = (()=>{
   const SIMPLE_STORY_CATALYSTS=[
     "someone misses an important callback","a rehearsal has to move to a new room","one actor gets the wrong pages","a family secret comes up during a quiet scene","a lead performer drops out at the last minute",
     "the director changes the ending","a prop goes missing before the scene","a small lie becomes hard to ignore","two characters have to share one honest conversation","an old argument comes back during rehearsal",
-    "a producer needs one clean take before the location closes","a witness changes their story","a song is cut from the workshop","a callback reader recognizes one of the actors","a neighbor interrupts the shoot at the worst time"
+    "a producer needs one clean take before the location closes","a witness changes their story","a song is cut from the workshop","a callback reader recognizes one of the actors","a neighbor interrupts the shoot at the worst time",
+    "a scene partner shows up an hour late","two actors are up for the same part","the reader skips a page and no one stops them","a phone keeps buzzing through every take","the room is double-booked at the worst time",
+    "a note from yesterday quietly gets ignored","someone reads for the wrong role by mistake","the schedule shifts with no warning","a quiet disagreement becomes the whole scene","an actor freezes on the first line",
+    "the wrong sides get handed out","a last-minute replacement has to learn the scene fast","a private conversation is overheard","the lead and the understudy both arrive ready","a small favor turns complicated","a familiar face walks into the audition","one honest question changes the read"
   ];
   const SIMPLE_STORY_STAKES=[
     "finishing the scene before the day is lost","telling the truth without hurting the wrong person","getting through opening night","saving a small production with very little money","deciding whether to take the role",
@@ -18897,14 +18908,22 @@ const ACG = (()=>{
     if(/commercial|ad|brand|print|model|e-commerce/i.test(type))return pick(["Non-Union","Union and non-union welcome","Commercial terms disclosed before booking"]);
     return UNION;
   }
+  // Candidate order matters: candidateUnique() picks the FIRST unused one. When the
+  // bare stem is already taken we want a genuinely different title next (a distinct
+  // stem or an evocative TITLE_A×TITLE_B combo, ~780 options) — NOT "<same stem>:
+  // <suffix>", which reads as a near-duplicate of the existing listing. The
+  // same-stem+suffix form is therefore demoted to the last resort.
   function freshTitles(setting,type){
-    const stem=pick(setting.titles);
+    const stems=cgShuffle(setting.titles||[]);
+    const stem=stems[0];const alt=stems[1]||stem;const alt2=stems[2]||alt;
     return [
       stem,
-      `${stem}: ${pick(["First Pass","One Day Only","After Hours","Hold for Notes","Final Check"])}`,
-      `${pick(["The","A"]) } ${pick(TITLE_A)} ${pick(TITLE_B)}`,
-      `${type}: ${pick(setting.titles)}`,
-      `${pick(["Before","After","Inside","Under"])} ${pick(setting.titles)}`
+      `${pick(["The","A"])} ${pick(TITLE_A)} ${pick(TITLE_B)}`,
+      alt,
+      `${pick(["Before","After","Inside","Under"])} ${alt2}`,
+      `${pick(["The","A"])} ${pick(TITLE_A)} ${pick(TITLE_B)}`,
+      `${type}: ${alt2}`,
+      `${stem}: ${pick(TITLE_SUFFIXES)}`
     ];
   }
   // Kept to one clause naming the setting + the single concrete thing that
@@ -18914,14 +18933,21 @@ const ACG = (()=>{
   // used internally so a given combination is never repeated).
   function freshTagline(type,setting,plan){
     const label=projectLabel(type);
+    const pp=placePrep(setting.place);
     return pick([
-      `${articleFor(label)} ${label} at ${setting.place}.`,
+      `${articleFor(label)} ${label} ${pp} ${setting.place}.`,
       `${capFirst(setting.place)}.`,
-      `A grounded ${label} at ${setting.place}.`
+      `A grounded ${label} ${pp} ${setting.place}.`
     ]);
   }
   function articleFor(text){
     return /^[aeiou]/i.test(clean(text))?"An":"A";
+  }
+  // Enclosed interiors read as "in a piano room", open venues as "at a ferry
+  // terminal". Picks the natural preposition from the place noun so the generated
+  // line doesn't say "casting ... at a piano room / at a family kitchen".
+  function placePrep(place){
+    return /\b(room|apartment|walk-?up|kitchen|studio|office|suite|theater|theatre|lobby|basement|mailroom)\b/.test(clean(place))?"in":"at";
   }
   function projectLabel(type){
     const t=String(type||"project");
@@ -18972,7 +18998,11 @@ const ACG = (()=>{
   }
   function pickFreshBeat(pool,tag,h,res){
     const unused=pool.filter(v=>!h.traits.has(clean(tag+" "+v))&&!res.traits.has(clean(tag+" "+v)));
-    return pick(unused.length?unused:pool);
+    if(unused.length)return pick(unused);
+    // History has exhausted the pool — still refuse to repeat a beat already used in
+    // THIS batch, so two listings generated together never share the same twist.
+    const batchFresh=pool.filter(v=>!res.traits.has(clean(tag+" "+v)));
+    return pick(batchFresh.length?batchFresh:pool);
   }
   function buildStoryPlan(type,setting,h,res){
     const roles=[...(setting.roles||[])].map(rolePhrase);
@@ -19050,11 +19080,12 @@ const ACG = (()=>{
   function freshSynopsis(city,type,setting,plan,voice,length){
     const label=projectLabel(type);
     const cc=plan.catalystClause||plan.catalyst;
+    const pp=placePrep(setting.place);
     return pick([
-      `Casting ${articleFor(label).toLowerCase()} ${label} in ${city.name} at ${setting.place}, where ${cc}.`,
-      `${type} casting in ${city.name} at ${setting.place}, where ${cc}.`,
-      `Now casting ${label} talent in ${city.name} at ${setting.place}, where ${cc}.`,
-      `Seeking performers for ${articleFor(label).toLowerCase()} ${label} in ${city.name}, at ${setting.place}, where ${cc}.`
+      `Casting ${articleFor(label).toLowerCase()} ${label} in ${city.name}, set ${pp} ${setting.place}, where ${cc}.`,
+      `${type} casting in ${city.name}, set ${pp} ${setting.place}, where ${cc}.`,
+      `Now casting ${label} talent in ${city.name}, set ${pp} ${setting.place}, where ${cc}.`,
+      `Seeking performers for ${articleFor(label).toLowerCase()} ${label} in ${city.name}, set ${pp} ${setting.place}, where ${cc}.`
     ]);
   }
   function freshRoleType(type,i){
