@@ -1923,6 +1923,20 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @keyframes footerLangLift{0%,100%{transform:translateY(0);}50%{transform:translateY(-2px);}}
 @media(hover:hover){.footer-cookie-card:hover,.lang-toggle-btn:hover{transform:translateY(-3px);filter:brightness(1.05) saturate(1.1);}}
 @media(prefers-reduced-motion:reduce){.footer-cookie-card,.footer-cookie-card::before,.lang-toggle-btn{animation:none!important;}}
+/* Actor Business Card (dashboard shortcut) — "Holo Sheen" premium motion: metallic light sweep, breathing glow, dot pulse, button shimmer */
+.abc-prem{box-shadow:0 18px 40px -22px rgba(26,26,46,.45);transition:box-shadow .5s cubic-bezier(.2,.7,.2,1),filter .5s ease;animation:abc-float 6s ease-in-out infinite;will-change:transform;}
+.abc-prem::after{content:"";position:absolute;inset:-40%;pointer-events:none;z-index:2;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.28) 46%,rgba(255,255,255,.55) 50%,rgba(255,255,255,.28) 54%,transparent 70%);transform:translateX(-120%);animation:abc-sheen 4.8s ease-in-out infinite;mix-blend-mode:screen;}
+.abc-prem .abc-glow-o{animation:abc-breathe 5s ease-in-out infinite;}
+.abc-prem .abc-dot{animation:abc-pulse 2.2s ease-in-out infinite;}
+.abc-prem .abc-cta{overflow:hidden;}
+.abc-prem .abc-cta::before{content:"";position:absolute;top:0;left:-60%;width:45%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-18deg);animation:abc-btnshine 3.4s ease-in-out infinite;pointer-events:none;}
+@media(hover:hover){.abc-prem:hover{box-shadow:0 34px 60px -26px rgba(0,0,0,.6);filter:brightness(1.03);}}
+@keyframes abc-sheen{0%{transform:translateX(-120%);}18%,100%{transform:translateX(120%);}}
+@keyframes abc-float{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+@keyframes abc-breathe{0%,100%{opacity:.65;transform:scale(1);}50%{opacity:1;transform:scale(1.18);}}
+@keyframes abc-pulse{0%,100%{box-shadow:0 0 6px var(--amber);opacity:.75;}50%{box-shadow:0 0 14px var(--amber);opacity:1;}}
+@keyframes abc-btnshine{0%{left:-60%;}55%,100%{left:130%;}}
+@media(prefers-reduced-motion:reduce){.abc-prem,.abc-prem::after,.abc-prem .abc-glow-o,.abc-prem .abc-dot,.abc-prem .abc-cta::before{animation:none!important;}.abc-prem::after{display:none;}}
 @media (max-width:900px){
   .site-footer-grid{grid-template-columns:1fr 1fr;gap:32px;}
   .site-footer-brand{grid-column:1/-1;}
@@ -11576,18 +11590,18 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           </div>
 
           {/* Actor Business Card shortcut — teal/amber treatment to match the landing-page CTA */}
-          <div style={{position:'relative',overflow:'hidden',borderRadius:16,padding:20,background:'linear-gradient(135deg,#5C9FA0 0%,#4F8A8B 45%,#3B6E6F 100%)',color:'#fff',boxShadow:'0 18px 40px -22px rgba(26,26,46,.45)'}}>
-            <span style={{position:'absolute',borderRadius:'50%',pointerEvents:'none',width:180,height:180,background:'radial-gradient(circle,rgba(232,144,42,.32),transparent 70%)',top:-60,right:-40}}/>
+          <div className="abc-prem" style={{position:'relative',overflow:'hidden',borderRadius:16,padding:20,background:'linear-gradient(135deg,#5C9FA0 0%,#4F8A8B 45%,#3B6E6F 100%)',color:'#fff'}}>
+            <span className="abc-glow-o" style={{position:'absolute',borderRadius:'50%',pointerEvents:'none',width:180,height:180,background:'radial-gradient(circle,rgba(232,144,42,.32),transparent 70%)',top:-60,right:-40}}/>
             <span style={{position:'absolute',borderRadius:'50%',pointerEvents:'none',width:140,height:140,background:'radial-gradient(circle,rgba(255,255,255,.14),transparent 70%)',bottom:-50,left:-30}}/>
             <p style={{position:'relative',display:'inline-flex',alignItems:'center',gap:6,fontSize:10,fontWeight:800,letterSpacing:1.4,textTransform:'uppercase',color:'#FFE6C2',margin:'0 0 8px',fontFamily:"'DM Sans',sans-serif"}}>
-              <span style={{width:6,height:6,borderRadius:'50%',background:'var(--amber)',boxShadow:'0 0 8px var(--amber)'}}/>{isPremium?'Premium Feature':'Free Preview'}
+              <span className="abc-dot" style={{width:6,height:6,borderRadius:'50%',background:'var(--amber)',boxShadow:'0 0 8px var(--amber)'}}/>{isPremium?'Premium Feature':'Free Preview'}
             </p>
             <div style={{position:'relative',display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
               <span style={{fontSize:20,display:'flex',alignItems:'center',justifyContent:'center',width:36,height:36,borderRadius:10,background:'rgba(255,255,255,0.14)'}}><Ico n="credit-card" s={22}/></span>
               <h3 style={{fontWeight:800,fontSize:15.5,color:'#fff',margin:0,fontFamily:"'DM Sans',sans-serif",letterSpacing:-0.2}}>Actor Business Card</h3>
             </div>
             <p style={{position:'relative',fontSize:13,color:'rgba(255,255,255,.85)',margin:'0 0 16px',lineHeight:1.55}}>Create a downloadable actor card with your headshot and a unique QR code linking to your Cast Slate profile.</p>
-            <button style={{position:'relative',width:'100%',fontSize:13,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:'12px 14px',borderRadius:10,border:'none',cursor:'pointer',background:'var(--amber)',color:'#1A1A2E',boxShadow:'0 10px 24px -10px rgba(232,144,42,.7)'}} onClick={()=>onNavigate('actor-business-card')}>{isPremium?'Build My Actor Card →':'Preview Actor Card →'}</button>
+            <button className="abc-cta" style={{position:'relative',width:'100%',fontSize:13,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:'12px 14px',borderRadius:10,border:'none',cursor:'pointer',background:'var(--amber)',color:'#1A1A2E',boxShadow:'0 10px 24px -10px rgba(232,144,42,.7)'}} onClick={()=>onNavigate('actor-business-card')}>{isPremium?'Build My Actor Card →':'Preview Actor Card →'}</button>
           </div>
 
           {/* Profile Improvement Suggestions (Premium feature) */}
