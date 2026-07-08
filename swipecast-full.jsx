@@ -11601,7 +11601,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <h3 style={{fontWeight:800,fontSize:15.5,color:'#fff',margin:0,fontFamily:"'DM Sans',sans-serif",letterSpacing:-0.2}}>Actor Business Card</h3>
             </div>
             <p style={{position:'relative',fontSize:13,color:'rgba(255,255,255,.85)',margin:'0 0 16px',lineHeight:1.55}}>Create a downloadable actor card with your headshot and a unique QR code linking to your Cast Slate profile.</p>
-            <button className="abc-cta" style={{position:'relative',width:'100%',fontSize:13,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:'12px 14px',borderRadius:10,border:'none',cursor:'pointer',background:'var(--amber)',color:'#1A1A2E',boxShadow:'0 10px 24px -10px rgba(232,144,42,.7)'}} onClick={()=>onNavigate('actor-business-card')}>{isPremium?'Build My Actor Card →':'Preview Actor Card →'}</button>
+            <button className="abc-cta" style={{position:'relative',width:'100%',fontSize:13,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:'12px 14px',borderRadius:10,border:'none',cursor:'pointer',background:'linear-gradient(180deg,#F8B65E 0%,#EC942A 100%)',color:'#1A1A2E',boxShadow:'0 10px 26px -10px rgba(240,160,60,.8),inset 0 1px 0 rgba(255,255,255,.35)'}} onClick={()=>onNavigate('actor-business-card')}>{isPremium?'Build My Actor Card →':'Preview Actor Card →'}</button>
           </div>
 
           {/* Profile Improvement Suggestions (Premium feature) */}
