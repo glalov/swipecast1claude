@@ -75,21 +75,19 @@
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"WebApplication","name":"CastSlate","url":"https://www.castslate.com","applicationCategory":"EntertainmentApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD","description":"Free actor account. Premium at $9.99/month."},"description":"A modern casting platform where actors submit to roles and casting directors review talent one profile at a time."}
   </script>
-  <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
-  <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
-  <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20260708-232911"/>
+  <script src="/vendor/react.production.min.js" defer></script>
+  <script src="/vendor/react-dom.production.min.js" defer></script>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
-
-  <!-- BUILD: 20260708-232911 -->
-  <meta name="build-version" content="20260708-232911"/>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+  <!-- BUILD: 20260708-234022 -->
+  <meta name="build-version" content="20260708-234022"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260708-232911";
+        var B="20260708-234022";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -304,7 +302,7 @@
     window.__CS_LOADING_STARTED = Date.now();
     window.__CS_REACT_MOUNTED   = false;
     window.__SC_ERR             = [];
-    window.__CS_PRE_COMPILED    = true;
+    window.__CS_PRE_COMPILED    = false;
 
     window.__CS_HIDE_LOADING = function(){
       var el = document.getElementById('cs-loading');
@@ -360,6 +358,7 @@
       })();
     })();
   </script>
+  <script src="/vendor/supabase.min.js"></script>
   <script>
     /* Supabase client init — invoked by the sequenced boot loader below (or
        immediately in the runtime-Babel dev fallback) after the library has
@@ -394,37 +393,7 @@
     }
     };
   </script>
-  <script>
-    (function(){
-      var STEPS=[
-        "/vendor/react.production.min.js",
-        "/vendor/react-dom.production.min.js",
-        "/vendor/supabase.min.js",
-        "INIT",
-        "/app.js?v=20260708-232911"
-      ];
-      function step(){
-        var it=STEPS.shift();
-        if(it===undefined)return;
-        if(it==="INIT"){
-          try{window.__CS_INIT_SB();}catch(e){}
-          step();
-          return;
-        }
-        var sc=document.createElement('script');
-        sc.src=it;
-        sc.onload=step;
-        sc.onerror=step;   /* keep booting; init + app have their own guards */
-        document.body.appendChild(sc);
-      }
-      var fired=false;
-      function once(){if(fired)return;fired=true;step();}
-      var noHold=false;
-      try{noHold=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){}
-      if(noHold||!document.getElementById('cs-intro')){once();return;}
-      requestAnimationFrame(function(){setTimeout(once,900);});
-      setTimeout(once,1600);   /* hidden tab: rAF never fires - boot anyway */
-    })();
-  </script>
+  <script>window.__CS_INIT_SB();</script>
+  <script type="text/babel" data-presets="react" src="/app.jsx?v=20260708-234022" defer></script>
 </body>
 </html>
