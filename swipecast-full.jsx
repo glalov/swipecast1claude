@@ -21300,8 +21300,8 @@ function AdminEmailCampaigns({session}){
       <div style={{fontSize:12,color:"var(--t3)",fontWeight:600,marginBottom:6}}>Send to the list</div>
       {!sending?<div style={{marginBottom:8}}>
         <div style={{display:"flex",gap:8,alignItems:"flex-end",flexWrap:"wrap",marginBottom:10,paddingBottom:10,borderBottom:"1px solid var(--bdr)"}}>
-          <div><label style={{fontSize:12,color:"var(--t3)",fontWeight:600,display:"block",marginBottom:4}}>Send a set number (Resend free plan = 200/day)</label><input value={cap} onChange={e=>setCap(e.target.value.replace(/[^0-9]/g,""))} inputMode="numeric" style={{padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14,width:120}}/></div>
-          <button className="btn-p" disabled={busy} onClick={()=>startSend(Math.max(1,parseInt(cap)||200),"daily limit")}>Send {(parseInt(cap)||200).toLocaleString()} now</button>
+          <div><label style={{fontSize:12,color:"var(--t3)",fontWeight:600,display:"block",marginBottom:4}}>Send a set number (Resend Pro = 50,000/mo · send in batches to warm up)</label><input value={cap} onChange={e=>setCap(e.target.value.replace(/[^0-9]/g,""))} inputMode="numeric" style={{padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14,width:120}}/></div>
+          <button className="btn-p" disabled={busy} onClick={()=>startSend(Math.max(1,parseInt(cap)||2000),"batch")}>Send {(parseInt(cap)||2000).toLocaleString()} now</button>
         </div>
         <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
         <button className="btn-s" disabled={busy} onClick={()=>startSend(500,"warm-up")}>Send 500</button>
