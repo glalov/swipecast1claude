@@ -4313,6 +4313,11 @@ function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice}){
   const [resentOk,setResentOk]=useState(false);
   const [resendCooldown,setResendCooldown]=useState(0);
   useEffect(()=>{if(resendCooldown<=0)return;const id=setTimeout(()=>setResendCooldown(c=>c-1),1000);return()=>clearTimeout(id);},[resendCooldown]);
+  // Cooldown for the "Send Reset Link" button. A user who taps repeatedly will trip
+  // Supabase's per-email / project-wide recovery-email rate limit and lock themselves
+  // out — so after each reset request we hold the button for a minute.
+  const [resetCooldown,setResetCooldown]=useState(0);
+  useEffect(()=>{if(resetCooldown<=0)return;const id=setTimeout(()=>setResetCooldown(c=>c-1),1000);return()=>clearTimeout(id);},[resetCooldown]);
   const resendConfirm=async()=>{
     setErr("");setResentOk(false);
     const clean=(email||"").trim().toLowerCase();
@@ -4347,6 +4352,7 @@ function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice}){
         );
         if(error)throw error;
         dbg().loginStep="reset-email-sent";
+        setResetCooldown(60);
         setSentReset(true);
       }else{
         dbg().loginStep="supabase-login-start";
@@ -4364,9 +4370,18 @@ function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice}){
     }catch(e){
       console.warn("[auth] login submit error:",e?.message||e);
       dbg().loginStep="login-error";dbg().lastError=e?.message||String(e);
-      let msg=e?.message||"Login failed. Please try again.";
+      let msg=e?.message||(forgot?"Couldn't send the reset link. Please try again.":"Login failed. Please try again.");
       const ml=msg.toLowerCase();
-      if(ml.includes("email not confirmed"))msg="Please verify your email first. Check your inbox for the confirmation link.";
+      // Supabase throttles recovery/confirmation emails (per-email + project-wide).
+      // Show calm guidance, not the raw "email rate limit exceeded" alarm — and hold
+      // the button so the user doesn't keep firing requests and dig in deeper.
+      const isRateLimited=e?.status===429||ml.includes("rate limit")||ml.includes("only request this")||ml.includes("too many")||ml.includes("exceeded")||ml.includes("over_email_send");
+      if(isRateLimited&&forgot){
+        msg="A reset link is on its way. Reset emails can take a couple of minutes — please check your inbox and spam folder. If nothing arrives, wait a minute, then request another.";
+        setResetCooldown(60);
+      }
+      else if(isRateLimited)msg="Too many attempts in a row. Please wait about a minute, then try again.";
+      else if(ml.includes("email not confirmed"))msg="Please verify your email first. Check your inbox for the confirmation link.";
       else if(ml.includes("invalid login credentials"))msg="Email or password incorrect.";
       else if(ml.includes("lock")&&ml.includes("stole"))msg="Something interrupted the login — please try again.";
       setErr(msg);
@@ -4431,7 +4446,7 @@ function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice}){
       <div className="form-group"><label className="label">{t('login.email')}</label><input className="input" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email"/></div>
       {!forgot&&<div className="form-group"><label className="label">{t('login.password')}</label><input className="input" type="password" placeholder="Your password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password"/></div>}
       {!forgot&&<div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",marginBottom:20}}><span style={{color:"var(--acc)",fontSize:13,cursor:"pointer"}} onClick={()=>{setForgot(true);setErr("");}}>{t('login.forgotPwd')}</span></div>}
-      <button type="submit" className="btn-p" style={{width:"100%"}} disabled={loading}>{loading?(forgot?t('login.sending'):t('login.loggingIn')):(forgot?t('login.sendReset'):t('login.logIn'))}</button>
+      <button type="submit" className="btn-p" style={{width:"100%",opacity:(loading||(forgot&&resetCooldown>0))?0.7:1}} disabled={loading||(forgot&&resetCooldown>0)}>{loading?(forgot?t('login.sending'):t('login.loggingIn')):(forgot?(resetCooldown>0?`Try again in ${resetCooldown}s`:t('login.sendReset')):t('login.logIn'))}</button>
       {!forgot&&(authNotice||/verify your email/i.test(err))&&<button type="button" className="btn-s" style={{width:"100%",marginTop:8,opacity:(resending||resendCooldown>0)?0.6:1}} disabled={resending||resendCooldown>0} onClick={resendConfirm}>{resending?"Sending…":resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button>}
       {resentOk&&<div style={{marginTop:8,textAlign:"center",color:"var(--grn)",fontWeight:600,fontSize:13}}><Ico n="check" s={24}/> New confirmation email sent — check your inbox &amp; spam folder.</div>}
       {forgot&&<button type="button" className="btn-s" style={{width:"100%",marginTop:8}} onClick={()=>{setForgot(false);setErr("");}}>{t('login.backToLogin')}</button>}
@@ -18256,8 +18271,12 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
               try{
                 const{error}=await window.sb.auth.resetPasswordForEmail(email,{redirectTo:"https://www.castslate.com"});
                 if(error)throw error;
-                showMsg("Password reset email sent. Check your inbox.");
-              }catch(e){showMsg(e.message||"Failed to send reset email.",true);}
+                showMsg("Password reset email sent. Check your inbox and spam folder.");
+              }catch(e){
+                const ml=(e?.message||"").toLowerCase();
+                const rate=e?.status===429||ml.includes("rate limit")||ml.includes("only request this")||ml.includes("too many")||ml.includes("exceeded")||ml.includes("over_email_send");
+                showMsg(rate?"A reset link was just requested. Check your inbox and spam folder, then wait about a minute before trying again.":(e?.message||"Failed to send reset email."),true);
+              }
               finally{setSaving(false);}
             }} disabled={saving}>Send Reset Email</button>
           </div>
