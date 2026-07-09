@@ -1,4 +1,4 @@
-import re, datetime, subprocess, os, sys, tempfile, shutil
+import re, datetime, subprocess, os, sys, tempfile, shutil, time
 
 BUILD_VERSION = datetime.datetime.utcnow().strftime("%Y%m%d-%H%M%S")
 JSC = "/System/Library/Frameworks/JavaScriptCore.framework/Versions/Current/Helpers/jsc"
@@ -84,16 +84,48 @@ jsx_raw = re.sub(r'^\s*import\s+.*?from\s+["\'][^"\']+["\'];?\s*\n', '', jsx_raw
 jsx_raw = jsx_raw.replace("export default function App", "function App")
 jsx_raw += "\nReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App, null));\n"
 
-# ── Try to compile at build time ─────────────────────────────────────────────
-print("  Compiling JSX…")
-compiled_js, compile_err = compile_jsx(jsx_raw)
+# ── Compile at build time, with retries ──────────────────────────────────────
+# Production MUST ship the pre-compiled app.js. The in-browser Babel path
+# (app.jsx) is a LOCAL-DEV convenience only, opt-in via --dev — that file is
+# untracked, so committing/deploying it 404s the app bundle and downs the whole
+# site (this is exactly what happened on 2026-07-08). Guardrails below make a
+# failed compile abort loudly instead of silently shipping a broken build.
+DEV_RUNTIME_BABEL = ("--dev" in sys.argv) or (os.environ.get("CASTSLATE_DEV") == "1")
+MAX_ATTEMPTS = 5
+
+compiled_js, compile_err = None, None
+if DEV_RUNTIME_BABEL:
+    print("  --dev: skipping build-time compile (in-browser Babel — LOCAL PREVIEW ONLY)")
+else:
+    print("  Compiling JSX…")
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        compiled_js, compile_err = compile_jsx(jsx_raw)
+        if compiled_js:
+            note = "" if attempt == 1 else f" — succeeded on attempt {attempt}"
+            print(f"  ✓ JSX pre-compiled ({len(compiled_js):,} chars){note}")
+            break
+        print(f"  ⚠ compile attempt {attempt}/{MAX_ATTEMPTS} failed: {compile_err}")
+        if attempt < MAX_ATTEMPTS:
+            wait = 2 * attempt
+            print(f"    retrying in {wait}s (compile failures are usually transient)…")
+            time.sleep(wait)
 
 if compiled_js:
-    print(f"  ✓ JSX pre-compiled ({len(compiled_js):,} chars) — no runtime Babel needed")
     USE_BABEL_RUNTIME = False
-else:
-    print(f"  ⚠ Build-time compilation failed ({compile_err}) — falling back to runtime Babel")
+elif DEV_RUNTIME_BABEL:
     USE_BABEL_RUNTIME = True
+else:
+    # HARD STOP before any output file is written — the current, working build
+    # stays untouched on disk, so a transient failure can never ship a broken
+    # site or leave a deployable-but-broken artifact behind.
+    print("")
+    print(f"  ✗ BUILD ABORTED — JSX compilation failed after {MAX_ATTEMPTS} attempts.")
+    print(f"    Last error: {compile_err}")
+    print("    NO files were changed; the deployed build is untouched, so nothing")
+    print("    broken can be committed or pushed.")
+    print("    → Re-run  python3 build-html.py  (transient jsc failures usually clear).")
+    print("    → Local preview only (never commit):  python3 build-html.py --dev")
+    sys.exit(1)
 
 # ── Externalize the app bundle into a single file ─────────────────────────────
 # The app is identical for every route — only the <head> SEO tags differ. By
@@ -149,6 +181,9 @@ if not USE_BABEL_RUNTIME:
     sb_tag = ''
     babel_cdn = ''
 else:
+    # Reached ONLY via --dev. Writes an UNTRACKED app.jsx loaded through
+    # in-browser Babel — a LOCAL PREVIEW artifact. Never commit or deploy it.
+    print("  ⚠ DEV BUILD: in-browser Babel (app.jsx) — DO NOT COMMIT OR DEPLOY.")
     APP_FILE = "app.jsx"
     open(APP_FILE, "w", encoding="utf-8").write(jsx_raw)
     # Babel standalone supports `src` on text/babel scripts.
@@ -599,7 +634,29 @@ for filename, path, title, desc in ROUTES:
     canonical = SITE + ("/" if path == "/" else path)
     open(filename, "w", encoding="utf-8").write(render_page(title, desc, canonical))
 
-mode = "pre-compiled JS" if not USE_BABEL_RUNTIME else "runtime Babel (fallback)"
+# ── Deploy-safety self-check ─────────────────────────────────────────────────
+# A production build must load the pre-compiled /app.js. If index.html ever
+# ends up on the in-browser Babel path, stop loudly — that build 404s on Vercel
+# (app.jsx is untracked) and would take the whole site down.
+if not USE_BABEL_RUNTIME:
+    _idx = open("index.html", encoding="utf-8").read()
+    _bad = [t for t in ("text/babel", "/app.jsx", "@babel/standalone") if t in _idx]
+    if _bad or "/app.js?v=" not in _idx:
+        print("")
+        print("  ✗ BUILD ABORTED — index.html failed the production self-check.")
+        print(f"    Problem: {_bad or ['missing /app.js reference']}")
+        print("    This build would 404 the app bundle. Not deploying.")
+        sys.exit(1)
+    print("  ✓ Deploy-safety check passed — all routes load /app.js")
+else:
+    print("")
+    print("  ##################################################################")
+    print("  #  DEV BUILD — in-browser Babel via UNTRACKED app.jsx.            #")
+    print("  #  DO NOT git add / commit / push. It 404s on Vercel and downs    #")
+    print("  #  production. Re-run without --dev for a deployable build.       #")
+    print("  ##################################################################")
+
+mode = "pre-compiled JS" if not USE_BABEL_RUNTIME else "runtime Babel (DEV — do not deploy)"
 print(f"Done — BUILD: {BUILD_VERSION} [{mode}]")
 print(f"  App bundle: {APP_FILE}")
 print(f"  Pre-rendered {len(ROUTES)} routes (self-canonical):")
