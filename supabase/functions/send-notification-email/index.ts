@@ -71,7 +71,7 @@ const corsHeaders = {
 
 interface NotifyRequest {
   to_user_id: string;
-  type: "inbox_message" | "class_invitation" | "booking_approved" | "booking_declined" | "premium_welcome" | "weekly_checkin" | "application_selected" | "activity_digest";
+  type: "inbox_message" | "class_invitation" | "booking_approved" | "booking_declined" | "premium_welcome" | "new_actor_welcome" | "weekly_checkin" | "application_selected" | "activity_digest";
   from_id?: string;
   from_name?: string;
   application_id?: string;
@@ -319,6 +319,73 @@ function premiumWelcomeHtml(firstName: string): string {
       <tr><td style="padding:20px 36px 32px;border-top:1px solid #f0f0f0">
         <p style="margin:0;font-size:12px;color:#aaa;line-height:1.6">You're receiving this because you upgraded to CastSlate Premium.<br/>To manage notifications, visit <a href="${APP_URL}/account-settings" style="color:#8b5cf6;text-decoration:none">Account Settings → Notifications</a>.</p>
       </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+function newActorWelcomeHtml(firstName: string): string {
+  const step = (emoji: string, title: string, body: string) =>
+    `<tr><td style="background:#f1f7f7;border:1px solid #d9e9e9;border-radius:12px;padding:16px 18px">
+      <table width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td width="34" valign="top" style="font-size:20px;line-height:1">${emoji}</td>
+        <td valign="top">
+          <div style="font-size:15px;font-weight:800;color:#1A1A2E;margin:0 0 3px">${title}</div>
+          <div style="font-size:14px;line-height:1.6;color:#555">${body}</div>
+        </td>
+      </tr></table>
+    </td></tr>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head>
+<body style="margin:0;padding:0;background:#f5f6f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f6f6;padding:40px 20px"><tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;width:100%">
+
+      <tr><td style="background:#4F8A8B;background:linear-gradient(135deg,#2f5f60 0%,#4F8A8B 55%,#5fa0a1 100%);border-top:3px solid #6fb0b1;padding:34px 36px 32px">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td valign="middle" style="width:52px">
+            <span style="display:inline-block;background:#ffffff;border-radius:12px;padding:9px;line-height:0;box-shadow:0 4px 14px rgba(0,0,0,0.20)">
+              <img src="${APP_URL}/logo-email.png" alt="CastSlate" width="30" height="30" style="display:block"/>
+            </span>
+          </td>
+          <td valign="middle" style="padding-left:14px">
+            <div style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1">CastSlate</div>
+            <div style="margin-top:4px;font-size:11px;font-weight:600;color:#dff1f1;letter-spacing:2px;text-transform:uppercase">Get seen. Get cast.</div>
+          </td>
+          <td valign="middle" align="right">
+            <span style="display:inline-block;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.28);color:#f2fbfb;font-size:11px;font-weight:700;letter-spacing:0.5px;padding:5px 13px;border-radius:20px;text-transform:uppercase">Get started</span>
+          </td>
+        </tr></table>
+      </td></tr>
+
+      <tr><td style="padding:36px 36px 8px">
+        <h1 style="margin:0 0 14px;font-size:25px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">Welcome to CastSlate, ${firstName} 🎬</h1>
+        <p style="margin:0 0 10px;font-size:16px;line-height:1.65;color:#555">Your account is live. You're about <strong>two minutes</strong> from being ready to apply to real castings — here's all it takes.</p>
+        <p style="margin:0 0 24px;font-size:15px;line-height:1.65;color:#555">Follow these three steps in order:</p>
+      </td></tr>
+
+      <tr><td style="padding:0 36px 8px">
+        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0 10px">
+          ${step("📸", `1 &middot; Add your headshot <span style="font-weight:700;color:#37696A">(required to apply)</span>`, "This is the one thing you need before you can submit to a casting. A clean, well-lit photo — even from your phone — works. You can add more later.")}
+          ${step("✍️", "2 &middot; Fill in your basics", "Add your stats and a short bio so a casting director knows who they're looking at the moment they open your profile.")}
+          ${step("🎬", "3 &middot; Browse castings &amp; send your first submission", "Free accounts can submit to <strong>one casting a week</strong>. Find a role that fits and apply — every submission is reviewed by the casting director individually.")}
+        </table>
+      </td></tr>
+
+      <tr><td style="padding:18px 36px 26px" align="center">
+        <a href="${APP_URL}/my-profile" style="display:inline-block;background:linear-gradient(90deg,#4F8A8B,#37696A);color:#fff;text-decoration:none;padding:15px 40px;border-radius:10px;font-weight:800;font-size:15px;letter-spacing:0.1px">Add my headshot →</a>
+      </td></tr>
+
+      <tr><td style="padding:0 36px 30px">
+        <div style="background:#f4f9f9;border:1px dashed #bfdcdc;border-radius:12px;padding:16px 18px">
+          <div style="font-size:13px;font-weight:800;color:#1A1A2E;margin:0 0 4px">Want to move faster?</div>
+          <div style="font-size:13.5px;line-height:1.6;color:#555">Premium ($9.99/mo) unlocks <strong>unlimited submissions</strong>, unlimited photos &amp; videos, your Actor's Slate, and an Actor Business Card with a QR code. Start free — upgrade whenever you're ready.</div>
+        </div>
+      </td></tr>
+
+      <tr><td style="padding:20px 36px 32px;border-top:1px solid #f0f0f0">
+        <p style="margin:0;font-size:12px;color:#aaa;line-height:1.6">You're receiving this because you created a CastSlate account.<br/>To manage notifications, visit <a href="${APP_URL}/account-settings" style="color:#4F8A8B;text-decoration:none">Account Settings → Notifications</a>.</p>
+      </td></tr>
+
     </table>
   </td></tr></table>
 </body></html>`;
@@ -583,6 +650,34 @@ serve(async (req) => {
       });
       if (!sent.ok) {
         console.error("[send-notification-email] premium welcome send error:", sent.err);
+        return json({ ok: false, results: { email: `error:${sent.err}` } });
+      }
+      return json({ ok: true, results: { email: "sent" } });
+    }
+
+    // ── New actor welcome (fired once when a talent confirms their signup) ──
+    //    Onboarding nudge that drives them to upload a headshot and apply.
+    if (type === "new_actor_welcome") {
+      const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
+      const emailMasterEnabled = profile.notification_email !== false;
+      if (!emailMasterEnabled) {
+        return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
+      }
+      if (!emailConfigured()) {
+        console.warn("[send-notification-email] email provider not configured — skipping new actor welcome");
+        return json({ ok: true, results: { email: "skipped:EMAIL_NOT_CONFIGURED" } });
+      }
+      const { data: authData, error: authErr } = await supabase.auth.admin.getUserById(to_user_id);
+      if (authErr || !authData?.user?.email) {
+        return json({ ok: false, results: { email: "error:could_not_retrieve_user_email" } });
+      }
+      const sent = await sendEmail({
+        from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
+        subject: "Welcome to CastSlate — let's get you cast 🎬",
+        html: newActorWelcomeHtml(firstName),
+      });
+      if (!sent.ok) {
+        console.error("[send-notification-email] new actor welcome send error:", sent.err);
         return json({ ok: false, results: { email: `error:${sent.err}` } });
       }
       return json({ ok: true, results: { email: "sent" } });
