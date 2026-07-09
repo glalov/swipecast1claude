@@ -91,7 +91,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .card:hover{border-color:var(--acc);box-shadow:0 4px 20px rgba(26,26,46,0.06);}
 .card-flat{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;}
 /* Talent + CD dashboard card elevation ("Option A") — soft but clearly visible shadow so white cards separate from the cream page bg */
-.td-dash-outer div[style*="var(--s1)"][style*="var(--bdr)"],.cd-dash-outer div[style*="var(--s1)"][style*="var(--bdr)"]{box-shadow:0 2px 5px rgba(41,35,22,.07),0 12px 30px -8px rgba(41,35,22,.22);}
+.td-dash-outer div[style*="var(--s1)"][style*="var(--bdr)"],.cd-dash-outer div[style*="var(--s1)"][style*="var(--bdr)"]{box-shadow:0 1px 2px rgba(41,35,22,.06),0 4px 10px -3px rgba(41,35,22,.16);}
 /* Dashboard inner item rows: white fill instead of the cream page color, so content reads crisp inside the white cards (colored status tiers use their own bg and are unaffected) */
 .td-dash-outer div[style*="var(--bg)"][style*="var(--bdr)"],.cd-dash-outer div[style*="var(--bg)"][style*="var(--bdr)"]{background:var(--s1)!important;}
 .tag{background:var(--s2);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:500;color:var(--t2);display:inline-block;}
