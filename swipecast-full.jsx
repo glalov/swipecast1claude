@@ -22408,15 +22408,41 @@ function CatalogCard({u,appCount,onOpen}){
 }
 function AdminTalentCatalogDetail({u,session,myProfile,onBack}){
   const [apps,setApps]=useState(null);
-  useEffect(()=>{
+  const [openCastingId,setOpenCastingId]=useState(null); // drill into a project's roles
+  const [decideApp,setDecideApp]=useState(null);         // application currently in the decision swiper
+  const [busy,setBusy]=useState(false);
+  const [decErr,setDecErr]=useState("");
+  const load=useCallback(async()=>{
     if(!u?.id)return;
-    (async()=>{
-      const {data}=await window.sb.from("applications")
-        .select("id,status,created_at,casting_id,role_id,castings(title,prod,type,location),roles(name)")
-        .eq("talent_id",u.id).order("created_at",{ascending:false});
-      setApps(data||[]);
-    })();
+    const {data}=await window.sb.from("applications")
+      .select("id,status,created_at,casting_id,role_id,selected_photo_url,cover_note,castings(id,title,prod,type,location,is_admin_created),roles(id,name)")
+      .eq("talent_id",u.id).order("created_at",{ascending:false});
+    setApps(data||[]);
   },[u?.id]);
+  useEffect(()=>{load();},[load]);
+  // Admin decision — same RPC path the CD swipe deck uses. decide_application
+  // enforces ownership (admin owns admin-created castings) and, on a "selected"
+  // transition, notifies the talent. We also fire the admin-generated activity
+  // ping so the actor's "reviewed by casting" signal stays consistent with the
+  // dashboard flow. Optimistic local update with rollback on error.
+  const doDecide=useCallback(async(app,action)=>{
+    const nextStatus=action==='reject'?'rejected':action==='hold'?'hold':action==='select'?'selected':null;
+    if(!nextStatus||!app?.id||busy)return;
+    const prevStatus=app.status;
+    if(prevStatus===nextStatus)return;
+    setBusy(true);setDecErr("");
+    setApps(p=>(p||[]).map(a=>a.id===app.id?{...a,status:nextStatus}:a));
+    setDecideApp(d=>d&&d.id===app.id?{...d,status:nextStatus}:d);
+    const {error}=await window.sb.rpc("decide_application",{p_application:app.id,p_status:nextStatus});
+    if(error){
+      setApps(p=>(p||[]).map(a=>a.id===app.id?{...a,status:prevStatus}:a));
+      setDecideApp(d=>d&&d.id===app.id?{...d,status:prevStatus}:d);
+      setBusy(false);setDecErr("Could not save that decision. Please try again.");
+      return;
+    }
+    try{await window.sb.rpc("notify_admin_generated_application_activity",{p_application:app.id,p_activity:"profile_view"});}catch(_){}
+    setBusy(false);
+  },[busy]);
   // Build the object TalentProfile expects (mirrors the AdminUsers "View Profile" flow).
   const additional=Array.isArray(u.additional_photos)?u.additional_photos:[];
   const mainPhoto=u.headshot_url||"";
@@ -22424,27 +22450,135 @@ function AdminTalentCatalogDetail({u,session,myProfile,onBack}){
   [mainPhoto,...additional].forEach(url=>{if(url&&!seen.has(url)){seen.add(url);allPhotos.push(url);}});
   const talentObj={...u,id:u.id,name:u.display_name||u.email||"Unknown",display_name:u.display_name||u.email||"Unknown",img:mainPhoto||"https://placehold.co/400x500/e5e5e5/999?text=No+Headshot",type:"Talent",union:u.union_status||"Non-Union",skills:Array.isArray(u.skills)?u.skills:[],additional_photos:additional,video_links:Array.isArray(u.video_links)?u.video_links:[],credits:u.credits||"",_allPhotos:allPhotos};
   const stColor=(s)=>({selected:"#1d7b44",shortlisted:"#1d7b44",hold:"#c88900",pending:"#2980b9",rejected:"#c0392b"})[s]||"var(--t3)";
+  // Group applications by project (casting). Admin-generated postings get the
+  // clickable review shortcut: project → roles → decision swiper. Real-CD
+  // castings stay read-only (the admin doesn't own them, so no decisions here).
+  const groups=[];const byId={};
+  (apps||[]).forEach(a=>{
+    const cid=a.casting_id||a.castings?.id||("_"+a.id);
+    if(!byId[cid]){byId[cid]={cid,casting:a.castings,apps:[]};groups.push(byId[cid]);}
+    byId[cid].apps.push(a);
+  });
+  const openGroup=groups.find(g=>g.cid===openCastingId)||null;
   return(<div>
     <button className="btn-s btn-sm" style={{marginBottom:16}} onClick={onBack}>← Back to Catalog</button>
     <div className="card" style={{padding:"20px 24px",marginBottom:20}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",marginBottom:14}}>
-        <h3 style={{fontWeight:700,fontSize:16,margin:0}}>Casting Activity</h3>
-        <span style={{fontSize:12,color:"var(--t3)"}}>{apps==null?"…":`${apps.length} application${apps.length===1?"":"s"}`}</span>
-      </div>
-      {apps==null?<CastSlateLoader size="inline" text="Loading applications…"/>:
-        apps.length===0?<p style={{color:"var(--t3)",fontSize:13,margin:0}}>This actor hasn't applied to any castings yet.</p>:
-        <div style={{display:"flex",flexDirection:"column"}}>
-          {apps.map(a=>(<div key={a.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,padding:"10px 0",borderBottom:"1px solid var(--bdr)"}}>
-            <div style={{minWidth:0}}>
-              <div style={{fontWeight:600,fontSize:14,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{a.castings?.title||"—"}{a.roles?.name?<span style={{color:"var(--t3)",fontWeight:400}}> · {a.roles.name}</span>:""}</div>
-              <div style={{fontSize:12,color:"var(--t3)"}}>{[a.castings?.prod,a.castings?.type,a.castings?.location].filter(Boolean).join(" · ")||"—"} · {a.created_at?new Date(a.created_at).toLocaleDateString():""}</div>
-            </div>
-            <span style={{fontSize:11,fontWeight:700,color:stColor(a.status),textTransform:"uppercase",whiteSpace:"nowrap"}}>{a.status||"pending"}</span>
-          </div>))}
+      {/* ── Level 3: decision swiper for one role application ── */}
+      {decideApp?(()=>{
+        const g=groups.find(x=>x.apps.some(a=>a.id===decideApp.id));
+        const live=(apps||[]).find(a=>a.id===decideApp.id)||decideApp;
+        return(<>
+          <button className="btn-s btn-sm" style={{marginBottom:16}} onClick={()=>{setDecideApp(null);setDecErr("");}}>← Back to roles</button>
+          <div style={{marginBottom:6,fontSize:12,fontWeight:700,letterSpacing:.4,textTransform:"uppercase",color:"var(--acc)"}}>{g?.casting?.title||live.castings?.title||"Project"}</div>
+          <h3 style={{fontWeight:800,fontSize:18,margin:"0 0 14px"}}>{live.roles?.name||"Role"}</h3>
+          {decErr&&<div style={{background:"rgba(192,57,43,0.1)",border:"1px solid rgba(192,57,43,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{decErr}</div>}
+          <AdminRoleDecisionCard app={live} talent={u} busy={busy} onDecide={(action)=>doDecide(live,action)}/>
+        </>);
+      })():
+      /* ── Level 2: roles the actor applied for within one project ── */
+      openGroup?(<>
+        <button className="btn-s btn-sm" style={{marginBottom:16}} onClick={()=>setOpenCastingId(null)}>← Back to projects</button>
+        <h3 style={{fontWeight:800,fontSize:18,margin:"0 0 4px"}}>{openGroup.casting?.title||"Project"}</h3>
+        <p style={{fontSize:12,color:"var(--t3)",margin:"0 0 14px"}}>{[openGroup.casting?.prod,openGroup.casting?.type,openGroup.casting?.location].filter(Boolean).join(" · ")||"—"} · {openGroup.apps.length} role{openGroup.apps.length===1?"":"s"} applied</p>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {openGroup.apps.map(a=>(
+            <button key={a.id} onClick={()=>{setDecErr("");setDecideApp(a);}} style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--s1)",cursor:"pointer",textAlign:"left",fontFamily:"inherit",width:"100%",transition:"background .12s,border-color .12s"}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--acc)";e.currentTarget.style.background="var(--s2)";}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--bdr)";e.currentTarget.style.background="var(--s1)";}}>
+              <div style={{minWidth:0}}>
+                <div style={{fontWeight:700,fontSize:14}}>{a.roles?.name||"Role"}</div>
+                <div style={{fontSize:12,color:"var(--t3)"}}>Applied {a.created_at?new Date(a.created_at).toLocaleDateString():""}</div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+                <span style={{fontSize:11,fontWeight:700,color:stColor(a.status),textTransform:"uppercase"}}>{a.status||"pending"}</span>
+                <span style={{color:"var(--t3)",fontSize:18}}>›</span>
+              </div>
+            </button>
+          ))}
         </div>
-      }
+      </>):
+      /* ── Level 1: projects the actor applied to ── */
+      (<>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",marginBottom:14}}>
+          <h3 style={{fontWeight:700,fontSize:16,margin:0}}>Casting Activity</h3>
+          <span style={{fontSize:12,color:"var(--t3)"}}>{apps==null?"…":`${apps.length} application${apps.length===1?"":"s"}`}</span>
+        </div>
+        {apps==null?<CastSlateLoader size="inline" text="Loading applications…"/>:
+          apps.length===0?<p style={{color:"var(--t3)",fontSize:13,margin:0}}>This actor hasn't applied to any castings yet.</p>:
+          <div style={{display:"flex",flexDirection:"column"}}>
+            {groups.map(g=>{
+              const admin=g.casting?.is_admin_created===true;
+              const statuses=g.apps.map(a=>a.status||"pending");
+              const clickable=admin;
+              return(<div key={g.cid} onClick={clickable?()=>setOpenCastingId(g.cid):undefined}
+                style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,padding:"12px 0",borderBottom:"1px solid var(--bdr)",cursor:clickable?"pointer":"default"}}
+                onMouseEnter={clickable?e=>{e.currentTarget.style.background="var(--s2)";}:undefined}
+                onMouseLeave={clickable?e=>{e.currentTarget.style.background="transparent";}:undefined}>
+                <div style={{minWidth:0}}>
+                  <div style={{fontWeight:600,fontSize:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+                    <span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{g.casting?.title||"—"}</span>
+                    {admin&&<span style={{fontSize:9,fontWeight:700,background:"rgba(var(--acc-rgb,100,149,237),0.15)",color:"var(--acc)",borderRadius:4,padding:"1px 5px",letterSpacing:.3}}>PLATFORM · REVIEW</span>}
+                  </div>
+                  <div style={{fontSize:12,color:"var(--t3)"}}>{[g.casting?.prod,g.casting?.type,g.casting?.location].filter(Boolean).join(" · ")||"—"} · {g.apps.length} role{g.apps.length===1?"":"s"}</div>
+                </div>
+                <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+                  <span style={{fontSize:11,fontWeight:700,color:stColor(statuses[0]),textTransform:"uppercase",whiteSpace:"nowrap"}}>{statuses.length>1?`${statuses.length} roles`:statuses[0]}</span>
+                  {clickable&&<span style={{color:"var(--t3)",fontSize:18}}>›</span>}
+                </div>
+              </div>);
+            })}
+          </div>
+        }
+      </>)}
     </div>
     <TalentProfile talent={talentObj} onBack={onBack} onNavigate={()=>{}} session={session} myProfile={myProfile} hideBack/>
+  </div>);
+}
+// Single-application decision swiper used by the admin Headshot Catalog shortcut.
+// Mirrors the CD review card's swipe physics (left=reject, up=hold, right=select)
+// plus explicit buttons, so admins can decide on an admin-generated posting
+// straight from the actor's profile without hunting for the casting in Dashboard.
+function AdminRoleDecisionCard({app,talent,busy,onDecide}){
+  const [dx,setDx]=useState(0);const [dy,setDy]=useState(0);const [dr,setDr]=useState(false);
+  const sx=useRef(0);const sy=useRef(0);
+  const status=app.status||"pending";
+  const img=app.selected_photo_url||talent.headshot_url||talent.img||"https://placehold.co/400x500/e5e5e5/999?text=No+Headshot";
+  const name=talent.display_name||talent.email||"Applicant";
+  const horizDom=Math.abs(dx)>Math.abs(dy);
+  const ac=horizDom?(dx>60?"select":dx<-60?"reject":null):(dy<-60?"hold":null);
+  const stColor={selected:"#1d7b44",hold:"#c88900",rejected:"#c0392b",pending:"#2980b9"}[status]||"var(--t3)";
+  const stBg={selected:"rgba(46,204,113,0.15)",hold:"rgba(200,137,0,0.13)",rejected:"rgba(192,57,43,0.12)",pending:"var(--s2)"}[status]||"var(--s2)";
+  const end=()=>{
+    setDr(false);
+    if(Math.abs(dx)>100&&Math.abs(dx)>Math.abs(dy)){if(dx>0)onDecide('select');else onDecide('reject');}
+    else if(dy<-90){onDecide('hold');}
+    setDx(0);setDy(0);
+  };
+  return(<div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+    <div className="swipe-card-wrap">
+      <div className="s-card"
+        style={{transform:`translate(${dx}px, ${Math.min(dy,0)}px) rotate(${dx*.035}deg)`,transition:dr?"none":"transform .35s cubic-bezier(.34,1.56,.64,1)",zIndex:2,cursor:dr?"grabbing":"grab"}}
+        onPointerDown={e=>{if(busy)return;setDr(true);sx.current=e.clientX;sy.current=e.clientY;}}
+        onPointerMove={e=>{if(dr){setDx(e.clientX-sx.current);setDy(e.clientY-sy.current);}}}
+        onPointerUp={end} onPointerCancel={end}>
+        <div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="reject"?1:0}}>PASS</div>
+        <div className="sw-overlay" style={{color:"#c88900",opacity:ac==="hold"?1:0}}>HOLD</div>
+        <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="select"?1:0}}>SELECT <Ico n="check" s={24}/></div>
+        <img src={img} alt={name} draggable="false"/>
+        <div className="s-card-info">
+          <h3>{name}</h3>
+          <div className="s-card-meta">{[talent.location,talent.union_status].filter(Boolean).join(" · ")||"—"}</div>
+          <div style={{marginTop:8}}><span style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,padding:"3px 9px",borderRadius:99,background:stBg,color:stColor}}>{status}</span></div>
+          {app.cover_note&&<p style={{marginTop:8,fontSize:12,color:"var(--t2)",fontStyle:"italic"}}>"{String(app.cover_note).slice(0,160)}{String(app.cover_note).length>160?"…":""}"</p>}
+        </div>
+      </div>
+    </div>
+    <div className="swipe-btns" style={{opacity:busy?0.6:1,pointerEvents:busy?"none":"auto"}}>
+      <button className="sw-btn pass" onClick={()=>onDecide('reject')} title="Pass (swipe left)"><Ico n="x" s={24}/></button>
+      <button className="sw-btn save" style={{background:"rgba(200,137,0,0.15)",color:"#c88900"}} onClick={()=>onDecide('hold')} title="Hold (swipe up)">⏸</button>
+      <button className="sw-btn yes" onClick={()=>onDecide('select')} title="Select (swipe right)"><Ico n="check" s={24}/></button>
+    </div>
+    <p style={{textAlign:"center",fontSize:11,color:"var(--t3)",marginTop:10}}>Swipe left = pass · swipe up = hold · swipe right = select</p>
   </div>);
 }
 
