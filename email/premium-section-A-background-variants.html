@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="color-scheme" content="light"/>
+<title>Variant A — cinematic background options</title>
+<style>
+@keyframes cs_glow { 0%,100%{opacity:0.55;transform:scale(1);} 50%{opacity:1;transform:scale(1.08);} }
+@keyframes cs_twinkle { 0%,100%{opacity:0.35;} 50%{opacity:1;} }
+@keyframes cs_shimmer { 0%{transform:translateX(-120%) skewX(-18deg);} 60%,100%{transform:translateX(320%) skewX(-18deg);} }
+@keyframes cs_rule { 0%,100%{opacity:0.5;} 50%{opacity:1;} }
+.cs-glow{animation:cs_glow 4.5s ease-in-out infinite;}
+.cs-tw{animation:cs_twinkle 3s ease-in-out infinite;display:inline-block;}
+.cs-tw.d1{animation-delay:0.6s;}
+.cs-rule{animation:cs_rule 4.5s ease-in-out infinite;}
+.cs-btn{position:relative;overflow:hidden;}
+.cs-btn .cs-sweep{position:absolute;top:0;left:0;width:40%;height:100%;background:linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0.55) 50%,rgba(255,255,255,0) 100%);animation:cs_shimmer 3.8s ease-in-out infinite;}
+@media (prefers-reduced-motion: reduce){.cs-glow,.cs-tw,.cs-rule,.cs-btn .cs-sweep{animation:none;}.cs-btn .cs-sweep{display:none;}}
+</style>
+</head>
+<body style="margin:0;padding:0;background:#eceff0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;">
+
+<div style="max-width:640px;margin:0 auto;padding:30px 16px 6px;text-align:center;">
+  <div style="font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#37696A;">Variant A — 3 cinematic backgrounds</div>
+  <div style="font-size:13px;color:#778;margin-top:6px;line-height:1.6;">Same marquee layout, animation, and gold — only the dark backdrop changes from flat black to a graded, two-tone finish.</div>
+</div>
+
+<!-- ══════════ A1 · EMBER THEATER ══════════ -->
+<div style="max-width:640px;margin:0 auto;padding:26px 16px 6px;">
+  <div style="background:#fff;border:1px solid #d8a9a0;border-left:5px solid #7a2b22;border-radius:10px;padding:12px 16px;">
+    <div style="font-size:12px;font-weight:800;letter-spacing:0.5px;color:#8a2f22;text-transform:uppercase;">A1 · Ember Theater</div>
+    <div style="font-size:13px;color:#666;line-height:1.6;margin-top:3px;">Charcoal deepening into warm oxblood at the corners — the red-velvet-and-house-lights feel of a theater. Warm, rich, inviting.</div>
+  </div>
+</div>
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#eceff0;padding:6px 16px 10px;"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 6px 26px rgba(30,10,8,0.4);">
+  <tr><td style="padding:0;background:#160a0a;background:radial-gradient(ellipse at 88% 108%, rgba(140,38,30,0.42) 0%, rgba(140,38,30,0) 52%), radial-gradient(ellipse at 8% 0%, rgba(90,26,22,0.4) 0%, rgba(90,26,22,0) 46%), linear-gradient(158deg,#150b0b 0%,#1d0f0e 46%,#2a1613 100%);">
+    <div style="position:relative;">
+      <div class="cs-glow" style="position:absolute;top:-40px;left:50%;margin-left:-190px;width:380px;height:260px;background:radial-gradient(ellipse at center, rgba(240,207,122,0.4) 0%, rgba(226,183,60,0.10) 40%, rgba(0,0,0,0) 70%);pointer-events:none;"></div>
+      <div style="position:relative;padding:44px 34px 38px;border-top:1px solid rgba(226,183,60,0.4);">
+        <div style="text-align:center;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:#eaca8c;margin-bottom:16px;"><span class="cs-tw">&#9733;</span> &nbsp;Now Showing&nbsp; <span class="cs-tw d1">&#9733;</span></div>
+          <h2 style="margin:0 0 10px;font-size:30px;font-weight:800;color:#fff5e6;letter-spacing:-0.5px;line-height:1.15;">CastSlate <span style="color:#f2d488;">Premium</span></h2>
+          <div class="cs-rule" style="width:52px;height:2px;background:linear-gradient(90deg,transparent,#e2b73c,transparent);margin:0 auto 18px;"></div>
+          <p style="margin:0 auto 26px;font-size:14.5px;line-height:1.7;color:#cbb3a6;max-width:400px;">Step into the version of your career where nothing holds you back.</p>
+        </div>
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.15);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#f5ece0;font-size:15px;font-weight:600;">Unlimited submissions <span style="color:#a58f82;font-weight:400;">— every role, no weekly cap</span></td></tr></table></td></tr>
+          <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.15);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#f5ece0;font-size:15px;font-weight:600;">Manager Mode <span style="color:#a58f82;font-weight:400;">— a weekly check-in in your corner</span></td></tr></table></td></tr>
+          <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.15);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#f5ece0;font-size:15px;font-weight:600;">Monthly NYC events <span style="color:#a58f82;font-weight:400;">— meet CDs in person</span></td></tr></table></td></tr>
+          <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.15);border-bottom:1px solid rgba(226,183,60,0.15);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#f5ece0;font-size:15px;font-weight:600;">Actor Card + QR <span style="color:#a58f82;font-weight:400;">— your whole profile in one scan</span></td></tr></table></td></tr>
+        </table>
+        <div style="text-align:center;margin-top:30px;">
+          <a href="#" class="cs-btn" style="display:inline-block;background:linear-gradient(90deg,#f4d987,#d9a92e);color:#241a05;text-decoration:none;padding:16px 48px;border-radius:40px;font-weight:800;font-size:15.5px;letter-spacing:0.3px;box-shadow:0 0 28px rgba(226,183,60,0.5),0 8px 20px rgba(0,0,0,0.4);"><span class="cs-sweep"></span>Unlock Premium &rarr;</a>
+          <p style="margin:16px 0 0;font-size:12px;letter-spacing:1px;color:#8f7c6d;">$9.99 / MONTH &middot; CANCEL ANYTIME</p>
+        </div>
+      </div>
+    </div>
+  </td></tr>
+</table>
+</td></tr></table>
+
+
+<!-- ══════════ A2 · PETROL NOIR ══════════ -->
+<div style="max-width:640px;margin:0 auto;padding:26px 16px 6px;">
+  <div style="background:#fff;border:1px solid #a7c6c6;border-left:5px solid #0d1e22;border-radius:10px;padding:12px 16px;">
+    <div style="font-size:12px;font-weight:800;letter-spacing:0.5px;color:#164b4d;text-transform:uppercase;">A2 · Petrol Noir</div>
+    <div style="font-size:13px;color:#666;line-height:1.6;margin-top:3px;">Deep desaturated teal-green graduating into near-black — film-noir mood that quietly nods to CastSlate's brand teal. Sophisticated, cohesive with the header.</div>
+  </div>
+</div>
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#eceff0;padding:6px 16px 10px;"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 6px 26px rgba(6,20,22,0.45);">
+  <tr><td style="padding:0;background:#0a1418;background:radial-gradient(ellipse at 90% 106%, rgba(45,120,120,0.30) 0%, rgba(45,120,120,0) 50%), radial-gradient(ellipse at 6% 4%, rgba(30,70,72,0.42) 0%, rgba(30,70,72,0) 46%), linear-gradient(160deg,#08151a 0%,#0c2024 50%,#0f2a2e 100%);">
+    <div style="position:relative;">
+      <div class="cs-glow" style="position:absolute;top:-40px;left:50%;margin-left:-190px;width:380px;height:260px;background:radial-gradient(ellipse at center, rgba(240,207,122,0.36) 0%, rgba(226,183,60,0.09) 40%, rgba(0,0,0,0) 70%);pointer-events:none;"></div>
+      <div style="position:relative;padding:44px 34px 38px;border-top:1px solid rgba(226,183,60,0.38);">
+        <div style="text-align:center;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:#e6c98a;margin-bottom:16px;"><span class="cs-tw">&#9733;</span> &nbsp;Now Showing&nbsp; <span class="cs-tw d1">&#9733;</span></div>
+          <h2 style="margin:0 0 10px;font-size:30px;font-weight:800;color:#f4f8f7;letter-spacing:-0.5px;line-height:1.15;">CastSlate <span style="color:#f0cf7a;">Premium</span></h2>
+          <div class="cs-rule" style="width:52px;height:2px;background:linear-gradient(90deg,transparent,#e2b73c,transparent);margin:0 auto 18px;"></div>
+          <p style="margin:0 auto 26px;font-size:14.5px;line-height:1.7;color:#a7bcbd;max-width:400px;">Step into the version of your career where nothing holds you back.</p>
+        </div>
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Unlimited submissions <span style="color:#8ba4a4;font-weight:400;">— every role, no weekly cap</span></td></tr></table></td></tr>
+          <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Manager Mode <span style="color:#8ba4a4;font-weight:400;">— a weekly check-in in your corner</span></td></tr></table></td></tr>
+          <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Monthly NYC events <span style="color:#8ba4a4;font-weight:400;">— meet CDs in person</span></td></tr></table></td></tr>
+          <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);border-bottom:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Actor Card + QR <span style="color:#8ba4a4;font-weight:400;">— your whole profile in one scan</span></td></tr></table></td></tr>
+        </table>
+        <div style="text-align:center;margin-top:30px;">
+          <a href="#" class="cs-btn" style="display:inline-block;background:linear-gradient(90deg,#f4d987,#d9a92e);color:#241a05;text-decoration:none;padding:16px 48px;border-radius:40px;font-weight:800;font-size:15.5px;letter-spacing:0.3px;box-shadow:0 0 28px rgba(226,183,60,0.5),0 8px 20px rgba(0,0,0,0.4);"><span class="cs-sweep"></span>Unlock Premium &rarr;</a>
+          <p style="margin:16px 0 0;font-size:12px;letter-spacing:1px;color:#7c8f8f;">$9.99 / MONTH &middot; CANCEL ANYTIME</p>
+        </div>
+      </div>
+    </div>
+  </td></tr>
+</table>
+</td></tr></table>
+
+
+<!-- ══════════ A3 · AGED BRONZE ══════════ -->
+<div style="max-width:640px;margin:0 auto;padding:26px 16px 6px;">
+  <div style="background:#fff;border:1px solid #cbb083;border-left:5px solid #6b4e1f;border-radius:10px;padding:12px 16px;">
+    <div style="font-size:12px;font-weight:800;letter-spacing:0.5px;color:#7a5a1e;text-transform:uppercase;">A3 · Aged Bronze</div>
+    <div style="font-size:13px;color:#666;line-height:1.6;margin-top:3px;">Warm espresso-brown with bronze undertones and a soft corner vignette — the look of aged film and old leather. The most luxurious, "heritage" feel of the three.</div>
+  </div>
+</div>
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#eceff0;padding:6px 16px 30px;"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 6px 26px rgba(24,16,6,0.45);">
+  <tr><td style="padding:0;background:#150f07;background:radial-gradient(ellipse at 50% 118%, rgba(120,86,34,0.30) 0%, rgba(120,86,34,0) 55%), radial-gradient(ellipse at 100% 0%, rgba(80,58,24,0.4) 0%, rgba(80,58,24,0) 44%), linear-gradient(160deg,#140e07 0%,#1e160c 48%,#241a0d 100%);">
+    <div style="position:relative;">
+      <div class="cs-glow" style="position:absolute;top:-40px;left:50%;margin-left:-190px;width:380px;height:260px;background:radial-gradient(ellipse at center, rgba(233,190,110,0.4) 0%, rgba(200,150,60,0.10) 40%, rgba(0,0,0,0) 70%);pointer-events:none;"></div>
+      <div style="position:relative;padding:44px 34px 38px;border-top:1px solid rgba(226,183,60,0.42);">
+        <div style="text-align:center;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:#e8c88a;margin-bottom:16px;"><span class="cs-tw">&#9733;</span> &nbsp;Now Showing&nbsp; <span class="cs-tw d1">&#9733;</span></div>
+          <h2 style="margin:0 0 10px;font-size:30px;font-weight:800;color:#fbf2df;letter-spacing:-0.5px;line-height:1.15;">CastSlate <span style="color:#f0cf7a;">Premium</span></h2>
+          <div class="cs-rule" style="width:52px;height:2px;background:linear-gradient(90deg,transparent,#e2b73c,transparent);margin:0 auto 18px;"></div>
+          <p style="margin:0 auto 26px;font-size:14.5px;line-height:1.7;color:#c3b393;max-width:400px;">Step into the version of your career where nothing holds you back.</p>
+        </div>
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.16);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#f6eeda;font-size:15px;font-weight:600;">Unlimited submissions <span style="color:#a3906c;font-weight:400;">— every role, no weekly cap</span></td></tr></table></td></tr>
+          <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.16);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#f6eeda;font-size:15px;font-weight:600;">Manager Mode <span style="color:#a3906c;font-weight:400;">— a weekly check-in in your corner</span></td></tr></table></td></tr>
+          <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.16);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#f6eeda;font-size:15px;font-weight:600;">Monthly NYC events <span style="color:#a3906c;font-weight:400;">— meet CDs in person</span></td></tr></table></td></tr>
+          <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.16);border-bottom:1px solid rgba(226,183,60,0.16);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#f6eeda;font-size:15px;font-weight:600;">Actor Card + QR <span style="color:#a3906c;font-weight:400;">— your whole profile in one scan</span></td></tr></table></td></tr>
+        </table>
+        <div style="text-align:center;margin-top:30px;">
+          <a href="#" class="cs-btn" style="display:inline-block;background:linear-gradient(90deg,#f4d987,#d9a92e);color:#241a05;text-decoration:none;padding:16px 48px;border-radius:40px;font-weight:800;font-size:15.5px;letter-spacing:0.3px;box-shadow:0 0 28px rgba(226,183,60,0.5),0 8px 20px rgba(0,0,0,0.4);"><span class="cs-sweep"></span>Unlock Premium &rarr;</a>
+          <p style="margin:16px 0 0;font-size:12px;letter-spacing:1px;color:#8c7c58;">$9.99 / MONTH &middot; CANCEL ANYTIME</p>
+        </div>
+      </div>
+    </div>
+  </td></tr>
+</table>
+</td></tr></table>
+
+</body></html>
