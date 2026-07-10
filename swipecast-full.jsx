@@ -2198,6 +2198,40 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .msg-bubble .msg-del-btn{display:none;align-items:center;justify-content:center;}
 .msg-bubble:hover .msg-del-btn{display:flex;}
 .msg-del-btn:hover{color:#c0392b !important;border-color:#c0392b !important;}
+.cs-thread-modal{width:min(1060px,94vw);height:min(760px,92vh);max-width:none!important;max-height:92vh!important;display:flex;flex-direction:column;padding:0!important;overflow:hidden;background:#fff!important;border-radius:18px!important;}
+.cs-thread-header{display:flex;align-items:center;gap:14px;padding:18px 22px;border-bottom:1px solid #ececf1;background:#fbfbfd;flex-shrink:0;}
+.cs-thread-context{background:#f7f7fa;border-bottom:1px solid #ececf1;padding:10px 22px;flex-shrink:0;}
+.cs-thread-body{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);flex:1;min-height:0;background:#fff;}
+.cs-thread-timeline{overflow-y:auto;padding:18px;background:#fff;border-right:1px solid #ececf1;min-height:0;}
+.cs-thread-compose-panel{background:#fbfbfd;padding:18px;display:flex;flex-direction:column;min-width:0;min-height:0;}
+.cs-thread-compose-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
+.cs-thread-compose-title{font-size:15px;font-weight:800;color:#111;}
+.cs-thread-composer-input{flex:1!important;min-height:360px!important;background:#fff!important;border:1px solid #d9d9df!important;border-radius:16px!important;font-size:14px!important;line-height:1.5!important;padding:15px!important;resize:none!important;}
+.cs-thread-composer-input:focus{border-color:#0a84ff!important;box-shadow:0 0 0 3px rgba(10,132,255,.13)!important;}
+.cs-thread-sendbar{display:flex;gap:10px;align-items:center;margin-top:12px;}
+.cs-thread-sendbar .btn-p{background:#0a84ff;border-radius:14px;min-width:128px;}
+.cs-thread-hint{font-size:10px;color:var(--t3);margin-top:7px;letter-spacing:.3px;}
+.cs-thread-day{display:block;text-align:center;margin:14px 0 12px;font-size:11px;color:#9b9ba3;font-weight:600;}
+.cs-thread-row{display:flex;margin-bottom:8px;}
+.cs-thread-row.mine{justify-content:flex-end;}
+.cs-thread-row.theirs{justify-content:flex-start;}
+.cs-thread-stack{max-width:86%;display:flex;flex-direction:column;gap:3px;}
+.cs-thread-stack.mine{align-items:flex-end;}
+.cs-thread-stack.theirs{align-items:flex-start;}
+.cs-thread-meta{font-size:11px;color:#9b9ba3;padding:0 4px;}
+.cs-thread-bubble{position:relative;border-radius:20px;padding:10px 14px;font-size:14px;line-height:1.45;white-space:pre-wrap;word-break:break-word;}
+.cs-thread-bubble.mine{background:#0a84ff;color:#fff;border-bottom-right-radius:5px;}
+.cs-thread-bubble.theirs{background:#e9e9eb;color:#111;border-bottom-left-radius:5px;}
+@media(max-width:760px){
+  .cs-thread-modal{width:96vw;height:90vh;border-radius:14px!important;}
+  .cs-thread-header{padding:14px;}
+  .cs-thread-context{padding:10px 14px;}
+  .cs-thread-body{display:flex;flex-direction:column;}
+  .cs-thread-timeline{border-right:0;border-bottom:1px solid #ececf1;flex:1;padding:14px;}
+  .cs-thread-compose-panel{flex-shrink:0;padding:14px;max-height:46%;}
+  .cs-thread-composer-input{min-height:180px!important;}
+  .cs-thread-stack{max-width:92%;}
+}
 /* ─── Featured castings slider — track-translate carousel.
        Every casting is rendered in a single flex track. The track translates
        horizontally so the active card lands in the stage centre, producing a
@@ -13287,9 +13321,9 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
   };
 
   return(<div className="modal-overlay" onClick={()=>!busy&&!deleting&&onClose()}>
-    <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column",padding:0,overflow:"hidden"}}>
+    <div className="modal cs-thread-modal" onClick={e=>e.stopPropagation()}>
       {/* Header — back button, counterparty info, delete-conversation (admin only) */}
-      <div style={{display:"flex",alignItems:"center",gap:14,padding:"18px 22px",borderBottom:"1px solid var(--bdr)",flexShrink:0}}>
+      <div className="cs-thread-header">
         <button className="btn-s btn-sm" onClick={onClose} disabled={busy||deleting}>←</button>
         {cpIsCasting
           ? <DirectorChairAvatar size={44}/>
@@ -13303,7 +13337,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
           )}
         <div style={{minWidth:0,flex:1}}>
           <div
-            style={{fontWeight:800,fontSize:15,letterSpacing:"-0.2px",lineHeight:1.2,cursor:canOpenProfile?"pointer":"default"}}
+            style={{fontWeight:800,fontSize:15,lineHeight:1.2,cursor:canOpenProfile?"pointer":"default"}}
             onClick={()=>{if(canOpenProfile)onViewProfile({...cp,id:cp.id,name:cpName,display_name:cpName,img:cp.headshot_url||"",type:"Talent"});}}
           >{cpName}</div>
           <div style={{fontSize:10,letterSpacing:1,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,marginTop:3}}>{cpTypeLabel}</div>
@@ -13312,63 +13346,66 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
       </div>
 
       {/* Casting context strip — sticky-feeling block under the header */}
-      {castingCtx?.casting&&<div style={{background:"var(--s2)",borderBottom:"1px solid var(--bdr)",padding:"10px 22px",flexShrink:0}}>
+      {castingCtx?.casting&&<div className="cs-thread-context">
         <div style={{fontSize:9,letterSpacing:1.2,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,marginBottom:2}}>Related casting</div>
         <div style={{fontSize:13,fontWeight:700,color:"var(--t1)"}}>{(()=>{const canOpenCasting=!!onViewCasting&&!!castingCtx.casting.id;return <span onClick={()=>{if(canOpenCasting){onViewCasting(castingCtx.casting.id);onClose();}}} style={{cursor:canOpenCasting?"pointer":"default",color:canOpenCasting?"var(--acc)":"var(--t1)",textDecoration:canOpenCasting?"underline":"none"}} title={canOpenCasting?"View this casting":undefined}>{castingCtx.casting.title||"Casting"}</span>;})()}{castingCtx.role?.name?<span style={{color:"var(--t2)",fontWeight:500}}> · {castingCtx.role.name}</span>:null} <span style={{color:"var(--t3)",fontWeight:500,fontSize:12}}>· {[castingCtx.casting.prod,castingCtx.casting.location].filter(Boolean).join(" · ")}</span></div>
       </div>}
 
-      {/* Chronological timeline — oldest top, newest bottom. Day separators on date change. */}
-      <div ref={scrollRef} style={{flex:1,overflowY:"auto",padding:"18px 22px",background:"var(--s1)",minHeight:240}}>
-        {thread.length===0?<CastSlateLoader size="inline" text="Loading conversation…"/>:
-         (() => {
-           // Group by day for friendly date separators
-           let lastDay="";
-           return thread.map(m=>{
-             const mine=m.from_id===sessionUid;
-             const dt=new Date(m.created_at);
-             const day=dt.toDateString();
-             const showSeparator=day!==lastDay;
-             lastDay=day;
-             const today=new Date().toDateString();
-             const yesterday=new Date(Date.now()-86400000).toDateString();
-             const dayLabel=day===today?"Today":day===yesterday?"Yesterday":dt.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:dt.getFullYear()!==new Date().getFullYear()?"numeric":undefined});
-             const time=dt.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
-             const fromLabel=mine?"You":cpName;
-             return(<div key={m.id}>
-               {showSeparator&&<div style={{textAlign:"center",margin:"14px 0 12px",fontSize:10,letterSpacing:1.2,textTransform:"uppercase",color:"var(--t3)",fontWeight:700}}>{dayLabel}</div>}
-               <div style={{display:"flex",justifyContent:mine?"flex-end":"flex-start",marginBottom:8}}>
-                 <div style={{maxWidth:"82%",display:"flex",flexDirection:"column",alignItems:mine?"flex-end":"flex-start",gap:3}}>
-                   <div style={{fontSize:10,fontWeight:700,letterSpacing:0.4,color:"var(--t3)",textTransform:"uppercase",padding:"0 4px"}}>{fromLabel} · {time}</div>
-                   <div className="msg-bubble" style={{background:mine?"var(--acc)":"#fff",color:mine?"#fff":"var(--t1)",border:mine?"none":"1px solid var(--bdr)",padding:"10px 14px",borderRadius:14,fontSize:14,lineHeight:1.5,whiteSpace:"pre-wrap",wordBreak:"break-word"}}>
-                     {m.body}
-                     {isAdmin&&<button onClick={()=>deleteOne(m.id)} title="Delete this message" className="msg-del-btn" style={{position:"absolute",top:-8,[mine?"left":"right"]:-8,width:22,height:22,borderRadius:"50%",border:"1px solid var(--bdr)",background:"#fff",color:"var(--t3)",fontSize:11,cursor:"pointer",padding:0}}><Ico n="x" s={24}/></button>}
+      <div className="cs-thread-body">
+        {/* Chronological timeline — oldest top, newest bottom. Day separators on date change. */}
+        <div ref={scrollRef} className="cs-thread-timeline">
+          {thread.length===0?<CastSlateLoader size="inline" text="Loading conversation…"/>:
+           (() => {
+             // Group by day for friendly date separators
+             let lastDay="";
+             return thread.map(m=>{
+               const mine=m.from_id===sessionUid;
+               const dt=new Date(m.created_at);
+               const day=dt.toDateString();
+               const showSeparator=day!==lastDay;
+               lastDay=day;
+               const today=new Date().toDateString();
+               const yesterday=new Date(Date.now()-86400000).toDateString();
+               const dayLabel=day===today?"Today":day===yesterday?"Yesterday":dt.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:dt.getFullYear()!==new Date().getFullYear()?"numeric":undefined});
+               const time=dt.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+               const fromLabel=mine?"You":cpName;
+               return(<div key={m.id}>
+                 {showSeparator&&<div className="cs-thread-day">{dayLabel}</div>}
+                 <div className={`cs-thread-row ${mine?"mine":"theirs"}`}>
+                   <div className={`cs-thread-stack ${mine?"mine":"theirs"}`}>
+                     <div className="cs-thread-meta">{fromLabel} · {time}</div>
+                     <div className={`msg-bubble cs-thread-bubble ${mine?"mine":"theirs"}`}>
+                       {m.body}
+                       {isAdmin&&<button onClick={()=>deleteOne(m.id)} title="Delete this message" className="msg-del-btn" style={{position:"absolute",top:-8,[mine?"left":"right"]:-8,width:22,height:22,borderRadius:"50%",border:"1px solid var(--bdr)",background:"#fff",color:"var(--t3)",fontSize:11,cursor:"pointer",padding:0}}><Ico n="x" s={24}/></button>}
+                     </div>
+                     {m.to_id===sessionUid&&!m.read_at&&<span style={{fontSize:9,fontWeight:800,color:"#0a84ff",letterSpacing:1,padding:"0 4px"}}>NEW</span>}
                    </div>
-                   {m.to_id===sessionUid&&!m.read_at&&<span style={{fontSize:9,fontWeight:800,color:"var(--acc)",letterSpacing:1,padding:"0 4px"}}>NEW</span>}
                  </div>
-               </div>
-             </div>);
-           });
-         })()
-        }
-      </div>
+               </div>);
+             });
+           })()
+          }
+        </div>
 
-      {/* Reply composer — pinned to bottom of the modal */}
-      <div style={{borderTop:"1px solid var(--bdr)",padding:"14px 22px",background:"var(--s1)",flexShrink:0}}>
-        {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"8px 12px",borderRadius:8,fontSize:12,marginBottom:10}}>{err}</div>}
-        <div style={{display:"flex",gap:10,alignItems:"flex-end"}}>
+        {/* Reply composer — large split-panel editor on desktop, stacked on mobile */}
+        <div className="cs-thread-compose-panel">
+          {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"8px 12px",borderRadius:8,fontSize:12,marginBottom:10}}>{err}</div>}
+          <div className="cs-thread-compose-head">
+            <div className="cs-thread-compose-title">Reply to {(cpName.split(" ")[0]||cpName).trim()}</div>
+          </div>
           <textarea
-            className="textarea"
-            rows="2"
+            className="textarea cs-thread-composer-input"
             placeholder={`Reply to ${cpName.split(" ")[0]||cpName}…`}
             value={reply}
             onChange={e=>setReply(e.target.value)}
             disabled={busy||deleting}
             onKeyDown={e=>{if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){e.preventDefault();sendReply();}}}
-            style={{flex:1,minHeight:46,resize:"vertical"}}
           />
-          <button className="btn-p" onClick={sendReply} disabled={busy||deleting||!reply.trim()} style={{whiteSpace:"nowrap",height:46}}>{busy?"Sending…":"Send"}</button>
+          <div className="cs-thread-sendbar">
+            <div className="cs-thread-hint" style={{flex:1}}>Press ⌘/Ctrl+Enter to send</div>
+            <button className="btn-p" onClick={sendReply} disabled={busy||deleting||!reply.trim()} style={{whiteSpace:"nowrap",height:46,display:"inline-flex",alignItems:"center",justifyContent:"center",gap:6}}><Ico n="send" s={16}/>{busy?"Sending…":"Send Reply"}</button>
+          </div>
         </div>
-        <p style={{fontSize:10,color:"var(--t3)",marginTop:6,letterSpacing:0.3}}>Press ⌘/Ctrl+Enter to send</p>
       </div>
     </div>
   </div>);
