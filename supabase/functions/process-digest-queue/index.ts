@@ -535,6 +535,22 @@ serve(async (req) => {
         }
       }
 
+      // ── Suppression list — addresses that hard-bounced or filed a spam complaint
+      //    (populated by the resend-webhook fn) plus manual campaign unsubscribes.
+      //    NEVER email these; re-sending to dead addresses is what drives the
+      //    domain's bounce rate up and risks the whole sender reputation. ──────────
+      const suppressed=new Set<string>();
+      {
+        let from=0;
+        while(true){
+          const{data,error}=await sb.from("email_unsubscribes").select("email").range(from,from+PAGE-1);
+          if(error){ console.error("[digest-queue] suppression load error",error); break; }
+          if(!data?.length) break;
+          data.forEach((r:any)=>{ if(r.email) suppressed.add(String(r.email).trim().toLowerCase()); });
+          if(data.length<PAGE) break; from+=PAGE;
+        }
+      }
+
       // ── Phase 1: decide each user's email — pure in-memory, no per-user network. ─
       interface Out{ userId:string; email:string; subject:string; html:string; ids:string[]; }
       const outbox:Out[]=[];
@@ -551,6 +567,7 @@ serve(async (req) => {
           else if((pf.frequency||"daily")==="off")   skipReason="frequency_off";
           else if(!eligible(pf.frequency||"daily",pf.last_sent_at??null)) skipReason="sent_recently";
           else if(!email)                            skipReason="no_email";
+          else if(suppressed.has(String(email).trim().toLowerCase())) skipReason="suppressed";
 
           if(skipReason){ skipped++; bump(skipReason); addLog({user_id:p.id,email,status:"skipped",reason:skipReason,project_ids_included:[]}); continue; }
 
