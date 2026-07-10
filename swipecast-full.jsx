@@ -23320,9 +23320,15 @@ function AdminEmailDigests(){
 
   const loadAll=async()=>{
     setLoading(true);
-    const[sRes,lRes]=await Promise.all([
+    // Stat cards must count the WHOLE table, not the 100-row preview page below —
+    // computing them from the fetched `ls` slice capped "Total" at 100 and showed
+    // 0 sent / 0 failed whenever the newest 100 rows were all "skipped".
+    const[sRes,lRes,cTotal,cSent,cFailed]=await Promise.all([
       window.sb.from("site_settings").select("digest_emails_enabled,digest_min_projects,digest_send_hour,digest_paused").eq("id",1).maybeSingle(),
-      window.sb.from("email_digest_logs").select("*").order("sent_at",{ascending:false}).limit(100)
+      window.sb.from("email_digest_logs").select("*").order("sent_at",{ascending:false}).limit(100),
+      window.sb.from("email_digest_logs").select("id",{count:"exact",head:true}),
+      window.sb.from("email_digest_logs").select("id",{count:"exact",head:true}).eq("status","sent"),
+      window.sb.from("email_digest_logs").select("id",{count:"exact",head:true}).eq("status","failed")
     ]);
     if(sRes.data){
       const s=sRes.data;
@@ -23337,9 +23343,9 @@ function AdminEmailDigests(){
     const ls=lRes.data||[];
     setLogs(ls);
     setLogStats({
-      total:ls.length,
-      sent:ls.filter(l=>l.status==="sent").length,
-      failed:ls.filter(l=>l.status==="failed").length
+      total:cTotal.count??ls.length,
+      sent:cSent.count??ls.filter(l=>l.status==="sent").length,
+      failed:cFailed.count??ls.filter(l=>l.status==="failed").length
     });
     setLoading(false);
   };
