@@ -204,6 +204,8 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
   const home       = APP_URL;
   const logoImgUrl = `${APP_URL}/logo-email.png`;
   const greetLead  = slot === "evening" ? "Before the day's out" : "Fresh for you today";
+  // Sprocket-hole strip for the cinematic 35mm film-frame header.
+  const filmStrip  = Array.from({length:15}).map(()=>`<span style="display:inline-block;width:14px;height:8px;background:#0e2a2d;border-radius:2px;margin:4px 6px;"></span>`).join("");
 
   const jobsSection = count ? `
 <tr>
@@ -262,23 +264,27 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
 
 <table width="600" cellpadding="0" cellspacing="0" role="presentation" class="shell" style="background:#ffffff;max-width:600px;width:100%;border-radius:18px;overflow:hidden;box-shadow:0 4px 30px rgba(47,95,96,0.15);">
 
-<!-- HEADER — teal gradient + logo -->
+<!-- HEADER — cinematic film-strip banner -->
 <tr>
-  <td class="head-pad" style="background:#4F8A8B;background:linear-gradient(135deg,#2f5f60 0%,#4F8A8B 55%,#5fa0a1 100%);border-top:3px solid #6fb0b1;padding:34px 36px 32px;">
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
-      <td valign="middle" style="width:52px;">
-        <a href="${home}" style="text-decoration:none;"><span style="display:inline-block;background:#ffffff;border-radius:12px;padding:9px;line-height:0;box-shadow:0 4px 14px rgba(0,0,0,0.20);">
-          <img src="${logoImgUrl}" alt="CastSlate" width="30" height="30" style="display:block;border:none;outline:none;"/>
-        </span></a>
-      </td>
-      <td valign="middle" style="padding-left:14px;">
-        <div style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1;">CastSlate</div>
-        <div style="margin-top:4px;font-size:11px;font-weight:600;color:#dff1f1;letter-spacing:2px;text-transform:uppercase;">Get seen. Get cast.</div>
-      </td>
-      <td valign="middle" align="right">
-        <span style="display:inline-block;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.28);color:#f2fbfb;font-size:11px;font-weight:700;letter-spacing:0.5px;padding:5px 13px;border-radius:20px;text-transform:uppercase;">Daily Castings</span>
-      </td>
-    </tr></table>
+  <td style="padding:0;background:#0c1a1c;background:radial-gradient(ellipse 360px 180px at 50% 0%, rgba(240,207,122,0.28) 0%, rgba(226,183,60,0.06) 45%, rgba(12,26,28,0) 75%), linear-gradient(160deg,#0b1e21 0%,#0e2a2d 60%,#103436 100%);border-top:3px solid #e2b73c;">
+    <div style="height:16px;background:#05100f;line-height:0;font-size:0;text-align:center;white-space:nowrap;overflow:hidden;">${filmStrip}</div>
+    <a href="${home}" style="text-decoration:none;display:block;">
+      <div style="padding:26px 34px 24px;text-align:center;">
+        <span style="display:inline-block;vertical-align:middle;background:#ffffff;border-radius:11px;width:42px;height:42px;text-align:center;line-height:42px;box-shadow:0 4px 14px rgba(0,0,0,0.4);">
+          <svg width="25" height="25" viewBox="0 0 24 24" style="vertical-align:middle;">
+            <rect x="2.5" y="9" width="19" height="11" rx="1.6" fill="#0e2a2d"/>
+            <g transform="rotate(-8 3 6)">
+              <rect x="2" y="4.2" width="19.5" height="4.4" rx="0.8" fill="#0e2a2d"/>
+              <path d="M4.5 4.2 L6.6 8.6 M8.4 4.2 L10.5 8.6 M12.3 4.2 L14.4 8.6 M16.2 4.2 L18.3 8.6" stroke="#f0cf7a" stroke-width="1.1"/>
+            </g>
+            <path d="M10.5 12.5 L15 14.5 L10.5 16.5 Z" fill="#e2b73c"/>
+          </svg>
+        </span>
+        <span style="display:inline-block;vertical-align:middle;margin-left:12px;font-size:25px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">Cast<span style="color:#f0cf7a;">Slate</span></span>
+        <div style="margin-top:9px;font-size:10.5px;font-weight:700;color:#cfe0df;letter-spacing:4px;text-transform:uppercase;">&#9733; &nbsp;Daily Castings&nbsp; &#9733;</div>
+      </div>
+    </a>
+    <div style="height:16px;background:#05100f;line-height:0;font-size:0;text-align:center;white-space:nowrap;overflow:hidden;">${filmStrip}</div>
   </td>
 </tr>
 
