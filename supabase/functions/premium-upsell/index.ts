@@ -315,10 +315,13 @@ ${jobsSection}
 }
 
 function subjectFor(slot: string, count: number): string {
+  // Append the NY date so every send has a unique subject — this stops Gmail's
+  // conversation view from collapsing separate daily emails into one thread.
+  const day = new Date().toLocaleDateString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric"});
   if (slot === "evening") {
-    return count ? `Still open tonight: ${count} casting${count!==1?"s":""} for you` : "Tonight's open castings on CastSlate";
+    return count ? `Still open tonight: ${count} casting${count!==1?"s":""} for you — ${day}` : `Tonight's open castings on CastSlate — ${day}`;
   }
-  return count ? `${count} new casting${count!==1?"s":""} matched to you today` : "New castings are waiting on CastSlate";
+  return count ? `${count} new casting match${count!==1?"es":""} for you — ${day}` : `New castings are waiting — ${day}`;
 }
 
 serve(async (req) => {
