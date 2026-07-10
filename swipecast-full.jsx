@@ -21068,6 +21068,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {isSuperAdmin&&<AdminNavLink current={section} target="terms-acceptance" label="Terms Acceptance" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="email-digests" label="Email Digests" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="email-campaigns" label="Email Campaigns" onClick={goToSection}/>}
+      {isSuperAdmin&&<AdminNavLink current={section} target="premium-upsell" label="Premium Upsell" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="monthly-event" label="Monthly Event Email" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="weekly-checkins" label="Weekly Check-Ins" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="manager-mode" label="Manager Mode" onClick={goToSection}/>}
@@ -21103,6 +21104,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="terms-acceptance"&&isSuperAdmin&&<AdminTermsAcceptance session={session}/>}
       {section==="email-digests"&&isSuperAdmin&&<AdminEmailDigests/>}
       {section==="email-campaigns"&&isSuperAdmin&&<AdminEmailCampaigns session={session}/>}
+      {section==="premium-upsell"&&isSuperAdmin&&<AdminPremiumUpsell session={session}/>}
       {section==="monthly-event"&&isSuperAdmin&&<AdminMonthlyEvent session={session}/>}
       {section==="weekly-checkins"&&isSuperAdmin&&<AdminWeeklyCheckIns session={session}/>}
       {section==="manager-mode"&&isSuperAdmin&&<AdminManagerMode session={session}/>}
@@ -23538,6 +23540,241 @@ function AdminEmailDigests(){
                   </td>
                   <td style={{padding:"10px 10px",fontSize:11,color:"var(--t3)",maxWidth:160,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{log.reason||"—"}</td>
                   <td style={{padding:"10px 10px",fontFamily:"monospace",fontSize:11,color:"var(--t3)",maxWidth:140,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{log.provider_message_id||"—"}</td>
+                  <td style={{padding:"10px 10px",fontSize:11,color:"var(--red)",maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{log.error_message||"—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  </>);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN: PREMIUM UPSELL CAMPAIGN
+// Recurring twice-daily "castings + go Premium" email to NON-PREMIUM
+// talent only. On/off toggle, test send (noon/evening), manual run,
+// and separate noon vs evening stat cards (received + unsubscribed).
+// Backed by the `premium-upsell` edge function + premium_upsell_logs.
+// ═══════════════════════════════════════════════════════════════
+function AdminPremiumUpsell({session}){
+  const[loading,setLoading]=useState(true);
+  const[msg,setMsg]=useState("");
+  const[busy,setBusy]=useState(false);
+  const[testEmail,setTestEmail]=useState("");
+  const[testSlot,setTestSlot]=useState("noon");
+  const[form,setForm]=useState({premium_upsell_enabled:true,premium_upsell_paused:false});
+  const[logs,setLogs]=useState([]);
+  const[stats,setStats]=useState({
+    noon:{received:0,failed:0,unsub:0},
+    evening:{received:0,failed:0,unsub:0},
+    optouts:0
+  });
+
+  const showFeedback=(m)=>{setMsg(m);setTimeout(()=>setMsg(""),6000);};
+
+  const loadAll=async()=>{
+    setLoading(true);
+    const dayStart=new Date();dayStart.setHours(0,0,0,0);
+    const todayIso=dayStart.toISOString();
+    const cnt=(q)=>q.then(r=>r.count??0);
+    const base=()=>window.sb.from("premium_upsell_logs").select("id",{count:"exact",head:true});
+    const[sRes,lRes,nRecv,nFail,eRecv,eFail,nUnsub,eUnsub,optouts]=await Promise.all([
+      window.sb.from("site_settings").select("premium_upsell_enabled,premium_upsell_paused").eq("id",1).maybeSingle(),
+      window.sb.from("premium_upsell_logs").select("*").order("sent_at",{ascending:false}).limit(100),
+      cnt(base().eq("slot","noon").eq("status","sent").gte("sent_at",todayIso)),
+      cnt(base().eq("slot","noon").eq("status","failed").gte("sent_at",todayIso)),
+      cnt(base().eq("slot","evening").eq("status","sent").gte("sent_at",todayIso)),
+      cnt(base().eq("slot","evening").eq("status","failed").gte("sent_at",todayIso)),
+      cnt(base().eq("slot","noon").eq("reason","unsubscribe_click")),
+      cnt(base().eq("slot","evening").eq("reason","unsubscribe_click")),
+      cnt(window.sb.from("email_preferences").select("user_id",{count:"exact",head:true}).eq("premium_upsell_optout",true))
+    ]);
+    if(sRes.data){
+      setForm({
+        premium_upsell_enabled:sRes.data.premium_upsell_enabled!==false,
+        premium_upsell_paused:!!sRes.data.premium_upsell_paused
+      });
+    }
+    setLogs(lRes.data||[]);
+    setStats({
+      noon:{received:nRecv,failed:nFail,unsub:nUnsub},
+      evening:{received:eRecv,failed:eFail,unsub:eUnsub},
+      optouts
+    });
+    setLoading(false);
+  };
+  useEffect(()=>{loadAll();},[]);
+
+  const saveSettings=async()=>{
+    setBusy(true);setMsg("");
+    const{error}=await window.sb.from("site_settings").update({
+      premium_upsell_enabled:form.premium_upsell_enabled,
+      premium_upsell_paused:form.premium_upsell_paused,
+      updated_at:new Date().toISOString()
+    }).eq("id",1);
+    if(error)showFeedback("Save failed: "+error.message);
+    else showFeedback("Settings saved.");
+    setBusy(false);
+  };
+
+  const sendTest=async()=>{
+    if(!testEmail){showFeedback("Enter a test email address.");return;}
+    setBusy(true);setMsg("");
+    try{
+      const{data,error}=await window.sb.functions.invoke("premium-upsell",{
+        body:{action:"test",to_email:testEmail,slot:testSlot}
+      });
+      if(error)showFeedback("Test failed: "+error.message);
+      else if(data&&data.error)showFeedback("Test failed: "+data.error);
+      else showFeedback(`Test (${testSlot}) sent to `+testEmail+".");
+    }catch(e){showFeedback("Error: "+e.message);}
+    setBusy(false);
+  };
+
+  const runNow=async(slot)=>{
+    if(!window.confirm(`Send the ${slot} campaign now to all eligible NON-PREMIUM users?`))return;
+    setBusy(true);setMsg("");
+    try{
+      const{data,error}=await window.sb.functions.invoke("premium-upsell",{body:{action:"run",slot}});
+      if(error)showFeedback("Run failed: "+error.message);
+      else if(data&&data.ok===false)showFeedback("Not sent: "+(data.message||"disabled/paused"));
+      else showFeedback(`Done (${slot}) — ${data?.sent||0} sent, ${data?.skipped||0} skipped of ${data?.total_users||0} users.`);
+      loadAll();
+    }catch(e){showFeedback("Error: "+e.message);}
+    setBusy(false);
+  };
+
+  const fmt=(iso)=>{ if(!iso)return"—"; try{return new Date(iso).toLocaleString("en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});}catch(_){return iso;} };
+
+  if(loading)return(<CastSlateLoader size="inline" text="Loading premium upsell settings…"/>);
+
+  const live=form.premium_upsell_enabled&&!form.premium_upsell_paused;
+  const statusColor={sent:"var(--grn)",failed:"var(--red)",skipped:"var(--t3)"};
+  const statusBg={sent:"rgba(27,135,62,0.08)",failed:"rgba(214,59,59,0.08)",skipped:"rgba(141,141,160,0.08)"};
+
+  const SlotCard=({title,time,d})=>(
+    <div className="card" style={{padding:20}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <div style={{fontWeight:800,fontSize:15}}>{title}</div>
+        <span style={{fontSize:11,color:"var(--t3)",fontWeight:600}}>{time}</span>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <div style={{textAlign:"center",padding:"10px 6px",borderRadius:10,background:"rgba(27,135,62,0.07)"}}>
+          <div style={{fontSize:26,fontWeight:800,color:"var(--grn)",lineHeight:1}}>{d.received}</div>
+          <div style={{fontSize:11,color:"var(--t2)",marginTop:5}}>Received today</div>
+        </div>
+        <div style={{textAlign:"center",padding:"10px 6px",borderRadius:10,background:"rgba(214,59,59,0.07)"}}>
+          <div style={{fontSize:26,fontWeight:800,color:"var(--red)",lineHeight:1}}>{d.unsub}</div>
+          <div style={{fontSize:11,color:"var(--t2)",marginTop:5}}>Unsubscribed</div>
+        </div>
+      </div>
+      {d.failed>0&&<div style={{fontSize:11,color:"var(--t3)",marginTop:10,textAlign:"center"}}>{d.failed} failed today</div>}
+    </div>
+  );
+
+  return(<>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Premium Upsell</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Recurring twice-daily email (noon &amp; evening) sent to <strong>non-premium talent only</strong> — today's castings plus a Premium upgrade pitch. When a user upgrades to Premium they're dropped automatically; premium members are never emailed.</p>
+
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,borderLeft:"3px solid var(--acc)"}}>{msg}</div>}
+
+    <div style={{display:"flex",gap:10,marginBottom:20,flexWrap:"wrap"}}>
+      <span style={{padding:"5px 14px",borderRadius:20,fontSize:12,fontWeight:700,
+        background:live?"rgba(27,135,62,0.1)":"rgba(214,59,59,0.1)",
+        color:live?"var(--grn)":"var(--red)"}}>
+        {form.premium_upsell_paused?"⏸ PAUSED":form.premium_upsell_enabled?"● ACTIVE":"○ OFF"}
+      </span>
+    </div>
+
+    {/* Settings */}
+    <div className="card" style={{padding:24,marginBottom:16}}>
+      <div style={{fontWeight:700,fontSize:16,marginBottom:16}}>Campaign Settings</div>
+      <div style={{display:"flex",flexDirection:"column",gap:14}}>
+        <label style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer"}}>
+          <input type="checkbox" checked={form.premium_upsell_enabled}
+            onChange={e=>setForm(f=>({...f,premium_upsell_enabled:e.target.checked}))}
+            style={{accentColor:"var(--acc)",width:16,height:16,marginTop:2}}/>
+          <div>
+            <div style={{fontWeight:600,fontSize:14}}>Enable premium upsell campaign</div>
+            <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>Master switch. When on, the noon &amp; evening cron sends run automatically. When off, nothing sends.</div>
+          </div>
+        </label>
+        <label style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer"}}>
+          <input type="checkbox" checked={form.premium_upsell_paused}
+            onChange={e=>setForm(f=>({...f,premium_upsell_paused:e.target.checked}))}
+            style={{accentColor:"#e85454",width:16,height:16,marginTop:2}}/>
+          <div>
+            <div style={{fontWeight:600,fontSize:14,color:form.premium_upsell_paused?"var(--red)":"inherit"}}>Pause sending</div>
+            <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>Emergency stop — halts both slots without turning the campaign off.</div>
+          </div>
+        </label>
+      </div>
+      <button className="btn-p btn-sm" style={{marginTop:18}} disabled={busy} onClick={saveSettings}>
+        {busy?"Saving…":"Save Settings"}
+      </button>
+    </div>
+
+    {/* Test + manual controls */}
+    <div className="card" style={{padding:24,marginBottom:16}}>
+      <div style={{fontWeight:700,fontSize:16,marginBottom:14}}>Test &amp; Manual Send</div>
+      <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:14}}>
+        <input className="input" type="email" placeholder="you@example.com"
+          value={testEmail} onChange={e=>setTestEmail(e.target.value)}
+          onKeyDown={e=>e.key==="Enter"&&sendTest()} style={{width:220}}/>
+        <select className="input" value={testSlot} onChange={e=>setTestSlot(e.target.value)} style={{width:130}}>
+          <option value="noon">Noon version</option>
+          <option value="evening">Evening version</option>
+        </select>
+        <button className="btn-s btn-sm" disabled={busy} onClick={sendTest}>Send Test</button>
+      </div>
+      <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
+        <button className="btn-p btn-sm" disabled={busy||!live} onClick={()=>runNow("noon")} style={{opacity:live?1:0.5}} title={live?undefined:"Enable + unpause first"}>Run Noon Now</button>
+        <button className="btn-p btn-sm" disabled={busy||!live} onClick={()=>runNow("evening")} style={{opacity:live?1:0.5}} title={live?undefined:"Enable + unpause first"}>Run Evening Now</button>
+      </div>
+      <div style={{color:"var(--t3)",fontSize:12,marginTop:12}}>
+        "Send Test" emails a preview (no logging, doesn't touch recipients). "Run Now" sends the real campaign to all eligible non-premium users immediately.
+      </div>
+    </div>
+
+    {/* Stats — noon vs evening */}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12,marginBottom:8}}>
+      <SlotCard title="☀️ Noon" time="16:00 UTC" d={stats.noon}/>
+      <SlotCard title="🌙 Evening" time="22:00 UTC" d={stats.evening}/>
+    </div>
+    <div style={{fontSize:12,color:"var(--t3)",marginBottom:16,textAlign:"center"}}>
+      {stats.optouts} total unsubscribed from this campaign · "Received"/"failed" reset each day · "Unsubscribed" is cumulative
+    </div>
+
+    {/* Logs */}
+    <div className="card" style={{padding:24}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        <div style={{fontWeight:700,fontSize:16}}>Recent Sends</div>
+        <button className="btn-s btn-sm" onClick={loadAll}>Refresh</button>
+      </div>
+      {logs.length===0?(
+        <div style={{color:"var(--t3)",fontSize:13,padding:"28px 0",textAlign:"center"}}>No sends logged yet. Run a slot or wait for the next scheduled send.</div>
+      ):(
+        <div style={{overflowX:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+            <thead>
+              <tr style={{borderBottom:"2px solid var(--bdr)"}}>
+                {["Sent At","Slot","Email","Status","Reason","Error"].map(h=>(
+                  <th key={h} style={{textAlign:"left",padding:"8px 10px",fontWeight:700,color:"var(--t2)",whiteSpace:"nowrap"}}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {logs.map(log=>(
+                <tr key={log.id} style={{borderBottom:"1px solid var(--bdr)"}}>
+                  <td style={{padding:"10px 10px",whiteSpace:"nowrap",fontSize:12}}>{fmt(log.sent_at)}</td>
+                  <td style={{padding:"10px 10px",fontSize:12,textTransform:"capitalize"}}>{log.slot}</td>
+                  <td style={{padding:"10px 10px",fontSize:11,color:"var(--t2)",maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{log.email||"—"}</td>
+                  <td style={{padding:"10px 10px"}}>
+                    <span style={{background:statusBg[log.status]||"transparent",color:statusColor[log.status]||"var(--t1)",padding:"2px 8px",borderRadius:5,fontSize:11,fontWeight:700,textTransform:"uppercase"}}>{log.status}</span>
+                  </td>
+                  <td style={{padding:"10px 10px",fontSize:11,color:"var(--t3)",maxWidth:160,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{log.reason||"—"}</td>
                   <td style={{padding:"10px 10px",fontSize:11,color:"var(--red)",maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{log.error_message||"—"}</td>
                 </tr>
               ))}
