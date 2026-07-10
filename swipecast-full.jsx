@@ -13379,6 +13379,15 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
                        {isAdmin&&<button onClick={()=>deleteOne(m.id)} title="Delete this message" className="msg-del-btn" style={{position:"absolute",top:-8,[mine?"left":"right"]:-8,width:22,height:22,borderRadius:"50%",border:"1px solid var(--bdr)",background:"#fff",color:"var(--t3)",fontSize:11,cursor:"pointer",padding:0}}><Ico n="x" s={24}/></button>}
                      </div>
                      {m.to_id===sessionUid&&!m.read_at&&<span style={{fontSize:9,fontWeight:800,color:"#0a84ff",letterSpacing:1,padding:"0 4px"}}>NEW</span>}
+                     {/* Admin-only read receipt. Only on admin-generated castings, only for
+                         messages the admin SENT, and only once the actor has truly opened the
+                         thread (their read_at is stamped by bulkMarkRead). Talent never see any
+                         receipt on messages they send — this whole block is gated behind isAdmin. */}
+                     {isAdmin&&castingCtx?.casting?.is_admin_created&&mine&&(
+                       m.read_at
+                         ? <span style={{fontSize:9,fontWeight:800,color:"#0f9d8f",letterSpacing:0.6,padding:"0 4px",display:"inline-flex",alignItems:"center",gap:3}}><Ico n="checks" s={13}/>Read by user</span>
+                         : <span style={{fontSize:9,fontWeight:700,color:"var(--t3)",letterSpacing:0.6,padding:"0 4px",display:"inline-flex",alignItems:"center",gap:3}}><Ico n="check" s={12}/>Sent</span>
+                     )}
                    </div>
                  </div>
                </div>);
