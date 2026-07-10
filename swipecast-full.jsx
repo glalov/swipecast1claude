@@ -23320,15 +23320,17 @@ function AdminEmailDigests(){
 
   const loadAll=async()=>{
     setLoading(true);
-    // Stat cards must count the WHOLE table, not the 100-row preview page below —
-    // computing them from the fetched `ls` slice capped "Total" at 100 and showed
-    // 0 sent / 0 failed whenever the newest 100 rows were all "skipped".
+    // Stat cards show TODAY's totals (admin's local day) counted over the WHOLE
+    // table via head:true count queries — NOT the 100-row preview slice below,
+    // which capped "Total" at 100 and read 0/0 when the newest rows were skipped.
+    const dayStart=new Date();dayStart.setHours(0,0,0,0);
+    const todayIso=dayStart.toISOString();
     const[sRes,lRes,cTotal,cSent,cFailed]=await Promise.all([
       window.sb.from("site_settings").select("digest_emails_enabled,digest_min_projects,digest_send_hour,digest_paused").eq("id",1).maybeSingle(),
       window.sb.from("email_digest_logs").select("*").order("sent_at",{ascending:false}).limit(100),
-      window.sb.from("email_digest_logs").select("id",{count:"exact",head:true}),
-      window.sb.from("email_digest_logs").select("id",{count:"exact",head:true}).eq("status","sent"),
-      window.sb.from("email_digest_logs").select("id",{count:"exact",head:true}).eq("status","failed")
+      window.sb.from("email_digest_logs").select("id",{count:"exact",head:true}).gte("sent_at",todayIso),
+      window.sb.from("email_digest_logs").select("id",{count:"exact",head:true}).eq("status","sent").gte("sent_at",todayIso),
+      window.sb.from("email_digest_logs").select("id",{count:"exact",head:true}).eq("status","failed").gte("sent_at",todayIso)
     ]);
     if(sRes.data){
       const s=sRes.data;
@@ -23493,9 +23495,9 @@ function AdminEmailDigests(){
     {/* Stats */}
     <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:16}}>
       {[
-        {label:"Total Logged",val:logStats.total,color:"var(--acc)"},
-        {label:"Sent Successfully",val:logStats.sent,color:"var(--grn)"},
-        {label:"Failed",val:logStats.failed,color:"var(--red)"}
+        {label:"Logged Today",val:logStats.total,color:"var(--acc)"},
+        {label:"Sent Today",val:logStats.sent,color:"var(--grn)"},
+        {label:"Failed Today",val:logStats.failed,color:"var(--red)"}
       ].map(({label,val,color})=>(
         <div key={label} className="card" style={{padding:18,textAlign:"center"}}>
           <div style={{fontSize:30,fontWeight:800,color,lineHeight:1}}>{val}</div>
