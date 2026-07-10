@@ -128,6 +128,27 @@ function matches(prefs: any, c: any): boolean {
   return true;
 }
 
+// Age safety-filter. A casting is age-appropriate when the actor's age is unknown,
+// the casting has no roles, or at least one role's age range covers the actor.
+// Roles with no / "Any" / unparseable range count as covering — we only EXCLUDE a
+// casting when every role has a real numeric range and none of them fit. This stops
+// e.g. a 24-year-old receiving a casting whose roles are all 50+.
+function roleCoversAge(ageRange: any, age: number): boolean {
+  if(!ageRange) return true;
+  const s=String(ageRange).toLowerCase().replace(/[–—]/g,"-");
+  const nums=(s.match(/\d+/g)||[]).map(Number);
+  if(nums.length===0) return true;               // "Any", "All ages", etc.
+  if(s.includes("+")) return age>=nums[0];        // "18+", "All ages 18+"
+  if(nums.length>=2){ const lo=Math.min(nums[0],nums[1]), hi=Math.max(nums[0],nums[1]); return age>=lo&&age<=hi; }
+  return true;                                    // single loose number → be lenient
+}
+function castingAgeOk(c: any, age: number|null|undefined): boolean {
+  if(!age || age<=0) return true;                 // no age on file → don't filter
+  const roles=c.roles||[];
+  if(!roles.length) return true;
+  return roles.some((r:any)=>roleCoversAge(r.age_range,age));
+}
+
 // Green-tile casting card — matches the approved preview design.
 function card(c: any): string {
   const roles = (c.roles||[]).slice(0,2);
@@ -200,7 +221,7 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
 </tr>`;
 
   const headline = count
-    ? (count===1 ? "A fresh role matched to you" : `${count} fresh roles matched to you`)
+    ? (count===1 ? "A fresh casting for you today" : `${count} fresh castings for you today`)
     : "New castings are waiting";
   const sub = count
     ? "Review them, then submit while the roles are still open — casting moves fast."
@@ -321,7 +342,7 @@ function subjectFor(slot: string, count: number): string {
   if (slot === "evening") {
     return count ? `Still open tonight: ${count} casting${count!==1?"s":""} for you — ${day}` : `Tonight's open castings on CastSlate — ${day}`;
   }
-  return count ? `${count} new casting match${count!==1?"es":""} for you — ${day}` : `New castings are waiting — ${day}`;
+  return count ? `${count} new casting${count!==1?"s":""} for you — ${day}` : `New castings are waiting — ${day}`;
 }
 
 serve(async (req) => {
@@ -399,7 +420,7 @@ serve(async (req) => {
       const PAGE=1000; let from=0;
       while(true){
         const{data,error}=await sb.from("profiles")
-          .select("id,display_name,notification_email,membership_status")
+          .select("id,display_name,notification_email,membership_status,age")
           .in("user_type",["talent","actor"])
           .eq("account_status","active")
           .eq("visible",true)
@@ -488,7 +509,7 @@ serve(async (req) => {
       if(skipReason){ skipped++; bump(skipReason); logs.push({user_id:p.id,email,slot,status:"skipped",reason:skipReason}); continue; }
 
       // Personalized job cards (best-effort; email still sends with 0 matches).
-      const pool=cwr.filter((c:any)=>matches(pf,c));
+      const pool=cwr.filter((c:any)=>matches(pf,c) && castingAgeOk(c,p.age));
       const batch=shuffle(pool.slice()).slice(0,JOB_CAP);
       const first=(p.display_name??"").split(" ")[0].trim()||"there";
       outbox.push({ userId:p.id, email, subject:subjectFor(slot,batch.length), html:buildEmail(first,batch,p.id,slot) });
