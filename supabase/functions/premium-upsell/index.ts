@@ -223,17 +223,15 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
   .hl{font-size:23px !important;}
   .foot-pad{padding:22px 20px 26px !important;}
 }
-/* Motion — animates in Apple Mail / iOS Mail; other clients show the static design. */
-@keyframes cs_glow{0%,100%{opacity:0.55;transform:scale(1);}50%{opacity:1;transform:scale(1.08);}}
-@keyframes cs_twinkle{0%,100%{opacity:0.35;}50%{opacity:1;}}
-@keyframes cs_shimmer{0%{transform:translateX(-120%) skewX(-18deg);}60%,100%{transform:translateX(320%) skewX(-18deg);}}
-@keyframes cs_rule{0%,100%{opacity:0.5;}50%{opacity:1;}}
-.cs-glow{animation:cs_glow 4.5s ease-in-out infinite;}
+/* Motion — animates in Apple Mail / iOS Mail; other clients show the static design.
+   The glow is baked into the section BACKGROUND (not a positioned layer) so it
+   renders identically in Gmail/Outlook, which strip position. */
+@keyframes cs_twinkle{0%,100%{opacity:0.4;}50%{opacity:1;}}
+@keyframes cs_rule{0%,100%{opacity:0.55;}50%{opacity:1;}}
 .cs-tw{animation:cs_twinkle 3s ease-in-out infinite;}
 .cs-tw.d1{animation-delay:0.6s;}
 .cs-rule{animation:cs_rule 4.5s ease-in-out infinite;}
-.cs-sweep{animation:cs_shimmer 3.8s ease-in-out infinite;}
-@media (prefers-reduced-motion: reduce){.cs-glow,.cs-tw,.cs-rule,.cs-sweep{animation:none !important;}}
+@media (prefers-reduced-motion: reduce){.cs-tw,.cs-rule{animation:none !important;}}
 </style>
 </head>
 <body style="margin:0;padding:0;background:#f0f4f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;">
@@ -274,29 +272,24 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
 
 ${jobsSection}
 
-<!-- PREMIUM UPSELL — Petrol Noir cinematic marquee (animated where supported) -->
+<!-- PREMIUM UPSELL — Petrol Noir cinematic marquee (glow baked into background) -->
 <tr>
-  <td style="padding:0;background:#0a1418;background:radial-gradient(ellipse at 90% 106%, rgba(45,120,120,0.30) 0%, rgba(45,120,120,0) 50%), radial-gradient(ellipse at 6% 4%, rgba(30,70,72,0.42) 0%, rgba(30,70,72,0) 46%), linear-gradient(160deg,#08151a 0%,#0c2024 50%,#0f2a2e 100%);">
-    <div style="position:relative;">
-      <div class="cs-glow" style="position:absolute;top:-40px;left:50%;margin-left:-190px;width:380px;height:260px;background:radial-gradient(ellipse at center, rgba(240,207,122,0.36) 0%, rgba(226,183,60,0.09) 40%, rgba(0,0,0,0) 70%);pointer-events:none;"></div>
-      <div class="prem-pad" style="position:relative;padding:44px 34px 38px;border-top:1px solid rgba(226,183,60,0.38);">
-        <div style="text-align:center;">
-          <div style="font-size:11px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:#e6c98a;margin-bottom:16px;"><span class="cs-tw">&#9733;</span> &nbsp;Now Showing&nbsp; <span class="cs-tw d1">&#9733;</span></div>
-          <h2 style="margin:0 0 10px;font-size:29px;font-weight:800;color:#f4f8f7;letter-spacing:-0.5px;line-height:1.15;">CastSlate <span style="color:#f0cf7a;">Premium</span></h2>
-          <div class="cs-rule" style="width:52px;height:2px;background:linear-gradient(90deg,transparent,#e2b73c,transparent);margin:0 auto 18px;"></div>
-          <p style="margin:0 auto 26px;font-size:14.5px;line-height:1.7;color:#a7bcbd;max-width:410px;">Step into the version of your career where nothing holds you back.</p>
-        </div>
-        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-          <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Unlimited submissions <span style="color:#8ba4a4;font-weight:400;">&mdash; apply to every role, no weekly cap</span></td></tr></table></td></tr>
-          <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Manager Mode <span style="color:#8ba4a4;font-weight:400;">&mdash; a weekly check-in in your corner</span></td></tr></table></td></tr>
-          <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Monthly NYC events <span style="color:#8ba4a4;font-weight:400;">&mdash; meet casting directors in person</span></td></tr></table></td></tr>
-          <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);border-bottom:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Actor Card + QR <span style="color:#8ba4a4;font-weight:400;">&mdash; your whole profile in one scan</span></td></tr></table></td></tr>
-        </table>
-        <div style="text-align:center;margin-top:30px;">
-          <a href="${upgrade}" style="display:inline-block;position:relative;overflow:hidden;background:linear-gradient(90deg,#f4d987,#d9a92e);color:#241a05;text-decoration:none;padding:16px 48px;border-radius:40px;font-weight:800;font-size:15.5px;letter-spacing:0.3px;box-shadow:0 0 28px rgba(226,183,60,0.5),0 8px 20px rgba(0,0,0,0.4);"><span class="cs-sweep" style="position:absolute;top:0;left:0;width:40%;height:100%;transform:translateX(-120%) skewX(-18deg);background:linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0.55) 50%,rgba(255,255,255,0) 100%);"></span>Unlock Premium &rarr;</a>
-          <p style="margin:16px 0 0;font-size:12px;letter-spacing:1px;color:#7c8f8f;">$9.99 / MONTH &middot; CANCEL ANYTIME</p>
-        </div>
-      </div>
+  <td class="prem-pad" style="padding:40px 34px 40px;border-top:3px solid #e2b73c;background:#0a1418;background:radial-gradient(ellipse 440px 300px at 50% -6%, rgba(240,207,122,0.30) 0%, rgba(226,183,60,0.08) 40%, rgba(10,20,24,0) 72%), radial-gradient(ellipse at 94% 112%, rgba(45,120,120,0.26) 0%, rgba(45,120,120,0) 54%), linear-gradient(160deg,#08151a 0%,#0c2024 52%,#0f2a2e 100%);">
+    <div style="text-align:center;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:#e6c98a;margin-bottom:16px;"><span class="cs-tw">&#9733;</span> &nbsp;Now Showing&nbsp; <span class="cs-tw d1">&#9733;</span></div>
+      <h2 style="margin:0 0 10px;font-size:29px;font-weight:800;color:#f4f8f7;letter-spacing:-0.5px;line-height:1.15;">CastSlate <span style="color:#f0cf7a;">Premium</span></h2>
+      <div class="cs-rule" style="width:52px;height:2px;background:linear-gradient(90deg,transparent,#e2b73c,transparent);margin:0 auto 18px;font-size:0;line-height:0;">&nbsp;</div>
+      <p style="margin:0 auto 26px;font-size:14.5px;line-height:1.7;color:#a7bcbd;max-width:410px;">Step into the version of your career where nothing holds you back.</p>
+    </div>
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+      <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Unlimited submissions <span style="color:#8ba4a4;font-weight:400;">&mdash; apply to every role, no weekly cap</span></td></tr></table></td></tr>
+      <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Manager Mode <span style="color:#8ba4a4;font-weight:400;">&mdash; a weekly check-in in your corner</span></td></tr></table></td></tr>
+      <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Monthly NYC events <span style="color:#8ba4a4;font-weight:400;">&mdash; meet casting directors in person</span></td></tr></table></td></tr>
+      <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);border-bottom:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Actor Card + QR <span style="color:#8ba4a4;font-weight:400;">&mdash; your whole profile in one scan</span></td></tr></table></td></tr>
+    </table>
+    <div style="text-align:center;margin-top:30px;">
+      <a href="${upgrade}" style="display:inline-block;background:linear-gradient(90deg,#f4d987,#d9a92e);color:#241a05;text-decoration:none;padding:16px 48px;border-radius:40px;font-weight:800;font-size:15.5px;letter-spacing:0.3px;box-shadow:0 0 26px rgba(226,183,60,0.45),0 8px 20px rgba(0,0,0,0.4);">Unlock Premium &rarr;</a>
+      <p style="margin:16px 0 0;font-size:12px;letter-spacing:1px;color:#7c8f8f;">$9.99 / MONTH &middot; CANCEL ANYTIME</p>
     </div>
   </td>
 </tr>
