@@ -113,6 +113,46 @@ async function sendEmail(a: SendEmailArgs): Promise<SendEmailResult> {
   return { ok:false, id:null, err:await r.text(), status:r.status };
 }
 
+// Send MANY emails per request via Resend's batch endpoint (up to 100 messages
+// in one call). This is what keeps the daily run under the Edge Function wall
+// clock: instead of one HTTP call + a 550ms sleep PER user (which capped the run
+// at ~100 recipients before the 150s timeout), a 2,000-user list becomes ~20
+// calls. Results come back in the SAME order as the input array. Non-Resend
+// providers fall back to serial sends so the function still works if the
+// EMAIL_PROVIDER pin is ever reverted.
+async function sendBatch(items: SendEmailArgs[]): Promise<SendEmailResult[]> {
+  if (EMAIL_PROVIDER === "resend" && RESEND_API_KEY) {
+    // deno-lint-ignore no-explicit-any
+    const payload = items.map((a) => {
+      const o: any = { from:a.from, to:a.to, subject:a.subject, html:a.html };
+      if (a.text) o.text = a.text;
+      if (a.replyTo) o.reply_to = a.replyTo;
+      return o;
+    });
+    try {
+      const r = await fetch("https://api.resend.com/emails/batch", {
+        method:"POST",
+        headers:{ Authorization:`Bearer ${RESEND_API_KEY}`, "Content-Type":"application/json" },
+        body:JSON.stringify(payload),
+      });
+      if (r.ok) {
+        const d = await r.json().catch(()=>({}));
+        // deno-lint-ignore no-explicit-any
+        const arr: any[] = Array.isArray((d as any)?.data) ? (d as any).data : [];
+        return items.map((_, i) => ({ ok:true, id: arr[i]?.id ?? null, err:null, status:r.status }));
+      }
+      const errText = await r.text();
+      return items.map(() => ({ ok:false, id:null, err:errText, status:r.status }));
+    } catch (e) {
+      return items.map(() => ({ ok:false, id:null, err:String(e), status:500 }));
+    }
+  }
+  // Fallback for ses/sender: serial, throttled to ~2 req/s.
+  const out: SendEmailResult[] = [];
+  for (const a of items) { out.push(await sendEmail(a)); await new Promise((r)=>setTimeout(r,550)); }
+  return out;
+}
+
 function ago(iso: string): string {
   const h = Math.floor((Date.now()-new Date(iso).getTime())/3600000);
   const d = Math.floor(h/24);
@@ -343,11 +383,6 @@ serve(async (req) => {
     const{action,to_email}=body;
     const sb=createClient(SUPABASE_URL,SUPABASE_SERVICE_KEY);
 
-    // Non-fatal logging helper — a logging failure must never abort the run.
-    const logRow=async(row:Record<string,unknown>)=>{
-      try{ await sb.from("email_digest_logs").insert(row); }catch(e){ console.error("[digest-queue] log insert failed",e); }
-    };
-
     if(action==="test"){
       if(!to_email) return res({error:"to_email required"},400);
       const today=new Date().toISOString().slice(0,10);
@@ -447,7 +482,62 @@ serve(async (req) => {
       const skipReasons:Record<string,number>={};
       const errs:string[]=[];
       const bump=(reason:string)=>{ skipReasons[reason]=(skipReasons[reason]||0)+1; };
+      const shuffle=(arr:any[])=>{ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; };
+      const PAGE=1000;
 
+      // Accumulate log rows in memory and bulk-insert at the end. The old code did
+      // one awaited INSERT per user (plus 2 reads + a 550ms sleep per user) — that
+      // per-user network cost is exactly what made the run hit the ~150s Edge
+      // Function wall clock at ~100 recipients and silently drop everyone after.
+      const logs:Record<string,unknown>[]=[];
+      const addLog=(row:Record<string,unknown>)=>{ logs.push(row); };
+
+      // ── Bulk-load, ONCE, what each user has already been emailed. Bounded to the
+      //    current active-casting pool (cids) so this stays small even for accounts
+      //    with years of history — we only need to know which of TODAY's castings
+      //    a user has seen. ───────────────────────────────────────────────────────
+      const histMap:Record<string,Set<string>>={};
+      for(let ui=0; ui<uids.length; ui+=500){
+        const uchunk=uids.slice(ui,ui+500);
+        for(let ci=0; ci<cids.length; ci+=200){
+          const cchunk=cids.slice(ci,ci+200);
+          let from=0;
+          while(true){
+            const{data,error}=await sb.from("user_casting_email_history")
+              .select("user_id,casting_id").in("user_id",uchunk).in("casting_id",cchunk).range(from,from+PAGE-1);
+            if(error){ console.error("[digest-queue] history page error",error); break; }
+            if(!data?.length) break;
+            data.forEach((h:any)=>{ (histMap[h.user_id]??=new Set<string>()).add(h.casting_id); });
+            if(data.length<PAGE) break; from+=PAGE;
+          }
+        }
+      }
+
+      // ── Bulk-load each user's LAST sent batch (to exclude it so today differs).
+      //    Digest is daily, so the last batch is within a day — a 3-day window keeps
+      //    this tiny. First row per user (ordered newest-first) is their last batch. ─
+      const lastMap:Record<string,Set<string>>={};
+      {
+        const since=new Date(Date.now()-3*86400000).toISOString();
+        for(let i=0;i<uids.length;i+=500){
+          const uchunk=uids.slice(i,i+500);
+          let from=0;
+          while(true){
+            const{data,error}=await sb.from("email_digest_logs")
+              .select("user_id,project_ids_included,sent_at").in("user_id",uchunk)
+              .eq("status","sent").gte("sent_at",since)
+              .order("sent_at",{ascending:false}).range(from,from+PAGE-1);
+            if(error){ console.error("[digest-queue] last-batch page error",error); break; }
+            if(!data?.length) break;
+            data.forEach((r:any)=>{ if(!lastMap[r.user_id]) lastMap[r.user_id]=new Set((r.project_ids_included||[]) as string[]); });
+            if(data.length<PAGE) break; from+=PAGE;
+          }
+        }
+      }
+
+      // ── Phase 1: decide each user's email — pure in-memory, no per-user network. ─
+      interface Out{ userId:string; email:string; subject:string; html:string; ids:string[]; }
+      const outbox:Out[]=[];
       for(const p of profiles){
         const email=emailMap[p.id]||null;
         try{
@@ -462,7 +552,7 @@ serve(async (req) => {
           else if(!eligible(pf.frequency||"daily",pf.last_sent_at??null)) skipReason="sent_recently";
           else if(!email)                            skipReason="no_email";
 
-          if(skipReason){ skipped++; bump(skipReason); await logRow({user_id:p.id,email,status:"skipped",reason:skipReason,project_ids_included:[]}); continue; }
+          if(skipReason){ skipped++; bump(skipReason); addLog({user_id:p.id,email,status:"skipped",reason:skipReason,project_ids_included:[]}); continue; }
 
           // ── Pick this user's castings ───────────────────────────────────────
           //    The digest must keep going out DAILY for the life of the account —
@@ -474,51 +564,58 @@ serve(async (req) => {
           //      4. shuffle so the daily mix varies,
           //    and we only skip when the pool is genuinely empty.
           const pool=cwr.filter((c:any)=>matches(pf,c));
-          if(pool.length<1){ skipped++; bump("no_matches"); await logRow({user_id:p.id,email,status:"skipped",reason:"no_matches",project_ids_included:[]}); continue; }
+          if(pool.length<1){ skipped++; bump("no_matches"); addLog({user_id:p.id,email,status:"skipped",reason:"no_matches",project_ids_included:[]}); continue; }
 
-          let sentIds=new Set<string>();
-          try{
-            const{data:hist}=await sb.from("user_casting_email_history").select("casting_id").eq("user_id",p.id);
-            sentIds=new Set((hist||[]).map((h:any)=>h.casting_id));
-          }catch(e){ console.error("[digest-queue] history fetch failed",p.id,e); }
-
-          let lastIds=new Set<string>();
-          try{
-            const{data:last}=await sb.from("email_digest_logs").select("project_ids_included").eq("user_id",p.id).eq("status","sent").order("sent_at",{ascending:false}).limit(1).maybeSingle();
-            lastIds=new Set(((last?.project_ids_included)||[]) as string[]);
-          }catch(e){ console.error("[digest-queue] last-batch fetch failed",p.id,e); }
-
-          const shuffle=(arr:any[])=>{ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; };
+          const sentIds=histMap[p.id]??new Set<string>();
+          const lastIds=lastMap[p.id]??new Set<string>();
           const fresh=shuffle(pool.filter((c:any)=>!sentIds.has(c.id)));
           const recycled=shuffle(pool.filter((c:any)=>sentIds.has(c.id)&&!lastIds.has(c.id)));
           let candidates=[...fresh,...recycled];
           if(candidates.length<1) candidates=shuffle(pool.slice());
 
-          // ── Send INLINE (direct to Resend/SES — no per-user sub-invocation). ──
           const batch=candidates.slice(0,cap);
           const first=(p.display_name??"").split(" ")[0].trim()||"there";
           const count=batch.length;
           const subject=count===1?"1 new casting match on CastSlate":`${count} new casting matches on CastSlate`;
-          const html=buildEmail(first,batch,p.id,count);
-          const r=await sendEmail({from:FROM_EMAIL,to:[email],replyTo:CONTACT_EMAIL,subject,html});
-
-          if(r.ok){
-            sent++;
-            await logRow({user_id:p.id,email,status:"sent",reason:`Sent ${count} match${count!==1?"es":""}`,provider_message_id:r.id,project_ids_included:batch.map((c:any)=>c.id)});
-            // Record what they've seen + stamp last_sent_at (UPSERT so the daily
-            // gate holds even when the user has no email_preferences row yet).
-            await sb.from("user_casting_email_history").upsert(batch.map((c:any)=>({user_id:p.id,casting_id:c.id})),{onConflict:"user_id,casting_id",ignoreDuplicates:true});
-            await sb.from("email_preferences").upsert({user_id:p.id,last_sent_at:new Date().toISOString(),updated_at:new Date().toISOString()},{onConflict:"user_id"});
-          }else{
-            failed++; errs.push(`${p.id}: ${r.err}`);
-            await logRow({user_id:p.id,email,status:"failed",reason:"Email send failed",error_message:r.err,project_ids_included:batch.map((c:any)=>c.id)});
-          }
+          outbox.push({ userId:p.id, email, subject, html:buildEmail(first,batch,p.id,count), ids:batch.map((c:any)=>c.id) });
         }catch(e){
           failed++; errs.push(`${p.id}: ${String(e)}`);
-          await logRow({user_id:p.id,email,status:"failed",reason:"unexpected_error",error_message:String(e),project_ids_included:[]});
+          addLog({user_id:p.id,email,status:"failed",reason:"unexpected_error",error_message:String(e),project_ids_included:[]});
         }
-        // Respect Resend's rate limit (~2 req/s) — direct sends, no invoke overhead.
-        await new Promise(r=>setTimeout(r,550));
+      }
+
+      // ── Phase 2: send in batches of 100 via Resend's batch endpoint, then bulk
+      //    upsert history + last_sent_at per batch. ~20 calls for 2,000 users. ─────
+      const BATCH=100;
+      for(let i=0;i<outbox.length;i+=BATCH){
+        const group=outbox.slice(i,i+BATCH);
+        const results=await sendBatch(group.map((o)=>({from:FROM_EMAIL,to:[o.email],replyTo:CONTACT_EMAIL,subject:o.subject,html:o.html})));
+        const okHistory:{user_id:string;casting_id:string}[]=[];
+        const okPrefs:any[]=[];
+        const nowIso=new Date().toISOString();
+        group.forEach((o,idx)=>{
+          const r=results[idx];
+          if(r?.ok){
+            sent++;
+            addLog({user_id:o.userId,email:o.email,status:"sent",reason:`Sent ${o.ids.length} match${o.ids.length!==1?"es":""}`,provider_message_id:r.id,project_ids_included:o.ids});
+            o.ids.forEach((cid)=>okHistory.push({user_id:o.userId,casting_id:cid}));
+            okPrefs.push({user_id:o.userId,last_sent_at:nowIso,updated_at:nowIso});
+          }else{
+            failed++; errs.push(`${o.userId}: ${r?.err}`);
+            addLog({user_id:o.userId,email:o.email,status:"failed",reason:"Email send failed",error_message:r?.err,project_ids_included:o.ids});
+          }
+        });
+        // Record what was seen + stamp last_sent_at (UPSERT so the daily gate holds
+        // even for users who never had an email_preferences row yet).
+        if(okHistory.length){ try{ await sb.from("user_casting_email_history").upsert(okHistory,{onConflict:"user_id,casting_id",ignoreDuplicates:true}); }catch(e){ console.error("[digest-queue] history upsert failed",e); } }
+        if(okPrefs.length){ try{ await sb.from("email_preferences").upsert(okPrefs,{onConflict:"user_id"}); }catch(e){ console.error("[digest-queue] prefs upsert failed",e); } }
+        // One batch call = one request; space them to respect Resend's rate limit.
+        if(i+BATCH<outbox.length) await new Promise((r)=>setTimeout(r,600));
+      }
+
+      // ── Bulk-write all audit logs (chunked). ─────────────────────────────────
+      for(let i=0;i<logs.length;i+=500){
+        try{ await sb.from("email_digest_logs").insert(logs.slice(i,i+500)); }catch(e){ console.error("[digest-queue] bulk log insert failed",e); }
       }
 
       const summary={ok:true,sent,skipped,failed,total_users:profiles.length,skip_reasons:skipReasons,errors:errs.length?errs.slice(0,50):undefined};
