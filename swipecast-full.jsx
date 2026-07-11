@@ -1941,6 +1941,11 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @keyframes abc-pulse{0%,100%{box-shadow:0 0 6px var(--amber);opacity:.75;}50%{box-shadow:0 0 14px var(--amber);opacity:1;}}
 @keyframes abc-btnshine{0%{left:-60%;}55%,100%{left:130%;}}
 @media(prefers-reduced-motion:reduce){.abc-prem,.abc-prem::after,.abc-prem .abc-glow-o,.abc-prem .abc-dot,.abc-prem .abc-cta::before{animation:none!important;}.abc-prem::after{display:none;}}
+/* Premium "Member" status card — dashboard welcome flourish (brand purple). Rendered only for membership_status='active'. */
+.cs-procard{position:relative;overflow:hidden;width:230px;flex:none;border-radius:14px;padding:15px 17px;background:linear-gradient(145deg,#7a4fd6,#4d2a9c 60%,#7a4fd6);box-shadow:0 18px 40px -22px rgba(77,42,156,.6);}
+.cs-procard .cs-pc-edge{position:absolute;inset:0;border-radius:14px;padding:1px;background:linear-gradient(120deg,#a07bff,#ffe9a8,#a07bff);background-size:200% 100%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:cs-pc-edge 6s linear infinite;opacity:.85;pointer-events:none;}
+@keyframes cs-pc-edge{to{background-position:200% 50%;}}
+@media(prefers-reduced-motion:reduce){.cs-procard .cs-pc-edge{animation:none;}}
 /* Free-actor submission-cap upgrade modal — premium dark treatment (fires at 3/3) */
 .capm{width:460px;max-width:92%;max-height:90vh;overflow-y:auto;background:var(--s1);border:1px solid var(--bdr);border-radius:18px;padding:24px;position:relative;box-shadow:0 26px 60px -30px rgba(26,26,46,.55);animation:capm-pop .32s cubic-bezier(.2,.8,.2,1);}
 .capm-cta{position:relative;overflow:hidden;}
@@ -11108,10 +11113,24 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       })()}
 
       {/* ── Welcome header ── */}
-      <div style={{marginBottom:28}}>
-        <div className="section-label">{t('td.title')}</div>
-        <h1 style={{fontWeight:800,fontSize:isMobile?22:30,letterSpacing:-0.8,color:"var(--t1)",marginBottom:6,margin:"0 0 6px",wordBreak:"break-word"}}>Welcome back, {firstName}.</h1>
-        <p style={{color:"var(--t2)",fontSize:15,margin:0}}>Here are the latest updates for your acting profile.</p>
+      <div style={{marginBottom:28,display:"flex",alignItems:isMobile?"stretch":"center",justifyContent:"space-between",gap:20,flexDirection:isMobile?"column":"row"}}>
+        <div style={{minWidth:0}}>
+          <div className="section-label">{t('td.title')}</div>
+          <h1 style={{fontWeight:800,fontSize:isMobile?22:30,letterSpacing:-0.8,color:"var(--t1)",marginBottom:6,margin:"0 0 6px",wordBreak:"break-word"}}>Welcome back, {firstName}.</h1>
+          <p style={{color:"var(--t2)",fontSize:15,margin:0}}>Here are the latest updates for your acting profile.</p>
+        </div>
+        {isPremium&&(
+          <div className="cs-procard" aria-label="Premium member card" style={isMobile?{width:"100%",maxWidth:300}:undefined}>
+            <div className="cs-pc-edge"/>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",position:"relative"}}>
+              <span style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",fontWeight:700,color:"#d6c8f7"}}>CastSlate</span>
+              <span style={{fontSize:10,fontWeight:800,letterSpacing:1.4,color:"#ffe9a8"}}>PRO</span>
+            </div>
+            <div style={{width:25,height:18,borderRadius:4,marginTop:12,background:"linear-gradient(135deg,#ffe9a8,#e6b84e)",position:"relative"}}/>
+            <div style={{marginTop:12,fontSize:15,fontWeight:600,color:"#fff",position:"relative",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{myProfile?.display_name||firstName}</div>
+            <div style={{marginTop:2,fontSize:10,letterSpacing:0.5,color:"#d0c2f2",position:"relative"}}>Member since {(myProfile?.premium_started_at||myProfile?.membership_start_date)?new Date(myProfile.premium_started_at||myProfile.membership_start_date).getFullYear():new Date().getFullYear()}</div>
+          </div>
+        )}
       </div>
 
       {/* ── Quick stats row ── */}
