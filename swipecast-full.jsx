@@ -1946,6 +1946,12 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .cs-procard .cs-pc-edge{position:absolute;inset:0;border-radius:14px;padding:1px;background:linear-gradient(120deg,#a07bff,#ffe9a8,#a07bff);background-size:200% 100%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:cs-pc-edge 6s linear infinite;opacity:.85;pointer-events:none;}
 @keyframes cs-pc-edge{to{background-position:200% 50%;}}
 @media(prefers-reduced-motion:reduce){.cs-procard .cs-pc-edge{animation:none;}}
+/* Public-profile preview → editor "slide back" page transition */
+.cs-slide-out{animation:cs-slide-out-r .2s cubic-bezier(.4,0,1,1) forwards;}
+@keyframes cs-slide-out-r{to{transform:translateX(100%);opacity:0;}}
+.cs-slide-in{animation:cs-slide-in-l .3s cubic-bezier(.22,.7,.2,1);}
+@keyframes cs-slide-in-l{from{transform:translateX(-100%);opacity:.35;}to{transform:none;opacity:1;}}
+@media(prefers-reduced-motion:reduce){.cs-slide-out,.cs-slide-in{animation:none;}}
 /* Free-actor submission-cap upgrade modal — premium dark treatment (fires at 3/3) */
 .capm{width:460px;max-width:92%;max-height:90vh;overflow-y:auto;background:var(--s1);border:1px solid var(--bdr);border-radius:18px;padding:24px;position:relative;box-shadow:0 26px 60px -30px rgba(26,26,46,.55);animation:capm-pop .32s cubic-bezier(.2,.8,.2,1);}
 .capm-cta{position:relative;overflow:hidden;}
@@ -9497,6 +9503,7 @@ function ShowcaseVideoTile({v,onOpen}){
 function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const vpw=useViewportWidth();
   const isMobile=vpw<768;
+  const [slidingBack,setSlidingBack]=useState(false);
   const viewerIsCd=!!myProfile&&(myProfile.user_type==="cd"||myProfile.user_type==="admin"||myProfile.user_type==="super_admin");
   const talentDbId=typeof talent.id==="string"&&/^[0-9a-f]{8}-/i.test(String(talent.id))?talent.id:null;
   const [cdAction,setCdAction]=useState(null);
@@ -9669,11 +9676,11 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
 
   const isOwnProfile=talent?.id&&talent.id===session?.user?.id;
 
-  return(<div className="page">
+  return(<div className={"page"+(slidingBack?" cs-slide-out":"")}>
     {isOwnProfile&&(
       <div style={{background:"#111",border:"1px solid #333",borderRadius:10,padding:"10px 16px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
         <div style={{fontSize:13,color:"#fff",fontWeight:600}}><Ico n="eye" s={22}/> Previewing your public profile — this is how casting directors see you.</div>
-        <button style={{background:"#fff",color:"#111",border:"none",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}} onClick={()=>{if(onNavigate){onNavigate("my-profile");}else if(onBack){onBack();}}}>← Back to Edit Profile</button>
+        <button style={{background:"#fff",color:"#111",border:"none",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}} onClick={()=>{if(slidingBack)return;setSlidingBack(true);try{sessionStorage.setItem('cs_slide_editor','1');}catch(_){}setTimeout(()=>{if(onNavigate){onNavigate("my-profile");}else if(onBack){onBack();}},200);}}>← Back to Edit Profile</button>
       </div>
     )}
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:16,flexWrap:"wrap"}}>
@@ -11120,7 +11127,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           <p style={{color:"var(--t2)",fontSize:15,margin:0}}>Here are the latest updates for your acting profile.</p>
         </div>
         {isPremium&&(
-          <div className="cs-procard" aria-label="Premium member card" style={isMobile?{width:"100%",maxWidth:300}:undefined}>
+          <div className="cs-procard" aria-label="Premium member card">
             <div className="cs-pc-edge"/>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",position:"relative"}}>
               <span style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",fontWeight:700,color:"#d6c8f7"}}>CastSlate</span>
@@ -16540,6 +16547,8 @@ function CastMeAsSection({talentId}){
 function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onViewCastingById}){
   const vpw=useViewportWidth();
   const isMobile=vpw<768;
+  const [slideIn,setSlideIn]=useState(false); // slide editor in when returning from public-profile preview
+  useEffect(()=>{try{if(sessionStorage.getItem('cs_slide_editor')){sessionStorage.removeItem('cs_slide_editor');setSlideIn(true);}}catch(_){}},[]);
   const profileInitializedRef=useRef(false); // prevent focus/reload from wiping form state
   const [tab,setTab]=useState("profile");
   const [saving,setSaving]=useState(false);
@@ -16917,7 +16926,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     items.splice(toIdx,0,moved);
     setShowcaseOrder(items.map(item=>({type:item.type,id:item.id})));
   };
-  return(<div className="page page-wide">
+  return(<div className={"page page-wide"+(slideIn?" cs-slide-in":"")}>
     {msg&&<div style={{background:"rgba(46,204,113,0.12)",border:"1px solid rgba(46,204,113,0.3)",color:"#1d7b44",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{msg}</div>}
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
 
