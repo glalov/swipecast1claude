@@ -204,8 +204,8 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
   const home       = APP_URL;
   const logoImgUrl = `${APP_URL}/logo-email.png`;
   const greetLead  = slot === "evening" ? "Before the day's out" : "Fresh for you today";
-  // Sprocket-hole strip for the cinematic 35mm film-frame header.
-  const filmStrip  = Array.from({length:15}).map(()=>`<span style="display:inline-block;width:14px;height:8px;background:#1c5052;border-radius:2px;margin:3.5px 6px;"></span>`).join("");
+  // Sprocket-hole strip for the cinematic 35mm film-frame header (light holes on a teal bar).
+  const filmStrip  = Array.from({length:15}).map(()=>`<span style="display:inline-block;width:14px;height:8px;background:#eaf3f3;border-radius:2px;margin:3px 6px;"></span>`).join("");
 
   const jobsSection = count ? `
 <tr>
@@ -264,33 +264,31 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
 
 <table width="600" cellpadding="0" cellspacing="0" role="presentation" class="shell" style="background:#ffffff;max-width:600px;width:100%;border-radius:18px;overflow:hidden;box-shadow:0 4px 30px rgba(47,95,96,0.15);">
 
-<!-- HEADER — 3C marquee: film tape + gold frame + logo + amber glow -->
+<!-- HEADER — W1 bright white banner: amber frame + film tape + logo -->
 <tr>
-  <td style="padding:0;background:#153f41;background:radial-gradient(ellipse 380px 260px at 50% 16%, rgba(245,215,135,0.58) 0%, rgba(230,185,70,0.18) 42%, rgba(21,63,65,0) 72%), linear-gradient(155deg,#14403f 0%,#1c5052 55%,#215a5c 100%);border-top:3px solid #e2b73c;">
-    <div style="height:15px;background:#06110f;line-height:0;font-size:0;text-align:center;white-space:nowrap;overflow:hidden;">${filmStrip}</div>
+  <td style="padding:0;background:#ffffff;border-top:4px solid #e2b73c;">
+    <div style="height:14px;background:#2c5f60;line-height:0;font-size:0;text-align:center;white-space:nowrap;overflow:hidden;">${filmStrip}</div>
     <a href="${home}" style="text-decoration:none;display:block;">
       <div style="padding:12px 14px 14px;">
-        <div style="border:1px solid rgba(240,207,122,0.4);border-radius:12px;padding:24px 20px 22px;text-align:center;">
-          <span style="display:inline-block;padding:6px;border-radius:16px;background:rgba(245,215,135,0.15);border:1px solid rgba(240,207,122,0.55);line-height:0;">
-            <img src="${logoImgUrl}" alt="CastSlate" width="48" height="48" style="display:block;border-radius:11px;box-shadow:0 4px 16px rgba(0,0,0,0.45);border:none;outline:none;"/>
+        <div style="border:1.5px solid #f0dca8;border-radius:12px;padding:22px 20px 20px;text-align:center;">
+          <span style="display:inline-block;padding:5px;border-radius:15px;background:#fbf3dd;border:1px solid #eccf86;line-height:0;">
+            <img src="${logoImgUrl}" alt="CastSlate" width="46" height="46" style="display:block;border-radius:11px;box-shadow:0 3px 12px rgba(120,100,40,0.22);border:none;outline:none;"/>
           </span>
-          <div style="margin-top:13px;font-size:26px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">Cast<span style="color:#f4d788;">Slate</span></div>
-          <div style="width:46px;height:2px;background:linear-gradient(90deg,transparent,#e2b73c,transparent);margin:11px auto 11px;font-size:0;line-height:0;">&nbsp;</div>
-          <div style="font-size:10.5px;font-weight:700;color:#e6d6a8;letter-spacing:5px;text-transform:uppercase;">&#9733; &nbsp;Daily Castings&nbsp; &#9733;</div>
+          <div style="margin-top:12px;font-size:26px;font-weight:800;color:#2f5f60;letter-spacing:-0.5px;">Cast<span style="color:#d9a92e;">Slate</span></div>
+          <div style="width:46px;height:2px;background:linear-gradient(90deg,transparent,#e2b73c,transparent);margin:10px auto 10px;font-size:0;line-height:0;">&nbsp;</div>
+          <div style="font-size:10.5px;font-weight:800;color:#c8901a;letter-spacing:5px;text-transform:uppercase;">&#9733; &nbsp;Daily Castings&nbsp; &#9733;</div>
         </div>
       </div>
     </a>
-    <div style="height:15px;background:#06110f;line-height:0;font-size:0;text-align:center;white-space:nowrap;overflow:hidden;">${filmStrip}</div>
+    <div style="height:14px;background:#2c5f60;line-height:0;font-size:0;text-align:center;white-space:nowrap;overflow:hidden;">${filmStrip}</div>
   </td>
 </tr>
 
-<!-- STUDIO STRIP — A24 / Neon / Netflix on teal tint -->
+<!-- STUDIO STRIP — A24 / Neon / Netflix (muted charcoal) on teal tint -->
 <tr>
-  <td style="background:#eef5f5;padding:18px 20px 16px;text-align:center;border-bottom:1px solid #dce9e9;">
-    <div style="font-size:10px;font-weight:700;letter-spacing:2.4px;text-transform:uppercase;color:#6f9a9a;margin-bottom:9px;">Casting across every format</div>
-    <div style="font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:24px;letter-spacing:-0.5px;">
-      <span style="color:#0A0A0A;">A24</span> <span style="color:#b7c8c8;font-weight:400;">&middot;</span> <span style="color:#FF2D6F;">Neon</span> <span style="color:#b7c8c8;font-weight:400;">&middot;</span> <span style="color:#E50914;">Netflix</span>
-    </div>
+  <td style="background:#eef5f5;padding:16px 20px 14px;text-align:center;border-bottom:1px solid #dce9e9;border-top:1px solid #f0f3f3;">
+    <div style="font-size:10px;font-weight:700;letter-spacing:2.4px;text-transform:uppercase;color:#6f9a9a;margin-bottom:8px;">Casting across every format</div>
+    <div style="font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:23px;letter-spacing:-0.5px;color:#39474a;">A24 <span style="color:#aebcbc;font-weight:400;">&middot;</span> Neon <span style="color:#aebcbc;font-weight:400;">&middot;</span> Netflix</div>
   </td>
 </tr>
 
