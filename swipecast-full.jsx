@@ -9673,7 +9673,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     {isOwnProfile&&(
       <div style={{background:"#111",border:"1px solid #333",borderRadius:10,padding:"10px 16px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
         <div style={{fontSize:13,color:"#fff",fontWeight:600}}><Ico n="eye" s={22}/> Previewing your public profile — this is how casting directors see you.</div>
-        <button style={{background:"#fff",color:"#111",border:"none",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}} onClick={onBack}>← Back to Edit Profile</button>
+        <button style={{background:"#fff",color:"#111",border:"none",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}} onClick={()=>{if(onNavigate){onNavigate("my-profile");}else if(onBack){onBack();}}}>← Back to Edit Profile</button>
       </div>
     )}
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:16,flexWrap:"wrap"}}>
