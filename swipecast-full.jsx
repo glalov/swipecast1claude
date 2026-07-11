@@ -10625,6 +10625,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const uid=session?.user?.id;
   const isPremium=myProfile?.membership_status==="active";
   const firstName=(myProfile?.display_name||"").split(" ")[0]||"there";
+  const [navSliding,setNavSliding]=useState(false);
+  const slideToEditor=()=>{if(navSliding)return;setNavSliding(true);try{sessionStorage.setItem('cs_slide_editor','1');}catch(_){}setTimeout(()=>onNavigate("my-profile"),200);};
 
   const [applications,setApplications]=useState([]);
   const [appsLoading,setAppsLoading]=useState(true);
@@ -11087,7 +11089,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   }
 
   return(
-    <div className="td-dash-outer">
+    <div className={"td-dash-outer"+(navSliding?" cs-slide-out":"")}>
 
       {/* ── Payment Required urgent banner — shown when a booking is approved and awaiting payment ── */}
       {(()=>{
@@ -11642,7 +11644,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 <p style={{fontSize:13,color:"var(--t2)",margin:0}}>Your profile is visible to casting directors browsing talent.</p>
               </div>
             )}
-            <button className="btn-p btn-sm" style={{width:"100%"}} onClick={()=>onNavigate("my-profile")}>{isProfileComplete?"View My Profile →":"Edit My Profile →"}</button>
+            <button className="btn-p btn-sm" style={{width:"100%"}} onClick={slideToEditor}>{isProfileComplete?"View My Profile →":"Edit My Profile →"}</button>
           </div>
 
           {/* Media Locker card */}
