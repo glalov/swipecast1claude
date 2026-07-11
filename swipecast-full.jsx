@@ -11124,7 +11124,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             <div className="cs-pc-edge"/>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",position:"relative"}}>
               <span style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",fontWeight:700,color:"#d6c8f7"}}>CastSlate</span>
-              <span style={{fontSize:10,fontWeight:800,letterSpacing:1.4,color:"#ffe9a8"}}>PRO</span>
+              <span style={{fontSize:10,fontWeight:800,letterSpacing:1.4,color:"#ffe9a8"}}>Premium</span>
             </div>
             <div style={{width:25,height:18,borderRadius:4,marginTop:12,background:"linear-gradient(135deg,#ffe9a8,#e6b84e)",position:"relative"}}/>
             <div style={{marginTop:12,fontSize:15,fontWeight:600,color:"#fff",position:"relative",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{myProfile?.display_name||firstName}</div>
