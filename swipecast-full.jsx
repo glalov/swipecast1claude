@@ -10881,7 +10881,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     {label:"Add age range",done:!!myProfile?.age_range},
     {label:"Add credits / experience",done:dashDbCredits.length>0||!!(myProfile?.credits?.trim())},
     {label:"Add reel / video link",done:isPremium&&(myProfile?.video_links||[]).some(v=>v),premium:true},
-    {label:"Add slate video (7-sec intro)",done:!!myProfile?.slate_video_url},
+    {label:"Add slate video (7-sec intro)",done:isPremium&&!!myProfile?.slate_video_url,premium:true},
   ];
   const completedCount=profileChecks.filter(c=>c.done).length;
   const isProfileComplete=completedCount===profileChecks.length;
