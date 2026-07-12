@@ -13070,7 +13070,7 @@ function InviteToProjectModal({cdId,talentId,talentName,onClose}){
       // Also drop a notification in the messages thread so the talent sees it in inbox immediately
       try{
         const body=`You've been invited to audition for ${pickedCasting.title}${pickedRole?` · ${pickedRole.name}`:""}.${note.trim()?`\n\n"${note.trim()}"`:""}`;
-        await window.sb.from("messages").insert({from_id:cdId,to_id:talentId,application_id:null,body,message_type:"project_invite",payload:{casting_id:pickedCasting.id,role_id:pickedRole?.id||null,role_name:pickedRole?.name||null,project_title:pickedCasting.title,note:note.trim()||null}});
+        await window.sb.from("messages").insert({from_id:cdId,to_id:talentId,application_id:null,body});
         fireMessageNotification(talentId,cdId,{castingId:pickedCasting.id});
       }catch(_){/* non-fatal */}
       setSent(true);
@@ -13434,11 +13434,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
                const dayLabel=day===today?"Today":day===yesterday?"Yesterday":dt.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:dt.getFullYear()!==new Date().getFullYear()?"numeric":undefined});
                const time=dt.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
                const fromLabel=mine?"You":cpName;
-               const inv=!mine?(
-                 (m.message_type==="project_invite"&&m.payload&&typeof m.payload==="object")
-                   ?{project:m.payload.project_title||"This casting",role:m.payload.role_name||"",note:m.payload.note||"",castingId:m.payload.casting_id||null}
-                   :parseAuditionInvite(m.body)
-               ):null;
+               const inv=!mine?parseAuditionInvite(m.body):null;
                return(<div key={m.id}>
                  {showSeparator&&<div className="cs-thread-day">{dayLabel}</div>}
                  <div className={`cs-thread-row ${mine?"mine":"theirs"}`}>
