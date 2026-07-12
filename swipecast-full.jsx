@@ -13471,6 +13471,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile,onViewCastingById})
   const [castingByApp,setCastingByApp]=useState({}); // application_id -> casting (for admin-generated poster name)
   const [openMsg,setOpenMsg]=useState(null);
   const [openCheckin,setOpenCheckin]=useState(null); // for weekly_actor_checkin messages
+  const [showPrevNotes,setShowPrevNotes]=useState(false); // collapse older weekly career notes (Option A)
   const [loading,setLoading]=useState(true);
   const [err,setErr]=useState("");
   const [search,setSearch]=useState("");
@@ -13661,18 +13662,22 @@ function InboxPage({session,profile,onNavigate,onViewProfile,onViewCastingById})
               </div>
               <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap",alignSelf:"flex-start"}}>{dateLabel}</span>
             </div>
-            {checkins.length>1&&<div style={{borderTop:"1px solid var(--bdr)",padding:"8px 22px",background:"var(--s2)"}}>
-              <div style={{fontSize:11,color:"var(--t3)"}}>Previous notes</div>
-              {checkins.slice(1,4).map(m=>{
-                let prevPreview="Weekly career note";
-                try{const c=JSON.parse(m.body);if(c.task)prevPreview=c.task;}catch(_){}
-                const prevDt=new Date(m.created_at);
-                return(<div key={m.id} onClick={()=>setOpenCheckin(m)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"6px 0",cursor:"pointer",gap:12,borderTop:"1px solid var(--bdr)"}}>
-                  <span style={{fontSize:12,color:"var(--t2)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{prevPreview}</span>
-                  <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap"}}>{prevDt.toLocaleDateString(undefined,{month:"short",day:"numeric"})}</span>
-                  {!m.read_at&&<span style={{width:7,height:7,borderRadius:"50%",background:"var(--acc)",flexShrink:0}}/>}
-                </div>);
-              })}
+            {checkins.length>1&&<div style={{borderTop:"1px solid var(--bdr)",background:"var(--s2)"}}>
+              <button onClick={()=>setShowPrevNotes(v=>!v)} style={{width:"100%",textAlign:"left",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit",padding:"9px 22px",fontSize:12,fontWeight:600,color:"var(--acc)",display:"flex",alignItems:"center",gap:6}}>
+                {showPrevNotes?"Hide earlier check-ins":`Show ${checkins.length-1} earlier check-in${checkins.length-1===1?"":"s"}`}<span style={{fontSize:11}}>{showPrevNotes?"↑":"↓"}</span>
+              </button>
+              {showPrevNotes&&<div style={{padding:"0 22px 10px"}}>
+                {checkins.slice(1,8).map(m=>{
+                  let prevPreview="Weekly career note";
+                  try{const c=JSON.parse(m.body);if(c.task)prevPreview=c.task;}catch(_){}
+                  const prevDt=new Date(m.created_at);
+                  return(<div key={m.id} onClick={()=>setOpenCheckin(m)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"7px 0",cursor:"pointer",gap:12,borderTop:"1px solid var(--bdr)"}}>
+                    <span style={{fontSize:12,color:"var(--t2)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{prevPreview}</span>
+                    <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap"}}>{prevDt.toLocaleDateString(undefined,{month:"short",day:"numeric"})}</span>
+                    {!m.read_at&&<span style={{width:7,height:7,borderRadius:"50%",background:"var(--acc)",flexShrink:0}}/>}
+                  </div>);
+                })}
+              </div>}
             </div>}
           </div>
         </div>
