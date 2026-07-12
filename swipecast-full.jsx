@@ -1946,6 +1946,12 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .cs-procard .cs-pc-edge{position:absolute;inset:0;border-radius:14px;padding:1px;background:linear-gradient(120deg,#a07bff,#ffe9a8,#a07bff);background-size:200% 100%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:cs-pc-edge 6s linear infinite;opacity:.85;pointer-events:none;}
 @keyframes cs-pc-edge{to{background-position:200% 50%;}}
 @media(prefers-reduced-motion:reduce){.cs-procard .cs-pc-edge{animation:none;}}
+/* Soft luxe shine passing through the "Premium" word (~every 7.5s) — Option B */
+.cs-prem-shine{position:relative;display:inline-block;overflow:hidden;padding:1px 3px;border-radius:3px;animation:cs-prem-glow 7.5s ease-in-out infinite;}
+.cs-prem-shine::after{content:"";position:absolute;top:0;bottom:0;left:-80%;width:70%;transform:skewX(-18deg);pointer-events:none;background:linear-gradient(105deg,transparent,rgba(255,246,214,.75) 45%,rgba(255,255,255,.9) 50%,rgba(255,246,214,.75) 55%,transparent);animation:cs-prem-sweep 7.5s ease-in-out infinite;}
+@keyframes cs-prem-sweep{0%{left:-80%;}16%{left:180%;}100%{left:180%;}}
+@keyframes cs-prem-glow{0%,16%{text-shadow:0 0 7px rgba(255,224,140,.9);}30%,100%{text-shadow:none;}}
+@media(prefers-reduced-motion:reduce){.cs-prem-shine{animation:none;}.cs-prem-shine::after{display:none;}}
 /* Public-profile preview → editor "slide back" page transition */
 .cs-slide-out{animation:cs-slide-out-r .25s cubic-bezier(.16,1,.3,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
 @keyframes cs-slide-out-r{from{transform:translateX(0);}to{transform:translateX(100%);}}
@@ -11133,7 +11139,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             <div className="cs-pc-edge"/>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",position:"relative"}}>
               <span style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",fontWeight:700,color:"#d6c8f7"}}>CastSlate</span>
-              <span style={{fontSize:10,fontWeight:800,letterSpacing:1.4,color:"#ffe9a8"}}>Premium</span>
+              <span className="cs-prem-shine" style={{fontSize:10,fontWeight:800,letterSpacing:1.4,color:"#ffe9a8"}}>Premium</span>
             </div>
             <div style={{width:25,height:18,borderRadius:4,marginTop:12,background:"linear-gradient(135deg,#ffe9a8,#e6b84e)",position:"relative"}}/>
             <div style={{marginTop:12,fontSize:15,fontWeight:600,color:"#fff",position:"relative",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{myProfile?.display_name||firstName}</div>
