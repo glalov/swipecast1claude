@@ -13305,9 +13305,9 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
     (async()=>{
       try{
         const {data}=await window.sb.from("applications")
-          .select("id,castings(id,title,prod,location,type,is_admin_created,posted_by_label),roles(name)")
+          .select("id,created_at,status,castings(id,title,prod,location,type,is_admin_created,posted_by_label),roles(name)")
           .eq("id",message.application_id).maybeSingle();
-        if(!cancelled&&data)setCastingCtx({casting:data.castings||null,role:data.roles||null});
+        if(!cancelled&&data)setCastingCtx({casting:data.castings||null,role:data.roles||null,appliedAt:data.created_at||null});
       }catch(_){/* silent */}
     })();
     return()=>{cancelled=true;};
@@ -13411,8 +13411,9 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
 
       {/* Casting context strip — sticky-feeling block under the header */}
       {castingCtx?.casting&&<div className="cs-thread-context">
-        <div style={{fontSize:9,letterSpacing:1.2,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,marginBottom:2}}>Related casting</div>
+        <div style={{fontSize:9,letterSpacing:1.2,textTransform:"uppercase",color:"var(--t3)",fontWeight:700,marginBottom:2}}>{sessionUserType==="talent"?"The role you applied for":"Related casting"}</div>
         <div style={{fontSize:13,fontWeight:700,color:"var(--t1)"}}>{(()=>{const canOpenCasting=!!onViewCasting&&!!castingCtx.casting.id;return <span onClick={()=>{if(canOpenCasting){onViewCasting(castingCtx.casting.id);onClose();}}} style={{cursor:canOpenCasting?"pointer":"default",color:canOpenCasting?"var(--acc)":"var(--t1)",textDecoration:canOpenCasting?"underline":"none"}} title={canOpenCasting?"View this casting":undefined}>{castingCtx.casting.title||"Casting"}</span>;})()}{castingCtx.role?.name?<span style={{color:"var(--t2)",fontWeight:500}}> · {castingCtx.role.name}</span>:null} <span style={{color:"var(--t3)",fontWeight:500,fontSize:12}}>· {[castingCtx.casting.prod,castingCtx.casting.location].filter(Boolean).join(" · ")}</span></div>
+        {castingCtx.appliedAt&&<div style={{fontSize:12,color:"var(--t2)",marginTop:4,fontWeight:600,display:"inline-flex",alignItems:"center",gap:5}}><Ico n="calendar" s={13}/>{sessionUserType==="talent"?"You applied":"Applied"} {new Date(castingCtx.appliedAt).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}</div>}
       </div>}
 
       <div className="cs-thread-body">
@@ -13451,7 +13452,6 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
                              <div onClick={canOpen?()=>{onViewCasting(cid);onClose();}:undefined} style={{fontSize:16,fontWeight:800,letterSpacing:"-0.2px",color:canOpen?"var(--blu)":"var(--t1)",lineHeight:1.25,cursor:canOpen?"pointer":"default",textDecoration:canOpen?"underline":"none"}} title={canOpen?"View this casting":undefined}>{inv.project}</div>
                            );})()}
                            {inv.role&&<div style={{marginTop:10}}><span style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--s2)",borderRadius:8,padding:"5px 10px",fontSize:13,fontWeight:700,color:"var(--t1)"}}><span style={{color:"var(--t3)",fontWeight:600,fontSize:11,textTransform:"uppercase",letterSpacing:"0.05em"}}>Role</span>{inv.role}</span></div>}
-                           <div style={{fontSize:12,color:"var(--t3)",marginTop:8}}>Invited {dt.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}</div>
                            {inv.note&&<div style={{marginTop:11,padding:"10px 12px",background:"var(--bg)",borderRadius:8,fontSize:13,color:"var(--t2)",lineHeight:1.5,fontStyle:"italic",borderLeft:"2px solid var(--bdr)"}}>&ldquo;{inv.note}&rdquo;</div>}
                            {(inv.castingId||castingCtx?.casting?.id)&&onViewCasting&&<button className="btn-p btn-sm" style={{marginTop:12,fontSize:13}} onClick={()=>{onViewCasting(inv.castingId||castingCtx.casting.id);onClose();}}>View casting &amp; role →</button>}
                          </div>
