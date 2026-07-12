@@ -1947,10 +1947,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @keyframes cs-pc-edge{to{background-position:200% 50%;}}
 @media(prefers-reduced-motion:reduce){.cs-procard .cs-pc-edge{animation:none;}}
 /* Public-profile preview → editor "slide back" page transition */
-.cs-slide-out{animation:cs-slide-out-r .6s cubic-bezier(.4,0,.2,1) forwards;}
-@keyframes cs-slide-out-r{to{transform:translateX(100%);}}
-.cs-slide-in{animation:cs-slide-in-l .6s cubic-bezier(.4,0,.2,1);}
-@keyframes cs-slide-in-l{from{transform:translateX(-100%);}to{transform:none;}}
+.cs-slide-out{animation:cs-slide-out-r .6s cubic-bezier(.4,0,.2,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+@keyframes cs-slide-out-r{from{transform:translateX(0);}to{transform:translateX(100%);}}
+.cs-slide-in{animation:cs-slide-in-l .6s cubic-bezier(.4,0,.2,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+@keyframes cs-slide-in-l{from{transform:translateX(-100%);}to{transform:translateX(0);}}
 @media(prefers-reduced-motion:reduce){.cs-slide-out,.cs-slide-in{animation:none;}}
 /* Free-actor submission-cap upgrade modal — premium dark treatment (fires at 3/3) */
 .capm{width:460px;max-width:92%;max-height:90vh;overflow-y:auto;background:var(--s1);border:1px solid var(--bdr);border-radius:18px;padding:24px;position:relative;box-shadow:0 26px 60px -30px rgba(26,26,46,.55);animation:capm-pop .32s cubic-bezier(.2,.8,.2,1);}
@@ -16549,8 +16549,7 @@ function CastMeAsSection({talentId}){
 function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onViewCastingById}){
   const vpw=useViewportWidth();
   const isMobile=vpw<768;
-  const [slideIn,setSlideIn]=useState(false); // slide editor in when returning from public-profile preview
-  useEffect(()=>{try{if(sessionStorage.getItem('cs_slide_editor')){sessionStorage.removeItem('cs_slide_editor');setSlideIn(true);}}catch(_){}},[]);
+  const [slideIn]=useState(()=>{try{if(sessionStorage.getItem('cs_slide_editor')==='1'){sessionStorage.removeItem('cs_slide_editor');return true;}}catch(_){}return false;}); // read synchronously so cs-slide-in is on the first paint — otherwise the editor flashes in place before sliding
   const profileInitializedRef=useRef(false); // prevent focus/reload from wiping form state
   const [tab,setTab]=useState("profile");
   const [saving,setSaving]=useState(false);
