@@ -10656,6 +10656,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const [routineNotifOpen,setRoutineNotifOpen]=useState(false); // collapse routine "reviewed/watched" notifs
   const [sysNotifLoading,setSysNotifLoading]=useState(true);
   const [dashDbCredits,setDashDbCredits]=useState([]);
+  const [dashDbVideoCount,setDashDbVideoCount]=useState(0); // uploaded reels live in profile_media, not video_links
 
   const fmtDate=(s)=>{if(!s)return"—";const d=new Date(s);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
   const fmtDeadline=(s)=>{if(!s)return null;try{const d=new Date(s);const now=new Date();const diff=Math.ceil((d-now)/(1000*60*60*24));if(diff<0)return{label:"Closed",urgent:false};if(diff===0)return{label:"Closes today",urgent:true};if(diff<=3)return{label:`${diff}d left`,urgent:true};return{label:`${diff}d left`,urgent:false};}catch{return null;}};
@@ -10815,6 +10816,14 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     }catch(e){console.warn("[talent-dashboard] credits:",e);}
   },[uid]);
 
+  const loadDashMedia=useCallback(async()=>{
+    if(!uid){setDashDbVideoCount(0);return;}
+    try{
+      const{data}=await window.sb.from("profile_media").select("id").eq("user_id",uid).eq("media_type","video");
+      setDashDbVideoCount(Array.isArray(data)?data.length:0);
+    }catch(e){console.warn("[talent-dashboard] media:",e);}
+  },[uid]);
+
   const markNotificationsRead=useCallback(async(ids=null)=>{
     setSysNotifications(prev=>prev.map(n=>(!ids||ids.includes(n.id))?{...n,is_read:true}:n));
     try{
@@ -10858,7 +10867,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     finally{setSavingId(null);}
   },[uid,savedIds,savingId]);
 
-  useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadRecentlyViewed();loadClassInvitations();loadSysNotifications();loadDashCredits();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed,loadClassInvitations,loadSysNotifications,loadDashCredits]);
+  useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadRecentlyViewed();loadClassInvitations();loadSysNotifications();loadDashCredits();loadDashMedia();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed,loadClassInvitations,loadSysNotifications,loadDashCredits,loadDashMedia]);
   // Poll invitations + notifications every 30s so approved status appears without a page reload
   useEffect(()=>{
     if(!uid)return;
@@ -10880,7 +10889,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     {label:"Add location",done:!!myProfile?.location},
     {label:"Add age range",done:!!myProfile?.age_range},
     {label:"Add credits / experience",done:dashDbCredits.length>0||!!(myProfile?.credits?.trim())},
-    {label:"Add reel / video link",done:isPremium&&(myProfile?.video_links||[]).some(v=>v),premium:true},
+    {label:"Add reel / video link",done:isPremium&&(dashDbVideoCount>0||(myProfile?.video_links||[]).some(v=>v)),premium:true},
     {label:"Add slate video (7-sec intro)",done:isPremium&&!!myProfile?.slate_video_url,premium:true},
   ];
   const completedCount=profileChecks.filter(c=>c.done).length;
@@ -10888,9 +10897,9 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
 
   const headshotCount=myProfile?.headshot_url?1:0;
   const additionalPhotos=Array.isArray(myProfile?.additional_photos)?myProfile.additional_photos.filter(Boolean):[];
-  const totalPhotos=isPremium?additionalPhotos.length:headshotCount;
-  const videoLinks=Array.isArray(myProfile?.video_links)?myProfile.video_links.filter(Boolean):[];
-  const totalVideos=videoLinks.length+(myProfile?.slate_video_url?1:0);
+  const extraPhotos=additionalPhotos.filter(u=>u!==myProfile?.headshot_url);
+  const totalPhotos=headshotCount+extraPhotos.length; // headshot + gallery photos (deduped)
+  const totalVideos=dashDbVideoCount+(myProfile?.slate_video_url?1:0); // uploaded reels (profile_media) + slate
   const hasResumeFile=!!(myProfile?.resume_url);
   const hasCredits=dashDbCredits.length>0||!!(myProfile?.credits?.trim());
   const hasResume=hasResumeFile||hasCredits;
