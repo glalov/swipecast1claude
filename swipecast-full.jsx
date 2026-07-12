@@ -1947,10 +1947,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @keyframes cs-pc-edge{to{background-position:200% 50%;}}
 @media(prefers-reduced-motion:reduce){.cs-procard .cs-pc-edge{animation:none;}}
 /* Public-profile preview → editor "slide back" page transition */
-.cs-slide-out{animation:cs-slide-out-r .2s cubic-bezier(.4,0,1,1) forwards;}
-@keyframes cs-slide-out-r{to{transform:translateX(100%);opacity:0;}}
-.cs-slide-in{animation:cs-slide-in-l .3s cubic-bezier(.22,.7,.2,1);}
-@keyframes cs-slide-in-l{from{transform:translateX(-100%);opacity:.35;}to{transform:none;opacity:1;}}
+.cs-slide-out{animation:cs-slide-out-r .6s cubic-bezier(.4,0,.2,1) forwards;}
+@keyframes cs-slide-out-r{to{transform:translateX(100%);}}
+.cs-slide-in{animation:cs-slide-in-l .6s cubic-bezier(.4,0,.2,1);}
+@keyframes cs-slide-in-l{from{transform:translateX(-100%);}to{transform:none;}}
 @media(prefers-reduced-motion:reduce){.cs-slide-out,.cs-slide-in{animation:none;}}
 /* Free-actor submission-cap upgrade modal — premium dark treatment (fires at 3/3) */
 .capm{width:460px;max-width:92%;max-height:90vh;overflow-y:auto;background:var(--s1);border:1px solid var(--bdr);border-radius:18px;padding:24px;position:relative;box-shadow:0 26px 60px -30px rgba(26,26,46,.55);animation:capm-pop .32s cubic-bezier(.2,.8,.2,1);}
@@ -9680,7 +9680,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     {isOwnProfile&&(
       <div style={{background:"#111",border:"1px solid #333",borderRadius:10,padding:"10px 16px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
         <div style={{fontSize:13,color:"#fff",fontWeight:600}}><Ico n="eye" s={22}/> Previewing your public profile — this is how casting directors see you.</div>
-        <button style={{background:"#fff",color:"#111",border:"none",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}} onClick={()=>{if(slidingBack)return;setSlidingBack(true);try{sessionStorage.setItem('cs_slide_editor','1');}catch(_){}setTimeout(()=>{if(onNavigate){onNavigate("my-profile");}else if(onBack){onBack();}},200);}}>← Back to Edit Profile</button>
+        <button style={{background:"#fff",color:"#111",border:"none",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}} onClick={()=>{if(slidingBack)return;setSlidingBack(true);try{sessionStorage.setItem('cs_slide_editor','1');}catch(_){}setTimeout(()=>{if(onNavigate){onNavigate("my-profile");}else if(onBack){onBack();}},600);}}>← Back to Edit Profile</button>
       </div>
     )}
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:16,flexWrap:"wrap"}}>
@@ -10626,7 +10626,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const isPremium=myProfile?.membership_status==="active";
   const firstName=(myProfile?.display_name||"").split(" ")[0]||"there";
   const [navSliding,setNavSliding]=useState(false);
-  const slideToEditor=()=>{if(navSliding)return;setNavSliding(true);try{sessionStorage.setItem('cs_slide_editor','1');}catch(_){}setTimeout(()=>onNavigate("my-profile"),200);};
+  const slideToEditor=()=>{if(navSliding)return;setNavSliding(true);try{sessionStorage.setItem('cs_slide_editor','1');}catch(_){}setTimeout(()=>onNavigate("my-profile"),600);};
 
   const [applications,setApplications]=useState([]);
   const [appsLoading,setAppsLoading]=useState(true);
