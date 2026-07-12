@@ -13192,6 +13192,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
   const [deleting,setDeleting]=useState(false);
   const [err,setErr]=useState("");
   const [castingCtx,setCastingCtx]=useState(null);
+  const [inviteMap,setInviteMap]=useState({}); // cold-invite lookup: casting title -> {castingId,type,location,role}
   const [thread,setThread]=useState([]);
   const [counterpartyProfile,setCounterpartyProfile]=useState(null);
   const readFiredRef=useRef(false);
@@ -13312,6 +13313,26 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
     })();
     return()=>{cancelled=true;};
   },[message?.application_id]);
+
+  // Cold-invite context — project invites carry the casting (id/type/location) the
+  // text-only invite message doesn't, so the invitation card can link + show details.
+  useEffect(()=>{
+    let cancelled=false;
+    if(!counterpartyId||!sessionUid){setInviteMap({});return;}
+    (async()=>{
+      try{
+        const {data}=await window.sb.from("project_invites")
+          .select("casting_id,castings(id,title,type,location,prod),roles(name)")
+          .or(`and(talent_id.eq.${sessionUid},cd_id.eq.${counterpartyId}),and(talent_id.eq.${counterpartyId},cd_id.eq.${sessionUid})`)
+          .order("created_at",{ascending:false});
+        if(cancelled||!Array.isArray(data))return;
+        const map={};
+        data.forEach(row=>{const c=row.castings;if(!c?.title)return;const key=c.title.trim().toLowerCase();if(!map[key])map[key]={castingId:c.id,type:c.type||"",location:c.location||"",role:row.roles?.name||""};});
+        setInviteMap(map);
+      }catch(_){/* silent */}
+    })();
+    return()=>{cancelled=true;};
+  },[counterpartyId,sessionUid]);
 
   // Auto-scroll to the bottom whenever new messages land — keeps focus on the latest.
   useEffect(()=>{if(scrollRef.current){scrollRef.current.scrollTop=scrollRef.current.scrollHeight;}},[thread.length]);
@@ -13435,6 +13456,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
                const time=dt.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
                const fromLabel=mine?"You":cpName;
                const inv=!mine?parseAuditionInvite(m.body):null;
+               const invLink=inv?inviteMap[(inv.project||"").trim().toLowerCase()]:null;
                return(<div key={m.id}>
                  {showSeparator&&<div className="cs-thread-day">{dayLabel}</div>}
                  <div className={`cs-thread-row ${mine?"mine":"theirs"}`}>
@@ -13443,14 +13465,14 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
                      {inv?(
                        <div style={{position:"relative",maxWidth:360,width:"100%",border:"1px solid var(--bdr)",borderLeft:"4px solid var(--blu)",borderRadius:12,overflow:"hidden",background:"var(--s1)"}}>
                          <div style={{background:"rgba(37,99,235,0.08)",padding:"8px 14px",fontSize:11,fontWeight:800,letterSpacing:"0.06em",textTransform:"uppercase",color:"var(--blu)",display:"flex",alignItems:"center",gap:6}}><Ico n="movie" s={14}/>Audition invitation</div>
+                         {(()=>{const cid=invLink?.castingId||castingCtx?.casting?.id;const canOpen=!!cid&&!!onViewCasting;const meta=[invLink?.type,invLink?.location].filter(Boolean).join(" · ");return(
                          <div style={{padding:"13px 15px"}}>
-                           {(()=>{const cid=inv.castingId||castingCtx?.casting?.id;const canOpen=!!cid&&!!onViewCasting;return(
-                             <div onClick={canOpen?()=>{onViewCasting(cid);onClose();}:undefined} style={{fontSize:16,fontWeight:800,letterSpacing:"-0.2px",color:canOpen?"var(--blu)":"var(--t1)",lineHeight:1.25,cursor:canOpen?"pointer":"default",textDecoration:canOpen?"underline":"none"}} title={canOpen?"View this casting":undefined}>{inv.project}</div>
-                           );})()}
-                           {inv.role&&<div style={{marginTop:10}}><span style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--s2)",borderRadius:8,padding:"5px 10px",fontSize:13,fontWeight:700,color:"var(--t1)"}}><span style={{color:"var(--t3)",fontWeight:600,fontSize:11,textTransform:"uppercase",letterSpacing:"0.05em"}}>Role</span>{inv.role}</span></div>}
+                           <div onClick={canOpen?()=>{onViewCasting(cid);onClose();}:undefined} style={{fontSize:16,fontWeight:800,letterSpacing:"-0.2px",color:canOpen?"var(--blu)":"var(--t1)",lineHeight:1.25,cursor:canOpen?"pointer":"default",textDecoration:canOpen?"underline":"none"}} title={canOpen?"View this casting":undefined}>{inv.project}</div>
+                           {meta&&<div style={{fontSize:12.5,color:"var(--t2)",marginTop:3}}>{meta}</div>}
+                           {inv.role&&<div style={{marginTop:11}}><span style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--s2)",borderRadius:8,padding:"5px 10px",fontSize:13,fontWeight:700,color:"var(--t1)"}}><span style={{color:"var(--t3)",fontWeight:600,fontSize:11,textTransform:"uppercase",letterSpacing:"0.05em"}}>Role</span>{inv.role}</span></div>}
                            {inv.note&&<div style={{marginTop:11,padding:"10px 12px",background:"var(--bg)",borderRadius:8,fontSize:13,color:"var(--t2)",lineHeight:1.5,fontStyle:"italic",borderLeft:"2px solid var(--bdr)"}}>&ldquo;{inv.note}&rdquo;</div>}
-                           {(inv.castingId||castingCtx?.casting?.id)&&onViewCasting&&<button className="btn-p btn-sm" style={{marginTop:12,fontSize:13}} onClick={()=>{onViewCasting(inv.castingId||castingCtx.casting.id);onClose();}}>View casting &amp; role →</button>}
-                         </div>
+                           {canOpen&&<button className="btn-p btn-sm" style={{marginTop:12,fontSize:13}} onClick={()=>{onViewCasting(cid);onClose();}}>View &amp; respond →</button>}
+                         </div>);})()}
                          {isAdmin&&<button onClick={()=>deleteOne(m.id)} title="Delete this message" className="msg-del-btn" style={{position:"absolute",top:-8,right:-8,width:22,height:22,borderRadius:"50%",border:"1px solid var(--bdr)",background:"#fff",color:"var(--t3)",fontSize:11,cursor:"pointer",padding:0}}><Ico n="x" s={24}/></button>}
                        </div>
                      ):(
