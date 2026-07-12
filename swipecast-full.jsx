@@ -11632,14 +11632,15 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                     <div style={{width:`${profilePct}%`,height:"100%",background:profilePct<50?"var(--red)":profilePct<80?"#d97706":"var(--grn)",borderRadius:3,transition:"width .4s"}}/>
                   </div>
                 </div>
-                <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
+                <div style={{display:"flex",flexDirection:"column",gap:9,marginBottom:16}}>
                   {profileChecks.map((c,i)=>(
-                    <div key={i} style={{display:"flex",alignItems:"flex-start",gap:8,fontSize:12}}>
-                      <span style={{color:c.done?"var(--grn)":"var(--t3)",fontWeight:700,fontSize:14,flexShrink:0,marginTop:-1}}>{c.done?"":"○"}</span>
-                      <span style={{color:c.done?"var(--t1)":"var(--t2)",lineHeight:1.4}}>
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:9,fontSize:13}}>
+                      <span style={{width:18,height:18,borderRadius:"50%",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:c.done?"var(--grn)":"transparent",border:c.done?"none":"2px dashed #c9c3b4",color:"#fff"}}>{c.done&&<Ico n="check" s={12}/>}</span>
+                      <span style={{color:c.done?"var(--t2)":"var(--t1)",fontWeight:c.done?400:600,lineHeight:1.3}}>
                         {c.label}
                         {c.premium&&!isPremium&&<span style={{fontSize:10,color:"var(--t3)",marginLeft:4}}>(Premium)</span>}
                       </span>
+                      {!c.done&&<span onClick={slideToEditor} style={{marginLeft:"auto",fontSize:12,fontWeight:700,color:"var(--acc)",whiteSpace:"nowrap",cursor:"pointer"}}>Add →</span>}
                     </div>
                   ))}
                 </div>
