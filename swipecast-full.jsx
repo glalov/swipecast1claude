@@ -1951,12 +1951,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @keyframes cs-slide-out-r{from{transform:translateX(0);}to{transform:translateX(100%);}}
 .cs-slide-in{animation:cs-slide-in-l .25s cubic-bezier(.16,1,.3,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
 @keyframes cs-slide-in-l{from{transform:translateX(-100%);}to{transform:translateX(0);}}
-.cs-slide-down{animation:cs-slide-down-k .25s cubic-bezier(.16,1,.3,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
-@keyframes cs-slide-down-k{from{transform:translateY(0);}to{transform:translateY(100%);}}
-.cs-slide-up{animation:cs-slide-up-k .25s cubic-bezier(.16,1,.3,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
-@keyframes cs-slide-up-k{from{transform:translateY(100%);}to{transform:translateY(0);}}
-.cs-clip-v{overflow:hidden;}
-@media(prefers-reduced-motion:reduce){.cs-slide-out,.cs-slide-in,.cs-slide-down,.cs-slide-up{animation:none;}}
+@media(prefers-reduced-motion:reduce){.cs-slide-out,.cs-slide-in{animation:none;}}
 /* Free-actor submission-cap upgrade modal — premium dark treatment (fires at 3/3) */
 .capm{width:460px;max-width:92%;max-height:90vh;overflow-y:auto;background:var(--s1);border:1px solid var(--bdr);border-radius:18px;padding:24px;position:relative;box-shadow:0 26px 60px -30px rgba(26,26,46,.55);animation:capm-pop .32s cubic-bezier(.2,.8,.2,1);}
 .capm-cta{position:relative;overflow:hidden;}
@@ -27282,17 +27277,6 @@ function App(){
     setPageSEO(target,opts);
     pushHist(target,opts);
   },[]);
-  // App-level page slide for specific nav-bar buttons (My Profile / Inbox /
-  // Account Settings / Dashboard). Animates <main> out then in — destination
-  // pages need no changes. Same 0.6s smooth glide as the editor transition.
-  const [mainSlide,setMainSlide]=useState(null); // 'out-right' | 'out-down' | 'in-left' | 'in-up'
-  const slideNav=useCallback((target)=>{
-    if(mainSlide||target===page){navigate(target);return;}
-    // Inbox + My Profile rise from below (and drop down on exit); every other page slides horizontally.
-    const isVert=(p)=>p==="inbox"||p==="my-profile";
-    setMainSlide(isVert(page)?'out-down':'out-right');
-    setTimeout(()=>{navigate(target);setMainSlide(isVert(target)?'in-up':'in-left');setTimeout(()=>setMainSlide(null),270);},250);
-  },[mainSlide,page,navigate]);
   const viewProfile=(t)=>{setPrevPage(page);setViewingProfile(t);setPage("profile");pushHist("profile",t?.public_slug?{talentSlug:t.public_slug}:{});};
   const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");pushHist("auth-gate");};
   const handleViewCasting=(c,from)=>{
@@ -27594,7 +27578,7 @@ function App(){
   const navT=(key)=>(TRANSLATIONS[lang]&&TRANSLATIONS[lang][key])||TRANSLATIONS.en[key]||key;
   return(
     <LanguageContext.Provider value={{lang,setLang}}>
-    <div className={"app"+((mainSlide==='out-down'||mainSlide==='in-up')?" cs-clip-v":"")}><style>{css}</style>
+    <div className="app"><style>{css}</style>
       {/* Sticky top: promo stripe + activate banner + white nav stay pinned
           together at the top of the viewport while the page scrolls. */}
       <div className="site-top" ref={siteTopRef}>
@@ -27622,13 +27606,13 @@ function App(){
           {!authReady?null:isLoggedIn?<>
             {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navigate("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)",display:"inline-flex",alignItems:"center",gap:6}}>{navT('nav.admin')}{adminPendingBookings>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800,lineHeight:1.4}}>{adminPendingBookings}</span>}</button>}
             {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navigate("dashboard")}>{navT('nav.dashboard')}</button>:null}
-            {(myProfile?.user_type==="talent"||!myProfile)?<button className="btn-s btn-sm" onClick={()=>slideNav("talent-dashboard")}>{navT('nav.dashboard')}</button>:null}
-            {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>slideNav("my-profile")}>{navT('nav.myProfile')}</button>:null}
-            <button className="btn-s btn-sm" onClick={()=>slideNav("inbox")} style={{position:"relative",display:"inline-flex",alignItems:"center",gap:6}}>
+            {(myProfile?.user_type==="talent"||!myProfile)?<button className="btn-s btn-sm" onClick={()=>navigate("talent-dashboard")}>{navT('nav.dashboard')}</button>:null}
+            {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navigate("my-profile")}>{navT('nav.myProfile')}</button>:null}
+            <button className="btn-s btn-sm" onClick={()=>navigate("inbox")} style={{position:"relative",display:"inline-flex",alignItems:"center",gap:6}}>
               <span>{navT('nav.inbox')}</span>
               {globalUnread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800,minWidth:20,textAlign:"center",lineHeight:1.2}}>{globalUnread>99?"99+":globalUnread}</span>}
             </button>
-            <button className="btn-s btn-sm" onClick={()=>slideNav("account-settings")} title={navT('nav.accountSettings')}>{myProfile?.display_name?.split(" ")[0]||navT('nav.accountSettings').split(" ")[0]} <Ico n="settings" s={22}/></button>
+            <button className="btn-s btn-sm" onClick={()=>navigate("account-settings")} title={navT('nav.accountSettings')}>{myProfile?.display_name?.split(" ")[0]||navT('nav.accountSettings').split(" ")[0]} <Ico n="settings" s={22}/></button>
             <button className="btn-p btn-sm" onClick={signOut}>{navT('nav.signOut')}</button>
           </>:<>
             <div className="join-dropdown" ref={joinRef}>
@@ -27719,7 +27703,7 @@ function App(){
       </div>}
       {/* Stable route content wrapper — always holds at least viewport height so the
           footer never jumps upward during route transitions or while data loads. */}
-      <main className={mainSlide==='out-right'?'cs-slide-out':mainSlide==='out-down'?'cs-slide-down':mainSlide==='in-left'?'cs-slide-in':mainSlide==='in-up'?'cs-slide-up':undefined} style={{flex:"1 1 auto",display:"flex",flexDirection:"column",minHeight:"100vh"}}>
+      <main style={{flex:"1 1 auto",display:"flex",flexDirection:"column",minHeight:"100vh"}}>
         {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"home")}/>}
         {/* SearchPage is pre-mounted on home page too so it's already loaded when the
             user clicks Browse Castings — prevents the fresh-mount loading flash. */}
