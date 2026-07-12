@@ -27272,6 +27272,15 @@ function App(){
     setPageSEO(target,opts);
     pushHist(target,opts);
   },[]);
+  // App-level page slide for specific nav-bar buttons (My Profile / Inbox /
+  // Account Settings / Dashboard). Animates <main> out then in — destination
+  // pages need no changes. Same 0.6s smooth glide as the editor transition.
+  const [mainSlide,setMainSlide]=useState(null); // null | 'out' | 'in'
+  const slideNav=useCallback((target)=>{
+    if(mainSlide||target===page){navigate(target);return;}
+    setMainSlide('out');
+    setTimeout(()=>{navigate(target);setMainSlide('in');setTimeout(()=>setMainSlide(null),620);},600);
+  },[mainSlide,page,navigate]);
   const viewProfile=(t)=>{setPrevPage(page);setViewingProfile(t);setPage("profile");pushHist("profile",t?.public_slug?{talentSlug:t.public_slug}:{});};
   const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");pushHist("auth-gate");};
   const handleViewCasting=(c,from)=>{
@@ -27601,13 +27610,13 @@ function App(){
           {!authReady?null:isLoggedIn?<>
             {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navigate("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)",display:"inline-flex",alignItems:"center",gap:6}}>{navT('nav.admin')}{adminPendingBookings>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800,lineHeight:1.4}}>{adminPendingBookings}</span>}</button>}
             {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navigate("dashboard")}>{navT('nav.dashboard')}</button>:null}
-            {(myProfile?.user_type==="talent"||!myProfile)?<button className="btn-s btn-sm" onClick={()=>navigate("talent-dashboard")}>{navT('nav.dashboard')}</button>:null}
-            {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navigate("my-profile")}>{navT('nav.myProfile')}</button>:null}
-            <button className="btn-s btn-sm" onClick={()=>navigate("inbox")} style={{position:"relative",display:"inline-flex",alignItems:"center",gap:6}}>
+            {(myProfile?.user_type==="talent"||!myProfile)?<button className="btn-s btn-sm" onClick={()=>slideNav("talent-dashboard")}>{navT('nav.dashboard')}</button>:null}
+            {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>slideNav("my-profile")}>{navT('nav.myProfile')}</button>:null}
+            <button className="btn-s btn-sm" onClick={()=>slideNav("inbox")} style={{position:"relative",display:"inline-flex",alignItems:"center",gap:6}}>
               <span>{navT('nav.inbox')}</span>
               {globalUnread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800,minWidth:20,textAlign:"center",lineHeight:1.2}}>{globalUnread>99?"99+":globalUnread}</span>}
             </button>
-            <button className="btn-s btn-sm" onClick={()=>navigate("account-settings")} title={navT('nav.accountSettings')}>{myProfile?.display_name?.split(" ")[0]||navT('nav.accountSettings').split(" ")[0]} <Ico n="settings" s={22}/></button>
+            <button className="btn-s btn-sm" onClick={()=>slideNav("account-settings")} title={navT('nav.accountSettings')}>{myProfile?.display_name?.split(" ")[0]||navT('nav.accountSettings').split(" ")[0]} <Ico n="settings" s={22}/></button>
             <button className="btn-p btn-sm" onClick={signOut}>{navT('nav.signOut')}</button>
           </>:<>
             <div className="join-dropdown" ref={joinRef}>
@@ -27698,7 +27707,7 @@ function App(){
       </div>}
       {/* Stable route content wrapper — always holds at least viewport height so the
           footer never jumps upward during route transitions or while data loads. */}
-      <main style={{flex:"1 1 auto",display:"flex",flexDirection:"column",minHeight:"100vh"}}>
+      <main className={mainSlide==='out'?'cs-slide-out':mainSlide==='in'?'cs-slide-in':undefined} style={{flex:"1 1 auto",display:"flex",flexDirection:"column",minHeight:"100vh"}}>
         {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"home")}/>}
         {/* SearchPage is pre-mounted on home page too so it's already loaded when the
             user clicks Browse Castings — prevents the fresh-mount loading flash. */}
