@@ -13455,7 +13455,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
                const dayLabel=day===today?"Today":day===yesterday?"Yesterday":dt.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:dt.getFullYear()!==new Date().getFullYear()?"numeric":undefined});
                const time=dt.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
                const fromLabel=mine?"You":cpName;
-               const inv=!mine?parseAuditionInvite(m.body):null;
+               const inv=parseAuditionInvite(m.body); // render the invitation card for both sides (talent + the CD who sent it)
                const invLink=inv?inviteMap[(inv.project||"").trim().toLowerCase()]:null;
                return(<div key={m.id}>
                  {showSeparator&&<div className="cs-thread-day">{dayLabel}</div>}
@@ -13471,7 +13471,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
                            {meta&&<div style={{fontSize:12.5,color:"var(--t2)",marginTop:3}}>{meta}</div>}
                            {inv.role&&<div style={{marginTop:11}}><span style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--s2)",borderRadius:8,padding:"5px 10px",fontSize:13,fontWeight:700,color:"var(--t1)"}}><span style={{color:"var(--t3)",fontWeight:600,fontSize:11,textTransform:"uppercase",letterSpacing:"0.05em"}}>Role</span>{inv.role}</span></div>}
                            {inv.note&&<div style={{marginTop:11,padding:"10px 12px",background:"var(--bg)",borderRadius:8,fontSize:13,color:"var(--t2)",lineHeight:1.5,fontStyle:"italic",borderLeft:"2px solid var(--bdr)"}}>&ldquo;{inv.note}&rdquo;</div>}
-                           {canOpen&&<button className="btn-p btn-sm" style={{marginTop:12,fontSize:13}} onClick={()=>{onViewCasting(cid);onClose();}}>View &amp; respond →</button>}
+                           {canOpen&&<button className="btn-p btn-sm" style={{marginTop:12,fontSize:13}} onClick={()=>{onViewCasting(cid);onClose();}}>{mine?"View casting →":"View & respond →"}</button>}
                          </div>);})()}
                          {isAdmin&&<button onClick={()=>deleteOne(m.id)} title="Delete this message" className="msg-del-btn" style={{position:"absolute",top:-8,right:-8,width:22,height:22,borderRadius:"50%",border:"1px solid var(--bdr)",background:"#fff",color:"var(--t3)",fontSize:11,cursor:"pointer",padding:0}}><Ico n="x" s={24}/></button>}
                        </div>
