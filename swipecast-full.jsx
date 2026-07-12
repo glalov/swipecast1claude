@@ -1947,13 +1947,13 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @keyframes cs-pc-edge{to{background-position:200% 50%;}}
 @media(prefers-reduced-motion:reduce){.cs-procard .cs-pc-edge{animation:none;}}
 /* Public-profile preview → editor "slide back" page transition */
-.cs-slide-out{animation:cs-slide-out-r .6s cubic-bezier(.4,0,.2,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.cs-slide-out{animation:cs-slide-out-r .48s cubic-bezier(.4,0,.2,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
 @keyframes cs-slide-out-r{from{transform:translateX(0);}to{transform:translateX(100%);}}
-.cs-slide-in{animation:cs-slide-in-l .6s cubic-bezier(.4,0,.2,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.cs-slide-in{animation:cs-slide-in-l .48s cubic-bezier(.4,0,.2,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
 @keyframes cs-slide-in-l{from{transform:translateX(-100%);}to{transform:translateX(0);}}
-.cs-slide-down{animation:cs-slide-down-k .6s cubic-bezier(.4,0,.2,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.cs-slide-down{animation:cs-slide-down-k .48s cubic-bezier(.4,0,.2,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
 @keyframes cs-slide-down-k{from{transform:translateY(0);}to{transform:translateY(100%);}}
-.cs-slide-up{animation:cs-slide-up-k .6s cubic-bezier(.4,0,.2,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.cs-slide-up{animation:cs-slide-up-k .48s cubic-bezier(.4,0,.2,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
 @keyframes cs-slide-up-k{from{transform:translateY(100%);}to{transform:translateY(0);}}
 .cs-clip-v{overflow:hidden;}
 @media(prefers-reduced-motion:reduce){.cs-slide-out,.cs-slide-in,.cs-slide-down,.cs-slide-up{animation:none;}}
@@ -9685,7 +9685,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     {isOwnProfile&&(
       <div style={{background:"#111",border:"1px solid #333",borderRadius:10,padding:"10px 16px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
         <div style={{fontSize:13,color:"#fff",fontWeight:600}}><Ico n="eye" s={22}/> Previewing your public profile — this is how casting directors see you.</div>
-        <button style={{background:"#fff",color:"#111",border:"none",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}} onClick={()=>{if(slidingBack)return;setSlidingBack(true);try{sessionStorage.setItem('cs_slide_editor','1');}catch(_){}setTimeout(()=>{if(onNavigate){onNavigate("my-profile");}else if(onBack){onBack();}},600);}}>← Back to Edit Profile</button>
+        <button style={{background:"#fff",color:"#111",border:"none",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}} onClick={()=>{if(slidingBack)return;setSlidingBack(true);try{sessionStorage.setItem('cs_slide_editor','1');}catch(_){}setTimeout(()=>{if(onNavigate){onNavigate("my-profile");}else if(onBack){onBack();}},480);}}>← Back to Edit Profile</button>
       </div>
     )}
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:16,flexWrap:"wrap"}}>
@@ -10631,7 +10631,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const isPremium=myProfile?.membership_status==="active";
   const firstName=(myProfile?.display_name||"").split(" ")[0]||"there";
   const [navSliding,setNavSliding]=useState(false);
-  const slideToEditor=()=>{if(navSliding)return;setNavSliding(true);try{sessionStorage.setItem('cs_slide_editor','1');}catch(_){}setTimeout(()=>onNavigate("my-profile"),600);};
+  const slideToEditor=()=>{if(navSliding)return;setNavSliding(true);try{sessionStorage.setItem('cs_slide_editor','1');}catch(_){}setTimeout(()=>onNavigate("my-profile"),480);};
 
   const [applications,setApplications]=useState([]);
   const [appsLoading,setAppsLoading]=useState(true);
@@ -27286,7 +27286,7 @@ function App(){
     // Inbox + My Profile rise from below (and drop down on exit); every other page slides horizontally.
     const isVert=(p)=>p==="inbox"||p==="my-profile";
     setMainSlide(isVert(page)?'out-down':'out-right');
-    setTimeout(()=>{navigate(target);setMainSlide(isVert(target)?'in-up':'in-left');setTimeout(()=>setMainSlide(null),620);},600);
+    setTimeout(()=>{navigate(target);setMainSlide(isVert(target)?'in-up':'in-left');setTimeout(()=>setMainSlide(null),500);},480);
   },[mainSlide,page,navigate]);
   const viewProfile=(t)=>{setPrevPage(page);setViewingProfile(t);setPage("profile");pushHist("profile",t?.public_slug?{talentSlug:t.public_slug}:{});};
   const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");pushHist("auth-gate");};
