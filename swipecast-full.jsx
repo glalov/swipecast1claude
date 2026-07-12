@@ -13172,6 +13172,20 @@ function ComposeDMModal({fromId,toId,toName,onClose,initialBody,title,intro}){
 // Realtime-subscribes to the conversation_id so new messages from the other side
 // appear live without a manual refresh — and they get marked read immediately too,
 // since the user is actively viewing the thread.
+// Audition-invitation messages are sent as plain text by the CD invite flow:
+//   "You've been invited to audition for {Project} · {Role}.\n\n\"{note}\""
+// Parse that shape so the talent's thread can show a clear invitation card.
+function parseAuditionInvite(body){
+  if(typeof body!=="string")return null;
+  const m=body.match(/^You've been invited to audition for ([^\n]+?)\.(?:\s*\n+"([\s\S]+?)")?\s*$/);
+  if(!m)return null;
+  const head=m[1].trim(), note=(m[2]||"").trim();
+  let project=head, role="";
+  const i=head.lastIndexOf(" · ");
+  if(i>=0){project=head.slice(0,i).trim();role=head.slice(i+3).trim();}
+  return {project,role,note};
+}
+
 function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,onViewCasting,onClose,onRead,onDeleted,onReplied}){
   const [reply,setReply]=useState("");
   const [busy,setBusy]=useState(false);
@@ -13419,15 +13433,29 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
                const dayLabel=day===today?"Today":day===yesterday?"Yesterday":dt.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:dt.getFullYear()!==new Date().getFullYear()?"numeric":undefined});
                const time=dt.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
                const fromLabel=mine?"You":cpName;
+               const inv=!mine?parseAuditionInvite(m.body):null;
                return(<div key={m.id}>
                  {showSeparator&&<div className="cs-thread-day">{dayLabel}</div>}
                  <div className={`cs-thread-row ${mine?"mine":"theirs"}`}>
                    <div className={`cs-thread-stack ${mine?"mine":"theirs"}`}>
                      <div className="cs-thread-meta">{fromLabel} · {time}</div>
-                     <div className={`msg-bubble cs-thread-bubble ${mine?"mine":"theirs"}`}>
-                       {m.body}
-                       {isAdmin&&<button onClick={()=>deleteOne(m.id)} title="Delete this message" className="msg-del-btn" style={{position:"absolute",top:-8,[mine?"left":"right"]:-8,width:22,height:22,borderRadius:"50%",border:"1px solid var(--bdr)",background:"#fff",color:"var(--t3)",fontSize:11,cursor:"pointer",padding:0}}><Ico n="x" s={24}/></button>}
-                     </div>
+                     {inv?(
+                       <div style={{position:"relative",maxWidth:360,width:"100%",border:"1px solid var(--bdr)",borderLeft:"4px solid var(--blu)",borderRadius:12,overflow:"hidden",background:"var(--s1)"}}>
+                         <div style={{background:"rgba(37,99,235,0.08)",padding:"8px 14px",fontSize:11,fontWeight:800,letterSpacing:"0.06em",textTransform:"uppercase",color:"var(--blu)",display:"flex",alignItems:"center",gap:6}}><Ico n="movie" s={14}/>Audition invitation</div>
+                         <div style={{padding:"13px 15px"}}>
+                           <div style={{fontSize:16,fontWeight:800,letterSpacing:"-0.2px",color:"var(--t1)",lineHeight:1.25}}>{inv.project}</div>
+                           {inv.role&&<div style={{marginTop:10}}><span style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--s2)",borderRadius:8,padding:"5px 10px",fontSize:13,fontWeight:700,color:"var(--t1)"}}><span style={{color:"var(--t3)",fontWeight:600,fontSize:11,textTransform:"uppercase",letterSpacing:"0.05em"}}>Role</span>{inv.role}</span></div>}
+                           {inv.note&&<div style={{marginTop:11,padding:"10px 12px",background:"var(--bg)",borderRadius:8,fontSize:13,color:"var(--t2)",lineHeight:1.5,fontStyle:"italic",borderLeft:"2px solid var(--bdr)"}}>&ldquo;{inv.note}&rdquo;</div>}
+                           {castingCtx?.casting?.id&&onViewCasting&&<button className="btn-p btn-sm" style={{marginTop:12,fontSize:13}} onClick={()=>{onViewCasting(castingCtx.casting.id);onClose();}}>View casting &amp; role →</button>}
+                         </div>
+                         {isAdmin&&<button onClick={()=>deleteOne(m.id)} title="Delete this message" className="msg-del-btn" style={{position:"absolute",top:-8,right:-8,width:22,height:22,borderRadius:"50%",border:"1px solid var(--bdr)",background:"#fff",color:"var(--t3)",fontSize:11,cursor:"pointer",padding:0}}><Ico n="x" s={24}/></button>}
+                       </div>
+                     ):(
+                       <div className={`msg-bubble cs-thread-bubble ${mine?"mine":"theirs"}`}>
+                         {m.body}
+                         {isAdmin&&<button onClick={()=>deleteOne(m.id)} title="Delete this message" className="msg-del-btn" style={{position:"absolute",top:-8,[mine?"left":"right"]:-8,width:22,height:22,borderRadius:"50%",border:"1px solid var(--bdr)",background:"#fff",color:"var(--t3)",fontSize:11,cursor:"pointer",padding:0}}><Ico n="x" s={24}/></button>}
+                       </div>
+                     )}
                      {m.to_id===sessionUid&&!m.read_at&&<span style={{fontSize:9,fontWeight:800,color:"#0a84ff",letterSpacing:1,padding:"0 4px"}}>NEW</span>}
                      {/* Admin-only read receipt. Only on admin-generated castings, only for
                          messages the admin SENT, and only once the actor has truly opened the
