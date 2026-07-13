@@ -92,7 +92,7 @@ const TRANSLATIONS = {
     'footer.talent':'Talent','footer.industry':'Industry','footer.company':'Company','footer.support':'Support',
     'footer.createProfile':'Create Profile','footer.browse':'Browse Castings','footer.classes':'Classes',
     'footer.resources':'Resources','footer.successStories':'Success Stories',
-    'footer.postCasting':'Post a Casting','footer.pricing':'Pricing',
+    'footer.postCasting':'Post a Casting','footer.pricing':'Pricing','footer.manageMembership':'Manage membership',
     'footer.payTalent':'Pay Talent',
     'footer.actorToolkit':'Actor Toolkit',
     'footer.managerMode':'Manager Mode',
@@ -340,7 +340,7 @@ const TRANSLATIONS = {
     'footer.talent':'Talento','footer.industry':'Industria','footer.company':'Empresa','footer.support':'Soporte',
     'footer.createProfile':'Crear perfil','footer.browse':'Convocatorias','footer.classes':'Clases',
     'footer.resources':'Recursos','footer.successStories':'Historias de éxito',
-    'footer.postCasting':'Publicar convocatoria','footer.pricing':'Precios',
+    'footer.postCasting':'Publicar convocatoria','footer.pricing':'Precios','footer.manageMembership':'Gestionar membresía',
     'footer.payTalent':'Pagar Talento',
     'footer.actorToolkit':'Kit del Actor',
     'footer.forStudios':'Para estudios','footer.apiAccess':'Acceso API',
@@ -3874,7 +3874,9 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
           <div>
             <h4 className="site-footer-heading">{t('footer.industry')}</h4>
             <L to="register-cd">{t('footer.postCasting')}</L>
-            <L to="pricing">{t('footer.pricing')}</L>
+            {(typeof window!=="undefined"&&window.__SC_PREMIUM===true)
+              ?<L to="account-settings">{t('footer.manageMembership')}</L>
+              :<L to="pricing">{t('footer.pricing')}</L>}
             <L to="pay-talent">{t('footer.payTalent')}</L>
             <L to="studios">{t('footer.forStudios')}</L>
           </div>
@@ -26858,6 +26860,11 @@ function App(){
       setClassesOn(on);
     }catch(_){}
   })();},[]);
+  // Premium flag — lets the Footer (rendered in many places, no myProfile prop)
+  // swap its "Pricing" upsell link to "Manage membership" for paying members.
+  // Set during render so the change is reflected the same tick myProfile updates
+  // (App re-renders → Footer re-reads the flag; no prop-drilling, no stale link).
+  try{window.__SC_PREMIUM=myProfile?.membership_status==="active";}catch(_){}
   // ───────────────────────────────────────────────────────────────
   // Shared refresh signal for cross-page data (castings, talent, etc.)
   // Any page that wants to know "something important changed, re-fetch"
