@@ -3194,7 +3194,7 @@ function ActivateMembershipBanner({myProfile,session,page,onNavigate}){
     onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onNavigate&&onNavigate("membership");}}}
     style={{
       position:"relative",width:"100%",cursor:"pointer",
-      background:"linear-gradient(180deg,#C46F79 0%,#A94F5C 100%)",color:"#fff8eb",fontFamily:"'DM Sans',sans-serif",
+      background:"linear-gradient(90deg,#FF7A5C 0%,#F0456E 100%)",color:"#fff8eb",fontFamily:"'DM Sans',sans-serif",
       padding:"0 18px",minHeight:24,height:24,
       display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",
       boxShadow:"0 1px 0 rgba(0,0,0,0.15)"
