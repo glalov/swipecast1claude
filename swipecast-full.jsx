@@ -24462,19 +24462,23 @@ const MM_MONTHS=["January","February","March","April","May","June","July","Augus
 function AdminManagerMode({session}){
   const[rowsByWeek,setRowsByWeek]=useState({});   // { 'YYYY-MM-DD': {count, firstSentAt} }
   const[premiumCount,setPremiumCount]=useState(0);
+  const[checkinSettings,setCheckinSettings]=useState({checkin_enabled:true,checkin_paused:false});
   const[loading,setLoading]=useState(true);
+  const[toggleBusy,setToggleBusy]=useState(false);
+  const[msg,setMsg]=useState("");
   const now=new Date();
   const[cursor,setCursor]=useState({y:now.getUTCFullYear(),m:now.getUTCMonth()}); // viewed month (UTC)
 
   useEffect(()=>{(async()=>{
     setLoading(true);
-    const[lRes,pRes]=await Promise.all([
+    const[lRes,pRes,sRes]=await Promise.all([
       // Only count recipients who are currently Premium — Manager Mode is premium-only.
       window.sb.from("weekly_checkin_logs")
         .select("week_start,sent_at,status,talent_id,profiles:talent_id(membership_status)")
         .eq("status","sent").order("sent_at",{ascending:true}).limit(5000),
       window.sb.from("profiles").select("id",{count:"exact",head:true})
-        .eq("user_type","talent").eq("membership_status","active")
+        .eq("user_type","talent").eq("membership_status","active"),
+      window.sb.from("site_settings").select("checkin_enabled,checkin_paused").eq("id",1).maybeSingle()
     ]);
     const agg={};
     (lRes.data||[]).forEach(r=>{
@@ -24486,6 +24490,10 @@ function AdminManagerMode({session}){
     });
     setRowsByWeek(agg);
     setPremiumCount(pRes.count||0);
+    if(sRes.data)setCheckinSettings({
+      checkin_enabled:sRes.data.checkin_enabled!==false,
+      checkin_paused:!!sRes.data.checkin_paused
+    });
     setLoading(false);
   })();},[]);
 
@@ -24510,6 +24518,21 @@ function AdminManagerMode({session}){
 
   const goMonth=(delta)=>setCursor(c=>{let m=c.m+delta,y=c.y;if(m<0){m=11;y--;}if(m>11){m=0;y++;}return{y,m};});
   const isCurrentMonth=cursor.y===now.getUTCFullYear()&&cursor.m===now.getUTCMonth();
+  const checkinsOn=checkinSettings.checkin_enabled!==false&&!checkinSettings.checkin_paused;
+  const toggleManagerMode=async()=>{
+    const next=!checkinsOn;
+    setToggleBusy(true);setMsg("");
+    const payload=next
+      ?{checkin_enabled:true,checkin_paused:false,updated_at:new Date().toISOString()}
+      :{checkin_enabled:false,updated_at:new Date().toISOString()};
+    const{error}=await window.sb.from("site_settings").update(payload).eq("id",1);
+    if(error)setMsg("Manager Mode update failed: "+error.message);
+    else{
+      setCheckinSettings(s=>({...s,...payload}));
+      setMsg(next?"Manager Mode weekly check-ins are on.":"Manager Mode weekly check-ins are off. Scheduled sends are stopped.");
+    }
+    setToggleBusy(false);
+  };
 
   if(loading)return(<CastSlateLoader size="inline" text="Loading Manager Mode delivery history…"/>);
 
@@ -24524,8 +24547,14 @@ function AdminManagerMode({session}){
   const monthSent=bars.reduce((a,b)=>a+b.count,0);
 
   return(<>
-    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Manager Mode</h1>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",marginBottom:4}}>
+      <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,margin:0}}>Manager Mode</h1>
+      <button className={checkinsOn?"btn-s btn-sm":"btn-p btn-sm"} disabled={toggleBusy} aria-pressed={checkinsOn} onClick={toggleManagerMode} title={checkinsOn?"Turn off weekly Manager Mode sends":"Turn on weekly Manager Mode sends"} style={{borderColor:checkinsOn?"#c0392b":"var(--grn)",color:checkinsOn?"#c0392b":"#fff",background:checkinsOn?"#fff":"var(--grn)",fontWeight:800}}>
+        {toggleBusy?"Saving...":checkinsOn?"Manager Mode Sends: ON":"Manager Mode Sends: OFF"}
+      </button>
+    </div>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Premium-only weekly career check-ins. Every <strong>Monday at 10:00&nbsp;AM ET</strong> (14:00 UTC), each Premium subscriber receives one personalized note. This view shows, month by month, how many paid subscribers were successfully sent on each of the month's Mondays and the upcoming schedule.</p>
+    {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,borderLeft:"3px solid var(--acc)"}}>{msg}</div>}
 
     {/* Top stat cards */}
     <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:22}}>
