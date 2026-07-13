@@ -3281,12 +3281,14 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
   // Always show the 3 actor plans. Button text differs: logged-in users can pick directly,
   // logged-out users are sent to sign in first (with plan saved to sessionStorage).
   const planCardButton=(p)=>{
+    // Tinted Tiers: featured (yearly) plan uses a solid teal action button
+    const featBtn=p.key==="yearly"?{width:"100%",background:"#14785f",borderColor:"#14785f",color:"#fff"}:{width:"100%"};
     if(session?.user){
       // Logged-in non-industry user — proceed directly to plan summary
-      return(<button className={p.key==="yearly"?"btn-p":"btn-s"} style={{width:"100%"}} onClick={()=>onPickPlan(p.key)}>Select Plan →</button>);
+      return(<button className={p.key==="yearly"?"btn-p":"btn-s"} style={featBtn} onClick={()=>onPickPlan(p.key)}>Select Plan →</button>);
     }
     // Logged-out — save plan, send to login
-    return(<button className={p.key==="yearly"?"btn-p":"btn-s"} style={{width:"100%"}} onClick={()=>{try{sessionStorage.setItem("sc_pending_plan",p.key);}catch(_){}onNavigate("login");}}>Sign in to subscribe →</button>);
+    return(<button className={p.key==="yearly"?"btn-p":"btn-s"} style={featBtn} onClick={()=>{try{sessionStorage.setItem("sc_pending_plan",p.key);}catch(_){}onNavigate("login");}}>Sign in to subscribe →</button>);
   };
 
   return(<div className="page page-wide">
@@ -3298,23 +3300,30 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
     <div className="grid-3" style={{gap:18,maxWidth:1100,margin:"0 auto"}}>
       {Object.values(MEMBERSHIP_PLANS).map(p=>{
         const featured=p.key==="yearly";
-        return(<div key={p.key} className="card" style={{padding:28,position:"relative",border:featured?"2px solid var(--acc)":"1px solid var(--bdr)"}}>
-          {featured&&<div style={{position:"absolute",top:-12,left:24,background:"var(--acc)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.2,padding:"4px 10px",borderRadius:100,fontFamily:"'DM Sans',sans-serif"}}>BEST VALUE</div>}
+        // Tinted Tiers — each plan gets its own soft wash; featured plan reads teal
+        const PLAN_TINTS={
+          yearly:{bg:"linear-gradient(180deg,#e6f3ed,#daeee6)",border:"#14785f"},
+          six_month:{bg:"#f2eee6",border:"#e2d9c6"},
+          monthly:{bg:"#f3edf0",border:"#e4d4dd"}
+        };
+        const tint=PLAN_TINTS[p.key]||{bg:"var(--s1)",border:"var(--bdr)"};
+        return(<div key={p.key} className="card" style={{padding:28,position:"relative",background:tint.bg,border:featured?"2px solid #14785f":`1px solid ${tint.border}`,boxShadow:featured?"0 30px 58px -30px rgba(20,120,95,.5), 0 0 0 1px #14785f":"none"}}>
+          {featured&&<div style={{position:"absolute",top:-12,left:24,background:"#14785f",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.2,padding:"4px 10px",borderRadius:100,fontFamily:"'DM Sans',sans-serif"}}>BEST VALUE</div>}
           <h3 style={{fontSize:16,fontWeight:800,marginBottom:6}}>{p.label}</h3>
           <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:6}}>
-            <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:38,letterSpacing:-1.2,color:featured?"var(--acc)":"var(--t1)"}}>${p.monthly.toFixed(2)}</span>
+            <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:38,letterSpacing:-1.2,color:featured?"#14785f":"var(--t1)"}}>${p.monthly.toFixed(2)}</span>
             <span style={{fontSize:13,color:"var(--t2)"}}>/month</span>
           </div>
           <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>{p.note}</p>
           <ul style={{listStyle:"none",padding:0,margin:"0 0 22px",display:"flex",flexDirection:"column",gap:6}}>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>Unlimited casting submissions</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>Unlimited photos &amp; gallery media</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>Unlimited video uploads</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>Actor Slate Video — 7-sec intro for casting teams</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>Actor Business Card with unique QR code</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>Manager Mode — weekly career check-ins</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>Personalized profile improvement suggestions</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>Cancel anytime</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"#14785f",fontWeight:700}}><Ico n="check" s={24}/></span>Unlimited casting submissions</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"#14785f",fontWeight:700}}><Ico n="check" s={24}/></span>Unlimited photos &amp; gallery media</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"#14785f",fontWeight:700}}><Ico n="check" s={24}/></span>Unlimited video uploads</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"#14785f",fontWeight:700}}><Ico n="check" s={24}/></span>Actor Slate Video — 7-sec intro for casting teams</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"#14785f",fontWeight:700}}><Ico n="check" s={24}/></span>Actor Business Card with unique QR code</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"#14785f",fontWeight:700}}><Ico n="check" s={24}/></span>Manager Mode — weekly career check-ins</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"#14785f",fontWeight:700}}><Ico n="check" s={24}/></span>Personalized profile improvement suggestions</li>
+            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"#14785f",fontWeight:700}}><Ico n="check" s={24}/></span>Cancel anytime</li>
           </ul>
           <div style={{borderTop:"1px solid var(--bdr)",paddingTop:14,marginBottom:14,fontSize:12,color:"var(--t3)"}}>Total billed: <strong style={{color:"var(--t1)"}}>${p.total.toFixed(2)}</strong>{p.months>1?` for ${p.months} months`:" today"}</div>
           {planCardButton(p)}
