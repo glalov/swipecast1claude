@@ -24462,12 +24462,20 @@ const MM_MONTHS=["January","February","March","April","May","June","July","Augus
 function AdminManagerMode({session}){
   const[rowsByWeek,setRowsByWeek]=useState({});   // { 'YYYY-MM-DD': {count, firstSentAt} }
   const[premiumCount,setPremiumCount]=useState(0);
-  const[checkinSettings,setCheckinSettings]=useState({checkin_enabled:true,checkin_paused:false});
+  const[checkinSettings,setCheckinSettings]=useState({checkin_enabled:true,checkin_paused:false,checkin_one_time_send_at:null,checkin_one_time_status:null,checkin_one_time_triggered_at:null});
+  const[scheduleValue,setScheduleValue]=useState("");
   const[loading,setLoading]=useState(true);
   const[toggleBusy,setToggleBusy]=useState(false);
   const[msg,setMsg]=useState("");
   const now=new Date();
   const[cursor,setCursor]=useState({y:now.getUTCFullYear(),m:now.getUTCMonth()}); // viewed month (UTC)
+  const toDateTimeLocal=(iso)=>{
+    if(!iso)return"";
+    const d=new Date(iso);
+    if(Number.isNaN(d.getTime()))return"";
+    const pad=n=>String(n).padStart(2,"0");
+    return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
 
   useEffect(()=>{(async()=>{
     setLoading(true);
@@ -24478,7 +24486,7 @@ function AdminManagerMode({session}){
         .eq("status","sent").order("sent_at",{ascending:true}).limit(5000),
       window.sb.from("profiles").select("id",{count:"exact",head:true})
         .eq("user_type","talent").eq("membership_status","active"),
-      window.sb.from("site_settings").select("checkin_enabled,checkin_paused").eq("id",1).maybeSingle()
+      window.sb.from("site_settings").select("checkin_enabled,checkin_paused,checkin_one_time_send_at,checkin_one_time_status,checkin_one_time_triggered_at").eq("id",1).maybeSingle()
     ]);
     const agg={};
     (lRes.data||[]).forEach(r=>{
@@ -24490,10 +24498,17 @@ function AdminManagerMode({session}){
     });
     setRowsByWeek(agg);
     setPremiumCount(pRes.count||0);
-    if(sRes.data)setCheckinSettings({
-      checkin_enabled:sRes.data.checkin_enabled!==false,
-      checkin_paused:!!sRes.data.checkin_paused
-    });
+    if(sRes.data){
+      const s=sRes.data;
+      setCheckinSettings({
+        checkin_enabled:s.checkin_enabled!==false,
+        checkin_paused:!!s.checkin_paused,
+        checkin_one_time_send_at:s.checkin_one_time_send_at||null,
+        checkin_one_time_status:s.checkin_one_time_status||null,
+        checkin_one_time_triggered_at:s.checkin_one_time_triggered_at||null
+      });
+      if(s.checkin_one_time_status==="scheduled"&&s.checkin_one_time_send_at)setScheduleValue(toDateTimeLocal(s.checkin_one_time_send_at));
+    }
     setLoading(false);
   })();},[]);
 
@@ -24507,6 +24522,7 @@ function AdminManagerMode({session}){
   // The exact send moment for a given Monday date string = that day 14:00 UTC.
   const sendMoment=(ymd)=>new Date(ymd+`T${String(MM_SEND_HOUR_UTC).padStart(2,"0")}:00:00Z`);
   const fmtTimeET=(iso)=>{try{return new Date(iso).toLocaleString("en-US",{timeZone:"America/New_York",hour:"numeric",minute:"2-digit",timeZoneName:"short"});}catch(_){return"—";}};
+  const fmtDateTimeET=(iso)=>{try{return new Date(iso).toLocaleString("en-US",{timeZone:"America/New_York",weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",timeZoneName:"short"});}catch(_){return"—";}};
   const fmtDate=(ymd)=>{try{return new Date(ymd+"T12:00:00Z").toLocaleDateString("en-US",{timeZone:"UTC",month:"short",day:"numeric"});}catch(_){return ymd;}};
 
   // Next scheduled send = next Monday 14:00 UTC strictly in the future.
@@ -24522,14 +24538,38 @@ function AdminManagerMode({session}){
   const toggleManagerMode=async()=>{
     const next=!checkinsOn;
     setToggleBusy(true);setMsg("");
-    const payload=next
-      ?{checkin_enabled:true,checkin_paused:false,updated_at:new Date().toISOString()}
-      :{checkin_enabled:false,updated_at:new Date().toISOString()};
-    const{error}=await window.sb.from("site_settings").update(payload).eq("id",1);
+    let runAtIso=null;
+    if(next&&scheduleValue.trim()){
+      const runAt=new Date(scheduleValue);
+      if(Number.isNaN(runAt.getTime())){
+        setMsg("Choose a valid date and time first.");
+        setToggleBusy(false);
+        return;
+      }
+      if(runAt.getTime()<=Date.now()+60000){
+        setMsg("Choose a time at least 1 minute in the future.");
+        setToggleBusy(false);
+        return;
+      }
+      runAtIso=runAt.toISOString();
+    }
+    const{data,error}=await window.sb.rpc("admin_set_manager_mode_checkins",{p_enabled:next,p_run_at:runAtIso});
     if(error)setMsg("Manager Mode update failed: "+error.message);
     else{
-      setCheckinSettings(s=>({...s,...payload}));
-      setMsg(next?"Manager Mode weekly check-ins are on.":"Manager Mode weekly check-ins are off. Scheduled sends are stopped.");
+      const s=data||{};
+      setCheckinSettings({
+        checkin_enabled:s.checkin_enabled!==false,
+        checkin_paused:!!s.checkin_paused,
+        checkin_one_time_send_at:s.checkin_one_time_send_at||null,
+        checkin_one_time_status:s.checkin_one_time_status||null,
+        checkin_one_time_triggered_at:s.checkin_one_time_triggered_at||null
+      });
+      if(s.checkin_one_time_status==="scheduled"&&s.checkin_one_time_send_at)setScheduleValue(toDateTimeLocal(s.checkin_one_time_send_at));
+      else if(!next)setScheduleValue("");
+      setMsg(next
+        ?(runAtIso?`Manager Mode weekly check-ins are on. One-time send scheduled for ${fmtDateTimeET(runAtIso)}.`:"Manager Mode weekly check-ins are on.")
+        :"Manager Mode weekly check-ins are off. Scheduled sends are stopped."
+      );
     }
     setToggleBusy(false);
   };
@@ -24545,23 +24585,39 @@ function AdminManagerMode({session}){
   });
   const maxCount=Math.max(1,...bars.map(b=>b.count));
   const monthSent=bars.reduce((a,b)=>a+b.count,0);
+  const oneTimeScheduled=checkinSettings.checkin_one_time_status==="scheduled"&&checkinSettings.checkin_one_time_send_at;
+  const nextSendDate=oneTimeScheduled?new Date(checkinSettings.checkin_one_time_send_at):nextSend;
+  const nextSendSub=oneTimeScheduled?"One-time scheduled":fmtTimeET(nextSend.toISOString());
 
   return(<>
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",marginBottom:4}}>
       <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,margin:0}}>Manager Mode</h1>
-      <button className={checkinsOn?"btn-s btn-sm":"btn-p btn-sm"} disabled={toggleBusy} aria-pressed={checkinsOn} onClick={toggleManagerMode} title={checkinsOn?"Turn off weekly Manager Mode sends":"Turn on weekly Manager Mode sends"} style={{borderColor:checkinsOn?"#c0392b":"var(--grn)",color:checkinsOn?"#c0392b":"#fff",background:checkinsOn?"#fff":"var(--grn)",fontWeight:800}}>
+      <button className="btn-s btn-sm" disabled={toggleBusy} aria-pressed={checkinsOn} onClick={toggleManagerMode} title={checkinsOn?"Turn off weekly Manager Mode sends":"Turn on weekly Manager Mode sends"} style={{borderColor:checkinsOn?"var(--grn)":"#c0392b",color:checkinsOn?"#fff":"#c0392b",background:checkinsOn?"var(--grn)":"#fff",fontWeight:800}}>
         {toggleBusy?"Saving...":checkinsOn?"Manager Mode Sends: ON":"Manager Mode Sends: OFF"}
       </button>
     </div>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Premium-only weekly career check-ins. Every <strong>Monday at 10:00&nbsp;AM ET</strong> (14:00 UTC), each Premium subscriber receives one personalized note. This view shows, month by month, how many paid subscribers were successfully sent on each of the month's Mondays and the upcoming schedule.</p>
     {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,borderLeft:"3px solid var(--acc)"}}>{msg}</div>}
 
+    <div className="card" style={{padding:18,marginBottom:18}}>
+      <div style={{display:"flex",alignItems:"end",gap:12,flexWrap:"wrap"}}>
+        <div style={{flex:"1 1 260px",minWidth:220}}>
+          <label className="label">Optional one-time send date/time</label>
+          <input className="input" type="datetime-local" value={scheduleValue} onChange={e=>setScheduleValue(e.target.value)} disabled={toggleBusy}/>
+        </div>
+        {scheduleValue&&<button className="btn-s btn-sm" disabled={toggleBusy} onClick={()=>setScheduleValue("")}>Clear</button>}
+      </div>
+      <p style={{fontSize:12,color:"var(--t3)",lineHeight:1.6,margin:"10px 0 0"}}>Enter a date/time, then click the Manager Mode Sends toggle. It will schedule one one-time send for that exact minute; leave this blank to only resume the normal Monday schedule.</p>
+      {oneTimeScheduled&&<div style={{marginTop:10,padding:"9px 12px",borderRadius:8,background:"rgba(26,26,200,0.06)",color:"var(--acc)",fontSize:12,fontWeight:700}}>One-time send scheduled for {fmtDateTimeET(checkinSettings.checkin_one_time_send_at)}. Turning sends off cancels it.</div>}
+      {checkinSettings.checkin_one_time_status==="triggered"&&checkinSettings.checkin_one_time_triggered_at&&<div style={{marginTop:10,padding:"9px 12px",borderRadius:8,background:"rgba(27,135,62,0.08)",color:"var(--grn)",fontSize:12,fontWeight:700}}>Last one-time send triggered {fmtDateTimeET(checkinSettings.checkin_one_time_triggered_at)}.</div>}
+    </div>
+
     {/* Top stat cards */}
     <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:22}}>
       {[
         ["Premium subscribers",premiumCount,"Currently eligible"],
         ["Sent this month",monthSent,`${MM_MONTHS[cursor.m]} ${cursor.y}`],
-        ["Next send",nextSend.toLocaleDateString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric"}),fmtTimeET(nextSend.toISOString())]
+        ["Next send",nextSendDate.toLocaleDateString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric"}),nextSendSub]
       ].map(([label,val,sub])=>(
         <div key={label} className="card" style={{padding:"16px 18px",textAlign:"center"}}>
           <div style={{fontSize:26,fontWeight:800,color:"var(--acc)"}}>{val}</div>
@@ -24644,6 +24700,14 @@ function AdminManagerMode({session}){
     <div className="card" style={{padding:24}}>
       <div style={{fontWeight:700,fontSize:16,marginBottom:4}}>Upcoming schedule</div>
       <div style={{fontSize:12,color:"var(--t3)",marginBottom:14}}>Automatic — runs every Monday at 10:00&nbsp;AM ET (14:00 UTC). No action needed.</div>
+      {oneTimeScheduled&&(
+        <div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:"1px solid var(--bdr)"}}>
+          <div style={{width:8,height:8,borderRadius:"50%",background:"var(--grn)"}}/>
+          <div style={{flex:1,fontWeight:800,fontSize:14}}>One-time Manager Mode send</div>
+          <div style={{fontSize:13,color:"var(--t2)"}}>{fmtDateTimeET(checkinSettings.checkin_one_time_send_at)}</div>
+          <span style={{padding:"3px 9px",borderRadius:10,fontSize:10,fontWeight:700,background:"rgba(27,135,62,0.08)",color:"var(--grn)",textTransform:"uppercase",letterSpacing:0.5}}>Scheduled</span>
+        </div>
+      )}
       {(()=>{
         const upcoming=[];const d=new Date(nextSend.getTime());
         for(let i=0;i<4;i++){upcoming.push(new Date(d.getTime()));d.setUTCDate(d.getUTCDate()+7);}
