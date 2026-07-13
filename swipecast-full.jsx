@@ -3216,7 +3216,7 @@ function ActivateMembershipBanner({myProfile,session,page,onNavigate}){
 //     → routes to PlanSummaryPage. The cards mirror Backstage's layout but
 //     stay on-brand. Already-active members see a different card explaining
 //     their current plan + expiry instead of plan options.
-function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
+function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
   // Only show "industry doesn't need a membership" when we KNOW the user is CD/industry.
   // Never gate on a null/loading profile — default to showing talent plans.
   const userType=(myProfile?.user_type||"").toLowerCase();
@@ -3337,6 +3337,9 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
     {!session?.user&&<div style={{textAlign:"center",marginTop:28,fontSize:13,color:"var(--t3)"}}>
       No account yet?{" "}<span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("register-talent")}>Create a free account →</span>
     </div>}
+    {/* Social proof (Demo 1) — same section as the public pricing page, so
+        logged-in free actors on the plan picker see it too. */}
+    <div style={{marginTop:40}}><PricingSocialProof onViewCasting={onViewCasting}/></div>
     <Footer onNavigate={onNavigate}/>
   </div>);
 }
@@ -28266,7 +28269,7 @@ function App(){
         {page==="register-talent"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterTalent onNavigate={navigate}/>)}
         {page==="register-cd"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterCD onNavigate={navigate}/>)}
         {page==="login"&&<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn} authNotice={authNotice} clearAuthNotice={clearAuthNotice}/>}
-        {page==="membership"&&<MembershipPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}}/>}
+        {page==="membership"&&<MembershipPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}} onViewCasting={(c)=>handleViewCasting(c,"membership")}/>}
         {page==="plan-summary"&&(!authReady?<PageLoader text="Loading your plan…"/>:<PlanSummaryPage session={session} myProfile={myProfile} planKey={selectedPlan||"monthly"} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} onActivated={(returnInfo)=>{
           // Came from a casting they tried to apply to — bounce back to that casting.
           if(returnInfo?.casting){
