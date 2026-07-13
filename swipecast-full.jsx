@@ -3429,7 +3429,7 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
           <strong>Total due today</strong>
           <strong style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:26,color:"var(--acc)",letterSpacing:-0.8}}>${plan.total.toFixed(2)}</strong>
         </div>
-        <p style={{fontSize:11,color:"var(--t3)",marginTop:12,lineHeight:1.5}}>Renews automatically. Plus tax where applicable.</p>
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:12,lineHeight:1.5}}>Renews automatically. Plus tax where applicable. <strong style={{color:"var(--t2)"}}>All sales are final — memberships are non-refundable except where required by law.</strong></p>
       </div>
 
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"12px 16px",borderRadius:8,fontSize:13,marginBottom:14,textAlign:"center"}}>{err}</div>}
