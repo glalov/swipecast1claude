@@ -21187,6 +21187,79 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
 // Full oversight. All writes go through SECURITY DEFINER RPCs on the DB side —
 // the frontend only *triggers* actions. Permissions are enforced server-side.
 // ═══════════════════════════════════════════
+// ─── Dispute Evidence — look up the checkout-consent record a user agreed to
+//     before paying, to submit as evidence when a Stripe chargeback is opened.
+//     Search by Stripe checkout session id (from the disputed charge), user
+//     email, or user id. Data comes via the admin-gated RPC (RLS-safe).
+function AdminDisputeEvidence(){
+  const [q,setQ]=useState("");
+  const [rows,setRows]=useState(null);
+  const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState("");
+  const [copiedId,setCopiedId]=useState(null);
+
+  const run=async()=>{
+    setBusy(true);setErr("");
+    try{
+      const{data,error}=await window.sb.rpc("admin_search_checkout_consents",{p_query:q||null});
+      if(error)throw error;
+      setRows(data||[]);
+    }catch(e){setErr(e.message||"Lookup failed.");setRows(null);}
+    setBusy(false);
+  };
+  useEffect(()=>{run();},[]); // load most-recent on open
+
+  const copyRow=(r)=>{
+    const txt=`CastSlate — checkout consent evidence
+Recorded: ${new Date(r.created_at).toISOString()} (${r.source})
+User: ${r.display_name||"—"} <${r.email||"—"}>  (id ${r.user_id})
+Plan: ${r.plan_key}  Price: $${r.price!=null?Number(r.price).toFixed(2):"—"} ${(r.currency||"").toUpperCase()}
+Stripe session: ${r.session_id||"—"}
+IP address: ${r.ip||"—"}
+Device: ${r.user_agent||"—"}
+Disclosure shown (v${r.policy_version}):
+"${r.policy_text}"`;
+    try{navigator.clipboard.writeText(txt);setCopiedId(r.id);setTimeout(()=>setCopiedId(null),1800);}catch(_){}
+  };
+
+  const th={textAlign:"left",fontSize:11,textTransform:"uppercase",letterSpacing:0.5,color:"var(--t3)",fontWeight:700,padding:"8px 10px",borderBottom:"1px solid var(--bdr)",whiteSpace:"nowrap"};
+  const td={fontSize:12.5,color:"var(--t2)",padding:"10px",borderBottom:"1px solid var(--bdr)",verticalAlign:"top"};
+
+  return(<div>
+    <h2 style={{fontSize:22,fontWeight:800,marginBottom:6}}>Dispute Evidence</h2>
+    <p style={{fontSize:13,color:"var(--t2)",marginBottom:18,maxWidth:680,lineHeight:1.55}}>
+      When a Stripe chargeback comes in, look up the consent the member agreed to at checkout — the exact recurring-billing and no-refund disclosure, their IP, device, and the linked Stripe session. Search by <strong>Stripe session id</strong> (from the disputed charge), <strong>email</strong>, or <strong>user id</strong>. Leave blank for the most recent.
+    </p>
+    <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
+      <input className="input" value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")run();}}
+        placeholder="cs_live_… / email / user id" style={{flex:"1 1 320px",padding:"11px 14px",fontSize:13}}/>
+      <button className="btn-p btn-sm" disabled={busy} onClick={run}>{busy?"Searching…":"Search"}</button>
+    </div>
+    {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}</div>}
+    {rows&&rows.length===0&&<div style={{fontSize:13,color:"var(--t3)",padding:"20px 0"}}>No consent records found.</div>}
+    {rows&&rows.length>0&&<div style={{overflowX:"auto",border:"1px solid var(--bdr)",borderRadius:12}}>
+      <table style={{width:"100%",borderCollapse:"collapse",minWidth:820}}>
+        <thead><tr>
+          <th style={th}>Recorded</th><th style={th}>Src</th><th style={th}>User</th>
+          <th style={th}>Plan</th><th style={th}>IP</th><th style={th}>Stripe session</th><th style={th}>Disclosure</th><th style={th}></th>
+        </tr></thead>
+        <tbody>
+          {rows.map(r=>(<tr key={r.id}>
+            <td style={{...td,whiteSpace:"nowrap"}}>{new Date(r.created_at).toLocaleString()}</td>
+            <td style={td}><span style={{fontSize:10,fontWeight:800,textTransform:"uppercase",padding:"2px 7px",borderRadius:99,background:r.source==="server"?"rgba(20,120,95,.14)":"var(--s3)",color:r.source==="server"?"#14785f":"var(--t2)"}}>{r.source}</span></td>
+            <td style={td}><div style={{fontWeight:600,color:"var(--t1)"}}>{r.display_name||"—"}</div><div style={{fontSize:11}}>{r.email||"—"}</div></td>
+            <td style={{...td,whiteSpace:"nowrap"}}>{r.plan_key}<br/><span style={{color:"var(--t1)",fontWeight:600}}>${r.price!=null?Number(r.price).toFixed(2):"—"}</span></td>
+            <td style={{...td,fontFamily:"monospace",fontSize:11.5}}>{r.ip||"—"}</td>
+            <td style={{...td,fontFamily:"monospace",fontSize:11,maxWidth:180,wordBreak:"break-all"}}>{r.session_id||"—"}</td>
+            <td style={{...td,maxWidth:260}}><span title={r.policy_text} style={{display:"block",lineHeight:1.45}}>v{r.policy_version}</span></td>
+            <td style={td}><button className="btn-s btn-sm" onClick={()=>copyRow(r)} style={{whiteSpace:"nowrap"}}>{copiedId===r.id?"Copied ✓":"Copy"}</button></td>
+          </tr>))}
+        </tbody>
+      </table>
+    </div>}
+  </div>);
+}
+
 function AdminPage({session,profile,isSuperAdmin,onNavigate}){
   // Read initial section from URL hash (e.g. /admin#users)
   const [section,setSection]=useState(()=>{
@@ -21250,6 +21323,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {isSuperAdmin&&<AdminNavLink current={section} target="news-controls" label="News Controls" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="legal-pages" label="Legal Pages" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="terms-acceptance" label="Terms Acceptance" onClick={goToSection}/>}
+      {isSuperAdmin&&<AdminNavLink current={section} target="dispute-evidence" label="Dispute Evidence" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="email-digests" label="Email Digests" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="email-campaigns" label="Email Campaigns" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="premium-upsell" label="Premium Upsell" onClick={goToSection}/>}
@@ -21286,6 +21360,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="news-controls"&&isSuperAdmin&&<AdminNews session={session}/>}
       {section==="legal-pages"&&isSuperAdmin&&<AdminLegalPages/>}
       {section==="terms-acceptance"&&isSuperAdmin&&<AdminTermsAcceptance session={session}/>}
+      {section==="dispute-evidence"&&isSuperAdmin&&<AdminDisputeEvidence/>}
       {section==="email-digests"&&isSuperAdmin&&<AdminEmailDigests/>}
       {section==="email-campaigns"&&isSuperAdmin&&<AdminEmailCampaigns session={session}/>}
       {section==="premium-upsell"&&isSuperAdmin&&<AdminPremiumUpsell session={session}/>}
