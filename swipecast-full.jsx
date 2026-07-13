@@ -4123,6 +4123,7 @@ function RegisterTalent({onNavigate}){
           setErr(`${name} sign-in is not available right now. Please use email to sign up.`);return;
         }
       }catch(_){}
+      try{sessionStorage.setItem("sc_oauth_login","1");}catch(_){}
       window.location.href=data.url;
     }catch(e){
       const name=provider.charAt(0).toUpperCase()+provider.slice(1);
@@ -4334,6 +4335,7 @@ function RegisterCD({onNavigate}){
         }
       }catch(_){}
       sessionStorage.setItem("swipecast_pending_type","cd");
+      try{sessionStorage.setItem("sc_oauth_login","1");}catch(_){}
       window.location.href=data.url;
     }catch(e){
       const name=provider.charAt(0).toUpperCase()+provider.slice(1);
@@ -4495,6 +4497,7 @@ function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice}){
           setErr(`${name} sign-in is not available right now. Please use your email and password.`);return;
         }
       }catch(_){}
+      try{sessionStorage.setItem("sc_oauth_login","1");}catch(_){}
       window.location.href=data.url;
     }catch(e){
       const name=provider.charAt(0).toUpperCase()+provider.slice(1);
@@ -7834,6 +7837,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
       if(pending){
         try{sessionStorage.setItem("sc_post_auth_apply",JSON.stringify({casting:pending.casting,role:pending.role}));}catch(_){}
       }
+      try{sessionStorage.setItem("sc_oauth_login","1");}catch(_){}
       window.location.href=data.url;
     }catch(e){
       try{sessionStorage.removeItem("sc_post_auth_apply");}catch(_){}
@@ -11164,6 +11168,35 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           </div>
         );
       })()}
+
+      {/* ── Upgrade banner — non-premium talent only. Prominent, top-of-dashboard
+           nudge that pairs with the first-login pricing redirect (see
+           talentLandingPage in App). Returning free users land here (not on a
+           repeat pricing wall), so this banner carries the upgrade ask. ── */}
+      {!isPremium&&(
+        <div style={{
+          background:"linear-gradient(90deg,#6b3ecb,#8b5cf6)",
+          borderRadius:14,padding:"16px 20px",marginBottom:28,
+          display:"flex",alignItems:"center",justifyContent:"space-between",gap:14,flexWrap:"wrap",
+          boxShadow:"0 6px 20px rgba(107,62,203,0.28)"
+        }}>
+          <div style={{display:"flex",alignItems:"center",gap:14,minWidth:0}}>
+            <span style={{flexShrink:0,color:"#fff"}}><Ico n="bolt" s={24}/></span>
+            <div style={{minWidth:0}}>
+              <div style={{fontWeight:800,fontSize:15.5,color:"#fff",marginBottom:2}}>Unlock your full casting potential</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,0.9)",lineHeight:1.4}}>
+                Go Premium for unlimited submissions, Manager Mode, video reels &amp; your QR business card — {PREMIUM_PRICE}.
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={()=>onNavigate("pricing")}
+            style={{background:"#fff",color:"#6b3ecb",fontWeight:800,fontSize:13,padding:"11px 22px",
+              borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",
+              boxShadow:"0 2px 8px rgba(0,0,0,0.18)",flexShrink:0}}
+          >See Premium Plans →</button>
+        </div>
+      )}
 
       {/* ── Welcome header ── */}
       <div style={{marginBottom:28,display:"flex",alignItems:isMobile?"stretch":"center",justifyContent:"space-between",gap:20,flexDirection:isMobile?"column":"row"}}>
@@ -27172,16 +27205,26 @@ function App(){
     if(tokenHash&&otpType&&otpType!=="recovery"){
       (async()=>{
         try{
-          const {error}=await window.sb.auth.verifyOtp({type:otpType,token_hash:tokenHash});
+          const {data:otpData,error}=await window.sb.auth.verifyOtp({type:otpType,token_hash:tokenHash});
           if(error){
             console.warn("[auth] verifyOtp failed:",error?.message||error);
             toLogin(looksExpired(error?.message)?"expired":"invalid");
           }else{
             // Success: onAuthStateChange SIGNED_IN populates session + profile
-            // (and restores any pending application). Land on the dashboard.
-            try{window.history.replaceState({swipecast:true,page:"dashboard"},"","/dashboard");}catch(_){}
+            // (and restores any pending application). This is the FIRST login, so
+            // route by account type: new talent → Pricing (surface the offer),
+            // everyone else → dashboard.
+            let dest="dashboard";
+            const uid=otpData?.user?.id;
+            if(uid){
+              try{
+                const {data:prof}=await window.sb.from("profiles").select("user_type,membership_status").eq("id",uid).maybeSingle();
+                if(prof?.user_type==="talent")dest=talentLandingPage(uid,prof);
+              }catch(_){}
+            }
+            try{window.history.replaceState({swipecast:true,page:dest},"","/"+dest);}catch(_){}
             window.scrollTo(0,0);
-            setPage("dashboard");
+            setPage(dest);
           }
         }catch(e){
           console.warn("[auth] verifyOtp threw:",e?.message||e);
@@ -27373,6 +27416,7 @@ function App(){
             // Restore a pending casting application that was saved to sessionStorage
             // before email confirmation (page may have reloaded since the auth-gate).
             if(e==="SIGNED_IN"){
+              let routed=false;
               try{
                 const raw=sessionStorage.getItem("sc_post_auth_apply");
                 if(raw){
@@ -27383,6 +27427,7 @@ function App(){
                     setViewingCasting(pa.casting);
                     setPage("casting-detail");
                     pushHist("casting-detail",{slug:pa.casting?.slug});
+                    routed=true;
                   }
                 }
               }catch(_){}
@@ -27394,6 +27439,29 @@ function App(){
                   setSelectedPlan(pp);
                   setPage("plan-summary");
                   pushHist("plan-summary");
+                  routed=true;
+                }
+              }catch(_){}
+              // OAuth (Google) login/signup just completed — it bypasses onLoggedIn,
+              // so apply the same growth routing here. Guarded by a one-shot flag set
+              // right before the OAuth redirect, and skipped if a pending apply/plan
+              // already claimed the destination.
+              try{
+                const wasOAuth=sessionStorage.getItem("sc_oauth_login");
+                if(wasOAuth){
+                  sessionStorage.removeItem("sc_oauth_login");
+                  if(!routed&&s?.user){
+                    const {data:prof}=await window.sb.from("profiles").select("user_type,membership_status").eq("id",s.user.id).maybeSingle();
+                    const isAd2=prof?.user_type==="admin"||prof?.user_type==="super_admin";
+                    let dest=null;
+                    if(isAd2)dest="admin";
+                    else if(prof?.user_type==="cd")dest="dashboard";
+                    else if(prof?.user_type==="talent")dest=talentLandingPage(s.user.id,prof);
+                    if(dest){
+                      setPage(dest);
+                      try{window.history.replaceState({swipecast:true,page:dest},"","/"+dest);}catch(_){}
+                    }
+                  }
                 }
               }catch(_){}
             }
@@ -27601,12 +27669,36 @@ function App(){
     }catch(e){console.warn("[viewCastingById]",e);}
   },[page]);
   const completeAuth=()=>{if(pendingApply){const c=pendingApply.casting;const r=pendingApply.role;setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c?.slug||String(c?.id)});if(!r)setPendingApply(null);}else{setPage("search");pushHist("search");}};
+  // ── Post-login landing for TALENT (actors) — growth routing ──────────────
+  //   • Premium talent                         → their Talent Dashboard.
+  //   • Free talent, FIRST login of the day    → Pricing page (once per day).
+  //   • Free talent, later logins that day     → Talent Dashboard, which shows
+  //                                              the upgrade banner (no repeat
+  //                                              pricing wall).
+  // The once-per-day gate is tracked per user in localStorage by local calendar
+  // date. Flip PRICING_EVERY_LOGIN to true to show pricing on every free login.
+  // Only talent are routed here; CDs, producers, studios and admins keep their
+  // own landings untouched.
+  const PRICING_EVERY_LOGIN=false;
+  const talentLandingPage=(uid,prof)=>{
+    if(prof?.membership_status==="active")return "talent-dashboard";
+    if(PRICING_EVERY_LOGIN)return "pricing";
+    const d=new Date();
+    const today=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    let lastShown="";
+    try{lastShown=localStorage.getItem("sc_pricing_day_"+uid)||"";}catch(_){}
+    if(lastShown!==today){
+      try{localStorage.setItem("sc_pricing_day_"+uid,today);}catch(_){}
+      return "pricing";
+    }
+    return "talent-dashboard";
+  };
   const onLoggedIn=async(user)=>{
     // onAuthStateChange SIGNED_IN will populate myProfile in parallel — do NOT call
     // loadProfile here too (that created a double-fetch race). Fetch a minimal row
     // just to decide routing.
     try{
-      const {data,error}=await window.sb.from("profiles").select("user_type,email").eq("id",user.id).maybeSingle();
+      const {data,error}=await window.sb.from("profiles").select("user_type,email,membership_status").eq("id",user.id).maybeSingle();
       if(error)console.warn("[auth] route fetch error:",error.message);
       const email=(data?.email||user.email||"").toLowerCase();
       const fallbackOwner=email&&email===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase();
@@ -27632,6 +27724,7 @@ function App(){
       }else if(isAd)navigate("admin");
       else if(data?.user_type==="cd")navigate("dashboard");
       else if(pendingApply)completeAuth();
+      else if(data?.user_type==="talent")navigate(talentLandingPage(user.id,data));
       else navigate("my-profile");
     }catch(e){
       console.warn("[auth] route decision failed, defaulting to my-profile:",e?.message||e);
