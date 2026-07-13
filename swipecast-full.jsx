@@ -5967,7 +5967,6 @@ const PSP_TESTIMONIALS=[
 ];
 function PricingSocialProof({onViewCasting}){
   const [castings,setCastings]=React.useState([]);
-  const [castCount,setCastCount]=React.useState(null);
   React.useEffect(()=>{
     let alive=true;
     (async()=>{
@@ -5981,19 +5980,12 @@ function PricingSocialProof({onViewCasting}){
         const rows=(data||[]).filter(c=>(!c.expires_at||new Date(c.expires_at).getTime()>now)&&(!c.deadline||new Date(c.deadline).getTime()>now));
         setCastings(rows);
       }catch(_){}
-      try{
-        const {count}=await window.sb.from("castings").select("id",{count:"exact",head:true})
-          .eq("published",true).in("status",["open","active","published"]);
-        if(alive&&typeof count==="number")setCastCount(count);
-      }catch(_){}
     })();
     return()=>{alive=false;};
   },[]);
   if(!castings.length)return null;
   const shortPay=(p)=>{if(!p)return null;const s=String(p).split(/[.;(]/)[0].trim();return s.length>30?s.slice(0,29).trim()+"…":s;};
   const loop=castings.concat(castings);
-  const nCast=castCount||castings.length;
-  const nCastDisp=Math.max(10,Math.floor(nCast/10)*10)+"+";
   const castCard=(c,i)=>(
     <div className="psp-cast" key={(c.id||i)+"-"+i} role="button" tabIndex={0}
       onClick={()=>onViewCasting&&onViewCasting(c)}
@@ -6024,7 +6016,7 @@ function PricingSocialProof({onViewCasting}){
       </div>
       <div className="psp-stats">
         <div className="psp-stat"><div className="psp-n">Every</div><div className="psp-l">submission gets seen — guaranteed</div></div>
-        <div className="psp-stat"><div className="psp-n">{nCastDisp}</div><div className="psp-l">active castings open now</div></div>
+        <div className="psp-stat"><div className="psp-n">Fresh</div><div className="psp-l">new castings added often</div></div>
         <div className="psp-stat"><div className="psp-n">$0</div><div className="psp-l">to start — upgrade only when ready</div></div>
         <div className="psp-stat"><div className="psp-n">No</div><div className="psp-l">agent required to get booked</div></div>
       </div>
