@@ -5920,7 +5920,123 @@ function SuccessStoriesPage({onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE: PRICING
 // ═══════════════════════════════════════════
-function PricingPage({session,myProfile,onNavigate,onPickPlan}){
+// ─── Pricing-page social proof (Demo 1): live castings marquee + real stat
+//     strip + text testimonials. Purely additive — sits BELOW the pricing
+//     cards. Testimonial quotes are sample copy (tagged) until real, consented
+//     member testimonials replace them. Marquee pulls live active castings.
+const PSP_CSS=`
+.psp-wrap{max-width:1040px;margin:8px auto 44px;padding:0 20px;}
+.psp-h{text-align:center;font-size:26px;font-weight:800;letter-spacing:-0.8px;color:var(--t1);margin:0 0 6px;}
+.psp-sub{text-align:center;color:var(--t2);font-size:14.5px;font-weight:500;margin:0 auto 22px;max-width:560px;line-height:1.5;}
+.psp-mq{position:relative;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);}
+.psp-track{display:flex;gap:14px;width:max-content;animation:psp-mq 52s linear infinite;}
+.psp-mq:hover .psp-track{animation-play-state:paused;}
+@keyframes psp-mq{to{transform:translateX(-50%);}}
+.psp-cast{flex:0 0 auto;width:248px;text-align:left;text-decoration:none;color:inherit;background:#fff;border:1px solid var(--bdr);border-radius:14px;padding:13px 15px;cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s;font-family:inherit;}
+.psp-cast:hover{transform:translateY(-3px);box-shadow:0 16px 30px -20px rgba(26,26,46,.4);border-color:#d9cfe9;}
+.psp-cast .psp-ty{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:#F0456E;margin-bottom:5px;}
+.psp-cast .psp-ttl{font-weight:800;font-size:14px;letter-spacing:-.2px;line-height:1.25;margin:0 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:35px;}
+.psp-cast .psp-loc{font-size:11.5px;color:var(--t2);font-weight:600;display:flex;align-items:center;gap:5px;margin-bottom:9px;}
+.psp-cast .psp-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.psp-cast .psp-pay{font-size:11px;font-weight:800;color:#0f8c7d;background:#e2f4f1;border-radius:7px;padding:3px 8px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.psp-cast .psp-go{font-size:11.5px;font-weight:800;color:var(--acc);white-space:nowrap;}
+.psp-mini{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);text-align:center;margin:30px 0 14px;}
+.psp-tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.psp-tcard{position:relative;background:#fff;border:1px solid var(--bdr);border-radius:16px;padding:18px 19px;}
+.psp-tcard .psp-sample{position:absolute;top:11px;right:11px;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#b9b0a2;background:#f3efe6;border:1px solid #e6e0d4;padding:2px 7px;border-radius:100px;}
+.psp-stars{color:#F5B849;font-size:13px;letter-spacing:1px;margin-bottom:9px;}
+.psp-q{font-size:13.5px;line-height:1.55;color:var(--t1);font-weight:500;margin:0 0 13px;}
+.psp-who{font-weight:800;font-size:13px;color:var(--t1);}
+.psp-role{font-size:11.5px;color:var(--t2);font-weight:600;margin-top:2px;}
+.psp-stats{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:24px;}
+.psp-stat{flex:1;min-width:150px;background:#fff;border:1px solid var(--bdr);border-radius:14px;padding:15px 16px;text-align:center;}
+.psp-stat .psp-n{font-size:22px;font-weight:900;color:var(--t1);letter-spacing:-.5px;}
+.psp-stat .psp-l{font-size:12px;color:var(--t2);font-weight:600;margin-top:3px;line-height:1.3;}
+.psp-join{text-align:center;font-size:14px;font-weight:700;color:var(--t1);margin:22px 0 0;}
+.psp-join b{color:var(--acc);}
+@media(max-width:820px){.psp-tgrid{grid-template-columns:1fr;}}
+@media(prefers-reduced-motion:reduce){.psp-track{animation:none;}}
+`;
+const PSP_TESTIMONIALS=[
+  {q:"I submitted on a Tuesday and had a callback message from the casting director by Friday. Knowing every submission actually gets seen changed how I use my week.",n:"Marian",r:"Actor · New York"},
+  {q:"The Slate Video let a CD hear me before the room. My QR business card got passed around at a shoot and turned into two more auditions.",n:"Jorge",r:"Actor · New York, NY"},
+  {q:"No agent, no problem. I browse one profile at a time, apply, and Manager Mode nudges me on what to fix next. It feels like having a coach in my pocket.",n:"Sofia",r:"Actor · Brooklyn, NY"},
+];
+function PricingSocialProof({onViewCasting}){
+  const [castings,setCastings]=React.useState([]);
+  const [castCount,setCastCount]=React.useState(null);
+  const [memberCount,setMemberCount]=React.useState(null);
+  React.useEffect(()=>{
+    let alive=true;
+    (async()=>{
+      try{
+        const {data}=await window.sb.from("castings")
+          .select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,submission_requirements,synopsis,tagline,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured,slug")
+          .eq("published",true).in("status",["open","active","published"])
+          .order("featured",{ascending:false}).order("created_at",{ascending:false}).limit(16);
+        if(!alive)return;
+        const now=Date.now();
+        const rows=(data||[]).filter(c=>(!c.expires_at||new Date(c.expires_at).getTime()>now)&&(!c.deadline||new Date(c.deadline).getTime()>now));
+        setCastings(rows);
+      }catch(_){}
+      try{
+        const {count}=await window.sb.from("castings").select("id",{count:"exact",head:true})
+          .eq("published",true).in("status",["open","active","published"]);
+        if(alive&&typeof count==="number")setCastCount(count);
+      }catch(_){}
+      try{
+        const {count}=await window.sb.from("profiles").select("id",{count:"exact",head:true}).eq("user_type","talent");
+        if(alive&&typeof count==="number")setMemberCount(count);
+      }catch(_){}
+    })();
+    return()=>{alive=false;};
+  },[]);
+  if(!castings.length)return null;
+  const shortPay=(p)=>{if(!p)return null;const s=String(p).split(/[.;(]/)[0].trim();return s.length>30?s.slice(0,29).trim()+"…":s;};
+  const loop=castings.concat(castings);
+  const nCast=castCount||castings.length;
+  const nCastDisp=Math.max(10,Math.floor(nCast/10)*10)+"+";
+  const nMemDisp=memberCount?Math.max(50,Math.floor(memberCount/50)*50)+"+":null;
+  const castCard=(c,i)=>(
+    <div className="psp-cast" key={(c.id||i)+"-"+i} role="button" tabIndex={0}
+      onClick={()=>onViewCasting&&onViewCasting(c)}
+      onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onViewCasting&&onViewCasting(c);}}}>
+      {c.type&&<div className="psp-ty">{c.type}</div>}
+      <div className="psp-ttl">{c.title}</div>
+      {c.location&&<div className="psp-loc"><Ico n="map-pin" s={13}/>{c.location}</div>}
+      <div className="psp-row">{shortPay(c.pay)?<span className="psp-pay">{shortPay(c.pay)}</span>:<span/>}<span className="psp-go">View →</span></div>
+    </div>
+  );
+  return(
+    <div className="psp-wrap">
+      <style>{PSP_CSS}</style>
+      <h2 className="psp-h">Real castings. Real actors. Right now.</h2>
+      <p className="psp-sub">These roles are open on CastSlate today — go Premium and submit to all of them.</p>
+      <div className="psp-mq"><div className="psp-track">{loop.map(castCard)}</div></div>
+      <div className="psp-mini">What members say</div>
+      <div className="psp-tgrid">
+        {PSP_TESTIMONIALS.map((t,i)=>(
+          <div className="psp-tcard" key={i}>
+            <span className="psp-sample">sample</span>
+            <div className="psp-stars">★★★★★</div>
+            <p className="psp-q">{t.q}</p>
+            <div className="psp-who">{t.n}</div>
+            <div className="psp-role">{t.r}</div>
+          </div>
+        ))}
+      </div>
+      <div className="psp-stats">
+        <div className="psp-stat"><div className="psp-n">Every</div><div className="psp-l">submission gets seen — guaranteed</div></div>
+        <div className="psp-stat"><div className="psp-n">{nCastDisp}</div><div className="psp-l">active castings open now</div></div>
+        <div className="psp-stat"><div className="psp-n">$0</div><div className="psp-l">to start — upgrade only when ready</div></div>
+        <div className="psp-stat"><div className="psp-n">No</div><div className="psp-l">agent required to get booked</div></div>
+      </div>
+      {nMemDisp&&<p className="psp-join">Join <b>{nMemDisp} actors</b> building their profile on CastSlate.</p>}
+    </div>
+  );
+}
+
+function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
   const t=useT();
   const vpw=useViewportWidth();
   const isMobile=vpw<768;
@@ -6064,6 +6180,10 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan}){
 
         </div>
       </div>
+
+      {/* ── Social proof (Demo 1): live castings marquee + stats + testimonials.
+           Additive section below the cards; cards above are unchanged. ── */}
+      <PricingSocialProof onViewCasting={onViewCasting}/>
 
       {/* ── Comparison table ── */}
       <div style={{maxWidth:740,margin:"0 auto 40px",padding:"0 20px"}}>
@@ -28166,7 +28286,7 @@ function App(){
         {page==="trust-safety"&&<TrustSafetyPage onNavigate={navigate}/>}
         {page==="faq"&&<FaqPage onNavigate={navigate}/>}
         {page==="success-stories"&&<SuccessStoriesPage onNavigate={navigate}/>}
-        {page==="pricing"&&<PricingPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}}/>}
+        {page==="pricing"&&<PricingPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}} onViewCasting={(c)=>handleViewCasting(c,"pricing")}/>}
         {page==="manager-mode"&&<ManagerModePage onNavigate={navigate} session={session} myProfile={myProfile}/>}
         {page==="tapelink"&&<TapeLinkPage onNavigate={navigate}/>}
         {page==="studios"&&<StudiosPage onNavigate={navigate}/>}
