@@ -5968,7 +5968,6 @@ const PSP_TESTIMONIALS=[
 function PricingSocialProof({onViewCasting}){
   const [castings,setCastings]=React.useState([]);
   const [castCount,setCastCount]=React.useState(null);
-  const [memberCount,setMemberCount]=React.useState(null);
   React.useEffect(()=>{
     let alive=true;
     (async()=>{
@@ -5987,10 +5986,6 @@ function PricingSocialProof({onViewCasting}){
           .eq("published",true).in("status",["open","active","published"]);
         if(alive&&typeof count==="number")setCastCount(count);
       }catch(_){}
-      try{
-        const {count}=await window.sb.from("profiles").select("id",{count:"exact",head:true}).eq("user_type","talent");
-        if(alive&&typeof count==="number")setMemberCount(count);
-      }catch(_){}
     })();
     return()=>{alive=false;};
   },[]);
@@ -5999,7 +5994,6 @@ function PricingSocialProof({onViewCasting}){
   const loop=castings.concat(castings);
   const nCast=castCount||castings.length;
   const nCastDisp=Math.max(10,Math.floor(nCast/10)*10)+"+";
-  const nMemDisp=memberCount?Math.max(50,Math.floor(memberCount/50)*50)+"+":null;
   const castCard=(c,i)=>(
     <div className="psp-cast" key={(c.id||i)+"-"+i} role="button" tabIndex={0}
       onClick={()=>onViewCasting&&onViewCasting(c)}
@@ -6013,7 +6007,7 @@ function PricingSocialProof({onViewCasting}){
   return(
     <div className="psp-wrap">
       <style>{PSP_CSS}</style>
-      <h2 className="psp-h">Real castings. Real actors. Right now.</h2>
+      <h2 className="psp-h">See what's casting on CastSlate.</h2>
       <p className="psp-sub">These roles are open on CastSlate today — go Premium and submit to all of them.</p>
       <div className="psp-mq"><div className="psp-track">{loop.map(castCard)}</div></div>
       <div className="psp-mini">What members say</div>
@@ -6034,7 +6028,7 @@ function PricingSocialProof({onViewCasting}){
         <div className="psp-stat"><div className="psp-n">$0</div><div className="psp-l">to start — upgrade only when ready</div></div>
         <div className="psp-stat"><div className="psp-n">No</div><div className="psp-l">agent required to get booked</div></div>
       </div>
-      {nMemDisp&&<p className="psp-join">Join <b>{nMemDisp} actors</b> building their profile on CastSlate.</p>}
+      <p className="psp-join">Join actors building their profiles on CastSlate.</p>
     </div>
   );
 }
