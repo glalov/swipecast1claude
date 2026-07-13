@@ -3339,6 +3339,12 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan}){
 // ─── Selected-plan summary. Shows plan details and a placeholder checkout
 //     button. When Stripe is wired, handleUpgradeClick redirects to a
 //     server-side Checkout session; activate_membership is called by webhook.
+// Version + text of the checkout consent shown at the payment step. Bump the
+// version whenever the wording changes so each logged consent maps to the exact
+// disclosure the user saw (chargeback evidence).
+const CHECKOUT_CONSENT_VERSION="2026-07-13";
+const checkoutConsentText=(plan)=>`By continuing to checkout, you authorize CastSlate to charge your payment method $${plan.total.toFixed(2)}${plan.months>1?` today for ${plan.months} months`:` per month`} and to automatically renew this membership until you cancel. You confirm you have read and agree to CastSlate's Terms of Service and Privacy Policy, that you are at least 18 years old, and that fees are non-refundable except where required by law.`;
+
 function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onReload}){
   const [err,setErr]=useState("");
   const [busy,setBusy]=useState(false);
@@ -3382,6 +3388,19 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
     try{
       const{data:{session:authSess}}=await window.sb.auth.getSession();
       if(!authSess){setErr("Please sign in first.");setBusy(false);return;}
+      // Record the explicit checkout consent (Terms + recurring billing + no
+      // refund) before redirecting to Stripe. The RPC captures the verified user
+      // and real client IP server-side — this is the evidence submitted to win a
+      // dispute. Never block checkout if logging fails; just proceed.
+      try{
+        await window.sb.rpc("log_checkout_consent",{
+          p_plan:planKey,
+          p_price:plan.total,
+          p_policy_version:CHECKOUT_CONSENT_VERSION,
+          p_policy_text:checkoutConsentText(plan),
+          p_user_agent:(typeof navigator!=="undefined"?navigator.userAgent:null),
+        });
+      }catch(_){}
       const supabaseUrl=window.SC_CONFIG?.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co";
       const res=await fetch(`${supabaseUrl}/functions/v1/stripe-checkout`,{
         method:"POST",
@@ -3437,7 +3456,8 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
       <button className="btn-p" style={{width:"100%",padding:"16px",opacity:busy?0.7:1}} disabled={busy} onClick={handleUpgradeClick}>
         {busy?"Opening Checkout…":plan.months===1?`Continue to Checkout — $${plan.monthly.toFixed(2)}/month`:`Continue to Checkout — $${plan.total.toFixed(2)} today`}
       </button>
-      <p style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginTop:12}}>You'll be taken to Stripe's secure checkout. Your plan activates automatically after payment.</p>
+      <p style={{fontSize:12,color:"var(--t2)",textAlign:"center",marginTop:14,lineHeight:1.55,maxWidth:440,marginLeft:"auto",marginRight:"auto"}}>{checkoutConsentText(plan)}</p>
+      <p style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginTop:10}}>You'll be taken to Stripe's secure checkout. Your plan activates automatically after payment.</p>
 
     <Footer onNavigate={onNavigate}/>
   </div>);
