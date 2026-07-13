@@ -1468,7 +1468,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @keyframes mm-event-icon-shine{0%{left:-65%;}100%{left:122%;}}
 @media(prefers-reduced-motion:reduce){.mm-event-card,.mm-event-card::before,.mm-event-icon::after{animation:none!important;}}
 /* Free-plan upgrade stripe (ActivateMembershipBanner) — darker purple, centered full-width text, ghost CTA (fills black on hover) w/ shimmer, twinkling star */
-.mb-msg{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;text-align:center;font-size:12px;font-weight:800;color:#fff8eb;letter-spacing:0.1px;padding:0 16px;}
+.mb-msg{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;gap:9px;width:100%;text-align:center;font-size:12px;font-weight:800;color:#fff8eb;letter-spacing:0.1px;padding:0 16px;}
+.mb-sheen{position:absolute;top:0;left:0;width:32%;height:100%;background:rgba(255,255,255,.22);filter:blur(2px);animation:mb-shimmer 9s ease-in-out infinite;pointer-events:none;z-index:1;}
 .mb-text-short{display:none;}
 .mb-star{display:inline-block;color:#FFD77A;font-size:15px;line-height:1;transform-origin:center;animation:mb-glint 3.6s ease-in-out infinite;flex-shrink:0;filter:drop-shadow(0 0 7px rgba(255,215,122,.78));}
 .mb-cta{position:absolute;right:14px;top:50%;transform:translateY(-50%);overflow:hidden;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:6px 15px;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;background:transparent;color:#fff;transition:background .2s,border-color .2s,color .2s;}
@@ -1478,7 +1479,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .mb-cta::after{content:"";position:absolute;top:0;left:0;width:35%;height:100%;background:rgba(255,255,255,.30);filter:blur(2px);animation:mb-shimmer 10s ease-in-out infinite;pointer-events:none;}
 @keyframes mb-shimmer{0%{transform:translateX(-130%) skewX(-20deg);}100%{transform:translateX(430%) skewX(-20deg);}}
 @keyframes mb-glint{0%,60%,100%{opacity:.65;transform:scale(1) rotate(0deg);}72%{opacity:1;transform:scale(1.45) rotate(8deg);}84%{opacity:.85;transform:scale(1.1) rotate(-4deg);}}
-@media(prefers-reduced-motion:reduce){.mb-cta::after,.mb-star{animation:none;}}
+@media(prefers-reduced-motion:reduce){.mb-cta::after,.mb-star,.mb-sheen{animation:none;}}
 .btn-p{background:var(--acc);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .btn-p:hover{background:var(--acc2);transform:translateY(-1px);}
 .btn-s{background:transparent;color:var(--t1);border:1px solid var(--bdr);padding:10px 22px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;}
@@ -3181,6 +3182,9 @@ function ActivateMembershipBanner({myProfile,session,page,onNavigate}){
   const AUTH_PAGES=["login","register-talent","register-cd","reset-password","auth-gate"];
   if(!session?.user)return null;
   if(AUTH_PAGES.includes(page))return null;
+  // The Talent Dashboard already carries the full-size purple upgrade banner,
+  // so suppress this thin stripe there — one upgrade prompt per page, not two.
+  if(page==="talent-dashboard")return null;
   const userType=(myProfile?.user_type||"").toLowerCase();
   const isTalent=["talent","actor"].includes(userType);
   const status=myProfile?.membership_status||"free";
@@ -3199,6 +3203,7 @@ function ActivateMembershipBanner({myProfile,session,page,onNavigate}){
       display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",
       boxShadow:"0 1px 0 rgba(0,0,0,0.15)"
     }}>
+    <span className="mb-sheen" aria-hidden="true"></span>
     <span className="mb-msg">
       <span className="mb-star" aria-hidden="true"><Ico n="star" s={17}/></span>
       <span className="mb-text-full">Get seen more — unlock unlimited submissions, Slate Video, Business Card &amp; Manager Mode</span>
