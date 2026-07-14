@@ -3469,7 +3469,7 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
           disclosures (auto-renew, cancel, no-refund, Terms, 18+) required at
           checkout. The full consent statement is still logged to
           checkout_consents via checkoutConsentText(plan) on submit — unchanged. */}
-      <p style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginTop:11,lineHeight:1.55,maxWidth:430,marginLeft:"auto",marginRight:"auto"}}>By continuing you agree to CastSlate's <span style={{textDecoration:"underline",cursor:"pointer"}} onClick={()=>onNavigate&&onNavigate("terms")}>Terms</span> and <span style={{textDecoration:"underline",cursor:"pointer"}} onClick={()=>onNavigate&&onNavigate("privacy")}>Privacy Policy</span> and confirm you're 18+. Membership auto-renews until cancelled; fees are non-refundable except where required by law.</p>
+      <p style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginTop:11,lineHeight:1.55,maxWidth:430,marginLeft:"auto",marginRight:"auto"}}>By continuing you agree to CastSlate's <span style={{textDecoration:"underline",cursor:"pointer"}} onClick={()=>onNavigate&&onNavigate("terms")}>Terms</span> and <span style={{textDecoration:"underline",cursor:"pointer"}} onClick={()=>onNavigate&&onNavigate("privacy")}>Privacy Policy</span> and confirm you're 18+. Membership auto-renews until cancelled.</p>
       <p style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginTop:9}}>Secure checkout by Stripe · activates right after payment.</p>
 
     <Footer onNavigate={onNavigate}/>
