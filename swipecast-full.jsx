@@ -5928,7 +5928,7 @@ function SuccessStoriesPage({onNavigate}){
 //     cards. Testimonial quotes are sample copy (tagged) until real, consented
 //     member testimonials replace them. Marquee pulls live active castings.
 const PSP_CSS=`
-.psp-wrap{max-width:1040px;margin:8px auto 44px;padding:0 20px;}
+.psp-wrap{width:100%;max-width:1040px;box-sizing:border-box;margin:8px auto 44px;padding:0 20px;}
 .psp-h{text-align:center;font-size:26px;font-weight:800;letter-spacing:-0.8px;color:var(--t1);margin:0 0 6px;}
 .psp-sub{text-align:center;color:var(--t2);font-size:14.5px;font-weight:500;margin:0 auto 22px;max-width:560px;line-height:1.5;}
 .psp-mq{position:relative;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);}
