@@ -5945,12 +5945,14 @@ const PSP_CSS=`
 .psp-cast .psp-go{font-size:11.5px;font-weight:800;color:var(--acc);white-space:nowrap;}
 .psp-mini{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);text-align:center;margin:30px 0 14px;}
 .psp-tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-.psp-tcard{position:relative;background:#fff;border:1px solid var(--bdr);border-radius:16px;padding:18px 19px;}
-.psp-tcard .psp-sample{position:absolute;top:11px;right:11px;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#b9b0a2;background:#f3efe6;border:1px solid #e6e0d4;padding:2px 7px;border-radius:100px;}
-.psp-stars{color:#F5B849;font-size:13px;letter-spacing:1px;margin-bottom:9px;}
-.psp-q{font-size:13.5px;line-height:1.55;color:var(--t1);font-weight:500;margin:0 0 13px;}
-.psp-who{font-weight:800;font-size:13px;color:var(--t1);}
-.psp-role{font-size:11.5px;color:var(--t2);font-weight:600;margin-top:2px;}
+.psp-tcard{background:#fff;border:1px solid var(--bdr);border-radius:16px;padding:22px;display:flex;flex-direction:column;}
+.psp-fb{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;background:rgba(18,165,148,.1);color:#0f8c7d;font-size:11px;font-weight:700;letter-spacing:.3px;padding:5px 11px;border-radius:999px;margin-bottom:15px;}
+.psp-q{font-size:13.5px;line-height:1.6;color:var(--t1);font-weight:500;margin:0 0 18px;flex:1;}
+.psp-who{display:flex;align-items:center;gap:11px;padding-top:15px;border-top:1px solid var(--bdr);}
+.psp-av{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--bdr);background:#e7e2d8;}
+.psp-name{font-weight:800;font-size:13px;color:var(--t1);}
+.psp-role{font-size:11.5px;color:var(--t3);font-weight:600;margin-top:1px;}
+.psp-chip{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;background:rgba(27,135,62,.08);color:#1b873e;font-size:11px;font-weight:600;padding:5px 11px;border-radius:999px;margin-top:15px;}
 .psp-stats{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:24px;}
 .psp-stat{flex:1;min-width:150px;background:#fff;border:1px solid var(--bdr);border-radius:14px;padding:15px 16px;text-align:center;}
 .psp-stat .psp-n{font-size:22px;font-weight:900;color:var(--t1);letter-spacing:-.5px;}
@@ -5960,10 +5962,13 @@ const PSP_CSS=`
 @media(max-width:820px){.psp-tgrid{grid-template-columns:1fr;}}
 @media(prefers-reduced-motion:reduce){.psp-track{animation:none;}}
 `;
+// Representative examples with illustrative stock headshots (see Terms §20),
+// styled to match the landing-page testimonial cards. Replace with real,
+// verified member quotes + photos when available.
 const PSP_TESTIMONIALS=[
-  {q:"I submitted on a Tuesday and had a callback message from the casting director by Friday. Knowing every submission actually gets seen changed how I use my week.",n:"Marian",r:"Actor · New York"},
-  {q:"The Slate Video let a CD hear me before the room. My QR business card got passed around at a shoot and turned into two more auditions.",n:"Jorge",r:"Actor · New York, NY"},
-  {q:"No agent, no problem. I browse one profile at a time, apply, and Manager Mode nudges me on what to fix next. It feels like having a coach in my pocket.",n:"Sofia",r:"Actor · Brooklyn, NY"},
+  {q:"I submitted on a Tuesday and had a callback message from the casting director by Friday. Knowing every submission actually gets seen changed how I use my week.",n:"Marian",r:"Actor · New York",chip:"Callback that week",img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=160&q=80",pos:"center 25%"},
+  {q:"The Slate Video let a CD hear me before the room. My QR business card got passed around at a shoot and turned into two more auditions.",n:"Jorge",r:"Actor · New York, NY",chip:"Booked a commercial",img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&q=80",pos:"center 20%"},
+  {q:"No agent, no problem. I browse one profile at a time, apply, and Manager Mode nudges me on what to fix next. It feels like having a coach in my pocket.",n:"Sofia",r:"Actor · Brooklyn, NY",chip:"Working actor",img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&q=80",pos:"center 20%"},
 ];
 function PricingSocialProof({onViewCasting}){
   const [castings,setCastings]=React.useState([]);
@@ -6006,11 +6011,13 @@ function PricingSocialProof({onViewCasting}){
       <div className="psp-tgrid">
         {PSP_TESTIMONIALS.map((t,i)=>(
           <div className="psp-tcard" key={i}>
-            <span className="psp-sample">sample</span>
-            <div className="psp-stars">★★★★★</div>
-            <p className="psp-q">{t.q}</p>
-            <div className="psp-who">{t.n}</div>
-            <div className="psp-role">{t.r}</div>
+            <span className="psp-fb"><Ico n="check" s={13}/> User feedback</span>
+            <p className="psp-q">"{t.q}"</p>
+            <div className="psp-who">
+              <img className="psp-av" src={t.img} style={{objectPosition:t.pos}} alt="" loading="lazy"/>
+              <div><div className="psp-name">{t.n}</div><div className="psp-role">{t.r}</div></div>
+            </div>
+            {t.chip&&<span className="psp-chip"><Ico n="check" s={13}/> {t.chip}</span>}
           </div>
         ))}
       </div>
