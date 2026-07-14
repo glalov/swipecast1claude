@@ -21484,41 +21484,89 @@ Disclosure shown (v${r.policy_version}):
     try{navigator.clipboard.writeText(txt);setCopiedId(r.id);setTimeout(()=>setCopiedId(null),1800);}catch(_){}
   };
 
-  const th={textAlign:"left",fontSize:11,textTransform:"uppercase",letterSpacing:0.5,color:"var(--t3)",fontWeight:700,padding:"8px 10px",borderBottom:"1px solid var(--bdr)",whiteSpace:"nowrap"};
-  const td={fontSize:12.5,color:"var(--t2)",padding:"10px",borderBottom:"1px solid var(--bdr)",verticalAlign:"top"};
+  // Group the flat consent rows by user, then split into who actually paid
+  // (membership active) vs who only reached checkout and abandoned. Each user's
+  // "attempts" = the number of Stripe checkout sessions they kicked off (one
+  // server row per session; fall back to client rows if a session never formed).
+  const groups=(()=>{
+    if(!rows)return null;
+    const byUser=new Map();
+    for(const r of rows){
+      const key=r.user_id||r.email||("row"+r.id);
+      let g=byUser.get(key);
+      if(!g){g={key,display_name:r.display_name,email:r.email,membership_status:r.membership_status,plan_key:r.plan_key,price:r.price,currency:r.currency,rows:[],sessions:new Set(),latest:r,latestWithSession:null};byUser.set(key,g);}
+      g.rows.push(r);
+      if(r.session_id)g.sessions.add(r.session_id);
+      if(r.membership_status)g.membership_status=r.membership_status;
+      if(new Date(r.created_at)>new Date(g.latest.created_at))g.latest=r;
+      if(r.session_id&&(!g.latestWithSession||new Date(r.created_at)>new Date(g.latestWithSession.created_at)))g.latestWithSession=r;
+    }
+    const list=Array.from(byUser.values()).map(g=>{
+      const serverCount=g.rows.filter(x=>x.source==="server").length;
+      g.attempts=g.sessions.size||serverCount||Math.max(1,g.rows.length);
+      g.paid=g.membership_status==="active";
+      g.evidenceRow=g.latestWithSession||g.latest;
+      return g;
+    });
+    list.sort((a,b)=>new Date(b.latest.created_at)-new Date(a.latest.created_at));
+    return{paid:list.filter(g=>g.paid),abandoned:list.filter(g=>!g.paid)};
+  })();
+
+  const card=(g,paid)=>(
+    <div key={g.key} style={{border:"1px solid var(--bdr)",borderLeft:`3px solid ${paid?"#14785f":"#d08700"}`,borderRadius:10,padding:"12px 14px",background:"var(--s2)",display:"flex",flexDirection:"column",gap:7}}>
+      <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"flex-start"}}>
+        <div style={{minWidth:0}}>
+          <div style={{fontWeight:700,color:"var(--t1)",fontSize:13.5,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.display_name||"—"}</div>
+          <div style={{fontSize:11.5,color:"var(--t3)",wordBreak:"break-all"}}>{g.email||"—"}</div>
+        </div>
+        <span title={`${g.attempts} checkout ${g.attempts===1?"attempt":"attempts"}`} style={{flex:"0 0 auto",fontSize:11,fontWeight:800,padding:"3px 9px",borderRadius:99,whiteSpace:"nowrap",background:(!paid&&g.attempts>1)?"rgba(208,135,0,.16)":"var(--s3)",color:(!paid&&g.attempts>1)?"#b8730a":"var(--t2)"}}>{g.attempts}× {g.attempts===1?"try":"tries"}</span>
+      </div>
+      <div style={{display:"flex",gap:14,fontSize:11.5,color:"var(--t2)",flexWrap:"wrap"}}>
+        <span>{g.plan_key} · <strong style={{color:"var(--t1)"}}>{g.price!=null?"$"+Number(g.price).toFixed(2):"—"}</strong></span>
+        <span>{paid?"Paid":"Last tried"} {new Date(g.latest.created_at).toLocaleDateString()}</span>
+      </div>
+      <div style={{fontSize:10.5,fontFamily:"monospace",color:"var(--t3)",wordBreak:"break-all"}}>{g.evidenceRow.session_id||"no stripe session"}</div>
+      <button className="btn-s btn-sm" onClick={()=>copyRow(g.evidenceRow)} style={{alignSelf:"flex-start"}}>{copiedId===g.evidenceRow.id?"Copied ✓":"Copy evidence"}</button>
+    </div>
+  );
+
+  const colHead=(label,count,color)=>(
+    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+      <span style={{width:9,height:9,borderRadius:99,background:color,flex:"0 0 auto"}}/>
+      <h3 style={{fontSize:14,fontWeight:800,margin:0}}>{label}</h3>
+      <span style={{fontSize:12,fontWeight:700,color:"var(--t3)"}}>{count}</span>
+    </div>
+  );
 
   return(<div>
     <h2 style={{fontSize:22,fontWeight:800,marginBottom:6}}>Dispute Evidence</h2>
-    <p style={{fontSize:13,color:"var(--t2)",marginBottom:18,maxWidth:680,lineHeight:1.55}}>
-      When a Stripe chargeback comes in, look up the consent the member agreed to at checkout — the exact recurring-billing and no-refund disclosure, their IP, device, and the linked Stripe session. Search by <strong>Stripe session id</strong> (from the disputed charge), <strong>email</strong>, or <strong>user id</strong>. Leave blank for the most recent.
+    <p style={{fontSize:13,color:"var(--t2)",marginBottom:18,maxWidth:720,lineHeight:1.55}}>
+      Everyone who agreed to the checkout terms, split by whether they finished paying. <strong>Paid</strong> members are active premium subscribers. <strong>Almost paid</strong> reached the Stripe checkout page and consented but never completed — high-intent leads (watch the ones with multiple tries). Each card's <strong>Copy evidence</strong> gives the full recurring-billing / no-refund disclosure, IP, device, and Stripe session for a chargeback. Search by <strong>Stripe session id</strong>, <strong>email</strong>, or <strong>user id</strong>.
     </p>
-    <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
+    <div style={{display:"flex",gap:10,marginBottom:18,flexWrap:"wrap"}}>
       <input className="input" value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")run();}}
         placeholder="cs_live_… / email / user id" style={{flex:"1 1 320px",padding:"11px 14px",fontSize:13}}/>
       <button className="btn-p btn-sm" disabled={busy} onClick={run}>{busy?"Searching…":"Search"}</button>
     </div>
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}</div>}
-    {rows&&rows.length===0&&<div style={{fontSize:13,color:"var(--t3)",padding:"20px 0"}}>No consent records found.</div>}
-    {rows&&rows.length>0&&<div style={{overflowX:"auto",border:"1px solid var(--bdr)",borderRadius:12}}>
-      <table style={{width:"100%",borderCollapse:"collapse",minWidth:820}}>
-        <thead><tr>
-          <th style={th}>Recorded</th><th style={th}>Src</th><th style={th}>User</th>
-          <th style={th}>Plan</th><th style={th}>IP</th><th style={th}>Stripe session</th><th style={th}>Disclosure</th><th style={th}></th>
-        </tr></thead>
-        <tbody>
-          {rows.map(r=>(<tr key={r.id}>
-            <td style={{...td,whiteSpace:"nowrap"}}>{new Date(r.created_at).toLocaleString()}</td>
-            <td style={td}><span style={{fontSize:10,fontWeight:800,textTransform:"uppercase",padding:"2px 7px",borderRadius:99,background:r.source==="server"?"rgba(20,120,95,.14)":"var(--s3)",color:r.source==="server"?"#14785f":"var(--t2)"}}>{r.source}</span></td>
-            <td style={td}><div style={{fontWeight:600,color:"var(--t1)"}}>{r.display_name||"—"}</div><div style={{fontSize:11}}>{r.email||"—"}</div></td>
-            <td style={{...td,whiteSpace:"nowrap"}}>{r.plan_key}<br/><span style={{color:"var(--t1)",fontWeight:600}}>${r.price!=null?Number(r.price).toFixed(2):"—"}</span></td>
-            <td style={{...td,fontFamily:"monospace",fontSize:11.5}}>{r.ip||"—"}</td>
-            <td style={{...td,fontFamily:"monospace",fontSize:11,maxWidth:180,wordBreak:"break-all"}}>{r.session_id||"—"}</td>
-            <td style={{...td,maxWidth:260}}><span title={r.policy_text} style={{display:"block",lineHeight:1.45}}>v{r.policy_version}</span></td>
-            <td style={td}><button className="btn-s btn-sm" onClick={()=>copyRow(r)} style={{whiteSpace:"nowrap"}}>{copiedId===r.id?"Copied ✓":"Copy"}</button></td>
-          </tr>))}
-        </tbody>
-      </table>
-    </div>}
+    {groups&&groups.paid.length===0&&groups.abandoned.length===0&&<div style={{fontSize:13,color:"var(--t3)",padding:"20px 0"}}>No consent records found.</div>}
+    {groups&&(groups.paid.length>0||groups.abandoned.length>0)&&
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:20,alignItems:"start"}}>
+        <div>
+          {colHead("Paid · premium active",groups.paid.length,"#14785f")}
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {groups.paid.length===0&&<div style={{fontSize:12.5,color:"var(--t3)",padding:"6px 0"}}>None in this view.</div>}
+            {groups.paid.map(g=>card(g,true))}
+          </div>
+        </div>
+        <div>
+          {colHead("Almost paid · abandoned checkout",groups.abandoned.length,"#d08700")}
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {groups.abandoned.length===0&&<div style={{fontSize:12.5,color:"var(--t3)",padding:"6px 0"}}>None in this view.</div>}
+            {groups.abandoned.map(g=>card(g,false))}
+          </div>
+        </div>
+      </div>}
   </div>);
 }
 
