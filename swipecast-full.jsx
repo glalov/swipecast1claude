@@ -5968,7 +5968,7 @@ const PSP_CSS=`
 const PSP_TESTIMONIALS=[
   {q:"I submitted on a Tuesday and had a callback message from the casting director by Friday. Knowing every submission actually gets seen changed how I use my week.",n:"Marian",r:"Actor · New York",chip:"Callback that week",img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=160&q=80",pos:"center 25%"},
   {q:"The Slate Video let a CD hear me before the room. My QR business card got passed around at a shoot and turned into two more auditions.",n:"Jorge",r:"Actor · New York, NY",chip:"Booked a commercial",img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&q=80",pos:"center 20%"},
-  {q:"No agent, no problem. I browse one profile at a time, apply, and Manager Mode nudges me on what to fix next. It feels like having a coach in my pocket.",n:"Sofia",r:"Actor · Brooklyn, NY",chip:"Working actor",img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&q=80",pos:"center 20%"},
+  {q:"No agent, no problem. I find roles that fit, apply in a couple of taps, and Manager Mode nudges me on what to fix next. It feels like having a coach in my pocket.",n:"Sofia",r:"Actor · Brooklyn, NY",chip:"Working actor",img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&q=80",pos:"center 20%"},
 ];
 function PricingSocialProof({onViewCasting}){
   const [castings,setCastings]=React.useState([]);
