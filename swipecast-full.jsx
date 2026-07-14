@@ -3456,7 +3456,7 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
           <strong>Total due today</strong>
           <strong style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:26,color:"var(--acc)",letterSpacing:-0.8}}>${plan.total.toFixed(2)}</strong>
         </div>
-        <p style={{fontSize:11,color:"var(--t3)",marginTop:12,lineHeight:1.5}}>Renews automatically. Plus tax where applicable. <strong style={{color:"var(--t2)"}}>All sales are final — memberships are non-refundable except where required by law.</strong></p>
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:12,lineHeight:1.5}}>Renews automatically until you cancel. Plus tax where applicable.</p>
       </div>
 
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"12px 16px",borderRadius:8,fontSize:13,marginBottom:14,textAlign:"center"}}>{err}</div>}
@@ -3464,8 +3464,13 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
       <button className="btn-p" style={{width:"100%",padding:"16px",opacity:busy?0.7:1}} disabled={busy} onClick={handleUpgradeClick}>
         {busy?"Opening Checkout…":plan.months===1?`Continue to Checkout — $${plan.monthly.toFixed(2)}/month`:`Continue to Checkout — $${plan.total.toFixed(2)} today`}
       </button>
-      <p style={{fontSize:12,color:"var(--t2)",textAlign:"center",marginTop:14,lineHeight:1.55,maxWidth:440,marginLeft:"auto",marginRight:"auto"}}>{checkoutConsentText(plan)}</p>
-      <p style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginTop:10}}>You'll be taken to Stripe's secure checkout. Your plan activates automatically after payment.</p>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7,fontSize:12.5,color:"var(--grn)",fontWeight:700,marginTop:14,textAlign:"center"}}><Ico n="check" s={15}/> Cancel anytime — you keep access through the period you paid for.</div>
+      {/* Calm, single-line acknowledgment. Covers the material recurring-billing
+          disclosures (auto-renew, cancel, no-refund, Terms, 18+) required at
+          checkout. The full consent statement is still logged to
+          checkout_consents via checkoutConsentText(plan) on submit — unchanged. */}
+      <p style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginTop:11,lineHeight:1.55,maxWidth:430,marginLeft:"auto",marginRight:"auto"}}>By continuing you agree to CastSlate's <span style={{textDecoration:"underline",cursor:"pointer"}} onClick={()=>onNavigate&&onNavigate("terms")}>Terms</span> and <span style={{textDecoration:"underline",cursor:"pointer"}} onClick={()=>onNavigate&&onNavigate("privacy")}>Privacy Policy</span> and confirm you're 18+. Membership auto-renews until cancelled; fees are non-refundable except where required by law.</p>
+      <p style={{fontSize:11,color:"var(--t3)",textAlign:"center",marginTop:9}}>Secure checkout by Stripe · activates right after payment.</p>
 
     <Footer onNavigate={onNavigate}/>
   </div>);
