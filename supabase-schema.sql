@@ -1434,6 +1434,14 @@ alter table public.messages
   add column if not exists message_type text not null default 'direct',
   add column if not exists checkin_week date;
 
+-- attachments: jsonb array of {url,name,size,type,path}. Lets casting-side senders
+-- (CDs and admin casting-generator personas) attach files — e.g. a sides PDF for a
+-- self-tape — that the talent recipient can download from their inbox. Files are
+-- stored in the public `casting-media` bucket under the sender's own uid folder
+-- (matching that bucket's INSERT RLS: (storage.foldername(name))[1] = auth.uid()).
+alter table public.messages
+  add column if not exists attachments jsonb not null default '[]'::jsonb;
+
 -- Log of sent weekly check-ins: one row per (talent, week); unique prevents duplicates
 create table if not exists public.weekly_checkin_logs (
   id                 uuid primary key default gen_random_uuid(),

@@ -13075,6 +13075,87 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     <Footer onNavigate={onNavigate}/></div>);
 }
 
+// ─── Message attachments ─────────────────────────────────────────────────────
+// Casting-side senders (CDs and admin casting-generator personas) can attach files
+// to a message — e.g. a sides PDF for a self-tape — that the talent recipient can
+// download from their inbox. Files go to the existing public `casting-media` bucket
+// under the sender's own uid folder (matching that bucket's INSERT RLS policy),
+// and the message row stores a jsonb array of {url,name,size,type,path}.
+const MSG_ATTACH_MAX_FILES=5;
+const MSG_ATTACH_MAX_BYTES=20*1024*1024; // 20 MB per file
+const MSG_ATTACH_ACCEPT=".pdf,.doc,.docx,.txt,.rtf,.jpg,.jpeg,.png,.webp,application/pdf,image/*";
+function fmtFileSize(b){
+  const n=Number(b)||0;
+  if(n<1024)return n+" B";
+  if(n<1024*1024)return (n/1024).toFixed(0)+" KB";
+  return (n/(1024*1024)).toFixed(1)+" MB";
+}
+// Upload an array of File objects; returns the attachment metadata array to store on
+// the message. Throws on the first failed upload so the caller can surface the error.
+async function uploadMessageAttachments(files,fromId){
+  const out=[];
+  for(const file of files){
+    const safe=(file.name||"file").replace(/[^a-zA-Z0-9._-]/g,"_").slice(0,120)||"file";
+    const path=`${fromId}/message-attachments/${Date.now()}_${Math.random().toString(36).slice(2,8)}_${safe}`;
+    const{error}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:false,contentType:file.type||"application/octet-stream"});
+    if(error)throw error;
+    const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
+    out.push({url:publicUrl,name:file.name||safe,size:file.size||0,type:file.type||"",path});
+  }
+  return out;
+}
+// Read-side list of downloadable attachment chips, rendered inside a message bubble.
+function MessageAttachments({items,mine}){
+  if(!Array.isArray(items)||items.length===0)return null;
+  return(<div style={{display:"flex",flexDirection:"column",gap:6,marginTop:8}}>
+    {items.map((a,i)=>{
+      const isImg=(a.type||"").startsWith("image/")||/\.(jpg|jpeg|png|webp|gif)$/i.test(a.name||"");
+      return(<a key={i} href={a.url} target="_blank" rel="noopener noreferrer" download={a.name||undefined}
+        style={{display:"flex",alignItems:"center",gap:8,textDecoration:"none",background:mine?"rgba(255,255,255,0.16)":"var(--s2)",border:"1px solid "+(mine?"rgba(255,255,255,0.28)":"var(--bdr)"),borderRadius:9,padding:"8px 10px",color:mine?"#fff":"var(--t1)",maxWidth:280}}
+        title={"Download "+(a.name||"attachment")}>
+        <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:6,background:mine?"rgba(255,255,255,0.18)":"var(--s1)",flexShrink:0}}><Ico n={isImg?"photo":"file-text"} s={16}/></span>
+        <span style={{minWidth:0,flex:1,overflow:"hidden"}}>
+          <span style={{display:"block",fontSize:12.5,fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{a.name||"Attachment"}</span>
+          <span style={{display:"block",fontSize:11,opacity:0.8}}>{fmtFileSize(a.size)} · Download</span>
+        </span>
+        <Ico n="download" s={16}/>
+      </a>);
+    })}
+  </div>);
+}
+// Compose-side attachment picker. Controlled: parent owns the File[] via files/setFiles.
+// Shows an "Attach files" button plus a removable chip per selected file.
+function MessageAttachBar({files,setFiles,disabled}){
+  const inputRef=useRef(null);
+  const add=(list)=>{
+    const arr=Array.from(list||[]);
+    if(!arr.length)return;
+    const valid=[];
+    for(const f of arr){
+      if(f.size>MSG_ATTACH_MAX_BYTES){window.alert(`"${f.name}" is larger than 20 MB and can't be attached.`);continue;}
+      valid.push(f);
+    }
+    setFiles(prev=>[...prev,...valid].slice(0,MSG_ATTACH_MAX_FILES));
+  };
+  return(<div style={{marginTop:8}}>
+    <input ref={inputRef} type="file" multiple accept={MSG_ATTACH_ACCEPT} style={{display:"none"}}
+      onChange={e=>{add(e.target.files);e.target.value="";}}/>
+    <button type="button" className="btn-s btn-sm" disabled={disabled||files.length>=MSG_ATTACH_MAX_FILES}
+      onClick={()=>inputRef.current&&inputRef.current.click()}
+      style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:12.5}}>
+      <Ico n="paperclip" s={15}/>{files.length>0?`Attach more (${files.length}/${MSG_ATTACH_MAX_FILES})`:"Attach files"}
+    </button>
+    {files.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:8}}>
+      {files.map((f,i)=>(<span key={i} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:8,padding:"5px 8px",fontSize:12,maxWidth:220}}>
+        <Ico n="file-text" s={14}/>
+        <span style={{minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontWeight:600}}>{f.name}</span>
+        <span style={{color:"var(--t3)",fontSize:11}}>{fmtFileSize(f.size)}</span>
+        {!disabled&&<button type="button" onClick={()=>setFiles(prev=>prev.filter((_,idx)=>idx!==i))} title="Remove" style={{background:"transparent",border:"none",color:"var(--t3)",cursor:"pointer",padding:0,display:"inline-flex"}}><Ico n="x" s={14}/></button>}
+      </span>))}
+    </div>}
+  </div>);
+}
+
 // ─── Message + Audition modal (CD → actor)
 function MessageModal({app,fromId,castingTitle,onClose,onSent}){
   const [body,setBody]=useState("");
@@ -13083,10 +13164,11 @@ function MessageModal({app,fromId,castingTitle,onClose,onSent}){
   const [err,setErr]=useState("");
   const [busy,setBusy]=useState(false);
   const [sent,setSent]=useState(false);
+  const [files,setFiles]=useState([]); // pending attachments (File[])
   const t=app.profiles;
   const send=async()=>{
     setErr("");
-    if(!body.trim()&&!auditionAt){setErr("Write a message or schedule an audition.");return;}
+    if(!body.trim()&&!auditionAt&&files.length===0){setErr("Write a message, attach a file, or schedule an audition.");return;}
     setBusy(true);
     try{
       // compose full message body — include audition info inline if scheduled
@@ -13095,8 +13177,13 @@ function MessageModal({app,fromId,castingTitle,onClose,onSent}){
         const d=new Date(auditionAt);
         full=(full?full+"\n\n":"")+"Audition scheduled: "+d.toLocaleString()+(auditionNote?"\n"+auditionNote:"");
       }
-      if(full){
-        const {error}=await window.sb.from("messages").insert({from_id:fromId,to_id:app.talent_id,application_id:app.id,body:full});
+      // Upload any attachments first so the message row carries their metadata.
+      let attachments=[];
+      if(files.length){attachments=await uploadMessageAttachments(files,fromId);}
+      if(full||attachments.length){
+        const row={from_id:fromId,to_id:app.talent_id,application_id:app.id,body:full||(attachments.length?"Attachment"+(attachments.length>1?"s":""):"")};
+        if(attachments.length)row.attachments=attachments;
+        const {error}=await window.sb.from("messages").insert(row);
         if(error)throw error;
         fireMessageNotification(app.talent_id,fromId,{applicationId:app.id});
       }
@@ -13117,13 +13204,16 @@ function MessageModal({app,fromId,castingTitle,onClose,onSent}){
         <div><h4 style={{fontSize:14,fontWeight:700}}>{t.display_name}</h4><p style={{color:"var(--t2)",fontSize:12}}>Re: {castingTitle} · {app.roles?.name||"—"}</p></div>
       </div>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{err}</div>}
-      <div className="form-group"><label className="label">Message</label><textarea className="textarea" rows="4" placeholder="Hi! Loved your submission — would love to bring you in for a callback…" value={body} onChange={e=>setBody(e.target.value)}></textarea></div>
+      <div className="form-group"><label className="label">Message</label><textarea className="textarea" rows="4" placeholder="Hi! Loved your submission — would love to bring you in for a callback…" value={body} onChange={e=>setBody(e.target.value)}></textarea>
+        <MessageAttachBar files={files} setFiles={setFiles} disabled={busy}/>
+        <div style={{fontSize:11,color:"var(--t3)",marginTop:6}}>Attach sides, a script, or reference files (PDF, Word, image · up to 20 MB each). {t.display_name?.split(" ")[0]||"They"} can download them from their inbox.</div>
+      </div>
       <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:10,padding:16,marginBottom:16}}>
         <div style={{fontSize:12,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,fontWeight:700,marginBottom:10}}><Ico n="calendar-event" s={22}/> Schedule Audition (Optional)</div>
         <div className="form-group" style={{marginBottom:10}}><label className="label">Date & Time</label><input className="input" type="datetime-local" value={auditionAt} onChange={e=>setAuditionAt(e.target.value)}/></div>
         <div className="form-group" style={{marginBottom:0}}><label className="label">Location / Details</label><input className="input" placeholder="e.g. 1420 Broadway, Studio 7 · bring sides" value={auditionNote} onChange={e=>setAuditionNote(e.target.value)}/></div>
       </div>
-      <div style={{display:"flex",gap:12}}><button className="btn-p" style={{flex:1}} onClick={send} disabled={busy}>{busy?"Sending…":"Send Message"}</button><button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button></div>
+      <div style={{display:"flex",gap:12}}><button className="btn-p" style={{flex:1}} onClick={send} disabled={busy}>{busy?(files.length?"Uploading…":"Sending…"):"Send Message"}</button><button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button></div>
     </>}
   </div></div>);
 }
@@ -13325,13 +13415,18 @@ function ComposeDMModal({fromId,toId,toName,onClose,initialBody,title,intro}){
   const [busy,setBusy]=useState(false);
   const [err,setErr]=useState("");
   const [sent,setSent]=useState(false);
+  const [files,setFiles]=useState([]); // pending attachments (File[])
   const send=async()=>{
     setErr("");
-    if(!body.trim()){setErr("Write something to send.");return;}
+    if(!body.trim()&&files.length===0){setErr("Write something or attach a file to send.");return;}
     if(!fromId||!toId){setErr("Missing sender or recipient.");return;}
     setBusy(true);
     try{
-      const {error}=await window.sb.from("messages").insert({from_id:fromId,to_id:toId,application_id:null,body:body.trim()});
+      let attachments=[];
+      if(files.length){attachments=await uploadMessageAttachments(files,fromId);}
+      const row={from_id:fromId,to_id:toId,application_id:null,body:body.trim()||(attachments.length?"Attachment"+(attachments.length>1?"s":""):"")};
+      if(attachments.length)row.attachments=attachments;
+      const {error}=await window.sb.from("messages").insert(row);
       if(error)throw error;
       fireMessageNotification(toId,fromId);
       setSent(true);
@@ -13344,9 +13439,11 @@ function ComposeDMModal({fromId,toId,toName,onClose,initialBody,title,intro}){
       <h2>{title||`Message ${toName}`}</h2>
       <p style={{color:"var(--t2)",fontSize:13,marginTop:-8,marginBottom:18}}>{intro||"Direct message — no application or audition attached. Use this for quick check-ins or follow-ups."}</p>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{err}</div>}
-      <div className="form-group"><label className="label">Message</label><textarea className="textarea" rows="6" placeholder={`Hi ${toName.split(" ")[0]||"there"} — …`} value={body} onChange={e=>setBody(e.target.value)} autoFocus></textarea></div>
+      <div className="form-group"><label className="label">Message</label><textarea className="textarea" rows="6" placeholder={`Hi ${toName.split(" ")[0]||"there"} — …`} value={body} onChange={e=>setBody(e.target.value)} autoFocus></textarea>
+        <MessageAttachBar files={files} setFiles={setFiles} disabled={busy}/>
+      </div>
       <div style={{display:"flex",gap:12,marginTop:8}}>
-        <button className="btn-p" style={{flex:1}} onClick={send} disabled={busy}>{busy?"Sending…":"Send Message"}</button>
+        <button className="btn-p" style={{flex:1}} onClick={send} disabled={busy}>{busy?(files.length?"Uploading…":"Sending…"):"Send Message"}</button>
         <button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
       </div>
     </>}
@@ -13376,6 +13473,7 @@ function parseAuditionInvite(body){
 
 function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,onViewCasting,onClose,onRead,onDeleted,onReplied}){
   const [reply,setReply]=useState("");
+  const [replyFiles,setReplyFiles]=useState([]); // pending reply attachments (File[])
   const [busy,setBusy]=useState(false);
   const [deleting,setDeleting]=useState(false);
   const [err,setErr]=useState("");
@@ -13416,7 +13514,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
     (async()=>{
       try{
         let q=window.sb.from("messages")
-          .select("id,from_id,to_id,body,created_at,read_at,application_id,conversation_id,message_type,checkin_week,profiles:from_id(id,display_name,company_name,headshot_url,user_type)")
+          .select("id,from_id,to_id,body,created_at,read_at,application_id,conversation_id,message_type,checkin_week,attachments,profiles:from_id(id,display_name,company_name,headshot_url,user_type)")
           .eq("conversation_id",conversationId);
         q=threadAppId?q.eq("application_id",threadAppId):q.is("application_id",null);
         const {data,error}=await q.order("created_at",{ascending:true}).limit(500);
@@ -13550,17 +13648,20 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
   // Send a reply: insert the row, then optimistically append. Realtime will reconcile.
   const sendReply=async()=>{
     const body=reply.trim();
-    if(!body||busy||!counterpartyId)return;
+    if((!body&&replyFiles.length===0)||busy||!counterpartyId)return;
     setBusy(true);setErr("");
     try{
-      const payload={from_id:sessionUid,to_id:counterpartyId,application_id:message.application_id||null,body};
+      let attachments=[];
+      if(replyFiles.length){attachments=await uploadMessageAttachments(replyFiles,sessionUid);}
+      const payload={from_id:sessionUid,to_id:counterpartyId,application_id:message.application_id||null,body:body||(attachments.length?"Attachment"+(attachments.length>1?"s":""):"")};
+      if(attachments.length)payload.attachments=attachments;
       const {data,error}=await window.sb.from("messages")
         .insert(payload)
-        .select("id,from_id,to_id,body,created_at,read_at,application_id,conversation_id")
+        .select("id,from_id,to_id,body,created_at,read_at,application_id,conversation_id,attachments")
         .single();
       if(error)throw error;
       fireMessageNotification(counterpartyId,sessionUid,{applicationId:message.application_id||undefined});
-      setReply("");
+      setReply("");setReplyFiles([]);
       setThread(p=>p.some(m=>m.id===data.id)?p:[...p,data]);
       if(typeof onReplied==="function")onReplied(data);
     }catch(e){setErr(e.message||"Could not send reply.");}
@@ -13666,6 +13767,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
                      ):(
                        <div className={`msg-bubble cs-thread-bubble ${mine?"mine":"theirs"}`}>
                          {m.body}
+                         <MessageAttachments items={m.attachments} mine={mine}/>
                          {isAdmin&&<button onClick={()=>deleteOne(m.id)} title="Delete this message" className="msg-del-btn" style={{position:"absolute",top:-8,[mine?"left":"right"]:-8,width:22,height:22,borderRadius:"50%",border:"1px solid var(--bdr)",background:"#fff",color:"var(--t3)",fontSize:11,cursor:"pointer",padding:0}}><Ico n="x" s={24}/></button>}
                        </div>
                      )}
@@ -13701,9 +13803,10 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
             disabled={busy||deleting}
             onKeyDown={e=>{if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){e.preventDefault();sendReply();}}}
           />
+          <MessageAttachBar files={replyFiles} setFiles={setReplyFiles} disabled={busy||deleting}/>
           <div className="cs-thread-sendbar">
             <div className="cs-thread-hint" style={{flex:1}}>Press ⌘/Ctrl+Enter to send</div>
-            <button className="btn-p" onClick={sendReply} disabled={busy||deleting||!reply.trim()} style={{whiteSpace:"nowrap",height:46,display:"inline-flex",alignItems:"center",justifyContent:"center",gap:6}}><Ico n="send" s={16}/>{busy?"Sending…":"Send Reply"}</button>
+            <button className="btn-p" onClick={sendReply} disabled={busy||deleting||(!reply.trim()&&replyFiles.length===0)} style={{whiteSpace:"nowrap",height:46,display:"inline-flex",alignItems:"center",justifyContent:"center",gap:6}}><Ico n="send" s={16}/>{busy?(replyFiles.length?"Uploading…":"Sending…"):"Send Reply"}</button>
           </div>
         </div>
       </div>
@@ -13736,7 +13839,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile,onViewCastingById})
     setLoading(true);
     try{
       const {data,error}=await window.sb.from("messages")
-        .select("id,from_id,to_id,body,created_at,read_at,application_id,message_type,checkin_week")
+        .select("id,from_id,to_id,body,created_at,read_at,application_id,message_type,checkin_week,attachments")
         .or(`from_id.eq.${uid},to_id.eq.${uid}`)
         .order("created_at",{ascending:false})
         .limit(500);
@@ -13965,7 +14068,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile,onViewCastingById})
                {projectTitle&&<span style={{fontSize:10,color:"var(--t3)",background:"var(--s2)",padding:"1px 6px",borderRadius:4,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:200}}>{projectTitle}</span>}
                <span style={{fontSize:11,color:"var(--t3)"}}>· {t.total} message{t.total===1?"":"s"}</span>
              </div>
-             <div style={{fontSize:13,color:t.unread>0?"var(--t1)":"var(--t2)",fontWeight:t.unread>0?500:400,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{previewPrefix}{t.latest?.body||""}</div>
+             <div style={{fontSize:13,color:t.unread>0?"var(--t1)":"var(--t2)",fontWeight:t.unread>0?500:400,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",display:"flex",alignItems:"center",gap:5}}>{Array.isArray(t.latest?.attachments)&&t.latest.attachments.length>0&&<Ico n="paperclip" s={14} style={{flexShrink:0,color:"var(--t3)"}}/>}<span style={{minWidth:0,overflow:"hidden",textOverflow:"ellipsis"}}>{previewPrefix}{t.latest?.body||""}</span></div>
            </div>
            <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap",alignSelf:"flex-start"}}>{dateLabel}</span>
          </div>);
