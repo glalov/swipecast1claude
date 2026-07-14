@@ -21523,7 +21523,7 @@ Disclosure shown (v${r.policy_version}):
       </div>
       <div style={{display:"flex",gap:14,fontSize:11.5,color:"var(--t2)",flexWrap:"wrap"}}>
         <span>{g.plan_key} · <strong style={{color:"var(--t1)"}}>{g.price!=null?"$"+Number(g.price).toFixed(2):"—"}</strong></span>
-        <span>{paid?"Paid":"Last tried"} {new Date(g.latest.created_at).toLocaleDateString()}</span>
+        <span>{paid?"Paid":"Last tried"} {new Date(g.latest.created_at).toLocaleString([],{month:"numeric",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})}</span>
         <span>IP <span style={{fontFamily:"monospace",color:"var(--t1)"}}>{g.evidenceRow.ip||"—"}</span></span>
       </div>
       <div title={g.evidenceRow.user_agent||""} style={{fontSize:10.5,fontFamily:"monospace",color:"var(--t3)",wordBreak:"break-all"}}>{g.evidenceRow.session_id||"no stripe session"}</div>
