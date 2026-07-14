@@ -21471,14 +21471,23 @@ function AdminDisputeEvidence(){
   };
   useEffect(()=>{run();},[]); // load most-recent on open
 
+  const fmtTs=(d)=>d?new Date(d).toISOString():"—";
   const copyRow=(r)=>{
     const txt=`CastSlate — checkout consent evidence
-Recorded: ${new Date(r.created_at).toISOString()} (${r.source})
+Recorded: ${fmtTs(r.created_at)} (${r.source})
 User: ${r.display_name||"—"} <${r.email||"—"}>  (id ${r.user_id})
 Plan: ${r.plan_key}  Price: $${r.price!=null?Number(r.price).toFixed(2):"—"} ${(r.currency||"").toUpperCase()}
 Stripe session: ${r.session_id||"—"}
 IP address: ${r.ip||"—"}
 Device: ${r.user_agent||"—"}
+
+Account usage (proof the cardholder accessed and used the paid service):
+Account created: ${fmtTs(r.account_created_at)}
+Premium since: ${fmtTs(r.premium_started_at)}
+Last login: ${fmtTs(r.last_sign_in_at)}
+Applications submitted: ${r.applications_count??"—"}
+Photos/videos uploaded: ${r.media_count??"—"}
+
 Disclosure shown (v${r.policy_version}):
 "${r.policy_text}"`;
     try{navigator.clipboard.writeText(txt);setCopiedId(r.id);setTimeout(()=>setCopiedId(null),1800);}catch(_){}
@@ -21525,6 +21534,10 @@ Disclosure shown (v${r.policy_version}):
         <span>{g.plan_key} · <strong style={{color:"var(--t1)"}}>{g.price!=null?"$"+Number(g.price).toFixed(2):"—"}</strong></span>
         <span>{paid?"Paid":"Last tried"} {new Date(g.latest.created_at).toLocaleString([],{month:"numeric",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})}</span>
         <span>IP <span style={{fontFamily:"monospace",color:"var(--t1)"}}>{g.evidenceRow.ip||"—"}</span></span>
+      </div>
+      <div style={{fontSize:11,color:"var(--t2)",display:"flex",gap:12,flexWrap:"wrap"}}>
+        <span>Last login {g.evidenceRow.last_sign_in_at?new Date(g.evidenceRow.last_sign_in_at).toLocaleDateString():"—"}</span>
+        <span>{Number(g.evidenceRow.applications_count||0)} apps · {Number(g.evidenceRow.media_count||0)} uploads</span>
       </div>
       <div title={g.evidenceRow.user_agent||""} style={{fontSize:10.5,fontFamily:"monospace",color:"var(--t3)",wordBreak:"break-all"}}>{g.evidenceRow.session_id||"no stripe session"}</div>
       <button className="btn-s btn-sm" onClick={()=>copyRow(g.evidenceRow)} style={{alignSelf:"flex-start"}}>{copiedId===g.evidenceRow.id?"Copied ✓":"Copy evidence"}</button>
