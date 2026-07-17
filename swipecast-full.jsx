@@ -3319,7 +3319,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
           <div style={{minHeight:22,marginBottom:10,display:"flex",alignItems:"center"}}>{featured&&<span style={{fontSize:10,fontWeight:800,letterSpacing:1.4,textTransform:"uppercase",color:"#18181a",background:"#f5f4f0",fontFamily:"'DM Sans',sans-serif",padding:"4px 11px",borderRadius:100}}>Most popular</span>}</div>
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:6,color:tm}}>{p.label}</h3>
           <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:6}}>
-            <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:38,letterSpacing:-1.2,color:tm}}>${p.monthly.toFixed(2)}</span>
+            <span style={{fontFamily:"'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif",fontWeight:600,fontSize:42,letterSpacing:"-0.02em",color:tm}}>${p.monthly.toFixed(2)}</span>
             <span style={{fontSize:13,color:ts}}>/month</span>
           </div>
           <p style={{fontSize:12,color:ts,marginBottom:16}}>{save?<span style={{fontWeight:700}}>{save} · </span>:null}{p.note}</p>
