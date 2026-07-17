@@ -15840,15 +15840,22 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
     // the back cards only enter the DOM when the deal-in starts, and cold
     // image fetch+decode mid-animation was a visible desktop stutter.
     try{demo.forEach(d=>{const im=new Image();im.decoding="async";im.src=d.img;if(im.decode)im.decode().catch(()=>{});});}catch(e){}
-    let started=false,endTm,poll,safety;
+    let started=false,endTm,poll,safety,lead;
     function play(){if(started)return;started=true;swipeIntroSeen=true;setArmed(true);endTm=setTimeout(()=>setIntro(false),2400);}
     const hasSplash=typeof document!=='undefined'&&document.getElementById('cs-intro');
     if(!hasSplash){const k=setTimeout(play,150);return ()=>{clearTimeout(k);clearTimeout(endTm);};}
-    // Play the deal-in the instant the curtain (#cs-intro) leaves the DOM — no
-    // "breathe" pause, so the deck rides in exactly as the curtain falls.
-    poll=setInterval(()=>{if(typeof document!=='undefined'&&!document.getElementById('cs-intro')){clearInterval(poll);play();}},30);
-    safety=setTimeout(()=>{clearInterval(poll);play();},16000);
-    return ()=>{clearInterval(poll);clearTimeout(safety);clearTimeout(endTm);};
+    // Deal the deck in WHILE the curtain is still falling — ~0.75s earlier than
+    // its removal. The curtain begins its 1.1s fall when #cs-intro gets .cs-go
+    // and is removed ~1.3s after; firing 0.55s after cs-go lands the deck in as
+    // the curtain drops. If the curtain is already gone, deal in immediately.
+    poll=setInterval(()=>{
+      if(typeof document==='undefined')return;
+      const s=document.getElementById('cs-intro');
+      if(!s){clearInterval(poll);clearTimeout(lead);play();return;}
+      if(s.classList.contains('cs-go')){clearInterval(poll);lead=setTimeout(play,550);}
+    },30);
+    safety=setTimeout(()=>{clearInterval(poll);clearTimeout(lead);play();},16000);
+    return ()=>{clearInterval(poll);clearTimeout(safety);clearTimeout(lead);clearTimeout(endTm);};
   },[]);
   function advance(dir){
     if(animating)return;
