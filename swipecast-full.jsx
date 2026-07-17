@@ -247,7 +247,7 @@ const TRANSLATIONS = {
     'type.indieFilm':'Indie Film','type.webSeries':'Web Series',
     // Classes extended
     'classes.backToClasses':'← Back to Classes','classes.availableSessions':'Available Sessions',
-    'classes.noSessionsMatch':'No sessions match this filter.','classes.fullyBooked':'Fully Booked',
+    'classes.noSessionsMatch':'No sessions match this filter.','classes.fullyBooked':'Fully Booked','classes.notAvailable':'Not Available',
     'classes.requestBooking':'Request Booking','classes.viewClass':'View Class',
     'classes.quickView':'Quick View →','classes.allCategories':'All Categories',
     'classes.starts':'Starts:','classes.paymentApproved':'Your spot is approved — complete payment to confirm it',
@@ -494,7 +494,7 @@ const TRANSLATIONS = {
     'type.indieFilm':'Película independiente','type.webSeries':'Serie web',
     // Classes extended
     'classes.backToClasses':'← Volver a clases','classes.availableSessions':'Sesiones disponibles',
-    'classes.noSessionsMatch':'Ninguna sesión coincide con este filtro.','classes.fullyBooked':'Completamente reservado',
+    'classes.noSessionsMatch':'Ninguna sesión coincide con este filtro.','classes.fullyBooked':'Completamente reservado','classes.notAvailable':'No disponible',
     'classes.requestBooking':'Solicitar reserva','classes.viewClass':'Ver clase',
     'classes.quickView':'Vista rápida →','classes.allCategories':'Todas las categorías',
     'classes.starts':'Inicia:','classes.paymentApproved':'Tu lugar está aprobado — completa el pago para confirmarlo',
@@ -3287,7 +3287,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
   // logged-out users are sent to sign in first (with plan saved to sessionStorage).
   const planCardButton=(p)=>{
     // Tinted Tiers: featured (yearly) plan uses a solid teal action button
-    const featBtn=p.key==="yearly"?{width:"100%",background:"#14785f",borderColor:"#14785f",color:"#fff"}:{width:"100%"};
+    const featBtn=p.key==="yearly"?{width:"100%",background:"#ffffff",borderColor:"#ffffff",color:"#18181a"}:{width:"100%"};
     if(session?.user){
       // Logged-in non-industry user — proceed directly to plan summary
       return(<button className={p.key==="yearly"?"btn-p":"btn-s"} style={featBtn} onClick={()=>onPickPlan(p.key)}>Select Plan →</button>);
@@ -3305,31 +3305,33 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
     <div className="grid-3" style={{gap:18,maxWidth:1100,margin:"0 auto"}}>
       {Object.values(MEMBERSHIP_PLANS).map(p=>{
         const featured=p.key==="yearly";
-        // Tinted Tiers — each plan gets its own soft wash; featured plan reads teal
-        const PLAN_TINTS={
-          yearly:{bg:"linear-gradient(180deg,#e6f3ed,#daeee6)",border:"#14785f"},
-          six_month:{bg:"#f2eee6",border:"#e2d9c6"},
-          monthly:{bg:"#f3edf0",border:"#e4d4dd"}
-        };
-        const tint=PLAN_TINTS[p.key]||{bg:"var(--s1)",border:"var(--bdr)"};
-        return(<div key={p.key} className="card" style={{padding:28,position:"relative",background:tint.bg,border:featured?"2px solid #14785f":`1px solid ${tint.border}`,boxShadow:featured?"0 30px 58px -30px rgba(20,120,95,.5), 0 0 0 1px #14785f":"none"}}>
-          {featured&&<div style={{position:"absolute",top:-12,left:24,background:"#14785f",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.2,padding:"4px 10px",borderRadius:100,fontFamily:"'DM Sans',sans-serif"}}>BEST VALUE</div>}
-          <h3 style={{fontSize:16,fontWeight:800,marginBottom:6}}>{p.label}</h3>
+        // Monochrome anchor — the featured (yearly) plan is a solid charcoal card
+        // so it stands out by contrast, not color. The others stay quiet and white.
+        const SAVE={yearly:"Save 20%",six_month:"Save 10%",monthly:""};
+        const save=SAVE[p.key]||"";
+        const tm=featured?"#ffffff":"var(--t1)";
+        const ts=featured?"#c9c8c1":"var(--t2)";
+        const ck=featured?"#9a9a9f":"#c4c2b8";
+        const ft=featured?"#e2e1da":"var(--t2)";
+        const feat=(txt)=>(<li style={{display:"flex",gap:8,fontSize:13,color:ft}}><span style={{color:ck,fontWeight:700,flex:"none"}}><Ico n="check" s={24}/></span>{txt}</li>);
+        return(<div key={p.key} className="card" style={{padding:28,position:"relative",display:"flex",flexDirection:"column",background:featured?"#18181a":"#ffffff",border:featured?"1px solid #18181a":"1px solid #e7e4db",boxShadow:"none"}}>
+          <div style={{fontSize:10,fontWeight:800,letterSpacing:1.4,textTransform:"uppercase",color:featured?"#8f8f95":"transparent",fontFamily:"'DM Sans',sans-serif",minHeight:14,marginBottom:8}}>{featured?"Most popular":" "}</div>
+          <h3 style={{fontSize:15,fontWeight:700,marginBottom:6,color:tm}}>{p.label}</h3>
           <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:6}}>
-            <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:38,letterSpacing:-1.2,color:featured?"#14785f":"var(--t1)"}}>${p.monthly.toFixed(2)}</span>
-            <span style={{fontSize:13,color:"var(--t2)"}}>/month</span>
+            <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:38,letterSpacing:-1.2,color:tm}}>${p.monthly.toFixed(2)}</span>
+            <span style={{fontSize:13,color:ts}}>/month</span>
           </div>
-          <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>{p.note}</p>
-          <ul style={{listStyle:"none",padding:0,margin:"0 0 22px",display:"flex",flexDirection:"column",gap:6}}>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"#14785f",fontWeight:700}}><Ico n="check" s={24}/></span>Unlimited casting submissions</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"#14785f",fontWeight:700}}><Ico n="check" s={24}/></span>Unlimited photos &amp; gallery media</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"#14785f",fontWeight:700}}><Ico n="check" s={24}/></span>Unlimited video uploads</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"#14785f",fontWeight:700}}><Ico n="check" s={24}/></span>Actor Slate Video — 7-sec intro for casting teams</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"#14785f",fontWeight:700}}><Ico n="check" s={24}/></span>Actor Business Card with unique QR code</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"#14785f",fontWeight:700}}><Ico n="check" s={24}/></span>Manager Mode — weekly career check-ins</li>
-            <li style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)"}}><span style={{color:"#14785f",fontWeight:700}}><Ico n="check" s={24}/></span>Personalized profile improvement suggestions</li>
+          <p style={{fontSize:12,color:ts,marginBottom:16}}>{save?<span style={{fontWeight:700}}>{save} · </span>:null}{p.note}</p>
+          <ul style={{listStyle:"none",padding:0,margin:"0 0 22px",display:"flex",flexDirection:"column",gap:6,flex:1}}>
+            {feat("Unlimited casting submissions")}
+            {feat("Unlimited photos & gallery media")}
+            {feat("Unlimited video uploads")}
+            {feat("Actor Slate Video — 7-sec intro for casting teams")}
+            {feat("Actor Business Card with unique QR code")}
+            {feat("Manager Mode — weekly career check-ins")}
+            {feat("Personalized profile improvement suggestions")}
           </ul>
-          <div style={{borderTop:"1px solid var(--bdr)",paddingTop:14,marginBottom:14,fontSize:12,color:"var(--t3)"}}>Total billed: <strong style={{color:"var(--t1)"}}>${p.total.toFixed(2)}</strong>{p.months>1?` for ${p.months} months`:" today"}</div>
+          <div style={{borderTop:featured?"1px solid #37373a":"1px solid var(--bdr)",paddingTop:14,marginBottom:14,fontSize:12,color:ts}}>Total billed: <strong style={{color:tm}}>${p.total.toFixed(2)}</strong>{p.months>1?` for ${p.months} months`:" today"}</div>
           {planCardButton(p)}
         </div>);
       })}
@@ -4865,6 +4867,31 @@ function fmtTime(t){if(!t)return"";const[h,m]=t.split(":").map(Number);const ap=
 // ─── helper: next N occurrences of a day-of-week (0=Sun…6=Sat) ───
 function upcomingDates(dow,count=4){const dates=[];const d=new Date();d.setHours(0,0,0,0);const diff=(dow-d.getDay()+7)%7;d.setDate(d.getDate()+(diff===0?7:diff));for(let i=0;i<count;i++){dates.push(new Date(d));d.setDate(d.getDate()+7);}return dates;}
 
+// ─── Calendar "blocked out" days ───
+// Marks ~25% of a class's weekday sessions as Not Available. The choice is
+// seeded per calendar week (Mon-start) so it's stable across renders and
+// auto-renews as the projected window rolls forward — no stored dates to
+// exhaust. Scoped to CAL_BLOCKED_CLASS_IDS only (George Ludlow's class).
+const CAL_BLOCKED_CLASS_IDS=new Set(["c7276edb-7c57-4c1f-be8c-7bb1f4809c0d"]);
+function _fnv1a(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+function _weekStartStr(dateStr){const d=new Date(dateStr+"T00:00:00");const day=d.getDay();d.setDate(d.getDate()+(day===0?-6:1-day));return d.toISOString().split("T")[0];}
+const _blockedWeekCache={};
+function _blockedDatesForWeek(weekStr){
+  if(_blockedWeekCache[weekStr])return _blockedWeekCache[weekStr];
+  const seed=_fnv1a(weekStr)||1;
+  let x=seed;const rnd=()=>{x^=x<<13;x^=x>>>17;x^=x<<5;x>>>=0;return x/4294967296;};
+  const offs=[0,1,2,3,4]; // Mon..Fri
+  for(let i=offs.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));const tmp=offs[i];offs[i]=offs[j];offs[j]=tmp;}
+  const n=(seed%4===0)?2:1; // 2 days once every ~4 weeks, else 1 → averages 1.25/5 = 25%
+  const base=new Date(weekStr+"T00:00:00");
+  const set=new Set(offs.slice(0,n).map(o=>{const d=new Date(base);d.setDate(base.getDate()+o);return d.toISOString().split("T")[0];}));
+  _blockedWeekCache[weekStr]=set;return set;
+}
+function isCalDayBlocked(classId,dateStr){
+  if(!CAL_BLOCKED_CLASS_IDS.has(classId))return false;
+  return _blockedDatesForWeek(_weekStartStr(dateStr)).has(dateStr);
+}
+
 // Supabase image transform: rewrite a public storage object URL to the CDN
 // render/image endpoint so the browser downloads a resized WebP/AVIF sized for
 // the slot instead of the full-size original upload (often a multi-MB PNG).
@@ -5298,13 +5325,18 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
                 <div style={{display:"flex",flexDirection:"column",gap:12}}>
                   {dateGroups.map(({date,dateStr,entries})=>{
                     const fullDate=date.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+                    const dayBlocked=isCalDayBlocked(viewing.id,dateStr);
                     return(
-                      <div key={dateStr} style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,boxShadow:"0 1px 4px rgba(0,0,0,0.06)",overflow:"hidden"}}>
+                      <div key={dateStr} style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,boxShadow:"0 1px 4px rgba(0,0,0,0.06)",overflow:"hidden",opacity:dayBlocked?0.72:1}}>
                         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 18px",borderBottom:"1px solid var(--bdr)",background:"var(--s2)"}}>
-                          <div style={{fontWeight:700,fontSize:15,color:"var(--t1)"}}>{fullDate}</div>
-                          {locationPill}
+                          <div style={{fontWeight:700,fontSize:15,color:dayBlocked?"var(--t2)":"var(--t1)"}}>{fullDate}</div>
+                          {dayBlocked?(<span style={{flexShrink:0,fontSize:10,fontWeight:700,letterSpacing:0.4,padding:"3px 9px",borderRadius:20,whiteSpace:"nowrap",background:"var(--s1)",color:"var(--t3)",border:"1px solid var(--bdr)"}}>NOT AVAILABLE</span>):locationPill}
                         </div>
-                        {entries.map(({slot},idx)=>{
+                        {dayBlocked?(
+                          <div className="cls-slot-row" style={{justifyContent:"center"}}>
+                            <div style={{fontSize:13,fontWeight:600,color:"var(--t3)",padding:"4px 0"}}>{t('classes.notAvailable')}</div>
+                          </div>
+                        ):entries.map(({slot},idx)=>{
                           const isBooked=bookedSessions.has(`${slot.id}_${dateStr}`);
                           return(
                             <React.Fragment key={slot.id}>
@@ -5357,13 +5389,19 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
                 </div>
                 {/* ── Weekday columns ── */}
                 <div style={{display:"grid",gridTemplateColumns:`repeat(${cur.days.length},minmax(0,1fr))`,gap:10}}>
-                  {cur.days.map(({date,dateStr,entries})=>(
+                  {cur.days.map(({date,dateStr,entries})=>{
+                    const dayBlocked=isCalDayBlocked(viewing.id,dateStr);
+                    return(
                     <div key={dateStr} style={{minWidth:0}}>
                       <div style={{padding:"0 0 8px",borderBottom:"1px solid var(--bdr)",marginBottom:10}}>
-                        <div style={{fontSize:13,fontWeight:700,color:"var(--t1)"}}>{date.toLocaleDateString("en-US",{weekday:"short"})}</div>
-                        <div style={{fontSize:11,color:"var(--t2)"}}>{date.toLocaleDateString("en-US",{month:"short",day:"numeric"})}</div>
+                        <div style={{fontSize:13,fontWeight:700,color:dayBlocked?"var(--t3)":"var(--t1)"}}>{date.toLocaleDateString("en-US",{weekday:"short"})}</div>
+                        <div style={{fontSize:11,color:dayBlocked?"var(--t3)":"var(--t2)"}}>{date.toLocaleDateString("en-US",{month:"short",day:"numeric"})}</div>
                       </div>
-                      {entries.map(({slot})=>{
+                      {dayBlocked?(
+                        <div style={{padding:"14px 8px",borderRadius:9,border:"1px dashed var(--bdr)",background:"var(--s2)",textAlign:"center"}}>
+                          <div style={{fontSize:11.5,fontWeight:700,color:"var(--t3)",lineHeight:1.4}}>{t('classes.notAvailable')}</div>
+                        </div>
+                      ):entries.map(({slot})=>{
                         const isBooked=bookedSessions.has(`${slot.id}_${dateStr}`);
                         return(
                           <button key={slot.id} disabled={isBooked} onClick={()=>handleRequestBooking(viewing,slot,date)}
@@ -5381,7 +5419,8 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
                         );
                       })}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -22911,6 +22950,7 @@ function AdminHeadshotCatalog({session,myProfile}){
   const [loading,setLoading]=useState(true);
   const [msg,setMsg]=useState("");
   const [viewing,setViewing]=useState(null);
+  const scrollYRef=useRef(0); // remember catalog scroll position across open → back
   const load=useCallback(async()=>{
     // Every talent with a non-empty headshot, newest first. No visible/suspended
     // filter — admins get full visibility (suspended/banned are flagged on the card).
@@ -22948,6 +22988,18 @@ function AdminHeadshotCatalog({session,myProfile}){
     window.addEventListener("focus",onFocus);
     return()=>{cancelled=true;clearInterval(tid);window.removeEventListener("focus",onFocus);if(ch){try{window.sb.removeChannel(ch);}catch(_){}}};
   },[load]);
+  // When returning from a profile detail view, restore the catalog's previous
+  // scroll position so the admin lands back on the exact card they opened —
+  // not scrolled all the way to the top. (<html> is the overflow scroller, so
+  // set its scrollTop directly; window.scrollTo is a belt-and-suspenders backup.)
+  useLayoutEffect(()=>{
+    if(viewing)return;
+    const y=scrollYRef.current;
+    if(!y)return;
+    const sc=document.scrollingElement||document.documentElement;
+    const apply=()=>{try{sc.scrollTop=y;}catch(_){}try{window.scrollTo(0,y);}catch(_){}};
+    apply();requestAnimationFrame(apply);
+  },[viewing]);
   const filtered=profiles.filter(u=>{
     if(!q)return true;
     const needle=q.toLowerCase();
@@ -22962,7 +23014,7 @@ function AdminHeadshotCatalog({session,myProfile}){
     {loading?<CastSlateLoader size="inline" text="Loading catalog…"/>:
       filtered.length===0?<div className="card" style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No actors with headshots match.</div>:
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(190px,1fr))",gap:16}}>
-        {filtered.map(u=><CatalogCard key={u.id} u={u} appCount={appCounts[u.id]||0} onOpen={()=>setViewing(u)}/>)}
+        {filtered.map(u=><CatalogCard key={u.id} u={u} appCount={appCounts[u.id]||0} onOpen={()=>{try{scrollYRef.current=(document.scrollingElement||document.documentElement).scrollTop||window.pageYOffset||0;}catch(_){scrollYRef.current=window.pageYOffset||0;}setViewing(u);}}/>)}
       </div>
     }
   </>);
