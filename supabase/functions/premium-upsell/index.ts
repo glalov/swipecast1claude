@@ -288,7 +288,7 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
 <tr>
   <td style="background:#eef5f5;padding:16px 20px 14px;text-align:center;border-bottom:1px solid #dce9e9;border-top:1px solid #f0f3f3;">
     <div style="font-size:10px;font-weight:700;letter-spacing:2.4px;text-transform:uppercase;color:#6f9a9a;margin-bottom:8px;">Casting across every format</div>
-    <div style="font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:23px;letter-spacing:-0.5px;color:#39474a;">A24 <span style="color:#aebcbc;font-weight:400;">&middot;</span> Neon <span style="color:#aebcbc;font-weight:400;">&middot;</span> Netflix</div>
+    <div style="font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:23px;letter-spacing:-0.5px;"><span style="color:#0A0A0A;">A24</span> <span style="color:#b7c8c8;font-weight:400;">&middot;</span> <span style="color:#FF2D6F;">Neon</span> <span style="color:#b7c8c8;font-weight:400;">&middot;</span> <span style="color:#E50914;">Netflix</span></div>
   </td>
 </tr>
 
@@ -359,9 +359,15 @@ serve(async (req) => {
   if(req.method==="OPTIONS") return new Response("ok",{headers:cors});
 
   // Dedicated unsubscribe for THIS campaign only (keeps their digest intact).
-  if(req.method==="GET"){
+  // Handles BOTH ways a person unsubscribes, so neither can silently fail:
+  //   • GET  — the visible "Unsubscribe" link in the email body (a browser click).
+  //   • POST — the native one-click button Gmail/Apple Mail render from the
+  //            List-Unsubscribe header (RFC 8058; body is "List-Unsubscribe=One-Click",
+  //            NOT JSON). Both carry ?action=unsubscribe&uid=... in the URL, so we
+  //            match on that and MUST handle it before any req.json() parse below.
+  {
     const url=new URL(req.url);
-    if(url.searchParams.get("action")==="unsubscribe"&&url.searchParams.get("uid")){
+    if((req.method==="GET"||req.method==="POST")&&url.searchParams.get("action")==="unsubscribe"&&url.searchParams.get("uid")){
       const uid=url.searchParams.get("uid")!;
       const slot=(url.searchParams.get("slot")==="evening")?"evening":"noon";
       const sb=createClient(SUPABASE_URL,SUPABASE_SERVICE_KEY);
@@ -375,9 +381,12 @@ serve(async (req) => {
       if(!existing || existing.premium_upsell_optout!==true){
         try{ await sb.from("premium_upsell_logs").insert({user_id:uid,slot,status:"skipped",reason:"unsubscribe_click"}); }catch(_){ /* non-fatal */ }
       }
-      return new Response(null,{ status:302, headers:{"Location":`${APP_URL}/unsubscribed`} });
+      // Visible link (GET) → friendly confirmation page. One-click (POST) → 200 OK.
+      return req.method==="GET"
+        ? new Response(null,{ status:302, headers:{...cors,"Location":`${APP_URL}/unsubscribed`} })
+        : new Response(JSON.stringify({ok:true,unsubscribed:true}),{status:200,headers:{...cors,"Content-Type":"application/json"}});
     }
-    return new Response("Not found",{status:404});
+    if(req.method==="GET") return new Response("Not found",{status:404});
   }
 
   const res=(b:unknown,s=200)=>new Response(JSON.stringify(b),{status:s,headers:{...cors,"Content-Type":"application/json"}});
