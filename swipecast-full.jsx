@@ -3217,6 +3217,7 @@ function ActivateMembershipBanner({myProfile,session,page,onNavigate}){
 //     stay on-brand. Already-active members see a different card explaining
 //     their current plan + expiry instead of plan options.
 function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
+  const isMobile=useViewportWidth()<768;
   // Only show "industry doesn't need a membership" when we KNOW the user is CD/industry.
   // Never gate on a null/loading profile — default to showing talent plans.
   const userType=(myProfile?.user_type||"").toLowerCase();
@@ -3314,8 +3315,8 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
         const ck=featured?"#9a9a9f":"#c4c2b8";
         const ft=featured?"#e2e1da":"var(--t2)";
         const feat=(txt)=>(<li style={{display:"flex",gap:8,fontSize:13,color:ft}}><span style={{color:ck,fontWeight:700,flex:"none"}}><Ico n="check" s={24}/></span>{txt}</li>);
-        return(<div key={p.key} className="card" style={{padding:28,position:"relative",display:"flex",flexDirection:"column",background:featured?"#18181a":"#ffffff",border:featured?"1px solid #18181a":"1px solid #e7e4db",boxShadow:"none"}}>
-          <div style={{fontSize:10,fontWeight:800,letterSpacing:1.4,textTransform:"uppercase",color:featured?"#8f8f95":"transparent",fontFamily:"'DM Sans',sans-serif",minHeight:14,marginBottom:8}}>{featured?"Most popular":" "}</div>
+        return(<div key={p.key} className="card" style={{padding:28,position:"relative",display:"flex",flexDirection:"column",background:featured?"#18181a":"#ffffff",border:featured?"1px solid #18181a":"1px solid #e7e4db",boxShadow:featured?"0 26px 50px -22px rgba(20,20,26,.55)":"none",transform:featured&&!isMobile?"translateY(-14px)":"none",zIndex:featured?2:1}}>
+          <div style={{minHeight:22,marginBottom:10,display:"flex",alignItems:"center"}}>{featured&&<span style={{fontSize:10,fontWeight:800,letterSpacing:1.4,textTransform:"uppercase",color:"#18181a",background:"#f5f4f0",fontFamily:"'DM Sans',sans-serif",padding:"4px 11px",borderRadius:100}}>Most popular</span>}</div>
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:6,color:tm}}>{p.label}</h3>
           <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:6}}>
             <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:38,letterSpacing:-1.2,color:tm}}>${p.monthly.toFixed(2)}</span>

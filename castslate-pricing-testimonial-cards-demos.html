@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>CastSlate — Pricing testimonial card demos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700;9..40,800&display=swap" rel="stylesheet"/>
+<style>
+:root{--cream:#FBF7F0;--t1:#1A1A2E;--t2:#585870;--t3:#8A8AA0;--bdr:#EAE4DA;--teal:#12A594;--grn:#1b873e;--gold:#F5B849;}
+*{box-sizing:border-box;}
+body{margin:0;background:#E7E2D8;font-family:'DM Sans',system-ui,sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased;}
+.head{max-width:1080px;margin:0 auto;padding:34px 24px 4px;}
+.head h1{font-size:23px;font-weight:800;letter-spacing:-.5px;margin:0 0 6px;}
+.head p{color:var(--t2);font-size:14px;margin:0;max-width:780px;line-height:1.55;}
+.demo{max-width:1080px;margin:24px auto;background:var(--cream);border:1px solid var(--bdr);border-radius:20px;padding:26px 26px 34px;}
+.tag{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--teal);background:#e2f4f1;border:1px solid #c8e9e3;padding:6px 12px;border-radius:100px;margin-bottom:18px;}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+@media(max-width:860px){.grid{grid-template-columns:1fr;}}
+.card{background:#fff;border:1px solid var(--bdr);border-radius:14px;box-shadow:0 2px 14px rgba(0,0,0,0.05);padding:28px;display:flex;flex-direction:column;}
+.pill{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;background:rgba(18,165,148,.1);color:var(--teal);font-size:11px;font-weight:700;letter-spacing:.3px;padding:5px 11px;border-radius:999px;margin-bottom:16px;}
+.stars{color:var(--gold);font-size:14px;letter-spacing:1px;margin-bottom:12px;}
+.q{font-size:14px;line-height:1.65;color:var(--t1);margin:0 0 20px;font-weight:500;flex:1;}
+.who{display:flex;align-items:center;gap:12px;padding-top:16px;border-top:1px solid var(--bdr);}
+.who img{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--bdr);background:#e7e2d8;}
+.name{font-size:13px;font-weight:700;}
+.role{font-size:11px;color:var(--t3);margin-top:1px;}
+.chip{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;background:rgba(27,135,62,.08);color:var(--grn);font-size:11px;font-weight:600;padding:5px 11px;border-radius:999px;margin-top:16px;}
+.ck{width:13px;height:13px;}
+</style>
+</head>
+<body>
+<div class="head">
+  <h1>Pricing testimonial cards — 3 demos</h1>
+  <p>All three match your landing-page card style: teal "User feedback" pill, quote, headshot circle, and green outcome chip. Headshots are stock/illustrative placeholders and the quotes are representative examples — swap in real, verified member quotes when ready (covered by Terms §20 meanwhile). Pick a layout.</p>
+</div>
+<div id="app"></div>
+<script>
+const CK='<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+const T=[
+  {q:"I submitted on a Tuesday and had a callback message from the casting director by Friday. Knowing every submission actually gets seen changed how I use my week.",n:"Marian",r:"Actor · New York",chip:"Callback that week",img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=160&q=80",pos:"center 25%"},
+  {q:"The Slate Video let a CD hear me before the room. My QR business card got passed around at a shoot and turned into two more auditions.",n:"Jorge",r:"Actor · New York, NY",chip:"Booked a commercial",img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&q=80",pos:"center 20%"},
+  {q:"No agent, no problem. I browse one profile at a time, apply, and Manager Mode nudges me on what to fix next. It feels like having a coach in my pocket.",n:"Sofia",r:"Actor · Brooklyn, NY",chip:"Working actor",img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&q=80",pos:"center 20%"},
+];
+const foot=(t)=>`<div class="who"><img src="${t.img}" style="object-position:${t.pos}" alt=""/><div><div class="name">${t.n}</div><div class="role">${t.r}</div></div></div>`;
+// Variant 1 — exact landing match: pill + quote + headshot + green chip
+const v1=(t)=>`<div class="card"><span class="pill">${CK} User feedback</span><p class="q">"${t.q}"</p>${foot(t)}<span class="chip">${CK} ${t.chip}</span></div>`;
+// Variant 2 — minimal: pill + quote + headshot (no green chip)
+const v2=(t)=>`<div class="card"><span class="pill">${CK} User feedback</span><p class="q">"${t.q}"</p>${foot(t)}</div>`;
+// Variant 3 — with stars: pill + 5 stars + quote + headshot + green chip
+const v3=(t)=>`<div class="card"><span class="pill">${CK} User feedback</span><div class="stars">★★★★★</div><p class="q">"${t.q}"</p>${foot(t)}<span class="chip">${CK} ${t.chip}</span></div>`;
+const block=(label,fn)=>`<section class="demo"><div class="tag">${label}</div><div class="grid">${T.map(fn).join("")}</div></section>`;
+document.getElementById("app").innerHTML=
+  block("Demo 1 · exact landing match (badge + quote + headshot + outcome chip)",v1)+
+  block("Demo 2 · minimal (badge + quote + headshot, no chip)",v2)+
+  block("Demo 3 · with star rating (badge + stars + quote + headshot + chip)",v3);
+</script>
+</body>
+</html>

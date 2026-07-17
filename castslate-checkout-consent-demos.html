@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>CastSlate — Checkout confirmation options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700;9..40,800&display=swap" rel="stylesheet"/>
+<style>
+:root{--cream:#FBF7F0;--t1:#1A1A2E;--t2:#585870;--t3:#8A8AA0;--bdr:#EAE4DA;--acc:#6b3ecb;}
+*{box-sizing:border-box;}
+body{margin:0;background:#E7E2D8;font-family:'DM Sans',system-ui,sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased;}
+.head{max-width:1120px;margin:0 auto;padding:32px 24px 4px;}
+.head h1{font-size:23px;font-weight:800;letter-spacing:-.5px;margin:0 0 6px;}
+.head p{color:var(--t2);font-size:14px;margin:0;max-width:820px;line-height:1.55;}
+.row{max-width:1120px;margin:22px auto;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:0 24px;}
+@media(max-width:960px){.row{grid-template-columns:1fr;}}
+.col{background:var(--cream);border:1px solid var(--bdr);border-radius:18px;padding:22px;}
+.badge{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:5px 11px;border-radius:100px;margin-bottom:16px;}
+.b-before{background:#eef0f2;color:#6b7280;}
+.b-now{background:#fdeaea;color:#c0392b;}
+.b-rec{background:#e7f6ef;color:#0f8c5a;}
+.sum{background:#fff;border:1px solid var(--bdr);border-radius:14px;padding:18px;}
+.line{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;}
+.line .k{color:var(--t2);} .line .v{font-weight:700;color:var(--t1);}
+.tot{display:flex;justify-content:space-between;align-items:baseline;padding-top:13px;margin-top:13px;border-top:1px solid var(--bdr);}
+.tot .k{font-weight:800;font-size:14px;} .tot .v{font-family:'DM Sans';font-weight:800;font-size:24px;color:var(--acc);letter-spacing:-.6px;}
+.fine{font-size:11px;color:var(--t3);line-height:1.5;margin:11px 0 0;}
+.fine b{color:var(--t2);}
+.btn{width:100%;padding:15px;border:none;border-radius:10px;background:var(--acc);color:#fff;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;margin-top:16px;}
+.foot{font-size:12px;color:var(--t2);text-align:center;line-height:1.55;margin:13px auto 0;max-width:340px;}
+.foot-sm{font-size:11px;color:var(--t3);text-align:center;margin-top:9px;}
+.scary{font-size:12px;color:var(--t2);line-height:1.55;margin:13px auto 0;max-width:360px;text-align:center;}
+.note{font-size:11.5px;color:var(--t3);margin-top:14px;line-height:1.5;border-top:1px dashed var(--bdr);padding-top:12px;}
+.calm-legal{font-size:11px;color:var(--t3);text-align:center;line-height:1.5;margin:11px auto 0;max-width:340px;}
+.reassure{display:flex;align-items:center;justify-content:center;gap:7px;font-size:12.5px;color:#0f8c5a;font-weight:700;margin-top:14px;}
+</style></head>
+<body>
+<div class="head">
+  <h1>Checkout confirmation — 3 options</h1>
+  <p>The order summary + pay button on the plan-confirm step. All three still log the invisible consent record for chargeback defense; the difference is only what the user sees. Values shown for the Monthly plan.</p>
+</div>
+
+<div class="row">
+  <!-- BEFORE -->
+  <div class="col">
+    <span class="badge b-before">Before · what users saw</span>
+    <div class="sum">
+      <div class="line"><span class="k">Membership</span><span class="v">Actor Premium</span></div>
+      <div class="line"><span class="k">Billing period</span><span class="v">Monthly · renews each month</span></div>
+      <div class="line"><span class="k">Effective rate</span><span class="v">$9.99/month</span></div>
+      <div class="tot"><span class="k">Total due today</span><span class="v">$9.99</span></div>
+      <p class="fine">Renews automatically. Plus tax where applicable.</p>
+    </div>
+    <button class="btn">Continue to Checkout — $9.99/month</button>
+    <p class="foot-sm">You'll be taken to Stripe's secure checkout. Your plan activates automatically after payment.</p>
+    <p class="note">Clean and calm — but no visible recurring/cancel disclosure or consent at checkout. Weaker for chargebacks and auto-renewal-law compliance.</p>
+  </div>
+
+  <!-- NOW -->
+  <div class="col">
+    <span class="badge b-now">Now · feels heavy</span>
+    <div class="sum">
+      <div class="line"><span class="k">Membership</span><span class="v">Actor Premium</span></div>
+      <div class="line"><span class="k">Billing period</span><span class="v">Monthly · renews each month</span></div>
+      <div class="line"><span class="k">Effective rate</span><span class="v">$9.99/month</span></div>
+      <div class="tot"><span class="k">Total due today</span><span class="v">$9.99</span></div>
+      <p class="fine">Renews automatically. Plus tax where applicable. <b>All sales are final — memberships are non-refundable except where required by law.</b></p>
+    </div>
+    <button class="btn">Continue to Checkout — $9.99/month</button>
+    <p class="scary">By continuing to checkout, you authorize CastSlate to charge your payment method $9.99 per month and to automatically renew this membership until you cancel. You confirm you have read and agree to CastSlate's Terms of Service and Privacy Policy, that you are at least 18 years old, and that fees are non-refundable except where required by law.</p>
+    <p class="foot-sm">You'll be taken to Stripe's secure checkout.</p>
+    <p class="note">Legally strong, but the dense paragraph reads as a warning and repeats the no-refund line twice.</p>
+  </div>
+
+  <!-- RECOMMENDED -->
+  <div class="col">
+    <span class="badge b-rec">Recommended · calm + protected</span>
+    <div class="sum">
+      <div class="line"><span class="k">Membership</span><span class="v">Actor Premium</span></div>
+      <div class="line"><span class="k">Billing period</span><span class="v">Monthly · renews each month</span></div>
+      <div class="line"><span class="k">Effective rate</span><span class="v">$9.99/month</span></div>
+      <div class="tot"><span class="k">Total due today</span><span class="v">$9.99</span></div>
+      <p class="fine">Renews at $9.99/month until you cancel. Plus tax where applicable.</p>
+    </div>
+    <button class="btn">Continue to Checkout — $9.99/month</button>
+    <div class="reassure">✓ Cancel anytime — you keep access through the period you paid for.</div>
+    <p class="calm-legal">By continuing you agree to the <u>Terms</u> and <u>Privacy Policy</u> and confirm you're 18+. Membership auto-renews until cancelled; fees are non-refundable except where required by law.</p>
+    <p class="foot-sm">Secure checkout by Stripe · activates right after payment.</p>
+    <p class="note">Same legal coverage + same invisible consent record — but reassurance-first, one calm legal line, no duplicate no-refund, softer tone.</p>
+  </div>
+</div>
+</body></html>
