@@ -24,9 +24,16 @@ select vault.create_secret('<YOUR-SERVICE-ROLE-KEY>', 'premium_upsell_service_ro
 
 ## 3. Deploy the edge function
 ```
-supabase functions deploy premium-upsell --project-ref mvqhqbjjvgkftninjcby
+supabase functions deploy premium-upsell --project-ref mvqhqbjjvgkftninjcby --no-verify-jwt
 ```
-(Or Dashboard → Edge Functions → deploy `premium-upsell`.)
+⚠️ **`--no-verify-jwt` is REQUIRED.** This function has a public GET
+`?action=unsubscribe` endpoint clicked straight from an email (no auth header).
+Without the flag, Supabase's gateway rejects every unsubscribe click with
+`401 UNAUTHORIZED_NO_AUTH_HEADER` before the function runs. The POST `run`/`test`
+paths are safe because they enforce their own service-role/admin-secret/admin-JWT
+check in-code. (Same pattern as news-refresh / weekly-checkin-run / weekly-upsell.)
+
+(Or Dashboard → Edge Functions → `premium-upsell` → Details → turn **Verify JWT** off.)
 Reuses existing secrets already set for the digest: `RESEND_API_KEY`,
 `NOTIFY_FROM_EMAIL`, `APP_URL`, `CONTACT_EMAIL`, `SUPABASE_SERVICE_ROLE_KEY`.
 
