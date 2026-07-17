@@ -84,18 +84,24 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-  if (req.method === "GET") {
+  // Unsubscribe — handle BOTH the visible in-email link (GET) and the native
+  // one-click button Gmail/Apple Mail render from List-Unsubscribe-Post (RFC 8058:
+  // a POST with body "List-Unsubscribe=One-Click", not JSON). Both carry
+  // ?action=unsubscribe&e=<email>&c=<campaign> in the URL; must run before req.json().
+  {
     const url = new URL(req.url);
-    if (url.searchParams.get("action") === "unsubscribe" && url.searchParams.get("e")) {
+    if ((req.method === "GET" || req.method === "POST") && url.searchParams.get("action") === "unsubscribe" && url.searchParams.get("e")) {
       try {
         const email = b64urlDecode(url.searchParams.get("e")!).toLowerCase().trim();
         const campaignId = url.searchParams.get("c") || null;
         await sb.from("email_unsubscribes").upsert({ email, unsubscribed_at: new Date().toISOString(), campaign_id: campaignId }, { onConflict: "email" });
         await sb.from("email_campaign_recipients").update({ status: "skipped_unsub" }).eq("email", email).eq("status", "queued");
       } catch (e) { console.error("[send-campaign] unsubscribe error", e); }
-      return new Response(null, { status: 302, headers: { "Location": `${APP_URL}/unsubscribed` } });
+      return req.method === "GET"
+        ? new Response(null, { status: 302, headers: { ...cors, "Location": `${APP_URL}/unsubscribed` } })
+        : new Response(JSON.stringify({ ok: true, unsubscribed: true }), { status: 200, headers: { ...cors, "Content-Type": "application/json" } });
     }
-    return new Response("Not found", { status: 404 });
+    if (req.method === "GET") return new Response("Not found", { status: 404 });
   }
 
   const res = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
