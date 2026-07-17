@@ -3673,7 +3673,7 @@ function ReportModal({open,onClose,session,target}){
   </div>);
 }
 
-function CookieConsentModal({open,onClose}){
+function CookieConsentModal({open,onClose,onNavigate}){
   // Necessary always true. Analytics + marketing default off and rehydrate from saved prefs.
   // "Amber Block" cinematic drawer — rises from the bottom edge. Logic unchanged:
   // preferences persist to localStorage via writeCookiePrefs; necessary is always on.
@@ -3717,7 +3717,7 @@ function CookieConsentModal({open,onClose}){
         <div className="logo"><div className="logo-i"><LogoMark/></div>CastSlate</div>
         <div className="cc6-sub">Cookie Settings</div>
         <h2 className="cc6-mega">Mind the<br/><span className="amb">cookies.</span></h2>
-        <p className="cc6-body">Essentials keep the lights on. Everything else is your call — flip what you want and get back to it. <a href="/privacy" onClick={beginClose}>Privacy Policy</a></p>
+        <p className="cc6-body">Essentials keep the lights on. Everything else is your call — flip what you want and get back to it. <a href="/privacy" onClick={e=>{e.preventDefault();if(typeof onNavigate==="function")onNavigate("privacy");beginClose();}}>Privacy Policy</a></p>
       </div>
       <div className="cc6-prefs">
         <div className="cc6-pref"><div className="top"><h4>Necessary</h4><span className="cc6-on">On</span></div><p>Sign-in, security &amp; payments. Always active.</p></div>
@@ -15844,10 +15844,11 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
     function play(){if(started)return;started=true;swipeIntroSeen=true;setArmed(true);endTm=setTimeout(()=>setIntro(false),2400);}
     const hasSplash=typeof document!=='undefined'&&document.getElementById('cs-intro');
     if(!hasSplash){const k=setTimeout(play,150);return ()=>{clearTimeout(k);clearTimeout(endTm);};}
-    let breathe;
-    poll=setInterval(()=>{if(typeof document!=='undefined'&&!document.getElementById('cs-intro')){clearInterval(poll);breathe=setTimeout(play,250);}},120);
+    // Play the deal-in the instant the curtain (#cs-intro) leaves the DOM — no
+    // "breathe" pause, so the deck rides in exactly as the curtain falls.
+    poll=setInterval(()=>{if(typeof document!=='undefined'&&!document.getElementById('cs-intro')){clearInterval(poll);play();}},30);
     safety=setTimeout(()=>{clearInterval(poll);play();},16000);
-    return ()=>{clearInterval(poll);clearTimeout(safety);clearTimeout(breathe);clearTimeout(endTm);};
+    return ()=>{clearInterval(poll);clearTimeout(safety);clearTimeout(endTm);};
   },[]);
   function advance(dir){
     if(animating)return;
@@ -28563,7 +28564,7 @@ function App(){
       </main>
       {/* Cookie preferences modal — opened via the footer "Cookie Preferences" link.
           Mounted at App level so it can sit on top of any page. */}
-      <CookieConsentModal open={cookieModalOpen} onClose={()=>setCookieModalOpen(false)}/>
+      <CookieConsentModal open={cookieModalOpen} onClose={()=>setCookieModalOpen(false)} onNavigate={navigate}/>
       {/* ── Mobile debug panel — visible when URL contains ?debug ── */}
       {(()=>{
         if(typeof window==="undefined")return null;
