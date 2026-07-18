@@ -21943,6 +21943,18 @@ function AdminEmailCampaigns({session}){
     catch(e){addLog("ERROR: "+e.message);}finally{setBusy(false);}
   };
 
+  // Send-section Refresh button. Normally it just re-checks the live counts.
+  // But once the whole list has been emailed (nothing left queued) it doubles
+  // as "start over" — re-queuing everyone so you can email the list again from
+  // the beginning, exactly like the red "Resend to everyone" action (same
+  // confirmation, unsubscribers stay excluded).
+  const refreshOrRequeue=async()=>{
+    const st=selStatus||(selCamp?{queued:selCamp.queued,sent:selCamp.sent,failed:selCamp.failed,skipped:selCamp.skipped}:null);
+    const done=st?((st.sent||0)+(st.failed||0)+(st.skipped||0)):0;
+    if(st&&st.queued===0&&done>0){await resetAll();return;}
+    await refreshSel();
+  };
+
   const selCamp=(campaigns||[]).find(c=>c.id===sel);
   return(<>
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Email Campaigns</h1>
@@ -22016,7 +22028,11 @@ function AdminEmailCampaigns({session}){
         <button className="btn-s" disabled={busy} onClick={()=>startSend(500,"warm-up")}>Send 500</button>
         <button className="btn-s" disabled={busy} onClick={()=>startSend(2000,"next 2,000")}>Send 2,000</button>
         <button className="btn-s" disabled={busy} onClick={()=>startSend(null,"everyone remaining")}>Send everyone remaining</button>
-        <button className="btn-s btn-sm" onClick={()=>refreshSel()}>↻ Refresh</button>
+        {(()=>{ const _st=selStatus||(selCamp?{queued:selCamp.queued,sent:selCamp.sent,failed:selCamp.failed,skipped:selCamp.skipped}:null);
+          const _done=_st?((_st.sent||0)+(_st.failed||0)+(_st.skipped||0)):0;
+          const _allEmailed=_st&&_st.queued===0&&_done>0;
+          return <button className="btn-s btn-sm" disabled={busy} onClick={refreshOrRequeue} title={_allEmailed?"Everyone has been emailed — click to re-queue the whole list and start over":"Re-check the latest counts"}>{_allEmailed?"↺ Refresh — re-queue everyone":"↻ Refresh"}</button>;
+        })()}
         </div>
       </div>:<div style={{display:"flex",gap:10,alignItems:"center",marginBottom:8}}>
         <button className="btn-s" onClick={()=>{stopRef.current=true;}} style={{color:"#c0392b",borderColor:"#c0392b"}}>■ Stop</button>
