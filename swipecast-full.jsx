@@ -15849,15 +15849,14 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
     function play(){if(started)return;started=true;swipeIntroSeen=true;setArmed(true);endTm=setTimeout(()=>setIntro(false),2400);}
     const hasSplash=typeof document!=='undefined'&&document.getElementById('cs-intro');
     if(!hasSplash){const k=setTimeout(play,150);return ()=>{clearTimeout(k);clearTimeout(endTm);};}
-    // Deal the deck in WHILE the curtain is still falling — ~0.75s earlier than
-    // its removal. The curtain begins its 1.1s fall when #cs-intro gets .cs-go
-    // and is removed ~1.3s after; firing 0.55s after cs-go lands the deck in as
-    // the curtain drops. If the curtain is already gone, deal in immediately.
+    // Deal the deck in the instant the curtain STARTS to fall (#cs-intro gets
+    // .cs-go) — no lead delay — so the cards ride in during the drop instead of
+    // after it clears. If the curtain is already gone, deal in immediately.
     poll=setInterval(()=>{
       if(typeof document==='undefined')return;
       const s=document.getElementById('cs-intro');
       if(!s){clearInterval(poll);clearTimeout(lead);play();return;}
-      if(s.classList.contains('cs-go')){clearInterval(poll);lead=setTimeout(play,550);}
+      if(s.classList.contains('cs-go')){clearInterval(poll);play();}
     },30);
     safety=setTimeout(()=>{clearInterval(poll);clearTimeout(lead);play();},16000);
     return ()=>{clearInterval(poll);clearTimeout(safety);clearTimeout(lead);clearTimeout(endTm);};
@@ -20927,6 +20926,7 @@ function AdminCastingGenerator({session}){
     const {error}=await window.sb.from("castings").delete().eq("id",c.id);
     setBusy(null);
     if(error){showMsg("Delete failed: "+error.message);return;}
+    try{localStorage.removeItem("acg_edit_draft_v2:"+c.id);}catch(_){}
     showMsg("Listing deleted.");loadAll();
   };
 
@@ -20952,6 +20952,7 @@ function AdminCastingGenerator({session}){
     }
     setBusy(null);
     if(error){showMsg("Regenerate failed: "+error.message);return;}
+    try{localStorage.removeItem("acg_edit_draft_v2:"+c.id);}catch(_){}
     showMsg("Listing regenerated.");loadAll();
   };
 
@@ -21194,7 +21195,21 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
   const MAX_IMAGES=5;
   const knownTypes=[...PROJECT_TYPE_OPTIONS,...PROJECT_TYPES.map(p=>p.value),...FILM_GENRES];
 
-  const [form,setForm]=useState({
+  // ── Draft persistence ─────────────────────────────────────────────
+  // The whole admin tree can be torn down mid-edit by a transient auth
+  // event (a background token refresh / tab-refocus that momentarily flaps
+  // session or profile). That unmounts this modal and wipes its in-progress
+  // form — the "casting card disappears and I have to refill everything"
+  // bug. We snapshot the draft to localStorage on every change and restore
+  // it on mount, keyed by listing id, so re-opening the same draft brings
+  // every typed field back. Cleared only on a successful save/publish.
+  const DRAFT_LS_KEY="acg_edit_draft_v2:"+listing.id;
+  const [savedDraft]=useState(()=>{
+    try{const r=localStorage.getItem(DRAFT_LS_KEY);return r?JSON.parse(r):null;}catch(_){return null;}
+  });
+  const clearSavedDraft=()=>{try{localStorage.removeItem(DRAFT_LS_KEY);}catch(_){}};
+
+  const [form,setForm]=useState(()=>{const _base={
     id:listing.id,
     title:listing.title||"",
     type:listing.type||"Film & TV",
@@ -21214,12 +21229,12 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     go_live_at:utcISOToNYLocal(listing.go_live_at),
     status:listing.status||"draft",
     admin_verified:adminBadgeState(listing.admin_verified),
-  });
-  const [castingImages,setCastingImages]=useState(Array.isArray(listing.casting_images)?listing.casting_images:(listing.casting_image_url?[{url:listing.casting_image_url,path:listing.casting_image_path||""}]:[]));
+  };return savedDraft&&savedDraft.form?{..._base,...savedDraft.form,id:listing.id}:_base;});
+  const [castingImages,setCastingImages]=useState(savedDraft&&Array.isArray(savedDraft.castingImages)?savedDraft.castingImages:(Array.isArray(listing.casting_images)?listing.casting_images:(listing.casting_image_url?[{url:listing.casting_image_url,path:listing.casting_image_path||""}]:[])));
   const [uploadingImg,setUploadingImg]=useState(false);
   const [err,setErr]=useState("");
-  const [roles,setRoles]=useState([]);
-  const [rolesLoading,setRolesLoading]=useState(true);
+  const [roles,setRoles]=useState(savedDraft&&Array.isArray(savedDraft.roles)?savedDraft.roles:[]);
+  const [rolesLoading,setRolesLoading]=useState(!(savedDraft&&Array.isArray(savedDraft.roles)));
   const [busy,setBusy]=useState(false);
   const set=(k,v)=>setForm(f=>({...f,[k]:v}));
 
@@ -21233,12 +21248,24 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
   };
 
   useEffect(()=>{
+    // A restored draft already carries the user's (possibly edited) roles —
+    // don't let the DB fetch clobber them.
+    if(savedDraft&&Array.isArray(savedDraft.roles))return;
     (async()=>{
       const {data}=await window.sb.from("roles").select("id,name,description,gender,age_range,ethnicity,pay,role_type,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,official_takes_allowed,submission_mode").eq("casting_id",listing.id).order("id");
       setRoles((data||[]).map(r=>({...r,_key:r.id,role_type:r.role_type||"Supporting",...ageToPreset(r.age_range),_showAudInstr:false,_uploadingPdf:false})));
       setRolesLoading(false);
     })();
   },[listing.id]);
+
+  // Snapshot every change to localStorage so an unexpected unmount (auth flap,
+  // tab refocus, background re-render) never loses typed work. Skipped while
+  // roles are still loading so the transient empty state can't overwrite a
+  // good restored/loaded draft.
+  useEffect(()=>{
+    if(rolesLoading)return;
+    try{localStorage.setItem(DRAFT_LS_KEY,JSON.stringify({form,castingImages,roles,_ts:Date.now()}));}catch(_){}
+  },[form,castingImages,roles,rolesLoading,DRAFT_LS_KEY]);
 
   const BLANK_ROLE=()=>({_key:Date.now()+Math.random(),id:null,name:"",description:"",gender:"Any",role_type:"Supporting",age_preset:"Any age",age_min:"",age_max:"",ethnicity:"Any ethnicity",pay:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false});
   const addRole=()=>setRoles(r=>[...r,BLANK_ROLE()]);
@@ -21306,6 +21333,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     if(form.casting_website_url.trim()&&!/^https?:\/\//i.test(form.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
     setBusy(true);setErr("");
     await onSave(buildPayload());
+    clearSavedDraft();
     setBusy(false);
   };
   const handlePublish=async()=>{
@@ -21313,6 +21341,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     setBusy(true);setErr("");
     await onSave(buildPayload());
     await onPublish({id:form.id});
+    clearSavedDraft();
     setBusy(false);
   };
   const isDraft=listing.status==="draft"||listing.status==="pending_review";
@@ -27359,6 +27388,12 @@ function App(){
   const [prevPage,setPrevPage]=useState("home");
   const [session,setSession]=useState(null);
   const [myProfile,setMyProfile]=useState(null);
+  // Mirror of myProfile readable from the stable loadProfile callback. Lets a
+  // failed *background* re-fetch keep the profile we already have instead of
+  // nulling it — nulling flapped isAdmin/isSuperAdmin and tore down open admin
+  // views (e.g. the casting-generator draft modal) on every transient hiccup.
+  const myProfileRef=useRef(null);
+  useEffect(()=>{myProfileRef.current=myProfile;},[myProfile]);
   const [authReady,setAuthReady]=useState(false);
   const [pendingApply,setPendingApply]=useState(null);
   const [openClassId,setOpenClassId]=useState(null);
@@ -27483,7 +27518,7 @@ function App(){
       clearTimeout(tid);
       if(error){
         _dbg().loginStep="profile-fetch-error";_dbg().lastError="loadProfile: "+error.message;
-        console.warn("[auth] loadProfile error:",error.message);setMyProfile(null);return null;
+        console.warn("[auth] loadProfile error:",error.message);if(!myProfileRef.current)setMyProfile(null);return myProfileRef.current||null;
       }
       // No row found (trigger may not have fired on signup) — auto-create a minimal profile
       // so the user can immediately access their profile page.
@@ -27546,7 +27581,7 @@ function App(){
       setMyProfile(data||null);return data||null;
     }catch(e){
       _dbg().loginStep="profile-fetch-threw";_dbg().lastError="loadProfile threw: "+(e?.message||String(e));
-      console.warn("[auth] loadProfile threw:",e?.message||e);setMyProfile(null);return null;
+      console.warn("[auth] loadProfile threw:",e?.message||e);if(!myProfileRef.current)setMyProfile(null);return myProfileRef.current||null;
     }
   },[]);
 
