@@ -348,7 +348,7 @@ def render_page(title, desc, canonical):
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
       will-change:transform;
     }}
-    #cs-intro.cs-go #cs-intro-bg{{-webkit-animation:cs-bg-down 1.1s cubic-bezier(0,0,.2,1) forwards;animation:cs-bg-down 1.1s cubic-bezier(0,0,.2,1) forwards;}}
+    #cs-intro.cs-go #cs-intro-bg{{-webkit-animation:cs-bg-down .55s cubic-bezier(0,0,.2,1) forwards;animation:cs-bg-down .55s cubic-bezier(0,0,.2,1) forwards;}}
     /* Counter-moving holder: it rises at the exact speed the curtain (#cs-intro-bg)
        falls, so the logo stays perfectly still on screen while the curtain's
        overflow:hidden edge cuts down through it. Logo never travels with the curtain. */
@@ -357,7 +357,7 @@ def render_page(title, desc, canonical):
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
       will-change:transform;
     }}
-    #cs-intro.cs-go .cs-intro-hold{{-webkit-animation:cs-mark-up 1.1s cubic-bezier(0,0,.2,1) forwards;animation:cs-mark-up 1.1s cubic-bezier(0,0,.2,1) forwards;}}
+    #cs-intro.cs-go .cs-intro-hold{{-webkit-animation:cs-mark-up .55s cubic-bezier(0,0,.2,1) forwards;animation:cs-mark-up .55s cubic-bezier(0,0,.2,1) forwards;}}
     #cs-intro .cs-intro-mark{{
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:16px;
       opacity:0;-webkit-transform:translateY(28px) scale(.965);transform:translateY(28px) scale(.965);
@@ -366,10 +366,10 @@ def render_page(title, desc, canonical):
        so the fade always starts from a frame the user actually saw and can
        never be silently eaten by early main-thread work. */
     #cs-intro.cs-ready .cs-intro-mark{{
-      -webkit-animation:cs-intro-in .6s cubic-bezier(.2,.7,.2,1) .1s forwards,cs-breathe 2.6s ease-in-out 2.1s infinite alternate;animation:cs-intro-in .6s cubic-bezier(.2,.7,.2,1) .1s forwards,cs-breathe 2.6s ease-in-out 2.1s infinite alternate;
+      -webkit-animation:cs-intro-in .3s cubic-bezier(.2,.7,.2,1) .05s forwards,cs-breathe 1.3s ease-in-out 1.05s infinite alternate;animation:cs-intro-in .3s cubic-bezier(.2,.7,.2,1) .05s forwards,cs-breathe 1.3s ease-in-out 1.05s infinite alternate;
     }}
     #cs-intro .cs-intro-box{{width:74px;height:74px;background:#fff;border-radius:16px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}}
-    #cs-intro.cs-ready .cs-intro-box{{-webkit-animation:cs-spin .6s cubic-bezier(.5,.05,.2,1) 1.2s both;animation:cs-spin .6s cubic-bezier(.5,.05,.2,1) 1.2s both;}}
+    #cs-intro.cs-ready .cs-intro-box{{-webkit-animation:cs-spin .3s cubic-bezier(.5,.05,.2,1) .6s both;animation:cs-spin .3s cubic-bezier(.5,.05,.2,1) .6s both;}}
     #cs-intro .cs-intro-name{{color:#fff;font-size:52px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'DM Sans',sans-serif;letter-spacing:-1.2px;}}
     @-webkit-keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
     @keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
@@ -420,7 +420,7 @@ def render_page(title, desc, canonical):
          breathing until the site is ready, so the reveal always lands on
          a live page — never on a loading spinner or a half-built layout.
          Hard 15s cap so a failed boot can never trap the curtain. */
-      var t0=Date.now(),MIN=2900,CAP=15000,gone=false;
+      var t0=Date.now(),MIN=1450,CAP=15000,gone=false;
       function appReady(){{
         if(window.__CS_REACT_MOUNTED)return true;
         var r=document.getElementById('root');
@@ -430,7 +430,7 @@ def render_page(title, desc, canonical):
         if(gone)return;
         gone=true;
         el.classList.add('cs-go');
-        setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},1300);
+        setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},700);
       }}
       (function poll(){{
         if(gone)return;
