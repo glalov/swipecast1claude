@@ -112,7 +112,14 @@
       ]
     },
     {
-      "source": "/assets/(.*)",
+      "source": "/assets/video/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=2592000, immutable" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
+      ]
+    },
+    {
+      "source": "/assets/((?!video/).*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" },
         { "key": "X-Content-Type-Options", "value": "nosniff" }

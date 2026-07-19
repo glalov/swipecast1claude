@@ -1465,7 +1465,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .mm-event-card:nth-child(2) .mm-event-icon::after{animation-delay:-4.7s;}
 @keyframes mm-event-card-scan{0%{transform:translateX(-42%);}100%{transform:translateX(42%);}}
 @keyframes mm-event-card-float{0%,100%{transform:translate3d(0,0,0);box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 18px 34px -28px rgba(74,69,129,.42);}33%{transform:translate3d(0,-2px,0);}66%{transform:translate3d(0,-4px,0);box-shadow:inset 0 1px 0 rgba(255,255,255,.78),0 24px 38px -30px rgba(74,69,129,.47);}}
-@keyframes mm-event-icon-shine{0%{left:-65%;}100%{left:122%;}}
+@keyframes mm-event-icon-shine{0%{transform:translateX(0) skewX(-16deg);}100%{transform:translateX(584%) skewX(-16deg);}}
 @media(prefers-reduced-motion:reduce){.mm-event-card,.mm-event-card::before,.mm-event-icon::after{animation:none!important;}}
 /* Free-plan upgrade stripe (ActivateMembershipBanner) — darker purple, centered full-width text, ghost CTA (fills black on hover) w/ shimmer, twinkling star */
 .mb-msg{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;gap:9px;width:100%;text-align:center;font-size:12px;font-weight:800;color:#fff8eb;letter-spacing:0.1px;padding:0 16px;}
@@ -1982,7 +1982,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @keyframes abc-float{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
 @keyframes abc-breathe{0%,100%{opacity:.65;transform:scale(1);}50%{opacity:1;transform:scale(1.18);}}
 @keyframes abc-pulse{0%,100%{box-shadow:0 0 6px var(--amber);opacity:.75;}50%{box-shadow:0 0 14px var(--amber);opacity:1;}}
-@keyframes abc-btnshine{0%{left:-60%;}55%,100%{left:130%;}}
+@keyframes abc-btnshine{0%{transform:translateX(0) skewX(-18deg);}55%,100%{transform:translateX(422%) skewX(-18deg);}}
 @media(prefers-reduced-motion:reduce){.abc-prem,.abc-prem::after,.abc-prem .abc-glow-o,.abc-prem .abc-dot,.abc-prem .abc-cta::before{animation:none!important;}.abc-prem::after{display:none;}}
 /* Premium "Member" status card — dashboard welcome flourish (brand purple). Rendered only for membership_status='active'. */
 .cs-procard{position:relative;overflow:hidden;width:230px;flex:none;border-radius:14px;padding:15px 17px;background:linear-gradient(145deg,#7a4fd6,#4d2a9c 60%,#7a4fd6);box-shadow:0 18px 40px -22px rgba(77,42,156,.6);}
@@ -1992,7 +1992,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* Soft luxe shine passing through the "Premium" word (~every 7.5s) — Option B */
 .cs-prem-shine{position:relative;display:inline-block;overflow:hidden;padding:1px 3px;border-radius:3px;animation:cs-prem-glow 7.5s ease-in-out infinite;}
 .cs-prem-shine::after{content:"";position:absolute;top:0;bottom:0;left:-80%;width:70%;transform:skewX(-18deg);pointer-events:none;background:linear-gradient(105deg,transparent,rgba(255,246,214,.75) 45%,rgba(255,255,255,.9) 50%,rgba(255,246,214,.75) 55%,transparent);animation:cs-prem-sweep 7.5s ease-in-out infinite;}
-@keyframes cs-prem-sweep{0%{left:-80%;}16%{left:180%;}100%{left:180%;}}
+@keyframes cs-prem-sweep{0%{transform:translateX(0) skewX(-18deg);}16%,100%{transform:translateX(371%) skewX(-18deg);}}
 @keyframes cs-prem-glow{0%,16%{text-shadow:0 0 7px rgba(255,224,140,.9);}30%,100%{text-shadow:none;}}
 @media(prefers-reduced-motion:reduce){.cs-prem-shine{animation:none;}.cs-prem-shine::after{display:none;}}
 /* Public-profile preview → editor "slide back" page transition */
@@ -2006,7 +2006,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .capm-cta{position:relative;overflow:hidden;}
 .capm-cta::after{content:"";position:absolute;top:0;left:-60%;width:45%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-18deg);animation:capm-shine 3.6s ease-in-out infinite;pointer-events:none;}
 @keyframes capm-pop{from{opacity:0;transform:translateY(14px) scale(.96);}to{opacity:1;transform:none;}}
-@keyframes capm-shine{0%{left:-60%;}55%,100%{left:130%;}}
+@keyframes capm-shine{0%{transform:translateX(0) skewX(-18deg);}55%,100%{transform:translateX(422%) skewX(-18deg);}}
 @media(prefers-reduced-motion:reduce){.capm{animation:none;}.capm-cta::after{animation:none;}}
 @media (max-width:900px){
   .site-footer-grid{grid-template-columns:1fr 1fr;gap:32px;}
@@ -16125,6 +16125,40 @@ const FORMAT_ICONS={
   mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>',
   star:'<path d="M12 3l2.6 5.6L20.5 9.4l-4.2 4 1 5.9L12 16.6 6.7 19.3l1-5.9-4.2-4 5.9-.8L12 3Z"/>',
 };
+// Decorative loop that only starts once it's fully buffered (canplaythrough):
+// on slow connections the poster frame holds — a clean still, never a
+// stuttering half-loaded video. Same file, same quality, it just waits until
+// it can play perfectly. preload="auto" starts the download immediately.
+function BufferedLoopVideo(props){
+  const ref=React.useRef(null);
+  React.useEffect(function(){
+    const v=ref.current; if(!v) return;
+    // Play only when BOTH are true: fully buffered (canplaythrough) and near
+    // the viewport. Buffer-gating means slow wifi holds the clean poster frame
+    // instead of a stuttering half-loaded video; the visibility gate is needed
+    // because Chrome pauses offscreen script-started muted videos and won't
+    // resume them itself (it only does that for the autoplay attribute).
+    let buffered=v.readyState>=4, visible=false, fbT=0;
+    const sync=function(){ if(buffered&&visible){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); } else if(!visible){ try{v.pause();}catch(_){} } };
+    const onBuf=function(){ buffered=true; sync(); };
+    v.addEventListener('canplaythrough',onBuf);
+    // Fallback: some mobile browsers withhold canplaythrough under data-saver;
+    // after 10s accept solid forward buffer (canplay) instead.
+    if(!buffered) fbT=setTimeout(function(){ if(v.readyState>=3) onBuf(); else v.addEventListener('canplay',onBuf); },10000);
+    let io=null;
+    if(typeof IntersectionObserver!=='undefined'){
+      io=new IntersectionObserver(function(entries){ entries.forEach(function(e){ visible=e.isIntersecting; sync(); }); },{rootMargin:'100px 0px',threshold:0.01});
+      io.observe(v);
+    } else { visible=true; sync(); }
+    // Chrome pauses the video while the tab is hidden and won't restart a
+    // script-played loop on return — resume it ourselves.
+    const onVis=function(){ if(!document.hidden) sync(); };
+    document.addEventListener('visibilitychange',onVis);
+    return function(){ v.removeEventListener('canplaythrough',onBuf); v.removeEventListener('canplay',onBuf); clearTimeout(fbT); if(io)io.disconnect(); document.removeEventListener('visibilitychange',onVis); };
+  },[]);
+  return <video ref={ref} muted loop playsInline preload="auto" {...props}/>;
+}
+
 function FormatReel(){
   const reelRef=React.useRef(null);
   React.useEffect(function(){
@@ -16134,25 +16168,44 @@ function FormatReel(){
     // play, so phones decode only a few at a time (the rest show a sharp poster
     // frame, behind the edge fade). Every card you can see is always playing.
     const vids=Array.prototype.slice.call(reel.querySelectorAll('.fmt-video'));
+    function attach(v){
+      if(!v.getAttribute('src') && v.dataset.src){ v.setAttribute('src', v.dataset.src); v.preload='auto'; try{v.load();}catch(_){} }
+    }
     function play(v){
-      if(!v.getAttribute('src') && v.dataset.src){ v.setAttribute('src', v.dataset.src); }
-      const p=v.play(); if(p&&p.catch)p.catch(function(){});
+      attach(v);
+      v._csWanted=true;
+      // Never start a clip until the browser can play it through without
+      // stalling — on slow wifi the card holds its sharp poster instead of
+      // showing a stuttering half-buffered video. Once buffered it loops
+      // from cache forever, so it never hiccups again.
+      if(v.readyState>=4){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); return; }
+      if(!v._csArmed){
+        v._csArmed=true;
+        v.addEventListener('canplaythrough',function(){ if(v._csWanted){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); } });
+      }
     }
     let io=null;
     if(typeof IntersectionObserver!=='undefined'){
       io=new IntersectionObserver(function(entries){
         entries.forEach(function(e){
           if(e.isIntersecting){ play(e.target); }
-          else { try{ e.target.pause(); }catch(_){} }
+          else { e.target._csWanted=false; try{ e.target.pause(); }catch(_){} }
         });
       },{root:null,rootMargin:'200px 600px',threshold:0.01});
       vids.forEach(function(v){ io.observe(v); });
     } else {
       vids.forEach(play); // very old browsers: just play them all
     }
-    const onVis=function(){ if(!document.hidden) vids.forEach(function(v){ if(v.getAttribute('src')) play(v); }); };
+    const onVis=function(){ if(!document.hidden) vids.forEach(function(v){ if(v.getAttribute('src')&&v._csWanted) play(v); }); };
     document.addEventListener('visibilitychange',onVis);
-    return function(){ if(io)io.disconnect(); document.removeEventListener('visibilitychange',onVis); };
+    // Warm every clip in the background shortly after load: the files start
+    // downloading while the user is still up at the hero, so by the time the
+    // reel scrolls in each card is already fully buffered and plays instantly.
+    const warm=function(){ vids.forEach(attach); };
+    const warmT=setTimeout(function(){
+      if(typeof requestIdleCallback!=='undefined') requestIdleCallback(warm,{timeout:4000}); else warm();
+    },2500);
+    return function(){ if(io)io.disconnect(); document.removeEventListener('visibilitychange',onVis); clearTimeout(warmT); };
   },[]);
   const doubled=[...FORMAT_CARDS,...FORMAT_CARDS];
   // Phones load the smaller mobile encode (.m.mp4 ~60–460KB); desktop gets the
@@ -16397,7 +16450,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="cinema-feature">
       <div className="cinema-feature-inner">
         <div className="cinema-feature-img">
-          <video src="/assets/video/actor-journey-set.mp4" poster="/assets/video/actor-journey-set-poster.jpg" aria-label="Real film set footage showing crew preparing a camera setup" autoPlay muted loop playsInline preload="metadata"/>
+          <BufferedLoopVideo src="/assets/video/actor-journey-set.mp4" poster="/assets/video/actor-journey-set-poster.jpg" aria-label="Real film set footage showing crew preparing a camera setup"/>
         </div>
         <div className="cinema-feature-copy">
           <p className="cf-label">The actor journey</p>
@@ -16473,7 +16526,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="hiw-card">
       <div className="hiw-card-inner">
         <div className="hiw-card-img">
-          <video src="/assets/video/casting-director-set.mp4" poster="/assets/video/casting-director-set-poster.jpg" aria-label="Realistic stock footage of a filmmaker recording on a professional set with lights and camera equipment" autoPlay muted loop playsInline preload="metadata" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+          <BufferedLoopVideo src="/assets/video/casting-director-set.mp4" poster="/assets/video/casting-director-set-poster.jpg" aria-label="Realistic stock footage of a filmmaker recording on a professional set with lights and camera equipment" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
         </div>
         <div className="hiw-card-body">
           <p style={{fontSize:10,letterSpacing:1.8,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,margin:0,fontFamily:"'DM Sans',sans-serif"}}>For Casting Directors</p>
