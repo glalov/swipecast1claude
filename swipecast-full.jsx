@@ -21874,7 +21874,10 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
   };
 
   return(<div className="page page-wide admin-shell" style={{display:"grid",gridTemplateColumns:"220px 1fr",gap:28,alignItems:"start"}}>
-    <aside className="admin-sidebar" style={{position:"sticky",top:24,background:"var(--s2)",borderRadius:14,padding:18,border:"1px solid var(--bdr)"}}>
+    {/* NOT sticky: html overflow-x:hidden used to break sticky site-wide, so this
+        sidebar always scrolled with the page; the overflow-x:clip scroller fix
+        revived sticky and suddenly pinned it — users expect it to scroll. */}
+    <aside className="admin-sidebar" style={{position:"static",background:"var(--s2)",borderRadius:14,padding:18,border:"1px solid var(--bdr)"}}>
       <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,color:"var(--acc)",marginBottom:6}}>{isSuperAdmin?"SUPER ADMIN":"ADMIN"}</div>
       <div style={{fontSize:13,fontWeight:700,marginBottom:2,wordBreak:"break-word"}}>{profile?.display_name||session?.user?.email||"—"}</div>
       <div style={{fontSize:11,color:"var(--t3)",marginBottom:18,wordBreak:"break-word"}}>{session?.user?.email}</div>
