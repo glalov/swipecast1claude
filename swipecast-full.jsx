@@ -6284,6 +6284,8 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
             <div style={{paddingBottom:20,marginBottom:20,borderBottom:"1px solid #ede8e0"}}>
               <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:40,color:"var(--acc)",letterSpacing:-1.5,lineHeight:1}}>$9.99</div>
               <div style={{fontSize:12,color:"var(--t3)",marginTop:5}}>{t('pricing.perMonthCancel')}</div>
+              {/* Pennies-a-day reframe: same price, trivial-expense reference point. */}
+              <div style={{fontSize:12.5,fontWeight:700,color:"var(--grn)",marginTop:8}}>≈ 33¢ a day — less than one subway swipe to your career</div>
             </div>
             <div style={{flex:1}}>
               {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Actor Slate Video — 7-sec intro','Actor Business Card with QR code','Manager Mode weekly career check-ins','Personalized profile improvement suggestions'].map(f=>feat(f,"var(--acc)"))}
@@ -9189,16 +9191,18 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
         <span style={{width:52,height:52,borderRadius:10,flexShrink:0,background:"linear-gradient(135deg,#5C9FA0,#3B6E6F)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff"}}><Ico n="star" s={24}/></span>
         <div style={{minWidth:0}}>
           <div style={{color:"var(--t1)",fontSize:13.5,fontWeight:700}}>{casting?.title||"This casting"}</div>
-          <div style={{color:"var(--t3)",fontSize:11.5,marginTop:2}}>{[upgradeRole,casting?.type,casting?.location].filter(Boolean).join(" · ")||"Still accepting submissions"}</div>
+          <div style={{color:"var(--t3)",fontSize:11.5,marginTop:2}}>{(()=>{const cdn=castingCountdown(casting?.deadline);const bits=[upgradeRole,casting?.type,casting?.location].filter(Boolean);if(cdn&&!cdn.expired&&cdn.days>=0)bits.push(cdn.days===0?"closes today":cdn.days===1?"1 day left":`${cdn.days} days left`);return bits.join(" · ")||"Still accepting submissions";})()}</div>
         </div>
         <span style={{marginLeft:"auto",color:"#E29A3A",flexShrink:0,lineHeight:0}}><Ico n="lock" s={18}/></span>
       </div>
       <div style={{display:"flex",alignItems:"center",gap:8,color:"#98630F",background:"rgba(236,148,42,.09)",fontSize:12.5,fontWeight:600,padding:"9px 11px",borderRadius:9,margin:"0 0 16px"}}>
         <Ico n="clock" s={16}/><span>Your free submissions reset Monday at 6&nbsp;AM ET. Premium is unlimited — starting now.</span>
       </div>
-      <button className="capm-cta" onClick={()=>{setShowUpgradePrompt(false);onNavigate&&onNavigate("membership");}} style={{width:"100%",border:"none",cursor:"pointer",fontWeight:800,fontSize:13.5,color:"#1A1A2E",background:"linear-gradient(180deg,#F8B65E 0%,#EC942A 100%)",padding:"14px 16px",borderRadius:11,marginBottom:9,boxShadow:"0 10px 24px -10px rgba(240,160,60,.85),inset 0 1px 0 rgba(255,255,255,.4)"}}>Go unlimited — {PREMIUM_PRICE} →</button>
+      {/* CTA sells finishing THIS submission, not "Premium" in the abstract — the
+          button names the casting the actor was just blocked from. */}
+      <button className="capm-cta" onClick={()=>{setShowUpgradePrompt(false);onNavigate&&onNavigate("membership");}} style={{width:"100%",border:"none",cursor:"pointer",fontWeight:800,fontSize:13.5,color:"#1A1A2E",background:"linear-gradient(180deg,#F8B65E 0%,#EC942A 100%)",padding:"14px 16px",borderRadius:11,marginBottom:9,boxShadow:"0 10px 24px -10px rgba(240,160,60,.85),inset 0 1px 0 rgba(255,255,255,.4)"}}>{(()=>{const tt=(casting?.title||"").trim();if(!tt)return`Go unlimited — ${PREMIUM_PRICE} →`;const short=tt.length>26?tt.slice(0,24).trimEnd()+"…":tt;return`Unlock & submit to “${short}” →`;})()}</button>
       <button onClick={()=>setShowUpgradePrompt(false)} style={{width:"100%",background:"transparent",border:"1px solid var(--bdr)",color:"var(--t2)",cursor:"pointer",fontWeight:700,fontSize:12.5,padding:"12px 14px",borderRadius:11}}>No thanks, I'll wait until Monday</button>
-      <div style={{textAlign:"center",color:"var(--t3)",fontSize:10.5,marginTop:12}}>Unlimited submissions, video &amp; Manager Mode</div>
+      <div style={{textAlign:"center",color:"var(--t3)",fontSize:10.5,marginTop:12}}>Premium · {PREMIUM_PRICE} · unlimited submissions · cancel anytime</div>
     </div></div>}
 
     {/* ── Free-actor submissions remaining badge ── */}
