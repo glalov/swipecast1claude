@@ -20974,6 +20974,28 @@ function AdminCastingGenerator({session}){
       deadline:updated.deadline||(updated.expires_at?new Date(updated.expires_at).toISOString().slice(0,10):null),
       updated_at:new Date().toISOString()
     };
+    // ── Admin "revive an expired listing" ────────────────────────────────
+    // A listing reads as Expired / Applications closed once its Expiration
+    // Date is in the past — even when the apply-by Deadline was extended to a
+    // future date (they're separate fields, which is what made this one show
+    // "13 days left" AND "Expired" at the same time). When an admin pushes a
+    // future date, treat it as intent to re-open: pull the expiration forward
+    // to cover the deadline and put the listing back to a live, published
+    // state so it returns to Browse Castings. Only for already-public listings
+    // — never auto-publishes a draft, never un-archives a filled one. CDs edit
+    // through a different modal that doesn't touch expires_at, so they still
+    // can't repost an expired casting (they can only post a new one).
+    const nowMs=Date.now();
+    const dlMs=updated.deadline?new Date(updated.deadline+"T23:59:59Z").getTime():NaN;
+    const exMs=updated.expires_at?new Date(updated.expires_at).getTime():NaN;
+    const deadlineFuture=!isNaN(dlMs)&&dlMs>nowMs;
+    const expiresFuture=!isNaN(exMs)&&exMs>nowMs;
+    let revived=false;
+    if(updated.status!=="draft"&&updated.status!=="pending_review"&&updated.status!=="archived"&&(deadlineFuture||expiresFuture)){
+      if(!expiresFuture&&deadlineFuture)patch.expires_at=new Date(dlMs).toISOString();
+      patch.status="open";patch.published=true;
+      revived=true;
+    }
     // Only overwrite the posted date (created_at) when the admin set one — a blank
     // field must not wipe the original timestamp.
     if(updated.created_at)patch.created_at=updated.created_at;
@@ -20986,7 +21008,7 @@ function AdminCastingGenerator({session}){
         await window.sb.from("roles").insert(toInsert.map(r=>({casting_id:updated.id,name:r.name.trim(),description:r.description||"",gender:r.gender||"Any",role_type:r.role_type||inferRoleType(r.name,r.description),age_range:r.age_range||"",ethnicity:r.ethnicity||"Any ethnicity",pay:r.pay||null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"})));
       }
     }
-    showMsg("Draft saved.");setEditDraft(null);loadAll();
+    showMsg(revived?"Saved — listing is live again in Browse Castings.":"Draft saved.");setEditDraft(null);loadAll();
   };
 
   // Derived status: treat open+expires_at<now as "expired"
