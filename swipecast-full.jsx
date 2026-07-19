@@ -2462,7 +2462,14 @@ a.news-card{text-decoration:none;color:inherit;}
   .dash-stats{grid-template-columns:1fr;}
 }
 /* ─── Classes page responsive layout ─── */
-html,body{overflow-x:hidden;}
+/* overflow-x:hidden on <html> silently made the html element the page's scroll
+   container, which kicked scrolling off the browser's compositor fast-path —
+   THE reason native smooth scrolling ({behavior:'smooth'}) was a no-op here and
+   every scroll animation had to run janky on the main thread. clip gives the
+   identical visual result (sideways overflow cut off) WITHOUT creating a
+   scroll container, so the viewport scrolls natively again. hidden stays first
+   as the fallback for old browsers that don't know clip. */
+html,body{overflow-x:hidden;overflow-x:clip;}
 .cls-detail-grid{display:grid;gap:24px;align-items:start;}
 .cls-credits-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
 .cls-slot-row{display:flex;align-items:center;gap:14px;padding:13px 18px;flex-wrap:wrap;}
@@ -3843,23 +3850,40 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     // footer measuring (glideRef mutes check() so nothing janks the ascent).
     b2tShownRef.current=false;setB2tShow(false);setB2tAnim('out');
     glideRef.current=true;
-    // Glide the WHOLE page — fast, but smooth: duration scales with distance
-    // (~1s for the longest pages instead of cramming it into 600ms), and
-    // easeInOut ramps velocity up/down instead of slamming off at peak speed,
-    // so a dropped frame lands mid-blur where the eye can't catch it.
-    const t0=performance.now();
-    const dur=Math.min(950,Math.max(420,startY*0.1));
-    const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2; // easeInOutCubic
+    const yNow=()=>window.scrollY||document.documentElement.scrollTop||0;
     let done=false;
-    const step=(now)=>{
-      const p=Math.min(1,(now-t0)/dur);
-      window.scrollTo(0,Math.round(startY*(1-ease(p))));
-      if(p<1)requestAnimationFrame(step); else {done=true;hardTop();}
+    // Fallback glide (older browsers, or if native smooth doesn't move):
+    // main-thread rAF through the whole page, duration scaled by distance,
+    // easeInOut so peak speed sits mid-blur where dropped frames can't be seen.
+    const rafGlide=()=>{
+      const from=yNow();
+      if(from<=0){done=true;hardTop();return;}
+      const t0=performance.now();
+      const dur=Math.min(950,Math.max(420,from*0.1));
+      const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2; // easeInOutCubic
+      const step=(now)=>{
+        const p=Math.min(1,(now-t0)/dur);
+        window.scrollTo(0,Math.round(from*(1-ease(p))));
+        if(p<1)requestAnimationFrame(step); else {done=true;hardTop();}
+      };
+      requestAnimationFrame(step);
+      setTimeout(()=>{if(!done)hardTop();},dur+260);
     };
-    requestAnimationFrame(step);
-    // Safety: if rAF is throttled (backgrounded tab, etc.) and the glide never
-    // settles, still guarantee we land at the very top.
-    setTimeout(()=>{if(!done)hardTop();},dur+260);
+    // Preferred: NATIVE smooth scroll. It animates on the browser's compositor
+    // thread, so it physically cannot stutter however busy the page is. This
+    // only works now that <html> uses overflow-x:clip (see the CSS note) —
+    // overflow-x:hidden used to break it, which is why the rAF glide existed.
+    let native=false;
+    try{window.scrollTo({top:0,left:0,behavior:'smooth'});native=true;}catch(_){}
+    if(!native){rafGlide();return;}
+    setTimeout(()=>{
+      if(done)return;
+      if(yNow()>=startY-2){rafGlide();return;} // hasn't budged — fall back
+      const poll=setInterval(()=>{if(yNow()<=0){done=true;clearInterval(poll);hardTop();}},120);
+      // If the flight is interrupted (user grabs the scrollbar mid-glide),
+      // stop watching and just re-arm the cube's scroll check where they are.
+      setTimeout(()=>{clearInterval(poll);if(!done){glideRef.current=false;if(yNow()<=8){hardTop();}else{try{window.dispatchEvent(new Event('scroll'));}catch(__){}}}},2600);
+    },150);
   }catch(_){glideRef.current=false;try{window.scrollTo(0,0);}catch(__){}}};
   // Show the floating back-to-top cube only when the page is scrolled to the very
   // bottom; it drops in from above and shoots back up off-screen on scroll-up.
