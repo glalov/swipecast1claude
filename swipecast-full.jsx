@@ -3833,27 +3833,38 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     const startY=window.scrollY||document.documentElement.scrollTop||0;
     if(startY<=0)return;
     const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-    const hardTop=()=>{window.scrollTo(0,0);document.documentElement.scrollTop=0;};
+    const hardTop=()=>{glideRef.current=false;window.scrollTo(0,0);document.documentElement.scrollTop=0;};
     if(reduce){hardTop();return;}
+    // Jank-proof ascent: teleport most of the distance in one instant hop, then
+    // glide only the final stretch. Gliding the whole multi-thousand-px page in
+    // ~600ms moved ~250px per frame — one busy frame (React scroll handlers,
+    // fresh sections painting in) showed as a visible jump/stutter. From 1100px
+    // it's ~40px per frame, below what the eye can catch, so the swoosh reads
+    // perfectly smooth on any device. glideRef also mutes the cube's footer-
+    // measuring scroll handler until we land.
+    glideRef.current=true;
+    const glideY=Math.min(startY,1100);
+    if(startY>glideY)window.scrollTo(0,glideY);
     const t0=performance.now();
-    const dur=Math.min(600,Math.max(320,startY*0.5));
+    const dur=Math.min(600,Math.max(320,glideY*0.5));
     const ease=t=>1-Math.pow(1-t,3); // easeOutCubic
     let done=false;
     const step=(now)=>{
       const p=Math.min(1,(now-t0)/dur);
-      window.scrollTo(0,Math.round(startY*(1-ease(p))));
+      window.scrollTo(0,Math.round(glideY*(1-ease(p))));
       if(p<1)requestAnimationFrame(step); else {done=true;hardTop();}
     };
     requestAnimationFrame(step);
     // Safety: if rAF is throttled (backgrounded tab, etc.) and the glide never
     // settles, still guarantee we land at the very top.
     setTimeout(()=>{if(!done)hardTop();},dur+260);
-  }catch(_){try{window.scrollTo(0,0);}catch(__){}}};
+  }catch(_){glideRef.current=false;try{window.scrollTo(0,0);}catch(__){}}};
   // Show the floating back-to-top cube only when the page is scrolled to the very
   // bottom; it drops in from above and shoots back up off-screen on scroll-up.
   const [b2tShow,setB2tShow]=React.useState(false);
   const [b2tAnim,setB2tAnim]=React.useState(null); // 'in' | 'out' | null — drives the tumble animation only
   const b2tShownRef=React.useRef(false);
+  const glideRef=React.useRef(false); // true while the back-to-top glide runs — mutes check() so its DOM measuring can't jank the ascent
   React.useEffect(()=>{
     // Appear once the viewport bottom reaches the FOOTER'S MIDPOINT, on long
     // pages only. A short mount suppression prevents the flash that happened
@@ -3861,6 +3872,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     // restores / scrolls to top, which briefly looked like "reached the footer").
     let ready=false;
     const check=()=>{try{
+      if(glideRef.current)return; // mid back-to-top glide: skip the footer measuring; runs again on landing
       if(!ready){
         if(b2tShownRef.current){b2tShownRef.current=false;setB2tShow(false);setB2tAnim('out');}
         return;
