@@ -3833,25 +3833,27 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     const startY=window.scrollY||document.documentElement.scrollTop||0;
     if(startY<=0)return;
     const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-    const hardTop=()=>{glideRef.current=false;window.scrollTo(0,0);document.documentElement.scrollTop=0;};
+    // hardTop dispatches a synthetic scroll event: if the glide's last frame
+    // already landed on 0, scrollTo(0,0) fires no new scroll event and the
+    // muted check() would otherwise never re-run.
+    const hardTop=()=>{glideRef.current=false;window.scrollTo(0,0);document.documentElement.scrollTop=0;try{window.dispatchEvent(new Event('scroll'));}catch(_){}};
     if(reduce){hardTop();return;}
-    // Jank-proof ascent: teleport most of the distance in one instant hop, then
-    // glide only the final stretch. Gliding the whole multi-thousand-px page in
-    // ~600ms moved ~250px per frame — one busy frame (React scroll handlers,
-    // fresh sections painting in) showed as a visible jump/stutter. From 1100px
-    // it's ~40px per frame, below what the eye can catch, so the swoosh reads
-    // perfectly smooth on any device. glideRef also mutes the cube's footer-
-    // measuring scroll handler until we land.
+    // Send the cube tumbling up-and-away immediately — it visibly shoots up past
+    // the nav while the page flies, exactly the old feel, and needs no mid-glide
+    // footer measuring (glideRef mutes check() so nothing janks the ascent).
+    b2tShownRef.current=false;setB2tShow(false);setB2tAnim('out');
     glideRef.current=true;
-    const glideY=Math.min(startY,1100);
-    if(startY>glideY)window.scrollTo(0,glideY);
+    // Glide the WHOLE page — fast, but smooth: duration scales with distance
+    // (~1s for the longest pages instead of cramming it into 600ms), and
+    // easeInOut ramps velocity up/down instead of slamming off at peak speed,
+    // so a dropped frame lands mid-blur where the eye can't catch it.
     const t0=performance.now();
-    const dur=Math.min(600,Math.max(320,glideY*0.5));
-    const ease=t=>1-Math.pow(1-t,3); // easeOutCubic
+    const dur=Math.min(950,Math.max(420,startY*0.1));
+    const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2; // easeInOutCubic
     let done=false;
     const step=(now)=>{
       const p=Math.min(1,(now-t0)/dur);
-      window.scrollTo(0,Math.round(glideY*(1-ease(p))));
+      window.scrollTo(0,Math.round(startY*(1-ease(p))));
       if(p<1)requestAnimationFrame(step); else {done=true;hardTop();}
     };
     requestAnimationFrame(step);
