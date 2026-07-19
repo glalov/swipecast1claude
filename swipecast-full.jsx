@@ -3842,14 +3842,21 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
     // hardTop dispatches a synthetic scroll event: if the glide's last frame
     // already landed on 0, scrollTo(0,0) fires no new scroll event and the
-    // muted check() would otherwise never re-run.
-    const hardTop=()=>{glideRef.current=false;window.scrollTo(0,0);document.documentElement.scrollTop=0;try{window.dispatchEvent(new Event('scroll'));}catch(_){}};
+    // muted check() would otherwise never re-run. sc:glide-end tells the video
+    // components (frozen during the flight) to re-sync.
+    const hardTop=()=>{glideRef.current=false;window.__scGliding=false;window.scrollTo(0,0);document.documentElement.scrollTop=0;try{window.dispatchEvent(new Event('scroll'));window.dispatchEvent(new Event('sc:glide-end'));}catch(_){}};
     if(reduce){hardTop();return;}
     // Send the cube tumbling up-and-away immediately — it visibly shoots up past
     // the nav while the page flies, exactly the old feel, and needs no mid-glide
     // footer measuring (glideRef mutes check() so nothing janks the ascent).
     b2tShownRef.current=false;setB2tShow(false);setB2tAnim('out');
     glideRef.current=true;
+    // Freeze video starts during the flight: the reel clips are pre-buffered,
+    // so without this each one fires up its decoder the instant it streaks
+    // through the viewport — six decoder spin-ups in half a second was a real
+    // mid-ascent stutter source. They re-sync on sc:glide-end.
+    window.__scGliding=true;
+    setTimeout(()=>{if(window.__scGliding){window.__scGliding=false;try{window.dispatchEvent(new Event('sc:glide-end'));}catch(_){}}},3200); // absolute safety release
     const yNow=()=>window.scrollY||document.documentElement.scrollTop||0;
     let done=false;
     // Fallback glide (older browsers, or if native smooth doesn't move):
@@ -3884,7 +3891,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
       // stop watching and just re-arm the cube's scroll check where they are.
       setTimeout(()=>{clearInterval(poll);if(!done){glideRef.current=false;if(yNow()<=8){hardTop();}else{try{window.dispatchEvent(new Event('scroll'));}catch(__){}}}},2600);
     },150);
-  }catch(_){glideRef.current=false;try{window.scrollTo(0,0);}catch(__){}}};
+  }catch(_){glideRef.current=false;window.__scGliding=false;try{window.scrollTo(0,0);}catch(__){}}};
   // Show the floating back-to-top cube only when the page is scrolled to the very
   // bottom; it drops in from above and shoots back up off-screen on scroll-up.
   const [b2tShow,setB2tShow]=React.useState(false);
@@ -16177,7 +16184,7 @@ function BufferedLoopVideo(props){
     // because Chrome pauses offscreen script-started muted videos and won't
     // resume them itself (it only does that for the autoplay attribute).
     let buffered=v.readyState>=4, visible=false, fbT=0;
-    const sync=function(){ if(buffered&&visible){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); } else if(!visible){ try{v.pause();}catch(_){} } };
+    const sync=function(){ if(buffered&&visible&&!window.__scGliding){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); } else if(!visible){ try{v.pause();}catch(_){} } };
     const onBuf=function(){ buffered=true; sync(); };
     v.addEventListener('canplaythrough',onBuf);
     // Fallback: some mobile browsers withhold canplaythrough under data-saver;
@@ -16192,7 +16199,8 @@ function BufferedLoopVideo(props){
     // script-played loop on return — resume it ourselves.
     const onVis=function(){ if(!document.hidden) sync(); };
     document.addEventListener('visibilitychange',onVis);
-    return function(){ v.removeEventListener('canplaythrough',onBuf); v.removeEventListener('canplay',onBuf); clearTimeout(fbT); if(io)io.disconnect(); document.removeEventListener('visibilitychange',onVis); };
+    window.addEventListener('sc:glide-end',sync); // resume after a back-to-top flight froze video starts
+    return function(){ v.removeEventListener('canplaythrough',onBuf); v.removeEventListener('canplay',onBuf); clearTimeout(fbT); if(io)io.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',sync); };
   },[]);
   return <video ref={ref} muted loop playsInline preload="auto" {...props}/>;
 }
@@ -16211,6 +16219,7 @@ function FormatReel(){
     }
     function play(v){
       attach(v);
+      if(window.__scGliding)return; // back-to-top flight: don't spin up decoders mid-ascent; resynced on sc:glide-end
       v._csWanted=true;
       // Never start a clip until the browser can play it through without
       // stalling — on slow wifi the card holds its sharp poster instead of
@@ -16236,6 +16245,10 @@ function FormatReel(){
     }
     const onVis=function(){ if(!document.hidden) vids.forEach(function(v){ if(v.getAttribute('src')&&v._csWanted) play(v); }); };
     document.addEventListener('visibilitychange',onVis);
+    // After a back-to-top flight, re-run the observer on every clip so whichever
+    // cards are actually in view resume playing.
+    const onGlideEnd=function(){ if(io) vids.forEach(function(v){ io.unobserve(v); io.observe(v); }); };
+    window.addEventListener('sc:glide-end',onGlideEnd);
     // Warm every clip in the background shortly after load: the files start
     // downloading while the user is still up at the hero, so by the time the
     // reel scrolls in each card is already fully buffered and plays instantly.
@@ -16243,7 +16256,7 @@ function FormatReel(){
     const warmT=setTimeout(function(){
       if(typeof requestIdleCallback!=='undefined') requestIdleCallback(warm,{timeout:4000}); else warm();
     },2500);
-    return function(){ if(io)io.disconnect(); document.removeEventListener('visibilitychange',onVis); clearTimeout(warmT); };
+    return function(){ if(io)io.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',onGlideEnd); clearTimeout(warmT); };
   },[]);
   const doubled=[...FORMAT_CARDS,...FORMAT_CARDS];
   // Phones load the smaller mobile encode (.m.mp4 ~60–460KB); desktop gets the
