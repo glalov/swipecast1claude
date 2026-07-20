@@ -16204,7 +16204,13 @@ function BufferedLoopVideo(props){
     const onVis=function(){ if(!document.hidden) sync(); };
     document.addEventListener('visibilitychange',onVis);
     window.addEventListener('sc:glide-end',sync); // resume after a back-to-top flight froze video starts
-    return function(){ v.removeEventListener('canplaythrough',onBuf); v.removeEventListener('canplay',onBuf); clearTimeout(fbT); if(io)io.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',sync); };
+    // Self-healing: browsers quietly pause loops on their own (memory/power
+    // pressure, brief tab switches). Any pause we didn't cause gets resumed,
+    // so the loop never sits frozen while the user is looking at it.
+    const onPause=function(){ if(visible&&buffered&&!window.__scGliding&&!document.hidden) setTimeout(sync,150); };
+    v.addEventListener('pause',onPause);
+    const guard=setInterval(function(){ if(visible&&buffered&&v.paused&&!window.__scGliding&&!document.hidden) sync(); },4000);
+    return function(){ v.removeEventListener('canplaythrough',onBuf); v.removeEventListener('canplay',onBuf); v.removeEventListener('pause',onPause); clearTimeout(fbT); clearInterval(guard); if(io)io.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',sync); };
   },[]);
   return <video ref={ref} muted loop playsInline preload="auto" {...props}/>;
 }
@@ -16253,6 +16259,12 @@ function FormatReel(){
     // cards are actually in view resume playing.
     const onGlideEnd=function(){ if(io) vids.forEach(function(v){ io.unobserve(v); io.observe(v); }); };
     window.addEventListener('sc:glide-end',onGlideEnd);
+    // Self-healing: our own pauses clear _csWanted first, so a pause event with
+    // the flag still set is the BROWSER quietly stopping a clip (memory/power
+    // pressure). Resume it — visible cards must never sit frozen.
+    const onPause=function(ev){ const v=ev.target; if(v._csWanted&&!window.__scGliding&&!document.hidden) setTimeout(function(){ if(v._csWanted&&v.paused) play(v); },150); };
+    vids.forEach(function(v){ v.addEventListener('pause',onPause); });
+    const guard=setInterval(function(){ if(window.__scGliding||document.hidden)return; vids.forEach(function(v){ if(v._csWanted&&v.paused) play(v); }); },4000);
     // Warm every clip in the background shortly after load: the files start
     // downloading while the user is still up at the hero, so by the time the
     // reel scrolls in each card is already fully buffered and plays instantly.
@@ -16260,7 +16272,7 @@ function FormatReel(){
     const warmT=setTimeout(function(){
       if(typeof requestIdleCallback!=='undefined') requestIdleCallback(warm,{timeout:4000}); else warm();
     },2500);
-    return function(){ if(io)io.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',onGlideEnd); clearTimeout(warmT); };
+    return function(){ if(io)io.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',onGlideEnd); vids.forEach(function(v){ v.removeEventListener('pause',onPause); }); clearInterval(guard); clearTimeout(warmT); };
   },[]);
   const doubled=[...FORMAT_CARDS,...FORMAT_CARDS];
   // Phones load the smaller mobile encode (.m.mp4 ~60–460KB); desktop gets the
