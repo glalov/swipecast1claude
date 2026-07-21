@@ -361,6 +361,10 @@ def render_page(title, desc, canonical):
     #cs-intro .cs-intro-mark{{
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:16px;
       opacity:0;-webkit-transform:translateY(28px) scale(.965);transform:translateY(28px) scale(.965);
+      /* Own compositor layer: the breathe scale runs exactly while the app
+         bundle executes on cold loads; without this the text re-rasters
+         between frames under load and visibly flickers ("blinks"). */
+      will-change:transform,opacity;-webkit-backface-visibility:hidden;backface-visibility:hidden;
     }}
     /* Animations begin only on .cs-ready — added on the second painted frame,
        so the fade always starts from a frame the user actually saw and can
@@ -370,7 +374,10 @@ def render_page(title, desc, canonical):
     }}
     #cs-intro .cs-intro-box{{width:74px;height:74px;background:#fff;border-radius:16px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}}
     #cs-intro.cs-ready .cs-intro-box{{-webkit-animation:cs-spin .3s cubic-bezier(.5,.05,.2,1) .6s both;animation:cs-spin .3s cubic-bezier(.5,.05,.2,1) .6s both;}}
-    #cs-intro .cs-intro-name{{color:#fff;font-size:52px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'DM Sans',sans-serif;letter-spacing:-1.2px;}}
+    /* System fonts ONLY — never a webfont. DM Sans used to be in this stack and
+       finished downloading MID-INTRO on cold first loads, re-rendering the name
+       ("blink"). System fonts are always instantly available on every OS. */
+    #cs-intro .cs-intro-name{{color:#fff;font-size:52px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;letter-spacing:-1.2px;}}
     @-webkit-keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
     @keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
     @-webkit-keyframes cs-breathe{{from{{-webkit-transform:scale(1);transform:scale(1);}}to{{-webkit-transform:scale(1.016);transform:scale(1.016);}}}}
