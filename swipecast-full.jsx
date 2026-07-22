@@ -4207,7 +4207,16 @@ function RegisterTalent({onNavigate}){
       // and the red "Activate Membership" banner prompts them to upgrade
       // when (and only when) they try to submit for a role.
       setDone(true);
-    }catch(e){console.warn("[auth] createAccount caught:",e?.message||e);setErr(e.message||"Something went wrong. Please try again.");window.scrollTo(0,0);}
+    }catch(e){
+      console.warn("[auth] createAccount caught:",e?.message||e);
+      // Show calm guidance on a rate-limited confirmation email (429), not the raw
+      // "email rate limit exceeded" alarm — panicked users retype their address and
+      // make it worse. Same detector as the password-reset flow.
+      const ml=(e?.message||"").toLowerCase();
+      const rate=e?.status===429||ml.includes("rate limit")||ml.includes("only request this")||ml.includes("too many")||ml.includes("exceeded")||ml.includes("over_email_send");
+      setErr(rate?"We're sending a lot of verification emails right now. Your details are fine — wait about a minute, then press Create Account again with the same email.":(e.message||"Something went wrong. Please try again."));
+      window.scrollTo(0,0);
+    }
     finally{setLoading(false);submittingRef.current=false;}
   };
   const handleSocialAuth=async(provider)=>{
@@ -4418,7 +4427,14 @@ function RegisterCD({onNavigate}){
         try{await window.sb.rpc("apply_signup_metadata_to_profile");}catch(_){}
       }
       setDone(true);
-    }catch(e){console.warn("[auth] CD submit caught:",e?.message||e);setErr(e.message||"Something went wrong. Please try again.");}
+    }catch(e){
+      console.warn("[auth] CD submit caught:",e?.message||e);
+      // Calm copy on a rate-limited confirmation email — same detector as the
+      // password-reset flow.
+      const ml=(e?.message||"").toLowerCase();
+      const rate=e?.status===429||ml.includes("rate limit")||ml.includes("only request this")||ml.includes("too many")||ml.includes("exceeded")||ml.includes("over_email_send");
+      setErr(rate?"We're sending a lot of verification emails right now. Your details are fine — wait about a minute, then press Create Account again with the same email.":(e.message||"Something went wrong. Please try again."));
+    }
     finally{setLoading(false);submittingRef.current=false;}
   };
   const handleSocialAuth=async(provider)=>{
@@ -8026,7 +8042,12 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
         if(em.includes("already")||em.includes("exist")||em.includes("registered")){
           setErr("An account with this email already exists. Please log in instead.");
           setLiEmail(email);setMode("login");
-        }else{setErr(error.message||"Sign up failed. Please try again.");}
+        }else{
+          // Calm copy on a rate-limited confirmation email — retyping the address
+          // makes it worse.
+          const rate=error?.status===429||em.includes("rate limit")||em.includes("only request this")||em.includes("too many")||em.includes("exceeded")||em.includes("over_email_send");
+          setErr(rate?"We're sending a lot of verification emails right now. Your details are fine — wait about a minute, then try again with the same email.":(error.message||"Sign up failed. Please try again."));
+        }
         return;
       }
       if(data?.user&&Array.isArray(data.user.identities)&&data.user.identities.length===0){
@@ -8044,7 +8065,11 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
         // Email confirmation required — tell the user to check their inbox
         setSignupDone(true);
       }
-    }catch(e){setErr(e?.message||"Something went wrong. Please try again.");}
+    }catch(e){
+      const ml=(e?.message||"").toLowerCase();
+      const rate=e?.status===429||ml.includes("rate limit")||ml.includes("only request this")||ml.includes("too many")||ml.includes("exceeded")||ml.includes("over_email_send");
+      setErr(rate?"We're sending a lot of verification emails right now. Your details are fine — wait about a minute, then try again with the same email.":(e?.message||"Something went wrong. Please try again."));
+    }
     finally{setLoading(false);submittingRef.current=false;}
   };
 
