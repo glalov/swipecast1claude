@@ -16270,12 +16270,21 @@ function BufferedLoopVideo(props){
   const ref=React.useRef(null);
   React.useEffect(function(){
     const v=ref.current; if(!v) return;
+    // iOS/Android muted-inline autoplay needs the muted PROPERTY set on the
+    // element, not just the attribute — React doesn't reliably reflect it, so
+    // set it explicitly or mobile silently refuses to autoplay.
+    try{ v.muted=true; v.defaultMuted=true; v.setAttribute('muted',''); }catch(_){}
+    // Touch devices defer video buffering until a play() attempt and frequently
+    // never fire canplaythrough, so the desktop buffer-gate would hold the
+    // poster forever. On touch/coarse-pointer devices, treat the clip as ready
+    // and let the browser start buffering the moment it scrolls into view.
+    const isTouch=(typeof matchMedia!=='undefined'&&matchMedia('(hover:none),(pointer:coarse)').matches)||/iP(hone|ad|od)|Android/i.test((navigator&&navigator.userAgent)||'');
     // Play only when BOTH are true: fully buffered (canplaythrough) and near
     // the viewport. Buffer-gating means slow wifi holds the clean poster frame
     // instead of a stuttering half-loaded video; the visibility gate is needed
     // because Chrome pauses offscreen script-started muted videos and won't
     // resume them itself (it only does that for the autoplay attribute).
-    let buffered=v.readyState>=4, visible=false, fbT=0;
+    let buffered=isTouch||v.readyState>=4, visible=false, fbT=0;
     const sync=function(){ if(buffered&&visible&&!window.__scGliding){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); } else if(!visible){ try{v.pause();}catch(_){} } };
     const onBuf=function(){ buffered=true; sync(); };
     v.addEventListener('canplaythrough',onBuf);
