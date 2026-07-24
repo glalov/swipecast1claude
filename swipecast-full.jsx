@@ -8466,7 +8466,7 @@ function VideoRecorder({session,roleId,onVideoReady,onClose,maxSec,primaryLabel,
       let pct=0;
       const tick=setInterval(()=>{pct=Math.min(pct+8,90);setUploadPct(pct);},300);
       const{data:upData,error:upErr}=await window.sb.storage.from("talent-media").upload(path,blob,{
-        upsert:true,
+        upsert:false,
         contentType:type
       });
       clearInterval(tick);
@@ -14914,7 +14914,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     setRole(roleIdx,"_uploadingPdf",true);setErr("");
     try{
       const path=`${uid}/sides/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
-      const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true,contentType:"application/pdf"});
+      const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:false,contentType:"application/pdf"});
       if(upErr)throw upErr;
       const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
       setRole(roleIdx,"sides_pdf_url",publicUrl);
@@ -14948,7 +14948,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
       const uploaded=[];
       for(const file of toUpload){
         const path=`${uid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
-        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true});
+        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:false});
         if(upErr)throw upErr;
         const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
         uploaded.push({url:publicUrl,path});
@@ -15198,7 +15198,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
     setRole(roleIdx,"_uploadingPdf",true);setErr("");
     try{
       const path=`${uid}/sides/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
-      const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true,contentType:"application/pdf"});
+      const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:false,contentType:"application/pdf"});
       if(upErr)throw upErr;
       const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
       setRole(roleIdx,"sides_pdf_url",publicUrl);
@@ -15332,7 +15332,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
       const uploaded=[];
       for(const file of toUpload){
         const path=`${uid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
-        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true});
+        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:false});
         if(upErr)throw upErr;
         const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
         uploaded.push({url:publicUrl,path});
@@ -16919,7 +16919,7 @@ function CastingFitDNAEditor({session,isPremium,onNavigate}){
       const path=`${uid}/casting-dna/${entry.id}/clip_${Date.now()}.${ext}`;
       // remove old clip if exists
       if(entry.mood_clip_path)await window.sb.storage.from("talent-media").remove([entry.mood_clip_path]);
-      const{error:upErr}=await window.sb.storage.from("talent-media").upload(path,file,{upsert:true,contentType:file.type});
+      const{error:upErr}=await window.sb.storage.from("talent-media").upload(path,file,{upsert:false,contentType:file.type});
       if(upErr)throw upErr;
       const{data:{publicUrl}}=window.sb.storage.from("talent-media").getPublicUrl(path);
       const{error}=await window.sb.from("talent_casting_fit_dna").update({mood_clip_url:publicUrl,mood_clip_path:path,updated_at:new Date().toISOString()}).eq("id",entry.id).eq("user_id",uid);
@@ -17405,7 +17405,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       if(dur!==null&&dur>7.5){setErr("Slate videos must be 7 seconds or shorter. This file is "+Math.round(dur)+" seconds.");return;}
       const ext=(file.name?.split(".").pop()||"mp4").toLowerCase().replace("quicktime","mov");
       const path=`${session.user.id}/slate-${Date.now()}.${ext}`;
-      const{error:upErr}=await window.sb.storage.from("talent-media").upload(path,file,{upsert:true,contentType:file.type});
+      const{error:upErr}=await window.sb.storage.from("talent-media").upload(path,file,{upsert:false,contentType:file.type});
       if(upErr)throw upErr;
       const{data:{publicUrl}}=window.sb.storage.from("talent-media").getPublicUrl(path);
       await saveSlateUrl(publicUrl);
@@ -20851,7 +20851,7 @@ function AdminNews({session}){
     try{
       const ext=(file.name.split(".").pop()||"jpg").toLowerCase();
       const path=`news/${a.id}-${Date.now()}.${ext}`;
-      const{error:upErr}=await window.sb.storage.from("news-media").upload(path,file,{upsert:true,contentType:file.type});
+      const{error:upErr}=await window.sb.storage.from("news-media").upload(path,file,{upsert:false,contentType:file.type});
       if(upErr)throw upErr;
       const{data:pub}=window.sb.storage.from("news-media").getPublicUrl(path);
       const url=pub?.publicUrl;
@@ -21452,7 +21452,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
       const uploaded=[];
       for(const file of toUpload){
         const path=`${adminId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
-        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true});
+        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:false});
         if(upErr)throw upErr;
         const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
         uploaded.push({url:publicUrl,path});
@@ -21467,7 +21467,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     updateRole(roleIdx,"_uploadingPdf",true);setErr("");
     try{
       const path=`${adminId}/sides/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
-      const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true,contentType:"application/pdf"});
+      const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:false,contentType:"application/pdf"});
       if(upErr)throw upErr;
       const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
       updateRole(roleIdx,"sides_pdf_url",publicUrl);
@@ -25664,7 +25664,7 @@ function AdminEditClass({cls,onClose}){
     try{
       const ext=file.name.split(".").pop().toLowerCase();
       const path=`class-posters/${cls.id}/${Date.now()}-${Math.random().toString(36).slice(2,7)}.${ext}`;
-      const{data,error}=await window.sb.storage.from("class-media").upload(path,file,{upsert:true});
+      const{data,error}=await window.sb.storage.from("class-media").upload(path,file,{upsert:false});
       if(error)throw error;
       const{data:{publicUrl}}=window.sb.storage.from("class-media").getPublicUrl(data.path);
       setPosters(p=>[...p,{url:publicUrl,path:data.path}]);
@@ -26604,7 +26604,7 @@ function EditCastingModal({casting,onClose,onSaved}){
       const uid=sessionData?.session?.user?.id;
       if(!uid)throw new Error("Not authenticated — please reload and try again.");
       const path=`${uid}/sides/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
-      const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true,contentType:"application/pdf"});
+      const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:false,contentType:"application/pdf"});
       if(upErr)throw upErr;
       const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
       setRole(roleIdx,"sides_pdf_url",publicUrl);
@@ -26627,7 +26627,7 @@ function EditCastingModal({casting,onClose,onSaved}){
       const uploadUid=sessionData?.session?.user?.id||"admin";
       for(const file of toUpload){
         const path=`${uploadUid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
-        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:true});
+        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:false});
         if(upErr)throw upErr;
         const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
         uploaded.push({url:publicUrl,path});
