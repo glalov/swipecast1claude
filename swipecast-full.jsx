@@ -3516,7 +3516,6 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
       <button className="btn-p" style={{width:"100%",padding:"16px",opacity:busy?0.7:1}} disabled={busy} onClick={handleUpgradeClick}>
         {busy?"Opening Checkout…":plan.months===1?`Continue to Checkout — $${plan.monthly.toFixed(2)}/month`:`Continue to Checkout — $${plan.total.toFixed(2)} today`}
       </button>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7,fontSize:12.5,color:"var(--grn)",fontWeight:700,marginTop:14,textAlign:"center"}}><Ico n="check" s={15}/> Cancel anytime — you keep access through the period you paid for.</div>
       {/* Calm, single-line acknowledgment. Covers the material recurring-billing
           disclosures (auto-renew, cancel, no-refund, Terms, 18+) required at
           checkout. The full consent statement is still logged to
