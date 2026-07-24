@@ -24702,7 +24702,7 @@ function AdminPremiumUpsell({session}){
       cnt(base().eq("slot","evening").eq("status","failed").gte("sent_at",todayIso)),
       cnt(base().eq("slot","noon").eq("reason","unsubscribe_click")),
       cnt(base().eq("slot","evening").eq("reason","unsubscribe_click")),
-      cnt(window.sb.from("email_preferences").select("user_id",{count:"exact",head:true}).eq("premium_upsell_optout",true))
+      window.sb.rpc("get_premium_upsell_optout_count").then(r=>r.data??0)
     ]);
     if(sRes.data){
       setForm({
@@ -24780,7 +24780,7 @@ function AdminPremiumUpsell({session}){
         </div>
         <div style={{textAlign:"center",padding:"10px 6px",borderRadius:10,background:"rgba(214,59,59,0.07)"}}>
           <div style={{fontSize:26,fontWeight:800,color:"var(--red)",lineHeight:1}}>{d.unsub}</div>
-          <div style={{fontSize:11,color:"var(--t2)",marginTop:5}}>Unsubscribed</div>
+          <div style={{fontSize:11,color:"var(--t2)",marginTop:5}}>Unsubscribed · all-time</div>
         </div>
       </div>
       {d.failed>0&&<div style={{fontSize:11,color:"var(--t3)",marginTop:10,textAlign:"center"}}>{d.failed} failed today</div>}
@@ -24863,7 +24863,7 @@ function AdminPremiumUpsell({session}){
     {/* Logs */}
     <div className="card" style={{padding:24}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-        <div style={{fontWeight:700,fontSize:16}}>Recent Sends</div>
+        <div style={{fontWeight:700,fontSize:16}}>Recent Sends <span style={{fontWeight:500,fontSize:12,color:"var(--t3)"}}>· newest 100 (sent + skipped)</span></div>
         <button className="btn-s btn-sm" onClick={loadAll}>Refresh</button>
       </div>
       {logs.length===0?(
