@@ -5049,6 +5049,35 @@ function sbImg(url,width,quality){
   return u+(u.indexOf("?")===-1?"?":"&")+"width="+(width||640)+"&quality="+(quality||74)+"&resize=contain";
 }
 
+// Client-side image compression before upload. Casting posters are frequently
+// multi-MB phone/camera originals (a single 4.8 MB JPEG was slowing detail
+// pages on slow connections). This downscales to <=1600px on the long edge and
+// re-encodes as JPEG ~82% quality, typically turning a 4.8 MB upload into
+// ~250-400 KB with no visible loss. Transparency is flattened onto white
+// (casting posters are photos, never UI chrome). On ANY failure it returns the
+// ORIGINAL file untouched so an upload never breaks because of compression.
+async function compressImageFile(file,maxDim,quality){
+  try{
+    if(!file||typeof file!=="object"||!file.type||file.type.indexOf("image/")!==0)return file;
+    if(file.type==="image/gif")return file; // never touch animated gifs
+    if(file.size<=350*1024)return file;      // already small enough
+    const MAX=maxDim||1600, Q=quality||0.82;
+    const dataUrl=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});
+    const img=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=dataUrl;});
+    let {width:w,height:h}=img;
+    if(!w||!h)return file;
+    if(w>MAX||h>MAX){ if(w>=h){h=Math.round(h*(MAX/w));w=MAX;} else {w=Math.round(w*(MAX/h));h=MAX;} }
+    const canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;
+    const ctx=canvas.getContext("2d");
+    ctx.fillStyle="#ffffff";ctx.fillRect(0,0,w,h);        // flatten any transparency
+    ctx.drawImage(img,0,0,w,h);
+    const blob=await new Promise((res)=>canvas.toBlob(res,"image/jpeg",Q));
+    if(!blob||blob.size>=file.size)return file;           // no gain — keep original
+    const baseName=(file.name||"image").replace(/\.[^.]+$/,"");
+    return new File([blob],baseName+".jpg",{type:"image/jpeg",lastModified:Date.now()});
+  }catch(e){ return file; }
+}
+
 function ClassPosterCollage({posters,imageUrl,title,bg="#F4F1EA",variant="hero"}){
   const vw=useViewportWidth();
   const _W=variant==="card"?(vw>768?560:640):1100;
@@ -14981,8 +15010,9 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     try{
       const uploaded=[];
       for(const file of toUpload){
-        const path=`${uid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
-        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:false});
+        const upFile=await compressImageFile(file);
+        const path=`${uid}/${Date.now()}_${upFile.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,upFile,{upsert:false});
         if(upErr)throw upErr;
         const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
         uploaded.push({url:publicUrl,path});
@@ -15365,8 +15395,9 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
     try{
       const uploaded=[];
       for(const file of toUpload){
-        const path=`${uid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
-        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:false});
+        const upFile=await compressImageFile(file);
+        const path=`${uid}/${Date.now()}_${upFile.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,upFile,{upsert:false});
         if(upErr)throw upErr;
         const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
         uploaded.push({url:publicUrl,path});
@@ -21485,8 +21516,9 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     try{
       const uploaded=[];
       for(const file of toUpload){
-        const path=`${adminId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
-        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:false});
+        const upFile=await compressImageFile(file);
+        const path=`${adminId}/${Date.now()}_${upFile.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,upFile,{upsert:false});
         if(upErr)throw upErr;
         const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
         uploaded.push({url:publicUrl,path});
@@ -25696,9 +25728,10 @@ function AdminEditClass({cls,onClose}){
     if(file.size>5*1024*1024){setPosterErr("Poster must be 5 MB or smaller.");return;}
     setPosterBusy(true);setPosterErr("");
     try{
-      const ext=file.name.split(".").pop().toLowerCase();
+      const upFile=await compressImageFile(file);
+      const ext=upFile.name.split(".").pop().toLowerCase();
       const path=`class-posters/${cls.id}/${Date.now()}-${Math.random().toString(36).slice(2,7)}.${ext}`;
-      const{data,error}=await window.sb.storage.from("class-media").upload(path,file,{upsert:false});
+      const{data,error}=await window.sb.storage.from("class-media").upload(path,upFile,{upsert:false});
       if(error)throw error;
       const{data:{publicUrl}}=window.sb.storage.from("class-media").getPublicUrl(data.path);
       setPosters(p=>[...p,{url:publicUrl,path:data.path}]);
@@ -26660,8 +26693,9 @@ function EditCastingModal({casting,onClose,onSaved}){
       const {data:sessionData}=await window.sb.auth.getSession();
       const uploadUid=sessionData?.session?.user?.id||"admin";
       for(const file of toUpload){
-        const path=`${uploadUid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
-        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,file,{upsert:false});
+        const upFile=await compressImageFile(file);
+        const path=`${uploadUid}/${Date.now()}_${upFile.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+        const{error:upErr}=await window.sb.storage.from("casting-media").upload(path,upFile,{upsert:false});
         if(upErr)throw upErr;
         const{data:{publicUrl}}=window.sb.storage.from("casting-media").getPublicUrl(path);
         uploaded.push({url:publicUrl,path});
