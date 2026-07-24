@@ -2771,7 +2771,7 @@ const MEMBERSHIP_PLANS={
 const FREE_PLAN={headshotsTotal:1,additionalPhotos:0,videos:0,submissionsPerWeek:1,castingTypes:2,castingMoodClips:0,castingSupportingPhotos:0};
 const PREMIUM_PLAN={headshotsTotal:Infinity,additionalPhotos:Infinity,videos:Infinity,submissionsPerWeek:Infinity,castingTypes:Infinity,castingMoodClips:1,castingSupportingPhotos:3};
 const PREMIUM_PRICE="$9.99/month";
-const UPGRADE_MSG="You've used your 3 free submissions for this week. Upgrade to Premium for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card, Manager Mode, and more.";
+const UPGRADE_MSG=`You've used your ${FREE_PLAN.submissionsPerWeek===1?"free submission":`${FREE_PLAN.submissionsPerWeek} free submissions`} for this week. Upgrade to Premium for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card, Manager Mode, and more.`;
 // Most recent Monday 6:00 AM America/New_York as a Date — the point free submissions reset each week.
 function weeklyResetStart(){
   const now=new Date();
@@ -3350,7 +3350,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
     <div className="section-label">Membership</div>
     <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1.2,marginBottom:8}}>Pick your plan.</h1>
     <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>
-      Free actors can submit to {FREE_PLAN.submissionsPerWeek} castings per week and upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins.
+      Free actors can submit to {FREE_PLAN.submissionsPerWeek} {FREE_PLAN.submissionsPerWeek===1?"casting":"castings"} per week and upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins.
     </p>
     <div className="grid-3" style={{gap:18,maxWidth:1100,margin:"0 auto"}}>
       {Object.values(MEMBERSHIP_PLANS).map(p=>{
@@ -6343,7 +6343,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
           <div style={{display:"grid",gridTemplateColumns:isMobile?"2fr 1fr 1fr":"1fr 1fr 1fr",gap:isMobile?4:8,padding:"8px 0",borderBottom:"2px solid var(--bdr)",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)"}}>
             <span>{t('pricing.feature')}</span><span style={{textAlign:"center"}}>{t('pricing.freeLabel')}</span><span style={{textAlign:"center",color:"var(--acc)"}}>Premium</span>
           </div>
-          {featureRow("Casting submissions / week","3",t('pricing.unlimitedLabel'))}
+          {featureRow("Casting submissions / week",String(FREE_PLAN.submissionsPerWeek),t('pricing.unlimitedLabel'))}
           {featureRow("Headshots","1","Unlimited")}
           {featureRow("Photos & videos","no","Unlimited")}
           {featureRow("Browse castings","yes","yes")}
@@ -16660,7 +16660,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div className="section-title" style={{textAlign:"center",marginBottom:32}}>Everything you want to know.</div>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         {[
-          {q:"How much does CastSlate cost for actors?",a:"Free accounts get 1 headshot and 3 casting submissions per week. Premium is $9.99/month and gives you unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins. No hidden tiers, no per-submission fees."},
+          {q:"How much does CastSlate cost for actors?",a:"Free accounts get 1 headshot and 1 casting submission per week. Premium is $9.99/month and gives you unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins. No hidden tiers, no per-submission fees."},
           {q:"How is CastSlate different from legacy casting websites?",a:"On older platforms, your submission lands in a grid where a CD can scan 80 faces in 20 seconds. On CastSlate, every submission is full-screen, one at a time, swipe-style. CDs decide on you individually. No one gets skipped."},
           {q:"Can minors (under 18) sign up?",a:"Only with a parent or legal guardian managing the account. We require guardian verification and comply with COPPA and state child-performer laws."},
           {q:"Is this SAG-AFTRA friendly?",a:"Yes. SAG-AFTRA, AEA, and non-union castings are all supported. Union status is displayed on every casting post and can be filtered."},
@@ -18615,7 +18615,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
         )}
         {["talent","actor"].includes(role)&&!isPremiumMember&&(
           <div style={{borderTop:"1px solid var(--bdr)",paddingTop:16}}>
-            <p style={{color:"var(--t2)",fontSize:13,marginBottom:12}}>Free plan: 3 casting submissions/week, 1 headshot, no video reels.</p>
+            <p style={{color:"var(--t2)",fontSize:13,marginBottom:12}}>Free plan: 1 casting submission/week, 1 headshot, no video reels.</p>
             <button className="btn-p btn-sm" onClick={()=>onNavigate("membership")}>Upgrade to Premium — $9.99/month</button>
           </div>
         )}

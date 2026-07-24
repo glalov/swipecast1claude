@@ -78,18 +78,18 @@
   <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20260722-025223"/>
+  <link rel="preload" as="script" href="/app.js?v=20260724-005742"/>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
-  <!-- BUILD: 20260722-025223 -->
-  <meta name="build-version" content="20260722-025223"/>
+  <!-- BUILD: 20260724-005742 -->
+  <meta name="build-version" content="20260724-005742"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260722-025223";
+        var B="20260724-005742";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -408,7 +408,7 @@
         "/vendor/react-dom.production.min.js",
         "/vendor/supabase.min.js",
         "INIT",
-        "/app.js?v=20260722-025223"
+        "/app.js?v=20260724-005742"
       ];
       function step(){
         var it=STEPS.shift();
