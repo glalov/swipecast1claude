@@ -2766,6 +2766,24 @@ const MEMBERSHIP_PLANS={
   monthly:{key:"monthly",label:"Monthly Plan",monthly:9.99,months:1,total:9.99,note:"Billed monthly."}
 };
 
+// ─── "Ink & Bone" palette for the plan picker. Flat fills only — no gradients
+//     and no coloured glow, which is what made the old treatment read cheap.
+//     Brass is spent sparingly: the badge outline and the exclusives rules.
+const INK_DEEP="#12141F";
+const INK_BONE="#F0EDE5";
+const BRASS_ON_DARK="#C3A671";
+const BRASS_ON_LIGHT="#7A6134";
+
+// ─── What each plan gives you that the others don't. Every line here must be
+//     factually true of the plan itself — a prepaid term genuinely fixes the
+//     rate for that term. Do NOT add perks that aren't built (founder badges,
+//     search priority) until they actually exist and are honoured.
+const PLAN_EXCLUSIVES={
+  yearly:["Your $7.99/month rate is fixed for the full 12 months","One payment — nothing to renew until next year"],
+  six_month:["Your $8.99/month rate is fixed for all 6 months"],
+  monthly:[]
+};
+
 // ─── Actor plan limits — single source of truth used by profile upload, casting
 //     submission gate, and the pricing page.
 const FREE_PLAN={headshotsTotal:1,additionalPhotos:0,videos:0,submissionsPerWeek:1,castingTypes:2,castingMoodClips:0,castingSupportingPhotos:0};
@@ -3336,14 +3354,19 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
   // Always show the 3 actor plans. Button text differs: logged-in users can pick directly,
   // logged-out users are sent to sign in first (with plan saved to sessionStorage).
   const planCardButton=(p)=>{
-    // Tinted Tiers: featured (yearly) plan uses a solid teal action button
-    const featBtn=p.key==="yearly"?{width:"100%",background:"#ffffff",borderColor:"#ffffff",color:"#18181a"}:{width:"100%"};
+    // "Ink & Bone": the featured (yearly) plan takes a bone button on the ink
+    // card — light-on-dark reads as an invitation rather than an alert. No
+    // gradient, no coloured glow.
+    const featBtn=p.key==="yearly"?{width:"100%",background:INK_BONE,borderColor:INK_BONE,color:INK_DEEP}:{width:"100%"};
+    // CTA names the outcome instead of the generic "Select Plan".
+    const CTA={yearly:`Go unlimited — $${p.monthly.toFixed(2)}/mo`,six_month:"Choose 6 months",monthly:"Start monthly"};
+    const label=CTA[p.key]||"Select plan";
     if(session?.user){
       // Logged-in non-industry user — proceed directly to plan summary
-      return(<button className={p.key==="yearly"?"btn-p":"btn-s"} style={featBtn} onClick={()=>onPickPlan(p.key)}>Select Plan →</button>);
+      return(<button className={p.key==="yearly"?"btn-p":"btn-s"} style={featBtn} onClick={()=>onPickPlan(p.key)}>{label}</button>);
     }
     // Logged-out — save plan, send to login
-    return(<button className={p.key==="yearly"?"btn-p":"btn-s"} style={featBtn} onClick={()=>{try{sessionStorage.setItem("sc_pending_plan",p.key);}catch(_){}onNavigate("login");}}>Sign in to subscribe →</button>);
+    return(<button className={p.key==="yearly"?"btn-p":"btn-s"} style={featBtn} onClick={()=>{try{sessionStorage.setItem("sc_pending_plan",p.key);}catch(_){}onNavigate("login");}}>Sign in to subscribe</button>);
   };
 
   return(<div className="page page-wide">
@@ -3363,15 +3386,26 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
         const ts=featured?"#c9c8c1":"var(--t2)";
         const ck=featured?"#9a9a9f":"#c4c2b8";
         const ft=featured?"#e2e1da":"var(--t2)";
+        const brass=featured?BRASS_ON_DARK:BRASS_ON_LIGHT;
+        const excl=PLAN_EXCLUSIVES[p.key]||[];
         const feat=(txt)=>(<li style={{display:"flex",gap:8,fontSize:13,color:ft}}><span style={{color:ck,fontWeight:700,flex:"none"}}><Ico n="check" s={24}/></span>{txt}</li>);
-        return(<div key={p.key} className="card" style={{padding:28,position:"relative",display:"flex",flexDirection:"column",background:featured?"#18181a":"#ffffff",border:featured?"1px solid #18181a":"1px solid #e7e4db",boxShadow:featured?"0 26px 50px -22px rgba(20,20,26,.55)":"none",transform:featured&&!isMobile?"translateY(-14px)":"none",zIndex:featured?2:1}}>
-          <div style={{minHeight:22,marginBottom:10,display:"flex",alignItems:"center"}}>{featured&&<span style={{fontSize:10,fontWeight:800,letterSpacing:1.4,textTransform:"uppercase",color:"#18181a",background:"#f5f4f0",fontFamily:"'DM Sans',sans-serif",padding:"4px 11px",borderRadius:100}}>Most popular</span>}</div>
+        return(<div key={p.key} className="card" style={{padding:28,position:"relative",display:"flex",flexDirection:"column",background:featured?INK_DEEP:"#ffffff",border:featured?`1px solid ${INK_DEEP}`:"1px solid #e7e4db",boxShadow:featured?"0 26px 50px -22px rgba(18,20,31,.55)":"none",transform:featured&&!isMobile?"translateY(-14px)":"none",zIndex:featured?2:1}}>
+          {/* "Best value" is true — the yearly plan is the lowest monthly rate.
+              The old "Most popular" was not: monthly outsells it 12 to 1. */}
+          <div style={{minHeight:22,marginBottom:10,display:"flex",alignItems:"center"}}>{featured&&<span style={{fontSize:9.5,fontWeight:800,letterSpacing:1.6,textTransform:"uppercase",color:BRASS_ON_DARK,background:"transparent",border:`1px solid ${BRASS_ON_DARK}`,fontFamily:"'DM Sans',sans-serif",padding:"4px 11px",borderRadius:3}}>Best value</span>}</div>
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:6,color:tm}}>{p.label}</h3>
           <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:6}}>
             <span style={{fontFamily:"'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif",fontWeight:600,fontSize:42,letterSpacing:"-0.02em",color:tm}}>${p.monthly.toFixed(2)}</span>
             <span style={{fontSize:13,color:ts}}>/month</span>
           </div>
           <p style={{fontSize:12,color:ts,marginBottom:16}}>{save?<span style={{fontWeight:700}}>{save} · </span>:null}{p.note}</p>
+          {/* Tier differentiator. Without this the three cards list identical
+              features, so the only variable is price — which is why monthly
+              outsells yearly 12 to 1. Hairline rules, not a boxed container. */}
+          {excl.length>0&&<div style={{borderTop:`1px solid ${featured?"rgba(195,166,113,.32)":"#dcd2be"}`,borderBottom:`1px solid ${featured?"rgba(195,166,113,.32)":"#dcd2be"}`,padding:"12px 0",margin:"0 0 16px",display:"flex",flexDirection:"column",gap:8}}>
+            <div style={{fontSize:9,fontWeight:800,letterSpacing:1.6,textTransform:"uppercase",color:brass}}>{p.key==="yearly"?"Only on the yearly plan":"Included"}</div>
+            {excl.map(x=>(<div key={x} style={{display:"flex",gap:9,fontSize:12.5,color:ft,lineHeight:1.45}}><span style={{color:brass,fontWeight:700,flex:"none"}}>✦</span>{x}</div>))}
+          </div>}
           <ul style={{listStyle:"none",padding:0,margin:"0 0 22px",display:"flex",flexDirection:"column",gap:6,flex:1}}>
             {feat("Unlimited casting submissions")}
             {feat("Unlimited photos & gallery media")}
@@ -3381,7 +3415,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
             {feat("Manager Mode — weekly career check-ins")}
             {feat("Personalized profile improvement suggestions")}
           </ul>
-          <div style={{borderTop:featured?"1px solid #37373a":"1px solid var(--bdr)",paddingTop:14,marginBottom:14,fontSize:12,color:ts}}>Total billed: <strong style={{color:tm}}>${p.total.toFixed(2)}</strong>{p.months>1?` for ${p.months} months`:" today"}</div>
+          <div style={{borderTop:featured?"1px solid rgba(240,237,229,.16)":"1px solid var(--bdr)",paddingTop:14,marginBottom:14,fontSize:12,color:ts}}>Total billed: <strong style={{color:tm}}>${p.total.toFixed(2)}</strong>{p.months>1?` for ${p.months} months`:" today"}</div>
           {planCardButton(p)}
         </div>);
       })}
