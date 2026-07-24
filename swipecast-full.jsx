@@ -22979,6 +22979,9 @@ function AdminCDVerification(){
   const reject=(u,notes)=>callRpc("admin_reject_casting_creator",{p_user_id:u.id,p_notes:notes||null},`${u.display_name||u.email} rejected.`,u.id);
   const needsReview=(u,notes)=>callRpc("admin_needs_review_casting_creator",{p_user_id:u.id,p_notes:notes||null},`${u.display_name||u.email} flagged for review.`,u.id);
   const reset=(u)=>{if(!confirm(`Reset verification for ${u.display_name||u.email}? This clears all verification data.`))return;callRpc("admin_reset_casting_verification",{p_user_id:u.id},`${u.display_name||u.email} reset.`,u.id);};
+  // Grant posting AFTER the ID check passed (or for a recognized/test account). ID-passing alone does NOT allow posting.
+  const allowPost=(u)=>{if(!confirm(`Allow ${u.display_name||u.email} to post castings?\n\nOnly do this once their ID is verified — or if you recognize this as a test/known account.`))return;callRpc("admin_set_posting",{p_user_id:u.id,p_allow:true,p_notes:null},`${u.display_name||u.email} can now post castings.`,u.id);};
+  const revokePost=(u)=>{if(!confirm(`Revoke posting permission for ${u.display_name||u.email}? They will no longer be able to post castings.`))return;callRpc("admin_set_posting",{p_user_id:u.id,p_allow:false,p_notes:null},`Posting revoked for ${u.display_name||u.email}.`,u.id);};
 
   const filtered=users.filter(u=>{
     if(statusFilter!=="all"&&u.verification_status!==statusFilter)return false;
@@ -22993,7 +22996,7 @@ function AdminCDVerification(){
 
   return(<>
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>CD Verification</h1>
-    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Review and approve casting creator identity verification requests.</p>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Two steps before a casting director can post: (1) they must <strong>pass the ID check</strong> — you'll see an <strong style={{color:"#1d7b44"}}>ID Verified ✓</strong> badge and get notified, or you can approve a recognized/test account manually; then (2) you click <strong>Allow posting</strong>. Nobody can post until you grant it.</p>
     {msg&&<div style={{background:msgType==="error"?"rgba(192,57,43,0.1)":"rgba(46,204,113,0.12)",color:msgType==="error"?"#c0392b":"#1d7b44",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
     <div style={{display:"grid",gridTemplateColumns:"1fr 200px",gap:10,marginBottom:14}}>
       <input className="input" placeholder="Search by name, email, company…" value={q} onChange={e=>setQ(e.target.value)}/>
@@ -23019,6 +23022,8 @@ function AdminCDVerification(){
                 <div style={{fontWeight:600,fontSize:14,display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
                   {u.display_name||"—"}
                   <span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:99,background:STATUS_COLOR[vs]+"22",color:STATUS_COLOR[vs]}}>{STATUS_LABEL[vs]||vs}</span>
+                  {u.identity_verified===true&&vs==="verified"&&<span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:99,background:"rgba(29,123,68,0.12)",color:"#1d7b44"}}><Ico n="check" s={24}/> ID Verified</span>}
+                  {u.identity_verified===true&&vs==="verified"&&!u.can_post_castings&&<span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:99,background:"rgba(200,137,0,0.14)",color:"#b06f00"}}>Awaiting your approval</span>}
                   {u.can_post_castings&&<span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:99,background:"rgba(46,204,113,0.12)",color:"#1d7b44"}}><Ico n="check" s={24}/> Can Post</span>}
                 </div>
                 <div style={{fontSize:12,color:"var(--t3)",marginTop:2}}>{u.email}{u.company_name?` · ${u.company_name}`:""}{u.company_role?` · ${u.company_role}`:""}</div>
@@ -23039,7 +23044,12 @@ function AdminCDVerification(){
               </div>
               {u.verification_notes&&<div style={{fontSize:12,color:"var(--t2)",marginBottom:14,background:"var(--s2)",borderRadius:8,padding:"8px 12px"}}><strong>Notes:</strong> {u.verification_notes}</div>}
               <div style={{display:"flex",gap:8,flexWrap:"wrap",pointerEvents:busy?"none":"auto",opacity:busy?0.5:1}}>
-                {vs!=="verified"&&<button className="btn-p btn-sm" disabled={busy} onClick={()=>setReasonPrompt({user:u,action:"approve"})}><Ico n="check" s={24}/> Approve</button>}
+                {/* Step 2: grant posting once ID has passed */}
+                {u.identity_verified===true&&vs==="verified"&&!u.can_post_castings&&<button className="btn-p btn-sm" disabled={busy} onClick={()=>allowPost(u)}><Ico n="check" s={24}/> Allow posting</button>}
+                {/* Manual full-approve for a recognized/test account with no real ID check */}
+                {!(u.identity_verified===true&&vs==="verified")&&!u.can_post_castings&&<button className="btn-s btn-sm" disabled={busy} onClick={()=>setReasonPrompt({user:u,action:"approve"})}><Ico n="check" s={24}/> Approve (recognized/test)</button>}
+                {/* Revoke posting */}
+                {u.can_post_castings&&<button className="btn-s btn-sm" disabled={busy} style={{color:"#c0392b",borderColor:"#e8c6c6"}} onClick={()=>revokePost(u)}>Revoke posting</button>}
                 {vs!=="rejected"&&<button className="btn-s btn-sm" disabled={busy} style={{color:"#c0392b",borderColor:"#e8c6c6"}} onClick={()=>setReasonPrompt({user:u,action:"reject"})}><Ico n="x" s={24}/> Reject</button>}
                 {vs!=="needs_review"&&<button className="btn-s btn-sm" disabled={busy} style={{color:"#8e44ad"}} onClick={()=>setReasonPrompt({user:u,action:"needs_review"})}><Ico n="flag" s={22}/> Needs Review</button>}
                 <button className="btn-s btn-sm" disabled={busy} onClick={()=>reset(u)}>↺ Reset</button>
