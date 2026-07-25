@@ -52,6 +52,8 @@ create table if not exists public.profiles (
   company_role text,
   website text,
   credits text,
+  -- CD review-screen preference: 'swipe' (one-at-a-time deck, default) or 'grid' (all headshots)
+  cd_review_style text default 'swipe' check (cd_review_style is null or cd_review_style in ('swipe','grid')),
 
   -- Shared
   instagram text,

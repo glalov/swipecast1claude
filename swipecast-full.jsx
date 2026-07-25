@@ -12250,6 +12250,21 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   // ─── Vertical audition feed mode — shows all submissions as a scrollable video review
   const [auditionFeedMode,setAuditionFeedMode]=useState(false);
   const [feedIdx,setFeedIdx]=useState(0); // current card in vertical feed
+  // ─── Review style for the PENDING queue: 'swipe' (one-at-a-time deck, default) or
+  //     'grid' (all headshots at once). Per-CD preference, persisted to
+  //     profiles.cd_review_style with a localStorage fallback so it survives instantly.
+  const [reviewStyle,setReviewStyle]=useState(()=>{
+    if(myProfile?.cd_review_style==='grid'||myProfile?.cd_review_style==='swipe')return myProfile.cd_review_style;
+    try{const ls=localStorage.getItem('cs_cd_review_style');if(ls==='swipe'||ls==='grid')return ls;}catch(_){}
+    return 'swipe';
+  });
+  const reviewStyleSyncedRef=useRef(false); // stop adopting profile once the CD manually toggles
+  // Adopt the account preference once myProfile finishes loading (unless the CD already chose).
+  useEffect(()=>{
+    if(reviewStyleSyncedRef.current)return;
+    const pref=myProfile?.cd_review_style;
+    if(pref==='swipe'||pref==='grid'){reviewStyleSyncedRef.current=true;setReviewStyle(pref);}
+  },[myProfile]);
   // ─── Application video note viewer
   const [appVideoViewer,setAppVideoViewer]=useState(null); // {url, name} or null
 
@@ -12275,6 +12290,20 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   const baseCastings=isAdminDash?myCastings.filter(c=>c.status==="open"):myCastings;
   const castingQ=castingSearch.trim().toLowerCase();
   const visibleCastings=castingQ?baseCastings.filter(c=>[c.title,c.prod,c.type,c.location].some(x=>x&&String(x).toLowerCase().includes(castingQ))):baseCastings;
+
+  // Persist the review-style choice to the CD's account (with a localStorage fallback so it
+  // also applies instantly and offline). Optimistic — the view switches immediately.
+  const changeReviewStyle=useCallback((style)=>{
+    if(style!=='swipe'&&style!=='grid')return;
+    reviewStyleSyncedRef.current=true; // a manual choice wins over any later profile sync
+    setReviewStyle(style);
+    if(style==='grid')setFsMode(false); // full-screen is a swipe-only concept
+    try{localStorage.setItem('cs_cd_review_style',style);}catch(_){}
+    if(uid){
+      window.sb.from("profiles").update({cd_review_style:style}).eq("id",uid)
+        .then(({error})=>{if(error)console.warn("[cd] could not save review style:",error.message);});
+    }
+  },[uid]);
 
   // When the CD clicks "Message" on a talent card, check for an existing conversation
   // first. If one exists, open MessageThreadModal directly. Otherwise open the new-
@@ -12986,6 +13015,24 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           onClick={()=>setAuditionFeedMode(v=>!v)}
           style={{fontSize:12,display:"flex",alignItems:"center",gap:6}}
         >{auditionFeedMode?"← Swipe Mode":"▶ Video Review Mode"}</button>}
+        {/* Review style — Swipe (one at a time) vs Grid (all headshots). Applies to the Pending queue. */}
+        {!auditionFeedMode&&folder==='pending'&&counts.pending>0&&(
+          <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:8}}>
+            <span style={{fontSize:10,fontWeight:800,letterSpacing:".8px",textTransform:"uppercase",color:"var(--t3)"}}>Review style</span>
+            <div style={{display:"inline-flex",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:3,gap:3}}>
+              {[["swipe","Swipe"],["grid","Grid"]].map(([val,label])=>(
+                <button key={val} onClick={()=>changeReviewStyle(val)}
+                  title={val==='swipe'?"Review one headshot at a time":"See every headshot in a grid"}
+                  style={{appearance:"none",border:"none",cursor:"pointer",fontFamily:"inherit",fontWeight:700,fontSize:12.5,padding:"6px 13px",borderRadius:7,display:"inline-flex",alignItems:"center",gap:6,transition:"all .18s",background:reviewStyle===val?"var(--acc)":"transparent",color:reviewStyle===val?"#fff":"var(--t2)",boxShadow:reviewStyle===val?"0 2px 8px rgba(26,26,46,.22)":"none"}}>
+                  {val==='swipe'
+                    ?<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6"/></svg>
+                    :<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>}
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       <div style={{marginBottom:14}}>
         <h3 style={{fontSize:20,fontWeight:800}}>{active.title} · {activeRole.name}</h3>
@@ -13034,6 +13081,17 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             <div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No submissions for this role yet.</p></div>:
            counts.pending===0?
             <div className="success-msg"><div className="check"><Ico n="check" s={24}/></div><h3>All Caught Up</h3><p>No pending submissions for this role. Check Selected, Hold, or Rejected to see your decisions.</p></div>:
+           reviewStyle==='grid'?
+            <>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14,flexWrap:"wrap"}}>
+                <span style={{fontSize:13,color:"var(--t2)",fontWeight:600}}>{counts.pending} pending — tap Select, Hold, or Reject on any card</span>
+                <div style={{flex:1}}/>
+                {lastUndo&&<button className="btn-s btn-sm" onClick={undo}>↩ Undo — {lastUndo.name} ({lastUndo.newStatus})</button>}
+              </div>
+              <div className="folder-cards-grid">
+                {pendingList.map(a=><FolderCard key={a.id} a={a}/>)}
+              </div>
+            </>:
             <div className={fsMode?"":"swipe-layout"} style={fsMode?{position:"fixed",inset:0,zIndex:9100,background:"var(--bg)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start",overflowY:"auto",padding:"60px 24px 32px"}:{}}>
               {fsMode&&<button onClick={()=>setFsMode(false)} style={{position:"fixed",top:12,right:12,zIndex:9101,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:8,padding:"8px 16px",fontSize:13,fontWeight:700,cursor:"pointer",color:"var(--t1)",display:"flex",alignItems:"center",gap:6,boxShadow:"0 2px 8px rgba(0,0,0,0.12)"}}>⊡ Exit Full Screen</button>}
               <div className="swipe-area" style={fsMode?{width:"100%",maxWidth:720}:{}}>
