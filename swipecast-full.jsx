@@ -12297,6 +12297,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     if(style!=='swipe'&&style!=='grid')return;
     reviewStyleSyncedRef.current=true; // a manual choice wins over any later profile sync
     setReviewStyle(style);
+    setFolder('pending'); // the style controls the Pending queue — jump there so the switch always shows an effect
     if(style==='grid')setFsMode(false); // full-screen is a swipe-only concept
     try{localStorage.setItem('cs_cd_review_style',style);}catch(_){}
     if(uid){
@@ -13015,8 +13016,10 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           onClick={()=>setAuditionFeedMode(v=>!v)}
           style={{fontSize:12,display:"flex",alignItems:"center",gap:6}}
         >{auditionFeedMode?"← Swipe Mode":"▶ Video Review Mode"}</button>}
-        {/* Review style — Swipe (one at a time) vs Grid (all headshots). Applies to the Pending queue. */}
-        {!auditionFeedMode&&folder==='pending'&&counts.pending>0&&(
+        {/* Review style — Swipe (one at a time) vs Grid (all headshots). Controls the Pending queue.
+            Always visible on every casting's review screen (both modes, any folder) so it never
+            disappears and the CD can switch back and forth at will. */}
+        {!auditionFeedMode&&submissions.length>0&&(
           <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:8}}>
             <span style={{fontSize:10,fontWeight:800,letterSpacing:".8px",textTransform:"uppercase",color:"var(--t3)"}}>Review style</span>
             <div style={{display:"inline-flex",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:3,gap:3}}>
