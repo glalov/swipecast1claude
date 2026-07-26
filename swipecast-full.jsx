@@ -11054,6 +11054,11 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const [sysNotifLoading,setSysNotifLoading]=useState(true);
   const [dashDbCredits,setDashDbCredits]=useState([]);
   const [dashDbVideoCount,setDashDbVideoCount]=useState(0); // uploaded reels live in profile_media, not video_links
+  // Talent dashboard v2 stat cards — gated by site_settings.dashboard_cards_v2_enabled
+  // (flip it in Admin → Toggles). Defaults OFF and STAYS OFF on any read error,
+  // so the original stat row always renders unless an admin explicitly enables v2.
+  const [dashV2,setDashV2]=useState(false);
+  useEffect(()=>{let alive=true;(async()=>{try{const{data}=await window.sb.from("site_settings").select("dashboard_cards_v2_enabled").eq("id",1).maybeSingle();if(alive)setDashV2(data?.dashboard_cards_v2_enabled===true);}catch(_){/* stay on the safe original row */}})();return()=>{alive=false;};},[]);
 
   const fmtDate=(s)=>{if(!s)return"—";const d=new Date(s);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
   const fmtDeadline=(s)=>{if(!s)return null;try{const d=new Date(s);const now=new Date();const diff=Math.ceil((d-now)/(1000*60*60*24));if(diff<0)return{label:"Closed",urgent:false};if(diff===0)return{label:"Closes today",urgent:true};if(diff<=3)return{label:`${diff}d left`,urgent:true};return{label:`${diff}d left`,urgent:false};}catch{return null;}};
@@ -11594,6 +11599,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           :hasUnread("class_invitation")?"private invitation — tap to view"
           :unreadNotifs>0?"tap to view":"all caught up";
         const notifHot=hasUnread("application_selected")||hasUnread("audition_requested")||hasUnread("booking_approved")||hasUnread("class_invitation");
+        // ── Original stat row — preserved verbatim; renders unless v2 is enabled. ──
+        if(!dashV2){
         return(
         <div className="td-stats">
           {[
@@ -11613,6 +11620,70 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           ))}
         </div>
         );
+        }
+        // ── v2 zero-proof cards (Admin → Toggles → "Talent dashboard cards"). ──
+        // Everything below is computed live from data already loaded — no writes,
+        // no per-profile changes. Each card has a graceful fallback / "done" state.
+        const appliedCastingIds=new Set((applications||[]).map(a=>a?.casting_id).filter(Boolean));
+        const roleForYou=(recommended||[]).find(c=>c&&c.id&&!appliedCastingIds.has(c.id))||null;
+        const rfyRole=roleForYou&&(roleForYou.roles||[])[0];
+        const rfyTitle=roleForYou?((roleForYou.type?roleForYou.type+" · ":"")+((rfyRole&&rfyRole.name)||roleForYou.title||"Open role")):"";
+        const rfyMeta=roleForYou?[roleForYou.location,(fmtDeadline(roleForYou.deadline)||{}).label].filter(Boolean).join(" · "):"";
+        const nextStep=(profileChecks||[]).find(c=>!c.done)||null;
+        const box=(o)=>({background:o&&o.bg?o.bg:"var(--s1)",border:`1px solid ${o&&o.bd?o.bd:"var(--bdr)"}`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:4,minHeight:120,cursor:o&&o.click?"pointer":"default"});
+        const lab=(txt,color)=>(<div style={{fontSize:11,fontWeight:600,color:color||"var(--t3)",textTransform:"uppercase",letterSpacing:0.6}}>{txt}</div>);
+        const cta=(txt)=>(<div style={{fontSize:12,fontWeight:800,color:"var(--teal)",marginTop:"auto",paddingTop:8}}>{txt}</div>);
+        const doneMark=(txt,sub)=>(<><div style={{fontSize:15,fontWeight:800,color:"#1a6b42",marginTop:4,display:"flex",alignItems:"center",gap:7}}><span style={{width:20,height:20,borderRadius:"50%",background:"#1a6b42",color:"#fff",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",flex:"none"}}>✓</span>{txt}</div><div style={{fontSize:11.5,color:"#3f7a5b",marginTop:3}}>{sub}</div></>);
+        return(<>
+          {notifHot&&(
+            <div onClick={()=>{setDashView("notifications");markNotificationsRead();}} style={{display:"flex",alignItems:"center",gap:13,background:"linear-gradient(100deg,#eaf7ef,#d3eddf)",border:"1.5px solid #bfe0cd",borderRadius:14,padding:"13px 16px",marginBottom:16,cursor:"pointer"}}>
+              <div style={{flex:"none",width:36,height:36,borderRadius:"50%",background:"#1a6b42",color:"#fff",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>★</div>
+              <div style={{flex:1,minWidth:0}}><div style={{fontWeight:800,fontSize:14.5,color:"#155a37"}}>Good news for you</div><div style={{fontSize:12.5,color:"#2b7a52",marginTop:1}}>{notifHeadline}</div></div>
+              <span style={{flex:"none",fontWeight:800,fontSize:13,color:"#1a6b42"}}>View →</span>
+            </div>
+          )}
+          <div className="td-stats">
+            {recsLoading&&!roleForYou?(
+              <div style={box({bd:"#cfe3e3"})}>{lab("A role for you","var(--teal)")}<div style={{fontSize:13,color:"var(--t3)",marginTop:6}}>Finding your matches…</div></div>
+            ):roleForYou?(
+              <div onClick={()=>onViewCastingById&&onViewCastingById(roleForYou.id)} style={box({bd:"#cfe3e3",click:true})}>
+                {lab("A role for you","var(--teal)")}
+                <div style={{fontSize:14.5,fontWeight:800,color:"var(--t1)",lineHeight:1.2,marginTop:2}}>{rfyTitle}</div>
+                <div style={{fontSize:11.5,color:"var(--t3)"}}>{rfyMeta||"Open now"}</div>
+                {cta("Apply →")}
+              </div>
+            ):(
+              <div onClick={()=>onNavigate&&onNavigate("search")} style={box({bd:"#bfe0cd",bg:"linear-gradient(180deg,#f4fbf7,#fff 62%)",click:true})}>
+                {lab("A role for you","#1a6b42")}
+                {doneMark("All caught up","New roles post daily.")}
+                {cta("Browse all →")}
+              </div>
+            )}
+            <div style={box()}>
+              {lab("Applications")}
+              <div style={{fontSize:26,fontWeight:800,color:"var(--t1)",letterSpacing:-0.5,lineHeight:1,marginTop:2}}>{appsLoading?"…":applications.length}</div>
+              <div style={{fontSize:11,color:"var(--t3)"}}>in casting directors' hands</div>
+            </div>
+            {nextStep?(
+              <div onClick={slideToEditor} style={box({bd:"#cfe3e3",click:true})}>
+                {lab("Your next step","var(--teal)")}
+                <div style={{fontSize:14.5,fontWeight:800,color:"var(--t1)",lineHeight:1.2,marginTop:2}}>{nextStep.label}{nextStep.premium?" (Premium)":""}</div>
+                <div style={{fontSize:11.5,color:"var(--t3)"}}>a quick win for your profile</div>
+                {cta(nextStep.premium?"Upgrade →":"Add now →")}
+              </div>
+            ):(
+              <div style={box({bd:"#bfe0cd",bg:"linear-gradient(180deg,#f4fbf7,#fff 62%)"})}>
+                {lab("Your next step","#1a6b42")}
+                {doneMark("Profile complete","You're fully visible to casting.")}
+              </div>
+            )}
+            <div style={box()}>
+              {lab("Profile strength")}
+              <div style={{fontSize:26,fontWeight:800,color:"var(--t1)",letterSpacing:-0.5,lineHeight:1,marginTop:2}}>{isProfileComplete?"Live":`${profilePct}%`}</div>
+              <div style={{fontSize:11,color:"var(--t3)"}}>{isProfileComplete?"visible to CDs":"finish to get seen"}</div>
+            </div>
+          </div>
+        </>);
       })()}
 
       {/* ── Recommended Classes hero (class invitations) ── */}
@@ -24235,13 +24306,15 @@ function AdminToggles(){
   const [msg,setMsg]=useState("");
   const [taglineOn,setTaglineOn]=useState(false);
   const [classesSecOn,setClassesSecOn]=useState(true);
+  const [dashCardsOn,setDashCardsOn]=useState(false);
   const [featClass,setFeatClass]=useState(null); // {id,title,is_visible}
   useEffect(()=>{(async()=>{
     try{
-      const{data,error}=await window.sb.from("site_settings").select("tagline_under_marquee,classes_section_enabled").eq("id",1).maybeSingle();
+      const{data,error}=await window.sb.from("site_settings").select("tagline_under_marquee,classes_section_enabled,dashboard_cards_v2_enabled").eq("id",1).maybeSingle();
       if(error)throw error;
       setTaglineOn(data?.tagline_under_marquee!==false);
       setClassesSecOn(data?.classes_section_enabled!==false);
+      setDashCardsOn(data?.dashboard_cards_v2_enabled===true);
       // The headline (featured) class on the Classes page — its own show/hide switch.
       const{data:fc}=await window.sb.from("classes").select("id,title,is_visible").eq("is_featured",true).order("display_order",{ascending:true}).limit(1).maybeSingle();
       if(fc)setFeatClass(fc);
@@ -24260,6 +24333,13 @@ function AdminToggles(){
     const{error}=await window.sb.rpc("admin_set_classes_section",{p_enabled:next});
     if(error){setMsg("Save failed: "+error.message);}
     else{setClassesSecOn(next);try{window.__SC_CLASSES_ON=next;}catch(_){}setMsg(next?"Classes section is now ON — visible across the site.":"Classes section is now OFF — hidden everywhere (nav, footer, and the page).");}
+    setBusy(false);
+  };
+  const toggleDashCards=async(next)=>{
+    setBusy(true);setMsg("");
+    const{error}=await window.sb.rpc("admin_set_dashboard_cards_v2",{p_enabled:next});
+    if(error){setMsg("Save failed: "+error.message);}
+    else{setDashCardsOn(next);setMsg(next?"Talent dashboard cards are now ON — actors see the new cards (A role for you, Your next step).":"Talent dashboard cards are now OFF — actors see the original stat row.");}
     setBusy(false);
   };
   const toggleFeatClass=async(next)=>{
@@ -24291,6 +24371,7 @@ function AdminToggles(){
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Toggles</h1>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Show or hide individual front-end elements. Changes apply to all visitors immediately and are audit-logged.</p>
     {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+    <Row title="Talent dashboard cards (new)" desc="Replaces the talent dashboard's stat row with the new cards: 'A role for you' (a matched open casting), Applications, 'Your next step' (profile guidance), and Profile strength — plus a celebration banner for shortlists/auditions. OFF shows the original row (Applications / Audition Requests / Notifications / Profile). Safe to flip on and off anytime." on={dashCardsOn} onToggle={toggleDashCards}/>
     <Row title="Classes section (entire site)" desc="Master switch for the whole Classes section. When OFF, the Classes link is removed from the top nav, the mobile menu, and the footer, and the /classes page itself is hidden from all visitors." on={classesSecOn} onToggle={toggleClassesSec}/>
     {featClass&&<Row title={`Featured class — ${featClass.title}`} desc="Show or hide the highlighted On-Camera Film Intensive (George Ludlow) on the Classes page, without affecting any other class." on={featClass.is_visible!==false} onToggle={toggleFeatClass}/>}
     <Row title="Tagline under marquee" desc={'The line "from indie films to A24, Neon and Netflix level projects" shown beneath the casting-format slider on the landing page.'} on={taglineOn} onToggle={toggleTagline}/>
