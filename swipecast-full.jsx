@@ -11060,6 +11060,60 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const [dashV2,setDashV2]=useState(false);
   useEffect(()=>{let alive=true;(async()=>{try{const{data}=await window.sb.from("site_settings").select("dashboard_cards_v2_enabled").eq("id",1).maybeSingle();if(alive)setDashV2(data?.dashboard_cards_v2_enabled===true);}catch(_){/* stay on the safe original row */}})();return()=>{alive=false;};},[]);
 
+  // ── Role matcher (Premium): ONE strict age+gender-matched role per day, shared
+  //    across ALL the user's devices via a server record (get_talent_daily_match:
+  //    first device to write today wins, everyone then reads the same pick).
+  //    rmMatch: undefined=loading, null=none, casting object=today's pick.
+  //    rmDone: today's pick was already applied → "come back tomorrow". ──
+  const [rmMatch,setRmMatch]=useState(undefined);
+  const [rmDone,setRmDone]=useState(false);
+  useEffect(()=>{
+    if(!dashV2||!isPremium||!uid){setRmMatch(null);setRmDone(false);return;}
+    if(recsLoading)return; // wait for the matching pool
+    let alive=true;
+    (async()=>{
+      try{
+        const notExp=(dl)=>{if(!dl)return true;const t=new Date(dl).getTime();return isNaN(t)||Math.ceil((t-Date.now())/86400000)>=0;};
+        // Parse an age range: "28-42", "18–65" (en dash), "18+", "All ages 18+",
+        // "any"/"all ages" → open. Returns [min,max] (max may be Infinity) or null.
+        const parseRange=(s)=>{if(s==null)return null;const str=String(s).toLowerCase().trim();if(!str)return null;
+          if(/all ages|open|any/.test(str)){const mp=str.match(/(\d+)\s*\+/);if(mp)return[parseInt(mp[1],10),Infinity];const mo=str.match(/(\d+)/);return mo?[parseInt(mo[1],10),Infinity]:[0,Infinity];}
+          const mr=str.match(/(\d+)\s*[-–—]\s*(\d+)/);if(mr)return[parseInt(mr[1],10),parseInt(mr[2],10)];
+          const mp=str.match(/(\d+)\s*\+/);if(mp)return[parseInt(mp[1],10),Infinity];
+          const m1=str.match(/(\d+)/);if(m1){const n=parseInt(m1[1],10);return[n,n];}return null;};
+        const tg=((myProfile&&myProfile.gender)||"").toLowerCase().trim();
+        const na=Number(myProfile&&myProfile.age);
+        const tAge=(Number.isFinite(na)&&na>0)?[na,na]:parseRange(myProfile&&myProfile.age_range);
+        // STRICT match: role gender must be open (all genders/any) OR equal the
+        // talent's; if a role specifies an age, the talent's age must overlap it.
+        // If we can't verify (talent gender/age unknown), we do NOT match — never
+        // show a role that could be wrong for their age/gender.
+        const roleOk=(r)=>{
+          const rg=((r&&r.gender)||"").toLowerCase().trim();
+          const gOpen=(rg===""||rg==="any"||rg==="all genders");
+          if(!gOpen){if(!tg||rg!==tg)return false;}
+          const rr=parseRange(r&&r.age_range);
+          if(rr){if(!tAge)return false;if(!(tAge[1]>=rr[0]&&tAge[0]<=rr[1]))return false;}
+          return true;
+        };
+        const applied=new Set((applications||[]).map(a=>(a&&a.casting_id)).filter(Boolean));
+        const cand=(recommended||[]).find(c=>c&&c.id&&!applied.has(c.id)&&notExp(c.deadline)&&((c.roles||[]).some(roleOk)))||null;
+        const{data:pickId}=await window.sb.rpc("get_talent_daily_match",{p_candidate:cand?cand.id:null});
+        if(!alive)return;
+        const id=pickId||null;
+        if(!id){setRmMatch(null);setRmDone(false);return;}
+        let casting=(recommended||[]).find(c=>c&&c.id===id)||null;
+        if(!casting){const{data}=await window.sb.from("castings").select("id,title,type,location,deadline,status,published,roles(id,name,gender,age_range)").eq("id",id).maybeSingle();if(!alive)return;casting=data||null;}
+        if(!casting){setRmMatch(null);setRmDone(false);return;}
+        if(applied.has(id)){setRmMatch(null);setRmDone(true);return;} // applied today's pick
+        const bad=(!notExp(casting.deadline))||(casting.status&&casting.status!=="open")||(casting.published===false);
+        if(bad){setRmMatch(null);setRmDone(false);return;}
+        setRmMatch(casting);setRmDone(false);
+      }catch(_){if(alive){setRmMatch(null);setRmDone(false);}}
+    })();
+    return()=>{alive=false;};
+  },[dashV2,isPremium,uid,recsLoading,recommended,applications,myProfile]);
+
   const fmtDate=(s)=>{if(!s)return"—";const d=new Date(s);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
   const fmtDeadline=(s)=>{if(!s)return null;try{const d=new Date(s);const now=new Date();const diff=Math.ceil((d-now)/(1000*60*60*24));if(diff<0)return{label:"Closed",urgent:false};if(diff===0)return{label:"Closes today",urgent:true};if(diff<=3)return{label:`${diff}d left`,urgent:true};return{label:`${diff}d left`,urgent:false};}catch{return null;}};
   const castingDecisionName=(casting)=>String(casting?.casting_director_name||casting?.posted_by_label||casting?.prod||"").trim()||"A casting director";
@@ -11643,26 +11697,12 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         // ── v2 zero-proof cards (Admin → Toggles → "Talent dashboard cards"). ──
         // Everything below is computed live from data already loaded — no writes,
         // no per-profile changes. Each card has a graceful fallback / "done" state.
-        const appliedCastingIds=new Set((applications||[]).map(a=>a?.casting_id).filter(Boolean));
-        // Guard: never surface an expired casting (no deadline / today / future only).
-        const _notExpired=(dl)=>{if(!dl)return true;const t=new Date(dl).getTime();return isNaN(t)||Math.ceil((t-Date.now())/86400000)>=0;};
-        // ── Role matcher (Premium): ONE matched role per day, stable within the day
-        //    via localStorage (keyed by user + LOCAL date). Applying today's pick →
-        //    "come back tomorrow"; no live match → "we'll match you when new roles
-        //    post". Free users see a locked Premium upsell. ──
-        const _todayKey=(()=>{const d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();})();
-        let dailyMatch=null,matchedToday=false;
-        if(isPremium){
-          let saved=null;
-          try{const raw=localStorage.getItem("cs_role_match_"+uid);saved=raw?JSON.parse(raw):null;}catch(_){}
-          if(saved&&saved.date===_todayKey){
-            matchedToday=true; // today's pick already chosen — show only if still live+unapplied
-            dailyMatch=(recommended||[]).find(c=>c&&c.id===saved.id&&!appliedCastingIds.has(c.id)&&_notExpired(c.deadline))||null;
-          }else{
-            dailyMatch=(recommended||[]).find(c=>c&&c.id&&!appliedCastingIds.has(c.id)&&_notExpired(c.deadline))||null;
-            if(dailyMatch){matchedToday=true;try{localStorage.setItem("cs_role_match_"+uid,JSON.stringify({date:_todayKey,id:dailyMatch.id}));}catch(_){}}
-          }
-        }
+        // Role matcher's pick comes from the DB-backed daily effect (rmMatch/rmDone)
+        // — the SAME across every device the user signs into, and a STRICT
+        // age+gender match (computed in that effect).
+        const dailyMatch=(rmMatch&&typeof rmMatch==="object")?rmMatch:null;
+        const rmLoading=(rmMatch===undefined);
+        const matchedToday=rmDone;
         const dmRole=dailyMatch&&(dailyMatch.roles||[])[0];
         const dmTitle=dailyMatch?((dailyMatch.type?dailyMatch.type+" · ":"")+((dmRole&&dmRole.name)||dailyMatch.title||"Open role")):"";
         const dmMeta=dailyMatch?[dailyMatch.location,(fmtDeadline(dailyMatch.deadline)||{}).label].filter(Boolean).join(" · "):"";
@@ -11683,7 +11723,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 <div style={{fontSize:11.5,color:"var(--t3)"}}>Hand-matched to your profile</div>
                 {cta("Unlock with Premium →","#6b3ecb")}
               </div>
-            ):recsLoading&&!matchedToday?(
+            ):rmLoading?(
               <div style={box({bd:"#cfe3e3"})}>{lab("Role matcher","var(--teal)")}<div style={{fontSize:13,color:"var(--t3)",marginTop:6}}>Finding today's match…</div></div>
             ):dailyMatch?(
               <div onClick={()=>onViewCastingById&&onViewCastingById(dailyMatch.id)} style={box({bd:"#cfe3e3",click:true})}>
