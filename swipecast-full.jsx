@@ -11113,7 +11113,11 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         if(applied.has(id)){setRmMatch(null);setRmDone(true);return;} // applied today's pick
         const bad=(!notExp(casting.deadline))||(casting.status&&casting.status!=="open")||(casting.published===false);
         if(bad){setRmMatch(null);setRmDone(false);return;}
-        setRmMatch(casting);setRmDone(false);
+        // Display the SPECIFIC role that matches this talent (not just roles[0]);
+        // if somehow no role matches, don't show it — never display a mismatch.
+        const matchRole=(casting.roles||[]).find(roleOk)||null;
+        if(!matchRole){setRmMatch(null);setRmDone(false);return;}
+        setRmMatch({...casting,_matchRole:matchRole});setRmDone(false);
       }catch(_){if(alive){setRmMatch(null);setRmDone(false);}}
     })();
     return()=>{alive=false;};
@@ -11708,7 +11712,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         const dailyMatch=(rmMatch&&typeof rmMatch==="object")?rmMatch:null;
         const rmLoading=(rmMatch===undefined);
         const matchedToday=rmDone;
-        const dmRole=dailyMatch&&(dailyMatch.roles||[])[0];
+        const dmRole=dailyMatch&&(dailyMatch._matchRole||(dailyMatch.roles||[])[0]);
         const dmTitle=dailyMatch?((dailyMatch.type?dailyMatch.type+" · ":"")+((dmRole&&dmRole.name)||dailyMatch.title||"Open role")):"";
         const dmMeta=dailyMatch?[dailyMatch.location,(fmtDeadline(dailyMatch.deadline)||{}).label].filter(Boolean).join(" · "):"";
         const nextStep=(profileChecks||[]).find(c=>!c.done)||null;
