@@ -884,12 +884,13 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
        smooth slide between cards instead of an instant content swap. Side cards
        fade + slightly scale down so the centre card reads as dominant. ─── */
 .fcs-section{position:relative;max-width:1480px;margin:0 auto;padding:48px 24px 16px;}
-/* contain:inline-size pins the stage's width to its container so its own
-   overflow:hidden reliably clips the wide (multi-card) track LOCALLY. Without
-   it the stage grew to the full track width (~6700px) and containment fell to
-   the root overflow-x:clip — which iOS Safari (iPad portrait) does not honour,
-   blowing the whole page out to thousands of px wide (the "broken on iPad" bug).*/
-.fcs-stage{position:relative;overflow:hidden;padding:18px 0;contain:inline-size;}
+/* NOTE: contain:inline-size is applied to .fcs-stage ONLY at <=1024px (the iPad
+   fix), NOT here. At desktop widths the stage MUST stay uncontained: containing
+   it removes the track's width contribution, which makes the flex-child
+   .fcs-section shrink-wrap to its header (~794px) instead of filling the
+   viewport — that fed a wrong width into the coverflow-centre math and threw the
+   centre card off-screen to the right (the "slider cut off on desktop" bug). */
+.fcs-stage{position:relative;overflow:hidden;padding:18px 0;}
 .fcs-track{display:flex;align-items:stretch;will-change:transform;transition:transform .55s cubic-bezier(.4,0,.2,1);}
 .fcs-card{position:relative;background:var(--s1);border:1px solid var(--bdr);border-radius:20px;padding:38px 42px;cursor:pointer;box-sizing:border-box;flex-shrink:0;min-height:300px;
   transition:opacity .45s cubic-bezier(.4,0,.2,1),transform .45s cubic-bezier(.4,0,.2,1),filter .45s ease,box-shadow .45s ease,border-color .25s ease;
@@ -913,6 +914,13 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
      the coverflow math (which measures the section) centres the card instead of
      shrink-wrapping to the header and mis-placing cards/arrows off-screen. */
   .fcs-section{padding:40px 20px 14px;max-width:none;width:100%;}
+  /* contain:inline-size pins the stage to the (now full-width) section so its own
+     overflow:hidden clips the wide multi-card track LOCALLY — the fix iOS Safari
+     (iPad portrait) needs because it does not honour the root overflow-x:clip.
+     Scoped to <=1024 only: on desktop it makes the section shrink-wrap (see the
+     base .fcs-stage note above), so it must NOT apply there. Paired with the
+     width:100% above, which keeps the section full-width and the card centred. */
+  .fcs-stage{contain:inline-size;}
   .fcs-card{padding:30px 32px;min-height:260px;}
   .fcs-card-center h3{font-size:26px !important;}
   .fcs-arrow{width:44px;height:44px;font-size:18px;}
