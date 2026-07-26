@@ -11126,7 +11126,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       const{data}=await window.sb.from("castings")
         .select("id,title,type,location,deadline,roles(id,name,gender,age_range)")
         .eq("status","open").eq("published",true)
-        .order("created_at",{ascending:false}).limit(50);
+        .order("created_at",{ascending:false}).limit(100);
       // NEVER recommend expired castings. status="open"/published can still be
       // true on a casting whose deadline has already passed, so filter by
       // deadline here (day granularity, matching fmtDeadline's "Closed" logic):
@@ -11164,8 +11164,18 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         }
         return{...c,_score:score};
       });
-      scored.sort((a,b)=>b._score-a._score);
-      setRecommended(scored.slice(0,3));
+      // Sort by match score, then soonest real deadline (nulls last) so equally
+      // good matches surface the one about to close first.
+      scored.sort((a,b)=>{
+        if(b._score!==a._score)return b._score-a._score;
+        const ad=a.deadline?new Date(a.deadline).getTime():Infinity;
+        const bd=b.deadline?new Date(b.deadline).getTime():Infinity;
+        return ad-bd;
+      });
+      // Keep the FULL live, sorted pool. "A role for you" walks the whole list
+      // (skipping already-applied), so power users never hit "all caught up"
+      // while unapplied matches remain. The Recommended section still shows 3.
+      setRecommended(scored);
     }catch(e){console.warn("[talent-dashboard] recommended:",e);}
     finally{setRecsLoading(false);}
   },[myProfile?.gender,myProfile?.age_range,myProfile?.age,myProfile?.location]);
@@ -12051,7 +12061,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 </div>
               ):(
                 <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                  {recommended.map(c=>{
+                  {recommended.slice(0,3).map(c=>{
                     const dl=c.deadline?fmtDeadline(c.deadline):null;
                     const isSaved=savedIds.has(c.id);
                     const isSaving=savingId===c.id;
