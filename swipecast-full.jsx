@@ -11058,7 +11058,12 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   // (flip it in Admin → Toggles). Defaults OFF and STAYS OFF on any read error,
   // so the original stat row always renders unless an admin explicitly enables v2.
   const [dashV2,setDashV2]=useState(false);
-  useEffect(()=>{let alive=true;(async()=>{try{const{data}=await window.sb.from("site_settings").select("dashboard_cards_v2_enabled").eq("id",1).maybeSingle();if(alive)setDashV2(data?.dashboard_cards_v2_enabled===true);}catch(_){/* stay on the safe original row */}})();return()=>{alive=false;};},[]);
+  useEffect(()=>{let alive=true;(async()=>{
+    // Per-device preview override: set localStorage cs_dash_v2_preview="1" to see
+    // v2 on THIS browser only, without enabling it for everyone (for owner testing).
+    let preview=false;try{preview=localStorage.getItem("cs_dash_v2_preview")==="1";}catch(_){}
+    try{const{data}=await window.sb.from("site_settings").select("dashboard_cards_v2_enabled").eq("id",1).maybeSingle();if(alive)setDashV2(preview||data?.dashboard_cards_v2_enabled===true);}catch(_){if(alive)setDashV2(preview);/* else stay on the safe original row */}
+  })();return()=>{alive=false;};},[]);
 
   // ── Role matcher (Premium): ONE strict age+gender-matched role per day, shared
   //    across ALL the user's devices via a server record (get_talent_daily_match:
