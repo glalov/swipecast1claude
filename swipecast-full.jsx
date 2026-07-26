@@ -11127,7 +11127,16 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         .select("id,title,type,location,deadline,roles(id,name,gender,age_range)")
         .eq("status","open").eq("published",true)
         .order("created_at",{ascending:false}).limit(50);
-      const castingsList=data||[];
+      // NEVER recommend expired castings. status="open"/published can still be
+      // true on a casting whose deadline has already passed, so filter by
+      // deadline here (day granularity, matching fmtDeadline's "Closed" logic):
+      // keep no-deadline (ongoing) + today + future; drop anything past.
+      const _nowMs=Date.now();
+      const castingsList=(data||[]).filter(c=>{
+        if(!c||!c.deadline)return true;
+        const t=new Date(c.deadline).getTime();
+        return isNaN(t)||Math.ceil((t-_nowMs)/86400000)>=0;
+      });
       const talentGender=(myProfile?.gender||"").toLowerCase().trim();
       const talentAgeRange=myProfile?.age_range||"";
       const talentAge=myProfile?.age||null;
@@ -11625,7 +11634,9 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         // Everything below is computed live from data already loaded — no writes,
         // no per-profile changes. Each card has a graceful fallback / "done" state.
         const appliedCastingIds=new Set((applications||[]).map(a=>a?.casting_id).filter(Boolean));
-        const roleForYou=(recommended||[]).find(c=>c&&c.id&&!appliedCastingIds.has(c.id))||null;
+        // Guard: never surface an expired casting (no deadline / today / future only).
+        const _notExpired=(dl)=>{if(!dl)return true;const t=new Date(dl).getTime();return isNaN(t)||Math.ceil((t-Date.now())/86400000)>=0;};
+        const roleForYou=(recommended||[]).find(c=>c&&c.id&&!appliedCastingIds.has(c.id)&&_notExpired(c.deadline))||null;
         const rfyRole=roleForYou&&(roleForYou.roles||[])[0];
         const rfyTitle=roleForYou?((roleForYou.type?roleForYou.type+" · ":"")+((rfyRole&&rfyRole.name)||roleForYou.title||"Open role")):"";
         const rfyMeta=roleForYou?[roleForYou.location,(fmtDeadline(roleForYou.deadline)||{}).label].filter(Boolean).join(" · "):"";
