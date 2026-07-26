@@ -11172,7 +11172,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         const bd=b.deadline?new Date(b.deadline).getTime():Infinity;
         return ad-bd;
       });
-      // Keep the FULL live, sorted pool. "A role for you" walks the whole list
+      // Keep the FULL live, sorted pool. "Role matcher" walks the whole list
       // (skipping already-applied), so power users never hit "all caught up"
       // while unapplied matches remain. The Recommended section still shows 3.
       setRecommended(scored);
@@ -11646,37 +11646,62 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         const appliedCastingIds=new Set((applications||[]).map(a=>a?.casting_id).filter(Boolean));
         // Guard: never surface an expired casting (no deadline / today / future only).
         const _notExpired=(dl)=>{if(!dl)return true;const t=new Date(dl).getTime();return isNaN(t)||Math.ceil((t-Date.now())/86400000)>=0;};
-        const roleForYou=(recommended||[]).find(c=>c&&c.id&&!appliedCastingIds.has(c.id)&&_notExpired(c.deadline))||null;
-        const rfyRole=roleForYou&&(roleForYou.roles||[])[0];
-        const rfyTitle=roleForYou?((roleForYou.type?roleForYou.type+" · ":"")+((rfyRole&&rfyRole.name)||roleForYou.title||"Open role")):"";
-        const rfyMeta=roleForYou?[roleForYou.location,(fmtDeadline(roleForYou.deadline)||{}).label].filter(Boolean).join(" · "):"";
+        // ── Role matcher (Premium): ONE matched role per day, stable within the day
+        //    via localStorage (keyed by user + LOCAL date). Applying today's pick →
+        //    "come back tomorrow"; no live match → "we'll match you when new roles
+        //    post". Free users see a locked Premium upsell. ──
+        const _todayKey=(()=>{const d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();})();
+        let dailyMatch=null,matchedToday=false;
+        if(isPremium){
+          let saved=null;
+          try{const raw=localStorage.getItem("cs_role_match_"+uid);saved=raw?JSON.parse(raw):null;}catch(_){}
+          if(saved&&saved.date===_todayKey){
+            matchedToday=true; // today's pick already chosen — show only if still live+unapplied
+            dailyMatch=(recommended||[]).find(c=>c&&c.id===saved.id&&!appliedCastingIds.has(c.id)&&_notExpired(c.deadline))||null;
+          }else{
+            dailyMatch=(recommended||[]).find(c=>c&&c.id&&!appliedCastingIds.has(c.id)&&_notExpired(c.deadline))||null;
+            if(dailyMatch){matchedToday=true;try{localStorage.setItem("cs_role_match_"+uid,JSON.stringify({date:_todayKey,id:dailyMatch.id}));}catch(_){}}
+          }
+        }
+        const dmRole=dailyMatch&&(dailyMatch.roles||[])[0];
+        const dmTitle=dailyMatch?((dailyMatch.type?dailyMatch.type+" · ":"")+((dmRole&&dmRole.name)||dailyMatch.title||"Open role")):"";
+        const dmMeta=dailyMatch?[dailyMatch.location,(fmtDeadline(dailyMatch.deadline)||{}).label].filter(Boolean).join(" · "):"";
         const nextStep=(profileChecks||[]).find(c=>!c.done)||null;
         const box=(o)=>({background:o&&o.bg?o.bg:"var(--s1)",border:`1px solid ${o&&o.bd?o.bd:"var(--bdr)"}`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:4,minHeight:120,cursor:o&&o.click?"pointer":"default"});
         const lab=(txt,color)=>(<div style={{fontSize:11,fontWeight:600,color:color||"var(--t3)",textTransform:"uppercase",letterSpacing:0.6}}>{txt}</div>);
-        const cta=(txt)=>(<div style={{fontSize:12,fontWeight:800,color:"var(--teal)",marginTop:"auto",paddingTop:8}}>{txt}</div>);
+        const cta=(txt,color)=>(<div style={{fontSize:12,fontWeight:800,color:color||"var(--teal)",marginTop:"auto",paddingTop:8}}>{txt}</div>);
         const doneMark=(txt,sub)=>(<><div style={{fontSize:15,fontWeight:800,color:"#1a6b42",marginTop:4,display:"flex",alignItems:"center",gap:7}}><span style={{width:20,height:20,borderRadius:"50%",background:"#1a6b42",color:"#fff",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",flex:"none"}}>✓</span>{txt}</div><div style={{fontSize:11.5,color:"#3f7a5b",marginTop:3}}>{sub}</div></>);
         return(<>
-          {notifHot&&(
-            <div onClick={()=>{setDashView("notifications");markNotificationsRead();}} style={{display:"flex",alignItems:"center",gap:13,background:"linear-gradient(100deg,#eaf7ef,#d3eddf)",border:"1.5px solid #bfe0cd",borderRadius:14,padding:"13px 16px",marginBottom:16,cursor:"pointer"}}>
-              <div style={{flex:"none",width:36,height:36,borderRadius:"50%",background:"#1a6b42",color:"#fff",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>★</div>
-              <div style={{flex:1,minWidth:0}}><div style={{fontWeight:800,fontSize:14.5,color:"#155a37"}}>Good news for you</div><div style={{fontSize:12.5,color:"#2b7a52",marginTop:1}}>{notifHeadline}</div></div>
-              <span style={{flex:"none",fontWeight:800,fontSize:13,color:"#1a6b42"}}>View →</span>
-            </div>
-          )}
+          {/* No celebration banner: a shortlist already shows in the Applications
+              section below — surfacing it here too was a duplicate and linked to
+              the removed notifications view. Wins live in Applications only. */}
           <div className="td-stats">
-            {recsLoading&&!roleForYou?(
-              <div style={box({bd:"#cfe3e3"})}>{lab("A role for you","var(--teal)")}<div style={{fontSize:13,color:"var(--t3)",marginTop:6}}>Finding your matches…</div></div>
-            ):roleForYou?(
-              <div onClick={()=>onViewCastingById&&onViewCastingById(roleForYou.id)} style={box({bd:"#cfe3e3",click:true})}>
-                {lab("A role for you","var(--teal)")}
-                <div style={{fontSize:14.5,fontWeight:800,color:"var(--t1)",lineHeight:1.2,marginTop:2}}>{rfyTitle}</div>
-                <div style={{fontSize:11.5,color:"var(--t3)"}}>{rfyMeta||"Open now"}</div>
-                {cta("Apply →")}
+            {!isPremium?(
+              <div onClick={()=>onNavigate&&onNavigate("membership")} style={box({bd:"#e6d8f7",bg:"linear-gradient(180deg,#faf7ff,#fff 62%)",click:true})}>
+                {lab("Role matcher","#6b3ecb")}
+                <div style={{fontSize:14.5,fontWeight:800,color:"var(--t1)",lineHeight:1.2,marginTop:2}}>🔒 A fresh role daily</div>
+                <div style={{fontSize:11.5,color:"var(--t3)"}}>Hand-matched to your profile</div>
+                {cta("Unlock with Premium →","#6b3ecb")}
+              </div>
+            ):recsLoading&&!matchedToday?(
+              <div style={box({bd:"#cfe3e3"})}>{lab("Role matcher","var(--teal)")}<div style={{fontSize:13,color:"var(--t3)",marginTop:6}}>Finding today's match…</div></div>
+            ):dailyMatch?(
+              <div onClick={()=>onViewCastingById&&onViewCastingById(dailyMatch.id)} style={box({bd:"#cfe3e3",click:true})}>
+                {lab("Role matcher","var(--teal)")}
+                <div style={{fontSize:14.5,fontWeight:800,color:"var(--t1)",lineHeight:1.2,marginTop:2}}>{dmTitle}</div>
+                <div style={{fontSize:11.5,color:"var(--t3)"}}>{dmMeta||"Open now"}</div>
+                {cta("View & apply →")}
+              </div>
+            ):matchedToday?(
+              <div onClick={()=>onNavigate&&onNavigate("search")} style={box({bd:"#bfe0cd",bg:"linear-gradient(180deg,#f4fbf7,#fff 62%)",click:true})}>
+                {lab("Role matcher","#1a6b42")}
+                {doneMark("Today's match, done","Your next match arrives tomorrow.")}
+                {cta("Browse all →")}
               </div>
             ):(
               <div onClick={()=>onNavigate&&onNavigate("search")} style={box({bd:"#bfe0cd",bg:"linear-gradient(180deg,#f4fbf7,#fff 62%)",click:true})}>
-                {lab("A role for you","#1a6b42")}
-                {doneMark("All caught up","New roles post daily.")}
+                {lab("Role matcher","#1a6b42")}
+                {doneMark("All caught up","We'll match you when new roles post.")}
                 {cta("Browse all →")}
               </div>
             )}
@@ -24360,7 +24385,7 @@ function AdminToggles(){
     setBusy(true);setMsg("");
     const{error}=await window.sb.rpc("admin_set_dashboard_cards_v2",{p_enabled:next});
     if(error){setMsg("Save failed: "+error.message);}
-    else{setDashCardsOn(next);setMsg(next?"Talent dashboard cards are now ON — actors see the new cards (A role for you, Your next step).":"Talent dashboard cards are now OFF — actors see the original stat row.");}
+    else{setDashCardsOn(next);setMsg(next?"Talent dashboard cards are now ON — actors see the new cards (Role matcher, Your next step).":"Talent dashboard cards are now OFF — actors see the original stat row.");}
     setBusy(false);
   };
   const toggleFeatClass=async(next)=>{
@@ -24392,7 +24417,7 @@ function AdminToggles(){
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Toggles</h1>
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>Show or hide individual front-end elements. Changes apply to all visitors immediately and are audit-logged.</p>
     {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
-    <Row title="Talent dashboard cards (new)" desc="Replaces the talent dashboard's stat row with the new cards: 'A role for you' (a matched open casting), Applications, 'Your next step' (profile guidance), and Profile strength — plus a celebration banner for shortlists/auditions. OFF shows the original row (Applications / Audition Requests / Notifications / Profile). Safe to flip on and off anytime." on={dashCardsOn} onToggle={toggleDashCards}/>
+    <Row title="Talent dashboard cards (new)" desc="Replaces the talent dashboard's stat row with the new cards: 'Role matcher' (Premium only — one profile-matched open casting per day; locked upsell for free actors), Applications, 'Your next step' (profile guidance), and Profile strength. OFF shows the original row (Applications / Audition Requests / Notifications / Profile). Safe to flip on and off anytime." on={dashCardsOn} onToggle={toggleDashCards}/>
     <Row title="Classes section (entire site)" desc="Master switch for the whole Classes section. When OFF, the Classes link is removed from the top nav, the mobile menu, and the footer, and the /classes page itself is hidden from all visitors." on={classesSecOn} onToggle={toggleClassesSec}/>
     {featClass&&<Row title={`Featured class — ${featClass.title}`} desc="Show or hide the highlighted On-Camera Film Intensive (George Ludlow) on the Classes page, without affecting any other class." on={featClass.is_visible!==false} onToggle={toggleFeatClass}/>}
     <Row title="Tagline under marquee" desc={'The line "from indie films to A24, Neon and Netflix level projects" shown beneath the casting-format slider on the landing page.'} on={taglineOn} onToggle={toggleTagline}/>
