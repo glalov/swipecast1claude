@@ -2575,13 +2575,24 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 @keyframes cs-card-float-c{0%,100%{transform:translate3d(0,0,0) rotateX(0deg) rotateY(0deg);}50%{transform:translate3d(0,-10px,0) rotateX(2deg) rotateY(2deg);}}
 @keyframes cs-card-float-d{0%,100%{transform:translate3d(0,0,0) rotateX(0deg) rotateY(0deg);}50%{transform:translate3d(0,-6px,0) rotateX(-1deg) rotateY(-3deg);}}
 @keyframes cs-stat-3d-spin{0%{transform:translate3d(0,0,0) rotateY(0deg) rotateX(0deg) scale(1);}45%{transform:translate3d(0,-12px,28px) rotateY(178deg) rotateX(7deg) scale(1.025);}100%{transform:translate3d(0,0,0) rotateY(360deg) rotateX(0deg) scale(1);}}
-@media(max-width:760px){
+/* Tablet portrait uses the same 2-up stat grid as phones, so every iPad width
+   agrees with the burger nav + stacked hero. The old 760px line split the iPads
+   against each other: iPad mini (744) got a roomy 2-up while iPad Air (820) got
+   a cramped 4-up of ~154px columns. */
+@media(max-width:900px){
   .landing-stats-live{grid-template-columns:repeat(2,minmax(120px,1fr));gap:28px 12px;padding:44px 20px 48px;}
+}
+/* Phone-only sizing stays on its own line — unchanged. */
+@media(max-width:760px){
   .landing-stat-live{min-height:118px;}
   .landing-stat-value{min-width:112px;font-size:38px;}
 }
 .cinema-feature{max-width:1100px;margin:0 auto 52px;padding:0 clamp(16px,4vw,40px);}
-.cinema-feature-inner{background:#fff;border:1px solid var(--bdr);border-radius:22px;box-shadow:0 12px 38px -22px rgba(26,26,46,.24),0 2px 8px rgba(26,26,46,.04);padding:clamp(16px,2.4vw,26px);display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1fr);gap:clamp(22px,3.2vw,44px);align-items:center;}
+/* The copy column carries a 280px floor so the 2-col layout is only ever used
+   when the text has room to read. Above 1100px the natural 2.2:1 share is
+   ~289px, so the floor never engages and desktop stays pixel-identical; it only
+   catches the 1001-1100 band (iPad landscape) where 2.2:1 would crush the copy. */
+.cinema-feature-inner{background:#fff;border:1px solid var(--bdr);border-radius:22px;box-shadow:0 12px 38px -22px rgba(26,26,46,.24),0 2px 8px rgba(26,26,46,.04);padding:clamp(16px,2.4vw,26px);display:grid;grid-template-columns:minmax(0,2.2fr) minmax(280px,1fr);gap:clamp(22px,3.2vw,44px);align-items:center;}
 /* Backstage-style long card: real set footage is inset on the left with rounded
    corners. Copy sits on the right, centered. */
 .cinema-feature-img{line-height:0;position:relative;overflow:hidden;border-radius:14px;background:var(--s3);}
@@ -2590,15 +2601,24 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .cinema-feature-copy .cf-label{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--acc);font-weight:700;font-family:'DM Sans',sans-serif;margin:0;}
 .cinema-feature-copy h2{font-weight:800;font-size:clamp(22px,2.8vw,30px);letter-spacing:-0.8px;line-height:1.15;margin:0;}
 .cinema-feature-copy p{color:var(--t2);font-size:14px;line-height:1.7;margin:0;}
-@media(max-width:720px){
-  .cinema-feature-inner{grid-template-columns:1fr;gap:18px;padding:14px;}
+/* TABLET: stack at <=1000px, not 720px. The old 720px line left every iPad
+   portrait width (744-834) in a 2-col layout whose copy column collapsed to
+   ~200-240px — the text stretched into a tall ribbon beside a short 16/9 video,
+   leaving ~280px of dead white space in the card. Stacking here matches the
+   nav/hero, which already go mobile at 900px. */
+@media(max-width:1000px){
+  .cinema-feature-inner{grid-template-columns:minmax(0,1fr);gap:20px;}
   .cinema-feature-copy{padding:4px 6px 8px;}
+}
+@media(max-width:720px){
+  .cinema-feature-inner{gap:18px;padding:14px;}
   .cinema-feature{margin-bottom:48px;}
 }
 
 /* ── Landing: How It Works card (Mandy-style: image left, text right) ── */
 .hiw-card{max-width:1100px;margin:0 auto 48px;padding:0 clamp(16px,4vw,40px);}
-.hiw-card-inner{background:#fff;border:1px solid var(--bdr);border-radius:22px;box-shadow:0 12px 38px -22px rgba(26,26,46,.24),0 2px 8px rgba(26,26,46,.04);padding:clamp(16px,2.4vw,26px);display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1fr);gap:clamp(22px,3.2vw,44px);align-items:center;}
+/* 280px copy floor — see the matching note on .cinema-feature-inner. */
+.hiw-card-inner{background:#fff;border:1px solid var(--bdr);border-radius:22px;box-shadow:0 12px 38px -22px rgba(26,26,46,.24),0 2px 8px rgba(26,26,46,.04);padding:clamp(16px,2.4vw,26px);display:grid;grid-template-columns:minmax(0,2.2fr) minmax(280px,1fr);gap:clamp(22px,3.2vw,44px);align-items:center;}
 /* Backstage-style long card: full photo inset on the LEFT with rounded corners,
    natural ratio (width:100%/height:auto) — never cropped, no bars. Copy right. */
 .hiw-card-img{line-height:0;}
@@ -2608,9 +2628,13 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .hiw-card-steps{display:flex;flex-direction:column;gap:10px;margin:4px 0;}
 .hiw-card-step{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--t2);line-height:1.5;}
 .hiw-step-num{width:22px;height:22px;min-width:22px;border-radius:50%;background:var(--acc);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;margin-top:2px;}
-@media(max-width:720px){
-  .hiw-card-inner{grid-template-columns:1fr;gap:18px;padding:14px;}
+/* TABLET: stack at <=1000px — see the matching note on .cinema-feature-inner. */
+@media(max-width:1000px){
+  .hiw-card-inner{grid-template-columns:minmax(0,1fr);gap:20px;}
   .hiw-card-body{padding:4px 6px 8px;}
+}
+@media(max-width:720px){
+  .hiw-card-inner{gap:18px;padding:14px;}
   .hiw-card{margin-bottom:48px;}
 }
 
