@@ -11105,7 +11105,24 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           return true;
         };
         const applied=new Set((applications||[]).map(a=>(a&&a.casting_id)).filter(Boolean));
-        const cand=(recommended||[]).find(c=>c&&c.id&&!applied.has(c.id)&&notExp(c.deadline)&&((c.roles||[]).some(roleOk)))||null;
+        // Don't re-serve a casting this talent has already been shown on a prior
+        // day — each day should surface a genuinely NEW matching role. We read the
+        // talent's past daily matches and prefer a role never shown before; only
+        // when every eligible open role has already been served do we recycle the
+        // least-recently-shown one (never a role they've already applied to).
+        let shownDates=new Map(); // casting_id -> most recent match_date it was shown
+        try{
+          const{data:prior}=await window.sb.from("talent_daily_match").select("casting_id,match_date").eq("talent_id",uid);
+          (prior||[]).forEach(r=>{if(!r||!r.casting_id)return;const d=String(r.match_date||"");const cur=shownDates.get(r.casting_id);if(!cur||d>cur)shownDates.set(r.casting_id,d);});
+        }catch(_){/* if we can't read history, fall back to the applied-only filter */}
+        const eligibleCand=(c)=>c&&c.id&&!applied.has(c.id)&&notExp(c.deadline)&&((c.roles||[]).some(roleOk));
+        // Primary: best-scored matching role that has NEVER been shown before.
+        let cand=(recommended||[]).find(c=>eligibleCand(c)&&!shownDates.has(c.id))||null;
+        // Exhausted → recycle the eligible role shown longest ago (oldest match_date first).
+        if(!cand){
+          cand=(recommended||[]).filter(eligibleCand)
+            .sort((a,b)=>{const da=shownDates.get(a.id)||"";const db=shownDates.get(b.id)||"";return da<db?-1:da>db?1:0;})[0]||null;
+        }
         const{data:pickId}=await window.sb.rpc("get_talent_daily_match",{p_candidate:cand?cand.id:null});
         if(!alive)return;
         const id=pickId||null;
