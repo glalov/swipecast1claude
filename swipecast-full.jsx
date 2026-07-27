@@ -14746,11 +14746,15 @@ function CheckInViewModal({message,onClose,onNavigate,onRead}){
 
   const handleCTA=async()=>{
     const action=content.cta_action||"profile";
-    // Mark task completed
+    // Record that they STARTED the task, not that they finished it — clicking through
+    // is not the same as uploading. A DB trigger on profiles flips this to
+    // 'task_completed' once the field actually fills in, so the admin count is real and
+    // next week's note doesn't re-nag someone who genuinely did the work.
     try{
       await window.sb.from("weekly_checkin_logs")
-        .update({status:"task_completed",task_completed_at:new Date().toISOString()})
-        .eq("message_id",message.id);
+        .update({status:"task_started"})
+        .eq("message_id",message.id)
+        .neq("status","task_completed");
     }catch(_){}
     setTaskDone(true);
     // "search" is the correct page key for Browse Castings
@@ -25571,8 +25575,8 @@ function AdminWeeklyCheckIns({session}){
           <tbody>
             {logs.slice(0,100).map(l=>{
               const name=l.profiles?.display_name||l.talent_id?.slice(0,8);
-              const sColor={sent:"var(--t2)",read:"var(--acc)",task_completed:"var(--grn)"};
-              const sBg={sent:"transparent",read:"rgba(26,26,200,0.06)",task_completed:"rgba(27,135,62,0.06)"};
+              const sColor={sent:"var(--t2)",read:"var(--acc)",task_started:"#B4711A",task_completed:"var(--grn)"};
+              const sBg={sent:"transparent",read:"rgba(26,26,200,0.06)",task_started:"rgba(224,135,31,0.08)",task_completed:"rgba(27,135,62,0.06)"};
               return(<tr key={l.id} style={{borderBottom:"1px solid var(--bdr)",background:sBg[l.status]||"transparent"}}>
                 <td style={{padding:"10px 10px"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -25584,7 +25588,7 @@ function AdminWeeklyCheckIns({session}){
                 <td style={{padding:"10px 10px",color:"var(--t3)",whiteSpace:"nowrap"}}>{fmt(l.sent_at)}</td>
                 <td style={{padding:"10px 10px"}}>
                   <span style={{padding:"3px 8px",borderRadius:10,fontSize:10,fontWeight:700,background:sBg[l.status]||"transparent",color:sColor[l.status]||"var(--t2)",textTransform:"uppercase",letterSpacing:0.5}}>
-                    {l.status==="task_completed"?"Completed":l.status}
+                    {l.status==="task_completed"?"Completed":l.status==="task_started"?"Started":l.status}
                   </span>
                 </td>
                 <td style={{padding:"10px 10px",color:"var(--t3)"}}>{l.task_action||"—"}</td>
