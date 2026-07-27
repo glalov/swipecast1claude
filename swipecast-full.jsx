@@ -23563,6 +23563,7 @@ function AdminHeadshotCatalog({session,myProfile}){
   const [profiles,setProfiles]=useState([]);
   const [appCounts,setAppCounts]=useState({});
   const [q,setQ]=useState("");
+  const [tab,setTab]=useState("all"); // "all" | "premium" — Premium shows only paying members
   const [loading,setLoading]=useState(true);
   const [msg,setMsg]=useState("");
   const [viewing,setViewing]=useState(null);
@@ -23571,7 +23572,7 @@ function AdminHeadshotCatalog({session,myProfile}){
     // Every talent with a non-empty headshot, newest first. No visible/suspended
     // filter — admins get full visibility (suspended/banned are flagged on the card).
     const {data,error}=await window.sb.from("profiles")
-      .select("id,display_name,email,location,union_status,headshot_url,additional_photos,verified,featured,banned,suspended,created_at")
+      .select("id,display_name,email,location,union_status,headshot_url,additional_photos,verified,featured,banned,suspended,created_at,membership_status")
       .eq("user_type","talent")
       .not("headshot_url","is",null)
       .neq("headshot_url","")
@@ -23616,16 +23617,29 @@ function AdminHeadshotCatalog({session,myProfile}){
     const apply=()=>{try{sc.scrollTop=y;}catch(_){}try{window.scrollTo(0,y);}catch(_){}};
     apply();requestAnimationFrame(apply);
   },[viewing]);
+  const isPremiumU=(u)=>u&&u.membership_status==="active"; // paying members only
+  const premiumCount=profiles.filter(isPremiumU).length;
   const filtered=profiles.filter(u=>{
+    if(tab==="premium"&&!isPremiumU(u))return false;
     if(!q)return true;
     const needle=q.toLowerCase();
     return [u.display_name,u.email,u.location].some(x=>x&&x.toLowerCase().includes(needle));
   });
   if(viewing)return <AdminTalentCatalogDetail u={viewing} session={session} myProfile={myProfile} onBack={()=>setViewing(null)}/>;
+  const tabBtn=(key,label,count,color)=>{
+    const on=tab===key;
+    return <button onClick={()=>setTab(key)} style={{display:"inline-flex",alignItems:"center",gap:7,padding:"7px 14px",borderRadius:999,border:"1px solid "+(on?color:"var(--bdr)"),background:on?color:"var(--s1)",color:on?"#fff":"var(--t2)",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:"inherit",transition:"all .12s"}}>
+      {label}<span style={{fontSize:11,fontWeight:800,padding:"1px 7px",borderRadius:999,background:on?"rgba(255,255,255,0.22)":"var(--s3)",color:on?"#fff":"var(--t3)"}}>{count}</span>
+    </button>;
+  };
   return(<>
     <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Headshot Catalog</h1>
-    <p style={{color:"var(--t2)",fontSize:13,marginBottom:16}}>{filtered.length} of {profiles.length} actors with a headshot · <span style={{color:"var(--acc)",fontWeight:600}}>updates live</span></p>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:14}}>{filtered.length} of {tab==="premium"?premiumCount:profiles.length} {tab==="premium"?"premium actors":"actors"} with a headshot · <span style={{color:"var(--acc)",fontWeight:600}}>updates live</span></p>
     {msg&&<div style={{background:"rgba(192,57,43,0.1)",color:"#c0392b",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14}}>{msg}</div>}
+    <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
+      {tabBtn("all","All actors",profiles.length,"var(--acc)")}
+      {tabBtn("premium","Premium members",premiumCount,"#6b3ecb")}
+    </div>
     <input className="input" placeholder="Search by name, email, location…" value={q} onChange={e=>setQ(e.target.value)} style={{width:"100%",marginBottom:16}}/>
     {loading?<CastSlateLoader size="inline" text="Loading catalog…"/>:
       filtered.length===0?<div className="card" style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No actors with headshots match.</div>:
@@ -23643,6 +23657,7 @@ function CatalogCard({u,appCount,onOpen}){
     <div style={{position:"relative",width:"100%",aspectRatio:"3/4",background:"var(--s3)"}}>
       <img src={u.headshot_url} alt={u.display_name||"Headshot"} loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
       <div style={{position:"absolute",top:8,right:8,display:"flex",flexDirection:"column",gap:4,alignItems:"flex-end"}}>
+        {u.membership_status==="active"&&<span style={{background:"rgba(107,62,203,0.94)",color:"#fff",fontSize:9,fontWeight:800,padding:"2px 6px",borderRadius:4,letterSpacing:.4}}>★ PREMIUM</span>}
         {u.verified&&<span style={{background:"rgba(29,123,68,0.92)",color:"#fff",fontSize:9,fontWeight:800,padding:"2px 6px",borderRadius:4,letterSpacing:.4}}>VERIFIED</span>}
         {u.featured&&<span style={{background:"rgba(0,0,0,0.72)",color:"#fff",fontSize:9,fontWeight:800,padding:"2px 6px",borderRadius:4,letterSpacing:.4}}>★ FEATURED</span>}
         {u.banned&&<span style={{background:"#c0392b",color:"#fff",fontSize:9,fontWeight:800,padding:"2px 6px",borderRadius:4}}>BANNED</span>}
