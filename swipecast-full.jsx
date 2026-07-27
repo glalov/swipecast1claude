@@ -11074,7 +11074,10 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const [rmDone,setRmDone]=useState(false);
   useEffect(()=>{
     if(!dashV2||!isPremium||!uid){setRmMatch(null);setRmDone(false);return;}
-    if(recsLoading)return; // wait for the matching pool
+    if(recsLoading||appsLoading)return; // wait for BOTH the matching pool AND the
+    // actor's applications — otherwise the "already applied" filter runs on an
+    // empty list and can pick (and lock in for the day) a role they already
+    // applied to, which then shows as "today's match, done".
     let alive=true;
     (async()=>{
       try{
@@ -11121,7 +11124,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       }catch(_){if(alive){setRmMatch(null);setRmDone(false);}}
     })();
     return()=>{alive=false;};
-  },[dashV2,isPremium,uid,recsLoading,recommended,applications,myProfile]);
+  },[dashV2,isPremium,uid,recsLoading,appsLoading,recommended,applications,myProfile]);
 
   const fmtDate=(s)=>{if(!s)return"—";const d=new Date(s);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
   const fmtDeadline=(s)=>{if(!s)return null;try{const d=new Date(s);const now=new Date();const diff=Math.ceil((d-now)/(1000*60*60*24));if(diff<0)return{label:"Closed",urgent:false};if(diff===0)return{label:"Closes today",urgent:true};if(diff<=3)return{label:`${diff}d left`,urgent:true};return{label:`${diff}d left`,urgent:false};}catch{return null;}};
