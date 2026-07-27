@@ -22559,25 +22559,28 @@ function AdminEmailCampaigns({session}){
 //     takes minutes: edit the event fields, preview, test, send. Field values are
 //     remembered in localStorage so next month starts from last month's content.
 const MONTHLY_EVENT_DEFAULTS={
-  subject:"Your event pick this month — a free NYC industry mixer",
+  subject:"Your event pick this month — an outdoor Shakespeare Workout in NYC",
   eyebrow:"Your monthly event pick",
-  title:"Get in the room this month",
-  heroSub:"Roles come from relationships. Each month your CastSlate manager hand-picks one NYC event worth showing up for — here's this month's.",
-  intro:"showing up in person is one of the highest-leverage things an actor can do between auditions. This one is free, it's in Chelsea, and the room is full of exactly the people you want to know: casting-adjacent creatives, filmmakers, and fellow performers.",
-  dateLabel:"FRI, JULY 10",
-  timeLabel:"8:30–11:00 PM",
-  costBadge:"FREE ADMISSION",
-  eventTitle:"Media & Entertainment Industry Networking Night",
-  venue:"The Rose · 160 West 25th Street, Manhattan",
-  tags:"NETWORKING MIXER, ACTORS · FILM · MODELS, DRINK SPECIALS",
-  description:"An easy, low-pressure gathering that brings people across the arts & media — actors, musicians, comedians, models, and journalists — together to swap experiences, leads, and opportunities. Come as you are, bring your reel energy, and leave with a few new names in your phone.",
-  bonus:"a free comedy show runs 6:30–8:00 PM at the same venue — come early and make a night of it.",
-  host:"New York Film & Fashion Professionals",
-  rsvpUrl:"https://www.meetup.com/new-york-film-and-fashion/events/314966888/",
+  title:"Get on your feet with Shakespeare",
+  heroSub:"Roles come from relationships — and from craft. Each month your CastSlate manager hand-picks one NYC event worth showing up for. This month it's a hands-on Shakespeare workout in Riverside Park.",
+  intro:"getting on your feet and working text out loud is one of the best things you can do between auditions. This one is outdoors in Riverside Park, open to every experience level, and led by the resident artists of the Hudson Classical Theater Company — voice, acting, and stage combat in one afternoon.",
+  dateLabel:"SAT, AUG 8",
+  timeLabel:"3:00–5:00 PM",
+  costBadge:"ALL LEVELS · 13+",
+  eventTitle:"Shakespeare Workout — Hudson Classical Theater Company",
+  venue:"North Patio, Riverside Park · W 89th St & Riverside Dr, NYC",
+  tags:"SHAKESPEARE, VOICE PRODUCTION, ACTING, STAGE COMBAT",
+  description:"A hands-on outdoor workout led by Hudson Classical Theater Company's resident artists — their signature approach to classical work, performed outdoors in NYC. You'll cover voice production, acting, and stage combat in the shadow of the Soldiers' and Sailors' Monument. Open to everyone ages 13 and up, all experience levels welcome. Space is set by the host, so email to register before you go.",
+  bonus:"this is the season's final Saturday session — the June 13 and July 11 dates have already passed, so Aug 8 is your last chance this summer.",
+  host:"Hudson Classical Theater Company (formerly Hudson Warehouse, est. 2004)",
+  rsvpUrl:"mailto:HCTCWorkout@hudsonclassicaltheatercompany.org?subject=Shakespeare%20Workout%20Registration",
 };
 function buildMonthlyEventHtml(f){
   const esc=(s)=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   const url=String(f.rsvpUrl||"").replace(/"/g,"%22");
+  // Button label adapts to the link: mailto → email registration, Meetup → RSVP on
+  // Meetup, anything else → generic RSVP/Register (so non-Meetup events read right).
+  const rsvpLabel=/^mailto:/i.test(String(f.rsvpUrl||""))?"Email to Register":/meetup\./i.test(String(f.rsvpUrl||""))?"RSVP on Meetup":"RSVP / Register";
   const pill=["background:#eef2ff;color:#4338ca;","background:#f8fafc;color:#475569;","background:#f0fdf4;color:#15803d;"];
   const tags=String(f.tags||"").split(",").map(t=>t.trim()).filter(Boolean).slice(0,4)
     .map((t,i)=>`<span style="display:inline-block;${pill[i%pill.length]}padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;margin:0 5px 5px 0;">${esc(t)}</span>`).join("");
@@ -22607,7 +22610,7 @@ function buildMonthlyEventHtml(f){
 <div style="margin:0 0 14px;">${tags}</div>
 <p style="margin:0 0 14px;font-size:14px;color:#475569;line-height:1.7;">${esc(f.description)}</p>
 ${bonus}
-<a href="${url}" style="display:inline-block;background:#0F6B66;color:#ffffff;text-decoration:none;padding:13px 30px;border-radius:12px;font-size:14px;font-weight:800;">RSVP on Meetup &rarr;</a>
+<a href="${url}" style="display:inline-block;background:#0F6B66;color:#ffffff;text-decoration:none;padding:13px 30px;border-radius:12px;font-size:14px;font-weight:800;">${esc(rsvpLabel)} &rarr;</a>
 <div style="font-size:11px;color:#94a3b8;margin-top:12px;">Hosted by ${esc(f.host)}</div>
 </td></tr></table></td></tr>
 <tr><td style="background:#ffffff;padding:22px 30px 8px;">
@@ -22640,7 +22643,7 @@ function EventField({f,set,label,k,area,ph}){
 }
 function AdminMonthlyEvent({session}){
   const SUPA=(window.SC_CONFIG?.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co");
-  const LS_KEY="cs_monthly_event_fields_v1";
+  const LS_KEY="cs_monthly_event_fields_v2";
   const [f,setF]=useState(()=>{try{const s=localStorage.getItem(LS_KEY);if(s)return{...MONTHLY_EVENT_DEFAULTS,...JSON.parse(s)};}catch(_){}return{...MONTHLY_EVENT_DEFAULTS};});
   const [premiumCount,setPremiumCount]=useState(null);
   const [busy,setBusy]=useState(false);
