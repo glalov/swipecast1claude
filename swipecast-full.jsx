@@ -1567,10 +1567,25 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .sw-btn.pass:hover{border-color:var(--red);background:rgba(214,59,59,0.07);transform:scale(1.1);}
 .sw-btn.save:hover{border-color:var(--blu);background:rgba(37,99,235,0.07);transform:scale(1.1);}
 .sw-btn.yes:hover{border-color:var(--grn);background:rgba(27,135,62,0.07);transform:scale(1.1);}
-@keyframes sw-sway{0%,100%{transform:translateX(0)}30%{transform:translateX(-7px)}70%{transform:translateX(7px)}}
 @keyframes sw-ring{0%,100%{box-shadow:0 0 0 0 rgba(99,91,255,0)}55%{box-shadow:0 0 0 10px rgba(99,91,255,0.22)}}
-.sw-hint-pill{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:#fff;border:1px solid var(--bdr);border-radius:100px;margin:8px 0 14px;box-shadow:0 6px 18px rgba(26,26,46,0.10);}
-.sw-hint-arrow{font-size:16px;display:inline-block;animation:sw-sway 2.4s ease-in-out infinite;line-height:1;color:#1A1A2E;}
+/* Swipe-hint "travel flip" coin: glides left<->right while turning, and the face
+   colour changes with direction (navy going left, teal going right). Travel and
+   turn share one 2.8s clock so direction and colour never disagree. Both inner
+   spans need display:block (inline ignores width/height) and preserve-3d (the
+   travel transform would otherwise flatten the turn and kill the perspective). */
+@keyframes sw-flip-travel{0%,100%{transform:translateX(-5px)}50%{transform:translateX(5px)}}
+@keyframes sw-flip-turn{0%,6%{transform:rotateY(0)}44%,56%{transform:rotateY(180deg)}94%,100%{transform:rotateY(360deg)}}
+.sw-hint-pill{display:inline-flex;align-items:center;gap:9px;padding:9px 18px;background:#fff;border:1px solid var(--bdr);border-radius:100px;margin:8px 0 14px;box-shadow:0 6px 18px rgba(26,26,46,0.10);}
+.sw-hint-arrow{position:relative;display:block;flex:0 0 auto;width:34px;height:24px;perspective:90px;}
+.sw-hint-arrow .fc-travel,.sw-hint-arrow .fc-coin{display:block;width:24px;height:24px;transform-style:preserve-3d;}
+.sw-hint-arrow .fc-travel{animation:sw-flip-travel 2.8s cubic-bezier(.45,.05,.55,.95) infinite;}
+.sw-hint-arrow .fc-coin{position:relative;animation:sw-flip-turn 2.8s cubic-bezier(.55,0,.45,1) infinite;}
+.sw-hint-arrow .fc-face{position:absolute;inset:0;border-radius:8px;display:grid;place-items:center;backface-visibility:hidden;}
+.sw-hint-arrow .fc-face.front{background:linear-gradient(155deg,#2C2C48,#1A1A2E);box-shadow:0 2px 7px rgba(26,26,46,0.34),0 1px 0 rgba(255,255,255,0.18) inset;}
+.sw-hint-arrow .fc-face.back{background:linear-gradient(155deg,#5FA0A1,var(--teal-dk));box-shadow:0 2px 7px rgba(55,105,106,0.40),0 1px 0 rgba(255,255,255,0.24) inset;transform:rotateY(180deg);}
+.sw-hint-arrow .fc-face svg{display:block;width:14px;height:14px;}
+.sw-hint-arrow .fc-face svg path{fill:none;stroke:#FFF8EC;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;}
+@media(prefers-reduced-motion:reduce){.sw-hint-arrow .fc-travel,.sw-hint-arrow .fc-coin{animation:none;}}
 .sw-hint-text{font-size:12px;font-weight:700;color:#1A1A2E;}
 .sw-hint-text-mobile{display:none;font-size:12px;font-weight:700;color:#1A1A2E;}
 .sw-btn.save{animation:sw-ring 2.8s ease-in-out infinite;color:var(--blu);}
@@ -16359,7 +16374,10 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
         </div>
       </div>
       <div className="sw-hint-pill">
-        <span className="sw-hint-arrow">↔️</span>
+        <span className="sw-hint-arrow" aria-hidden="true"><span className="fc-travel"><span className="fc-coin">
+          <span className="fc-face front"><svg viewBox="0 0 24 24"><path d="M14 6 L8 12 L14 18"/></svg></span>
+          <span className="fc-face back"><svg viewBox="0 0 24 24"><path d="M10 6 L16 12 L10 18"/></svg></span>
+        </span></span></span>
         <span className="sw-hint-text">Swipe or tap to review talent</span>
         <span className="sw-hint-text-mobile">Swipe the card or tap below</span>
       </div>
