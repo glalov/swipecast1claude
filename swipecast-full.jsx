@@ -1403,12 +1403,6 @@ const BLOG_POSTS = [
   {id:24,title:"How Smaller Productions Can Find Serious Talent Without a Big Budget",date:"Feb 11, 2026",category:"Industry",excerpt:"Short films, web series, and micro-budget features have an advantage they rarely use: actors are more willing to commit to good material than they are to bad money. Here's how to package it.",readTime:"7 min"},
 ];
 
-const SUCCESS_STORIES = [
-  {name:"Maria Santos",role:"Lead in 'Burning Season'",quote:"I submitted through CastSlate and got a callback within 24 hours. On other platforms, I'd submit and never hear back. The swipe system actually works — they saw me.",img:TALENT[0].img},
-  {name:"David Kim",role:"Series Regular on 'Atlanta Rising'",quote:"I was on three paid platforms for two years with barely any callbacks. First month on CastSlate — booked a series regular.",img:TALENT[3].img},
-  {name:"Aisha Johnson",role:"National Nike Campaign",quote:"As a non-union actor just starting out, paying $20/month for casting sites was rough. Dropping to $9.99 on CastSlate let me put the difference into headshots and classes instead.",img:TALENT[4].img},
-];
-
 // ═══════════════════════════════════════════
 // STYLES
 // ═══════════════════════════════════════════
@@ -1646,11 +1640,6 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .blog-card:hover h3{color:var(--blu);}
 .blog-card p{color:var(--t2);font-size:13px;line-height:1.5;}
 .blog-card .blog-meta{color:var(--t3);font-size:12px;margin-top:10px;}
-.story-card{display:grid;grid-template-columns:80px 1fr;gap:20px;align-items:center;}
-.story-card img{width:80px;height:80px;border-radius:12px;object-fit:cover;}
-.story-card h4{font-size:15px;font-weight:700;margin-bottom:2px;}
-.story-card .story-role{font-size:12px;color:var(--blu);margin-bottom:6px;}
-.story-card p{font-size:13px;color:var(--t2);line-height:1.5;font-style:italic;}
 .feature-list{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;}
 .feature-item{background:var(--s1);border-radius:10px;padding:16px;display:flex;gap:12px;align-items:flex-start;}
 .feature-item .feat-icon{font-size:20px;flex-shrink:0;}
@@ -1676,7 +1665,6 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   .info-hero h1{font-size:32px;}
   .info-hero p{font-size:15px;}
   .section-title{font-size:28px;margin-bottom:28px;}
-  .story-card{grid-template-columns:60px 1fr;}
   .swipe-card-wrap{width:100%;max-width:340px;}
   .modal{padding:22px;width:94%;max-width:94%;border-radius:14px;}
   .modal h2{font-size:20px;margin-bottom:16px;}
@@ -6176,19 +6164,6 @@ function TrustSafetyPage({onNavigate}){
 
     <Footer onNavigate={onNavigate}/>
   </div>);
-}
-
-// ═══════════════════════════════════════════
-// PAGE: SUCCESS STORIES
-// ═══════════════════════════════════════════
-function SuccessStoriesPage({onNavigate}){
-  return(<div className="page">
-    <div className="info-hero"><div className="section-label">Success Stories</div><h1>Real Talent.<br/>Real Bookings.</h1><p>CastSlate actors are booking roles across film, TV, commercials, and theater.</p></div>
-    <div style={{maxWidth:700,margin:"0 auto",display:"flex",flexDirection:"column",gap:24}}>
-      {SUCCESS_STORIES.map((s,i)=><div key={i} className="card story-card"><img src={s.img} alt={s.name}/><div><h4>{s.name}</h4><div className="story-role">{s.role}</div><p>"{s.quote}"</p></div></div>)}
-    </div>
-    <div style={{textAlign:"center",marginTop:48}}><p style={{color:"var(--t2)",fontSize:15,marginBottom:16}}>Ready to write your own success story?</p><button className="btn-p" onClick={()=>onNavigate("auth-gate")}>Create My Free Profile →</button></div>
-    <Footer onNavigate={onNavigate}/></div>);
 }
 
 // ═══════════════════════════════════════════
@@ -27866,7 +27841,7 @@ const PAGE_PATH={
   "login":"/login","register-talent":"/register-talent","register-cd":"/register-cd",
   "reset-password":"/reset-password","about":"/about","blog":"/blog",
   "classes":"/classes","contact":"/contact","resources":"/resources","trust-safety":"/trust-safety",
-  "faq":"/faq","success-stories":"/success-stories","studios":"/studios",
+  "faq":"/faq","studios":"/studios",
   "api-info":"/api-info","terms":"/terms","privacy":"/privacy","careers":"/careers",
   "auth-gate":"/auth-gate","account-settings":"/account-settings",
   "pay-talent":"/pay-talent",
@@ -27895,7 +27870,6 @@ const PAGE_SEO={
   "careers":{title:"Careers",desc:"Join the team building the future of casting. Open roles at CastSlate."},
   "contact":{title:"Contact",desc:"Get in touch with the CastSlate team. We're here to help actors, casting directors, and production companies."},
   "faq":{title:"FAQ",desc:"Frequently asked questions about CastSlate — how it works, account types, submissions, and pricing."},
-  "success-stories":{title:"Success Stories",desc:"Real actors, real results. Read how CastSlate members booked roles through the platform."},
   "terms":{title:"Terms of Use",desc:"CastSlate Terms of Use — the rules and guidelines for using the CastSlate casting platform."},
   "privacy":{title:"Privacy Policy",desc:"CastSlate Privacy Policy — how we collect, use, and protect your personal information."},
   "studios":{title:"For Studios",desc:"CastSlate for studios and production companies. Post castings, review talent, and hire fast."},
@@ -29200,7 +29174,6 @@ function App(){
         {page==="resources"&&<ResourcesPage onNavigate={navigate}/>}
         {page==="trust-safety"&&<TrustSafetyPage onNavigate={navigate}/>}
         {page==="faq"&&<FaqPage onNavigate={navigate}/>}
-        {page==="success-stories"&&<SuccessStoriesPage onNavigate={navigate}/>}
         {page==="pricing"&&<PricingPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}} onViewCasting={(c)=>handleViewCasting(c,"pricing")}/>}
         {page==="manager-mode"&&<ManagerModePage onNavigate={navigate} session={session} myProfile={myProfile}/>}
         {page==="tapelink"&&<TapeLinkPage onNavigate={navigate}/>}

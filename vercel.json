@@ -25,7 +25,6 @@
     { "source": "/careers", "destination": "/careers.html" },
     { "source": "/contact", "destination": "/contact.html" },
     { "source": "/faq", "destination": "/faq.html" },
-    { "source": "/success-stories", "destination": "/success-stories.html" },
     { "source": "/terms", "destination": "/terms.html" },
     { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/manager-mode", "destination": "/manager-mode.html" },

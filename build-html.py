@@ -630,7 +630,6 @@ ROUTES = [
     ("careers.html",          "/careers",         "Careers", "Join the team building the future of casting. Open roles at CastSlate."),
     ("contact.html",          "/contact",         "Contact", "Get in touch with the CastSlate team. We're here to help actors, casting directors, and production companies."),
     ("faq.html",              "/faq",             "FAQ", "Frequently asked questions about CastSlate — how it works, account types, submissions, and pricing."),
-    ("success-stories.html",  "/success-stories", "Success Stories", "Real actors, real results. Read how CastSlate members booked roles through the platform."),
     ("terms.html",            "/terms",           "Terms of Use", "CastSlate Terms of Use — the rules and guidelines for using the CastSlate casting platform."),
     ("privacy.html",          "/privacy",         "Privacy Policy", "CastSlate Privacy Policy — how we collect, use, and protect your personal information."),
     ("manager-mode.html",     "/manager-mode",    "Manager Mode", "Cast Slate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."),
