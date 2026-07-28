@@ -521,7 +521,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .cc6-ov{position:fixed;inset:0;z-index:200;display:flex;align-items:flex-end;justify-content:center;}
 .cc6-scrim{position:absolute;inset:0;background:rgba(15,18,20,.52);will-change:opacity;animation:cc6fade .5s ease both;}
 .cc6-ov.cc6-closing .cc6-scrim{animation:cc6fadeout .5s ease both;}
-.cc6-panel{position:relative;z-index:1;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateZ(0);width:100%;background:linear-gradient(180deg,#f7f6f2,#ecebe4);color:#1f2327;border-top:2px solid #37696a;border-radius:18px 18px 0 0;padding:30px clamp(24px,6vw,66px) 30px;max-height:88vh;overflow-y:auto;box-shadow:0 -30px 90px -22px rgba(31,35,39,.3);display:grid;grid-template-columns:1.05fr 1.15fr auto;gap:40px;align-items:center;animation:cc6rise .62s cubic-bezier(.16,.84,.24,1) both;}
+.cc6-panel{position:relative;z-index:1;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateZ(0);width:100%;background:linear-gradient(180deg,#f7f6f2,#ecebe4);color:#1f2327;border-top:2px solid #37696a;border-radius:18px 18px 0 0;padding:30px clamp(24px,6vw,66px) 30px;max-height:88vh;overflow-y:auto;box-shadow:0 -30px 90px -22px rgba(31,35,39,.3);display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1.15fr) auto;gap:40px;align-items:center;animation:cc6rise .62s cubic-bezier(.16,.84,.24,1) both;}
 .cc6-panel::before{content:"";position:absolute;top:12px;left:50%;transform:translateX(-50%);width:46px;height:4px;border-radius:999px;background:rgba(31,35,39,.2);}
 .cc6-panel .logo{color:#1f2327;font-size:17px;}
 .cc6-panel .logo-i{background:#1A1A2E;color:#fff;width:34px;height:34px;border-radius:9px;}
@@ -554,7 +554,15 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @keyframes cc6fadeout{from{opacity:1;}to{opacity:0;}}
 @keyframes cc6drop{from{transform:translateY(0);}to{transform:translateY(110%);}}
 .cc6-panel.cc6-closing{animation:cc6drop .62s cubic-bezier(.16,.84,.24,1) both;}
-@media(max-width:960px){.cc6-panel{grid-template-columns:1fr;gap:22px;}.cc6-prefs{grid-template-columns:1fr;}.cc6-actions{min-width:0;}}
+/* The 3-col panel needs ~1207px to fit (66px padding x2 + 40px gap x2 + 210px
+   actions + the prefs' 538px min-content + the headline's 247px min-content).
+   Below that the actions column was pushed clean off the right edge and clipped,
+   so Accept all / Confirm choices / Reject all were unreachable — every iPad
+   from 961px up, portrait and landscape. Stack at 1240px for margin; 1280px+
+   desktops keep the 3-col layout unchanged. */
+@media(max-width:1240px){.cc6-panel{grid-template-columns:1fr;gap:22px;}.cc6-actions{min-width:0;}}
+/* Phones/small tablets additionally stack the three preference cards. */
+@media(max-width:960px){.cc6-prefs{grid-template-columns:1fr;}}
 @media(prefers-reduced-motion:reduce){.cc6-scrim,.cc6-panel{animation:none!important;}}
 /* Actor Business Card (dashboard shortcut) — "Holo Sheen" premium motion: metallic light sweep, breathing glow, dot pulse, button shimmer */
 .abc-prem{box-shadow:0 18px 40px -22px rgba(26,26,46,.45);transition:box-shadow .5s cubic-bezier(.2,.7,.2,1),filter .5s ease;animation:abc-float 6s ease-in-out infinite;will-change:transform;}
@@ -883,7 +891,16 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
        horizontally so the active card lands in the stage centre, producing a
        smooth slide between cards instead of an instant content swap. Side cards
        fade + slightly scale down so the centre card reads as dominant. ─── */
-.fcs-section{position:relative;max-width:1480px;margin:0 auto;padding:48px 24px 16px;}
+/* width:100% is load-bearing, do not drop it. Without an explicit width this
+   section is sized by the coverflow track's max-content (~9000px) clamped to
+   max-width, so between 1025px and 1479px it stayed a rigid 1480px instead of
+   shrinking to the viewport: its right edge sat up to 300px off-screen, taking
+   the "next" arrow and the "Browse all" button with it (clipped by
+   main{overflow-x:clip}, so they read as missing rather than as overflow).
+   That band is every medium/large iPad in landscape — 1080/1112/1133/1180/1194/1366.
+   Explicit width also makes the layout independent of intrinsic sizing, which is
+   what made this fragile in the first place (see the contain:inline-size note below). */
+.fcs-section{position:relative;width:100%;max-width:1480px;margin:0 auto;padding:48px 24px 16px;}
 /* NOTE: contain:inline-size is applied to .fcs-stage ONLY at <=1024px (the iPad
    fix), NOT here. At desktop widths the stage MUST stay uncontained: containing
    it removes the track's width contribution, which makes the flex-child
