@@ -16976,10 +16976,19 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         </div>
         <div className="hiw-card-body">
           <p style={{fontSize:10,letterSpacing:1.8,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,margin:0,fontFamily:"'DM Sans',sans-serif"}}>For Casting Directors</p>
-          <h2 style={{fontWeight:800,fontSize:"clamp(22px,2.8vw,30px)",letterSpacing:-0.8,lineHeight:1.15,margin:0}}>Casting teams review one actor at a time.</h2>
+          <h2 style={{fontWeight:800,fontSize:"clamp(22px,2.8vw,30px)",letterSpacing:-0.8,lineHeight:1.15,margin:0}}>{/* Kept to 2 lines on purpose: a 3rd line makes this
+            card ~35px taller than the actor-journey card, and since the grid centres the
+            video that extra height became uneven white space above/below it (57px vs 75px).
+            Keep any future wording short enough to wrap at 2 lines in a ~280px column. */}
+            Review one actor at a time.</h2>
           <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,margin:0}}>Instead of burying actors in crowded thumbnail grids, CastSlate presents each profile clearly — headshots, credits, skills, resume, and reels organized for faster decisions.</p>
           <div className="hiw-card-steps">
-            {[["1","Review full-screen profiles."],["2","Compare actors visually."],["3","Shortlist and message faster."]].map(([n,t])=>(
+            {/* Step labels stay short enough to hold ONE line at the narrowest desktop
+                copy column (280px at 1001-1100px). "Shortlist and message faster." wrapped
+                to two lines there, making this card 18px taller than the actor-journey card
+                and re-introducing the uneven white space around the video. Keep each label
+                at or under ~26 characters. */}
+            {[["1","Review full-screen profiles."],["2","Compare actors visually."],["3","Shortlist and message."]].map(([n,t])=>(
               <div key={n} className="hiw-card-step">
                 <span className="hiw-step-num">{n}</span>
                 <span><strong style={{color:"var(--t1)"}}>Step {n}:</strong> {t}</span>
