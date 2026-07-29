@@ -472,6 +472,13 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .site-backtotop:hover .site-backtotop-arrow{transform:translateY(-2px);}
 /* Breathing room between page content (e.g. pagination) and the Back-to-top bar. */
 .page-foot-gap{flex:none;height:clamp(40px,6vw,64px);}
+/* Same hairline seam guard as .site-footer below, for the boundary between the
+   Manager Mode teaser and the final CTA. Two full-bleed dark sections stacked
+   back to back: the teaser's clamp()'d type gives it a fractional height, so on
+   a phone the seam rounds to a sub-pixel gap and the cream .app background
+   flickers through it while you scroll. Pull the CTA up a hairline so the seam
+   can only ever show the CTA's own colour. */
+.lh-cta{margin-top:-1px;}
 /* ─── Global site footer — dark charcoal, applied via Footer component everywhere.
        The width:100vw + negative-margin-50vw pattern lets the footer's dark bg
        escape any constrained .page (max-width:1200px) parent so it always
@@ -488,6 +495,15 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   margin-top:0;
   margin-left:-50vw;margin-right:-50vw;
   margin-bottom:0;
+  /* Hairline seam guard. .app paints the cream page background behind
+     everything, so if the footer's height lands on a fraction of a CSS pixel
+     — which it does on a phone, where DPR is 2–3 and the type is clamp()'d —
+     the rounding leaves a sliver of cream below the last footer row, and it
+     blinks in and out as you scroll. Paint one more pixel of footer colour
+     underneath so there is no edge for the cream to show at. A shadow rather
+     than a negative margin on purpose: it costs no layout, so short pages
+     that currently fit in the viewport don't gain a 1px scroll. */
+  box-shadow:0 1px 0 0 #1B1C20;
   flex-shrink:0;
 }
 .site-footer-inner{max-width:1200px;margin:0 auto;padding:60px 40px 28px;}
