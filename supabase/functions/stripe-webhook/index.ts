@@ -54,6 +54,17 @@ function resolvePeriodEnd(sub: Stripe.Subscription): string | null {
   return secs ? new Date(secs * 1000).toISOString() : null;
 }
 
+// The recurring amount THIS member is actually billed, in dollars.
+//
+// A Stripe subscription is pinned to the price it was created with, so members
+// who joined on older rates keep them. The app's plan table only holds current
+// list pricing, so it must never be used to tell an existing member what they
+// pay — store the real figure and read that instead.
+function resolvePlanPrice(sub: Stripe.Subscription): number | null {
+  const cents = (sub as any).items?.data?.[0]?.price?.unit_amount;
+  return typeof cents === "number" ? cents / 100 : null;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: { "Access-Control-Allow-Origin": "*" } });
@@ -181,6 +192,8 @@ Deno.serve(async (req: Request) => {
           cancel_at_period_end: !!sub.cancel_at_period_end,
           updated_at: new Date().toISOString(),
         };
+        const planPrice = resolvePlanPrice(sub);
+        if (planPrice !== null) updates.plan_price = planPrice;
 
         // membership_status is the gate the whole app reads. Only move it on
         // DEFINITIVE states, so transient / out-of-order events can never
@@ -247,6 +260,7 @@ Deno.serve(async (req: Request) => {
             plan_type: planKey,
             current_period_end: periodEnd,
             cancel_at_period_end: !!sub.cancel_at_period_end,
+            ...(resolvePlanPrice(sub) !== null ? { plan_price: resolvePlanPrice(sub) } : {}),
             updated_at: new Date().toISOString(),
           })
           .eq("id", userId);

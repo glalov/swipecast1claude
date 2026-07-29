@@ -1494,6 +1494,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .landing-hero-desc{color:var(--t1);font-size:17.5px;line-height:1.6;font-weight:500;max-width:520px;margin-bottom:26px;}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;}
+/* Shared "Everything in Premium" band above the plan cards. */
+.premium-feature-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px 24px;}
+@media(max-width:980px){.premium-feature-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:560px){.premium-feature-grid{grid-template-columns:1fr;}}
 .flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
 .mt-20{margin-top:20px;}.mt-40{margin-top:40px;}.mb-20{margin-bottom:20px;}.mb-8{margin-bottom:8px;}.mb-32{margin-bottom:32px;}
 .card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:24px;transition:all .3s;box-shadow:0 1px 2px rgba(26,26,46,0.03);}
@@ -2836,11 +2840,39 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 // ─── Membership plans. Single source of truth — used by MembershipPage,
 //     PlanSummaryPage, the red banner copy, the yearly promo stripe, and
 //     the activate_membership RPC.
+// ─── Current list pricing, with a welcome offer on the first term.
+//
+//     The list price never moves — `listMonthly` / `renewTotal` are what the
+//     membership renews at. `monthly` / `total` are the discounted first term,
+//     applied in Stripe by a duration:"once" coupon, so a member enters below
+//     $100 and renews at full list.
+//
+//     IMPORTANT: this table is CURRENT pricing only. Members who joined on
+//     older rates keep them (a Stripe subscription is pinned to the price it
+//     was created with), so never render these numbers as an existing
+//     member's bill — read profiles.plan_price for that.
 const MEMBERSHIP_PLANS={
-  yearly:{key:"yearly",label:"Early Plan — 12 Months",monthly:7.99,months:12,total:7.99*12,note:"Billed once, locks in our lowest founder price."},
-  six_month:{key:"six_month",label:"6 Month Plan",monthly:8.99,months:6,total:8.99*6,note:"Billed every six months."},
-  monthly:{key:"monthly",label:"Monthly Plan",monthly:9.99,months:1,total:9.99,note:"Billed monthly."}
+  yearly:{key:"yearly",label:"Yearly",monthly:8.25,listMonthly:16.58,months:12,total:99,renewTotal:199,
+    save:"Save $100 — 50% off",note:"Billed yearly."},
+  six_month:{key:"six_month",label:"6-Month",monthly:19.95,listMonthly:null,months:6,total:119.70,renewTotal:119.70,
+    save:"",note:"Billed bi-annually."},
+  monthly:{key:"monthly",label:"Monthly",monthly:14.95,listMonthly:24.95,months:1,total:14.95,renewTotal:24.95,
+    save:"$10 off your first month",note:"then $24.95/month."}
 };
+
+// ─── Stated once above the plan cards rather than repeated inside all three.
+//     Identical lists in every card left price as the only visible variable
+//     and pushed the buttons below the fold.
+const PREMIUM_SHARED_FEATURES=[
+  ["Unlimited","casting submissions"],
+  ["Unlimited","photos & gallery media"],
+  ["Unlimited","video uploads"],
+  ["Actor Slate Video","— 7-sec intro"],
+  ["Actor Business Card","with QR code"],
+  ["Manager Mode","weekly check-ins"],
+  ["Profile improvements","personalized to you"],
+  ["Cancel anytime","from your account"]
+];
 
 // ─── "Ink & Bone" palette for the plan picker. Flat fills only — no gradients
 //     and no coloured glow, which is what made the old treatment read cheap.
@@ -2855,16 +2887,16 @@ const BRASS_ON_LIGHT="#7A6134";
 //     rate for that term. Do NOT add perks that aren't built (founder badges,
 //     search priority) until they actually exist and are honoured.
 const PLAN_EXCLUSIVES={
-  yearly:["Your $7.99/month rate is fixed for the full 12 months","One payment — nothing to renew until next year"],
-  six_month:["Your $8.99/month rate is fixed for all 6 months"],
-  monthly:[]
+  yearly:["Your $8.25/month rate is fixed for the full 12 months","One payment — nothing to renew until next year"],
+  six_month:["Your $19.95/month rate is fixed for all 6 months"],
+  monthly:["Cancel anytime — no commitment"]
 };
 
 // ─── Actor plan limits — single source of truth used by profile upload, casting
 //     submission gate, and the pricing page.
 const FREE_PLAN={headshotsTotal:1,additionalPhotos:0,videos:0,submissionsPerWeek:1,castingTypes:2,castingMoodClips:0,castingSupportingPhotos:0};
 const PREMIUM_PLAN={headshotsTotal:Infinity,additionalPhotos:Infinity,videos:Infinity,submissionsPerWeek:Infinity,castingTypes:Infinity,castingMoodClips:1,castingSupportingPhotos:3};
-const PREMIUM_PRICE="$9.99/month";
+const PREMIUM_PRICE="from $8.25/month";
 const UPGRADE_MSG=`You've used your ${FREE_PLAN.submissionsPerWeek===1?"free submission":`${FREE_PLAN.submissionsPerWeek} free submissions`} for this week. Upgrade to Premium for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card, Manager Mode, and more.`;
 // Most recent Monday 6:00 AM America/New_York as a Date — the point free submissions reset each week.
 function weeklyResetStart(){
@@ -3451,13 +3483,34 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
     <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>
       Free actors can submit to {FREE_PLAN.submissionsPerWeek} {FREE_PLAN.submissionsPerWeek===1?"casting":"castings"} per week and upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins.
     </p>
+    {/* Shared value band. Every plan carries the same features, so they are
+        stated once here instead of three times inside the cards. */}
+    <div className="card" style={{maxWidth:1100,margin:"0 auto 20px",padding:"17px 22px"}}>
+      <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",flexWrap:"wrap",gap:8,paddingBottom:11,marginBottom:12,borderBottom:"1px solid var(--bdr)"}}>
+        <h2 style={{margin:0,fontSize:16,fontWeight:800,letterSpacing:-0.3}}>Everything in CastSlate Premium</h2>
+        <div style={{fontSize:10,fontWeight:800,letterSpacing:1.4,textTransform:"uppercase",color:BRASS_ON_LIGHT}}>Included on every plan</div>
+      </div>
+      <div className="premium-feature-grid">
+        {PREMIUM_SHARED_FEATURES.map(([lead,rest])=>(
+          <div key={lead+rest} style={{display:"flex",gap:9,fontSize:13,color:"var(--t2)",lineHeight:1.45}}>
+            <span style={{color:"var(--grn)",fontWeight:800,flex:"none",marginTop:1}}><Ico n="check" s={24}/></span>
+            <span><strong style={{color:"var(--t1)",fontWeight:700}}>{lead}</strong> {rest}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{marginTop:11,paddingTop:10,borderTop:"1px solid var(--bdr)",fontSize:11.5,color:"var(--t3)"}}>
+        Every plan includes the same features. The only difference is how long you're in — and how much you save.
+      </div>
+    </div>
+    <div style={{textAlign:"center",marginBottom:16}}>
+      <h3 style={{margin:0,fontSize:15,fontWeight:800,color:"var(--t2)",letterSpacing:-0.2}}>Then choose how long you're in.</h3>
+    </div>
     <div className="grid-3" style={{gap:18,maxWidth:1100,margin:"0 auto"}}>
       {Object.values(MEMBERSHIP_PLANS).map(p=>{
         const featured=p.key==="yearly";
         // Monochrome anchor — the featured (yearly) plan is a solid charcoal card
         // so it stands out by contrast, not color. The others stay quiet and white.
-        const SAVE={yearly:"Save 20%",six_month:"Save 10%",monthly:""};
-        const save=SAVE[p.key]||"";
+        const save=p.save||"";
         const tm=featured?"#ffffff":"var(--t1)";
         const ts=featured?"#c9c8c1":"var(--t2)";
         const ck=featured?"#9a9a9f":"#c4c2b8";
@@ -3468,13 +3521,16 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
         return(<div key={p.key} className="card" style={{padding:28,position:"relative",display:"flex",flexDirection:"column",background:featured?INK_DEEP:"#ffffff",border:featured?`1px solid ${INK_DEEP}`:"1px solid #e7e4db",boxShadow:featured?"0 26px 50px -22px rgba(18,20,31,.55)":"none",transform:featured&&!isMobile?"translateY(-14px)":"none",zIndex:featured?2:1}}>
           {/* "Best value" is true — the yearly plan is the lowest monthly rate.
               The old "Most popular" was not: monthly outsells it 12 to 1. */}
-          <div style={{minHeight:22,marginBottom:10,display:"flex",alignItems:"center"}}>{featured&&<span style={{fontSize:9.5,fontWeight:800,letterSpacing:1.6,textTransform:"uppercase",color:BRASS_ON_DARK,background:"transparent",border:`1px solid ${BRASS_ON_DARK}`,fontFamily:"'DM Sans',sans-serif",padding:"4px 11px",borderRadius:3}}>Best value</span>}</div>
+          <div style={{minHeight:22,marginBottom:10,display:"flex",alignItems:"center"}}>{featured&&<span style={{fontSize:9.5,fontWeight:800,letterSpacing:1.6,textTransform:"uppercase",color:BRASS_ON_DARK,background:"transparent",border:`1px solid ${BRASS_ON_DARK}`,fontFamily:"'DM Sans',sans-serif",padding:"4px 11px",borderRadius:3}}>Welcome offer</span>}</div>
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:6,color:tm}}>{p.label}</h3>
-          <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:6}}>
+          {/* Struck-through list rate gives the discount a reference point. A
+              bare low price has nothing to be measured against. */}
+          <div style={{display:"flex",alignItems:"baseline",gap:8,marginBottom:6,flexWrap:"wrap"}}>
+            {p.listMonthly&&<span style={{fontFamily:"'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif",fontWeight:600,fontSize:22,color:featured?"#9a9a9f":"var(--t3)",textDecoration:"line-through",textDecorationColor:"#C4443F",textDecorationThickness:2}}>${p.listMonthly.toFixed(2)}</span>}
             <span style={{fontFamily:"'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif",fontWeight:600,fontSize:42,letterSpacing:"-0.02em",color:tm}}>${p.monthly.toFixed(2)}</span>
-            <span style={{fontSize:13,color:ts}}>/month</span>
+            <span style={{fontSize:13,color:ts}}>{p.key==="monthly"?"first month":"/month"}</span>
           </div>
-          <p style={{fontSize:12,color:ts,marginBottom:16}}>{save?<span style={{fontWeight:700}}>{save} · </span>:null}{p.note}</p>
+          <p style={{fontSize:12,color:ts,marginBottom:16}}>{save?<span style={{fontWeight:700,color:featured?BRASS_ON_DARK:"var(--grn)"}}>{save} · </span>:null}{p.note}</p>
           {/* Tier differentiator. Without this the three cards list identical
               features, so the only variable is price — which is why monthly
               outsells yearly 12 to 1. Hairline rules, not a boxed container. */}
@@ -3482,15 +3538,9 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
             <div style={{fontSize:9,fontWeight:800,letterSpacing:1.6,textTransform:"uppercase",color:brass}}>{p.key==="yearly"?"Only on the yearly plan":"Included"}</div>
             {excl.map(x=>(<div key={x} style={{display:"flex",gap:9,fontSize:12.5,color:ft,lineHeight:1.45}}><span style={{color:brass,fontWeight:700,flex:"none"}}>✦</span>{x}</div>))}
           </div>}
-          <ul style={{listStyle:"none",padding:0,margin:"0 0 22px",display:"flex",flexDirection:"column",gap:6,flex:1}}>
-            {feat("Unlimited casting submissions")}
-            {feat("Unlimited photos & gallery media")}
-            {feat("Unlimited video uploads")}
-            {feat("Actor Slate Video — 7-sec intro for casting teams")}
-            {feat("Actor Business Card with unique QR code")}
-            {feat("Manager Mode — weekly career check-ins")}
-            {feat("Personalized profile improvement suggestions")}
-          </ul>
+          {/* Features live in the shared band above — repeating them here is
+              what made every card identical and pushed the CTAs off-screen. */}
+          <div style={{flex:1,minHeight:8}}/>
           <div style={{borderTop:featured?"1px solid rgba(240,237,229,.16)":"1px solid var(--bdr)",paddingTop:14,marginBottom:14,fontSize:12,color:ts}}>Total billed: <strong style={{color:tm}}>${p.total.toFixed(2)}</strong>{p.months>1?` for ${p.months} months`:" today"}</div>
           {planCardButton(p)}
         </div>);
@@ -3512,8 +3562,20 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
 // Version + text of the checkout consent shown at the payment step. Bump the
 // version whenever the wording changes so each logged consent maps to the exact
 // disclosure the user saw (chargeback evidence).
-const CHECKOUT_CONSENT_VERSION="2026-07-13";
-const checkoutConsentText=(plan)=>`By continuing to checkout, you authorize CastSlate to charge your payment method $${plan.total.toFixed(2)}${plan.months>1?` today for ${plan.months} months`:` per month`} and to automatically renew this membership until you cancel. You confirm you have read and agree to CastSlate's Terms of Service and Privacy Policy, that you are at least 18 years old, and that fees are non-refundable except where required by law.`;
+// ⚠️ Keep in sync with CONSENT_VERSION / consentText() in the stripe-checkout
+//    edge function. Bumped for welcome-offer pricing: the discounted first
+//    term now renews at a HIGHER list price, so the consent must state the
+//    renewal amount explicitly — that disclosure is what makes the offer
+//    defensible in a dispute.
+const CHECKOUT_CONSENT_VERSION="2026-07-29";
+const checkoutConsentText=(plan)=>{
+  const term=plan.months>1?` today for ${plan.months} months`:` for your first month`;
+  const renewEvery=plan.months===1?"month":plan.months===12?"year":"6 months";
+  const renewal=plan.renewTotal>plan.total
+    ? ` This is a discounted introductory price; the membership then renews automatically at $${plan.renewTotal.toFixed(2)} per ${renewEvery} until you cancel.`
+    : ` The membership renews automatically at $${plan.total.toFixed(2)} per ${renewEvery} until you cancel.`;
+  return `By continuing to checkout, you authorize CastSlate to charge your payment method $${plan.total.toFixed(2)}${term}.${renewal} You confirm you have read and agree to CastSlate's Terms of Service and Privacy Policy, that you are at least 18 years old, and that fees are non-refundable except where required by law.`;
+};
 
 function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onReload}){
   const [err,setErr]=useState("");
@@ -3618,7 +3680,16 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
           <strong>Total due today</strong>
           <strong style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:26,color:"var(--acc)",letterSpacing:-0.8}}>${plan.total.toFixed(2)}</strong>
         </div>
-        <p style={{fontSize:11,color:"var(--t3)",marginTop:12,lineHeight:1.5}}>Renews automatically until you cancel. Plus tax where applicable.</p>
+        {/* Renewal disclosure. The first term is discounted, so the price and
+            date it renews at MUST be stated before payment — this is the
+            required disclosure and the main defence against a dispute. */}
+        {plan.renewTotal>plan.total?(
+          <div style={{marginTop:12,padding:"11px 13px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:9,fontSize:12,color:"var(--t2)",lineHeight:1.55}}>
+            Renews on <strong style={{color:"var(--t1)"}}>{new Date(Date.now()+plan.months*30.44*86400000).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}</strong> for <strong style={{color:"var(--t1)"}}>${plan.renewTotal.toFixed(2)}</strong>{plan.months===1?" per month":plan.months===12?" per year":" every 6 months"}, plus tax where applicable. Cancel anytime from your account.
+          </div>
+        ):(
+          <p style={{fontSize:11,color:"var(--t3)",marginTop:12,lineHeight:1.5}}>Renews automatically until you cancel. Plus tax where applicable.</p>
+        )}
       </div>
 
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"12px 16px",borderRadius:8,fontSize:13,marginBottom:14,textAlign:"center"}}>{err}</div>}
@@ -19068,7 +19139,11 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
           <div style={{borderTop:"1px solid var(--bdr)",paddingTop:16}}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"6px 24px"}}>
               <div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Plan:</span> <strong>{planInfo.label}</strong></div>
-              {hasStripe&&<div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Billing:</span> <strong>${planInfo.monthly.toFixed(2)}/month</strong></div>}
+              {/* Their REAL rate, from Stripe — never the current list price.
+                  Members on grandfathered rates keep paying what they signed
+                  up for, so showing today's pricing here would be a lie. If we
+                  have no stored amount, show nothing rather than a wrong number. */}
+              {hasStripe&&profile?.plan_price!=null&&<div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Billing:</span> <strong>${Number(profile.plan_price).toFixed(2)}{(profile?.plan_type||"monthly")==="monthly"?"/month":(profile.plan_type==="yearly"?"/year":" every 6 months")}</strong></div>}
               <div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Status:</span> <strong style={{color:renewExpired?"var(--red)":isCancelling?"var(--amber,#C8891F)":"var(--grn)"}}>{renewExpired?"Expired":isCancelling?"Cancelling":"Active"}</strong></div>
               {endLabel&&hasStripe&&<div style={{fontSize:13,color:renewExpired?"var(--red)":"var(--t2)"}}>
                 <span style={{color:"var(--t3)"}}>{isCancelling?"Access until:":"Renewal:"}</span> <strong>{endLabel}</strong>
