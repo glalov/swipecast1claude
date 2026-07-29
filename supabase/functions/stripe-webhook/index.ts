@@ -39,6 +39,21 @@ async function resolveUserId(opts: {
   return null;
 }
 
+// The date a member's paid access actually runs to.
+//
+// Stripe moved `current_period_end` off the subscription object and onto the
+// subscription ITEM in its newer API versions. Reading only the top-level
+// field silently wrote NULL for every member, which left the settings page
+// with no renewal date and no way to tell someone when their access ends.
+// Read both, newest shape first, so this stays correct across versions.
+function resolvePeriodEnd(sub: Stripe.Subscription): string | null {
+  const secs =
+    (sub as any).current_period_end ??
+    (sub as any).items?.data?.[0]?.current_period_end ??
+    null;
+  return secs ? new Date(secs * 1000).toISOString() : null;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: { "Access-Control-Allow-Origin": "*" } });
@@ -150,9 +165,7 @@ Deno.serve(async (req: Request) => {
         });
         if (!userId) { console.warn("No user match for subscription event"); break; }
 
-        const periodEnd = sub.current_period_end
-          ? new Date(sub.current_period_end * 1000).toISOString()
-          : null;
+        const periodEnd = resolvePeriodEnd(sub);
         const planKey = sub.metadata?.plan_key || "monthly";
 
         // Always keep subscription_status / ids / period in sync.
@@ -162,6 +175,10 @@ Deno.serve(async (req: Request) => {
           stripe_customer_id: sub.customer as string,
           plan_type: planKey,
           current_period_end: periodEnd,
+          // Scheduled cancellation. Stripe keeps status "active" until the
+          // period actually ends, so this flag is the ONLY way the app can
+          // tell "renews on this date" from "access ends on this date".
+          cancel_at_period_end: !!sub.cancel_at_period_end,
           updated_at: new Date().toISOString(),
         };
 
@@ -199,6 +216,7 @@ Deno.serve(async (req: Request) => {
             subscription_status: "canceled",
             stripe_subscription_id: null,
             current_period_end: null,
+            cancel_at_period_end: false,
             updated_at: new Date().toISOString(),
           })
           .eq("id", userId);
@@ -217,9 +235,7 @@ Deno.serve(async (req: Request) => {
           subscriptionId: sub.id,
         });
         if (!userId) break;
-        const periodEnd = sub.current_period_end
-          ? new Date(sub.current_period_end * 1000).toISOString()
-          : null;
+        const periodEnd = resolvePeriodEnd(sub);
         const planKey = sub.metadata?.plan_key || "monthly";
         await supabase
           .from("profiles")
@@ -230,6 +246,7 @@ Deno.serve(async (req: Request) => {
             stripe_subscription_id: sub.id,
             plan_type: planKey,
             current_period_end: periodEnd,
+            cancel_at_period_end: !!sub.cancel_at_period_end,
             updated_at: new Date().toISOString(),
           })
           .eq("id", userId);

@@ -5980,13 +5980,49 @@ function BookingRequestModal({target,myProfile,session,onClose,onSubmitted}){
 // ═══════════════════════════════════════════
 // PAGE: CONTACT
 // ═══════════════════════════════════════════
-function ContactPage({onNavigate}){
+// Single source of truth for the cancellation subject. Settings deep-links
+// to the contact form with this exact string, so it must match the option
+// in CONTACT_SUBJECTS or the dropdown will not pre-select.
+const CANCEL_SUBJECT="Cancel subscription";
+
+// Contact subjects. Kept as a list so every inbound request arrives tagged
+// with a filterable topic instead of freeform prose. "Cancel subscription"
+// is last — visible, not hidden; it is the target of the cancel link in
+// Settings -> Subscription Info.
+const CONTACT_SUBJECTS=[
+  "General question",
+  "Account & login help",
+  "Profile or media upload",
+  "Casting submissions",
+  "Posting a casting (Casting Directors)",
+  "Classes & workshops",
+  "Billing or payment question",
+  "Partnership or press",
+  "Report a problem",
+  CANCEL_SUBJECT
+];
+
+function ContactPage({onNavigate,session,myProfile,initialSubject}){
   const [sent,setSent]=useState(false);
-  const [name,setName]=useState("");
-  const [email,setEmail]=useState("");
-  const [role,setRole]=useState("Actor / Model / Performer");
-  const [subject,setSubject]=useState("");
+  const [name,setName]=useState(myProfile?.display_name||myProfile?.company_name||"");
+  const [email,setEmail]=useState(myProfile?.email||session?.user?.email||"");
+  const [role,setRole]=useState(()=>{
+    const t=myProfile?.user_type;
+    if(t==="cd")return "Casting Director";
+    if(t==="producer"||t==="studio"||t==="creator")return "Producer / Director";
+    return "Actor / Model / Performer";
+  });
+  const [subject,setSubject]=useState(initialSubject||CONTACT_SUBJECTS[0]);
   const [message,setMessage]=useState("");
+  const isCancel=subject===CANCEL_SUBJECT;
+  // The date paid access actually runs to. Only ever rendered when we have a
+  // real value from Stripe — never guessed, never approximated.
+  const accessUntil=myProfile?.current_period_end
+    ? new Date(myProfile.current_period_end)
+    : null;
+  const accessUntilLabel=accessUntil&&!isNaN(accessUntil)
+    ? accessUntil.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})
+    : null;
   const [sending,setSending]=useState(false);
   const [error,setError]=useState("");
   const send=async()=>{
@@ -6007,10 +6043,32 @@ function ContactPage({onNavigate}){
     <div className="section-label">Contact</div>
     <h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:8}}>Get in Touch</h1>
     <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>Questions? Want to partner? Need support? We'd love to hear from you.</p>
-    {sent?<div className="success-msg"><div className="check"><Ico n="check" s={24}/></div><h3>Message sent</h3><p>We'll get back to you soon.</p></div>:<>
+    {sent?(isCancel?<div className="success-msg"><div className="check"><Ico n="check" s={24}/></div>
+      <h3>Cancellation request received</h3>
+      <p>We'll confirm by email within one business day. Here's exactly what happens:</p>
+      <ul style={{textAlign:"left",margin:"18px auto 0",maxWidth:420,paddingLeft:18,color:"var(--t2)",fontSize:13.5,lineHeight:1.7}}>
+        {accessUntilLabel
+          ?<li>You keep full Premium access until <strong style={{color:"var(--t1)"}}>{accessUntilLabel}</strong> — the period you've already paid for.</li>
+          :<li>You keep full Premium access until the end of your current billing period.</li>}
+        <li>You will not be charged again.</li>
+        <li>{accessUntilLabel?<>On {accessUntilLabel} your account</>:<>Your account then</>} returns to the free plan automatically.</li>
+        <li>Nothing is deleted — your profile, media and application history stay.</li>
+      </ul>
+    </div>:<div className="success-msg"><div className="check"><Ico n="check" s={24}/></div><h3>Message sent</h3><p>We'll get back to you soon.</p></div>):<>
       <div className="form-row"><div className="form-group"><label className="label">Name</label><input className="input" placeholder="Your name" value={name} onChange={e=>setName(e.target.value)}/></div><div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)}/></div></div>
       <div className="form-group"><label className="label">I am a...</label><select className="select" style={{width:"100%"}} value={role} onChange={e=>setRole(e.target.value)}><option>Actor / Model / Performer</option><option>Casting Director</option><option>Producer / Director</option><option>Agent / Manager</option><option>Press / Media</option><option>Other</option></select></div>
-      <div className="form-group"><label className="label">Subject</label><input className="input" placeholder="What's this about?" value={subject} onChange={e=>setSubject(e.target.value)}/></div>
+      <div className="form-group"><label className="label">Subject</label><select className="select" style={{width:"100%"}} value={subject} onChange={e=>setSubject(e.target.value)}>{CONTACT_SUBJECTS.map(s=><option key={s} value={s}>{s}</option>)}</select></div>
+      {isCancel&&<div style={{marginBottom:18,padding:"14px 16px",borderRadius:12,background:"var(--s2)",border:"1px solid var(--bdr)"}}>
+        <div style={{fontWeight:800,fontSize:13,marginBottom:8}}>What happens when you cancel</div>
+        <ul style={{margin:0,paddingLeft:18,color:"var(--t2)",fontSize:13,lineHeight:1.65}}>
+          {accessUntilLabel
+            ?<li>You keep full Premium access until <strong style={{color:"var(--t1)"}}>{accessUntilLabel}</strong> — the period you've already paid for.</li>
+            :<li>You keep full Premium access until the end of your current billing period.</li>}
+          <li>You will not be charged again.</li>
+          <li>{accessUntilLabel?<>On {accessUntilLabel} your account</>:<>Your account then</>} returns to the free plan automatically.</li>
+          <li>Nothing is deleted — your profile, media and application history stay.</li>
+        </ul>
+      </div>}
       <div className="form-group"><label className="label">Message</label><textarea className="textarea" placeholder="Tell us more..." style={{minHeight:140}} value={message} onChange={e=>setMessage(e.target.value)}></textarea></div>
       <button className="btn-p" style={{width:"100%"}} onClick={send} disabled={sending}>{sending?"Sending…":"Send Message"}</button>
       {error&&<div style={{marginTop:14,padding:"12px 14px",borderRadius:10,background:"rgba(214,59,59,.08)",border:"1px solid rgba(214,59,59,.25)",color:"var(--red)",fontSize:13,fontWeight:600,textAlign:"center"}}>{error}</div>}</>}
@@ -18974,6 +19032,14 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     const isOverride=isPremiumMember&&!hasStripe;
     const renewDate=profile?.current_period_end||profile?.membership_end_date;
     const renewExpired=renewDate&&new Date(renewDate)<new Date();
+    // Cancelled-but-still-paid-through. Stripe keeps the subscription "active"
+    // until the period ends, so this flag is what turns "Renews" into "Access
+    // until" everywhere below.
+    const isCancelling=isPremiumMember&&hasStripe&&!!profile?.cancel_at_period_end;
+    const endDateObj=renewDate?new Date(renewDate):null;
+    const endLabel=endDateObj&&!isNaN(endDateObj)
+      ? endDateObj.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})
+      : null;
     const planKey=profile?.plan_type||"monthly";
     const planInfo=MEMBERSHIP_PLANS[planKey]||MEMBERSHIP_PLANS.monthly;
     return(
@@ -18994,6 +19060,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
             }}>
               {["talent","actor"].includes(role)?isPremiumMember?"PREMIUM":"FREE":isAdminRole?"ADMIN":"CREATOR"}
             </span>
+            {isCancelling&&<span style={{background:"rgba(200,137,31,0.13)",color:"#C8891F",padding:"6px 14px",borderRadius:20,fontSize:11,fontWeight:700}}>{endLabel?`ENDS ${endLabel.toUpperCase()}`:"ENDS AT PERIOD END"}</span>}
             {isOverride&&<span style={{background:"rgba(99,60,180,0.1)",color:"var(--acc)",padding:"6px 14px",borderRadius:20,fontSize:11,fontWeight:700}}>TEST/ADMIN OVERRIDE</span>}
           </div>
         </div>
@@ -19002,9 +19069,9 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"6px 24px"}}>
               <div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Plan:</span> <strong>{planInfo.label}</strong></div>
               {hasStripe&&<div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Billing:</span> <strong>${planInfo.monthly.toFixed(2)}/month</strong></div>}
-              <div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Status:</span> <strong style={{color:renewExpired?"var(--red)":"var(--grn)"}}>{renewExpired?"Expired":"Active"}</strong></div>
-              {renewDate&&hasStripe&&<div style={{fontSize:13,color:renewExpired?"var(--red)":"var(--t2)"}}>
-                <span style={{color:"var(--t3)"}}>Renewal:</span> <strong>{new Date(renewDate).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}</strong>
+              <div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Status:</span> <strong style={{color:renewExpired?"var(--red)":isCancelling?"var(--amber,#C8891F)":"var(--grn)"}}>{renewExpired?"Expired":isCancelling?"Cancelling":"Active"}</strong></div>
+              {endLabel&&hasStripe&&<div style={{fontSize:13,color:renewExpired?"var(--red)":"var(--t2)"}}>
+                <span style={{color:"var(--t3)"}}>{isCancelling?"Access until:":"Renewal:"}</span> <strong>{endLabel}</strong>
               </div>}
             </div>
             {isOverride&&<p style={{fontSize:12,color:"var(--t3)",marginTop:10,marginBottom:0}}>Premium access granted via admin/test override. No real Stripe subscription is attached to this account.</p>}
@@ -19029,7 +19096,21 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
         {isOverride?(
           <div style={{color:"var(--t2)",fontSize:13}}>This account has Premium access via an admin/test override. No Stripe billing is attached — no billing portal is available.</div>
         ):hasStripe?(
-          <div style={{color:"var(--t2)",fontSize:13}}>Your subscription is managed through Stripe. To cancel or update your payment method, contact support or use the billing portal in Payment &amp; Billing.</div>
+          isCancelling?(
+            <div style={{color:"var(--t2)",fontSize:13}}>
+              Your membership is cancelled and will not renew.{endLabel?<> You keep full Premium access until <strong style={{color:"var(--t1)"}}>{endLabel}</strong>, then your account returns to the free plan automatically.</>:<> You keep full Premium access until the end of your current billing period, then your account returns to the free plan automatically.</>} Nothing is deleted — your profile, media and application history stay.
+              <div style={{marginTop:10}}>
+                Changed your mind? <span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("contact",{subject:"Billing or payment question"})}>Ask us to resume it →</span>
+              </div>
+            </div>
+          ):(
+            <div style={{color:"var(--t2)",fontSize:13}}>
+              Your subscription is managed through Stripe.{endLabel?<> It renews automatically on <strong style={{color:"var(--t1)"}}>{endLabel}</strong>.</>:null}
+              <div style={{marginTop:10}}>
+                Need to make a change to your membership? <span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("contact",{subject:CANCEL_SUBJECT})}>Cancel my subscription →</span>
+              </div>
+            </div>
+          )
         ):(
           <div style={{color:"var(--t2)",fontSize:13}}>No active subscription. <span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</span></div>
         )}
@@ -28020,6 +28101,9 @@ function App(){
   const [authReady,setAuthReady]=useState(false);
   const [pendingApply,setPendingApply]=useState(null);
   const [openClassId,setOpenClassId]=useState(null);
+  // Subject to pre-select when deep-linking into the contact form
+  // (Settings -> "Cancel my subscription →").
+  const [contactSubject,setContactSubject]=useState(null);
   const [openClassInvitationId,setOpenClassInvitationId]=useState(null);
   // Selected plan key for PlanSummaryPage. Stored at App level so navigating
   // to "plan-summary" doesn't lose the choice if the user refreshes mid-flow.
@@ -28665,6 +28749,10 @@ function App(){
     else if(p==="talent-dashboard"){setPage("talent-dashboard");}
     else if(p==="news-article"){setViewingNewsSlug(opts.slug||null);setPage("news-article");}
     else setPage(p);
+    // Pre-select a contact-form subject (e.g. the cancel link in Settings).
+    // Cleared on any other navigation so a later visit starts fresh.
+    if(p==="contact")setContactSubject(opts.subject||null);
+    else setContactSubject(null);
     // Deep-link into a specific class detail
     if(p==="classes"&&opts.classId){setOpenClassId(opts.classId);setOpenClassInvitationId(opts.invitationId||null);}
     else if(p!=="classes"){setOpenClassId(null);setOpenClassInvitationId(null);}
@@ -29213,7 +29301,7 @@ function App(){
         {page==="about"&&<AboutPage onNavigate={navigate}/>}
         {page==="blog"&&<BlogPage onNavigate={navigate}/>}
         {page==="classes"&&(classesOn?<ClassesPage onNavigate={navigate} session={session} myProfile={myProfile} isLoggedIn={isLoggedIn} openClassId={openClassId} onClassOpened={()=>{setOpenClassId(null);}} invitationId={openClassInvitationId}/>:<div className="page"><div style={{textAlign:"center",padding:"80px 24px",maxWidth:520,margin:"0 auto"}}><h2 style={{fontSize:24,fontWeight:800,marginBottom:10}}>Classes are unavailable</h2><p style={{color:"var(--t2)",marginBottom:24}}>The classes section is currently turned off. Please check back soon.</p><button className="btn-p" onClick={()=>navigate("home")}>Back to Home</button></div><Footer onNavigate={navigate}/></div>)}
-        {page==="contact"&&<ContactPage onNavigate={navigate}/>}
+        {page==="contact"&&<ContactPage onNavigate={navigate} session={session} myProfile={myProfile} initialSubject={contactSubject}/>}
         {page==="resources"&&<ResourcesPage onNavigate={navigate}/>}
         {page==="trust-safety"&&<TrustSafetyPage onNavigate={navigate}/>}
         {page==="faq"&&<FaqPage onNavigate={navigate}/>}
