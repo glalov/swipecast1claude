@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CastSlate — CD Review: Swipe / Grid View Toggle (Demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAF7F1;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--amber:#E8902A;--amber-dk:#C8761B;--hold:#c88900;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;padding:0 0 60px;}
+h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;margin:0;}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 24px 0;}
+
+/* ── Demo banner ── */
+.demo-note{background:linear-gradient(180deg,#fff,#FCFAF5);border:1px solid var(--bdr);border-radius:16px;padding:20px 24px;margin-bottom:26px;box-shadow:0 4px 18px rgba(0,0,0,.04);}
+.demo-note .kicker{font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--amber-dk);margin-bottom:8px;}
+.demo-note h1{font-family:'Source Serif 4',serif;font-size:27px;font-weight:700;line-height:1.14;margin-bottom:8px;}
+.demo-note p{color:var(--t2);font-size:14px;line-height:1.6;margin:0;max-width:760px;}
+.demo-note .tag{display:inline-block;margin-top:12px;font-size:12px;color:var(--t3);}
+
+/* ── Dashboard chrome ── */
+.section-label{font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:8px;}
+.role-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:18px;}
+.role-head h2{font-size:22px;font-weight:800;}
+.role-head .sub{color:var(--t2);font-size:13px;margin-top:5px;}
+
+/* ── The NEW toggle (segmented control) ── */
+.view-toggle-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.view-toggle-label{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--t3);}
+.view-toggle{display:inline-flex;background:var(--s2);border:1px solid var(--bdr);border-radius:11px;padding:4px;gap:4px;}
+.view-toggle button{appearance:none;border:none;background:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;color:var(--t2);padding:8px 16px;border-radius:8px;display:inline-flex;align-items:center;gap:7px;transition:all .18s;}
+.view-toggle button svg{width:16px;height:16px;}
+.view-toggle button.active{background:var(--acc);color:#fff;box-shadow:0 2px 8px rgba(26,26,46,.22);}
+.view-toggle button:not(.active):hover{color:var(--t1);}
+
+/* ── stat strip ── */
+.mini-stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.mini-stat{background:var(--s1);border:1px solid var(--bdr);border-radius:10px;padding:9px 15px;font-size:12px;color:var(--t2);font-weight:600;}
+.mini-stat b{color:var(--acc);font-weight:800;font-size:14px;margin-right:5px;}
+.mini-stat.pend b{color:var(--amber-dk);}
+.mini-stat.sel b{color:var(--grn);}
+
+/* ── SWIPE VIEW ── */
+.swipe-layout{display:grid;grid-template-columns:1fr 340px;gap:32px;min-height:60vh;}
+.swipe-area{display:flex;flex-direction:column;align-items:center;}
+.sw-counter{text-align:center;color:var(--t2);font-size:13px;margin-bottom:12px;}
+.swipe-card-wrap{position:relative;width:340px;height:530px;margin-bottom:20px;}
+.s-card{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:18px;overflow:hidden;background:var(--s1);border:1px solid var(--bdr);user-select:none;touch-action:pan-y;box-shadow:0 8px 30px rgba(0,0,0,0.08);}
+.s-card img{width:100%;height:56%;object-fit:cover;pointer-events:none;display:block;}
+.s-card-info{padding:14px 18px;overflow-y:auto;max-height:44%;}
+.s-card-info h3{font-size:18px;font-weight:700;margin-bottom:3px;}
+.s-card-meta{color:var(--t2);font-size:12px;margin-bottom:8px;}
+.s-card-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.s-card-tags span{background:var(--s2);padding:3px 8px;border-radius:5px;font-size:10px;color:var(--t2);}
+.s-card-note{margin-top:8px;font-size:12px;color:var(--t2);font-style:italic;}
+.sw-overlay{position:absolute;top:16px;left:0;right:0;text-align:center;font-weight:800;font-size:28px;letter-spacing:-0.5px;pointer-events:none;z-index:10;text-shadow:0 2px 10px rgba(0,0,0,.4);opacity:0;transition:opacity .1s;}
+.sw-btns{display:flex;gap:20px;align-items:flex-start;justify-content:center;}
+.sw-btn-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.sw-btn-label{font-size:9px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--t3);}
+.sw-btn{width:60px;height:60px;border-radius:50%;border:2px solid var(--bdr);background:var(--s1);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .18s,border-color .18s,background .18s;font-size:24px;}
+.sw-btn svg{width:26px;height:26px;}
+.sw-btn.pass:hover{border-color:var(--red);background:rgba(214,59,59,.07);transform:scale(1.1);}
+.sw-btn.hold:hover{border-color:var(--hold);background:rgba(200,137,0,.09);transform:scale(1.1);}
+.sw-btn.yes:hover{border-color:var(--grn);background:rgba(27,135,62,.07);transform:scale(1.1);}
+.sw-foot{text-align:center;margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.sw-hint{text-align:center;font-size:11px;color:var(--t3);margin-top:10px;}
+
+/* Selected sidebar */
+.cb-sidebar{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:20px;overflow-y:auto;max-height:600px;}
+.cb-sidebar h3{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;}
+.cb-item{display:flex;align-items:center;gap:12px;padding:9px;border-radius:10px;margin-bottom:4px;}
+.cb-item img{width:44px;height:44px;border-radius:8px;object-fit:cover;}
+.cb-item h4{font-size:13px;font-weight:600;}
+.cb-item p{font-size:11px;color:var(--t2);margin:0;}
+.cb-empty{color:var(--t3);font-size:13px;text-align:center;padding:40px 20px;font-style:italic;}
+.tag-grn{background:rgba(27,135,62,.12);color:var(--grn);font-size:11px;font-weight:800;padding:2px 9px;border-radius:99px;}
+
+/* ── GRID VIEW ── */
+.tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+.tab{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid transparent;background:none;color:var(--t2);font-family:inherit;transition:all .18s;}
+.tab:hover{background:var(--s2);}
+.tab.active{background:var(--s1);border-color:var(--bdr);color:var(--t1);box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.tab .c{opacity:.55;margin-left:3px;}
+.folder-cards-grid{display:grid;gap:16px;grid-template-columns:repeat(4,1fr);}
+@media(max-width:900px){.folder-cards-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.folder-cards-grid{grid-template-columns:1fr;}}
+.g-card{display:flex;flex-direction:column;border-radius:16px;overflow:hidden;background:var(--s1);border:1px solid var(--bdr);box-shadow:0 4px 16px rgba(0,0,0,.06);transition:transform .2s,box-shadow .2s;}
+.g-card:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(0,0,0,.10);}
+.g-shot{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--s2);}
+.g-shot img{width:100%;height:100%;object-fit:cover;display:block;}
+.g-badge{position:absolute;top:10px;right:10px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;padding:3px 8px;border-radius:99px;}
+.g-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:3px;flex:1;}
+.g-body h4{font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.g-body .meta{font-size:12px;color:var(--t2);margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.g-chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;}
+.g-chips span{background:#F1EFE8;border:1px solid #DDD8CC;padding:2px 7px;border-radius:10px;font-size:10px;color:#171724;font-weight:500;}
+.g-note{font-size:11px;color:var(--t3);font-style:italic;margin:5px 0 0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.g-actions{display:flex;gap:5px;margin-top:11px;flex-wrap:wrap;align-items:center;}
+.btn-s{background:var(--s1);border:1px solid var(--bdr);color:var(--t1);border-radius:7px;font-weight:700;cursor:pointer;font-family:inherit;font-size:11px;padding:6px 10px;transition:all .18s;}
+.btn-s:hover{background:var(--s2);}
+.btn-s.sel:hover{border-color:var(--grn);color:var(--grn);}
+.btn-s.hold:hover{border-color:var(--hold);color:var(--hold);}
+.btn-s.rej:hover{border-color:var(--red);color:var(--red);}
+.btn-p{background:var(--acc);border:none;color:#fff;border-radius:7px;font-weight:700;cursor:pointer;font-family:inherit;font-size:11px;padding:6px 11px;margin-left:auto;}
+.empty{text-align:center;padding:60px 24px;background:var(--s1);border:1px solid var(--bdr);border-radius:16px;color:var(--t3);font-size:14px;}
+
+.badge-pending{background:var(--s2);color:var(--t2);}
+.badge-selected{background:rgba(27,135,62,.15);color:#1d7b44;}
+.badge-hold{background:rgba(200,137,0,.14);color:var(--hold);}
+.badge-rejected{background:rgba(214,59,59,.12);color:var(--red);}
+
+.hidden{display:none!important;}
+@media(max-width:820px){.swipe-layout{grid-template-columns:1fr;}.cb-sidebar{max-height:none;}}
+.foot-hint{margin-top:30px;text-align:center;font-size:12px;color:var(--t3);border-top:1px solid var(--bdr);padding-top:18px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="demo-note">
+    <div class="kicker">Demo · not yet live</div>
+    <h1>Reviewing headshots — your choice of Swipe or Grid</h1>
+    <p>This is a preview of a new setting for casting-director accounts. Every CD would get the toggle in the top-right of their review screen and could switch between the one-at-a-time <b>Swipe</b> deck (today's default) and a scrollable <b>Grid</b> of all headshots — whichever they prefer. Their choice is remembered per account. Try the toggle, swipe or click the buttons, and move actors between folders. Nothing here is real data.</p>
+    <span class="tag">↓ Use the toggle in the top-right to switch views. Both views share the same shortlist.</span>
+  </div>
+
+  <div class="section-label">Casting · Review submissions</div>
+  <div class="role-head">
+    <div>
+      <h2>"Northlight" — Indie Feature · <span style="color:var(--t2);font-weight:700">Lead — Detective Mara</span></h2>
+      <div class="sub" id="roleSub"></div>
+    </div>
+    <div class="view-toggle-wrap">
+      <span class="view-toggle-label">Review style</span>
+      <div class="view-toggle" role="tablist">
+        <button id="tgSwipe" class="active" onclick="setView('swipe')" role="tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6"/></svg>
+          Swipe
+        </button>
+        <button id="tgGrid" onclick="setView('grid')" role="tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Grid
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mini-stats">
+    <div class="mini-stat"><b id="stTotal">0</b>total</div>
+    <div class="mini-stat pend"><b id="stPending">0</b>pending</div>
+    <div class="mini-stat sel"><b id="stSelected">0</b>selected</div>
+    <div class="mini-stat"><b id="stHold">0</b>hold</div>
+    <div class="mini-stat"><b id="stRejected">0</b>rejected</div>
+  </div>
+
+  <!-- ══ SWIPE VIEW ══ -->
+  <div id="swipeView">
+    <div class="swipe-layout">
+      <div class="swipe-area">
+        <div class="sw-counter" id="swCounter"></div>
+        <div class="swipe-card-wrap" id="cardWrap"></div>
+        <div class="sw-btns">
+          <div class="sw-btn-wrap">
+            <button class="sw-btn pass" onclick="decide('rejected')" title="Reject (swipe left / ←)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button><span class="sw-btn-label">Reject</span>
+          </div>
+          <div class="sw-btn-wrap">
+            <button class="sw-btn hold" onclick="decide('hold')" title="Hold (swipe up / ↑)" style="color:var(--hold);font-size:22px">⏸</button>
+            <span class="sw-btn-label">Hold</span>
+          </div>
+          <div class="sw-btn-wrap">
+            <button class="sw-btn yes" onclick="decide('selected')" title="Select (swipe right / →)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--grn)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </button><span class="sw-btn-label">Select</span>
+          </div>
+        </div>
+        <div class="sw-foot">
+          <button class="btn-s" onclick="undo()" id="undoBtn" style="visibility:hidden">↩ Undo</button>
+        </div>
+        <p class="sw-hint">Drag the card, use the buttons, or press ← reject · ↑ hold · → select</p>
+      </div>
+      <aside class="cb-sidebar">
+        <h3>Selected <span class="tag-grn" id="sideCount">0</span></h3>
+        <div id="sideList"></div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ══ GRID VIEW ══ -->
+  <div id="gridView" class="hidden">
+    <div class="tabs" id="folderTabs"></div>
+    <div id="gridBody"></div>
+  </div>
+
+  <div class="foot-hint">CastSlate review interface — faithful preview built from the live design system. Toggle placement, colors, and cards match production.</div>
+</div>
+
+<script>
+// ─── Sample applicants (demo headshots reused from the live landing demo) ───
+const APPLICANTS=[
+  {id:1,name:"Marisol Veyra",age:28,gender:"Female",height:"5'6\"",loc:"Los Angeles, CA",union:"SAG-AFTRA",skills:["Meisner Trained","Fluent Spanish","Stage Combat"],note:"Detective roles are my wheelhouse — I did a season of procedural TV and would love to bring grit to Mara.",img:"https://images.unsplash.com/photo-1601412436009-d964bd02edbc?w=600&h=800&fit=facearea&facepad=3&q=90"},
+  {id:2,name:"Georgie Nelson",age:26,gender:"Female",height:"5'11\"",loc:"Atlanta, GA",union:"Non-Union",skills:["Action","Commercial","Improv"],note:"Available for the full shoot window. Tape attached shows the interrogation beat.",img:"https://images.unsplash.com/photo-1721956514577-f6c15d73e585?w=600&h=800&fit=facearea&facepad=3&q=90"},
+  {id:3,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",loc:"New York, NY",union:"SAG-AFTRA",skills:["Drama Training","Voiceover","Stage Combat"],note:"Local to NY, no travel needed. Thanks for the read!",img:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=800&fit=crop&crop=top&q=90"},
+  {id:4,name:"Julian J. West",age:30,gender:"Male",height:"6'0\"",loc:"Chicago, IL",union:"SAG-AFTRA",skills:["Drama","Screen Acting","Stage Combat"],note:"Submitting for the detective's partner if you're still open on that role too.",img:"https://images.unsplash.com/photo-1587397845856-e6cf49176c70?w=600&h=800&fit=facearea&facepad=3&q=90"},
+  {id:5,name:"Evan Calder",age:46,gender:"Male",height:"6'1\"",loc:"Los Angeles, CA",union:"SAG-AFTRA",skills:["Improv","Yale Drama MFA","Basketball"],note:"Veteran character actor — happy to self-tape additional sides on request.",img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90"},
+  {id:6,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",loc:"Seattle, WA",union:"Non-Union",skills:["Film & TV","Japanese Fluent","Physical Theater"],note:"Big fan of the writer-director's last short. Would be an honor.",img:"https://images.unsplash.com/photo-1624395213043-fa2e123b2656?w=600&h=800&fit=facearea&facepad=3&q=90"},
+  {id:7,name:"Roman Kovalenko",age:29,gender:"Male",height:"5'10\"",loc:"Austin, TX",union:"Non-Union",skills:["Indie Film","Drama","Guitar"],note:"Comfortable with night shoots and the stunt-adjacent scenes.",img:"https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop"},
+  {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",loc:"New Orleans, LA",union:"SAG-AFTRA",skills:["Military Background","Boxing","Bass Vocals"],note:"Former MP — the procedural details come naturally. Reel link in profile.",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop&crop=top&q=90"},
+  {id:9,name:"Owen Fletcher",age:28,gender:"Male",height:"6'0\"",loc:"Portland, OR",union:"Non-Union",skills:["Drama","Film & TV","Screen Acting"],note:"Flexible schedule, can travel. Thank you for the consideration!",img:"https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop"},
+  {id:10,name:"Malik Jensen",age:22,gender:"Male",height:"6'0\"",loc:"Miami, FL",union:"Non-Union",skills:["Music Video","Indie","Dance"],note:"Younger read on the role — bringing a rookie-cop energy.",img:"https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop"},
+];
+
+// status: pending | selected | hold | rejected
+let state = APPLICANTS.map(a=>({...a,status:'pending'}));
+let view='swipe';
+let swipeIdx=0;          // index into pending list
+let folder='pending';
+let lastAction=null;     // {id, prev} for undo
+const STATUS_LABEL={pending:'Pending',selected:'Selected',hold:'Hold',rejected:'Rejected'};
+
+const pending = ()=>state.filter(a=>a.status==='pending');
+const byStatus = s=>state.filter(a=>a.status===s);
+const $ = id=>document.getElementById(id);
+
+function counts(){
+  return {
+    total:state.length,
+    pending:byStatus('pending').length,
+    selected:byStatus('selected').length,
+    hold:byStatus('hold').length,
+    rejected:byStatus('rejected').length,
+  };
+}
+
+function setView(v){
+  view=v;
+  $('tgSwipe').classList.toggle('active',v==='swipe');
+  $('tgGrid').classList.toggle('active',v==='grid');
+  $('swipeView').classList.toggle('hidden',v!=='swipe');
+  $('gridView').classList.toggle('hidden',v!=='grid');
+  render();
+}
+
+// ─── decision from swipe view (acts on current top card) ───
+function decide(status){
+  const list=pending();
+  const app=list[swipeIdx];
+  if(!app)return;
+  lastAction={id:app.id,prev:app.status};
+  app.status=status;
+  // keep index valid (list shrank)
+  if(swipeIdx>=pending().length) swipeIdx=Math.max(0,pending().length-1);
+  render();
+}
+
+// ─── move from grid view (explicit target) ───
+function moveTo(id,status){
+  const app=state.find(a=>a.id===id);
+  if(!app||app.status===status)return;
+  lastAction={id:app.id,prev:app.status};
+  app.status=status;
+  render();
+}
+
+function undo(){
+  if(!lastAction)return;
+  const app=state.find(a=>a.id===lastAction.id);
+  if(app)app.status=lastAction.prev;
+  lastAction=null;
+  render();
+}
+
+function badgeClass(s){return 'g-badge badge-'+s;}
+
+// ─── SWIPE CARD ───
+function renderSwipe(){
+  const list=pending();
+  const c=counts();
+  $('swCounter').textContent = list.length
+    ? `${c.pending} pending · reviewing ${Math.min(swipeIdx+1,list.length)} of ${list.length} · Role: Detective Mara`
+    : `No pending submissions`;
+
+  const wrap=$('cardWrap');
+  wrap.innerHTML='';
+  const app=list[swipeIdx];
+  const next=list[swipeIdx+1];
+
+  if(!app){
+    wrap.innerHTML=`<div class="s-card" style="display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:30px">
+      <div style="width:60px;height:60px;border-radius:50%;background:rgba(27,135,62,.10);color:var(--grn);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:14px">✓</div>
+      <h3 style="font-size:20px;margin-bottom:6px">All caught up</h3>
+      <p style="color:var(--t2);font-size:13px">Every submission has a decision. Switch to Grid to review your Selected, Hold, and Rejected folders.</p></div>`;
+  } else {
+    if(next){
+      const nb=document.createElement('div');
+      nb.className='s-card';
+      nb.style.cssText='transform:scale(.94) translateY(10px);opacity:.4;z-index:1';
+      nb.innerHTML=`<img src="${next.img}" alt=""><div class="s-card-info"><h3>${next.name}</h3></div>`;
+      wrap.appendChild(nb);
+    }
+    const card=document.createElement('div');
+    card.className='s-card';
+    card.style.cssText='z-index:2;cursor:grab;transition:transform .35s cubic-bezier(.34,1.56,.64,1)';
+    card.innerHTML=`
+      <div class="sw-overlay ov-rej" style="color:var(--red)">REJECT</div>
+      <div class="sw-overlay ov-hold" style="color:var(--hold)">HOLD</div>
+      <div class="sw-overlay ov-sel" style="color:var(--grn)">SELECT ✓</div>
+      <img src="${app.img}" alt="${app.name}" draggable="false">
+      <div class="s-card-info">
+        <h3>${app.name}</h3>
+        <div class="s-card-meta">${[app.age,app.gender,app.height,app.loc].filter(Boolean).join(' · ')}</div>
+        <div class="s-card-tags">
+          ${app.skills.slice(0,3).map(s=>`<span>${s}</span>`).join('')}
+          <span style="background:rgba(26,26,46,.08);color:var(--acc)">${app.union}</span>
+        </div>
+        <p class="s-card-note">"${app.note}"</p>
+      </div>`;
+    wrap.appendChild(card);
+    attachDrag(card);
+  }
+
+  // sidebar
+  const sel=byStatus('selected');
+  $('sideCount').textContent=sel.length;
+  $('sideList').innerHTML = sel.length
+    ? sel.map(a=>`<div class="cb-item"><img src="${a.img}" alt=""><div><h4>${a.name}</h4><p>${[a.age,a.gender,a.loc].filter(Boolean).join(' · ')}</p></div></div>`).join('')
+    : `<div class="cb-empty">Swipe right or press Select to shortlist an actor.</div>`;
+
+  $('undoBtn').style.visibility = lastAction? 'visible':'hidden';
+  if(lastAction){
+    const a=state.find(x=>x.id===lastAction.id);
+    $('undoBtn').textContent = '↩ Undo — '+(a?a.name:'');
+  }
+}
+
+function attachDrag(card){
+  let dx=0,dy=0,sx=0,sy=0,dragging=false;
+  const ovRej=card.querySelector('.ov-rej'),ovHold=card.querySelector('.ov-hold'),ovSel=card.querySelector('.ov-sel');
+  const paint=()=>{
+    card.style.transform=`translate(${dx}px,${Math.min(dy,0)}px) rotate(${dx*.035}deg)`;
+    const horiz=Math.abs(dx)>Math.abs(dy);
+    ovSel.style.opacity = (horiz&&dx>60)?1:0;
+    ovRej.style.opacity = (horiz&&dx<-60)?1:0;
+    ovHold.style.opacity = (!horiz&&dy<-60)?1:0;
+  };
+  const down=e=>{dragging=true;card.style.transition='none';card.style.cursor='grabbing';sx=e.clientX;sy=e.clientY;card.setPointerCapture&&card.setPointerCapture(e.pointerId);};
+  const move=e=>{if(!dragging)return;dx=e.clientX-sx;dy=e.clientY-sy;paint();};
+  const up=()=>{
+    if(!dragging)return;dragging=false;card.style.cursor='grab';card.style.transition='transform .35s cubic-bezier(.34,1.56,.64,1)';
+    if(Math.abs(dx)>100&&Math.abs(dx)>Math.abs(dy)){
+      const status=dx>0?'selected':'rejected';
+      card.style.transform=`translate(${dx>0?600:-600}px,${dy}px) rotate(${dx*.05}deg)`;
+      setTimeout(()=>decide(status),160);
+    } else if(dy<-90){
+      card.style.transform=`translateY(-600px)`;
+      setTimeout(()=>decide('hold'),160);
+    } else {
+      dx=0;dy=0;paint();
+    }
+  };
+  card.addEventListener('pointerdown',down);
+  card.addEventListener('pointermove',move);
+  card.addEventListener('pointerup',up);
+  card.addEventListener('pointercancel',up);
+}
+
+// ─── GRID ───
+function renderGrid(){
+  const c=counts();
+  const order=['pending','hold','selected','rejected'];
+  $('folderTabs').innerHTML=order.map(f=>
+    `<button class="tab ${folder===f?'active':''}" onclick="setFolder('${f}')">${STATUS_LABEL[f]}<span class="c">(${c[f]})</span></button>`
+  ).join('');
+
+  const list=byStatus(folder);
+  const body=$('gridBody');
+  if(!list.length){
+    body.innerHTML=`<div class="empty">No actors in ${STATUS_LABEL[folder]} yet.${folder==='pending'?'':' Move some here from another folder or the Pending queue.'}</div>`;
+    return;
+  }
+  body.innerHTML=`<div class="folder-cards-grid">${list.map(cardHTML).join('')}</div>`;
+}
+
+function cardHTML(a){
+  const chips=a.skills.slice(0,3).map(s=>`<span>${s}</span>`).join('');
+  const actions=[];
+  if(a.status!=='selected')actions.push(`<button class="btn-s sel" onclick="moveTo(${a.id},'selected')">→ Select</button>`);
+  if(a.status!=='hold')actions.push(`<button class="btn-s hold" onclick="moveTo(${a.id},'hold')">→ Hold</button>`);
+  if(a.status!=='rejected')actions.push(`<button class="btn-s rej" onclick="moveTo(${a.id},'rejected')">→ Reject</button>`);
+  if(a.status==='selected')actions.push(`<button class="btn-p" onclick="alert('Opens the message composer to '+${JSON.stringify(a.name)})">✉ Message</button>`);
+  return `<div class="g-card">
+    <div class="g-shot">
+      <img src="${a.img}" alt="${a.name}">
+      <span class="${badgeClass(a.status)}">${a.status}</span>
+    </div>
+    <div class="g-body">
+      <h4>${a.name}</h4>
+      <p class="meta">${[a.age,a.gender,a.loc,a.union].filter(Boolean).join(' · ')}</p>
+      <div class="g-chips">${chips}</div>
+      <p class="g-note">"${a.note}"</p>
+      <div class="g-actions">${actions.join('')}</div>
+    </div>
+  </div>`;
+}
+
+function setFolder(f){folder=f;renderGrid();}
+
+function renderStats(){
+  const c=counts();
+  $('stTotal').textContent=c.total;
+  $('stPending').textContent=c.pending;
+  $('stSelected').textContent=c.selected;
+  $('stHold').textContent=c.hold;
+  $('stRejected').textContent=c.rejected;
+  $('roleSub').textContent=`${c.total} submissions · ${c.pending} pending · ${c.selected} selected · ${c.hold} hold · ${c.rejected} rejected`;
+}
+
+function render(){
+  renderStats();
+  if(view==='swipe')renderSwipe(); else renderGrid();
+}
+
+// keyboard for swipe view
+window.addEventListener('keydown',e=>{
+  if(view!=='swipe')return;
+  if(e.key==='ArrowLeft')decide('rejected');
+  else if(e.key==='ArrowRight')decide('selected');
+  else if(e.key==='ArrowUp')decide('hold');
+});
+
+render();
+</script>
+</body>
+</html>

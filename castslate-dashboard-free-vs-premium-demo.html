@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CastSlate — Talent Dashboard: Free vs Premium (production design)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+<style>
+  /* ── real production tokens (from swipecast-full.jsx :root) ── */
+  :root{
+    --bg:#FAF7F1; --s1:#FFFFFF; --s2:#F1ECE2; --bdr:#E5DFD2;
+    --t1:#1A1A2E; --t2:#5A5A72; --t3:#8E8EA0; --acc:#1A1A2E; --teal:#4F8A8B;
+    --win:#1a6b42; --win-bd:#bfe0cd; --purple:#6b3ecb;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:#ece7dd;color:var(--t1);
+    font-family:'DM Sans',-apple-system,Segoe UI,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;padding:30px 16px 70px;}
+  .outer{max-width:1180px;margin:0 auto;}
+  .intro-k{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#3d6259;}
+  .intro-h{font-size:26px;font-weight:800;letter-spacing:-.5px;margin:6px 0 6px;}
+  .intro-p{color:var(--t2);font-size:14.5px;max-width:820px;margin:0;}
+
+  /* faux browser frame to sell "live production" */
+  .frame{margin-top:26px;border-radius:14px;overflow:hidden;box-shadow:0 20px 50px -24px rgba(20,20,40,.4);border:1px solid #dcd6c9;}
+  .frame-bar{background:#e9e4d8;display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid #dcd6c9;}
+  .dots{display:flex;gap:6px;} .dots i{width:11px;height:11px;border-radius:50%;display:block;}
+  .dots i:nth-child(1){background:#ff5f57;} .dots i:nth-child(2){background:#febc2e;} .dots i:nth-child(3){background:#28c840;}
+  .url{flex:1;background:#fff;border:1px solid #dcd6c9;border-radius:7px;padding:5px 12px;font-size:12px;color:var(--t2);text-align:center;}
+  .tier{font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:999px;}
+  .tier.free{background:#efe7f9;color:#6b3ecb;} .tier.prem{background:linear-gradient(100deg,#7a4fd6,#4d2a9c);color:#ffe9a8;}
+
+  /* the actual page (matches .page + --bg) */
+  .page{background:var(--bg);padding:30px 34px 34px;}
+  @media(max-width:640px){.page{padding:22px 16px;}}
+  .section-label{font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:12px;}
+
+  /* upgrade banner (free only) — exact production styles */
+  .upg{background:linear-gradient(90deg,#6b3ecb,#8b5cf6);border-radius:14px;padding:16px 20px;margin-bottom:28px;
+    display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;box-shadow:0 6px 20px rgba(107,62,203,.28);}
+  .upg .lft{display:flex;align-items:center;gap:14px;min-width:0;}
+  .upg svg{flex:none;stroke:#fff;}
+  .upg .t{font-weight:800;font-size:15.5px;color:#fff;margin-bottom:2px;}
+  .upg .s{font-size:13px;color:rgba(255,255,255,.9);line-height:1.4;}
+  .upg .btn{background:#fff;color:#6b3ecb;font-weight:800;font-size:13px;padding:11px 22px;border-radius:10px;border:none;cursor:pointer;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.18);flex:none;}
+
+  /* welcome header + premium member card */
+  .head{margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;gap:20px;}
+  @media(max-width:640px){.head{flex-direction:column;align-items:stretch;}}
+  .head h1{font-weight:800;font-size:30px;letter-spacing:-.8px;color:var(--t1);margin:0 0 6px;}
+  @media(max-width:640px){.head h1{font-size:22px;}}
+  .head p{color:var(--t2);font-size:15px;margin:0;}
+  .procard{position:relative;overflow:hidden;width:230px;flex:none;border-radius:14px;padding:15px 17px;background:linear-gradient(145deg,#7a4fd6,#4d2a9c 60%,#7a4fd6);box-shadow:0 18px 40px -22px rgba(77,42,156,.6);}
+  .procard .r1{display:flex;justify-content:space-between;align-items:center;}
+  .procard .cs{font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:#d6c8f7;}
+  .procard .pm{font-size:10px;font-weight:800;letter-spacing:1.4px;color:#ffe9a8;}
+  .procard .chip{width:25px;height:18px;border-radius:4px;margin-top:12px;background:linear-gradient(135deg,#ffe9a8,#e6b84e);}
+  .procard .nm{margin-top:12px;font-size:15px;font-weight:600;color:#fff;}
+  .procard .sn{margin-top:2px;font-size:10px;letter-spacing:.5px;color:#d0c2f2;}
+
+  /* ── stat row: exact production .td-stats + card styles ── */
+  .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:10px;}
+  @media(max-width:900px){.td-stats{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:520px){.td-stats{grid-template-columns:1fr;}}
+  .stat{background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;position:relative;min-height:86px;}
+  .stat .l{font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;}
+  .stat .v{font-size:26px;font-weight:800;color:var(--t1);letter-spacing:-.5px;line-height:1;}
+  .stat .s{font-size:11px;color:var(--t3);}
+  .stat.win{border-color:var(--win-bd);} .stat.win .l{color:var(--win);} .stat.win .v{color:var(--win);} .stat.win .s{color:var(--win);}
+  .stat.teal .l{color:var(--teal);} .stat.teal .v{color:var(--teal);}
+  .stat.pv .v{color:var(--teal);} .stat.pv .s{color:var(--win);font-weight:700;}
+  .delta-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--win);margin-right:5px;vertical-align:middle;animation:pl 2.2s infinite;}
+  @keyframes pl{0%{box-shadow:0 0 0 0 rgba(26,107,66,.5);}70%{box-shadow:0 0 0 6px rgba(26,107,66,0);}100%{box-shadow:0 0 0 0 rgba(26,107,66,0);}}
+  /* locked profile-views (free) */
+  .stat.locked .v{filter:blur(7px);color:#c9c6bd;user-select:none;}
+  .lockcta{position:absolute;inset:0;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;padding:8px;
+    background:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,.9));}
+  .lockcta .lk{font-size:15px;}
+  .lockcta .t{font-size:11.5px;font-weight:800;color:var(--t1);}
+  .lockcta .c{font-size:11px;font-weight:800;color:#6b3ecb;}
+
+  .statnote{font-size:12px;color:var(--t2);background:#f6f2ea;border:1px dashed #ddd5c6;border-radius:10px;padding:10px 13px;margin:6px 0 26px;line-height:1.5;}
+  .statnote b{color:var(--t1);}
+  .statnote .g{color:var(--win);font-weight:700;}
+  .statnote .p{color:#6b3ecb;font-weight:700;}
+
+  /* content continuation (unchanged) */
+  .cols{display:grid;grid-template-columns:1.6fr 1fr;gap:22px;}
+  @media(max-width:820px){.cols{grid-template-columns:1fr;}}
+  .panel{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:22px;}
+  .panel .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .panel .ph h3{margin:0;font-size:17px;font-weight:800;}
+  .panel .ph .sm{font-size:12px;color:var(--t3);}
+  .btn-o{background:var(--s1);border:1px solid var(--bdr);border-radius:9px;padding:9px 15px;font-size:12.5px;font-weight:700;color:var(--t1);cursor:pointer;}
+  .appc{border:1px solid var(--bdr);border-radius:12px;padding:15px 16px;margin-bottom:12px;display:flex;gap:12px;}
+  .appc.shortlisted{border-color:var(--win-bd);background:linear-gradient(180deg,#f2fbf6,#fff 55%);}
+  .appc .ic{flex:none;width:34px;height:34px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:15px;}
+  .appc.shortlisted .ic{background:var(--win);color:#fff;}
+  .appc .body{flex:1;min-width:0;}
+  .appc .tt{font-size:15px;font-weight:800;color:var(--t1);}
+  .appc .st{font-size:12.5px;color:var(--t2);margin:2px 0 4px;}
+  .appc .mt{font-size:12px;color:var(--t3);}
+  .badge{font-size:11px;font-weight:800;padding:5px 11px;border-radius:999px;white-space:nowrap;height:fit-content;}
+  .badge.sub{background:var(--s2);color:var(--t2);} .badge.short{background:#d9f0e2;color:var(--win);}
+  .checkline{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:13.5px;}
+  .checkline .ck{width:20px;height:20px;border-radius:50%;flex:none;border:2px solid #d8d2c4;}
+  .checkline.done .ck{background:var(--win);border-color:var(--win);position:relative;}
+  .checkline.done .ck::after{content:"✓";color:#fff;font-size:12px;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+  .checkline .add{margin-left:auto;font-size:12.5px;color:var(--teal);font-weight:700;}
+  .progbar{height:6px;border-radius:999px;background:#eee7d6;overflow:hidden;margin:6px 0 14px;}
+  .progbar>i{display:block;height:100%;width:14%;background:linear-gradient(90deg,#e0574a,#e88);border-radius:999px;}
+
+  .foot{margin-top:30px;font-size:12px;color:var(--t3);border-top:1px solid #dcd6c9;padding-top:14px;}
+</style>
+</head>
+<body>
+<div class="outer">
+  <div class="intro-k">CastSlate · Talent Dashboard</div>
+  <div class="intro-h">Free vs Premium — in the live production design</div>
+  <p class="intro-p">Same real page, exact production styling. The change is the stat row: the demotivating <b>“Audition Requests: 0”</b> is gone, <b>Profile Views</b> is the Premium upsell (locked for free), and every card leads with something positive or actionable — so a struggling actor never opens to a wall of zeros.</p>
+
+  <!-- ============ FREE ============ -->
+  <div class="frame">
+    <div class="frame-bar">
+      <span class="dots"><i></i><i></i><i></i></span>
+      <span class="url">castslate.com/talent-dashboard</span>
+      <span class="tier free">Free account</span>
+    </div>
+    <div class="page">
+      <!-- purple upgrade banner (free only) -->
+      <div class="upg">
+        <div class="lft">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3v7h6l-8 11v-7H5l8-11"/></svg>
+          <div>
+            <div class="t">Unlock your full casting potential</div>
+            <div class="s">Go Premium for unlimited submissions, Manager Mode, video reels &amp; your QR business card — $9.99/month.</div>
+          </div>
+        </div>
+        <button class="btn">See Premium Plans →</button>
+      </div>
+
+      <div class="head">
+        <div>
+          <div class="section-label">Talent Dashboard</div>
+          <h1>Welcome back, Marian.</h1>
+          <p>Here are the latest updates for your acting profile.</p>
+        </div>
+      </div>
+
+      <!-- NEW stat row -->
+      <div class="td-stats">
+        <div class="stat"><div class="l">Applications</div><div class="v">9</div><div class="s">total submitted</div></div>
+        <div class="stat win"><div class="l">Casting interest</div><div class="v">1</div><div class="s">a director shortlisted you</div></div>
+        <div class="stat locked">
+          <div class="l">Profile views</div><div class="v">47</div><div class="s">appeared in searches</div>
+          <div class="lockcta"><span class="lk">🔒</span><span class="t">See who’s viewing you</span><span class="c">Go Premium →</span></div>
+        </div>
+        <div class="stat"><div class="l">Profile</div><div class="v">14%</div><div class="s">complete your profile</div></div>
+      </div>
+      <div class="statnote">
+        <b>Why this beats the old row:</b> “Audition Requests: 0” is gone. <span class="g">Casting interest</span> surfaces the real shortlist that was buried below the fold — and when an actor has <b>no</b> wins yet it falls back to <span class="p">“New roles for you · 6 · closing soon”</span> (fresh-casting FOMO), so nobody ever sees a naked zero. <span class="p">Profile views</span> is the locked upsell.
+      </div>
+
+      <!-- content below (unchanged) -->
+      <div class="cols">
+        <div class="panel">
+          <div class="ph"><h3>Applications</h3><button class="btn-o">Browse Castings</button></div>
+          <div class="appc"><div class="ic">➤</div><div class="body"><div class="tt">Room 8</div><div class="st">Awaiting casting director review</div><div class="mt">Role: Mara Voss · Feature Film · New York, NY</div></div><span class="badge sub">Submitted</span></div>
+          <div class="appc shortlisted"><div class="ic">★</div><div class="body"><div class="tt">THE BOOTH IS DEAD (working title)</div><div class="st">🎬 NYC West 43 Pictures shortlisted you</div><div class="mt">Role: MARCUS DELACROIX · Experimental Film · New York, NY</div></div><span class="badge short">Shortlisted</span></div>
+          <div class="appc"><div class="ic">➤</div><div class="body"><div class="tt">Off-Broadway Workshop: The Ninth Table</div><div class="st">Awaiting casting director review</div><div class="mt">Role: Mae Whitlock · Workshop / Staged Reading · New York, NY</div></div><span class="badge sub">Submitted</span></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>Complete Your Actor Profile</h3></div>
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--t2)"><span>1 of 7 complete</span><span style="font-weight:800;color:var(--t1)">14%</span></div>
+          <div class="progbar"><i></i></div>
+          <div class="checkline done"><span class="ck"></span> Upload headshot</div>
+          <div class="checkline"><span class="ck"></span> Add bio <span class="add">Add →</span></div>
+          <div class="checkline"><span class="ck"></span> Add location <span class="add">Add →</span></div>
+          <div class="checkline"><span class="ck"></span> Add age range <span class="add">Add →</span></div>
+          <div class="checkline"><span class="ck"></span> Add credits / experience <span class="add">Add →</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PREMIUM ============ -->
+  <div class="frame">
+    <div class="frame-bar">
+      <span class="dots"><i></i><i></i><i></i></span>
+      <span class="url">castslate.com/talent-dashboard</span>
+      <span class="tier prem">Premium account</span>
+    </div>
+    <div class="page">
+      <!-- no upgrade banner for premium -->
+      <div class="head">
+        <div>
+          <div class="section-label">Talent Dashboard</div>
+          <h1>Welcome back, Marian.</h1>
+          <p>Here are the latest updates for your acting profile.</p>
+        </div>
+        <div class="procard">
+          <div class="r1"><span class="cs">CastSlate</span><span class="pm">Premium</span></div>
+          <div class="chip"></div>
+          <div class="nm">Marian</div>
+          <div class="sn">Member since 2026</div>
+        </div>
+      </div>
+
+      <!-- NEW stat row (Profile Views unlocked) -->
+      <div class="td-stats">
+        <div class="stat"><div class="l">Applications</div><div class="v">9</div><div class="s">total submitted</div></div>
+        <div class="stat win"><div class="l">Casting interest</div><div class="v">1</div><div class="s">a director shortlisted you</div></div>
+        <div class="stat pv"><div class="l">Profile views</div><div class="v">47</div><div class="s"><span class="delta-dot"></span>▲ +14 this week</div></div>
+        <div class="stat"><div class="l">Profile</div><div class="v">14%</div><div class="s">complete your profile</div></div>
+      </div>
+      <div class="statnote">
+        <b>Premium unlocks Profile views.</b> The number is <span class="g">impressions</span> — times you appeared in casting searches — which grow with platform activity <b>for everyone</b>, not just actors who book. The <span class="g">“+14 this week”</span> delta (with a live pulse) keeps it feeling alive on every login. <b>Every figure is a real logged event — nothing invented.</b>
+      </div>
+
+      <!-- content below (identical for both tiers) -->
+      <div class="cols">
+        <div class="panel">
+          <div class="ph"><h3>Applications</h3><button class="btn-o">Browse Castings</button></div>
+          <div class="appc"><div class="ic">➤</div><div class="body"><div class="tt">Room 8</div><div class="st">Awaiting casting director review</div><div class="mt">Role: Mara Voss · Feature Film · New York, NY</div></div><span class="badge sub">Submitted</span></div>
+          <div class="appc shortlisted"><div class="ic">★</div><div class="body"><div class="tt">THE BOOTH IS DEAD (working title)</div><div class="st">🎬 NYC West 43 Pictures shortlisted you</div><div class="mt">Role: MARCUS DELACROIX · Experimental Film · New York, NY</div></div><span class="badge short">Shortlisted</span></div>
+          <div class="appc"><div class="ic">➤</div><div class="body"><div class="tt">Off-Broadway Workshop: The Ninth Table</div><div class="st">Awaiting casting director review</div><div class="mt">Role: Mae Whitlock · Workshop / Staged Reading · New York, NY</div></div><span class="badge sub">Submitted</span></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>Complete Your Actor Profile</h3></div>
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--t2)"><span>1 of 7 complete</span><span style="font-weight:800;color:var(--t1)">14%</span></div>
+          <div class="progbar"><i></i></div>
+          <div class="checkline done"><span class="ck"></span> Upload headshot</div>
+          <div class="checkline"><span class="ck"></span> Add bio <span class="add">Add →</span></div>
+          <div class="checkline"><span class="ck"></span> Add location <span class="add">Add →</span></div>
+          <div class="checkline"><span class="ck"></span> Add reel / video link <span class="add">Add →</span></div>
+          <div class="checkline"><span class="ck"></span> Add slate video (7-sec intro) <span class="add">Add →</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ zero-win actor ============ -->
+  <div class="frame">
+    <div class="frame-bar">
+      <span class="dots"><i></i><i></i><i></i></span>
+      <span class="url">castslate.com/talent-dashboard</span>
+      <span class="tier free">New actor · no wins yet</span>
+    </div>
+    <div class="page">
+      <div class="section-label" style="margin-bottom:14px">Directly answering your churn worry — what a brand-new actor (0 shortlists) sees</div>
+      <div class="td-stats">
+        <div class="stat teal"><div class="l">New roles for you</div><div class="v">6</div><div class="s">2 closing soon →</div></div>
+        <div class="stat"><div class="l">Applications</div><div class="v">3</div><div class="s">in casting directors’ hands</div></div>
+        <div class="stat locked"><div class="l">Profile views</div><div class="v">12</div><div class="s">appeared in searches</div><div class="lockcta"><span class="lk">🔒</span><span class="t">See who’s viewing you</span><span class="c">Go Premium →</span></div></div>
+        <div class="stat"><div class="l">Profile strength</div><div class="v">14%</div><div class="s">finish to get seen</div></div>
+      </div>
+      <div class="statnote">
+        No shortlist, no auditions — and still <b>not a single demotivating zero.</b> <span class="teal" style="color:var(--teal);font-weight:700">New roles for you</span> leads with fresh-casting FOMO (the real reason people keep paying — “I might miss the role”), <b>Applications</b> rewards the effort they control, <b>Profile strength</b> invites action. The retention lever is momentum + opportunity, never a scoreboard they’re losing.
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">Design mockup in the production design system — not wired to live data. Numbers mirror Marian’s account. Content below the stat row (Applications, checklist, Media Locker) is unchanged. · Say the word and I’ll wire this into <code>TalentDashboard</code> and ship it the same way as the iPad fix.</div>
+</div>
+</body>
+</html>

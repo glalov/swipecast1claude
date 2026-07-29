@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CastSlate — video card white-space options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800;900&family=Source+Serif+4:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAF7F1;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--teal:#4F8A8B;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;}
+
+/* radios drive everything — no JS */
+.sw{position:absolute;opacity:0;pointer-events:none;}
+
+.bar{position:sticky;top:0;z-index:20;background:rgba(250,247,241,.95);border-bottom:1px solid var(--bdr);padding:14px 24px 13px;}
+.bar-in{max-width:1100px;margin:0 auto;}
+.bar h1{font-family:'Source Serif 4',serif;font-size:19px;margin:0 0 3px;font-weight:700;}
+.bar>.bar-in>p{margin:0 0 11px;font-size:13px;color:var(--t2);line-height:1.5;}
+.opts{display:flex;flex-wrap:wrap;gap:7px;}
+.opt{font-size:12.5px;font-weight:600;padding:8px 13px;border-radius:8px;border:1px solid var(--bdr);
+     background:#fff;color:var(--t2);cursor:pointer;user-select:none;display:inline-block;}
+.opt:hover{border-color:var(--t3);}
+
+#o-now:checked   ~ .bar .opt[for="o-now"],
+#o-fill:checked  ~ .bar .opt[for="o-fill"],
+#o-equal:checked ~ .bar .opt[for="o-equal"],
+#o-copy:checked  ~ .bar .opt[for="o-copy"]{background:var(--t1);border-color:var(--t1);color:#fff;}
+
+.note{max-width:1100px;margin:16px auto 0;padding:0 24px;font-size:13.5px;line-height:1.62;color:var(--t2);display:none;}
+.note b{color:var(--t1);font-weight:700;}
+.note em{color:var(--t1);font-style:italic;}
+#o-now:checked   ~ .notes .n-now,
+#o-fill:checked  ~ .notes .n-fill,
+#o-equal:checked ~ .notes .n-equal,
+#o-copy:checked  ~ .notes .n-copy{display:block;}
+.verdict{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;padding:3px 9px;border-radius:999px;margin-right:9px;}
+.v-ok{background:rgba(27,135,62,.13);color:#12662d;}
+.v-bad{background:rgba(214,59,59,.13);color:#9e2020;}
+
+/* ── real landing-page card CSS ── */
+.cinema-feature,.hiw-card{max-width:1100px;margin:0 auto 34px;padding:0 clamp(16px,4vw,40px);}
+.card-inner{background:#fff;border:1px solid var(--bdr);border-radius:22px;
+  box-shadow:0 12px 38px -22px rgba(26,26,46,.24),0 2px 8px rgba(26,26,46,.04);
+  padding:clamp(16px,2.4vw,26px);display:grid;
+  grid-template-columns:minmax(0,2.2fr) minmax(280px,1fr);
+  gap:clamp(22px,3.2vw,44px);align-items:center;}
+.media{line-height:0;position:relative;overflow:hidden;border-radius:14px;background:var(--s3);}
+.media img{width:100%;aspect-ratio:16/9;height:auto;display:block;object-fit:cover;border-radius:14px;}
+.copy{padding:6px clamp(4px,1vw,14px) 6px 0;display:flex;flex-direction:column;justify-content:center;gap:14px;}
+.cf-label{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--acc);font-weight:700;margin:0;}
+.copy h2{font-weight:800;font-size:clamp(22px,2.8vw,30px);letter-spacing:-0.8px;line-height:1.15;margin:0;}
+.copy p{color:var(--t2);font-size:14px;line-height:1.7;margin:0;}
+.steps{display:flex;flex-direction:column;gap:10px;margin:4px 0;}
+.step{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--t2);line-height:1.5;}
+.num{width:22px;height:22px;min-width:22px;border-radius:50%;background:var(--acc);color:#fff;font-size:10px;
+     font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+.btn{background:var(--teal);color:#fff;border:none;border-radius:9px;padding:13px 22px;font-size:14px;
+     font-weight:700;font-family:inherit;align-self:flex-start;}
+
+/* the tinted bands ARE the leftover space — they size themselves, no JS */
+.mediawrap{display:flex;flex-direction:column;height:100%;}
+.band{flex:1;min-height:0;background:rgba(232,144,42,.28);border-radius:3px;}
+
+/* ── OPTION 1 — video fills the card ── */
+@media(min-width:1001px){
+  #o-fill:checked ~ .stage .media{align-self:stretch;height:100%;}
+  #o-fill:checked ~ .stage .media img{height:100%;aspect-ratio:auto;}
+}
+/* ── OPTION 2 — equal card heights ── */
+#o-equal:checked ~ .stage .card-inner{min-height:513px;}
+/* ── OPTION 3 — shorter headline on card 2 ── */
+.hl-short{display:none;}
+#o-copy:checked ~ .stage .hl-full{display:none;}
+#o-copy:checked ~ .stage .hl-short{display:inline;}
+
+.cardtag{max-width:1100px;margin:0 auto;padding:0 clamp(16px,4vw,40px) 6px;font-size:10.5px;
+     letter-spacing:.09em;text-transform:uppercase;color:var(--t3);font-weight:700;}
+.legend{max-width:1100px;margin:0 auto 14px;padding:0 clamp(16px,4vw,40px);font-size:12px;color:var(--t3);}
+.chip{display:inline-block;width:11px;height:11px;border-radius:3px;background:rgba(232,144,42,.28);vertical-align:-1px;margin-right:5px;}
+footer{max-width:1100px;margin:8px auto 60px;padding:0 24px;font-size:12px;color:var(--t3);line-height:1.6;}
+</style>
+</head>
+<body>
+
+<input class="sw" type="radio" name="opt" id="o-now" checked>
+<input class="sw" type="radio" name="opt" id="o-fill">
+<input class="sw" type="radio" name="opt" id="o-equal">
+<input class="sw" type="radio" name="opt" id="o-copy">
+
+<div class="bar"><div class="bar-in">
+  <h1>Matching the white space around the two videos</h1>
+  <p>Both videos are already the same size. Card&nbsp;2 is taller only because its headline wraps to 3 lines — and the grid centres the video, so that extra height splits above and below.</p>
+  <div class="opts">
+    <label class="opt" for="o-now">Now</label>
+    <label class="opt" for="o-fill">Option 1 — video fills</label>
+    <label class="opt" for="o-equal">Option 2 — equal heights</label>
+    <label class="opt" for="o-copy">Option 3 — shorter headline</label>
+  </div>
+</div></div>
+
+<div class="notes">
+  <div class="note n-now"><span class="verdict v-bad">MISMATCHED</span>Card 2 carries noticeably more space above and below its video than card 1. The orange bands show it.</div>
+  <div class="note n-fill"><span class="verdict v-ok">MATCHED</span><b>Recommended.</b> The video stretches to the card’s full inner height, so the leftover space disappears entirely and the framing is identical in both — permanently. It can’t drift again when copy changes. Trade-off: the two videos end up slightly different heights and crop a little more top and bottom. No text change.</div>
+  <div class="note n-equal"><span class="verdict v-ok">MATCHED</span>Both cards forced to the taller height, so the bands match exactly and the video stays 16/9. Trade-off: card 1 gains ~35px of air, giving both the roomier look you liked <em>less</em>. No text change.</div>
+  <div class="note n-copy"><span class="verdict v-ok">MATCHED</span>Card 2’s headline shortened to 2 lines, so both cards land at the same height and card 1 stays <b>exactly</b> as it is today. Trade-off: needs a wording change, and it can slip back to 3 lines if the copy grows later.</div>
+</div>
+
+<div class="stage">
+  <div style="height:20px"></div>
+  <div class="legend"><span class="chip"></span>orange = the white space above / below the video</div>
+
+  <div class="cardtag">Card 1 — the actor journey</div>
+  <div class="cinema-feature"><div class="card-inner">
+    <div class="mediawrap">
+      <div class="band"></div>
+      <div class="media"><img src="/assets/video/actor-journey-set-poster.jpg" alt=""></div>
+      <div class="band"></div>
+    </div>
+    <div class="copy">
+      <p class="cf-label">The actor journey</p>
+      <h2>From submission to set.</h2>
+      <p>CastSlate helps actors move from profile submission to real casting consideration. Casting teams review actors visually, one profile at a time, so every headshot has a real chance to be seen.</p>
+      <div class="steps">
+        <div class="step"><span class="num">1</span><span><strong style="color:var(--t1)">Step 1:</strong> Create your actor profile.</span></div>
+        <div class="step"><span class="num">2</span><span><strong style="color:var(--t1)">Step 2:</strong> Submit to roles.</span></div>
+        <div class="step"><span class="num">3</span><span><strong style="color:var(--t1)">Step 3:</strong> Get reviewed full-screen.</span></div>
+      </div>
+      <div><button class="btn">Create My Free Profile →</button></div>
+    </div>
+  </div></div>
+
+  <div class="cardtag">Card 2 — for casting directors</div>
+  <div class="hiw-card"><div class="card-inner">
+    <div class="mediawrap">
+      <div class="band"></div>
+      <div class="media"><img src="/assets/video/casting-director-set-poster.jpg" alt=""></div>
+      <div class="band"></div>
+    </div>
+    <div class="copy">
+      <p class="cf-label">For Casting Directors</p>
+      <h2><span class="hl-full">Casting teams review one actor at a time.</span><span class="hl-short">Review one actor at a time.</span></h2>
+      <p>Instead of burying actors in crowded thumbnail grids, CastSlate presents each profile clearly — headshots, credits, skills, resume, and reels organized for faster decisions.</p>
+      <div class="steps">
+        <div class="step"><span class="num">1</span><span><strong style="color:var(--t1)">Step 1:</strong> Review full-screen profiles.</span></div>
+        <div class="step"><span class="num">2</span><span><strong style="color:var(--t1)">Step 2:</strong> Compare actors visually.</span></div>
+        <div class="step"><span class="num">3</span><span><strong style="color:var(--t1)">Step 3:</strong> Shortlist and message faster.</span></div>
+      </div>
+      <div><button class="btn">Create CD Account →</button></div>
+    </div>
+  </div></div>
+</div>
+
+<footer>Real card CSS, static poster frames. Below 1000px both cards stack and every option behaves the same as today.</footer>
+
+</body>
+</html>

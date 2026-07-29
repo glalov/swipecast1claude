@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CastSlate — Dashboard: Free vs Premium ("Roles you match")</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAF7F1; --s1:#FFFFFF; --s2:#F1ECE2; --bdr:#E5DFD2;
+    --t1:#1A1A2E; --t2:#5A5A72; --t3:#8E8EA0; --acc:#1A1A2E; --teal:#4F8A8B;
+    --win:#1a6b42; --win-bd:#bfe0cd; --purple:#6b3ecb;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:#ece7dd;color:var(--t1);
+    font-family:'DM Sans',-apple-system,Segoe UI,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;padding:30px 16px 70px;}
+  .outer{max-width:1180px;margin:0 auto;}
+  .intro-k{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#3d6259;}
+  .intro-h{font-size:26px;font-weight:800;letter-spacing:-.5px;margin:6px 0 8px;}
+  .rulebox{background:#fff;border:1px solid #dcd6c9;border-radius:12px;padding:14px 18px;font-size:13.5px;color:var(--t2);line-height:1.55;max-width:920px;}
+  .rulebox b{color:var(--t1);} .rulebox .tl{color:var(--teal);font-weight:700;} .rulebox .p{color:var(--purple);font-weight:700;} .rulebox .g{color:var(--win);font-weight:700;}
+
+  .frame{margin-top:24px;border-radius:14px;overflow:hidden;box-shadow:0 20px 50px -24px rgba(20,20,40,.4);border:1px solid #dcd6c9;}
+  .frame-bar{background:#e9e4d8;display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid #dcd6c9;}
+  .dots{display:flex;gap:6px;} .dots i{width:11px;height:11px;border-radius:50%;display:block;}
+  .dots i:nth-child(1){background:#ff5f57;} .dots i:nth-child(2){background:#febc2e;} .dots i:nth-child(3){background:#28c840;}
+  .url{flex:1;background:#fff;border:1px solid #dcd6c9;border-radius:7px;padding:5px 12px;font-size:12px;color:var(--t2);text-align:center;}
+  .tier{font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;padding:4px 10px;border-radius:999px;white-space:nowrap;}
+  .tier.free{background:#efe7f9;color:#6b3ecb;} .tier.prem{background:linear-gradient(100deg,#7a4fd6,#4d2a9c);color:#ffe9a8;}
+
+  .page{background:var(--bg);padding:26px 30px 30px;}
+  @media(max-width:640px){.page{padding:20px 15px;}}
+  .section-label{font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:10px;}
+  .head{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:22px;}
+  @media(max-width:640px){.head{flex-direction:column;align-items:stretch;}}
+  .head h1{font-weight:800;font-size:26px;letter-spacing:-.8px;margin:0 0 4px;}
+  .head p{color:var(--t2);font-size:14px;margin:0;}
+
+  .upg{background:linear-gradient(90deg,#6b3ecb,#8b5cf6);border-radius:14px;padding:16px 20px;margin-bottom:24px;
+    display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;box-shadow:0 6px 20px rgba(107,62,203,.28);}
+  .upg .lft{display:flex;align-items:center;gap:14px;min-width:0;}
+  .upg .cnt{flex:none;width:44px;height:44px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff;}
+  .upg .t{font-weight:800;font-size:15.5px;color:#fff;margin-bottom:2px;}
+  .upg .s{font-size:13px;color:rgba(255,255,255,.9);line-height:1.4;}
+  .upg .btn{background:#fff;color:#6b3ecb;font-weight:800;font-size:13px;padding:11px 22px;border-radius:10px;border:none;cursor:pointer;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.18);flex:none;}
+
+  .procard{position:relative;overflow:hidden;width:220px;flex:none;border-radius:14px;padding:15px 17px;background:linear-gradient(145deg,#7a4fd6,#4d2a9c 60%,#7a4fd6);box-shadow:0 18px 40px -22px rgba(77,42,156,.6);}
+  .procard .r1{display:flex;justify-content:space-between;align-items:center;}
+  .procard .cs{font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:#d6c8f7;}
+  .procard .pm{font-size:10px;font-weight:800;letter-spacing:1.4px;color:#ffe9a8;}
+  .procard .chip{width:25px;height:18px;border-radius:4px;margin-top:12px;background:linear-gradient(135deg,#ffe9a8,#e6b84e);}
+  .procard .nm{margin-top:12px;font-size:15px;font-weight:600;color:#fff;} .procard .sn{margin-top:2px;font-size:10px;letter-spacing:.5px;color:#d0c2f2;}
+
+  .celebrate{display:flex;align-items:center;gap:14px;background:linear-gradient(100deg,#eaf7ef,#d3eddf);border:1.5px solid var(--win-bd);border-radius:14px;padding:14px 18px;margin-bottom:18px;}
+  .celebrate .star{flex:none;width:38px;height:38px;border-radius:50%;background:var(--win);color:#fff;font-size:19px;display:flex;align-items:center;justify-content:center;}
+  .celebrate .tx{flex:1;min-width:0;} .celebrate .t1{font-weight:800;font-size:15px;color:#155a37;} .celebrate .t2{font-size:12.5px;color:#2b7a52;margin-top:1px;}
+  .celebrate .btn{flex:none;background:var(--win);color:#fff;border:none;border-radius:9px;padding:10px 18px;font-weight:800;font-size:13px;cursor:pointer;}
+
+  .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:8px;}
+  @media(max-width:900px){.td-stats{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:520px){.td-stats{grid-template-columns:1fr;}}
+  .stat{background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;position:relative;min-height:92px;}
+  .stat .l{font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;}
+  .stat .v{font-size:26px;font-weight:800;color:var(--t1);letter-spacing:-.5px;line-height:1;}
+  .stat .s{font-size:11px;color:var(--t3);}
+  .stat.teal{border-color:#cfe3e3;} .stat.teal .l{color:var(--teal);} .stat.teal .v{color:var(--teal);} .stat.teal .s{color:var(--teal);}
+  /* Roles you match — personalized; neutral number + teal CTA + "for you" pill */
+  .stat.match .v{color:var(--t1);} .stat.match .s{color:var(--teal);font-weight:700;}
+  .stat .foryou{position:absolute;top:14px;right:14px;font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--teal);background:#e7f0ed;border:1px solid #cfe3e3;padding:3px 7px;border-radius:999px;}
+  .stat.action{gap:5px;justify-content:center;}
+  .stat.action .prompt{font-size:14.5px;font-weight:800;color:var(--t1);line-height:1.25;letter-spacing:-.2px;}
+  .stat.action .cta{font-size:12px;font-weight:700;color:var(--teal);}
+
+  .cap{font-size:13px;color:var(--t2);background:#f6f2ea;border:1px dashed #ddd5c6;border-radius:10px;padding:10px 13px;margin-top:8px;line-height:1.5;}
+  .cap b{color:var(--t1);} .cap .g{color:var(--win);font-weight:700;} .cap .tl{color:var(--teal);font-weight:700;} .cap .p{color:var(--purple);font-weight:700;} .cap .no{color:#b23b2e;font-weight:700;}
+  .foot{margin-top:28px;font-size:12px;color:var(--t3);border-top:1px solid #dcd6c9;padding-top:14px;}
+</style>
+</head>
+<body>
+<div class="outer">
+  <div class="intro-k">CastSlate · Talent Dashboard</div>
+  <div class="intro-h">Free vs Premium — with “Roles you match”</div>
+  <div class="rulebox">
+    Row = <span class="tl">New roles for you</span> · <span class="tl">Applications</span> · <span class="tl">Roles you match</span> · <span class="tl">Profile strength</span>. Four different levers — novelty, effort, <b>personal opportunity</b>, progress — none of them a zero, none dependent on booking. <span class="p">Submissions this week</span> is the Premium hook. <span class="g">Wins</span> show as a celebration only when real. “Roles you match” is honest at any marketplace size — 12 fitting roles feels great even on a small platform.
+  </div>
+
+  <!-- FREE -->
+  <div class="frame">
+    <div class="frame-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">castslate.com/talent-dashboard</span><span class="tier free">Free account</span></div>
+    <div class="page">
+      <div class="upg">
+        <div class="lft"><span class="cnt">1/1</span><div><div class="t">You’ve used your free submission this week</div><div class="s">Go Premium for <b>unlimited submissions</b>, Manager Mode &amp; your QR business card — $9.99/month.</div></div></div>
+        <button class="btn">Go Unlimited →</button>
+      </div>
+      <div class="head"><div><div class="section-label">Talent Dashboard</div><h1>Welcome back, Marian.</h1><p>Here are the latest updates for your acting profile.</p></div></div>
+      <div class="celebrate"><div class="star">★</div><div class="tx"><div class="t1">A casting director shortlisted you 🎬</div><div class="t2">NYC West 43 Pictures · “THE BOOTH IS DEAD” — role: Marcus Delacroix</div></div><button class="btn">View →</button></div>
+      <div class="td-stats">
+        <div class="stat teal"><div class="l">New roles for you</div><div class="v">6</div><div class="s">2 closing soon →</div></div>
+        <div class="stat"><div class="l">Applications</div><div class="v">9</div><div class="s">in casting directors’ hands</div></div>
+        <div class="stat match"><span class="foryou">for you</span><div class="l">Roles you match</div><div class="v">12</div><div class="s">for your look · view →</div></div>
+        <div class="stat"><div class="l">Profile strength</div><div class="v">14%</div><div class="s">finish to get seen</div></div>
+      </div>
+      <div class="cap"><span class="tl">Roles you match</span> is the star — it’s about <b>them</b> (“12 roles for my look”), not a crowd, so it lands harder than social proof and gives hope + a next move. The old “Audition Requests: 0” is gone; the <span class="p">purple banner is the real upsell</span> (their 1/week cap → unlimited).</div>
+    </div>
+  </div>
+
+  <!-- PREMIUM -->
+  <div class="frame">
+    <div class="frame-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">castslate.com/talent-dashboard</span><span class="tier prem">Premium account</span></div>
+    <div class="page">
+      <div class="head">
+        <div><div class="section-label">Talent Dashboard</div><h1>Welcome back, Marian.</h1><p>Here are the latest updates for your acting profile.</p></div>
+        <div class="procard"><div class="r1"><span class="cs">CastSlate</span><span class="pm">Premium</span></div><div class="chip"></div><div class="nm">Marian</div><div class="sn">Member since 2026</div></div>
+      </div>
+      <div class="celebrate"><div class="star">★</div><div class="tx"><div class="t1">A casting director shortlisted you 🎬</div><div class="t2">NYC West 43 Pictures · “THE BOOTH IS DEAD” — role: Marcus Delacroix</div></div><button class="btn">View →</button></div>
+      <div class="td-stats">
+        <div class="stat teal"><div class="l">New roles for you</div><div class="v">6</div><div class="s">2 closing soon →</div></div>
+        <div class="stat"><div class="l">Applications</div><div class="v">9</div><div class="s">in casting directors’ hands</div></div>
+        <div class="stat match"><span class="foryou">for you</span><div class="l">Roles you match</div><div class="v">12</div><div class="s">for your look · view →</div></div>
+        <div class="stat"><div class="l">Profile strength</div><div class="v">14%</div><div class="s">finish to get seen</div></div>
+      </div>
+      <div class="cap">Premium removes the submission cap, so <b>no upsell banner</b> — the member card sits in the header instead. Same zero-proof row. (When the impression engine is real, Profile Views can return here as a Premium-only 5th signal.)</div>
+    </div>
+  </div>
+
+  <!-- BONUS: brand-new free user (zero-proof) -->
+  <div class="frame">
+    <div class="frame-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">castslate.com/talent-dashboard</span><span class="tier free">Free · brand new · 0 wins, 0 apps</span></div>
+    <div class="page">
+      <div class="head"><div><div class="section-label">Talent Dashboard</div><h1>Welcome back, Marian.</h1><p>Here’s how to get in front of casting directors.</p></div></div>
+      <div class="td-stats">
+        <div class="stat teal"><div class="l">New roles for you</div><div class="v">6</div><div class="s">2 closing soon →</div></div>
+        <div class="stat action"><div class="l">Applications</div><div class="prompt">Apply to your first role</div><div class="cta">Browse castings →</div></div>
+        <div class="stat match"><span class="foryou">for you</span><div class="l">Roles you match</div><div class="v">9</div><div class="s">for your look · view →</div></div>
+        <div class="stat action"><div class="l">Profile strength</div><div class="prompt">14% — add a headshot</div><div class="cta">Finish to get seen →</div></div>
+      </div>
+      <div class="cap"><b>Even with 0 apps and 0 wins — no zero on screen.</b> “Roles you match · 9” greets a brand-new actor with <span class="tl">personal opportunity</span> (“there’s stuff here for me”), the empty cards flip to <span class="tl">actions</span>, and wins are simply absent — never “0.”</div>
+    </div>
+  </div>
+
+  <div class="foot">Design mockup in the production design system — not wired to live data. Same real tokens & <code>.td-stats</code> cards as the live Talent Dashboard. “Roles you match” = open castings filtered to the actor’s type/location. · Say the word and I’ll wire this into <code>TalentDashboard</code>.</div>
+</div>
+</body>
+</html>

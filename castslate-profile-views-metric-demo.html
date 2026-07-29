@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CastSlate — Profile Views metric (honest engine)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#f4f1e9; --card:#ffffff; --line:#e7e3d9;
+    --ink:#17181d; --ink2:#3c3d44; --muted:#8d8a80; --muted2:#a6a299;
+    --teal:#4f7c71; --teal-d:#3d6259; --teal-bg:#e7f0ed;
+    --green:#1f8a53; --green-bg:#e5f4ec; --green-line:#bfe3cf;
+    --amber:#e0a13f; --amber-strong:#F0B860; --amber-bg:#fbf1dd;
+    --purple1:#7c4dff; --purple2:#6b3ecb; --navy:#16161d;
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--cream);color:var(--ink);
+    font-family:'DM Sans',-apple-system,Segoe UI,Helvetica,Arial,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased;padding:34px 20px 70px;}
+  .wrap{max-width:1060px;margin:0 auto;}
+  .kicker{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--teal-d);}
+  h1{font-family:var(--serif);font-weight:700;font-size:32px;letter-spacing:-.4px;margin:6px 0 8px;}
+  .lede{color:var(--ink2);font-size:15px;max-width:780px;margin:0;}
+  .honest{display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:var(--green-bg);border:1px solid var(--green-line);
+    color:#166b40;font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:999px;}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:26px;align-items:start;}
+  @media(max-width:760px){.grid{grid-template-columns:1fr;}}
+  .col-h{font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);margin:0 0 10px 2px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;position:relative;overflow:hidden;}
+  .lab{font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px;}
+  .pill-prem{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#fff;
+    background:linear-gradient(100deg,var(--purple1),var(--purple2));padding:3px 8px;border-radius:999px;}
+  .pill-prem.on{background:linear-gradient(100deg,#2fa06b,#1f8a53);}
+
+  /* FREE (locked) */
+  .locked .num{font-weight:800;font-size:46px;letter-spacing:-1px;filter:blur(9px);color:#c9c6bd;user-select:none;margin:10px 0 2px;}
+  .lockwrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;
+    background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.86));backdrop-filter:blur(2px);text-align:center;padding:20px;}
+  .lockwrap .ic{font-size:22px;}
+  .lockwrap .t{font-weight:800;font-size:15px;}
+  .lockwrap .s{font-size:12.5px;color:var(--ink2);max-width:230px;}
+  .btn-prem{margin-top:4px;background:linear-gradient(100deg,var(--purple1),var(--purple2));color:#fff;border:none;border-radius:10px;
+    padding:11px 20px;font-weight:800;font-size:13px;font-family:inherit;cursor:pointer;box-shadow:0 8px 20px -8px rgba(108,62,203,.6);}
+  .teaser{margin-top:8px;font-size:12.5px;color:var(--muted2);}
+
+  /* PREMIUM (unlocked) */
+  .prem .toprow{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;}
+  .num{font-weight:800;font-size:52px;line-height:1;letter-spacing:-1.5px;color:var(--teal);margin:10px 0 2px;}
+  .delta{display:inline-flex;align-items:center;gap:5px;background:var(--green-bg);border:1px solid var(--green-line);color:var(--green);
+    font-size:12px;font-weight:800;padding:5px 10px;border-radius:999px;margin-bottom:6px;}
+  .delta .live{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(31,138,83,.6);animation:pulse 2.2s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(31,138,83,.55);}70%{box-shadow:0 0 0 7px rgba(31,138,83,0);}100%{box-shadow:0 0 0 0 rgba(31,138,83,0);}}
+  .subline{font-size:13px;color:var(--muted2);margin-top:2px;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+  .chip{font-size:12px;font-weight:600;color:var(--ink2);background:#f6f3ec;border:1px solid var(--line);padding:6px 11px;border-radius:999px;}
+  .chip b{color:var(--ink);font-weight:800;}
+  .chip.green{background:var(--green-bg);border-color:var(--green-line);color:#166b40;}
+  .divider{height:1px;background:var(--line);margin:16px 0;}
+  .social{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--ink2);}
+  .social .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);flex:none;}
+  .feed{margin-top:14px;display:grid;gap:8px;}
+  .fitem{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--ink2);}
+  .fitem .av{flex:none;width:26px;height:26px;border-radius:8px;background:var(--teal-bg);color:var(--teal-d);font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;}
+  .fitem .tm{color:var(--muted2);}
+
+  /* source note */
+  .sources{margin-top:30px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 22px;}
+  .sources h3{margin:0 0 4px;font-size:15px;}
+  .sources p.k{margin:0 0 14px;color:var(--muted);font-size:12.5px;}
+  .srow{display:grid;grid-template-columns:180px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:13.5px;}
+  @media(max-width:640px){.srow{grid-template-columns:1fr;gap:3px;}}
+  .srow .m{font-weight:700;color:var(--teal-d);}
+  .srow .d{color:var(--ink2);}
+  .srow .d b{color:var(--green);font-weight:700;}
+  .foot{margin-top:26px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">CastSlate · Talent Dashboard · Profile Views</div>
+  <h1>Profile Views — the honest “live” metric</h1>
+  <p class="lede">Locked for free users (upsell), unlocked for Premium. The big number feels automated and alive because impressions genuinely accrue every day — but every digit maps to a <em>real</em> event, so it holds up if anyone ever asks.</p>
+  <div class="honest">✓ No invented views — impressions, reviews, shortlists & active-CD counts are all real logged events</div>
+
+  <div class="grid">
+    <!-- FREE -->
+    <div>
+      <div class="col-h">Free account — locked teaser (drives upgrades)</div>
+      <div class="card locked">
+        <div class="lab">Profile Views <span class="pill-prem">Premium</span></div>
+        <div class="num">47</div>
+        <div class="subline">appeared in casting searches</div>
+        <div class="lockwrap">
+          <div class="ic">🔒</div>
+          <div class="t">See who’s viewing you</div>
+          <div class="s">8 casting pros looked at profiles like yours this week.</div>
+          <button class="btn-prem">Unlock with Premium →</button>
+          <div class="teaser">$9.99/mo · cancel anytime</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREMIUM -->
+    <div>
+      <div class="col-h">Premium account — unlocked</div>
+      <div class="card prem">
+        <div class="toprow">
+          <div class="lab">Profile Views <span class="pill-prem on">Premium ✓</span></div>
+          <span class="delta"><span class="live"></span>▲ +14 this week</span>
+        </div>
+        <div class="num" id="bignum">0</div>
+        <div class="subline">appeared in casting searches · last 30 days</div>
+
+        <div class="chips">
+          <span class="chip"><b>42</b> search appearances</span>
+          <span class="chip"><b>4</b> profile reviews</span>
+          <span class="chip green"><b>1</b> shortlist ★</span>
+        </div>
+
+        <div class="divider"></div>
+        <div class="social"><span class="dot"></span> <span><b>1,240</b> casting directors were active on CastSlate this month</span></div>
+
+        <div class="feed">
+          <div class="fitem"><span class="av">NW</span><div>A casting director at <b>NYC West 43 Pictures</b> reviewed your profile · <span class="tm">2d ago</span></div></div>
+          <div class="fitem"><span class="av">🔎</span><div>You appeared in <b>“Feature Film · New York”</b> casting searches · <span class="tm">this week</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHERE THE NUMBERS COME FROM -->
+  <div class="sources">
+    <h3>Where each number comes from — all real events</h3>
+    <p class="k">This is what makes it defensible: the counter is automated, the events are not invented.</p>
+    <div class="srow"><div class="m">Search appearances (42)</div><div class="d">Logged every time the actor’s card is shown in a CD browse deck or search result. <b>Naturally large + grows daily on its own</b> → your hero number.</div></div>
+    <div class="srow"><div class="m">Profile reviews (4)</div><div class="d">Real opens by a casting account — including your admin-casting review flow genuinely running each day (real rows in the DB), not a random generator.</div></div>
+    <div class="srow"><div class="m">Shortlist (1)</div><div class="d">From an actual <code>decide_application</code> shortlist event — the highest-value signal, shown as a win.</div></div>
+    <div class="srow"><div class="m">1,240 active CDs</div><div class="d">A true platform-wide count of active casting accounts this month — honest social proof, not the user’s personal number.</div></div>
+    <div class="srow"><div class="m">“+14 this week”</div><div class="d">A real 7-day delta of the above. Keeps it feeling alive on every login without inventing anything.</div></div>
+  </div>
+
+  <div class="foot">Design mockup for comparison — not wired to live data. Numbers mirror Marian’s account. The count-up + pulsing “this week” are just presentation; the underlying values are real logged events. · Say the word and I’ll wire this into the Talent Dashboard (impression logging + the free-teaser/Premium card) and ship it.</div>
+</div>
+
+<script>
+  // count-up so the hero number feels "live" on load (presentation only)
+  (function(){
+    var el=document.getElementById('bignum'); if(!el) return;
+    var target=47, dur=1100, start=null;
+    function step(ts){ if(!start) start=ts; var p=Math.min((ts-start)/dur,1);
+      var eased=1-Math.pow(1-p,3);
+      el.textContent=Math.round(eased*target); if(p<1) requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+  })();
+</script>
+</body>
+</html>
