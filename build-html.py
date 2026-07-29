@@ -280,7 +280,7 @@ def render_page(title, desc, canonical):
   </script>
   <!-- Structured Data: WebApplication -->
   <script type="application/ld+json">
-  {{"@context":"https://schema.org","@type":"WebApplication","name":"CastSlate","url":"https://www.castslate.com","applicationCategory":"EntertainmentApplication","operatingSystem":"Web","offers":{{"@type":"Offer","price":"0","priceCurrency":"USD","description":"Free actor account. Premium at $9.99/month."}},"description":"A modern casting platform where actors submit to roles and casting directors review talent one profile at a time."}}
+  {{"@context":"https://schema.org","@type":"WebApplication","name":"CastSlate","url":"https://www.castslate.com","applicationCategory":"EntertainmentApplication","operatingSystem":"Web","offers":{{"@type":"Offer","price":"0","priceCurrency":"USD","description":"Free actor account. Premium plans from $8.25/month."}},"description":"A modern casting platform where actors submit to roles and casting directors review talent one profile at a time."}}
   </script>
 {head_vendor}{preload_tags}
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
@@ -480,7 +480,7 @@ def render_page(title, desc, canonical):
       <h1 style="font-size:28px;font-weight:800;margin:0 0 12px;">Casting, finally built for actors.</h1>
       <p style="font-size:16px;line-height:1.7;margin:0 0 24px;color:#444;">
         CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time.
-        Free forever for actors. Premium at $9.99/month for unlimited submissions.
+        Free forever for actors. Premium plans from $8.25/month for unlimited submissions.
         Used by actors, casting directors, filmmakers, and production companies for film, TV, theater, and commercial casting calls and auditions.
       </p>
       <h2 style="font-size:18px;font-weight:700;margin:0 0 12px;">Quick Links</h2>
@@ -619,7 +619,7 @@ def render_page(title, desc, canonical):
 ROUTES = [
     ("index.html",            "/",                "CastSlate: Casting Calls, Auditions & Acting Jobs — Film, TV & Theater", "CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."),
     ("browse-castings.html",  "/browse-castings", "Browse Castings", "Browse open casting calls for film, TV, theater, and commercials. Submit your actor profile to roles that match your look and skills."),
-    ("pricing.html",          "/pricing",         "Pricing", "CastSlate is free forever for actors. Upgrade to Premium at $9.99/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, and more. See all plans and what's included."),
+    ("pricing.html",          "/pricing",         "Pricing", "CastSlate is free forever for actors. Upgrade to Premium from $8.25/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, and more. See all plans and what's included."),
     ("classes.html",          "/classes",         "Acting Classes", "Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."),
     ("actor-toolkit.html",    "/actor-toolkit",   "Actor Toolkit", "Free tools, guides, and resources for working actors — headshot advice, self-tape setup, audition prep, and more."),
     ("resources.html",        "/resources",       "Resources", "Guides and resources for actors and casting directors on the CastSlate platform."),

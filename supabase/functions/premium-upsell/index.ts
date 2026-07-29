@@ -320,7 +320,7 @@ ${jobsSection}
     </table>
     <div style="text-align:center;margin-top:30px;">
       <a href="${upgrade}" style="display:inline-block;background:linear-gradient(90deg,#f4d987,#d9a92e);color:#241a05;text-decoration:none;padding:16px 48px;border-radius:40px;font-weight:800;font-size:15.5px;letter-spacing:0.3px;box-shadow:0 0 26px rgba(226,183,60,0.45),0 8px 20px rgba(0,0,0,0.4);">Unlock Premium &rarr;</a>
-      <p style="margin:16px 0 0;font-size:12px;letter-spacing:1px;color:#7c8f8f;">$9.99 / MONTH &middot; CANCEL ANYTIME</p>
+      <p style="margin:16px 0 0;font-size:12px;letter-spacing:1px;color:#7c8f8f;">PLANS FROM $8.25 / MONTH &middot; CANCEL ANYTIME</p>
     </div>
   </td>
 </tr>
