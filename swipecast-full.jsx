@@ -15102,6 +15102,211 @@ function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm}){
   </div>);
 }
 
+// ─── SelfieCamera — in-page capture for desktop (and any device that grants
+//     getUserMedia). Phones get the OS camera through <input capture> instead,
+//     which is both better quality and one less permission prompt inside our UI.
+//     Every exit path stops the tracks: leaving the stream open keeps the
+//     camera light on, which reads as a bug even when nothing is recording.
+function SelfieCamera({onShot,onCancel}){
+  const vRef=useRef(null);
+  const streamRef=useRef(null);
+  const [state,setState]=useState("starting"); // starting | live | denied | unavailable
+  const [shooting,setShooting]=useState(false);
+
+  useEffect(()=>{
+    let dead=false;
+    (async()=>{
+      try{
+        if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){if(!dead)setState("unavailable");return;}
+        const s=await navigator.mediaDevices.getUserMedia({
+          video:{facingMode:"user",width:{ideal:1280},height:{ideal:1600}},audio:false
+        });
+        if(dead){s.getTracks().forEach(t=>{try{t.stop();}catch(_){}});return;}
+        streamRef.current=s;
+        const v=vRef.current;
+        if(v){v.srcObject=s;try{await v.play();}catch(_){}}
+        setState("live");
+      }catch(e){
+        if(dead)return;
+        const n=e&&e.name;
+        setState(n==="NotAllowedError"||n==="SecurityError"?"denied":"unavailable");
+      }
+    })();
+    return()=>{
+      dead=true;
+      const s=streamRef.current;
+      if(s)s.getTracks().forEach(t=>{try{t.stop();}catch(_){}});
+      streamRef.current=null;
+    };
+  },[]);
+
+  const shoot=()=>{
+    const v=vRef.current;
+    if(!v||!v.videoWidth||!v.videoHeight||shooting)return;
+    setShooting(true);
+    try{
+      const c=document.createElement("canvas");
+      c.width=v.videoWidth;c.height=v.videoHeight;
+      const g=c.getContext("2d");
+      // The preview is mirrored because that's what people expect while framing
+      // themselves — so the capture is mirrored to match. Otherwise the photo
+      // handed back is flipped from the one they just posed for.
+      g.translate(c.width,0);g.scale(-1,1);
+      g.drawImage(v,0,0,c.width,c.height);
+      c.toBlob((b)=>{setShooting(false);if(b)onShot(b);},"image/jpeg",0.92);
+    }catch(_){setShooting(false);}
+  };
+
+  return(<div style={{marginTop:4}}>
+    <div style={{position:"relative",width:"100%",aspectRatio:"4/5",borderRadius:12,overflow:"hidden",background:"#12121F",display:"grid",placeItems:"center"}}>
+      <video ref={vRef} playsInline muted autoPlay
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",transform:"scaleX(-1)",display:state==="live"?"block":"none"}}/>
+      {state==="starting"&&<span style={{color:"#B9B2A2",fontSize:13}}>Starting camera…</span>}
+      {state==="denied"&&<span style={{color:"#F0C08A",fontSize:12.5,textAlign:"center",padding:"0 22px",lineHeight:1.55}}>
+        Camera access was blocked. Allow it in your browser's address bar, or choose a photo from your files instead.
+      </span>}
+      {state==="unavailable"&&<span style={{color:"#B9B2A2",fontSize:12.5,textAlign:"center",padding:"0 22px",lineHeight:1.55}}>
+        No camera available on this device. Choose a photo from your files instead.
+      </span>}
+    </div>
+    <div style={{display:"flex",gap:10,marginTop:12}}>
+      <button type="button" className="btn-p" style={{flex:1}} onClick={shoot} disabled={state!=="live"||shooting}>
+        {shooting?"Capturing…":"Take photo"}
+      </button>
+      <button type="button" className="btn-s" onClick={onCancel}>Cancel</button>
+    </div>
+  </div>);
+}
+
+// ─── HeadshotStep — the first screen a new actor sees.
+//     Talent land here with an empty profile more often than not, and almost
+//     none come back: profiles without a headshot are ~5% likely to ever sign
+//     in again after day one. So the photo is asked for once, immediately, and
+//     nothing else is asked for alongside it — height/bio/union are exactly
+//     what made the full profile form feel like paperwork.
+//     Bucket, path shape and crop ratio match the profile editor's uploader, so
+//     a photo added here is indistinguishable from one added there later.
+function HeadshotStep({session,displayName,onSaved,onSkip}){
+  const [pick,setPick]=useState(null);   // File|Blob passed to ImageCropModal
+  const [cam,setCam]=useState(false);
+  const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState("");
+  const fileRef=useRef(null);
+  const camFileRef=useRef(null);
+  // Phones/tablets: hand off to the OS camera app. Desktop: in-page getUserMedia.
+  const coarse=typeof window!=="undefined"&&window.matchMedia
+    ? window.matchMedia("(pointer:coarse)").matches : false;
+  const withTimeout=(p,ms,label)=>Promise.race([p,
+    new Promise((_,rej)=>setTimeout(()=>rej(new Error(label+" timed out. Check your connection and try again.")),ms))]);
+
+  const takeFile=(e)=>{
+    const f=e.target.files&&e.target.files[0];
+    e.target.value=""; // so picking the same file twice still fires onChange
+    if(!f)return;
+    if(!/^image\//.test(f.type||"")){setErr("That file isn't an image — choose a JPG or PNG.");return;}
+    if(f.size>25*1024*1024){setErr("That photo is larger than 25 MB. Try a smaller one.");return;}
+    setErr("");setCam(false);setPick(f);
+  };
+
+  const save=async(blob)=>{
+    if(!blob||busy)return;
+    setBusy(true);setErr("");
+    try{
+      const uid=session&&session.user&&session.user.id;
+      if(!uid)throw new Error("Your session expired. Please log in again.");
+      const path=`${uid}/${Date.now()}.jpg`;
+      const {error:upErr}=await withTimeout(
+        window.sb.storage.from("headshots").upload(path,blob,{cacheControl:"3600",upsert:false,contentType:"image/jpeg"}),
+        60000,"Upload");
+      if(upErr)throw upErr;
+      const {data:pub}=window.sb.storage.from("headshots").getPublicUrl(path);
+      const url=pub&&pub.publicUrl;
+      if(!url)throw new Error("The upload finished but the photo link came back empty. Please try again.");
+      const {error:updErr}=await withTimeout(
+        window.sb.from("profiles").update({headshot_url:url}).eq("id",uid),30000,"Save");
+      if(updErr)throw updErr;
+      onSaved(url); // parent unmounts this step — no setBusy(false), it guards double-submits
+    }catch(e){
+      setErr((e&&e.message)||"That didn't upload. Please try again.");
+      setBusy(false);
+    }
+  };
+
+  const first=(displayName||"").trim().split(/\s+/)[0]||"";
+
+  return(<>
+    {/* Hidden outright while cropping — ImageCropModal is its own .modal-overlay at
+        a lower z-index, so leaving this mounted would bury it. */}
+    {!pick&&<div className="modal-overlay" style={{zIndex:400,padding:16,overflowY:"auto",alignItems:"flex-start"}}>
+      <div className="modal" style={{maxWidth:430,padding:"28px 26px",margin:"auto",textAlign:"center"}}>
+        <div style={{fontSize:10.5,fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",color:"var(--amber-dk)",marginBottom:10}}>Last step</div>
+        <h2 style={{fontSize:23,fontWeight:800,letterSpacing:-.8,margin:"0 0 8px"}}>
+          {first?`Add your headshot, ${first}`:"Add your headshot"}
+        </h2>
+        <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.55,margin:"0 0 18px"}}>
+          You're in. One photo and casting directors can start reviewing you — a clear phone photo is genuinely fine.
+        </p>
+
+        {err&&<div style={{background:"rgba(214,59,59,0.09)",border:"1px solid rgba(214,59,59,0.3)",color:"#B03030",padding:"10px 13px",borderRadius:9,fontSize:12.5,lineHeight:1.5,marginBottom:14,textAlign:"left"}}>{err}</div>}
+
+        {cam?(
+          <SelfieCamera onShot={(b)=>{setCam(false);setPick(b);}} onCancel={()=>setCam(false)}/>
+        ):(<>
+          <div onClick={()=>!busy&&fileRef.current&&fileRef.current.click()}
+            style={{border:"2px dashed var(--s3)",borderRadius:16,background:"#FDFBF7",padding:"26px 20px",cursor:busy?"default":"pointer"}}>
+            <div style={{width:104,height:130,borderRadius:11,background:"var(--s2)",border:"1px solid var(--bdr)",margin:"0 auto 13px",display:"grid",placeItems:"center",color:"#B9B2A2"}}>
+              <Ico n="user-circle" s={38}/>
+            </div>
+            <div style={{fontSize:15,fontWeight:800,marginBottom:4}}>Upload a photo</div>
+            <div style={{fontSize:12.5,color:"var(--t2)",lineHeight:1.5}}>Click to choose · JPG or PNG</div>
+          </div>
+
+          <div style={{display:"flex",gap:9,marginTop:13}}>
+            <button type="button" className="btn-s" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:7}}
+              disabled={busy} onClick={()=>fileRef.current&&fileRef.current.click()}>
+              <Ico n="photo" s={16}/>Choose file
+            </button>
+            <button type="button" className="btn-s" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:7}}
+              disabled={busy} onClick={()=>{setErr("");if(coarse){camFileRef.current&&camFileRef.current.click();}else{setCam(true);}}}>
+              <Ico n="camera" s={16}/>Take a photo
+            </button>
+          </div>
+
+          <div style={{textAlign:"left",marginTop:16}}>
+            {["A phone photo in daylight works","You can swap it any time","Height, age and the rest can wait"].map((t)=>(
+              <div key={t} style={{display:"flex",gap:8,alignItems:"flex-start",fontSize:12.5,color:"var(--t2)",lineHeight:1.5,marginTop:7}}>
+                <Ico n="check" s={15} style={{color:"var(--grn)",marginTop:1}}/>{t}
+              </div>
+            ))}
+          </div>
+        </>)}
+
+        {busy&&<div style={{fontSize:12.5,color:"var(--t2)",marginTop:16}}>Uploading your headshot…</div>}
+
+        <p style={{color:"var(--t3)",fontSize:12,marginTop:18,marginBottom:0}}>
+          <span role="button" tabIndex={0}
+            onClick={()=>!busy&&onSkip()}
+            onKeyDown={(e)=>{if(!busy&&(e.key==="Enter"||e.key===" ")){e.preventDefault();onSkip();}}}
+            style={{cursor:busy?"default":"pointer",textDecoration:"underline",opacity:busy?.5:1}}>Skip for now</span>
+        </p>
+
+        {/* Kept out of the layout so the click handlers above own the interaction */}
+        <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={takeFile}/>
+        <input ref={camFileRef} type="file" accept="image/*" capture="user" style={{display:"none"}} onChange={takeFile}/>
+      </div>
+    </div>}
+
+    {/* Same cropper the profile editor uses, same 0.8 ratio — one headshot shape site-wide */}
+    {pick&&<ImageCropModal
+      file={pick}
+      aspect={0.8}
+      label="Position your headshot"
+      onClose={()=>setPick(null)}
+      onConfirm={(blob)=>{setPick(null);save(blob);}}
+    />}
+  </>);
+}
+
 // ─── FixedTooltip — portal-style fixed tooltip that escapes overflow:hidden containers
 function FixedTooltip({anchorRef,children,width=300}){
   const [rect,setRect]=useState(null);
@@ -28243,6 +28448,10 @@ function App(){
   // custom DOM event ("sc:open-cookies") rather than threading a callback
   // through every page's <Footer/> usage.
   const [cookieModalOpen,setCookieModalOpen]=useState(false);
+  // Dismissal for the first-run headshot step (see showHeadshotStep below).
+  // Session-scoped state + a per-day localStorage key, mirroring how the
+  // once-a-day pricing screen remembers itself.
+  const [headshotStepOff,setHeadshotStepOff]=useState(false);
   // Set when user returns from Persona/Didit after completing verification
   const [verificationReturn,setVerificationReturn]=useState(false);
   // Mobile debug panel tick — forces re-render so the panel reflects live window.__SC_DBG
@@ -28447,7 +28656,7 @@ function App(){
             const uid=otpData?.user?.id;
             if(uid){
               try{
-                const {data:prof}=await window.sb.from("profiles").select("user_type,membership_status").eq("id",uid).maybeSingle();
+                const {data:prof}=await window.sb.from("profiles").select("user_type,membership_status,headshot_url").eq("id",uid).maybeSingle();
                 if(prof?.user_type==="talent")dest=talentLandingPage(uid,prof);
               }catch(_){}
             }
@@ -28680,7 +28889,7 @@ function App(){
                 if(wasOAuth){
                   sessionStorage.removeItem("sc_oauth_login");
                   if(!routed&&s?.user){
-                    const {data:prof}=await window.sb.from("profiles").select("user_type,membership_status").eq("id",s.user.id).maybeSingle();
+                    const {data:prof}=await window.sb.from("profiles").select("user_type,membership_status,headshot_url").eq("id",s.user.id).maybeSingle();
                     const isAd2=prof?.user_type==="admin"||prof?.user_type==="super_admin";
                     let dest=null;
                     if(isAd2)dest="admin";
@@ -28915,6 +29124,12 @@ function App(){
   const PRICING_EVERY_LOGIN=false;
   const talentLandingPage=(uid,prof)=>{
     if(prof?.membership_status==="active")return "talent-dashboard";
+    // No headshot yet → the first-run photo step owns this screen. Sending them
+    // to the pricing pitch before they have a profile worth promoting buries the
+    // step and wastes the one visit most of these accounts ever make. The daily
+    // pricing flag is deliberately NOT consumed here, so pricing still gets its
+    // turn on the next login once there's a photo.
+    if(!prof?.headshot_url)return "talent-dashboard";
     if(PRICING_EVERY_LOGIN)return "pricing";
     const d=new Date();
     const today=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
@@ -28931,7 +29146,7 @@ function App(){
     // loadProfile here too (that created a double-fetch race). Fetch a minimal row
     // just to decide routing.
     try{
-      const {data,error}=await window.sb.from("profiles").select("user_type,email,membership_status").eq("id",user.id).maybeSingle();
+      const {data,error}=await window.sb.from("profiles").select("user_type,email,membership_status,headshot_url").eq("id",user.id).maybeSingle();
       if(error)console.warn("[auth] route fetch error:",error.message);
       const email=(data?.email||user.email||"").toLowerCase();
       const fallbackOwner=email&&email===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase();
@@ -29172,6 +29387,40 @@ function App(){
     return()=>window.removeEventListener("scroll",onScroll);
   },[]);
 
+  // ─── First-run headshot step gate ───────────────────────────────────────
+  // Talent with no headshot get asked for one on their first authenticated
+  // screen. Deliberately conservative: it only fires for a fully loaded talent
+  // profile in good standing, never on top of an auth/checkout screen, and
+  // never while a saved application is still waiting to be submitted.
+  const headshotStepDayKey=(()=>{
+    const d=new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  })();
+  const showHeadshotStep=(()=>{
+    if(headshotStepOff)return false;
+    if(!authReady||!session?.user?.id||!myProfile)return false;
+    // Guard against a profile left over from a previous account (fast switch,
+    // or a reload landing before loadProfile catches up).
+    if(myProfile.id&&myProfile.id!==session.user.id)return false;
+    if(myProfile.user_type!=="talent")return false;
+    // Owner preview: localStorage.cs_hs_step_preview="1" forces the step on for
+    // this device so the flow can be walked with a real account. Uploading while
+    // previewing replaces the current headshot, exactly as the profile editor would.
+    let preview=false;
+    try{preview=localStorage.getItem("cs_hs_step_preview")==="1";}catch(_){}
+    if(myProfile.headshot_url&&!preview)return false;
+    if(myProfile.banned||myProfile.suspended)return false;
+    if(myProfile.account_status&&myProfile.account_status!=="active")return false;
+    if(page==="login"||page==="success"||page==="plan-summary")return false;
+    try{if(sessionStorage.getItem("sc_post_auth_apply"))return false;}catch(_){}
+    try{if(localStorage.getItem("sc_hs_step_"+session.user.id)===headshotStepDayKey)return false;}catch(_){}
+    return true;
+  })();
+  const dismissHeadshotStep=()=>{
+    try{localStorage.setItem("sc_hs_step_"+session.user.id,headshotStepDayKey);}catch(_){}
+    setHeadshotStepOff(true);
+  };
+
   const navT=(key)=>(TRANSLATIONS[lang]&&TRANSLATIONS[lang][key])||TRANSLATIONS.en[key]||key;
   return(
     <LanguageContext.Provider value={{lang,setLang}}>
@@ -29410,6 +29659,14 @@ function App(){
       {/* Cookie preferences modal — opened via the footer "Cookie Preferences" link.
           Mounted at App level so it can sit on top of any page. */}
       <CookieConsentModal open={cookieModalOpen} onClose={()=>setCookieModalOpen(false)} onNavigate={navigate}/>
+      {/* First-run headshot step — sits above every page so it owns the first
+          screen a new actor sees, whichever route they landed on. */}
+      {showHeadshotStep&&<HeadshotStep
+        session={session}
+        displayName={myProfile?.display_name}
+        onSaved={()=>{setHeadshotStepOff(true);loadProfile(session?.user?.id);}}
+        onSkip={dismissHeadshotStep}
+      />}
       {/* ── Mobile debug panel — visible when URL contains ?debug ── */}
       {(()=>{
         if(typeof window==="undefined")return null;
