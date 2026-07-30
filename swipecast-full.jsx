@@ -3528,7 +3528,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
           <div style={{display:"flex",alignItems:"baseline",gap:8,marginBottom:6,flexWrap:"wrap"}}>
             {p.listMonthly&&<span style={{fontFamily:"'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif",fontWeight:600,fontSize:22,color:featured?"#9a9a9f":"var(--t3)",textDecoration:"line-through",textDecorationColor:"#C4443F",textDecorationThickness:2}}>${p.listMonthly.toFixed(2)}</span>}
             <span style={{fontFamily:"'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif",fontWeight:600,fontSize:42,letterSpacing:"-0.02em",color:tm}}>${p.monthly.toFixed(2)}</span>
-            <span style={{fontSize:13,color:ts}}>"/month"</span>
+            <span style={{fontSize:13,color:ts}}>/month</span>
           </div>
           <p style={{fontSize:12,color:ts,marginBottom:16}}>{save?<span style={{fontWeight:700,color:featured?BRASS_ON_DARK:"var(--grn)"}}>{save} · </span>:null}{p.note}</p>
           {/* Tier differentiator. Without this the three cards list identical
