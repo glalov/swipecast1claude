@@ -8,7 +8,7 @@ const corsHeaders = {
 };
 
 // Keep in sync with CHECKOUT_CONSENT_VERSION / checkoutConsentText in the app.
-const CONSENT_VERSION = "2026-07-30";
+const CONSENT_VERSION = "2026-07-30b";
 
 // FLAT PRICING. Every plan renews at exactly the price paid — there is no
 // introductory rate on any term, and no coupon is attached at checkout.
@@ -20,8 +20,8 @@ const CONSENT_VERSION = "2026-07-30";
 //
 // These figures are duplicated in MEMBERSHIP_PLANS in swipecast-full.jsx.
 // Change both together or the consent record will not match what was charged.
-const PLAN_PRICE: Record<string, number> = { monthly: 19.95, six_month: 89.70, yearly: 99 };
-const PLAN_RENEWAL: Record<string, number> = { monthly: 19.95, six_month: 89.70, yearly: 99 };
+const PLAN_PRICE: Record<string, number> = { monthly: 14.95, six_month: 71.70, yearly: 99 };
+const PLAN_RENEWAL: Record<string, number> = { monthly: 14.95, six_month: 71.70, yearly: 99 };
 const PLAN_MONTHS: Record<string, number> = { monthly: 1, six_month: 6, yearly: 12 };
 
 function consentText(planKey: string): string {
