@@ -14981,9 +14981,11 @@ function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm}){
   const [zoom,setZoom]=useState(1);
   const [pan,setPan]=useState({x:0,y:0});
   const [busy,setBusy]=useState(false);
+  const [box,setBox]=useState(null); // measured frame size, drives fill + clamping
   const containerRef=useRef(null);
   const dragRef=useRef(null);
   const saveBtnRef=useRef(null); // for Enter-key triggering
+  const zoomedRef=useRef(false); // one-time snap to fill, so reopening doesn't fight the user
 
   useEffect(()=>{
     if(!file)return;
@@ -15006,6 +15008,59 @@ function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm}){
     return()=>window.removeEventListener("keydown",onKey);
   },[onClose]);
 
+  // Measure the frame so zoom/pan can be expressed in its units.
+  useEffect(()=>{
+    if(!loaded)return;
+    const measure=()=>{
+      const el=containerRef.current;if(!el)return;
+      // clientWidth/Height, not getBoundingClientRect: the frame has a 2px border
+      // and the image sits inside it. Measuring the border box leaves the photo a
+      // few pixels short of filling, which shows as a hairline black edge.
+      const w=el.clientWidth,h=el.clientHeight;
+      if(w>0&&h>0)setBox({w,h});
+    };
+    measure();
+    window.addEventListener("resize",measure);
+    return()=>window.removeEventListener("resize",measure);
+  },[loaded]);
+
+  // The image is laid out contained (maxWidth/maxHeight 100%), so a landscape
+  // photo dropped into a portrait frame starts as a letterboxed strip with black
+  // above and below — it reads as "the uploader is horizontal". minZoom is the
+  // scale at which the photo covers the frame, and it becomes both the starting
+  // zoom and the slider's floor, so the frame is always full.
+  const minZoom=(()=>{
+    if(!imgEl||!box||!imgEl.naturalWidth||!imgEl.naturalHeight)return 1;
+    const imgAspect=imgEl.naturalWidth/imgEl.naturalHeight;
+    const boxAspect=box.w/box.h;
+    let baseW,baseH;
+    if(imgAspect>boxAspect){baseW=box.w;baseH=box.w/imgAspect;}
+    else{baseH=box.h;baseW=box.h*imgAspect;}
+    // 0.3% over, so sub-pixel rounding can never leave a hairline edge showing.
+    const z=Math.max(box.w/baseW,box.h/baseH)*1.003;
+    return z>1?Math.min(z,8):1; // guard against absurd panoramas
+  })();
+
+  // Keep the photo covering the frame: pan can never expose an empty edge.
+  const clampPan=(p,z)=>{
+    if(!imgEl||!box)return p;
+    const imgAspect=imgEl.naturalWidth/imgEl.naturalHeight;
+    const boxAspect=box.w/box.h;
+    let baseW,baseH;
+    if(imgAspect>boxAspect){baseW=box.w;baseH=box.w/imgAspect;}
+    else{baseH=box.h;baseW=box.h*imgAspect;}
+    const dispW=baseW*z,dispH=baseH*z;
+    const mx=Math.max(0,(dispW-box.w)/2),my=Math.max(0,(dispH-box.h)/2);
+    return{x:Math.min(mx,Math.max(-mx,p.x)),y:Math.min(my,Math.max(-my,p.y))};
+  };
+
+  // Snap to fill once, as soon as both the image and the frame are measured.
+  useEffect(()=>{
+    if(zoomedRef.current||!imgEl||!box)return;
+    zoomedRef.current=true;
+    setZoom(minZoom);setPan({x:0,y:0});
+  },[imgEl,box,minZoom]);
+
   const onPointerDown=(e)=>{
     e.preventDefault();
     dragRef.current={startX:e.clientX,startY:e.clientY,panX:pan.x,panY:pan.y};
@@ -15015,7 +15070,7 @@ function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm}){
     if(!dragRef.current)return;
     const dx=e.clientX-dragRef.current.startX;
     const dy=e.clientY-dragRef.current.startY;
-    setPan({x:dragRef.current.panX+dx,y:dragRef.current.panY+dy});
+    setPan(clampPan({x:dragRef.current.panX+dx,y:dragRef.current.panY+dy},zoom));
   };
   const onPointerUp=(e)=>{
     dragRef.current=null;
@@ -15026,8 +15081,9 @@ function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm}){
     if(!imgEl||!containerRef.current||busy)return;
     setBusy(true);
     try{
-      const rect=containerRef.current.getBoundingClientRect();
-      const BW=rect.width,BH=rect.height;
+      // Content box, matching how the preview image is laid out — see the
+      // measure() note above.
+      const BW=containerRef.current.clientWidth,BH=containerRef.current.clientHeight;
       const imgAspect=imgEl.naturalWidth/imgEl.naturalHeight;
       const boxAspect=BW/BH;
       let baseW,baseH;
@@ -15089,8 +15145,9 @@ function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm}){
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12,marginTop:16}}>
           <span style={{fontSize:12,color:"var(--t2)",width:44}}>Zoom</span>
-          <input type="range" min="1" max="4" step="0.02" value={zoom} onChange={e=>setZoom(parseFloat(e.target.value))} style={{flex:1}}/>
-          <button type="button" className="btn-s btn-sm" onClick={()=>{setZoom(1);setPan({x:0,y:0});}}>Reset</button>
+          <input type="range" min={minZoom} max={minZoom*4} step="0.02" value={zoom}
+            onChange={e=>{const z=parseFloat(e.target.value);setZoom(z);setPan(p=>clampPan(p,z));}} style={{flex:1}}/>
+          <button type="button" className="btn-s btn-sm" onClick={()=>{setZoom(minZoom);setPan({x:0,y:0});}}>Reset</button>
         </div>
         <p style={{fontSize:11,color:"var(--t3)",marginTop:14,textAlign:"center"}}>Tip: Press <kbd style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:4,padding:"1px 6px",fontSize:10}}>Enter</kbd> to save · <kbd style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:4,padding:"1px 6px",fontSize:10}}>Esc</kbd> to cancel</p>
         <div style={{display:"flex",gap:10,marginTop:12}}>
@@ -15254,11 +15311,13 @@ function HeadshotStep({session,displayName,onSaved,onSkip}){
         ):(<>
           <div onClick={()=>!busy&&fileRef.current&&fileRef.current.click()}
             style={{border:"2px dashed var(--s3)",borderRadius:16,background:"#FDFBF7",padding:"26px 20px",cursor:busy?"default":"pointer"}}>
-            <div style={{width:104,height:130,borderRadius:11,background:"var(--s2)",border:"1px solid var(--bdr)",margin:"0 auto 13px",display:"grid",placeItems:"center",color:"#B9B2A2"}}>
-              <Ico n="user-circle" s={38}/>
+            {/* Portrait placeholder — headshots are vertical, and the frame should
+                say so before anyone picks a file. */}
+            <div style={{width:120,aspectRatio:"4/5",borderRadius:11,background:"var(--s2)",border:"1px solid var(--bdr)",margin:"0 auto 13px",display:"grid",placeItems:"center",color:"#B9B2A2"}}>
+              <Ico n="user-circle" s={40}/>
             </div>
             <div style={{fontSize:15,fontWeight:800,marginBottom:4}}>Upload a photo</div>
-            <div style={{fontSize:12.5,color:"var(--t2)",lineHeight:1.5}}>Click to choose · JPG or PNG</div>
+            <div style={{fontSize:12.5,color:"var(--t2)",lineHeight:1.5}}>Click to choose · JPG or PNG · portrait works best</div>
           </div>
 
           <div style={{display:"flex",gap:9,marginTop:13}}>
@@ -18194,9 +18253,28 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     }catch(e){setErr(e.message||"Upload failed.");}finally{setUploading(false);}
   };
   const removePhoto=async(url)=>{
+    if(!window.confirm("Remove this photo from your profile?"))return;
     const newPhotos=photos.filter(p=>p!==url);
-    await window.sb.from("profiles").update({additional_photos:newPhotos}).eq("id",session.user.id);
+    const {error}=await window.sb.from("profiles").update({additional_photos:newPhotos}).eq("id",session.user.id);
+    if(error){showErr(error.message||"Could not remove that photo. Please try again.");return;}
     setPhotos(newPhotos);onReload&&onReload();
+    setMsg("Photo removed.");setTimeout(()=>setMsg(""),3000);
+  };
+  // Clears the main headshot. The stored file is intentionally left in the
+  // bucket: applications keep their own selected_photo_url, which for most
+  // submissions is this exact object — deleting it would blank out headshots
+  // in casting directors' review history for applications already sent.
+  const removeHeadshot=async()=>{
+    if(!profile?.headshot_url)return;
+    if(!window.confirm("Remove your main headshot?\n\nCasting directors won't see a photo on your profile until you add a new one."))return;
+    setUploading(true);setErr("");
+    try{
+      const {error}=await window.sb.from("profiles").update({headshot_url:null}).eq("id",session.user.id);
+      if(error)throw error;
+      onReload&&onReload();
+      setMsg("Headshot removed.");setTimeout(()=>setMsg(""),3000);
+    }catch(e){showErr((e&&e.message)||"Could not remove your headshot. Please try again.");}
+    finally{setUploading(false);}
   };
   const reorderPhotos=(fromIdx,toIdx)=>{
     if(fromIdx===toIdx)return;
@@ -18286,6 +18364,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
           ?<img src={profile.headshot_url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:10}}/>
           :<div style={{width:"100%",aspectRatio:"3/4",background:"var(--s2)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t3)",fontSize:12,textAlign:"center",padding:12}}>No headshot yet</div>}
         <label className="btn-s" style={{width:"100%",display:"block",textAlign:"center",cursor:"pointer",marginTop:8,fontSize:11}}>{uploading?"Uploading…":"Change Headshot"}<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/></label>
+        {profile.headshot_url&&<button type="button" onClick={removeHeadshot} disabled={uploading}
+          style={{width:"100%",marginTop:6,background:"none",border:"none",color:"var(--t3)",fontSize:11,fontWeight:600,cursor:uploading?"default":"pointer",textDecoration:"underline",padding:4,fontFamily:"inherit"}}>Remove headshot</button>}
       </div>
       <div style={isMobile?{textAlign:"center"}:{}}>
         <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8,justifyContent:isMobile?"center":"flex-start"}}>
@@ -18536,6 +18616,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
             {profile.headshot_url&&(
               <div style={{position:"relative",borderRadius:8,overflow:"hidden",border:"2px solid var(--acc)"}}>
                 <img src={profile.headshot_url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",display:"block"}}/>
+                <button onClick={removeHeadshot} disabled={uploading} title="Remove headshot"
+                  style={{position:"absolute",top:4,right:4,background:"rgba(0,0,0,0.6)",border:"none",color:"#fff",borderRadius:"50%",width:22,height:22,cursor:uploading?"default":"pointer",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n="x" s={24}/></button>
                 <div style={{position:"absolute",bottom:0,left:0,right:0,background:"rgba(0,0,0,0.6)",color:"#fff",fontSize:10,fontWeight:700,padding:"4px 8px",textAlign:"center",letterSpacing:1}}>MAIN</div>
               </div>
             )}
@@ -29396,8 +29478,8 @@ function App(){
     const d=new Date();
     return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
   })();
-  const showHeadshotStep=(()=>{
-    if(headshotStepOff)return false;
+  // "Still applies" — who the step is for, independent of how often it has run.
+  const headshotStepApplies=(()=>{
     if(!authReady||!session?.user?.id||!myProfile)return false;
     // Guard against a profile left over from a previous account (fast switch,
     // or a reload landing before loadProfile catches up).
@@ -29411,13 +29493,47 @@ function App(){
     if(myProfile.headshot_url&&!preview)return false;
     if(myProfile.banned||myProfile.suspended)return false;
     if(myProfile.account_status&&myProfile.account_status!=="active")return false;
-    if(page==="login"||page==="success"||page==="plan-summary")return false;
-    try{if(sessionStorage.getItem("sc_post_auth_apply"))return false;}catch(_){}
-    try{if(localStorage.getItem("sc_hs_step_"+session.user.id)===headshotStepDayKey)return false;}catch(_){}
     return true;
   })();
+  // Never over an auth/checkout screen, and never while a saved application is
+  // still waiting to be submitted. Checked live, so navigating to checkout hides
+  // the step and coming back restores it.
+  const headshotStepAllowedHere=(()=>{
+    if(page==="login"||page==="success"||page==="plan-summary")return false;
+    try{if(sessionStorage.getItem("sc_post_auth_apply"))return false;}catch(_){}
+    return true;
+  })();
+  // Asked on the first three days the actor turns up without a photo, not once
+  // and never again — one prompt is easy to dismiss on autopilot. The counter
+  // ticks at most once per calendar day, so reloading a page doesn't burn a turn.
+  const HS_STEP_MAX_DAYS=3;
+  const headshotStepCounter=(uid)=>{
+    let n=0,last="";
+    try{
+      const raw=localStorage.getItem("sc_hs_step_seen_"+uid);
+      if(raw){const o=JSON.parse(raw);n=parseInt(o&&o.n,10)||0;last=(o&&o.last)||"";}
+    }catch(_){}
+    return{n,last};
+  };
+  const [headshotStepActive,setHeadshotStepActive]=useState(false);
+  useEffect(()=>{
+    const uid=session?.user?.id;
+    if(!headshotStepApplies||!uid){if(headshotStepActive)setHeadshotStepActive(false);return;}
+    if(headshotStepActive||headshotStepOff)return;
+    // Skipping settles it for the rest of that day — a reload shouldn't undo a
+    // deliberate dismissal.
+    try{if(localStorage.getItem("sc_hs_step_skip_"+uid)===headshotStepDayKey)return;}catch(_){}
+    const {n,last}=headshotStepCounter(uid);
+    // A day already counted stays open all day; a new day has to have turns left.
+    if(last!==headshotStepDayKey&&n>=HS_STEP_MAX_DAYS)return;
+    if(last!==headshotStepDayKey){
+      try{localStorage.setItem("sc_hs_step_seen_"+uid,JSON.stringify({n:n+1,last:headshotStepDayKey}));}catch(_){}
+    }
+    setHeadshotStepActive(true);
+  },[headshotStepApplies,headshotStepActive,headshotStepOff,session?.user?.id,headshotStepDayKey]);
+  const showHeadshotStep=headshotStepActive&&headshotStepApplies&&headshotStepAllowedHere&&!headshotStepOff;
   const dismissHeadshotStep=()=>{
-    try{localStorage.setItem("sc_hs_step_"+session.user.id,headshotStepDayKey);}catch(_){}
+    try{localStorage.setItem("sc_hs_step_skip_"+session.user.id,headshotStepDayKey);}catch(_){}
     setHeadshotStepOff(true);
   };
 
