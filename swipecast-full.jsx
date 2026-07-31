@@ -1903,19 +1903,31 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   padding:15px 16px;
   font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:.3px;
   cursor:pointer;transition:background .2s ease,color .2s ease;
+  /* Same seam guard: this bar sits directly on top of the dark footer, so a
+     sub-pixel gap between the two shows cream. Paint one pixel of the bar's own
+     colour underneath it. */
+  box-shadow:0 1px 0 0 #26272D;
 }
 .site-backtotop:hover{background:#2F3037;color:#fff;}
 .site-backtotop-arrow{display:inline-block;font-size:13px;transition:transform .2s ease;}
 .site-backtotop:hover .site-backtotop-arrow{transform:translateY(-2px);}
 /* Breathing room between page content (e.g. pagination) and the Back-to-top bar. */
 .page-foot-gap{flex:none;height:clamp(40px,6vw,64px);}
-/* Same hairline seam guard as .site-footer below, for the boundary between the
-   Manager Mode teaser and the final CTA. Two full-bleed dark sections stacked
-   back to back: the teaser's clamp()'d type gives it a fractional height, so on
-   a phone the seam rounds to a sub-pixel gap and the cream .app background
-   flickers through it while you scroll. Pull the CTA up a hairline so the seam
-   can only ever show the CTA's own colour. */
-.lh-cta{margin-top:-1px;}
+/* ─── Hairline seam guards for the dark run at the bottom of the landing page.
+   Four dark sections stack back to back — iOS teaser → Manager Mode → final CTA
+   → footer — and every one of them is sized with clamp()'d type, so each lands
+   on a fractional CSS pixel (measured: .5469, .5391). At DPR 2–3 the top box's
+   bottom edge and the next box's top edge round to different device-pixel rows,
+   leaving one row of the cream .app background showing between them. It blinks
+   because the rounding changes with the scroll offset, and it varies per device
+   because the fractional heights depend on DPR and font metrics — which is why
+   it shows on some phones/iPads and not on others.
+   Fix: make every dark→dark boundary paint dark on BOTH sides, so the rounding
+   has no cream left to reveal. Pull the lower section up a hairline where that
+   is free (the section paints its own gradient into the seam), and paint an
+   extra pixel with a shadow where layout must not move. ─── */
+.lh-mm{margin-top:-1px;}   /* iOS teaser → Manager Mode teaser */
+.lh-cta{margin-top:-1px;}  /* Manager Mode teaser → final CTA */
 /* ─── Global site footer — dark charcoal, applied via Footer component everywhere.
        The width:100vw + negative-margin-50vw pattern lets the footer's dark bg
        escape any constrained .page (max-width:1200px) parent so it always
@@ -1939,8 +1951,13 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
      blinks in and out as you scroll. Paint one more pixel of footer colour
      underneath so there is no edge for the cream to show at. A shadow rather
      than a negative margin on purpose: it costs no layout, so short pages
-     that currently fit in the viewport don't gain a 1px scroll. */
-  box-shadow:0 1px 0 0 #1B1C20;
+     that currently fit in the viewport don't gain a 1px scroll — and margin-top
+     here must stay put, since it is what keeps the footer pinned to the bottom
+     of the flex column on short pages.
+     The -1px half guards the seam ABOVE the footer, where the final CTA (dark)
+     meets it. On light pages that pixel just reads as the footer's own top
+     edge; on dark ones it closes the gap the cream was blinking through. */
+  box-shadow:0 1px 0 0 #1B1C20, 0 -1px 0 0 #1B1C20;
   flex-shrink:0;
 }
 .site-footer-inner{max-width:1200px;margin:0 auto;padding:60px 40px 28px;}
@@ -17609,7 +17626,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </div>
 
     {/* ───────── MANAGER MODE TEASER ───────── */}
-    <section style={{padding:"72px 40px",background:"linear-gradient(160deg,#1A1A2E 0%,#16213e 60%,#0f3460 100%)",color:"#fff",position:"relative",overflow:"hidden"}}>
+    <section className="lh-mm" style={{padding:"72px 40px",background:"linear-gradient(160deg,#1A1A2E 0%,#16213e 60%,#0f3460 100%)",color:"#fff",position:"relative",overflow:"hidden"}}>
       <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 80% 50%,rgba(99,102,241,0.13) 0%,transparent 60%)",pointerEvents:"none"}}/>
       <div style={{maxWidth:1100,margin:"0 auto",position:"relative",display:"flex",alignItems:"center",gap:"clamp(32px,5vw,72px)",flexWrap:"wrap"}}>
         <div style={{flex:"1 1 320px",minWidth:280}}>
