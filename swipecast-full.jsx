@@ -6180,7 +6180,7 @@ function ContactPage({onNavigate,session,myProfile,initialSubject}){
           Response times
         </span>
         <h4>We'll be in touch soon</h4>
-        <p>A real person on our team reads every message that comes in.</p>
+        <p>Our team reads every message that comes in.</p>
       </div>
       <div className="crt-steps">
         <div className="crt-step"><div className="ic"><Ico n="clock-hour-4" s={17}/></div><div className="t">Usually hours</div><div className="s">Typical reply time</div></div>
