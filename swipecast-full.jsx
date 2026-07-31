@@ -1644,6 +1644,31 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .success-msg .check{width:64px;height:64px;border-radius:50%;background:rgba(27,135,62,0.08);color:var(--grn);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;}
 .success-msg h3{font-size:22px;font-weight:800;margin-bottom:8px;}
 .success-msg p{color:var(--t2);font-size:14px;}
+/* Contact page — response-time reassurance block. Sets expectations before the
+   message is sent so nobody feels ignored (and nobody sends the same message
+   three times). Envelope opens, closes, then turns a full 360 and repeats. */
+.crt{margin-top:22px;background:linear-gradient(180deg,#FBFAF7 0%,#FFFFFF 100%);border:1px solid var(--bdr);border-radius:14px;padding:22px 20px 20px;}
+.crt-h{text-align:center;margin-bottom:16px;}
+.crt-h h4{font-size:17px;font-weight:800;letter-spacing:-.3px;color:var(--t1);margin-bottom:6px;}
+.crt-h p{font-size:13px;color:#3E4350;line-height:1.55;max-width:380px;margin:0 auto;}
+.crt-pill{display:inline-flex;align-items:center;gap:10px;font-size:12px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--teal-dk);background:rgba(79,138,139,.12);border:1px solid rgba(79,138,139,.3);padding:7px 16px 7px 8px;border-radius:999px;margin-bottom:11px;}
+.crt-disc{width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid rgba(79,138,139,.28);display:flex;align-items:center;justify-content:center;flex-shrink:0;perspective:90px;}
+.crt-env{position:relative;width:20px;height:14px;transform-style:preserve-3d;color:var(--teal-dk);animation:crtspin 5.6s cubic-bezier(.6,.02,.3,1) infinite;}
+.crt-env .bd{position:absolute;top:0;left:0;right:0;bottom:0;border:1.6px solid currentColor;border-radius:3px;background:#fff;}
+.crt-env .paper{position:absolute;left:2.6px;right:2.6px;bottom:1.6px;height:10px;border:1.4px solid currentColor;border-bottom:none;border-radius:1.5px 1.5px 0 0;background:linear-gradient(#fff 0 2.4px,rgba(55,105,106,.42) 2.4px 3.4px,#fff 3.4px 5px,rgba(55,105,106,.42) 5px 6px,#fff 6px 100%);}
+.crt-env .flap{position:absolute;left:-.5px;top:-.5px;width:21px;height:9.5px;background:currentColor;clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top center;animation:crtflap 5.6s ease-in-out infinite;}
+@keyframes crtflap{0%,9%{transform:rotateX(0deg);}22%,38%{transform:rotateX(-168deg);}52%,100%{transform:rotateX(0deg);}}
+@keyframes crtspin{0%,56%{transform:rotate(0deg) scale(1);}72%{transform:rotate(180deg) scale(.88);}86%,100%{transform:rotate(360deg) scale(1);}}
+.crt-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.crt-step{background:var(--s1);border:1px solid var(--bdr);border-radius:11px;padding:13px 12px;text-align:center;}
+.crt-step .ic{width:32px;height:32px;border-radius:9px;background:rgba(79,138,139,.12);color:var(--teal-dk);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;}
+.crt-step .t{font-size:13px;font-weight:800;letter-spacing:-.1px;color:var(--t1);}
+.crt-step .s{font-size:11.5px;color:#5F6573;line-height:1.45;margin-top:3px;font-weight:500;}
+.crt-foot{display:flex;align-items:flex-start;gap:9px;background:rgba(79,138,139,.09);border:1px solid rgba(79,138,139,.16);border-radius:10px;padding:12px;font-size:12.5px;line-height:1.55;color:#3E4350;}
+.crt-foot b{color:var(--t1);font-weight:800;}
+.crt-foot .ic{color:var(--teal-dk);flex-shrink:0;margin-top:1px;}
+@media(max-width:540px){.crt-steps{grid-template-columns:1fr;}}
+@media (prefers-reduced-motion:reduce){.crt-env,.crt-env .flap{animation:none;}}
 .info-hero{text-align:center;padding:80px 40px 60px;max-width:800px;margin:0 auto;}
 .info-hero h1{font-weight:800;font-size:48px;letter-spacing:-2px;margin-bottom:16px;}
 .info-hero p{color:var(--t2);font-size:17px;line-height:1.6;max-width:600px;margin:0 auto;}
@@ -6148,6 +6173,25 @@ function ContactPage({onNavigate,session,myProfile,initialSubject}){
       <div className="form-group"><label className="label">Message</label><textarea className="textarea" placeholder="Tell us more..." style={{minHeight:140}} value={message} onChange={e=>setMessage(e.target.value)}></textarea></div>
       <button className="btn-p" style={{width:"100%"}} onClick={send} disabled={sending}>{sending?"Sending…":"Send Message"}</button>
       {error&&<div style={{marginTop:14,padding:"12px 14px",borderRadius:10,background:"rgba(214,59,59,.08)",border:"1px solid rgba(214,59,59,.25)",color:"var(--red)",fontSize:13,fontWeight:600,textAlign:"center"}}>{error}</div>}</>}
+    <div className="crt">
+      <div className="crt-h">
+        <span className="crt-pill">
+          <span className="crt-disc"><span className="crt-env"><span className="bd"/><span className="paper"/><span className="flap"/></span></span>
+          Response times
+        </span>
+        <h4>We'll be in touch soon</h4>
+        <p>A real person on our team reads every message that comes in.</p>
+      </div>
+      <div className="crt-steps">
+        <div className="crt-step"><div className="ic"><Ico n="clock-hour-4" s={17}/></div><div className="t">Usually hours</div><div className="s">Typical reply time</div></div>
+        <div className="crt-step"><div className="ic"><Ico n="calendar-event" s={17}/></div><div className="t">1–2 business days</div><div className="s">During busy periods</div></div>
+        <div className="crt-step"><div className="ic"><Ico n="moon" s={17}/></div><div className="t">A little longer</div><div className="s">On weekends</div></div>
+      </div>
+      <div className="crt-foot">
+        <span className="ic"><Ico n="shield-check" s={17}/></span>
+        <div><b>No need to send it twice.</b> Your message has reached us and is in the queue. We appreciate your patience and look forward to connecting with you.</div>
+      </div>
+    </div>
     <div style={{marginTop:48,display:"flex",justifyContent:"center"}}>
       <div className="card" style={{maxWidth:340,width:"100%",textAlign:"center",overflow:"hidden",padding:0}}>
         <div style={{position:"relative",width:"100%",height:150,overflow:"hidden",background:"#dfe6e0"}}>
