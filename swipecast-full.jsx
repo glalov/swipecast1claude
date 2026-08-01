@@ -17074,11 +17074,24 @@ function BufferedLoopVideo(props){
     // Fallback: some mobile browsers withhold canplaythrough under data-saver;
     // after 10s accept solid forward buffer (canplay) instead.
     if(!buffered) fbT=setTimeout(function(){ if(v.readyState>=3) onBuf(); else v.addEventListener('canplay',onBuf); },10000);
-    let io=null;
+    // Buffering starts on APPROACH instead of at page load. The clip used to
+    // download in full the moment the page opened, even for visitors who never
+    // scrolled this far; now it starts about a screen and a half early, which
+    // gives the buffer gate above the same head start it had before while
+    // costing nothing for people who never reach this section. NOTE: preload
+    // must be flipped to 'auto' here — the gate waits for canplaythrough, and
+    // with preload left at 'none' nothing would ever buffer and the poster
+    // would hold forever on desktop.
+    const startLoad=function(){ if(v.preload!=='auto'){ v.preload='auto'; try{ v.load(); }catch(_){} } };
+    let io=null, loadIo=null;
     if(typeof IntersectionObserver!=='undefined'){
       io=new IntersectionObserver(function(entries){ entries.forEach(function(e){ visible=e.isIntersecting; sync(); }); },{rootMargin:'100px 0px',threshold:0.01});
       io.observe(v);
-    } else { visible=true; sync(); }
+      loadIo=new IntersectionObserver(function(entries){
+        if(entries.some(function(e){ return e.isIntersecting; })){ startLoad(); if(loadIo){ loadIo.disconnect(); loadIo=null; } }
+      },{rootMargin:'1200px 0px',threshold:0});
+      loadIo.observe(v);
+    } else { startLoad(); visible=true; sync(); }
     // Chrome pauses the video while the tab is hidden and won't restart a
     // script-played loop on return — resume it ourselves.
     const onVis=function(){ if(!document.hidden) sync(); };
@@ -17090,9 +17103,9 @@ function BufferedLoopVideo(props){
     const onPause=function(){ if(visible&&buffered&&!window.__scGliding&&!document.hidden) setTimeout(sync,150); };
     v.addEventListener('pause',onPause);
     const guard=setInterval(function(){ if(visible&&buffered&&v.paused&&!window.__scGliding&&!document.hidden) sync(); },4000);
-    return function(){ v.removeEventListener('canplaythrough',onBuf); v.removeEventListener('canplay',onBuf); v.removeEventListener('pause',onPause); clearTimeout(fbT); clearInterval(guard); if(io)io.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',sync); };
+    return function(){ v.removeEventListener('canplaythrough',onBuf); v.removeEventListener('canplay',onBuf); v.removeEventListener('pause',onPause); clearTimeout(fbT); clearInterval(guard); if(io)io.disconnect(); if(loadIo)loadIo.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',sync); };
   },[]);
-  return <video ref={ref} muted loop playsInline preload="auto" {...props}/>;
+  return <video ref={ref} muted loop playsInline preload="none" {...props}/>;
 }
 
 function FormatReel(){
@@ -17145,14 +17158,27 @@ function FormatReel(){
     const onPause=function(ev){ const v=ev.target; if(v._csWanted&&!window.__scGliding&&!document.hidden) setTimeout(function(){ if(v._csWanted&&v.paused) play(v); },150); };
     vids.forEach(function(v){ v.addEventListener('pause',onPause); });
     const guard=setInterval(function(){ if(window.__scGliding||document.hidden)return; vids.forEach(function(v){ if(v._csWanted&&v.paused) play(v); }); },4000);
-    // Warm every clip in the background shortly after load: the files start
-    // downloading while the user is still up at the hero, so by the time the
-    // reel scrolls in each card is already fully buffered and plays instantly.
-    const warm=function(){ vids.forEach(attach); };
-    const warmT=setTimeout(function(){
-      if(typeof requestIdleCallback!=='undefined') requestIdleCallback(warm,{timeout:4000}); else warm();
-    },2500);
-    return function(){ if(io)io.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',onGlideEnd); vids.forEach(function(v){ v.removeEventListener('pause',onPause); }); clearInterval(guard); clearTimeout(warmT); };
+    // Warm every clip together so each card is fully buffered before it slides
+    // in — but trigger that on APPROACH (about a screen and a half above the
+    // reel) rather than on a page-load timer. Anyone scrolling toward the reel
+    // still gets the identical instant-playback behaviour, while visitors who
+    // never reach this section stop downloading ~24MB of video they never see.
+    let warmed=false;
+    const warm=function(){
+      if(warmed)return; warmed=true;
+      if(typeof requestIdleCallback!=='undefined') requestIdleCallback(function(){ vids.forEach(attach); },{timeout:4000});
+      else vids.forEach(attach);
+    };
+    let warmIo=null;
+    if(typeof IntersectionObserver!=='undefined'){
+      warmIo=new IntersectionObserver(function(entries){
+        if(entries.some(function(e){ return e.isIntersecting; })){ warm(); if(warmIo){ warmIo.disconnect(); warmIo=null; } }
+      },{root:null,rootMargin:'1200px 0px',threshold:0});
+      warmIo.observe(reel);
+    } else {
+      warm(); // no IntersectionObserver: behave exactly as before
+    }
+    return function(){ if(io)io.disconnect(); if(warmIo)warmIo.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',onGlideEnd); vids.forEach(function(v){ v.removeEventListener('pause',onPause); }); clearInterval(guard); };
   },[]);
   const doubled=[...FORMAT_CARDS,...FORMAT_CARDS];
   // Phones load the smaller mobile encode (.m.mp4 ~60–460KB); desktop gets the
