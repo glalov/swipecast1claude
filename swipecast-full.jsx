@@ -11638,6 +11638,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   },[applications,appsTab]);
 
   const profileChecks=[
+    {label:"Add your name",done:!!(myProfile?.display_name?.trim())},
     {label:"Upload headshot",done:!!myProfile?.headshot_url},
     {label:"Add bio",done:!!(myProfile?.bio?.trim())},
     {label:"Add location",done:!!myProfile?.location},
@@ -28700,11 +28701,16 @@ function App(){
         try{
           const {data:ud}=await window.sb.auth.getUser();
           const userEmail=ud?.user?.email||"";
+          const um=ud?.user?.user_metadata||{};
+          // Never seed the name from the email handle — it surfaces on CD-facing
+          // cards as things like "kiarakarissawhite". Use the name the signup form
+          // or the OAuth provider gave us; leave it null when there isn't one.
+          const metaName=(um.display_name||um.full_name||um.name||"").trim();
           const pendingT=sessionStorage.getItem("swipecast_pending_type")||"talent";
           const {data:created,error:insErr}=await window.sb.from("profiles").insert({
             id:uid,email:userEmail,
             user_type:["talent","cd","admin","super_admin"].includes(pendingT)?pendingT:"talent",
-            display_name:userEmail.split("@")[0]||"New User",
+            display_name:metaName||null,
             visible:true,suspended:false
           }).select().maybeSingle();
           if(!insErr&&created){data=created;}
