@@ -11767,6 +11767,73 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
     if(txt)copyText(txt,"__all");
   };
 
+  // Print the mailing list ONLY. window.print() would print the whole dashboard behind
+  // the modal, so we render a clean standalone document into a hidden iframe instead.
+  const printList=()=>{
+    const esc=(v)=>String(v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+    const today=new Date().toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
+    const rows=myList.map(a=>{
+      const addr=a.a.length
+        ? a.a.map(x=>'<div class="ln"><span>'+esc(x[0])+'</span>'+esc(x[1])+'</div>').join("")
+        : '<div class="pend">Address withheld — we are re-confirming this one. Check the directory before sending.</div>';
+      const tags=[a.sag?"SAG-AFTRA franchised":"",a.pc?"Accepts postcards":""].filter(Boolean)
+        .map(t=>'<span class="tag">'+esc(t)+'</span>').join("");
+      return '<div class="item'+(sent.has(a.n)?" done":"")+'">'
+        +'<div class="box">'+(sent.has(a.n)?"&#10003;":"")+'</div>'
+        +'<div class="body"><h3>'+esc(a.n)+'</h3>'
+        +(tags?'<div class="tags">'+tags+'</div>':"")
+        +addr
+        +(sent.has(a.n)?'<div class="sent">Sent</div>':'<div class="todo">Not sent yet</div>')
+        +'</div></div>';
+    }).join("");
+    const doc='<!DOCTYPE html><html><head><meta charset="utf-8"><title>My Agency Mailing List</title><style>'
+      +'@page{margin:16mm;}'
+      +'*{box-sizing:border-box;}'
+      +'body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#1A1A2E;font-size:12pt;}'
+      +'header{border-bottom:2px solid #1A1A2E;padding-bottom:10px;margin-bottom:18px;}'
+      +'h1{margin:0 0 4px;font-size:19pt;letter-spacing:-.3px;}'
+      +'header p{margin:0;font-size:9.5pt;color:#5A5A72;}'
+      +'.summary{font-size:10pt;color:#5A5A72;margin:0 0 16px;}'
+      +'.item{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid #E5DFD2;page-break-inside:avoid;break-inside:avoid;}'
+      +'.item.done{color:#6b6b7d;}'
+      +'.box{width:15px;height:15px;border:1.5px solid #1A1A2E;border-radius:3px;flex:0 0 auto;margin-top:2px;text-align:center;line-height:13px;font-size:11px;}'
+      +'.body{flex:1;}'
+      +'h3{margin:0 0 3px;font-size:12.5pt;}'
+      +'.tags{margin:0 0 4px;}'
+      +'.tag{display:inline-block;font-size:7.5pt;font-weight:700;border:1px solid #C9C2B2;border-radius:3px;padding:1px 5px;margin-right:5px;color:#5A5A72;}'
+      +'.ln{font-size:10.5pt;line-height:1.45;margin-bottom:3px;}'
+      +'.ln span{display:block;font-size:7.5pt;letter-spacing:.08em;text-transform:uppercase;color:#8E8EA0;}'
+      +'.pend{font-size:10pt;font-style:italic;color:#8E8EA0;}'
+      +'.sent{font-size:9pt;font-weight:700;color:#146B31;margin-top:3px;}'
+      +'.todo{font-size:9pt;color:#8E8EA0;margin-top:3px;}'
+      +'footer{margin-top:20px;padding-top:10px;border-top:1px solid #E5DFD2;font-size:9pt;color:#5A5A72;line-height:1.5;}'
+      +'</style></head><body>'
+      +'<header><h1>My Agency Mailing List</h1>'
+      +'<p>CastSlate &middot; '+esc(today)+'</p></header>'
+      +'<p class="summary">'+myList.length+' '+(myList.length===1?"agency":"agencies")+' &middot; '
+      +myList.filter(a=>sent.has(a.n)).length+' sent &middot; '+myList.filter(a=>!sent.has(a.n)).length+' still to go</p>'
+      +rows
+      +'<footer><strong>One at a time.</strong> Five letters to agencies you actually researched will beat forty to everyone on the list. '
+      +'Write a short handwritten note on the back of your CastSlate card &mdash; one or two sentences, no biography.</footer>'
+      +'</body></html>';
+    const frame=document.createElement("iframe");
+    frame.setAttribute("aria-hidden","true");
+    frame.style.cssText="position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;";
+    document.body.appendChild(frame);
+    const cleanup=()=>{try{document.body.removeChild(frame);}catch(_){}};
+    frame.onload=()=>{
+      try{
+        const w=frame.contentWindow;
+        w.focus();
+        w.onafterprint=cleanup;
+        w.print();
+        setTimeout(cleanup,60000);
+      }catch(_){cleanup();}
+    };
+    const d=frame.contentWindow.document;
+    d.open();d.write(doc);d.close();
+  };
+
   const row=(a)=>{
     const sub=TAD_SUB[a.s];
     const isPicked=picked.has(a.n);
@@ -11955,7 +12022,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
                     </div>
                     <span style={{flex:1}}/>
                     <button className="tad-b" onClick={copyAll}>{copied==="__all"?"Copied":"Copy all addresses"}</button>
-                    <button className="btn-p" style={{padding:"11px 18px",fontSize:12.5}} onClick={()=>window.print()}>Print my list</button>
+                    <button className="btn-p" style={{padding:"11px 18px",fontSize:12.5}} onClick={printList}>Print my list</button>
                   </div>
                   {myList.map(a=>(
                     <div className={"tad-mlitem"+(sent.has(a.n)?" done":"")} key={a.n}>
@@ -11964,7 +12031,9 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
                       </div>
                       <div>
                         <h4>{a.n}</h4>
-                        {a.a.map(x=><div className="ad" key={x[0]}>{x[1]}</div>)}
+                        {a.a.length
+                          ? a.a.map(x=><div className="ad" key={x[0]}>{x[1]}</div>)
+                          : <div className="ad" style={{fontStyle:"italic",color:"var(--t3)"}}>Address withheld — we're re-confirming this one. Check the directory before sending.</div>}
                         {a.pc?<div className="sentmark">Accepts postcards — your card can go on its own</div>:null}
                         {sent.has(a.n)&&<div className="sentmark">Marked as sent</div>}
                       </div>
