@@ -1686,25 +1686,20 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tad-curated{display:inline-flex;align-items:center;gap:7px;margin-top:14px;font-size:11.5px;font-weight:700;background:rgba(240,184,96,.14);border:1px solid rgba(240,184,96,.34);color:#F0B860;padding:6px 12px;border-radius:20px;}
 .tad-body{padding:20px 26px 28px;}
 .tad-key{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px;}
-.tad-keycard{flex:1;min-width:210px;background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:13px 15px;}
+.tad-keycard{position:relative;flex:1;min-width:210px;background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:13px 15px;}
 .tad-keycard p{margin:0;font-size:12px;color:var(--t2);line-height:1.5;}
 .tad-tier{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;border-radius:5px;}
 .tad-t-small{background:rgba(79,138,139,.14);color:#3C6E6F;}
 .tad-t-medium{background:rgba(232,144,42,.16);color:#B96C12;}
 .tad-t-large{background:rgba(26,26,46,.09);color:#42425C;}
-.tad-info{position:relative;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1.4px solid var(--t3);color:var(--t3);font-size:10px;font-weight:800;cursor:help;flex-shrink:0;font-style:normal;}
+/* NOTE: the tip is anchored to .tad-keycard (not the icon) and inset within it, so it can
+   never overflow the modal's clipping context at any container width. */
+.tad-info{position:static;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1.4px solid var(--t3);color:var(--t3);font-size:10px;font-weight:800;cursor:help;flex-shrink:0;font-style:normal;}
 .tad-info:hover,.tad-info:focus{border-color:var(--t1);color:var(--t1);outline:none;}
-.tad-tip{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%) translateY(-4px);width:290px;background:#12131A;color:#fff;border-radius:11px;padding:13px 15px;font-size:12.2px;font-weight:500;line-height:1.55;text-transform:none;letter-spacing:0;opacity:0;pointer-events:none;transition:opacity .16s,transform .16s;z-index:40;box-shadow:0 16px 40px -14px rgba(0,0,0,.6);text-align:left;}
+.tad-tip{position:absolute;top:calc(100% + 9px);left:0;right:0;transform:translateY(-4px);background:#12131A;color:#fff;border-radius:11px;padding:13px 15px;font-size:12.2px;font-weight:500;line-height:1.55;text-transform:none;letter-spacing:0;opacity:0;pointer-events:none;transition:opacity .16s,transform .16s;z-index:40;box-shadow:0 16px 40px -14px rgba(0,0,0,.6);text-align:left;}
 .tad-tip b{color:#F0B860;display:block;margin-bottom:5px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;}
-.tad-tip:after{content:"";position:absolute;bottom:100%;left:50%;margin-left:-6px;border:6px solid transparent;border-bottom-color:#12131A;}
-.tad-info:hover .tad-tip,.tad-info:focus .tad-tip{opacity:1;transform:translateX(-50%);}
-.tad-info.tad-r .tad-tip{left:auto;right:-8px;transform:translateY(-4px);}
-.tad-info.tad-r .tad-tip:after{left:auto;right:12px;margin:0;}
-.tad-info.tad-r:hover .tad-tip,.tad-info.tad-r:focus .tad-tip{transform:none;}
-/* leftmost tip must anchor left, or it overflows the modal edge and gets clipped */
-.tad-info.tad-l .tad-tip{left:-8px;right:auto;transform:translateY(-4px);}
-.tad-info.tad-l .tad-tip:after{left:14px;margin-left:0;}
-.tad-info.tad-l:hover .tad-tip,.tad-info.tad-l:focus .tad-tip{transform:none;}
+.tad-tip:after{content:"";position:absolute;bottom:100%;left:74px;border:6px solid transparent;border-bottom-color:#12131A;}
+.tad-info:hover .tad-tip,.tad-info:focus .tad-tip{opacity:1;transform:none;}
 .tad-controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:8px;}
 .tad-srch{flex:1;min-width:180px;border:1px solid var(--bdr);background:var(--s1);border-radius:9px;padding:9px 13px;font-family:inherit;font-size:13px;color:var(--t1);}
 .tad-srch:focus{outline:none;border-color:var(--t1);}
@@ -1760,7 +1755,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   .tad-head{padding:22px 16px;}
   .tad-body{padding:16px 14px 22px;}
   .tad-tray{margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px;}
-  .tad-tip{width:220px;}
+  .tad-tip{font-size:12px;padding:11px 13px;}
 }
 .success-msg .check{width:64px;height:64px;border-radius:50%;background:rgba(27,135,62,0.08);color:var(--grn);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;}
 .success-msg h3{font-size:22px;font-weight:800;margin-bottom:8px;}
@@ -11525,8 +11520,8 @@ const TAD_GROUPS=[
 ];
 const TAD_PICK_KEY="cs_agency_maillist_v1";
 
-function TadInfo({title,body,right,left}){
-  return <i className={"tad-info"+(right?" tad-r":"")+(left?" tad-l":"")} tabIndex={0}>i
+function TadInfo({title,body}){
+  return <i className="tad-info" tabIndex={0}>i
     <span className="tad-tip"><b>{title}</b>{body}</span></i>;
 }
 
@@ -11647,7 +11642,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
               <div className="tad-keycard">
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}>
                   <span className="tad-tier tad-t-small">Small</span>
-                  <TadInfo left title="Small agencies" body="These are the ones actively looking for new faces. Most don't require credits or experience — what they want to see is talent. You can be a complete beginner here as long as you can act. This is where nearly every working actor starts, and this is where your letters should go first."/>
+                  <TadInfo title="Small agencies" body="These are the ones actively looking for new faces. Most don't require credits or experience — what they want to see is talent. You can be a complete beginner here as long as you can act. This is where nearly every working actor starts, and this is where your letters should go first."/>
                 </div>
                 <p>Open to beginners. Start here.</p>
               </div>
@@ -11661,7 +11656,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
               <div className="tad-keycard">
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}>
                   <span className="tad-tier tad-t-large">Major</span>
-                  <TadInfo right title="Major agencies — information only" body="Some of these have been in the business close to seven decades. They are on this list so you know who they are, not so you can submit to them. We advise you NOT to mail them your business card or QR code — most will return it unopened. They work almost entirely with established and celebrity talent and do not develop beginners."/>
+                  <TadInfo title="Major agencies — information only" body="Some of these have been in the business close to seven decades. They are on this list so you know who they are, not so you can submit to them. We advise you NOT to mail them your business card or QR code — most will return it unopened. They work almost entirely with established and celebrity talent and do not develop beginners."/>
                 </div>
                 <p>Information only — don't mail these.</p>
               </div>
