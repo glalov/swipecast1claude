@@ -65,6 +65,72 @@ function resolvePlanPrice(sub: Stripe.Subscription): number | null {
   return typeof cents === "number" ? cents / 100 : null;
 }
 
+// ── Non-payment grace period ────────────────────────────────────────────────
+// A failed charge does NOT revoke premium on its own — Stripe retries for days
+// and an out-of-order event must never knock a paying member down to free. What
+// it does is start the clock: past_due_since is stamped once, and the hourly
+// enforce_past_due_downgrades() sweep flips the member to free (and hides their
+// gallery photos/videos via premium_locked_at) on day 4 if it is still unpaid.
+//
+// Stamp ONCE per streak: `.is("past_due_since", null)` means Stripe's repeated
+// retry failures can't keep pushing the deadline out.
+async function stampPastDue(userId: string): Promise<void> {
+  await supabase
+    .from("profiles")
+    .update({ past_due_since: new Date().toISOString() })
+    .eq("id", userId)
+    .is("past_due_since", null);
+}
+
+// The other half: any confirmed payment clears the streak AND the lock, so the
+// member's media comes back untouched. Always merged into the same update that
+// sets membership_status='active' — never a separate write that could half-apply.
+const PAYMENT_CLEARED = {
+  past_due_since: null,
+  premium_locked_at: null,
+};
+
+// One-time "Welcome to Premium" email.
+//
+// send-notification-email is no longer anonymous — it requires the service role
+// key, the shared notify secret, or a user JWT. This call used to send no
+// Authorization header at all, so every welcome was rejected with 401 while the
+// webhook still stamped premium_welcome_sent_at, permanently marking the member
+// as "welcomed" without a single email going out. Two rules keep that from
+// recurring: send the service-role credential, and only stamp the guard when the
+// email function confirms it actually sent (or deliberately skipped).
+async function sendPremiumWelcome(userId: string): Promise<void> {
+  const { data: prof } = await supabase
+    .from("profiles").select("premium_welcome_sent_at").eq("id", userId).maybeSingle();
+  if (prof?.premium_welcome_sent_at) return;
+
+  const res = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-notification-email`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+    },
+    body: JSON.stringify({ to_user_id: userId, type: "premium_welcome" }),
+  });
+
+  const payload = await res.json().catch(() => ({} as any));
+  const outcome = String((payload as any)?.results?.email ?? "");
+
+  // A hard failure (401/500) or a provider error must NOT burn the guard —
+  // leaving it null means the next paid event can still deliver the welcome.
+  if (!res.ok || outcome.startsWith("error:")) {
+    console.error(
+      `[stripe-webhook] premium welcome NOT sent for ${userId} — status ${res.status}, outcome "${outcome || JSON.stringify(payload)}"; guard left unset for retry`
+    );
+    return;
+  }
+
+  await supabase.from("profiles")
+    .update({ premium_welcome_sent_at: new Date().toISOString() })
+    .eq("id", userId);
+  console.log(`[stripe-webhook] premium welcome ${outcome || "sent"} for user: ${userId}`);
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: { "Access-Control-Allow-Origin": "*" } });
@@ -120,28 +186,17 @@ Deno.serve(async (req: Request) => {
               stripe_subscription_id: session.subscription as string,
               plan_type: planKey,
               premium_started_at: new Date().toISOString(),
+              ...PAYMENT_CLEARED,
               updated_at: new Date().toISOString(),
             })
             .eq("id", userId);
           if (error) console.error("Failed to activate premium:", error);
           else console.log(`Premium activated for user: ${userId}, plan: ${planKey}`);
 
-          // One-time "Welcome to Premium" email. Guarded by premium_welcome_sent_at
-          // so renewals / re-subscribes never re-send it. Fire-and-forget; non-fatal.
+          // Guarded by premium_welcome_sent_at so renewals / re-subscribes never
+          // re-send it. Non-fatal: a failed email must never fail the webhook.
           try {
-            const { data: prof } = await supabase
-              .from("profiles").select("premium_welcome_sent_at").eq("id", userId).maybeSingle();
-            if (!prof?.premium_welcome_sent_at) {
-              await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-notification-email`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ to_user_id: userId, type: "premium_welcome" }),
-              });
-              await supabase.from("profiles")
-                .update({ premium_welcome_sent_at: new Date().toISOString() })
-                .eq("id", userId);
-              console.log(`Premium welcome email dispatched for user: ${userId}`);
-            }
+            await sendPremiumWelcome(userId);
           } catch (e) {
             console.error("Premium welcome email failed (non-fatal):", e);
           }
@@ -198,18 +253,41 @@ Deno.serve(async (req: Request) => {
         // membership_status is the gate the whole app reads. Only move it on
         // DEFINITIVE states, so transient / out-of-order events can never
         // clobber a paid member back to "free":
-        //   - active / trialing            -> grant premium
+        //   - active / trialing            -> grant premium (and clear any lock)
         //   - canceled / unpaid            -> revoke premium
-        //   - incomplete / past_due / etc. -> leave membership untouched
+        //   - incomplete / past_due / etc. -> leave membership untouched; the
+        //     3-day grace sweep decides, not this event
         if (sub.status === "active" || sub.status === "trialing") {
           updates.membership_status = "active";
+          Object.assign(updates, PAYMENT_CLEARED);
         } else if (sub.status === "canceled" || sub.status === "unpaid") {
           updates.membership_status = "free";
+          // "unpaid" is Stripe giving up on retries — that IS non-payment, so
+          // the media lock applies. A plain cancel is not, and leaves it alone.
+          if (sub.status === "unpaid") {
+            updates.premium_locked_at = new Date().toISOString();
+          }
         }
 
         const { error } = await supabase.from("profiles").update(updates).eq("id", userId);
         if (error) console.error("Failed to update subscription:", error);
         else console.log(`Subscription ${sub.status} for user: ${userId}, plan: ${planKey}`);
+
+        // Start the 3-day clock the first time this streak goes unpaid.
+        if (sub.status === "past_due" || sub.status === "unpaid") {
+          await stampPastDue(userId);
+        }
+
+        // Safety net for the welcome email: if checkout.session.completed was
+        // missed, or its send failed, an active subscription still triggers it
+        // exactly once (the guard inside sendPremiumWelcome keeps it one-time).
+        if (updates.membership_status === "active") {
+          try {
+            await sendPremiumWelcome(userId);
+          } catch (e) {
+            console.error("Premium welcome email failed (non-fatal):", e);
+          }
+        }
         break;
       }
 
@@ -230,6 +308,10 @@ Deno.serve(async (req: Request) => {
             stripe_subscription_id: null,
             current_period_end: null,
             cancel_at_period_end: false,
+            // The streak is over (the subscription is gone), but premium_locked_at
+            // is left as-is: someone dropped for non-payment stays locked until
+            // they actually pay, rather than being un-locked by the cancellation.
+            past_due_since: null,
             updated_at: new Date().toISOString(),
           })
           .eq("id", userId);
@@ -261,10 +343,13 @@ Deno.serve(async (req: Request) => {
             current_period_end: periodEnd,
             cancel_at_period_end: !!sub.cancel_at_period_end,
             ...(resolvePlanPrice(sub) !== null ? { plan_price: resolvePlanPrice(sub) } : {}),
+            // Payment landed: end the non-payment streak and unlock the member's
+            // photos/videos in the same write that restores premium.
+            ...PAYMENT_CLEARED,
             updated_at: new Date().toISOString(),
           })
           .eq("id", userId);
-        console.log(`Invoice payment succeeded for user: ${userId}, plan: ${planKey}`);
+        console.log(`Invoice payment succeeded for user: ${userId}, plan: ${planKey} (premium restored, media unlocked)`);
         break;
       }
 
@@ -285,7 +370,10 @@ Deno.serve(async (req: Request) => {
             updated_at: new Date().toISOString(),
           })
           .eq("id", userId);
-        console.log(`Invoice payment failed for user: ${userId}`);
+        // Premium is NOT revoked here — the member gets 3 full days. Stamping
+        // the start of the streak is what hands that decision to the sweep.
+        await stampPastDue(userId);
+        console.log(`Invoice payment failed for user: ${userId} — grace period started`);
         break;
       }
 

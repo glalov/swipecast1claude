@@ -10227,8 +10227,15 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
 
   // Build gallery from fresh profile data when available so new/deleted photos reflect immediately.
   const freshHeadshot=freshProfile?.headshot_url||talent.img;
+  // Premium media lock (non-payment). When a member's subscription has been
+  // failing for more than the 3-day grace period they are returned to free and
+  // premium_locked_at is stamped — gallery photos and videos are Premium-only
+  // features, so they stop showing here. Nothing is deleted: the moment their
+  // payment succeeds stripe-webhook clears the flag and it all comes back.
+  // The main headshot is a free-plan feature and always stays visible.
+  const ownerMediaLocked=!!freshProfile?.premium_locked_at;
   // Filter headshot out of additional_photos to prevent duplication in gallery/showcase
-  const freshAdditional=(Array.isArray(freshProfile?.additional_photos)?freshProfile.additional_photos:(talent.additional_photos||[])).filter(u=>u&&u!==freshHeadshot);
+  const freshAdditional=ownerMediaLocked?[]:(Array.isArray(freshProfile?.additional_photos)?freshProfile.additional_photos:(talent.additional_photos||[])).filter(u=>u&&u!==freshHeadshot);
   const _galSeen=new Set();const gallery=[];
   [talent._selectedPhoto,freshHeadshot,...freshAdditional].forEach(u=>{if(u&&!_galSeen.has(u)){_galSeen.add(u);gallery.push(u);}});
   if(!gallery.length)gallery.push(talent.img||"");
@@ -10266,7 +10273,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   // reel_url is a fallback only if it points to uploaded storage (not YouTube/Vimeo).
   const reelUrlRaw=freshProfile?.reel_url||talent.reel_url||"";
   const reelIsExternal=/(youtube\.com|youtu\.be|vimeo\.com)/i.test(reelUrlRaw);
-  const allVideoItems=[
+  const allVideoItems=ownerMediaLocked?[]:[
     ...uploadedVideos.map(v=>({kind:"upload",...v})),
     ...(!uploadedVideos.length&&reelUrlRaw&&!reelIsExternal?[{kind:"reel",url:reelUrlRaw,title:"Demo Reel"}]:[]),
   ];
@@ -18514,6 +18521,24 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         <div style={{fontSize:11,color:"var(--t3)"}}>Member since {new Date(profile.created_at).toLocaleDateString()} · {session?.user?.email}</div>
       </div>
     </div>
+
+    {/* ── PAYMENT-LOCK NOTICE ──
+        Set when a subscription stayed unpaid past the 3-day grace period. The
+        account is back on the free plan and gallery photos/videos are hidden
+        from the public profile — but nothing has been deleted, so this has to
+        say so plainly rather than reading like the work is gone. */}
+    {!isCD&&profile.premium_locked_at&&<div style={{marginBottom:16,padding:"16px 18px",borderRadius:12,background:"#fff8ec",border:"1px solid #f0c98a"}}>
+      <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+        <span style={{color:"#a86a12",flexShrink:0,marginTop:1}}><Ico n="lock" s={18}/></span>
+        <div>
+          <div style={{fontWeight:800,fontSize:14,color:"#7a4c0b",marginBottom:4}}>Your Premium is paused — we couldn't process your payment</div>
+          <div style={{fontSize:13,color:"#7a4c0b",lineHeight:1.6}}>
+            Your account is on the free plan for now, and your gallery photos and videos are hidden from your public profile. <strong>Nothing has been deleted.</strong> As soon as your payment goes through, everything is restored exactly as you left it.
+          </div>
+          <button className="btn-p btn-sm" style={{marginTop:12}} onClick={()=>onNavigate&&onNavigate("membership")}>Restore my Premium →</button>
+        </div>
+      </div>
+    </div>}
 
     {/* ── PUBLIC PROFILE BUTTONS (talent only) ── */}
     {!isCD&&<div style={{marginBottom:16,display:"flex",justifyContent:"flex-end",gap:8,alignItems:"center"}}>
