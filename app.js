@@ -267,7 +267,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tad-mini{position:relative;display:flex;gap:14px;margin:0 0 15px;padding:11px 0;border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12);}
 .tad-mini>div{flex:1;}
 .tad-mini b{display:block;font-size:16px;font-weight:800;line-height:1.1;}
-.tad-mini span{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.5);}
+.tad-mini span{display:block;font-size:8.6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:rgba(255,255,255,.5);white-space:nowrap;}
 .tad-cta{position:relative;width:100%;font-size:13px;font-weight:800;font-family:'DM Sans',sans-serif;padding:12px 14px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(180deg,#F8B65E 0%,#EC942A 100%);color:#1A1A2E;box-shadow:0 10px 26px -10px rgba(240,160,60,.8),inset 0 1px 0 rgba(255,255,255,.35);}
 .tad-cta.tad-open{background:rgba(255,255,255,.14);color:#fff;box-shadow:none;border:1px solid rgba(255,255,255,.25);}
 .tad-modal{background:var(--bg);border:1px solid var(--bdr);border-radius:18px;width:96%;max-width:1040px;max-height:88vh;overflow-y:auto;box-shadow:0 40px 90px -30px rgba(0,0,0,.6);}
