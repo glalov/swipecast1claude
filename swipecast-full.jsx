@@ -1701,6 +1701,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tad-info.tad-r .tad-tip{left:auto;right:-8px;transform:translateY(-4px);}
 .tad-info.tad-r .tad-tip:after{left:auto;right:12px;margin:0;}
 .tad-info.tad-r:hover .tad-tip,.tad-info.tad-r:focus .tad-tip{transform:none;}
+/* leftmost tip must anchor left, or it overflows the modal edge and gets clipped */
+.tad-info.tad-l .tad-tip{left:-8px;right:auto;transform:translateY(-4px);}
+.tad-info.tad-l .tad-tip:after{left:14px;margin-left:0;}
+.tad-info.tad-l:hover .tad-tip,.tad-info.tad-l:focus .tad-tip{transform:none;}
 .tad-controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:8px;}
 .tad-srch{flex:1;min-width:180px;border:1px solid var(--bdr);background:var(--s1);border-radius:9px;padding:9px 13px;font-family:inherit;font-size:13px;color:var(--t1);}
 .tad-srch:focus{outline:none;border-color:var(--t1);}
@@ -11512,7 +11516,7 @@ const TALENT_AGENCIES=[
   {n:"Shirley Grant Management",t:"small",c:["NY"],v:0,s:"email",
    note:"Over 40 years placing young and emerging artists in TV, film, commercials, Broadway and modelling. Submit by email to submit@shirleygrant.com. Street address still being confirmed.",a:[]}
 ];
-const TAD_SUB={mail:["tad-mail","Mail OK"],email:["tad-email","Email first"],form:["tad-form","Web form only"],no:["tad-no","Do not mail"]};
+const TAD_SUB={mail:["tad-mail","Mail OK"],email:["tad-email","Email first"],form:["tad-form","Web form only"],no:["tad-no","Do not mail"],lock:["tad-form","Premium"]};
 const TAD_TIERNAME={small:"Small",medium:"Mid-size",large:"Major"};
 const TAD_GROUPS=[
   ["small","Small agencies — open to beginners","Your first letters go here."],
@@ -11521,8 +11525,8 @@ const TAD_GROUPS=[
 ];
 const TAD_PICK_KEY="cs_agency_maillist_v1";
 
-function TadInfo({title,body,right}){
-  return <i className={"tad-info"+(right?" tad-r":"")} tabIndex={0}>i
+function TadInfo({title,body,right,left}){
+  return <i className={"tad-info"+(right?" tad-r":"")+(left?" tad-l":"")} tabIndex={0}>i
     <span className="tad-tip"><b>{title}</b>{body}</span></i>;
 }
 
@@ -11592,7 +11596,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
           <p className="tad-note">{a.note}</p>
         </div>
         <div className="tad-meta">
-          <span className={"tad-sc "+sub[0]}><Ico n={a.s==="no"?"x":a.s==="mail"?"mail":a.s==="email"?"send":"device-laptop"} s={13}/>{sub[1]}</span>
+          <span className={"tad-sc "+sub[0]}><Ico n={a.s==="no"?"x":a.s==="mail"?"mail":a.s==="email"?"send":a.s==="lock"?"lock":"device-laptop"} s={13}/>{sub[1]}</span>
           {a.pc?<span className="tad-pc">Accepts postcards &amp; invitations</span>:null}
           {a.v&&a.a.length
             ? a.a.map(x=><div key={x[0]} className="tad-addr"><span className="lb">{x[0]}</span>{x[1]}</div>)
@@ -11643,7 +11647,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
               <div className="tad-keycard">
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}>
                   <span className="tad-tier tad-t-small">Small</span>
-                  <TadInfo title="Small agencies" body="These are the ones actively looking for new faces. Most don't require credits or experience — what they want to see is talent. You can be a complete beginner here as long as you can act. This is where nearly every working actor starts, and this is where your letters should go first."/>
+                  <TadInfo left title="Small agencies" body="These are the ones actively looking for new faces. Most don't require credits or experience — what they want to see is talent. You can be a complete beginner here as long as you can act. This is where nearly every working actor starts, and this is where your letters should go first."/>
                 </div>
                 <p>Open to beginners. Start here.</p>
               </div>
@@ -11675,7 +11679,13 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
 
             {!isPremium?(
               <div className="tad-lockwrap">
-                <div className="tad-rows">{TALENT_AGENCIES.slice(6,11).map(row)}</div>
+                {/* Teaser rows are REDACTED, not just blurred — CSS blur is visual only and the
+                    real addresses would still be readable in the DOM. Names/tiers are public
+                    knowledge and build credibility; the paid asset never reaches a free client. */}
+                <div className="tad-rows">{TALENT_AGENCIES.slice(6,11).map(a=>row({
+                  ...a,v:0,a:[],s:"lock",pc:0,
+                  note:a.note.slice(0,58).replace(/\s+\S*$/,"")+"…"
+                }))}</div>
                 <div className="tad-lockover">
                   <div className="lk"><Ico n="lock" s={20}/></div>
                   <h3>{counts.all} agencies. {counts.mail} of them will open an envelope from you.</h3>
