@@ -1662,6 +1662,102 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .modal{background:var(--s1);border:1px solid var(--bdr);border-radius:18px;padding:36px;max-width:560px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.15);}
 .modal h2{font-size:24px;font-weight:800;margin-bottom:20px;}
 .success-msg{text-align:center;padding:48px 24px;}
+/* ── Talent Agency Directory (premium dashboard card + modal) ── */
+.tad-card{position:relative;overflow:hidden;border-radius:16px;padding:20px;color:#fff;cursor:pointer;background:linear-gradient(140deg,#232342 0%,#1A1A2E 55%,#111124 100%);transition:transform .18s,box-shadow .18s;}
+.tad-card:hover{transform:translateY(-2px);box-shadow:0 16px 36px -14px rgba(26,26,46,.6);}
+.tad-glow{position:absolute;border-radius:50%;pointer-events:none;width:190px;height:190px;background:radial-gradient(circle,rgba(240,184,96,.26),transparent 70%);top:-70px;right:-50px;}
+.tad-kick{position:relative;display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#F0B860;margin:0 0 8px;font-family:'DM Sans',sans-serif;}
+.tad-dot{width:6px;height:6px;border-radius:50%;background:#F0B860;box-shadow:0 0 8px #F0B860;}
+.tad-hd{position:relative;display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.tad-ic{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.12);}
+.tad-card h3{font-weight:800;font-size:15.5px;color:#fff;margin:0;font-family:'DM Sans',sans-serif;letter-spacing:-.2px;}
+.tad-card p.tad-sub{position:relative;font-size:13px;color:rgba(255,255,255,.8);margin:0 0 14px;line-height:1.55;}
+.tad-mini{position:relative;display:flex;gap:14px;margin:0 0 15px;padding:11px 0;border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12);}
+.tad-mini>div{flex:1;}
+.tad-mini b{display:block;font-size:16px;font-weight:800;line-height:1.1;}
+.tad-mini span{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.5);}
+.tad-cta{position:relative;width:100%;font-size:13px;font-weight:800;font-family:'DM Sans',sans-serif;padding:12px 14px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(180deg,#F8B65E 0%,#EC942A 100%);color:#1A1A2E;box-shadow:0 10px 26px -10px rgba(240,160,60,.8),inset 0 1px 0 rgba(255,255,255,.35);}
+.tad-cta.tad-open{background:rgba(255,255,255,.14);color:#fff;box-shadow:none;border:1px solid rgba(255,255,255,.25);}
+.tad-modal{background:var(--bg);border:1px solid var(--bdr);border-radius:18px;width:96%;max-width:1040px;max-height:88vh;overflow-y:auto;box-shadow:0 40px 90px -30px rgba(0,0,0,.6);}
+.tad-head{background:linear-gradient(140deg,#232342 0%,#1A1A2E 60%,#111124 100%);color:#fff;padding:26px 28px 24px;position:relative;}
+.tad-head h2{margin:8px 0 8px;font-size:24px;font-weight:800;letter-spacing:-.02em;color:#fff;}
+.tad-head p{margin:0;font-size:13.5px;color:rgba(255,255,255,.75);line-height:1.55;max-width:660px;}
+.tad-x{position:absolute;top:18px;right:18px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.tad-curated{display:inline-flex;align-items:center;gap:7px;margin-top:14px;font-size:11.5px;font-weight:700;background:rgba(240,184,96,.14);border:1px solid rgba(240,184,96,.34);color:#F0B860;padding:6px 12px;border-radius:20px;}
+.tad-body{padding:20px 26px 28px;}
+.tad-key{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px;}
+.tad-keycard{flex:1;min-width:210px;background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:13px 15px;}
+.tad-keycard p{margin:0;font-size:12px;color:var(--t2);line-height:1.5;}
+.tad-tier{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;border-radius:5px;}
+.tad-t-small{background:rgba(79,138,139,.14);color:#3C6E6F;}
+.tad-t-medium{background:rgba(232,144,42,.16);color:#B96C12;}
+.tad-t-large{background:rgba(26,26,46,.09);color:#42425C;}
+.tad-info{position:relative;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1.4px solid var(--t3);color:var(--t3);font-size:10px;font-weight:800;cursor:help;flex-shrink:0;font-style:normal;}
+.tad-info:hover,.tad-info:focus{border-color:var(--t1);color:var(--t1);outline:none;}
+.tad-tip{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%) translateY(-4px);width:290px;background:#12131A;color:#fff;border-radius:11px;padding:13px 15px;font-size:12.2px;font-weight:500;line-height:1.55;text-transform:none;letter-spacing:0;opacity:0;pointer-events:none;transition:opacity .16s,transform .16s;z-index:40;box-shadow:0 16px 40px -14px rgba(0,0,0,.6);text-align:left;}
+.tad-tip b{color:#F0B860;display:block;margin-bottom:5px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;}
+.tad-tip:after{content:"";position:absolute;bottom:100%;left:50%;margin-left:-6px;border:6px solid transparent;border-bottom-color:#12131A;}
+.tad-info:hover .tad-tip,.tad-info:focus .tad-tip{opacity:1;transform:translateX(-50%);}
+.tad-info.tad-r .tad-tip{left:auto;right:-8px;transform:translateY(-4px);}
+.tad-info.tad-r .tad-tip:after{left:auto;right:12px;margin:0;}
+.tad-info.tad-r:hover .tad-tip,.tad-info.tad-r:focus .tad-tip{transform:none;}
+.tad-controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:8px;}
+.tad-srch{flex:1;min-width:180px;border:1px solid var(--bdr);background:var(--s1);border-radius:9px;padding:9px 13px;font-family:inherit;font-size:13px;color:var(--t1);}
+.tad-srch:focus{outline:none;border-color:var(--t1);}
+.tad-chip{border:1px solid var(--bdr);background:var(--s1);border-radius:20px;padding:7px 13px;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--t2);cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.tad-chip.on{background:var(--t1);border-color:var(--t1);color:#fff;}
+.tad-chip .n{font-size:11px;opacity:.6;font-weight:800;}
+.tad-res{font-size:12px;color:var(--t3);margin:10px 0 4px;font-weight:600;}
+.tad-gh{display:flex;align-items:center;gap:10px;margin:22px 0 11px;}
+.tad-gh h3{margin:0;font-size:14px;font-weight:800;color:var(--t1);}
+.tad-gh .ln{flex:1;height:1px;background:var(--bdr);}
+.tad-gh .ct{font-size:11.5px;color:var(--t3);font-weight:700;}
+.tad-rows{display:grid;gap:10px;}
+.tad-row{background:var(--s1);border:1px solid var(--bdr);border-radius:13px;padding:15px 17px;display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start;}
+.tad-row:hover{border-color:var(--t3);}
+.tad-row.pick{border-color:var(--grn);background:rgba(27,135,62,.03);}
+.tad-nm{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:4px;}
+.tad-nm h4{margin:0;font-size:15px;font-weight:800;color:var(--t1);letter-spacing:-.01em;}
+.tad-note{margin:0;font-size:12.8px;color:var(--t2);line-height:1.5;}
+.tad-addr{font-size:12.4px;line-height:1.5;color:var(--t1);}
+.tad-addr .lb{font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--t3);text-transform:uppercase;display:block;margin-bottom:2px;}
+.tad-addr+.tad-addr{margin-top:9px;}
+.tad-meta{display:flex;flex-direction:column;gap:9px;}
+.tad-sc{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;padding:5px 10px;border-radius:6px;width:fit-content;}
+.tad-mail{background:rgba(27,135,62,.12);color:#146B31;}
+.tad-email{background:rgba(37,99,235,.1);color:#1D4FBF;}
+.tad-form{background:var(--s2);color:var(--t2);}
+.tad-no{background:rgba(214,59,59,.1);color:#B02E2E;}
+.tad-pend{font-size:12px;color:var(--t3);font-style:italic;}
+.tad-acts{display:flex;gap:7px;flex-wrap:wrap;}
+.tad-b{background:none;border:1px solid var(--bdr);border-radius:7px;font-family:inherit;font-size:11px;font-weight:700;color:var(--t2);padding:5px 10px;cursor:pointer;}
+.tad-b:hover{border-color:var(--t1);color:var(--t1);}
+.tad-b.add{border-color:var(--grn);color:#146B31;}
+.tad-b.add.on{background:var(--grn);color:#fff;border-color:var(--grn);}
+.tad-pc{font-size:10.5px;font-weight:800;color:#146B31;background:rgba(27,135,62,.1);padding:3px 8px;border-radius:5px;width:fit-content;}
+.tad-fn{margin-top:13px;background:var(--s2);border:1px solid var(--bdr);border-left:3px solid var(--amber);border-radius:10px;padding:14px 16px;font-size:12.6px;color:var(--t2);line-height:1.6;}
+.tad-fn b{color:var(--t1);}
+.tad-rm{margin-top:20px;border:1px dashed var(--s3);border-radius:12px;padding:15px 18px;background:rgba(255,255,255,.5);}
+.tad-rm h4{margin:0 0 8px;font-size:12.5px;font-weight:800;color:var(--t1);}
+.tad-rm ul{margin:0;padding-left:18px;font-size:12.3px;color:var(--t2);line-height:1.75;}
+.tad-rm b{color:var(--t1);}
+.tad-lockwrap{position:relative;}
+.tad-lockwrap .tad-rows{filter:blur(4.5px);pointer-events:none;user-select:none;opacity:.75;}
+.tad-lockover{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;padding:52px 22px 22px;background:linear-gradient(180deg,rgba(250,247,241,.3) 0%,rgba(250,247,241,.94) 32%);}
+.tad-lockover .lk{width:46px;height:46px;border-radius:50%;background:var(--t1);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+.tad-lockover h3{margin:0 0 8px;font-size:21px;font-weight:800;letter-spacing:-.02em;color:var(--t1);max-width:520px;}
+.tad-lockover p{margin:0;font-size:13.6px;color:var(--t2);line-height:1.6;max-width:480px;}
+.tad-stats{display:flex;gap:26px;margin:16px 0 18px;}
+.tad-stats b{display:block;font-size:22px;font-weight:800;color:var(--t1);}
+.tad-stats span{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);}
+.tad-tray{position:sticky;bottom:0;margin:16px -26px -28px;background:var(--t1);color:#fff;padding:13px 26px;display:flex;align-items:center;gap:14px;font-size:13px;font-weight:700;}
+@media(max-width:760px){
+  .tad-row{grid-template-columns:1fr;gap:12px;}
+  .tad-head{padding:22px 16px;}
+  .tad-body{padding:16px 14px 22px;}
+  .tad-tray{margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px;}
+  .tad-tip{width:220px;}
+}
 .success-msg .check{width:64px;height:64px;border-radius:50%;background:rgba(27,135,62,0.08);color:var(--grn);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;}
 .success-msg h3{font-size:22px;font-weight:800;margin-bottom:8px;}
 .success-msg p{color:var(--t2);font-size:14px;}
@@ -11296,6 +11392,343 @@ function ProfileImprovementCard({profile,isPremium,onNavigate,dbCredits,mediaIte
 }
 
 // ═══════════════════════════════════════════
+// TALENT AGENCY DIRECTORY — premium-gated dashboard card
+//   Curated agency list. Every address was verified against a current public
+//   source; entries with v:0 are real+active but the street address is still
+//   unconfirmed, so no address is shown for them. Re-check monthly: agencies
+//   move, merge and close (ICM, KMR and Vault were all removed on the first pass).
+// ═══════════════════════════════════════════
+const TALENT_AGENCIES=[
+  // ── MAJOR — information only, do not mail ──
+  {n:"Creative Artists Agency (CAA)",t:"large",c:["LA","NY"],v:1,s:"no",
+   note:"Founded 1975. The top tier of film and television representation. No unsolicited submissions of any kind.",
+   a:[["Los Angeles","2000 Avenue of the Stars, Los Angeles, CA 90067"],["New York","405 Lexington Ave, 22nd Floor, New York, NY 10174"]]},
+  {n:"WME (William Morris Endeavor)",t:"large",c:["LA","NY"],v:1,s:"no",
+   note:"The William Morris name goes back to 1898 — over twelve decades. Referral and industry introduction only.",
+   a:[["Beverly Hills","9601 Wilshire Blvd, Beverly Hills, CA 90210"],["New York","11 Madison Ave, New York, NY 10010"]]},
+  {n:"United Talent Agency (UTA)",t:"large",c:["LA","NY"],v:1,s:"no",
+   note:"One of the big four. Signs from referral, festival buzz or an established quote — not from the mailbox.",
+   a:[["Beverly Hills","9336 Civic Center Dr, Beverly Hills, CA 90210"],["New York","888 Seventh Ave, 7th Floor, New York, NY 10106"]]},
+  {n:"The Gersh Agency",t:"large",c:["LA","NY"],v:1,s:"no",
+   note:"Family-founded in 1949 — roughly eight decades old. Prestigious theatrical roster. Referral only.",
+   a:[["Beverly Hills","9465 Wilshire Blvd, 6th Floor, Beverly Hills, CA 90212"],["New York","41 Madison Ave, 29th Floor, New York, NY 10010"]]},
+  {n:"APA (Agency for the Performing Arts)",t:"large",c:["LA"],v:1,s:"no",
+   note:"Founded 1962. Large diversified agency — talent, music, literary. Not a beginner's door.",
+   a:[["Beverly Hills","405 S Beverly Dr, Suite 500, Beverly Hills, CA 90212"]]},
+  {n:"Paradigm Talent Agency",t:"large",c:["LA"],v:1,s:"no",
+   note:"Major agency in the Wilshire LaPeer building since 2018. Referral only.",
+   a:[["Beverly Hills","8942 Wilshire Blvd, Beverly Hills, CA 90211"]]},
+  // ── MID-SIZE — some credits expected ──
+  {n:"Innovative Artists",t:"medium",c:["LA","NY"],v:1,s:"form",
+   note:"Bicoastal, founded 1982. Strong theatrical and youth divisions. Wants a reel and real credits.",
+   a:[["Santa Monica","1505 10th St, Santa Monica, CA 90401"],["New York","235 Park Ave South, 10th Floor, New York, NY 10003"]]},
+  {n:"A3 Artists Agency",t:"medium",c:["LA","NY"],v:1,s:"form",
+   note:"Formerly Abrams Artists, founded 1977. Broad roster across film, TV, theatre, voice-over and hosting.",
+   a:[["Los Angeles","750 N San Vicente Blvd, East Tower, 11th Floor, Los Angeles, CA 90069"],["New York","275 Seventh Ave, 26th Floor, New York, NY 10001"]]},
+  {n:"CESD Talent Agency",t:"medium",c:["LA","NY"],v:1,s:"email",
+   note:"Big commercial, voice-over and print divisions on both coasts. The commercial side is the realistic way in.",
+   a:[["Los Angeles","10635 Santa Monica Blvd #130, Los Angeles, CA 90025"],["New York","450 7th Ave #1100, New York, NY 10123"]]},
+  {n:"Buchwald",t:"medium",c:["NY"],v:1,s:"email",
+   note:"In business since 1977. Theatrical, commercial, voice-over and a well-known youth division.",
+   a:[["New York","10 E 44th St, New York, NY 10017"]]},
+  {n:"Clear Talent Group",t:"medium",c:["LA"],v:1,s:"form",
+   note:"Est. 2003 — actors, dancers, choreographers, young performers. Website submissions only; a mailed package will not be opened.",
+   a:[["Studio City","10950 Ventura Blvd, Studio City, CA 91604"]]},
+  {n:"Stewart Talent",t:"medium",c:["NY"],v:1,s:"email",
+   note:"National agency — NY, Chicago, LA, Atlanta. Send headshot/resume or snapshots with your stats. Appointment only, no drop-offs.",
+   a:[["New York","1430 Broadway, Suite 601, New York, NY 10018"]]},
+  {n:"Daniel Hoff Agency",t:"medium",c:["LA"],v:1,s:"mail",
+   note:"Takes mail. Address it to a specific agent: Daniel Hoff for commercial, Kevin Turner for theatrical, or the youth division by name.",
+   a:[["Los Angeles","5455 Wilshire Blvd, Suite 1615, Los Angeles, CA 90036"]]},
+  {n:"Avalon Artists Group",t:"medium",c:["LA","NY"],v:1,s:"mail",
+   note:"Full service, both coasts. Headshot, resume and reel by mail or email — pick the office closest to you.",
+   a:[["Los Angeles","5455 Wilshire Blvd, Suite 900, Los Angeles, CA 90036"],["New York","45 W 29th St, Suite 403, New York, NY 10001"]]},
+  {n:"AEFH (Amsel, Eisenstadt, Frazier & Hinojosa)",t:"medium",c:["LA"],v:1,s:"mail",pc:1,
+   note:"Long-established LA agency with adult theatrical, commercial and youth desks. Accepts mail AND postcards and invitations — appointment only, no drop-offs.",
+   a:[["Los Angeles","5055 Wilshire Blvd #865, Los Angeles, CA 90036"]]},
+  {n:"TalentWorks",t:"medium",c:["LA"],v:1,s:"mail",pc:1,
+   note:"Over 30 years in business, strong theatre and musical-theatre reputation. Mail only — and they accept postcards and showcase invitations.",
+   a:[["Burbank","3500 W Olive Ave, Suite 1400, Burbank, CA 91505"]]},
+  {n:"Osbrink Talent Agency",t:"medium",c:["LA"],v:1,s:"mail",
+   note:"Strong youth and commercial divisions. Mail a current headshot and resume. Recently relocated — address re-confirmed June 2026.",
+   a:[["Burbank","2222 W Olive Ave, Burbank, CA 91506"]]},
+  {n:"Nicolosi & Co.",t:"medium",c:["NY"],v:1,s:"email",
+   note:"Est. 2002. Well-respected NY film, TV and theatre boutique. Email first to ask about the submission process.",
+   a:[["New York","150 W 25th St, Suite 1200, New York, NY 10001"]]},
+  {n:"Take 3 Talent",t:"medium",c:["NY"],v:1,s:"form",
+   note:"Leading NYC agency for children, teens and adults across TV, film, theatre and voice-over. Web form only — but they do read them.",
+   a:[["New York","1411 Broadway, 16th Floor, New York, NY 10018"]]},
+  {n:"The Krasny Office",t:"medium",c:["NY"],v:1,s:"mail",
+   note:"Mail is the ONLY way in — no calls, no email submissions. A physical package is exactly what they ask for.",
+   a:[["New York","1501 Broadway, Suite 1507, New York, NY 10036"]]},
+  {n:"BRS/Gage Talent Agency",t:"medium",c:["NY"],v:1,s:"no",
+   note:"Respected NY theatrical agency — but industry referral only. No unsolicited submissions, no drop-offs. Listed so you don't waste the postage.",
+   a:[["New York","1650 Broadway, Suite 1410, New York, NY 10019"]]},
+  {n:"SMS Talent",t:"medium",c:["LA"],v:1,s:"no",
+   note:"Boutique LA agency for distinguished actors since 1996. Industry referral only — no unsolicited submissions, no drop-offs.",
+   a:[["West Hollywood","8730 W Sunset Blvd, Suite 440, West Hollywood, CA 90069"]]},
+  {n:"Ann Steele Agency",t:"medium",c:["NY"],v:1,s:"no",
+   note:"Union performers only, legit and commercial. Referral only — they do not open unsolicited submissions.",
+   a:[["New York","330 W 42nd St, 18th Floor, New York, NY 10036"]]},
+  {n:"Silver, Massetti & Szatmary / East",t:"medium",c:["NY"],v:1,s:"no",
+   note:"Adults, early twenties and up. Legit, no print. No drop-ins, no faxes — approach through a referral.",
+   a:[["New York","145 W 45th St, Suite 1204, New York, NY 10036"]]},
+  {n:"Talent House Agency",t:"medium",c:["NY"],v:1,s:"no",
+   note:"Adults 18+, legit theatre focus. Union members only and referrals only.",
+   a:[["New York","311 W 43rd St, Suite 602, New York, NY 10036"]]},
+  // ── SMALL — open to new talent ──
+  {n:"Coast to Coast Talent Group",t:"small",c:["LA"],v:1,s:"mail",pc:1,
+   note:"Mail only — and they explicitly accept postcards and invitations, which makes them the single best target for your CastSlate card. SAG submissions to Hugh Leon; non-union to the adult commercial desk.",
+   a:[["Los Angeles","3350 Barham Blvd, Los Angeles, CA 90068"]]},
+  {n:"Bicoastal Talent",t:"small",c:["LA"],v:1,s:"mail",
+   note:"The commercial division takes union AND non-union talent of all ages, year-round — one of the friendliest doors in LA for a true beginner. Mail or email, not both.",
+   a:[["Burbank","2600 W Olive Ave, Burbank, CA 91505"]]},
+  {n:"The Wayne Agency",t:"small",c:["LA"],v:1,s:"mail",
+   note:"SAG-AFTRA franchised and WGA signatory, and openly seeking new AEA talent right now. Hard-copy submissions accepted by post.",
+   a:[["Los Angeles","3255 Wilshire Blvd, Floor 15, Suite 1534, Los Angeles, CA 90010"]]},
+  {n:"The Carson Kolker Organization",t:"small",c:["NY"],v:1,s:"mail",
+   note:"Founded 1992, represents performers of ALL ages for theatre, film and TV. Submit online or mail your materials — both work here.",
+   a:[["New York","18 E 41st St, Room 801, New York, NY 10017"]]},
+  {n:"Brady, Brannon & Rich",t:"small",c:["LA"],v:1,s:"mail",
+   note:"On-camera commercial, industrial, hosting and print. Commercial-first agencies like this are the easiest first credit to get.",
+   a:[["Los Angeles","5700 Wilshire Blvd, Suite 275, Los Angeles, CA 90036"]]},
+  {n:"Hudson Artists Agency",t:"small",c:["NY"],v:1,s:"email",
+   note:"NYC boutique across television, theatre and film. Submissions to info@haanyc.com.",
+   a:[["New York","225 W 34th St, Floor 9, New York, NY 10122"]]},
+  {n:"Frontier Booking International",t:"small",c:["NY"],v:1,s:"mail",
+   note:"Long-running Midtown agency working with young performers and adults.",
+   a:[["New York","1560 Broadway, Suite 1110, New York, NY 10036"]]},
+  {n:"Zuri Agency (Zuri Model and Talent)",t:"small",c:["LA","NY"],v:1,s:"email",
+   note:"Founded 2008, infants through adults for print, commercial and theatrical. Wants 3-4 recent photos — they explicitly do NOT need to be professional headshots. About as beginner-friendly as it gets.",
+   a:[["Los Angeles","2121 Avenue of the Stars, Suite 800, Los Angeles, CA 90067"],["New York","159 W 25th St, Suite 508, New York, NY 10001"]]},
+  {n:"LA Talent Agency",t:"small",c:["LA"],v:1,s:"form",
+   note:"States plainly that they are always looking for new talent. Online submission form.",
+   a:[["Beverly Hills","9350 Wilshire Blvd, Suite 203, Beverly Hills, CA 90212"]]},
+  {n:"The Price Group (TPG)",t:"small",c:["NY"],v:1,s:"email",
+   note:"NYC boutique across Broadway, TV, film and new media — openly represents tomorrow's finest talent. Email preferred over hard copy.",
+   a:[["New York","33 W 19th St, Floor 4, New York, NY 10011"]]},
+  {n:"District Model and Talent",t:"small",c:["LA"],v:0,s:"form",
+   note:"SAG-AFTRA franchised and openly growing its roster right now — print, commercial, actors of all ages, voice-over, athletes. Street address still being confirmed.",a:[]},
+  {n:"Shirley Grant Management",t:"small",c:["NY"],v:0,s:"email",
+   note:"Over 40 years placing young and emerging artists in TV, film, commercials, Broadway and modelling. Submit by email to submit@shirleygrant.com. Street address still being confirmed.",a:[]}
+];
+const TAD_SUB={mail:["tad-mail","Mail OK"],email:["tad-email","Email first"],form:["tad-form","Web form only"],no:["tad-no","Do not mail"]};
+const TAD_TIERNAME={small:"Small",medium:"Mid-size",large:"Major"};
+const TAD_GROUPS=[
+  ["small","Small agencies — open to beginners","Your first letters go here."],
+  ["medium","Mid-size agencies — some credits expected","Target these once your resume has something on it."],
+  ["large","Major agencies — information only","Do not mail these."]
+];
+const TAD_PICK_KEY="cs_agency_maillist_v1";
+
+function TadInfo({title,body,right}){
+  return <i className={"tad-info"+(right?" tad-r":"")} tabIndex={0}>i
+    <span className="tad-tip"><b>{title}</b>{body}</span></i>;
+}
+
+function TalentAgencyDirectoryCard({isPremium,onNavigate}){
+  const [open,setOpen]=useState(false);
+  const [q,setQ]=useState("");
+  const [tier,setTier]=useState("all");
+  const [city,setCity]=useState("all");
+  const [mailOnly,setMailOnly]=useState(false);
+  const [copied,setCopied]=useState(null);
+  const [picked,setPicked]=useState(()=>{
+    try{return new Set(JSON.parse(localStorage.getItem(TAD_PICK_KEY)||"[]"));}catch(_){return new Set();}
+  });
+
+  const counts=useMemo(()=>({
+    all:TALENT_AGENCIES.length,
+    small:TALENT_AGENCIES.filter(a=>a.t==="small").length,
+    medium:TALENT_AGENCIES.filter(a=>a.t==="medium").length,
+    large:TALENT_AGENCIES.filter(a=>a.t==="large").length,
+    mail:TALENT_AGENCIES.filter(a=>a.s==="mail").length
+  }),[]);
+
+  const shown=useMemo(()=>{
+    const needle=q.trim().toLowerCase();
+    return TALENT_AGENCIES.filter(a=>{
+      if(tier!=="all"&&a.t!==tier)return false;
+      if(city!=="all"&&!a.c.includes(city))return false;
+      if(mailOnly&&a.s!=="mail")return false;
+      if(needle){
+        const hay=(a.n+" "+a.note+" "+a.a.map(x=>x.join(" ")).join(" ")).toLowerCase();
+        if(!hay.includes(needle))return false;
+      }
+      return true;
+    });
+  },[q,tier,city,mailOnly]);
+
+  const togglePick=(name)=>{
+    setPicked(prev=>{
+      const next=new Set(prev);
+      next.has(name)?next.delete(name):next.add(name);
+      try{localStorage.setItem(TAD_PICK_KEY,JSON.stringify([...next]));}catch(_){}
+      return next;
+    });
+  };
+  const copyText=async(text,key)=>{
+    try{await navigator.clipboard.writeText(text);setCopied(key);setTimeout(()=>setCopied(null),1400);}catch(_){}
+  };
+  const copyMyList=()=>{
+    const lines=TALENT_AGENCIES.filter(a=>picked.has(a.n)&&a.a.length)
+      .map(a=>a.n+"\n"+a.a.map(x=>x[1]).join("\n")).join("\n\n");
+    if(lines)copyText(lines,"__list");
+  };
+
+  const openModal=()=>setOpen(true);
+
+  const row=(a)=>{
+    const sub=TAD_SUB[a.s];
+    const isPicked=picked.has(a.n);
+    const canMail=a.v&&a.s==="mail";
+    return(
+      <div key={a.n} className={"tad-row"+(isPicked?" pick":"")}>
+        <div>
+          <div className="tad-nm">
+            <h4>{a.n}</h4>
+            <span className={"tad-tier tad-t-"+a.t}>{TAD_TIERNAME[a.t]}</span>
+          </div>
+          <p className="tad-note">{a.note}</p>
+        </div>
+        <div className="tad-meta">
+          <span className={"tad-sc "+sub[0]}><Ico n={a.s==="no"?"x":a.s==="mail"?"mail":a.s==="email"?"send":"device-laptop"} s={13}/>{sub[1]}</span>
+          {a.pc?<span className="tad-pc">Accepts postcards &amp; invitations</span>:null}
+          {a.v&&a.a.length
+            ? a.a.map(x=><div key={x[0]} className="tad-addr"><span className="lb">{x[0]}</span>{x[1]}</div>)
+            : <div className="tad-pend">Address being confirmed by our team — we publish it once a person has checked it.</div>}
+          {a.v&&a.a.length?(
+            <div className="tad-acts">
+              <button className="tad-b" onClick={()=>copyText(a.a.map(x=>x[1]).join("\n"),a.n)}>{copied===a.n?"Copied":"Copy address"}</button>
+              {canMail&&<button className={"tad-b add"+(isPicked?" on":"")} onClick={()=>togglePick(a.n)}>{isPicked?"On my list":"+ Add to mailing list"}</button>}
+            </div>
+          ):null}
+        </div>
+      </div>
+    );
+  };
+
+  return(<>
+    <div className="tad-card" onClick={openModal} role="button" tabIndex={0}
+         onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openModal();}}}>
+      <span className="tad-glow"/>
+      <p className="tad-kick"><span className="tad-dot"/>{isPremium?"Unlocked":"Premium Feature"}</p>
+      <div className="tad-hd"><span className="tad-ic"><Ico n="building-bank" s={22}/></span><h3>Talent Agency Directory</h3></div>
+      <p className="tad-sub">{isPremium
+        ? counts.all+" agencies in LA & New York, checked this month. Filter by size, city, or who actually opens mail."
+        : "Agencies in LA & New York that are open to new talent right now — with the mailing address for each one."}</p>
+      <div className="tad-mini">
+        <div><b>{counts.all}</b><span>Agencies</span></div>
+        <div><b>{counts.mail}</b><span>Accept mail</span></div>
+        <div><b>{counts.small}</b><span>Take beginners</span></div>
+      </div>
+      <button className={"tad-cta"+(isPremium?" tad-open":"")} onClick={e=>{e.stopPropagation();openModal();}}>
+        {isPremium?"Open the Directory →":"Unlock the Directory →"}
+      </button>
+    </div>
+
+    {open&&(
+      <div className="modal-overlay" onClick={()=>setOpen(false)}>
+        <div className="tad-modal" onClick={e=>e.stopPropagation()}>
+          <div className="tad-head">
+            <button className="tad-x" onClick={()=>setOpen(false)} aria-label="Close"><Ico n="x" s={16}/></button>
+            <div style={{fontSize:11,fontWeight:800,letterSpacing:"0.14em",textTransform:"uppercase",color:"#F0B860"}}>CastSlate Premium</div>
+            <h2>Talent Agency Directory</h2>
+            <p>Talent agencies and management companies across Los Angeles and New York, sorted by size so you know where a beginner actually stands a chance — with the mailing address for each and exactly how that agency wants to be approached.</p>
+            <div className="tad-curated"><Ico n="star" s={13}/>Hand-curated by the CastSlate team · every address re-checked monthly</div>
+          </div>
+
+          <div className="tad-body">
+            <div className="tad-key">
+              <div className="tad-keycard">
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}>
+                  <span className="tad-tier tad-t-small">Small</span>
+                  <TadInfo title="Small agencies" body="These are the ones actively looking for new faces. Most don't require credits or experience — what they want to see is talent. You can be a complete beginner here as long as you can act. This is where nearly every working actor starts, and this is where your letters should go first."/>
+                </div>
+                <p>Open to beginners. Start here.</p>
+              </div>
+              <div className="tad-keycard">
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}>
+                  <span className="tad-tier tad-t-medium">Mid-size</span>
+                  <TadInfo title="Mid-size agencies" body="These will want some credits behind you — student films, shorts, indies, theatre, commercials, a real reel. They are realistic targets once you have a little history. Worth writing to when your resume has something on it."/>
+                </div>
+                <p>Some credits expected.</p>
+              </div>
+              <div className="tad-keycard">
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}>
+                  <span className="tad-tier tad-t-large">Major</span>
+                  <TadInfo right title="Major agencies — information only" body="Some of these have been in the business close to seven decades. They are on this list so you know who they are, not so you can submit to them. We advise you NOT to mail them your business card or QR code — most will return it unopened. They work almost entirely with established and celebrity talent and do not develop beginners."/>
+                </div>
+                <p>Information only — don't mail these.</p>
+              </div>
+            </div>
+
+            <div className="tad-controls">
+              <input className="tad-srch" placeholder="Search agency name, city or note…" value={q} onChange={e=>setQ(e.target.value)}/>
+              {[["all","All",counts.all],["small","Small",counts.small],["medium","Mid-size",counts.medium],["large","Major",counts.large]].map(([v,label,n])=>
+                <button key={v} className={"tad-chip"+(tier===v?" on":"")} onClick={()=>setTier(v)}>{label} <span className="n">{n}</span></button>)}
+              {[["all","Both coasts"],["LA","Los Angeles"],["NY","New York"]].map(([v,label])=>
+                <button key={v} className={"tad-chip"+(city===v?" on":"")} onClick={()=>setCity(v)}>{label}</button>)}
+              <button className={"tad-chip"+(mailOnly?" on":"")} onClick={()=>setMailOnly(m=>!m)}><Ico n="mail" s={13}/>Accepts mail only</button>
+            </div>
+            <div className="tad-res">Showing {isPremium?shown.length:counts.all} of {counts.all} agencies</div>
+
+            {!isPremium?(
+              <div className="tad-lockwrap">
+                <div className="tad-rows">{TALENT_AGENCIES.slice(6,11).map(row)}</div>
+                <div className="tad-lockover">
+                  <div className="lk"><Ico n="lock" s={20}/></div>
+                  <h3>{counts.all} agencies. {counts.mail} of them will open an envelope from you.</h3>
+                  <p>Every agency here was checked by our team this month — the ones that merged or closed are already stripped out. Premium members get the names, the mailing addresses, and exactly how each one wants to be approached.</p>
+                  <div className="tad-stats">
+                    <div><b>{counts.all}</b><span>Agencies</span></div>
+                    <div><b>{counts.mail}</b><span>Accept mail</span></div>
+                    <div><b>{counts.small}</b><span>Take beginners</span></div>
+                  </div>
+                  <button className="btn-p" onClick={()=>{setOpen(false);onNavigate("membership");}}>Unlock with Premium →</button>
+                  <div style={{fontSize:11.5,color:"var(--t3)",marginTop:10}}>Cancel anytime · list re-verified monthly</div>
+                </div>
+              </div>
+            ):(<>
+              <div style={{background:"rgba(27,135,62,.08)",border:"1px solid rgba(27,135,62,.28)",borderRadius:11,padding:"13px 16px",fontSize:13,color:"#146B31",fontWeight:700,margin:"6px 0 4px"}}>
+                Send a headshot, resume and your CastSlate business card to any agency marked <strong>Mail OK</strong> — tick them off as you go and we'll build your mailing list.
+              </div>
+              {TAD_GROUPS.map(([t,title,sub])=>{
+                const list=shown.filter(a=>a.t===t);
+                if(!list.length)return null;
+                return(<div key={t}>
+                  <div className="tad-gh"><h3>{title}</h3><span className="ln"/><span className="ct">{sub}</span></div>
+                  <div className="tad-rows">{list.map(row)}</div>
+                  {t==="large"&&<div className="tad-fn"><b>Why ICM isn't on this list.</b> You'll find ICM Partners on most agency lists online — it hasn't existed as a separate company since CAA absorbed it in 2022. If a service is still selling you an ICM address, that list hasn't been checked in years.</div>}
+                </div>);
+              })}
+              {!shown.length&&<div style={{padding:"40px 0",textAlign:"center",color:"var(--t3)",fontSize:14}}>No agencies match those filters.</div>}
+              <div className="tad-rm">
+                <h4>Removed from this list after our latest check</h4>
+                <ul>
+                  <li><b>ICM Partners</b> — absorbed into CAA in 2022. Not a separate agency.</li>
+                  <li><b>KMR / Kazarian Measures Ruskin</b> — inactivated its SAG-AFTRA franchises in March 2024; the LA office shows as closed.</li>
+                  <li><b>Vault Talent Agency</b> — real and taking submissions, but serves the Southeast, not LA or NY.</li>
+                </ul>
+              </div>
+              {picked.size>0&&(
+                <div className="tad-tray">
+                  <span>{picked.size} {picked.size===1?"agency":"agencies"} on your mailing list</span>
+                  <span style={{flex:1}}/>
+                  <button className="tad-cta" style={{width:"auto",padding:"10px 18px",fontSize:12.5}} onClick={copyMyList}>
+                    {copied==="__list"?"Copied":"Copy my mailing list"}
+                  </button>
+                </div>
+              )}
+            </>)}
+          </div>
+        </div>
+      </div>
+    )}
+  </>);
+}
+
+// ═══════════════════════════════════════════
 // ═══════════════════════════════════════════
 // PAGE: TALENT DASHBOARD — actor/talent accounts
 // ═══════════════════════════════════════════
@@ -12620,6 +13053,10 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             <p style={{position:'relative',fontSize:13,color:'rgba(255,255,255,.85)',margin:'0 0 16px',lineHeight:1.55}}>Create a downloadable actor card with your headshot and a unique QR code linking to your Cast Slate profile.</p>
             <button className="abc-cta" style={{position:'relative',width:'100%',fontSize:13,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:'12px 14px',borderRadius:10,border:'none',cursor:'pointer',background:'linear-gradient(180deg,#F8B65E 0%,#EC942A 100%)',color:'#1A1A2E',boxShadow:'0 10px 26px -10px rgba(240,160,60,.8),inset 0 1px 0 rgba(255,255,255,.35)'}} onClick={()=>onNavigate('actor-business-card')}>{isPremium?'Build My Actor Card →':'Preview Actor Card →'}</button>
           </div>
+
+          {/* Talent Agency Directory — premium-gated; sits next to the business card on purpose
+              (the card is what they print, the directory is where they mail it) */}
+          <TalentAgencyDirectoryCard isPremium={isPremium} onNavigate={onNavigate}/>
 
           {/* Profile Improvement Suggestions (Premium feature) */}
           <ProfileImprovementCard
