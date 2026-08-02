@@ -11563,7 +11563,59 @@ const TALENT_AGENCIES=[
   {n:"District Model and Talent",t:"small",c:["LA"],v:0,s:"form",w:"districtmodelandtalent.com",
    note:"SAG-AFTRA franchised and openly growing its roster right now — print, commercial, actors of all ages, voice-over, athletes. Street address still being confirmed.",a:[]},
   {n:"Shirley Grant Management",t:"small",c:["NY"],v:0,s:"email",w:"shirleygrant.com",
-   note:"Over 40 years placing young and emerging artists in TV, film, commercials, Broadway and modelling. Submit by email to submit@shirleygrant.com. Street address still being confirmed.",a:[]}
+   note:"Over 40 years placing young and emerging artists in TV, film, commercials, Broadway and modelling. Submit by email to submit@shirleygrant.com. Street address still being confirmed.",a:[]},
+  {n:"The Roster Agency",t:"small",c:["NY"],v:1,s:"mail",pc:1,
+   note:"Openly accepting submissions right now, all types, for theatre, TV, film and commercials — photos and resumes by mail only. They also try to attend every showcase they're invited to, so an invitation is genuinely worth sending.",
+   w:"therosteragency.com",
+   a:[["New York","247 W 38th St, 6th Floor, New York, NY 10018"]]},
+  {n:"Sovereign Talent Group",t:"small",c:["LA"],v:1,s:"mail",
+   note:"Founded 2008. Commercials, pilots, music videos and features. Accepts either email or hard-copy submissions from talent seeking representation — one of the few that will take a physical package without a referral.",
+   w:"sovereigntg.com",
+   a:[["Los Angeles","1642 Westwood Blvd, Suite 202, Los Angeles, CA 90024"]]},
+  {n:"Bounty LA",t:"small",c:["LA"],v:1,s:"email",
+   note:"Licensed full-service agency founded 2017, built around developing new talent — actors, athletes, models, dancers, singers and comedians. Submissions to contact@bountyla.com.",
+   w:"bountyla.com",
+   a:[["West Hollywood","750 N San Vicente Blvd, West Hollywood, CA 90069"]]},
+  {n:"The Collective Talent Agency",t:"small",c:["NY"],v:1,s:"email",
+   note:"NYC boutique representing performers for film, television and theatre. Reach the agents directly by email.",
+   w:"thecollectivetalent.com",
+   a:[["New York","307 W 38th St, 16th Floor, New York, NY 10018"]]},
+  {n:"Bloc Agency",t:"small",c:["LA","NY"],v:0,s:"form",
+   note:"Dancers, choreographers, singers, actors and specialty talent, both coasts. Online submission form ONLY — emailing an agent directly gets your message binned. They also hold open general auditions for dancers a few times a year, announced on their Instagram. Office addresses still being confirmed.",
+   w:"blocagency.com",a:[]},
+  {n:"DDO Artists Agency",t:"medium",c:["LA","NY"],v:1,s:"email",
+   note:"Welcomes submissions year-round, which is rare at this size. Email a headshot, resume and a short cover letter naming any referrals plus your commercial experience and training. No calls, no drop-offs.",
+   w:"ddoagency.com",
+   a:[["North Hollywood","4605 Lankershim Blvd, Suite 815, North Hollywood, CA 91602"],["New York","16 Madison Square Park West, 12th Floor, New York, NY 10010"]]},
+  {n:"Eris Talent Agency",t:"medium",c:["LA"],v:1,s:"form",
+   note:"Woman-owned full-service boutique founded 2017, with New York, Atlanta and Mexico City offices behind the Sherman Oaks base. Actors, writers, directors, VO and comedians. No unsolicited literary material.",
+   w:"eristalentagency.com",
+   a:[["Sherman Oaks","15303 Ventura Blvd, Suite 900, Sherman Oaks, CA 91403"]]},
+  {n:"HCKR (Harden Curtis Kirsten Riley)",t:"medium",c:["NY"],v:1,s:"mail",
+   note:"Serious Broadway and theatrical agency. Headshot and resume by mail only — no unsolicited reels, interviews by appointment, no calls and no drop-offs. You can email HCKR@hckragency.com to ask first.",
+   w:"hckragency.com",
+   a:[["New York","214 W 29th St, Suite 1203, New York, NY 10001"]]},
+  {n:"Mavrick Artists Agency",t:"medium",c:["LA"],v:1,s:"form",
+   note:"Film, TV, commercial, commercial print and voice-over, plus a fashion division. Actor submissions come through subscriber services rather than the inbox — the public email is for fashion only.",
+   w:"mavrickagency.com",
+   a:[["Beverly Hills","8383 Wilshire Blvd, Suite 330, Beverly Hills, CA 90211"]]},
+  {n:"The Kohner Agency",t:"medium",c:["LA"],v:1,s:"check",
+   note:"Founded in the late 1930s — the second-oldest talent agency in Los Angeles. A small, selective boutique. They don't publish a submission policy, so check with them before sending anything.",
+   w:"kohneragency.com",
+   a:[["Beverly Hills","9300 Wilshire Blvd, Suite 555, Beverly Hills, CA 90212"]]},
+  {n:"Beverly Hecht Agency",t:"medium",c:["LA"],v:1,s:"email",
+   note:"Over 30 years in business. Does not take unsolicited submissions as a rule, but prefers headshots and resumes by email when they do look — so email, never post. Note they moved from Studio City; this Wilshire address is the current one.",
+   a:[["Los Angeles","12100 Wilshire Blvd, Suite 800, Los Angeles, CA 90025"]]},
+  {n:"Dulcina Eisen Associates",t:"medium",c:["NY"],v:1,s:"check",
+   note:"Long-established NY agency with a reputation for backing off-Broadway and emerging regional actors. No published submission policy — ask before you send.",
+   a:[["New York","154 E 61st St, New York, NY 10065"]]},
+  {n:"Ellis Talent Group",t:"medium",c:["LA"],v:1,s:"no",
+   note:"Well-regarded LA theatrical agency — but industry referral only, no unsolicited submissions. Listed so you know who they are and don't waste the postage.",
+   w:"ellistalentgroup.com",
+   a:[["Los Angeles","4705 Laurel Canyon Blvd, Suite 300, Los Angeles, CA 91607"]]},
+  {n:"Greene & Associates",t:"medium",c:["LA"],v:1,s:"no",
+   note:"Century City theatrical agency. Industry referral only — no unsolicited submissions. Here for your information, not your mailing list.",
+   a:[["Los Angeles","1901 Avenue of the Stars, Suite 130, Los Angeles, CA 90067"]]}
 ];
 
 // Tips written for beginners submitting to agencies for the first time.
@@ -11605,7 +11657,7 @@ const TALENT_AGENCY_TIPS=[
       {t:"pull",x:"Mail the card when the profile behind it is ready to be seen — not before."}]}
 ];
 
-const TAD_SUB={mail:["tad-mail","Mail OK"],email:["tad-email","Email first"],form:["tad-form","Web form only"],no:["tad-no","Do not mail"],lock:["tad-form","Premium"]};
+const TAD_SUB={mail:["tad-mail","Mail OK"],email:["tad-email","Email first"],form:["tad-form","Web form only"],no:["tad-no","Do not mail"],check:["tad-form","Check their site first"],lock:["tad-form","Premium"]};
 const TAD_TIERNAME={small:"Small",medium:"Mid-size",large:"Major"};
 const TAD_GROUPS=[
   ["small","Small agencies — open to beginners","Your first letters go here."],
@@ -11702,7 +11754,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
           {a.w&&<a className="tad-web" href={"https://"+a.w} target="_blank" rel="noopener noreferrer">{a.w} ↗</a>}
         </div>
         <div className="tad-meta">
-          <span className={"tad-sc "+sub[0]}><Ico n={a.s==="no"?"x":a.s==="mail"?"mail":a.s==="email"?"send":a.s==="lock"?"lock":"device-laptop"} s={13}/>{sub[1]}</span>
+          <span className={"tad-sc "+sub[0]}><Ico n={a.s==="no"?"x":a.s==="mail"?"mail":a.s==="email"?"send":a.s==="lock"?"lock":a.s==="check"?"eye":"device-laptop"} s={13}/>{sub[1]}</span>
           {a.pc?<span className="tad-pc">Accepts postcards &amp; invitations</span>:null}
           {a.v&&a.a.length
             ? a.a.map(x=><div key={x[0]} className="tad-addr"><span className="lb">{x[0]}</span>{x[1]}</div>)
