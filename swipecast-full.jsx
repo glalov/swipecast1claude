@@ -1272,6 +1272,23 @@ const WEIGHTS = ["Under 100 lbs","100-110 lbs","111-120 lbs","121-130 lbs","131-
 const HAIR_COLORS = ["Black","Dark Brown","Brown","Light Brown","Auburn","Red","Strawberry Blonde","Dirty Blonde","Blonde","Platinum","Grey","Salt & Pepper","White","Bald","Dyed / Colored"];
 const EYE_COLORS = ["Brown","Dark Brown","Hazel","Green","Blue","Grey","Amber","Heterochromia"];
 const ETHNICITIES = ["Black / African American","White / Caucasian","Latino / Latina / Latinx","Hispanic","Asian - East Asian","Asian - South Asian","Asian - Southeast Asian","Middle Eastern / North African","Native American / Indigenous","Pacific Islander","Mixed / Multiracial","Eastern European","Mediterranean","Other / Prefer to self-describe"];
+// `value` is what we store and what the role matcher compares against — roles only
+// ever carry Any/Male/Female/Non-Binary, so those three keep their canonical value
+// while the label stays inclusive. The rest store their own text and match open roles.
+const GENDER_IDENTITY_OPTS = [
+  {value:"Male",label:"Man / Male"},
+  {value:"Female",label:"Woman / Female"},
+  {value:"Non-Binary",label:"Non-Binary"},
+  {value:"Transgender",label:"Transgender"},
+  {value:"Genderfluid",label:"Genderfluid"},
+  {value:"Agender",label:"Agender"},
+  {value:"Genderqueer",label:"Genderqueer"},
+  {value:"Two-Spirit",label:"Two-Spirit"},
+  {value:"Prefer not to say",label:"Prefer not to say / Unspecified"},
+];
+const isCustomGender = g => {const v=(g||"").trim();return !!v&&!GENDER_IDENTITY_OPTS.some(o=>o.value===v);};
+// Suggestions only — the field stays free text so existing entries remain valid.
+const CASTING_MARKETS = ["New York, NY","Brooklyn, NY","Queens, NY","Bronx, NY","Staten Island, NY","Jersey City, NJ","Newark, NJ","Los Angeles, CA","Atlanta, GA","Chicago, IL","Miami, FL","Orlando, FL","Austin, TX","Dallas, TX","Houston, TX","New Orleans, LA","Albuquerque, NM","Las Vegas, NV","Phoenix, AZ","Denver, CO","Seattle, WA","Portland, OR","San Francisco, CA","San Diego, CA","Boston, MA","Philadelphia, PA","Pittsburgh, PA","Washington, DC","Baltimore, MD","Charlotte, NC","Wilmington, NC","Nashville, TN","Memphis, TN","Detroit, MI","Cleveland, OH","Minneapolis, MN","St. Louis, MO","Kansas City, MO","Salt Lake City, UT","Honolulu, HI","Toronto, ON","Vancouver, BC","Montreal, QC","London, UK","Manchester, UK","Dublin, IE","Sydney, AU","Melbourne, AU","Auckland, NZ","Mexico City, MX"];
 
 
 const CASTINGS = [
@@ -18092,6 +18109,9 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     body_type:profile?.body_type||"",age_range:profile?.age_range||"",
     talent_types:Array.isArray(profile?.talent_types)?profile.talent_types:[]
   }));
+  // A stored gender outside the preset list (legacy "Other", or a self-described one)
+  // reopens the custom text box instead of silently showing an empty select.
+  const [genderCustom,setGenderCustom]=useState(()=>isCustomGender(profile?.gender));
   useEffect(()=>{
     if(!profile)return;
     // Only run full form sync once (on first profile load).
@@ -18109,6 +18129,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         body_type:profile.body_type||"",age_range:profile.age_range||"",
         talent_types:Array.isArray(profile.talent_types)?profile.talent_types:[]
       }));
+      setGenderCustom(isCustomGender(profile.gender));
       // Filter the main headshot out of additional_photos to prevent duplication in the gallery.
       const ap=(profile.additional_photos||[]).filter(u=>u&&u!==profile.headshot_url);setPhotos(ap);
       setShowcaseOrder(profile.showcase_order||[]);
@@ -18514,14 +18535,29 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       <div className="card" style={{padding:24,marginBottom:16}}>
         <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Basic Info</h3>
         <div className="form-group"><label className="label">Display Name</label><input className="input" value={f.display_name} onChange={e=>up("display_name",e.target.value)}/></div>
-        <div className="form-row"><div className="form-group"><label className="label">Location</label><input className="input" placeholder="City, State" value={f.location} onChange={e=>up("location",e.target.value)}/></div><div className="form-group"><label className="label">Instagram</label><input className="input" placeholder="@handle" value={f.instagram} onChange={e=>up("instagram",e.target.value)}/></div></div>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="label">Location</label>
+            <input className="input" list="cs-market-list" placeholder="Start typing a city…" value={f.location} onChange={e=>up("location",e.target.value)}/>
+            <datalist id="cs-market-list">{CASTING_MARKETS.map(m=><option key={m} value={m}/>)}</datalist>
+          </div>
+          <div className="form-group">
+            <label className="label">Instagram{!isPremium&&!isCD?" · Premium":""}</label>
+            {(isPremium||isCD)
+              ?<input className="input" placeholder="@handle" value={f.instagram} onChange={e=>up("instagram",e.target.value)}/>
+              :<button type="button" onClick={()=>onNavigate&&onNavigate("pricing")} title="Upgrade to add your Instagram" style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,padding:"12px 14px",borderRadius:10,border:"1px dashed var(--bdr)",background:"var(--s2)",color:"var(--t2)",font:"inherit",fontSize:14,cursor:"pointer",textAlign:"left"}}>
+                  <span style={{display:"flex",alignItems:"center",gap:8}}><Ico n="lock" s={16}/> Unlock with Premium</span>
+                  <span style={{fontWeight:700,color:"var(--acc)",whiteSpace:"nowrap"}}>Upgrade →</span>
+                </button>}
+          </div>
+        </div>
         <div className="form-row"><div className="form-group"><label className="label">Phone (private)</label><input className="input" placeholder="Optional" value={f.phone} onChange={e=>up("phone",e.target.value)}/></div></div>
         <div className="form-group"><label className="label">Bio / Overview</label><textarea className="textarea" style={{minHeight:130}} value={f.bio} onChange={e=>up("bio",e.target.value)} placeholder={isCD?"About you and your casting work…":"Your experience, strengths, what makes you unique…"}></textarea></div>
       </div>
       {!isCD&&<>
         <div className="card" style={{padding:24,marginBottom:16}}>
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Physical Stats</h3>
-          <div className="form-row"><div className="form-group"><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={f.gender} onChange={e=>up("gender",e.target.value)}><option value="">—</option><option>Female</option><option>Male</option><option>Non-Binary</option><option>Other</option></select></div><div className="form-group"><label className="label">Age</label><input className="input" type="number" min="1" max="120" value={f.age} onChange={e=>up("age",e.target.value)}/></div></div>
+          <div className="form-row"><div className="form-group"><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={genderCustom?"__custom":f.gender} onChange={e=>{const v=e.target.value;if(v==="__custom"){setGenderCustom(true);up("gender","");}else{setGenderCustom(false);up("gender",v);}}}><option value="">—</option>{GENDER_IDENTITY_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}<option value="__custom">Custom / Other…</option></select>{genderCustom&&<input className="input" style={{marginTop:8}} placeholder="Describe your gender identity" value={f.gender} onChange={e=>up("gender",e.target.value)}/>}</div><div className="form-group"><label className="label">Age</label><input className="input" type="number" min="1" max="120" value={f.age} onChange={e=>up("age",e.target.value)}/></div></div>
           <div className="form-row"><div className="form-group"><label className="label">Height</label><select className="select" style={{width:"100%"}} value={f.height} onChange={e=>up("height",e.target.value)}><option value="">Select</option>{HEIGHTS.map(h=><option key={h} value={h}>{h}</option>)}</select></div><div className="form-group"><label className="label">Weight</label><select className="select" style={{width:"100%"}} value={f.weight} onChange={e=>up("weight",e.target.value)}><option value="">Select</option>{WEIGHTS.map(w=><option key={w} value={w}>{w}</option>)}</select></div></div>
           <div className="form-row"><div className="form-group"><label className="label">Hair Color</label><select className="select" style={{width:"100%"}} value={f.hair} onChange={e=>up("hair",e.target.value)}><option value="">Select</option>{HAIR_COLORS.map(h=><option key={h} value={h}>{h}</option>)}</select></div><div className="form-group"><label className="label">Eye Color</label><select className="select" style={{width:"100%"}} value={f.eyes} onChange={e=>up("eyes",e.target.value)}><option value="">Select</option>{EYE_COLORS.map(ec=><option key={ec} value={ec}>{ec}</option>)}</select></div></div>
           <div className="form-row"><div className="form-group"><label className="label">Ethnicity</label><select className="select" style={{width:"100%"}} value={f.ethnicity} onChange={e=>up("ethnicity",e.target.value)}><option value="">Select</option>{ETHNICITIES.map(et=><option key={et} value={et}>{et}</option>)}</select></div><div className="form-group"><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union_status} onChange={e=>up("union_status",e.target.value)}><option>Non-Union</option><option>SAG-AFTRA</option><option>AEA</option><option>SAG-AFTRA / AEA</option><option>ACTRA</option></select></div></div>
