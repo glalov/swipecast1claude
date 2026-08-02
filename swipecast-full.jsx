@@ -1663,8 +1663,29 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .modal h2{font-size:24px;font-weight:800;margin-bottom:20px;}
 .success-msg{text-align:center;padding:48px 24px;}
 /* ── Talent Agency Directory (premium dashboard card + modal) ── */
-.tad-card{position:relative;overflow:hidden;border-radius:16px;padding:20px;color:#fff;cursor:pointer;background:linear-gradient(140deg,#232342 0%,#1A1A2E 55%,#111124 100%);transition:transform .18s,box-shadow .18s;}
-.tad-card:hover{transform:translateY(-2px);box-shadow:0 16px 36px -14px rgba(26,26,46,.6);}
+.tad-card{position:relative;overflow:hidden;border-radius:16px;padding:20px;color:#fff;cursor:pointer;background:linear-gradient(140deg,#232342 0%,#1A1A2E 55%,#111124 100%);z-index:1;}
+/* ── "Gold Seal": a single gold light travels the card's PERIMETER, striking each corner.
+   Deliberately shares no motion with the Actor Business Card above it (which floats,
+   sweeps a diagonal sheen, breathes its glow and shines its button) so the two premium
+   cards never read as the same effect twice. ── */
+.tad-seal{position:relative;padding:1.5px;border-radius:17.5px;overflow:hidden;isolation:isolate;transition:transform .18s,box-shadow .18s;}
+.tad-seal::before{content:"";position:absolute;inset:-60%;z-index:0;background:conic-gradient(from 0deg,transparent 0deg,transparent 268deg,rgba(240,184,96,.25) 300deg,#F0B860 340deg,#FFF0D2 352deg,#F0B860 356deg,transparent 360deg);animation:tad-seal-run 5.5s linear infinite;}
+.tad-seal:hover{transform:translateY(-2px);box-shadow:0 16px 36px -14px rgba(26,26,46,.6);}
+.tad-seal:hover::before{animation-duration:2.4s;}
+@keyframes tad-seal-run{to{transform:rotate(360deg);}}
+.tad-glint{position:absolute;width:5px;height:5px;border-radius:50%;background:#FFF3DC;z-index:4;opacity:0;box-shadow:0 0 10px 2px rgba(240,184,96,.9);pointer-events:none;}
+.tad-glint.g1{top:9px;left:9px;animation:tad-glint 5.5s linear infinite;}
+.tad-glint.g2{top:9px;right:9px;animation:tad-glint 5.5s linear infinite 1.375s;}
+.tad-glint.g3{bottom:9px;right:9px;animation:tad-glint 5.5s linear infinite 2.75s;}
+.tad-glint.g4{bottom:9px;left:9px;animation:tad-glint 5.5s linear infinite 4.125s;}
+@keyframes tad-glint{0%,88%{opacity:0;transform:scale(.4);}93%{opacity:1;transform:scale(1);}100%{opacity:0;transform:scale(.4);}}
+.tad-card .tad-ic{position:relative;overflow:hidden;}
+.tad-card .tad-ic::after{content:"";position:absolute;inset:0;border-radius:10px;background:radial-gradient(circle at 50% 50%,rgba(240,184,96,.55),transparent 68%);opacity:0;animation:tad-emboss 5.5s ease-in-out infinite;}
+@keyframes tad-emboss{0%,74%{opacity:0;}84%{opacity:1;}100%{opacity:0;}}
+@media(prefers-reduced-motion:reduce){
+  .tad-seal::before{animation:none;background:conic-gradient(from 0deg,rgba(240,184,96,.5),rgba(240,184,96,.5));}
+  .tad-glint,.tad-card .tad-ic::after{animation:none;opacity:0;}
+}
 .tad-glow{position:absolute;border-radius:50%;pointer-events:none;width:190px;height:190px;background:radial-gradient(circle,rgba(240,184,96,.26),transparent 70%);top:-70px;right:-50px;}
 .tad-kick{position:relative;display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#F0B860;margin:0 0 8px;font-family:'DM Sans',sans-serif;}
 .tad-dot{width:6px;height:6px;border-radius:50%;background:#F0B860;box-shadow:0 0 8px #F0B860;}
@@ -11875,6 +11896,9 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
   );
 
   return(<>
+    <div className="tad-seal">
+      <span className="tad-glint g1"/><span className="tad-glint g2"/>
+      <span className="tad-glint g3"/><span className="tad-glint g4"/>
     <div className="tad-card" onClick={()=>setOpen(true)} role="button" tabIndex={0}
          onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setOpen(true);}}}>
       <span className="tad-glow"/>
@@ -11890,6 +11914,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
       <button className={"tad-cta"+(isPremium?" tad-open":"")} onClick={e=>{e.stopPropagation();setOpen(true);}}>
         {isPremium?"Open the Directory →":"Unlock the Directory →"}
       </button>
+    </div>
     </div>
 
     {open&&(
