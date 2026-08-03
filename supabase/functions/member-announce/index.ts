@@ -265,16 +265,19 @@ serve(async (req) => {
   // excludes membership_status='active' because Premium do not get the casting
   // digest — reusing it here silently dropped every Premium member.
   const emailMap:Record<string,string> = {};
-  for (let i = 0; i < uids.length; i += 1000) {
-    const { data, error } = await sb.rpc("get_member_emails", { uids: uids.slice(i, i + 1000) });
-    if (error) { console.error("[member-announce] get_member_emails", error); continue; }
+  let emailsOk = true;
+  for (let i = 0; i < uids.length; i += 500) {
+    const { data, error } = await sb.rpc("get_member_emails", { uids: uids.slice(i, i + 500) });
+    if (error) { console.error("[member-announce] get_member_emails", error); emailsOk = false; break; }
     (data ?? []).forEach((r:{id?:string; email?:string}) => { if (r?.id && r?.email) emailMap[r.id] = r.email; });
   }
 
   // opt-outs: announcement-specific, plus anyone globally unsubscribed
   const optedOut = new Set<string>();
-  for (let i = 0; i < uids.length; i += 300) {
-    const { data } = await sb.from("email_preferences").select("user_id,announce_optout,unsubscribed_at").in("user_id", uids.slice(i, i + 300));
+  let optedOutOk = true;
+  for (let i = 0; i < uids.length; i += 100) {
+    const { data, error } = await sb.from("email_preferences").select("user_id,announce_optout,unsubscribed_at").in("user_id", uids.slice(i, i + 100));
+    if (error) { console.error("[member-announce] optedOut chunk failed", error); optedOutOk = false; break; }
     (data ?? []).forEach((p:{user_id:string; announce_optout?:boolean; unsubscribed_at?:string|null}) => {
       if (p.announce_optout === true || p.unsubscribed_at) optedOut.add(p.user_id);
     });
@@ -295,10 +298,17 @@ serve(async (req) => {
   }
 
   // already sent this announcement
+  // Chunks must stay small: .in() becomes a GET query string, and 500 UUIDs is a
+  // ~19KB URL that fails on length. That failure previously went unnoticed because
+  // the error was discarded, so the run thought nobody had been sent and offered to
+  // re-mail 442 people who already had it. Fail CLOSED instead: if this lookup is
+  // incomplete we refuse to send, because the alternative is mass duplicate email.
   const alreadySent = new Set<string>();
-  for (let i = 0; i < uids.length; i += 500) {
-    const { data } = await sb.from("member_announce_logs")
-      .select("user_id").eq("announce_key", ANNOUNCE_KEY).in("user_id", uids.slice(i, i + 500));
+  let alreadySentOk = true;
+  for (let i = 0; i < uids.length; i += 100) {
+    const { data, error } = await sb.from("member_announce_logs")
+      .select("user_id").eq("announce_key", ANNOUNCE_KEY).in("user_id", uids.slice(i, i + 100));
+    if (error) { console.error("[member-announce] alreadySent chunk failed", error); alreadySentOk = false; break; }
     (data ?? []).forEach((r:{user_id:string}) => alreadySent.add(r.user_id));
   }
 
@@ -326,6 +336,12 @@ serve(async (req) => {
   };
 
   // count-only, or a run without explicit confirmation → report, never send
+  // Any incomplete lookup means the skip lists are untrustworthy — refuse to send.
+  if (!alreadySentOk || !optedOutOk || !emailsOk) {
+    return res({ ok:false, error:"Recipient checks did not complete — refusing to send so nobody is emailed twice. Try again.",
+                 detail:{ already_sent_ok:alreadySentOk, opted_out_ok:optedOutOk, emails_ok:emailsOk } }, 503);
+  }
+
   if (action !== "run" || body.confirm !== true) {
     return res({ ok:true, dry_run:true, ...counts, note: action === "run" ? "confirm:true required to send" : undefined });
   }
