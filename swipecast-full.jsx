@@ -12012,6 +12012,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
     large:TALENT_AGENCIES.filter(a=>a.t==="large").length,
     mail:TALENT_AGENCIES.filter(a=>a.s==="mail").length,
     addressed:TALENT_AGENCIES.filter(a=>a.v&&a.a.length).length,
+    open:TALENT_AGENCIES.filter(a=>["mail","email","form"].includes(a.s)).length,
     tips:TALENT_AGENCY_TIPS.length
   }),[]);
 
@@ -12169,7 +12170,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
       <p className="tad-sub">Agencies in LA &amp; New York open to new talent right now — plus how to actually approach them, from people who have done it for decades.</p>
       <div className="tad-mini">
         <div><b>{counts.all}</b><span>Agencies</span></div>
-        <div><b>{counts.addressed}</b><span>With addresses</span></div>
+        <div><b>{counts.open}</b><span>Open to submissions</span></div>
         <div><b>{counts.tips}</b><span>Insider tips</span></div>
       </div>
       <button className={"tad-cta"+(isPremium?" tad-open":"")} onClick={e=>{e.stopPropagation();setOpen(true);}}>
@@ -12253,7 +12254,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
                     <p>Every franchised talent agency in the Los Angeles and New York locals, plus {counts.curated} our team verified one by one: the street address, the website, and exactly how that agency wants to be approached. The ones that merged, closed or stopped taking talent are already stripped out.</p>
                     <div className="tad-stats">
                       <div><b>{counts.all}</b><span>Agencies</span></div>
-                      <div><b>{counts.addressed}</b><span>With addresses</span></div>
+                      <div><b>{counts.open}</b><span>Open to submissions</span></div>
                       <div><b>{counts.small}</b><span>Take beginners</span></div>
                     </div>
                     <button className="btn-p" onClick={()=>{setOpen(false);onNavigate("membership");}}>Unlock with Premium →</button>
