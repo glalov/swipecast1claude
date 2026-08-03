@@ -232,14 +232,42 @@ Deno.serve(async (req: Request) => {
         if (!userId) { console.warn("No user match for subscription event"); break; }
 
         const periodEnd = resolvePeriodEnd(sub);
-        const planKey = sub.metadata?.plan_key || "monthly";
+        // NO "monthly" fallback here. This runs on every subscription event, so
+        // a default would silently rewrite a yearly member to monthly the first
+        // time an event arrived without plan_key metadata.
+        const planKey = sub.metadata?.plan_key || null;
+
+        // A customer can own more than one subscription (an abandoned or
+        // declined attempt sitting alongside the live one), and Stripe does not
+        // guarantee webhook ordering. Both let a stale or transient event
+        // clobber a paying row — that is how paid members ended up stamped
+        // "incomplete". Read what we hold before overwriting it.
+        const { data: held } = await supabase
+          .from("profiles")
+          .select("subscription_status, stripe_subscription_id")
+          .eq("id", userId)
+          .maybeSingle();
+        const heldSub = held?.stripe_subscription_id || null;
+        const heldIsPaid = ["active", "trialing", "past_due"].includes(held?.subscription_status || "");
+        const eventIsPaid = sub.status === "active" || sub.status === "trialing";
+
+        // Event describes a DIFFERENT subscription than the one on file, and
+        // the one on file is paid. Only a paid event may take over the record;
+        // a dead sibling must not drag the live subscription's id/plan with it.
+        if (heldSub && heldSub !== sub.id && heldIsPaid && !eventIsPaid) {
+          console.log(`[stripe-webhook] Ignoring ${sub.status} for stale sub ${sub.id}; profile holds ${heldSub}`);
+          break;
+        }
+        // Same subscription, but a transient pre-payment status arriving after
+        // checkout.session.completed already confirmed the money. Keep what we
+        // have rather than downgrading a paid member to "incomplete".
+        const staleIncomplete = sub.status === "incomplete" && heldIsPaid;
 
         // Always keep subscription_status / ids / period in sync.
         const updates: Record<string, unknown> = {
-          subscription_status: sub.status,
+          subscription_status: staleIncomplete ? held!.subscription_status : sub.status,
           stripe_subscription_id: sub.id,
           stripe_customer_id: sub.customer as string,
-          plan_type: planKey,
           current_period_end: periodEnd,
           // Scheduled cancellation. Stripe keeps status "active" until the
           // period actually ends, so this flag is the ONLY way the app can
@@ -247,6 +275,7 @@ Deno.serve(async (req: Request) => {
           cancel_at_period_end: !!sub.cancel_at_period_end,
           updated_at: new Date().toISOString(),
         };
+        if (planKey) updates.plan_type = planKey;
         const planPrice = resolvePlanPrice(sub);
         if (planPrice !== null) updates.plan_price = planPrice;
 

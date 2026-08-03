@@ -24822,6 +24822,15 @@ td.k{color:#64748b;width:190px;} .mono{font-family:ui-monospace,Menlo,monospace;
   </>);
 }
 
+// ─── Is this profile a genuinely paying subscriber? Both halves matter:
+//     membership_status is the access gate the app reads, subscription_status
+//     is what Stripe last told us about the money. "incomplete" means a
+//     checkout was started and never paid for, so it must not count.
+const PAYING_SUB_STATUS=["active","trialing","past_due"];
+function isPayingSub(p){
+  return p&&p.membership_status==="active"&&PAYING_SUB_STATUS.includes(p.subscription_status);
+}
+
 // ─── Overview: counts + recent audit activity
 function AdminOverview({onGoToBookingRequests,session,myProfile}){
   const [stats,setStats]=useState(null);
@@ -24868,8 +24877,12 @@ function AdminOverview({onGoToBookingRequests,session,myProfile}){
         free_members:pu.filter(x=>x.membership_status==="free").length,
         premium_members:pu.filter(x=>x.membership_status==="active").length,
         paid_subs:pu.filter(x=>x.subscription_status==="active").length,
-        plan_monthly:pu.filter(x=>x.plan_type==="monthly").length,
-        plan_yearly:pu.filter(x=>x.plan_type==="yearly").length,
+        // Plan tiles count PAYING members only. plan_type is stamped when the
+        // checkout session is created, not when it's paid, so filtering on it
+        // alone counts abandoned/declined checkouts as members. past_due stays
+        // in — those are members inside the retry window, not lost revenue.
+        plan_monthly:pu.filter(x=>isPayingSub(x)&&x.plan_type==="monthly").length,
+        plan_yearly:pu.filter(x=>isPayingSub(x)&&x.plan_type==="yearly").length,
         extra:(xs&&!xs.error&&xs.data)?xs.data:null
       });
       const byNewest=(arr)=>arr.slice().sort((x,y)=>new Date(y.created_at||0)-new Date(x.created_at||0));
