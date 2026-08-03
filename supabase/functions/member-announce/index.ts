@@ -87,20 +87,26 @@ function noteCard(): string {
 
 const GATE = `<p style="margin:0 0 22px;font-size:15px;line-height:1.75;color:#5A5A72">Here is the part nobody tells you at the start: the Marvel films, the DC films, the hundred-million-dollar features &mdash; <strong style="color:#1A1A2E">those roles are never posted publicly, anywhere.</strong> They are submitted by agents and managers only. Which makes the people on this list the gatekeepers.</p>`;
 
-interface ShellArgs { tag:string; heading:string; greeting:string; body:string; mid:string; cta:string; href:string; foot:string; unsub?:string; }
+interface ShellArgs { tag:string; kicker:string; heading:string; greeting:string; body:string; mid:string; cta:string; href:string; foot:string; unsub?:string; }
 function shell(a: ShellArgs): string {
-  const pill = `<span style="display:inline-block;background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.34);color:#FBF8F1;font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;padding:5px 12px;border-radius:999px">${a.tag}</span>`;
+
   const cta  = `<table cellpadding="0" cellspacing="0"><tr><td style="background:${T.solid};border-radius:10px"><a href="${APP_URL}${a.href}" style="display:inline-block;padding:15px 36px;font-size:14px;font-weight:800;letter-spacing:.2px;color:#FBF8F1;text-decoration:none">${a.cta} &rarr;</a></td></tr></table>`;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head>
 <body style="margin:0;padding:0;background:#EFE9DD;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#EFE9DD;padding:36px 22px"><tr><td align="center">
     <table width="560" cellpadding="0" cellspacing="0" style="width:100%;max-width:560px;background:#FBF8F1;border-radius:16px;overflow:hidden;box-shadow:0 1px 0 #EAE2D1">
-      <tr><td style="background:${T.solid};background:${T.grad};padding:26px 36px 24px">
+      <tr><td style="background:#000000;padding:16px 30px 14px">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
-          <td style="vertical-align:middle">${csLogo()}<span style="display:inline-block;vertical-align:middle;margin-left:12px;font-size:20px;font-weight:800;letter-spacing:-0.3px;color:#FBF8F1">CastSlate</span></td>
-          <td align="right">${pill}</td>
+          <td style="vertical-align:middle">${csLogo()}<span style="display:inline-block;vertical-align:middle;margin-left:10px;font-size:17px;font-weight:800;letter-spacing:2px;color:#FBF8F1;text-transform:uppercase">CastSlate</span></td>
+          <td align="right"><span style="font-size:9.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#F0B860">${a.tag}</span></td>
         </tr></table>
-        <div style="height:2px;background:linear-gradient(90deg,${T.rule},rgba(255,255,255,0));margin-top:22px"></div>
+      </td></tr>
+      <tr><td style="background:#000000;line-height:0;font-size:0">
+        <img src="${APP_URL}/email/digest-hero.jpg" width="560" alt="" style="display:block;width:100%;max-width:560px;height:auto"/>
+      </td></tr>
+      <tr><td style="background:#000000;padding:14px 30px 20px;text-align:center">
+        <div style="height:1px;background:linear-gradient(90deg,rgba(240,184,96,0),#F0B860,rgba(240,184,96,0));margin:0 0 14px;font-size:0;line-height:0">&nbsp;</div>
+        <div style="font-size:10px;font-weight:800;letter-spacing:3.4px;text-transform:uppercase;color:#F0B860">${a.kicker}</div>
       </td></tr>
       <tr><td style="padding:34px 36px 10px">
         <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:700;color:#1A1A2E;letter-spacing:-0.4px;line-height:1.18">${a.heading}</h1>
@@ -123,6 +129,7 @@ function premiumHtml(first: string, unsub?: string): string {
   return shell({
     unsub,
     tag:"New in Premium",
+    kicker:"The gatekeepers, in one list",
     heading:"312 agencies &mdash; and the letter that actually gets opened.",
     greeting:`Hi ${esc(first)},`,
     body:"We have just added the <strong>Talent Agency Directory + Tips &amp; Tricks</strong> to your dashboard. It sits right under your Actor Business Card, and the two are built to work together: the card is what you send, the directory is where you send it.",
@@ -141,6 +148,7 @@ function freeHtml(first: string, unsub?: string): string {
   return shell({
     unsub,
     tag:"New on CastSlate",
+    kicker:"The gatekeepers, in one list",
     heading:"The roles you cannot find online are behind these doors.",
     greeting:`Hi ${esc(first)},`,
     body:"We have just launched the <strong>Talent Agency Directory + Tips &amp; Tricks</strong> &mdash; every SAG-AFTRA franchised talent agency across Los Angeles and New York, in one place, with the 62 our team verified one by one.",
