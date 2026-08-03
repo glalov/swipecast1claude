@@ -102,7 +102,7 @@ function shell(a: ShellArgs): string {
         </tr></table>
       </td></tr>
       <tr><td style="background:#000000;line-height:0;font-size:0">
-        <img src="${APP_URL}/email/digest-hero.jpg" width="560" alt="" style="display:block;width:100%;max-width:560px;height:auto"/>
+        <img src="${APP_URL}/email/hero-hollywood-dusk.jpg" width="560" alt="" style="display:block;width:100%;max-width:560px;height:auto"/>
       </td></tr>
       <tr><td style="background:#000000;padding:14px 30px 20px;text-align:center">
         <div style="height:1px;background:linear-gradient(90deg,rgba(240,184,96,0),#F0B860,rgba(240,184,96,0));margin:0 0 14px;font-size:0;line-height:0">&nbsp;</div>
