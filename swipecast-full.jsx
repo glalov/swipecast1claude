@@ -11663,7 +11663,261 @@ const TALENT_AGENCIES=[
    note:"Burbank agency with a broad roster including children, commercials, dance, seniors and performers with disabilities — a long-standing door for young and new talent. Listed at Burbank 91502, (818) 841-7943.",a:[]},
   {n:"Greene & Associates",t:"medium",c:["LA"],v:1,s:"no",
    note:"Century City theatrical agency. Industry referral only — no unsolicited submissions. Here for your information, not your mailing list. NOTE: this agency does not appear on SAG-AFTRA's current franchised list.",
-   a:[["Los Angeles","1901 Avenue of the Stars, Suite 130, Los Angeles, CA 90067"]]}
+   a:[["Los Angeles","1901 Avenue of the Stars, Suite 130, Los Angeles, CA 90067"]]},
+  // ── Full SAG-AFTRA franchised roster (LA + NY locals), pulled from sagaftra.org.
+  //    SAG publishes name, city, zip, phone and specialty codes but NO street address and
+  //    NO submission policy — so every one of these is v:0 / s:'check' by design. Hidden
+  //    behind the 'SAG-AFTRA roster' filter so they never dilute the curated, addressed set.
+  {n:"90210 Talent Group",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Woodland Hills 91367 · (561) 213-2341.",a:[]},
+  {n:"ABA Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Beverly Hills 90212 · (310) 276-1851.",a:[]},
+  {n:"AC Talent Agency LLC (SAG Only)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Beverly Hills 90211 · (323) 878-0800.",a:[]},
+  {n:"AE Talent Agency (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90020 · (310) 743-2364.",a:[]},
+  {n:"AIRE Talent Agency Corp",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Burbank 91505 · (310) 448-3884.",a:[]},
+  {n:"AKA Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents TV, commercials, daytime drama, voice-over, industrials. Listed at Los Angeles 90010 · (323) 965-5600.",a:[]},
+  {n:"AMK Hollywood Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Los Angeles 90041 · (323) 349-0860.",a:[]},
+  {n:"AMT Artists, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Sherman Oaks 91403 · (818) 582-2490.",a:[]},
+  {n:"ASAP Talent Agency (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Valencia 91355 · (323) 769-9000.",a:[]},
+  {n:"ATB Talent Agency (Los Angeles)",sag:1,t:"roster",c:["LA","NY"],v:0,s:"check",note:"Represents theatrical. Listed at North Hollywood 91602 · (323) 761-0282.",a:[]},
+  {n:"AVO Talent, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents commercials, voice-over. Listed at Marina Del Rey 90292 · (310) 360-7680.",a:[]},
+  {n:"Abstract Talent, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Van Nuys 91406 · (818) 997-2875.",a:[]},
+  {n:"Activity",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Sherman Oaks 91403 · (818) 308-6420.",a:[]},
+  {n:"Affinity Artists Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90036 · (323) 646-4477.",a:[]},
+  {n:"Afritalent Agency LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Santa Monica 90404 · (888) 622-6717.",a:[]},
+  {n:"Alexander White Agency LLC (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Sherman Oaks 91403 · (404) 609-4752.",a:[]},
+  {n:"Alkeme Artists Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, TV, commercials, musical artists. Listed at Malibu 90265 · (310) 648-1945.",a:[]},
+  {n:"Allegory Creative Talent, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Sherman Oaks 91423 · (818) 582-8055.",a:[]},
+  {n:"Almond Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90048 · (323) 934-5500.",a:[]},
+  {n:"American Artists Agency LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90036 · (949) 351-3170.",a:[]},
+  {n:"Amsel, Eisenstadt, Frazier, & Hinojosa, Inc. / Pinnacle Talent",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90036 · (323) 939-1188.",a:[]},
+  {n:"Angel City Talent",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Moorpark 93021 · (323) 656-5489.",a:[]},
+  {n:"Aperture Talent (Los Angeles)",sag:1,t:"roster",c:["LA","NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Beverly Hills 90212 · (310) 601-2532.",a:[]},
+  {n:"Aqua, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at West Hollywood 90069 · (310) 859-8889.",a:[]},
+  {n:"Arise Artists Agency (Los Angeles)",sag:1,t:"roster",c:["LA","NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Manhattan Beach 90266 · (310) 893-0216.",a:[]},
+  {n:"Arrowheart Talent Agency LLC, The",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Santa Monica 90401 · (310) 426-8889.",a:[]},
+  {n:"Artistic Talent",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Lake Balboa 91406 · (213) 359-2003.",a:[]},
+  {n:"Artists & Representatives Agency, LLC (Los Angeles)",sag:1,t:"roster",c:["LA","NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, daytime drama, hosting. Listed at Los Angeles 90048 · (323) 655-1313.",a:[]},
+  {n:"Artists Among Us",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Long Beach 90810 · (323) 330-3151.",a:[]},
+  {n:"Artium Talent, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV, commercials, voice-over. Listed at Santa Monica 90401 · (310) 550-9333.",a:[]},
+  {n:"Aston Models and Talent",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, commercials, voice-over, models, industrials. Listed at Beverly Hills 90212 · (310) 424-5981.",a:[]},
+  {n:"Atlas Talent Agency/LA, Inc.",sag:1,t:"roster",c:["LA","NY"],v:0,s:"check",note:"Represents actors, TV, commercials, hosting, Spanish language. Listed at Los Angeles 90036 · (310) 324-9800.",a:[]},
+  {n:"Avail Talent LA",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Whittier 90601 · (714) 206-5759.",a:[]},
+  {n:"Avant Artists LLC (AFTRA Only)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, TV, commercials, children, daytime drama. Listed at Woodland Hills 91367 · (818) 609-1556.",a:[]},
+  {n:"Axis Artists LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Marina Del Rey 90292 · (310) 272-4009.",a:[]},
+  {n:"BBR (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents commercials. Listed at Los Angeles 90064 · (323) 852-9559.",a:[]},
+  {n:"BH Talent",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Encino 91436 · (323) 596-7827.",a:[]},
+  {n:"BMG Talent Group, Inc (Los Angeles)",sag:1,t:"roster",c:["LA","NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90010 · (323) 692-1720.",a:[]},
+  {n:"Backlot Talent Agency, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, commercials, daytime drama, musical artists. Listed at Los Angeles 90064 · (310) 369-3320.",a:[]},
+  {n:"Bankston Talent Agency, LLC (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90067 · (210) 683-5089.",a:[]},
+  {n:"Baron Entertainment Group, Inc. (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90036 · (323) 969-1000.",a:[]},
+  {n:"Bella Agency LLC (Los Angeles)",sag:1,t:"roster",c:["LA","NY"],v:0,s:"check",note:"Represents actors, theatrical, commercials, dancers, comedians. Listed at Los Angeles 90028 · (323) 462-9191.",a:[]},
+  {n:"Bella Pearl Agency LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Century City 90067 · (818) 749-7825.",a:[]},
+  {n:"Berman/Sacks Talent Agency LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at North Hollywood 91601 · (323) 600-3641.",a:[]},
+  {n:"Brand Model & Talent Agency, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, commercials, children, comedians. Listed at Santa Ana 92703 · (714) 850-1158.",a:[]},
+  {n:"BritMo Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Manhattan Bch 90266 · (310) 345-9482.",a:[]},
+  {n:"Cali Kids Talent",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Encino 91436 · (818) 251-3539.",a:[]},
+  {n:"Career Artists International",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV, commercials. Listed at Studio City 91604 · (818) 980-1315.",a:[]},
+  {n:"Carrie Macy Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, commercials, children, comedians. Listed at Beverly Hills 90212 · (424) 281-0256.",a:[]},
+  {n:"Carry Company (Los Angeles)",sag:1,t:"roster",c:["LA","NY"],v:0,s:"check",note:"Represents theatrical, commercials. Listed at Los Angeles 90010 · (213) 388-0770.",a:[]},
+  {n:"Castle Hill Enterprises",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV, commercials, voice-over. Listed at Los Angeles 90035 · (323) 653-3535.",a:[]},
+  {n:"Central Artists, Inc",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Burbank 91505 · (818) 557-8284.",a:[]},
+  {n:"Chic Models (SAG Only)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Long Beach 90804 · (562) 433-8097.",a:[]},
+  {n:"Cindy Romano Modeling & Talent Agency (SAG Only)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Palm Desert 92260 · (760) 323-3333.",a:[]},
+  {n:"Circle Talent Associates Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Santa Monica 90401 · (310) 496-4501.",a:[]},
+  {n:"Circle of 10 Talent",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Tustin 92780 · (949) 701-6215.",a:[]},
+  {n:"Closeup LA",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, commercials, models, industrials. Listed at Los Angeles 90036 · (323) 746-5121.",a:[]},
+  {n:"Commercial Talent Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, TV, commercials, children, daytime drama. Listed at Sherman Oaks 91403 · (818) 505-1431.",a:[]},
+  {n:"Creative Ventures Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, children, daytime drama. Listed at Los Angeles 90049 · (310) 625-7627.",a:[]},
+  {n:"Culbertson Group LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Los Angeles 90046 · (323) 650-9454.",a:[]},
+  {n:"DPM Talent Agency, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, commercials, voice-over, models. Listed at Sherman Oaks 91403 · (818) 201-9521.",a:[]},
+  {n:"DPN Talent LLC (Los Angeles)",sag:1,t:"roster",c:["LA","NY"],v:0,s:"check",note:"Represents actors, TV, commercials, children, seniors. Listed at Century City 90067 · (310) 432-7800.",a:[]},
+  {n:"Dangerfield Talent & Literary (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Sherman Oaks 91423 · (818) 400-3348.",a:[]},
+  {n:"David Shapira & Associates, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Beverly Hills 90212 · (310) 967-0480.",a:[]},
+  {n:"Day7 Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Sun Valley 91352 · (818) 270-1903.",a:[]},
+  {n:"Dean Panaro Talent, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Studio City 91604 · (818) 660-0633.",a:[]},
+  {n:"Defining Artists Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents TV, daytime drama. Listed at Los Angeles 90069 · (310) 500-0512.",a:[]},
+  {n:"Dragonfly Agency, The",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90021 · (323) 230-7700.",a:[]},
+  {n:"Dramatic Artists Agency LA, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Burbank 91502 · (818) 288-1859.",a:[]},
+  {n:"EM Artists, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90028 · (424) 333-0706.",a:[]},
+  {n:"Elev8, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Beverly Hills 90211 · (310) 734-8688.",a:[]},
+  {n:"Elite Los Angeles",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents commercials, models. Listed at West Hollywood 90048 · (310) 274-9395.",a:[]},
+  {n:"Embrace Real Artists LLC (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Sherman Oaks 91403 · (323) 533-1233.",a:[]},
+  {n:"Emerald Artists Agency, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Santa Monica 90401 · (310) 430-2031.",a:[]},
+  {n:"Encompass Talent, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, TV, children, comedians. Listed at Woodland Hills 91367 · (323) 828-4773.",a:[]},
+  {n:"Engage Artists Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Tustin 92780 · (858) 848-9558.",a:[]},
+  {n:"Envy Model & Talent LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90034 · (310) 694-8567.",a:[]},
+  {n:"Evolve Artists Agency LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, commercials, children, dancers. Listed at Glendale 91203 · (818) 293-5715.",a:[]},
+  {n:"Exclusive Artists Agency (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Calabasas 91302 · (310) 844-1176.",a:[]},
+  {n:"Fame Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at North Hollywood 91601 · (323) 412-9087.",a:[]},
+  {n:"Feral Talent Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Van Nuys 91403 · (818) 669-0603.",a:[]},
+  {n:"Ferrari Talent",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, commercials, children, dancers. Listed at West Hollywood 90046 · (323) 800-2500.",a:[]},
+  {n:"Firestarter Entertainment (Los Angeles)",sag:1,t:"roster",c:["LA","NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Woodland Hills 91367 · (213) 531-0547.",a:[]},
+  {n:"Firm LA Model and Talent, The",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Arcadia 91006 · (626) 415-6793.",a:[]},
+  {n:"First Source Talent Agency LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Burbank 91505 · (605) 728-9000.",a:[]},
+  {n:"Flick East & West Talents, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, commercials, children, dancers, comedians. Listed at West Hollywood 90069 · (310) 271-9111.",a:[]},
+  {n:"Fred R. Price Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Sherman Oaks 91423 · (818) 284-2752.",a:[]},
+  {n:"GFTA Gwyn Foxx Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Burbank 91505 · (818) 476-7702.",a:[]},
+  {n:"GVA Talent Agency, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, daytime drama, comedians. Listed at Huntington Beach 92648 · (310) 278-1310.",a:[]},
+  {n:"Genesis Artists Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Glendale 91202 · (323) 423-7502.",a:[]},
+  {n:"Global Artists Agency, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV. Listed at Los Angeles 90028 · (323) 836-0320.",a:[]},
+  {n:"Grant, Savic, Kopaloff and Associates, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90010 · (323) 782-1854.",a:[]},
+  {n:"Gray Talent Group, Inc. (Los Angeles)",sag:1,t:"roster",c:["LA","NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at West Hollywood 90069 · (312) 663-1659.",a:[]},
+  {n:"Griffin Talent",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, TV, children, daytime drama, dancers. Listed at Pasadena 91104 · (310) 614-9741.",a:[]},
+  {n:"Happen Agency LLC, The",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Burbank 91505 · (818) 588-6437.",a:[]},
+  {n:"Hayes Talent Agency (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Los Angeles 90025 · (310) 651-9934.",a:[]},
+  {n:"Henderson Represents, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Calabasas 91302 · (310) 295-0775.",a:[]},
+  {n:"House of Representatives, A Talent Agency Inc., The",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Santa Monica 90403 · (310) 451-2345.",a:[]},
+  {n:"IAG (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV. Listed at Los Angeles 90025 · (310) 888-4200.",a:[]},
+  {n:"Ideal Talent Agency, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Hidden Hills 91302 · (818) 306-9223.",a:[]},
+  {n:"Image Powerhouse Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Los Angeles 90071 · (818) 208-0405.",a:[]},
+  {n:"Imagine Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Chatsworth 91311 · (818) 314-5179.",a:[]},
+  {n:"Impact Talent Group (ITG)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Torrance 90501 · (310) 755-6515.",a:[]},
+  {n:"Imperium 7, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents TV, commercials, voice-over, industrials. Listed at Burbank 91505 · (323) 931-9099.",a:[]},
+  {n:"Infinity Artists, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Burbank 91505 · (619) 590-2231.",a:[]},
+  {n:"Irv Schechter Company, The",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV. Listed at Beverly Hills 90212 · (310) 278-8070.",a:[]},
+  {n:"It Model and Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, commercials, hosting, seniors. Listed at Irvine 92617 · (949) 825-7009.",a:[]},
+  {n:"J.K.A. Talent & Literary Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical. Listed at West Hollywood 90046 · (818) 980-2093.",a:[]},
+  {n:"JBS Agency LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, commercials, children, dancers, comedians. Listed at Hermosa Beach 90254 · (585) 507-0430.",a:[]},
+  {n:"JS Represents",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Los Angeles 90046 · (323) 462-3246.",a:[]},
+  {n:"JVC Talent Agency (SAG Only)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Newhall 91321 · (323) 420-3800.",a:[]},
+  {n:"Jager Campbell Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90013 · (818) 839-1729.",a:[]},
+  {n:"Jana Luker Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV, commercials, daytime drama, industrials. Listed at North Hollywood 91605 · (310) 441-2822.",a:[]},
+  {n:"Janet Tscha Talent",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Sherman Oaks 91401 · (323) 683-9228.",a:[]},
+  {n:"Jarvis Co. Agency LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90068 · (508) 409-9129.",a:[]},
+  {n:"Jeffrey Leavitt Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Los Angeles 90064 · (310) 444-3066.",a:[]},
+  {n:"Jenny Stricklin Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Hollywood 90038 · (323) 652-1048.",a:[]},
+  {n:"Johnson Talent Agency, LLC (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Glendale 91203 · (310) 270-8453.",a:[]},
+  {n:"Joseph Le Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Irvine 92612 · (818) 973-2705.",a:[]},
+  {n:"Kathleen Schultz Associates (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV, commercials, daytime drama, industrials. Listed at Valencia 91355 · (818) 760-3100.",a:[]},
+  {n:"Ken Lindner and Associates, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Century City 90067 · (310) 277-9223.",a:[]},
+  {n:"Kia Todd Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Woodland Hills 91367 · (818) 463-3161.",a:[]},
+  {n:"Kit International Talent LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Long Beach 90802 · (800) 473-8063.",a:[]},
+  {n:"L.A. Talent, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90046 · (323) 436-7777.",a:[]},
+  {n:"Lavonne's The Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Burbank 91505 · (916) 262-5208.",a:[]},
+  {n:"Library Agency LLC, The",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Van Nuys 91405 · (818) 913-1155.",a:[]},
+  {n:"Linda McAlister Talent LLC (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Sherman Oaks 91423 · (646) 529-5739.",a:[]},
+  {n:"Love Talent Corp",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Santa Monica 90401 · (323) 401-8287.",a:[]},
+  {n:"Luciano Reeves Talent, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, commercials, dancers, comedians, hosting. Listed at Woodland Hills 91367 · (818) 531-0060.",a:[]},
+  {n:"MMV, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Porter Ranch 91326 · (323) 206-5050.",a:[]},
+  {n:"MPM Models and Talent",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90014 · (213) 955-7777.",a:[]},
+  {n:"MZA, \"THE MICHAEL ZANUCK AGENCY\"",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Huntington Beach 92649 · (818) 707-9747.",a:[]},
+  {n:"Mademoiselle Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Harbor City 90710 · (310) 469-8792.",a:[]},
+  {n:"Malaky International",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV, commercials, voice-over. Listed at Santa Clarita 91355 · (310) 777-7560.",a:[]},
+  {n:"Malibu Artists Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Malibu 90265 · (310) 985-9342.",a:[]},
+  {n:"Margaux the Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Hollywood 90038 · (818) 935-0129.",a:[]},
+  {n:"Marlene Agency, The",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Playa Del Rey 90293 · (310) 266-4133.",a:[]},
+  {n:"Master Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Sherman Oaks 91403 · (310) 486-0050.",a:[]},
+  {n:"McDonald/Selznick Associates, Inc. (Los Angeles)",sag:1,t:"roster",c:["LA","NY"],v:0,s:"check",note:"Represents theatrical, TV, commercials, children, daytime drama. Listed at Burbank 91505 · (323) 957-6680.",a:[]},
+  {n:"McHugo Artists Agency, LTD.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Calabasas 91372 · (323) 455-4811.",a:[]},
+  {n:"Media Artists Group",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Santa Monica 90401 · (323) 658-5050.",a:[]},
+  {n:"Metropolitan Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, daytime drama. Listed at Los Angeles 90028 · (323) 857-4500.",a:[]},
+  {n:"Michael Greene Artists Agency, llc",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Malibu 90265 · (310) 717-1819.",a:[]},
+  {n:"Minc Talent, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Valley Village 91607 · (323) 320-4116.",a:[]},
+  {n:"Mitchell & Associates Talent (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at North Hollywood 91604 · (818) 856-0355.",a:[]},
+  {n:"Mitchell K. Stubbs & Associates",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV, commercials, daytime drama, industrials. Listed at Culver City 90232 · (310) 838-1200.",a:[]},
+  {n:"Modern Artists",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Los Angeles 90048 · (310) 720-9169.",a:[]},
+  {n:"Momentum Talent & Literary Agency, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Burbank 91505 · (310) 858-6655.",a:[]},
+  {n:"Movement Talent Agency, The",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at North Hollywood 91601 · (323) 462-5300.",a:[]},
+  {n:"Nancy Chaidez Agency & Associates, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at North Hollywood 91606 · (323) 467-8954.",a:[]},
+  {n:"Natalie Lynn Talent (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at North Hollywood 91605 · (818) 903-4324.",a:[]},
+  {n:"Nava Artists, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Encino 91436 · (310) 600-6315.",a:[]},
+  {n:"Now Talent Group, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, commercials, comedians, musical artists. Listed at Burbank 91502 · (818) 469-1876.",a:[]},
+  {n:"O'Neill Talent Group, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Glendale 91208 · (818) 566-7717.",a:[]},
+  {n:"Pakula King & Associates",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, daytime drama. Listed at Los Angeles 90069 · (310) 281-4868.",a:[]},
+  {n:"Paloma Model & Talent, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Manhattan Beach 90266 · (323) 800-7500.",a:[]},
+  {n:"Palomera Group (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Glendale 91203 · (305) 499-4185.",a:[]},
+  {n:"Pantheon Talent Group, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90019 · (310) 461-3644.",a:[]},
+  {n:"Paradigm, A Talent & Literary Agency (LA)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV, commercials, voice-over. Listed at West Hollywood 90069 · (310) 288-8000.",a:[]},
+  {n:"Park Agency, Inc., The",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90068 · (310) 430-4083.",a:[]},
+  {n:"Park Noack Agency LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV, commercials, children, seniors. Listed at Santa Monica 90404 · (310) 228-3180.",a:[]},
+  {n:"Peak Models and Talent",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Westlake Village 91361 · (818) 889-8800.",a:[]},
+  {n:"Peter Kallinteris Talent Agency, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Los Angeles 90020 · (310) 849-2771.",a:[]},
+  {n:"Phillip L Hawkins DBA Pittmobile Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Hollywood 90028 · (888) 525-6774.",a:[]},
+  {n:"Pinstars Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90066 · (786) 543-0377.",a:[]},
+  {n:"Players Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Woodland Hills 91367 · (310) 850-0140.",a:[]},
+  {n:"Polygon Group, Inc., The",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Burbank 91502 · (747) 248-7012.",a:[]},
+  {n:"Progressive Artists Agency Corp.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV. Listed at West Hollywood 90046 · (323) 850-2992.",a:[]},
+  {n:"Prototype Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, children, daytime drama. Listed at Beverly Hills 90211 · (310) 793-2383.",a:[]},
+  {n:"Q Model Management",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, commercials, models. Listed at Los Angeles 90046 · (310) 205-2888.",a:[]},
+  {n:"RPM Talent",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Burbank 91505 · (818) 333-5150.",a:[]},
+  {n:"Rage Models and Talent",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Calabasas 91302 · (818) 225-0526.",a:[]},
+  {n:"Realm Talent, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Los Angeles 90036 · (424) 409-9333.",a:[]},
+  {n:"Rebel Entertainment Partners, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, children, daytime drama. Listed at Malibu 90265 · (323) 935-1700.",a:[]},
+  {n:"Reign Agency, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV, commercials, children, seniors. Listed at Los Angeles 90067 · (310) 396-6462.",a:[]},
+  {n:"Riot Talent Agency (Los Angeles)",sag:1,t:"roster",c:["LA","NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at North Hollywood 91606 · (316) 737-2680.",a:[]},
+  {n:"Rise Agency Group LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Santa Monica 90404 · (916) 730-7867.",a:[]},
+  {n:"Robertson/Taylor Agency LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, TV, commercials, children, daytime drama. Listed at Los Angeles 90064 · (310) 321-8484.",a:[]},
+  {n:"SDB Partners, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV. Listed at Beverly Hills 90212 · (310) 785-0060.",a:[]},
+  {n:"Sabel Group LLC, The",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90010 · (213) 772-2423.",a:[]},
+  {n:"Saint Agency Inc",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, dancers. Listed at West Hollywood 90069 · (424) 251-8409.",a:[]},
+  {n:"Savage Agency, Inc., The",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV, commercials, daytime drama, hosting. Listed at Porter Ranch 91326 · (323) 461-8316.",a:[]},
+  {n:"Scout Talent Agency (Los Angeles)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90048 · (310) 274-2779.",a:[]},
+  {n:"Shirley A. Wilson Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV, commercials, voice-over. Listed at Hollywood 90038 · (323) 857-6977.",a:[]},
+  {n:"Siona Entertainment",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Sherman Oaks 91403 · (310) 634-5050.",a:[]},
+  {n:"Smith & Hervey/Grimes Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV, commercials. Listed at Manhattan Beach 90266 · (310) 475-2010.",a:[]},
+  {n:"So Cal Talent",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Marina Del Rey 90292 · (714) 880-4968.",a:[]},
+  {n:"Special Artists Agency, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, commercials, musical artists, voice-over. Listed at Los Angeles 90069 · (310) 859-9688.",a:[]},
+  {n:"Stander Group, Inc., The",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV, commercials, voice-over. Listed at Sherman Oaks 91403 · (818) 905-7000.",a:[]},
+  {n:"Starburst Talent LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90028 · (408) 429-3082.",a:[]},
+  {n:"Starwil Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Palmdale 93551 · (661) 272-4722.",a:[]},
+  {n:"Stellar Artists Agency, LLC (Los Angeles)",sag:1,t:"roster",c:["LA","NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Manhattan Beach 90266 · 1 (917) 426-7421.",a:[]},
+  {n:"Stone Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Sherman Oaks 91403 · (323) 334-0703.",a:[]},
+  {n:"Suite A Management Talent & Literary Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, TV. Listed at Beverly Hills 90212 · (310) 278-0801.",a:[]},
+  {n:"Sutton, Barth & Vennari",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, TV, commercials, comedians, hosting. Listed at Los Angeles 90036 · (323) 938-6000.",a:[]},
+  {n:"Svea Talent LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90028 · (310) 400-0158.",a:[]},
+  {n:"Sweetheart Elite Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Torrance 90503 · (310) 702-4257.",a:[]},
+  {n:"Synergy Talent Group",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Studio City 91604 · (818) 995-6500.",a:[]},
+  {n:"TGMD Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents commercials, voice-over. Listed at Burbank 91505 · (323) 850-6767.",a:[]},
+  {n:"Tangerine Talent, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at N Hollywood 91601 · (310) 906-0224.",a:[]},
+  {n:"Tanzanite Artists Group LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90017 · (213) 545-4564.",a:[]},
+  {n:"Tiffin Creative Talent",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Trabuco Cyn 92679 · (714) 501-2706.",a:[]},
+  {n:"Tilmar Talent Agency (SAG Only)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Los Angeles 90048 · (310) 623-9231.",a:[]},
+  {n:"Torde Sillas",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Valley Village 91607 · (818) 468-0943.",a:[]},
+  {n:"True Artists Agency, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, commercials, children, comedians, seniors. Listed at North Hollywood 91601 · (818) 646-9644.",a:[]},
+  {n:"Universal Attractions Agency, INC. (Los Angeles)",sag:1,t:"roster",c:["LA","NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Woodland Hills 91367 · (818) 225-0444.",a:[]},
+  {n:"Verve Talent and Literary Agency, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, children, daytime drama. Listed at Los Angeles 90038 · (310) 558-2424.",a:[]},
+  {n:"Vision Los Angeles",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, commercials, children, dancers, comedians. Listed at Culver City 90232 · (310) 733-4420.",a:[]},
+  {n:"Visionary Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at West Hollywood 90046 · (323) 890-6160.",a:[]},
+  {n:"Vox, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, commercials, hosting, voice-over. Listed at Burbank 91505 · (323) 655-8699.",a:[]},
+  {n:"Ward Agency (SAG Only)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Hollywood 90028 · (323) 466-7566.",a:[]},
+  {n:"Wildflowers Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, commercials, children, dancers. Listed at Sunland 91040 · (323) 908-0999.",a:[]},
+  {n:"World Class Sports (SAG Only)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical, commercials. Listed at Marina Del Rey 90292 · (310) 665-9400.",a:[]},
+  {n:"Xpose Entertainment Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Pasadena 91106 · (626) 240-4674.",a:[]},
+  {n:"Youth Talent Connection",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Yorba Linda 92886 · (714) 315-8546.",a:[]},
+  {n:"Adunni Rose Talent Agency, LLC",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at New York 10036 · (212) 748-9394.",a:[]},
+  {n:"Arcieri & Associates, Inc",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, commercials, voice-over, animation. Listed at New York 10036 · (212) 286-1700.",a:[]},
+  {n:"Boals,Winnett and Associates",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, daytime drama, dancers. Listed at New York 10017 · (212) 500-1424.",a:[]},
+  {n:"Bonafide & Emerging Artists, LLC",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at New York 10010 · (646) 992-3585.",a:[]},
+  {n:"Bramante Artists LLC",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at New York 10018 · (646) 389-1603.",a:[]},
+  {n:"Carlton, Goddard and Freer Talent Inc.",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, daytime drama, dancers. Listed at New York 10001 · (212) 379-6822.",a:[]},
+  {n:"Cornerstone Talent Agency",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, TV, seniors. Listed at New York 10011 · (212) 807-8344.",a:[]},
+  {n:"Crystal Ship Artists",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at New York 10019 · (212) 810-7501.",a:[]},
+  {n:"Dottridge Talent Agency",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Kearny 07032 · (973) 755-3020.",a:[]},
+  {n:"Douglas, Gorman, Rothacker & Wilhelm, Inc.",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, dancers, comedians, musical artists, stunt performers. Listed at New York 10036 · (646) 214-2096.",a:[]},
+  {n:"Garber Agency, The",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents theatrical, TV, commercials, industrials. Listed at New York 10175 · (212) 292-4910.",a:[]},
+  {n:"Glitter Talent Agency",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at West New York 07093 · (201) 758-7272.",a:[]},
+  {n:"Gotham Talent Agency LLC",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, TV, daytime drama, seniors. Listed at New York 10018 · (212) 944-8898.",a:[]},
+  {n:"Hybrid Agency LLC, The",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at New York 10036 · (201) 819-7785.",a:[]},
+  {n:"IAG/ Independent Artist Group (New York)",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents theatrical, TV. Listed at New York 10019 · (212) 205-4320.",a:[]},
+  {n:"Ingber & Associates, Inc.",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, commercials, comedians, seniors. Listed at New York 10022 · (212) 889-9450.",a:[]},
+  {n:"JC William Agency, Inc.",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at New York 10023 · (646) 420-0037.",a:[]},
+  {n:"Jordan, Gill and Dornbaum Talent Agency, Inc.",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents theatrical, TV, commercials, voice-over, industrials. Listed at New York 10018 · (212) 463-8455.",a:[]},
+  {n:"LS Talent Agency Inc.",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents theatrical. Listed at Brooklyn 11222 · (347) 378-6644.",a:[]},
+  {n:"Lisa Lax Agency (New York)",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at New York 10065 · (646) 648-0138.",a:[]},
+  {n:"Luedtke Agency, LLC, The",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Long Island City 11101 · (212) 765-9564.",a:[]},
+  {n:"Metropolis Artists Agency, Inc.",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at New York 10016 · (212) 779-0814.",a:[]},
+  {n:"More Meaningful Voices",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at New York 10027 · (212) 655-7628.",a:[]},
+  {n:"Pantera/Murphy, The Agency",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, TV, daytime drama, dancers, comedians. Listed at New York 10018 · (212) 219-9330.",a:[]},
+  {n:"Posche Models & Talent LLC (New York)",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at New York 10016 · (646) 205-3023.",a:[]},
+  {n:"Resolute Artists Agency, LLC (New York)",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at New York 10170 · (212) 739-7856.",a:[]},
+  {n:"Ruth Gravity Artists",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Brooklyn 11205 · (212) 299-9186.",a:[]},
+  {n:"STW Talent Agency, Inc. (New York)",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Brooklyn 11201 · (315) 694-6228.",a:[]},
+  {n:"Stefanie Talent & Entertainment, Inc.",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Clark 07066 · (908) 276-1031.",a:[]},
+  {n:"Talent Mine, Inc., The",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents theatrical. Listed at New York 10017 · (212) 612-3200.",a:[]},
+  {n:"UIA Talent Agency, Inc.",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents theatrical. Listed at New York 10019 · (212) 969-1797.",a:[]},
+  {n:"United Crafted Artists Agency LLC",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at New York 10005 · (914) 222-3503.",a:[]},
+  {n:"Vie Model & Talent Agency",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Mount Laurel 08054 · (609) 902-1360.",a:[]},
+  {n:"William Morris Endeavor Entertainment, LLC (NY)",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at New York 10010 · (212) 586-5100.",a:[]},
+  {n:"YOU Talent Agency, LLC",sag:1,t:"roster",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at New York 10018 · (888) 881-1968.",a:[]}
 ];
 
 // Tips written for beginners submitting to agencies for the first time.
@@ -11710,7 +11964,8 @@ const TAD_TIERNAME={small:"Small",medium:"Mid-size",large:"Major"};
 const TAD_GROUPS=[
   ["small","Small agencies — open to beginners","Your first letters go here."],
   ["medium","Mid-size agencies — some credits expected","Target these once your resume has something on it."],
-  ["large","Major agencies — information only","Do not mail these."]
+  ["large","Major agencies — information only","Do not mail these."],
+  ["roster","Every other SAG-AFTRA franchised agency","Reference list — check each one's own site."]
 ];
 const TAD_PICK_KEY="cs_agency_maillist_v1";
 const TAD_SENT_KEY="cs_agency_sent_v1";
@@ -11742,6 +11997,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
   const [tier,setTier]=useState("all");
   const [city,setCity]=useState("all");
   const [mailOnly,setMailOnly]=useState(false);
+  const [showRoster,setShowRoster]=useState(false);
   const [copied,setCopied]=useState(null);
   const readSet=(k)=>{try{return new Set(JSON.parse(localStorage.getItem(k)||"[]"));}catch(_){return new Set();}};
   const [picked,setPicked]=useState(()=>readSet(TAD_PICK_KEY));
@@ -11749,16 +12005,21 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
 
   const counts=useMemo(()=>({
     all:TALENT_AGENCIES.length,
+    curated:TALENT_AGENCIES.filter(a=>a.t!=="roster").length,
+    roster:TALENT_AGENCIES.filter(a=>a.t==="roster").length,
     small:TALENT_AGENCIES.filter(a=>a.t==="small").length,
     medium:TALENT_AGENCIES.filter(a=>a.t==="medium").length,
     large:TALENT_AGENCIES.filter(a=>a.t==="large").length,
     mail:TALENT_AGENCIES.filter(a=>a.s==="mail").length,
+    addressed:TALENT_AGENCIES.filter(a=>a.v&&a.a.length).length,
     tips:TALENT_AGENCY_TIPS.length
   }),[]);
 
   const shown=useMemo(()=>{
     const needle=q.trim().toLowerCase();
     return TALENT_AGENCIES.filter(a=>{
+      // the full franchised roster is reference material with no addresses — opt-in only
+      if(a.t==="roster"&&!showRoster)return false;
       if(tier!=="all"&&a.t!==tier)return false;
       if(city!=="all"&&!a.c.includes(city))return false;
       if(mailOnly&&a.s!=="mail")return false;
@@ -11768,7 +12029,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
       }
       return true;
     });
-  },[q,tier,city,mailOnly]);
+  },[q,tier,city,mailOnly,showRoster]);
 
   const toggleIn=(setter,key)=>(name)=>setter(prev=>{
     const next=new Set(prev);
@@ -11974,8 +12235,9 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
                 {[["all","Both coasts"],["LA","Los Angeles"],["NY","New York"]].map(([v,label])=>
                   <button key={v} className={"tad-chip"+(city===v?" on":"")} onClick={()=>setCity(v)}>{label}</button>)}
                 <button className={"tad-chip"+(mailOnly?" on":"")} onClick={()=>setMailOnly(m=>!m)}><Ico n="mail" s={13}/>Accepts mail only</button>
+                <button className={"tad-chip"+(showRoster?" on":"")} onClick={()=>setShowRoster(r=>!r)}><Ico n="shield-check" s={13}/>SAG-AFTRA roster <span className="n">{counts.roster}</span></button>
               </div>
-              <div className="tad-res">Showing {isPremium?shown.length:counts.all} of {counts.all} agencies</div>
+              <div className="tad-res">Showing {isPremium?shown.length:counts.curated} of {showRoster?counts.all:counts.curated} agencies{!showRoster&&<span> · {counts.roster} more on the full SAG-AFTRA roster</span>}</div>
 
               {!isPremium?(
                 <div className="tad-lockwrap">
@@ -12007,6 +12269,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
                   if(!list.length)return null;
                   return(<div key={t}>
                     <div className="tad-gh"><h3>{title}</h3><span className="ln"/><span className="ct">{sub}</span></div>
+                    {t==="roster"&&<div className="tad-fn" style={{marginTop:0,marginBottom:11}}><b>Read this before you use the roster.</b> These {counts.roster} agencies are every franchised agency SAG-AFTRA lists for the Los Angeles and New York locals — so they are all real and all licensed. But SAG publishes only the city, ZIP, phone and specialties: <b>no street address, and no word on whether they are taking submissions.</b> That is why none of them show an address and all of them say "check their site first". The {counts.addressed} agencies above are the ones our team has actually verified.</div>}
                     <div className="tad-rows">{list.map(row)}</div>
                     {t==="large"&&<div className="tad-fn"><b>Why ICM isn't on this list.</b> You'll find ICM Partners on most agency lists online — it hasn't existed as a separate company since CAA absorbed it in 2022. If a service is still selling you an ICM address, that list hasn't been checked in years.</div>}
                   </div>);
