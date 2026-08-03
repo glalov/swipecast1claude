@@ -12169,7 +12169,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
       <p className="tad-sub">Agencies in LA &amp; New York open to new talent right now — plus how to actually approach them, from people who have done it for decades.</p>
       <div className="tad-mini">
         <div><b>{counts.all}</b><span>Agencies</span></div>
-        <div><b>{counts.mail}</b><span>Accept mail</span></div>
+        <div><b>{counts.addressed}</b><span>With addresses</span></div>
         <div><b>{counts.tips}</b><span>Insider tips</span></div>
       </div>
       <button className={"tad-cta"+(isPremium?" tad-open":"")} onClick={e=>{e.stopPropagation();setOpen(true);}}>
@@ -12234,7 +12234,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
                   <button key={v} className={"tad-chip"+(tier===v?" on":"")} onClick={()=>setTier(v)}>{label} <span className="n">{n}</span></button>)}
                 {[["all","Both coasts"],["LA","Los Angeles"],["NY","New York"]].map(([v,label])=>
                   <button key={v} className={"tad-chip"+(city===v?" on":"")} onClick={()=>setCity(v)}>{label}</button>)}
-                <button className={"tad-chip"+(mailOnly?" on":"")} onClick={()=>setMailOnly(m=>!m)}><Ico n="mail" s={13}/>Accepts mail only</button>
+                <button className={"tad-chip"+(mailOnly?" on":"")} onClick={()=>setMailOnly(m=>!m)}><Ico n="mail" s={13}/>Known to accept mail <span className="n">{counts.mail}</span></button>
                 <button className={"tad-chip"+(showRoster?" on":"")} onClick={()=>setShowRoster(r=>!r)}><Ico n="shield-check" s={13}/>SAG-AFTRA roster <span className="n">{counts.roster}</span></button>
               </div>
               <div className="tad-res">Showing {isPremium?shown.length:counts.curated} of {showRoster?counts.all:counts.curated} agencies{!showRoster&&<span> · {counts.roster} more on the full SAG-AFTRA roster</span>}</div>
@@ -12249,12 +12249,12 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
                   }))}</div>
                   <div className="tad-lockover">
                     <div className="lk"><Ico n="lock" s={20}/></div>
-                    <h3>{counts.all} agencies. {counts.mail} of them will open an envelope from you.</h3>
-                    <p>Every agency here was checked by our team — the ones that merged, closed or stopped taking talent are already stripped out. Premium members get the names, the mailing addresses, the websites, and the tips that tell you what to actually put in the envelope.</p>
+                    <h3>{counts.all} agencies — and the {counts.curated} we checked by hand come with the address.</h3>
+                    <p>Every franchised talent agency in the Los Angeles and New York locals, plus {counts.curated} our team verified one by one: the street address, the website, and exactly how that agency wants to be approached. The ones that merged, closed or stopped taking talent are already stripped out.</p>
                     <div className="tad-stats">
                       <div><b>{counts.all}</b><span>Agencies</span></div>
-                      <div><b>{counts.mail}</b><span>Accept mail</span></div>
-                      <div><b>{counts.tips}</b><span>Insider tips</span></div>
+                      <div><b>{counts.addressed}</b><span>With addresses</span></div>
+                      <div><b>{counts.small}</b><span>Take beginners</span></div>
                     </div>
                     <button className="btn-p" onClick={()=>{setOpen(false);onNavigate("membership");}}>Unlock with Premium →</button>
                     <div style={{fontSize:11.5,color:"var(--t3)",marginTop:10}}>Cancel anytime · list re-curated every few months</div>
