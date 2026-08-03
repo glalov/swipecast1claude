@@ -29120,7 +29120,7 @@ async function _abcGeneratePrintSheet(cardCanvas){
   return a4;
 }
 
-function ActorCardPreview({displayName,headline,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl,photoZoom,photoPosX,photoPosY,photoRef,onPhotoMouseDown,onPhotoTouchStart,isDragging,watermark}){
+function ActorCardPreview({displayName,headline,directContact,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl,photoZoom,photoPosX,photoPosY,photoRef,onPhotoMouseDown,onPhotoTouchStart,isDragging,watermark}){
   return(
     <div style={{background:'#ffffff',border:'1.5px solid #E0E0E8',borderRadius:10,overflow:'hidden',boxShadow:'0 8px 40px rgba(26,26,46,0.15)',display:'flex',width:'100%',maxWidth:390,aspectRatio:'390 / 246',position:'relative',flexShrink:0}}>
       <div style={{position:'absolute',top:0,left:0,right:0,height:5,background:'#1A1A2E',zIndex:2}}/>
@@ -29173,6 +29173,7 @@ function ActorCardPreview({displayName,headline,showLocation,location,tags,showU
           </div>
         )}
         {showUnion&&unionStatus&&<div style={{fontSize:9.5,fontWeight:700,color:unionStatus.toLowerCase().includes('non')?'#8E8EA0':'#2563EB',marginBottom:5}}>{unionStatus}</div>}
+        {directContact&&<div style={{fontSize:8.5,color:'#6B6B80',marginBottom:5,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}><span style={{fontWeight:700,color:'#1A1A2E'}}>Direct contact: </span>{directContact}</div>}
         <div style={{flex:1}}/>
         <div style={{borderTop:'1px solid #EDEDF0',paddingTop:7,display:'flex',alignItems:'flex-end',justifyContent:'space-between',gap:8}}>
           <div style={{minWidth:0,flex:1}}>
@@ -29216,6 +29217,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   const photoRef=useRef(null);
   const [displayName,setDisplayName]=useState(myProfile?.display_name||'');
   const [headline,setHeadline]=useState('Actor');
+  const [directContact,setDirectContact]=useState('');
   const [showLocation,setShowLocation]=useState(true);
   const [showUnion,setShowUnion]=useState(true);
   const [qrDataUrl,setQrDataUrl]=useState(null);
@@ -29358,7 +29360,21 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
     if(showUnion&&unionStatus){
       ctx.fillStyle=unionStatus.toLowerCase().includes('non')?'#8E8EA0':'#2563EB';
       ctx.font='bold 24px Arial,sans-serif';
-      ctx.fillText(unionStatus,IX,IY);
+      ctx.fillText(unionStatus,IX,IY);IY+=34;
+    }
+
+    // Optional phone number or email entered directly in the card builder
+    if(directContact){
+      ctx.font='bold 22px Arial,sans-serif';ctx.fillStyle='#1A1A2E';
+      const label='Direct contact: ';
+      ctx.fillText(label,IX,IY);
+      const labelWidth=ctx.measureText(label).width;
+      ctx.font='22px Arial,sans-serif';ctx.fillStyle='#6B6B80';
+      let contactText=directContact;
+      const maxContactWidth=CW-IX-labelWidth-24;
+      while(ctx.measureText(contactText).width>maxContactWidth&&contactText.length>3)contactText=contactText.slice(0,-1);
+      if(contactText!==directContact)contactText+='…';
+      ctx.fillText(contactText,IX+labelWidth,IY);
     }
 
     // Bottom
@@ -29386,7 +29402,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
       }catch(e){}
     }
     return canvas;
-  },[selectedPhoto,displayName,headline,showLocation,location,showUnion,unionStatus,cardTags,qrDataUrl,publicSlug,photoZoom,photoPosX,photoPosY]);
+  },[selectedPhoto,displayName,headline,directContact,showLocation,location,showUnion,unionStatus,cardTags,qrDataUrl,publicSlug,photoZoom,photoPosX,photoPosY]);
 
   const handleDownloadPNG=async()=>{
     if(!isPremium){setDownloadErr('Actor Business Card downloads are included with Premium. Upgrade to create and download your actor card.');return;}
@@ -29464,6 +29480,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
               <ActorCardPreview
                 displayName={displayName}
                 headline={headline}
+                directContact={directContact}
                 showLocation={showLocation}
                 location={location}
                 tags={cardTags}
@@ -29533,6 +29550,10 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
                 <div>
                   <label style={{fontSize:12,fontWeight:600,color:'var(--t2)',marginBottom:4,display:'block'}}>Headline</label>
                   <input type="text" value={headline} onChange={e=>setHeadline(e.target.value)} maxLength={30} placeholder="Actor" style={{width:'100%',padding:'9px 12px',borderRadius:8,border:'1px solid var(--bdr)',fontSize:14,background:'var(--bg)',color:'var(--t1)',boxSizing:'border-box',fontFamily:'inherit'}}/>
+                </div>
+                <div>
+                  <label style={{fontSize:12,fontWeight:600,color:'var(--t2)',marginBottom:4,display:'block'}}>Direct contact</label>
+                  <input type="text" value={directContact} onChange={e=>setDirectContact(e.target.value)} maxLength={60} placeholder="Phone number or email" style={{width:'100%',padding:'9px 12px',borderRadius:8,border:'1px solid var(--bdr)',fontSize:14,background:'var(--bg)',color:'var(--t1)',boxSizing:'border-box',fontFamily:'inherit'}}/>
                 </div>
                 {location&&(
                   <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'4px 0'}}>
@@ -29615,6 +29636,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
               <ActorCardPreview
                 displayName={displayName}
                 headline={headline}
+                directContact={directContact}
                 showLocation={showLocation}
                 location={location}
                 tags={cardTags}
