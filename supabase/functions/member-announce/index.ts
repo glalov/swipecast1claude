@@ -17,9 +17,15 @@
 //     premium/free split is always current. A member who upgrades between the
 //     count and the run gets the premium copy, not the upsell.
 //   • Hard bounces + complaints (email_unsubscribes, fed by resend-webhook) are
-//     suppressed, and anyone who turned off marketing email is skipped.
+//     suppressed. So is anyone who globally unsubscribed (email_preferences
+//     .unsubscribed_at) or opted out of announcements (announce_optout) — the
+//     same dedicated-column convention premium-upsell and winback-run use.
+//
 //   • "run" requires confirm:true. Without it the function refuses and returns
 //     the count instead — no accidental blast from a stray request.
+//
+// GET ?action=unsubscribe&uid=<id> → opt out of announcements only (keeps the
+//     casting digest and every other email intact).
 //
 // Auth: service-role key OR the shared admin campaign secret (mirrors send-campaign).
 
@@ -35,6 +41,7 @@ const ADMIN_SECRET         = Deno.env.get("ADMIN_CAMPAIGN_SECRET") ?? "";
 
 // Bump this to send a NEW announcement to everyone again.
 const ANNOUNCE_KEY = "agency_directory_v1";
+const UNSUB_BASE   = `${SUPABASE_URL}/functions/v1/member-announce`;
 
 const cors = {
   "Access-Control-Allow-Origin":"*",
@@ -80,7 +87,7 @@ function noteCard(): string {
 
 const GATE = `<p style="margin:0 0 22px;font-size:15px;line-height:1.75;color:#5A5A72">Here is the part nobody tells you at the start: the Marvel films, the DC films, the hundred-million-dollar features &mdash; <strong style="color:#1A1A2E">those roles are never posted publicly, anywhere.</strong> They are submitted by agents and managers only. Which makes the people on this list the gatekeepers.</p>`;
 
-interface ShellArgs { tag:string; heading:string; greeting:string; body:string; mid:string; cta:string; href:string; foot:string; }
+interface ShellArgs { tag:string; heading:string; greeting:string; body:string; mid:string; cta:string; href:string; foot:string; unsub?:string; }
 function shell(a: ShellArgs): string {
   const pill = `<span style="display:inline-block;background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.34);color:#FBF8F1;font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;padding:5px 12px;border-radius:999px">${a.tag}</span>`;
   const cta  = `<table cellpadding="0" cellspacing="0"><tr><td style="background:${T.solid};border-radius:10px"><a href="${APP_URL}${a.href}" style="display:inline-block;padding:15px 36px;font-size:14px;font-weight:800;letter-spacing:.2px;color:#FBF8F1;text-decoration:none">${a.cta} &rarr;</a></td></tr></table>`;
@@ -103,7 +110,7 @@ function shell(a: ShellArgs): string {
         ${cta}
       </td></tr>
       <tr><td style="padding:24px 36px 30px;border-top:1px solid #EFE7D6">
-        <p style="margin:0;font-size:11.5px;color:#9a9382;line-height:1.7">${a.foot}<br/>Manage notifications in <a href="${APP_URL}/account-settings" style="color:${T.solid};text-decoration:none">Account Settings &rarr; Notifications</a>.</p>
+        <p style="margin:0;font-size:11.5px;color:#9a9382;line-height:1.7">${a.foot}<br/>Manage notifications in <a href="${APP_URL}/account-settings" style="color:${T.solid};text-decoration:none">Account Settings &rarr; Notifications</a>${a.unsub ? ` &middot; <a href="${a.unsub}" style="color:#9a9382;text-decoration:underline">Unsubscribe from announcements</a>` : ""}.</p>
       </td></tr>
     </table>
   </td></tr></table>
@@ -112,8 +119,9 @@ function shell(a: ShellArgs): string {
 
 const STATS: [string,string][] = [["312","Agencies"],["39","With addresses"],["35","Open to submissions"],["7","Insider tips"]];
 
-function premiumHtml(first: string): string {
+function premiumHtml(first: string, unsub?: string): string {
   return shell({
+    unsub,
     tag:"New in Premium",
     heading:"312 agencies &mdash; and the letter that actually gets opened.",
     greeting:`Hi ${esc(first)},`,
@@ -129,8 +137,9 @@ function premiumHtml(first: string): string {
   });
 }
 
-function freeHtml(first: string): string {
+function freeHtml(first: string, unsub?: string): string {
   return shell({
+    unsub,
     tag:"New on CastSlate",
     heading:"The roles you cannot find online are behind these doors.",
     greeting:`Hi ${esc(first)},`,
@@ -171,6 +180,21 @@ async function sendBatch(items: Outbox[]): Promise<{ ok:boolean; ids:(string|nul
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
 
+  // ── GET unsubscribe: public, no auth (the link lives in the email footer) ──
+  const url = new URL(req.url);
+  if (req.method === "GET" && url.searchParams.get("action") === "unsubscribe") {
+    const uid = (url.searchParams.get("uid") ?? "").trim();
+    const page = (msg: string) =>
+      new Response(`<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>CastSlate</title></head><body style="margin:0;background:#EFE9DD;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"><table width="100%" style="padding:60px 22px"><tr><td align="center"><table width="460" style="max-width:460px;background:#FBF8F1;border-radius:16px"><tr><td style="padding:34px 32px"><h1 style="margin:0 0 12px;font-family:Georgia,serif;font-size:24px;color:#1A1A2E">${msg}</h1><p style="margin:0;font-size:14px;line-height:1.7;color:#5A5A72">You will still receive your casting digest and account emails. Change anything in <a href="${APP_URL}/account-settings" style="color:#B4711A">Account Settings</a>.</p></td></tr></table></td></tr></table></body></html>`,
+        { status:200, headers:{ ...cors, "Content-Type":"text/html; charset=utf-8" } });
+    if (!uid) return page("That link was incomplete.");
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    await admin.from("email_preferences").upsert(
+      { user_id:uid, announce_optout:true, updated_at:new Date().toISOString() },
+      { onConflict:"user_id" });
+    return page("You're unsubscribed from announcements.");
+  }
+
   // ── auth ──
   const auth = req.headers.get("authorization") ?? "";
   const token = auth.replace(/^Bearer\s+/i, "").trim();
@@ -197,7 +221,8 @@ serve(async (req) => {
     if (!to) return res({ error:"to_email required" }, 400);
     const variant = body.variant === "free" ? "free" : "premium";
     const first = String(body.first_name ?? "there").trim() || "there";
-    const html = variant === "premium" ? premiumHtml(first) : freeHtml(first);
+    const previewUnsub = `${UNSUB_BASE}?action=unsubscribe&uid=preview`;
+    const html = variant === "premium" ? premiumHtml(first, previewUnsub) : freeHtml(first, previewUnsub);
     const r = await sendBatch([{ userId:"test", email:to, variant, subject:`[TEST] ${SUBJECT[variant]}`, html }]);
     return res({ ok:r.ok, error:r.err, variant, to });
   }
@@ -235,11 +260,13 @@ serve(async (req) => {
     (data ?? []).forEach((r:{id?:string; email?:string}) => { if (r?.id && r?.email) emailMap[r.id] = r.email; });
   }
 
-  // marketing opt-outs
+  // opt-outs: announcement-specific, plus anyone globally unsubscribed
   const optedOut = new Set<string>();
   for (let i = 0; i < uids.length; i += 300) {
-    const { data } = await sb.from("email_preferences").select("user_id,marketing_emails").in("user_id", uids.slice(i, i + 300));
-    (data ?? []).forEach((p:{user_id:string; marketing_emails?:boolean}) => { if (p.marketing_emails === false) optedOut.add(p.user_id); });
+    const { data } = await sb.from("email_preferences").select("user_id,announce_optout,unsubscribed_at").in("user_id", uids.slice(i, i + 300));
+    (data ?? []).forEach((p:{user_id:string; announce_optout?:boolean; unsubscribed_at?:string|null}) => {
+      if (p.announce_optout === true || p.unsubscribed_at) optedOut.add(p.user_id);
+    });
   }
 
   // hard bounces + complaints
@@ -274,7 +301,8 @@ serve(async (req) => {
     if (optedOut.has(p.id)) { skip.opted_out++; continue; }
     const variant:"premium"|"free" = p.membership_status === "active" ? "premium" : "free";
     const first = (p.display_name ?? "").split(" ")[0].trim() || "there";
-    outbox.push({ userId:p.id, email, variant, subject:SUBJECT[variant], html: variant === "premium" ? premiumHtml(first) : freeHtml(first) });
+    const unsub = `${UNSUB_BASE}?action=unsubscribe&uid=${p.id}`;
+    outbox.push({ userId:p.id, email, variant, subject:SUBJECT[variant], html: variant === "premium" ? premiumHtml(first, unsub) : freeHtml(first, unsub) });
   }
 
   const counts = {
