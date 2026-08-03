@@ -24052,6 +24052,109 @@ function AdminNavLink({current,target,label,onClick,badge}){
   </button>);
 }
 
+// ─── Member announcement: one-off product email to REGISTERED members ───────
+//     Separate from the CSV promo campaigns below — recipients resolve live from
+//     profiles.membership_status, each member gets the premium or free copy
+//     automatically, and the edge function refuses to send without confirm:true.
+function AdminMemberAnnounce({session,SUPA}){
+  const [audience,setAudience]=useState("both");
+  const [preview,setPreview]=useState(null);
+  const [result,setResult]=useState(null);
+  const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState("");
+  const [testTo,setTestTo]=useState(session?.user?.email||"");
+  const [testVariant,setTestVariant]=useState("premium");
+  const [testMsg,setTestMsg]=useState("");
+
+  const call=async(payload)=>{
+    const {data:{session:s}}=await window.sb.auth.getSession();
+    const r=await fetch(SUPA+"/functions/v1/member-announce",{method:"POST",
+      headers:{"Content-Type":"application/json",Authorization:"Bearer "+(s?.access_token||"")},
+      body:JSON.stringify(payload)});
+    const d=await r.json().catch(()=>({error:"bad response"}));
+    if(!r.ok) throw new Error(d.error||("HTTP "+r.status));
+    return d;
+  };
+
+  const doCount=async()=>{
+    setErr("");setResult(null);setBusy(true);
+    try{ setPreview(await call({action:"count",audience})); }
+    catch(e){ setErr(e.message==="Failed to fetch"?"Could not reach member-announce — has the function been deployed?":e.message); }
+    finally{ setBusy(false); }
+  };
+
+  const doTest=async()=>{
+    setErr("");setTestMsg("");setBusy(true);
+    try{
+      const d=await call({action:"test",to_email:testTo.trim(),variant:testVariant,first_name:(session?.user?.user_metadata?.display_name||"there").split(" ")[0]});
+      setTestMsg(d.ok?("Test sent to "+testTo):("Failed: "+(d.error||"unknown")));
+    }catch(e){ setErr(e.message); }
+    finally{ setBusy(false); }
+  };
+
+  const doSend=async()=>{
+    if(!preview) return;
+    const n=preview.to_send||0;
+    if(!n) return;
+    const label=audience==="both"?"premium AND free members":audience+" members";
+    if(!window.confirm("Send the Talent Agency Directory announcement to "+n+" "+label+"?\n\n"
+      +preview.premium+" will get the Premium version\n"+preview.free+" will get the Free version\n\n"
+      +"This sends real email and cannot be undone.")) return;
+    setErr("");setBusy(true);
+    try{ setResult(await call({action:"run",audience,confirm:true})); await doCount(); }
+    catch(e){ setErr(e.message); }
+    finally{ setBusy(false); }
+  };
+
+  const AUD=[["both","Premium + Free"],["premium","Premium only"],["free","Free only"]];
+  return(<div className="card" style={{padding:18,marginBottom:22,borderLeft:"3px solid var(--acc)"}}>
+    <h3 style={{fontSize:15,fontWeight:800,margin:"0 0 4px"}}>Announce to members</h3>
+    <p style={{fontSize:12.5,color:"var(--t2)",margin:"0 0 14px",lineHeight:1.6}}>
+      Sends the <strong>Talent Agency Directory + Tips &amp; Tricks</strong> announcement to registered members.
+      Each person is greeted by their own first name, and gets the Premium or Free version based on their membership at send time.
+      Bounced/complained addresses and marketing opt-outs are excluded, and anyone already sent this announcement is skipped automatically.
+    </p>
+
+    <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",marginBottom:12}}>
+      {AUD.map(([v,label])=>(
+        <button key={v} className="btn-s btn-sm" onClick={()=>{setAudience(v);setPreview(null);setResult(null);}}
+          style={audience===v?{borderColor:"var(--acc)",color:"var(--acc)",fontWeight:800}:undefined}>{label}</button>
+      ))}
+      <button className="btn-s btn-sm" disabled={busy} onClick={doCount}>{busy?"Working…":"Check recipients"}</button>
+    </div>
+
+    {err&&<div style={{color:"#c0392b",fontSize:13,marginBottom:10}}>{err}</div>}
+
+    {preview&&<div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 14px",marginBottom:12,fontSize:13,lineHeight:1.75}}>
+      <div><strong>{preview.to_send}</strong> will be emailed — {preview.premium} Premium · {preview.free} Free</div>
+      <div style={{color:"var(--t3)",fontSize:12}}>
+        {preview.eligible} eligible · skipped: {preview.skipped?.already_sent||0} already sent, {preview.skipped?.suppressed||0} suppressed, {preview.skipped?.opted_out||0} opted out, {preview.skipped?.no_email||0} no email
+      </div>
+      {preview.to_send>0&&<button className="btn-p btn-sm" style={{marginTop:10}} disabled={busy} onClick={doSend}>
+        Send to {preview.to_send} member{preview.to_send===1?"":"s"} →
+      </button>}
+      {preview.to_send===0&&<div style={{marginTop:8,color:"var(--t3)",fontSize:12}}>Nothing to send — everyone eligible has already received this announcement.</div>}
+    </div>}
+
+    {result&&<div style={{background:"rgba(27,135,62,.08)",border:"1px solid rgba(27,135,62,.3)",borderRadius:10,padding:"12px 14px",marginBottom:12,fontSize:13,color:"#146B31",fontWeight:600}}>
+      Sent {result.sent} email{result.sent===1?"":"s"}.{result.errors?.length?" Errors: "+result.errors.join("; "):""}
+    </div>}
+
+    <div style={{borderTop:"1px solid var(--bdr)",paddingTop:12,display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+      <span style={{fontSize:12,color:"var(--t3)",fontWeight:700}}>Send yourself a test:</span>
+      <input value={testTo} onChange={e=>setTestTo(e.target.value)} placeholder="you@example.com"
+        style={{padding:"7px 10px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:13,minWidth:200}}/>
+      <select value={testVariant} onChange={e=>setTestVariant(e.target.value)}
+        style={{padding:"7px 10px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:13}}>
+        <option value="premium">Premium version</option>
+        <option value="free">Free version</option>
+      </select>
+      <button className="btn-s btn-sm" disabled={busy||!testTo.trim()} onClick={doTest}>Send test</button>
+      {testMsg&&<span style={{fontSize:12,color:"var(--t2)"}}>{testMsg}</span>}
+    </div>
+  </div>);
+}
+
 // ─── Email Campaigns: bulk promo emailer (admin-only) ───────────────────────
 function AdminEmailCampaigns({session}){
   const SUPA=(window.SC_CONFIG?.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co");
@@ -24190,6 +24293,8 @@ function AdminEmailCampaigns({session}){
       <button className="btn-s btn-sm" onClick={loadCampaigns}>↻ Refresh</button>
       <button className="btn-p btn-sm" onClick={()=>{setShowNew(s=>!s);if(!nHtml)loadTemplate();}}>{showNew?"Close new campaign":"+ New campaign"}</button>
     </div>
+
+    <AdminMemberAnnounce session={session} SUPA={SUPA}/>
 
     {showNew&&<div className="card" style={{padding:18,marginBottom:20}}>
       <h3 style={{fontSize:15,fontWeight:800,margin:"0 0 12px"}}>New campaign</h3>
