@@ -261,10 +261,13 @@ serve(async (req) => {
   const uids = profiles.map((p) => p.id);
 
   // emails (authoritative, from auth.users)
+  // NOTE: get_member_emails, NOT get_digest_emails. The digest RPC deliberately
+  // excludes membership_status='active' because Premium do not get the casting
+  // digest — reusing it here silently dropped every Premium member.
   const emailMap:Record<string,string> = {};
   for (let i = 0; i < uids.length; i += 1000) {
-    const { data, error } = await sb.rpc("get_digest_emails", { uids: uids.slice(i, i + 1000) });
-    if (error) { console.error("[member-announce] get_digest_emails", error); continue; }
+    const { data, error } = await sb.rpc("get_member_emails", { uids: uids.slice(i, i + 1000) });
+    if (error) { console.error("[member-announce] get_member_emails", error); continue; }
     (data ?? []).forEach((r:{id?:string; email?:string}) => { if (r?.id && r?.email) emailMap[r.id] = r.email; });
   }
 
