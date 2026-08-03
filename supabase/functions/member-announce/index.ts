@@ -79,13 +79,13 @@ function block(kicker: string, title: string, sub: string, stats?: [string,strin
 function noteCard(): string {
   return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px"><tr>
     <td style="background:#1A1A2E;border-radius:12px;padding:18px 20px">
-      <div style="font-size:10px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:#F0B860;margin:0 0 8px">Write this on the back &mdash; by hand</div>
+      <div style="font-size:10px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:#F0B860;margin:0 0 8px">One of the seven tips: the handwritten note</div>
       <div style="font-family:Georgia,serif;font-style:italic;font-size:15px;line-height:1.65;color:#FBF8F1">&ldquo;Hi, my name is {{NAME}} and I&rsquo;m seeking representation in the TV and film industry. May I request an audition so you can see my abilities?&rdquo;</div>
-      <div style="font-size:12px;color:rgba(251,248,241,.6);margin-top:10px;line-height:1.6">One or two sentences. No biography, no how-you-found-them. Short reads as confident.</div>
+      <div style="font-size:12px;color:rgba(251,248,241,.6);margin-top:10px;line-height:1.6">If you are approaching a new agency, write it by hand on the back of your card. One or two sentences. No biography, no how-you-found-them. Short reads as confident.</div>
     </td></tr></table>`;
 }
 
-const GATE = `<p style="margin:0 0 22px;font-size:15px;line-height:1.75;color:#5A5A72">Here is the part nobody tells you at the start: the Marvel films, the DC films, the hundred-million-dollar features &mdash; <strong style="color:#1A1A2E">those roles are never posted publicly, anywhere.</strong> They are submitted by agents and managers only. Which makes the people on this list the gatekeepers.</p>`;
+const GATE = `<p style="margin:0 0 22px;font-size:15px;line-height:1.75;color:#5A5A72">Worth saying plainly: the Marvel films, the DC films, the hundred-million-dollar features &mdash; <strong style="color:#1A1A2E">those roles are never posted publicly, anywhere.</strong> They are submitted by agents and managers only. Whatever stage you are at, that is the door this list is about.</p>`;
 
 interface ShellArgs { tag:string; kicker:string; heading:string; greeting:string; body:string; mid:string; cta:string; href:string; foot:string; unsub?:string; }
 function shell(a: ShellArgs): string {
@@ -135,7 +135,7 @@ function premiumHtml(first: string, unsub?: string): string {
     body:"We have just added the <strong>Talent Agency Directory + Tips &amp; Tricks</strong> to your dashboard. It sits right under your Actor Business Card, and the two are built to work together: the card is what you send, the directory is where you send it.",
     mid: GATE
       + block("Now in your dashboard","Talent Agency Directory + Tips &amp; Tricks",
-          "Every SAG-AFTRA franchised agency across Los Angeles and New York, sorted by size so you know where a beginner actually stands a chance &mdash; with the mailing address, the website and exactly how each one wants to be approached.", STATS)
+          "Every SAG-AFTRA franchised agency across Los Angeles and New York, sorted by size so you can see at a glance which are open to new clients, which expect credits behind you, and which sign only through referral &mdash; with the mailing address, the website and exactly how each one wants to be approached.", STATS)
       + block("Pair it with your card","Your Actor Business Card",
           "A mailed envelope takes four actions before anyone sees your face. Your card takes none &mdash; your headshot <em>is</em> the card, and the QR code opens your reels, photos, r&eacute;sum&eacute; and links in seconds on the agent&rsquo;s phone.")
       + noteCard().replace("{{NAME}}", esc(first)),
@@ -154,7 +154,7 @@ function freeHtml(first: string, unsub?: string): string {
     body:"We have just launched the <strong>Talent Agency Directory + Tips &amp; Tricks</strong> &mdash; every SAG-AFTRA franchised talent agency across Los Angeles and New York, in one place, with the 62 our team verified one by one.",
     mid: GATE
       + block("New &mdash; Premium feature","Talent Agency Directory + Tips &amp; Tricks",
-          "Sorted small, mid-size and major, so you know which ones take beginners and which will send your envelope straight back. Members see the mailing address, the website and how each agency wants to be approached.", STATS)
+          "Sorted small, mid-size and major, so you can tell which are open to new clients, which expect credits, and which will send an unsolicited envelope straight back. Members see the mailing address, the website and how each agency wants to be approached.", STATS)
       + block("Included with Premium","Your Actor Business Card",
           "A card carrying your headshot and a QR code that opens your reels, photos and r&eacute;sum&eacute; on an agent&rsquo;s phone in seconds &mdash; no envelope to open, nothing to unfold.")
       + noteCard().replace("{{NAME}}", esc(first)),
