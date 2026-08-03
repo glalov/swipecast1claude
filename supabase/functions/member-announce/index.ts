@@ -123,7 +123,7 @@ function shell(a: ShellArgs): string {
 </body></html>`;
 }
 
-const STATS: [string,string][] = [["312","Agencies"],["39","With addresses"],["35","Open to submissions"],["7","Insider tips"]];
+const STATS: [string,string][] = [["312","Agencies"],["35","Open to submissions"],["7","Insider tips"]];
 
 function premiumHtml(first: string, unsub?: string): string {
   return shell({
