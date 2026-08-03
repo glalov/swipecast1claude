@@ -24076,9 +24076,10 @@ function AdminMemberAnnounce({session,SUPA}){
     return d;
   };
 
-  const doCount=async()=>{
+  const doCount=async(aud)=>{
+    const a=aud||audience;
     setErr("");setResult(null);setBusy(true);
-    try{ setPreview(await call({action:"count",audience})); }
+    try{ setPreview(await call({action:"count",audience:a})); }
     catch(e){ setErr(e.message==="Failed to fetch"?"Could not reach member-announce — has the function been deployed?":e.message); }
     finally{ setBusy(false); }
   };
@@ -24112,15 +24113,18 @@ function AdminMemberAnnounce({session,SUPA}){
     <p style={{fontSize:12.5,color:"var(--t2)",margin:"0 0 14px",lineHeight:1.6}}>
       Sends the <strong>Talent Agency Directory + Tips &amp; Tricks</strong> announcement to registered members.
       Each person is greeted by their own first name, and gets the Premium or Free version based on their membership at send time.
-      Bounced/complained addresses and marketing opt-outs are excluded, and anyone already sent this announcement is skipped automatically.
+      Bounced/complained addresses and opt-outs are excluded, and anyone already sent this announcement is skipped automatically.{" "}
+      <strong>Pick an audience below to load the numbers — the send button appears once they load.</strong>
     </p>
 
     <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",marginBottom:12}}>
+      <span style={{fontSize:12,color:"var(--t3)",fontWeight:700,marginRight:2}}>Who gets it:</span>
       {AUD.map(([v,label])=>(
-        <button key={v} className="btn-s btn-sm" onClick={()=>{setAudience(v);setPreview(null);setResult(null);}}
-          style={audience===v?{borderColor:"var(--acc)",color:"var(--acc)",fontWeight:800}:undefined}>{label}</button>
+        <button key={v} className="btn-s btn-sm" disabled={busy}
+          onClick={()=>{setAudience(v);setPreview(null);setResult(null);doCount(v);}}
+          style={audience===v?{borderColor:"var(--acc)",background:"var(--acc)",color:"#fff",fontWeight:800}:undefined}>{label}</button>
       ))}
-      <button className="btn-s btn-sm" disabled={busy} onClick={doCount}>{busy?"Working…":"Check recipients"}</button>
+      {busy&&<span style={{fontSize:12,color:"var(--t3)"}}>Checking…</span>}
     </div>
 
     {err&&<div style={{color:"#c0392b",fontSize:13,marginBottom:10}}>{err}</div>}
@@ -24130,8 +24134,8 @@ function AdminMemberAnnounce({session,SUPA}){
       <div style={{color:"var(--t3)",fontSize:12}}>
         {preview.eligible} eligible · skipped: {preview.skipped?.already_sent||0} already sent, {preview.skipped?.suppressed||0} suppressed, {preview.skipped?.opted_out||0} opted out, {preview.skipped?.no_email||0} no email
       </div>
-      {preview.to_send>0&&<button className="btn-p btn-sm" style={{marginTop:10}} disabled={busy} onClick={doSend}>
-        Send to {preview.to_send} member{preview.to_send===1?"":"s"} →
+      {preview.to_send>0&&<button className="btn-p" style={{marginTop:12,fontSize:14,padding:"12px 22px"}} disabled={busy} onClick={doSend}>
+        {busy?"Sending…":`Send now to ${preview.to_send} member${preview.to_send===1?"":"s"} →`}
       </button>}
       {preview.to_send===0&&<div style={{marginTop:8,color:"var(--t3)",fontSize:12}}>Nothing to send — everyone eligible has already received this announcement.</div>}
     </div>}
