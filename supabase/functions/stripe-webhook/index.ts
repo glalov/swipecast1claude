@@ -360,7 +360,10 @@ Deno.serve(async (req: Request) => {
         });
         if (!userId) break;
         const periodEnd = resolvePeriodEnd(sub);
-        const planKey = sub.metadata?.plan_key || "monthly";
+        // Same rule as the subscription handler: no "monthly" fallback. This is
+        // the renewal path, so a default here would flip a yearly member to
+        // monthly on the very invoice that proves they paid for a year.
+        const planKey = sub.metadata?.plan_key || null;
         await supabase
           .from("profiles")
           .update({
@@ -368,7 +371,7 @@ Deno.serve(async (req: Request) => {
             subscription_status: "active",
             stripe_customer_id: sub.customer as string,
             stripe_subscription_id: sub.id,
-            plan_type: planKey,
+            ...(planKey ? { plan_type: planKey } : {}),
             current_period_end: periodEnd,
             cancel_at_period_end: !!sub.cancel_at_period_end,
             ...(resolvePlanPrice(sub) !== null ? { plan_price: resolvePlanPrice(sub) } : {}),
