@@ -92,9 +92,9 @@ function shell(a: ShellArgs): string {
 
   const cta  = `<table cellpadding="0" cellspacing="0"><tr><td style="background:${T.solid};border-radius:10px"><a href="${APP_URL}${a.href}" style="display:inline-block;padding:15px 36px;font-size:14px;font-weight:800;letter-spacing:.2px;color:#FBF8F1;text-decoration:none">${a.cta} &rarr;</a></td></tr></table>`;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head>
-<body style="margin:0;padding:0;background:#EFE9DD;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#EFE9DD;padding:36px 22px"><tr><td align="center">
-    <table width="560" cellpadding="0" cellspacing="0" style="width:100%;max-width:560px;background:#FBF8F1;border-radius:16px;overflow:hidden;box-shadow:0 1px 0 #EAE2D1">
+<body style="margin:0;padding:0;background:#f0f4f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f4;padding:36px 22px"><tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="width:100%;max-width:560px;background:#FBF8F1;border-radius:16px;overflow:hidden;border:1px solid #E1E8E8;box-shadow:0 4px 30px rgba(47,95,96,0.13)">
       <tr><td style="background:#000000;padding:16px 30px 14px">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
           <td style="vertical-align:middle">${csLogo()}<span style="display:inline-block;vertical-align:middle;margin-left:10px;font-size:17px;font-weight:800;letter-spacing:2px;color:#FBF8F1;text-transform:uppercase">CastSlate</span></td>
@@ -193,7 +193,7 @@ serve(async (req) => {
   if (req.method === "GET" && url.searchParams.get("action") === "unsubscribe") {
     const uid = (url.searchParams.get("uid") ?? "").trim();
     const page = (msg: string) =>
-      new Response(`<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>CastSlate</title></head><body style="margin:0;background:#EFE9DD;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"><table width="100%" style="padding:60px 22px"><tr><td align="center"><table width="460" style="max-width:460px;background:#FBF8F1;border-radius:16px"><tr><td style="padding:34px 32px"><h1 style="margin:0 0 12px;font-family:Georgia,serif;font-size:24px;color:#1A1A2E">${msg}</h1><p style="margin:0;font-size:14px;line-height:1.7;color:#5A5A72">You will still receive your casting digest and account emails. Change anything in <a href="${APP_URL}/account-settings" style="color:#B4711A">Account Settings</a>.</p></td></tr></table></td></tr></table></body></html>`,
+      new Response(`<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>CastSlate</title></head><body style="margin:0;background:#f0f4f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"><table width="100%" style="padding:60px 22px"><tr><td align="center"><table width="460" style="max-width:460px;background:#FBF8F1;border-radius:16px;border:1px solid #E1E8E8"><tr><td style="padding:34px 32px"><h1 style="margin:0 0 12px;font-family:Georgia,serif;font-size:24px;color:#1A1A2E">${msg}</h1><p style="margin:0;font-size:14px;line-height:1.7;color:#5A5A72">You will still receive your casting digest and account emails. Change anything in <a href="${APP_URL}/account-settings" style="color:#B4711A">Account Settings</a>.</p></td></tr></table></td></tr></table></body></html>`,
         { status:200, headers:{ ...cors, "Content-Type":"text/html; charset=utf-8" } });
     if (!uid) return page("That link was incomplete.");
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
