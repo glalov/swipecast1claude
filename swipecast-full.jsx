@@ -1274,6 +1274,18 @@ const HEIGHTS = ["4'10\"","4'11\"","5'0\"","5'1\"","5'2\"","5'3\"","5'4\"","5'5\
 const WEIGHTS = ["Under 100 lbs","100-110 lbs","111-120 lbs","121-130 lbs","131-140 lbs","141-150 lbs","151-160 lbs","161-170 lbs","171-180 lbs","181-190 lbs","191-200 lbs","201-215 lbs","216-230 lbs","231-250 lbs","251+ lbs","Prefer not to say"];
 const HAIR_COLORS = ["Black","Dark Brown","Brown","Light Brown","Auburn","Red","Strawberry Blonde","Dirty Blonde","Blonde","Platinum","Grey","Salt & Pepper","White","Bald","Dyed / Colored"];
 const EYE_COLORS = ["Brown","Dark Brown","Hazel","Green","Blue","Grey","Amber","Heterochromia"];
+// Self-tape gear tiers, ordered basic → advanced so an actor can scan down and stop at
+// the first line that overshoots them. "Other" stays last and opens a free-text box
+// (stored separately in profiles.self_recording_other) for anything off-list.
+const SELF_RECORDING_SETUPS = [
+  "Phone camera only — handheld, natural light",
+  "Phone + tripod — natural light, quiet room",
+  "Phone + tripod + ring light — plain wall or backdrop",
+  "Phone + tripod + LED / softbox lighting + neutral backdrop",
+  "Phone or camera + lighting + external mic (lav or shotgun)",
+  "DSLR / mirrorless + lighting kit + external mic + backdrop",
+  "Full home studio — pro camera, full lighting, treated audio, reader available",
+];
 // Strictly A–Z so the order reads as a mechanical rule rather than a ranking —
 // the only exception is the self-describe option, which stays last because it is
 // the fallback, not a category. Values are unchanged: this is display order only.
@@ -10528,6 +10540,13 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const bioText=freshProfile?.bio||talent.bio;
   const locationText=freshProfile?.location||talent.location;
   const unionText=freshProfile?.union_status||talent.union||talent.union_status;
+  const licenseText=freshProfile?.drivers_license||talent.drivers_license;
+  const passportText=freshProfile?.passport||talent.passport;
+  const selfRecSetup=freshProfile?.self_recording_setup||talent.self_recording_setup;
+  const selfRecOther=freshProfile?.self_recording_other||talent.self_recording_other;
+  // "Other" is only meaningful with its free text — an empty one reads as unanswered.
+  const selfRecText=selfRecSetup==="Other"?(selfRecOther||"").trim():(selfRecSetup||"");
+  const showLogistics=!!(licenseText||passportText||selfRecText);
 
   const statsData=[
     ["Height",freshProfile?.height||talent.height],
@@ -10778,6 +10797,27 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
       <p style={{fontSize:14,color:"var(--t1)",lineHeight:1.6}}>{trainingText}</p>
     </div>}
 
+    {/* ── SELF-TAPE & LOGISTICS ── */}
+    {showLogistics&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
+      {sectionHead("Self-Tape & Logistics")}
+      {(licenseText||passportText)&&(
+        <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:selfRecText?14:0}}>
+          {[["Driver's License",licenseText],["Passport",passportText]].filter(([,v])=>v).map(([l,v])=>{
+            const yes=v==="Yes";
+            return(<span key={l} className="badge" style={{gap:6,background:yes?"rgba(79,138,139,.10)":"var(--s2)",color:yes?"var(--teal-dk)":"var(--t3)",fontWeight:600}}>
+              <Ico n={yes?"check":"x"} s={13}/> {l}
+            </span>);
+          })}
+        </div>
+      )}
+      {selfRecText&&(
+        <div>
+          <div style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:3}}>Self-recording setup</div>
+          <p style={{fontSize:14,color:"var(--t1)",lineHeight:1.6}}>{selfRecText}</p>
+        </div>
+      )}
+    </div>}
+
     {/* ── CAST ME AS ── */}
     {talentDbId&&<CastMeAsSection talentId={talentDbId}/>}
 
@@ -10816,6 +10856,8 @@ function PublicTalentProfilePage({slug,onNavigate,session,myProfile}){
             height:data.height,weight:data.weight,hair:data.hair,eyes:data.eyes,
             age:data.age,gender:data.gender,ethnicity:data.ethnicity,
             training:data.training,resume_url:data.resume_url,
+            drivers_license:data.drivers_license,passport:data.passport,
+            self_recording_setup:data.self_recording_setup,self_recording_other:data.self_recording_other,
             agent:data.agent||data.representation,reel_url:data.reel_url,
           });
         }else{setNotFound(true);}
@@ -19176,6 +19218,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     company_name:profile?.company_name||"",company_role:profile?.company_role||"",website:profile?.website||"",
     credits:profile?.credits||"",
     body_type:profile?.body_type||"",age_range:profile?.age_range||"",
+    drivers_license:profile?.drivers_license||"",passport:profile?.passport||"",
+    self_recording_setup:profile?.self_recording_setup||"",self_recording_other:profile?.self_recording_other||"",
     talent_types:Array.isArray(profile?.talent_types)?profile.talent_types:[]
   }));
   // A stored gender outside the preset list (legacy "Other", or a self-described one)
@@ -19196,6 +19240,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         company_name:profile.company_name||"",company_role:profile.company_role||"",website:profile.website||"",
         credits:profile.credits||"",
         body_type:profile.body_type||"",age_range:profile.age_range||"",
+        drivers_license:profile.drivers_license||"",passport:profile.passport||"",
+        self_recording_setup:profile.self_recording_setup||"",self_recording_other:profile.self_recording_other||"",
         talent_types:Array.isArray(profile.talent_types)?profile.talent_types:[]
       }));
       setGenderCustom(isCustomGender(profile.gender));
@@ -19355,6 +19401,10 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         company_name:f.company_name||null,company_role:f.company_role||null,website:f.website||null,
         credits:f.credits||null,video_links:vl,
         body_type:f.body_type||null,age_range:f.age_range||null,
+        drivers_license:f.drivers_license||null,passport:f.passport||null,
+        self_recording_setup:f.self_recording_setup||null,
+        // Free text only belongs to the "Other" choice — switching back to a preset clears it.
+        self_recording_other:f.self_recording_setup==="Other"?(f.self_recording_other||"").trim()||null:null,
         talent_types:Array.isArray(f.talent_types)?f.talent_types:[],
         social_links:socialLinks||{}
       };
@@ -19695,6 +19745,50 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
           <div className="form-group"><label className="label">Training / Education</label><input className="input" placeholder="e.g. BFA Acting, NYU Tisch · Meisner Technique" value={f.training} onChange={e=>up("training",e.target.value)}/></div>
           <div className="form-group"><label className="label">Special Skills (comma separated)</label><input className="input" placeholder="Stage Combat, Fluent Spanish, Horseback Riding, Guitar…" value={f.skills} onChange={e=>up("skills",e.target.value)}/></div>
           <div className="form-group"><label className="label">Representation</label><input className="input" placeholder="Agency, manager, or 'Seeking Representation'" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
+        </div>
+
+        {/* ── LICENSE & PASSPORT ── */}
+        <div className="card" style={{padding:24,marginBottom:16}}>
+          <h3 style={{fontSize:15,fontWeight:700,marginBottom:6}}>License &amp; Passport</h3>
+          <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,marginBottom:16}}>Casting directors check these when a role requires driving on camera or travelling for a shoot. Both are optional.</p>
+          <div className="form-row" style={{marginBottom:0}}>
+            <div className="form-group" style={{marginBottom:0}}>
+              <label className="label">Driver's License</label>
+              <select className="select" style={{width:"100%"}} value={f.drivers_license||""} onChange={e=>up("drivers_license",e.target.value)}>
+                <option value="">Select</option>
+                <option value="Yes">Yes — I have a driver's license</option>
+                <option value="No">No — I don't have one</option>
+              </select>
+            </div>
+            <div className="form-group" style={{marginBottom:0}}>
+              <label className="label">Passport</label>
+              <select className="select" style={{width:"100%"}} value={f.passport||""} onChange={e=>up("passport",e.target.value)}>
+                <option value="">Select</option>
+                <option value="Yes">Yes — I have a valid passport</option>
+                <option value="No">No — I don't have one</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* ── SELF-RECORDING SETUP ── */}
+        <div className="card" style={{padding:24,marginBottom:16}}>
+          <h3 style={{fontSize:15,fontWeight:700,marginBottom:6}}>Self-Recording Setup</h3>
+          <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.6,marginBottom:16}}>What you can shoot a self-tape with at home. Pick the closest match — you don't need professional gear to be considered.</p>
+          <div className="form-group" style={{marginBottom:0}}>
+            <label className="label">Equipment &amp; Environment</label>
+            <select className="select" style={{width:"100%"}} value={f.self_recording_setup||""} onChange={e=>up("self_recording_setup",e.target.value)}>
+              <option value="">Select</option>
+              {SELF_RECORDING_SETUPS.map(s=><option key={s} value={s}>{s}</option>)}
+              <option value="Other">Other — describe my setup</option>
+            </select>
+            {f.self_recording_setup==="Other"&&(
+              <div style={{marginTop:14}}>
+                <label className="label">Describe your setup</label>
+                <textarea className="textarea" style={{minHeight:100}} value={f.self_recording_other||""} onChange={e=>up("self_recording_other",e.target.value)} placeholder="Camera, lighting, microphone, backdrop, the room you shoot in, and whether you have a reader."></textarea>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ── ACTOR SLATE VIDEO — Premium only ── */}

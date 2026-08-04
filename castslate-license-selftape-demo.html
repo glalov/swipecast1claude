@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CastSlate — License & Passport + Self-Recording (demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAF7F1; --s1:#FFFFFF; --s2:#F1ECE2; --bdr:#E5DFD2;
+  --t1:#1A1A2E; --t2:#5A5A72; --t3:#8E8EA0; --acc:#1A1A2E; --acc2:#2d2d44; --teal:#4F8A8B;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--t1);font-family:'DM Sans',-apple-system,sans-serif;font-size:14px;line-height:1.5;}
+.wrap{max-width:760px;margin:0 auto;padding:40px 20px 80px;}
+.demo-head{margin-bottom:28px;}
+.demo-head h1{font-family:'Source Serif 4',serif;font-size:30px;margin:0 0 8px;letter-spacing:-0.4px;}
+.demo-head p{color:var(--t2);font-size:14px;margin:0;line-height:1.6;}
+.demo-note{margin:26px 0 10px;font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--teal);}
+
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:24px;transition:all .3s;box-shadow:0 1px 2px rgba(26,26,46,0.03);margin-bottom:16px;}
+.card:hover{border-color:var(--acc);box-shadow:0 4px 20px rgba(26,26,46,0.06);}
+.card h3{font-size:15px;font-weight:700;margin:0 0 16px;}
+.input{background:var(--s1);border:1px solid var(--bdr);border-radius:8px;padding:10px 14px;color:var(--t1);font-size:13px;font-family:'DM Sans',sans-serif;width:100%;transition:border-color .2s;outline:none;}
+.input:focus{border-color:var(--acc);}
+.select{appearance:none;background:var(--s1) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238E8EA0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;border:1px solid var(--bdr);border-radius:8px;padding:10px 32px 10px 14px;color:var(--t1);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;width:100%;}
+.select:focus{border-color:var(--acc);}
+.label{font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.5px;}
+.textarea{background:var(--s1);border:1px solid var(--bdr);border-radius:8px;padding:10px 14px;color:var(--t1);font-size:13px;font-family:'DM Sans',sans-serif;width:100%;min-height:100px;resize:vertical;outline:none;}
+.textarea:focus{border-color:var(--acc);}
+.form-group{margin-bottom:16px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:560px){.form-row{grid-template-columns:1fr;}}
+.hint{font-size:12px;color:var(--t3);margin:-4px 0 12px;line-height:1.55;}
+.checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;color:var(--t2);cursor:pointer;}
+.checkbox-row input{accent-color:var(--acc);width:16px;height:16px;}
+.tag{background:var(--s2);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:500;color:var(--t2);display:inline-block;}
+
+/* profile-view preview */
+.pv{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:20px 24px;}
+.pv-row{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--bdr);font-size:13px;}
+.pv-row:last-child{border-bottom:none;}
+.pv-k{width:150px;flex:none;color:var(--t3);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;padding-top:2px;}
+.pv-v{color:var(--t1);}
+.chip{display:inline-flex;align-items:center;gap:6px;background:rgba(79,138,139,.10);color:#3c6f70;border-radius:100px;padding:4px 12px;font-size:12px;font-weight:600;margin:0 6px 6px 0;}
+.chip.off{background:var(--s2);color:var(--t3);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="demo-head">
+    <h1>Profile editor — two new sections</h1>
+    <p>This is a static demo of how the new <strong>License &amp; Passport</strong> and <strong>Self-Recording Setup</strong> cards would look inside the talent profile editor. Same card, label, select and spacing styles as the existing Physical Stats / Training &amp; Skills cards. Nothing is wired to the database yet.</p>
+  </div>
+
+  <div class="demo-note">Where it sits: after “Training &amp; Skills”</div>
+
+  <!-- ── LICENSE & PASSPORT ── -->
+  <div class="card">
+    <h3>License &amp; Passport</h3>
+    <p class="hint">Casting directors use this to check whether you can drive on camera or travel for a booking. Both are optional.</p>
+    <div class="form-row">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="label">Driver's License</label>
+        <select class="select" id="dl">
+          <option value="">Select</option>
+          <option>Yes — I have a driver's license</option>
+          <option>No — I don't have one</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="label">Passport</label>
+        <select class="select" id="pp">
+          <option value="">Select</option>
+          <option>Yes — I have a valid passport</option>
+          <option>No — I don't have one</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SELF-RECORDING SETUP ── -->
+  <div class="card">
+    <h3>Self-Recording Setup</h3>
+    <p class="hint">What you can shoot a self-tape with at home. Pick the closest match — you don't need pro gear to be considered.</p>
+    <div class="form-group" style="margin-bottom:0">
+      <label class="label">Equipment &amp; Environment</label>
+      <select class="select" id="sr">
+        <option value="">Select</option>
+        <option>Phone camera only — handheld, natural light</option>
+        <option>Phone + tripod — natural light, quiet room</option>
+        <option>Phone + tripod + ring light — plain wall or backdrop</option>
+        <option>Phone + tripod + LED / softbox lighting + neutral backdrop</option>
+        <option>Phone or camera + lighting + external mic (lav or shotgun)</option>
+        <option>DSLR / mirrorless + lighting kit + external mic + backdrop</option>
+        <option>Full home studio — pro camera, full lighting, treated audio, reader available</option>
+        <option value="other">Other — describe my setup</option>
+      </select>
+      <div id="otherWrap" style="display:none;margin-top:14px">
+        <label class="label">Describe your setup</label>
+        <textarea class="textarea" id="otherTxt" placeholder="e.g. Sony a6400 on a tripod, two Aputure LED panels, Rode VideoMic Pro, grey muslin backdrop in a spare bedroom, sound-treated with blankets. Reader available most evenings."></textarea>
+        <p class="hint" style="margin:6px 0 0">Camera, lights, microphone, backdrop, room, and whether you have a reader.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-note">How it reads on your public profile</div>
+
+  <div class="pv">
+    <div class="pv-row">
+      <div class="pv-k">License &amp; Passport</div>
+      <div class="pv-v" id="pvLic"><span class="chip off">Not specified</span></div>
+    </div>
+    <div class="pv-row">
+      <div class="pv-k">Self-Recording</div>
+      <div class="pv-v" id="pvSr"><span class="chip off">Not specified</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var sr=document.getElementById('sr'),ow=document.getElementById('otherWrap'),ot=document.getElementById('otherTxt');
+var dl=document.getElementById('dl'),pp=document.getElementById('pp');
+var pvLic=document.getElementById('pvLic'),pvSr=document.getElementById('pvSr');
+
+function chip(txt,on){return '<span class="chip'+(on?'':' off')+'">'+txt+'</span>';}
+
+function render(){
+  var out='';
+  if(dl.value) out+=chip((dl.value.indexOf('Yes')===0?'✓ ':'✕ ')+"Driver's License",dl.value.indexOf('Yes')===0);
+  if(pp.value) out+=chip((pp.value.indexOf('Yes')===0?'✓ ':'✕ ')+'Passport',pp.value.indexOf('Yes')===0);
+  pvLic.innerHTML=out||chip('Not specified',false);
+
+  if(sr.value==='other'){
+    pvSr.innerHTML=ot.value.trim()?('<span style="line-height:1.6">'+ot.value.replace(/[<>]/g,'')+'</span>'):chip('Not specified',false);
+  }else if(sr.value){
+    pvSr.innerHTML=chip(sr.value,true);
+  }else{
+    pvSr.innerHTML=chip('Not specified',false);
+  }
+}
+sr.addEventListener('change',function(){ow.style.display=(sr.value==='other')?'block':'none';render();});
+ot.addEventListener('input',render);
+dl.addEventListener('change',render);
+pp.addEventListener('change',render);
+render();
+</script>
+</body>
+</html>
