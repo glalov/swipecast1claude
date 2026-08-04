@@ -29177,12 +29177,12 @@ function _abcDrawCanvasLogo(ctx,x,y,size){
   ctx.beginPath();ctx.moveTo(4,16);ctx.lineTo(12,9);ctx.lineTo(12,12);ctx.lineTo(20,12);ctx.lineTo(20,9);ctx.lineTo(28,16);ctx.lineTo(20,23);ctx.lineTo(20,20);ctx.lineTo(12,20);ctx.lineTo(12,23);ctx.closePath();ctx.fill();ctx.restore();
 }
 
-function ActorCardPreview({formatKey='business',side='front',mailingMessage,displayName,headline,directContact,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl,photoZoom,photoPosX,photoPosY,photoRef,onPhotoMouseDown,onPhotoTouchStart,isDragging,watermark}){
+function ActorCardPreview({formatKey='business',side='front',mailingMessage,displayName,headline,directContact,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl,photoZoom,photoPosX,photoPosY,photoRef,onPhotoMouseDown,onPhotoTouchStart,isDragging,watermark,onOpen}){
   const format=ABC_CARD_FORMATS[formatKey]||ABC_CARD_FORMATS.business;
   const large=formatKey!=='business';
   const logo=(<div style={{display:'flex',alignItems:'center',gap:6}}><div style={{width:large?22:19,height:large?22:19,background:'#1A1A2E',borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:'#fff'}}><LogoMark/></div><span style={{fontSize:large?9.5:9,fontWeight:800,color:'#1A1A2E',letterSpacing:1.5}}>CASTSLATE</span></div>);
   return(
-    <div style={{background:'#ffffff',border:'1.5px solid #E0E0E8',borderRadius:10,overflow:'hidden',boxShadow:'0 8px 40px rgba(26,26,46,0.15)',display:'flex',width:'100%',maxWidth:large?520:390,aspectRatio:`${format.width} / ${format.height}`,position:'relative',flexShrink:0}}>
+    <div role={onOpen?'button':undefined} tabIndex={onOpen?0:undefined} aria-label={onOpen?`Enlarge ${format.name} ${side} preview`:undefined} title={onOpen?'Click to enlarge preview':undefined} onClick={onOpen} onKeyDown={onOpen?(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onOpen();}}:undefined} style={{background:'#ffffff',border:'1.5px solid #E0E0E8',borderRadius:10,overflow:'hidden',boxShadow:'0 8px 40px rgba(26,26,46,0.15)',display:'flex',width:'100%',maxWidth:large?520:390,aspectRatio:`${format.width} / ${format.height}`,position:'relative',flexShrink:0,cursor:onOpen?'zoom-in':undefined,outlineOffset:4}}>
       <div style={{position:'absolute',top:0,left:0,right:0,height:5,background:'#1A1A2E',zIndex:2}}/>
       {watermark&&<div style={{position:'absolute',inset:0,zIndex:5,display:'flex',alignItems:'center',justifyContent:'center',pointerEvents:'none'}}><span style={{transform:'rotate(-16deg)',border:'2.5px solid rgba(26,26,46,0.18)',borderRadius:10,color:'rgba(26,26,46,0.22)',fontWeight:800,fontSize:26,letterSpacing:'0.22em',textTransform:'uppercase',padding:'7px 20px',background:'rgba(255,255,255,0.18)'}}>Preview</span></div>}
       {side==='back'&&large?(
@@ -29205,7 +29205,7 @@ function ActorCardPreview({formatKey='business',side='front',mailingMessage,disp
         </>
       ):(
         <>
-          <div ref={photoRef} style={{width:`${format.photoPct*100}%`,flexShrink:0,position:'relative',marginTop:5,overflow:'hidden',cursor:headshotUrl?(isDragging?'grabbing':'grab'):'default',background:'#E8E8F2',userSelect:'none'}} onMouseDown={onPhotoMouseDown} onTouchStart={onPhotoTouchStart}>
+          <div ref={photoRef} style={{width:`${format.photoPct*100}%`,flexShrink:0,position:'relative',marginTop:5,overflow:'hidden',cursor:headshotUrl&&onPhotoMouseDown?(isDragging?'grabbing':'grab'):'default',background:'#E8E8F2',userSelect:'none'}} onMouseDown={onPhotoMouseDown} onTouchStart={onPhotoTouchStart}>
             {headshotUrl?<><div style={{position:'absolute',inset:0,backgroundImage:`url(${headshotUrl})`,backgroundSize:'contain',backgroundRepeat:'no-repeat',backgroundPosition:`${photoPosX}% ${photoPosY}%`,transform:`scale(${photoZoom})`,transformOrigin:`${photoPosX}% ${photoPosY}%`,pointerEvents:'none',userSelect:'none'}}/>{!large&&<div style={{position:'absolute',bottom:0,left:0,right:0,background:'linear-gradient(transparent,rgba(26,26,46,0.45))',padding:'10px 0 4px',pointerEvents:'none',zIndex:1,color:'#fff'}}><div style={{fontSize:7,textAlign:'center',color:'rgba(255,255,255,0.85)',letterSpacing:0.5,fontWeight:600}}>{photoZoom>1.05?'drag to reposition':'zoom in to crop'}</div></div>}</>:<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:36,color:'#C0C0D0'}}><Ico n="user" s={22}/></div>}
           </div>
           <div style={{flex:1,padding:large?'22px 22px 15px':'16px 14px 12px',display:'flex',flexDirection:'column',minWidth:0,marginTop:5,overflow:'hidden'}}>
@@ -29266,17 +29266,31 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   const [pdfGenerating,setPdfGenerating]=useState(false);
   const [downloadErr,setDownloadErr]=useState('');
   const [preparedDownload,setPreparedDownload]=useState(null);
+  const [largePreviewOpen,setLargePreviewOpen]=useState(false);
+  const suppressPreviewClickRef=useRef(false);
 
   const cardTags=useMemo(()=>Array.isArray(myProfile?.skills)?myProfile.skills.filter(Boolean).slice(0,3):[],[myProfile?.skills]);
   const unionStatus=myProfile?.union_status||'';
   const location=myProfile?.location||'';
   const selectedFormat=ABC_CARD_FORMATS[cardFormat]||ABC_CARD_FORMATS.business;
+  const largePreviewBaseWidth=cardFormat==='business'?390:520;
+  const largePreviewScale=isMobile?1.35:Math.min(2,Math.max(1.4,(vpw-100)/largePreviewBaseWidth));
+  const largePreviewWidth=Math.round(largePreviewBaseWidth*largePreviewScale);
+  const largePreviewHeight=Math.round((largePreviewBaseWidth*selectedFormat.height/selectedFormat.width)*largePreviewScale);
 
   // Reset crop when photo changes
   useEffect(()=>{setPhotoZoom(1);setPhotoPosX(50);setPhotoPosY(50);},[selectedPhoto]);
   useEffect(()=>{if(cardFormat==='business'){if(cardSide==='back')setCardSide('front');if(printPreviewSide==='back')setPrintPreviewSide('front');}},[cardFormat,cardSide,printPreviewSide]);
   useEffect(()=>()=>{if(preparedDownload?.url)URL.revokeObjectURL(preparedDownload.url);},[preparedDownload?.url]);
   useEffect(()=>{setPreparedDownload(null);},[cardFormat]);
+  useEffect(()=>{
+    if(!largePreviewOpen)return;
+    const previousOverflow=document.body.style.overflow;
+    const closeOnEscape=(e)=>{if(e.key==='Escape')setLargePreviewOpen(false);};
+    document.body.style.overflow='hidden';
+    window.addEventListener('keydown',closeOnEscape);
+    return()=>{document.body.style.overflow=previousOverflow;window.removeEventListener('keydown',closeOnEscape);};
+  },[largePreviewOpen]);
 
   // Generate real QR code via free public API — no library required
   useEffect(()=>{
@@ -29293,6 +29307,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
     if(!selectedPhoto)return;
     e.preventDefault();
     const cli=e.touches?e.touches[0]:e;
+    suppressPreviewClickRef.current=false;
     dragDataRef.current={sx:cli.clientX,sy:cli.clientY,px:photoPosX,py:photoPosY};
     setIsDragging(true);
   },[selectedPhoto,photoPosX,photoPosY]);
@@ -29302,13 +29317,14 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
     const onMove=(e)=>{
       const d=dragDataRef.current;if(!d||!photoRef.current)return;
       const cli=e.touches?e.touches[0]:e;
+      if(Math.abs(cli.clientX-d.sx)>4||Math.abs(cli.clientY-d.sy)>4)suppressPreviewClickRef.current=true;
       const rect=photoRef.current.getBoundingClientRect();
       const dx=((cli.clientX-d.sx)/rect.width)*(100/photoZoom);
       const dy=((cli.clientY-d.sy)/rect.height)*(100/photoZoom);
       setPhotoPosX(Math.max(0,Math.min(100,d.px-dx)));
       setPhotoPosY(Math.max(0,Math.min(100,d.py-dy)));
     };
-    const onUp=()=>{setIsDragging(false);dragDataRef.current=null;};
+    const onUp=()=>{setIsDragging(false);dragDataRef.current=null;setTimeout(()=>{suppressPreviewClickRef.current=false;},0);};
     window.addEventListener('mousemove',onMove);window.addEventListener('mouseup',onUp);
     window.addEventListener('touchmove',onMove,{passive:false});window.addEventListener('touchend',onUp);
     return()=>{
@@ -29316,6 +29332,11 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
       window.removeEventListener('touchmove',onMove);window.removeEventListener('touchend',onUp);
     };
   },[isDragging,photoZoom]);
+
+  const openLargePreview=useCallback(()=>{
+    if(suppressPreviewClickRef.current)return;
+    setLargePreviewOpen(true);
+  },[]);
 
   const drawCard=useCallback(async()=>{
     // Draw directly onto the exact 300 dpi output canvas. Scaling the drawing
@@ -29609,30 +29630,34 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
           {isMobile&&(
             <div style={{display:'flex',flexDirection:'column',gap:10,alignItems:'center',position:'sticky',top:'calc(var(--site-top-h, 56px) + 8px)',zIndex:5,background:'var(--bg)',paddingBottom:10,width:'100%'}}>
               <div style={{fontWeight:700,fontSize:11,color:'var(--t3)',textTransform:'uppercase',letterSpacing:1}}>Live {selectedFormat.name} Preview · {cardSide}</div>
-              <ActorCardPreview
-                formatKey={cardFormat}
-                side={cardSide}
-                mailingMessage={mailingMessage}
-                displayName={displayName}
-                headline={headline}
-                directContact={directContact}
-                showLocation={showLocation}
-                location={location}
-                tags={cardTags}
-                showUnion={showUnion}
-                unionStatus={unionStatus}
-                headshotUrl={selectedPhoto}
-                publicSlug={publicSlug}
-                qrDataUrl={qrDataUrl}
-                photoZoom={photoZoom}
-                photoPosX={photoPosX}
-                photoPosY={photoPosY}
-                photoRef={photoRef}
-                onPhotoMouseDown={handlePhotoMouseDown}
-                onPhotoTouchStart={handlePhotoMouseDown}
-                isDragging={isDragging}
-                watermark={!isPremium}
-              />
+              <div style={{width:'100%',maxWidth:cardFormat==='business'?390:520}}>
+                <ActorCardPreview
+                  formatKey={cardFormat}
+                  side={cardSide}
+                  mailingMessage={mailingMessage}
+                  displayName={displayName}
+                  headline={headline}
+                  directContact={directContact}
+                  showLocation={showLocation}
+                  location={location}
+                  tags={cardTags}
+                  showUnion={showUnion}
+                  unionStatus={unionStatus}
+                  headshotUrl={selectedPhoto}
+                  publicSlug={publicSlug}
+                  qrDataUrl={qrDataUrl}
+                  photoZoom={photoZoom}
+                  photoPosX={photoPosX}
+                  photoPosY={photoPosY}
+                  photoRef={photoRef}
+                  onPhotoMouseDown={handlePhotoMouseDown}
+                  onPhotoTouchStart={handlePhotoMouseDown}
+                  isDragging={isDragging}
+                  watermark={!isPremium}
+                  onOpen={openLargePreview}
+                />
+                <button type="button" onClick={openLargePreview} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,width:'100%',marginTop:7,padding:'6px 10px',border:0,background:'transparent',color:'var(--acc)',fontSize:10.5,fontWeight:800,cursor:'zoom-in'}}>⛶ View larger</button>
+              </div>
             </div>
           )}
 
@@ -29794,30 +29819,34 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
           <div style={{display:'flex',flexDirection:'column',gap:16,alignItems:isMobile?'center':'flex-start',position:isMobile?'static':'sticky',top:24,minWidth:0,width:'100%'}}>
             {!isMobile&&(<>
               <div style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}><span style={{fontWeight:700,fontSize:11,color:'var(--t3)',textTransform:'uppercase',letterSpacing:1}}>Live {selectedFormat.name} Preview</span>{cardFormat!=='business'&&<div style={{display:'flex',padding:3,border:'1px solid var(--bdr)',borderRadius:8}}><button type="button" onClick={()=>setCardSide('front')} style={{border:0,borderRadius:5,padding:'6px 12px',background:cardSide==='front'?'var(--t1)':'transparent',color:cardSide==='front'?'var(--bg)':'var(--t2)',fontSize:10,fontWeight:700,cursor:'pointer'}}>Front</button><button type="button" onClick={()=>setCardSide('back')} style={{border:0,borderRadius:5,padding:'6px 12px',background:cardSide==='back'?'var(--t1)':'transparent',color:cardSide==='back'?'var(--bg)':'var(--t2)',fontSize:10,fontWeight:700,cursor:'pointer'}}>Back</button></div>}</div>
-              <ActorCardPreview
-                formatKey={cardFormat}
-                side={cardSide}
-                mailingMessage={mailingMessage}
-                displayName={displayName}
-                headline={headline}
-                directContact={directContact}
-                showLocation={showLocation}
-                location={location}
-                tags={cardTags}
-                showUnion={showUnion}
-                unionStatus={unionStatus}
-                headshotUrl={selectedPhoto}
-                publicSlug={publicSlug}
-                qrDataUrl={qrDataUrl}
-                photoZoom={photoZoom}
-                photoPosX={photoPosX}
-                photoPosY={photoPosY}
-                photoRef={photoRef}
-                onPhotoMouseDown={handlePhotoMouseDown}
-                onPhotoTouchStart={handlePhotoMouseDown}
-                isDragging={isDragging}
-                watermark={!isPremium}
-              />
+              <div style={{width:'100%',maxWidth:cardFormat==='business'?390:520}}>
+                <ActorCardPreview
+                  formatKey={cardFormat}
+                  side={cardSide}
+                  mailingMessage={mailingMessage}
+                  displayName={displayName}
+                  headline={headline}
+                  directContact={directContact}
+                  showLocation={showLocation}
+                  location={location}
+                  tags={cardTags}
+                  showUnion={showUnion}
+                  unionStatus={unionStatus}
+                  headshotUrl={selectedPhoto}
+                  publicSlug={publicSlug}
+                  qrDataUrl={qrDataUrl}
+                  photoZoom={photoZoom}
+                  photoPosX={photoPosX}
+                  photoPosY={photoPosY}
+                  photoRef={photoRef}
+                  onPhotoMouseDown={handlePhotoMouseDown}
+                  onPhotoTouchStart={handlePhotoMouseDown}
+                  isDragging={isDragging}
+                  watermark={!isPremium}
+                  onOpen={openLargePreview}
+                />
+                <button type="button" onClick={openLargePreview} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,width:'100%',marginTop:8,padding:'7px 10px',border:0,background:'transparent',color:'var(--acc)',fontSize:11,fontWeight:800,cursor:'zoom-in'}}>⛶ Click card to view larger</button>
+              </div>
             </>)}
             <div style={{maxWidth:390,width:'100%'}}>
               <p style={{fontSize:11.5,color:'var(--t3)',lineHeight:1.6,margin:'0 0 10px'}}>
@@ -29848,6 +29877,46 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
           </div>
         </div>
       </div>
+      {largePreviewOpen&&(
+        <div role="presentation" onClick={()=>setLargePreviewOpen(false)} style={{position:'fixed',inset:0,zIndex:10000,background:'rgba(13,13,24,0.82)',backdropFilter:'blur(7px)',display:'flex',alignItems:'center',justifyContent:'center',padding:isMobile?12:28}}>
+          <div role="dialog" aria-modal="true" aria-label={`Expanded ${selectedFormat.name} ${cardSide} preview`} onClick={e=>e.stopPropagation()} style={{width:'100%',maxWidth:largePreviewWidth+36,maxHeight:'calc(100vh - 24px)',display:'flex',flexDirection:'column',background:'var(--s1)',border:'1px solid rgba(255,255,255,0.18)',borderRadius:16,boxShadow:'0 28px 90px rgba(0,0,0,.42)',overflow:'hidden'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,padding:'13px 15px',borderBottom:'1px solid var(--bdr)',background:'var(--s1)',flexWrap:'wrap'}}>
+              <div><div style={{fontSize:13,fontWeight:800,color:'var(--t1)'}}>Expanded {selectedFormat.name}</div><div style={{fontSize:10.5,color:'var(--t3)',marginTop:2}}>{isMobile?'Scroll sideways to inspect the larger card.':'Click outside or press Escape to close.'}</div></div>
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                {cardFormat!=='business'&&<div style={{display:'flex',padding:3,border:'1px solid var(--bdr)',borderRadius:8,background:'var(--bg)'}}><button type="button" aria-label="Show expanded front preview" onClick={()=>setCardSide('front')} style={{border:0,borderRadius:5,padding:'6px 12px',background:cardSide==='front'?'var(--t1)':'transparent',color:cardSide==='front'?'var(--bg)':'var(--t2)',fontSize:10,fontWeight:700,cursor:'pointer'}}>Front</button><button type="button" aria-label="Show expanded back preview" onClick={()=>setCardSide('back')} style={{border:0,borderRadius:5,padding:'6px 12px',background:cardSide==='back'?'var(--t1)':'transparent',color:cardSide==='back'?'var(--bg)':'var(--t2)',fontSize:10,fontWeight:700,cursor:'pointer'}}>Back</button></div>}
+                <button type="button" aria-label="Close enlarged preview" onClick={()=>setLargePreviewOpen(false)} style={{width:34,height:34,borderRadius:'50%',border:'1px solid var(--bdr)',background:'var(--bg)',color:'var(--t1)',fontSize:19,lineHeight:1,cursor:'pointer'}}>×</button>
+              </div>
+            </div>
+            <div style={{overflow:'auto',padding:isMobile?'18px 14px 24px':18,background:'#EDE9E2',display:'flex',justifyContent:isMobile?'flex-start':'center'}}>
+              <div style={{width:largePreviewWidth,height:largePreviewHeight,flex:'0 0 auto'}}>
+                <div style={{width:largePreviewBaseWidth,transform:`scale(${largePreviewScale})`,transformOrigin:'top left'}}>
+                  <ActorCardPreview
+                    formatKey={cardFormat}
+                    side={cardSide}
+                    mailingMessage={mailingMessage}
+                    displayName={displayName}
+                    headline={headline}
+                    directContact={directContact}
+                    showLocation={showLocation}
+                    location={location}
+                    tags={cardTags}
+                    showUnion={showUnion}
+                    unionStatus={unionStatus}
+                    headshotUrl={selectedPhoto}
+                    publicSlug={publicSlug}
+                    qrDataUrl={qrDataUrl}
+                    photoZoom={photoZoom}
+                    photoPosX={photoPosX}
+                    photoPosY={photoPosY}
+                    isDragging={false}
+                    watermark={!isPremium}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <Footer onNavigate={onNavigate}/>
     </div>
   );
