@@ -30333,7 +30333,7 @@ function App(){
             const uid=otpData?.user?.id;
             if(uid){
               try{
-                const {data:prof}=await window.sb.from("profiles").select("user_type,membership_status,headshot_url").eq("id",uid).maybeSingle();
+                const {data:prof}=await window.sb.from("profiles").select("user_type,membership_status,headshot_url,created_at").eq("id",uid).maybeSingle();
                 if(prof?.user_type==="talent")dest=talentLandingPage(uid,prof);
               }catch(_){}
             }
@@ -30527,7 +30527,11 @@ function App(){
         if(e==="SIGNED_IN"||e==="INITIAL_SESSION"||e==="USER_UPDATED"){
           _d.loginStep="auth-callback-"+e.toLowerCase();
           if(s?.user){
-            await loadProfile(s.user.id);
+            const prof0=await loadProfile(s.user.id);
+            // Returning visit on a still-valid session (no SIGNED_IN event): give
+            // the daily upgrade offer its turn. Neutral landings only — see
+            // maybeDailyPricingOnReturn.
+            if(e==="INITIAL_SESSION")maybeDailyPricingOnReturn(s.user.id,prof0);
             // Restore a pending casting application that was saved to sessionStorage
             // before email confirmation (page may have reloaded since the auth-gate).
             if(e==="SIGNED_IN"){
@@ -30566,7 +30570,7 @@ function App(){
                 if(wasOAuth){
                   sessionStorage.removeItem("sc_oauth_login");
                   if(!routed&&s?.user){
-                    const {data:prof}=await window.sb.from("profiles").select("user_type,membership_status,headshot_url").eq("id",s.user.id).maybeSingle();
+                    const {data:prof}=await window.sb.from("profiles").select("user_type,membership_status,headshot_url,created_at").eq("id",s.user.id).maybeSingle();
                     const isAd2=prof?.user_type==="admin"||prof?.user_type==="super_admin";
                     let dest=null;
                     if(isAd2)dest="admin";
@@ -30788,42 +30792,78 @@ function App(){
     }catch(e){console.warn("[viewCastingById]",e);}
   },[page]);
   const completeAuth=()=>{if(pendingApply){const c=pendingApply.casting;const r=pendingApply.role;setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c?.slug||String(c?.id)});if(!r)setPendingApply(null);}else{setPage("search");pushHist("search");}};
-  // ── Post-login landing for TALENT (actors) — growth routing ──────────────
+  // ── Daily upgrade offer for TALENT (actors) — growth routing ─────────────
   //   • Premium talent                         → their Talent Dashboard.
-  //   • Free talent, FIRST login of the day    → Pricing page (once per day).
-  //   • Free talent, later logins that day     → Talent Dashboard, which shows
+  //   • Free talent, FIRST visit of the day    → Membership (the plan picker).
+  //   • Free talent, later visits that day     → Talent Dashboard, which shows
   //                                              the upgrade banner (no repeat
   //                                              pricing wall).
-  // The once-per-day gate is tracked per user in localStorage by local calendar
-  // date. Flip PRICING_EVERY_LOGIN to true to show pricing on every free login.
+  // "First VISIT of the day", not "first login": Supabase keeps a session alive
+  // for weeks, so a returning actor fires INITIAL_SESSION and never a fresh
+  // SIGNED_IN. Gating on the login event meant the offer effectively never
+  // showed again after signup day — see maybeDailyPricingOnReturn below for the
+  // returning-session path.
+  // Destination is "membership" and not "pricing" because PricingPage bounces
+  // logged-in free users straight to /membership anyway; going direct skips the
+  // flash and lands them one click from checkout.
+  // The gate is consumed once per user per local calendar date in localStorage.
+  // Flip PRICING_EVERY_LOGIN to true to show it on every visit.
   // Only talent are routed here; CDs, producers, studios and admins keep their
   // own landings untouched.
   const PRICING_EVERY_LOGIN=false;
-  const talentLandingPage=(uid,prof)=>{
-    if(prof?.membership_status==="active")return "talent-dashboard";
-    // No headshot yet → the first-run photo step owns this screen. Sending them
-    // to the pricing pitch before they have a profile worth promoting buries the
-    // step and wastes the one visit most of these accounts ever make. The daily
-    // pricing flag is deliberately NOT consumed here, so pricing still gets its
-    // turn on the next login once there's a photo.
-    if(!prof?.headshot_url)return "talent-dashboard";
-    if(PRICING_EVERY_LOGIN)return "pricing";
-    const d=new Date();
-    const today=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  const PRICING_DEST="membership";
+  const localDayKey=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
+  // True at most once per user per day, and CONSUMES the day when it says true.
+  const consumeDailyPricing=(uid)=>{
+    if(!uid)return false;
+    if(PRICING_EVERY_LOGIN)return true;
+    const today=localDayKey();
     let lastShown="";
     try{lastShown=localStorage.getItem("sc_pricing_day_"+uid)||"";}catch(_){}
-    if(lastShown!==today){
-      try{localStorage.setItem("sc_pricing_day_"+uid,today);}catch(_){}
-      return "pricing";
-    }
-    return "talent-dashboard";
+    if(lastShown===today)return false;
+    try{localStorage.setItem("sc_pricing_day_"+uid,today);}catch(_){}
+    return true;
+  };
+  // Day one with no headshot belongs to the first-run photo step — burying it
+  // costs us the profile these accounts only ever build once. From the next day
+  // the offer takes the slot whether or not a photo ever landed. A profile with
+  // a headshot is never in grace, however new it is.
+  const inOnboardingGrace=(prof)=>{
+    if(prof?.headshot_url)return false;
+    const ts=Date.parse(prof?.created_at||"");
+    if(!ts)return true;   // unknown age → treat as brand new, don't hijack
+    return (Date.now()-ts)<24*60*60*1000;
+  };
+  const talentLandingPage=(uid,prof)=>{
+    if(prof?.membership_status==="active")return "talent-dashboard";
+    if(inOnboardingGrace(prof))return "talent-dashboard";
+    return consumeDailyPricing(uid)?PRICING_DEST:"talent-dashboard";
+  };
+  // Returning actor whose session was still alive — no SIGNED_IN fires, so the
+  // landing routing above never runs. This only takes over a NEUTRAL landing
+  // (bare / or /talent-dashboard, no query or hash): a deep-linked casting, a
+  // class payment link, an email CTA or a pending application must never be
+  // hijacked by the offer.
+  const NEUTRAL_RETURN_PATHS=["/","/talent-dashboard"];
+  const maybeDailyPricingOnReturn=(uid,prof)=>{
+    try{
+      if(!prof||prof.user_type!=="talent")return;
+      if(prof.membership_status==="active")return;
+      if(inOnboardingGrace(prof))return;
+      if(window.location.search||window.location.hash)return;
+      const path=(window.location.pathname||"/").replace(/\/+$/,"")||"/";
+      if(!NEUTRAL_RETURN_PATHS.includes(path))return;
+      if(sessionStorage.getItem("sc_post_auth_apply")||sessionStorage.getItem("sc_pending_plan")||sessionStorage.getItem("sc_return_to"))return;
+      if(!consumeDailyPricing(uid))return;
+      navigate(PRICING_DEST);
+    }catch(_){}
   };
   const onLoggedIn=async(user)=>{
     // onAuthStateChange SIGNED_IN will populate myProfile in parallel — do NOT call
     // loadProfile here too (that created a double-fetch race). Fetch a minimal row
     // just to decide routing.
     try{
-      const {data,error}=await window.sb.from("profiles").select("user_type,email,membership_status,headshot_url").eq("id",user.id).maybeSingle();
+      const {data,error}=await window.sb.from("profiles").select("user_type,email,membership_status,headshot_url,created_at").eq("id",user.id).maybeSingle();
       if(error)console.warn("[auth] route fetch error:",error.message);
       const email=(data?.email||user.email||"").toLowerCase();
       const fallbackOwner=email&&email===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase();
