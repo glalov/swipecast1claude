@@ -3106,7 +3106,7 @@ const PREMIUM_SHARED_FEATURES=[
   ["Unlimited","photos & gallery media"],
   ["Unlimited","video uploads"],
   ["Actor Slate Video","— 7-sec intro"],
-  ["Actor Business Card","with QR code"],
+  ["Actor cards with QR","business, postcard & agent promo"],
   ["Manager Mode","weekly check-ins"],
   ["Profile improvements","personalized to you"],
   ["Cancel anytime","from your account"]
@@ -6828,7 +6828,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
               <div style={{fontSize:11.5,color:"var(--t3)",marginTop:7}}>Prefer monthly? ${MEMBERSHIP_PLANS.monthly.monthly.toFixed(2)}/month, flat — no introductory rate that goes up.</div>
             </div>
             <div style={{flex:1}}>
-              {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Actor Slate Video — 7-sec intro','Actor Business Card with QR code','Manager Mode weekly career check-ins','Personalized profile improvement suggestions'].map(f=>feat(f,"var(--acc)"))}
+              {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Actor Slate Video — 7-sec intro','Actor Business Card with QR code','Mailing postcard & agent promo card','Manager Mode weekly career check-ins','Personalized profile improvement suggestions'].map(f=>feat(f,"var(--acc)"))}
             </div>
             {isPremium
               ?<button className="btn-teal" style={{width:"100%",height:44,borderRadius:10,marginTop:24}} onClick={()=>onNavigate("membership")}>Manage Plan →</button>
@@ -6876,6 +6876,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
           {featureRow("Profile improvement suggestions","no","yes")}
           {featureRow("Actor Slate Video","no","yes")}
           {featureRow("Actor Business Card (with QR code)","no","yes")}
+          {featureRow("Mailing postcard & agent promo card","no","yes")}
           {featureRow("Manager Mode","no","yes")}
           {featureRow("Price",t('pricing.freeLabel'),PREMIUM_PRICE)}
         </div>
