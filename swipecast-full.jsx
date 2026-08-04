@@ -81,7 +81,7 @@ const TRANSLATIONS = {
     'nav.home':'Home','nav.browse':'Browse Castings','nav.classes':'Classes',
     'nav.pricing':'Pricing','nav.blog':'Blog','nav.dashboard':'Dashboard',
     'nav.myProfile':'My Profile','nav.inbox':'Inbox','nav.admin':'Admin',
-    'nav.signOut':'Sign out','nav.join':'Join','nav.postJob':'Post a Job','nav.postCasting':'Post a Casting',
+    'nav.signOut':'Sign out','nav.join':'Join Free','nav.postJob':'Post a Job','nav.postCasting':'Post a Casting',
     'nav.signIn':'Sign in','nav.accountSettings':'Account Settings',
     'nav.resources':'Resources','nav.successStories':'Success Stories',
     'nav.about':'About','nav.contact':'Contact','nav.joinAsTalent':'Join as Talent',
@@ -329,7 +329,7 @@ const TRANSLATIONS = {
     'nav.home':'Inicio','nav.browse':'Convocatorias','nav.classes':'Clases',
     'nav.pricing':'Precios','nav.blog':'Blog','nav.dashboard':'Panel',
     'nav.myProfile':'Mi perfil','nav.inbox':'Bandeja de entrada','nav.admin':'Admin',
-    'nav.signOut':'Cerrar sesión','nav.join':'Unirse','nav.postJob':'Publicar trabajo','nav.postCasting':'Publicar casting',
+    'nav.signOut':'Cerrar sesión','nav.join':'Únete gratis','nav.postJob':'Publicar trabajo','nav.postCasting':'Publicar casting',
     'nav.signIn':'Iniciar sesión','nav.accountSettings':'Configuración de cuenta',
     'nav.resources':'Recursos','nav.successStories':'Historias de éxito',
     'nav.about':'Acerca de','nav.contact':'Contacto','nav.joinAsTalent':'Unirse como Talento',
@@ -1996,6 +1996,15 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @keyframes pageFade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 @media(prefers-reduced-motion:reduce){.mobile-menu,.mobile-menu-inner{animation:none;}}
 .join-dropdown{position:relative;display:inline-flex;}
+/* Logged-out account CTA: one restrained invitation glow after auth resolves,
+   then fully still. Transform-based emphasis never changes nav layout. */
+@keyframes joinFreeSoftInvitation{
+  0%,14%{transform:scale(1);box-shadow:0 4px 12px rgba(55,105,106,.16),0 0 0 0 rgba(79,138,139,.24);}
+  42%{transform:scale(1.035);box-shadow:0 7px 19px rgba(55,105,106,.24),0 0 0 9px rgba(79,138,139,.11);}
+  75%,100%{transform:scale(1);box-shadow:0 4px 12px rgba(55,105,106,.16),0 0 0 0 rgba(79,138,139,0);}
+}
+.join-free-soft{animation:joinFreeSoftInvitation 2.9s cubic-bezier(.22,.7,.3,1) 1 both;transform-origin:center;}
+@media(prefers-reduced-motion:reduce){.join-free-soft{animation:none;}}
 @keyframes ddFadeIn{from{opacity:0;transform:translateX(-50%) translateY(-6px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
 .join-dd-menu{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--bdr);border-radius:12px;box-shadow:0 8px 32px rgba(26,26,46,0.14);padding:6px;min-width:260px;z-index:300;animation:ddFadeIn .15s ease;}
 /* Right-anchored variant (mobile nav + mobile menu) — same look as desktop, but
@@ -31213,7 +31222,7 @@ function App(){
             <button className="btn-p btn-sm" onClick={signOut}>{navT('nav.signOut')}</button>
           </>:<>
             <div className="join-dropdown" ref={joinRef}>
-              <button className="btn-teal btn-sm" onClick={()=>setJoinOpen(o=>!o)} style={{display:"inline-flex",alignItems:"center",gap:5}}>
+              <button className="btn-teal btn-sm join-free-soft" onClick={()=>setJoinOpen(o=>!o)} style={{display:"inline-flex",alignItems:"center",gap:5}}>
                 {navT('nav.join')}
                 <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor" style={{transition:"transform .2s",transform:joinOpen?"rotate(180deg)":"rotate(0deg)"}}><path d="M0 0l5 6 5-6z"/></svg>
               </button>
@@ -31233,7 +31242,7 @@ function App(){
           </>}
         </div>
         {authReady&&!isLoggedIn&&<div className="nav-join-mobile" ref={joinRefM} style={{position:"relative"}}>
-          <button onClick={()=>setJoinOpen(o=>!o)} style={{display:"inline-flex",alignItems:"center",gap:5,height:40,padding:"0 14px",background:"var(--teal)",color:"#fff",border:"none",borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:14,cursor:"pointer"}}>
+          <button className="join-free-soft" onClick={()=>setJoinOpen(o=>!o)} style={{display:"inline-flex",alignItems:"center",gap:5,height:40,padding:"0 14px",background:"var(--teal)",color:"#fff",border:"none",borderRadius:9,fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:14,cursor:"pointer"}}>
             {navT('nav.join')}
             <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor" style={{transition:"transform .2s",transform:joinOpen?"rotate(180deg)":"rotate(0deg)"}}><path d="M0 0l5 6 5-6z"/></svg>
           </button>
@@ -31277,7 +31286,7 @@ function App(){
               <button className="btn-p btn-sm" onClick={doSignOut}>{navT('nav.signOut')}</button>
             </>:<>
               <div style={{position:"relative"}}>
-                <button onClick={()=>setMenuJoinOpen(o=>!o)} style={{width:"100%",height:54,background:"var(--teal)",color:"#fff",border:"none",borderRadius:12,fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                <button className="join-free-soft" onClick={()=>setMenuJoinOpen(o=>!o)} style={{width:"100%",height:54,background:"var(--teal)",color:"#fff",border:"none",borderRadius:12,fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
                   {navT('nav.join')}
                   <svg width="12" height="7" viewBox="0 0 10 6" fill="currentColor" style={{transition:"transform .2s",transform:menuJoinOpen?"rotate(180deg)":"rotate(0deg)"}}><path d="M0 0l5 6 5-6z"/></svg>
                 </button>
