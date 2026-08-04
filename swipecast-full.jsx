@@ -29302,12 +29302,18 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   },[isDragging,photoZoom]);
 
   const drawCard=useCallback(async()=>{
-    // Render a clean master, then scale it to the exact 300 dpi format dimensions.
+    // Draw directly onto the exact 300 dpi output canvas. Scaling the drawing
+    // context keeps the approved layout proportions while text, rules, logo,
+    // headshot, and QR are rasterized at the final resolution instead of being
+    // enlarged from a smaller card (which made type look soft).
     const CH=600,CW=Math.round(CH*selectedFormat.width/selectedFormat.height);
+    const pixelScale=selectedFormat.height/CH;
     const TB=14;
     const canvas=document.createElement('canvas');
-    canvas.width=CW;canvas.height=CH;
+    canvas.width=selectedFormat.width;canvas.height=selectedFormat.height;
     const ctx=canvas.getContext('2d');
+    ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+    ctx.scale(pixelScale,pixelScale);
     ctx.fillStyle='#ffffff';ctx.fillRect(0,0,CW,CH);
     ctx.fillStyle='#1A1A2E';ctx.fillRect(0,0,CW,TB);
 
@@ -29428,10 +29434,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
         ctx.textAlign='left';
       }catch(e){}
     }
-    if(selectedFormat.width===CW&&selectedFormat.height===CH)return canvas;
-    const output=document.createElement('canvas');output.width=selectedFormat.width;output.height=selectedFormat.height;
-    output.getContext('2d').drawImage(canvas,0,0,output.width,output.height);
-    return output;
+    return canvas;
   },[selectedPhoto,displayName,headline,directContact,showLocation,location,showUnion,unionStatus,cardTags,qrDataUrl,publicSlug,photoZoom,photoPosX,photoPosY,selectedFormat]);
 
   const drawBackCard=useCallback(async()=>{
