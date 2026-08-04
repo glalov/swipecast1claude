@@ -29083,114 +29083,131 @@ function _abcRoundRect(ctx,x,y,w,h,r){
   ctx.quadraticCurveTo(x,y,x+r,y);
   ctx.closePath();
 }
-// Generate QR data URL via free public API — no library required
+// Generate the profile QR as a data URL. A second provider prevents a temporary
+// outage from leaving the card blank, and exports remain locked until one works.
 async function _abcGenerateQR(profileUrl){
-  const src=`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(profileUrl)}&color=1A1A2E&bgcolor=ffffff&format=png&margin=12&ecc=H`;
-  const img=await _abcLoadImg(src);
-  const c=document.createElement('canvas');
-  c.width=img.naturalWidth||400;c.height=img.naturalHeight||400;
-  c.getContext('2d').drawImage(img,0,0);
-  return c.toDataURL('image/png');
+  const encoded=encodeURIComponent(profileUrl);
+  const sources=[
+    `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encoded}&color=1A1A2E&bgcolor=ffffff&format=png&margin=12&ecc=H`,
+    `https://quickchart.io/qr?text=${encoded}&size=400&dark=1A1A2E&light=ffffff&ecLevel=H&margin=2`,
+  ];
+  let lastError=null;
+  for(const src of sources){
+    try{
+      const img=await _abcLoadImg(src);
+      const c=document.createElement('canvas');
+      c.width=img.naturalWidth||400;c.height=img.naturalHeight||400;
+      c.getContext('2d').drawImage(img,0,0);
+      return c.toDataURL('image/png');
+    }catch(e){lastError=e;}
+  }
+  throw lastError||new Error('qr-generation-failed');
 }
-// Draw A4 print sheet canvas (2cols × 5rows = 10 cards)
-async function _abcGeneratePrintSheet(cardCanvas){
-  // A4 at 300dpi: 2480 × 3508px
-  const A4W=2480,A4H=3508;
-  const CW=cardCanvas.width,CH=cardCanvas.height; // 1050 × 600
-  const COLS=2,ROWS=5,GAP=50;
-  const TW=COLS*CW+(COLS-1)*GAP,TH=ROWS*CH+(ROWS-1)*GAP;
-  const ML=Math.round((A4W-TW)/2),MT=Math.round((A4H-TH)/2);
-  const a4=document.createElement('canvas');
-  a4.width=A4W;a4.height=A4H;
-  const ctx=a4.getContext('2d');
-  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,A4W,A4H);
-  for(let row=0;row<ROWS;row++){
-    for(let col=0;col<COLS;col++){
+const ABC_CARD_FORMATS={
+  business:{key:'business',name:'Business Card',size:'3.5 × 2 in',use:'Auditions & networking',width:1050,height:600,photoPct:0.34,copies:10,cols:2,rows:5},
+  postcard:{key:'postcard',name:'Mailing Postcard',size:'6 × 4 in',use:'Agent updates & mailings',width:1800,height:1200,photoPct:0.45,copies:2,cols:1,rows:2},
+  agent:{key:'agent',name:'Agent Promo Card',size:'7 × 5 in',use:'Premium introductions',width:2100,height:1500,photoPct:0.43,copies:2,cols:1,rows:2},
+};
+const ABC_PAPER_SIZES={a4:{name:'A4',width:2480,height:3508,css:'210mm 297mm'},letter:{name:'US Letter',width:2550,height:3300,css:'8.5in 11in'}};
+
+async function _abcGeneratePrintSheet(cardCanvas,formatKey='business',paperKey='a4'){
+  const format=ABC_CARD_FORMATS[formatKey]||ABC_CARD_FORMATS.business;
+  const paper=ABC_PAPER_SIZES[paperKey]||ABC_PAPER_SIZES.a4;
+  const CW=cardCanvas.width,CH=cardCanvas.height,GAP=formatKey==='business'?50:60;
+  const TW=format.cols*CW+(format.cols-1)*GAP,TH=format.rows*CH+(format.rows-1)*GAP;
+  const ML=Math.round((paper.width-TW)/2),MT=Math.round((paper.height-TH)/2);
+  const sheet=document.createElement('canvas');sheet.width=paper.width;sheet.height=paper.height;
+  const ctx=sheet.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,paper.width,paper.height);
+  for(let row=0;row<format.rows;row++){
+    for(let col=0;col<format.cols;col++){
       const x=ML+col*(CW+GAP),y=MT+row*(CH+GAP);
       ctx.drawImage(cardCanvas,x,y);
-      // Crop marks — L-shaped at each corner
       ctx.strokeStyle='#BBBBBB';ctx.lineWidth=2;
-      const mO=12,mL=40;
+      const mO=12,mL=36;
       [[x,y,-1,-1],[x+CW,y,1,-1],[x,y+CH,-1,1],[x+CW,y+CH,1,1]].forEach(([cx,cy,hd,vd])=>{
         ctx.beginPath();ctx.moveTo(cx+hd*mO,cy);ctx.lineTo(cx+hd*(mO+mL),cy);ctx.stroke();
         ctx.beginPath();ctx.moveTo(cx,cy+vd*mO);ctx.lineTo(cx,cy+vd*(mO+mL));ctx.stroke();
       });
     }
   }
-  return a4;
+  return sheet;
+}
+function _abcCanvasPreviewDataUrl(canvas,maxWidth=720){
+  const scale=Math.min(1,maxWidth/canvas.width);
+  const preview=document.createElement('canvas');
+  preview.width=Math.max(1,Math.round(canvas.width*scale));
+  preview.height=Math.max(1,Math.round(canvas.height*scale));
+  const ctx=preview.getContext('2d');
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  ctx.drawImage(canvas,0,0,preview.width,preview.height);
+  return preview.toDataURL('image/png');
+}
+function _abcWrapCanvasText(ctx,text,maxWidth,maxLines){
+  const words=String(text||'').trim().split(/\s+/).filter(Boolean),lines=[];let line='';
+  for(const word of words){
+    const test=line?`${line} ${word}`:word;
+    if(ctx.measureText(test).width<=maxWidth){line=test;continue;}
+    if(line)lines.push(line);line=word;
+    if(lines.length===maxLines-1)break;
+  }
+  if(line&&lines.length<maxLines)lines.push(line);
+  if(words.length&&lines.join(' ').length<String(text||'').trim().length){
+    let last=lines[lines.length-1]||'';
+    while(last&&ctx.measureText(last+'…').width>maxWidth)last=last.slice(0,-1);
+    lines[lines.length-1]=last+'…';
+  }
+  return lines;
+}
+function _abcDrawCanvasLogo(ctx,x,y,size){
+  ctx.fillStyle='#1A1A2E';_abcRoundRect(ctx,x,y,size,size,Math.max(4,size*.18));ctx.fill();
+  ctx.fillStyle='#ffffff';ctx.save();ctx.translate(x,y);ctx.scale(size/32,size/32);
+  ctx.beginPath();ctx.moveTo(4,16);ctx.lineTo(12,9);ctx.lineTo(12,12);ctx.lineTo(20,12);ctx.lineTo(20,9);ctx.lineTo(28,16);ctx.lineTo(20,23);ctx.lineTo(20,20);ctx.lineTo(12,20);ctx.lineTo(12,23);ctx.closePath();ctx.fill();ctx.restore();
 }
 
-function ActorCardPreview({displayName,headline,directContact,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl,photoZoom,photoPosX,photoPosY,photoRef,onPhotoMouseDown,onPhotoTouchStart,isDragging,watermark}){
+function ActorCardPreview({formatKey='business',side='front',mailingMessage,displayName,headline,directContact,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl,photoZoom,photoPosX,photoPosY,photoRef,onPhotoMouseDown,onPhotoTouchStart,isDragging,watermark}){
+  const format=ABC_CARD_FORMATS[formatKey]||ABC_CARD_FORMATS.business;
+  const large=formatKey!=='business';
+  const logo=(<div style={{display:'flex',alignItems:'center',gap:6}}><div style={{width:large?22:19,height:large?22:19,background:'#1A1A2E',borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:'#fff'}}><LogoMark/></div><span style={{fontSize:large?9.5:9,fontWeight:800,color:'#1A1A2E',letterSpacing:1.5}}>CASTSLATE</span></div>);
   return(
-    <div style={{background:'#ffffff',border:'1.5px solid #E0E0E8',borderRadius:10,overflow:'hidden',boxShadow:'0 8px 40px rgba(26,26,46,0.15)',display:'flex',width:'100%',maxWidth:390,aspectRatio:'390 / 246',position:'relative',flexShrink:0}}>
+    <div style={{background:'#ffffff',border:'1.5px solid #E0E0E8',borderRadius:10,overflow:'hidden',boxShadow:'0 8px 40px rgba(26,26,46,0.15)',display:'flex',width:'100%',maxWidth:large?520:390,aspectRatio:`${format.width} / ${format.height}`,position:'relative',flexShrink:0}}>
       <div style={{position:'absolute',top:0,left:0,right:0,height:5,background:'#1A1A2E',zIndex:2}}/>
-      {watermark&&<div style={{position:'absolute',inset:0,zIndex:5,display:'flex',alignItems:'center',justifyContent:'center',pointerEvents:'none'}}>
-        <span style={{transform:'rotate(-16deg)',border:'2.5px solid rgba(26,26,46,0.18)',borderRadius:10,color:'rgba(26,26,46,0.22)',fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:26,letterSpacing:'0.22em',textTransform:'uppercase',padding:'7px 20px',background:'rgba(255,255,255,0.18)'}}>Preview</span>
-      </div>}
-      {/* Headshot — draggable, contain-based zoom */}
-      <div ref={photoRef} style={{width:'32.8%',flexShrink:0,position:'relative',marginTop:5,overflow:'hidden',cursor:headshotUrl?(isDragging?'grabbing':'grab'):'default',background:'#E8E8F2',userSelect:'none'}}
-        onMouseDown={onPhotoMouseDown}
-        onTouchStart={onPhotoTouchStart}
-      >
-        {headshotUrl?(
-          <>
-            {/* background-size:contain shows full image; scale(zoom) zooms in from anchor point */}
-            <div style={{
-              position:'absolute',inset:0,
-              backgroundImage:`url(${headshotUrl})`,
-              backgroundSize:'contain',
-              backgroundRepeat:'no-repeat',
-              backgroundPosition:`${photoPosX}% ${photoPosY}%`,
-              transform:`scale(${photoZoom})`,
-              transformOrigin:`${photoPosX}% ${photoPosY}%`,
-              pointerEvents:'none',
-              userSelect:'none',
-            }}/>
-            <div style={{position:'absolute',bottom:0,left:0,right:0,background:'linear-gradient(transparent,rgba(26,26,46,0.45))',padding:'10px 0 4px',textAlign:'center',pointerEvents:'none',zIndex:1}}>
-              <div style={{fontSize:7,color:'rgba(255,255,255,0.85)',letterSpacing:0.5,fontWeight:600}}>{photoZoom>1.05?'drag to reposition':'zoom in to crop'}</div>
+      {watermark&&<div style={{position:'absolute',inset:0,zIndex:5,display:'flex',alignItems:'center',justifyContent:'center',pointerEvents:'none'}}><span style={{transform:'rotate(-16deg)',border:'2.5px solid rgba(26,26,46,0.18)',borderRadius:10,color:'rgba(26,26,46,0.22)',fontWeight:800,fontSize:26,letterSpacing:'0.22em',textTransform:'uppercase',padding:'7px 20px',background:'rgba(255,255,255,0.18)'}}>Preview</span></div>}
+      {side==='back'&&large?(
+        <>
+          <div style={{width:'57%',padding:large?'24px 26px':'18px',display:'flex',flexDirection:'column',minWidth:0,marginTop:5}}>
+            {logo}
+            <div style={{fontSize:8,color:'#6340B4',fontWeight:800,letterSpacing:1.1,textTransform:'uppercase',marginTop:18}}>A personal note from</div>
+            <div style={{fontSize:24,fontWeight:800,color:'#1A1A2E',letterSpacing:-0.6,marginTop:3,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{displayName||'Your Name'}</div>
+            <div style={{fontSize:9.5,color:'#6B6B80',lineHeight:1.55,marginTop:10,flex:'1 1 auto',minHeight:76,overflow:'hidden'}}>{mailingMessage}</div>
+            <div style={{paddingTop:9,borderTop:'1px solid #EDEDF0',display:'flex',alignItems:'flex-end',justifyContent:'flex-end'}}>
+              {qrDataUrl?<img src={qrDataUrl} alt="QR code" style={{width:45,height:45,display:'block',flexShrink:0}}/>:<div style={{width:45,height:45,display:'grid',placeItems:'center',flexShrink:0,border:'1px dashed #C8C3D3',borderRadius:3,color:'#8E8EA0',fontSize:8,fontWeight:700}}>QR</div>}
             </div>
-          </>
-        ):(
-          <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:36,color:'#C0C0D0'}}><Ico n="user" s={22}/></div>
-        )}
-      </div>
-      {/* Info */}
-      <div style={{flex:1,padding:'16px 14px 12px',display:'flex',flexDirection:'column',minWidth:0,marginTop:5,overflow:'hidden'}}>
-        <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:10}}>
-          <div style={{width:19,height:19,background:'#1A1A2E',borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-            <svg viewBox="0 0 32 32" width={11} height={11}><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg>
           </div>
-          <span style={{fontSize:9,fontWeight:800,color:'#1A1A2E',letterSpacing:1.5,textTransform:'uppercase'}}>CASTSLATE</span>
-        </div>
-        <div style={{fontWeight:800,fontSize:17,color:'#1A1A2E',letterSpacing:-0.5,lineHeight:1.15,marginBottom:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{displayName||'Your Name'}</div>
-        <div style={{fontSize:11,color:'#6B6B80',marginBottom:4,fontWeight:500}}>{headline||'Actor'}</div>
-        {showLocation&&location&&<div style={{fontSize:10,color:'#8E8EA0',marginBottom:5,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{location}</div>}
-        {tags&&tags.length>0&&(
-          <div style={{display:'flex',gap:4,flexWrap:'nowrap',marginBottom:5,overflow:'hidden'}}>
-            {tags.slice(0,3).map((tag,i)=>(
-              <span key={i} style={{fontSize:8,fontWeight:600,padding:'2px 7px',borderRadius:4,background:'#F0F0F8',color:'#1A1A2E',border:'1px solid #E0E0F0',whiteSpace:'nowrap',flexShrink:0}}>{tag}</span>
-            ))}
+          <div style={{width:'43%',position:'relative',marginTop:5,borderLeft:'1px dashed #C9C3B8',background:'#FAF8F4'}}>
+            <div style={{position:'absolute',left:16,top:16,fontSize:5.5,color:'#8E8EA0',maxWidth:'55%'}}>FROM: {(displayName||'YOUR NAME').toUpperCase()} · {location||'NEW YORK, NY'}</div>
+            <div style={{position:'absolute',right:14,top:14,width:48,height:56,border:'1px dashed #AAA294',display:'grid',placeItems:'center',fontSize:5.5,color:'#8E8EA0',textAlign:'center',lineHeight:1.35}}>PLACE<br/>STAMP<br/>HERE</div>
+            <div style={{position:'absolute',left:24,right:24,top:'47%',display:'flex',flexDirection:'column',gap:12}}>{[0,1,2,3].map(i=><span key={i} style={{borderBottom:'1px solid #BDB6AC'}}/>)}</div>
+            <div style={{position:'absolute',left:14,right:14,bottom:13,paddingTop:7,borderTop:'1px solid #DDD7CD',fontSize:5.5,color:'#8E8EA0',textAlign:'center'}}>{formatKey==='postcard'?'USPS POSTCARD-FRIENDLY FORMAT':'VISIBLE FLAT-CARD MAILING · CONFIRM CURRENT POSTAGE'}</div>
           </div>
-        )}
-        {showUnion&&unionStatus&&<div style={{fontSize:9.5,fontWeight:700,color:unionStatus.toLowerCase().includes('non')?'#8E8EA0':'#2563EB',marginBottom:5}}>{unionStatus}</div>}
-        {directContact&&<div style={{fontSize:8.5,color:'#6B6B80',marginBottom:5,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}><span style={{fontWeight:700,color:'#1A1A2E'}}>Direct contact: </span>{directContact}</div>}
-        <div style={{flex:1}}/>
-        <div style={{borderTop:'1px solid #EDEDF0',paddingTop:7,display:'flex',alignItems:'flex-end',justifyContent:'space-between',gap:8}}>
-          <div style={{minWidth:0,flex:1}}>
-            <div style={{fontSize:8,color:'#9090A0',lineHeight:1.4}}>castslate.com/talent/</div>
-            <div style={{fontSize:10,fontWeight:700,color:'#1A1A2E',lineHeight:1.3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{publicSlug||'your-profile'}</div>
+        </>
+      ):(
+        <>
+          <div ref={photoRef} style={{width:`${format.photoPct*100}%`,flexShrink:0,position:'relative',marginTop:5,overflow:'hidden',cursor:headshotUrl?(isDragging?'grabbing':'grab'):'default',background:'#E8E8F2',userSelect:'none'}} onMouseDown={onPhotoMouseDown} onTouchStart={onPhotoTouchStart}>
+            {headshotUrl?<><div style={{position:'absolute',inset:0,backgroundImage:`url(${headshotUrl})`,backgroundSize:'contain',backgroundRepeat:'no-repeat',backgroundPosition:`${photoPosX}% ${photoPosY}%`,transform:`scale(${photoZoom})`,transformOrigin:`${photoPosX}% ${photoPosY}%`,pointerEvents:'none',userSelect:'none'}}/>{!large&&<div style={{position:'absolute',bottom:0,left:0,right:0,background:'linear-gradient(transparent,rgba(26,26,46,0.45))',padding:'10px 0 4px',pointerEvents:'none',zIndex:1,color:'#fff'}}><div style={{fontSize:7,textAlign:'center',color:'rgba(255,255,255,0.85)',letterSpacing:0.5,fontWeight:600}}>{photoZoom>1.05?'drag to reposition':'zoom in to crop'}</div></div>}</>:<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:36,color:'#C0C0D0'}}><Ico n="user" s={22}/></div>}
           </div>
-          <div style={{flexShrink:0,textAlign:'center'}}>
-            {qrDataUrl?(
-              <><img src={qrDataUrl} alt="QR code" style={{width:46,height:46,display:'block',borderRadius:2}}/><div style={{fontSize:6,color:'#9090A0',letterSpacing:0.3,marginTop:2,whiteSpace:'nowrap'}}>SCAN TO VIEW</div></>
-            ):(
-              <div style={{width:46,height:46,background:'#F0F0F8',borderRadius:4,border:'1.5px dashed #D0D0E0',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                <div style={{fontSize:8,color:'#C0C0D0',fontWeight:700}}>QR</div>
-              </div>
-            )}
+          <div style={{flex:1,padding:large?'22px 22px 15px':'16px 14px 12px',display:'flex',flexDirection:'column',minWidth:0,marginTop:5,overflow:'hidden'}}>
+            <div style={{marginBottom:large?13:10}}>{logo}</div>
+            <div style={{fontWeight:800,fontSize:large?25:17,color:'#1A1A2E',letterSpacing:large?-0.8:-0.5,lineHeight:1.15,marginBottom:4,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{displayName||'Your Name'}</div>
+            <div style={{fontSize:large?13:11,color:'#6B6B80',marginBottom:4,fontWeight:600}}>{headline||'Actor'}</div>
+            {showLocation&&location&&<div style={{fontSize:large?10.5:10,color:'#8E8EA0',marginBottom:5,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{location}</div>}
+            {tags&&tags.length>0&&<div style={{display:'flex',gap:4,flexWrap:'nowrap',marginBottom:5,overflow:'hidden'}}>{tags.slice(0,3).map((tag,i)=><span key={i} style={{fontSize:large?8.5:8,fontWeight:600,padding:'2px 7px',borderRadius:4,background:'#F0F0F8',color:'#1A1A2E',border:'1px solid #E0E0F0',whiteSpace:'nowrap',flexShrink:0}}>{tag}</span>)}</div>}
+            {showUnion&&unionStatus&&<div style={{fontSize:large?10:9.5,fontWeight:700,color:unionStatus.toLowerCase().includes('non')?'#8E8EA0':'#2563EB',marginBottom:5}}>{unionStatus}</div>}
+            {directContact&&<div style={{fontSize:large?9.5:8.5,color:'#6B6B80',marginBottom:5,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}><span style={{fontWeight:700,color:'#1A1A2E'}}>Direct contact: </span>{directContact}</div>}
+            <div style={{flex:1}}/>
+            <div style={{borderTop:'1px solid #EDEDF0',paddingTop:7,display:'flex',alignItems:'flex-end',justifyContent:'space-between',gap:8}}><div style={{minWidth:0,flex:1}}><div style={{fontSize:8,color:'#9090A0',lineHeight:1.4}}>castslate.com/talent/</div><div style={{fontSize:10,fontWeight:700,color:'#1A1A2E',lineHeight:1.3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{publicSlug||'your-profile'}</div></div><div style={{flexShrink:0,textAlign:'center'}}>{qrDataUrl?<><img src={qrDataUrl} alt="QR code" style={{width:large?54:46,height:large?54:46,display:'block',borderRadius:2}}/><div style={{fontSize:6,color:'#9090A0',letterSpacing:0.3,marginTop:2,whiteSpace:'nowrap'}}>SCAN TO VIEW</div></>:<div style={{width:46,height:46,background:'#F0F0F8',borderRadius:4,border:'1.5px dashed #D0D0E0',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontSize:8,color:'#C0C0D0',fontWeight:700}}>QR</div></div>}</div></div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }
@@ -29218,21 +29235,32 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   const [displayName,setDisplayName]=useState(myProfile?.display_name||'');
   const [headline,setHeadline]=useState('Actor');
   const [directContact,setDirectContact]=useState('');
+  const [cardFormat,setCardFormat]=useState('business');
+  const [cardSide,setCardSide]=useState('front');
+  const [paperSize,setPaperSize]=useState('a4');
+  const [printMode,setPrintMode]=useState('manual');
+  const [printPreviewSide,setPrintPreviewSide]=useState('front');
+  const [printSheetPreview,setPrintSheetPreview]=useState({front:'',back:''});
+  const [printSheetPreviewLoading,setPrintSheetPreviewLoading]=useState(false);
+  const [mailingMessage,setMailingMessage]=useState("I'm seeking representation and would love to connect. Scan the QR code to view my headshots, reel, credits, and current availability.");
   const [showLocation,setShowLocation]=useState(true);
   const [showUnion,setShowUnion]=useState(true);
   const [qrDataUrl,setQrDataUrl]=useState(null);
   const [qrLoading,setQrLoading]=useState(false);
   const [qrErr,setQrErr]=useState(false);
+  const [qrRetryNonce,setQrRetryNonce]=useState(0);
   const [generating,setGenerating]=useState(false);
   const [pdfGenerating,setPdfGenerating]=useState(false);
   const [downloadErr,setDownloadErr]=useState('');
 
-  const cardTags=Array.isArray(myProfile?.skills)?myProfile.skills.filter(Boolean).slice(0,3):[];
+  const cardTags=useMemo(()=>Array.isArray(myProfile?.skills)?myProfile.skills.filter(Boolean).slice(0,3):[],[myProfile?.skills]);
   const unionStatus=myProfile?.union_status||'';
   const location=myProfile?.location||'';
+  const selectedFormat=ABC_CARD_FORMATS[cardFormat]||ABC_CARD_FORMATS.business;
 
   // Reset crop when photo changes
   useEffect(()=>{setPhotoZoom(1);setPhotoPosX(50);setPhotoPosY(50);},[selectedPhoto]);
+  useEffect(()=>{if(cardFormat==='business'){if(cardSide==='back')setCardSide('front');if(printPreviewSide==='back')setPrintPreviewSide('front');}},[cardFormat,cardSide,printPreviewSide]);
 
   // Generate real QR code via free public API — no library required
   useEffect(()=>{
@@ -29242,7 +29270,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
       .then(url=>{setQrDataUrl(url);setQrErr(false);})
       .catch(()=>setQrErr(true))
       .finally(()=>setQrLoading(false));
-  },[profileUrl]);
+  },[profileUrl,qrRetryNonce]);
 
   // Drag handlers for headshot crop
   const handlePhotoMouseDown=useCallback((e)=>{
@@ -29274,17 +29302,16 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   },[isDragging,photoZoom]);
 
   const drawCard=useCallback(async()=>{
-    // CW/CH/PW/TB scaled to exactly match the preview card proportions (390×246, photo 128px, top-bar 5px)
-    // so the downloaded card looks identical to the live card preview.
-    const CW=1050,CH=662;
-    const TB=14; // top bar height (5px preview × 2.692 scale)
+    // Render a clean master, then scale it to the exact 300 dpi format dimensions.
+    const CH=600,CW=Math.round(CH*selectedFormat.width/selectedFormat.height);
+    const TB=14;
     const canvas=document.createElement('canvas');
     canvas.width=CW;canvas.height=CH;
     const ctx=canvas.getContext('2d');
     ctx.fillStyle='#ffffff';ctx.fillRect(0,0,CW,CH);
     ctx.fillStyle='#1A1A2E';ctx.fillRect(0,0,CW,TB);
 
-    const PW=344; // 128px preview × 2.692 scale — keeps photo area aspect ratio identical
+    const PW=Math.round(CW*selectedFormat.photoPct);
     if(selectedPhoto){
       try{
         const img=await _abcLoadImg(selectedPhoto);
@@ -29401,44 +29428,110 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
         ctx.textAlign='left';
       }catch(e){}
     }
-    return canvas;
-  },[selectedPhoto,displayName,headline,directContact,showLocation,location,showUnion,unionStatus,cardTags,qrDataUrl,publicSlug,photoZoom,photoPosX,photoPosY]);
+    if(selectedFormat.width===CW&&selectedFormat.height===CH)return canvas;
+    const output=document.createElement('canvas');output.width=selectedFormat.width;output.height=selectedFormat.height;
+    output.getContext('2d').drawImage(canvas,0,0,output.width,output.height);
+    return output;
+  },[selectedPhoto,displayName,headline,directContact,showLocation,location,showUnion,unionStatus,cardTags,qrDataUrl,publicSlug,photoZoom,photoPosX,photoPosY,selectedFormat]);
 
-  const handleDownloadPNG=async()=>{
+  const drawBackCard=useCallback(async()=>{
+    const format=selectedFormat,CW=format.width,CH=format.height;
+    const canvas=document.createElement('canvas');canvas.width=CW;canvas.height=CH;
+    const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,CW,CH);
+    ctx.fillStyle='#1A1A2E';ctx.fillRect(0,0,CW,Math.max(12,Math.round(CH*.012)));
+    const leftW=Math.round(CW*.57),pad=Math.round(CH*.055),logoSize=Math.round(CH*.052);
+    _abcDrawCanvasLogo(ctx,pad,pad,logoSize);
+    ctx.fillStyle='#1A1A2E';ctx.font=`bold ${Math.round(CH*.027)}px Arial,sans-serif`;ctx.fillText('CASTSLATE',pad+logoSize+Math.round(CH*.018),pad+logoSize*.72);
+    let y=pad+logoSize+Math.round(CH*.08);
+    ctx.fillStyle='#6340B4';ctx.font=`bold ${Math.round(CH*.018)}px Arial,sans-serif`;ctx.fillText('A PERSONAL NOTE FROM',pad,y);
+    y+=Math.round(CH*.057);ctx.fillStyle='#1A1A2E';ctx.font=`bold ${Math.round(CH*.06)}px Arial,sans-serif`;
+    const originalBackName=displayName||'Your Name';let backName=originalBackName;while(ctx.measureText(backName).width>leftW-pad*2&&backName.length>3)backName=backName.slice(0,-1);if(backName!==originalBackName)backName+='…';ctx.fillText(backName,pad,y);
+    y+=Math.round(CH*.06);ctx.fillStyle='#6B6B80';ctx.font=`${Math.round(CH*.024)}px Arial,sans-serif`;
+    const messageLines=_abcWrapCanvasText(ctx,mailingMessage,leftW-pad*2,5),lineH=Math.round(CH*.034);
+    messageLines.forEach((line,i)=>ctx.fillText(line,pad,y+i*lineH));
+    if(qrDataUrl){try{const qr=await _abcLoadImg(qrDataUrl);const qs=Math.round(CH*.14);ctx.drawImage(qr,leftW-pad-qs,CH-pad-qs,qs,qs);}catch(e){}}
+    ctx.fillStyle='#FAF8F4';ctx.fillRect(leftW,Math.max(12,Math.round(CH*.012)),CW-leftW,CH);
+    ctx.save();ctx.setLineDash([12,10]);ctx.strokeStyle='#BDB6AC';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(leftW,0);ctx.lineTo(leftW,CH);ctx.stroke();ctx.restore();
+    ctx.fillStyle='#8E8EA0';ctx.font=`${Math.round(CH*.014)}px Arial,sans-serif`;ctx.fillText(`FROM: ${(displayName||'YOUR NAME').toUpperCase()} · ${(location||'NEW YORK, NY').toUpperCase()}`,leftW+pad*.65,pad);
+    const stampW=Math.round(CH*.15),stampH=Math.round(CH*.18),stampX=CW-pad*.65-stampW,stampY=pad*.65;
+    ctx.save();ctx.setLineDash([9,7]);ctx.strokeStyle='#AAA294';ctx.strokeRect(stampX,stampY,stampW,stampH);ctx.restore();ctx.textAlign='center';ctx.fillStyle='#8E8EA0';ctx.font=`bold ${Math.round(CH*.013)}px Arial,sans-serif`;ctx.fillText('PLACE STAMP HERE',stampX+stampW/2,stampY+stampH/2);ctx.textAlign='left';
+    const lineLeft=leftW+pad,lineRight=CW-pad,lineStart=Math.round(CH*.5),lineGap=Math.round(CH*.075);ctx.strokeStyle='#BDB6AC';ctx.lineWidth=2;
+    for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(lineLeft,lineStart+i*lineGap);ctx.lineTo(lineRight,lineStart+i*lineGap);ctx.stroke();}
+    ctx.strokeStyle='#DDD7CD';ctx.beginPath();ctx.moveTo(leftW+pad*.65,CH-pad);ctx.lineTo(CW-pad*.65,CH-pad);ctx.stroke();ctx.textAlign='center';ctx.fillStyle='#8E8EA0';ctx.font=`${Math.round(CH*.014)}px Arial,sans-serif`;ctx.fillText(cardFormat==='postcard'?'USPS POSTCARD-FRIENDLY FORMAT':'VISIBLE FLAT-CARD MAILING · CONFIRM CURRENT POSTAGE',leftW+(CW-leftW)/2,CH-pad*.55);ctx.textAlign='left';
+    return canvas;
+  },[selectedFormat,displayName,location,mailingMessage,qrDataUrl,cardFormat]);
+
+  // The on-page sheet preview is produced by the exact same card and sheet
+  // canvases as the downloaded print document, so no fields or crop changes
+  // can disappear between preview and print.
+  useEffect(()=>{
+    let active=true;
+    const timer=setTimeout(async()=>{
+      setPrintSheetPreviewLoading(true);
+      try{
+        const frontCanvas=await drawCard();
+        const frontSheet=await _abcGeneratePrintSheet(frontCanvas,cardFormat,paperSize);
+        let back='';
+        if(cardFormat!=='business'){
+          const backCanvas=await drawBackCard();
+          const backSheet=await _abcGeneratePrintSheet(backCanvas,cardFormat,paperSize);
+          back=_abcCanvasPreviewDataUrl(backSheet);
+        }
+        if(active)setPrintSheetPreview({front:_abcCanvasPreviewDataUrl(frontSheet),back});
+      }catch(e){
+        console.error('[abc-sheet-preview]',e);
+        if(active)setPrintSheetPreview({front:'',back:''});
+      }finally{
+        if(active)setPrintSheetPreviewLoading(false);
+      }
+    },180);
+    return()=>{active=false;clearTimeout(timer);};
+  },[drawCard,drawBackCard,cardFormat,paperSize]);
+
+  const handleDownloadPNG=async(side='front')=>{
     if(!isPremium){setDownloadErr('Actor Business Card downloads are included with Premium. Upgrade to create and download your actor card.');return;}
     if(!selectedPhoto){setDownloadErr('Upload a headshot before creating your actor card.');return;}
+    if(!qrDataUrl){setDownloadErr('Your profile QR code must be ready before downloading. Please retry the QR code first.');return;}
     setGenerating(true);setDownloadErr('');
     try{
-      const canvas=await drawCard();
+      const canvas=side==='back'&&cardFormat!=='business'?await drawBackCard():await drawCard();
       const url=canvas.toDataURL('image/png');
       const a=document.createElement('a');a.href=url;
-      a.download=`${(displayName||'actor').toLowerCase().replace(/\s+/g,'-')}-cast-slate-card.png`;
+      a.download=`${(displayName||'actor').toLowerCase().replace(/\s+/g,'-')}-cast-slate-${cardFormat}-${side}.png`;
       document.body.appendChild(a);a.click();document.body.removeChild(a);
     }catch(e){setDownloadErr('Could not generate card. Please try again.');}
     setGenerating(false);
   };
 
-  // PDF: draws A4 canvas (10 cards + crop marks) and opens print/save dialog
+  // Print/PDF: page 1 contains fronts; two-sided formats add an aligned page 2 of backs.
   const handleDownloadPDF=async()=>{
     if(!isPremium){setDownloadErr('Actor Business Card downloads are included with Premium. Upgrade to create and print your card.');return;}
     if(!selectedPhoto){setDownloadErr('Upload a headshot before creating your actor card.');return;}
+    if(!qrDataUrl){setDownloadErr('Your profile QR code must be ready before creating a print sheet. Please retry the QR code first.');return;}
     setPdfGenerating(true);setDownloadErr('');
     try{
-      const cardCanvas=await drawCard();
-      const a4Canvas=await _abcGeneratePrintSheet(cardCanvas);
-      const dataUrl=a4Canvas.toDataURL('image/png');
+      const frontCanvas=await drawCard();
+      const frontSheet=await _abcGeneratePrintSheet(frontCanvas,cardFormat,paperSize);
+      const frontUrl=frontSheet.toDataURL('image/png');
+      let backUrl='';
+      if(cardFormat!=='business'){
+        const backCanvas=await drawBackCard();
+        const backSheet=await _abcGeneratePrintSheet(backCanvas,cardFormat,paperSize);
+        backUrl=backSheet.toDataURL('image/png');
+      }
       const slug=(displayName||'actor').toLowerCase().replace(/\s+/g,'-');
-      // Open print-ready window — user can File → Print → Save as PDF
       const win=window.open('','_blank','width=900,height=1100,menubar=yes,toolbar=yes');
       if(win){
-        win.document.write(`<!DOCTYPE html><html><head><title>${displayName||'Actor'} — Actor Business Card Print Sheet</title><style>@page{size:A4 portrait;margin:0}*{margin:0;padding:0}body{background:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh}img{width:210mm;height:297mm;display:block}@media print{html,body{width:210mm;height:297mm;display:block}img{width:210mm;height:297mm;page-break-after:avoid}}</style></head><body><img src="${dataUrl}" onload="setTimeout(function(){window.print();},500)"/></body></html>`);
+        const paperCss=ABC_PAPER_SIZES[paperSize].css;
+        const safeTitle=String(displayName||'Actor').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+        const instructions=cardFormat==='business'?'Print at 100% or Actual Size.':printMode==='duplex'?'Choose Two-Sided, 100% or Actual Size, and start with Flip on long edge. Test one sheet first.':'Print page 1 first. Reinsert the same sheet according to your printer feed direction, then print page 2. Test on ordinary paper first.';
+        win.document.write(`<!DOCTYPE html><html><head><title>${safeTitle} — ${selectedFormat.name} Print Sheet</title><style>@page{size:${paperCss};margin:0}*{box-sizing:border-box}html,body{margin:0;background:#ececf2;font-family:Arial,sans-serif}.instructions{max-width:760px;margin:20px auto;padding:18px 20px;background:#fff;border:1px solid #ddd;border-radius:10px;color:#1A1A2E;line-height:1.55}.instructions strong{display:block;margin-bottom:5px}.page{width:${paperSize==='a4'?'210mm':'8.5in'};height:${paperSize==='a4'?'297mm':'11in'};margin:18px auto;background:#fff;page-break-after:always}.page:last-child{page-break-after:auto}.page img{width:100%;height:100%;display:block}@media print{html,body{background:#fff}.instructions{display:none}.page{margin:0}}</style></head><body><div class="instructions"><strong>${cardFormat==='business'?'Single-sided print sheet':printMode==='duplex'?'Automatic two-sided printing':'Manual two-pass printing'}</strong>${instructions}</div><div class="page"><img src="${frontUrl}"/></div>${backUrl?`<div class="page"><img src="${backUrl}"/></div>`:''}<script>Promise.all(Array.from(document.images).map(function(img){return img.decode?img.decode():Promise.resolve()})).then(function(){setTimeout(function(){window.print()},350)})</script></body></html>`);
         win.document.close();
       }else{
-        // Popup blocked → direct PNG download as fallback
-        const a=document.createElement('a');a.href=dataUrl;
-        a.download=`${slug}-cast-slate-print-sheet.png`;
+        const a=document.createElement('a');a.href=frontUrl;
+        a.download=`${slug}-cast-slate-${cardFormat}-front-sheet.png`;
         document.body.appendChild(a);a.click();document.body.removeChild(a);
-        setDownloadErr('Popup blocked — downloaded as PNG. Open the file and print at 100% scale on A4 paper.');
+        setDownloadErr('Popup blocked — downloaded the front sheet as a PNG. Allow popups to open the full print-ready document.');
       }
     }catch(e){console.error('[abc-pdf]',e);setDownloadErr('Could not generate print sheet. Please try again.');}
     setPdfGenerating(false);
@@ -29466,8 +29559,25 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
           <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(99,60,180,0.08)',border:'1px solid rgba(99,60,180,0.2)',padding:'5px 14px',borderRadius:100,fontSize:11,color:'var(--acc)',fontWeight:800,letterSpacing:1,textTransform:'uppercase',marginBottom:12}}>
             <span style={{width:6,height:6,borderRadius:'50%',background:'var(--acc)'}}/>{isPremium?'Premium Feature':'Free Preview'}
           </div>
-          <h1 style={{fontWeight:800,fontSize:isMobile?24:30,letterSpacing:-0.8,color:'var(--t1)',marginBottom:8,margin:'0 0 8px'}}>Actor Business Card</h1>
-          <p style={{color:'var(--t2)',fontSize:15,margin:0}}>{isPremium?'Create a downloadable actor card with your headshot and a unique QR code linking directly to your Cast Slate profile.':'Build your actor card live below — it uses your real headshot, name, and profile. Customize it free; upgrade to Premium to download and print.'}</p>
+          <h1 style={{fontWeight:800,fontSize:isMobile?24:30,letterSpacing:-0.8,color:'var(--t1)',marginBottom:8,margin:'0 0 8px'}}>Actor Card Formats</h1>
+          <p style={{color:'var(--t2)',fontSize:15,margin:0}}>{isPremium?'Create a business card, mailing postcard, or agent promo card with your headshot and a QR code linking directly to your Cast Slate profile.':'Build your actor card live below — it uses your real headshot, name, and profile. Customize it free; upgrade to Premium to download and print.'}</p>
+        </div>
+
+        <div style={{background:'var(--s1)',border:'1px solid var(--bdr)',borderRadius:14,padding:20,marginBottom:28}}>
+          <div style={{fontWeight:700,fontSize:14,color:'var(--t1)',marginBottom:12}}>Choose Card Format</div>
+          <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(3,1fr)',gap:10}}>
+            {Object.values(ABC_CARD_FORMATS).map(format=><button key={format.key} type="button" onClick={()=>{setCardFormat(format.key);setCardSide('front');}} style={{position:'relative',textAlign:'left',padding:'14px 15px',borderRadius:10,border:`${cardFormat===format.key?2:1}px solid ${cardFormat===format.key?'var(--acc)':'var(--bdr)'}`,background:cardFormat===format.key?'rgba(99,60,180,0.055)':'var(--bg)',cursor:'pointer',color:'var(--t1)'}}>
+              <div style={{fontSize:9,fontWeight:800,letterSpacing:.8,color:'var(--acc)',textTransform:'uppercase',marginBottom:4}}>{format.key==='business'?'Pocket size':format.key==='postcard'?'Postcard mailing':'More room'}</div>
+              <div style={{fontSize:14,fontWeight:800}}>{format.name}</div>
+              <div style={{fontSize:11,color:'var(--t2)',fontWeight:600,marginTop:2}}>{format.size}</div>
+              <div style={{fontSize:10,color:'var(--t3)',marginTop:5}}>{format.use}</div>
+              {cardFormat===format.key&&<span style={{position:'absolute',right:10,top:10,width:19,height:19,borderRadius:'50%',background:'var(--acc)',color:'#fff',display:'grid',placeItems:'center',fontSize:11,fontWeight:800}}>✓</span>}
+            </button>)}
+          </div>
+          {cardFormat!=='business'&&<div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,marginTop:13,paddingTop:13,borderTop:'1px solid var(--bdr)',flexWrap:'wrap'}}>
+            <div><div style={{fontSize:12,fontWeight:700,color:'var(--t1)'}}>Two-sided card</div><div style={{fontSize:10.5,color:'var(--t3)',marginTop:2}}>Preview the actor side and the mailing side.</div></div>
+            <div style={{display:'flex',padding:3,border:'1px solid var(--bdr)',borderRadius:9,background:'var(--bg)'}}><button type="button" onClick={()=>setCardSide('front')} style={{border:0,borderRadius:6,padding:'7px 15px',background:cardSide==='front'?'var(--t1)':'transparent',color:cardSide==='front'?'var(--bg)':'var(--t2)',fontSize:11,fontWeight:700,cursor:'pointer'}}>Front</button><button type="button" onClick={()=>setCardSide('back')} style={{border:0,borderRadius:6,padding:'7px 15px',background:cardSide==='back'?'var(--t1)':'transparent',color:cardSide==='back'?'var(--bg)':'var(--t2)',fontSize:11,fontWeight:700,cursor:'pointer'}}>Back</button></div>
+          </div>}
         </div>
 
         <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:32,alignItems:'start'}}>
@@ -29476,8 +29586,11 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
               while the user scrolls the controls (e.g. the position slider). */}
           {isMobile&&(
             <div style={{display:'flex',flexDirection:'column',gap:10,alignItems:'center',position:'sticky',top:'calc(var(--site-top-h, 56px) + 8px)',zIndex:5,background:'var(--bg)',paddingBottom:10,width:'100%'}}>
-              <div style={{fontWeight:700,fontSize:11,color:'var(--t3)',textTransform:'uppercase',letterSpacing:1}}>Live Card Preview</div>
+              <div style={{fontWeight:700,fontSize:11,color:'var(--t3)',textTransform:'uppercase',letterSpacing:1}}>Live {selectedFormat.name} Preview · {cardSide}</div>
               <ActorCardPreview
+                formatKey={cardFormat}
+                side={cardSide}
+                mailingMessage={mailingMessage}
                 displayName={displayName}
                 headline={headline}
                 directContact={directContact}
@@ -29574,31 +29687,56 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
               </div>
             </div>
 
+            {cardFormat!=='business'&&(
+              <div style={{background:'var(--s1)',border:'1px solid var(--bdr)',borderRadius:14,padding:20}}>
+                <h3 style={{fontWeight:700,fontSize:14,margin:'0 0 14px',color:'var(--t1)'}}>Back Side Mailing Message</h3>
+                <label style={{fontSize:12,fontWeight:600,color:'var(--t2)',marginBottom:4,display:'block'}}>Personal note to agents</label>
+                <textarea value={mailingMessage} onChange={e=>setMailingMessage(e.target.value)} maxLength={260} style={{width:'100%',minHeight:100,padding:'10px 12px',borderRadius:8,border:'1px solid var(--bdr)',fontSize:13,lineHeight:1.5,background:'var(--bg)',color:'var(--t1)',boxSizing:'border-box',fontFamily:'inherit',resize:'vertical'}}/>
+                <div style={{fontSize:10,color:'var(--t3)',textAlign:'right',marginTop:4}}>{mailingMessage.length}/260</div>
+                <div style={{marginTop:10,padding:'10px 12px',borderRadius:8,background:'rgba(99,60,180,0.05)',border:'1px solid rgba(99,60,180,0.12)',fontSize:11,color:'var(--t2)',lineHeight:1.5}}>{cardFormat==='postcard'?'The address and stamp areas are reserved automatically for postcard mailing.':'Designed to mail as a visible flat card; confirm current postage before sending.'}</div>
+              </div>
+            )}
+
             {/* QR status */}
             <div style={{background:'rgba(37,99,235,0.04)',border:'1px solid rgba(37,99,235,0.15)',borderRadius:10,padding:'12px 16px'}}>
               <div style={{fontSize:12,fontWeight:700,color:'var(--acc)',marginBottom:3,display:'flex',alignItems:'center',gap:6}}>
                 {qrLoading?'⏳ Generating your QR code…':qrDataUrl?'Your unique QR code is ready':'Your Unique QR Code'}
               </div>
               <div style={{fontSize:11.5,color:'var(--t2)',lineHeight:1.5,wordBreak:'break-all'}}>Links to: <span style={{fontFamily:'monospace',color:'var(--t1)',fontWeight:600}}>{profileUrl}</span></div>
-              {qrErr&&<div style={{fontSize:11,color:'var(--red)',marginTop:6}}><Ico n="alert-triangle" s={22}/> Could not load QR. Check your connection and refresh.</div>}
+              {qrErr&&<div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,marginTop:8,paddingTop:8,borderTop:'1px solid rgba(37,99,235,0.12)'}}><span style={{fontSize:11,color:'var(--red)',lineHeight:1.4}}><Ico n="alert-triangle" s={22}/> Your QR code needs another try.</span><button type="button" className="btn-s btn-sm" onClick={()=>setQrRetryNonce(n=>n+1)} disabled={qrLoading} style={{flexShrink:0,fontSize:10}}>Retry QR</button></div>}
             </div>
 
             {/* Download section */}
             {!isPremium?(
               <div style={{padding:'20px',background:'linear-gradient(135deg,rgba(99,60,180,0.06),rgba(99,60,180,0.02))',border:'1px solid rgba(99,60,180,0.22)',borderRadius:14,textAlign:'center'}}>
-                <div style={{fontSize:15,fontWeight:800,color:'var(--t1)',marginBottom:8}}>Actor Business Card — Premium</div>
-                <p style={{fontSize:13,color:'var(--t2)',margin:'0 0 14px',lineHeight:1.65}}>Free users can preview the card. Upgrade to Premium to download and print your actor business card.</p>
+                <div style={{fontSize:15,fontWeight:800,color:'var(--t1)',marginBottom:8}}>Actor Card Formats — Premium</div>
+                <p style={{fontSize:13,color:'var(--t2)',margin:'0 0 14px',lineHeight:1.65}}>Free users can preview every format. Upgrade to Premium to download and print your business card, mailing postcard, or agent promo card.</p>
                 <button className="btn-p" onClick={()=>onNavigate('membership')} style={{padding:'12px 24px',fontSize:14}}>Upgrade to Premium →</button>
               </div>
             ):(
-              <div style={{display:'flex',flexDirection:'column',gap:10}}>
-                <div style={{fontSize:12,color:'var(--t3)',marginBottom:2}}>Your A4 PDF will include 10 copies of your actor card on one sheet, with cut guides for trimming after printing.</div>
-                <button className="btn-p" onClick={handleDownloadPDF} disabled={pdfGenerating||qrLoading||allPhotos.length===0} style={{padding:'15px 20px',fontSize:15,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',gap:9,borderRadius:10,opacity:(pdfGenerating||qrLoading||allPhotos.length===0)?0.65:1}}>
-                  {pdfGenerating?<>⏳ Generating print sheet…</>:<><Ico n="arrow-down" s={24}/> Print / Save A4 Sheet PDF</>}
-                </button>
-                <button className="btn-s btn-sm" onClick={handleDownloadPNG} disabled={generating||qrLoading||allPhotos.length===0} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:7,opacity:(generating||qrLoading||allPhotos.length===0)?0.6:1}}>
-                  {generating?'Generating…':'Download Single Card PNG'}
-                </button>
+              <div style={{display:'flex',flexDirection:'column',gap:12,background:'var(--s1)',border:'1px solid var(--bdr)',borderRadius:14,padding:18}}>
+                <div style={{fontSize:14,fontWeight:800,color:'var(--t1)'}}>Print &amp; Download</div>
+                {cardFormat!=='business'&&<>
+                  <div style={{fontSize:11,fontWeight:700,color:'var(--t2)'}}>How will you print?</div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr',gap:7}}>
+                    {[
+                      ['manual','One-sided printer','Print fronts, reinsert the sheet, then print backs.'],
+                      ['duplex','Automatic two-sided printer','Use the aligned two-page print document.'],
+                      ['shop','Print shop or online service','Download separate 300 dpi front and back files.'],
+                    ].map(([key,title,desc])=><button key={key} type="button" onClick={()=>setPrintMode(key)} style={{textAlign:'left',padding:'10px 12px',borderRadius:9,border:`${printMode===key?2:1}px solid ${printMode===key?'var(--acc)':'var(--bdr)'}`,background:printMode===key?'rgba(99,60,180,0.05)':'var(--bg)',cursor:'pointer'}}><span style={{display:'block',fontSize:11.5,fontWeight:800,color:'var(--t1)'}}>{title}</span><span style={{display:'block',fontSize:9.5,color:'var(--t3)',lineHeight:1.45,marginTop:2}}>{desc}</span></button>)}
+                  </div>
+                  <div style={{padding:'11px 12px',borderRadius:9,background:'rgba(37,99,235,0.045)',border:'1px solid rgba(37,99,235,0.14)',fontSize:10.5,color:'var(--t2)',lineHeight:1.55}}>
+                    {printMode==='manual'?<><strong style={{display:'block',color:'var(--t1)',marginBottom:3}}>Manual two-pass printing</strong>Print page 1 at 100%. Reinsert that same sheet using your printer's feed direction, then print page 2. Test one ordinary sheet before using cardstock.</>:printMode==='duplex'?<><strong style={{display:'block',color:'var(--t1)',marginBottom:3}}>Automatic double-sided printing</strong>Select Two-Sided, Actual Size or 100%, and high-quality color. For portrait Letter/A4, start with Flip on long edge; if the back is upside down, switch the edge setting.</>:<><strong style={{display:'block',color:'var(--t1)',marginBottom:3}}>Professional print shop</strong>Upload the clearly named front and back PNG files, select the exact finished size, double-sided color, and no scaling.</>}
+                  </div>
+                </>}
+                <div style={{fontSize:11,fontWeight:700,color:'var(--t2)'}}>Paper sheet</div>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}><button type="button" onClick={()=>setPaperSize('letter')} style={{padding:'10px 11px',borderRadius:9,border:`${paperSize==='letter'?2:1}px solid ${paperSize==='letter'?'var(--acc)':'var(--bdr)'}`,background:paperSize==='letter'?'rgba(99,60,180,0.05)':'var(--bg)',textAlign:'left',cursor:'pointer'}}><strong style={{display:'block',fontSize:11.5,color:'var(--t1)'}}>US Letter</strong><span style={{fontSize:9.5,color:'var(--t3)'}}>8.5 × 11 in</span></button><button type="button" onClick={()=>setPaperSize('a4')} style={{padding:'10px 11px',borderRadius:9,border:`${paperSize==='a4'?2:1}px solid ${paperSize==='a4'?'var(--acc)':'var(--bdr)'}`,background:paperSize==='a4'?'rgba(99,60,180,0.05)':'var(--bg)',textAlign:'left',cursor:'pointer'}}><strong style={{display:'block',fontSize:11.5,color:'var(--t1)'}}>A4</strong><span style={{fontSize:9.5,color:'var(--t3)'}}>210 × 297 mm</span></button></div>
+                <div style={{fontSize:11,color:'var(--t3)',lineHeight:1.5}}>{selectedFormat.copies} {selectedFormat.name.toLowerCase()} copies per sheet, with crop marks{cardFormat!=='business'?' and an aligned back page':''}.</div>
+                {printMode==='shop'&&cardFormat!=='business'?<>
+                  <button className="btn-p" onClick={()=>handleDownloadPNG('front')} disabled={generating||qrLoading||!qrDataUrl||allPhotos.length===0} style={{padding:'13px 18px',fontSize:14,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',gap:8,borderRadius:10,opacity:(generating||qrLoading||!qrDataUrl||allPhotos.length===0)?0.65:1}}>{generating?'Generating…':<><Ico n="arrow-down" s={22}/> Download Front PNG</>}</button>
+                  <button className="btn-s btn-sm" onClick={()=>handleDownloadPNG('back')} disabled={generating||qrLoading||!qrDataUrl||allPhotos.length===0} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:7,opacity:(generating||qrLoading||!qrDataUrl||allPhotos.length===0)?0.6:1}}>Download Back PNG</button>
+                </>:<button className="btn-p" onClick={handleDownloadPDF} disabled={pdfGenerating||qrLoading||!qrDataUrl||allPhotos.length===0} style={{padding:'15px 20px',fontSize:15,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',gap:9,borderRadius:10,opacity:(pdfGenerating||qrLoading||!qrDataUrl||allPhotos.length===0)?0.65:1}}>{pdfGenerating?<>⏳ Generating print sheet…</>:<><Ico n="arrow-down" s={24}/> Print / Save {paperSize==='a4'?'A4':'US Letter'} {cardFormat==='business'?'Sheet':'Front + Back PDF'}</>}</button>}
+                {!(printMode==='shop'&&cardFormat!=='business')&&<div style={{display:'grid',gridTemplateColumns:cardFormat==='business'?'1fr':'1fr 1fr',gap:8}}><button className="btn-s btn-sm" onClick={()=>handleDownloadPNG('front')} disabled={generating||qrLoading||!qrDataUrl||allPhotos.length===0} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:7,opacity:(generating||qrLoading||!qrDataUrl||allPhotos.length===0)?0.6:1}}>{generating?'Generating…':'Front PNG'}</button>{cardFormat!=='business'&&<button className="btn-s btn-sm" onClick={()=>handleDownloadPNG('back')} disabled={generating||qrLoading||!qrDataUrl||allPhotos.length===0} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:7,opacity:(generating||qrLoading||!qrDataUrl||allPhotos.length===0)?0.6:1}}>Back PNG</button>}</div>}
               </div>
             )}
 
@@ -29632,8 +29770,11 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
               preview itself is pinned at the top of the grid above). */}
           <div style={{display:'flex',flexDirection:'column',gap:16,alignItems:isMobile?'center':'flex-start',position:isMobile?'static':'sticky',top:24,minWidth:0,width:'100%'}}>
             {!isMobile&&(<>
-              <div style={{fontWeight:700,fontSize:11,color:'var(--t3)',textTransform:'uppercase',letterSpacing:1}}>Live Card Preview</div>
+              <div style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}><span style={{fontWeight:700,fontSize:11,color:'var(--t3)',textTransform:'uppercase',letterSpacing:1}}>Live {selectedFormat.name} Preview</span>{cardFormat!=='business'&&<div style={{display:'flex',padding:3,border:'1px solid var(--bdr)',borderRadius:8}}><button type="button" onClick={()=>setCardSide('front')} style={{border:0,borderRadius:5,padding:'6px 12px',background:cardSide==='front'?'var(--t1)':'transparent',color:cardSide==='front'?'var(--bg)':'var(--t2)',fontSize:10,fontWeight:700,cursor:'pointer'}}>Front</button><button type="button" onClick={()=>setCardSide('back')} style={{border:0,borderRadius:5,padding:'6px 12px',background:cardSide==='back'?'var(--t1)':'transparent',color:cardSide==='back'?'var(--bg)':'var(--t2)',fontSize:10,fontWeight:700,cursor:'pointer'}}>Back</button></div>}</div>
               <ActorCardPreview
+                formatKey={cardFormat}
+                side={cardSide}
+                mailingMessage={mailingMessage}
                 displayName={displayName}
                 headline={headline}
                 directContact={directContact}
@@ -29658,17 +29799,28 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
             <div style={{maxWidth:390,width:'100%'}}>
               <p style={{fontSize:11.5,color:'var(--t3)',lineHeight:1.6,margin:'0 0 10px'}}>
                 {isPremium
-                  ?'Your print sheet includes 10 copies of this card on one A4 page with crop marks. Print on 250–350 gsm cardstock and cut along the guide lines.'
+                  ?`Your ${ABC_PAPER_SIZES[paperSize].name} print sheet includes ${selectedFormat.copies} ${selectedFormat.name.toLowerCase()} copies${cardFormat==='business'?'':' plus an aligned back page'}, with crop marks. Print on 250–350 gsm cardstock at 100% scale.`
                   :'Preview of your actor business card. Upgrade to Premium to download and print.'}
               </p>
               {!isPremium&&(
                 <div style={{padding:'16px 16px 18px',background:'linear-gradient(135deg,rgba(15,107,102,0.07),rgba(232,163,61,0.06))',border:'1px solid rgba(15,107,102,0.18)',borderRadius:12,textAlign:'center'}}>
                   <div style={{fontSize:14.5,fontWeight:800,color:'var(--t1)',marginBottom:5}}>This card is ready — it's yours.</div>
-                  <div style={{fontSize:12.5,color:'var(--t2)',lineHeight:1.55,marginBottom:13}}>Activate Premium to remove the watermark and download your print-ready card + A4 sheet with QR code.</div>
+                  <div style={{fontSize:12.5,color:'var(--t2)',lineHeight:1.55,marginBottom:13}}>Activate Premium to remove the watermark and download your print-ready card files and paper sheets with QR code.</div>
                   <button className="btn-p" onClick={()=>onNavigate('membership')} style={{width:'100%',padding:'13px 20px',fontSize:14.5,fontWeight:700}}>Activate My Card — Premium {PREMIUM_PRICE}</button>
                   <div style={{fontSize:11,color:'var(--t3)',marginTop:9}}>Included with all Premium plans</div>
                 </div>
               )}
+            </div>
+            <div style={{maxWidth:390,width:'100%',marginTop:4}}>
+              <div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',gap:10,marginBottom:9,flexWrap:'wrap'}}>
+                <div><div style={{fontSize:10,fontWeight:800,color:'var(--acc)',letterSpacing:1,textTransform:'uppercase'}}>Print Sheet Preview</div><div style={{fontSize:11,fontWeight:700,color:'var(--t1)',marginTop:4}}>{selectedFormat.copies} × {selectedFormat.name} · {ABC_PAPER_SIZES[paperSize].name}</div></div>
+                {cardFormat!=='business'&&<div style={{display:'flex',padding:3,border:'1px solid var(--bdr)',borderRadius:8}}><button type="button" onClick={()=>setPrintPreviewSide('front')} style={{border:0,borderRadius:5,padding:'5px 8px',background:printPreviewSide==='front'?'var(--t1)':'transparent',color:printPreviewSide==='front'?'var(--bg)':'var(--t2)',fontSize:9,fontWeight:700,cursor:'pointer'}}>Page 1 · Fronts</button><button type="button" onClick={()=>setPrintPreviewSide('back')} style={{border:0,borderRadius:5,padding:'5px 8px',background:printPreviewSide==='back'?'var(--t1)':'transparent',color:printPreviewSide==='back'?'var(--bg)':'var(--t2)',fontSize:9,fontWeight:700,cursor:'pointer'}}>Page 2 · Backs</button></div>}
+              </div>
+              <div style={{position:'relative',minHeight:220,padding:10,border:'1px solid var(--bdr)',borderRadius:10,background:'#EDE9E2',display:'grid',placeItems:'center',overflow:'hidden'}}>
+                {printSheetPreview[cardFormat==='business'?'front':printPreviewSide]?<div style={{position:'relative',width:'100%',lineHeight:0}}><img src={printSheetPreview[cardFormat==='business'?'front':printPreviewSide]} alt={`${selectedFormat.name} ${printPreviewSide} print sheet with the selected headshot, card details, and QR code`} style={{display:'block',width:'100%',height:'auto',background:'#fff',boxShadow:'0 8px 24px rgba(26,26,46,.15)'}}/>{!isPremium&&<div style={{position:'absolute',inset:0,display:'grid',placeItems:'center',pointerEvents:'none'}}><span style={{transform:'rotate(-18deg)',border:'2px solid rgba(26,26,46,.16)',borderRadius:7,color:'rgba(26,26,46,.2)',fontWeight:800,fontSize:18,letterSpacing:'0.18em',textTransform:'uppercase',padding:'5px 14px',background:'rgba(255,255,255,.22)',lineHeight:1.2}}>Preview</span></div>}</div>:<div style={{fontSize:11,color:'var(--t3)',fontWeight:600}}>{printSheetPreviewLoading?'Updating exact print preview…':'Print preview will appear when the card is ready.'}</div>}
+                {printSheetPreviewLoading&&printSheetPreview.front&&<div style={{position:'absolute',right:16,top:16,padding:'5px 8px',borderRadius:20,background:'rgba(26,26,46,.82)',color:'#fff',fontSize:8,fontWeight:700}}>Updating…</div>}
+              </div>
+              <p style={{fontSize:10,color:'var(--t3)',lineHeight:1.5,margin:'8px 2px 0'}}>This is the actual rendered print sheet—not a placeholder. It updates with the selected headshot crop, card details, personal note, and profile QR code.</p>
             </div>
           </div>
         </div>
