@@ -29142,6 +29142,19 @@ function _abcCanvasPreviewDataUrl(canvas,maxWidth=720){
   ctx.drawImage(canvas,0,0,preview.width,preview.height);
   return preview.toDataURL('image/png');
 }
+function _abcCanvasToBlob(canvas){
+  return new Promise((resolve,reject)=>{
+    if(!canvas||typeof canvas.toBlob!=='function'){reject(new Error('png-encode-unavailable'));return;}
+    canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('png-encode-failed')),'image/png');
+  });
+}
+function _abcDownloadBlob(blob,filename){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
+}
 function _abcWrapCanvasText(ctx,text,maxWidth,maxLines){
   const words=String(text||'').trim().split(/\s+/).filter(Boolean),lines=[];let line='';
   for(const word of words){
@@ -29498,12 +29511,10 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
     setGenerating(true);setDownloadErr('');
     try{
       const canvas=side==='back'&&cardFormat!=='business'?await drawBackCard():await drawCard();
-      const url=canvas.toDataURL('image/png');
-      const a=document.createElement('a');a.href=url;
-      a.download=`${(displayName||'actor').toLowerCase().replace(/\s+/g,'-')}-cast-slate-${cardFormat}-${side}.png`;
-      document.body.appendChild(a);a.click();document.body.removeChild(a);
-    }catch(e){setDownloadErr('Could not generate card. Please try again.');}
-    setGenerating(false);
+      const blob=await _abcCanvasToBlob(canvas);
+      _abcDownloadBlob(blob,`${(displayName||'actor').toLowerCase().replace(/\s+/g,'-')}-cast-slate-${cardFormat}-${side}.png`);
+    }catch(e){console.error('[abc-png]',e);setDownloadErr('Could not generate the high-resolution PNG. Please try again.');}
+    finally{setGenerating(false);}
   };
 
   // Print/PDF: page 1 contains fronts; two-sided formats add an aligned page 2 of backs.
@@ -29511,33 +29522,36 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
     if(!isPremium){setDownloadErr('Actor Business Card downloads are included with Premium. Upgrade to create and print your card.');return;}
     if(!selectedPhoto){setDownloadErr('Upload a headshot before creating your actor card.');return;}
     if(!qrDataUrl){setDownloadErr('Your profile QR code must be ready before creating a print sheet. Please retry the QR code first.');return;}
+    // Open synchronously while the click is still an active user gesture. If we
+    // wait until the high-resolution canvases finish, popup blockers may reject it.
+    const win=window.open('','_blank','width=900,height=1100,menubar=yes,toolbar=yes');
+    if(!win){setDownloadErr('Your browser blocked the print window. Allow pop-ups for CastSlate, then click the print button again.');return;}
+    win.document.write('<!DOCTYPE html><html><head><title>Preparing CastSlate print sheet…</title><style>body{margin:0;display:grid;place-items:center;min-height:100vh;background:#f7f4ef;color:#1a1a2e;font:600 16px Arial,sans-serif}div{text-align:center;line-height:1.6}small{display:block;color:#6b6b80;font-weight:400}</style></head><body><div>Preparing your high-resolution print sheet…<small>Please keep this window open.</small></div></body></html>');
+    win.document.close();
     setPdfGenerating(true);setDownloadErr('');
+    let frontUrl='',backUrl='';
     try{
       const frontCanvas=await drawCard();
       const frontSheet=await _abcGeneratePrintSheet(frontCanvas,cardFormat,paperSize);
-      const frontUrl=frontSheet.toDataURL('image/png');
-      let backUrl='';
+      frontUrl=URL.createObjectURL(await _abcCanvasToBlob(frontSheet));
       if(cardFormat!=='business'){
         const backCanvas=await drawBackCard();
         const backSheet=await _abcGeneratePrintSheet(backCanvas,cardFormat,paperSize);
-        backUrl=backSheet.toDataURL('image/png');
+        backUrl=URL.createObjectURL(await _abcCanvasToBlob(backSheet));
       }
-      const slug=(displayName||'actor').toLowerCase().replace(/\s+/g,'-');
-      const win=window.open('','_blank','width=900,height=1100,menubar=yes,toolbar=yes');
-      if(win){
-        const paperCss=ABC_PAPER_SIZES[paperSize].css;
-        const safeTitle=String(displayName||'Actor').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-        const instructions=cardFormat==='business'?'Print at 100% or Actual Size.':printMode==='duplex'?'Choose Two-Sided, 100% or Actual Size, and start with Flip on long edge. Test one sheet first.':'Print page 1 first. Reinsert the same sheet according to your printer feed direction, then print page 2. Test on ordinary paper first.';
-        win.document.write(`<!DOCTYPE html><html><head><title>${safeTitle} — ${selectedFormat.name} Print Sheet</title><style>@page{size:${paperCss};margin:0}*{box-sizing:border-box}html,body{margin:0;background:#ececf2;font-family:Arial,sans-serif}.instructions{max-width:760px;margin:20px auto;padding:18px 20px;background:#fff;border:1px solid #ddd;border-radius:10px;color:#1A1A2E;line-height:1.55}.instructions strong{display:block;margin-bottom:5px}.page{width:${paperSize==='a4'?'210mm':'8.5in'};height:${paperSize==='a4'?'297mm':'11in'};margin:18px auto;background:#fff;page-break-after:always}.page:last-child{page-break-after:auto}.page img{width:100%;height:100%;display:block}@media print{html,body{background:#fff}.instructions{display:none}.page{margin:0}}</style></head><body><div class="instructions"><strong>${cardFormat==='business'?'Single-sided print sheet':printMode==='duplex'?'Automatic two-sided printing':'Manual two-pass printing'}</strong>${instructions}</div><div class="page"><img src="${frontUrl}"/></div>${backUrl?`<div class="page"><img src="${backUrl}"/></div>`:''}<script>Promise.all(Array.from(document.images).map(function(img){return img.decode?img.decode():Promise.resolve()})).then(function(){setTimeout(function(){window.print()},350)})</script></body></html>`);
-        win.document.close();
-      }else{
-        const a=document.createElement('a');a.href=frontUrl;
-        a.download=`${slug}-cast-slate-${cardFormat}-front-sheet.png`;
-        document.body.appendChild(a);a.click();document.body.removeChild(a);
-        setDownloadErr('Popup blocked — downloaded the front sheet as a PNG. Allow popups to open the full print-ready document.');
-      }
-    }catch(e){console.error('[abc-pdf]',e);setDownloadErr('Could not generate print sheet. Please try again.');}
-    setPdfGenerating(false);
+      if(win.closed)throw new Error('print-window-closed');
+      const paperCss=ABC_PAPER_SIZES[paperSize].css;
+      const safeTitle=String(displayName||'Actor').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+      const instructions=cardFormat==='business'?'Print at 100% or Actual Size.':printMode==='duplex'?'Choose Two-Sided, 100% or Actual Size, and start with Flip on long edge. Test one sheet first.':'Print page 1 first. Reinsert the same sheet according to your printer feed direction, then print page 2. Test on ordinary paper first.';
+      win.document.open();
+      win.document.write(`<!DOCTYPE html><html><head><title>${safeTitle} — ${selectedFormat.name} Print Sheet</title><style>@page{size:${paperCss};margin:0}*{box-sizing:border-box}html,body{margin:0;background:#ececf2;font-family:Arial,sans-serif}.instructions{max-width:760px;margin:20px auto;padding:18px 20px;background:#fff;border:1px solid #ddd;border-radius:10px;color:#1A1A2E;line-height:1.55}.instructions strong{display:block;margin-bottom:5px}.page{width:${paperSize==='a4'?'210mm':'8.5in'};height:${paperSize==='a4'?'297mm':'11in'};margin:18px auto;background:#fff;page-break-after:always}.page:last-child{page-break-after:auto}.page img{width:100%;height:100%;display:block}@media print{html,body{background:#fff}.instructions{display:none}.page{margin:0}}</style></head><body><div class="instructions"><strong>${cardFormat==='business'?'Single-sided print sheet':printMode==='duplex'?'Automatic two-sided printing':'Manual two-pass printing'}</strong>${instructions}</div><div class="page"><img src="${frontUrl}"/></div>${backUrl?`<div class="page"><img src="${backUrl}"/></div>`:''}<script>Promise.all(Array.from(document.images).map(function(img){return img.decode?img.decode():Promise.resolve()})).then(function(){setTimeout(function(){window.print()},350)}).catch(function(){document.body.insertAdjacentHTML('afterbegin','<div class="instructions"><strong>Print preview could not load.</strong>Close this window and try again.</div>')})</script></body></html>`);
+      win.document.close();
+      setTimeout(()=>{if(frontUrl)URL.revokeObjectURL(frontUrl);if(backUrl)URL.revokeObjectURL(backUrl);},300000);
+    }catch(e){
+      console.error('[abc-pdf]',e);setDownloadErr('Could not generate the complete print sheet. Please close the print window and try again.');
+      if(frontUrl)URL.revokeObjectURL(frontUrl);if(backUrl)URL.revokeObjectURL(backUrl);
+      if(!win.closed){win.document.open();win.document.write('<!DOCTYPE html><html><body style="padding:40px;font:16px Arial,sans-serif;color:#1a1a2e"><h2>We could not prepare this print sheet.</h2><p>Please close this window and try the download again.</p></body></html>');win.document.close();}
+    }finally{setPdfGenerating(false);}
   };
 
   if(!publicSlug){
