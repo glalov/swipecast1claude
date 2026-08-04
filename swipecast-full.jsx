@@ -2003,7 +2003,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   42%{transform:scale(1.035);box-shadow:0 7px 19px rgba(55,105,106,.24),0 0 0 9px rgba(79,138,139,.11);}
   75%,100%{transform:scale(1);box-shadow:0 4px 12px rgba(55,105,106,.16),0 0 0 0 rgba(79,138,139,0);}
 }
-.join-free-soft{animation:joinFreeSoftInvitation 2.9s cubic-bezier(.22,.7,.3,1) 1 both;transform-origin:center;}
+.join-free-soft{animation:joinFreeSoftInvitation 2.9s cubic-bezier(.22,.7,.3,1) 5s 1 both;transform-origin:center;}
 @media(prefers-reduced-motion:reduce){.join-free-soft{animation:none;}}
 @keyframes ddFadeIn{from{opacity:0;transform:translateX(-50%) translateY(-6px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
 .join-dd-menu{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--bdr);border-radius:12px;box-shadow:0 8px 32px rgba(26,26,46,0.14);padding:6px;min-width:260px;z-index:300;animation:ddFadeIn .15s ease;}
