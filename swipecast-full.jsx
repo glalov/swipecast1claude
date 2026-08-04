@@ -13659,9 +13659,9 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             </p>
             <div style={{position:'relative',display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
               <span style={{fontSize:20,display:'flex',alignItems:'center',justifyContent:'center',width:36,height:36,borderRadius:10,background:'rgba(255,255,255,0.14)'}}><Ico n="credit-card" s={22}/></span>
-              <h3 style={{fontWeight:800,fontSize:15.5,color:'#fff',margin:0,fontFamily:"'DM Sans',sans-serif",letterSpacing:-0.2}}>Actor Business Card</h3>
+              <h3 style={{fontWeight:800,fontSize:15.5,color:'#fff',margin:0,fontFamily:"'DM Sans',sans-serif",letterSpacing:-0.2}}>Actor Card Studio</h3>
             </div>
-            <p style={{position:'relative',fontSize:13,color:'rgba(255,255,255,.85)',margin:'0 0 16px',lineHeight:1.55}}>Create a downloadable actor card with your headshot and a unique QR code linking to your Cast Slate profile.</p>
+            <p style={{position:'relative',fontSize:13,color:'rgba(255,255,255,.85)',margin:'0 0 16px',lineHeight:1.55}}>Build your business card, mailing postcard, or agent promo card — each with your headshot and a QR code linking to your Cast Slate profile.</p>
             <button className="abc-cta" style={{position:'relative',width:'100%',fontSize:13,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:'12px 14px',borderRadius:10,border:'none',cursor:'pointer',background:'linear-gradient(180deg,#F8B65E 0%,#EC942A 100%)',color:'#1A1A2E',boxShadow:'0 10px 26px -10px rgba(240,160,60,.8),inset 0 1px 0 rgba(255,255,255,.35)'}} onClick={()=>onNavigate('actor-business-card')}>{isPremium?'Build My Actor Card →':'Preview Actor Card →'}</button>
           </div>
 
@@ -29603,7 +29603,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
           <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(99,60,180,0.08)',border:'1px solid rgba(99,60,180,0.2)',padding:'5px 14px',borderRadius:100,fontSize:11,color:'var(--acc)',fontWeight:800,letterSpacing:1,textTransform:'uppercase',marginBottom:12}}>
             <span style={{width:6,height:6,borderRadius:'50%',background:'var(--acc)'}}/>{isPremium?'Premium Feature':'Free Preview'}
           </div>
-          <h1 style={{fontWeight:800,fontSize:isMobile?24:30,letterSpacing:-0.8,color:'var(--t1)',marginBottom:8,margin:'0 0 8px'}}>Actor Card Formats</h1>
+          <h1 style={{fontWeight:800,fontSize:isMobile?24:30,letterSpacing:-0.8,color:'var(--t1)',marginBottom:8,margin:'0 0 8px'}}>Actor Card Studio</h1>
           <p style={{color:'var(--t2)',fontSize:15,margin:0}}>{isPremium?'Create a business card, mailing postcard, or agent promo card with your headshot and a QR code linking directly to your Cast Slate profile.':'Build your actor card live below — it uses your real headshot, name, and profile. Customize it free; upgrade to Premium to download and print.'}</p>
         </div>
 
@@ -29757,7 +29757,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
             {/* Download section */}
             {!isPremium?(
               <div style={{padding:'20px',background:'linear-gradient(135deg,rgba(99,60,180,0.06),rgba(99,60,180,0.02))',border:'1px solid rgba(99,60,180,0.22)',borderRadius:14,textAlign:'center'}}>
-                <div style={{fontSize:15,fontWeight:800,color:'var(--t1)',marginBottom:8}}>Actor Card Formats — Premium</div>
+                <div style={{fontSize:15,fontWeight:800,color:'var(--t1)',marginBottom:8}}>Actor Card Studio — Premium</div>
                 <p style={{fontSize:13,color:'var(--t2)',margin:'0 0 14px',lineHeight:1.65}}>Free users can preview every format. Upgrade to Premium to download and print your business card, mailing postcard, or agent promo card.</p>
                 <button className="btn-p" onClick={()=>onNavigate('membership')} style={{padding:'12px 24px',fontSize:14}}>Upgrade to Premium →</button>
               </div>
