@@ -29153,7 +29153,7 @@ function _abcDownloadBlob(blob,filename){
   const a=document.createElement('a');
   a.href=url;a.download=filename;
   document.body.appendChild(a);a.click();document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url),30000);
+  return {url,filename};
 }
 function _abcWrapCanvasText(ctx,text,maxWidth,maxLines){
   const words=String(text||'').trim().split(/\s+/).filter(Boolean),lines=[];let line='';
@@ -29265,6 +29265,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   const [generating,setGenerating]=useState(false);
   const [pdfGenerating,setPdfGenerating]=useState(false);
   const [downloadErr,setDownloadErr]=useState('');
+  const [preparedDownload,setPreparedDownload]=useState(null);
 
   const cardTags=useMemo(()=>Array.isArray(myProfile?.skills)?myProfile.skills.filter(Boolean).slice(0,3):[],[myProfile?.skills]);
   const unionStatus=myProfile?.union_status||'';
@@ -29274,6 +29275,8 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   // Reset crop when photo changes
   useEffect(()=>{setPhotoZoom(1);setPhotoPosX(50);setPhotoPosY(50);},[selectedPhoto]);
   useEffect(()=>{if(cardFormat==='business'){if(cardSide==='back')setCardSide('front');if(printPreviewSide==='back')setPrintPreviewSide('front');}},[cardFormat,cardSide,printPreviewSide]);
+  useEffect(()=>()=>{if(preparedDownload?.url)URL.revokeObjectURL(preparedDownload.url);},[preparedDownload?.url]);
+  useEffect(()=>{setPreparedDownload(null);},[cardFormat]);
 
   // Generate real QR code via free public API — no library required
   useEffect(()=>{
@@ -29508,11 +29511,13 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
     if(!isPremium){setDownloadErr('Actor Business Card downloads are included with Premium. Upgrade to create and download your actor card.');return;}
     if(!selectedPhoto){setDownloadErr('Upload a headshot before creating your actor card.');return;}
     if(!qrDataUrl){setDownloadErr('Your profile QR code must be ready before downloading. Please retry the QR code first.');return;}
-    setGenerating(true);setDownloadErr('');
+    setGenerating(true);setDownloadErr('');setPreparedDownload(null);
     try{
       const canvas=side==='back'&&cardFormat!=='business'?await drawBackCard():await drawCard();
       const blob=await _abcCanvasToBlob(canvas);
-      _abcDownloadBlob(blob,`${(displayName||'actor').toLowerCase().replace(/\s+/g,'-')}-cast-slate-${cardFormat}-${side}.png`);
+      const filename=`${(displayName||'actor').toLowerCase().replace(/\s+/g,'-')}-cast-slate-${cardFormat}-${side}.png`;
+      const download=_abcDownloadBlob(blob,filename);
+      setPreparedDownload({...download,label:`${selectedFormat.name} ${side}`});
     }catch(e){console.error('[abc-png]',e);setDownloadErr('Could not generate the high-resolution PNG. Please try again.');}
     finally{setGenerating(false);}
   };
@@ -29754,6 +29759,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
                   <button className="btn-s btn-sm" onClick={()=>handleDownloadPNG('back')} disabled={generating||qrLoading||!qrDataUrl||allPhotos.length===0} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:7,opacity:(generating||qrLoading||!qrDataUrl||allPhotos.length===0)?0.6:1}}>Download Back PNG</button>
                 </>:<button className="btn-p" onClick={handleDownloadPDF} disabled={pdfGenerating||qrLoading||!qrDataUrl||allPhotos.length===0} style={{padding:'15px 20px',fontSize:15,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',gap:9,borderRadius:10,opacity:(pdfGenerating||qrLoading||!qrDataUrl||allPhotos.length===0)?0.65:1}}>{pdfGenerating?<>⏳ Generating print sheet…</>:<><Ico n="arrow-down" s={24}/> Print / Save {paperSize==='a4'?'A4':'US Letter'} {cardFormat==='business'?'Sheet':'Front + Back PDF'}</>}</button>}
                 {!(printMode==='shop'&&cardFormat!=='business')&&<div style={{display:'grid',gridTemplateColumns:cardFormat==='business'?'1fr':'1fr 1fr',gap:8}}><button className="btn-s btn-sm" onClick={()=>handleDownloadPNG('front')} disabled={generating||qrLoading||!qrDataUrl||allPhotos.length===0} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:7,opacity:(generating||qrLoading||!qrDataUrl||allPhotos.length===0)?0.6:1}}>{generating?'Generating…':'Front PNG'}</button>{cardFormat!=='business'&&<button className="btn-s btn-sm" onClick={()=>handleDownloadPNG('back')} disabled={generating||qrLoading||!qrDataUrl||allPhotos.length===0} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:7,opacity:(generating||qrLoading||!qrDataUrl||allPhotos.length===0)?0.6:1}}>Back PNG</button>}</div>}
+                {preparedDownload&&<div style={{padding:'10px 12px',borderRadius:9,background:'rgba(22,163,74,0.07)',border:'1px solid rgba(22,163,74,0.2)',fontSize:11.5,color:'var(--t2)',lineHeight:1.5}}><strong style={{display:'block',color:'#15803d',marginBottom:3}}>Your high-resolution PNG is ready.</strong>If it did not save automatically, <a href={preparedDownload.url} download={preparedDownload.filename} style={{color:'var(--acc)',fontWeight:800,textDecoration:'underline'}}>click here to save the {preparedDownload.label} PNG</a>.</div>}
               </div>
             )}
 
