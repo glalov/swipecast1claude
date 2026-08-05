@@ -1826,6 +1826,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tad-t-medium{background:rgba(232,144,42,.16);color:#B96C12;}
 .tad-t-large{background:rgba(26,26,46,.09);color:#42425C;}
 .tad-t-mgmt{background:rgba(107,62,203,.13);color:#5B32AE;}
+.tad-t-roster{background:rgba(44,112,161,.12);color:#2F6389;}
 /* NOTE: the tip is anchored to .tad-keycard (not the icon) and inset within it, so it can
    never overflow the modal's clipping context at any container width. */
 .tad-info{position:static;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1.4px solid var(--t3);color:var(--t3);font-size:10px;font-weight:800;cursor:help;flex-shrink:0;font-style:normal;}
@@ -11856,7 +11857,7 @@ const TALENT_AGENCIES=[
   // ── Full SAG-AFTRA franchised roster (LA + NY locals), pulled from sagaftra.org.
   //    SAG publishes name, city, zip, phone and specialty codes but NO street address and
   //    NO submission policy — so every one of these is v:0 / s:'check' by design. Hidden
-  //    behind the 'SAG-AFTRA roster' filter so they never dilute the curated, addressed set.
+  //    in a clearly labeled unclassified section so no agency is removed from the full directory.
   {n:"90210 Talent Group",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Woodland Hills 91367 · (561) 213-2341.",a:[]},
   {n:"ABA Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Beverly Hills 90212 · (310) 276-1851.",a:[]},
   {n:"AC Talent Agency LLC (SAG Only)",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Beverly Hills 90211 · (323) 878-0800.",a:[]},
@@ -12678,13 +12679,13 @@ const TALENT_AGENCY_TIPS=[
 ];
 
 const TAD_SUB={mail:["tad-mail","Mail OK"],email:["tad-email","Email first"],form:["tad-form","Web form only"],no:["tad-no","No listed submission process"],check:["tad-form","Check their site first"],lock:["tad-form","Premium"]};
-const TAD_TIERNAME={small:"Small",medium:"Mid-size",large:"Major",mgmt:"Management"};
+const TAD_TIERNAME={small:"Small",medium:"Mid-size",large:"Major",mgmt:"Management",roster:"Other agency"};
 const TAD_GROUPS=[
   ["small","Small agencies — open to beginners","Your first letters go here."],
   ["medium","Mid-size agencies — some credits expected","Target these once your resume has something on it."],
   ["large","Major agencies","Most of their signings come through referral — but people do get read on the right look. Whether you write is entirely your call."],
   ["mgmt","Management companies — Los Angeles & New York","Managers, not agencies. Worth reading the note below before you write."],
-  ["roster","Every other SAG-AFTRA franchised agency","Reference list — check each one's own site."]
+  ["roster","Other franchised agencies — size not yet classified","Reference entries retained in the complete directory."]
 ];
 const TAD_PICK_KEY="cs_agency_maillist_v1";
 const TAD_SENT_KEY="cs_agency_sent_v1";
@@ -12715,8 +12716,6 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
   const [q,setQ]=useState("");
   const [tier,setTier]=useState("all");
   const [city,setCity]=useState("all");
-  const [mailOnly,setMailOnly]=useState(false);
-  const [showRoster,setShowRoster]=useState(false);
   const [copied,setCopied]=useState(null);
   const readSet=(k)=>{try{return new Set(JSON.parse(localStorage.getItem(k)||"[]"));}catch(_){return new Set();}};
   const [picked,setPicked]=useState(()=>readSet(TAD_PICK_KEY));
@@ -12724,13 +12723,13 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
 
   const counts=useMemo(()=>({
     all:TALENT_AGENCIES.length,
+    agencies:TALENT_AGENCIES.filter(a=>a.t!=="mgmt").length,
     curated:TALENT_AGENCIES.filter(a=>a.t!=="roster").length,
     roster:TALENT_AGENCIES.filter(a=>a.t==="roster").length,
     small:TALENT_AGENCIES.filter(a=>a.t==="small").length,
     medium:TALENT_AGENCIES.filter(a=>a.t==="medium").length,
     large:TALENT_AGENCIES.filter(a=>a.t==="large").length,
     mgmt:TALENT_AGENCIES.filter(a=>a.t==="mgmt").length,
-    mail:TALENT_AGENCIES.filter(a=>a.s==="mail").length,
     addressed:TALENT_AGENCIES.filter(a=>a.v&&a.a.length).length,
     open:TALENT_AGENCIES.filter(a=>["mail","email","form"].includes(a.s)).length,
     tips:TALENT_AGENCY_TIPS.length
@@ -12739,20 +12738,16 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
   const shown=useMemo(()=>{
     const needle=q.trim().toLowerCase();
     return TALENT_AGENCIES.filter(a=>{
-      // the full franchised roster is reference material with no addresses — opt-in only
-      // An exact search should never make a real agency look missing just because the
-      // full SAG-AFTRA reference roster is collapsed by default.
-      if(a.t==="roster"&&!showRoster&&!needle)return false;
-      if(tier!=="all"&&a.t!==tier)return false;
+      if(tier==="agencies"&&a.t==="mgmt")return false;
+      if(tier!=="all"&&tier!=="agencies"&&a.t!==tier)return false;
       if(city!=="all"&&!a.c.includes(city))return false;
-      if(mailOnly&&a.s!=="mail")return false;
       if(needle){
         const hay=(a.n+" "+a.note+" "+a.a.map(x=>x.join(" ")).join(" ")).toLowerCase();
         if(!hay.includes(needle))return false;
       }
       return true;
     });
-  },[q,tier,city,mailOnly,showRoster]);
+  },[q,tier,city]);
 
   const toggleIn=(setter,key)=>(name)=>setter(prev=>{
     const next=new Set(prev);
@@ -12899,7 +12894,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
         <h3>Talent Agency Directory<br/>+ Tips &amp; Tricks</h3></div>
       <p className="tad-sub">Agencies in LA &amp; New York open to new talent right now — plus how to actually approach them, from people who have done it for decades.</p>
       <div className="tad-mini">
-        <div><b>{counts.all}</b><span>Agencies</span></div>
+        <div><b>{counts.all}</b><span>Companies</span></div>
         <div><b>{counts.open}</b><span>Open to submissions</span></div>
         <div><b>{counts.tips}</b><span>Insider tips</span></div>
       </div>
@@ -12961,14 +12956,12 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
 
               <div className="tad-controls">
                 <input className="tad-srch" placeholder="Search agency name, city or note…" value={q} onChange={e=>setQ(e.target.value)}/>
-                {[["all","All",counts.all],["small","Small",counts.small],["medium","Mid-size",counts.medium],["large","Major",counts.large],["mgmt","Management",counts.mgmt]].map(([v,label,n])=>
+                {[["all","All",counts.all],["agencies","Agencies",counts.agencies],["small","Small",counts.small],["medium","Mid-size",counts.medium],["large","Major",counts.large],["mgmt","Management",counts.mgmt]].map(([v,label,n])=>
                   <button key={v} className={"tad-chip"+(tier===v?" on":"")} onClick={()=>setTier(v)}>{label} <span className="n">{n}</span></button>)}
                 {[["all","Both coasts"],["LA","Los Angeles"],["NY","New York"]].map(([v,label])=>
                   <button key={v} className={"tad-chip"+(city===v?" on":"")} onClick={()=>setCity(v)}>{label}</button>)}
-                <button className={"tad-chip"+(mailOnly?" on":"")} onClick={()=>setMailOnly(m=>!m)}><Ico n="mail" s={13}/>Known to accept mail <span className="n">{counts.mail}</span></button>
-                <button className={"tad-chip"+(showRoster?" on":"")} onClick={()=>setShowRoster(r=>!r)}><Ico n="shield-check" s={13}/>SAG-AFTRA roster <span className="n">{counts.roster}</span></button>
               </div>
-              <div className="tad-res">Showing {isPremium?shown.length:counts.curated} of {showRoster?counts.all:counts.curated} agencies &amp; managers{!showRoster&&<span> · {counts.roster} more on the full SAG-AFTRA roster</span>}</div>
+              <div className="tad-res">Showing {shown.length} of {counts.all} companies<span> · {counts.agencies} agencies ({counts.small} small + {counts.medium} mid-size + {counts.large} major + {counts.roster} other franchised) + {counts.mgmt} management = {counts.all}</span></div>
 
               {!isPremium?(
                 <div className="tad-lockwrap">
@@ -12980,10 +12973,10 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
                   }))}</div>
                   <div className="tad-lockover">
                     <div className="lk"><Ico n="lock" s={20}/></div>
-                    <h3>{counts.all} agencies — and the {counts.curated} we checked by hand come with the address.</h3>
+                    <h3>{counts.all} companies — and the {counts.curated} we checked by hand come with the address.</h3>
                     <p>Every franchised talent agency in the Los Angeles and New York locals, plus {counts.curated} our team verified one by one: the street address, the website, and exactly how that agency wants to be approached. The ones that merged, closed or stopped taking talent are already stripped out.</p>
                     <div className="tad-stats">
-                      <div><b>{counts.all}</b><span>Agencies</span></div>
+                      <div><b>{counts.all}</b><span>Companies</span></div>
                       <div><b>{counts.open}</b><span>Open to submissions</span></div>
                       <div><b>{counts.small}</b><span>Take beginners</span></div>
                     </div>
