@@ -1917,6 +1917,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* website link */
 .tad-web{font-size:12px;font-weight:700;color:#1D4FBF;text-decoration:none;}
 .tad-web:hover{text-decoration:underline;}
+.tad-find{color:var(--t3);font-weight:600;}
 /* mailing list */
 .tad-mlempty{text-align:center;padding:56px 24px;color:var(--t3);}
 .tad-mlempty h4{margin:0 0 8px;font-size:17px;font-weight:800;color:var(--t1);}
@@ -12128,7 +12129,7 @@ const TALENT_AGENCIES=[
    note:"Management company founded to represent multicultural talent across film, TV and music. Referral only.",a:[["Los Angeles","6255 Sunset Blvd, Los Angeles, CA 90028"]]},
   {n:"Untamed Artists LA",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"untamedartistsla.com",
    note:"Sunset Boulevard management firm representing actors.",a:[["Los Angeles","9229 Sunset Boulevard, 8th Floor, Los Angeles, CA 90069"]]},
-  {n:"Established Artists",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+  {n:"Established Artists",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"establishedartists.com",
    note:"Westwood-based actor management.",a:[["Los Angeles","10940 Wilshire Blvd., Suite 1600, Los Angeles, CA 90024"]]},
   {n:"Strand Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
    note:"Talent management working in film and television.",a:[["Los Angeles","3330 Cahuenga Blvd., Suite 500, Los Angeles, CA 90068"]]},
@@ -12184,7 +12185,7 @@ const TALENT_AGENCIES=[
    note:"Century City management and production company, also operating out of Sydney. Referral only.",a:[["Los Angeles","10250 Constellation Blvd, Ste 100, Los Angeles, CA 90067"]]},
   {n:"Madhouse Talent Management",sag:0,t:"mgmt",c:["LA"],v:0,s:"check",
    note:"Los Angeles talent management. Street address unconfirmed.",a:[]},
-  {n:"Gilbertson Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+  {n:"Gilbertson Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"gilbertsonentertainment.com",
    note:"Westwood-based talent management.",a:[["Los Angeles","10501 Wilshire Blvd, #2203, Los Angeles, CA 90024"]]},
   {n:"CGEM Talent",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"cgemtalent.com",
    note:"Century City talent management.",a:[["Los Angeles","1925 Century Park E, Suite 1700, Los Angeles, CA 90067"]]},
@@ -12210,7 +12211,7 @@ const TALENT_AGENCIES=[
    note:"Los Angeles talent management. Contact address is a PO box.",a:[["Los Angeles","PO Box 480033, Los Angeles, CA 90048"]]},
   {n:"The Boothe Group",sag:0,t:"mgmt",c:["LA","NY"],v:0,s:"check",w:"theboothegroup.com",
    note:"Bi-coastal talent management. Street addresses unconfirmed.",a:[]},
-  {n:"Tassell Talent Group",sag:0,t:"mgmt",c:["LA","NY"],v:0,s:"check",
+  {n:"Tassell Talent Group",sag:0,t:"mgmt",c:["LA","NY"],v:0,s:"check",w:"tasselltalentgroup.com",
    note:"Management company headquartered in Atlanta with Los Angeles and New York desks. Street addresses for the coastal offices unconfirmed.",a:[]},
   {n:"CMA Entertainment",sag:0,t:"mgmt",c:["LA","NY"],v:0,s:"check",w:"cmaentertainment.com",
    note:"Bi-coastal management company. Street addresses unconfirmed.",a:[]},
@@ -12218,17 +12219,17 @@ const TALENT_AGENCIES=[
    note:"Boutique Westwood management company.",a:[["Los Angeles","1103 1/2 Glendon Ave., Los Angeles, CA 90024"]]},
   {n:"PCM International",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
    note:"Sunset Strip management firm, also operating out of Sydney.",a:[["Los Angeles","9200 Sunset Blvd, Suite 600, Los Angeles, CA 90069"]]},
-  {n:"Fictious",sag:0,t:"mgmt",c:["LA"],v:0,s:"check",
+  {n:"Fictious",sag:0,t:"mgmt",c:["LA"],v:0,s:"check",w:"fictious.com",
    note:"Management company split between Los Angeles and Sydney. Street address unconfirmed.",a:[]},
   {n:"Berwick & Kovacik",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
    note:"Boutique management firm on Wilshire.",a:[["Los Angeles","6230 Wilshire Blvd, Ste 2140, Los Angeles, CA 90048"]]},
   {n:"The Zachary Co.",sag:0,t:"mgmt",c:["LA"],v:0,s:"check",
    note:"Los Angeles talent management. Street address unconfirmed.",a:[]},
-  {n:"1022m",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",
+  {n:"1022m",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"1022m.com",
    note:"Bi-coastal talent management.",a:[["Los Angeles","8605 Santa Monica Blvd, Suite #75785, Los Angeles, CA 90069"],["New York","407 West 43rd St., 3rd Floor, New York, NY 10036"]]},
   {n:"CLA Partners",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"cla.partners",
    note:"Bi-coastal management and representation firm.",a:[["Beverly Hills","8383 Wilshire Blvd, Suite 800, Beverly Hills, CA 90211"],["New York","1501 Broadway, New York, NY"]]},
-  {n:"Bullett Management",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",
+  {n:"Bullett Management",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"bullettmanagement.com",
    note:"Bi-coastal boutique talent management.",a:[["Los Angeles","1051 Ridgeley Drive, Los Angeles, CA 90019"],["New York","344 W 12th St., Ste 5G, New York, NY 10014"]]},
   {n:"Omni Artists",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"omniartistsltd.com",
    note:"Beverly Hills talent management.",a:[["Beverly Hills","9800 Wilshire Blvd, Beverly Hills, CA 90212"]]},
@@ -12262,7 +12263,7 @@ const TALENT_AGENCIES=[
    note:"Bi-coastal boutique management company.",a:[["Los Angeles","8023 Beverly Blvd., Suite 206, Los Angeles, CA 90048"]]},
   {n:"The Michael Abrams Group",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"michaelabramsgroup.com",
    note:"Bi-coastal talent management.",a:[["New York","2 Park Avenue, 20th Floor, New York, NY 10016"],["Los Angeles","9229 Sunset Boulevard, Los Angeles, CA 90069"]]},
-  {n:"Artist International",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",
+  {n:"Artist International",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"artistint.com",
    note:"Bi-coastal management company. Not to be confused with Artist International Group.",a:[["Los Angeles","1720 N. Fuller Ave., Suite #345, Los Angeles, CA 90036"],["New York","333 E. 43rd St., Suite #115, New York, NY 10017"]]},
   {n:"Rothman / Andres Entertainment",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",
    note:"Bi-coastal management company with a long-standing actor roster.",a:[["Studio City","4400 Coldwater Canyon Ave., Ste 235, Studio City, CA 91604"],["New York","1740 Broadway, 15th Floor, New York, NY 10019"]]},
@@ -12276,13 +12277,13 @@ const TALENT_AGENCIES=[
    note:"Westwood management company.",a:[["Los Angeles","1100 Glendon Ave, 17th Floor, Los Angeles, CA 90024"]]},
   {n:"Madhouse Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
    note:"Management and production company. Separate firm from Madhouse Talent Management.",a:[["Los Angeles","10390 Santa Monica Blvd, #110, Los Angeles, CA 90025"]]},
-  {n:"Brio Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+  {n:"Brio Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"brio-ent.com",
    note:"Culver City-area talent management.",a:[["Los Angeles","6430 Green Valley Circle, #335, Los Angeles, CA 90230"]]},
   {n:"Gregg Edwards Management",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
    note:"Boutique Hollywood management company.",a:[["Los Angeles","6072 Franklin Ave, Ste 304, Los Angeles, CA 90028"]]},
   {n:"Gem Entertainment Group",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"gementertainmentgroup.com",
    note:"Westwood management company.",a:[["Los Angeles","10433 Wilshire Blvd., Ste 150-9121, Los Angeles, CA 90024"]]},
-  {n:"Bold Management & Production",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+  {n:"Bold Management & Production",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"boldmp.com",
    note:"Silver Lake management and production company.",a:[["Los Angeles","2898 Rowena Ave, Suite 105F, Los Angeles, CA 90039"]]},
   {n:"Flavor Unit Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"no",
    note:"Management and production company founded by Queen Latifah and Shakim Compere. Referral only.",a:[["Beverly Hills","8484 Wilshire Blvd, Beverly Hills, CA 90211"]]},
@@ -12310,7 +12311,7 @@ const TALENT_AGENCIES=[
    note:"Long-running New York management company.",a:[["New York","29 West 46th Street, 5th Floor, New York, NY 10036"]]},
   {n:"Ivy Rock Management",sag:0,t:"mgmt",c:["NY"],v:1,s:"check",
    note:"Theatre-district management company.",a:[["New York","245 W 51st Street, Suite #411, New York, NY 10019"]]},
-  {n:"Red Letter Entertainment",sag:0,t:"mgmt",c:["NY"],v:1,s:"check",
+  {n:"Red Letter Entertainment",sag:0,t:"mgmt",c:["NY"],v:1,s:"check",w:"redletterent.com",
    note:"Hell's Kitchen management company.",a:[["New York","550 W. 45th Street, Suite 501, New York, NY 10036"]]},
   {n:"AAG Management",sag:0,t:"mgmt",c:["NY"],v:1,s:"check",w:"aagtalent.com",
    note:"Garment District management company.",a:[["New York","500 7th Avenue, 8th Floor, New York, NY 10018"]]},
@@ -12318,13 +12319,13 @@ const TALENT_AGENCIES=[
    note:"Midtown management company.",a:[["New York","57 West 58th Street, Suite 6D, New York, NY 10019"]]},
   {n:"Ingrid French Management",sag:0,t:"mgmt",c:["NY"],v:1,s:"check",w:"ingridfrenchmanagement.com",
    note:"Flatiron management company representing actors.",a:[["New York","928 Broadway, Suite 302, New York, NY 10010"]]},
-  {n:"Blue Ridge Entertainment",sag:0,t:"mgmt",c:["NY"],v:1,s:"check",
+  {n:"Blue Ridge Entertainment",sag:0,t:"mgmt",c:["NY"],v:1,s:"check",w:"bre-ny.com",
    note:"Columbus Circle management company.",a:[["New York","3 Columbus Circle, 15th Floor, New York, NY 10019"]]},
   {n:"Encompass Arts Management",sag:0,t:"mgmt",c:["NY"],v:1,s:"check",w:"encompassarts.com",
    note:"Upper West Side management company.",a:[["New York","119 W 72nd Street, New York, NY 10023"]]},
   {n:"The Katz Company",sag:0,t:"mgmt",c:["NY"],v:1,s:"check",w:"thekatzcompany.com",
    note:"Broadway management company.",a:[["New York","1560 Broadway, 12th Floor, New York, NY 10036"]]},
-  {n:"Maude Kaplan Management",sag:0,t:"mgmt",c:["NY"],v:1,s:"check",
+  {n:"Maude Kaplan Management",sag:0,t:"mgmt",c:["NY"],v:1,s:"check",w:"mkmtalent.com",
    note:"Upper West Side management company, also with a Playa Del Rey desk.",a:[["New York","2424 Broadway, #114, New York, NY 10025"]]},
   {n:"Kanner Entertainment",sag:0,t:"mgmt",c:["NY"],v:1,s:"check",
    note:"Upper West Side management company.",a:[["New York","101 W 80th Street, Suite 6A, New York, NY 10024"]]},
@@ -12573,6 +12574,12 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
 
   const row=(a)=>{
     const sub=TAD_SUB[a.s];
+    // 305 of these entries have no website on file (the whole SAG roster, plus the
+    // managers IMDbPro lists without one). Telling those to "check their site" points
+    // at nothing, so the copy changes and we offer a search instead of inventing a URL.
+    const subLabel=(a.s==="check"&&!a.w)?"Look them up first":sub[1];
+    const findUrl="https://www.google.com/search?q="+encodeURIComponent(
+      a.n+" "+(a.c.includes("LA")?"Los Angeles":"New York")+(a.t==="mgmt"?" talent management":" talent agency"));
     const isPicked=picked.has(a.n);
     return(
       <div key={a.n} className={"tad-row"+(isPicked?" pick":"")}>
@@ -12582,10 +12589,12 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
             <span className={"tad-tier tad-t-"+a.t}>{TAD_TIERNAME[a.t]}</span>
           </div>
           <p className="tad-note">{a.note}</p>
-          {a.w&&<a className="tad-web" href={"https://"+a.w} target="_blank" rel="noopener noreferrer">{a.w} ↗</a>}
+          {a.w
+            ? <a className="tad-web" href={"https://"+a.w} target="_blank" rel="noopener noreferrer">{a.w} ↗</a>
+            : <a className="tad-web tad-find" href={findUrl} target="_blank" rel="noopener noreferrer">No website on file — search for them ↗</a>}
         </div>
         <div className="tad-meta">
-          <span className={"tad-sc "+sub[0]}><Ico n={a.s==="no"?"x":a.s==="mail"?"mail":a.s==="email"?"send":a.s==="lock"?"lock":a.s==="check"?"eye":"device-laptop"} s={13}/>{sub[1]}</span>
+          <span className={"tad-sc "+sub[0]}><Ico n={a.s==="no"?"x":a.s==="mail"?"mail":a.s==="email"?"send":a.s==="lock"?"lock":a.s==="check"?"eye":"device-laptop"} s={13}/>{subLabel}</span>
           {a.sag?<span className="tad-sag"><Ico n="shield-check" s={12}/>SAG-AFTRA franchised</span>:null}
           {a.pc?<span className="tad-pc">Accepts postcards &amp; invitations</span>:null}
           {a.v&&a.a.length
@@ -12724,8 +12733,8 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
                   if(!list.length)return null;
                   return(<div key={t}>
                     <div className="tad-gh"><h3>{title}</h3><span className="ln"/><span className="ct">{sub}</span></div>
-                    {t==="mgmt"&&<div className="tad-fn" style={{marginTop:0,marginBottom:11}}><b>A manager is not an agent.</b> An agent is licensed by the state and franchised by SAG-AFTRA to get you auditions and negotiate the deal. A manager is not licensed to procure work — they build the career around it: strategy, introductions, which agency you should be at. Many actors have both, and pay both. <b>The fee rule does not change.</b> A real manager takes a commission (usually 10–15%) after you get paid, never a fee up front, never mandatory classes at their own studio. These {counts.mgmt} are the Los Angeles and New York management companies IMDbPro currently lists as active; unlike the agencies above, almost none of them take unsolicited mail, which is why most are marked "check their site first".</div>}
-                    {t==="roster"&&<div className="tad-fn" style={{marginTop:0,marginBottom:11}}><b>Read this before you use the roster.</b> These {counts.roster} agencies are every franchised agency SAG-AFTRA lists for the Los Angeles and New York locals — so they are all real and all licensed. But SAG publishes only the city, ZIP, phone and specialties: <b>no street address, and no word on whether they are taking submissions.</b> That is why none of them show an address and all of them say "check their site first". The {counts.addressed} agencies above are the ones our team has actually verified.</div>}
+                    {t==="mgmt"&&<div className="tad-fn" style={{marginTop:0,marginBottom:11}}><b>A manager is not an agent.</b> An agent is licensed by the state and franchised by SAG-AFTRA to get you auditions and negotiate the deal. A manager is not licensed to procure work — they build the career around it: strategy, introductions, which agency you should be at. Many actors have both, and pay both. <b>The fee rule does not change.</b> A real manager takes a commission (usually 10–15%) after you get paid, never a fee up front, never mandatory classes at their own studio. These {counts.mgmt} are the Los Angeles and New York management companies IMDbPro currently lists as active; unlike the agencies above, almost none of them take unsolicited mail, which is why most are marked "check their site first" — or, where IMDbPro lists no website for them either, "look them up first".</div>}
+                    {t==="roster"&&<div className="tad-fn" style={{marginTop:0,marginBottom:11}}><b>Read this before you use the roster.</b> These {counts.roster} agencies are every franchised agency SAG-AFTRA lists for the Los Angeles and New York locals — so they are all real and all licensed. But SAG publishes only the city, ZIP, phone and specialties: <b>no street address, and no word on whether they are taking submissions.</b> That is why none of them show an address and all of them say "look them up first". The {counts.addressed} agencies above are the ones our team has actually verified.</div>}
                     <div className="tad-rows">{list.map(row)}</div>
                     {t==="large"&&<div className="tad-fn"><b>Why ICM isn't on this list.</b> You'll find ICM Partners on most agency lists online — it hasn't existed as a separate company since CAA absorbed it in 2022. If a service is still selling you an ICM address, that list hasn't been checked in years.</div>}
                   </div>);
