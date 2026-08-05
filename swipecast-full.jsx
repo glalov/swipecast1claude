@@ -12723,7 +12723,6 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
 
   const counts=useMemo(()=>({
     all:TALENT_AGENCIES.length,
-    agencies:TALENT_AGENCIES.filter(a=>a.t!=="mgmt").length,
     curated:TALENT_AGENCIES.filter(a=>a.t!=="roster").length,
     roster:TALENT_AGENCIES.filter(a=>a.t==="roster").length,
     small:TALENT_AGENCIES.filter(a=>a.t==="small").length,
@@ -12738,8 +12737,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
   const shown=useMemo(()=>{
     const needle=q.trim().toLowerCase();
     return TALENT_AGENCIES.filter(a=>{
-      if(tier==="agencies"&&a.t==="mgmt")return false;
-      if(tier!=="all"&&tier!=="agencies"&&a.t!==tier)return false;
+      if(tier!=="all"&&a.t!==tier)return false;
       if(city!=="all"&&!a.c.includes(city))return false;
       if(needle){
         const hay=(a.n+" "+a.note+" "+a.a.map(x=>x.join(" ")).join(" ")).toLowerCase();
@@ -12924,7 +12922,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
             </div>
 
             <div className="tad-tabs">
-              <button className={tab==="agencies"?"on":""} onClick={()=>setTab("agencies")}>Agencies <span className="pill">{counts.all}</span></button>
+              <button className={tab==="agencies"?"on":""} onClick={()=>setTab("agencies")}>Companies <span className="pill">{counts.all}</span></button>
               <button className={tab==="tips"?"on":""} onClick={()=>setTab("tips")}>Tips &amp; Tricks <span className="pill">{counts.tips}</span></button>
               <button className={tab==="list"?"on":""} onClick={()=>setTab("list")}>My Mailing List <span className="pill">{picked.size}</span></button>
             </div>
@@ -12956,12 +12954,12 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
 
               <div className="tad-controls">
                 <input className="tad-srch" placeholder="Search agency name, city or note…" value={q} onChange={e=>setQ(e.target.value)}/>
-                {[["all","All",counts.all],["agencies","Agencies",counts.agencies],["small","Small",counts.small],["medium","Mid-size",counts.medium],["large","Major",counts.large],["mgmt","Management",counts.mgmt]].map(([v,label,n])=>
+                {[["all","All",counts.all],["small","Small",counts.small],["medium","Mid-size",counts.medium],["large","Major",counts.large],["roster","Other agencies",counts.roster],["mgmt","Management",counts.mgmt]].map(([v,label,n])=>
                   <button key={v} className={"tad-chip"+(tier===v?" on":"")} onClick={()=>setTier(v)}>{label} <span className="n">{n}</span></button>)}
                 {[["all","Both coasts"],["LA","Los Angeles"],["NY","New York"]].map(([v,label])=>
                   <button key={v} className={"tad-chip"+(city===v?" on":"")} onClick={()=>setCity(v)}>{label}</button>)}
               </div>
-              <div className="tad-res">Showing {shown.length} of {counts.all} companies<span> · {counts.agencies} agencies ({counts.small} small + {counts.medium} mid-size + {counts.large} major + {counts.roster} other franchised) + {counts.mgmt} management = {counts.all}</span></div>
+              <div className="tad-res">Showing {shown.length} of {counts.all} companies<span> · {counts.small} small + {counts.medium} mid-size + {counts.large} major + {counts.roster} other agencies + {counts.mgmt} management = {counts.all}</span></div>
 
               {!isPremium?(
                 <div className="tad-lockwrap">
