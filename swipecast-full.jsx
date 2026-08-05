@@ -12471,6 +12471,51 @@ const TALENT_AGENCIES=[
    note:"New York talent management. Street address unconfirmed.",a:[]},
   {n:"Who's That Kid",sag:0,t:"mgmt",c:["NY"],v:0,s:"check",w:"whosthatkid.com",
    note:"New York management company working with young performers. Street address unconfirmed.",a:[]}
+
+  ,{n:"Goldstar Talent Management",sag:0,t:"mgmt",c:["NY"],v:1,s:"check",
+   note:"New York management company representing actors.",a:[["New York","240 Central Park South, Suite 8R, New York, NY 10019"]]}
+  ,{n:"Laugh Factory Management Company",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"laughfactory.com",
+   note:"Comedy management company associated with the Laugh Factory and representing performers.",a:[["West Hollywood","8001 Sunset Blvd, West Hollywood, CA 90046"]]}
+  ,{n:"Seven Bridges Group",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",
+   note:"Bi-coastal management and law firm representing actors and other creative clients.",a:[["Los Angeles","10940 Wilshire Blvd, Suite 1600, Los Angeles, CA 90024"]]}
+  ,{n:"42",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"42mp.com",
+   note:"Integrated management and production company representing actors, writers and directors.",a:[["Beverly Hills","9171 Wilshire Blvd, Suite 430, Beverly Hills, CA 90210"]]}
+  ,{n:"Brillstein Entertainment Partners",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+   note:"Long-established management and production company representing actors and comedians.",a:[["Beverly Hills","9150 Wilshire Blvd, Suite 350, Beverly Hills, CA 90212"]]}
+  ,{n:"Echo Lake Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"echolakeentertainment.com",
+   note:"Management, production and financing company representing actors and other creatives.",a:[["Beverly Hills","9696 Wilshire Blvd, 3rd Floor, Beverly Hills, CA 90212"]]}
+  ,{n:"Mosaic",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+   note:"Management and production company representing actors, writers and comedians.",a:[["Beverly Hills","407 N Maple Drive, Suite 100, Beverly Hills, CA 90210"]]}
+  ,{n:"Thruline Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"thruline.com",
+   note:"Beverly Hills talent management and production company representing actors.",a:[["Beverly Hills","345 N Maple Drive, Suite 285, Beverly Hills, CA 90210"]]}
+  ,{n:"Elevate Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"elevate-ent.com",
+   note:"Talent and literary management firm with a production arm.",a:[["Beverly Hills","324 S Beverly Drive, Suite 1087, Beverly Hills, CA 90212"]]}
+  ,{n:"Main Title Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+   note:"Beverly Hills management company representing film and television actors.",a:[["Beverly Hills","9663 Santa Monica Blvd, Suite 733, Beverly Hills, CA 90210"]]}
+  ,{n:"Fourward",sag:0,t:"mgmt",c:["LA"],v:0,s:"check",w:"fourward.com",
+   note:"Talent management company representing actors and other film, television and music creatives. Street address unconfirmed.",a:[]}
+  ,{n:"Trademark Talent",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"trademarktalent.com",
+   note:"Beverly Hills management company representing film and television actors.",a:[["Beverly Hills","269 S Beverly Drive, Suite 450, Beverly Hills, CA 90212"]]}
+  ,{n:"Tash Moseley Management",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+   note:"Beverly Hills management company representing actors.",a:[["Beverly Hills","8306 Wilshire Blvd, Suite 717, Beverly Hills, CA 90211"]]}
+  ,{n:"Magnolia Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+   note:"Beverly Hills management company representing film and television actors.",a:[["Beverly Hills","9595 Wilshire Blvd, Suite 701, Beverly Hills, CA 90212"]]}
+  ,{n:"Alan Siegel Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+   note:"Beverly Hills management company representing actors.",a:[["Beverly Hills","369 S Doheny Drive, Suite 1419, Beverly Hills, CA 90211"]]}
+  ,{n:"Liberation Management",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+   note:"Beverly Hills management company representing actors.",a:[["Beverly Hills","9663 Santa Monica Blvd, Suite 1079, Beverly Hills, CA 90210"]]}
+  ,{n:"Cultured Artists",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",
+   note:"Bi-coastal management company representing film and television actors.",a:[["Beverly Hills","8306 Wilshire Blvd, Suite 1920, Beverly Hills, CA 90211"]]}
+  ,{n:"Select Management Group",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"select.co",
+   note:"Talent management company representing digital creators and on-camera performers.",a:[["Beverly Hills","345 N Maple Drive, Suite 230, Beverly Hills, CA 90210"]]}
+  ,{n:"Apex Talent Group",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"apextalentgroup.com",
+   note:"Beverly Hills talent management company representing actors and digital creators.",a:[["Beverly Hills","8383 Wilshire Blvd, Suite 800, Beverly Hills, CA 90211"]]}
+  ,{n:"ASManagement",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+   note:"Beverly Hills management company representing actors.",a:[["Beverly Hills","9440 Santa Monica Blvd, Suite 700, Beverly Hills, CA 90210"]]}
+  ,{n:"Blain & Associates",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+   note:"Beverly Hills management company representing actors.",a:[["Beverly Hills","8840 Wilshire Blvd, Beverly Hills, CA 90211-2606"]]}
+  ,{n:"DreamScope Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+   note:"Beverly Hills management and production company representing actors.",a:[["Beverly Hills","324 S Beverly Drive, Suite 900, Beverly Hills, CA 90212"]]}
 ];
 
 // Tips written for beginners submitting to agencies for the first time.
