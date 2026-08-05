@@ -1860,7 +1860,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tad-mail{background:rgba(27,135,62,.12);color:#146B31;}
 .tad-email{background:rgba(37,99,235,.1);color:#1D4FBF;}
 .tad-form{background:var(--s2);color:var(--t2);}
-.tad-no{background:rgba(214,59,59,.1);color:#B02E2E;}
+.tad-no{background:rgba(232,144,42,.16);color:#B96C12;}
 .tad-pend{font-size:12px;color:var(--t3);font-style:italic;}
 .tad-acts{display:flex;gap:7px;flex-wrap:wrap;}
 .tad-b{background:none;border:1px solid var(--bdr);border-radius:7px;font-family:inherit;font-size:11px;font-weight:700;color:var(--t2);padding:5px 10px;cursor:pointer;}
@@ -11657,19 +11657,19 @@ function ProfileImprovementCard({profile,isPremium,onNavigate,dbCredits,mediaIte
 const TALENT_AGENCIES=[
   // ── MAJOR — information only, do not mail ──
   {n:"Creative Artists Agency (CAA)",sag:1,t:"large",c:["LA","NY"],v:1,s:"no",w:"caa.com",
-   note:"Founded 1975. The top tier of film and television representation. No unsolicited submissions of any kind.",
+   note:"Founded 1975. The top tier of film and television representation. They sign through industry referral rather than submissions.",
    a:[["Los Angeles","2000 Avenue of the Stars, Los Angeles, CA 90067"],["New York","405 Lexington Ave, 22nd Floor, New York, NY 10174"]]},
   {n:"WME (William Morris Endeavor)",sag:1,t:"large",c:["LA","NY"],v:1,s:"no",w:"wmeagency.com",
-   note:"The William Morris name goes back to 1898 — over twelve decades. Referral and industry introduction only.",
+   note:"The William Morris name goes back to 1898 — over twelve decades. They sign through referral and industry introduction.",
    a:[["Beverly Hills","9601 Wilshire Blvd, Beverly Hills, CA 90210"],["New York","11 Madison Ave, New York, NY 10010"]]},
   {n:"United Talent Agency (UTA)",sag:1,t:"large",c:["LA","NY"],v:1,s:"no",w:"unitedtalent.com",
-   note:"One of the big four. Signs from referral, festival buzz or an established quote — not from the mailbox.",
+   note:"One of the big four. Signs from referral, festival buzz or an established quote.",
    a:[["Beverly Hills","9336 Civic Center Dr, Beverly Hills, CA 90210"],["New York","888 Seventh Ave, 7th Floor, New York, NY 10106"]]},
   {n:"The Gersh Agency",sag:1,t:"large",c:["LA","NY"],v:1,s:"no",w:"gersh.com",
-   note:"Family-founded in 1949 — roughly eight decades old. Prestigious theatrical roster. Referral only.",
+   note:"Family-founded in 1949 — roughly eight decades old. Prestigious theatrical roster. They sign mostly through referral.",
    a:[["Beverly Hills","9465 Wilshire Blvd, 6th Floor, Beverly Hills, CA 90212"],["New York","41 Madison Ave, 29th Floor, New York, NY 10010"]]},
   {n:"APA (Agency for the Performing Arts)",t:"large",c:["LA"],v:1,s:"no",w:"apa-agency.com",
-   note:"Founded 1962. Large diversified agency — talent, music, literary. Not a beginner's door. NOTE: SAG-AFTRA's franchised list shows IAG / Independent Artist Group rather than APA.",
+   note:"Founded 1962. Large diversified agency — talent, music, literary. Signs at an established level. NOTE: SAG-AFTRA's franchised list shows IAG / Independent Artist Group rather than APA.",
    a:[["Beverly Hills","405 S Beverly Dr, Suite 500, Beverly Hills, CA 90212"]]},
   {n:"Paradigm Talent Agency",sag:1,t:"large",c:["LA"],v:0,s:"no",w:"paradigmagency.com",
    note:"Founded 1992, in the Wilshire LaPeer building since 2018. Referral only. SAG-AFTRA's record lists West Hollywood (90069) rather than Beverly Hills — address withheld pending re-confirmation.",
@@ -11714,19 +11714,19 @@ const TALENT_AGENCIES=[
    note:"Leading NYC agency for children, teens and adults across TV, film, theatre and voice-over. Web form only — but they do read them.",
    a:[["New York","1411 Broadway, 16th Floor, New York, NY 10018"]]},
   {n:"BRS/Gage Talent Agency",sag:1,t:"medium",c:["NY"],v:1,s:"no",w:"brsgage.com",
-   note:"Respected NY theatrical agency — but industry referral only. No unsolicited submissions, no drop-offs. Listed so you don't waste the postage.",
+   note:"Respected NY theatrical agency. They work from industry referral and ask for no drop-offs.",
    a:[["New York","1650 Broadway, Suite 1410, New York, NY 10019"]]},
   {n:"SMS Talent",sag:1,t:"medium",c:["LA"],v:0,s:"no",w:"smstalent.com",
-   note:"Boutique LA agency for distinguished actors since 1996. Industry referral only — no unsolicited submissions, no drop-offs. SAG-AFTRA's franchise record lists Burbank (91505) rather than West Hollywood — address withheld pending re-confirmation.",
+   note:"Boutique LA agency for distinguished actors since 1996. They work from industry referral and ask for no drop-offs. SAG-AFTRA's franchise record lists Burbank (91505) rather than West Hollywood — address withheld pending re-confirmation.",
    a:[]},
   {n:"Ann Steele Agency",sag:1,t:"medium",c:["NY"],v:0,s:"no",
-   note:"Union performers only, legit and commercial. Referral only — they do not open unsolicited submissions. SAG-AFTRA's record lists the 10032 zip rather than 10036 — address withheld pending re-confirmation.",
+   note:"Union performers only, legit and commercial. They work from referral. SAG-AFTRA's record lists the 10032 zip rather than 10036 — address withheld pending re-confirmation.",
    a:[]},
   {n:"Silver, Massetti & Szatmary / East",t:"medium",c:["NY"],v:1,s:"no",
-   note:"Adults, early twenties and up. Legit, no print. No drop-ins, no faxes — approach through a referral. NOTE: this agency does not appear on SAG-AFTRA's current franchised list.",
+   note:"Adults, early twenties and up. Legit, no print. No drop-ins or faxes — referral is the usual route in. NOTE: this agency does not appear on SAG-AFTRA's current franchised list.",
    a:[["New York","145 W 45th St, Suite 1204, New York, NY 10036"]]},
   {n:"Talent House Agency",sag:1,t:"medium",c:["NY"],v:1,s:"no",
-   note:"Adults 18+, legit theatre focus. Union members only and referrals only.",
+   note:"Adults 18+, legit theatre focus. Union members, and referral is the usual route in.",
    a:[["New York","311 W 43rd St, Suite 602, New York, NY 10036"]]},
   // ── SMALL — open to new talent ──
   {n:"Coast to Coast Talent Group",sag:1,t:"small",c:["LA"],v:1,s:"mail",pc:1,w:"ctctalent.com",
@@ -11809,7 +11809,7 @@ const TALENT_AGENCIES=[
    note:"Long-established NY agency with a reputation for backing off-Broadway and emerging regional actors. No published submission policy — ask before you send.",
    a:[["New York","154 E 61st St, New York, NY 10065"]]},
   {n:"Ellis Talent Group",sag:1,t:"medium",c:["LA"],v:1,s:"no",
-   note:"Well-regarded LA theatrical agency — but industry referral only, no unsolicited submissions. Listed so you know who they are and don't waste the postage.",
+   note:"Well-regarded LA theatrical agency. They work from industry referral.",
    w:"ellistalentgroup.com",
    a:[["Los Angeles","4705 Laurel Canyon Blvd, Suite 300, Los Angeles, CA 91607"]]},
   // ── Added from the SAG-AFTRA franchised agents roster (Aug 2026). SAG publishes city,
@@ -11839,7 +11839,7 @@ const TALENT_AGENCIES=[
   {n:"Colleen Cler Agency",sag:1,t:"small",c:["LA"],v:0,s:"check",
    note:"Burbank agency with a broad roster including children, commercials, dance, seniors and performers with disabilities — a long-standing door for young and new talent. Listed at Burbank 91502, (818) 841-7943.",a:[]},
   {n:"Greene & Associates",t:"medium",c:["LA"],v:1,s:"no",
-   note:"Century City theatrical agency. Industry referral only — no unsolicited submissions. Here for your information, not your mailing list. NOTE: this agency does not appear on SAG-AFTRA's current franchised list.",
+   note:"Century City theatrical agency. They work from industry referral. NOTE: this agency does not appear on SAG-AFTRA's current franchised list.",
    a:[["Los Angeles","1901 Avenue of the Stars, Suite 130, Los Angeles, CA 90067"]]},
   // ── Full SAG-AFTRA franchised roster (LA + NY locals), pulled from sagaftra.org.
   //    SAG publishes name, city, zip, phone and specialty codes but NO street address and
@@ -12106,9 +12106,9 @@ const TALENT_AGENCIES=[
   {n:"Zero Gravity Management",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"zerogravitymanagement.com",
    note:"Management and production across film and television. Query address is published on their own site — read it before writing.",a:[["Los Angeles","11110 Ohio Avenue, Suite 100, Los Angeles, CA 90025"]]},
   {n:"Artists First",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"no",
-   note:"Established management firm with comedy and television strength. Also keeps a Chicago office. Referral only.",a:[["Los Angeles","2121 Avenue of the Stars, Suite 1700, Los Angeles, CA 90067"]]},
+   note:"Established management firm with comedy and television strength. Also keeps a Chicago office. They sign mostly through referral.",a:[["Los Angeles","2121 Avenue of the Stars, Suite 1700, Los Angeles, CA 90067"]]},
   {n:"Industry Entertainment",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"no",
-   note:"Long-running management and production company. Referral only.",a:[["Los Angeles","955 South Carrillo Dr., Ste. 204, Los Angeles, CA 90048"],["New York","1133 Broadway, St. James Building #320, New York, NY 10010"]]},
+   note:"Long-running management and production company. They sign mostly through referral.",a:[["Los Angeles","955 South Carrillo Dr., Ste. 204, Los Angeles, CA 90048"],["New York","1133 Broadway, St. James Building #320, New York, NY 10010"]]},
   {n:"Citizen Skull Management",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"citizenskull.com",
    note:"Actor management with a genre and independent-film lean. Check the site for how they prefer to be approached.",a:[["Los Angeles","4150 Santa Monica Blvd., Suite E, Los Angeles, CA 90029"]]},
   {n:"Circle Management + Production",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"circlemp.com",
@@ -12116,17 +12116,17 @@ const TALENT_AGENCIES=[
   {n:"Link Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
    note:"Talent management working across film, television and streaming.",a:[["Los Angeles","1640 South Sepulveda Blvd., Suite 101, Los Angeles, CA 90025"]]},
   {n:"Atlas Artists",sag:0,t:"mgmt",c:["LA"],v:1,s:"no",
-   note:"Sunset Strip management firm with a strong young-actor roster. Referral only.",a:[["Los Angeles","9200 W. Sunset Blvd., Suite 1000, Los Angeles, CA 90069"]]},
+   note:"Sunset Strip management firm with a strong young-actor roster. They sign mostly through referral.",a:[["Los Angeles","9200 W. Sunset Blvd., Suite 1000, Los Angeles, CA 90069"]]},
   {n:"Linden Entertainment",sag:0,t:"mgmt",c:["LA","NY"],v:0,s:"check",
    note:"Bi-coastal talent management. Offices in Los Angeles and New York; street address unconfirmed.",a:[]},
   {n:"Principal Entertainment LA",sag:0,t:"mgmt",c:["LA"],v:1,s:"no",w:"principalentla.com",
-   note:"Long-established management company. Referral only.",a:[["Los Angeles","9255 Sunset Blvd, Ste 500, Los Angeles, CA 90069"]]},
+   note:"Long-established management company. They sign mostly through referral.",a:[["Los Angeles","9255 Sunset Blvd, Ste 500, Los Angeles, CA 90069"]]},
   {n:"Wonder Street",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
    note:"Management and production company based on the Paramount lot.",a:[["Los Angeles","5555 Melrose Ave, Swanson Building 110, Los Angeles, CA 90038"]]},
   {n:"The Green Room",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"thegreenroommgmt.com",
    note:"Actor management in the heart of Hollywood.",a:[["Los Angeles","7080 Hollywood Blvd, 7th Floor, Los Angeles, CA 90028"]]},
   {n:"M88",sag:0,t:"mgmt",c:["LA"],v:1,s:"no",w:"staym88.com",
-   note:"Management company founded to represent multicultural talent across film, TV and music. Referral only.",a:[["Los Angeles","6255 Sunset Blvd, Los Angeles, CA 90028"]]},
+   note:"Management company founded to represent multicultural talent across film, TV and music. They sign mostly through referral.",a:[["Los Angeles","6255 Sunset Blvd, Los Angeles, CA 90028"]]},
   {n:"Untamed Artists LA",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"untamedartistsla.com",
    note:"Sunset Boulevard management firm representing actors.",a:[["Los Angeles","9229 Sunset Boulevard, 8th Floor, Los Angeles, CA 90069"]]},
   {n:"Established Artists",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"establishedartists.com",
@@ -12136,7 +12136,7 @@ const TALENT_AGENCIES=[
   {n:"ColorCreative",sag:0,t:"mgmt",c:["LA"],v:0,s:"form",w:"colorcreative.co",
    note:"Management company founded to open doors for under-represented writers and creators. Submissions run through their own site.",a:[]},
   {n:"Underground",sag:0,t:"mgmt",c:["LA"],v:1,s:"no",
-   note:"Management and production company with a substantial comedy roster. Referral only.",a:[["Los Angeles","1180 S Beverly Dr, Los Angeles, CA 90035"]]},
+   note:"Management and production company with a substantial comedy roster. They sign mostly through referral.",a:[["Los Angeles","1180 S Beverly Dr, Los Angeles, CA 90035"]]},
   {n:"Heroes and Villains Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"hvemgmt.com",
    note:"Management and production firm with a genre focus — writers, directors and actors.",a:[["Los Angeles","110 South Fairfax Avenue, Suite 250, Los Angeles, CA 90036"]]},
   {n:"Canopy Media Partners",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
@@ -12150,11 +12150,11 @@ const TALENT_AGENCIES=[
   {n:"Lighthouse Management & Media",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
    note:"Management and media company representing actors and authors.",a:[["Los Angeles","137 N. Larchmont Blvd., Suite 677, Los Angeles, CA 90004"]]},
   {n:"Odenkirk Provissiero Entertainment (OPE)",sag:0,t:"mgmt",c:["LA"],v:0,s:"no",w:"odenkirk-provissiero.com",
-   note:"Comedy-forward management and production company. Listed twice on IMDbPro (also as OPE Partners) — same firm. Referral only.",a:[]},
+   note:"Comedy-forward management and production company. Listed twice on IMDbPro (also as OPE Partners) — same firm. They sign mostly through referral.",a:[]},
   {n:"Mainstay Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"mainstayentertainment.com",
    note:"Talent management in the Seward Street production corridor.",a:[["Los Angeles","959 Seward St, Ste. 307, Los Angeles, CA 90038"]]},
   {n:"Grandview",sag:0,t:"mgmt",c:["LA"],v:1,s:"no",w:"grandviewla.com",
-   note:"Management and production company representing writers, directors and actors. Referral only.",a:[["Los Angeles","7122 Beverly Blvd., Ste. F, Los Angeles, CA 90036"]]},
+   note:"Management and production company representing writers, directors and actors. They sign mostly through referral.",a:[["Los Angeles","7122 Beverly Blvd., Ste. F, Los Angeles, CA 90036"]]},
   {n:"KEY Talent Management",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"key-mgmt.com",
    note:"Bi-coastal actor management with a published general enquiries address.",a:[["Los Angeles","8304 W 3rd St, Los Angeles, CA 90048"],["New York","590 5th Ave, 8th Floor, New York, NY 10036"]]},
   {n:"3G Management",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"3gmtalent.com",
@@ -12166,7 +12166,7 @@ const TALENT_AGENCIES=[
   {n:"Evoke Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"evokeentertainment.com",
    note:"Management company with offices in Los Angeles, Buffalo and Winnipeg.",a:[["Los Angeles","1108 Tamarind Ave, Los Angeles, CA 90038"]]},
   {n:"Iconoclast",sag:0,t:"mgmt",c:["LA"],v:1,s:"no",w:"iconoclast.tv",
-   note:"International management and production house for directors and artists. Referral only.",a:[["Los Angeles","207 N. Vermont Avenue, Los Angeles, CA 90004"]]},
+   note:"International management and production house for directors and artists. They sign mostly through referral.",a:[["Los Angeles","207 N. Vermont Avenue, Los Angeles, CA 90004"]]},
   {n:"Alchemy Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"alchemyco.com",
    note:"Long-running Westwood management and production company.",a:[["Los Angeles","10866 Wilshire Blvd., Suite 1140, Los Angeles, CA 90024"]]},
   {n:"A.D.S. Management",sag:0,t:"mgmt",c:["LA"],v:0,s:"check",
@@ -12176,13 +12176,13 @@ const TALENT_AGENCIES=[
   {n:"MGMT Artists",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"mgmtartists.com",
    note:"Talent management working across film and television.",a:[["Los Angeles","451 S. Beaudry Ave., Ste F 180, Los Angeles, CA 90017"]]},
   {n:"Haven Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"no",w:"haven.la",
-   note:"Management and production company representing actors, writers and directors. Referral only.",a:[["Los Angeles","6310 San Vicente Blvd, Los Angeles, CA 90048"]]},
+   note:"Management and production company representing actors, writers and directors. They sign mostly through referral.",a:[["Los Angeles","6310 San Vicente Blvd, Los Angeles, CA 90048"]]},
   {n:"Vanguard Management Group",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"vanguard-management.com",
    note:"Melrose-based management firm with a New York desk.",a:[["Los Angeles","8060 Melrose Ave, Ste 400, Los Angeles, CA 90046"]]},
   {n:"Stagecoach Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"stagecoachent.net",
    note:"West Los Angeles talent management.",a:[["Los Angeles","11835 W. Olympic Blvd., Suite 1235E, Los Angeles, CA 90064"]]},
   {n:"44",sag:0,t:"mgmt",c:["LA"],v:1,s:"no",w:"44mp.com",
-   note:"Century City management and production company, also operating out of Sydney. Referral only.",a:[["Los Angeles","10250 Constellation Blvd, Ste 100, Los Angeles, CA 90067"]]},
+   note:"Century City management and production company, also operating out of Sydney. They sign mostly through referral.",a:[["Los Angeles","10250 Constellation Blvd, Ste 100, Los Angeles, CA 90067"]]},
   {n:"Madhouse Talent Management",sag:0,t:"mgmt",c:["LA"],v:0,s:"check",
    note:"Los Angeles talent management. Street address unconfirmed.",a:[]},
   {n:"Gilbertson Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"gilbertsonentertainment.com",
@@ -12190,7 +12190,7 @@ const TALENT_AGENCIES=[
   {n:"CGEM Talent",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"cgemtalent.com",
    note:"Century City talent management.",a:[["Los Angeles","1925 Century Park E, Suite 1700, Los Angeles, CA 90067"]]},
   {n:"2AM",sag:0,t:"mgmt",c:["LA"],v:1,s:"no",w:"2am.com",
-   note:"Management and production company at the Pacific Design Center. Referral only.",a:[["Los Angeles","750 N. San Vicente Blvd, Red West Suite 1210, Los Angeles, CA 90069"]]},
+   note:"Management and production company at the Pacific Design Center. They sign mostly through referral.",a:[["Los Angeles","750 N. San Vicente Blvd, Red West Suite 1210, Los Angeles, CA 90069"]]},
   {n:"Navigation Media Group",sag:0,t:"mgmt",c:["LA"],v:0,s:"check",w:"navigationmg.com",
    note:"Los Angeles management and media company. Street address unconfirmed.",a:[]},
   {n:"Insight",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
@@ -12234,19 +12234,19 @@ const TALENT_AGENCIES=[
   {n:"Omni Artists",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"omniartistsltd.com",
    note:"Beverly Hills talent management.",a:[["Beverly Hills","9800 Wilshire Blvd, Beverly Hills, CA 90212"]]},
   {n:"Anonymous Content",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"no",w:"anonymouscontent.com",
-   note:"One of the largest management and production companies in the business — also keeps London and New York offices. Referral only.",a:[["Culver City","8501 Washington Boulevard, Culver City, CA 90232"]]},
+   note:"One of the largest management and production companies in the business — also keeps London and New York offices. They sign mostly through referral.",a:[["Culver City","8501 Washington Boulevard, Culver City, CA 90232"]]},
   {n:"3 Arts Entertainment",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"no",w:"3arts.com",
-   note:"Major management and production company with a very large comedy and television roster. Referral only.",a:[["Beverly Hills","9460 Wilshire Blvd., 7th Floor, Beverly Hills, CA 90212"],["New York","27 W. 24th Street, Suite 301, New York, NY"]]},
+   note:"Major management and production company with a very large comedy and television roster. They sign mostly through referral.",a:[["Beverly Hills","9460 Wilshire Blvd., 7th Floor, Beverly Hills, CA 90212"],["New York","27 W. 24th Street, Suite 301, New York, NY"]]},
   {n:"Untitled Entertainment",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"no",w:"untitledent.com",
-   note:"Major bi-coastal management firm, also with a London office. Referral only.",a:[["Los Angeles","7122 Beverly Boulevard, Los Angeles, CA 90036"],["New York","215 Park Avenue South, 8th Floor, New York, NY 10003"]]},
+   note:"Major bi-coastal management firm, also with a London office. They sign mostly through referral.",a:[["Los Angeles","7122 Beverly Boulevard, Los Angeles, CA 90036"],["New York","215 Park Avenue South, 8th Floor, New York, NY 10003"]]},
   {n:"Authentic Talent and Literary Management",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"no",w:"authenticm.com",
-   note:"Management and literary firm with a substantial actor and writer roster. Second office in Culver City. Referral only.",a:[["New York","330 Seventh Avenue, Suite 1701, New York, NY 10001"]]},
+   note:"Management and literary firm with a substantial actor and writer roster. Second office in Culver City. They sign mostly through referral.",a:[["New York","330 Seventh Avenue, Suite 1701, New York, NY 10001"]]},
   {n:"Cinetic Media",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"no",w:"cineticmedia.com",
    note:"Management and sales company with a strong independent-film and documentary practice. Also a Beverly Hills office on Wilshire.",a:[["New York","26 Broadway, 14th Floor, New York, NY 10004"]]},
   {n:"Entertainment Lab",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"entlab.la",
    note:"Bi-coastal management company representing actors.",a:[["Beverly Hills","8447 Wilshire Blvd., Suite 103, Beverly Hills, CA 90211"],["New York","1441 Broadway, 6th Floor, New York, NY"]]},
   {n:"Framework Entertainment",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"no",w:"frameworkent.com",
-   note:"Long-running bi-coastal management firm. Second office in West Hollywood. Referral only.",a:[["New York","129 W 27th St., 12th Floor Penthouse, New York, NY 10001"]]},
+   note:"Long-running bi-coastal management firm. Second office in West Hollywood. They sign mostly through referral.",a:[["New York","129 W 27th St., 12th Floor Penthouse, New York, NY 10001"]]},
   {n:"Independent Artist Entertainment",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"iartistent.com",
    note:"Bi-coastal management company at the Pacific Design Center.",a:[["West Hollywood","750 N San Vicente Blvd., Ste RW800, West Hollywood, CA 90069"],["New York","430 West 14th Street, New York, NY"]]},
   {n:"New Wave Entertainment",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"nwe.com",
@@ -12268,7 +12268,7 @@ const TALENT_AGENCIES=[
   {n:"Rothman / Andres Entertainment",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",
    note:"Bi-coastal management company with a long-standing actor roster.",a:[["Studio City","4400 Coldwater Canyon Ave., Ste 235, Studio City, CA 91604"],["New York","1740 Broadway, 15th Floor, New York, NY 10019"]]},
   {n:"The Arlook Group",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"no",w:"arlookgroup.com",
-   note:"Comedy-forward management company with a New York desk. Referral only.",a:[["Beverly Hills","205 S Beverly Dr, Ste 209, Beverly Hills, CA 90212"]]},
+   note:"Comedy-forward management company with a New York desk. They sign mostly through referral.",a:[["Beverly Hills","205 S Beverly Dr, Ste 209, Beverly Hills, CA 90212"]]},
   {n:"Cylence Media Management",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"cylencemedia.com",
    note:"Management company also covering Atlanta production. Publishes a talent enquiries address.",a:[["Beverly Hills","9465 Wilshire Blvd, Suite 300, Beverly Hills, CA 90212"]]},
   {n:"Avatar Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"avatarent.com",
@@ -12286,7 +12286,7 @@ const TALENT_AGENCIES=[
   {n:"Bold Management & Production",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"boldmp.com",
    note:"Silver Lake management and production company.",a:[["Los Angeles","2898 Rowena Ave, Suite 105F, Los Angeles, CA 90039"]]},
   {n:"Flavor Unit Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"no",
-   note:"Management and production company founded by Queen Latifah and Shakim Compere. Referral only.",a:[["Beverly Hills","8484 Wilshire Blvd, Beverly Hills, CA 90211"]]},
+   note:"Management and production company founded by Queen Latifah and Shakim Compere. They sign mostly through referral.",a:[["Beverly Hills","8484 Wilshire Blvd, Beverly Hills, CA 90211"]]},
   {n:"Gina Stoj Management-USA",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"ginastoj.com",
    note:"Management company operating between Hollywood and Australia.",a:[["Hollywood","7095 Hollywood Blvd, Ste 737, Hollywood, CA 90028"]]},
   {n:"Schuller Talent",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",
@@ -12332,7 +12332,7 @@ const TALENT_AGENCIES=[
   {n:"GSA Entertainment",sag:0,t:"mgmt",c:["NY"],v:1,s:"check",
    note:"Midtown management company.",a:[["New York","295 Madison Avenue, 12th Floor, New York, NY 10017"]]},
   {n:"Dixon Talent",sag:0,t:"mgmt",c:["NY"],v:1,s:"no",
-   note:"Management company known for late-night and comedy clients. Referral only.",a:[["New York","11 Madison Ave., 17th Floor, New York, NY 10010"]]},
+   note:"Management company known for late-night and comedy clients. They sign mostly through referral.",a:[["New York","11 Madison Ave., 17th Floor, New York, NY 10010"]]},
   {n:"Sullivan Talent Group",sag:0,t:"mgmt",c:["NY"],v:1,s:"check",w:"sullivantalentgroup.com",
    note:"Upper West Side management company.",a:[["New York","305 W 105th Street, Ste 3B, New York, NY 10025"]]},
   {n:"Harvest Talent Management",sag:0,t:"mgmt",c:["NY"],v:1,s:"check",w:"harvesttalent.com",
@@ -12412,13 +12412,13 @@ const TALENT_AGENCY_TIPS=[
       {t:"pull",x:"Mail the card when the profile behind it is ready to be seen — not before."}]}
 ];
 
-const TAD_SUB={mail:["tad-mail","Mail OK"],email:["tad-email","Email first"],form:["tad-form","Web form only"],no:["tad-no","Do not mail"],check:["tad-form","Check their site first"],lock:["tad-form","Premium"]};
+const TAD_SUB={mail:["tad-mail","Mail OK"],email:["tad-email","Email first"],form:["tad-form","Web form only"],no:["tad-no","Usually signs by referral"],check:["tad-form","Check their site first"],lock:["tad-form","Premium"]};
 const TAD_TIERNAME={small:"Small",medium:"Mid-size",large:"Major",mgmt:"Management"};
 const TAD_GROUPS=[
   ["small","Small agencies — open to beginners","Your first letters go here."],
   ["medium","Mid-size agencies — some credits expected","Target these once your resume has something on it."],
-  ["large","Major agencies — information only","Do not mail these."],
-  ["mgmt","Management companies — Los Angeles & New York","Managers, not agencies. Read the note below first."],
+  ["large","Major agencies","These sign mostly through referral. Worth knowing who they are — whether you write is your call."],
+  ["mgmt","Management companies — Los Angeles & New York","Managers, not agencies. Worth reading the note below before you write."],
   ["roster","Every other SAG-AFTRA franchised agency","Reference list — check each one's own site."]
 ];
 const TAD_PICK_KEY="cs_agency_maillist_v1";
@@ -12594,7 +12594,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
             : <a className="tad-web tad-find" href={findUrl} target="_blank" rel="noopener noreferrer">No website on file — search for them ↗</a>}
         </div>
         <div className="tad-meta">
-          <span className={"tad-sc "+sub[0]}><Ico n={a.s==="no"?"x":a.s==="mail"?"mail":a.s==="email"?"send":a.s==="lock"?"lock":a.s==="check"?"eye":"device-laptop"} s={13}/>{subLabel}</span>
+          <span className={"tad-sc "+sub[0]}><Ico n={a.s==="no"?"users":a.s==="mail"?"mail":a.s==="email"?"send":a.s==="lock"?"lock":a.s==="check"?"eye":"device-laptop"} s={13}/>{subLabel}</span>
           {a.sag?<span className="tad-sag"><Ico n="shield-check" s={12}/>SAG-AFTRA franchised</span>:null}
           {a.pc?<span className="tad-pc">Accepts postcards &amp; invitations</span>:null}
           {a.v&&a.a.length
@@ -12603,7 +12603,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
           {a.v&&a.a.length?(
             <div className="tad-acts">
               <button className="tad-b" onClick={()=>copyText(a.a.map(x=>x[1]).join("\n"),a.n)}>{copied===a.n?"Copied":"Copy address"}</button>
-              {a.s==="mail"&&<button className={"tad-b add"+(isPicked?" on":"")} onClick={()=>togglePick(a.n)}>{isPicked?"On my list":"+ Add to mailing list"}</button>}
+              <button className={"tad-b add"+(isPicked?" on":"")} onClick={()=>togglePick(a.n)}>{isPicked?"On my list":"+ Add to mailing list"}</button>
             </div>
           ):null}
         </div>
@@ -12726,7 +12726,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
                 </div>
               ):(<>
                 <div style={{background:"rgba(27,135,62,.08)",border:"1px solid rgba(27,135,62,.28)",borderRadius:11,padding:"13px 16px",fontSize:13,color:"#146B31",fontWeight:700,margin:"6px 0 4px"}}>
-                  Send a headshot, resume and your CastSlate business card to any agency marked <strong>Mail OK</strong> — tick them off as you go and we'll build your mailing list.
+                  Send a headshot, resume and your CastSlate business card to any agency you choose — the ones marked <strong>Mail OK</strong> are the likeliest to read it. Tick them off as you go and we'll build your mailing list.
                 </div>
                 {TAD_GROUPS.map(([t,title,sub])=>{
                   const list=shown.filter(a=>a.t===t);
