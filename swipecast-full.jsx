@@ -11812,6 +11812,18 @@ const TALENT_AGENCIES=[
    note:"Well-regarded LA theatrical agency. They work from industry referral.",
    w:"ellistalentgroup.com",
    a:[["Los Angeles","4705 Laurel Canyon Blvd, Suite 300, Los Angeles, CA 91607"]]},
+  {n:"Verve Talent and Literary Agency",sag:1,t:"large",c:["LA","NY"],v:1,s:"check",w:"vervetla.com",
+   note:"Talent and literary agency representing actors and other film and television creatives, with Los Angeles and New York offices.",
+   a:[["Los Angeles","6555 Barton Avenue, 4th Floor, Los Angeles, CA 90038"],["New York","9 E 19th Street, 3rd Floor, New York, NY 10003"]]},
+  {n:"NTA Talent Agency",sag:0,t:"medium",c:["LA","NY"],v:1,s:"check",w:"ntatalent.com",
+   note:"Bi-coastal talent agency representing film and television actors and other performers.",
+   a:[["Beverly Hills","8383 Wilshire Blvd, Suite 800, Beverly Hills, CA 90211"],["New York","1441 Broadway, Suite 5004, New York, NY 10018"]]},
+  {n:"Integral Artists",sag:0,t:"medium",c:["LA"],v:1,s:"check",w:"integralartists.com",
+   note:"Talent agency representing film and television actors, with offices in Los Angeles, Toronto and Vancouver.",
+   a:[["Los Angeles","15760 Ventura Blvd, Suite 820, Los Angeles, CA 91436-3000"]]},
+  {n:"International Artists Management",sag:0,t:"medium",c:["LA"],v:1,s:"check",w:"internationalartistsmanagement.co.uk",
+   note:"International talent agency representing actors, creatives and voice performers, with a Los Angeles office.",
+   a:[["Los Angeles","137 N Larchmont Blvd, Suite 154, Los Angeles, CA 90004"]]},
   // ── Added from the SAG-AFTRA franchised agents roster (Aug 2026). SAG publishes city,
   //    zip, phone and specialties but NOT street addresses, so these carry no address yet.
   {n:"About Artists Agency",sag:1,t:"medium",c:["NY"],v:0,s:"check",
@@ -12051,7 +12063,6 @@ const TALENT_AGENCIES=[
   {n:"Torde Sillas",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Valley Village 91607 · (818) 468-0943.",a:[]},
   {n:"True Artists Agency, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, commercials, children, comedians, seniors. Listed at North Hollywood 91601 · (818) 646-9644.",a:[]},
   {n:"Universal Attractions Agency, INC. (Los Angeles)",sag:1,t:"roster",c:["LA","NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Woodland Hills 91367 · (818) 225-0444.",a:[]},
-  {n:"Verve Talent and Literary Agency, LLC",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, children, daytime drama. Listed at Los Angeles 90038 · (310) 558-2424.",a:[]},
   {n:"Vision Los Angeles",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, commercials, children, dancers, comedians. Listed at Culver City 90232 · (310) 733-4420.",a:[]},
   {n:"Visionary Talent Agency",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at West Hollywood 90046 · (323) 890-6160.",a:[]},
   {n:"Vox, Inc.",sag:1,t:"roster",c:["LA"],v:0,s:"check",note:"Represents actors, commercials, hosting, voice-over. Listed at Burbank 91505 · (323) 655-8699.",a:[]},
@@ -12614,7 +12625,17 @@ const TALENT_AGENCIES=[
   {n:"Felicia Douglas Management",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
    note:"Beverly Hills management company representing actors.",a:[["Beverly Hills","8306 Wilshire Blvd, #1699, Beverly Hills, CA 90211"]]},
   {n:"Hipnoggin Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
-   note:"Beverly Hills management and production company representing actors.",a:[["Beverly Hills","9663 Santa Monica Blvd, Suite 1166, Beverly Hills, CA 90210"]]}
+   note:"Beverly Hills management and production company representing actors.",a:[["Beverly Hills","9663 Santa Monica Blvd, Suite 1166, Beverly Hills, CA 90210"]]},
+
+  {n:"Play Management",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"playmgmt.com",
+   note:"Talent management and representation company working with actors in film, television, voice-over and commercials.",
+   a:[["Los Angeles","2029 Century Park East, Suite 400, Los Angeles, CA 90067"]]},
+  {n:"Vault Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"vault-ent.com",
+   note:"Los Angeles management company representing film and television actors.",
+   a:[["Los Angeles","10720 McCune Avenue, Los Angeles, CA 90034"]]},
+  {n:"Seven Summits Pictures & Management",sag:0,t:"mgmt",c:["LA","NY"],v:1,s:"check",
+   note:"Bi-coastal management and production company representing film and television actors.",
+   a:[["Beverly Hills","9250 Wilshire Blvd, Suite 210, Beverly Hills, CA 90212"]]}
 ];
 
 // Tips written for beginners submitting to agencies for the first time.
@@ -12719,7 +12740,9 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
     const needle=q.trim().toLowerCase();
     return TALENT_AGENCIES.filter(a=>{
       // the full franchised roster is reference material with no addresses — opt-in only
-      if(a.t==="roster"&&!showRoster)return false;
+      // An exact search should never make a real agency look missing just because the
+      // full SAG-AFTRA reference roster is collapsed by default.
+      if(a.t==="roster"&&!showRoster&&!needle)return false;
       if(tier!=="all"&&a.t!==tier)return false;
       if(city!=="all"&&!a.c.includes(city))return false;
       if(mailOnly&&a.s!=="mail")return false;
