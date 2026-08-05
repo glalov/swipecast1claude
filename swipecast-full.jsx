@@ -1306,6 +1306,54 @@ const GENDER_IDENTITY_OPTS = [
 ];
 const isCustomGender = g => {const v=(g||"").trim();return !!v&&!GENDER_IDENTITY_OPTS.some(o=>o.value===v);};
 
+// ─── Casting archetypes ("Type Range"). Replaced the old Playable Age Range
+//     dropdown, which asked actors to pick a decade bracket when what casting
+//     actually reads is the KIND of part they carry. Multi-select: most working
+//     actors land in several.
+//
+//     These strings are stored verbatim in profiles.casting_types, so treat them
+//     the same way as the gender values — renaming one orphans every profile that
+//     already chose it. Add freely; edit or delete only with a backfill.
+const CASTING_ARCHETYPE_GROUPS = [
+  {group:"Leading & Heroic", items:[
+    "The Charismatic Leading Action Star",
+    "The Fresh-Faced Ingénue / Bright Young Thing",
+    "The Charming Romantic Lead",
+    "The Rugged Maverick / Reluctant Hero",
+    "The Fierce Action Heroine / Warrior",
+  ]},
+  {group:"Supporting & Character Roles", items:[
+    "The Quirky Best Friend / Comic Relief",
+    "The Relatable Everyman / Everywoman",
+    "The Tech Genius / Eccentric Hacker",
+    "The Wise Mentor / Trusted Advisor",
+    "The Trusted Sidekick / Companion",
+    "The Next-Door Neighbor",
+    "The Tortured Artist / Brooding Intellectual",
+    "The Hardboiled Detective / Investigator",
+    "The High-Society Elite / Aristocrat",
+  ]},
+  {group:"Villains & Antagonists", items:[
+    "The Ruthless Executive / Cold Corporate Boss",
+    "The Mysterious Anti-Hero / Rogue",
+    "The Criminal Mastermind / Kingpin",
+    "The Unhinged Psychopath / Chaotic Villain",
+    "The Corrupt Official / Snake in the Grass",
+    "The Sinister Femme Fatale / Seducer",
+  ]},
+  {group:"Genre-Specific Archetypes", items:[
+    "Sci-Fi/Fantasy: The Mystical Chosen One",
+    "Horror: The Final Girl / Final Survivor",
+    "Period/Fantasy: The Regal Monarch / Noble",
+    "Drama: The Tragic Figure / Broken Soul",
+    "Comedy: The Neurotic Overachiever",
+  ]},
+];
+// The free-text escape hatch. Stored as its own column rather than as an array
+// entry so re-opening the editor knows which chip was typed and which was picked.
+const CASTING_ARCHETYPE_OTHER = "Other…";
+const ALL_CASTING_ARCHETYPES = CASTING_ARCHETYPE_GROUPS.flatMap(g=>g.items);
+
 
 const CASTINGS = [
   {id:1,slug:"midnight-lens",title:"Midnight Lens",tagline:"Independent Horror Feature",prod:"Midnight Lens Productions",type:"Film",pay:"SAG-AFTRA Scale + 10%",location:"New York, NY",deadline:"May 15, 2026",union:"SAG-AFTRA",submissions:47,desc:"A quiet, slow-burn psychological horror that trusts its audience.",synopsis:"A young architect returns to her grandmother's abandoned upstate home to settle the estate — and uncovers a decades-old presence that remembers her. In the vein of *Hereditary* and *The Others*, from first-time feature director Aurora Halcyon.",director:"Aurora Halcyon",shoots:"July 10 – August 7, 2026",rate:"SAG-AFTRA Scale + 10%",rehearsal:"2 days (remote OK)",auditionFormat:"Self-tape",roles:[{name:"ISABEL CASTILLO",type:"Lead",ageRange:"25-35",gender:"Female",ethnicity:"Latina",desc:"A reserved architect whose composure slowly unravels. Must carry extended silences and believably move from skepticism to terror. Working Spanish a plus."},{name:"RUBEN CASTILLO",type:"Supporting",ageRange:"55-70",gender:"Male",ethnicity:"Latino",desc:"Isabel's uncle, a retired carpenter who knows more than he'll say. Spanish-language dialogue throughout."},{name:"THE WOMAN IN BLUE",type:"Featured",ageRange:"40-65",gender:"Female",ethnicity:"Any",desc:"Non-speaking. Dancers and physical performers encouraged. Long static holds in prosthetic makeup."}]},
@@ -1559,6 +1607,34 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
 .checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;color:var(--t2);cursor:pointer;}
 .checkbox-row input{accent-color:var(--acc);width:16px;height:16px;}
+/* ── Type Range multi-select. The trigger deliberately borrows .select's metrics
+   so it lines up with the real dropdowns sitting beside it in the same form-row. */
+.tr-wrap{position:relative;}
+/* The menu anchors to the TRIGGER, not the wrapper. The wrapper also holds the
+   "Other" input and the chip list, so anchoring there pushed the open menu
+   further down the page every time a chip was added. */
+.tr-anchor{position:relative;}
+.tr-trigger{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;background:var(--s1);border:1px solid var(--bdr);border-radius:8px;padding:10px 14px;color:var(--t1);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;transition:border-color .2s;}
+.tr-trigger:hover,.tr-trigger:focus-visible{border-color:var(--acc);}
+.tr-trigger[aria-expanded="true"]{border-color:var(--acc);}
+.tr-trigger-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tr-trigger-label.is-empty{color:var(--t3);}
+.tr-caret{flex:none;transition:transform .18s ease;}
+.tr-trigger[aria-expanded="true"] .tr-caret{transform:rotate(180deg);}
+.tr-count{flex:none;background:var(--acc);color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px;}
+.tr-menu{position:absolute;z-index:60;top:calc(100% + 6px);left:0;right:0;max-height:320px;overflow-y:auto;background:var(--s1);border:1px solid var(--bdr);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18);padding:6px;}
+.tr-group{padding:9px 10px 4px;font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--t3);}
+.tr-group+.tr-opt{margin-top:0;}
+.tr-opt{display:flex;align-items:flex-start;gap:9px;width:100%;text-align:left;padding:7px 10px;border-radius:7px;font-size:13px;line-height:1.35;color:var(--t2);background:none;border:0;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.tr-opt:hover{background:var(--s2);color:var(--t1);}
+.tr-opt input{accent-color:var(--acc);width:15px;height:15px;margin-top:1px;flex:none;pointer-events:none;}
+.tr-opt.is-on{color:var(--t1);font-weight:600;}
+.tr-divider{height:1px;background:var(--bdr);margin:6px 4px;}
+.tr-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.tr-chip{display:inline-flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--bdr);border-radius:999px;padding:3px 6px 3px 10px;font-size:11.5px;color:var(--t2);}
+.tr-chip button{background:none;border:0;color:var(--t3);cursor:pointer;line-height:1;padding:2px;border-radius:50%;display:flex;}
+.tr-chip button:hover{color:var(--red);}
+@media(max-width:640px){.tr-menu{max-height:60vh;}}
 .profile-hero{display:grid;grid-template-columns:320px 1fr;gap:40px;margin-bottom:40px;}
 .profile-photo{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:14px;border:1px solid var(--bdr);}
 .profile-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;}
@@ -10548,6 +10624,18 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const selfRecText=selfRecSetup==="Other"?(selfRecOther||"").trim():(selfRecSetup||"");
   const showLogistics=!!(licenseText||passportText||selfRecText);
 
+  // "Plays" now carries the archetypes an actor picked in Type Range. Profiles
+  // saved before that shipped still hold a decade bracket in age_range, so fall
+  // back to it rather than blanking the row for everyone who hasn't re-edited.
+  const castTypes=(()=>{
+    const a=freshProfile?.casting_types||talent.casting_types;
+    const arr=Array.isArray(a)?a.slice():[];
+    const oth=((freshProfile?.casting_type_other||talent.casting_type_other)||"").trim();
+    if(oth)arr.push(oth);
+    return arr;
+  })();
+  const playsText=castTypes.length?castTypes.join(" · "):(freshProfile?.age_range||talent.age_range);
+
   const statsData=[
     ["Height",freshProfile?.height||talent.height],
     ["Weight",freshProfile?.weight||talent.weight],
@@ -10557,7 +10645,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     ["Gender",freshProfile?.gender||talent.gender],
     ["Ethnicity",freshProfile?.ethnicity||talent.ethnicity],
     ["Body",freshProfile?.body_type||talent.body_type],
-    ["Plays",freshProfile?.age_range||talent.age_range],
+    ["Plays",playsText],
   ].filter(([,v])=>v);
 
   const isOwnProfile=talent?.id&&talent.id===session?.user?.id;
@@ -11225,7 +11313,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("Talent fetch timed out")),10000);});
       const {data:ps,error}=await Promise.race([
         window.sb.from("profiles")
-          .select("id,display_name,headshot_url,age,gender,ethnicity,location,union_status,skills,bio,social_links,body_type,age_range,hair,eyes,height,weight,training,agent,credits,video_links,additional_photos,resume_url")
+          .select("id,display_name,headshot_url,age,gender,ethnicity,location,union_status,skills,bio,social_links,body_type,age_range,casting_types,casting_type_other,hair,eyes,height,weight,training,agent,credits,video_links,additional_photos,resume_url")
           .eq("user_type","talent").eq("visible",true).eq("suspended",false).eq("onboarded",true)
           .limit(200),
         timeout
@@ -11249,6 +11337,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         eyes:p.eyes||"",
         body_type:p.body_type||"",
         age_range:p.age_range||"",
+        casting_types:Array.isArray(p.casting_types)?p.casting_types:[],
+        casting_type_other:p.casting_type_other||"",
         skills:Array.isArray(p.skills)?p.skills:[],
         bio:p.bio||"",
         training:p.training||"",
@@ -11413,7 +11503,10 @@ function computeProfileSuggestions(profile, dbCredits, mediaItems){
   const hasVideos=(mediaItems&&mediaItems.length>0)||vl.length>0;
   const hasCredits=(dbCredits&&dbCredits.length>0)||!!(profile?.credits?.trim());
   const hasSkills=Array.isArray(profile?.skills)&&profile.skills.length>0;
-  const hasStats=!!(profile?.height&&profile?.hair&&profile?.eyes&&profile?.age_range);
+  // Type Range took over from age_range here: age_range no longer has an input,
+  // so leaving it in this check would make the profile permanently incomplete.
+  const hasTypeRange=(Array.isArray(profile?.casting_types)&&profile.casting_types.length>0)||!!(profile?.casting_type_other||"").trim();
+  const hasStats=!!(profile?.height&&profile?.hair&&profile?.eyes&&hasTypeRange);
   const hasResume=!!(profile?.resume_url);
   const photoCount=ap.length+(profile?.headshot_url?1:0);
 
@@ -11440,7 +11533,7 @@ function computeProfileSuggestions(profile, dbCredits, mediaItems){
   if(!profile?.slate_video_url)suggestions.push({p:"High",text:"Add a 7-second slate video — casting directors see and hear you instantly",tab:"profile",btn:"Add Slate"});
   if(photoCount<3)suggestions.push({p:"Medium",text:"Add more gallery photos with different looks and angles",tab:"photos",btn:"Add Photos"});
   if(!profile?.location)suggestions.push({p:"Medium",text:"Add your location — casting directors often filter by area",tab:"profile",btn:"Add Location"});
-  if(!hasStats){const m=[!profile?.height&&"height",!profile?.hair&&"hair color",!profile?.eyes&&"eye color",!profile?.age_range&&"age range"].filter(Boolean);suggestions.push({p:"Medium",text:`Complete casting details: ${m.join(", ")}`,tab:"profile",btn:"Add Details"});}
+  if(!hasStats){const m=[!profile?.height&&"height",!profile?.hair&&"hair color",!profile?.eyes&&"eye color",!hasTypeRange&&"type range"].filter(Boolean);suggestions.push({p:"Medium",text:`Complete casting details: ${m.join(", ")}`,tab:"profile",btn:"Add Details"});}
   if(!hasSkills)suggestions.push({p:"Low",text:"Add special skills — accents, instruments, sports, and more",tab:"skills",btn:"Add Skills"});
   if(!profile?.training?.trim())suggestions.push({p:"Low",text:"Add your training — acting schools, coaches, and techniques",tab:"profile",btn:"Add Training"});
   if(!profile?.agent?.trim())suggestions.push({p:"Low",text:"Add representation info if you have an agent or manager",tab:"profile",btn:"Add Representation"});
@@ -12766,7 +12859,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     {label:"Upload headshot",done:!!myProfile?.headshot_url},
     {label:"Add bio",done:!!(myProfile?.bio?.trim())},
     {label:"Add location",done:!!myProfile?.location},
-    {label:"Add age range",done:!!myProfile?.age_range},
+    {label:"Add type range",done:(Array.isArray(myProfile?.casting_types)&&myProfile.casting_types.length>0)||!!(myProfile?.casting_type_other||"").trim()},
     {label:"Add credits / experience",done:dashDbCredits.length>0||!!(myProfile?.credits?.trim())},
     {label:"Add reel / video link",done:isPremium&&(dashDbVideoCount>0||(myProfile?.video_links||[]).some(v=>v)),premium:true},
     {label:"Add slate video (7-sec intro)",done:isPremium&&!!myProfile?.slate_video_url,premium:true},
@@ -19169,6 +19262,97 @@ function CastMeAsSection({talentId}){
 // ═══════════════════════════════════════════
 // PAGE: MY PROFILE — Backstage-style with gallery + videos
 // ═══════════════════════════════════════════
+// ─── "Select Type Range" — grouped, multi-select archetype picker.
+//     Replaces the old Playable Age Range select. Kept a plain button + absolute
+//     panel rather than a native <select multiple>: native multi-select has no
+//     group styling, no room for labels this long, and on mobile it collapses to
+//     a control most people can't tell is multi-select at all.
+function TypeRangeSelect({value,other,onChange,onOtherChange}){
+  const [open,setOpen]=useState(false);
+  const wrapRef=useRef(null);
+  const otherRef=useRef(null);
+  const selected=Array.isArray(value)?value:[];
+  const otherOn=!!other||selected.includes(CASTING_ARCHETYPE_OTHER);
+
+  // Close on outside click / Escape. Without this the panel survives a click on
+  // the Save button underneath it and covers the confirmation message.
+  useEffect(()=>{
+    if(!open)return;
+    const onDown=e=>{if(wrapRef.current&&!wrapRef.current.contains(e.target))setOpen(false);};
+    const onKey=e=>{if(e.key==="Escape"){setOpen(false);}};
+    document.addEventListener("mousedown",onDown);
+    document.addEventListener("keydown",onKey);
+    return()=>{document.removeEventListener("mousedown",onDown);document.removeEventListener("keydown",onKey);};
+  },[open]);
+
+  const toggle=a=>{
+    onChange(selected.includes(a)?selected.filter(x=>x!==a):[...selected,a]);
+  };
+  const toggleOther=()=>{
+    if(otherOn){
+      // Turning "Other…" back off discards the free text, mirroring how
+      // self_recording_other is cleared when a preset is chosen instead.
+      onChange(selected.filter(x=>x!==CASTING_ARCHETYPE_OTHER));
+      onOtherChange("");
+    }else{
+      onChange([...selected.filter(x=>x!==CASTING_ARCHETYPE_OTHER),CASTING_ARCHETYPE_OTHER]);
+      setTimeout(()=>{try{otherRef.current&&otherRef.current.focus();}catch(_){}},0);
+    }
+  };
+
+  // Chips show the real picks; "Other…" is represented by the typed text so the
+  // actor never sees a meaningless "Other…" chip next to their own wording.
+  const chips=selected.filter(a=>a!==CASTING_ARCHETYPE_OTHER);
+  const count=chips.length+(other&&other.trim()?1:0);
+  const label=count===0?"Select Type Range":(count===1?(chips[0]||other):`${count} types selected`);
+
+  return(<div className="tr-wrap" ref={wrapRef}>
+    <div className="tr-anchor">
+    <button type="button" className="tr-trigger" aria-expanded={open?"true":"false"} aria-haspopup="listbox"
+      onClick={()=>setOpen(o=>!o)}>
+      <span className={"tr-trigger-label"+(count===0?" is-empty":"")}>{label}</span>
+      {count>0&&<span className="tr-count">{count}</span>}
+      {/* Wrapper, not className on <Ico> — Ico spreads props AFTER its own
+          className, so passing one would overwrite "ti ti-chevron-down". */}
+      <span className="tr-caret" style={{display:"flex"}}><Ico n="chevron-down" s={15}/></span>
+    </button>
+
+    {open&&<div className="tr-menu" role="listbox" aria-multiselectable="true">
+      {CASTING_ARCHETYPE_GROUPS.map(g=>(<React.Fragment key={g.group}>
+        <div className="tr-group">{g.group}</div>
+        {g.items.map(a=>{
+          const on=selected.includes(a);
+          return(<button type="button" key={a} role="option" aria-selected={on?"true":"false"}
+            className={"tr-opt"+(on?" is-on":"")} onClick={()=>toggle(a)}>
+            <input type="checkbox" readOnly checked={on} tabIndex={-1}/>
+            <span>{a}</span>
+          </button>);
+        })}
+      </React.Fragment>))}
+      <div className="tr-divider"/>
+      <button type="button" role="option" aria-selected={otherOn?"true":"false"}
+        className={"tr-opt"+(otherOn?" is-on":"")} onClick={toggleOther}>
+        <input type="checkbox" readOnly checked={otherOn} tabIndex={-1}/>
+        <span>{CASTING_ARCHETYPE_OTHER}</span>
+      </button>
+    </div>}
+    </div>
+
+    {otherOn&&<input ref={otherRef} className="input" style={{marginTop:8}}
+      placeholder="Describe your own archetype" maxLength={80}
+      value={other||""} onChange={e=>onOtherChange(e.target.value)}/>}
+
+    {count>0&&<div className="tr-chips">
+      {chips.map(a=><span key={a} className="tr-chip">{a}
+        <button type="button" aria-label={`Remove ${a}`} onClick={()=>toggle(a)}><Ico n="x" s={12}/></button>
+      </span>)}
+      {other&&other.trim()&&<span className="tr-chip">{other.trim()}
+        <button type="button" aria-label="Remove custom type" onClick={toggleOther}><Ico n="x" s={12}/></button>
+      </span>}
+    </div>}
+  </div>);
+}
+
 function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onViewCastingById}){
   const vpw=useViewportWidth();
   const isMobile=vpw<768;
@@ -19218,6 +19402,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     company_name:profile?.company_name||"",company_role:profile?.company_role||"",website:profile?.website||"",
     credits:profile?.credits||"",
     body_type:profile?.body_type||"",age_range:profile?.age_range||"",
+    casting_types:Array.isArray(profile?.casting_types)?profile.casting_types:[],
+    casting_type_other:profile?.casting_type_other||"",
     drivers_license:profile?.drivers_license||"",passport:profile?.passport||"",
     self_recording_setup:profile?.self_recording_setup||"",self_recording_other:profile?.self_recording_other||"",
     talent_types:Array.isArray(profile?.talent_types)?profile.talent_types:[]
@@ -19240,6 +19426,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         company_name:profile.company_name||"",company_role:profile.company_role||"",website:profile.website||"",
         credits:profile.credits||"",
         body_type:profile.body_type||"",age_range:profile.age_range||"",
+        casting_types:Array.isArray(profile.casting_types)?profile.casting_types:[],
+        casting_type_other:profile.casting_type_other||"",
         drivers_license:profile.drivers_license||"",passport:profile.passport||"",
         self_recording_setup:profile.self_recording_setup||"",self_recording_other:profile.self_recording_other||"",
         talent_types:Array.isArray(profile.talent_types)?profile.talent_types:[]
@@ -19401,6 +19589,12 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         company_name:f.company_name||null,company_role:f.company_role||null,website:f.website||null,
         credits:f.credits||null,video_links:vl,
         body_type:f.body_type||null,age_range:f.age_range||null,
+        // Only real archetypes go in the array — the "Other…" entry is a UI
+        // marker, never persisted, so a reload can't reorder it into the list.
+        casting_types:(Array.isArray(f.casting_types)?f.casting_types:[]).filter(t=>ALL_CASTING_ARCHETYPES.includes(t)),
+        // Non-empty text IS the signal that "Other…" is on: unticking it clears
+        // the text, so there is no third state to encode here.
+        casting_type_other:(f.casting_type_other||"").trim()||null,
         drivers_license:f.drivers_license||null,passport:f.passport||null,
         self_recording_setup:f.self_recording_setup||null,
         // Free text only belongs to the "Other" choice — switching back to a preset clears it.
@@ -19698,7 +19892,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
           <div className="form-row"><div className="form-group"><label className="label">Height</label><select className="select" style={{width:"100%"}} value={f.height} onChange={e=>up("height",e.target.value)}><option value="">Select</option>{HEIGHTS.map(h=><option key={h} value={h}>{h}</option>)}</select></div><div className="form-group"><label className="label">Weight</label><select className="select" style={{width:"100%"}} value={f.weight} onChange={e=>up("weight",e.target.value)}><option value="">Select</option>{WEIGHTS.map(w=><option key={w} value={w}>{w}</option>)}</select></div></div>
           <div className="form-row"><div className="form-group"><label className="label">Hair Color</label><select className="select" style={{width:"100%"}} value={f.hair} onChange={e=>up("hair",e.target.value)}><option value="">Select</option>{HAIR_COLORS.map(h=><option key={h} value={h}>{h}</option>)}</select></div><div className="form-group"><label className="label">Eye Color</label><select className="select" style={{width:"100%"}} value={f.eyes} onChange={e=>up("eyes",e.target.value)}><option value="">Select</option>{EYE_COLORS.map(ec=><option key={ec} value={ec}>{ec}</option>)}</select></div></div>
           <div className="form-row"><div className="form-group"><label className="label">Ethnicity</label><select className="select" style={{width:"100%"}} value={f.ethnicity} onChange={e=>up("ethnicity",e.target.value)}><option value="">Select</option>{ETHNICITIES.map(et=><option key={et} value={et}>{et}</option>)}</select></div><div className="form-group"><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union_status} onChange={e=>up("union_status",e.target.value)}><option>Non-Union</option><option>SAG-AFTRA</option><option>AEA</option><option>SAG-AFTRA / AEA</option><option>ACTRA</option></select></div></div>
-          <div className="form-row"><div className="form-group"><label className="label">Body Type</label><select className="select" style={{width:"100%"}} value={f.body_type||""} onChange={e=>up("body_type",e.target.value)}><option value="">Select</option><option>Slim</option><option>Athletic / Toned</option><option>Average</option><option>Muscular</option><option>Curvy</option><option>Plus-size</option><option>Heavyset</option><option>Petite</option><option>Tall / Lean</option></select></div><div className="form-group"><label className="label">Playable Age Range</label><select className="select" style={{width:"100%"}} value={f.age_range||""} onChange={e=>up("age_range",e.target.value)}><option value="">Select</option><option>0-5</option><option>6-12</option><option>13-17</option><option>18-24</option><option>25-34</option><option>35-44</option><option>45-54</option><option>55-64</option><option>65+</option></select></div></div>
+          <div className="form-row"><div className="form-group"><label className="label">Body Type</label><select className="select" style={{width:"100%"}} value={f.body_type||""} onChange={e=>up("body_type",e.target.value)}><option value="">Select</option><option>Slim</option><option>Athletic / Toned</option><option>Average</option><option>Muscular</option><option>Curvy</option><option>Plus-size</option><option>Heavyset</option><option>Petite</option><option>Tall / Lean</option></select></div><div className="form-group"><label className="label">Type Range</label><TypeRangeSelect value={f.casting_types} other={f.casting_type_other} onChange={v=>up("casting_types",v)} onOtherChange={v=>up("casting_type_other",v)}/></div></div>
           <div className="form-group"><label className="label">Talent Types (select all that apply)</label><div style={{display:"flex",gap:16,flexWrap:"wrap",marginTop:6}}>{["Film","TV","Theater","Commercial","Modeling","Voiceover"].map(t=>{const arr=Array.isArray(f.talent_types)?f.talent_types:(f.talent_types?[f.talent_types]:[]);const on=arr.includes(t);return(<label key={t} className="checkbox-row"><input type="checkbox" checked={on} onChange={()=>up("talent_types",on?arr.filter(x=>x!==t):[...arr,t])}/>{t}</label>);})}</div></div>
         </div>
         <div className="card" style={{padding:24,marginBottom:16}}>
