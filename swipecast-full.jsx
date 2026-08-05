@@ -12599,7 +12599,22 @@ const TALENT_AGENCIES=[
   {n:"Daniel Sladek Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
    note:"Beverly Hills management and production company representing actors and writers.",a:[["Beverly Hills","8306 Wilshire Blvd, Suite 510, Beverly Hills, CA 90211"]]},
   {n:"Tropf Management",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"tropfmanagement.com",
-   note:"Beverly Hills talent management company representing actors and digital creators.",a:[["Beverly Hills","9663 Santa Monica Blvd, #1060, Beverly Hills, CA 90210"]]}
+   note:"Beverly Hills talent management company representing actors and digital creators.",a:[["Beverly Hills","9663 Santa Monica Blvd, #1060, Beverly Hills, CA 90210"]]},
+
+  {n:"FORM.B entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+   note:"Beverly Hills management and production company representing actors.",a:[["Beverly Hills","8383 Wilshire Blvd, Suite 230, Beverly Hills, CA 90211"]]},
+  {n:"FilmEngine",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+   note:"Beverly Hills production, financing and management company with an actor roster.",a:[["Beverly Hills","345 N Maple Drive, Suite 294, Beverly Hills, CA 90210"]]},
+  {n:"Larry Thompson Organization",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",w:"larrythompsonorg.com",
+   note:"Beverly Hills management and production company representing actors.",a:[["Beverly Hills","9663 Santa Monica Blvd, Suite 801, Beverly Hills, CA 90210"]]},
+  {n:"Wicked Curve",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+   note:"Beverly Hills management and production company representing actors and writers.",a:[["Beverly Hills","339 N Oakhurst Drive, Suite 303, Beverly Hills, CA 90210"]]},
+  {n:"DNA Entertainment",sag:0,t:"mgmt",c:["LA"],v:0,s:"check",
+   note:"Beverly Hills management company representing actors. Street address unconfirmed.",a:[]},
+  {n:"Felicia Douglas Management",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+   note:"Beverly Hills management company representing actors.",a:[["Beverly Hills","8306 Wilshire Blvd, #1699, Beverly Hills, CA 90211"]]},
+  {n:"Hipnoggin Entertainment",sag:0,t:"mgmt",c:["LA"],v:1,s:"check",
+   note:"Beverly Hills management and production company representing actors.",a:[["Beverly Hills","9663 Santa Monica Blvd, Suite 1166, Beverly Hills, CA 90210"]]}
 ];
 
 // Tips written for beginners submitting to agencies for the first time.
