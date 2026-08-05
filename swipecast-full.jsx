@@ -1354,6 +1354,30 @@ const CASTING_ARCHETYPE_GROUPS = [
 const CASTING_ARCHETYPE_OTHER = "Other…";
 const ALL_CASTING_ARCHETYPES = CASTING_ARCHETYPE_GROUPS.flatMap(g=>g.items);
 
+// ─── Age display. The exact age is always collected (it is what confirms the
+//     account holder is 18+, and what the role matcher compares), but an actor
+//     can choose to show a bracket instead — being pinned to a single number is
+//     a well-known way to get screened out of parts you could otherwise play.
+//     Brackets are the same buckets the old Playable Age Range select offered.
+const AGE_BRACKETS = [[0,5],[6,12],[13,17],[18,24],[25,34],[35,44],[45,54],[55,64]];
+function ageBracketLabel(age){
+  const n=parseInt(age,10);
+  if(!Number.isFinite(n)||n<=0)return "";
+  const b=AGE_BRACKETS.find(([lo,hi])=>n>=lo&&n<=hi);
+  return b?`${b[0]}-${b[1]}`:"65+";
+}
+// The ONE place that decides what a viewer sees. Every card, list row and
+// profile stat reads this, so the toggle can never be honoured in some views
+// and quietly ignored in others. Undefined show_exact_age means an older row
+// (or a query that didn't select the column) — default to the exact age, which
+// is what those profiles have always shown.
+function displayAge(p){
+  if(!p)return "";
+  const exact=p.age;
+  if(!exact)return "";
+  return p.show_exact_age===false?ageBracketLabel(exact):exact;
+}
+
 
 const CASTINGS = [
   {id:1,slug:"midnight-lens",title:"Midnight Lens",tagline:"Independent Horror Feature",prod:"Midnight Lens Productions",type:"Film",pay:"SAG-AFTRA Scale + 10%",location:"New York, NY",deadline:"May 15, 2026",union:"SAG-AFTRA",submissions:47,desc:"A quiet, slow-burn psychological horror that trusts its audience.",synopsis:"A young architect returns to her grandmother's abandoned upstate home to settle the estate — and uncovers a decades-old presence that remembers her. In the vein of *Hereditary* and *The Others*, from first-time feature director Aurora Halcyon.",director:"Aurora Halcyon",shoots:"July 10 – August 7, 2026",rate:"SAG-AFTRA Scale + 10%",rehearsal:"2 days (remote OK)",auditionFormat:"Self-tape",roles:[{name:"ISABEL CASTILLO",type:"Lead",ageRange:"25-35",gender:"Female",ethnicity:"Latina",desc:"A reserved architect whose composure slowly unravels. Must carry extended silences and believably move from skepticism to terror. Working Spanish a plus."},{name:"RUBEN CASTILLO",type:"Supporting",ageRange:"55-70",gender:"Male",ethnicity:"Latino",desc:"Isabel's uncle, a retired carpenter who knows more than he'll say. Spanish-language dialogue throughout."},{name:"THE WOMAN IN BLUE",type:"Featured",ageRange:"40-65",gender:"Female",ethnicity:"Any",desc:"Non-speaking. Dancers and physical performers encouraged. Long static holds in prosthetic makeup."}]},
@@ -4810,7 +4834,9 @@ function RegisterTalent({onNavigate}){
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}><Ico n="check" s={24}/> Verification email re-sent — check your inbox.</div>}</div>}
 
       {step===2&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>2 / 3 — {tr('reg.t.step2')}</h3>
-        <div className="form-row"><div className="form-group"><label className="label">{tr('reg.t.gender')}</label><select className="select" style={{width:"100%"}} value={genderCustom?"__custom":f.gender} onChange={e=>{const v=e.target.value;if(v==="__custom"){setGenderCustom(true);up("gender","");}else{setGenderCustom(false);up("gender",v);}}}><option value="">Select</option>{GENDER_IDENTITY_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}<option value="__custom">Custom / Other…</option></select>{genderCustom&&<input className="input" style={{marginTop:8}} placeholder="Describe your gender identity" value={f.gender} onChange={e=>up("gender",e.target.value)}/>}</div><div className="form-group"><label className="label">{tr('reg.t.age')} <span style={{color:"var(--red)"}}>*</span></label><input className="input" type="number" placeholder={tr('reg.t.age')} value={f.age} onChange={e=>up("age",e.target.value)}/></div></div>
+        <div className="form-row"><div className="form-group"><label className="label">{tr('reg.t.gender')}</label><select className="select" style={{width:"100%"}} value={genderCustom?"__custom":f.gender} onChange={e=>{const v=e.target.value;if(v==="__custom"){setGenderCustom(true);up("gender","");}else{setGenderCustom(false);up("gender",v);}}}><option value="">Select</option>{GENDER_IDENTITY_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}<option value="__custom">Custom / Other…</option></select>{genderCustom&&<input className="input" style={{marginTop:8}} placeholder="Describe your gender identity" value={f.gender} onChange={e=>up("gender",e.target.value)}/>}</div><div className="form-group"><label className="label">{tr('reg.t.age')} <span style={{color:"var(--red)"}}>*</span></label><input className="input" type="number" placeholder={tr('reg.t.age')} value={f.age} onChange={e=>up("age",e.target.value)}/>
+          <div style={{fontSize:11.5,color:"var(--t3)",marginTop:5,lineHeight:1.45}}>Required so we can confirm you're 18 or over. You choose later whether casting sees your exact age or just a range.</div>
+        </div></div>
         <div className="form-row"><div className="form-group"><label className="label">{tr('reg.t.height')}</label><select className="select" style={{width:"100%"}} value={f.height} onChange={e=>up("height",e.target.value)}><option value="">Select</option>{HEIGHTS.map(h=><option key={h} value={h}>{h}</option>)}</select></div><div className="form-group"><label className="label">{tr('reg.t.weight')}</label><select className="select" style={{width:"100%"}} value={f.weight} onChange={e=>up("weight",e.target.value)}><option value="">Select</option>{WEIGHTS.map(w=><option key={w} value={w}>{w}</option>)}</select></div></div>
         <div className="form-row"><div className="form-group"><label className="label">{tr('reg.t.hairColor')}</label><select className="select" style={{width:"100%"}} value={f.hair} onChange={e=>up("hair",e.target.value)}><option value="">Select</option>{HAIR_COLORS.map(h=><option key={h} value={h}>{h}</option>)}</select></div><div className="form-group"><label className="label">{tr('reg.t.eyeColor')}</label><select className="select" style={{width:"100%"}} value={f.eyes} onChange={e=>up("eyes",e.target.value)}><option value="">Select</option>{EYE_COLORS.map(ec=><option key={ec} value={ec}>{ec}</option>)}</select></div></div>
         <div className="form-row"><div className="form-group"><label className="label">{tr('reg.t.ethnicity')}</label><select className="select" style={{width:"100%"}} value={f.ethnicity} onChange={e=>up("ethnicity",e.target.value)}><option value="">Select</option>{ETHNICITIES.map(et=><option key={et} value={et}>{et}</option>)}</select></div><div className="form-group"><label className="label">{tr('reg.t.union')}</label><select className="select" style={{width:"100%"}} value={f.union_status} onChange={e=>up("union_status",e.target.value)}><option>Non-Union</option><option>SAG-AFTRA</option><option>AEA</option><option>SAG-AFTRA / AEA</option><option>ACTRA</option></select></div></div>
@@ -10641,7 +10667,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     ["Weight",freshProfile?.weight||talent.weight],
     ["Hair",freshProfile?.hair||talent.hair],
     ["Eyes",freshProfile?.eyes||talent.eyes],
-    ["Age",freshProfile?.age||talent.age],
+    ["Age",displayAge(freshProfile&&freshProfile.age?freshProfile:talent)],
     ["Gender",freshProfile?.gender||talent.gender],
     ["Ethnicity",freshProfile?.ethnicity||talent.ethnicity],
     ["Body",freshProfile?.body_type||talent.body_type],
@@ -11313,7 +11339,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("Talent fetch timed out")),10000);});
       const {data:ps,error}=await Promise.race([
         window.sb.from("profiles")
-          .select("id,display_name,headshot_url,age,gender,ethnicity,location,union_status,skills,bio,social_links,body_type,age_range,casting_types,casting_type_other,hair,eyes,height,weight,training,agent,credits,video_links,additional_photos,resume_url")
+          .select("id,display_name,headshot_url,age,show_exact_age,gender,ethnicity,location,union_status,skills,bio,social_links,body_type,age_range,casting_types,casting_type_other,hair,eyes,height,weight,training,agent,credits,video_links,additional_photos,resume_url")
           .eq("user_type","talent").eq("visible",true).eq("suspended",false).eq("onboarded",true)
           .limit(200),
         timeout
@@ -11326,6 +11352,10 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         display_name:p.display_name||"Talent",
         img:p.headshot_url,
         age:p.age||"",
+        // Must ride along with age everywhere — displayAge() falls back to the
+        // exact number when this is missing, so dropping it here would silently
+        // undo the actor's choice in every card built from this mapping.
+        show_exact_age:p.show_exact_age!==false,
         gender:p.gender||"",
         ethnicity:p.ethnicity||"",
         location:p.location||"",
@@ -14227,7 +14257,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
       let memberRows=[];
       if(ids.length){
         const {data:mm,error:mErr}=await window.sb.from("talent_list_members")
-          .select("list_id,talent_id,added_at,profiles:talent_id(id,display_name,headshot_url,location,age,gender,union_status,user_type)")
+          .select("list_id,talent_id,added_at,profiles:talent_id(id,display_name,headshot_url,location,age,show_exact_age,gender,union_status,user_type)")
           .in("list_id",ids)
           .order("added_at",{ascending:false});
         if(mErr)throw mErr;
@@ -14506,7 +14536,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           )}
           <div className="s-card-info" style={fsMode?{padding:"16px 22px"}:{}}>
             <h3 style={fsMode?{fontSize:22,marginBottom:5}:{}}>{t.display_name||"Applicant"}</h3>
-            <div className="s-card-meta" style={fsMode?{fontSize:14,marginBottom:10}:{}}>{[t.age,t.gender,t.height,t.location].filter(Boolean).join(" · ")||"—"}</div>
+            <div className="s-card-meta" style={fsMode?{fontSize:14,marginBottom:10}:{}}>{[displayAge(t),t.gender,t.height,t.location].filter(Boolean).join(" · ")||"—"}</div>
             <div className="s-card-tags">
               {(t.skills||[]).slice(0,3).map((s,i)=><span key={i}>{s}</span>)}
               {t.union_status&&<span style={{background:"rgba(26,26,46,.08)",color:"var(--acc)"}}>{t.union_status}</span>}
@@ -14552,7 +14582,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         {/* Info */}
         <div style={{padding:"12px 14px 14px",display:"flex",flexDirection:"column",gap:3,flex:1}}>
           <h4 style={{fontSize:15,fontWeight:800,cursor:"pointer",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",margin:0}} onClick={()=>openTalentProfileFromApp(a)}>{tp.display_name||"Applicant"}</h4>
-          <p style={{fontSize:12,color:"var(--t2)",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{[tp.age,tp.gender,tp.location,tp.union_status].filter(Boolean).join(" · ")||"—"}</p>
+          <p style={{fontSize:12,color:"var(--t2)",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{[displayAge(tp),tp.gender,tp.location,tp.union_status].filter(Boolean).join(" · ")||"—"}</p>
           {(tp.skills||[]).length>0&&<div style={{display:"flex",gap:4,flexWrap:"wrap",marginTop:2}}>
             {(tp.skills||[]).slice(0,3).map((s,i)=><span key={i} style={{background:"#F1EFE8",border:"1px solid #DDD8CC",padding:"2px 7px",borderRadius:10,fontSize:10,color:"#171724",fontWeight:500}}>{s}</span>)}
           </div>}
@@ -14604,7 +14634,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
                 >▶ Slate 7s</button>
               )}
             </div>
-            <p style={{fontSize:12,color:"var(--t2)",margin:"3px 0 0"}}>{[tp.age,tp.gender,tp.location,tp.union_status].filter(Boolean).join(" · ")||"—"}</p>
+            <p style={{fontSize:12,color:"var(--t2)",margin:"3px 0 0"}}>{[displayAge(tp),tp.gender,tp.location,tp.union_status].filter(Boolean).join(" · ")||"—"}</p>
             <p style={{fontSize:11,color:"var(--t3)",margin:"2px 0 0"}}>Submitted {new Date(a.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})} · Role: {a.roles?.name||activeRole?.name||"—"}</p>
           </div>
           <div style={{fontSize:12,color:"var(--t3)",flexShrink:0,textAlign:"right"}}>{idx+1} / {total}</div>
@@ -14791,7 +14821,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
                   <div key={a.id||i} className="cb-item" style={{flexDirection:"column",alignItems:"stretch"}}>
                     <div style={{display:"flex",gap:10,alignItems:"center",cursor:"pointer"}} onClick={()=>openTalentProfileFromApp(a)}>
                       <img src={a.selected_photo_url||a.profiles?.headshot_url||"https://placehold.co/80x100/e5e5e5/999?text=?"} alt={a.profiles?.display_name||""} style={{width:52,height:66,objectFit:"cover",borderRadius:6}}/>
-                      <div className="cb-item-info" style={{flex:1}}><h4>{a.profiles?.display_name||"Applicant"}</h4><p>{[a.profiles?.age,a.profiles?.gender,a.profiles?.location].filter(Boolean).join(" · ")}</p></div>
+                      <div className="cb-item-info" style={{flex:1}}><h4>{a.profiles?.display_name||"Applicant"}</h4><p>{[displayAge(a.profiles),a.profiles?.gender,a.profiles?.location].filter(Boolean).join(" · ")}</p></div>
                     </div>
                     <div style={{display:"flex",gap:6,marginTop:8}}>
                       <button className="btn-p btn-sm" style={{flex:1,fontSize:11,padding:"6px 10px"}} onClick={()=>handleMsgClick(a)}><Ico n="message-circle" s={22}/> Message</button>
@@ -14906,7 +14936,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         </>:
         tab==="allSelected"?
           (allSelected.length===0?<div className="card" style={{textAlign:"center",padding:48}}><p style={{color:"var(--t3)"}}>No selected talent yet. Review your pending submissions to build your shortlist.</p></div>:
-          <div className="results-grid">{allSelected.map((a,i)=>{const p=a.profiles||{};return(<div key={a.id||i} className="talent-thumb" onClick={()=>openTalentProfileFromApp(a)}><img src={a.selected_photo_url||p.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?"} alt={p.display_name||""}/><div className="talent-thumb-info"><h4>{p.display_name||"Applicant"}</h4><p>{[p.age,p.location].filter(Boolean).join(" · ")}</p></div></div>);})}</div>):
+          <div className="results-grid">{allSelected.map((a,i)=>{const p=a.profiles||{};return(<div key={a.id||i} className="talent-thumb" onClick={()=>openTalentProfileFromApp(a)}><img src={a.selected_photo_url||p.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=?"} alt={p.display_name||""}/><div className="talent-thumb-info"><h4>{p.display_name||"Applicant"}</h4><p>{[displayAge(p),p.location].filter(Boolean).join(" · ")}</p></div></div>);})}</div>):
         // ─── Saved Lists tab: index of lists, then drill-down to members ───
         <>
           {savedListsErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12}}>{savedListsErr}</div>}
@@ -14936,7 +14966,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
                 <img src={tv.img} alt={tv.name} onClick={()=>setCdProfileOverlay(tv)} style={{cursor:"pointer"}}/>
                 <div className="talent-thumb-info">
                   <h4 onClick={()=>setCdProfileOverlay(tv)} style={{cursor:"pointer"}}>{tv.name}</h4>
-                  <p>{[p.age,p.gender,p.location].filter(Boolean).join(" · ")||"—"}</p>
+                  <p>{[displayAge(p),p.gender,p.location].filter(Boolean).join(" · ")||"—"}</p>
                   <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
                     <button className="btn-p btn-sm" style={{fontSize:11,padding:"6px 10px"}} onClick={()=>setComposeDmTo({id:m.talent_id,name:tv.name})}><Ico n="message-circle" s={22}/> Message</button>
                     <button className="btn-s btn-sm" style={{fontSize:11,padding:"6px 10px",color:"#c0392b",borderColor:"rgba(255,100,100,0.35)"}} onClick={()=>removeFromList(activeList.id,m.talent_id)}>Remove</button>
@@ -19404,6 +19434,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     body_type:profile?.body_type||"",age_range:profile?.age_range||"",
     casting_types:Array.isArray(profile?.casting_types)?profile.casting_types:[],
     casting_type_other:profile?.casting_type_other||"",
+    show_exact_age:profile?.show_exact_age!==false,
     drivers_license:profile?.drivers_license||"",passport:profile?.passport||"",
     self_recording_setup:profile?.self_recording_setup||"",self_recording_other:profile?.self_recording_other||"",
     talent_types:Array.isArray(profile?.talent_types)?profile.talent_types:[]
@@ -19428,6 +19459,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         body_type:profile.body_type||"",age_range:profile.age_range||"",
         casting_types:Array.isArray(profile.casting_types)?profile.casting_types:[],
         casting_type_other:profile.casting_type_other||"",
+        show_exact_age:profile.show_exact_age!==false,
         drivers_license:profile.drivers_license||"",passport:profile.passport||"",
         self_recording_setup:profile.self_recording_setup||"",self_recording_other:profile.self_recording_other||"",
         talent_types:Array.isArray(profile.talent_types)?profile.talent_types:[]
@@ -19595,6 +19627,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         // Non-empty text IS the signal that "Other…" is on: unticking it clears
         // the text, so there is no third state to encode here.
         casting_type_other:(f.casting_type_other||"").trim()||null,
+        show_exact_age:f.show_exact_age!==false,
         drivers_license:f.drivers_license||null,passport:f.passport||null,
         self_recording_setup:f.self_recording_setup||null,
         // Free text only belongs to the "Other" choice — switching back to a preset clears it.
@@ -19888,7 +19921,18 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       {!isCD&&<>
         <div className="card" style={{padding:24,marginBottom:16}}>
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Physical Stats</h3>
-          <div className="form-row"><div className="form-group"><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={genderCustom?"__custom":f.gender} onChange={e=>{const v=e.target.value;if(v==="__custom"){setGenderCustom(true);up("gender","");}else{setGenderCustom(false);up("gender",v);}}}><option value="">—</option>{GENDER_IDENTITY_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}<option value="__custom">Custom / Other…</option></select>{genderCustom&&<input className="input" style={{marginTop:8}} placeholder="Describe your gender identity" value={f.gender} onChange={e=>up("gender",e.target.value)}/>}</div><div className="form-group"><label className="label">Age</label><input className="input" type="number" min="1" max="120" value={f.age} onChange={e=>up("age",e.target.value)}/></div></div>
+          <div className="form-row"><div className="form-group"><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={genderCustom?"__custom":f.gender} onChange={e=>{const v=e.target.value;if(v==="__custom"){setGenderCustom(true);up("gender","");}else{setGenderCustom(false);up("gender",v);}}}><option value="">—</option>{GENDER_IDENTITY_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}<option value="__custom">Custom / Other…</option></select>{genderCustom&&<input className="input" style={{marginTop:8}} placeholder="Describe your gender identity" value={f.gender} onChange={e=>up("gender",e.target.value)}/>}</div><div className="form-group"><label className="label">Age</label><input className="input" type="number" min="1" max="120" value={f.age} onChange={e=>up("age",e.target.value)}/>
+            <label className="checkbox-row" style={{marginTop:9,marginBottom:0,alignItems:"flex-start"}}>
+              <input type="checkbox" style={{marginTop:2}} checked={f.show_exact_age!==false} onChange={e=>up("show_exact_age",e.target.checked)}/>
+              <span>Show my exact age on my profile</span>
+            </label>
+            <div style={{fontSize:11.5,color:"var(--t3)",marginTop:5,lineHeight:1.45}}>
+              {f.show_exact_age!==false
+                ? <>Casting directors will see <strong>{f.age?`age ${f.age}`:"your exact age"}</strong>. Untick to show a range instead.</>
+                : <>Casting directors will see <strong>{f.age?`age ${ageBracketLabel(f.age)}`:"an age range"}</strong> instead of your exact age.</>}
+              <br/>Your age is always required so we can confirm you're 18 or over — that part is never hidden from us.
+            </div>
+          </div></div>
           <div className="form-row"><div className="form-group"><label className="label">Height</label><select className="select" style={{width:"100%"}} value={f.height} onChange={e=>up("height",e.target.value)}><option value="">Select</option>{HEIGHTS.map(h=><option key={h} value={h}>{h}</option>)}</select></div><div className="form-group"><label className="label">Weight</label><select className="select" style={{width:"100%"}} value={f.weight} onChange={e=>up("weight",e.target.value)}><option value="">Select</option>{WEIGHTS.map(w=><option key={w} value={w}>{w}</option>)}</select></div></div>
           <div className="form-row"><div className="form-group"><label className="label">Hair Color</label><select className="select" style={{width:"100%"}} value={f.hair} onChange={e=>up("hair",e.target.value)}><option value="">Select</option>{HAIR_COLORS.map(h=><option key={h} value={h}>{h}</option>)}</select></div><div className="form-group"><label className="label">Eye Color</label><select className="select" style={{width:"100%"}} value={f.eyes} onChange={e=>up("eyes",e.target.value)}><option value="">Select</option>{EYE_COLORS.map(ec=><option key={ec} value={ec}>{ec}</option>)}</select></div></div>
           <div className="form-row"><div className="form-group"><label className="label">Ethnicity</label><select className="select" style={{width:"100%"}} value={f.ethnicity} onChange={e=>up("ethnicity",e.target.value)}><option value="">Select</option>{ETHNICITIES.map(et=><option key={et} value={et}>{et}</option>)}</select></div><div className="form-group"><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union_status} onChange={e=>up("union_status",e.target.value)}><option>Non-Union</option><option>SAG-AFTRA</option><option>AEA</option><option>SAG-AFTRA / AEA</option><option>ACTRA</option></select></div></div>
