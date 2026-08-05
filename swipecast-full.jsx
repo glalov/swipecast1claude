@@ -12397,7 +12397,7 @@ const TALENT_AGENCY_TIPS=[
   p:[{t:"p",x:"Hollywood is enormous on screen and remarkably small behind it. The agents and managers on this list know each other. They came up together, they poach from each other, they have lunch. A blanket mailing to forty agencies gets noticed the way a mass email to forty companies gets noticed — and it reads as <b>desperate</b>, which is the one impression that costs you the most and takes the longest to undo."},
       {t:"p",x:"Do the opposite. Open the website of each agency you're considering — that's why we put the links in. Look at who is on the roster. Look at what those clients have actually been working on. Look at the divisions: is this a commercial house, a theatrical house, a youth agency?"},
       {t:"p",x:"Then write only to the ones where you can honestly finish this sentence: <b>“I can see myself on that roster because ______.”</b> Five well-chosen letters will beat forty scattered ones, every time, and it isn't close."},
-      {t:"p",x:"<b>Pick the right desk, too.</b> Most agencies list their agents by division. A commercial submission sent to the theatrical agent gets forwarded at best and binned at worst. Name the right person on the envelope."}]},
+      {t:"p",x:"<b>Pick the right desk, too.</b> Most agencies list their agents by division. A commercial submission sent to the theatrical agent gets forwarded at best and binned at worst. Name the right person on the card."}]},
  {k:"The thing nobody tells you",h:"A real agent never charges you a cent up front.",
   p:[{t:"p",x:"This is the tip that saves actors the most money and almost nobody explains it early enough. <b>A legitimate agent gets paid a commission — around 10% — after you book a job.</b> That is the whole business model. They make money when you make money."},
       {t:"p",x:"So the moment anyone calling themselves an agent asks you for a registration fee, a “portfolio” fee, mandatory classes at their own studio, or insists you shoot with one specific photographer they happen to recommend, you have not found an agent. You have found someone whose actual customers are actors, not producers."},
@@ -12726,7 +12726,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
                 </div>
               ):(<>
                 <div style={{background:"rgba(27,135,62,.08)",border:"1px solid rgba(27,135,62,.28)",borderRadius:11,padding:"13px 16px",fontSize:13,color:"#146B31",fontWeight:700,margin:"6px 0 4px"}}>
-                  Send a headshot, resume and your CastSlate business card to any agency you choose — the ones marked <strong>Mail OK</strong> are the likeliest to read it. Tick them off as you go and we'll build your mailing list.
+                  Send your CastSlate card — no envelope, nothing to print, nothing to open. Your headshot <em>is</em> the card, and one scan of the QR code puts your reels, photos, credits and links in their hand in seconds. Pick any office on this list, tick them off as you go, and we'll build your mailing list.
                 </div>
                 {TAD_GROUPS.map(([t,title,sub])=>{
                   const list=shown.filter(a=>a.t===t);
