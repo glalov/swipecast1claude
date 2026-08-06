@@ -344,7 +344,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tad-mini>div{flex:1;}
 .tad-mini b{display:block;font-size:16px;font-weight:800;line-height:1.1;}
 .tad-mini span{display:block;font-size:8.6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:rgba(255,255,255,.5);white-space:nowrap;}
-.tad-cta{position:relative;width:100%;font-size:13px;font-weight:800;font-family:'DM Sans',sans-serif;padding:12px 14px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(180deg,#F8B65E 0%,#EC942A 100%);color:#1A1A2E;box-shadow:0 10px 26px -10px rgba(240,160,60,.8),inset 0 1px 0 rgba(255,255,255,.35);}
+/* Emerald, not amber: the Actor Card Studio CTA directly above this card is amber,
+   and two identical buttons stacked gave neither any hierarchy. Dark navy text is
+   kept deliberately — #1A1A2E on #0FA47F is 5.3:1 (WCAG AA), white would be 3.2:1. */
+.tad-cta{position:relative;width:100%;font-size:13px;font-weight:800;font-family:'DM Sans',sans-serif;padding:12px 14px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(180deg,#17BE93 0%,#0FA47F 100%);color:#1A1A2E;box-shadow:0 10px 26px -10px rgba(15,164,127,.8),inset 0 1px 0 rgba(255,255,255,.35);}
 .tad-cta.tad-open{background:rgba(255,255,255,.14);color:#fff;box-shadow:none;border:1px solid rgba(255,255,255,.25);}
 /* The directory is a slide-in sheet, not a centred modal — same left-to-right motion,
    easing and dim as the Browse Castings detail sheet, so both "open from a card"

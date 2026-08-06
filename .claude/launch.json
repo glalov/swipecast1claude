@@ -4,62 +4,92 @@
     {
       "name": "swipecast",
       "runtimeExecutable": "/usr/bin/python3",
-      "runtimeArgs": ["/tmp/castslate_serve.py"],
+      "runtimeArgs": [
+        "/tmp/castslate_serve.py"
+      ],
       "port": 8000
     },
     {
       "name": "swipecast-site-preview",
       "runtimeExecutable": "/usr/bin/python3",
-      "runtimeArgs": ["/tmp/castslate_site_preview.py"],
+      "runtimeArgs": [
+        "/tmp/castslate_site_preview.py"
+      ],
       "autoPort": true,
       "port": 8061
     },
     {
       "name": "tagline-demo",
       "runtimeExecutable": "/usr/bin/python3",
-      "runtimeArgs": ["/tmp/castslate_demo_serve.py"],
+      "runtimeArgs": [
+        "/tmp/castslate_demo_serve.py"
+      ],
       "port": 8001
     },
     {
       "name": "news-demo",
       "runtimeExecutable": "/usr/bin/python3",
-      "runtimeArgs": ["/tmp/castslate_news_serve.py"],
+      "runtimeArgs": [
+        "/tmp/castslate_news_serve.py"
+      ],
       "port": 8014
     },
     {
       "name": "swipecast-preview",
       "runtimeExecutable": "/usr/bin/python3",
-      "runtimeArgs": ["/tmp/castslate_preview_serve.py"],
+      "runtimeArgs": [
+        "/tmp/castslate_preview_serve.py"
+      ],
       "autoPort": true,
       "port": 8021
     },
     {
       "name": "tl-preview",
       "runtimeExecutable": "/usr/bin/python3",
-      "runtimeArgs": ["/tmp/castslate_tl_serve.py"],
+      "runtimeArgs": [
+        "/tmp/castslate_tl_serve.py"
+      ],
       "autoPort": true,
       "port": 8033
     },
     {
       "name": "format-demo",
       "runtimeExecutable": "/usr/bin/python3",
-      "runtimeArgs": ["/tmp/castslate_format_serve.py"],
+      "runtimeArgs": [
+        "/tmp/castslate_format_serve.py"
+      ],
       "autoPort": true,
       "port": 8042
     },
     {
       "name": "casting-accordion-demo",
       "runtimeExecutable": "/usr/bin/python3",
-      "runtimeArgs": ["/tmp/castslate_accordion_serve.py"],
+      "runtimeArgs": [
+        "/tmp/castslate_accordion_serve.py"
+      ],
       "autoPort": true,
       "port": 8044
     },
     {
       "name": "banner-demo",
       "runtimeExecutable": "/usr/bin/python3",
-      "runtimeArgs": ["/tmp/castslate_banner_serve.py"],
+      "runtimeArgs": [
+        "/tmp/castslate_banner_serve.py"
+      ],
       "autoPort": true,
       "port": 8051
+    },
+    {
+      "name": "tad-preview",
+      "autoPort": true,
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "--directory",
+        "/private/tmp/claude-501/-Users-georgi-Desktop-latest-package-1/57ab0851-8ba1-4e5c-879e-a128458d1485/scratchpad/tadprev"
+      ],
+      "port": 8791
     }
   ]
 }
