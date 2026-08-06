@@ -1,0 +1,386 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CastSlate — Directory card, 3 treatments</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAF7F1;--s1:#FFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--gold:#F0B860;--gold-lt:#FFF0D2;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased;}
+.top{position:sticky;top:0;z-index:100;background:var(--t1);color:#fff;padding:13px 22px;font-weight:800;font-size:14px;display:flex;align-items:center;gap:12px;}
+.top em{font-style:normal;font-weight:500;font-size:12px;color:rgba(255,255,255,.6);}
+.wrap{max-width:1320px;margin:0 auto;padding:26px 22px 70px;}
+.lede{background:#12131A;color:#fff;border-radius:16px;padding:22px 26px;font-size:13.6px;line-height:1.7;margin-bottom:26px;}
+.lede h2{margin:0 0 10px;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:800;}
+.lede p{margin:0 0 10px;color:rgba(255,255,255,.85);}
+.lede p:last-child{margin:0;}
+.lede b{color:#fff;}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;align-items:start;}
+@media(max-width:1080px){.grid{grid-template-columns:1fr;max-width:430px;margin:0 auto;}}
+.col{background:var(--bg);}
+.colhead{margin-bottom:12px;}
+.tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;background:var(--t1);color:var(--gold);padding:5px 11px;border-radius:20px;}
+.colhead h3{margin:9px 0 5px;font-size:17px;font-weight:800;letter-spacing:-.02em;}
+.colhead p{margin:0;font-size:12.5px;color:var(--t2);line-height:1.6;}
+.stagecard{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:14px;margin-top:14px;}
+.stagecard>.hint{font-size:11px;color:var(--t3);font-weight:700;text-align:center;margin-top:11px;letter-spacing:.02em;}
+.mockabove{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:14px 16px;margin-bottom:12px;}
+.mockabove b{font-size:13px;}
+.mockabove span{display:block;font-size:11.5px;color:var(--t3);margin-top:3px;}
+
+/* ══════════ SHARED CARD SKELETON ══════════ */
+.cardwrap{position:relative;}
+.cd{position:relative;overflow:hidden;border-radius:16px;padding:20px;color:#fff;cursor:pointer;z-index:1;
+    background:linear-gradient(140deg,#232342 0%,#1A1A2E 55%,#111124 100%);}
+.cd *{position:relative;z-index:3;}
+.cd .fx{position:absolute;inset:0;z-index:1;pointer-events:none;}
+.kick{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold);margin:0 0 9px;}
+.kick i{width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);font-style:normal;}
+.hd{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.ic{flex:0 0 auto;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.12);}
+.ic svg{width:21px;height:21px;stroke:var(--gold);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+.cd h4{font-weight:800;font-size:15.5px;color:#fff;margin:0;letter-spacing:-.2px;line-height:1.28;}
+.sub{font-size:12.8px;color:rgba(255,255,255,.8);margin:0 0 14px;line-height:1.55;}
+.sub b{color:rgba(255,255,255,.95);}
+.mini{display:flex;gap:14px;margin:0 0 15px;padding:12px 0;border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12);}
+.mini>div{flex:1;}
+.mini b{display:block;font-size:17px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;}
+.mini span{display:block;font-size:8.6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:rgba(255,255,255,.5);white-space:nowrap;margin-top:2px;}
+.cta{width:100%;font-size:13px;font-weight:800;font-family:inherit;padding:12px 14px;border-radius:10px;cursor:pointer;
+     background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.25);transition:background .2s,border-color .2s;}
+.cd:hover .cta{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.42);}
+
+/* ── the info dot + its tooltip (shared by all three) ── */
+.info{width:17px;height:17px;flex:0 0 auto;border-radius:50%;border:1.4px solid rgba(240,184,96,.65);color:var(--gold);
+      font-size:10.5px;font-weight:800;font-style:normal;display:inline-flex;align-items:center;justify-content:center;
+      cursor:help;background:rgba(240,184,96,.1);transition:background .18s,transform .18s;margin-left:2px;}
+.info:hover,.info:focus,.info.on{background:var(--gold);color:#1A1A2E;outline:none;transform:scale(1.12);}
+.tip{position:absolute;left:14px;right:14px;top:66px;z-index:9;background:#0C0D14;border:1px solid rgba(240,184,96,.4);
+     border-radius:13px;padding:15px 17px;font-size:12.3px;font-weight:500;line-height:1.62;color:rgba(255,255,255,.88);
+     opacity:0;transform:translateY(-6px) scale(.985);pointer-events:none;transition:opacity .2s,transform .2s;
+     box-shadow:0 22px 48px -16px rgba(0,0,0,.85);}
+.tip b{display:block;color:var(--gold);font-size:11px;letter-spacing:.11em;text-transform:uppercase;margin-bottom:7px;}
+.tip em{font-style:normal;color:#fff;font-weight:700;}
+.cd .infowrap{position:static;display:inline-flex;align-items:center;}
+.info:hover+.tip,.info:focus+.tip,.infowrap:hover .tip{opacity:1;transform:none;pointer-events:auto;}
+
+/* ══════════ A · THE VAULT ══════════ */
+.seal{position:relative;padding:1.5px;border-radius:17.5px;overflow:hidden;isolation:isolate;
+      transition:transform .3s cubic-bezier(.2,.8,.3,1),box-shadow .3s;}
+.seal::before{content:"";position:absolute;inset:-60%;z-index:0;
+  background:conic-gradient(from 0deg,transparent 0deg,transparent 262deg,rgba(240,184,96,.22) 300deg,var(--gold) 342deg,var(--gold-lt) 352deg,var(--gold) 356deg,transparent 360deg);
+  animation:sealrun 6s linear infinite;}
+@keyframes sealrun{to{transform:rotate(360deg);}}
+.seal:hover{transform:translateY(-3px);box-shadow:0 24px 48px -18px rgba(26,26,46,.72);}
+.seal:hover::before{animation-duration:2.2s;}
+/* the archive beneath: ghost index rows drifting up forever */
+.strata{position:absolute;inset:-14% -8%;opacity:.9;
+  -webkit-mask-image:radial-gradient(112% 96% at 86% 0%,#000 0%,rgba(0,0,0,.58) 30%,rgba(0,0,0,.16) 56%,transparent 74%);
+          mask-image:radial-gradient(112% 96% at 86% 0%,#000 0%,rgba(0,0,0,.58) 30%,rgba(0,0,0,.16) 56%,transparent 74%);}
+.strata i{position:absolute;left:0;height:3px;border-radius:2px;background:rgba(240,184,96,.55);display:block;
+  animation:drift 26s linear infinite;transition:background .45s,box-shadow .45s;}
+@keyframes drift{from{transform:translateY(40px);}to{transform:translateY(-330px);}}
+.vault:hover .strata i{background:rgba(255,225,170,.92);box-shadow:0 0 6px rgba(240,184,96,.5);}
+/* the dial */
+.dial{position:absolute;inset:0;border-radius:11px;border:1.5px solid rgba(240,184,96,.42);
+      transition:transform .85s cubic-bezier(.2,.9,.25,1);z-index:2;}
+.dial::before,.dial::after{content:"";position:absolute;left:50%;width:1.5px;height:5px;background:var(--gold);margin-left:-.75px;border-radius:2px;}
+.dial::before{top:2px;} .dial::after{bottom:2px;}
+.vault:hover .dial{transform:rotate(147deg);}
+.vault .ic{position:relative;transition:box-shadow .4s;}
+.vault:hover .ic{box-shadow:0 0 0 3px rgba(240,184,96,.14),0 0 22px rgba(240,184,96,.4);}
+/* the unlock bar sweeps once on hover */
+.unlock{position:absolute;left:0;right:0;height:120px;top:-130px;z-index:2;
+  background:linear-gradient(180deg,transparent,rgba(240,184,96,.16) 48%,rgba(255,240,210,.3) 52%,transparent);}
+.vault:hover .unlock{animation:unlock 1.05s cubic-bezier(.4,0,.2,1);}
+@keyframes unlock{from{top:-130px;}to{top:110%;}}
+
+/* ══════════ B · THE NETWORK ══════════ */
+.netwrap{position:relative;padding:1.5px;border-radius:17.5px;background:linear-gradient(140deg,rgba(240,184,96,.5),rgba(240,184,96,.08) 42%,rgba(240,184,96,.5));
+  transition:transform .3s cubic-bezier(.2,.8,.3,1),box-shadow .3s;}
+.netwrap:hover{transform:translateY(-3px);box-shadow:0 24px 48px -18px rgba(26,26,46,.72);}
+.net svg{position:absolute;inset:0;width:100%;height:100%;}
+.net .edge{stroke:rgba(240,184,96,.2);stroke-width:.8;fill:none;transition:stroke .5s;}
+.net .node{fill:rgba(240,184,96,.55);animation:twink 4.6s ease-in-out infinite;}
+@keyframes twink{0%,100%{opacity:.2;r:1.5px;}50%{opacity:.8;r:2.4px;}}
+.network:hover .edge{stroke:rgba(240,184,96,.42);}
+/* scrim so the constellation reads as depth behind the copy, never as clutter over it */
+.net::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:4;
+  background:radial-gradient(88% 62% at 32% 44%,rgba(20,20,42,.94) 0%,rgba(20,20,42,.7) 44%,rgba(20,20,42,.1) 76%,transparent 100%),
+             linear-gradient(180deg,transparent 52%,rgba(17,17,36,.55) 74%,rgba(17,17,36,.9) 100%);}
+/* a signal runs the chain on hover — an introduction travelling */
+.net .pulse{stroke:var(--gold-lt);stroke-width:1.6;fill:none;stroke-linecap:round;
+  stroke-dasharray:34 640;stroke-dashoffset:34;opacity:0;filter:drop-shadow(0 0 4px rgba(240,184,96,.9));}
+.network:hover .pulse{opacity:1;animation:run 1.5s cubic-bezier(.45,0,.3,1) infinite;}
+@keyframes run{from{stroke-dashoffset:34;}to{stroke-dashoffset:-640;}}
+.network .ic{position:relative;}
+.network .ic::after{content:"";position:absolute;inset:-6px;border-radius:15px;border:1px solid rgba(240,184,96,.5);
+  opacity:0;animation:ring 3.4s ease-out infinite;}
+.network .ic::before{content:"";position:absolute;inset:-6px;border-radius:15px;border:1px solid rgba(240,184,96,.5);
+  opacity:0;animation:ring 3.4s ease-out infinite 1.7s;}
+@keyframes ring{0%{transform:scale(.82);opacity:.85;}70%{opacity:0;}100%{transform:scale(1.5);opacity:0;}}
+.network:hover .ic::after,.network:hover .ic::before{animation-duration:1.5s;}
+
+/* ══════════ C · THE DOSSIER ══════════ */
+.dosswrap{position:relative;padding:2px;border-radius:18px;overflow:hidden;isolation:isolate;
+  transition:transform .3s cubic-bezier(.2,.8,.3,1),box-shadow .3s;}
+.dosswrap::before{content:"";position:absolute;inset:0;z-index:0;border-radius:18px;
+  background:linear-gradient(150deg,#7A5A22,#F0B860 22%,#FFF3DC 34%,#B8842F 48%,#5E4318 62%,#F0B860 82%,#8B6524);
+  background-size:220% 220%;animation:foil 9s ease-in-out infinite;}
+@keyframes foil{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+.dosswrap:hover{transform:translateY(-3px);box-shadow:0 26px 52px -18px rgba(26,26,46,.75);}
+.dosswrap:hover::before{animation-duration:3.2s;}
+.doss{background:linear-gradient(140deg,#20203B 0%,#16162A 55%,#0D0D1B 100%);border-radius:16px;}
+.grain{position:absolute;inset:0;opacity:.16;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");}
+.rules{position:absolute;inset:0;opacity:.5;
+  background:repeating-linear-gradient(180deg,transparent 0 25px,rgba(240,184,96,.055) 25px 26px);}
+.stamp{position:absolute;top:14px;right:14px;z-index:4;width:54px;height:54px;border-radius:50%;
+  border:1.5px solid rgba(240,184,96,.55);display:flex;align-items:center;justify-content:center;
+  color:var(--gold);font-size:7.4px;font-weight:800;letter-spacing:.09em;text-align:center;line-height:1.25;
+  background:radial-gradient(circle at 35% 28%,rgba(240,184,96,.24),rgba(240,184,96,.05));
+  transform:rotate(-11deg);transition:transform .45s cubic-bezier(.2,1.4,.4,1),box-shadow .45s;}
+.dosswrap:hover .stamp{transform:rotate(-11deg) scale(1.08);box-shadow:0 0 0 5px rgba(240,184,96,.09),0 0 24px rgba(240,184,96,.3);}
+.doss h4{font-family:'DM Serif Display',Georgia,serif;font-weight:400;font-size:20px;letter-spacing:-.01em;line-height:1.16;}
+.doss .kick{color:var(--gold);border:1px solid rgba(240,184,96,.4);border-radius:4px;padding:3px 8px;background:rgba(240,184,96,.08);}
+.scr{font-variant-numeric:tabular-nums;}
+/* diagonal foil sheen across the face on hover */
+.sheen{position:absolute;top:-60%;bottom:-60%;width:70px;left:-40%;z-index:2;opacity:0;transform:rotate(18deg);
+  background:linear-gradient(90deg,transparent,rgba(255,243,220,.16),rgba(255,243,220,.42),rgba(255,243,220,.16),transparent);}
+.dosswrap:hover .sheen{opacity:1;animation:sheen 1.15s cubic-bezier(.35,0,.2,1);}
+@keyframes sheen{from{left:-40%;}to{left:130%;}}
+.doss .cta{background:linear-gradient(180deg,#F8B65E,#EC942A);color:#1A1A2E;border:none;
+  box-shadow:0 10px 26px -10px rgba(240,160,60,.85),inset 0 1px 0 rgba(255,255,255,.35);}
+.dosswrap:hover .doss .cta{background:linear-gradient(180deg,#FFC875,#F0A03A);}
+
+@media(prefers-reduced-motion:reduce){
+  .seal::before,.strata i,.net .node,.net .pulse,.dosswrap::before,.network .ic::after,.network .ic::before{animation:none!important;}
+  .sheen,.unlock{display:none;}
+}
+</style></head><body>
+
+<div class="top">CastSlate <em>— Talent Agency &amp; Management Directory card · three treatments · hover each one</em></div>
+
+<div class="wrap">
+  <div class="lede">
+    <h2>Three ways to make the card feel like a vault, not a link</h2>
+    <p>Same content and same numbers in all three — <b>570 companies, 44 open to submissions, 7 insider tips</b> — so you're judging the treatment, not the copy. Every one carries the new <b>ⓘ</b> next to the title: hover or tap it and the "powerful knowledge tool" note slides down inside the card.</p>
+    <p>Hover a card to see its full motion. The stat numbers count up once when the card first appears, on all three.</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- ══════════ A ══════════ -->
+    <div class="col">
+      <div class="colhead">
+        <span class="tag">Treatment A</span>
+        <h3>The Vault</h3>
+        <p>Keeps the gold perimeter light you already have, then puts <b>an archive underneath it</b> — ghost index rows drifting up forever, like shelves passing behind a window. The icon is a combination dial that turns on hover while a light bar sweeps down the face: the vault opening.</p>
+      </div>
+      <div class="stagecard">
+        <div class="mockabove"><b>Actor Card Studio</b><span>the card above it on the dashboard</span></div>
+        <div class="seal vault" id="cardA">
+          <div class="cd">
+            <div class="fx strata" id="strataA"></div>
+            <div class="fx unlock"></div>
+            <p class="kick"><i></i>Unlocked</p>
+            <div class="hd">
+              <span class="ic"><span class="dial"></span>
+                <svg viewBox="0 0 24 24"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>
+              </span>
+              <h4>Talent Agency &amp; Management Directory<br>+ Tips &amp; Tricks</h4>
+              <span class="infowrap"><i class="info" tabindex="0">i</i><div class="tip"><b>A powerful knowledge tool</b>
+              Access to roughly <em>90% of Hollywood's agents and managers</em> — who they are, where they sit, and exactly how each one wants to be approached. Connections and knowledge that took other actors decades to gather, in your hands in minutes. Learn who really runs film and television in New York and Los Angeles.
+            </div></span>
+            </div>
+            <p class="sub">Talent agencies <b>and management companies</b> in LA &amp; New York open to new talent right now — plus how to actually approach them, from people who have done it for decades.</p>
+            <div class="mini">
+              <div><b class="num" data-to="570">0</b><span>Companies</span></div>
+              <div><b class="num" data-to="44">0</b><span>Open to submissions</span></div>
+              <div><b class="num" data-to="7">0</b><span>Insider tips</span></div>
+            </div>
+            <button class="cta">Open the Directory →</button>
+          </div>
+        </div>
+        <p class="hint">Hover: dial turns · light bar sweeps · archive brightens</p>
+      </div>
+    </div>
+
+    <!-- ══════════ B ══════════ -->
+    <div class="col">
+      <div class="colhead">
+        <span class="tag">Treatment B</span>
+        <h3>The Network</h3>
+        <p>Sells the <b>connections</b> rather than the list. A constellation of offices twinkles behind the copy, wired together by faint gold lines. Hover and a bright signal runs the chain from node to node — an introduction travelling across town — while rings pulse out from the icon.</p>
+      </div>
+      <div class="stagecard">
+        <div class="mockabove"><b>Actor Card Studio</b><span>the card above it on the dashboard</span></div>
+        <div class="netwrap network" id="cardB">
+          <div class="cd">
+            <div class="fx net">
+              <svg viewBox="0 0 340 300" preserveAspectRatio="none" id="netsvg"></svg>
+            </div>
+            <p class="kick"><i></i>Unlocked</p>
+            <div class="hd">
+              <span class="ic"><svg viewBox="0 0 24 24"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg></span>
+              <h4>Talent Agency &amp; Management Directory<br>+ Tips &amp; Tricks</h4>
+              <span class="infowrap"><i class="info" tabindex="0">i</i><div class="tip"><b>A powerful knowledge tool</b>
+              Access to roughly <em>90% of Hollywood's agents and managers</em> — who they are, where they sit, and exactly how each one wants to be approached. Connections and knowledge that took other actors decades to gather, in your hands in minutes. Learn who really runs film and television in New York and Los Angeles.
+            </div></span>
+            </div>
+            <p class="sub">Talent agencies <b>and management companies</b> in LA &amp; New York open to new talent right now — plus how to actually approach them, from people who have done it for decades.</p>
+            <div class="mini">
+              <div><b class="num" data-to="570">0</b><span>Companies</span></div>
+              <div><b class="num" data-to="44">0</b><span>Open to submissions</span></div>
+              <div><b class="num" data-to="7">0</b><span>Insider tips</span></div>
+            </div>
+            <button class="cta">Open the Directory →</button>
+          </div>
+        </div>
+        <p class="hint">Hover: a signal runs the network · rings pulse</p>
+      </div>
+    </div>
+
+    <!-- ══════════ C ══════════ -->
+    <div class="col">
+      <div class="colhead">
+        <span class="tag">Treatment C</span>
+        <h3>The Dossier</h3>
+        <p>The most expensive-looking of the three. A <b>real gold-foil edge</b> that shifts like metal in light, film grain and faint ruled lines over the face, a pressed wax seal in the corner, and a serif headline that <b>decrypts</b> character by character. Gold CTA instead of the ghost button.</p>
+      </div>
+      <div class="stagecard">
+        <div class="mockabove"><b>Actor Card Studio</b><span>the card above it on the dashboard</span></div>
+        <div class="dosswrap" id="cardC">
+          <div class="cd doss">
+            <div class="fx grain"></div>
+            <div class="fx rules"></div>
+            <div class="fx sheen"></div>
+            <div class="stamp">CAST<br>SLATE<br>PREMIUM</div>
+            <p class="kick">Restricted · Unlocked</p>
+            <div class="hd" style="padding-right:52px">
+              <h4 class="scramble" data-text="Talent Agency &amp; Management Directory">Talent Agency &amp; Management Directory</h4>
+              <span class="infowrap"><i class="info" tabindex="0">i</i><div class="tip" style="top:96px"><b>A powerful knowledge tool</b>
+              Access to roughly <em>90% of Hollywood's agents and managers</em> — who they are, where they sit, and exactly how each one wants to be approached. Connections and knowledge that took other actors decades to gather, in your hands in minutes. Learn who really runs film and television in New York and Los Angeles.
+            </div></span>
+            </div>
+            <p class="sub" style="margin-top:10px">Every agency and management company in LA &amp; New York open to new talent right now — plus how to actually approach them, from people who have done it for decades.</p>
+            <div class="mini">
+              <div><b class="num" data-to="570">0</b><span>Companies</span></div>
+              <div><b class="num" data-to="44">0</b><span>Open to submissions</span></div>
+              <div><b class="num" data-to="7">0</b><span>Insider tips</span></div>
+            </div>
+            <button class="cta">Open the Directory →</button>
+          </div>
+        </div>
+        <p class="hint">Hover: foil shifts · seal presses · sheen sweeps</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ── A: build the drifting archive rows ── */
+(function(){
+  var host=document.getElementById('strataA'),h='';
+  for(var i=0;i<38;i++){
+    var w=18+Math.random()*54, x=Math.random()*78, y=i*11+Math.random()*6, d=-(Math.random()*26);
+    h+='<i style="width:'+w+'%;left:'+x+'%;top:'+y+'px;animation-delay:'+d.toFixed(2)+'s;opacity:'+(0.35+Math.random()*0.65).toFixed(2)+'"></i>';
+  }
+  host.innerHTML=h;
+})();
+
+/* ── B: build the constellation + the signal path ── */
+(function(){
+  var svg=document.getElementById('netsvg');
+  var pts=[[28,44],[92,22],[151,58],[214,30],[286,50],[62,108],[128,132],[196,104],[268,140],
+           [34,182],[104,206],[172,178],[240,214],[300,190],[70,254],[146,268],[224,258],[292,262]];
+  var edges=[[0,1],[1,2],[2,3],[3,4],[0,5],[1,6],[2,6],[3,7],[4,8],[5,6],[6,7],[7,8],[5,9],[6,10],[7,11],
+             [8,12],[9,10],[10,11],[11,12],[12,13],[9,14],[10,15],[11,15],[12,16],[13,17],[14,15],[15,16],[16,17]];
+  var s='';
+  edges.forEach(function(e){s+='<line class="edge" x1="'+pts[e[0]][0]+'" y1="'+pts[e[0]][1]+'" x2="'+pts[e[1]][0]+'" y2="'+pts[e[1]][1]+'"/>';});
+  // the route the signal travels — a plausible chain of introductions
+  var route=[14,10,6,2,3,7,11,15,16,13,4];
+  s+='<polyline class="pulse" points="'+route.map(function(i){return pts[i][0]+','+pts[i][1];}).join(' ')+'"/>';
+  pts.forEach(function(p,i){s+='<circle class="node" cx="'+p[0]+'" cy="'+p[1]+'" r="2" style="animation-delay:'+(i*0.26).toFixed(2)+'s"/>';});
+  svg.innerHTML=s;
+})();
+
+/* ── C: decrypt the headline ── */
+(function(){
+  var GLYPH="ABCDEFGHIJKLMNOPQRSTUVWXYZ#%&$@?/*+=";
+  document.querySelectorAll('.scramble').forEach(function(el){
+    var real=el.textContent, timer=null;
+    /* wall-clock, not frame-counted — a throttled tab must not stretch the reveal */
+    function run(){
+      clearInterval(timer);
+      var t0=Date.now(), per=1500/real.length;
+      timer=setInterval(function(){
+        var settled=Math.floor((Date.now()-t0)/per), out='';
+        for(var i=0;i<real.length;i++){
+          var c=real[i];
+          if(i<settled||c===' '||c==='&'){out+=c;}
+          else{out+=GLYPH[Math.floor(Math.random()*GLYPH.length)];}
+        }
+        if(settled>=real.length){clearInterval(timer);el.textContent=real;}
+        else el.textContent=out;
+      },26);
+    }
+    el.__run=run;
+    el.closest('.dosswrap').addEventListener('mouseenter',run);
+  });
+})();
+
+/* ── stat count-up, once per card, when it scrolls into view ──
+   IntersectionObserver drives it on a real browser; a timer backstops it so the
+   numbers never sit at zero if the observer never reports (some embedded views). */
+(function(){
+  var cards=['cardA','cardB','cardC'].map(function(id){return document.getElementById(id);});
+  function play(card){
+    if(!card||card.__done)return;
+    card.__done=1;
+    card.querySelectorAll('.num').forEach(function(n,i){
+      var to=+n.getAttribute('data-to'),dur=1100+i*130;
+      setTimeout(function(){
+        var t0=Date.now();
+        var iv=setInterval(function(){
+          var p=Math.min(1,(Date.now()-t0)/dur), e2=1-Math.pow(1-p,3);
+          n.textContent=Math.round(to*e2);
+          if(p>=1)clearInterval(iv);
+        },28);
+      },170+i*90);
+    });
+    var s=card.querySelector('.scramble');
+    if(s)setTimeout(s.__run,250);
+  }
+  try{
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){if(e.isIntersecting)play(e.target);});
+    },{threshold:.35});
+    cards.forEach(function(c){io.observe(c);});
+  }catch(_){}
+  setTimeout(function(){cards.forEach(play);},900);
+})();
+
+/* ── info dot: hover on desktop, tap on touch ── */
+document.querySelectorAll('.info').forEach(function(el){
+  var card=el.closest('.cd');
+  function show(){card.classList.add('tipon');el.classList.add('on');}
+  function hide(){card.classList.remove('tipon');el.classList.remove('on');}
+  el.addEventListener('mouseenter',show);
+  el.addEventListener('focus',show);
+  el.addEventListener('blur',hide);
+  card.addEventListener('mouseleave',hide);
+  el.addEventListener('click',function(ev){
+    ev.stopPropagation();
+    var was=card.classList.contains('tipon');
+    document.querySelectorAll('.cd.tipon').forEach(function(c){c.classList.remove('tipon');});
+    document.querySelectorAll('.info.on').forEach(function(x){x.classList.remove('on');});
+    if(!was)show();
+  });
+});
+document.addEventListener('click',function(){
+  document.querySelectorAll('.cd.tipon').forEach(function(c){c.classList.remove('tipon');});
+  document.querySelectorAll('.info.on').forEach(function(x){x.classList.remove('on');});
+});
+</script>
+</body></html>

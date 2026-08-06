@@ -275,8 +275,14 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   background-size:100% 260%;animation:tad-edgeflow 7s ease-in-out infinite;}
 @keyframes tad-edgeflow{0%,100%{background-position:50% 0%;}50%{background-position:50% 100%;}}
 .tad-seal:hover{transform:translateY(-3px);box-shadow:0 24px 48px -18px rgba(26,26,46,.72);}
-/* the network itself */
-.tad-net{position:absolute;inset:0;z-index:1;pointer-events:none;}
+/* the network itself.
+   The card's content is position:relative with z-index AUTO, which loses to any
+   positive z-index — so the network and its scrim have to sit at 0 and the content
+   has to be lifted explicitly above them. Without this the whole card renders
+   through a dark veil: greyed copy, lines crossing the words, a muddy smear. */
+.tad-net{position:absolute;inset:0;z-index:0;pointer-events:none;}
+.tad-card>.tad-kick,.tad-card>.tad-hd,.tad-card>.tad-sub,
+.tad-card>.tad-mini,.tad-card>.tad-cta{position:relative;z-index:3;}
 .tad-net svg{position:absolute;inset:0;width:100%;height:100%;}
 .tad-net .e{stroke:rgba(240,184,96,.22);stroke-width:.8;fill:none;}
 .tad-net .n{fill:rgba(240,184,96,.5);animation:tad-twink 4.6s ease-in-out infinite;}

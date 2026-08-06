@@ -1,0 +1,323 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CastSlate — Directory card, 3 always-on treatments</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAF7F1;--s1:#FFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--gold:#F0B860;--gold-lt:#FFF0D2;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased;}
+.top{position:sticky;top:0;z-index:100;background:var(--t1);color:#fff;padding:13px 22px;font-weight:800;font-size:14px;}
+.top em{font-style:normal;font-weight:500;font-size:12px;color:rgba(255,255,255,.6);}
+.wrap{max-width:1320px;margin:0 auto;padding:26px 22px 70px;}
+.lede{background:#12131A;color:#fff;border-radius:16px;padding:22px 26px;font-size:13.6px;line-height:1.7;margin-bottom:26px;}
+.lede h2{margin:0 0 10px;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:800;}
+.lede p{margin:0 0 10px;color:rgba(255,255,255,.85);}
+.lede p:last-child{margin:0;}
+.lede b{color:#fff;}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;align-items:start;}
+/* the marquee is width:max-content — without this the grid track sizes to it */
+.grid>div{min-width:0;}
+@media(max-width:1080px){.grid{grid-template-columns:1fr;max-width:430px;margin:0 auto;}}
+.colhead .tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;background:var(--t1);color:var(--gold);padding:5px 11px;border-radius:20px;}
+.colhead h3{margin:9px 0 5px;font-size:17px;font-weight:800;letter-spacing:-.02em;}
+.colhead p{margin:0;font-size:12.5px;color:var(--t2);line-height:1.6;}
+.stagecard{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:14px;margin-top:14px;}
+.stagecard>.hint{font-size:11px;color:var(--t3);font-weight:700;text-align:center;margin-top:11px;}
+.mockabove{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:14px 16px;margin-bottom:12px;}
+.mockabove b{font-size:13px;}
+.mockabove span{display:block;font-size:11.5px;color:var(--t3);margin-top:3px;}
+
+/* ══════════ SHARED SKELETON ══════════ */
+.cd{position:relative;overflow:hidden;border-radius:16px;padding:20px;color:#fff;cursor:pointer;z-index:1;
+    background:linear-gradient(140deg,#232342 0%,#1A1A2E 55%,#111124 100%);}
+.cd *{position:relative;z-index:3;}
+.cd .fx{position:absolute;inset:0;z-index:1;pointer-events:none;}
+.kick{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold);margin:0 0 9px;}
+.kick i{width:6px;height:6px;border-radius:50%;background:var(--gold);font-style:normal;animation:beat 2.4s ease-in-out infinite;}
+@keyframes beat{0%,100%{box-shadow:0 0 5px var(--gold);opacity:.75;}50%{box-shadow:0 0 13px 2px var(--gold);opacity:1;}}
+.hd{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.ic{flex:0 0 auto;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.12);}
+.ic svg{width:21px;height:21px;stroke:var(--gold);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+.cd h4{font-weight:800;font-size:15.5px;color:#fff;margin:0;letter-spacing:-.2px;line-height:1.28;}
+.sub{font-size:12.8px;color:rgba(255,255,255,.8);margin:0 0 14px;line-height:1.55;}
+.sub b{color:rgba(255,255,255,.95);}
+.mini{display:flex;gap:14px;margin:0 0 15px;padding:12px 0;border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12);}
+.mini>div{flex:1;}
+.mini b{display:block;font-size:17px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;}
+.mini span{display:block;font-size:8.6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:rgba(255,255,255,.5);white-space:nowrap;margin-top:2px;}
+.cta{width:100%;font-size:13px;font-weight:800;font-family:inherit;padding:12px 14px;border-radius:10px;cursor:pointer;
+     background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.25);transition:background .2s,border-color .2s;}
+.cd:hover .cta{background:rgba(255,255,255,.24);border-color:rgba(255,255,255,.45);}
+
+/* ── info dot + tooltip — pure CSS, works with no scripting at all ── */
+.cd .infowrap{position:static;display:inline-flex;align-items:center;}
+.info{width:17px;height:17px;flex:0 0 auto;border-radius:50%;border:1.4px solid rgba(240,184,96,.65);color:var(--gold);
+      font-size:10.5px;font-weight:800;font-style:normal;display:inline-flex;align-items:center;justify-content:center;
+      cursor:help;background:rgba(240,184,96,.1);transition:background .18s,transform .18s;margin-left:2px;
+      animation:infopulse 3.2s ease-in-out infinite;}
+@keyframes infopulse{0%,100%{box-shadow:0 0 0 0 rgba(240,184,96,.42);}70%{box-shadow:0 0 0 7px rgba(240,184,96,0);}}
+.info:hover,.info:focus{background:var(--gold);color:#1A1A2E;outline:none;transform:scale(1.14);animation:none;}
+.tip{position:absolute;left:14px;right:14px;top:64px;z-index:9;background:#0C0D14;border:1px solid rgba(240,184,96,.45);
+     border-radius:13px;padding:15px 17px;font-size:12.3px;font-weight:500;line-height:1.62;color:rgba(255,255,255,.9);
+     opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .18s,transform .18s;
+     box-shadow:0 22px 48px -16px rgba(0,0,0,.9);text-align:left;}
+.tip b{display:block;color:var(--gold);font-size:11px;letter-spacing:.11em;text-transform:uppercase;margin-bottom:7px;}
+.tip em{font-style:normal;color:#fff;font-weight:700;}
+.info:hover+.tip,.info:focus+.tip,.infowrap:hover .tip{opacity:1;transform:none;pointer-events:auto;}
+
+/* ══════════ D · LIVING ARCHIVE ══════════ */
+.dwrap{position:relative;padding:1.5px;border-radius:17.5px;overflow:hidden;isolation:isolate;transition:transform .3s,box-shadow .3s;}
+.dwrap::before{content:"";position:absolute;inset:-60%;z-index:0;
+  background:conic-gradient(from 0deg,transparent 0deg,transparent 250deg,rgba(240,184,96,.2) 296deg,var(--gold) 340deg,var(--gold-lt) 351deg,var(--gold) 356deg,transparent 360deg);
+  animation:spin 5.5s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.dwrap:hover{transform:translateY(-3px);box-shadow:0 24px 48px -18px rgba(26,26,46,.72);}
+/* rows of the archive, drifting forever */
+.arch{inset:-14% -8%!important;opacity:.92;
+  -webkit-mask-image:radial-gradient(112% 96% at 86% 0%,#000 0%,rgba(0,0,0,.56) 30%,rgba(0,0,0,.14) 56%,transparent 74%);
+          mask-image:radial-gradient(112% 96% at 86% 0%,#000 0%,rgba(0,0,0,.56) 30%,rgba(0,0,0,.14) 56%,transparent 74%);}
+.arch i{position:absolute;left:0;height:3px;border-radius:2px;background:rgba(240,184,96,.55);display:block;
+        animation:drift 26s linear infinite;}
+@keyframes drift{from{transform:translateY(40px);}to{transform:translateY(-340px);}}
+/* the scan line — runs on a loop, no hover needed */
+.scan{z-index:2!important;}
+.scan::after{content:"";position:absolute;left:0;right:0;height:130px;
+  background:linear-gradient(180deg,transparent,rgba(240,184,96,.12) 46%,rgba(255,240,210,.26) 51%,rgba(240,184,96,.12) 56%,transparent);
+  animation:scan 6.5s cubic-bezier(.55,0,.45,1) infinite;}
+@keyframes scan{0%{top:-140px;}55%{top:110%;}100%{top:110%;}}
+/* the dial never stops turning */
+.dial{position:absolute;inset:0;border-radius:11px;border:1.5px solid rgba(240,184,96,.42);z-index:2;
+      animation:tick 12s steps(24) infinite;}
+.dial::before,.dial::after{content:"";position:absolute;left:50%;width:1.5px;height:5px;background:var(--gold);margin-left:-.75px;border-radius:2px;}
+.dial::before{top:2px;}.dial::after{bottom:2px;}
+@keyframes tick{to{transform:rotate(360deg);}}
+.darch .ic{position:relative;animation:glowpulse 6.5s ease-in-out infinite;}
+@keyframes glowpulse{0%,72%,100%{box-shadow:0 0 0 0 rgba(240,184,96,0);}84%{box-shadow:0 0 0 3px rgba(240,184,96,.14),0 0 22px rgba(240,184,96,.42);}}
+
+/* ══════════ E · THE SIGNAL ══════════ */
+.ewrap{position:relative;padding:1.5px;border-radius:17.5px;transition:transform .3s,box-shadow .3s;
+  background:linear-gradient(140deg,rgba(240,184,96,.55),rgba(240,184,96,.08) 42%,rgba(240,184,96,.55));
+  background-size:100% 260%;animation:edgeflow 7s ease-in-out infinite;}
+@keyframes edgeflow{0%,100%{background-position:50% 0%;}50%{background-position:50% 100%;}}
+.ewrap:hover{transform:translateY(-3px);box-shadow:0 24px 48px -18px rgba(26,26,46,.72);}
+.net svg{position:absolute;inset:0;width:100%;height:100%;}
+.net .edge{stroke:rgba(240,184,96,.22);stroke-width:.8;fill:none;}
+.net .node{fill:rgba(240,184,96,.5);animation:twink 4.6s ease-in-out infinite;}
+@keyframes twink{0%,100%{opacity:.2;r:1.5px;}50%{opacity:.85;r:2.5px;}}
+/* two signals travel the map continuously, offset so one is always moving */
+.net .pulse{stroke:var(--gold-lt);stroke-width:1.7;fill:none;stroke-linecap:round;
+  stroke-dasharray:40 900;stroke-dashoffset:40;filter:drop-shadow(0 0 4px rgba(240,184,96,.95));
+  animation:run 4.2s cubic-bezier(.5,0,.35,1) infinite;}
+.net .pulse.p2{animation-delay:2.1s;stroke-width:1.3;opacity:.75;}
+@keyframes run{0%{stroke-dashoffset:40;opacity:0;}8%{opacity:1;}92%{opacity:1;}100%{stroke-dashoffset:-900;opacity:0;}}
+.net::after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;
+  background:radial-gradient(86% 60% at 32% 44%,rgba(20,20,42,.94) 0%,rgba(20,20,42,.7) 44%,rgba(20,20,42,.1) 76%,transparent 100%),
+             linear-gradient(180deg,transparent 52%,rgba(17,17,36,.58) 74%,rgba(17,17,36,.92) 100%);}
+.esig .ic{position:relative;}
+.esig .ic::before,.esig .ic::after{content:"";position:absolute;inset:-6px;border-radius:15px;border:1px solid rgba(240,184,96,.55);animation:ring 3s ease-out infinite;}
+.esig .ic::after{animation-delay:1.5s;}
+@keyframes ring{0%{transform:scale(.8);opacity:.9;}70%{opacity:0;}100%{transform:scale(1.55);opacity:0;}}
+
+/* ══════════ F · THE TICKER ══════════ */
+.fwrap{position:relative;padding:2px;border-radius:18px;overflow:hidden;isolation:isolate;transition:transform .3s,box-shadow .3s;}
+.fwrap::before{content:"";position:absolute;inset:0;z-index:0;border-radius:18px;
+  background:linear-gradient(150deg,#7A5A22,#F0B860 22%,#FFF3DC 34%,#B8842F 48%,#5E4318 62%,#F0B860 82%,#8B6524);
+  background-size:220% 220%;animation:foil 7s ease-in-out infinite;}
+@keyframes foil{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+.fwrap:hover{transform:translateY(-3px);box-shadow:0 26px 52px -18px rgba(26,26,46,.78);}
+.tick{background:linear-gradient(140deg,#20203B 0%,#16162A 55%,#0D0D1B 100%);border-radius:16px;}
+.grain{opacity:.15;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");}
+/* the foil sheen crosses the face on a loop, not on hover */
+.fsheen{z-index:2!important;}
+.fsheen::after{content:"";position:absolute;top:-60%;bottom:-60%;width:74px;transform:rotate(18deg);
+  background:linear-gradient(90deg,transparent,rgba(255,243,220,.14),rgba(255,243,220,.4),rgba(255,243,220,.14),transparent);
+  animation:sheen 5.5s cubic-bezier(.5,0,.4,1) infinite;}
+@keyframes sheen{0%{left:-40%;}45%{left:130%;}100%{left:130%;}}
+.wax{position:absolute;top:14px;right:14px;z-index:4;width:54px;height:54px;border-radius:50%;
+  border:1.5px solid rgba(240,184,96,.55);display:flex;align-items:center;justify-content:center;
+  color:var(--gold);font-size:7.4px;font-weight:800;letter-spacing:.09em;text-align:center;line-height:1.25;
+  background:radial-gradient(circle at 35% 28%,rgba(240,184,96,.26),rgba(240,184,96,.05));
+  animation:wax 5s ease-in-out infinite;}
+@keyframes wax{0%,100%{transform:rotate(-11deg) scale(1);box-shadow:0 0 0 0 rgba(240,184,96,0);}
+               50%{transform:rotate(-11deg) scale(1.055);box-shadow:0 0 0 5px rgba(240,184,96,.09),0 0 22px rgba(240,184,96,.26);}}
+.tick h4{font-family:'DM Serif Display',Georgia,serif;font-weight:400;font-size:20px;letter-spacing:-.01em;line-height:1.16;}
+.tick .kick{border:1px solid rgba(240,184,96,.4);border-radius:4px;padding:3px 8px;background:rgba(240,184,96,.08);}
+/* the marquee — real names off the list, running past forever */
+.wire{margin:0 0 13px;padding:8px 0;border-top:1px solid rgba(255,255,255,.1);border-bottom:1px solid rgba(255,255,255,.1);
+  overflow:hidden;position:relative;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);}
+.wire .run{display:flex;width:max-content;animation:marquee 26s linear infinite;}
+.wire span{font-size:9.6px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:rgba(240,184,96,.72);
+  white-space:nowrap;padding-right:22px;}
+@keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.tick .cta{background:linear-gradient(180deg,#F8B65E,#EC942A);color:#1A1A2E;border:none;
+  box-shadow:0 10px 26px -10px rgba(240,160,60,.85),inset 0 1px 0 rgba(255,255,255,.35);}
+.fwrap:hover .tick .cta{background:linear-gradient(180deg,#FFC875,#F0A03A);}
+
+@media(prefers-reduced-motion:reduce){
+  .dwrap::before,.arch i,.scan::after,.dial,.darch .ic,.ewrap,.net .node,.net .pulse,.esig .ic::before,.esig .ic::after,
+  .fwrap::before,.fsheen::after,.wax,.wire .run,.kick i,.info{animation:none!important;}
+}
+</style></head><body>
+
+<div class="top">CastSlate <em>— three always-on treatments · the motion never stops, hover not required</em></div>
+
+<div class="wrap">
+  <div class="lede">
+    <h2>Three cards that are alive before anyone touches them</h2>
+    <p>Unlike the first set, <b>none of these wait for a hover</b> — every one is in continuous motion on the dashboard, so the card is doing something the moment the page loads. Hover still adds a lift and brightens the CTA.</p>
+    <p>The <b>ⓘ</b> beside each title is now <b>pure CSS</b> — it opens on hover with no scripting at all, so it works everywhere, including inside a preview. Hover it and the full note appears inside the card.</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- ══════ D ══════ -->
+    <div>
+      <div class="colhead">
+        <span class="tag">Treatment D</span>
+        <h3>Living Archive</h3>
+        <p>An archive that never stops moving underneath the glass. Index rows drift upward forever, a gold scan line crosses the whole card every six seconds, and the combination dial <b>ticks continuously</b> like a safe being worked.</p>
+      </div>
+      <div class="stagecard">
+        <div class="mockabove"><b>Actor Card Studio</b><span>the card above it on the dashboard</span></div>
+        <div class="dwrap darch">
+          <div class="cd">
+            <div class="fx arch">
+              <i style="width:52%;left:11%;top:2px;animation-delay:-1s;opacity:.8"></i><i style="width:31%;left:44%;top:14px;animation-delay:-4s;opacity:.5"></i>
+              <i style="width:64%;left:5%;top:25px;animation-delay:-8s;opacity:.95"></i><i style="width:24%;left:58%;top:37px;animation-delay:-12s;opacity:.6"></i>
+              <i style="width:45%;left:22%;top:48px;animation-delay:-2s;opacity:.75"></i><i style="width:58%;left:9%;top:60px;animation-delay:-17s;opacity:.45"></i>
+              <i style="width:29%;left:51%;top:71px;animation-delay:-6s;opacity:.9"></i><i style="width:47%;left:16%;top:83px;animation-delay:-21s;opacity:.55"></i>
+              <i style="width:36%;left:38%;top:94px;animation-delay:-10s;opacity:.8"></i><i style="width:61%;left:3%;top:106px;animation-delay:-14s;opacity:.65"></i>
+              <i style="width:27%;left:63%;top:117px;animation-delay:-3s;opacity:.9"></i><i style="width:53%;left:19%;top:129px;animation-delay:-19s;opacity:.5"></i>
+              <i style="width:41%;left:33%;top:140px;animation-delay:-7s;opacity:.85"></i><i style="width:56%;left:7%;top:152px;animation-delay:-23s;opacity:.6"></i>
+              <i style="width:23%;left:60%;top:163px;animation-delay:-11s;opacity:.95"></i><i style="width:49%;left:26%;top:175px;animation-delay:-5s;opacity:.55"></i>
+              <i style="width:34%;left:45%;top:186px;animation-delay:-16s;opacity:.8"></i><i style="width:63%;left:4%;top:198px;animation-delay:-9s;opacity:.7"></i>
+              <i style="width:28%;left:55%;top:209px;animation-delay:-24s;opacity:.9"></i><i style="width:51%;left:14%;top:221px;animation-delay:-13s;opacity:.5"></i>
+              <i style="width:39%;left:36%;top:232px;animation-delay:-18s;opacity:.85"></i><i style="width:57%;left:8%;top:244px;animation-delay:-2.5s;opacity:.6"></i>
+              <i style="width:25%;left:62%;top:255px;animation-delay:-20s;opacity:.95"></i><i style="width:48%;left:21%;top:267px;animation-delay:-15s;opacity:.55"></i>
+              <i style="width:33%;left:47%;top:278px;animation-delay:-6.5s;opacity:.8"></i><i style="width:60%;left:6%;top:290px;animation-delay:-22s;opacity:.65"></i>
+              <i style="width:30%;left:57%;top:301px;animation-delay:-1.5s;opacity:.9"></i><i style="width:44%;left:28%;top:313px;animation-delay:-12.5s;opacity:.5"></i>
+            </div>
+            <div class="fx scan"></div>
+            <p class="kick"><i></i>Unlocked</p>
+            <div class="hd">
+              <span class="ic"><span class="dial"></span>
+                <svg viewBox="0 0 24 24"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg></span>
+              <h4>Talent Agency &amp; Management Directory<br>+ Tips &amp; Tricks</h4>
+              <span class="infowrap"><i class="info" tabindex="0">i</i>
+                <span class="tip"><b>A powerful knowledge tool</b>Access to roughly <em>90% of Hollywood's agents and managers</em> — who they are, where they sit, and exactly how each one wants to be approached. Connections and knowledge that took other actors decades to gather, in your hands in minutes. Learn who really runs film and television in New York and Los Angeles.</span>
+              </span>
+            </div>
+            <p class="sub">Talent agencies <b>and management companies</b> in LA &amp; New York open to new talent right now — plus how to actually approach them, from people who have done it for decades.</p>
+            <div class="mini">
+              <div><b>570</b><span>Companies</span></div><div><b>44</b><span>Open to submissions</span></div><div><b>7</b><span>Insider tips</span></div>
+            </div>
+            <button class="cta">Open the Directory →</button>
+          </div>
+        </div>
+        <p class="hint">Always on: rows drift · scan line every 6s · dial ticks</p>
+      </div>
+    </div>
+
+    <!-- ══════ E ══════ -->
+    <div>
+      <div class="colhead">
+        <span class="tag">Treatment E</span>
+        <h3>The Signal</h3>
+        <p>The network is <b>permanently live</b>. Two signals chase each other across the map of offices on a four-second loop, nodes twinkle out of step, rings breathe from the icon and the gold edge flows up and down. Nothing waits for the user.</p>
+      </div>
+      <div class="stagecard">
+        <div class="mockabove"><b>Actor Card Studio</b><span>the card above it on the dashboard</span></div>
+        <div class="ewrap esig">
+          <div class="cd">
+            <div class="fx net">
+              <svg viewBox="0 0 340 300" preserveAspectRatio="none">
+                <g class="edges">
+                  <line class="edge" x1="28" y1="44" x2="92" y2="22"/><line class="edge" x1="92" y1="22" x2="151" y2="58"/>
+                  <line class="edge" x1="151" y1="58" x2="214" y2="30"/><line class="edge" x1="214" y1="30" x2="286" y2="50"/>
+                  <line class="edge" x1="28" y1="44" x2="62" y2="108"/><line class="edge" x1="92" y1="22" x2="128" y2="132"/>
+                  <line class="edge" x1="151" y1="58" x2="128" y2="132"/><line class="edge" x1="214" y1="30" x2="196" y2="104"/>
+                  <line class="edge" x1="286" y1="50" x2="268" y2="140"/><line class="edge" x1="62" y1="108" x2="128" y2="132"/>
+                  <line class="edge" x1="128" y1="132" x2="196" y2="104"/><line class="edge" x1="196" y1="104" x2="268" y2="140"/>
+                  <line class="edge" x1="62" y1="108" x2="34" y2="182"/><line class="edge" x1="128" y1="132" x2="104" y2="206"/>
+                  <line class="edge" x1="196" y1="104" x2="172" y2="178"/><line class="edge" x1="268" y1="140" x2="240" y2="214"/>
+                  <line class="edge" x1="34" y1="182" x2="104" y2="206"/><line class="edge" x1="104" y1="206" x2="172" y2="178"/>
+                  <line class="edge" x1="172" y1="178" x2="240" y2="214"/><line class="edge" x1="240" y1="214" x2="300" y2="190"/>
+                  <line class="edge" x1="34" y1="182" x2="70" y2="254"/><line class="edge" x1="104" y1="206" x2="146" y2="268"/>
+                  <line class="edge" x1="172" y1="178" x2="146" y2="268"/><line class="edge" x1="240" y1="214" x2="224" y2="258"/>
+                  <line class="edge" x1="300" y1="190" x2="292" y2="262"/><line class="edge" x1="70" y1="254" x2="146" y2="268"/>
+                  <line class="edge" x1="146" y1="268" x2="224" y2="258"/><line class="edge" x1="224" y1="258" x2="292" y2="262"/>
+                </g>
+                <polyline class="pulse" points="70,254 104,206 128,132 151,58 214,30 196,104 172,178 146,268 224,258 300,190 286,50"/>
+                <polyline class="pulse p2" points="28,44 62,108 128,132 196,104 268,140 240,214 292,262"/>
+                <circle class="node" cx="28" cy="44" r="2" style="animation-delay:0s"/><circle class="node" cx="92" cy="22" r="2" style="animation-delay:.26s"/>
+                <circle class="node" cx="151" cy="58" r="2" style="animation-delay:.52s"/><circle class="node" cx="214" cy="30" r="2" style="animation-delay:.78s"/>
+                <circle class="node" cx="286" cy="50" r="2" style="animation-delay:1.04s"/><circle class="node" cx="62" cy="108" r="2" style="animation-delay:1.3s"/>
+                <circle class="node" cx="128" cy="132" r="2" style="animation-delay:1.56s"/><circle class="node" cx="196" cy="104" r="2" style="animation-delay:1.82s"/>
+                <circle class="node" cx="268" cy="140" r="2" style="animation-delay:2.08s"/><circle class="node" cx="34" cy="182" r="2" style="animation-delay:2.34s"/>
+                <circle class="node" cx="104" cy="206" r="2" style="animation-delay:2.6s"/><circle class="node" cx="172" cy="178" r="2" style="animation-delay:2.86s"/>
+                <circle class="node" cx="240" cy="214" r="2" style="animation-delay:3.12s"/><circle class="node" cx="300" cy="190" r="2" style="animation-delay:3.38s"/>
+                <circle class="node" cx="70" cy="254" r="2" style="animation-delay:3.64s"/><circle class="node" cx="146" cy="268" r="2" style="animation-delay:3.9s"/>
+                <circle class="node" cx="224" cy="258" r="2" style="animation-delay:4.16s"/><circle class="node" cx="292" cy="262" r="2" style="animation-delay:4.42s"/>
+              </svg>
+            </div>
+            <p class="kick"><i></i>Unlocked</p>
+            <div class="hd">
+              <span class="ic"><svg viewBox="0 0 24 24"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg></span>
+              <h4>Talent Agency &amp; Management Directory<br>+ Tips &amp; Tricks</h4>
+              <span class="infowrap"><i class="info" tabindex="0">i</i>
+                <span class="tip"><b>A powerful knowledge tool</b>Access to roughly <em>90% of Hollywood's agents and managers</em> — who they are, where they sit, and exactly how each one wants to be approached. Connections and knowledge that took other actors decades to gather, in your hands in minutes. Learn who really runs film and television in New York and Los Angeles.</span>
+              </span>
+            </div>
+            <p class="sub">Talent agencies <b>and management companies</b> in LA &amp; New York open to new talent right now — plus how to actually approach them, from people who have done it for decades.</p>
+            <div class="mini">
+              <div><b>570</b><span>Companies</span></div><div><b>44</b><span>Open to submissions</span></div><div><b>7</b><span>Insider tips</span></div>
+            </div>
+            <button class="cta">Open the Directory →</button>
+          </div>
+        </div>
+        <p class="hint">Always on: two signals loop · nodes twinkle · rings breathe</p>
+      </div>
+    </div>
+
+    <!-- ══════ F ══════ -->
+    <div>
+      <div class="colhead">
+        <span class="tag">Treatment F</span>
+        <h3>The Ticker</h3>
+        <p>The one that tells them what's inside. Gold foil shifts like real metal, the wax seal breathes, a sheen crosses the face every five seconds — and a <b>ticker of actual names from the list</b> runs past forever: CAA, WME, Gersh, Buchwald, 3 Arts.</p>
+      </div>
+      <div class="stagecard">
+        <div class="mockabove"><b>Actor Card Studio</b><span>the card above it on the dashboard</span></div>
+        <div class="fwrap">
+          <div class="cd tick">
+            <div class="fx grain"></div>
+            <div class="fx fsheen"></div>
+            <div class="wax">CAST<br>SLATE<br>PREMIUM</div>
+            <p class="kick">Restricted · Unlocked</p>
+            <div class="hd" style="padding-right:52px">
+              <h4>Talent Agency &amp; Management Directory</h4>
+              <span class="infowrap"><i class="info" tabindex="0">i</i>
+                <span class="tip" style="top:92px"><b>A powerful knowledge tool</b>Access to roughly <em>90% of Hollywood's agents and managers</em> — who they are, where they sit, and exactly how each one wants to be approached. Connections and knowledge that took other actors decades to gather, in your hands in minutes. Learn who really runs film and television in New York and Los Angeles.</span>
+              </span>
+            </div>
+            <p class="sub" style="margin-bottom:11px">Every agency and management company in LA &amp; New York open to new talent right now — plus how to actually approach them, from people who have done it for decades.</p>
+            <div class="wire"><div class="run">
+              <span>CAA · WME · UTA · Gersh · APA · Independent Artist Group · Paradigm · Buchwald · CESD · Innovative Artists · Clear Talent · Stewart Talent · Osbrink · 3 Arts · Anonymous Content · Authentic · Cinetic · Framework ·&nbsp;</span>
+              <span>CAA · WME · UTA · Gersh · APA · Independent Artist Group · Paradigm · Buchwald · CESD · Innovative Artists · Clear Talent · Stewart Talent · Osbrink · 3 Arts · Anonymous Content · Authentic · Cinetic · Framework ·&nbsp;</span>
+            </div></div>
+            <div class="mini" style="margin-top:0">
+              <div><b>570</b><span>Companies</span></div><div><b>44</b><span>Open to submissions</span></div><div><b>7</b><span>Insider tips</span></div>
+            </div>
+            <button class="cta">Open the Directory →</button>
+          </div>
+        </div>
+        <p class="hint">Always on: foil shifts · seal breathes · names run past</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body></html>

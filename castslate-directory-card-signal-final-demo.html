@@ -1,0 +1,204 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CastSlate — The Signal (final)</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAF7F1;--s1:#FFF;--s2:#F1ECE2;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--gold:#F0B860;--gold-lt:#FFF0D2;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased;}
+.top{position:sticky;top:0;z-index:100;background:var(--t1);color:#fff;padding:13px 22px;font-weight:800;font-size:14px;}
+.top em{font-style:normal;font-weight:500;font-size:12px;color:rgba(255,255,255,.6);}
+.wrap{max-width:1120px;margin:0 auto;padding:26px 22px 80px;}
+.lede{background:#12131A;color:#fff;border-radius:16px;padding:22px 26px;font-size:13.6px;line-height:1.7;margin-bottom:26px;}
+.lede h2{margin:0 0 10px;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:800;}
+.lede p{margin:0 0 10px;color:rgba(255,255,255,.85);}
+.lede p:last-child{margin:0;}
+.lede b{color:#fff;}
+.lede .fix{color:#9de2b4;font-weight:700;}
+.two{display:grid;grid-template-columns:400px 1fr;gap:30px;align-items:start;}
+@media(max-width:900px){.two{grid-template-columns:1fr;}}
+.stagecard{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:16px;}
+.stagecard>.hint{font-size:11.5px;color:var(--t3);font-weight:700;text-align:center;margin-top:12px;}
+.mockabove{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:14px 16px;margin-bottom:12px;}
+.mockabove b{font-size:13px;} .mockabove span{display:block;font-size:11.5px;color:var(--t3);margin-top:3px;}
+.notes h3{margin:0 0 10px;font-size:16px;font-weight:800;}
+.notes ul{margin:0 0 20px;padding-left:19px;font-size:13.3px;line-height:1.72;color:var(--t2);}
+.notes li{margin-bottom:7px;} .notes b{color:var(--t1);}
+.notes .pill{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  background:var(--t1);color:var(--gold);padding:5px 11px;border-radius:20px;margin-bottom:10px;}
+
+/* ══════════ CARD ══════════ */
+.cd{position:relative;overflow:hidden;border-radius:16px;padding:20px;color:#fff;cursor:pointer;z-index:1;
+    background:linear-gradient(140deg,#232342 0%,#1A1A2E 55%,#111124 100%);}
+.cd *{position:relative;z-index:3;}
+.cd .fx{position:absolute;inset:0;z-index:1;pointer-events:none;}
+.kick{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold);margin:0 0 9px;}
+.kick i{width:6px;height:6px;border-radius:50%;background:var(--gold);font-style:normal;animation:beat 2.4s ease-in-out infinite;}
+@keyframes beat{0%,100%{box-shadow:0 0 5px var(--gold);opacity:.75;}50%{box-shadow:0 0 13px 2px var(--gold);opacity:1;}}
+
+/* The header must NOT be a stacking context, or the body below it paints over the
+   tooltip. Static position keeps .tip anchored to .cd and free to sit on top. */
+.cd .hd{position:static;display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.ic{flex:0 0 auto;display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:11px;
+    background:rgba(255,255,255,.12);animation:icglow 4.5s ease-in-out infinite;}
+.ic svg{width:21px;height:21px;stroke:var(--gold);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+@keyframes icglow{0%,64%,100%{box-shadow:0 0 0 0 rgba(240,184,96,0);}
+                  82%{box-shadow:0 0 0 3px rgba(240,184,96,.15),0 0 24px rgba(240,184,96,.45);}}
+/* the ticking dial, lifted from Living Archive — turns forever in 24 discrete steps */
+.dial{position:absolute;inset:0;border-radius:11px;border:1.5px solid rgba(240,184,96,.45);z-index:2;
+      animation:tick 12s steps(24) infinite;}
+.dial::before,.dial::after{content:"";position:absolute;left:50%;width:1.5px;height:5px;background:var(--gold);margin-left:-.75px;border-radius:2px;}
+.dial::before{top:2px;} .dial::after{bottom:2px;}
+@keyframes tick{to{transform:rotate(360deg);}}
+/* a second, slower ring the other way — the dial reads as being worked, not just spun */
+.dial2{position:absolute;inset:-4px;border-radius:14px;border:1px dashed rgba(240,184,96,.24);z-index:2;
+       animation:tick2 26s linear infinite;}
+@keyframes tick2{to{transform:rotate(-360deg);}}
+
+.cd h4{font-weight:800;font-size:15.5px;color:#fff;margin:0;letter-spacing:-.2px;line-height:1.28;}
+.sub{font-size:12.8px;color:rgba(255,255,255,.8);margin:0 0 14px;line-height:1.55;}
+.sub b{color:rgba(255,255,255,.95);}
+.mini{display:flex;gap:14px;margin:0 0 15px;padding:12px 0;border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12);}
+.mini>div{flex:1;}
+.mini b{display:block;font-size:17px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;}
+.mini span{display:block;font-size:8.6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:rgba(255,255,255,.5);white-space:nowrap;margin-top:2px;}
+.cta{width:100%;font-size:13px;font-weight:800;font-family:inherit;padding:12px 14px;border-radius:10px;cursor:pointer;
+     background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.25);transition:background .2s,border-color .2s;}
+.cd:hover .cta{background:rgba(255,255,255,.24);border-color:rgba(255,255,255,.45);}
+
+/* ── info dot + tooltip · pure CSS, opaque, above everything ── */
+.info{width:17px;height:17px;flex:0 0 auto;border-radius:50%;border:1.4px solid rgba(240,184,96,.65);color:var(--gold);
+      font-size:10.5px;font-weight:800;font-style:normal;display:inline-flex;align-items:center;justify-content:center;
+      cursor:help;background:rgba(240,184,96,.12);transition:background .18s,transform .18s;margin-left:2px;
+      animation:infopulse 3.2s ease-in-out infinite;}
+@keyframes infopulse{0%,100%{box-shadow:0 0 0 0 rgba(240,184,96,.42);}70%{box-shadow:0 0 0 7px rgba(240,184,96,0);}}
+.info:hover,.info:focus{background:var(--gold);color:#1A1A2E;outline:none;transform:scale(1.14);animation:none;}
+/* z-index 30 clears the card body; #0A0B12 is fully opaque so nothing reads through */
+/* NO fade. A panel that cross-fades over body copy shows both layers at once and
+   reads as broken every time — it snaps in, fully opaque, or it isn't there at all. */
+.tip{position:absolute;left:12px;right:12px;top:12px;z-index:30;background:#0A0B12;
+     border:1px solid rgba(240,184,96,.5);border-radius:14px;padding:16px 18px;
+     font-size:12.4px;font-weight:500;line-height:1.62;color:rgba(255,255,255,.92);
+     display:none;pointer-events:none;
+     box-shadow:0 26px 56px -14px rgba(0,0,0,.95),0 0 0 1px rgba(0,0,0,.6);text-align:left;}
+.tip b{display:block;color:var(--gold);font-size:11px;letter-spacing:.11em;text-transform:uppercase;margin-bottom:8px;}
+.tip em{font-style:normal;color:#fff;font-weight:700;}
+.cd:has(.info:hover) .tip,.cd:has(.info:focus) .tip{display:block;pointer-events:auto;}
+
+/* ══════════ THE SIGNAL — always on ══════════ */
+.ewrap{position:relative;padding:1.5px;border-radius:17.5px;transition:transform .3s,box-shadow .3s;
+  background:linear-gradient(140deg,rgba(240,184,96,.55),rgba(240,184,96,.08) 42%,rgba(240,184,96,.55));
+  background-size:100% 260%;animation:edgeflow 7s ease-in-out infinite;}
+@keyframes edgeflow{0%,100%{background-position:50% 0%;}50%{background-position:50% 100%;}}
+.ewrap:hover{transform:translateY(-3px);box-shadow:0 24px 48px -18px rgba(26,26,46,.72);}
+.net svg{position:absolute;inset:0;width:100%;height:100%;}
+.net .edge{stroke:rgba(240,184,96,.22);stroke-width:.8;fill:none;}
+.net .node{fill:rgba(240,184,96,.5);animation:twink 4.6s ease-in-out infinite;}
+@keyframes twink{0%,100%{opacity:.2;r:1.5px;}50%{opacity:.85;r:2.5px;}}
+.net .pulse{stroke:var(--gold-lt);stroke-width:1.7;fill:none;stroke-linecap:round;
+  stroke-dasharray:40 900;stroke-dashoffset:40;filter:drop-shadow(0 0 4px rgba(240,184,96,.95));
+  animation:run 4.2s cubic-bezier(.5,0,.35,1) infinite;}
+.net .pulse.p2{animation-delay:2.1s;stroke-width:1.3;opacity:.75;}
+@keyframes run{0%{stroke-dashoffset:40;opacity:0;}8%{opacity:1;}92%{opacity:1;}100%{stroke-dashoffset:-900;opacity:0;}}
+.net::after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;
+  background:radial-gradient(86% 60% at 32% 44%,rgba(20,20,42,.94) 0%,rgba(20,20,42,.7) 44%,rgba(20,20,42,.1) 76%,transparent 100%),
+             linear-gradient(180deg,transparent 52%,rgba(17,17,36,.58) 74%,rgba(17,17,36,.92) 100%);}
+.esig .ic::before,.esig .ic::after{content:"";position:absolute;inset:-6px;border-radius:15px;border:1px solid rgba(240,184,96,.55);animation:ring 3s ease-out infinite;}
+.esig .ic::after{animation-delay:1.5s;}
+@keyframes ring{0%{transform:scale(.8);opacity:.9;}70%{opacity:0;}100%{transform:scale(1.55);opacity:0;}}
+
+@media(prefers-reduced-motion:reduce){
+  .ewrap,.net .node,.net .pulse,.esig .ic::before,.esig .ic::after,.dial,.dial2,.ic,.kick i,.info{animation:none!important;}
+}
+</style></head><body>
+
+<div class="top">CastSlate <em>— Treatment E “The Signal” + the ticking dial from Living Archive · final candidate</em></div>
+
+<div class="wrap">
+  <div class="lede">
+    <h2>The Signal, with the dial</h2>
+    <p>Everything you liked from E is unchanged — the network is permanently live, two signals chase each other across the map of offices, the nodes twinkle out of step and the gold edge flows. <b>Added from Living Archive:</b> the icon is now a combination dial that ticks round forever in 24 discrete steps, with a slow dashed ring counter-turning outside it and a glow that swells every few seconds.</p>
+    <p><span class="fix">The ⓘ is fixed.</span> It was rendering underneath the card's own text — the paragraph and the stats were painting straight over the panel. The tooltip has been moved out of the header to the end of the card, so nothing can paint over it, and it snaps in fully opaque instead of fading. Hover it and see.</p>
+  </div>
+
+  <div class="two">
+    <div class="stagecard">
+      <div class="mockabove"><b>Actor Card Studio</b><span>the card above it on the dashboard</span></div>
+      <div class="ewrap esig">
+        <div class="cd">
+          <div class="fx net">
+            <svg viewBox="0 0 340 300" preserveAspectRatio="none">
+              <line class="edge" x1="28" y1="44" x2="92" y2="22"/><line class="edge" x1="92" y1="22" x2="151" y2="58"/>
+              <line class="edge" x1="151" y1="58" x2="214" y2="30"/><line class="edge" x1="214" y1="30" x2="286" y2="50"/>
+              <line class="edge" x1="28" y1="44" x2="62" y2="108"/><line class="edge" x1="92" y1="22" x2="128" y2="132"/>
+              <line class="edge" x1="151" y1="58" x2="128" y2="132"/><line class="edge" x1="214" y1="30" x2="196" y2="104"/>
+              <line class="edge" x1="286" y1="50" x2="268" y2="140"/><line class="edge" x1="62" y1="108" x2="128" y2="132"/>
+              <line class="edge" x1="128" y1="132" x2="196" y2="104"/><line class="edge" x1="196" y1="104" x2="268" y2="140"/>
+              <line class="edge" x1="62" y1="108" x2="34" y2="182"/><line class="edge" x1="128" y1="132" x2="104" y2="206"/>
+              <line class="edge" x1="196" y1="104" x2="172" y2="178"/><line class="edge" x1="268" y1="140" x2="240" y2="214"/>
+              <line class="edge" x1="34" y1="182" x2="104" y2="206"/><line class="edge" x1="104" y1="206" x2="172" y2="178"/>
+              <line class="edge" x1="172" y1="178" x2="240" y2="214"/><line class="edge" x1="240" y1="214" x2="300" y2="190"/>
+              <line class="edge" x1="34" y1="182" x2="70" y2="254"/><line class="edge" x1="104" y1="206" x2="146" y2="268"/>
+              <line class="edge" x1="172" y1="178" x2="146" y2="268"/><line class="edge" x1="240" y1="214" x2="224" y2="258"/>
+              <line class="edge" x1="300" y1="190" x2="292" y2="262"/><line class="edge" x1="70" y1="254" x2="146" y2="268"/>
+              <line class="edge" x1="146" y1="268" x2="224" y2="258"/><line class="edge" x1="224" y1="258" x2="292" y2="262"/>
+              <polyline class="pulse" points="70,254 104,206 128,132 151,58 214,30 196,104 172,178 146,268 224,258 300,190 286,50"/>
+              <polyline class="pulse p2" points="28,44 62,108 128,132 196,104 268,140 240,214 292,262"/>
+              <circle class="node" cx="28" cy="44" r="2" style="animation-delay:0s"/><circle class="node" cx="92" cy="22" r="2" style="animation-delay:.26s"/>
+              <circle class="node" cx="151" cy="58" r="2" style="animation-delay:.52s"/><circle class="node" cx="214" cy="30" r="2" style="animation-delay:.78s"/>
+              <circle class="node" cx="286" cy="50" r="2" style="animation-delay:1.04s"/><circle class="node" cx="62" cy="108" r="2" style="animation-delay:1.3s"/>
+              <circle class="node" cx="128" cy="132" r="2" style="animation-delay:1.56s"/><circle class="node" cx="196" cy="104" r="2" style="animation-delay:1.82s"/>
+              <circle class="node" cx="268" cy="140" r="2" style="animation-delay:2.08s"/><circle class="node" cx="34" cy="182" r="2" style="animation-delay:2.34s"/>
+              <circle class="node" cx="104" cy="206" r="2" style="animation-delay:2.6s"/><circle class="node" cx="172" cy="178" r="2" style="animation-delay:2.86s"/>
+              <circle class="node" cx="240" cy="214" r="2" style="animation-delay:3.12s"/><circle class="node" cx="300" cy="190" r="2" style="animation-delay:3.38s"/>
+              <circle class="node" cx="70" cy="254" r="2" style="animation-delay:3.64s"/><circle class="node" cx="146" cy="268" r="2" style="animation-delay:3.9s"/>
+              <circle class="node" cx="224" cy="258" r="2" style="animation-delay:4.16s"/><circle class="node" cx="292" cy="262" r="2" style="animation-delay:4.42s"/>
+            </svg>
+          </div>
+
+          <p class="kick"><i></i>Unlocked</p>
+          <div class="hd">
+            <span class="ic"><span class="dial2"></span><span class="dial"></span>
+              <svg viewBox="0 0 24 24"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg></span>
+            <h4>Talent Agency &amp; Management Directory<br>+ Tips &amp; Tricks</h4>
+            <i class="info" tabindex="0">i</i>
+          </div>
+          <p class="sub">Talent agencies <b>and management companies</b> in LA &amp; New York open to new talent right now — plus how to actually approach them, from people who have done it for decades.</p>
+          <div class="mini">
+            <div><b>570</b><span>Companies</span></div>
+            <div><b>44</b><span>Open to submissions</span></div>
+            <div><b>7</b><span>Insider tips</span></div>
+          </div>
+          <button class="cta">Open the Directory →</button>
+          <span class="tip"><b>A powerful knowledge tool</b>Access to roughly <em>90% of Hollywood's agents and managers</em> — who they are, where they sit, and exactly how each one wants to be approached. Connections and knowledge that took other actors decades to gather, in your hands in minutes. Learn who really runs film and television in New York and Los Angeles.</span>
+        </div>
+      </div>
+      <p class="hint">Always on: two signals loop · nodes twinkle · rings breathe · dial ticks</p>
+    </div>
+
+    <div class="notes">
+      <span class="pill">What's in this one</span>
+      <h3>Kept from The Signal</h3>
+      <ul>
+        <li><b>Two signals</b> travel the map of offices on a 4.2s loop, offset by half so one is always moving — an introduction crossing town.</li>
+        <li><b>Eighteen nodes</b> twinkle on staggered delays, so the network never looks static or synchronised.</li>
+        <li><b>The gold edge flows</b> up and down the border on a 7s cycle.</li>
+        <li>A scrim holds the constellation <b>behind</b> the copy, so it reads as depth and never as clutter over the words.</li>
+      </ul>
+      <h3>Added from Living Archive</h3>
+      <ul>
+        <li><b>The ticking dial:</b> a gold ring around the icon turning a full circle every 12s in 24 discrete steps — it ticks rather than glides, like a safe being worked.</li>
+        <li><b>A counter-turning dashed ring</b> outside it on a slow 26s pass, so the two never line up twice.</li>
+        <li><b>The glow swells</b> through the icon every 4.5s, and the rings still breathe outward.</li>
+      </ul>
+      <h3>The ⓘ fix</h3>
+      <ul>
+        <li>The tooltip was <b>inside the header</b>, which formed its own paint layer — so the paragraph and stats below it drew straight over the panel. It now lives at the <b>end of the card</b>, after the button, so nothing can paint on top of it.</li>
+        <li>The panel is <b>fully opaque</b> (#0A0B12) with a heavy shadow — nothing shows through it any more.</li>
+        <li><b>No fade.</b> A panel that cross-fades over body copy shows both layers at once and reads as broken every time — this one snaps in fully formed, or isn't there at all.</li>
+        <li>Still <b>pure CSS</b> — no scripting, so it works in a preview, on the live site, and on keyboard focus.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</body></html>
