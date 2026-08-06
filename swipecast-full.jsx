@@ -1776,29 +1776,71 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .success-msg{text-align:center;padding:48px 24px;}
 /* ── Talent Agency Directory (premium dashboard card + modal) ── */
 .tad-card{position:relative;overflow:hidden;border-radius:16px;padding:20px;color:#fff;cursor:pointer;background:linear-gradient(140deg,#232342 0%,#1A1A2E 55%,#111124 100%);z-index:1;}
-/* ── "Gold Seal": a single gold light travels the card's PERIMETER, striking each corner.
-   Deliberately shares no motion with the Actor Business Card above it (which floats,
-   sweeps a diagonal sheen, breathes its glow and shines its button) so the two premium
-   cards never read as the same effect twice. ── */
-.tad-seal{position:relative;padding:1.5px;border-radius:17.5px;overflow:hidden;isolation:isolate;transition:transform .18s,box-shadow .18s;}
-.tad-seal::before{content:"";position:absolute;inset:-60%;z-index:0;background:conic-gradient(from 0deg,transparent 0deg,transparent 268deg,rgba(240,184,96,.25) 300deg,#F0B860 340deg,#FFF0D2 352deg,#F0B860 356deg,transparent 360deg);animation:tad-seal-run 5.5s linear infinite;}
-.tad-seal:hover{transform:translateY(-2px);box-shadow:0 16px 36px -14px rgba(26,26,46,.6);}
-.tad-seal:hover::before{animation-duration:2.4s;}
-@keyframes tad-seal-run{to{transform:rotate(360deg);}}
-.tad-glint{position:absolute;width:5px;height:5px;border-radius:50%;background:#FFF3DC;z-index:4;opacity:0;box-shadow:0 0 10px 2px rgba(240,184,96,.9);pointer-events:none;}
-.tad-glint.g1{top:9px;left:9px;animation:tad-glint 5.5s linear infinite;}
-.tad-glint.g2{top:9px;right:9px;animation:tad-glint 5.5s linear infinite 1.375s;}
-.tad-glint.g3{bottom:9px;right:9px;animation:tad-glint 5.5s linear infinite 2.75s;}
-.tad-glint.g4{bottom:9px;left:9px;animation:tad-glint 5.5s linear infinite 4.125s;}
-@keyframes tad-glint{0%,88%{opacity:0;transform:scale(.4);}93%{opacity:1;transform:scale(1);}100%{opacity:0;transform:scale(.4);}}
-.tad-card .tad-ic{position:relative;overflow:hidden;}
-.tad-card .tad-ic::after{content:"";position:absolute;inset:0;border-radius:10px;background:radial-gradient(circle at 50% 50%,rgba(240,184,96,.55),transparent 68%);opacity:0;animation:tad-emboss 5.5s ease-in-out infinite;}
-@keyframes tad-emboss{0%,74%{opacity:0;}84%{opacity:1;}100%{opacity:0;}}
+/* ── "The Signal": the card is alive before anyone touches it. A constellation of
+   offices sits behind the copy with two signals travelling it on a loop — an
+   introduction crossing town — and the icon is a combination dial that ticks round
+   forever. Nothing here waits for a hover; hover only lifts the card.
+   Deliberately shares no motion with the Actor Business Card above it (which floats
+   and sweeps a diagonal sheen) so the two premium cards never read as the same
+   effect twice. ── */
+.tad-seal{position:relative;padding:1.5px;border-radius:17.5px;transition:transform .3s,box-shadow .3s;
+  background:linear-gradient(140deg,rgba(240,184,96,.55),rgba(240,184,96,.08) 42%,rgba(240,184,96,.55));
+  background-size:100% 260%;animation:tad-edgeflow 7s ease-in-out infinite;}
+@keyframes tad-edgeflow{0%,100%{background-position:50% 0%;}50%{background-position:50% 100%;}}
+.tad-seal:hover{transform:translateY(-3px);box-shadow:0 24px 48px -18px rgba(26,26,46,.72);}
+/* the network itself */
+.tad-net{position:absolute;inset:0;z-index:1;pointer-events:none;}
+.tad-net svg{position:absolute;inset:0;width:100%;height:100%;}
+.tad-net .e{stroke:rgba(240,184,96,.22);stroke-width:.8;fill:none;}
+.tad-net .n{fill:rgba(240,184,96,.5);animation:tad-twink 4.6s ease-in-out infinite;}
+@keyframes tad-twink{0%,100%{opacity:.2;r:1.5px;}50%{opacity:.85;r:2.5px;}}
+.tad-net .p{stroke:#FFF0D2;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-dasharray:40 900;stroke-dashoffset:40;
+  filter:drop-shadow(0 0 4px rgba(240,184,96,.95));animation:tad-run 4.2s cubic-bezier(.5,0,.35,1) infinite;}
+.tad-net .p2{animation-delay:2.1s;stroke-width:1.3;opacity:.75;}
+@keyframes tad-run{0%{stroke-dashoffset:40;opacity:0;}8%{opacity:1;}92%{opacity:1;}100%{stroke-dashoffset:-900;opacity:0;}}
+/* scrim: holds the constellation BEHIND the copy so it reads as depth, never as clutter */
+.tad-net::after{content:"";position:absolute;inset:0;z-index:4;
+  background:radial-gradient(86% 60% at 32% 44%,rgba(20,20,42,.94) 0%,rgba(20,20,42,.7) 44%,rgba(20,20,42,.1) 76%,transparent 100%),
+             linear-gradient(180deg,transparent 52%,rgba(17,17,36,.58) 74%,rgba(17,17,36,.92) 100%);}
+/* the icon: a dial that ticks in 24 discrete steps, a dashed ring counter-turning
+   outside it, rings breathing outward, and a glow that swells every few seconds */
+.tad-card .tad-ic{position:relative;animation:tad-icglow 4.5s ease-in-out infinite;}
+@keyframes tad-icglow{0%,64%,100%{box-shadow:0 0 0 0 rgba(240,184,96,0);}
+                      82%{box-shadow:0 0 0 3px rgba(240,184,96,.15),0 0 24px rgba(240,184,96,.45);}}
+.tad-card .tad-ic::before,.tad-card .tad-ic::after{content:"";position:absolute;inset:-6px;border-radius:15px;
+  border:1px solid rgba(240,184,96,.55);animation:tad-ring 3s ease-out infinite;}
+.tad-card .tad-ic::after{animation-delay:1.5s;}
+@keyframes tad-ring{0%{transform:scale(.8);opacity:.9;}70%{opacity:0;}100%{transform:scale(1.55);opacity:0;}}
+.tad-dial{position:absolute;inset:0;border-radius:10px;border:1.5px solid rgba(240,184,96,.45);z-index:2;animation:tad-tick 12s steps(24) infinite;}
+.tad-dial:before,.tad-dial:after{content:"";position:absolute;left:50%;width:1.5px;height:5px;background:#F0B860;margin-left:-.75px;border-radius:2px;}
+.tad-dial:before{top:2px;}.tad-dial:after{bottom:2px;}
+@keyframes tad-tick{to{transform:rotate(360deg);}}
+.tad-dial2{position:absolute;inset:-4px;border-radius:13px;border:1px dashed rgba(240,184,96,.24);z-index:2;animation:tad-tick2 26s linear infinite;}
+@keyframes tad-tick2{to{transform:rotate(-360deg);}}
+.tad-dot{animation:tad-beat 2.4s ease-in-out infinite;}
+@keyframes tad-beat{0%,100%{box-shadow:0 0 5px #F0B860;opacity:.75;}50%{box-shadow:0 0 13px 2px #F0B860;opacity:1;}}
+/* ── the ⓘ and its note ──
+   The panel MUST NOT take the pointer (pointer-events stays none) and MUST NOT open
+   over the icon — either one turns hovering into an open/close flicker loop. It also
+   lives at the END of the card so the copy below can never paint over it, and it
+   snaps in rather than fading (a panel cross-fading over body copy shows both layers
+   at once and reads as broken). */
+.tad-info{width:17px;height:17px;flex:0 0 auto;border-radius:50%;border:1.4px solid rgba(240,184,96,.65);color:#F0B860;
+  font-size:10.5px;font-weight:800;font-style:normal;display:inline-flex;align-items:center;justify-content:center;
+  cursor:help;background:rgba(240,184,96,.12);transition:background .18s,transform .18s;margin-left:2px;
+  animation:tad-infopulse 3.2s ease-in-out infinite;}
+@keyframes tad-infopulse{0%,100%{box-shadow:0 0 0 0 rgba(240,184,96,.42);}70%{box-shadow:0 0 0 7px rgba(240,184,96,0);}}
+.tad-info:hover,.tad-info:focus{background:#F0B860;color:#1A1A2E;outline:none;transform:scale(1.14);animation:none;}
+.tad-tip{position:absolute;left:12px;right:12px;top:96px;z-index:30;background:#0A0B12;border:1px solid rgba(240,184,96,.5);
+  border-radius:14px;padding:16px 18px;font-size:12.4px;font-weight:500;line-height:1.62;color:rgba(255,255,255,.92);
+  display:none;pointer-events:none;text-align:left;box-shadow:0 26px 56px -14px rgba(0,0,0,.95),0 0 0 1px rgba(0,0,0,.6);}
+.tad-tip b{display:block;color:#F0B860;font-size:11px;letter-spacing:.11em;text-transform:uppercase;margin-bottom:8px;}
+.tad-tip em{font-style:normal;color:#fff;font-weight:700;}
+.tad-card:has(.tad-info:hover) .tad-tip,.tad-card:has(.tad-info:focus) .tad-tip{display:block;}
 @media(prefers-reduced-motion:reduce){
-  .tad-seal::before{animation:none;background:conic-gradient(from 0deg,rgba(240,184,96,.5),rgba(240,184,96,.5));}
-  .tad-glint,.tad-card .tad-ic::after{animation:none;opacity:0;}
+  .tad-seal,.tad-net .n,.tad-net .p,.tad-card .tad-ic,.tad-card .tad-ic::before,.tad-card .tad-ic::after,
+  .tad-dial,.tad-dial2,.tad-dot,.tad-info{animation:none!important;}
 }
-.tad-glow{position:absolute;border-radius:50%;pointer-events:none;width:190px;height:190px;background:radial-gradient(circle,rgba(240,184,96,.26),transparent 70%);top:-70px;right:-50px;}
 .tad-kick{position:relative;display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#F0B860;margin:0 0 8px;font-family:'DM Sans',sans-serif;}
 .tad-dot{width:6px;height:6px;border-radius:50%;background:#F0B860;box-shadow:0 0 8px #F0B860;}
 .tad-hd{position:relative;display:flex;align-items:center;gap:10px;margin-bottom:10px;}
@@ -11746,7 +11788,7 @@ const TALENT_AGENCIES=[
   {n:"Abstract Talent, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Van Nuys 91406 · (818) 997-2875.",a:[["Van Nuys","7111 Hayvenhurst Ave, Van Nuys, CA 91406"]]},
   {n:"AC Talent Agency LLC (SAG Only)",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"actalentagency.com",note:"Represents theatrical talent. IMDbPro lists its Beverly Hills office and general contact email.",a:[["Los Angeles","8447 Wilshire Blvd, Penthouse, Beverly Hills, CA 90211"]]},
   {n:"Activity",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents actors, theatrical, TV, commercials and children. California business records list this Sherman Oaks office.",a:[["Los Angeles","14859 Moorpark St, Suite 305, Sherman Oaks, CA 91403"]]},
-  {n:"Adunni Rose Talent Agency, LLC",sag:1,t:"small",c:["NY"],v:0,s:"check",w:"adunnirosetalent.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at New York 10036 · (212) 748-9394.",a:[]},
+  {n:"Adunni Rose Talent Agency, LLC",sag:1,t:"small",c:["NY"],v:1,s:"check",w:"adunnirosetalent.com",note:"Represents actors, theatrical, TV, commercials and children. This address is published on the agency's own contact page and matches SAG-AFTRA's New York 10036 listing. New York only — no Los Angeles office, though they represent performers nationally.",a:[["New York","120 West 45th St, 21st Floor, New York, NY 10036"]]},
   {n:"AE Talent Agency (Los Angeles)",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"aetalentagency.com",note:"Represents actors, theatrical, TV, commercials and children. The agency publishes direct agent emails but no street address.",a:[]},
   {n:"Afritalent Agency LLC",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"afritalentagency.com",note:"Represents actors, theatrical, TV, commercials and children. The agency identifies Santa Monica as its headquarters but does not publish a street address.",a:[]},
   {n:"AIRE Talent Agency Corp",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"airetalent.com",note:"Represents actors, theatrical, TV, commercials and children. IMDbPro publishes its Burbank office and submissions email.",a:[["Los Angeles","4100 W Alameda Ave, Suite 300, Burbank, CA 91505"]]},
@@ -11761,7 +11803,7 @@ const TALENT_AGENCIES=[
   {n:"AMT Artists, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents actors, theatrical, TV, commercials and children. California business records list this Sherman Oaks office.",a:[["Los Angeles","15260 Ventura Blvd, Suite 1200, Sherman Oaks, CA 91403"]]},
   {n:"Angel City Talent",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"angelcitytalent.biz",note:"Represents actors, theatrical, TV, commercials and children. The agency publishes phone and email contacts but no street address.",a:[["Valley Village","4741 Laurel Canyon Blvd, Valley Village, CA 91607"]]},
   {n:"Aqua, LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"aquatalent.com",note:"Represents actors, theatrical, TV, commercials and children. Its website publishes this West Hollywood office.",a:[["Los Angeles","9000 Sunset Blvd, Suite 700, West Hollywood, CA 90069"]]},
-  {n:"Arcieri & Associates, Inc",sag:1,t:"small",c:["NY"],v:0,s:"check",w:"arcieritalent.com",note:"Represents actors, theatrical, commercials, voice-over, animation. Listed at New York 10036 · (212) 286-1700.",a:[]},
+  {n:"Arcieri & Associates, Inc",sag:1,t:"small",c:["NY"],v:1,s:"check",w:"arcieritalent.com",note:"Represents actors, theatrical, commercials, voice-over and animation. Address from the agency's own home page; the phone matches SAG-AFTRA's listing digit-for-digit. An older page on the same site still shows 305 Madison Ave — this Ninth Ave office is the current one · (212) 286-1700.",a:[["New York","630 Ninth Ave, Suite 415, New York, NY 10036"]]},
   {n:"Arrowheart Talent Agency LLC, The",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents actors, theatrical, TV, commercials and children. The agency publishes this Santa Monica office.",a:[["Los Angeles","401 Wilshire Blvd, 12th Floor, Santa Monica, CA 90401"]]},
   {n:"Artistic Talent",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"artistictalentla.com",note:"Represents actors, theatrical, TV, commercials and daytime drama. The agency website does not publish a complete street address.",a:[["Lake Balboa","17216 Saticoy St, #312, Lake Balboa, CA 91406"]]},
   {n:"Artists Among Us",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"artistsamongus.co",note:"Represents actors, theatrical, TV, commercials and children. Its website publishes this Long Beach mailing address.",a:[["Los Angeles","4508 Atlantic Ave, #761, Long Beach, CA 90807"]]},
@@ -12323,6 +12365,31 @@ function TadTipBlock({b}){
   return null;
 }
 
+// The constellation behind the directory card: offices wired together, with two
+// signals travelling the chain on a loop. Nodes and route are fixed (not random) so
+// the shape is the same for every actor and reads as a map, not noise.
+const TAD_NODES=[[28,44],[92,22],[151,58],[214,30],[286,50],[62,108],[128,132],[196,104],[268,140],
+  [34,182],[104,206],[172,178],[240,214],[300,190],[70,254],[146,268],[224,258],[292,262]];
+const TAD_EDGES=[[0,1],[1,2],[2,3],[3,4],[0,5],[1,6],[2,6],[3,7],[4,8],[5,6],[6,7],[7,8],[5,9],[6,10],
+  [7,11],[8,12],[9,10],[10,11],[11,12],[12,13],[9,14],[10,15],[11,15],[12,16],[13,17],[14,15],[15,16],[16,17]];
+const TAD_ROUTE=[14,10,6,2,3,7,11,15,16,13,4];
+const TAD_ROUTE2=[0,5,6,7,8,12,17];
+const tadPts=(r)=>r.map(i=>TAD_NODES[i].join(",")).join(" ");
+function TadNetwork(){
+  return(
+    <span className="tad-net" aria-hidden="true">
+      <svg viewBox="0 0 340 300" preserveAspectRatio="none">
+        {TAD_EDGES.map(([a,b])=>
+          <line key={a+"-"+b} className="e" x1={TAD_NODES[a][0]} y1={TAD_NODES[a][1]} x2={TAD_NODES[b][0]} y2={TAD_NODES[b][1]}/>)}
+        <polyline className="p" points={tadPts(TAD_ROUTE)}/>
+        <polyline className="p p2" points={tadPts(TAD_ROUTE2)}/>
+        {TAD_NODES.map(([x,y],i)=>
+          <circle key={i} className="n" cx={x} cy={y} r="2" style={{animationDelay:(i*0.26).toFixed(2)+"s"}}/>)}
+      </svg>
+    </span>
+  );
+}
+
 function TalentAgencyDirectoryCard({isPremium,onNavigate}){
   const [open,setOpen]=useState(false);
   // The directory opens as a left-to-right slide-in sheet, the same model Browse
@@ -12514,15 +12581,16 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
 
   return(<>
     <div className="tad-seal">
-      <span className="tad-glint g1"/><span className="tad-glint g2"/>
-      <span className="tad-glint g3"/><span className="tad-glint g4"/>
     <div className="tad-card" onClick={openSheet} role="button" tabIndex={0}
          onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSheet();}}}>
-      <span className="tad-glow"/>
+      <TadNetwork/>
       <p className="tad-kick"><span className="tad-dot"/>{isPremium?"Unlocked":"Premium Feature"}</p>
-      <div className="tad-hd"><span className="tad-ic"><Ico n="building-bank" s={22}/></span>
-        <h3>Talent Agency &amp; Management Directory<br/>+ Tips &amp; Tricks</h3></div>
-      <p className="tad-sub">Talent agencies <b>and management companies</b> in LA &amp; New York open to new talent right now — plus how to actually approach them, from people who have done it for decades.</p>
+      <div className="tad-hd">
+        <span className="tad-ic"><span className="tad-dial2"/><span className="tad-dial"/><Ico n="building-bank" s={22}/></span>
+        <h3>Talent Agency &amp; Management Directory<br/>+ Tips &amp; Tricks</h3>
+        <i className="tad-info" tabIndex={0} aria-label="What this directory is">i</i>
+      </div>
+      <p className="tad-sub"><b>Talent agencies and management companies</b> in LA &amp; New York open to new talent right now — plus how to actually approach them, from people who have done it for years.</p>
       <div className="tad-mini">
         <div><b>{counts.all}</b><span>Companies</span></div>
         <div><b>{counts.open}</b><span>Open to submissions</span></div>
@@ -12531,6 +12599,8 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
       <button className={"tad-cta"+(isPremium?" tad-open":"")} onClick={e=>{e.stopPropagation();openSheet();}}>
         {isPremium?"Open the Directory →":"Unlock the Directory →"}
       </button>
+      {/* LAST child on purpose — anything after it would paint over the panel. */}
+      <span className="tad-tip"><b>A powerful knowledge tool</b>Access to roughly <em>90% of Hollywood's agents and managers</em> — who they are, where they sit, and exactly how each one wants to be approached. Connections and knowledge that took other actors years to gather, in your hands in minutes. Learn who really runs film and television in New York and Los Angeles.</span>
     </div>
     </div>
 
