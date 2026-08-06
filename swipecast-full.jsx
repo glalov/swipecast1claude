@@ -14009,27 +14009,17 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             <button className="btn-p btn-sm" style={{width:"100%"}} onClick={slideToEditor}>{isProfileComplete?"View My Profile →":"Edit My Profile →"}</button>
           </div>
 
-          {/* Media Locker card */}
-          <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:20}}>
-            <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:"0 0 14px 0"}}>Media Locker</h3>
-            <div style={{display:"flex",flexDirection:"column",gap:0,marginBottom:16,border:"1px solid var(--bdr)",borderRadius:8,overflow:"hidden"}}>
-              {[
-                {label:"Photos",val:isPremium?`${totalPhotos} uploaded`:`${totalPhotos} / 1`,ok:totalPhotos>0,warn:false},
-                {label:"Videos",val:isPremium?`${totalVideos} uploaded`:"Not included",note:!isPremium?"Upgrade":null,ok:isPremium&&totalVideos>0,warn:false},
-                {label:"Resume / Credits",val:hasResumeFile&&hasCredits?"Resume & Credits":hasResumeFile?"Resume uploaded":hasCredits?"Credits added":"Missing",ok:hasResume,warn:!hasResume},
-              ].map((row,i,arr)=>(
-                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:13,padding:"11px 14px",background:i%2===0?"var(--s1)":"var(--bg)",borderBottom:i<arr.length-1?"1px solid var(--bdr)":"none"}}>
-                  <span style={{color:"var(--t2)",fontWeight:500}}>{row.label}</span>
-                  <span style={{fontWeight:600,color:row.ok?"var(--grn)":row.warn?"var(--red)":"var(--t1)"}}>
-                    {row.val}{row.note&&<span style={{fontWeight:400,color:"var(--acc)",marginLeft:5,fontSize:10,cursor:"pointer"}} onClick={()=>onNavigate("membership")}>({row.note})</span>}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <button className="btn-s btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("my-profile")}>Manage Media →</button>
-          </div>
+          {/* Media Locker card removed 2026-08-06 — it duplicated the Profile Checklist
+              directly above (headshot / reel / credits) and pointed at the same
+              my-profile screen, so it only pushed the Actor Card Studio and the
+              Agency Directory further down the column. */}
 
-          {/* Plan Status card */}
+          {/* Plan Status card — FREE ACCOUNTS ONLY.
+              For premium actors this was a static list of features they had already
+              paid for; it is hidden for them so the Actor Card Studio and the Agency
+              Directory sit higher. Keep rendering it for free accounts: this card is
+              where the plan limits and the "Upgrade to Premium" button live. */}
+          {!isPremium&&(
           <div style={{background:isPremium?"linear-gradient(135deg,rgba(99,60,180,0.06),rgba(99,60,180,0.02))":"var(--s1)",border:isPremium?"1px solid rgba(99,60,180,0.2)":"1px solid var(--bdr)",borderRadius:14,padding:20}}>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
               <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:0}}>Your Plan</h3>
@@ -14060,6 +14050,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               </>
             )}
           </div>
+          )}
 
           {/* Actor Business Card shortcut — teal/amber treatment to match the landing-page CTA */}
           <div className="abc-prem" style={{position:'relative',overflow:'hidden',borderRadius:16,padding:20,background:'linear-gradient(135deg,#5C9FA0 0%,#4F8A8B 45%,#3B6E6F 100%)',color:'#fff'}}>
