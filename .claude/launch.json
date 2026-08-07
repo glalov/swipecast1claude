@@ -80,16 +80,16 @@
       "port": 8051
     },
     {
-      "name": "tad-preview",
+      "name": "menu-preview",
       "autoPort": true,
       "runtimeExecutable": "/usr/bin/python3",
       "runtimeArgs": [
         "-m",
         "http.server",
         "--directory",
-        "/private/tmp/claude-501/-Users-georgi-Desktop-latest-package-1/57ab0851-8ba1-4e5c-879e-a128458d1485/scratchpad/tadprev"
+        "/private/tmp/claude-501/-Users-georgi-Desktop-latest-package-1/57ab0851-8ba1-4e5c-879e-a128458d1485/scratchpad/menuprev"
       ],
-      "port": 8791
+      "port": 8812
     }
   ]
 }

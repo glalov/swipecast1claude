@@ -2168,9 +2168,19 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .cs-sheet-x:hover{background:var(--s2);}
 @media(max-width:768px){.cs-sheet{width:100%;}}
 @media(prefers-reduced-motion:reduce){.cs-sheet,.cs-sheet.closing,.cs-sheet-dim,.cs-sheet-dim.closing{animation:none;}}
-.mobile-menu-inner{position:absolute;top:0;left:0;bottom:0;width:100%;max-width:100%;background:var(--s1);padding:18px 16px 22px;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:mmDrop .6s cubic-bezier(.22,.68,.28,1);will-change:transform;}
-.mobile-menu-inner.closing{animation:mmDropUp .6s cubic-bezier(.22,.68,.28,1) forwards;}
-@keyframes mmDrop{from{transform:translateX(-100%);}to{transform:translateX(0);}}
+/* Menu drawer, modelled on caa.com. Three things make it read as "pushing the page
+   aside" rather than covering it: it stops short of the left edge so a sliver of the
+   page stays visible, it carries a heavy shadow onto that sliver, and it slides in
+   from the RIGHT over .4s ease-in-out. CAA's own rule is
+   .nav-overlay.open{left:5.333%;right:0;transition:left right .4s ease-in-out;
+   box-shadow:-15px 0 50px rgba(0,0,0,.5)} — same idea, expressed as a transform here
+   so it composites on the GPU instead of animating layout.
+   NOTE: do NOT "really" push by transforming the page wrapper. A transform on an
+   ancestor makes it the containing block for position:fixed descendants, which would
+   break the fixed site header the moment the menu opened. */
+.mobile-menu-inner{position:absolute;top:0;left:5.333%;right:0;bottom:0;width:auto;max-width:none;background:var(--s1);padding:18px 16px 22px;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:-15px 0 50px rgba(26,26,46,.5);animation:mmDrop .4s ease-in-out;will-change:transform;}
+.mobile-menu-inner.closing{animation:mmDropUp .4s ease-in-out forwards;}
+@keyframes mmDrop{from{transform:translateX(100%);}to{transform:translateX(0);}}
 @keyframes mmDropUp{from{transform:translateX(0);}to{transform:translateX(100%);}}
 .mm-close{position:absolute;top:12px;right:12px;width:42px;height:42px;display:inline-flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:var(--t1);line-height:1;padding:0;}
 .mm-close:hover{background:var(--s2);}
@@ -31635,7 +31645,9 @@ function App(){
 
   const [menuOpen,setMenuOpen]=useState(false);
   const [menuClosing,setMenuClosing]=useState(false);
-  const closeMenu=useCallback(()=>{setMenuClosing(true);setTimeout(()=>{setMenuOpen(false);setMenuClosing(false);},600);},[]);
+  // 400ms must stay in step with the .4s mmDropUp exit on .mobile-menu-inner —
+  // if this is longer the drawer sits finished-but-mounted before it disappears.
+  const closeMenu=useCallback(()=>{setMenuClosing(true);setTimeout(()=>{setMenuOpen(false);setMenuClosing(false);},400);},[]);
   const [joinOpen,setJoinOpen]=useState(false);
   const [menuJoinOpen,setMenuJoinOpen]=useState(false);
   const joinRef=useRef(null);
