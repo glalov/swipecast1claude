@@ -18716,9 +18716,18 @@ function BufferedLoopVideo(props){
     if(typeof IntersectionObserver!=='undefined'){
       io=new IntersectionObserver(function(entries){ entries.forEach(function(e){ visible=e.isIntersecting; sync(); }); },{rootMargin:'100px 0px',threshold:0.01});
       io.observe(v);
+      // 2600px, not 1200px. These clips are 4.0MB and 8.3MB, so on a ~10Mbps
+      // phone connection they need 3-7s of runway. At 1200px the download only
+      // began about a screen and a half out, which on the landing page is
+      // roughly when the visitor is already looking at the card — so they sat
+      // watching the poster wait for the mp4. 2600px starts the first clip
+      // essentially at page load (it sits 3404px down, viewport ~812px) and the
+      // second one around the time they are half way, which is enough runway to
+      // hide the wait entirely at normal speeds. Still lazy: someone who never
+      // scrolls past the hero downloads neither.
       loadIo=new IntersectionObserver(function(entries){
         if(entries.some(function(e){ return e.isIntersecting; })){ startLoad(); if(loadIo){ loadIo.disconnect(); loadIo=null; } }
-      },{rootMargin:'1200px 0px',threshold:0});
+      },{rootMargin:'2600px 0px',threshold:0});
       loadIo.observe(v);
     } else { startLoad(); visible=true; sync(); }
     // Chrome pauses the video while the tab is hidden and won't restart a
