@@ -19203,7 +19203,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="cinema-feature">
       <div className="cinema-feature-inner">
         <div className="cinema-feature-img">
-          <BufferedLoopVideo src="/assets/video/actor-journey-set.mp4" poster="/assets/video/actor-journey-set-poster.jpg" aria-label="Real film set footage showing crew preparing a camera setup"/>
+          <BufferedLoopVideo src="/assets/video/actor-journey-set-v2.mp4" poster="/assets/video/actor-journey-set-poster.jpg" aria-label="Real film set footage showing crew preparing a camera setup"/>
         </div>
         <div className="cinema-feature-copy">
           <p className="cf-label">The actor journey</p>
@@ -19279,7 +19279,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="hiw-card">
       <div className="hiw-card-inner">
         <div className="hiw-card-img">
-          <BufferedLoopVideo src="/assets/video/casting-director-set.mp4" poster="/assets/video/casting-director-set-poster.jpg" aria-label="Realistic stock footage of a filmmaker recording on a professional set with lights and camera equipment" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+          <BufferedLoopVideo src="/assets/video/casting-director-set-v2.mp4" poster="/assets/video/casting-director-set-poster.jpg" aria-label="Realistic stock footage of a filmmaker recording on a professional set with lights and camera equipment" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
         </div>
         <div className="hiw-card-body">
           <p style={{fontSize:10,letterSpacing:1.8,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,margin:0,fontFamily:"'DM Sans',sans-serif"}}>For Casting Directors</p>
