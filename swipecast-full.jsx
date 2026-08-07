@@ -88,7 +88,7 @@ const TRANSLATIONS = {
     'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.tapelink':'TapeLink',
     // Footer
     'footer.backToTop':'Back to top',
-    'footer.blurb':'The casting platform built for working actors. Every submission gets seen — guaranteed. Free accounts included — upgrade to Premium (from $8.25/mo) for unlimited submissions, Slate Video, Business Card, Manager Mode, and more.',
+    'footer.blurb':'The casting platform built for working actors. Every submission gets seen — guaranteed. Free accounts included — upgrade to Premium (from $8.25/mo) for unlimited submissions, Slate Video, Business Card, Manager Mode, the Talent Agency & Manager Directory (550+ agencies and managers in LA & NYC), and more.',
     'footer.talent':'Talent','footer.industry':'Industry','footer.company':'Company','footer.support':'Support',
     'footer.createProfile':'Create Profile','footer.browse':'Browse Castings','footer.classes':'Classes',
     'footer.resources':'Resources','footer.successStories':'Success Stories',
@@ -3416,7 +3416,7 @@ const PREMIUM_SHARED_FEATURES=[
   ["Actor Slate Video","— 7-sec intro"],
   ["Actor cards with QR","business, postcard & agent promo"],
   ["Manager Mode","weekly check-ins"],
-  ["Profile improvements","personalized to you"],
+  ["Talent Agency & Manager Directory","550+ in LA & NYC"],
   ["Cancel anytime","from your account"]
 ];
 
@@ -3443,7 +3443,7 @@ const PLAN_EXCLUSIVES={
 const FREE_PLAN={headshotsTotal:1,additionalPhotos:0,videos:0,submissionsPerWeek:1,castingTypes:2,castingMoodClips:0,castingSupportingPhotos:0};
 const PREMIUM_PLAN={headshotsTotal:Infinity,additionalPhotos:Infinity,videos:Infinity,submissionsPerWeek:Infinity,castingTypes:Infinity,castingMoodClips:1,castingSupportingPhotos:3};
 const PREMIUM_PRICE="from $8.25/month";
-const UPGRADE_MSG=`You've used your ${FREE_PLAN.submissionsPerWeek===1?"free submission":`${FREE_PLAN.submissionsPerWeek} free submissions`} for this week. Upgrade to Premium for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card, Manager Mode, and more.`;
+const UPGRADE_MSG=`You've used your ${FREE_PLAN.submissionsPerWeek===1?"free submission":`${FREE_PLAN.submissionsPerWeek} free submissions`} for this week. Upgrade to Premium for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (550+ agencies and managers in LA & NYC), and more.`;
 // Most recent Monday 6:00 AM America/New_York as a Date — the point free submissions reset each week.
 function weeklyResetStart(){
   const now=new Date();
@@ -3927,7 +3927,7 @@ function ActivateMembershipBanner({myProfile,session,page,onNavigate}){
     <span className="mb-sheen" aria-hidden="true"></span>
     <span className="mb-msg">
       <span className="mb-star" aria-hidden="true"><Ico n="star" s={17}/></span>
-      <span className="mb-text-full">Get seen more — unlock unlimited submissions, Slate Video, Business Card &amp; Manager Mode</span>
+      <span className="mb-text-full">Get seen more — unlock unlimited submissions, Slate Video, Business Card, Manager Mode &amp; the 550+ agency directory</span>
       <span className="mb-text-short">Unlock unlimited submissions</span>
     </span>
   </div>);
@@ -4027,8 +4027,8 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
     <div className="section-label">Membership</div>
     <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1.2,marginBottom:8}}>Pick your plan.</h1>
     <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>
-      Free actors can submit to {FREE_PLAN.submissionsPerWeek} {FREE_PLAN.submissionsPerWeek===1?"casting":"castings"} per week and upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins.
-    </p>
+      Free actors can submit to {FREE_PLAN.submissionsPerWeek} {FREE_PLAN.submissionsPerWeek===1?"casting":"castings"} per week and upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card with QR code, Manager Mode weekly career check-ins, and the Talent Agency &amp; Manager Directory — 550+ talent agencies and management companies in LA &amp; New York.
+</p>
     {/* Shared value band. Every plan carries the same features, so they are
         stated once here instead of three times inside the cards. */}
     <div className="card" style={{maxWidth:1100,margin:"0 auto 20px",padding:"17px 22px"}}>
@@ -5550,15 +5550,15 @@ const FAQ_CATEGORIES=[
   {id:"getting-started",label:"Getting Started",icon:"movie",blurb:"Creating your account, first steps, and how CastSlate works.",items:[
     {q:"What is CastSlate?",a:"CastSlate is a casting platform built for working actors. Free profiles, an active membership only when you're ready to submit, and a swipe-based review system that guarantees every submission gets seen one at a time — not buried in a grid of 200 headshots."},
     {q:"Is CastSlate actually live?",a:"Yes. The platform is live and active. Casting directors are posting roles, talent are submitting, and conversations are happening in the inbox right now."},
-    {q:"Do I need a membership to create a profile?",a:"No. Profiles are free for everyone. Free actors can submit to 1 casting per week. Premium is $99 a year ($8.25/month) and stays $99 every year, or $14.95/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins."},
+    {q:"Do I need a membership to create a profile?",a:"No. Profiles are free for everyone. Free actors can submit to 1 casting per week. Premium is $99 a year ($8.25/month) and stays $99 every year, or $14.95/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 550+ talent agencies and management companies in Los Angeles and New York."},
     {q:"Where is CastSlate available?",a:"Anywhere with a browser. Castings are organised by city, so you'll see roles in your market — but creating a profile and browsing castings works from anywhere."},
-    {q:"How do I get started as an actor?",a:"Create a free account, upload a headshot, fill out your stats, and add a short bio. Then browse Open Castings and apply. Free accounts can submit to 1 casting per week. Premium is $99 a year ($8.25/month) and stays $99 every year, or $14.95/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card, and Manager Mode weekly career check-ins."},
+    {q:"How do I get started as an actor?",a:"Create a free account, upload a headshot, fill out your stats, and add a short bio. Then browse Open Castings and apply. Free accounts can submit to 1 casting per week. Premium is $99 a year ($8.25/month) and stays $99 every year, or $14.95/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 550+ talent agencies and management companies in Los Angeles and New York."},
     {q:"How do I get started as a casting director or producer?",a:"Create a free industry account, then click 'Post a Casting' from your dashboard. Submit your casting for free — it goes live after admin approval."}
   ]},
   {id:"talent-profiles",label:"Talent Profiles",icon:"user",blurb:"Headshots, stats, bio, reel — building a profile that gets callbacks.",items:[
     {q:"What should I put in my talent profile?",a:"A current headshot (within the last 18 months), accurate stats, a 2-3 sentence bio with your training and strongest types, your three most recent credits with years, and one current piece of footage. Special skills only if you can perform them on demand."},
     {q:"What size should my headshot be?",a:"At least 800×1000 pixels, JPG or PNG, with your face filling about 60% of the frame. Natural or soft studio lighting and a simple background read best."},
-    {q:"Can I have multiple headshots?",a:"Free accounts include 1 headshot. Premium accounts (from $8.25/month on the yearly plan) include a main headshot plus unlimited gallery photos, unlimited video uploads, Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins. Your main headshot is separate from the gallery. You choose which photo to attach to each submission."},
+    {q:"Can I have multiple headshots?",a:"Free accounts include 1 headshot. Premium accounts (from $8.25/month on the yearly plan) include a main headshot plus unlimited gallery photos, unlimited video uploads, Actor Slate Video, Actor Business Card with QR code, Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 550+ talent agencies and management companies in Los Angeles and New York. Your main headshot is separate from the gallery. You choose which photo to attach to each submission."},
     {q:"What goes in the bio?",a:"Two to three sentences. Lead with your training, then your strongest types, then any genuine differentiator. Avoid generic 'I love acting' lines — CDs skip past them."},
     {q:"How do I add my reel?",a:"Edit your profile and paste a YouTube or Vimeo URL into the Reel field. We embed it automatically. Keep reels under two minutes and lead with your strongest, most recent work."},
     {q:"How do I update my profile later?",a:"My Profile → Edit Profile. Changes save instantly. Casting directors see your latest version on every submission, including ones you've already sent."}
@@ -5580,7 +5580,7 @@ const FAQ_CATEGORIES=[
     {q:"What if I need to edit a casting after it's posted?",a:"You can edit the breakdown, role specs, and deadline at any time from the dashboard. Already-submitted talent are notified of any changes that affect their submission."}
   ]},
   {id:"payments",label:"Payments & Membership",icon:"credit-card",blurb:"Talent membership, casting fees, and billing.",items:[
-    {q:"How much does the talent membership cost?",a:"Actor accounts are free — you can create a profile and submit to 1 casting per week at no cost. Premium is $99 a year ($8.25/month), and it stays $99 every year — we do not discount your first year and raise it later. Prefer monthly? $14.95/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins."},
+    {q:"How much does the talent membership cost?",a:"Actor accounts are free — you can create a profile and submit to 1 casting per week at no cost. Premium is $99 a year ($8.25/month), and it stays $99 every year — we do not discount your first year and raise it later. Prefer monthly? $14.95/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 550+ talent agencies and management companies in Los Angeles and New York."},
     {q:"How much does it cost to post a casting?",a:"Casting posts are free. Create a free industry account and submit your casting breakdown. It goes live after admin review and approval."},
     {q:"Are payments refundable?",a:"Membership fees are non-refundable except where required by law, but cancelled memberships continue until the end of the period you've already paid for. Casting post fees are non-refundable once the casting is published."},
     {q:"What payment methods do you accept?",a:"All major credit and debit cards. Payments are processed securely by our payment provider — CastSlate never stores your card details."},
@@ -7138,7 +7138,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
               <div style={{fontSize:11.5,color:"var(--t3)",marginTop:7}}>Prefer monthly? ${MEMBERSHIP_PLANS.monthly.monthly.toFixed(2)}/month, flat — no introductory rate that goes up.</div>
             </div>
             <div style={{flex:1}}>
-              {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Actor Slate Video — 7-sec intro','Actor Business Card with QR code','Mailing postcard & agent promo card','Manager Mode weekly career check-ins','Personalized profile improvement suggestions'].map(f=>feat(f,"var(--acc)"))}
+              {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Actor Slate Video — 7-sec intro','Actor Business Card with QR code','Mailing postcard & agent promo card','Manager Mode weekly career check-ins','Talent Agency & Manager Directory — 550+ in LA & NYC'].map(f=>feat(f,"var(--acc)"))}
             </div>
             {isPremium
               ?<button className="btn-teal" style={{width:"100%",height:44,borderRadius:10,marginTop:24}} onClick={()=>onNavigate("membership")}>Manage Plan →</button>
@@ -7188,6 +7188,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
           {featureRow("Actor Business Card (with QR code)","no","yes")}
           {featureRow("Mailing postcard & agent promo card","no","yes")}
           {featureRow("Manager Mode","no","yes")}
+          {featureRow("Talent Agency & Manager Directory (550+, LA & NYC)","no","yes")}
           {featureRow("Price",t('pricing.freeLabel'),PREMIUM_PRICE)}
         </div>
       </div>
@@ -13539,7 +13540,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             <div style={{minWidth:0}}>
               <div style={{fontWeight:800,fontSize:15.5,color:"#fff",marginBottom:2}}>Unlock your full casting potential</div>
               <div style={{fontSize:13,color:"rgba(255,255,255,0.9)",lineHeight:1.4}}>
-                Go Premium for unlimited submissions, Manager Mode, video reels &amp; your QR business card — {PREMIUM_PRICE}.
+                Go Premium for unlimited submissions, Manager Mode, the 550+ Talent Agency &amp; Manager Directory, video reels &amp; your QR business card — {PREMIUM_PRICE}.
               </div>
             </div>
           </div>
@@ -14178,7 +14179,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <>
                 <p style={{fontSize:13,color:"var(--t2)",margin:"0 0 12px",fontWeight:500}}>Actor Premium</p>
                 <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:4}}>
-                  {["Unlimited submissions","Unlimited photos, videos & Cast Me As","Actor Slate Video","Actor Business Card","Manager Mode","Profile improvement suggestions"].map((f,i)=>(
+                  {["Unlimited submissions","Unlimited photos, videos & Cast Me As","Actor Slate Video","Actor Business Card","Manager Mode","Talent Agency & Manager Directory (550+)"].map((f,i)=>(
                     <div key={i} style={{display:"flex",alignItems:"center",gap:7,fontSize:12,color:"var(--t2)"}}>
                       <span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>{f}
                     </div>
@@ -19330,11 +19331,11 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div className="section-title" style={{textAlign:"center",marginBottom:32}}>Everything you want to know.</div>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         {[
-          {q:"How much does CastSlate cost for actors?",a:"Free accounts get 1 headshot and 1 casting submission per week. Premium is $99 a year ($8.25/month), and it stays $99 every year — we do not discount your first year and raise it later. Prefer monthly? $14.95/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins. No hidden tiers, no per-submission fees."},
+          {q:"How much does CastSlate cost for actors?",a:"Free accounts get 1 headshot and 1 casting submission per week. Premium is $99 a year ($8.25/month), and it stays $99 every year — we do not discount your first year and raise it later. Prefer monthly? $14.95/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 550+ talent agencies and management companies in Los Angeles and New York. No hidden tiers, no per-submission fees."},
           {q:"How is CastSlate different from legacy casting websites?",a:"On older platforms, your submission lands in a grid where a CD can scan 80 faces in 20 seconds. On CastSlate, every submission is full-screen, one at a time, swipe-style. CDs decide on you individually. No one gets skipped."},
           {q:"Can minors (under 18) sign up?",a:"Only with a parent or legal guardian managing the account. We require guardian verification and comply with COPPA and state child-performer laws."},
           {q:"Is this SAG-AFTRA friendly?",a:"Yes. SAG-AFTRA, AEA, and non-union castings are all supported. Union status is displayed on every casting post and can be filtered."},
-          {q:"How does CastSlate work?",a:"Create a free profile, browse open castings, and apply. Free accounts can submit to 1 casting per week. Premium is $99 a year ($8.25/month) and stays $99 every year; the 6-month plan is $71.70 per term ($11.95/month), and month-to-month is $14.95/month. No plan uses an introductory rate that increases later. Every Premium plan includes unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card, and Manager Mode. Casting directors review every submission individually."}
+          {q:"How does CastSlate work?",a:"Create a free profile, browse open castings, and apply. Free accounts can submit to 1 casting per week. Premium is $99 a year ($8.25/month) and stays $99 every year; the 6-month plan is $71.70 per term ($11.95/month), and month-to-month is $14.95/month. No plan uses an introductory rate that increases later. Every Premium plan includes unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card, Manager Mode, and the Talent Agency & Manager Directory — 550+ talent agencies and management companies in Los Angeles and New York, with addresses and how each one wants to be approached. Casting directors review every submission individually."}
         ].map((f,i)=>
           <div key={i} className="card" style={{padding:0,cursor:"pointer"}} onClick={()=>setOpenFaq(openFaq===i?-1:i)}>
             <div style={{padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:16}}>
@@ -30739,7 +30740,7 @@ const PAGE_PATH={
 const PAGE_SEO={
   "home":{title:"CastSlate: Casting Calls, Auditions & Acting Jobs — Film, TV & Theater",desc:"CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."},
   "search":{title:"Browse Castings",desc:"Browse open casting calls for film, TV, theater, and commercials. Submit your actor profile to roles that match your look and skills."},
-  "pricing":{title:"Pricing",desc:"CastSlate is free forever for actors. Upgrade to Premium from $8.25/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, and more. See all plans and what's included."},
+  "pricing":{title:"Pricing",desc:"CastSlate is free forever for actors. Upgrade to Premium from $8.25/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (550+ agencies and managers in LA & NYC), and more. See all plans and what's included."},
   "classes":{title:"Acting Classes",desc:"Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."},
   "actor-toolkit":{title:"Actor Toolkit",desc:"Free tools, guides, and resources for working actors — headshot advice, self-tape setup, audition prep, and more."},
   "resources":{title:"Resources",desc:"Guides and resources for actors and casting directors on the CastSlate platform."},
