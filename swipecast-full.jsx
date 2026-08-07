@@ -1881,11 +1881,12 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tad-sheet.closing{animation:tadSheetOut .46s cubic-bezier(.3,.7,.25,1) forwards;}
 @keyframes tadSheetIn{from{transform:translateX(102%);}to{transform:translateX(0);}}
 @keyframes tadSheetOut{from{transform:translateX(0);}to{transform:translateX(102%);}}
-/* body.tad-active is added on open and removed the instant closing starts, so the page
+/* body.sheet-push is shared by every right-hand slide-in sheet (agency directory,
+   casting detail). Added on open, removed the instant closing starts, so the page
    travels back while the sheet is still sliding out. */
-body.tad-active{overflow:hidden;}
-body.tad-active main{margin-left:-50vw;margin-right:50vw;}
-@media(prefers-reduced-motion:reduce){.tad-sheet,.tad-sheet.closing{animation:none;}body.tad-active main{margin-left:0;margin-right:0;}main{transition:none;}}
+body.sheet-push{overflow:hidden;}
+body.sheet-push main{margin-left:-50vw;margin-right:50vw;}
+@media(prefers-reduced-motion:reduce){.tad-sheet,.tad-sheet.closing{animation:none;}body.sheet-push main{margin-left:0;margin-right:0;}main{transition:none;}}
 .tad-head{background:linear-gradient(140deg,#232342 0%,#1A1A2E 60%,#111124 100%);color:#fff;padding:24px 28px 22px;position:relative;}
 .tad-head h2{margin:8px 0 8px;font-size:24px;font-weight:800;letter-spacing:-.02em;color:#fff;padding-right:96px;}
 .tad-head p{margin:0;font-size:13.5px;color:rgba(255,255,255,.75);line-height:1.55;max-width:660px;}
@@ -2172,10 +2173,12 @@ body.tad-active main{margin-left:-50vw;margin-right:50vw;}
 /* Browse Castings slide-in detail sheet (left -> right), dimming the list behind. */
 .cs-sheet-dim{position:fixed;left:0;right:0;bottom:0;top:var(--site-top-h,56px);background:rgba(18,18,28,.42);z-index:114;animation:csDimIn .45s ease;}
 .cs-sheet-dim.closing{animation:csDimOut .45s ease forwards;}
-.cs-sheet{position:fixed;left:0;bottom:0;top:var(--site-top-h,56px);width:min(1500px,75%);background:var(--bg);z-index:115;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:18px 0 48px rgba(26,26,46,.34);animation:csSheetIn .5s cubic-bezier(.3,.7,.25,1);}
+/* Enters from the RIGHT and pushes the page left, same gesture as the agency directory
+   sheet — see the body.sheet-push block and the caa.com note above .tad-sheet. */
+.cs-sheet{position:fixed;right:0;left:auto;bottom:0;top:var(--site-top-h,56px);width:min(1500px,75%);background:var(--bg);z-index:115;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:-18px 0 48px rgba(26,26,46,.34);animation:csSheetIn .5s cubic-bezier(.3,.7,.25,1);}
 .cs-sheet.closing{animation:csSheetOut .46s cubic-bezier(.3,.7,.25,1) forwards;}
-@keyframes csSheetIn{from{transform:translateX(-102%);}to{transform:translateX(0);}}
-@keyframes csSheetOut{from{transform:translateX(0);}to{transform:translateX(-102%);}}
+@keyframes csSheetIn{from{transform:translateX(102%);}to{transform:translateX(0);}}
+@keyframes csSheetOut{from{transform:translateX(0);}to{transform:translateX(102%);}}
 @keyframes csDimIn{from{background:rgba(18,18,28,0);}to{background:rgba(18,18,28,.42);}}
 @keyframes csDimOut{from{background:rgba(18,18,28,.42);}to{background:rgba(18,18,28,0);}}
 .cs-sheet .site-footer,.cs-sheet .site-footer-spacer,.cs-sheet .site-backtotop,.cs-sheet .page-foot-gap{display:none !important;}
@@ -2791,7 +2794,7 @@ body.tad-active main{margin-left:-50vw;margin-right:50vw;}
    shrinking to the viewport: its right edge sat up to 300px off-screen, taking
    the "next" arrow and the "Browse all" button with it (clipped by
    /* The margin transition animates the caa.com-style page push when the agency directory
-   sheet opens (see body.tad-active main). It sits on the element itself so the page
+   sheet opens (see body.sheet-push main). It sits on the element itself so the page
    travels both ways off a single rule. */
 main{overflow-x:clip;transition:margin .5s cubic-bezier(.3,.7,.25,1);}, so they read as missing rather than as overflow).
    That band is every medium/large iPad in landscape — 1080/1112/1133/1180/1194/1366.
@@ -11304,6 +11307,16 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   // must pop back off to restore the /browse-castings URL.
   const sheetPushedRef=useRef(false);
   const animateClose=useCallback(()=>{setSheetClosing(true);setTimeout(()=>{setSheetCasting(null);setSheetClosing(false);window.scrollTo(0,sheetScrollY.current);},460);},[]);
+  // Same caa.com page push the agency directory uses — body.sheet-push slides `main`
+  // left while the casting sheet comes in from the right. Removed the moment
+  // sheetClosing flips so the page travels back with the exit animation; the cleanup
+  // guards against unmounting mid-animation and stranding the site 50vw off-screen.
+  useEffect(()=>{
+    const b=document.body;
+    if(sheetCasting&&!sheetClosing)b.classList.add("sheet-push");
+    else b.classList.remove("sheet-push");
+    return()=>b.classList.remove("sheet-push");
+  },[sheetCasting,sheetClosing]);
   const openSheet=useCallback((c)=>{
     sheetScrollY.current=window.scrollY;
     setSheetClosing(false);
@@ -12456,16 +12469,16 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
     return()=>window.removeEventListener("keydown",onKey);
   },[open,closeSheet]);
 
-  // Drives the caa.com-style page push: body.tad-active slides `main` left while the
+  // Drives the caa.com-style page push: body.sheet-push slides `main` left while the
   // sheet comes in from the right. Dropped as soon as `closing` flips so the page
   // travels back in step with the exit animation instead of snapping at unmount.
   // The cleanup matters — unmounting mid-animation would otherwise strand the class
   // and leave the whole site shifted 50vw off-screen with body scroll locked.
   useEffect(()=>{
     const b=document.body;
-    if(open&&!closing)b.classList.add("tad-active");
-    else b.classList.remove("tad-active");
-    return()=>b.classList.remove("tad-active");
+    if(open&&!closing)b.classList.add("sheet-push");
+    else b.classList.remove("sheet-push");
+    return()=>b.classList.remove("sheet-push");
   },[open,closing]);
 
   const counts=useMemo(()=>({
