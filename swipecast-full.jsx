@@ -1865,9 +1865,27 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* The directory is a slide-in sheet, not a centred modal — same left-to-right motion,
    easing and dim as the Browse Castings detail sheet, so both "open from a card"
    gestures on the site read as one thing. Animation names are shared on purpose. */
-.tad-sheet{position:fixed;left:0;bottom:0;top:var(--site-top-h,56px);width:min(1500px,80%);background:var(--bg);z-index:115;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;box-shadow:18px 0 48px rgba(26,26,46,.34);animation:csSheetIn .5s cubic-bezier(.3,.7,.25,1);}
-.tad-sheet.closing{animation:csSheetOut .46s cubic-bezier(.3,.7,.25,1) forwards;}
-@media(prefers-reduced-motion:reduce){.tad-sheet,.tad-sheet.closing{animation:none;}}
+/* Directory sheet, modelled on caa.com: it enters from the RIGHT and genuinely pushes
+   the page left instead of covering it, so a shifted sliver of the site stays visible.
+   CAA does the push with MARGIN, not transform:
+     body.nav-active #main{transition:margin .4s ease-in-out;margin-left:-50vw;margin-right:50vw}
+   That choice is load-bearing. A transform on an ancestor becomes the containing block
+   for position:fixed descendants, which would break our fixed site header the moment
+   the sheet opened; margin has no such side effect. margin-left:-50vw with
+   margin-right:50vw also nets to zero, so the element keeps its width and only moves.
+   The push lives on the main element (below) and shares this duration + easing, so the
+   sheet and page read as one gesture, not two things animating near each other.
+   NOTE: this whole block sits inside a JS template literal — never use backticks in
+   these comments, they terminate the literal and break the build. */
+.tad-sheet{position:fixed;right:0;left:auto;bottom:0;top:var(--site-top-h,56px);width:min(1500px,80%);background:var(--bg);z-index:115;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;box-shadow:-18px 0 48px rgba(26,26,46,.34);animation:tadSheetIn .5s cubic-bezier(.3,.7,.25,1);}
+.tad-sheet.closing{animation:tadSheetOut .46s cubic-bezier(.3,.7,.25,1) forwards;}
+@keyframes tadSheetIn{from{transform:translateX(102%);}to{transform:translateX(0);}}
+@keyframes tadSheetOut{from{transform:translateX(0);}to{transform:translateX(102%);}}
+/* body.tad-active is added on open and removed the instant closing starts, so the page
+   travels back while the sheet is still sliding out. */
+body.tad-active{overflow:hidden;}
+body.tad-active main{margin-left:-50vw;margin-right:50vw;}
+@media(prefers-reduced-motion:reduce){.tad-sheet,.tad-sheet.closing{animation:none;}body.tad-active main{margin-left:0;margin-right:0;}main{transition:none;}}
 .tad-head{background:linear-gradient(140deg,#232342 0%,#1A1A2E 60%,#111124 100%);color:#fff;padding:24px 28px 22px;position:relative;}
 .tad-head h2{margin:8px 0 8px;font-size:24px;font-weight:800;letter-spacing:-.02em;color:#fff;padding-right:96px;}
 .tad-head p{margin:0;font-size:13.5px;color:rgba(255,255,255,.75);line-height:1.55;max-width:660px;}
@@ -2772,7 +2790,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
    max-width, so between 1025px and 1479px it stayed a rigid 1480px instead of
    shrinking to the viewport: its right edge sat up to 300px off-screen, taking
    the "next" arrow and the "Browse all" button with it (clipped by
-   main{overflow-x:clip}, so they read as missing rather than as overflow).
+   /* The margin transition animates the caa.com-style page push when the agency directory
+   sheet opens (see body.tad-active main). It sits on the element itself so the page
+   travels both ways off a single rule. */
+main{overflow-x:clip;transition:margin .5s cubic-bezier(.3,.7,.25,1);}, so they read as missing rather than as overflow).
    That band is every medium/large iPad in landscape — 1080/1112/1133/1180/1194/1366.
    Explicit width also makes the layout independent of intrinsic sizing, which is
    what made this fragile in the first place (see the contain:inline-size note below). */
@@ -12434,6 +12455,18 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
     window.addEventListener("keydown",onKey);
     return()=>window.removeEventListener("keydown",onKey);
   },[open,closeSheet]);
+
+  // Drives the caa.com-style page push: body.tad-active slides `main` left while the
+  // sheet comes in from the right. Dropped as soon as `closing` flips so the page
+  // travels back in step with the exit animation instead of snapping at unmount.
+  // The cleanup matters — unmounting mid-animation would otherwise strand the class
+  // and leave the whole site shifted 50vw off-screen with body scroll locked.
+  useEffect(()=>{
+    const b=document.body;
+    if(open&&!closing)b.classList.add("tad-active");
+    else b.classList.remove("tad-active");
+    return()=>b.classList.remove("tad-active");
+  },[open,closing]);
 
   const counts=useMemo(()=>({
     all:TALENT_AGENCIES.length,
