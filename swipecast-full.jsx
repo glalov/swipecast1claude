@@ -3053,18 +3053,65 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   .auth-gate-grid{grid-template-columns:1fr !important;gap:24px !important;padding:20px 0 40px !important;}
   .auth-gate-grid>*{min-width:0 !important;width:100% !important;box-sizing:border-box !important;position:static !important;top:auto !important;}
 }
-/* ── iOS App Teaser ── */
-.ios-teaser-section{padding:80px 40px;position:relative;overflow:hidden;}
-.ios-teaser-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;max-width:1100px;margin:0 auto;position:relative;z-index:1;}
-@media(max-width:860px){
-  .ios-teaser-section{padding:60px 24px;}
-  .ios-teaser-grid{grid-template-columns:1fr;gap:40px;text-align:center;}
+/* ── Agency & Management Directory stripe ──
+   Replaced the old iOS-app teaser. Borrows the 3arts.com mechanic: a
+   [background, foreground] pair swapped on a timer with an .8s transition on
+   BOTH properties. Everything inside is drawn in currentColor, so the panel,
+   the borders and the CTA invert as one piece instead of the background alone
+   sliding under static text. The JS only sets --adx-bg/--adx-fg on the section;
+   all the inversion below is inheritance.
+   Deliberately shows no company names — the roster is the paid product, and a
+   list of names on a public page is a list anyone can go and look up for free.
+   The wall is built from the FIELDS each entry holds, not the entries. */
+.adx-section{padding:80px 40px;position:relative;overflow:hidden;background:#0F1012;color:#FDFBF7;
+  transition:background-color .8s cubic-bezier(.4,0,.2,1),color .8s cubic-bezier(.4,0,.2,1);}
+.adx-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;max-width:1100px;margin:0 auto;position:relative;z-index:1;}
+/* 900px is the landing's single mobile line — do not add another breakpoint here. */
+@media(max-width:900px){
+  .adx-section{padding:60px 24px;}
+  .adx-grid{grid-template-columns:1fr;gap:40px;text-align:center;}
+  .adx-lede{margin-left:auto;margin-right:auto;}
+  .adx-meta{justify-content:center;}
+  .adx-wall{height:320px;text-align:left;}
 }
 @media(max-width:480px){
-  .ios-teaser-section{padding:48px 16px;}
+  .adx-section{padding:48px 16px;}
+  .adx-wall{height:268px;}
 }
-.ios-teaser-phone-col{display:flex;justify-content:center;align-items:center;}
-@media(max-width:860px){.ios-teaser-phone-col{display:none !important;}}
+.adx-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:100px;border:1.5px solid currentColor;margin-bottom:20px;opacity:.92;font-family:'DM Sans',sans-serif;}
+.adx-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;animation:adxpulse 2s ease-in-out infinite;}
+@keyframes adxpulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.35;transform:scale(.7);}}
+.adx-num{font-family:'Poppins',sans-serif;font-weight:800;font-size:clamp(62px,9.4vw,106px);line-height:.86;letter-spacing:-5px;font-variant-numeric:tabular-nums;}
+.adx-num sup{font-size:.34em;letter-spacing:-1px;vertical-align:super;opacity:.55;}
+.adx-numcap{font-size:11px;font-weight:800;letter-spacing:2.2px;text-transform:uppercase;opacity:.55;margin:6px 0 22px;font-family:'DM Sans',sans-serif;}
+.adx-h{font-weight:800;letter-spacing:-1.3px;line-height:1.08;font-size:clamp(24px,3.3vw,34px);margin-bottom:14px;color:inherit;}
+.adx-lede{font-size:15px;line-height:1.75;max-width:430px;opacity:.66;margin-bottom:26px;}
+/* Buttons do NOT inherit the color property in most UAs. Without color:inherit,
+   background:currentColor resolves to the UA's default buttontext (black) and
+   the CTA disappears entirely on the dark halves of the cycle. */
+.adx-cta{display:inline-flex;align-items:center;gap:9px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;color:inherit;font-size:14px;font-weight:800;letter-spacing:.2px;padding:14px 26px;border-radius:100px;background:currentColor;
+  transition:background-color .8s cubic-bezier(.4,0,.2,1),transform .18s ease;}
+.adx-cta span{color:var(--adx-bg,#0F1012);transition:color .8s cubic-bezier(.4,0,.2,1);}
+.adx-cta:hover{transform:translateY(-2px);}
+.adx-meta{display:flex;gap:20px;flex-wrap:wrap;margin-top:20px;font-size:12px;font-weight:600;opacity:.5;}
+.adx-wall{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:400px;overflow:hidden;position:relative;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 14%,#000 84%,transparent 100%);
+          mask-image:linear-gradient(180deg,transparent 0,#000 14%,#000 84%,transparent 100%);}
+.adx-col{display:flex;flex-direction:column;gap:8px;will-change:transform;}
+.adx-col.a{animation:adxup 36s linear infinite;}
+.adx-col.b{animation:adxdown 44s linear infinite;}
+@keyframes adxup{from{transform:translateY(0);}to{transform:translateY(-50%);}}
+@keyframes adxdown{from{transform:translateY(-50%);}to{transform:translateY(0);}}
+.adx-chip{border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 26%,transparent);border-radius:10px;padding:9px 12px;white-space:nowrap;overflow:hidden;transition:border-color .8s cubic-bezier(.4,0,.2,1);}
+.adx-chip .m{font-size:12.5px;font-weight:700;letter-spacing:-.1px;overflow:hidden;text-overflow:ellipsis;}
+.adx-chip .s{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;opacity:.45;margin-top:3px;}
+.adx-chip.hot{background:currentColor;border-color:currentColor;}
+.adx-chip.hot .m,.adx-chip.hot .s{color:var(--adx-bg,#0F1012);transition:color .8s cubic-bezier(.4,0,.2,1);}
+.adx-chip.hot .s{opacity:.62;}
+@media(prefers-reduced-motion:reduce){
+  .adx-section,.adx-cta,.adx-chip,.adx-chip .m,.adx-chip .s{transition:none !important;}
+  .adx-col.a,.adx-col.b,.adx-eyebrow .dot{animation:none !important;}
+}
 
 /* ── Landing: Single cinematic feature image section ── */
 .landing-stats-live{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:clamp(18px,5vw,62px);max-width:900px;margin:0 auto;padding:56px 40px;text-align:center;align-items:start;perspective:1200px;}
@@ -18854,6 +18901,124 @@ function LandingStats(){
 }
 
 // ═══════════════════════════════════════════
+// AGENCY & MANAGEMENT DIRECTORY STRIPE (landing)
+// ═══════════════════════════════════════════
+// The counts are the real ones: TAD_AGENCIES splits 292 agencies / 258 management
+// companies = 550. If that array grows, update ADX_TOTAL and the two meta lines
+// rather than letting the headline drift away from the product.
+const ADX_TOTAL=550;
+// Every chip is a FIELD the directory stores, never a company. That is the whole
+// point of this fill: it argues the depth of the data without publishing the data.
+const ADX_FIELDS=[
+  ["Mailing address","On file"],              ["Which division to write to","On file"],
+  ["SAG-AFTRA franchised","Verified"],        ["Open to unsolicited mail","Yes"],
+  ["Do not mail — referral only","Flagged"],  ["Website","On file"],
+  ["Company size","Small / Mid / Major"],     ["Manager, not an agent","Flagged"],
+  ["Takes beginners","Yes"],                  ["Wants credits first","Noted"],
+  ["Check their site first","Noted"],         ["Commercial desk","Separate"],
+  ["Theatrical desk","Separate"],             ["Youth & child performers","Noted"],
+  ["Voice-over division","Noted"],            ["Los Angeles office","On file"],
+  ["New York office","On file"],              ["Both coasts","On file"],
+  ["Charges a fee — avoid","Flagged"],        ["Address unconfirmed","Withheld"],
+  ["How to approach them","On file"],         ["Last re-checked","This period"],
+  ["Still in business","Confirmed"],          ["Closed since last check","Removed"]
+];
+// [background, foreground]. Ink → deep teal → teal → cream → gold, then round again.
+const ADX_SCHEMES=[
+  ["#0F1012","#FDFBF7"],
+  ["#123A33","#25C2A0"],
+  ["#25C2A0","#0F1012"],
+  ["#FDFBF7","#0F1012"],
+  ["#0F1012","#F0B860"]
+];
+function AgencyDirectoryStripe({onNavigate,isPremium=false}){
+  const secRef=React.useRef(null);
+  const numRef=React.useRef(null);
+  // Colour cycle. Writes straight to the node instead of through state — this
+  // ticks every 2.2s forever and has no business re-rendering the subtree.
+  React.useEffect(()=>{
+    const el=secRef.current;
+    if(!el)return;
+    const paint=(i)=>{
+      const[bg,fg]=ADX_SCHEMES[i];
+      el.style.backgroundColor=bg;
+      el.style.color=fg;
+      el.style.setProperty("--adx-bg",bg);
+      el.style.setProperty("--adx-fg",fg);
+    };
+    paint(0);
+    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+    let i=0;
+    const t=setInterval(()=>{i=(i+1)%ADX_SCHEMES.length;paint(i);},2200);
+    return()=>clearInterval(t);
+  },[]);
+  // Count up to 550 once, when the number scrolls into view.
+  React.useEffect(()=>{
+    const el=numRef.current;
+    if(!el)return;
+    const settle=()=>{el.innerHTML=ADX_TOTAL+"<sup>+</sup>";};
+    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches){settle();return;}
+    let raf=0;
+    const run=()=>{
+      const start=performance.now(),duration=1500;
+      const tick=(now)=>{
+        const raw=Math.min((now-start)/duration,1);
+        const eased=1-Math.pow(1-raw,3);
+        el.innerHTML=Math.round(ADX_TOTAL*eased)+"<sup>+</sup>";
+        if(raw<1)raf=requestAnimationFrame(tick);
+        else settle();
+      };
+      raf=requestAnimationFrame(tick);
+    };
+    if(!("IntersectionObserver" in window)){run();return()=>cancelAnimationFrame(raf);}
+    const io=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{if(e.isIntersecting){run();io.disconnect();}});
+    },{threshold:.3});
+    io.observe(el);
+    return()=>{io.disconnect();cancelAnimationFrame(raf);};
+  },[]);
+  // Each column renders the list twice so translateY(-50%) lands exactly on the
+  // seam — one pass and the loop visibly jumps.
+  const column=(offset,hotEvery)=>{
+    const out=[];
+    for(let pass=0;pass<2;pass++){
+      for(let i=0;i<ADX_FIELDS.length;i++){
+        const[m,s]=ADX_FIELDS[(i+offset)%ADX_FIELDS.length];
+        out.push(
+          <div key={pass+"-"+i} className={"adx-chip"+(i%hotEvery===2?" hot":"")} aria-hidden={pass===1}>
+            <div className="m">{m}</div><div className="s">{s}</div>
+          </div>
+        );
+      }
+    }
+    return out;
+  };
+  return(
+    <section className="adx-section" ref={secRef}>
+      <div className="adx-grid">
+        <div>
+          <div className="adx-eyebrow"><span className="dot"/>Premium — Agency &amp; Management Directory</div>
+          <div className="adx-num" ref={numRef}>0<sup>+</sup></div>
+          <div className="adx-numcap">Agencies &amp; managers · Los Angeles + New York</div>
+          <h3 className="adx-h">Learn in an afternoon<br/>what took everyone else<br/>a decade.</h3>
+          <p className="adx-lede">For every company: the mailing address, the website, the division to write to, how big they are, and whether they take unsolicited mail at all — plus the ones charging a fee, flagged so you walk away.</p>
+          <button className="adx-cta" onClick={()=>onNavigate(isPremium?"dashboard":"membership")}>
+            <span>{isPremium?"Open the Directory →":"See What's Inside →"}</span>
+          </button>
+          <div className="adx-meta"><div>292 agencies</div><div>258 management companies</div><div>Re-checked every few months</div></div>
+        </div>
+        <div>
+          <div className="adx-wall" aria-hidden="true">
+            <div className="adx-col a">{column(0,7)}</div>
+            <div className="adx-col b">{column(13,9)}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════
 // LANDING PAGE
 // ═══════════════════════════════════════════
 function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,myProfile=null}){
@@ -19132,86 +19297,8 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     {/* ───────── LATEST INDUSTRY NEWS (compact; hidden via Super Admin toggle) ───────── */}
     <div style={{maxWidth:1200,margin:"0 auto"}}><NewsSection onNavigate={onNavigate}/></div>
 
-    {/* ───────── iOS APP TEASER ───────── */}
-    <div className="ios-teaser-section" style={{background:"linear-gradient(135deg,#0f1629 0%,#162255 30%,#3730a3 65%,#0f2847 100%)"}}>
-      {/* Decorative glow blobs */}
-      <div style={{position:"absolute",top:-100,right:"8%",width:420,height:420,borderRadius:"50%",background:"radial-gradient(circle,rgba(99,102,241,.28),transparent 70%)",pointerEvents:"none",zIndex:0}}/>
-      <div style={{position:"absolute",bottom:-80,left:"4%",width:340,height:340,borderRadius:"50%",background:"radial-gradient(circle,rgba(37,194,160,.18),transparent 70%)",pointerEvents:"none",zIndex:0}}/>
-      <div className="ios-teaser-grid">
-        {/* ── Left: copy ── */}
-        <div>
-          <div style={{display:"inline-flex",alignItems:"center",gap:7,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.16)",color:"rgba(255,255,255,.92)",fontSize:10,fontWeight:700,letterSpacing:1.4,padding:"6px 14px",borderRadius:100,marginBottom:22,fontFamily:"'DM Sans',sans-serif",textTransform:"uppercase"}}>
-            <span style={{width:6,height:6,borderRadius:"50%",background:"#4ade80",boxShadow:"0 0 8px #4ade80",flexShrink:0}}/>
-            iOS App Coming Soon
-          </div>
-          <h3 style={{color:"#fff",fontWeight:800,fontSize:38,letterSpacing:-1.4,lineHeight:1.08,marginBottom:16}}>CastSlate for iPhone<br/>is coming soon.</h3>
-          <p style={{color:"rgba(255,255,255,.58)",fontSize:15,lineHeight:1.78,maxWidth:400,marginBottom:32}}>Browse castings, manage your profile, receive invitations, and connect with opportunities from anywhere. Soon available for free on the Apple App Store.</p>
-          <div style={{display:"inline-flex",alignItems:"center",gap:10,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.18)",borderRadius:14,padding:"13px 22px",cursor:"default",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)"}}>
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-            <span style={{color:"#fff",fontSize:13,fontWeight:600,letterSpacing:.2}}>Coming soon to the App Store</span>
-          </div>
-        </div>
-        {/* ── Right: phone mockup ── */}
-        <div className="ios-teaser-phone-col">
-          <div style={{position:"relative",width:220,height:450}}>
-            {/* Glow behind phone */}
-            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:280,height:340,background:"radial-gradient(ellipse,rgba(99,102,241,.55) 0%,transparent 65%)",filter:"blur(28px)",zIndex:0,pointerEvents:"none"}}/>
-            {/* Phone body */}
-            <div style={{position:"relative",zIndex:1,width:220,height:450,background:"linear-gradient(180deg,#1c2044 0%,#101525 100%)",borderRadius:40,border:"1.5px solid rgba(255,255,255,.14)",boxShadow:"0 0 0 7px rgba(255,255,255,.04),0 32px 80px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.09)",overflow:"hidden"}}>
-              {/* Dynamic island */}
-              <div style={{height:38,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                <div style={{width:82,height:22,background:"#060810",borderRadius:20,border:"1px solid rgba(255,255,255,.06)"}}/>
-              </div>
-              {/* Screen content */}
-              <div style={{padding:"6px 14px 0"}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                  <div style={{fontSize:11,fontWeight:800,color:"#fff",letterSpacing:-.2}}>CastSlate</div>
-                  <div style={{width:24,height:24,borderRadius:"50%",background:"linear-gradient(135deg,rgba(99,102,241,.6),rgba(59,130,246,.4))",border:"1px solid rgba(255,255,255,.1)"}}/>
-                </div>
-                {/* Casting card */}
-                <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,padding:"10px 11px",marginBottom:7}}>
-                  <div style={{fontSize:7,color:"rgba(255,255,255,.38)",letterSpacing:.8,fontWeight:700,marginBottom:4,fontFamily:"'DM Sans',sans-serif",textTransform:"uppercase"}}>New Casting · Film</div>
-                  <div style={{fontSize:11.5,fontWeight:700,color:"#fff",lineHeight:1.25,marginBottom:3}}>Lead Role — Feature</div>
-                  <div style={{fontSize:8.5,color:"rgba(255,255,255,.4)",marginBottom:9}}>A24 · New York, NY · SAG-AFTRA</div>
-                  <div style={{display:"flex",gap:5}}>
-                    <div style={{flex:1,background:"rgba(255,255,255,.07)",borderRadius:7,padding:"5px 0",textAlign:"center",fontSize:8,color:"rgba(255,255,255,.45)",fontWeight:600}}>Pass</div>
-                    <div style={{flex:2,background:"linear-gradient(90deg,#3b82f6,#6366f1)",borderRadius:7,padding:"5px 0",textAlign:"center",fontSize:8,color:"#fff",fontWeight:700}}>Apply →</div>
-                  </div>
-                </div>
-                {/* Profile viewed notification */}
-                <div style={{background:"linear-gradient(90deg,rgba(99,102,241,.14),rgba(59,130,246,.07))",border:"1px solid rgba(99,102,241,.22)",borderRadius:10,padding:"8px 10px",display:"flex",gap:7,alignItems:"center",marginBottom:6}}>
-                  <div style={{width:20,height:20,borderRadius:"50%",background:"linear-gradient(135deg,#6366f1,#3b82f6)",flexShrink:0}}/>
-                  <div><div style={{fontSize:9,fontWeight:600,color:"#fff",lineHeight:1.2}}>Profile Viewed</div><div style={{fontSize:8,color:"rgba(255,255,255,.4)"}}>A24 Casting · just now</div></div>
-                </div>
-                {/* Callback notification */}
-                <div style={{background:"rgba(74,222,128,.07)",border:"1px solid rgba(74,222,128,.2)",borderRadius:10,padding:"8px 10px",display:"flex",gap:7,alignItems:"center"}}>
-                  <div style={{width:20,height:20,borderRadius:"50%",background:"linear-gradient(135deg,#4ade80,#22c55e)",flexShrink:0}}/>
-                  <div><div style={{fontSize:9,fontWeight:600,color:"#fff",lineHeight:1.2}}>Callback Request</div><div style={{fontSize:8,color:"rgba(255,255,255,.4)"}}>Cold Harbor Films</div></div>
-                </div>
-              </div>
-              {/* Home indicator */}
-              <div style={{position:"absolute",bottom:10,left:"50%",transform:"translateX(-50%)",width:90,height:4,background:"rgba(255,255,255,.22)",borderRadius:4}}/>
-            </div>
-            {/* Floating card: New Casting */}
-            <div style={{position:"absolute",top:70,right:-60,background:"rgba(255,255,255,.92)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",borderRadius:12,padding:"9px 12px",boxShadow:"0 10px 28px rgba(0,0,0,.28)",border:"1px solid rgba(255,255,255,.9)",width:124,zIndex:2}}>
-              <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:3}}>
-                <div style={{width:7,height:7,borderRadius:"50%",background:"#4ade80",flexShrink:0}}/>
-                <div style={{fontSize:8.5,fontWeight:700,color:"#1a1a2e"}}>New Casting</div>
-              </div>
-              <div style={{fontSize:7.5,color:"#5a5a72",lineHeight:1.35}}>Paramount · Feature Film</div>
-            </div>
-            {/* Floating card: Invited */}
-            <div style={{position:"absolute",bottom:95,left:-68,background:"rgba(255,255,255,.92)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",borderRadius:12,padding:"9px 12px",boxShadow:"0 10px 28px rgba(0,0,0,.28)",border:"1px solid rgba(255,255,255,.9)",width:124,zIndex:2}}>
-              <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:3}}>
-                <div style={{width:7,height:7,borderRadius:"50%",background:"#6366f1",flexShrink:0}}/>
-                <div style={{fontSize:8.5,fontWeight:700,color:"#1a1a2e"}}>Invited</div>
-              </div>
-              <div style={{fontSize:7.5,color:"#5a5a72",lineHeight:1.35}}>HBO Max is reviewing<br/>your reel</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    {/* ───────── AGENCY & MANAGEMENT DIRECTORY (replaced the iOS app teaser) ───────── */}
+    <AgencyDirectoryStripe onNavigate={onNavigate} isPremium={myProfile?.membership_status==="active"}/>
 
     {/* ───────── MANAGER MODE TEASER ───────── */}
     <section className="lh-mm" style={{padding:"72px 40px",background:"linear-gradient(160deg,#1A1A2E 0%,#16213e 60%,#0f3460 100%)",color:"#fff",position:"relative",overflow:"hidden"}}>
