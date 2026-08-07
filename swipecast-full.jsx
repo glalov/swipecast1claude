@@ -3072,11 +3072,9 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   .adx-grid{grid-template-columns:1fr;gap:40px;text-align:center;}
   .adx-lede{margin-left:auto;margin-right:auto;}
   .adx-meta{justify-content:center;}
-  .adx-wall{height:320px;text-align:left;}
 }
 @media(max-width:480px){
   .adx-section{padding:48px 16px;}
-  .adx-wall{height:268px;}
 }
 .adx-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:100px;border:1.5px solid currentColor;margin-bottom:20px;opacity:.92;font-family:'DM Sans',sans-serif;}
 .adx-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;animation:adxpulse 2s ease-in-out infinite;}
@@ -3097,9 +3095,18 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .adx-wall{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:400px;overflow:hidden;position:relative;
   -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 14%,#000 84%,transparent 100%);
           mask-image:linear-gradient(180deg,transparent 0,#000 14%,#000 84%,transparent 100%);}
-.adx-col{display:flex;flex-direction:column;gap:8px;will-change:transform;}
-.adx-col.a{animation:adxup 36s linear infinite;}
-.adx-col.b{animation:adxdown 44s linear infinite;}
+/* NO will-change here. These columns are ~2800px tall; promoting them to their
+   own composited layers costs roughly 50MB EACH at DPR 3, permanently, even
+   while the stripe is far offscreen. On a real phone that memory comes out of
+   the same budget the page's video decoders use, and iOS drops decoded video
+   to get it back — which shows up as the landing videos going blank or frozen
+   several sections further up. The transforms composite fine without it. */
+.adx-col{display:flex;flex-direction:column;gap:8px;}
+/* Paused until the stripe is actually near the viewport (JS adds .is-live).
+   animation-play-state resumes where it left off, so the wall never restarts. */
+.adx-col.a{animation:adxup 36s linear infinite;animation-play-state:paused;}
+.adx-col.b{animation:adxdown 44s linear infinite;animation-play-state:paused;}
+.adx-section.is-live .adx-col.a,.adx-section.is-live .adx-col.b{animation-play-state:running;}
 @keyframes adxup{from{transform:translateY(0);}to{transform:translateY(-50%);}}
 @keyframes adxdown{from{transform:translateY(-50%);}to{transform:translateY(0);}}
 .adx-chip{border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 26%,transparent);border-radius:10px;padding:9px 12px;white-space:nowrap;overflow:hidden;transition:border-color .8s cubic-bezier(.4,0,.2,1);}
@@ -3108,6 +3115,18 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .adx-chip.hot{background:currentColor;border-color:currentColor;}
 .adx-chip.hot .m,.adx-chip.hot .s{color:var(--adx-bg,#0F1012);transition:color .8s cubic-bezier(.4,0,.2,1);}
 .adx-chip.hot .s{opacity:.62;}
+/* Wall responsiveness lives HERE, after the base .adx-wall rule — not up with
+   the other breakpoints. Same specificity means source order decides, and a
+   media query written above the rule it is trying to override simply loses. */
+@media(max-width:900px){
+  .adx-wall{height:320px;text-align:left;}
+}
+@media(max-width:480px){
+  /* One column on the smallest screens — halves the scrolling surface on the
+     devices least able to afford it. */
+  .adx-wall{height:268px;grid-template-columns:1fr;}
+  .adx-col.b{display:none;}
+}
 @media(prefers-reduced-motion:reduce){
   .adx-section,.adx-cta,.adx-chip,.adx-chip .m,.adx-chip .s{transition:none !important;}
   .adx-col.a,.adx-col.b,.adx-eyebrow .dot{animation:none !important;}
@@ -18948,9 +18967,21 @@ function AgencyDirectoryStripe({onNavigate,isPremium=false}){
     };
     paint(0);
     if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches)return;
-    let i=0;
-    const t=setInterval(()=>{i=(i+1)%ADX_SCHEMES.length;paint(i);},2200);
-    return()=>clearInterval(t);
+    let i=0,t=0;
+    // Only cycle while the stripe is near the viewport, and only run the wall's
+    // marquee then too (.is-live). A landing page is long; this section used to
+    // repaint a full-bleed background every 2.2s and scroll two tall columns
+    // forever, several screens away from anything the visitor was looking at.
+    // That work is invisible by definition and competes with the video decoders
+    // further up the page on phones.
+    const start=()=>{if(!t){t=setInterval(()=>{i=(i+1)%ADX_SCHEMES.length;paint(i);},2200);}el.classList.add("is-live");};
+    const stop=()=>{if(t){clearInterval(t);t=0;}el.classList.remove("is-live");};
+    if(!("IntersectionObserver" in window)){start();return()=>stop();}
+    const io=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{if(e.isIntersecting)start();else stop();});
+    },{rootMargin:"200px 0px",threshold:0});
+    io.observe(el);
+    return()=>{io.disconnect();stop();};
   },[]);
   // Count up to 550 once, when the number scrolls into view.
   React.useEffect(()=>{
