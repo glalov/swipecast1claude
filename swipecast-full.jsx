@@ -3122,10 +3122,11 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   .adx-wall{height:320px;text-align:left;}
 }
 @media(max-width:480px){
-  /* One column on the smallest screens — halves the scrolling surface on the
-     devices least able to afford it. */
-  .adx-wall{height:268px;grid-template-columns:1fr;}
-  .adx-col.b{display:none;}
+  /* Both columns stay on phones — the up/down counter-scroll IS the effect, and
+     dropping to one column made it read as a plain list. Only the height comes
+     down. (Tried hiding column B for compositing headroom; the videos turned
+     out not to be the problem, so it was cost with no benefit.) */
+  .adx-wall{height:268px;}
 }
 @media(prefers-reduced-motion:reduce){
   .adx-section,.adx-cta,.adx-chip,.adx-chip .m,.adx-chip .s{transition:none !important;}
@@ -18733,7 +18734,19 @@ function BufferedLoopVideo(props){
     const guard=setInterval(function(){ if(visible&&buffered&&v.paused&&!window.__scGliding&&!document.hidden) sync(); },4000);
     return function(){ v.removeEventListener('canplaythrough',onBuf); v.removeEventListener('canplay',onBuf); v.removeEventListener('pause',onPause); clearTimeout(fbT); clearInterval(guard); if(io)io.disconnect(); if(loadIo)loadIo.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',sync); };
   },[]);
-  return <video ref={ref} muted loop playsInline preload="none" {...props}/>;
+  // iOS Safari will not paint the `poster` attribute while preload="none" — it
+  // waits for a load to be initiated, so the box sits EMPTY until the mp4 itself
+  // has enough data to show a frame. On a slow phone connection that is ten-plus
+  // seconds of blank space where the whole point was a sharp still.
+  // Painting the same still as a CSS background on the element sidesteps it: the
+  // browser fetches it as an ordinary image (57-101KB, versus a 4-8MB mp4), so
+  // something correct is on screen almost immediately and the video fades in over
+  // the top of it once buffered. Keeps `poster` too, for browsers that honour it.
+  const{poster}=props;
+  const style=poster
+    ?{backgroundImage:'url("'+poster+'")',backgroundSize:'cover',backgroundPosition:'center',backgroundRepeat:'no-repeat',...(props.style||{})}
+    :props.style;
+  return <video ref={ref} muted loop playsInline preload="none" {...props} style={style}/>;
 }
 
 function FormatReel(){
