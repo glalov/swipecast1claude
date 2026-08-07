@@ -1877,16 +1877,26 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
    sheet and page read as one gesture, not two things animating near each other.
    NOTE: this whole block sits inside a JS template literal — never use backticks in
    these comments, they terminate the literal and break the build. */
-.tad-sheet{position:fixed;right:0;left:auto;bottom:0;top:var(--site-top-h,56px);width:min(1500px,80%);background:var(--bg);z-index:115;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;box-shadow:-18px 0 48px rgba(26,26,46,.34);animation:tadSheetIn .5s cubic-bezier(.3,.7,.25,1);}
+.tad-sheet{position:fixed;right:0;left:auto;bottom:0;top:var(--site-top-h,56px);width:min(1500px,80%);background:var(--bg);z-index:115;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;box-shadow:-18px 0 48px rgba(26,26,46,.34);will-change:transform;animation:tadSheetIn .5s cubic-bezier(.3,.7,.25,1);}
 .tad-sheet.closing{animation:tadSheetOut .46s cubic-bezier(.3,.7,.25,1) forwards;}
 @keyframes tadSheetIn{from{transform:translateX(102%);}to{transform:translateX(0);}}
 @keyframes tadSheetOut{from{transform:translateX(0);}to{transform:translateX(102%);}}
 /* body.sheet-push is shared by every right-hand slide-in sheet (agency directory,
    casting detail). Added on open, removed the instant closing starts, so the page
-   travels back while the sheet is still sliding out. */
+   travels back while the sheet is still sliding out.
+   This pushes with TRANSFORM, not margin. caa.com uses margin, but margin is a layout
+   property: animating it reflows the whole main subtree every frame, which is what made
+   the slide stutter on our heavier pages. transform runs on the compositor instead.
+   The trade is that a transformed ancestor becomes the containing block for fixed
+   descendants — which is exactly why both sheets are now portalled to <body>. Nothing
+   else may rely on position:fixed inside main while a sheet is open. */
 body.sheet-push{overflow:hidden;}
-body.sheet-push main{margin-left:-50vw;margin-right:50vw;}
-@media(prefers-reduced-motion:reduce){.tad-sheet,.tad-sheet.closing{animation:none;}body.sheet-push main{margin-left:0;margin-right:0;}main{transition:none;}}
+body.sheet-push main{transform:translate3d(-50vw,0,0);}
+/* The back-to-top cube is position:fixed INSIDE main, so it would ride along with the
+   push. Hidden while a sheet is open — a floating back-to-top over a shoved-aside page
+   is wrong anyway. */
+body.sheet-push .b2t-cube{display:none;}
+@media(prefers-reduced-motion:reduce){.tad-sheet,.tad-sheet.closing{animation:none;}body.sheet-push main{transform:none;}main{transition:none;}}
 .tad-head{background:linear-gradient(140deg,#232342 0%,#1A1A2E 60%,#111124 100%);color:#fff;padding:24px 28px 22px;position:relative;}
 .tad-head h2{margin:8px 0 8px;font-size:24px;font-weight:800;letter-spacing:-.02em;color:#fff;padding-right:96px;}
 .tad-head p{margin:0;font-size:13.5px;color:rgba(255,255,255,.75);line-height:1.55;max-width:660px;}
@@ -1917,7 +1927,11 @@ body.sheet-push main{margin-left:-50vw;margin-right:50vw;}
 .tad-gh .ct{font-size:11.5px;color:var(--t3);font-weight:700;}
 .tad-gsub{font-size:12.6px;color:var(--t2);line-height:1.55;margin:0 0 11px;max-width:780px;}
 .tad-rows{display:grid;gap:10px;}
-.tad-row{background:var(--s1);border:1px solid var(--bdr);border-radius:13px;padding:15px 17px;display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start;}
+/* content-visibility lets the browser skip layout and paint for rows scrolled out of
+   view. With ~570 agencies the first frame of the slide-in was competing with laying
+   out the entire list, which showed up as a hitch right at the start of the animation.
+   contain-intrinsic-size keeps the scrollbar honest for the skipped rows. */
+.tad-row{content-visibility:auto;contain-intrinsic-size:auto 132px;background:var(--s1);border:1px solid var(--bdr);border-radius:13px;padding:15px 17px;display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start;}
 .tad-row:hover{border-color:var(--t3);}
 .tad-row.pick{border-color:var(--grn);background:rgba(27,135,62,.03);}
 .tad-nm{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:4px;}
@@ -2171,16 +2185,18 @@ body.sheet-push main{margin-left:-50vw;margin-right:50vw;}
 .mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:transparent;z-index:150;}
 .mobile-menu.closing{pointer-events:none;}
 /* Browse Castings slide-in detail sheet (left -> right), dimming the list behind. */
+/* Fades on OPACITY, not background-color. Animating a colour repaints the whole
+   overlay every frame; opacity is composited. */
 .cs-sheet-dim{position:fixed;left:0;right:0;bottom:0;top:var(--site-top-h,56px);background:rgba(18,18,28,.42);z-index:114;animation:csDimIn .45s ease;}
 .cs-sheet-dim.closing{animation:csDimOut .45s ease forwards;}
 /* Enters from the RIGHT and pushes the page left, same gesture as the agency directory
    sheet — see the body.sheet-push block and the caa.com note above .tad-sheet. */
-.cs-sheet{position:fixed;right:0;left:auto;bottom:0;top:var(--site-top-h,56px);width:min(1500px,75%);background:var(--bg);z-index:115;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:-18px 0 48px rgba(26,26,46,.34);animation:csSheetIn .5s cubic-bezier(.3,.7,.25,1);}
+.cs-sheet{position:fixed;right:0;left:auto;bottom:0;top:var(--site-top-h,56px);width:min(1500px,75%);background:var(--bg);z-index:115;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:-18px 0 48px rgba(26,26,46,.34);will-change:transform;animation:csSheetIn .5s cubic-bezier(.3,.7,.25,1);}
 .cs-sheet.closing{animation:csSheetOut .46s cubic-bezier(.3,.7,.25,1) forwards;}
 @keyframes csSheetIn{from{transform:translateX(102%);}to{transform:translateX(0);}}
 @keyframes csSheetOut{from{transform:translateX(0);}to{transform:translateX(102%);}}
-@keyframes csDimIn{from{background:rgba(18,18,28,0);}to{background:rgba(18,18,28,.42);}}
-@keyframes csDimOut{from{background:rgba(18,18,28,.42);}to{background:rgba(18,18,28,0);}}
+@keyframes csDimIn{from{opacity:0;}to{opacity:1;}}
+@keyframes csDimOut{from{opacity:1;}to{opacity:0;}}
 .cs-sheet .site-footer,.cs-sheet .site-footer-spacer,.cs-sheet .site-backtotop,.cs-sheet .page-foot-gap{display:none !important;}
 .cs-sheet .page{padding-top:14px !important;min-height:0 !important;}
 .cs-sheet-bar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:flex-end;padding:11px 16px;background:var(--bg);border-bottom:1px solid var(--bdr);}
@@ -2793,10 +2809,10 @@ body.sheet-push main{margin-left:-50vw;margin-right:50vw;}
    max-width, so between 1025px and 1479px it stayed a rigid 1480px instead of
    shrinking to the viewport: its right edge sat up to 300px off-screen, taking
    the "next" arrow and the "Browse all" button with it (clipped by
-   /* The margin transition animates the caa.com-style page push when the agency directory
-   sheet opens (see body.sheet-push main). It sits on the element itself so the page
-   travels both ways off a single rule. */
-main{overflow-x:clip;transition:margin .5s cubic-bezier(.3,.7,.25,1);}, so they read as missing rather than as overflow).
+   /* The transform transition animates the caa.com-style page push when a slide-in sheet
+   opens (see body.sheet-push main). It sits on the element itself so the page travels
+   both ways off a single rule, and transform keeps the whole thing on the compositor. */
+main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}, so they read as missing rather than as overflow).
    That band is every medium/large iPad in landscape — 1080/1112/1133/1180/1194/1366.
    Explicit width also makes the layout independent of intrinsic sizing, which is
    what made this fragile in the first place (see the contain:inline-size note below). */
@@ -11623,7 +11639,12 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
     </>
     {applyTo&&<div className="modal-overlay" onClick={()=>setApplyTo(null)}><div className="modal" onClick={e=>e.stopPropagation()}><h2>{t('search.submitForRole')}</h2><div style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:20}}><h4 style={{fontSize:14,fontWeight:700}}>{applyTo.title}</h4><p style={{color:"var(--t2)",fontSize:12,marginTop:2}}>{applyTo.prod} · {applyTo.location}</p></div><div className="form-group"><label className="label">{t('search.coverNote')}</label><textarea className="textarea" placeholder={t('search.coverNotePlaceholder')}></textarea></div><div className="form-group"><label className="label">{t('search.whichHeadshot')}</label><div style={{display:"flex",gap:10,marginTop:8}}><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"2px solid var(--acc)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t2)",textAlign:"center",padding:4}}>{t('search.primary')}</div><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t3)",textAlign:"center",padding:4,cursor:"pointer"}}>{t('search.addPhoto')}</div></div></div><div style={{display:"flex",gap:12,marginTop:24}}><button className="btn-p" style={{flex:1}} onClick={()=>{setApplied(p=>new Set([...p,applyTo.id]));setApplyTo(null);}}>{t('search.submitApp')}</button><button className="btn-s" onClick={()=>setApplyTo(null)}>{t('cancel')}</button></div></div></div>}
     <div className="page-foot-gap" aria-hidden="true"/>
-    {sheetCasting&&<>
+    {/* Portalled to <body> on purpose. The sheet is position:fixed, and the page push
+        transforms <main>; a transformed ancestor becomes the containing block for fixed
+        descendants, so left inside <main> the sheet would travel WITH the page instead
+        of staying anchored. Portalling also lets the push use transform (GPU) instead
+        of margin (layout every frame), which is what removed the stutter. */}
+    {sheetCasting&&ReactDOM.createPortal(<>
       <div className={"cs-sheet-dim"+(sheetClosing?" closing":"")} onClick={closeSheet} aria-hidden="true"/>
       <div className={"cs-sheet"+(sheetClosing?" closing":"")} role="dialog" aria-modal="true">
         <div className="cs-sheet-bar">
@@ -11633,7 +11654,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           ? <CastingDetailPage casting={sheetCasting} onBack={closeSheet} onNavigate={(p)=>{setSheetCasting(null);onNavigate(p);}} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} myProfile={myProfile} session={session} inSheet={true}/>
           : <CastingGatePage casting={sheetCasting} onCreateProfile={()=>{setSheetCasting(null);onNavigate("auth-gate");}} onLogin={()=>{setSheetCasting(null);onNavigate("login");}} onBack={closeSheet}/>}
       </div>
-    </>}
+    </>,document.body)}
     <Footer onNavigate={onNavigate} backToTop/></div>);
 }
 
@@ -12668,7 +12689,10 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
     </div>
     </div>
 
-    {open&&(<>
+    {/* Portalled to <body> — see the note on the casting sheet. The sheet is fixed and
+        the push transforms <main>, so inside <main> it would be dragged along by the
+        very transform it is supposed to sit still against. */}
+    {open&&ReactDOM.createPortal(<>
       <div className={"cs-sheet-dim"+(closing?" closing":"")} onClick={closeSheet} aria-hidden="true"/>
       <div className={"tad-sheet"+(closing?" closing":"")} role="dialog" aria-modal="true" aria-label="Talent Agency and Management Directory">
           <div className="tad-head">
@@ -12804,7 +12828,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
                 </>)}
           </div>
       </div>
-    </>)}
+    </>,document.body)}
   </>);
 }
 
