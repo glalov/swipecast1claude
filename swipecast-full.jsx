@@ -1353,6 +1353,15 @@ const CASTING_ARCHETYPE_GROUPS = [
 // entry so re-opening the editor knows which chip was typed and which was picked.
 const CASTING_ARCHETYPE_OTHER = "Other…";
 const ALL_CASTING_ARCHETYPES = CASTING_ARCHETYPE_GROUPS.flatMap(g=>g.items);
+// Casting directors filter on type, so a profile claiming twenty archetypes
+// claims none of them — and the joined string used to blow the stat grid open
+// into a several-thousand-pixel column. Five leaves room for genuine range
+// (everyman + romantic lead + comic relief is a real actor) while still forcing
+// a choice. IMPORTANT: this caps ADDITIONS only. Profiles saved before the cap
+// keep every type already stored — nothing is deleted, reordered, or rewritten.
+const MAX_CASTING_TYPES = 5;
+// How many chips the public profile shows before collapsing behind "+N more".
+const PROFILE_PLAYS_VISIBLE = 5;
 
 // ─── Age display. The exact age is always collected (it is what confirms the
 //     account holder is 18+, and what the role matcher compares), but an actor
@@ -1658,6 +1667,24 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tr-chip{display:inline-flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--bdr);border-radius:999px;padding:3px 6px 3px 10px;font-size:11.5px;color:var(--t2);}
 .tr-chip button{background:none;border:0;color:var(--t3);cursor:pointer;line-height:1;padding:2px;border-radius:50%;display:flex;}
 .tr-chip button:hover{color:var(--red);}
+.tr-opt.is-locked{opacity:.42;cursor:not-allowed;}
+.tr-opt.is-locked:hover{background:none;color:var(--t2);}
+.tr-cap{position:sticky;top:-6px;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-6px -6px 4px;padding:9px 12px;background:var(--s1);border-bottom:1px solid var(--bdr);border-radius:10px 10px 0 0;}
+.tr-cap-count{font-size:10.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--t2);}
+.tr-cap.is-full .tr-cap-count{color:var(--acc);}
+.tr-cap-hint{font-size:11px;color:var(--t3);}
+.tr-note{margin-top:8px;font-size:11.5px;line-height:1.5;color:var(--t3);}
+.tr-chip.is-primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700;padding-left:8px;}
+.tr-chip.is-primary button{color:rgba(255,255,255,.72);}
+.tr-chip.is-primary button:hover{color:#fff;}
+.tr-star:hover{color:var(--acc)!important;}
+.pp-plays{margin-bottom:14px;}
+.pp-plays-label{margin-bottom:6px;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);}
+.pp-plays-list{display:flex;flex-wrap:wrap;gap:6px;}
+.pp-play{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:4px 11px;border:1px solid var(--bdr);border-radius:999px;background:var(--s2);font-size:12px;font-weight:600;line-height:1.35;color:var(--t2);}
+.pp-play.is-primary{background:var(--acc);border-color:var(--acc);color:#fff;}
+.pp-more{padding:4px 11px;border:1px dashed var(--bdr);border-radius:999px;background:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:var(--t3);cursor:pointer;}
+.pp-more:hover{color:var(--acc);border-color:var(--acc);}
 @media(max-width:640px){.tr-menu{max-height:60vh;}}
 .profile-hero{display:grid;grid-template-columns:320px 1fr;gap:40px;margin-bottom:40px;}
 .profile-photo{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:14px;border:1px solid var(--bdr);}
@@ -10662,6 +10689,36 @@ function ShowcaseVideoTile({v,onOpen}){
 // ═══════════════════════════════════════════
 // PAGE: TALENT PROFILE VIEW
 // ═══════════════════════════════════════════
+// ─── "Plays" on the public profile. Archetypes are a variable-length list, not
+//     a one-word stat, so they get their own full-width row of wrapping chips
+//     instead of a 90px grid cell. The first entry is the actor's primary type
+//     and leads the row; anything past PROFILE_PLAYS_VISIBLE collapses behind a
+//     "+N more" toggle so grandfathered profiles holding 20+ types still render
+//     at a sane height without a single stored value being touched.
+function PlaysChips({types}){
+  const [expanded,setExpanded]=useState(false);
+  const list=Array.isArray(types)?types.filter(Boolean):[];
+  if(!list.length)return null;
+  const shown=expanded?list:list.slice(0,PROFILE_PLAYS_VISIBLE);
+  const hiddenCount=list.length-shown.length;
+  return(<div className="pp-plays">
+    <div className="pp-plays-label">Plays</div>
+    <div className="pp-plays-list">
+      {shown.map((t,i)=>(
+        <span key={t+"|"+i} className={"pp-play"+(i===0?" is-primary":"")}>
+          {i===0&&<Ico n="star" s={12}/>}{t}
+        </span>
+      ))}
+      {hiddenCount>0&&(
+        <button type="button" className="pp-more" onClick={()=>setExpanded(true)}>+{hiddenCount} more</button>
+      )}
+      {expanded&&list.length>PROFILE_PLAYS_VISIBLE&&(
+        <button type="button" className="pp-more" onClick={()=>setExpanded(false)}>Show less</button>
+      )}
+    </div>
+  </div>);
+}
+
 function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const vpw=useViewportWidth();
   const isMobile=vpw<768;
@@ -10848,7 +10905,11 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     if(oth)arr.push(oth);
     return arr;
   })();
-  const playsText=castTypes.length?castTypes.join(" · "):(freshProfile?.age_range||talent.age_range);
+  // Only the legacy decade bracket belongs in the stat grid. The archetypes are
+  // rendered as chips underneath it (see PlaysChips) — joining them into one
+  // string forced a 90px grid cell to wrap ~25 phrases vertically, which is what
+  // made long profiles look broken.
+  const playsFallback=castTypes.length?"":(freshProfile?.age_range||talent.age_range);
 
   const statsData=[
     ["Height",freshProfile?.height||talent.height],
@@ -10859,7 +10920,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     ["Gender",freshProfile?.gender||talent.gender],
     ["Ethnicity",freshProfile?.ethnicity||talent.ethnicity],
     ["Body",freshProfile?.body_type||talent.body_type],
-    ["Plays",playsText],
+    ["Plays",playsFallback],
   ].filter(([,v])=>v);
 
   const isOwnProfile=talent?.id&&talent.id===session?.user?.id;
@@ -11007,6 +11068,9 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
             ))}
           </div>
         )}
+
+        {/* Plays / casting archetypes — own row, wrapping chips, collapsible */}
+        <PlaysChips types={castTypes}/>
 
         {/* ── Card action bar — turns the public profile (where the actor's card
             QR/link lands) into an active submission tool. Adapts to the viewer.
@@ -19766,8 +19830,19 @@ function TypeRangeSelect({value,other,onChange,onOtherChange}){
     return()=>{document.removeEventListener("mousedown",onDown);document.removeEventListener("keydown",onKey);};
   },[open]);
 
+  // Chips show the real picks; "Other…" is represented by the typed text so the
+  // actor never sees a meaningless "Other…" chip next to their own wording.
+  const chips=selected.filter(a=>a!==CASTING_ARCHETYPE_OTHER);
+  const count=chips.length+(other&&other.trim()?1:0);
+  // Grandfathered profiles can legitimately sit ABOVE the cap. The rule only
+  // ever blocks adding — removal stays open, and nothing is auto-deleted.
+  const atCap=count>=MAX_CASTING_TYPES;
+  const overCap=count>MAX_CASTING_TYPES;
+
   const toggle=a=>{
-    onChange(selected.includes(a)?selected.filter(x=>x!==a):[...selected,a]);
+    if(selected.includes(a)){onChange(selected.filter(x=>x!==a));return;}
+    if(atCap)return;
+    onChange([...selected,a]);
   };
   const toggleOther=()=>{
     if(otherOn){
@@ -19776,15 +19851,16 @@ function TypeRangeSelect({value,other,onChange,onOtherChange}){
       onChange(selected.filter(x=>x!==CASTING_ARCHETYPE_OTHER));
       onOtherChange("");
     }else{
+      if(atCap)return;
       onChange([...selected.filter(x=>x!==CASTING_ARCHETYPE_OTHER),CASTING_ARCHETYPE_OTHER]);
       setTimeout(()=>{try{otherRef.current&&otherRef.current.focus();}catch(_){}},0);
     }
   };
+  // The first entry is the primary type — it leads the chip row on the public
+  // profile. Promoting just moves the entry to the front of the array, so the
+  // existing casting_types text[] column carries it with no schema change.
+  const makePrimary=a=>{onChange([a,...selected.filter(x=>x!==a)]);};
 
-  // Chips show the real picks; "Other…" is represented by the typed text so the
-  // actor never sees a meaningless "Other…" chip next to their own wording.
-  const chips=selected.filter(a=>a!==CASTING_ARCHETYPE_OTHER);
-  const count=chips.length+(other&&other.trim()?1:0);
   const label=count===0?"Select Type Range":(count===1?(chips[0]||other):`${count} types selected`);
 
   return(<div className="tr-wrap" ref={wrapRef}>
@@ -19799,12 +19875,19 @@ function TypeRangeSelect({value,other,onChange,onOtherChange}){
     </button>
 
     {open&&<div className="tr-menu" role="listbox" aria-multiselectable="true">
+      <div className={"tr-cap"+(atCap?" is-full":"")}>
+        <span className="tr-cap-count">{count} of {MAX_CASTING_TYPES} selected</span>
+        <span className="tr-cap-hint">{atCap?"Remove one to swap":"Pick your strongest"}</span>
+      </div>
       {CASTING_ARCHETYPE_GROUPS.map(g=>(<React.Fragment key={g.group}>
         <div className="tr-group">{g.group}</div>
         {g.items.map(a=>{
           const on=selected.includes(a);
+          const locked=!on&&atCap;
           return(<button type="button" key={a} role="option" aria-selected={on?"true":"false"}
-            className={"tr-opt"+(on?" is-on":"")} onClick={()=>toggle(a)}>
+            disabled={locked} aria-disabled={locked?"true":"false"}
+            title={locked?`Maximum ${MAX_CASTING_TYPES} types - remove one first`:undefined}
+            className={"tr-opt"+(on?" is-on":"")+(locked?" is-locked":"")} onClick={()=>toggle(a)}>
             <input type="checkbox" readOnly checked={on} tabIndex={-1}/>
             <span>{a}</span>
           </button>);
@@ -19812,7 +19895,8 @@ function TypeRangeSelect({value,other,onChange,onOtherChange}){
       </React.Fragment>))}
       <div className="tr-divider"/>
       <button type="button" role="option" aria-selected={otherOn?"true":"false"}
-        className={"tr-opt"+(otherOn?" is-on":"")} onClick={toggleOther}>
+        disabled={!otherOn&&atCap} aria-disabled={(!otherOn&&atCap)?"true":"false"}
+        className={"tr-opt"+(otherOn?" is-on":"")+((!otherOn&&atCap)?" is-locked":"")} onClick={toggleOther}>
         <input type="checkbox" readOnly checked={otherOn} tabIndex={-1}/>
         <span>{CASTING_ARCHETYPE_OTHER}</span>
       </button>
@@ -19824,13 +19908,24 @@ function TypeRangeSelect({value,other,onChange,onOtherChange}){
       value={other||""} onChange={e=>onOtherChange(e.target.value)}/>}
 
     {count>0&&<div className="tr-chips">
-      {chips.map(a=><span key={a} className="tr-chip">{a}
+      {chips.map((a,i)=><span key={a} className={"tr-chip"+(i===0?" is-primary":"")}>
+        {i===0&&<Ico n="star" s={12}/>}{a}
+        {i>0&&<button type="button" className="tr-star" title="Make this your primary type"
+          aria-label={`Make ${a} your primary type`} onClick={()=>makePrimary(a)}><Ico n="star" s={12}/></button>}
         <button type="button" aria-label={`Remove ${a}`} onClick={()=>toggle(a)}><Ico n="x" s={12}/></button>
       </span>)}
       {other&&other.trim()&&<span className="tr-chip">{other.trim()}
         <button type="button" aria-label="Remove custom type" onClick={toggleOther}><Ico n="x" s={12}/></button>
       </span>}
     </div>}
+
+    <div className="tr-note">{
+      overCap
+        ? `You have ${count} types saved from before the ${MAX_CASTING_TYPES}-type limit. Nothing was removed, but new picks stay paused until you're back under ${MAX_CASTING_TYPES}.`
+        : atCap
+          ? `That's all ${MAX_CASTING_TYPES}. Remove one to pick a different archetype.`
+          : `Choose up to ${MAX_CASTING_TYPES}. Casting directors filter by type, so a focused list is what gets you found. Your first pick is your primary type.`
+    }</div>
   </div>);
 }
 
