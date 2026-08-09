@@ -3172,7 +3172,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    panel, logo + name + slug + QR. IMPORTANT: every row carries flex-shrink:0.
    The body is a fixed-height flex column (locked aspect ratio), so any row left
    shrinkable is squeezed to zero height — that silently ate the actor's name. */
-.agdc{width:304px;background:#fff;border:1.5px solid #E0E0E8;border-radius:10px;overflow:hidden;box-shadow:0 8px 40px rgba(26,26,46,.15);display:flex;aspect-ratio:1050/600;position:relative;flex-shrink:0;}
+.agdc{width:340px;background:#fff;border:1.5px solid #E0E0E8;border-radius:10px;overflow:hidden;box-shadow:0 8px 40px rgba(26,26,46,.15);display:flex;aspect-ratio:1050/600;position:relative;flex-shrink:0;}
 .agdc .bar{position:absolute;top:0;left:0;right:0;height:4px;background:#1A1A2E;z-index:2;}
 .agdc .ph{width:34%;flex-shrink:0;position:relative;margin-top:4px;overflow:hidden;background:#E8E8F2;}
 .agdc .ph img{width:100%;height:100%;object-fit:cover;display:block;}
@@ -3195,11 +3195,11 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .agdc .ft .q img{width:38px;height:38px;display:block;border-radius:2px;}
 .agdc .ft .q em{display:block;font-style:normal;font-size:5px;color:#9090A0;letter-spacing:.3px;margin-top:1px;white-space:nowrap;}
 /* Desktop: a fan, each card breathing on its own phase. */
-.agd-fan{position:relative;height:430px;}
+.agd-fan{position:relative;height:472px;}
 .agd-fan .agdc{position:absolute;left:50%;top:50%;transform-origin:50% 90%;}
-.agd-fan .k1{margin-left:-215px;margin-top:-190px;z-index:1;animation:agdfan1 7s ease-in-out infinite;}
-.agd-fan .k2{margin-left:-152px;margin-top:-86px;z-index:2;animation:agdfan2 7s ease-in-out -2.3s infinite;}
-.agd-fan .k3{margin-left:-90px;margin-top:18px;z-index:3;animation:agdfan3 7s ease-in-out -4.6s infinite;}
+.agd-fan .k1{margin-left:-240px;margin-top:-212px;z-index:1;transform:rotate(-7deg);animation:agdfan1 7s ease-in-out infinite;}
+.agd-fan .k2{margin-left:-170px;margin-top:-96px;z-index:2;transform:rotate(-1.5deg);animation:agdfan2 7s ease-in-out -2.3s infinite;}
+.agd-fan .k3{margin-left:-101px;margin-top:20px;z-index:3;transform:rotate(5deg);animation:agdfan3 7s ease-in-out -4.6s infinite;}
 @keyframes agdfan1{0%,100%{transform:rotate(-7deg) translateY(0)}50%{transform:rotate(-8.5deg) translateY(-11px)}}
 @keyframes agdfan2{0%,100%{transform:rotate(-1.5deg) translateY(0)}50%{transform:rotate(-.5deg) translateY(-13px)}}
 @keyframes agdfan3{0%,100%{transform:rotate(5deg) translateY(0)}50%{transform:rotate(6.5deg) translateY(-9px)}}
@@ -3207,11 +3207,17 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    read anything. They overlap into a compact deck instead — the front card is
    whole, the two behind it peek out, and the whole thing is ~330px. */
 @media(max-width:960px){
-  .agd-fan{height:auto;display:flex;flex-direction:column;align-items:center;padding-top:4px;}
-  .agd-fan .agdc{position:static;margin:0;width:min(304px,84vw);animation:none;}
-  .agd-fan .k1{transform:rotate(-2.5deg) scale(.94);z-index:1;}
-  .agd-fan .k2{margin-top:-84px;transform:rotate(1.5deg) scale(.97);z-index:2;}
-  .agd-fan .k3{margin-top:-84px;transform:rotate(-.5deg);z-index:3;}
+  .agd-fan{height:auto;display:flex;flex-direction:column;align-items:center;padding-top:8px;}
+  .agd-fan .agdc{position:static;margin:0;width:min(320px,86vw);}
+  /* The deck floats on phones too. Each keyframe re-states its card's rotation
+     and scale — a transform animation REPLACES the static transform outright,
+     so leaving them out would flatten the deck the moment it starts. */
+  .agd-fan .k1{z-index:1;transform:rotate(-2.5deg) scale(.94);animation:agdfanm1 6.4s ease-in-out infinite;}
+  .agd-fan .k2{margin-top:-88px;z-index:2;transform:rotate(1.5deg) scale(.97);animation:agdfanm2 7.2s ease-in-out -1.9s infinite;}
+  .agd-fan .k3{margin-top:-88px;z-index:3;transform:rotate(-.5deg);animation:agdfanm3 6.8s ease-in-out -3.7s infinite;}
+  @keyframes agdfanm1{0%,100%{transform:rotate(-2.5deg) scale(.94) translateY(0)}50%{transform:rotate(-3.4deg) scale(.94) translateY(-7px)}}
+  @keyframes agdfanm2{0%,100%{transform:rotate(1.5deg) scale(.97) translateY(0)}50%{transform:rotate(2.3deg) scale(.97) translateY(-9px)}}
+  @keyframes agdfanm3{0%,100%{transform:rotate(-.5deg) translateY(0)}50%{transform:rotate(.4deg) translateY(-6px)}}
 }
 .agd-stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);}
 .agd-stat{padding:24px 20px;border-right:1px solid var(--bdr);}
@@ -3279,7 +3285,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .agd-legal{max-width:720px;margin:0 auto;text-align:center;font-size:12.5px;color:var(--t3);line-height:1.75;padding-bottom:clamp(30px,5vw,56px);}
 @media(max-width:960px){.agd-hero-grid,.agd-flow{grid-template-columns:1fr;}}
 @media(prefers-reduced-motion:reduce){
-  .agd-shot,.agd-plane,.agd-route,.agd-halo,.agd-key,.agd-ring,.agd-marq-in,.agd-redact,.agd-eyebrow .d{animation:none !important;}
+  .agd-plane,.agd-route,.agd-halo,.agd-key,.agd-ring,.agd-marq-in,.agd-redact,.agd-eyebrow .d,.agd-fan .agdc{animation:none !important;}
 }
 .adx-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:100px;border:1.5px solid currentColor;margin-bottom:20px;opacity:.92;font-family:'DM Sans',sans-serif;}
 .adx-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;animation:adxpulse 2s ease-in-out infinite;}
