@@ -633,6 +633,7 @@ ROUTES = [
     ("terms.html",            "/terms",           "Terms of Use", "CastSlate Terms of Use — the rules and guidelines for using the CastSlate casting platform."),
     ("privacy.html",          "/privacy",         "Privacy Policy", "CastSlate Privacy Policy — how we collect, use, and protect your personal information."),
     ("manager-mode.html",     "/manager-mode",    "Manager Mode", "Cast Slate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."),
+    ("agency-directory.html", "/agency-directory", "Talent Agency & Management Directory \u2014 550+ Agencies in LA & NYC", "CastSlate's Premium directory of 550+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."),
     ("tapelink.html",         "/tapelink",        "TapeLink: Self-Tape Auditions Built Into Casting", "TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."),
 ]
 

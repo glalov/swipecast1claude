@@ -85,7 +85,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Sign in','nav.accountSettings':'Account Settings',
     'nav.resources':'Resources','nav.successStories':'Success Stories',
     'nav.about':'About','nav.contact':'Contact','nav.joinAsTalent':'Join as Talent',
-    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.tapelink':'TapeLink',
+    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.tapelink':'TapeLink','nav.agencyDirectory':'Talent Agencies',
     // Footer
     'footer.backToTop':'Back to top',
     'footer.blurb':'The casting platform built for working actors. Every submission gets seen — guaranteed. Free accounts included — upgrade to Premium (from $8.25/mo) for unlimited submissions, Slate Video, Business Card, Manager Mode, the Talent Agency & Manager Directory (550+ agencies and managers in LA & NYC), and more.',
@@ -333,7 +333,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Iniciar sesión','nav.accountSettings':'Configuración de cuenta',
     'nav.resources':'Recursos','nav.successStories':'Historias de éxito',
     'nav.about':'Acerca de','nav.contact':'Contacto','nav.joinAsTalent':'Unirse como Talento',
-    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.tapelink':'TapeLink',
+    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencias de Talento',
     // Footer
     'footer.backToTop':'Volver arriba',
     'footer.blurb':'La plataforma de casting diseñada para actores que trabajan. Cada postulación es vista — garantizado. Cuentas gratuitas incluidas — mejora a Premium (desde $8.25/mes) para postulaciones ilimitadas y más.',
@@ -3119,6 +3119,128 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 @media(max-width:480px){
   .adx-section{padding:48px 16px;}
 }
+/* ─── PAGE: TALENT AGENCY & MANAGEMENT DIRECTORY (/agency-directory) ───
+   Public marketing page for the premium directory. Everything here is prefixed
+   .agd- so it cannot collide with the landing stripe's .adx- rules, which sell
+   the same feature in a different place. Motion is all ongoing (no scroll
+   reveals) — a section that hides itself until an observer fires is a section
+   that renders blank when the observer does not. */
+.agd-wrap{max-width:1120px;margin:0 auto;padding:0 clamp(16px,5vw,26px);}
+.agd-hero{padding:clamp(30px,5vw,58px) 0 clamp(28px,4vw,44px);background:radial-gradient(900px 420px at 78% 10%,rgba(232,144,42,.13),transparent);}
+.agd-hero-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(28px,4vw,50px);align-items:center;}
+.agd-eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:10.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;padding:7px 15px;border-radius:100px;border:1.5px solid var(--amber-dk);color:var(--amber-dk);margin-bottom:18px;}
+.agd-eyebrow .d{width:7px;height:7px;border-radius:50%;background:var(--amber-dk);animation:agdbeat 2.4s ease-in-out infinite;}
+@keyframes agdbeat{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.55);opacity:.4}}
+.agd-h1{font-size:clamp(28px,4.3vw,52px);line-height:1.05;letter-spacing:-2px;font-weight:800;margin:0;}
+.agd-cities{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0 0;}
+.agd-city{font-size:13.5px;font-weight:700;padding:9px 18px;border-radius:100px;border:1.5px solid var(--bdr);background:var(--s1);}
+.agd-city.la{background:rgba(79,138,139,.14);border-color:rgba(79,138,139,.5);color:var(--teal-dk);}
+.agd-city.bh{background:rgba(232,144,42,.16);border-color:rgba(232,144,42,.55);color:var(--amber-dk);}
+.agd-city.ny{background:rgba(26,26,46,.07);border-color:rgba(26,26,46,.32);color:var(--t1);}
+.agd-lede{font-size:16px;line-height:1.75;color:var(--t2);max-width:520px;margin:18px 0 24px;}
+.agd-ctas{display:flex;gap:11px;flex-wrap:wrap;}
+.agd-btn{border:none;border-radius:9px;padding:15px 28px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14.5px;cursor:pointer;transition:transform .2s,box-shadow .2s;}
+.agd-btn:hover{transform:translateY(-2px);}
+.agd-btn.gold{background:linear-gradient(180deg,#F2BE3C,#E8902A);color:#2A1802;box-shadow:0 12px 26px -14px rgba(232,144,42,.8);}
+.agd-btn.line{background:transparent;border:1.5px solid var(--bdr);color:var(--t1);}
+/* studio row — context for WHAT a talent agency is, not a partnership claim */
+.agd-studios{margin-top:22px;padding-top:18px;border-top:1px solid var(--bdr);}
+.agd-studios .k{font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);margin-bottom:9px;}
+.agd-studios .row{display:flex;flex-wrap:wrap;gap:7px;}
+.agd-studios span{font-size:11.5px;font-weight:700;color:var(--t2);background:var(--s2);border-radius:6px;padding:5px 10px;}
+.agd-map{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:14px 16px;margin-top:20px;}
+.agd-map svg{width:100%;height:auto;display:block;}
+.agd-route{fill:none;stroke:var(--amber);stroke-width:2;stroke-linecap:round;stroke-dasharray:7 9;opacity:.75;animation:agddash 3.4s linear infinite;}
+@keyframes agddash{to{stroke-dashoffset:-64}}
+.agd-halo{transform-box:fill-box;transform-origin:center;animation:agdhalo 3s ease-out infinite;}
+.agd-halo.b{animation-delay:1.5s;}
+@keyframes agdhalo{0%{opacity:.55;transform:scale(.7)}100%{opacity:0;transform:scale(1.9)}}
+/* The plane must carry a 180deg offset on the way home or offset-rotate:auto
+   flies it tail-first back to Los Angeles. The windows at 42-50% and 92-100%
+   are the banking turn at each coast. */
+.agd-plane{animation:agdfly 11s ease-in-out infinite;}
+@keyframes agdfly{0%{offset-distance:0%;offset-rotate:auto 0deg}42%{offset-distance:100%;offset-rotate:auto 0deg}50%{offset-distance:100%;offset-rotate:auto 180deg}92%{offset-distance:0%;offset-rotate:auto 180deg}100%{offset-distance:0%;offset-rotate:auto 360deg}}
+.agd-art{display:grid;gap:14px;}
+.agd-artrow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.agd-shot{border-radius:14px;overflow:hidden;border:1px solid var(--bdr);background:var(--s2);box-shadow:0 16px 34px -24px rgba(26,26,46,.55);animation:agdbob 6.5s ease-in-out infinite;}
+.agd-shot:nth-child(2){animation-delay:-2.1s;}
+.agd-shot:nth-child(3){animation-delay:-4.2s;}
+@keyframes agdbob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-9px) rotate(-.5deg)}}
+.agd-shot img{width:100%;height:250px;object-fit:cover;display:block;}
+.agd-shot.p1 img{object-position:center 18%;}
+.agd-shot.p2 img{object-position:center 40%;}
+.agd-shot.p3 img{object-position:center 20%;}
+@media(max-width:520px){.agd-shot img{height:158px;}}
+.agd-qr{display:flex;gap:15px;align-items:center;border-radius:14px;padding:16px;background:var(--s1);border:1px solid rgba(232,144,42,.5);box-shadow:0 16px 34px -26px rgba(26,26,46,.5);}
+.agd-qr .q{width:78px;height:78px;flex:none;border-radius:9px;background:#fff;border:1px solid var(--bdr);padding:5px;}
+.agd-qr .q img{width:100%;display:block;}
+.agd-qr b{font-size:14.5px;}
+.agd-qr span{display:block;font-size:12.5px;color:var(--t2);line-height:1.55;margin-top:4px;}
+.agd-stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);}
+.agd-stat{padding:24px 20px;border-right:1px solid var(--bdr);}
+.agd-stat:last-child{border-right:none;}
+.agd-stat .v{font-family:'Poppins',sans-serif;font-size:31px;font-weight:800;letter-spacing:-1.3px;line-height:1;color:var(--amber-dk);}
+.agd-stat .l{font-size:10.5px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--t3);margin-top:7px;}
+@media(max-width:760px){.agd-stats{grid-template-columns:1fr 1fr}.agd-stat{border-bottom:1px solid var(--bdr)}.agd-stat:nth-child(2n){border-right:none}.agd-stat:nth-last-child(-n+2){border-bottom:none}}
+.agd-blk{padding:clamp(34px,5vw,58px) 0;}
+.agd-h2{font-size:clamp(22px,3.1vw,34px);letter-spacing:-1.3px;font-weight:800;line-height:1.14;margin:0 0 13px;}
+.agd-sub{font-size:15.5px;line-height:1.75;color:var(--t2);max-width:640px;margin:0 0 26px;}
+.agd-flow{display:grid;grid-template-columns:1fr 1fr;gap:clamp(26px,4vw,46px);align-items:center;}
+.agd-marq{height:268px;overflow:hidden;position:relative;-webkit-mask-image:linear-gradient(180deg,transparent,#000 15%,#000 85%,transparent);mask-image:linear-gradient(180deg,transparent,#000 15%,#000 85%,transparent);}
+.agd-marq-in{display:flex;flex-direction:column;gap:9px;animation:agdmarq 24s linear infinite;}
+@keyframes agdmarq{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+.agd-field{border:1px solid var(--bdr);border-radius:11px;padding:13px 15px;background:var(--s1);}
+.agd-field .m{font-size:13.5px;font-weight:700;}
+.agd-field .s{font-size:9.5px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:var(--t3);margin-top:4px;}
+.agd-table{position:relative;border:1px solid rgba(232,144,42,.45);border-radius:16px;overflow:hidden;background:var(--s1);}
+.agd-table::before{content:"";position:absolute;inset:5px;border-radius:12px;border:1.5px dashed rgba(232,144,42,.62);pointer-events:none;z-index:2;}
+.agd-row{display:grid;grid-template-columns:1.5fr .9fr 1.15fr 1fr;gap:14px;padding:15px 20px;border-bottom:1px solid var(--bdr);align-items:center;font-size:13.5px;}
+.agd-row.head{background:var(--s2);font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--t2);}
+.agd-redact{display:inline-block;height:12px;border-radius:3px;background:linear-gradient(90deg,var(--s3),var(--s2),var(--s3));background-size:220% 100%;animation:agdredact 7s linear infinite;}
+@keyframes agdredact{to{background-position:-220% 0}}
+.agd-pill{font-size:10.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 9px;border-radius:100px;background:var(--s2);color:var(--t2);white-space:nowrap;}
+.agd-pill.ok{background:#E4F3E8;color:var(--grn);}
+@media(max-width:820px){.agd-row{grid-template-columns:1fr;row-gap:7px;padding:14px 16px}.agd-row.head{display:none}.agd-cell{display:flex;justify-content:space-between;gap:12px;align-items:center}.agd-cell::before{content:attr(data-l);font-size:10px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--t3)}}
+.agd-lock{position:absolute;left:0;right:0;bottom:0;height:72%;background:linear-gradient(180deg,rgba(250,247,241,0),rgba(250,247,241,.95) 45%,var(--bg));display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 18px 26px;text-align:center;z-index:3;}
+.agd-lockwrap{position:relative;width:96px;height:96px;display:grid;place-items:center;margin-bottom:14px;}
+.agd-ring{position:absolute;width:64px;height:64px;border-radius:50%;border:2px solid rgba(232,144,42,.75);animation:agdring 2.8s ease-out infinite;}
+.agd-ring.r2{animation-delay:1.4s;}
+@keyframes agdring{0%{opacity:.9;transform:scale(.62)}100%{opacity:0;transform:scale(1.65)}}
+.agd-key{font-size:60px;line-height:1;position:relative;z-index:1;animation:agdswing 3.2s ease-in-out infinite;transform-origin:50% 8%;filter:drop-shadow(0 7px 12px rgba(26,26,46,.26));}
+@keyframes agdswing{0%,100%{transform:rotate(-15deg)}50%{transform:rotate(15deg)}}
+.agd-lock h4{margin:0 0 6px;font-size:19px;letter-spacing:-.6px;font-weight:800;}
+.agd-lock p{margin:0 0 15px;font-size:13.5px;color:var(--t2);max-width:420px;}
+.agd-steps{display:flex;flex-direction:column;gap:18px;margin-top:24px;}
+.agd-step{display:flex;gap:14px;align-items:flex-start;}
+.agd-step .n{flex:none;width:29px;height:29px;border-radius:50%;background:var(--amber-dk);color:#fff;display:grid;place-items:center;font-size:12.5px;font-weight:800;}
+.agd-step h5{margin:0 0 3px;font-size:14.5px;font-weight:800;}
+.agd-step p{margin:0;font-size:13.5px;line-height:1.62;color:var(--t2);}
+.agd-phone{margin:0 auto;width:280px;max-width:100%;border:10px solid #16171F;border-radius:40px;background:#16171F;overflow:hidden;box-shadow:0 28px 58px -30px rgba(26,26,46,.65);position:relative;}
+.agd-notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:86px;height:22px;border-radius:100px;background:#16171F;z-index:3;}
+.agd-scr{background:#fff;border-radius:31px;overflow:hidden;height:540px;display:flex;flex-direction:column;}
+.agd-scr .top{height:300px;flex:none;position:relative;background:var(--s2);}
+.agd-scr .top img{width:100%;height:100%;object-fit:cover;object-position:center 22%;}
+.agd-scr .tg{position:absolute;left:11px;bottom:11px;background:rgba(255,255,255,.94);border-radius:100px;padding:6px 12px;font-size:10.5px;font-weight:800;}
+.agd-scr .info{padding:14px 15px 16px;flex:1;display:flex;flex-direction:column;}
+.agd-scr h6{margin:0;font-size:17px;font-weight:800;letter-spacing:-.4px;}
+.agd-scr .mt{font-size:11.5px;color:var(--t3);font-weight:600;margin-top:3px;}
+.agd-mediapill{display:inline-flex;align-items:center;gap:6px;margin-top:9px;font-size:10.5px;font-weight:800;letter-spacing:.5px;padding:5px 10px;border-radius:100px;background:var(--s2);color:var(--t2);align-self:flex-start;}
+.agd-scr .lk{margin-top:auto;display:flex;flex-direction:column;gap:6px;}
+.agd-scr .lk div{border:1px solid var(--bdr);border-radius:8px;padding:8px 10px;font-size:11px;font-weight:700;color:var(--t2);display:flex;justify-content:space-between;}
+.agd-trust{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;}
+.agd-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:22px;transition:transform .22s,border-color .22s;}
+.agd-card:hover{transform:translateY(-3px);border-color:var(--amber-dk);}
+.agd-card h5{margin:0 0 6px;font-size:15px;font-weight:800;}
+.agd-card p{margin:0;font-size:13.5px;line-height:1.68;color:var(--t2);}
+.agd-card .ic{width:33px;height:33px;border-radius:9px;background:var(--s2);color:var(--amber-dk);display:grid;place-items:center;margin-bottom:11px;font-size:15px;}
+.agd-final{border-radius:20px;padding:clamp(30px,4vw,48px) clamp(20px,4vw,40px);text-align:center;background:radial-gradient(700px 300px at 50% 0,rgba(232,144,42,.14),transparent),var(--s1);border:1px solid rgba(232,144,42,.4);}
+.agd-final p{font-size:15px;line-height:1.7;color:var(--t2);max-width:580px;margin:0 auto 22px;}
+.agd-guarantee{font-size:12px;color:var(--t3);margin-top:14px;}
+.agd-legal{max-width:720px;margin:0 auto;text-align:center;font-size:12.5px;color:var(--t3);line-height:1.75;padding-bottom:clamp(30px,5vw,56px);}
+@media(max-width:960px){.agd-hero-grid,.agd-flow{grid-template-columns:1fr;}}
+@media(prefers-reduced-motion:reduce){
+  .agd-shot,.agd-plane,.agd-route,.agd-halo,.agd-key,.agd-ring,.agd-marq-in,.agd-redact,.agd-eyebrow .d{animation:none !important;}
+}
 .adx-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:100px;border:1.5px solid currentColor;margin-bottom:20px;opacity:.92;font-family:'DM Sans',sans-serif;}
 .adx-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;animation:adxpulse 2s ease-in-out infinite;}
 @keyframes adxpulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.35;transform:scale(.7);}}
@@ -4767,7 +4889,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             <L to="search">{t('footer.browse')}</L>
             <L to="actor-toolkit">{t('footer.actorToolkit')}</L>
             <L to="manager-mode">{t('footer.managerMode')}</L>
-            <L to="tapelink">TapeLink</L>
+            <L to="agency-directory">Talent Agency Directory</L>
             {(typeof window==="undefined"||window.__SC_CLASSES_ON!==false)&&<L to="classes">{t('footer.classes')}</L>}
             <L to="resources">{t('footer.resources')}</L>
           </div>
@@ -4779,6 +4901,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
               :<L to="pricing">{t('footer.pricing')}</L>}
             <L to="pay-talent">{t('footer.payTalent')}</L>
             <L to="studios">{t('footer.forStudios')}</L>
+            <L to="tapelink">TapeLink</L>
           </div>
           <div>
             <h4 className="site-footer-heading">{t('footer.company')}</h4>
@@ -7959,6 +8082,186 @@ function TapeLinkPage({onNavigate}){
     <section style={{padding:"0 clamp(16px,5vw,40px) clamp(48px,7vw,72px)",maxWidth:720,margin:"0 auto",textAlign:"center"}}>
       <p style={{fontSize:12.5,color:"var(--t3)",lineHeight:1.75}}>TapeLink is designed to make self-tape casting faster and more direct. Available self-tape options, take limits, recording, and upload features depend on each casting director's settings for a given role. Cast Slate does not guarantee auditions, callbacks, bookings, or career outcomes.</p>
     </section>
+
+    <Footer onNavigate={onNavigate} backToTop/>
+  </div>);
+}
+
+// ═══════════════════════════════════════════
+// PAGE: TALENT AGENCY & MANAGEMENT DIRECTORY (/agency-directory)
+// ═══════════════════════════════════════════
+// The public front door for the premium directory, which until now existed only
+// as a landing stripe and a card inside the member dashboard. "Talent agency" is
+// spelled out everywhere on purpose: "agency" alone reads as advertising or
+// staffing to someone new to the business.
+// The fields advertised here are the ones actually stored per company (name,
+// SAG-AFTRA franchised, size tier, agency vs management, cities, office
+// addresses, website, submission route, approach note). Do not add a field to
+// this page that the directory does not hold — see TAD_SUB / TAD_GROUPS.
+const AGD_FIELDS=[
+  ["Mailing address","Every office"],
+  ["Second office","LA + NY where both"],
+  ["Website","On file"],
+  ["How they take submissions","Post · Email · Form · Referral"],
+  ["SAG-AFTRA franchised","Marked"],
+  ["Company size","Small · Mid · Major"],
+  ["Agency or management","Separated"],
+  ["How to approach them","Written note"]
+];
+// Studios are named to explain WHAT a talent agency does — these are the
+// productions their clients are submitted to. It is context, not a partnership,
+// and the legal line at the foot of the page says so explicitly. Do not reword
+// this into anything that implies a relationship with these companies.
+const AGD_STUDIOS=["Warner Bros. Pictures","Universal Pictures","Walt Disney Studios","Sony Pictures","Paramount Pictures","Marvel Studios"];
+const AGD_SAMPLE=[
+  ["Beverly Hills","Mail OK","Small & boutique",134,true],
+  ["New York","Email first","Management",152,false],
+  ["Los Angeles","Mail OK","Mid-size",120,true],
+  ["LA + New York","Referral","Major",146,false],
+  ["New York","Web form","Small & boutique",128,false]
+];
+const AGD_ROUTE="M64 96 C 150 34, 268 34, 352 66";
+function AgencyDirectoryPage({onNavigate,isPremium=false}){
+  const go=()=>onNavigate(isPremium?"talent-dashboard":"membership");
+  const cta=isPremium?"Open the directory":"Unlock the directory — $14.95/mo";
+  return(<div className="page">
+    <div className="agd-wrap">
+      <section className="agd-hero"><div className="agd-hero-grid">
+        <div>
+          <div className="agd-eyebrow"><span className="d"/>Included with Premium</div>
+          <h1 className="agd-h1">550+ talent agencies and management companies, and how to reach each one.</h1>
+          <div className="agd-cities">
+            <span className="agd-city la">Los Angeles</span>
+            <span className="agd-city bh">Beverly Hills</span>
+            <span className="agd-city ny">New York</span>
+          </div>
+          <p className="agd-lede">Talent agencies are the companies that represent actors — the ones who put their clients in front of casting for studio and network productions. For every one: the mailing address of each office, the website, whether they're SAG-AFTRA franchised, how big they are, and how they actually take submissions, whether that's post, email, a web form, or only through a referral.</p>
+          <div className="agd-ctas">
+            <button className="agd-btn gold" onClick={go}>{cta}</button>
+            <button className="agd-btn line" onClick={()=>{const el=document.getElementById("agd-inside");if(el)el.scrollIntoView({behavior:"smooth",block:"start"});}}>See what's inside ↓</button>
+          </div>
+          <div className="agd-studios">
+            <div className="k">The productions their clients are cast in</div>
+            <div className="row">{AGD_STUDIOS.map(s=><span key={s}>{s}</span>)}</div>
+          </div>
+          <div className="agd-map">
+            <svg viewBox="0 0 420 132" role="img" aria-label="Talent agencies in Los Angeles, Beverly Hills and New York">
+              <path className="agd-route" d={AGD_ROUTE}/>
+              <circle className="agd-halo" cx="64" cy="96" r="12" fill="#4F8A8B" opacity=".38"/>
+              <circle cx="64" cy="96" r="6.5" fill="#4F8A8B"/>
+              <circle className="agd-halo b" cx="352" cy="66" r="12" fill="#1A1A2E" opacity=".28"/>
+              <circle cx="352" cy="66" r="6.5" fill="#1A1A2E"/>
+              <circle cx="92" cy="79" r="5.5" fill="#E8902A"/>
+              <path className="agd-plane" d="M13,0 L6.5,1.7 L2,1.7 L-3,9.5 L-5.8,9.5 L-3.6,1.7 L-8.4,1.7 L-11,5.2 L-12.6,5.2 L-11.4,1.5 L-13.6,0 L-11.4,-1.5 L-12.6,-5.2 L-11,-5.2 L-8.4,-1.7 L-3.6,-1.7 L-5.8,-9.5 L-3,-9.5 L2,-1.7 L6.5,-1.7 Z" fill="#1A1A2E" style={{offsetPath:`path('${AGD_ROUTE}')`}}/>
+              <text x="64" y="122" textAnchor="middle" fontFamily="DM Sans" fontSize="10.5" fontWeight="800" fill="#37696A">LOS ANGELES</text>
+              <text x="152" y="112" textAnchor="middle" fontFamily="DM Sans" fontSize="9.5" fontWeight="800" fill="#B96F16">BEVERLY HILLS</text>
+              <path d="M96 84 L 132 106" stroke="#B96F16" strokeWidth="1" opacity=".5"/>
+              <text x="352" y="93" textAnchor="middle" fontFamily="DM Sans" fontSize="10.5" fontWeight="800" fill="#1A1A2E">NEW YORK</text>
+            </svg>
+          </div>
+        </div>
+        <div className="agd-art">
+          <div className="agd-artrow">
+            <div className="agd-shot p1"><img alt="" src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=460&h=620&fit=crop&q=80"/></div>
+            <div className="agd-shot p2"><img alt="" src="https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=460&h=620&fit=crop&q=80"/></div>
+            <div className="agd-shot p3"><img alt="" src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=460&h=620&fit=crop&q=80"/></div>
+          </div>
+          <div className="agd-qr">
+            <div className="q"><img alt="" src="https://api.qrserver.com/v1/create-qr-code/?size=170x170&margin=0&data=https%3A%2F%2Fcastslate.com"/></div>
+            <div><b>Your Actor Business Card</b><span>They scan it — headshots, slate video, credits and links open in seconds.</span></div>
+          </div>
+        </div>
+      </div></section>
+    </div>
+
+    <div className="agd-wrap"><div className="agd-stats">
+      <div className="agd-stat"><div className="v">292</div><div className="l">Talent agencies</div></div>
+      <div className="agd-stat"><div className="v">258</div><div className="l">Management companies</div></div>
+      <div className="agd-stat"><div className="v">8</div><div className="l">Fields on each</div></div>
+      <div className="agd-stat"><div className="v">LA + NY</div><div className="l">Both coasts</div></div>
+    </div></div>
+
+    <div className="agd-wrap"><section className="agd-blk" id="agd-inside"><div className="agd-flow">
+      <div>
+        <div className="section-label">What's behind the lock</div>
+        <h2 className="agd-h2">Every company, and how to actually approach it.</h2>
+        <p className="agd-sub">A list of names is worthless — you already know the big agencies. What you don't know is which of them will open an envelope from an actor they've never heard of. These are the fields held on all 550.</p>
+        <button className="agd-btn gold" onClick={go}>{cta}</button>
+      </div>
+      <div className="agd-marq"><div className="agd-marq-in">
+        {AGD_FIELDS.concat(AGD_FIELDS).map(([m,s],i)=>(
+          <div key={m+i} className="agd-field" aria-hidden={i>=AGD_FIELDS.length}><div className="m">{m}</div><div className="s">{s}</div></div>
+        ))}
+      </div></div>
+    </div></section></div>
+
+    <div className="agd-wrap"><section className="agd-blk" style={{paddingTop:0}}>
+      <div className="agd-table">
+        <div className="agd-row head"><div>Company</div><div>City</div><div>Submissions</div><div>Size</div></div>
+        {AGD_SAMPLE.map(([city,sub,size,w,ok],i)=>(
+          <div className="agd-row" key={i}>
+            <div className="agd-cell" data-l="Company"><span className="agd-redact" style={{width:w}}/></div>
+            <div className="agd-cell" data-l="City">{city}</div>
+            <div className="agd-cell" data-l="Submissions"><span className={"agd-pill"+(ok?" ok":"")}>{sub}</span></div>
+            <div className="agd-cell" data-l="Size"><span className="agd-pill">{size}</span></div>
+          </div>
+        ))}
+        <div className="agd-lock">
+          <div className="agd-lockwrap"><span className="agd-ring"/><span className="agd-ring r2"/><span className="agd-key">🔒</span></div>
+          <h4>550+ companies unlock with Premium</h4>
+          <p>Names, office addresses, websites and submission routes.</p>
+          <button className="agd-btn gold" onClick={go} style={{padding:"13px 25px",fontSize:14}}>{isPremium?"Open the directory":"Unlock the directory"}</button>
+        </div>
+      </div>
+    </section></div>
+
+    <div style={{background:"var(--s2)",borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)"}}>
+      <div className="agd-wrap"><section className="agd-blk"><div className="agd-flow">
+        <div>
+          <div className="section-label">Directory + Actor Business Card</div>
+          <h2 className="agd-h2">Put your whole reel in an agent's hand — on a card.</h2>
+          <p className="agd-sub" style={{marginBottom:0}}>Premium prints your Actor Business Card: headshot, details, and a QR code that opens your live profile. Nothing to download, nothing that expires.</p>
+          <div className="agd-steps">
+            <div className="agd-step"><div className="n">1</div><div><h5>Pull your list</h5><p>Filter to the talent agencies in your city that accept post.</p></div></div>
+            <div className="agd-step"><div className="n">2</div><div><h5>Send the card</h5><p>Print the A4 sheet from your dashboard and post it to the office on file.</p></div></div>
+            <div className="agd-step"><div className="n">3</div><div><h5>They scan — you're live</h5><p>Headshots, self-tapes, credits, contact. Update it tomorrow; the same card shows the new version.</p></div></div>
+          </div>
+        </div>
+        <div><div className="agd-phone"><div className="agd-notch"/><div className="agd-scr">
+          <div className="top"><img alt="" src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=640&h=760&fit=crop&q=80"/><div className="tg">▶ Slate video · 0:32</div></div>
+          <div className="info">
+            <h6>Your profile</h6>
+            <div className="mt">Opens the moment they scan your card</div>
+            <span className="agd-mediapill">◉ Photos + videos + social links</span>
+            <div className="lk">
+              <div><b>Reel</b><span>Video ↗</span></div>
+              <div><b>Credits</b><span>Resume ↗</span></div>
+              <div><b>Contact</b><span>Tap to email</span></div>
+            </div>
+          </div>
+        </div></div></div>
+      </div></section></div>
+    </div>
+
+    <div className="agd-wrap">
+      <section className="agd-blk">
+        <div className="section-label">Why this list and not a free one</div>
+        <h2 className="agd-h2">Kept alive, not scraped once.</h2>
+        <p className="agd-sub">Free agency lists float around for years after the companies on them have closed or moved.</p>
+        <div className="agd-trust">
+          <div className="agd-card"><div className="ic"><Ico n="check" s={18}/></div><h5>Checked against the franchised list</h5><p>SAG-AFTRA franchised offices are marked, verified against the union's own list rather than whatever a blog post said three years ago.</p></div>
+          <div className="agd-card"><div className="ic"><Ico n="layout-list" s={18}/></div><h5>Sorted by size</h5><p>Small and boutique, mid-size, major and management are separated, so you know who to write to first.</p></div>
+          <div className="agd-card"><div className="ic"><Ico n="refresh" s={18}/></div><h5>Re-checked, and pruned</h5><p>Companies that have closed since the last pass are removed rather than left in to pad the number.</p></div>
+        </div>
+      </section>
+      <section className="agd-blk" style={{paddingTop:0}}><div className="agd-final">
+        <h2 className="agd-h2">The list opens the moment you upgrade.</h2>
+        <p>550+ talent agencies and management companies across Los Angeles, Beverly Hills and New York — plus your Actor Business Card, unlimited submissions, Manager Mode and your Slate video.</p>
+        <button className="agd-btn gold" onClick={go}>{isPremium?"Open the directory":"Go Premium — $14.95/mo"}</button>
+        <div className="agd-guarantee">Cancel any time · $99/year if you'd rather pay once</div>
+      </div></section>
+      <p className="agd-legal">Studio names are shown only to describe the kind of productions talent agencies submit their clients to. CastSlate is not affiliated with, endorsed by, or representing any studio, talent agency, or management company listed. Cast Slate does not guarantee representation, auditions, callbacks, bookings, or career outcomes.</p>
+    </div>
 
     <Footer onNavigate={onNavigate} backToTop/>
   </div>);
@@ -30920,6 +31223,7 @@ const PAGE_PATH={
   "actor-toolkit":"/actor-toolkit",
   "manager-mode":"/manager-mode",
   "tapelink":"/tapelink",
+  "agency-directory":"/agency-directory",
   "actor-business-card":"/actor-business-card",
   "success":"/success",
   "unsubscribed":"/unsubscribed",
@@ -30947,6 +31251,7 @@ const PAGE_SEO={
   "studios":{title:"For Studios",desc:"CastSlate for studios and production companies. Post castings, review talent, and hire fast."},
   "manager-mode":{title:"Manager Mode",desc:"Cast Slate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."},
   "tapelink":{title:"TapeLink: Self-Tape Auditions Built Into Casting",desc:"TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."},
+  "agency-directory":{title:"Talent Agency & Management Directory — 550+ Agencies in LA & NYC",desc:"CastSlate's Premium directory of 550+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."},
   "actor-business-card":{title:"Actor Business Card",desc:"Create your personalized actor business card with your headshot, casting details, and a unique QR code linking directly to your Cast Slate profile. Download an A4 print-ready sheet."},
   "login":{title:"Sign In",desc:"Sign in to your CastSlate account to browse castings, manage your profile, and submit to roles."},
   "register-talent":{title:"Create Actor Profile",desc:"Create your free CastSlate actor profile. Get seen by casting directors for film, TV, theater, and commercial roles."},
@@ -32180,7 +32485,7 @@ function App(){
           <span className={page==="home"?"act":""} onClick={()=>navigate("home")}>{navT('nav.home')}</span>
           <span className={page==="search"?"act":""} onClick={()=>navigate("search")}>{navT('nav.browse')}</span>
           {classesOn&&<span className={page==="classes"?"act":""} onClick={()=>navigate("classes")}>{navT('nav.classes')}</span>}
-          <span className={page==="tapelink"?"act":""} onClick={()=>navigate("tapelink")}>{navT('nav.tapelink')}</span>
+          <span className={page==="agency-directory"?"act":""} onClick={()=>navigate("agency-directory")}>{navT('nav.agencyDirectory')}</span>
           <span className={"mm-attn"+(page==="manager-mode"?" act":"")} onClick={()=>navigate("manager-mode")}>{navT('nav.managerMode')}</span>
           <span className={page==="blog"?"act":""} onClick={()=>navigate("blog")}>{navT('nav.blog')}</span>
         </div>
@@ -32246,7 +32551,7 @@ function App(){
             <button className="mm-link" onClick={()=>navThen("home")}>{navT('nav.home')}</button>
             <button className="mm-link" onClick={()=>navThen("search")}>{navT('nav.browse')}</button>
             {classesOn&&<button className="mm-link" onClick={()=>navThen("classes")}>{navT('nav.classes')}</button>}
-            <button className="mm-link" onClick={()=>navThen("tapelink")}>{navT('nav.tapelink')}</button>
+            <button className="mm-link" onClick={()=>navThen("agency-directory")}>{navT('nav.agencyDirectory')}</button>
             <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("manager-mode")}>{navT('nav.managerMode')}</button>
             <button className="mm-link" onClick={()=>navThen("about")}>{navT('nav.about')}</button>
             <button className="mm-link" onClick={()=>navThen("contact")}>{navT('nav.contact')}</button>
@@ -32381,6 +32686,7 @@ function App(){
         {page==="pricing"&&<PricingPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}} onViewCasting={(c)=>handleViewCasting(c,"pricing")}/>}
         {page==="manager-mode"&&<ManagerModePage onNavigate={navigate} session={session} myProfile={myProfile}/>}
         {page==="tapelink"&&<TapeLinkPage onNavigate={navigate}/>}
+        {page==="agency-directory"&&<AgencyDirectoryPage onNavigate={navigate} isPremium={typeof window!=="undefined"&&window.__SC_PREMIUM===true}/>}
         {page==="studios"&&<StudiosPage onNavigate={navigate}/>}
         {page==="api-info"&&<ApiPage onNavigate={navigate}/>}
         {page==="terms"&&<TermsPage onNavigate={navigate}/>}
