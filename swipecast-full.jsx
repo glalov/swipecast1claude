@@ -26486,6 +26486,7 @@ function AdminTalentCatalogDetail({u,session,myProfile,onBack}){
   const [decideApp,setDecideApp]=useState(null);         // application currently in the decision swiper
   const [busy,setBusy]=useState(false);
   const [decErr,setDecErr]=useState("");
+  const [copied,setCopied]=useState(false); // "Copied" flash on the account-email chip
   const load=useCallback(async()=>{
     if(!u?.id)return;
     const {data}=await window.sb.from("applications")
@@ -26536,6 +26537,26 @@ function AdminTalentCatalogDetail({u,session,myProfile,onBack}){
   const openGroup=groups.find(g=>g.cid===openCastingId)||null;
   return(<div>
     <button className="btn-s btn-sm" style={{marginBottom:16}} onClick={onBack}>← Back to Catalog</button>
+    {/* ── Account identity strip: the email this actor signed up with. profiles.email
+        is stamped by the handle_new_user trigger at signup, so this is present for
+        every existing and future account. Click the chip to copy it. ── */}
+    <div className="card" style={{padding:"14px 18px",marginBottom:16,display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+      <div style={{minWidth:0,flex:"1 1 240px"}}>
+        <div style={{fontSize:10,fontWeight:800,letterSpacing:.6,textTransform:"uppercase",color:"var(--t3)",marginBottom:3}}>Account email</div>
+        {u.email?
+          <button title="Copy email"
+            onClick={()=>{try{navigator.clipboard.writeText(u.email).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),1600);});}catch(_){}}}
+            style={{display:"inline-flex",alignItems:"center",gap:8,maxWidth:"100%",padding:"5px 10px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s2)",color:"var(--t1)",fontFamily:"inherit",fontSize:14,fontWeight:600,cursor:"pointer"}}>
+            <span style={{minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{u.email}</span>
+            <span style={{fontSize:11,fontWeight:700,color:copied?"#1d7b44":"var(--t3)",flexShrink:0}}>{copied?"Copied":"Copy"}</span>
+          </button>
+          :<div style={{fontSize:14,color:"var(--t3)"}}>—</div>}
+      </div>
+      <div style={{fontSize:12,color:"var(--t3)",textAlign:"right",flexShrink:0}}>
+        <div style={{fontWeight:700,fontSize:14,color:"var(--t1)"}}>{u.display_name||"Unknown"}</div>
+        <div>Joined {u.created_at?new Date(u.created_at).toLocaleDateString():"—"}{u.membership_status==="active"?" · Premium":""}</div>
+      </div>
+    </div>
     <div className="card" style={{padding:"20px 24px",marginBottom:20}}>
       {/* ── Level 3: decision swiper for one role application ── */}
       {decideApp?(()=>{
