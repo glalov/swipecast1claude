@@ -3126,7 +3126,15 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    reveals) — a section that hides itself until an observer fires is a section
    that renders blank when the observer does not. */
 .agd-wrap{max-width:1120px;margin:0 auto;padding:0 clamp(16px,5vw,26px);}
-.agd-hero{padding:clamp(30px,5vw,58px) 0 clamp(28px,4vw,44px);background:radial-gradient(900px 420px at 78% 10%,rgba(232,144,42,.13),transparent);}
+/* The tint lives on a full-bleed parent, NOT on the section inside .agd-wrap.
+   On a wide screen a background painted inside the 1120px wrap ends at the wrap
+   edge and draws a visible vertical seam down the right of the page. */
+/* .page is a 1200px centred column, so a background painted anywhere inside it
+   stops at that column and draws a seam down the page. Same 100vw + -50vw
+   break-out the footer and the back-to-top bar already use. */
+.agd-herobg{position:relative;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;padding:0 40px;background:radial-gradient(900px 420px at 78% 10%,rgba(232,144,42,.13),transparent);}
+@media(max-width:900px){.agd-herobg{padding:0 16px;}}
+.agd-hero{padding:clamp(30px,5vw,58px) 0 clamp(28px,4vw,44px);}
 .agd-hero-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(28px,4vw,50px);align-items:center;}
 .agd-eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:10.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;padding:7px 15px;border-radius:100px;border:1.5px solid var(--amber-dk);color:var(--amber-dk);margin-bottom:18px;}
 .agd-eyebrow .d{width:7px;height:7px;border-radius:50%;background:var(--amber-dk);animation:agdbeat 2.4s ease-in-out infinite;}
@@ -3160,22 +3168,51 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    are the banking turn at each coast. */
 .agd-plane{animation:agdfly 11s ease-in-out infinite;}
 @keyframes agdfly{0%{offset-distance:0%;offset-rotate:auto 0deg}42%{offset-distance:100%;offset-rotate:auto 0deg}50%{offset-distance:100%;offset-rotate:auto 180deg}92%{offset-distance:0%;offset-rotate:auto 180deg}100%{offset-distance:0%;offset-rotate:auto 360deg}}
-.agd-art{display:grid;gap:14px;}
-.agd-artrow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-.agd-shot{border-radius:14px;overflow:hidden;border:1px solid var(--bdr);background:var(--s2);box-shadow:0 16px 34px -24px rgba(26,26,46,.55);animation:agdbob 6.5s ease-in-out infinite;}
-.agd-shot:nth-child(2){animation-delay:-2.1s;}
-.agd-shot:nth-child(3){animation-delay:-4.2s;}
-@keyframes agdbob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-9px) rotate(-.5deg)}}
-.agd-shot img{width:100%;height:250px;object-fit:cover;display:block;}
-.agd-shot.p1 img{object-position:center 18%;}
-.agd-shot.p2 img{object-position:center 40%;}
-.agd-shot.p3 img{object-position:center 20%;}
-@media(max-width:520px){.agd-shot img{height:158px;}}
-.agd-qr{display:flex;gap:15px;align-items:center;border-radius:14px;padding:16px;background:var(--s1);border:1px solid rgba(232,144,42,.5);box-shadow:0 16px 34px -26px rgba(26,26,46,.5);}
-.agd-qr .q{width:78px;height:78px;flex:none;border-radius:9px;background:#fff;border:1px solid var(--bdr);padding:5px;}
-.agd-qr .q img{width:100%;display:block;}
-.agd-qr b{font-size:14.5px;}
-.agd-qr span{display:block;font-size:12.5px;color:var(--t2);line-height:1.55;margin-top:4px;}
+/* ─── The card. Mirrors ActorCardPreview: 1050x600, 4px ink bar, 34% photo
+   panel, logo + name + slug + QR. IMPORTANT: every row carries flex-shrink:0.
+   The body is a fixed-height flex column (locked aspect ratio), so any row left
+   shrinkable is squeezed to zero height — that silently ate the actor's name. */
+.agdc{width:304px;background:#fff;border:1.5px solid #E0E0E8;border-radius:10px;overflow:hidden;box-shadow:0 8px 40px rgba(26,26,46,.15);display:flex;aspect-ratio:1050/600;position:relative;flex-shrink:0;}
+.agdc .bar{position:absolute;top:0;left:0;right:0;height:4px;background:#1A1A2E;z-index:2;}
+.agdc .ph{width:34%;flex-shrink:0;position:relative;margin-top:4px;overflow:hidden;background:#E8E8F2;}
+.agdc .ph img{width:100%;height:100%;object-fit:cover;display:block;}
+.agdc .bd{flex:1;padding:12px 11px 9px;display:flex;flex-direction:column;min-width:0;margin-top:4px;overflow:hidden;}
+.agdc .lg,.agdc .nm,.agdc .hl,.agdc .lo,.agdc .tg,.agdc .ft{flex-shrink:0;}
+.agdc .lg{display:flex;align-items:center;gap:5px;margin-bottom:6px;}
+.agdc .lg .m{width:15px;height:15px;background:#1A1A2E;border-radius:3px;display:grid;place-items:center;color:#fff;flex-shrink:0;}
+.agdc .lg span{font-size:7px;font-weight:800;color:#1A1A2E;letter-spacing:1.4px;}
+.agdc .nm{font-weight:800;font-size:14px;color:#1A1A2E;letter-spacing:-.4px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.agdc .hl{font-size:9px;color:#6B6B80;font-weight:600;margin-top:2px;}
+.agdc .lo{font-size:8px;color:#8E8EA0;margin-top:1px;}
+.agdc .tg{display:flex;gap:3px;margin-top:4px;overflow:hidden;}
+.agdc .tg span{font-size:6.5px;font-weight:600;padding:2px 5px;border-radius:3px;background:#F0F0F8;color:#1A1A2E;border:1px solid #E0E0F0;white-space:nowrap;}
+.agdc .fill{flex:1 1 auto;min-height:0;}
+.agdc .ft{border-top:1px solid #EDEDF0;padding-top:5px;display:flex;align-items:flex-end;justify-content:space-between;gap:7px;}
+.agdc .ft .u{min-width:0;flex:1;}
+.agdc .ft .u b{display:block;font-size:6.5px;color:#9090A0;font-weight:400;line-height:1.35;}
+.agdc .ft .u i{display:block;font-style:normal;font-size:8.5px;font-weight:700;color:#1A1A2E;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.agdc .ft .q{flex-shrink:0;text-align:center;}
+.agdc .ft .q img{width:38px;height:38px;display:block;border-radius:2px;}
+.agdc .ft .q em{display:block;font-style:normal;font-size:5px;color:#9090A0;letter-spacing:.3px;margin-top:1px;white-space:nowrap;}
+/* Desktop: a fan, each card breathing on its own phase. */
+.agd-fan{position:relative;height:430px;}
+.agd-fan .agdc{position:absolute;left:50%;top:50%;transform-origin:50% 90%;}
+.agd-fan .k1{margin-left:-215px;margin-top:-190px;z-index:1;animation:agdfan1 7s ease-in-out infinite;}
+.agd-fan .k2{margin-left:-152px;margin-top:-86px;z-index:2;animation:agdfan2 7s ease-in-out -2.3s infinite;}
+.agd-fan .k3{margin-left:-90px;margin-top:18px;z-index:3;animation:agdfan3 7s ease-in-out -4.6s infinite;}
+@keyframes agdfan1{0%,100%{transform:rotate(-7deg) translateY(0)}50%{transform:rotate(-8.5deg) translateY(-11px)}}
+@keyframes agdfan2{0%,100%{transform:rotate(-1.5deg) translateY(0)}50%{transform:rotate(-.5deg) translateY(-13px)}}
+@keyframes agdfan3{0%,100%{transform:rotate(5deg) translateY(0)}50%{transform:rotate(6.5deg) translateY(-9px)}}
+/* Phones: three full cards in a column is ~540px of hero before the reader has
+   read anything. They overlap into a compact deck instead — the front card is
+   whole, the two behind it peek out, and the whole thing is ~330px. */
+@media(max-width:960px){
+  .agd-fan{height:auto;display:flex;flex-direction:column;align-items:center;padding-top:4px;}
+  .agd-fan .agdc{position:static;margin:0;width:min(304px,84vw);animation:none;}
+  .agd-fan .k1{transform:rotate(-2.5deg) scale(.94);z-index:1;}
+  .agd-fan .k2{margin-top:-84px;transform:rotate(1.5deg) scale(.97);z-index:2;}
+  .agd-fan .k3{margin-top:-84px;transform:rotate(-.5deg);z-index:3;}
+}
 .agd-stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);}
 .agd-stat{padding:24px 20px;border-right:1px solid var(--bdr);}
 .agd-stat:last-child{border-right:none;}
@@ -3228,6 +3265,9 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .agd-scr .lk{margin-top:auto;display:flex;flex-direction:column;gap:6px;}
 .agd-scr .lk div{border:1px solid var(--bdr);border-radius:8px;padding:8px 10px;font-size:11px;font-weight:700;color:var(--t2);display:flex;justify-content:space-between;}
 .agd-trust{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;}
+/* Without this the three cards stayed in a 3-column grid at 375px: ~120px wide
+   each, a 438px-wide block inside a 375px viewport, clipped on the right. */
+@media(max-width:900px){.agd-trust{grid-template-columns:1fr;}}
 .agd-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:22px;transition:transform .22s,border-color .22s;}
 .agd-card:hover{transform:translateY(-3px);border-color:var(--amber-dk);}
 .agd-card h5{margin:0 0 6px;font-size:15px;font-weight:800;}
@@ -8121,11 +8161,40 @@ const AGD_SAMPLE=[
   ["New York","Web form","Small & boutique",128,false]
 ];
 const AGD_ROUTE="M64 96 C 150 34, 268 34, 352 66";
+// Three sample Actor Business Cards for the hero. Each carries its OWN QR, so
+// the fan reads as three real cards rather than one card and some headshots.
+const AGD_CARDS=[
+  {name:"Angela Romano",head:"Actor · Theatrical",loc:"New York, NY",slug:"angela-romano",
+   tags:["Meisner","Fluent Spanish"],img:"https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=420&h=560&fit=crop&q=80",pos:"center 16%"},
+  {name:"Andre Sallis",head:"Actor · Film & TV",loc:"Los Angeles, CA",slug:"andre-sallis",
+   tags:["Improv","Stage Combat"],img:"https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=420&h=560&fit=crop&q=80",pos:"center 34%"},
+  {name:"Nora Kavanagh",head:"Actor · Commercial",loc:"Beverly Hills, CA",slug:"nora-kavanagh",
+   tags:["On-camera","Dance"],img:"https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=420&h=560&fit=crop&q=80",pos:"center 18%"}
+];
+function AgdCard({c,k}){
+  const qr="https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data="+encodeURIComponent("https://www.castslate.com/talent/"+c.slug);
+  return(<div className={"agdc "+k} aria-hidden="true">
+    <div className="bar"/>
+    <div className="ph"><img alt="" src={c.img} style={{objectPosition:c.pos}}/></div>
+    <div className="bd">
+      <div className="lg"><span className="m"><LogoMark/></span><span>CASTSLATE</span></div>
+      <div className="nm">{c.name}</div>
+      <div className="hl">{c.head}</div>
+      <div className="lo">{c.loc}</div>
+      <div className="tg">{c.tags.map(t=><span key={t}>{t}</span>)}</div>
+      <div className="fill"/>
+      <div className="ft">
+        <div className="u"><b>castslate.com/talent/</b><i>{c.slug}</i></div>
+        <div className="q"><img alt="" src={qr}/><em>SCAN TO VIEW</em></div>
+      </div>
+    </div>
+  </div>);
+}
 function AgencyDirectoryPage({onNavigate,isPremium=false}){
   const go=()=>onNavigate(isPremium?"talent-dashboard":"membership");
   const cta=isPremium?"Open the directory":"Unlock the directory — $14.95/mo";
   return(<div className="page">
-    <div className="agd-wrap">
+    <div className="agd-herobg"><div className="agd-wrap">
       <section className="agd-hero"><div className="agd-hero-grid">
         <div>
           <div className="agd-eyebrow"><span className="d"/>Included with Premium</div>
@@ -8160,19 +8229,11 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
             </svg>
           </div>
         </div>
-        <div className="agd-art">
-          <div className="agd-artrow">
-            <div className="agd-shot p1"><img alt="" src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=460&h=620&fit=crop&q=80"/></div>
-            <div className="agd-shot p2"><img alt="" src="https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=460&h=620&fit=crop&q=80"/></div>
-            <div className="agd-shot p3"><img alt="" src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=460&h=620&fit=crop&q=80"/></div>
-          </div>
-          <div className="agd-qr">
-            <div className="q"><img alt="" src="https://api.qrserver.com/v1/create-qr-code/?size=170x170&margin=0&data=https%3A%2F%2Fcastslate.com"/></div>
-            <div><b>Your Actor Business Card</b><span>They scan it — headshots, slate video, credits and links open in seconds.</span></div>
-          </div>
+        <div className="agd-fan">
+          {AGD_CARDS.map((c,i)=><AgdCard key={c.slug} c={c} k={"k"+(i+1)}/>)}
         </div>
       </div></section>
-    </div>
+    </div></div>
 
     <div className="agd-wrap"><div className="agd-stats">
       <div className="agd-stat"><div className="v">292</div><div className="l">Talent agencies</div></div>
