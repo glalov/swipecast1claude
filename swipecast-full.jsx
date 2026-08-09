@@ -3104,10 +3104,10 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    Deliberately shows no company names — the roster is the paid product, and a
    list of names on a public page is a list anyone can go and look up for free.
    The wall is built from the FIELDS each entry holds, not the entries. */
-/* .5s, not .8s — see ADX_HOLD_MS. Every transition in this stripe must use the
+/* 1.2s, a long crossfade — see ADX_HOLD_MS. Every transition in this stripe must use the
    same duration or the background, the CTA and the chips arrive out of step. */
 .adx-section{padding:80px 40px;position:relative;overflow:hidden;background:#0F1012;color:#FDFBF7;
-  transition:background-color .5s cubic-bezier(.4,0,.2,1),color .5s cubic-bezier(.4,0,.2,1);}
+  transition:background-color 1.2s cubic-bezier(.4,0,.2,1),color 1.2s cubic-bezier(.4,0,.2,1);}
 .adx-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;max-width:1100px;margin:0 auto;position:relative;z-index:1;}
 /* 900px is the landing's single mobile line — do not add another breakpoint here. */
 @media(max-width:900px){
@@ -3131,8 +3131,8 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    background:currentColor resolves to the UA's default buttontext (black) and
    the CTA disappears entirely on the dark halves of the cycle. */
 .adx-cta{display:inline-flex;align-items:center;gap:9px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;color:inherit;font-size:14px;font-weight:800;letter-spacing:.2px;padding:14px 26px;border-radius:100px;background:currentColor;
-  transition:background-color .5s cubic-bezier(.4,0,.2,1),transform .18s ease;}
-.adx-cta span{color:var(--adx-bg,#0F1012);transition:color .5s cubic-bezier(.4,0,.2,1);}
+  transition:background-color 1.2s cubic-bezier(.4,0,.2,1),transform .18s ease;}
+.adx-cta span{color:var(--adx-bg,#0F1012);transition:color 1.2s cubic-bezier(.4,0,.2,1);}
 .adx-cta:hover{transform:translateY(-2px);}
 .adx-meta{display:flex;gap:20px;flex-wrap:wrap;margin-top:20px;font-size:12px;font-weight:600;opacity:.5;}
 .adx-wall{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:400px;overflow:hidden;position:relative;
@@ -3152,11 +3152,11 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .adx-section.is-live .adx-col.a,.adx-section.is-live .adx-col.b{animation-play-state:running;}
 @keyframes adxup{from{transform:translateY(0);}to{transform:translateY(-50%);}}
 @keyframes adxdown{from{transform:translateY(-50%);}to{transform:translateY(0);}}
-.adx-chip{border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 26%,transparent);border-radius:10px;padding:9px 12px;white-space:nowrap;overflow:hidden;transition:border-color .5s cubic-bezier(.4,0,.2,1);}
+.adx-chip{border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 26%,transparent);border-radius:10px;padding:9px 12px;white-space:nowrap;overflow:hidden;transition:border-color 1.2s cubic-bezier(.4,0,.2,1);}
 .adx-chip .m{font-size:12.5px;font-weight:700;letter-spacing:-.1px;overflow:hidden;text-overflow:ellipsis;}
 .adx-chip .s{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;opacity:.45;margin-top:3px;}
 .adx-chip.hot{background:currentColor;border-color:currentColor;}
-.adx-chip.hot .m,.adx-chip.hot .s{color:var(--adx-bg,#0F1012);transition:color .5s cubic-bezier(.4,0,.2,1);}
+.adx-chip.hot .m,.adx-chip.hot .s{color:var(--adx-bg,#0F1012);transition:color 1.2s cubic-bezier(.4,0,.2,1);}
 .adx-chip.hot .s{opacity:.62;}
 /* Wall responsiveness lives HERE, after the base .adx-wall rule — not up with
    the other breakpoints. Same specificity means source order decides, and a
@@ -19091,18 +19091,27 @@ const ADX_FIELDS=[
 //      them, so the rose lands once per lap as a decision instead of a slide.
 // The previous cycle failed rule 1 on both counts: five stops, two of which
 // (teal on deep teal) were too close to read as a change at all.
+// ORDER MATTERS as much as the colours. What tires the eye is not colour change,
+// it is abrupt LUMINANCE change — ink to bone is the whole range in one step, and
+// three of those per lap reads as blinking no matter how nice the palette is.
+// Ordered this way the background holds ink for two beats while only the type
+// changes (bone -> rose), so there is exactly ONE full light/dark flip per lap
+// instead of three. Keep an accent adjacent to its own background, not to the
+// opposite end of the scale.
 const ADX_SCHEMES=[
   ["#0F1012","#FDFBF7"],
-  ["#FDFBF7","#0F1012"],
+  ["#0F1012","#E7A9B8"],
   ["#E7A9B8","#0F1012"],
-  ["#0F1012","#E7A9B8"]
+  ["#FDFBF7","#0F1012"]
 ];
-// Hold per stop. 1400ms with the 500ms fade below means the colour sits still
-// for roughly two thirds of its turn and then snaps — a held pose, then a
-// decisive change. Shortening the FADE is what reads as "faster"; shortening
-// the hold past this just reads as restless, because the section is then
-// mid-transition more often than it is at rest.
-const ADX_HOLD_MS=1400;
+// Hold per stop. Tried 1400ms with a 500ms snap — technically "faster", but a
+// hard 500ms flip between light and dark is a big change for the eye to absorb
+// and it read as flickering rather than energetic. A LONG fade at a SLOW hold is
+// what feels expensive: the colour drifts under you instead of switching, so it
+// never crosses the threshold where the eye treats it as a flash to react to.
+// If this is ever retuned, move both numbers together — a short fade at a long
+// hold brings the blink straight back.
+const ADX_HOLD_MS=2600;
 function AgencyDirectoryStripe({onNavigate,isPremium=false}){
   const secRef=React.useRef(null);
   const numRef=React.useRef(null);
