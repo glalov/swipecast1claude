@@ -2856,6 +2856,16 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}, so th
   transition:opacity .45s cubic-bezier(.4,0,.2,1),transform .45s cubic-bezier(.4,0,.2,1),filter .45s ease,box-shadow .45s ease,border-color .25s ease;
   box-shadow:0 1px 2px rgba(0,0,0,0.02);
 }
+/* ─── Anti-jump reservations. The carousel auto-advances every 5s and the cards
+   stretch to the tallest one, so ANY per-slide height difference resizes the
+   whole section on a timer and shoves every section below it up and down while
+   the visitor is just reading. Two lines are reserved for the title (titles wrap
+   to one or two depending on the casting AND on the centre card's larger font),
+   and the action row is reserved on every card by .fcs-cta-row. Scoped to
+   .fcs-track so the loading and empty-state cards are untouched. */
+.fcs-track .fcs-card h3{min-height:74px;}
+.fcs-cta-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.fcs-card-side .fcs-cta-row{visibility:hidden;pointer-events:none;}
 .fcs-card-center{opacity:1;filter:none;transform:scale(1);z-index:2;box-shadow:0 1px 10px rgba(26,26,46,0.05);}
 .fcs-card-center:hover{transform:scale(1.004) translateY(-1px);box-shadow:-12px 10px 30px -16px rgba(26,26,46,0.09),12px 10px 30px -16px rgba(26,26,46,0.09),0 14px 32px -18px rgba(26,26,46,0.08);border-color:var(--bdr);}
 .fcs-card-side{opacity:0.42;filter:grayscale(.12);transform:scale(.92);}
@@ -2883,6 +2893,8 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}, so th
   .fcs-stage{contain:inline-size;}
   .fcs-card{padding:30px 32px;min-height:260px;}
   .fcs-card-center h3{font-size:26px !important;}
+  /* Two lines at this breakpoint's largest title size (26px x 1.15 x 2). */
+  .fcs-track .fcs-card h3{min-height:60px;}
   .fcs-arrow{width:44px;height:44px;font-size:18px;}
 }
 @media (max-width:768px){
@@ -2890,6 +2902,8 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}, so th
   .fcs-stage{padding:6px 0;}
   .fcs-card{padding:24px 22px;min-height:auto;}
   .fcs-card-center h3{font-size:22px !important;}
+  /* Sides run 24px here and the centre 22px, so reserve two lines of the larger. */
+  .fcs-track .fcs-card h3{min-height:56px;}
   .fcs-arrow{width:38px;height:38px;font-size:16px;}
   .fcs-arrow.prev{left:4px;}
   .fcs-arrow.next{right:4px;}
@@ -18080,6 +18094,11 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   const [err,setErr]=useState("");
   const [paused,setPaused]=useState(false);
   const touchRef=useRef({startX:0,active:false});
+  const trackRef=useRef(null);
+  // Tallest track height seen at the current stage width — see the pin effect
+  // below. {w} is the width it was measured at, so a resize re-measures instead
+  // of keeping a stale (taller) value forever.
+  const pinRef=useRef({w:0,h:0});
   const vpw=useViewportWidth();
   // Stage width drives the responsive card sizing + the track-translate math.
   const sectionRef=useRef(null);
@@ -18235,6 +18254,31 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   // Defensive: clamp index if data shrinks (e.g. casting deleted while viewing)
   useEffect(()=>{if(idx>=castings.length&&castings.length>0)setIdx(0);},[castings.length,idx]);
 
+  // ─── Height pin. The reservations in CSS (.fcs-track .fcs-card h3 min-height,
+  //     .fcs-cta-row) equalise the parts that depend on WHICH card is centred,
+  //     but castings still differ in tagline and synopsis length, so the tallest
+  //     card is not always the one on screen. Cards stretch to the track, so a
+  //     taller card arriving resizes the whole section and shoves every section
+  //     below it down — then back up 5s later, with no input from the reader.
+  //     Remember the tallest height seen at this width and never shrink below
+  //     it. minHeight is cleared before measuring so the pin can come DOWN when
+  //     the width changes; without that it would only ever ratchet up.
+  //     Layout effect, not effect: this runs before paint, so the pin is applied
+  //     in the same frame as the slide and is never itself visible as a jump.
+  useLayoutEffect(()=>{
+    const el=trackRef.current;
+    if(!el)return;
+    // Width is read off the stage, not from stageWidth — that is computed further
+    // down the render and would be in its temporal dead zone up here, where the
+    // hook has to live to stay above the loading/empty early returns.
+    const w=el.parentElement?el.parentElement.offsetWidth:0;
+    if(pinRef.current.w!==w)pinRef.current={w:w,h:0};
+    el.style.minHeight="";
+    const h=el.offsetHeight;
+    if(h>pinRef.current.h)pinRef.current.h=h;
+    el.style.minHeight=pinRef.current.h+"px";
+  });
+
   const next=()=>setIdx(i=>(i+1)%(castings.length||1));
   const prev=()=>setIdx(i=>(i-1+(castings.length||1))%(castings.length||1));
   const onTouchStart=(e)=>{touchRef.current={startX:e.touches[0].clientX,active:true};setPaused(true);};
@@ -18319,7 +18363,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         smooth slide. Side cards remain clickable to jump straight to them. */}
     <div className="fcs-stage" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       {castings.length>1&&<button className="fcs-arrow prev" aria-label="Previous casting" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} onClick={(e)=>{e.stopPropagation();prev();}}>‹</button>}
-      <div className="fcs-track" style={{transform:`translate3d(${trackOffset}px,0,0)`,gap:`${gap}px`}}>
+      <div className="fcs-track" ref={trackRef} style={{transform:`translate3d(${trackOffset}px,0,0)`,gap:`${gap}px`}}>
         {castings.map((sc,i)=>{
           const isCenter=i===idx;
           const dist=Math.abs(i-idx);
@@ -18370,10 +18414,16 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
               {sc.pay&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Pay</strong> · {sc.pay}</span>}
               <CastingCountdown deadline={sc.deadline}/>
             </div>
-            {isCenter&&<div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
-              <button className="btn-teal" onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(sc);}}>View Roles &amp; Apply →</button>
+            {/* Rendered on EVERY card, not just the centred one. Only the centre
+                card shows it, but a row that appears and disappears as the
+                carousel advances changes the card height on a 5s timer, and
+                because the cards stretch to the tallest one that resized the
+                whole section — everything below it slid up and down on its own.
+                Hidden, not unmounted, so the space is always reserved. */}
+            <div className="fcs-cta-row" aria-hidden={!isCenter}>
+              <button className="btn-teal" tabIndex={isCenter?0:-1} onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(sc);}}>View Roles &amp; Apply →</button>
               <span style={{fontSize:11,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase",fontWeight:700}}>· Casting {idx+1} of {castings.length}</span>
-            </div>}
+            </div>
           </div>);
         })}
       </div>
