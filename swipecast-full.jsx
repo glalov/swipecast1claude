@@ -3156,10 +3156,25 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .agd-btn.gold{background:linear-gradient(180deg,#F2BE3C,#E8902A);color:#2A1802;box-shadow:0 12px 26px -14px rgba(232,144,42,.8);}
 .agd-btn.line{background:transparent;border:1.5px solid var(--bdr);color:var(--t1);}
 /* studio row — context for WHAT a talent agency is, not a partnership claim */
-.agd-studios{margin-top:22px;padding-top:18px;border-top:1px solid var(--bdr);}
-.agd-studios .k{font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);margin-bottom:9px;}
-.agd-studios .row{display:flex;flex-wrap:wrap;gap:7px;}
-.agd-studios span{font-size:11.5px;font-weight:700;color:var(--t2);background:var(--s2);border-radius:6px;padding:5px 10px;}
+/* Studio row. It used to live inside the hero's left column, which is ~500px
+   wide — marks could only be ~26px there, well under what Warner's shield and
+   Paramount's script need, so they rendered as blobs. It is now its own
+   full-bleed strip below the hero, which also puts the logos AFTER the CTA
+   (reassurance once the price has landed) instead of directly beneath it,
+   competing with the one button on the page that matters. */
+.agd-studios{position:relative;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;background:var(--s2);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);padding:26px 26px;}
+.agd-studios .k{font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);margin:0 auto 14px;text-align:center;max-width:1120px;}
+.agd-studios .row{display:flex;align-items:center;justify-content:space-between;gap:26px;flex-wrap:wrap;max-width:1120px;margin:0 auto;}
+/* Heights are per-mark, sized to equal optical AREA: these run from Disney at
+   4.2:1 to Sony at 0.65:1, so one shared height can only ever suit one of them.
+   The logos are NOT filtered — greyscale flattens Marvel (white type on a red
+   plate) into a slab and mushes the fine line work in the others. */
+.agd-studios img{width:auto;display:block;flex:0 0 auto;transition:transform .22s ease;}
+.agd-studios img:hover{transform:translateY(-2px);}
+@media(max-width:820px){.agd-studios{padding:22px 16px;}.agd-studios .row{justify-content:center;gap:26px 32px;}}
+/* Flex-wrap left Marvel alone on a second line (5 + 1). A 3-column grid at
+   phone width gives a balanced 3 + 3 instead. */
+@media(max-width:560px){.agd-studios .row{display:grid;grid-template-columns:repeat(3,1fr);justify-items:center;align-items:center;gap:22px 8px;}}
 .agd-map{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:14px 16px;margin:26px auto 0;max-width:680px;width:100%;}
 .agd-map svg{width:100%;height:auto;display:block;}
 .agd-route{fill:none;stroke:var(--amber);stroke-width:2;stroke-linecap:round;stroke-dasharray:7 9;opacity:.75;animation:agddash 3.4s linear infinite;}
@@ -8179,7 +8194,16 @@ const AGD_FIELDS=[
 // productions their clients are submitted to. It is context, not a partnership,
 // and the legal line at the foot of the page says so explicitly. Do not reword
 // this into anything that implies a relationship with these companies.
-const AGD_STUDIOS=["Warner Bros. Pictures","Universal Pictures","Walt Disney Studios","Sony Pictures","Paramount Pictures","Marvel Studios"];
+// Public-domain SVGs (simple geometry/typography sits below the US copyright
+// threshold). h = rendered height in px, tuned per mark, NOT shared.
+const AGD_STUDIOS=[
+  {n:"Warner Bros. Pictures",f:"/logos/warner.svg",   h:74,hm:40},
+  {n:"Universal Pictures",   f:"/logos/universal.svg",h:52,hm:30},
+  {n:"Walt Disney Studios",  f:"/logos/disney.svg",   h:30,hm:17},
+  {n:"Sony Pictures",        f:"/logos/sony.svg",     h:62,hm:36},
+  {n:"Paramount Pictures",   f:"/logos/paramount.svg",h:66,hm:38},
+  {n:"Marvel Studios",       f:"/logos/marvel.svg",   h:34,hm:20}
+];
 const AGD_SAMPLE=[
   ["Beverly Hills","Mail OK","Small & boutique",134,true],
   ["New York","Email first","Management",152,false],
@@ -8218,6 +8242,9 @@ function AgdCard({c,k}){
   </div>);
 }
 function AgencyDirectoryPage({onNavigate,isPremium=false}){
+  // Phone heights are a separate set, not a CSS scale: shrinking all six by the
+  // same factor puts Disney's script under 20px, where it stops reading.
+  const isNarrow=useViewportWidth()<560;
   const go=()=>onNavigate(isPremium?"talent-dashboard":"membership");
   const cta=isPremium?"Open the directory":"Unlock the directory — $14.95/mo";
   return(<div className="page">
@@ -8236,10 +8263,6 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
           <div className="agd-ctas">
             <button className="agd-btn gold" onClick={go}>{cta}</button>
             <button className="agd-btn line" onClick={()=>{const el=document.getElementById("agd-inside");if(el)el.scrollIntoView({behavior:"smooth",block:"start"});}}>See what's inside ↓</button>
-          </div>
-          <div className="agd-studios">
-            <div className="k">The productions their clients are cast in</div>
-            <div className="row">{AGD_STUDIOS.map(s=><span key={s}>{s}</span>)}</div>
           </div>
         </div>
         <div className="agd-fan">
@@ -8262,6 +8285,15 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
             </svg>
       </div></section>
     </div></div>
+
+    <div className="agd-studios">
+      <div className="k">The productions their clients are cast in</div>
+      <div className="row">
+        {AGD_STUDIOS.map(s=>(
+          <img key={s.f} src={s.f} alt={s.n} style={{height:(isNarrow?s.hm:s.h)+"px"}}/>
+        ))}
+      </div>
+    </div>
 
     <div className="agd-wrap"><div className="agd-stats">
       <div className="agd-stat"><div className="v">292</div><div className="l">Talent agencies</div></div>
