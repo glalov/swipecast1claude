@@ -3169,7 +3169,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    4.2:1 to Sony at 0.65:1, so one shared height can only ever suit one of them.
    The logos are NOT filtered — greyscale flattens Marvel (white type on a red
    plate) into a slab and mushes the fine line work in the others. */
-.agd-studios img{width:auto;display:block;flex:0 0 auto;transition:transform .22s ease;}
+.agd-studios img{width:auto;display:block;flex:0 0 auto;shape-rendering:geometricPrecision;transition:transform .22s ease;}
 .agd-studios img:hover{transform:translateY(-2px);}
 @media(max-width:820px){.agd-studios{padding:22px 16px;}.agd-studios .row{justify-content:center;gap:26px 32px;}}
 /* Flex-wrap left Marvel alone on a second line (5 + 1). A 3-column grid at
@@ -8202,7 +8202,10 @@ const AGD_STUDIOS=[
   {n:"Walt Disney Studios",  f:"/logos/disney.svg",   h:30,hm:17},
   {n:"Sony Pictures",        f:"/logos/sony.svg",     h:62,hm:36},
   {n:"Paramount Pictures",   f:"/logos/paramount.svg",h:66,hm:38},
-  {n:"Marvel Studios",       f:"/logos/marvel.svg",   h:34,hm:20}
+  // Marvel is the exception to the equal-area rule: its type sits INSIDE a solid
+  // plate, so the mark's legible content is much smaller than its bounding box.
+  // At the "correct" 34px the STUDIOS line was ~4px tall. Sized by readability.
+  {n:"Marvel Studios",       f:"/logos/marvel.svg",   h:50,hm:30}
 ];
 const AGD_SAMPLE=[
   ["Beverly Hills","Mail OK","Small & boutique",134,true],
