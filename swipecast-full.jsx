@@ -3146,9 +3146,9 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .agd-h1{font-size:clamp(28px,4.3vw,52px);line-height:1.05;letter-spacing:-2px;font-weight:800;margin:0;}
 .agd-cities{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0 0;}
 .agd-city{font-size:13.5px;font-weight:700;padding:9px 18px;border-radius:100px;border:1.5px solid var(--bdr);background:var(--s1);}
-.agd-city.la{background:rgba(79,138,139,.14);border-color:rgba(79,138,139,.5);color:var(--teal-dk);}
-.agd-city.bh{background:rgba(232,144,42,.16);border-color:rgba(232,144,42,.55);color:var(--amber-dk);}
-.agd-city.ny{background:rgba(26,26,46,.07);border-color:rgba(26,26,46,.32);color:var(--t1);}
+.agd-city.la{background:#A65A6E;border-color:#A65A6E;color:#fff;}
+.agd-city.bh{background:#A9640F;border-color:#A9640F;color:#fff;}
+.agd-city.ny{background:#2563EB;border-color:#2563EB;color:#fff;}
 .agd-lede{font-size:16px;line-height:1.75;color:var(--t2);max-width:520px;margin:18px 0 24px;}
 .agd-ctas{display:flex;gap:11px;flex-wrap:wrap;}
 .agd-btn{border:none;border-radius:9px;padding:15px 28px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14.5px;cursor:pointer;transition:transform .2s,box-shadow .2s;}
@@ -3176,7 +3176,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    panel, logo + name + slug + QR. IMPORTANT: every row carries flex-shrink:0.
    The body is a fixed-height flex column (locked aspect ratio), so any row left
    shrinkable is squeezed to zero height — that silently ate the actor's name. */
-.agdc{width:340px;background:#fff;border:1.5px solid #E0E0E8;border-radius:10px;overflow:hidden;box-shadow:0 8px 40px rgba(26,26,46,.15);display:flex;aspect-ratio:1050/600;position:relative;flex-shrink:0;}
+.agdc{width:var(--agdcw,392px);background:#fff;border:1.5px solid #E0E0E8;border-radius:10px;overflow:hidden;box-shadow:0 8px 40px rgba(26,26,46,.15);display:flex;aspect-ratio:1050/600;position:relative;flex-shrink:0;}
 .agdc .bar{position:absolute;top:0;left:0;right:0;height:4px;background:#1A1A2E;z-index:2;}
 .agdc .ph{width:34%;flex-shrink:0;position:relative;margin-top:4px;overflow:hidden;background:#E8E8F2;}
 .agdc .ph img{width:100%;height:100%;object-fit:cover;display:block;}
@@ -3199,11 +3199,19 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .agdc .ft .q img{width:38px;height:38px;display:block;border-radius:2px;}
 .agdc .ft .q em{display:block;font-style:normal;font-size:5px;color:#9090A0;letter-spacing:.3px;margin-top:1px;white-space:nowrap;}
 /* Desktop: a fan, each card breathing on its own phase. */
-.agd-fan{position:relative;height:472px;}
+.agd-fan{position:relative;height:var(--agdfh,512px);}
 .agd-fan .agdc{position:absolute;left:50%;top:50%;transform-origin:50% 90%;}
-.agd-fan .k1{margin-left:-240px;margin-top:-212px;z-index:1;transform:rotate(-7deg);animation:agdfan1 7s ease-in-out infinite;}
-.agd-fan .k2{margin-left:-170px;margin-top:-96px;z-index:2;transform:rotate(-1.5deg);animation:agdfan2 7s ease-in-out -2.3s infinite;}
-.agd-fan .k3{margin-left:-101px;margin-top:20px;z-index:3;transform:rotate(5deg);animation:agdfan3 7s ease-in-out -4.6s infinite;}
+.agd-fan .k1{margin-left:var(--k1x,-292px);margin-top:var(--k1y,-228px);z-index:1;transform:rotate(-7deg);animation:agdfan1 7s ease-in-out infinite;}
+.agd-fan .k2{margin-left:var(--k2x,-196px);margin-top:var(--k2y,-112px);z-index:2;transform:rotate(-1.5deg);animation:agdfan2 7s ease-in-out -2.3s infinite;}
+.agd-fan .k3{margin-left:var(--k3x,-100px);margin-top:var(--k3y,4px);z-index:3;transform:rotate(5deg);animation:agdfan3 7s ease-in-out -4.6s infinite;}
+/* The 392px fan is ~584px wide — wider than the hero's right column, which is
+   deliberate (the cards bleed toward the edge). Below ~1200px that bleed would
+   run off the viewport and get clipped by overflow-x:clip, so the whole
+   composition steps down one size rather than losing a card's edge. */
+@media(max-width:1200px){
+  .agd-fan{--agdcw:340px;--agdfh:472px;--k1x:-240px;--k1y:-212px;--k2x:-170px;--k2y:-96px;--k3x:-101px;--k3y:20px;}
+  .agd-fan .agdc{width:var(--agdcw);}
+}
 @keyframes agdfan1{0%,100%{transform:rotate(-7deg) translateY(0)}50%{transform:rotate(-8.5deg) translateY(-11px)}}
 @keyframes agdfan2{0%,100%{transform:rotate(-1.5deg) translateY(0)}50%{transform:rotate(-.5deg) translateY(-13px)}}
 @keyframes agdfan3{0%,100%{transform:rotate(5deg) translateY(0)}50%{transform:rotate(6.5deg) translateY(-9px)}}
