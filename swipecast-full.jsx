@@ -3160,7 +3160,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .agd-studios .k{font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);margin-bottom:9px;}
 .agd-studios .row{display:flex;flex-wrap:wrap;gap:7px;}
 .agd-studios span{font-size:11.5px;font-weight:700;color:var(--t2);background:var(--s2);border-radius:6px;padding:5px 10px;}
-.agd-map{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:14px 16px;margin-top:20px;}
+.agd-map{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:14px 16px;margin:26px auto 0;max-width:680px;width:100%;}
 .agd-map svg{width:100%;height:auto;display:block;}
 .agd-route{fill:none;stroke:var(--amber);stroke-width:2;stroke-linecap:round;stroke-dasharray:7 9;opacity:.75;animation:agddash 3.4s linear infinite;}
 @keyframes agddash{to{stroke-dashoffset:-64}}
@@ -3201,14 +3201,14 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 /* Desktop: a fan, each card breathing on its own phase. */
 .agd-fan{position:relative;height:var(--agdfh,512px);}
 .agd-fan .agdc{position:absolute;left:50%;top:50%;transform-origin:50% 90%;}
-.agd-fan .k1{margin-left:var(--k1x,-292px);margin-top:var(--k1y,-228px);z-index:1;transform:rotate(-7deg);animation:agdfan1 7s ease-in-out infinite;}
-.agd-fan .k2{margin-left:var(--k2x,-196px);margin-top:var(--k2y,-112px);z-index:2;transform:rotate(-1.5deg);animation:agdfan2 7s ease-in-out -2.3s infinite;}
-.agd-fan .k3{margin-left:var(--k3x,-100px);margin-top:var(--k3y,4px);z-index:3;transform:rotate(5deg);animation:agdfan3 7s ease-in-out -4.6s infinite;}
+.agd-fan .k1{margin-left:var(--k1x,-224px);margin-top:var(--k1y,-228px);z-index:1;transform:rotate(-7deg);animation:agdfan1 7s ease-in-out infinite;}
+.agd-fan .k2{margin-left:var(--k2x,-128px);margin-top:var(--k2y,-112px);z-index:2;transform:rotate(-1.5deg);animation:agdfan2 7s ease-in-out -2.3s infinite;}
+.agd-fan .k3{margin-left:var(--k3x,-32px);margin-top:var(--k3y,4px);z-index:3;transform:rotate(5deg);animation:agdfan3 7s ease-in-out -4.6s infinite;}
 /* The 392px fan is ~584px wide — wider than the hero's right column, which is
    deliberate (the cards bleed toward the edge). Below ~1200px that bleed would
    run off the viewport and get clipped by overflow-x:clip, so the whole
    composition steps down one size rather than losing a card's edge. */
-@media(max-width:1200px){
+@media(max-width:1339px){
   .agd-fan{--agdcw:340px;--agdfh:472px;--k1x:-240px;--k1y:-212px;--k2x:-170px;--k2y:-96px;--k3x:-101px;--k3y:20px;}
   .agd-fan .agdc{width:var(--agdcw);}
 }
@@ -3224,9 +3224,12 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   /* The deck floats on phones too. Each keyframe re-states its card's rotation
      and scale — a transform animation REPLACES the static transform outright,
      so leaving them out would flatten the deck the moment it starts. */
+  /* -58px, not -88px: the photo panel runs the full height of each card, so a
+     deep overlap buries the face of the card behind. This leaves ~125px of
+     every card showing, which is the whole photo panel down to the chin. */
   .agd-fan .k1{z-index:1;transform:rotate(-2.5deg) scale(.94);animation:agdfanm1 6.4s ease-in-out infinite;}
-  .agd-fan .k2{margin-top:-88px;z-index:2;transform:rotate(1.5deg) scale(.97);animation:agdfanm2 7.2s ease-in-out -1.9s infinite;}
-  .agd-fan .k3{margin-top:-88px;z-index:3;transform:rotate(-.5deg);animation:agdfanm3 6.8s ease-in-out -3.7s infinite;}
+  .agd-fan .k2{margin-top:-58px;z-index:2;transform:rotate(1.5deg) scale(.97);animation:agdfanm2 7.2s ease-in-out -1.9s infinite;}
+  .agd-fan .k3{margin-top:-58px;z-index:3;transform:rotate(-.5deg);animation:agdfanm3 6.8s ease-in-out -3.7s infinite;}
   @keyframes agdfanm1{0%,100%{transform:rotate(-2.5deg) scale(.94) translateY(0)}50%{transform:rotate(-3.4deg) scale(.94) translateY(-7px)}}
   @keyframes agdfanm2{0%,100%{transform:rotate(1.5deg) scale(.97) translateY(0)}50%{transform:rotate(2.3deg) scale(.97) translateY(-9px)}}
   @keyframes agdfanm3{0%,100%{transform:rotate(-.5deg) translateY(0)}50%{transform:rotate(.4deg) translateY(-6px)}}
@@ -3294,8 +3297,14 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .agd-final{border-radius:20px;padding:clamp(30px,4vw,48px) clamp(20px,4vw,40px);text-align:center;background:radial-gradient(700px 300px at 50% 0,rgba(232,144,42,.14),transparent),var(--s1);border:1px solid rgba(232,144,42,.4);}
 .agd-final p{font-size:15px;line-height:1.7;color:var(--t2);max-width:580px;margin:0 auto 22px;}
 .agd-guarantee{font-size:12px;color:var(--t3);margin-top:14px;}
-.agd-coasts{font-size:13.5px;line-height:1.7;color:var(--t3);max-width:520px;margin:14px 0 0;padding-left:13px;border-left:2px solid rgba(232,144,42,.45);}
+.agd-coasts{font-size:13.5px;line-height:1.7;color:var(--t2);max-width:520px;margin:14px 0 0;padding-left:13px;border-left:2px solid rgba(232,144,42,.45);}
 @media(max-width:960px){.agd-hero-grid,.agd-flow{grid-template-columns:1fr;}}
+/* Three city pills on one line at phone widths — they wrapped to two before,
+   which left "New York" stranded on a line of its own. */
+@media(max-width:560px){
+  .agd-cities{flex-wrap:nowrap;gap:6px;}
+  .agd-city{font-size:clamp(10px,3vw,12.5px);padding:7px 11px;white-space:nowrap;}
+}
 @media(prefers-reduced-motion:reduce){
   .agd-plane,.agd-route,.agd-halo,.agd-key,.agd-ring,.agd-marq-in,.agd-redact,.agd-eyebrow .d,.agd-fan .agdc{animation:none !important;}
 }
@@ -8232,7 +8241,12 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
             <div className="k">The productions their clients are cast in</div>
             <div className="row">{AGD_STUDIOS.map(s=><span key={s}>{s}</span>)}</div>
           </div>
-          <div className="agd-map">
+        </div>
+        <div className="agd-fan">
+          {AGD_CARDS.map((c,i)=><AgdCard key={c.slug} c={c} k={"k"+(i+1)}/>)}
+        </div>
+      </div>
+      <div className="agd-map">
             <svg viewBox="0 0 420 132" role="img" aria-label="Talent agencies in Los Angeles, Beverly Hills and New York">
               <path className="agd-route" d={AGD_ROUTE}/>
               <circle className="agd-halo" cx="64" cy="96" r="12" fill="#4F8A8B" opacity=".38"/>
@@ -8246,11 +8260,6 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
               <path d="M96 84 L 132 106" stroke="#B96F16" strokeWidth="1" opacity=".5"/>
               <text x="352" y="93" textAnchor="middle" fontFamily="DM Sans" fontSize="10.5" fontWeight="800" fill="#1A1A2E">NEW YORK</text>
             </svg>
-          </div>
-        </div>
-        <div className="agd-fan">
-          {AGD_CARDS.map((c,i)=><AgdCard key={c.slug} c={c} k={"k"+(i+1)}/>)}
-        </div>
       </div></section>
     </div></div>
 
