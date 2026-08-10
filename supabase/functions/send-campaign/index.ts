@@ -1,6 +1,6 @@
 // send-campaign — Supabase Edge Function (bulk email tool for CastSlate promo campaigns)
 // Auth: `secret` === SUPABASE_SERVICE_ROLE_KEY or ADMIN_CAMPAIGN_SECRET, OR an admin user JWT.
-// Public unsubscribe GET. Actions: create_campaign, import_recipients, list_campaigns,
+// Public unsubscribe GET. Actions: create_campaign, update_campaign, import_recipients, list_campaigns,
 // status, reset_campaign, requeue_failed, send_batch (+ test_email), provider_debug.
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
@@ -134,6 +134,33 @@ serve(async (req) => {
       const { data, error } = await sb.from("email_campaigns").insert({ name, subject, html, from_email: from_email || DEFAULT_FROM, reply_to: reply_to || CONTACT_EMAIL, status: "draft" }).select("id").single();
       if (error) return res({ error: error.message }, 500);
       return res({ id: data.id });
+    }
+
+    // Swap the design (or subject) on a campaign that already has its list
+    // attached — the reason this exists is that a casting can expire halfway
+    // through a send, and re-uploading an 11K CSV just to fix the HTML would
+    // re-queue people who were already emailed. Recipients are untouched: only
+    // the still-queued rows pick up the new HTML, because send_batch reads
+    // camp.html fresh on every batch.
+    if (action === "update_campaign") {
+      const { campaign_id, name, subject, html, from_email, reply_to } = body;
+      if (!campaign_id) return res({ error: "campaign_id required" }, 400);
+      const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+      if (typeof name === "string" && name.trim()) patch.name = name;
+      if (typeof subject === "string" && subject.trim()) patch.subject = subject;
+      if (typeof html === "string" && html.trim()) {
+        // An email without the unsubscribe tag is not sendable — refuse rather
+        // than let a campaign go out that can't be opted out of.
+        if (!html.includes("{{UNSUB_URL}}")) return res({ error: "html is missing {{UNSUB_URL}} — refusing to save" }, 400);
+        patch.html = html;
+      }
+      if (typeof from_email === "string" && from_email.trim()) patch.from_email = from_email;
+      if (typeof reply_to === "string" && reply_to.trim()) patch.reply_to = reply_to;
+      if (Object.keys(patch).length === 1) return res({ error: "nothing to update" }, 400);
+      const { error } = await sb.from("email_campaigns").update(patch).eq("id", campaign_id);
+      if (error) return res({ error: error.message }, 500);
+      const { count } = await sb.from("email_campaign_recipients").select("*", { count: "exact", head: true }).eq("campaign_id", campaign_id).eq("status", "queued");
+      return res({ ok: true, updated: Object.keys(patch).filter((k) => k !== "updated_at"), still_queued: count ?? 0 });
     }
 
     if (action === "import_recipients") {

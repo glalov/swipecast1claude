@@ -25623,6 +25623,9 @@ function AdminEmailCampaigns({session}){
   const [newTest,setNewTest]=useState(session?.user?.email||"");
   const [newTestMsg,setNewTestMsg]=useState("");
   const testDraft=useRef(null); // {id,sig} — throwaway draft reused while the design is unchanged
+  // swap the design on a campaign that already has its list attached
+  const [applyBusy,setApplyBusy]=useState(false);
+  const [applyMsg,setApplyMsg]=useState("");
 
   const addLog=(m)=>setLogLines(l=>[...l.slice(-200),`[${new Date().toLocaleTimeString()}] ${m}`]);
 
@@ -25721,6 +25724,30 @@ function AdminEmailCampaigns({session}){
       setShowNew(false);setRecips([]);await loadCampaigns();setSel(c.id);await refreshSel(c.id);
     }catch(e){addLog("ERROR: "+e.message);}
     finally{setBusy(false);}
+  };
+
+  // Swap the design on the SELECTED campaign — the list stays attached and
+  // nobody already emailed is touched. Only the still-queued recipients get the
+  // new design, because send_batch re-reads the campaign HTML on every batch.
+  const applyDesign=async(id)=>{
+    const t=PROMO_TEMPLATES.find(x=>x.id===id); if(!t||!sel||!selCamp)return;
+    const st=selStatus||{queued:selCamp.queued||0};
+    if(!window.confirm("Switch “"+selCamp.name+"” to the “"+t.name+"” design?\n\nThe "+(st.queued||0).toLocaleString()+" people still queued will get this design. Anyone already emailed is unaffected, and nobody gets emailed twice."))return;
+    setApplyBusy(true); setApplyMsg("Applying…");
+    try{
+      const html=await(await fetch(t.file)).text();
+      if(!html.includes("{{UNSUB_URL}}"))throw new Error("that template has no unsubscribe tag");
+      const r=await fnCall("update_campaign",{campaign_id:sel,html,subject:t.subject});
+      setApplyMsg(t.name+" applied — the "+(r.still_queued||0).toLocaleString()+" still queued will get this design. Send a test to yourself to confirm.");
+      addLog("Design switched to "+t.name+" ("+(r.still_queued||0)+" still queued)");
+      await loadCampaigns(); await refreshSel();
+    }catch(e){
+      const msg=/unknown action/i.test(e.message)
+        ? "needs the updated send-campaign function deployed (Supabase → Edge Functions → send-campaign)."
+        : e.message;
+      setApplyMsg("Couldn't apply: "+msg); addLog("ERROR: "+e.message);
+    }
+    finally{ setApplyBusy(false); }
   };
 
   const sendTest=async()=>{
@@ -25868,6 +25895,21 @@ function AdminEmailCampaigns({session}){
           <div style={{height:14,background:"var(--bdr)",borderRadius:7,overflow:"hidden"}}><div style={{height:"100%",width:pct+"%",background:"var(--acc)",transition:"width .3s"}}/></div>
         </div>);
       })()}
+      <div style={{marginBottom:16,padding:"12px 14px",borderRadius:10,background:"var(--s1)",border:"1px solid var(--bdr)"}}>
+        <div style={{fontSize:12,color:"var(--t3)",fontWeight:600,marginBottom:2}}>Design for everyone still queued</div>
+        <div style={{fontSize:11.5,color:"var(--t3)",lineHeight:1.6,marginBottom:9}}>The list stays attached. Only people who haven&rsquo;t been emailed yet get the new design — nobody is ever emailed twice.</div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {PROMO_TEMPLATES.map(t=>(
+            <div key={t.id} style={{display:"flex",alignItems:"center",gap:6,padding:"6px 8px 6px 6px",borderRadius:9,border:"1px solid var(--bdr)",background:"var(--s2)"}}>
+              <span style={{width:26,height:26,borderRadius:6,background:t.bg,color:t.fg,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:8,textAlign:"center",lineHeight:1,padding:2,overflow:"hidden"}}>{t.mark.split(" ")[0].slice(0,4)}</span>
+              <span style={{fontSize:12.5,fontWeight:700}}>{t.name}</span>
+              <button className="btn-s btn-sm" onClick={()=>previewTemplate(t.id)}>Preview</button>
+              <button className="btn-p btn-sm" disabled={applyBusy||sending} onClick={()=>applyDesign(t.id)}>Use this</button>
+            </div>
+          ))}
+        </div>
+        {applyMsg&&<div style={{fontSize:12,marginTop:9,fontWeight:applyMsg.startsWith("Couldn't")?400:700,color:applyMsg.startsWith("Couldn't")?"#c0392b":(applyMsg==="Applying…"?"var(--t3)":"#15803d")}}>{applyMsg}</div>}
+      </div>
       <div style={{display:"flex",gap:10,alignItems:"flex-end",flexWrap:"wrap",marginBottom:16}}>
         <div><label style={{fontSize:12,color:"var(--t3)",fontWeight:600,display:"block"}}>Send a test to yourself first</label><input value={testEmail} onChange={e=>setTestEmail(e.target.value)} style={{padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14,width:240}}/></div>
         <button className="btn-s" disabled={busy||sending} onClick={sendTest}>Send test</button>
@@ -25879,7 +25921,9 @@ function AdminEmailCampaigns({session}){
           <button className="btn-p" disabled={busy} onClick={()=>startSend(Math.max(1,parseInt(cap)||2000),"batch")}>Send {(parseInt(cap)||2000).toLocaleString()} now</button>
         </div>
         <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+        <button className="btn-s" disabled={busy} onClick={()=>startSend(200,"warm-up")}>Send 200</button>
         <button className="btn-s" disabled={busy} onClick={()=>startSend(500,"warm-up")}>Send 500</button>
+        <button className="btn-s" disabled={busy} onClick={()=>startSend(1000,"next 1,000")}>Send 1,000</button>
         <button className="btn-s" disabled={busy} onClick={()=>startSend(2000,"next 2,000")}>Send 2,000</button>
         <button className="btn-s" disabled={busy} onClick={()=>startSend(null,"everyone remaining")}>Send everyone remaining</button>
         {(()=>{ const _st=selStatus||(selCamp?{queued:selCamp.queued,sent:selCamp.sent,failed:selCamp.failed,skipped:selCamp.skipped}:null);
