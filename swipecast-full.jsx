@@ -1536,7 +1536,19 @@ img,video,iframe{max-width:100%;}
 .app{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;flex:1 1 auto;padding-top:var(--site-top-h,0px);}
 a{color:inherit;text-decoration:none;}
 h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
-.site-top{position:fixed;top:0;left:0;right:0;z-index:120;}
+/* Hairline seam guard, same family as the one on the landing's dark run (see
+   .lh-mm / .site-footer). This bar stacks two opaque dark children back to back
+   — .mq-stripe (#15131F) over .featured-class-stripe (#0C0A08) — and BOTH of
+   them animate their height over .42s when the header collapses on scroll.
+   Every frame of that transition lands the boundary on a fractional CSS pixel,
+   so at DPR 2–3 the stripe's bottom row and the next stripe's top row round to
+   different device-pixel rows and one row of the cream .app background shows
+   through: a white line that flashes across the top of the page for the length
+   of the collapse, on some devices and not others. Painting the stack's own
+   dark colour behind it leaves the rounding nothing cream to reveal. Safe
+   because every child here is fully opaque and full-bleed (the nav is solid
+   #FFFFFF, no backdrop-filter), so this is only ever visible in the seam. */
+.site-top{position:fixed;top:0;left:0;right:0;z-index:120;background:#0C0A08;}
 .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;position:relative;z-index:1;background:#FFFFFF;border-bottom:1px solid var(--bdr);transition:box-shadow .22s ease;}
 /* Subtle drop-shadow under the nav once the page is scrolled even slightly;
    none at the very top. Toggled by the .scrolled class (window.scrollY>4). */
@@ -3109,6 +3121,17 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .adx-section{padding:80px 40px;position:relative;overflow:hidden;background:#0F1012;color:#FDFBF7;
   transition:background-color 1.2s cubic-bezier(.4,0,.2,1),color 1.2s cubic-bezier(.4,0,.2,1);}
 .adx-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;max-width:1100px;margin:0 auto;position:relative;z-index:1;}
+/* A grid item's min-width is auto, so a track is never allowed to get
+   narrower than its content's min-content width. The wall's min-content is the
+   widest nowrap chip × 2 columns = ~383px, so on the single mobile track that
+   floor beat the padded container on every phone under ~415px CSS wide — the
+   track ran 13px past the container on a 402pt iPhone 17, 25px on a 390pt
+   phone — and .adx-section{overflow:hidden} then sliced the right-hand edge off
+   the centred headline, lede and caption. (Reported from an Apple Store bench:
+   iPhone 17 / 17e, but it was every narrow phone.) Releasing the floor lets the
+   track match the container and the chips ellipsize, which is exactly what
+   .adx-chip / .adx-chip .m already style themselves to do. */
+.adx-grid>*{min-width:0;}
 /* 900px is the landing's single mobile line — do not add another breakpoint here. */
 @media(max-width:900px){
   .adx-section{padding:60px 24px;}
@@ -3349,6 +3372,13 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    to get it back — which shows up as the landing videos going blank or frozen
    several sections further up. The transforms composite fine without it. */
 .adx-col{display:flex;flex-direction:column;gap:8px;}
+/* Same min-width:auto floor, one and two levels down. .adx-col is a grid item
+   of .adx-wall and each chip is a flex item of .adx-col, and neither can shrink
+   below its own min-content — a chip's min-content being its full nowrap label.
+   Release both or the columns overhang their 1fr tracks by ~7px, the right-hand
+   column gets shaved by .adx-wall{overflow:hidden}, and the ellipsis that
+   .adx-chip .m is styled for never has a reason to appear. */
+.adx-wall>*,.adx-col>*{min-width:0;}
 /* Paused until the stripe is actually near the viewport (JS adds .is-live).
    animation-play-state resumes where it left off, so the wall never restarts. */
 .adx-col.a{animation:adxup 36s linear infinite;animation-play-state:paused;}
