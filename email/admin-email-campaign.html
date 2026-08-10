@@ -33,6 +33,18 @@
   .ok{color:#15803d;font-weight:700;}
   .err{color:#b91c1c;font-weight:700;}
   small{color:var(--muted);}
+  /* ── Template picker ── */
+  .tpls{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;}
+  .tpl{border:2px solid var(--line);border-radius:12px;background:#fff;padding:0;overflow:hidden;cursor:pointer;transition:border-color .15s,box-shadow .15s;position:relative;text-align:left;}
+  .tpl:hover{border-color:#b9d6d4;}
+  .tpl.on{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,107,102,.12);}
+  .tpl .swatch{height:74px;display:flex;align-items:center;justify-content:center;font-weight:900;letter-spacing:-.5px;}
+  .tpl .body{padding:11px 13px 13px;}
+  .tpl .nm{font-size:13.5px;font-weight:800;color:var(--ink);margin-bottom:3px;}
+  .tpl .bl{font-size:11.5px;color:var(--muted);line-height:1.55;}
+  .tpl .chk{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--teal);color:#fff;font-size:12px;display:none;align-items:center;justify-content:center;font-weight:700;}
+  .tpl.on .chk{display:flex;}
+  .tpl .prev{margin-top:9px;display:inline-block;font-size:11.5px;font-weight:700;color:var(--teal);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -56,44 +68,54 @@
   </div>
 
   <div class="card">
-    <h2><span class="step">2</span> Campaign</h2>
+    <h2><span class="step">2</span> Pick a template</h2>
+    <p style="margin:-6px 0 12px;font-size:12.5px;color:var(--muted);">Choose the design this campaign sends. Picking one loads its HTML and its subject line below — you can still edit either. Preview opens the real email in a new tab.</p>
+    <div id="tplPicker" class="tpls"></div>
+    <div style="margin-top:10px;"><small id="tplNote"></small></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">3</span> Campaign details</h2>
     <div class="row">
       <div><label>Name (internal)</label><input id="name" type="text" value="Actor list — castings promo"/></div>
       <div><label>From</label><input id="from" type="text" value="CastSlate <notifications@castslate.com>"/></div>
     </div>
     <label>Subject</label>
     <input id="subject" type="text" value="Casting calls are live on CastSlate"/>
-    <label>Email HTML <small>(loads promo-castings-campaign.html automatically; edit if needed)</small></label>
-    <textarea id="html" placeholder="loading template…"></textarea>
-    <div style="margin-top:8px;"><small id="tplNote"></small></div>
+    <label>Email HTML <small>(set by the template you picked — edit here if you need a one-off tweak)</small></label>
+    <textarea id="html" placeholder="pick a template above…"></textarea>
   </div>
 
   <div class="card">
-    <h2><span class="step">3</span> Recipients</h2>
+    <h2><span class="step">★</span> Test send <small style="font-weight:400;">— works before you upload any list</small></h2>
+    <p style="margin:-6px 0 12px;font-size:12.5px;color:var(--muted);">Send the currently selected template to yourself. This does <b>not</b> touch your 11K list and does not create a sendable campaign — it makes a throwaway draft with no recipients. Test each design, then scroll down to send for real.</p>
+    <div class="row">
+      <div><label>Send test to</label><input id="testEmail" type="email" placeholder="you@example.com"/></div>
+      <div><label>Personalize as <small>({{FIRST_NAME}})</small></label><input id="testName" type="text" placeholder="e.g. Georgi"/></div>
+      <div style="display:flex;align-items:flex-end;"><button id="btnTest" class="secondary">Send test</button></div>
+    </div>
+    <div id="testInfo" style="margin-top:10px;"></div>
+    <div class="warn">Test both templates side by side in your own inbox (phone + desktop) before choosing. Gmail clips emails over ~102KB — the test is the fastest way to confirm the footer and unsubscribe link still show.</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">4</span> Recipients</h2>
     <label>Upload CSV <small>(needs an <b>email</b> column; optional <b>name</b> column)</small></label>
     <input id="csv" type="file" accept=".csv"/>
     <div id="csvInfo" style="margin-top:10px;"></div>
   </div>
 
   <div class="card">
-    <h2><span class="step">4</span> Create &amp; import</h2>
+    <h2><span class="step">5</span> Create &amp; import</h2>
     <button id="btnCreate">Create campaign &amp; import recipients</button>
     <div id="createInfo" style="margin-top:10px;"></div>
   </div>
 
   <div class="card">
-    <h2><span class="step">5</span> Test send</h2>
-    <div class="row">
-      <div><label>Send one test to</label><input id="testEmail" type="email" placeholder="you@example.com"/></div>
-      <div style="display:flex;align-items:flex-end;"><button id="btnTest" class="secondary">Send test</button></div>
-    </div>
-    <div id="testInfo" style="margin-top:10px;"></div>
-  </div>
-
-  <div class="card">
     <h2><span class="step">6</span> Send to everyone</h2>
+    <div id="sendTplNote" class="warn" style="background:#e0f2f1;color:#0b4a47;">Pick a template in step 2 first.</div>
     <div class="row">
-      <div style="flex:2;"><label>Resume existing campaign by ID <small>(skip steps 2–4 — use this to continue a campaign you already created)</small></label><input id="resumeId" type="text" placeholder="paste campaign id"/></div>
+      <div style="flex:2;"><label>Resume existing campaign by ID <small>(skip steps 2–5 — use this to continue a campaign you already created)</small></label><input id="resumeId" type="text" placeholder="paste campaign id"/></div>
       <div style="display:flex;align-items:flex-end;"><button id="btnResume" class="secondary">Load campaign</button></div>
     </div>
     <div id="resumeInfo" style="margin:6px 0 12px;"></div>
@@ -121,6 +143,7 @@
 <script>
 const $ = (id) => document.getElementById(id);
 let campaignId = null, stopFlag = false, totalForBar = 0;
+let testCampaign = null; // throwaway draft used by "Send test" — { id, sig }
 
 function log(msg, cls){ const l=$("log"); const t=new Date().toLocaleTimeString();
   l.innerHTML += `\n<span class="${cls||''}">[${t}] ${msg}</span>`; l.scrollTop=l.scrollHeight; }
@@ -180,10 +203,88 @@ async function loadStats(){
 }
 $("btnDash").addEventListener("click", loadStats);
 
-// Load the production template automatically
-fetch("promo-castings-campaign.html").then(r=>r.ok?r.text():Promise.reject())
-  .then(t=>{ $("html").value=t; $("tplNote").textContent="Loaded promo-castings-campaign.html ("+t.length+" chars). {{UNSUB_URL}} present: "+t.includes("{{UNSUB_URL}}"); })
-  .catch(()=>{ $("tplNote").textContent="Couldn't auto-load template — paste the email HTML manually (must include {{UNSUB_URL}})."; });
+// ── Template picker ──────────────────────────────────────────────────────────
+// Each entry is a real, sendable email file sitting next to this one. Adding a
+// new design = drop the .html in this folder and add a row here.
+const TEMPLATES = [
+  { id:"classic", file:"promo-castings-campaign.html",
+    name:"Classic Cards",
+    blurb:"The current design. White shell, hero banner, three full casting cards with role tables.",
+    subject:"Casting calls are live on CastSlate",
+    swatchBg:"#1a1b2e", swatchFg:"#ffffff", swatchTxt:"CastSlate" },
+  { id:"marquee", file:"promo-editorial-marquee.html",
+    name:"The Marquee",
+    blurb:"Editorial cream/ink. Big wordmark masthead, Backrooms still, indigo serif headline, listings as an index.",
+    subject:"Liminal, tense, and casting in New York this week",
+    swatchBg:"#efece4", swatchFg:"#101014", swatchTxt:"CASTSLATE NYC" },
+  { id:"latenight", file:"promo-editorial-latenight.html",
+    name:"The Late Show",
+    blurb:"Dark cinema. Full-bleed Obsession still, gold rule, one lead listing plus a two-up grid.",
+    subject:"The slow-burn is having a year. Three NY roles are open.",
+    swatchBg:"#0d0d10", swatchFg:"#F0B860", swatchTxt:"CASTSLATE" }
+];
+let selectedTpl = null;
+const tplCache = {};
+
+function renderPicker(){
+  $("tplPicker").innerHTML = TEMPLATES.map(t=>`
+    <div class="tpl" data-id="${t.id}">
+      <div class="chk">&#10003;</div>
+      <div class="swatch" style="background:${t.swatchBg};color:${t.swatchFg};font-size:${t.swatchTxt.length>12?14:17}px;">${t.swatchTxt}</div>
+      <div class="body">
+        <div class="nm">${t.name}</div>
+        <div class="bl">${t.blurb}</div>
+        <button class="prev" data-prev="${t.id}">Preview &rarr;</button>
+      </div>
+    </div>`).join("");
+  $("tplPicker").querySelectorAll(".tpl").forEach(el=>{
+    el.addEventListener("click",(e)=>{
+      if(e.target.dataset.prev){ e.stopPropagation(); previewTpl(e.target.dataset.prev); return; }
+      selectTpl(el.dataset.id);
+    });
+  });
+}
+
+async function loadTpl(id){
+  if(tplCache[id]) return tplCache[id];
+  const t = TEMPLATES.find(x=>x.id===id);
+  const r = await fetch(t.file);
+  if(!r.ok) throw new Error("Couldn't load "+t.file+" — keep it in this same folder.");
+  tplCache[id] = await r.text();
+  return tplCache[id];
+}
+
+async function selectTpl(id){
+  const t = TEMPLATES.find(x=>x.id===id);
+  try{
+    const html = await loadTpl(id);
+    selectedTpl = id;
+    $("html").value = html;
+    $("subject").value = t.subject;
+    $("name").value = "Actor list — " + t.name;
+    $("tplPicker").querySelectorAll(".tpl").forEach(el=>el.classList.toggle("on", el.dataset.id===id));
+    const unsubOk = html.includes("{{UNSUB_URL}}");
+    const kb = (new Blob([html]).size/1024).toFixed(1);
+    $("tplNote").innerHTML = `Loaded <b>${t.file}</b> — ${kb} KB. Unsubscribe tag: ` +
+      (unsubOk ? '<span class="ok">present</span>' : '<span class="err">MISSING — do not send</span>') +
+      (kb>102 ? ' <span class="err">· over Gmail’s 102 KB clip limit</span>' : '');
+    $("sendTplNote").innerHTML = `Sending template: <b>${t.name}</b> — “${t.subject}”`;
+    log("Template selected: "+t.name+" ("+t.file+")","ok");
+    testCampaign = null; // force a fresh test draft for the new design
+  }catch(e){ $("tplNote").innerHTML='<span class="err">'+e.message+'</span>'; }
+}
+
+function previewTpl(id){
+  loadTpl(id).then(html=>{
+    // {{UNSUB_URL}} / {{FIRST_NAME}} are filled at send time — stub them for preview.
+    const filled = html.replaceAll("{{UNSUB_URL}}","#preview-unsubscribe").replaceAll("{{FIRST_NAME}}","Georgi");
+    const w = window.open("", "_blank");
+    if(!w) return alert("Popup blocked — allow popups for this page to preview.");
+    w.document.write(filled); w.document.close();
+  }).catch(e=>alert(e.message));
+}
+renderPicker();
+selectTpl("classic");
 
 // CSV parsing
 let recipients = [];
@@ -240,17 +341,51 @@ $("btnCreate").addEventListener("click", async ()=>{
   finally{ $("btnCreate").disabled=false; }
 });
 
+// ── Test send ────────────────────────────────────────────────────────────────
+// Tests never ride on the real campaign. We spin up a throwaway draft that has
+// zero recipients imported, so there is no way a test click can start a blast.
+// The draft is reused while the subject/HTML are unchanged, and thrown away the
+// moment you edit either — so what lands in your inbox is always what's on screen.
+const sigOf = () => $("subject").value + " " + $("html").value;
+
+async function ensureTestCampaign(){
+  const sig = sigOf();
+  if(testCampaign && testCampaign.sig === sig) return testCampaign.id;
+  const label = (TEMPLATES.find(t=>t.id===selectedTpl)||{}).name || "custom";
+  const stamp = new Date().toLocaleString([], {month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"});
+  log("Creating throwaway test draft for “"+label+"”…");
+  const c = await call({ action:"create_campaign",
+    name:"TEST · "+label+" · "+stamp,
+    subject:$("subject").value, html:$("html").value, from_email:$("from").value });
+  testCampaign = { id:c.id, sig };
+  log("Test draft ready ("+c.id+") — 0 recipients, cannot be sent to the list.","ok");
+  return c.id;
+}
+
 $("btnTest").addEventListener("click", async ()=>{
   try{
-    if(!campaignId) return alert("Create the campaign first (step 4).");
+    if(!$("secret").value) return alert("Paste your service_role key in step 1 first.");
     const to=$("testEmail").value.trim(); if(!to) return alert("Enter a test email.");
-    $("btnTest").disabled=true; log("Sending test to "+to+"…");
-    const r = await call({ action:"send_batch", campaign_id:campaignId, test_email:to });
-    if(r.ok){ $("testInfo").innerHTML='<span class="ok">Test sent to '+to+'.</span> Check the inbox.'; log("Test sent (id "+r.provider_id+")","ok"); }
+    if(!$("html").value.trim()) return alert("No template loaded — pick one in step 2.");
+    if(!$("html").value.includes("{{UNSUB_URL}}") &&
+       !confirm("This HTML has no {{UNSUB_URL}} tag. Send the test anyway?")) return;
+    $("btnTest").disabled=true;
+    $("testInfo").innerHTML='<small>Sending…</small>';
+    const id = await ensureTestCampaign();
+    log("Sending test to "+to+"…");
+    const r = await call({ action:"send_batch", campaign_id:id, test_email:to, test_name:$("testName").value.trim() });
+    if(r.ok){
+      const label = (TEMPLATES.find(t=>t.id===selectedTpl)||{}).name || "custom template";
+      $("testInfo").innerHTML='<span class="ok">Test sent to '+to+'</span> &nbsp;<span class="pill">'+label+'</span> &nbsp;<small>via '+(r.provider||'')+' — check the inbox, then pick the winner.</small>';
+      log("Test sent (id "+r.provider_id+")","ok");
+    }
     else{ $("testInfo").innerHTML='<span class="err">Failed: '+(r.error||'')+'</span>'; }
   }catch(e){ log("ERROR: "+e.message,"err"); $("testInfo").innerHTML='<span class="err">'+e.message+'</span>'; }
   finally{ $("btnTest").disabled=false; }
 });
+
+// Editing the subject or HTML by hand invalidates the cached test draft.
+["subject","html"].forEach(id=>$(id).addEventListener("input", ()=>{ testCampaign=null; }));
 
 async function refreshStatus(){
   if(!campaignId) return;
@@ -281,8 +416,9 @@ $("btnResume").addEventListener("click", async ()=>{
 });
 
 $("btnSend").addEventListener("click", async ()=>{
-  if(!campaignId) return alert("Load or create a campaign first (use step 6's “Load campaign”, or steps 2–4).");
-  if(!confirm("Start sending real emails to your list? You can Stop anytime.")) return;
+  if(!campaignId) return alert("Load or create a campaign first (use step 6's “Load campaign”, or steps 2–5).");
+  const tplName = (TEMPLATES.find(t=>t.id===selectedTpl)||{}).name || "custom template";
+  if(!confirm("Send the “"+tplName+"” design to this campaign's real list?\n\nSubject: "+$("subject").value+"\n\nYou can Stop anytime.")) return;
   stopFlag=false; $("btnSend").disabled=true; $("btnStop").disabled=false;
   const batch = Math.max(1, Math.min(100, parseInt($("batch").value)||50));
   const cap = parseInt($("cap").value)||Infinity;

@@ -25579,6 +25579,25 @@ function AdminMemberAnnounce({session,SUPA}){
 }
 
 // ─── Email Campaigns: bulk promo emailer (admin-only) ───────────────────────
+// The promo designs you can send. Each `file` is a real, sendable email served
+// from /email/ — adding a fourth design is: drop the .html in that folder and
+// add a row here. `subject` is the default subject that ships with the design;
+// you can still edit it before creating the campaign.
+const PROMO_TEMPLATES=[
+  {id:"classic",file:"/email/promo-castings-campaign.html",name:"Classic Cards",
+   blurb:"White shell, hero banner, three full casting cards with role tables.",
+   subject:"Casting calls are live on CastSlate",
+   bg:"#1a1b2e",fg:"#ffffff",mark:"CastSlate"},
+  {id:"marquee",file:"/email/promo-editorial-marquee.html",name:"The Marquee",
+   blurb:"Editorial cream/ink. Big wordmark masthead, film still, serif headline, listings as an index.",
+   subject:"Liminal, tense, and casting in New York this week",
+   bg:"#efece4",fg:"#101014",mark:"CASTSLATE NYC"},
+  {id:"latenight",file:"/email/promo-editorial-latenight.html",name:"The Late Show",
+   blurb:"Dark cinema. Full-bleed still, gold rule, one lead listing plus a two-up grid.",
+   subject:"The slow-burn is having a year. Three NY roles are open.",
+   bg:"#0d0d10",fg:"#F0B860",mark:"CASTSLATE"}
+];
+
 function AdminEmailCampaigns({session}){
   const SUPA=(window.SC_CONFIG?.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co");
   const [campaigns,setCampaigns]=useState(null);
@@ -25598,6 +25617,12 @@ function AdminEmailCampaigns({session}){
   const [nHtml,setNHtml]=useState("");
   const [recips,setRecips]=useState([]);
   const [busy,setBusy]=useState(false);
+  // template picker + pre-create test send
+  const [tplId,setTplId]=useState("classic");
+  const [tplNote,setTplNote]=useState("");
+  const [newTest,setNewTest]=useState(session?.user?.email||"");
+  const [newTestMsg,setNewTestMsg]=useState("");
+  const testDraft=useRef(null); // {id,sig} — throwaway draft reused while the design is unchanged
 
   const addLog=(m)=>setLogLines(l=>[...l.slice(-200),`[${new Date().toLocaleTimeString()}] ${m}`]);
 
@@ -25635,7 +25660,53 @@ function AdminEmailCampaigns({session}){
   };
   const onCsv=(e)=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();
     rd.onload=()=>{try{const rows=parseCSV(rd.result);setRecips(rows);addLog("Parsed "+rows.length+" rows from "+f.name);}catch(er){setErr(er.message);}};rd.readAsText(f);};
-  const loadTemplate=async()=>{try{const t=await(await fetch("/email/promo-castings-campaign.html")).text();setNHtml(t);addLog("Loaded default template ("+t.length+" chars)");}catch(_){addLog("Couldn't load template — paste HTML manually.");}};
+  // Picking a design loads its HTML and its default subject. Editing either by
+  // hand afterwards is fine — it just invalidates the cached test draft so the
+  // next test always sends exactly what's on screen.
+  const pickTemplate=async(id)=>{
+    const t=PROMO_TEMPLATES.find(x=>x.id===id); if(!t)return;
+    try{
+      const r=await fetch(t.file); if(!r.ok)throw new Error("HTTP "+r.status);
+      const html=await r.text();
+      setTplId(id); setNHtml(html); setNSubject(t.subject); setNName("Actor list — "+t.name);
+      testDraft.current=null;
+      const kb=(html.length/1024).toFixed(1);
+      setTplNote(t.name+" loaded — "+kb+" KB · "+(html.includes("{{UNSUB_URL}}")?"unsubscribe tag present":"UNSUBSCRIBE TAG MISSING — do not send")+(html.length/1024>102?" · over Gmail's 102 KB clip limit":""));
+      addLog("Template selected: "+t.name);
+    }catch(e){ setTplNote("Couldn't load "+t.file+" — "+e.message); }
+  };
+  const previewTemplate=async(id)=>{
+    const t=PROMO_TEMPLATES.find(x=>x.id===id); if(!t)return;
+    try{
+      const html=(await(await fetch(t.file)).text())
+        .replaceAll("{{UNSUB_URL}}","#preview-unsubscribe")
+        .replaceAll("{{FIRST_NAME}}",(session?.user?.email||"there").split("@")[0]);
+      const url=URL.createObjectURL(new Blob([html],{type:"text/html"}));
+      window.open(url,"_blank");
+      setTimeout(()=>URL.revokeObjectURL(url),60000);
+    }catch(e){ setTplNote("Preview failed: "+e.message); }
+  };
+  // Test the design BEFORE any list is attached. This creates a throwaway draft
+  // with zero recipients imported, so a test click can never start a real send.
+  const sendNewTest=async()=>{
+    const to=(newTest||"").trim(); if(!to)return alert("Enter an email to send the test to.");
+    if(!nHtml.trim())return alert("Pick a design first.");
+    setBusy(true); setNewTestMsg("Sending…");
+    try{
+      const sig=nSubject+"\n"+nHtml;
+      if(!testDraft.current||testDraft.current.sig!==sig){
+        const stamp=new Date().toLocaleString([],{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+        const label=(PROMO_TEMPLATES.find(x=>x.id===tplId)||{}).name||"custom";
+        const c=await fnCall("create_campaign",{name:"TEST · "+label+" · "+stamp,subject:nSubject,html:nHtml});
+        testDraft.current={id:c.id,sig};
+        addLog("Created throwaway test draft (0 recipients) for "+label);
+      }
+      const r=await fnCall("send_batch",{campaign_id:testDraft.current.id,test_email:to});
+      setNewTestMsg(r.ok?("Test sent to "+to+" — check your inbox."):("Test failed: "+(r.error||"")));
+      addLog(r.ok?("Test sent to "+to):("Test failed: "+(r.error||"")));
+    }catch(e){ setNewTestMsg("Error: "+e.message); addLog("ERROR: "+e.message); }
+    finally{ setBusy(false); }
+  };
 
   const createCampaign=async()=>{
     if(!nHtml.trim())return alert("Email HTML is empty — click “Load default template” or paste HTML.");
@@ -25714,7 +25785,7 @@ function AdminEmailCampaigns({session}){
 
     <div style={{display:"flex",gap:10,marginBottom:18}}>
       <button className="btn-s btn-sm" onClick={loadCampaigns}>↻ Refresh</button>
-      <button className="btn-p btn-sm" onClick={()=>{setShowNew(s=>!s);if(!nHtml)loadTemplate();}}>{showNew?"Close new campaign":"+ New campaign"}</button>
+      <button className="btn-p btn-sm" onClick={()=>{setShowNew(s=>!s);if(!nHtml)pickTemplate("classic");}}>{showNew?"Close new campaign":"+ New campaign"}</button>
     </div>
 
     <AdminMemberAnnounce session={session} SUPA={SUPA}/>
@@ -25725,9 +25796,39 @@ function AdminEmailCampaigns({session}){
         <div><label style={{fontSize:12,color:"var(--t3)",fontWeight:600}}>Name (internal)</label><input value={nName} onChange={e=>setNName(e.target.value)} style={{width:"100%",padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14}}/></div>
         <div><label style={{fontSize:12,color:"var(--t3)",fontWeight:600}}>Subject</label><input value={nSubject} onChange={e=>setNSubject(e.target.value)} style={{width:"100%",padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:14}}/></div>
       </div>
+      <div style={{marginBottom:14}}>
+        <label style={{fontSize:12,color:"var(--t3)",fontWeight:600,display:"block",marginBottom:8}}>Choose the design</label>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:10}}>
+          {PROMO_TEMPLATES.map(t=>(
+            <div key={t.id} onClick={()=>pickTemplate(t.id)} style={{cursor:"pointer",borderRadius:12,overflow:"hidden",background:"var(--s1)",
+              border:tplId===t.id?"2px solid var(--acc)":"2px solid var(--bdr)",
+              boxShadow:tplId===t.id?"0 0 0 3px rgba(15,107,102,.12)":"none",transition:"border-color .15s,box-shadow .15s",position:"relative"}}>
+              {tplId===t.id&&<div style={{position:"absolute",top:7,right:7,width:20,height:20,borderRadius:"50%",background:"var(--acc)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2}}><Ico n="check" s={13}/></div>}
+              <div style={{height:66,background:t.bg,color:t.fg,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,letterSpacing:-0.5,fontSize:t.mark.length>12?13:16}}>{t.mark}</div>
+              <div style={{padding:"10px 12px 12px"}}>
+                <div style={{fontWeight:800,fontSize:13.5,marginBottom:3}}>{t.name}</div>
+                <div style={{fontSize:11.5,color:"var(--t3)",lineHeight:1.55}}>{t.blurb}</div>
+                <button className="btn-s btn-sm" style={{marginTop:8}} onClick={e=>{e.stopPropagation();previewTemplate(t.id);}}>Preview →</button>
+              </div>
+            </div>
+          ))}
+        </div>
+        {tplNote&&<div style={{fontSize:11.5,color:tplNote.includes("MISSING")||tplNote.includes("Couldn't")?"#c0392b":"var(--t3)",marginTop:8,fontWeight:tplNote.includes("MISSING")?700:400}}>{tplNote}</div>}
+      </div>
+
+      <div style={{marginBottom:14,padding:"12px 14px",borderRadius:10,background:"var(--s1)",border:"1px solid var(--bdr)"}}>
+        <div style={{fontSize:12,color:"var(--t3)",fontWeight:600,marginBottom:2}}>Test this design before you attach a list</div>
+        <div style={{fontSize:11.5,color:"var(--t3)",lineHeight:1.6,marginBottom:8}}>Sends only to you. Creates a throwaway draft with no recipients — it cannot email your list.</div>
+        <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+          <input value={newTest} onChange={e=>setNewTest(e.target.value)} placeholder="you@example.com" style={{padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s2)",color:"var(--t1)",fontSize:14,width:240}}/>
+          <button className="btn-s" disabled={busy} onClick={sendNewTest}>{busy?"Working…":"Send test"}</button>
+        </div>
+        {newTestMsg&&<div style={{fontSize:12,marginTop:8,color:newTestMsg.startsWith("Test sent")?"#15803d":(newTestMsg==="Sending…"?"var(--t3)":"#c0392b"),fontWeight:newTestMsg.startsWith("Test sent")?700:400}}>{newTestMsg}</div>}
+      </div>
+
       <div style={{marginBottom:10}}>
-        <label style={{fontSize:12,color:"var(--t3)",fontWeight:600}}>Email HTML <button className="btn-s btn-sm" style={{marginLeft:8}} onClick={loadTemplate}>Load default template</button></label>
-        <textarea value={nHtml} onChange={e=>setNHtml(e.target.value)} style={{width:"100%",minHeight:80,padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:12,fontFamily:"monospace"}} placeholder="Loads promo-castings-campaign.html automatically (must include {{UNSUB_URL}})."/>
+        <label style={{fontSize:12,color:"var(--t3)",fontWeight:600}}>Email HTML <span style={{fontWeight:400}}>(set by the design above — edit for a one-off tweak)</span></label>
+        <textarea value={nHtml} onChange={e=>{setNHtml(e.target.value);testDraft.current=null;}} style={{width:"100%",minHeight:80,padding:"9px 11px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s1)",color:"var(--t1)",fontSize:12,fontFamily:"monospace"}} placeholder="Pick a design above (must include {{UNSUB_URL}})."/>
         <div style={{fontSize:11,color:"var(--t3)",marginTop:4}}>{nHtml?(nHtml.length+" chars · {{UNSUB_URL}} "+(nHtml.includes("{{UNSUB_URL}}")?"present ":"MISSING ")):""}</div>
       </div>
       <div style={{marginBottom:12}}>
