@@ -3162,7 +3162,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    full-bleed strip below the hero, which also puts the logos AFTER the CTA
    (reassurance once the price has landed) instead of directly beneath it,
    competing with the one button on the page that matters. */
-.agd-studios{position:relative;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;background:var(--s2);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);padding:26px 26px;}
+.agd-studios{position:relative;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;padding:34px 26px 30px;}
 .agd-studios .k{font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);margin:0 auto 14px;text-align:center;max-width:1120px;}
 .agd-studios .row{display:flex;align-items:center;justify-content:space-between;gap:26px;flex-wrap:wrap;max-width:1120px;margin:0 auto;}
 /* Heights are per-mark, sized to equal optical AREA: these run from Disney at
