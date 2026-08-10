@@ -3132,8 +3132,12 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 /* .page is a 1200px centred column, so a background painted anywhere inside it
    stops at that column and draws a seam down the page. Same 100vw + -50vw
    break-out the footer and the back-to-top bar already use. */
-.agd-herobg{position:relative;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;padding:0 40px;background:radial-gradient(900px 420px at 78% 10%,rgba(232,144,42,.13),transparent);}
-@media(max-width:900px){.agd-herobg{padding:0 16px;}}
+/* Pulled up by .page's own top padding so the tint starts flush under the nav —
+   otherwise a 40px band of untinted background sits above it and reads as a
+   pale stripe fading across the top of the page. Padding is re-added inside. */
+.agd-herobg{position:relative;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;margin-top:-40px;padding:40px 40px 0;background:radial-gradient(900px 480px at 78% 4%,rgba(232,144,42,.13),transparent);}
+@media(max-width:768px){.agd-herobg{margin-top:-24px;padding:24px 16px 0;}}
+@media(max-width:480px){.agd-herobg{margin-top:-18px;padding:18px 14px 0;}}
 .agd-hero{padding:clamp(30px,5vw,58px) 0 clamp(28px,4vw,44px);}
 .agd-hero-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(28px,4vw,50px);align-items:center;}
 .agd-eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:10.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;padding:7px 15px;border-radius:100px;border:1.5px solid var(--amber-dk);color:var(--amber-dk);margin-bottom:18px;}
@@ -3282,7 +3286,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .agd-final{border-radius:20px;padding:clamp(30px,4vw,48px) clamp(20px,4vw,40px);text-align:center;background:radial-gradient(700px 300px at 50% 0,rgba(232,144,42,.14),transparent),var(--s1);border:1px solid rgba(232,144,42,.4);}
 .agd-final p{font-size:15px;line-height:1.7;color:var(--t2);max-width:580px;margin:0 auto 22px;}
 .agd-guarantee{font-size:12px;color:var(--t3);margin-top:14px;}
-.agd-legal{max-width:720px;margin:0 auto;text-align:center;font-size:12.5px;color:var(--t3);line-height:1.75;padding-bottom:clamp(30px,5vw,56px);}
+.agd-coasts{font-size:13.5px;line-height:1.7;color:var(--t3);max-width:520px;margin:14px 0 0;padding-left:13px;border-left:2px solid rgba(232,144,42,.45);}
 @media(max-width:960px){.agd-hero-grid,.agd-flow{grid-template-columns:1fr;}}
 @media(prefers-reduced-motion:reduce){
   .agd-plane,.agd-route,.agd-halo,.agd-key,.agd-ring,.agd-marq-in,.agd-redact,.agd-eyebrow .d,.agd-fan .agdc{animation:none !important;}
@@ -8210,6 +8214,7 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
             <span className="agd-city bh">Beverly Hills</span>
             <span className="agd-city ny">New York</span>
           </div>
+          <p className="agd-coasts">Write to either coast — where you live doesn't decide who you can approach. An actor in New York can mail a Beverly Hills office and an actor in LA can mail a New York one. If a company is interested enough, they arrange it: a paid trip to their office, or a video meeting first.</p>
           <p className="agd-lede">Talent agencies are the companies that represent actors — the ones who put their clients in front of casting for studio and network productions. For every one: the mailing address of each office, the website, whether they're SAG-AFTRA franchised, how big they are, and how they actually take submissions, whether that's post, email, a web form, or only through a referral.</p>
           <div className="agd-ctas">
             <button className="agd-btn gold" onClick={go}>{cta}</button>
@@ -8327,7 +8332,6 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
         <button className="agd-btn gold" onClick={go}>{isPremium?"Open the directory":"Go Premium — $14.95/mo"}</button>
         <div className="agd-guarantee">Cancel any time · $99/year if you'd rather pay once</div>
       </div></section>
-      <p className="agd-legal">Studio names are shown only to describe the kind of productions talent agencies submit their clients to. CastSlate is not affiliated with, endorsed by, or representing any studio, talent agency, or management company listed. Cast Slate does not guarantee representation, auditions, callbacks, bookings, or career outcomes.</p>
     </div>
 
     <Footer onNavigate={onNavigate} backToTop/>
