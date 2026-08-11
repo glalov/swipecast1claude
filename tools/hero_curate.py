@@ -93,7 +93,10 @@ def analyse(jpeg_bytes):
     accent = "#%02X%02X%02X" % (int(r * 255), int(g * 255), int(b * 255))
     return {
         "luma": round(luma, 1),
-        "style": "latenight" if luma < 110 else "marquee",
+        # Film backdrops skew dark, so a naive threshold puts nearly everything
+        # in the dark variant and the rotation stops feeling varied. 95 is where
+        # a genuinely bright frame starts reading as light editorial.
+        "style": "latenight" if luma < 95 else "marquee",
         "accent": accent,
         "ratio": round(w / h, 2),
         "size": (w, h),
