@@ -199,12 +199,32 @@ else:
 pre_compiled_flag = str(not USE_BABEL_RUNTIME).lower()
 SITE = "https://www.castslate.com"
 
+# ── Per-route asset preloads ──────────────────────────────────────────────────
+# Images inside the app cannot be DISCOVERED until app.js has downloaded, waited
+# out the intro hold (~0.9s, see BOOT_LOADER) and rendered — so an <img> below
+# the fold starts its request several seconds into the page, and paints while
+# the visitor is already reading past it. A preload hint in the head is the fix:
+# the browser starts the fetch during HTML parse, in parallel with the vendor
+# scripts, so the bytes are in cache before React ever mounts the element.
+# Keep this route-scoped — preloading the studio strip on all 18 routes would
+# spend the budget on pages that never show it.
+STUDIO_LOGOS = ["warner", "universal", "disney", "sony", "paramount", "marvel"]
+ROUTE_PRELOADS = {
+    "/agency-directory": [(f"/logos/{n}.svg", "image") for n in STUDIO_LOGOS],
+}
+
+def route_preload_tags(path):
+    return "".join(
+        f'\n  <link rel="preload" as="{kind}" href="{href}"/>'
+        for href, kind in ROUTE_PRELOADS.get(path, [])
+    )
+
 # ── HTML template ─────────────────────────────────────────────────────────────
 # title / desc / canonical are per-route; everything else is shared. The app
 # still patches these client-side on SPA navigation via setPageSEO(), but the
 # initial server-served HTML now declares the correct canonical for each URL,
 # which is what Google indexes.
-def render_page(title, desc, canonical):
+def render_page(title, desc, canonical, extra_preload=""):
     return f'''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -282,7 +302,7 @@ def render_page(title, desc, canonical):
   <script type="application/ld+json">
   {{"@context":"https://schema.org","@type":"WebApplication","name":"CastSlate","url":"https://www.castslate.com","applicationCategory":"EntertainmentApplication","operatingSystem":"Web","offers":{{"@type":"Offer","price":"0","priceCurrency":"USD","description":"Free actor account. Premium plans from $8.25/month."}},"description":"A modern casting platform where actors submit to roles and casting directors review talent one profile at a time."}}
   </script>
-{head_vendor}{preload_tags}
+{head_vendor}{preload_tags}{extra_preload}
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 {babel_cdn}
   <!-- BUILD: {BUILD_VERSION} -->
@@ -639,7 +659,8 @@ ROUTES = [
 
 for filename, path, title, desc in ROUTES:
     canonical = SITE + ("/" if path == "/" else path)
-    open(filename, "w", encoding="utf-8").write(render_page(title, desc, canonical))
+    open(filename, "w", encoding="utf-8").write(
+        render_page(title, desc, canonical, route_preload_tags(path)))
 
 # ── Deploy-safety self-check ─────────────────────────────────────────────────
 # A production build must load the pre-compiled /app.js. If index.html ever

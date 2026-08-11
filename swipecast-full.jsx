@@ -3192,7 +3192,13 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    4.2:1 to Sony at 0.65:1, so one shared height can only ever suit one of them.
    The logos are NOT filtered — greyscale flattens Marvel (white type on a red
    plate) into a slab and mushes the fine line work in the others. */
-.agd-studios img{width:auto;display:block;flex:0 0 auto;shape-rendering:geometricPrecision;transition:transform .22s ease;}
+/* color:transparent hides the alt text. An <img> that has not arrived yet paints
+   its alt string in the page's body colour, which is why a slow load showed a
+   row of "Warner Bros. Pictures / Universal Pictures / ..." in plain type where
+   the marks belong. The alt attribute stays for screen readers; it just never
+   renders as visible copy. Combined with the aspect-ratio reserved on each img,
+   the strip holds its exact final shape while the files are in flight. */
+.agd-studios img{width:auto;display:block;flex:0 0 auto;shape-rendering:geometricPrecision;transition:transform .22s ease;color:transparent;}
 .agd-studios img:hover{transform:translateY(-2px);}
 @media(max-width:820px){.agd-studios{padding:22px 16px;}.agd-studios .row{justify-content:center;gap:26px 32px;}}
 /* Flex-wrap left Marvel alone on a second line (5 + 1). A 3-column grid at
@@ -8226,16 +8232,22 @@ const AGD_FIELDS=[
 // this into anything that implies a relationship with these companies.
 // Public-domain SVGs (simple geometry/typography sits below the US copyright
 // threshold). h = rendered height in px, tuned per mark, NOT shared.
+/* `a` is each mark's aspect ratio, taken from its own viewBox — NOT eyeballed.
+   Without it the <img> has width:auto and zero intrinsic size until the SVG
+   arrives, so the strip renders collapsed and then shoves itself wider the
+   moment the last logo lands. With it the row reserves its final width up
+   front and the logos fade into space that was always theirs. Re-derive these
+   from the viewBox if a logo file is ever replaced. */
 const AGD_STUDIOS=[
-  {n:"Warner Bros. Pictures",f:"/logos/warner.svg",   h:74,hm:40},
-  {n:"Universal Pictures",   f:"/logos/universal.svg",h:52,hm:30},
-  {n:"Walt Disney Studios",  f:"/logos/disney.svg",   h:30,hm:17},
-  {n:"Sony Pictures",        f:"/logos/sony.svg",     h:62,hm:36},
-  {n:"Paramount Pictures",   f:"/logos/paramount.svg",h:66,hm:38},
+  {n:"Warner Bros. Pictures",f:"/logos/warner.svg",   h:74,hm:40,a:0.881},
+  {n:"Universal Pictures",   f:"/logos/universal.svg",h:52,hm:30,a:1.892},
+  {n:"Walt Disney Studios",  f:"/logos/disney.svg",   h:30,hm:17,a:4.219},
+  {n:"Sony Pictures",        f:"/logos/sony.svg",     h:62,hm:36,a:0.645},
+  {n:"Paramount Pictures",   f:"/logos/paramount.svg",h:66,hm:38,a:1.270},
   // Marvel is the exception to the equal-area rule: its type sits INSIDE a solid
   // plate, so the mark's legible content is much smaller than its bounding box.
   // At the "correct" 34px the STUDIOS line was ~4px tall. Sized by readability.
-  {n:"Marvel Studios",       f:"/logos/marvel.svg",   h:50,hm:30}
+  {n:"Marvel Studios",       f:"/logos/marvel.svg",   h:50,hm:30,a:2.095}
 ];
 const AGD_SAMPLE=[
   ["Beverly Hills","Mail OK","Small & boutique",134,true],
@@ -8323,7 +8335,9 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
       <div className="k">The productions their clients are cast in</div>
       <div className="row">
         {AGD_STUDIOS.map(s=>(
-          <img key={s.f} src={s.f} alt={s.n} style={{height:(isNarrow?s.hm:s.h)+"px"}}/>
+          <img key={s.f} src={s.f} alt={s.n}
+               fetchpriority="high" decoding="async" loading="eager"
+               style={{height:(isNarrow?s.hm:s.h)+"px",aspectRatio:String(s.a)}}/>
         ))}
       </div>
     </div>
@@ -32540,6 +32554,25 @@ function App(){
   // Warm the Classes cache once on startup so the first open is instant too.
   // (Browse Castings warms via its SearchPage premount on the home page.)
   useEffect(()=>{const id=setTimeout(()=>{prefetchClasses();},1200);return()=>clearTimeout(id);},[]);
+
+  // Warm the Agency Directory's studio marks. agency-directory.html preloads
+  // them in its <head> (see ROUTE_PRELOADS in build-html.py), but that only
+  // covers a direct landing — arriving via the in-app "Talent Agencies" nav is
+  // a client-side route change with no new document and therefore no head
+  // hints, which is the path where the strip used to draw itself line by line
+  // while the visitor was already reading. Idle-time and cheap: six small SVGs
+  // that the browser then serves from cache the instant the strip mounts.
+  useEffect(()=>{
+    let done=false;
+    const warm=()=>{
+      if(done)return; done=true;
+      try{AGD_STUDIOS.forEach(s=>{const im=new Image();im.decoding="async";im.src=s.f;});}catch(e){}
+    };
+    const ric=typeof requestIdleCallback!=="undefined"
+      ? requestIdleCallback(warm,{timeout:4000})
+      : setTimeout(warm,2000);
+    return ()=>{try{typeof cancelIdleCallback!=="undefined"?cancelIdleCallback(ric):clearTimeout(ric);}catch(e){}};
+  },[]);
 
   // If a talent user lands on /dashboard (CD dashboard), redirect them to their Talent Dashboard.
   // This handles direct URL loads, post-login routing, and nav button presses that call navigate("dashboard").

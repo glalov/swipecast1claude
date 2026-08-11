@@ -119,6 +119,14 @@
       ]
     },
     {
+      "_comment": "Studio marks on /agency-directory. agency-directory.html preloads these in its head, but the <img> that consumes them is not created until the app has booted (~2.4s measured). Under the catch-all's max-age=0 the browser is not allowed to reuse the preloaded bytes, so it downloaded every logo twice and the strip still drew late. A real lifetime makes the handoff a cache hit, and makes repeat visits and in-app navigation instant. Not immutable: stale-while-revalidate lets a swapped logo propagate within a day instead of being pinned for a month.",
+      "source": "/logos/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
+      ]
+    },
+    {
       "source": "/assets/((?!video/).*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" },
@@ -126,7 +134,7 @@
       ]
     },
     {
-      "source": "/((?!video-formats/|vendor/|assets/|app\\.js|app\\.jsx|og-image\\.png|favicon|apple-touch-icon\\.png|robots\\.txt|sitemap\\.xml).*)",
+      "source": "/((?!video-formats/|vendor/|assets/|logos/|app\\.js|app\\.jsx|og-image\\.png|favicon|apple-touch-icon\\.png|robots\\.txt|sitemap\\.xml).*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },
