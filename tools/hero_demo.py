@@ -46,6 +46,44 @@ CAPTIONS = {
   "The Kid": "Chaplin auditioned hundreds of children. Jackie Coogan was four.",
 }
 
+# Subject-line hook per still. The sending function appends a live role count,
+# so the reader always sees it is about casting, and no two consecutive days
+# carry the same subject.
+SUBJECTS = {
+  "Sinners": "Some rooms change what walks out of them",
+  "Weapons": "Nobody can describe it. You can audition for it",
+  "Wicked": "Every ensemble you love started as an open call",
+  "Dune Part Two": "The desert doesn't audition you twice",
+  "The Substance": "Roles that want you exactly as you are",
+  "Anora": "January unknowns, December leads",
+  "Conclave": "Someone is on the other side of that door",
+  "Twisters": "Chasing what everyone else runs from",
+  "Nosferatu": "Shadow, silence, and one unbearable face",
+  "Metropolis": "They built the future out of extras",
+  "Sherlock Jr.": "Keaton did his own stunts. Start where you can",
+  "Night of the Living Dead": "$114,000 and nobody's permission",
+  "Carnival of Souls": "One lake, one actress, no budget",
+  "His Girl Friday": "Ninety takes of pure nerve",
+  "The General": "One take. No second chance",
+  "Detour": "Six days, one road, no money",
+  "F1": "Six weeks of shooting, ninety seconds on screen",
+  "Superman": "Someone has to play him",
+  "Thunderbolts": "The ensemble is where careers start",
+  "A Complete Unknown": "Nobody knew his name in 1961 either",
+  "Gladiator II": "One extra is in every frame you remember",
+  "Challengers": "Three people and nowhere to hide",
+  "The Wild Robot": "Some of today's roles never face a camera",
+  "Nickel Boys": "The camera was somebody's eyes",
+  "Wicked For Good": "The back of the number is where leads start",
+  "Jurassic World Rebirth": "Reacting to nothing at all, convincingly",
+  "The Cabinet of Dr. Caligari": "They painted the set crooked on purpose",
+  "Safety Last!": "He really did hang off the clock",
+  "The Phantom of the Opera": "He would not show the makeup before the premiere",
+  "D.O.A.": "He walked in to report his own murder",
+  "Charade": "Public domain by accident",
+  "The Kid": "Chaplin auditioned hundreds. Coogan was four",
+}
+
 # Already on the site as /logos/*.svg (the AGD_STUDIOS strip). Shown small and
 # muted under the roles. NOTE: these are SVG, which Gmail strips -- they must be
 # converted to PNG before this goes into a real send.
@@ -193,13 +231,14 @@ def main():
     seed = os.path.join(os.path.dirname(__file__), "..", "supabase", "migrations", "email_hero_seed.sql")
     with open(seed, "w") as f:
         f.write("-- Seed pool for the rotating email hero. Captions hand-written per still.\n")
-        f.write("insert into public.email_hero_images (source,title,year,image_url,caption,style,accent,credit) values\n")
+        f.write("insert into public.email_hero_images (source,title,year,image_url,caption,subject_hook,style,accent,credit) values\n")
         vals = []
         for r in rows:
             src = "public_domain" if r.get("year") and int(r["year"]) < 1930 else "tmdb"
             cap = CAPTIONS.get(r["title"], "").replace("'", "''")
             yr = r["year"] or "null"
-            vals.append(f"  ('{src}','{r['title'].replace(chr(39), chr(39)*2)}',{yr},'{r['url']}','{cap}','{r['style']}','{r['accent']}','Still: {r['title'].replace(chr(39), chr(39)*2)}')")
+            sub = SUBJECTS.get(r["title"], "New casting calls are open").replace("'", "''")
+            vals.append(f"  ('{src}','{r['title'].replace(chr(39), chr(39)*2)}',{yr},'{r['url']}','{cap}','{sub}','{r['style']}','{r['accent']}','Still: {r['title'].replace(chr(39), chr(39)*2)}')")
         f.write(",\n".join(vals) + "\non conflict do nothing;\n")
     print("wrote", os.path.normpath(seed))
 

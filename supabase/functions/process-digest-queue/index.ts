@@ -6,14 +6,19 @@
 // GET  ?action=unsubscribe&uid=<id> → unsubscribe + redirect to confirmation.
 //
 // Reliability notes:
-//   • The digest goes out DAILY for the life of the account and never stops on
-//     its own. As long as a user has >= 1 matching ACTIVE casting, they get an
-//     email — even after they've already been sent every casting in the pool.
-//     Newly-posted castings are prioritised; once those run out we recycle ones
-//     the user has seen before, SHUFFLED and excluding the exact batch from their
-//     last email, so each day's batch differs from the previous send.
-//     The number of cards VARIES day-to-day (a cap under 10, not a send-gate), so
-//     the digest no longer sends the same fixed count every morning.
+//   • FREE (non-premium) users: the digest goes out DAILY for the life of the
+//     account and never stops on its own. As long as a user has >= 1 matching
+//     ACTIVE casting, they get an email — even after they've already been sent
+//     every casting in the pool. Newly-posted castings are prioritised; once those
+//     run out we recycle ones the user has seen before, SHUFFLED and excluding the
+//     exact batch from their last email, so each day's batch differs from the
+//     previous send. The number of cards VARIES day-to-day (a cap under 10, not a
+//     send-gate), so the digest no longer sends the same fixed count every morning.
+//   • PREMIUM (membership_status='active') users: a DIFFERENT, fresh-only digest.
+//     They are sent ONLY castings added to Browse Castings within the last 48h that
+//     they have not already been emailed. No recycling, no old castings. If nothing
+//     new matches in that 48h window, they get NO email that day (rather than an old
+//     batch). Everything else (matching, suppression, frequency gate) is shared.
 //   • Recipient emails come straight from auth.users (get_digest_emails RPC), NOT
 //     the GoTrue Admin API — which was silently dropping newer accounts so they
 //     never received a digest. Every subscriber, present and future, is covered.
@@ -214,14 +219,22 @@ function card(c: any): string {
 </table>`;
 }
 
-function buildEmail(firstName: string, castings: any[], userId: string, count: number): string {
+// The still shown at the top of today's digest, plus the look derived from it.
+// Null when the pool is empty or the flag is off, in which case the email falls
+// back to the original static hero.
+interface Hero { image_url: string; caption: string; subject_hook: string; style: string; accent: string; title: string; year: number | null; }
+
+function buildEmail(firstName: string, castings: any[], userId: string, count: number, hero: Hero | null = null): string {
   const headline  = count===1 ? "1 new casting match for you" : `${count} new casting matches for you`;
   const cards     = castings.map(card).join("");
   const unsub     = `${UNSUB_BASE}?action=unsubscribe&uid=${userId}`;
   const prefs     = `${APP_URL}/account-settings`;
   const browse    = `${APP_URL}/browse-castings`;
   const home      = APP_URL;
-  const heroImg    = `${APP_URL}/email/digest-hero.jpg`;
+  // Rotating film still when one is available, otherwise the original static
+  // hero so an empty pool or a disabled flag can never produce a broken email.
+  const heroImg    = hero?.image_url || `${APP_URL}/email/digest-hero.jpg`;
+  const heroAlt    = hero ? `Still from ${hero.title}` : "New casting roles on CastSlate";
   const logoImgUrl = `${APP_URL}/email/castslate-logo.png`;
 
   return `<!DOCTYPE html>
@@ -277,9 +290,21 @@ function buildEmail(firstName: string, castings: any[], userId: string, count: n
 <!-- HERO IMAGE -->
 <tr>
   <td style="padding:0;line-height:0;">
-    <img src="${heroImg}" width="600" height="220" class="hero-img" alt="New casting roles on CastSlate" style="display:block;width:100%;max-width:600px;height:auto;border:none;outline:none;text-decoration:none;" />
+    <!-- No fixed height and no object-fit: cropping a film still to a set band
+         slices heads off, which is the first thing anyone notices. Backdrops are
+         16:9, so keeping the natural ratio shows what was actually framed. -->
+    <img src="${heroImg}" width="600" class="hero-img" alt="${heroAlt}" style="display:block;width:100%;max-width:600px;height:auto;border:none;outline:none;text-decoration:none;" />
   </td>
 </tr>
+${hero ? `<tr>
+  <td style="height:4px;background:${hero.accent};line-height:0;font-size:0;">&nbsp;</td>
+</tr>
+<tr>
+  <td style="padding:16px 28px 0;background:#ffffff;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:10px;color:#94a3b8;letter-spacing:.4px;margin-bottom:8px;">Still: <em>${hero.title}</em>${hero.year ? ` (${hero.year})` : ""}</div>
+    <div style="font-family:Georgia,'Times New Roman',serif;font-size:19px;line-height:1.35;font-weight:700;color:#0f172a;">${hero.caption}</div>
+  </td>
+</tr>` : ""}
 
 <!-- HEADLINE -->
 <tr>
@@ -386,13 +411,27 @@ serve(async (req) => {
     if(action==="test"){
       if(!to_email) return res({error:"to_email required"},400);
       const today=new Date().toISOString().slice(0,10);
-      const{data:cs}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).order("created_at",{ascending:false}).limit(5);
+      const{data:cs}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).order("created_at",{ascending:false}).limit(5);
       const preview=(cs||[]).map((c:any)=>({...c,posted_at:c.created_at,roles:[]}));
       if(!preview.length) preview.push({id:"preview",title:"Indie Feature — New York",type:"Film",location:"New York, NY",union_status:"SAG-AFTRA",pay:"$2,500/week",synopsis:"A quiet drama about a Brooklyn ceramicist navigating her first gallery show. Character-driven, single-location, real-world cast.",slug:"sample",posted_at:new Date().toISOString(),roles:[{name:"NADIA",age_range:"28–38",gender:"Female",pay:"$2,500/week"}]});
       if(!emailConfigured()) return res({error:"Email provider not configured"},500);
       const count=preview.length;
-      const subject=count===1?"1 new casting match on CastSlate":`${count} new casting matches on CastSlate`;
-      const html=buildEmail("there",preview,"test",count);
+      // The test send must exercise the same rotation the real run does, or it
+      // shows the old static hero and proves nothing. Pass {"force_hero":true}
+      // to preview the new design while the flag is still off.
+      let thero: Hero | null = null;
+      try{
+        const{data:hs}=await sb.from("site_settings").select("hero_rotation_enabled").eq("id",1).maybeSingle();
+        if(hs?.hero_rotation_enabled || body.force_hero){
+          const{data:h}=await sb.rpc("get_next_email_hero");
+          if(h) thero = (Array.isArray(h) ? h[0] : h) as Hero;
+        }
+      }catch(e){ console.error("[digest test] hero unavailable:", (e as Error).message); }
+      const roleWord=count===1?"role":"roles";
+      const subject=thero
+        ? `${thero.subject_hook} — ${count} ${roleWord} open today`
+        : (count===1?"1 new casting match on CastSlate":`${count} new casting matches on CastSlate`);
+      const html=buildEmail("there",preview,"test",count,thero);
       const r=await sendEmail({from:FROM_EMAIL,to:[to_email],replyTo:CONTACT_EMAIL,subject,html});
       if(!r.ok) return res({error:r.err},500);
       return res({ok:true,result:{status:"sent",provider_id:r.id}});
@@ -420,7 +459,7 @@ serve(async (req) => {
         const PAGE=1000; let from=0;
         while(true){
           const{data,error}=await sb.from("profiles")
-            .select("id,display_name,notification_email")
+            .select("id,display_name,notification_email,membership_status")
             .in("user_type",["talent","actor"])
             .eq("account_status","active")
             .eq("visible",true)
@@ -463,9 +502,26 @@ serve(async (req) => {
         }
       }
 
+      // One still for the whole run, so everyone in today's digest sees the same
+      // picture and the rotation advances by one day rather than once per user.
+      // Any failure here is non-fatal: hero stays null and the email falls back
+      // to the static hero and the old subject.
+      let hero: Hero | null = null;
+      try{
+        const{data:hs}=await sb.from("site_settings").select("hero_rotation_enabled").eq("id",1).maybeSingle();
+        if(hs?.hero_rotation_enabled){
+          const{data:h}=await sb.rpc("get_next_email_hero");
+          if(h) hero = (Array.isArray(h) ? h[0] : h) as Hero;
+        }
+      }catch(e){ console.error("[digest] hero rotation unavailable:", (e as Error).message); }
+
       // ── All open, published, NON-EXPIRED castings (recent first) + roles ──────
       const today=new Date().toISOString().slice(0,10);
-      const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).order("created_at",{ascending:false}).limit(500);
+      // Premium members get a DIFFERENT digest: only genuinely FRESH castings added
+      // to Browse Castings within the last 48h — never recycled/old ones. This
+      // cutoff (created_at >= now-48h) is applied per-user below for premium only.
+      const FRESH_CUTOFF=new Date(Date.now()-48*3600000).toISOString();
+      const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).order("created_at",{ascending:false}).limit(500);
       if(!castings?.length) return res({ok:true,message:"No active castings",sent:0,skipped:0});
       const cids=castings.map((c:any)=>c.id);
       const rb:Record<string,any[]>={};
@@ -580,21 +636,47 @@ serve(async (req) => {
           //         batch from their last email so today's batch always differs,
           //      4. shuffle so the daily mix varies,
           //    and we only skip when the pool is genuinely empty.
-          const pool=cwr.filter((c:any)=>matches(pf,c));
-          if(pool.length<1){ skipped++; bump("no_matches"); addLog({user_id:p.id,email,status:"skipped",reason:"no_matches",project_ids_included:[]}); continue; }
+          const isPremium=p.membership_status==="active";
+          let pool=cwr.filter((c:any)=>matches(pf,c));
+
+          // ── PREMIUM: fresh-only digest ──────────────────────────────────────
+          //    Premium members are sent ONLY castings added to Browse Castings in
+          //    the last 48h. No recycling, no old castings. If nothing new matches
+          //    in that window, they get no email today (rather than an old batch).
+          if(isPremium){
+            pool=pool.filter((c:any)=>(c.created_at||c.posted_at)>=FRESH_CUTOFF);
+            if(pool.length<1){ skipped++; bump("premium_no_fresh"); addLog({user_id:p.id,email,status:"skipped",reason:"premium_no_fresh",project_ids_included:[]}); continue; }
+          }else if(pool.length<1){
+            skipped++; bump("no_matches"); addLog({user_id:p.id,email,status:"skipped",reason:"no_matches",project_ids_included:[]}); continue;
+          }
 
           const sentIds=histMap[p.id]??new Set<string>();
           const lastIds=lastMap[p.id]??new Set<string>();
           const fresh=shuffle(pool.filter((c:any)=>!sentIds.has(c.id)));
-          const recycled=shuffle(pool.filter((c:any)=>sentIds.has(c.id)&&!lastIds.has(c.id)));
-          let candidates=[...fresh,...recycled];
-          if(candidates.length<1) candidates=shuffle(pool.slice());
+          let candidates:any[];
+          if(isPremium){
+            // Premium: never recycle old (already-seen) castings. Only unseen,
+            // in-window ones. If they've already seen every fresh casting, skip.
+            candidates=fresh;
+            if(candidates.length<1){ skipped++; bump("premium_no_fresh"); addLog({user_id:p.id,email,status:"skipped",reason:"premium_no_fresh",project_ids_included:[]}); continue; }
+          }else{
+            const recycled=shuffle(pool.filter((c:any)=>sentIds.has(c.id)&&!lastIds.has(c.id)));
+            candidates=[...fresh,...recycled];
+            if(candidates.length<1) candidates=shuffle(pool.slice());
+          }
 
           const batch=candidates.slice(0,cap);
           const first=(p.display_name??"").split(" ")[0].trim()||"there";
           const count=batch.length;
-          const subject=count===1?"1 new casting match on CastSlate":`${count} new casting matches on CastSlate`;
-          outbox.push({ userId:p.id, email, subject, html:buildEmail(first,batch,p.id,count), ids:batch.map((c:any)=>c.id) });
+          // Subject comes from the day's still, with the live role count
+          // appended so it still reads as casting mail rather than film
+          // trivia. The old subject was the same sentence every single day,
+          // which is what trains people to stop opening it.
+          const roleWord=count===1?"role":"roles";
+          const subject=hero
+            ? `${hero.subject_hook} — ${count} ${roleWord} open today`
+            : (count===1?"1 new casting match on CastSlate":`${count} new casting matches on CastSlate`);
+          outbox.push({ userId:p.id, email, subject, html:buildEmail(first,batch,p.id,count,hero), ids:batch.map((c:any)=>c.id) });
         }catch(e){
           failed++; errs.push(`${p.id}: ${String(e)}`);
           addLog({user_id:p.id,email,status:"failed",reason:"unexpected_error",error_message:String(e),project_ids_included:[]});

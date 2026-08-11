@@ -14,6 +14,12 @@ create table if not exists public.email_hero_images (
   image_url    text not null,
   -- the line printed under the still
   caption      text not null,
+  -- Subject-line hook for the send that uses this still. The function appends a
+  -- live role count ("... — 6 roles open today"), so every subject is both
+  -- unique and visibly about casting rather than film trivia. Without this the
+  -- digest sent "N new casting matches on CastSlate" every single day, which is
+  -- what trains people to stop opening it.
+  subject_hook text not null default 'New casting calls are open',
   -- template variant: 'marquee' = cream/ink editorial, 'latenight' = dark cinema.
   -- Chosen from the still's mean luminance at curation time.
   style        text not null default 'marquee' check (style in ('marquee','latenight')),

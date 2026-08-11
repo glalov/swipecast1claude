@@ -416,7 +416,7 @@ serve(async (req) => {
     if(action==="test"){
       if(!to_email) return res({error:"to_email required"},400);
       const today=new Date().toISOString().slice(0,10);
-      const{data:cs}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).order("created_at",{ascending:false}).limit(3);
+      const{data:cs}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).order("created_at",{ascending:false}).limit(3);
       const preview=(cs||[]).map((c:any)=>({...c,posted_at:c.created_at,roles:[]}));
       if(!preview.length) preview.push({id:"preview",title:'Indie Feature — "The Long Winter"',type:"Film",location:"New York, NY",union_status:"SAG-AFTRA",pay:"$2,500/week",synopsis:"A character-driven drama about a Brooklyn ceramicist navigating her first gallery show.",slug:"sample",posted_at:new Date().toISOString(),roles:[{name:"NADIA",age_range:"28–38",gender:"Female",pay:"$2,500/week"}]});
       const html=buildEmail("there",preview,"test",slot);
@@ -493,7 +493,7 @@ serve(async (req) => {
 
     // ── Active castings + roles (for the personalized job cards). ──
     const today=new Date().toISOString().slice(0,10);
-    const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).order("created_at",{ascending:false}).limit(500);
+    const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).order("created_at",{ascending:false}).limit(500);
     const cwr:any[]=[];
     if(castings?.length){
       const cids=castings.map((c:any)=>c.id);
