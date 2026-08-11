@@ -28,7 +28,32 @@ CAPTIONS = {
   "His Girl Friday": "Nobody has talked that fast since. Ninety takes of pure nerve.",
   "The General": "The most expensive shot of the silent era. Done once, in a single take.",
   "Detour": "Six days, one road, no money. Noir was built by people improvising.",
+  "F1": "Ninety seconds of finished footage, six weeks of shooting. Screen time is earned.",
+  "Superman": "Someone has to play the person everyone has already pictured. Might as well be you.",
+  "Thunderbolts": "The ensemble is where careers start. Every one of them was an unknown once.",
+  "A Complete Unknown": "Nobody knew his name in 1961 either.",
+  "Gladiator II": "Thousands of extras. One of them is in every frame you remember.",
+  "Challengers": "Three people, one court, nowhere to hide. That is what a good audition feels like.",
+  "The Wild Robot": "Your voice is a credit too. Some of today's roles never face a camera.",
+  "Nickel Boys": "Shot almost entirely in first person. The camera was somebody's eyes.",
+  "Wicked For Good": "Standing at the back of the number is how most leads started.",
+  "Jurassic World Rebirth": "Reacting convincingly to nothing at all is a real skill. It pays, too.",
+  "The Cabinet of Dr. Caligari": "The set was painted crooked on purpose. People are still copying it.",
+  "Safety Last!": "He really did hang off the clock. Always ask what the role actually requires.",
+  "The Phantom of the Opera": "Chaney designed his own makeup and refused to show it before the premiere.",
+  "D.O.A.": "A man walks into a police station to report his own murder. Openings matter.",
+  "Charade": "It fell into the public domain by accident, and everyone has watched it since.",
+  "The Kid": "Chaplin auditioned hundreds of children. Jackie Coogan was four.",
 }
+
+# Already on the site as /logos/*.svg (the AGD_STUDIOS strip). Shown small and
+# muted under the roles. NOTE: these are SVG, which Gmail strips -- they must be
+# converted to PNG before this goes into a real send.
+STUDIOS = [
+    ("Warner Bros. Pictures", "https://www.castslate.com/logos/warner.svg", 22),
+    ("Universal Pictures", "https://www.castslate.com/logos/universal.svg", 17),
+    ("Walt Disney Studios", "https://www.castslate.com/logos/disney.svg", 11),
+]
 
 SLOTS = [
     ("Daily digest",   "07:00", "Today's new casting calls"),
@@ -58,6 +83,16 @@ def render_email(row, slot_label, headline):
         bg, panel, ink, muted, rule = "#efece4", "#ffffff", "#101014", "#5c564a", "#ddd6c8"
         cta_bg, cta_fg = "#101014", "#ffffff"
 
+    # Deliberately not "Trusted by" -- that wording claims a business
+    # relationship with these studios. Keep it to what is verifiable.
+    studio_label = "Casting for film, TV and stage"
+    filt = "" if dark else "filter:grayscale(1);opacity:.42;"
+    studios = "".join(
+        f'<img src="{u}" alt="{esc(n)}" height="{h}" '
+        f'style="display:inline-block;vertical-align:middle;margin:0 9px;height:{h}px;'
+        f'{"filter:brightness(0) invert(1);opacity:.38;" if dark else filt}border:none;"/>'
+        for n, u, h in STUDIOS)
+
     roles = "".join(
         f'<tr><td style="padding:9px 0;border-bottom:1px solid {rule};">'
         f'<div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:{ink};">{esc(t)}</div>'
@@ -73,7 +108,12 @@ def render_email(row, slot_label, headline):
       <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:{muted};">{esc(slot_label)}</td>
     </tr></table>
   </td></tr>
-  <tr><td style="padding:0;line-height:0;"><img src="{row['url']}" width="440" alt="{esc(row['title'])}" style="display:block;width:100%;height:150px;object-fit:cover;border:none;"/></td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="{row['url']}" width="440" alt="{esc(row['title'])}" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
   <tr><td style="height:3px;background:{accent};line-height:0;font-size:0;">&nbsp;</td></tr>
   <tr><td style="padding:14px 20px 0;">
     <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:{muted};letter-spacing:.4px;margin-bottom:9px;">Still: <em>{esc(row['title'])}</em>{(' (' + str(row['year']) + ')') if row.get('year') else ''}</div>
@@ -85,19 +125,32 @@ def render_email(row, slot_label, headline):
       <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation">{roles}</table></td></tr>
     </table>
   </td></tr>
-  <tr><td style="padding:14px 20px 20px;text-align:center;">
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
     <a href="#" style="display:inline-block;background:{cta_bg};color:{cta_fg};text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid {rule};">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:{muted};margin-bottom:9px;">{esc(studio_label)}</div>
+    {studios}
   </td></tr>
 </table>'''
 
 
 def main():
-    raw = open(sys.argv[1]).read()
-    rows = json.loads(raw[:raw.index("\n\n-- SQL")])
+    rows = []
+    for path in sys.argv[1:]:
+        raw = open(path).read()
+        rows += json.loads(raw[:raw.index("\n\n-- SQL")])
     rows = [r for r in rows if not r.get("error")]
+    # Interleave light and dark so consecutive sends never look like each other.
+    light = [r for r in rows if r["style"] == "marquee"]
+    dark = [r for r in rows if r["style"] == "latenight"]
+    rows, i = [], 0
+    while light or dark:
+        if dark: rows.append(dark.pop(0))
+        if light: rows.append(light.pop(0))
 
     days, i = [], 0
-    for d in range(1, 6):
+    for d in range(1, len(rows) // 3 + 1):
         slots = []
         for label, time, headline in SLOTS:
             slots.append((label, time, headline, rows[i % len(rows)]))
@@ -115,7 +168,7 @@ def main():
     # Served as a plain file, so it needs its own charset or the em-dashes and
     # curly quotes in the captions come out as mojibake.
     page = f'''<meta charset="utf-8">
-<title>CastSlate — Rotating hero, next 5 days</title>
+<title>CastSlate — Rotating hero, next {len(days)} days</title>
 <style>
  body{{margin:0;background:#e9e9ec;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#111;}}
  .wrap{{max-width:1500px;margin:0 auto;padding:30px 18px 60px;}}
@@ -129,8 +182,8 @@ def main():
  .slot-h span{{color:#888;}} .slot-h em{{color:#8a8a95;font-style:normal;margin-left:auto;font-size:10.5px;}}
 </style>
 <div class="wrap">
-<h1>Rotating film-still hero — the next five days</h1>
-<p class="lede">Every send pulls the least-recently-used still, so nothing repeats until the whole pool has been shown. Each row carries its own look: the mean luminance of the picture chooses the light or dark template, and the accent colour is sampled from the image itself — so the email is themed to whatever it happens to be showing. Captions are written per still, never generated at send time. Pool below is {len(rows)} images; at three sends a day that is {len(rows)//3} days before anything comes back.</p>
+<h1>Rotating film-still hero — the next {len(days)} days</h1>
+<p class="lede">Every send pulls the least-recently-used still, so nothing repeats until the whole pool has been shown. Each row carries its own look: the mean luminance of the picture chooses the light or dark template, and the accent colour is sampled from the image itself — so the email is themed to whatever it happens to be showing. Captions are written per still, never generated at send time. Pool is {len(rows)} images; at three sends a day nothing repeats for {len(rows)//3} days, then the rotation recycles oldest-first.</p>
 {cards}
 </div>'''
     out = os.path.join(os.path.dirname(__file__), "..", "email", "castslate-hero-rotation-demo.html")

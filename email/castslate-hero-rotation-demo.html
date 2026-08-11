@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<title>CastSlate — Rotating hero, next 5 days</title>
+<title>CastSlate — Rotating hero, next 10 days</title>
 <style>
  body{margin:0;background:#e9e9ec;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#111;}
  .wrap{max-width:1500px;margin:0 auto;padding:30px 18px 60px;}
@@ -13,8 +13,8 @@
  .slot-h span{color:#888;} .slot-h em{color:#8a8a95;font-style:normal;margin-left:auto;font-size:10.5px;}
 </style>
 <div class="wrap">
-<h1>Rotating film-still hero — the next five days</h1>
-<p class="lede">Every send pulls the least-recently-used still, so nothing repeats until the whole pool has been shown. Each row carries its own look: the mean luminance of the picture chooses the light or dark template, and the accent colour is sampled from the image itself — so the email is themed to whatever it happens to be showing. Captions are written per still, never generated at send time. Pool below is 16 images; at three sends a day that is 5 days before anything comes back.</p>
+<h1>Rotating film-still hero — the next 10 days</h1>
+<p class="lede">Every send pulls the least-recently-used still, so nothing repeats until the whole pool has been shown. Each row carries its own look: the mean luminance of the picture chooses the light or dark template, and the accent colour is sampled from the image itself — so the email is themed to whatever it happens to be showing. Captions are written per still, never generated at send time. Pool is 32 images; at three sends a day nothing repeats for 10 days, then the rotation recycles oldest-first.</p>
 <section><h2>Day 1</h2><div class="row"><div class="slot"><div class="slot-h"><b>Daily digest</b><span>07:00</span><em>Sinners &middot; latenight &middot; #D48934</em></div>
 <table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
   <tr><td style="padding:16px 20px 10px;">
@@ -23,7 +23,12 @@
       <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Daily digest</td>
     </tr></table>
   </td></tr>
-  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/nAxGnGHOsfzufThz20zgmRwKur3.jpg" width="440" alt="Sinners" style="display:block;width:100%;height:150px;object-fit:cover;border:none;"/></td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/nAxGnGHOsfzufThz20zgmRwKur3.jpg" width="440" alt="Sinners" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
   <tr><td style="height:3px;background:#D48934;line-height:0;font-size:0;">&nbsp;</td></tr>
   <tr><td style="padding:14px 20px 0;">
     <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Sinners</em></div>
@@ -35,54 +40,76 @@
       <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#D48934;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#D48934;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#D48934;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
     </table>
   </td></tr>
-  <tr><td style="padding:14px 20px 20px;text-align:center;">
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
     <a href="#" style="display:inline-block;background:#D48934;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
   </td></tr>
-</table></div><div class="slot"><div class="slot-h"><b>Noon upsell</b><span>12:00</span><em>Weapons &middot; latenight &middot; #4D96BB</em></div>
-<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
-  <tr><td style="padding:16px 20px 10px;">
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
-      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#ffffff;">CASTSLATE</td>
-      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Noon upsell</td>
-    </tr></table>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #26262f;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#a9a4b6;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:brightness(0) invert(1);opacity:.38;border:none;"/>
   </td></tr>
-  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/8VyTWJrNEyV2MTWvniDVp0MpOAe.jpg" width="440" alt="Weapons" style="display:block;width:100%;height:150px;object-fit:cover;border:none;"/></td></tr>
-  <tr><td style="height:3px;background:#4D96BB;line-height:0;font-size:0;">&nbsp;</td></tr>
-  <tr><td style="padding:14px 20px 0;">
-    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Weapons</em></div>
-    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#ffffff;letter-spacing:-.3px;">Everyone in town saw it. Nobody can describe it. Today's roles are below.</div>
-    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">You're missing roles that fit you</div>
-  </td></tr>
-  <tr><td style="padding:12px 20px 0;">
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
-      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#4D96BB;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#4D96BB;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#4D96BB;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
-    </table>
-  </td></tr>
-  <tr><td style="padding:14px 20px 20px;text-align:center;">
-    <a href="#" style="display:inline-block;background:#4D96BB;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
-  </td></tr>
-</table></div><div class="slot"><div class="slot-h"><b>Evening upsell</b><span>18:00</span><em>Wicked &middot; marquee &middot; #E0B08E</em></div>
+</table></div><div class="slot"><div class="slot-h"><b>Noon upsell</b><span>12:00</span><em>Wicked &middot; marquee &middot; #E0B08E</em></div>
 <table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#efece4;width:440px;max-width:100%;">
   <tr><td style="padding:16px 20px 10px;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
       <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#101014;">CASTSLATE</td>
-      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#5c564a;">Evening upsell</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#5c564a;">Noon upsell</td>
     </tr></table>
   </td></tr>
-  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/fyZ6SDUS4o9jp2EHxfZa3qS9ean.jpg" width="440" alt="Wicked" style="display:block;width:100%;height:150px;object-fit:cover;border:none;"/></td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/fyZ6SDUS4o9jp2EHxfZa3qS9ean.jpg" width="440" alt="Wicked" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
   <tr><td style="height:3px;background:#E0B08E;line-height:0;font-size:0;">&nbsp;</td></tr>
   <tr><td style="padding:14px 20px 0;">
     <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#5c564a;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Wicked</em></div>
     <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#101014;letter-spacing:-.3px;">Every ensemble you've ever loved started as a room full of people nobody had cast yet.</div>
-    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#5c564a;margin-top:10px;">Tonight's roles close soon</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#5c564a;margin-top:10px;">You're missing roles that fit you</div>
   </td></tr>
   <tr><td style="padding:12px 20px 0;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;">
       <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#E0B08E;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#E0B08E;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#E0B08E;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
     </table>
   </td></tr>
-  <tr><td style="padding:14px 20px 20px;text-align:center;">
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
     <a href="#" style="display:inline-block;background:#101014;color:#ffffff;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #ddd6c8;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#5c564a;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:grayscale(1);opacity:.42;border:none;"/>
+  </td></tr>
+</table></div><div class="slot"><div class="slot-h"><b>Evening upsell</b><span>18:00</span><em>Weapons &middot; latenight &middot; #4D96BB</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#ffffff;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Evening upsell</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/8VyTWJrNEyV2MTWvniDVp0MpOAe.jpg" width="440" alt="Weapons" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#4D96BB;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Weapons</em></div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#ffffff;letter-spacing:-.3px;">Everyone in town saw it. Nobody can describe it. Today's roles are below.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">Tonight's roles close soon</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#4D96BB;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#4D96BB;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#4D96BB;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#4D96BB;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #26262f;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#a9a4b6;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:brightness(0) invert(1);opacity:.38;border:none;"/>
   </td></tr>
 </table></div></div></section><section><h2>Day 2</h2><div class="row"><div class="slot"><div class="slot-h"><b>Daily digest</b><span>07:00</span><em>Dune Part Two &middot; marquee &middot; #BB8B4D</em></div>
 <table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#efece4;width:440px;max-width:100%;">
@@ -92,7 +119,12 @@
       <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#5c564a;">Daily digest</td>
     </tr></table>
   </td></tr>
-  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/eZ239CUp1d6OryZEBPnO2n87gMG.jpg" width="440" alt="Dune Part Two" style="display:block;width:100%;height:150px;object-fit:cover;border:none;"/></td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/eZ239CUp1d6OryZEBPnO2n87gMG.jpg" width="440" alt="Dune Part Two" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
   <tr><td style="height:3px;background:#BB8B4D;line-height:0;font-size:0;">&nbsp;</td></tr>
   <tr><td style="padding:14px 20px 0;">
     <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#5c564a;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Dune Part Two</em></div>
@@ -104,54 +136,76 @@
       <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB8B4D;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB8B4D;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB8B4D;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
     </table>
   </td></tr>
-  <tr><td style="padding:14px 20px 20px;text-align:center;">
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
     <a href="#" style="display:inline-block;background:#101014;color:#ffffff;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
   </td></tr>
-</table></div><div class="slot"><div class="slot-h"><b>Noon upsell</b><span>12:00</span><em>The Substance &middot; marquee &middot; #C76C72</em></div>
-<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#efece4;width:440px;max-width:100%;">
-  <tr><td style="padding:16px 20px 10px;">
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
-      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#101014;">CASTSLATE</td>
-      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#5c564a;">Noon upsell</td>
-    </tr></table>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #ddd6c8;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#5c564a;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:grayscale(1);opacity:.42;border:none;"/>
   </td></tr>
-  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/8ODNt5olCeIqBYTP3GgXEQYTfeX.jpg" width="440" alt="The Substance" style="display:block;width:100%;height:150px;object-fit:cover;border:none;"/></td></tr>
-  <tr><td style="height:3px;background:#C76C72;line-height:0;font-size:0;">&nbsp;</td></tr>
-  <tr><td style="padding:14px 20px 0;">
-    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#5c564a;letter-spacing:.4px;margin-bottom:9px;">Still: <em>The Substance</em></div>
-    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#101014;letter-spacing:-.3px;">The industry's favourite horror is being replaced. Here's work that wants you as you are.</div>
-    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#5c564a;margin-top:10px;">You're missing roles that fit you</div>
-  </td></tr>
-  <tr><td style="padding:12px 20px 0;">
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;">
-      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C76C72;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C76C72;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C76C72;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
-    </table>
-  </td></tr>
-  <tr><td style="padding:14px 20px 20px;text-align:center;">
-    <a href="#" style="display:inline-block;background:#101014;color:#ffffff;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
-  </td></tr>
-</table></div><div class="slot"><div class="slot-h"><b>Evening upsell</b><span>18:00</span><em>Anora &middot; latenight &middot; #C68E69</em></div>
+</table></div><div class="slot"><div class="slot-h"><b>Noon upsell</b><span>12:00</span><em>Anora &middot; latenight &middot; #C68E69</em></div>
 <table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
   <tr><td style="padding:16px 20px 10px;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
       <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#ffffff;">CASTSLATE</td>
-      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Evening upsell</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Noon upsell</td>
     </tr></table>
   </td></tr>
-  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/qvyOfwTC3qdbzkqdXWSSEMHtjBZ.jpg" width="440" alt="Anora" style="display:block;width:100%;height:150px;object-fit:cover;border:none;"/></td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/qvyOfwTC3qdbzkqdXWSSEMHtjBZ.jpg" width="440" alt="Anora" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
   <tr><td style="height:3px;background:#C68E69;line-height:0;font-size:0;">&nbsp;</td></tr>
   <tr><td style="padding:14px 20px 0;">
     <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Anora</em></div>
     <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#ffffff;letter-spacing:-.3px;">The best performances of the year came from faces nobody knew in January.</div>
-    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">Tonight's roles close soon</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">You're missing roles that fit you</div>
   </td></tr>
   <tr><td style="padding:12px 20px 0;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
       <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C68E69;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C68E69;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C68E69;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
     </table>
   </td></tr>
-  <tr><td style="padding:14px 20px 20px;text-align:center;">
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
     <a href="#" style="display:inline-block;background:#C68E69;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #26262f;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#a9a4b6;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:brightness(0) invert(1);opacity:.38;border:none;"/>
+  </td></tr>
+</table></div><div class="slot"><div class="slot-h"><b>Evening upsell</b><span>18:00</span><em>The Substance &middot; marquee &middot; #C76C72</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#efece4;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#101014;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#5c564a;">Evening upsell</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/8ODNt5olCeIqBYTP3GgXEQYTfeX.jpg" width="440" alt="The Substance" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#C76C72;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#5c564a;letter-spacing:.4px;margin-bottom:9px;">Still: <em>The Substance</em></div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#101014;letter-spacing:-.3px;">The industry's favourite horror is being replaced. Here's work that wants you as you are.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#5c564a;margin-top:10px;">Tonight's roles close soon</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C76C72;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C76C72;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C76C72;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#101014;color:#ffffff;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #ddd6c8;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#5c564a;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:grayscale(1);opacity:.42;border:none;"/>
   </td></tr>
 </table></div></div></section><section><h2>Day 3</h2><div class="row"><div class="slot"><div class="slot-h"><b>Daily digest</b><span>07:00</span><em>Conclave &middot; latenight &middot; #F41470</em></div>
 <table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
@@ -161,7 +215,12 @@
       <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Daily digest</td>
     </tr></table>
   </td></tr>
-  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/eZzNdjNDvaSoyywy9ICg2UmFwul.jpg" width="440" alt="Conclave" style="display:block;width:100%;height:150px;object-fit:cover;border:none;"/></td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/eZzNdjNDvaSoyywy9ICg2UmFwul.jpg" width="440" alt="Conclave" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
   <tr><td style="height:3px;background:#F41470;line-height:0;font-size:0;">&nbsp;</td></tr>
   <tr><td style="padding:14px 20px 0;">
     <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Conclave</em></div>
@@ -173,8 +232,12 @@
       <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#F41470;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#F41470;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#F41470;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
     </table>
   </td></tr>
-  <tr><td style="padding:14px 20px 20px;text-align:center;">
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
     <a href="#" style="display:inline-block;background:#F41470;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #26262f;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#a9a4b6;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:brightness(0) invert(1);opacity:.38;border:none;"/>
   </td></tr>
 </table></div><div class="slot"><div class="slot-h"><b>Noon upsell</b><span>12:00</span><em>Twisters &middot; marquee &middot; #BB794D</em></div>
 <table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#efece4;width:440px;max-width:100%;">
@@ -184,7 +247,12 @@
       <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#5c564a;">Noon upsell</td>
     </tr></table>
   </td></tr>
-  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/58D6ZAvOKxlHjyX9S8qNKSBE9Y.jpg" width="440" alt="Twisters" style="display:block;width:100%;height:150px;object-fit:cover;border:none;"/></td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/58D6ZAvOKxlHjyX9S8qNKSBE9Y.jpg" width="440" alt="Twisters" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
   <tr><td style="height:3px;background:#BB794D;line-height:0;font-size:0;">&nbsp;</td></tr>
   <tr><td style="padding:14px 20px 0;">
     <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#5c564a;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Twisters</em></div>
@@ -196,8 +264,12 @@
       <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB794D;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB794D;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB794D;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
     </table>
   </td></tr>
-  <tr><td style="padding:14px 20px 20px;text-align:center;">
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
     <a href="#" style="display:inline-block;background:#101014;color:#ffffff;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #ddd6c8;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#5c564a;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:grayscale(1);opacity:.42;border:none;"/>
   </td></tr>
 </table></div><div class="slot"><div class="slot-h"><b>Evening upsell</b><span>18:00</span><em>Nosferatu &middot; latenight &middot; #B5BB4E</em></div>
 <table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
@@ -207,7 +279,12 @@
       <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Evening upsell</td>
     </tr></table>
   </td></tr>
-  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/cA9iGtvjRGJHzDBfrq48l0eyCvA.jpg" width="440" alt="Nosferatu" style="display:block;width:100%;height:150px;object-fit:cover;border:none;"/></td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/cA9iGtvjRGJHzDBfrq48l0eyCvA.jpg" width="440" alt="Nosferatu" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
   <tr><td style="height:3px;background:#B5BB4E;line-height:0;font-size:0;">&nbsp;</td></tr>
   <tr><td style="padding:14px 20px 0;">
     <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Nosferatu</em> (1922)</div>
@@ -219,33 +296,46 @@
       <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#B5BB4E;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#B5BB4E;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#B5BB4E;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
     </table>
   </td></tr>
-  <tr><td style="padding:14px 20px 20px;text-align:center;">
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
     <a href="#" style="display:inline-block;background:#B5BB4E;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
   </td></tr>
-</table></div></div></section><section><h2>Day 4</h2><div class="row"><div class="slot"><div class="slot-h"><b>Daily digest</b><span>07:00</span><em>Metropolis &middot; latenight &middot; #BB4D4D</em></div>
-<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #26262f;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#a9a4b6;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:brightness(0) invert(1);opacity:.38;border:none;"/>
+  </td></tr>
+</table></div></div></section><section><h2>Day 4</h2><div class="row"><div class="slot"><div class="slot-h"><b>Daily digest</b><span>07:00</span><em>The General &middot; marquee &middot; #BB4D4D</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#efece4;width:440px;max-width:100%;">
   <tr><td style="padding:16px 20px 10px;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
-      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#ffffff;">CASTSLATE</td>
-      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Daily digest</td>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#101014;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#5c564a;">Daily digest</td>
     </tr></table>
   </td></tr>
-  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/eeMoFKxjjiCi6iep2GEZtSAMYIr.jpg" width="440" alt="Metropolis" style="display:block;width:100%;height:150px;object-fit:cover;border:none;"/></td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/mzox4HbcV9W42MH2dB1QsdDVGo3.jpg" width="440" alt="The General" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
   <tr><td style="height:3px;background:#BB4D4D;line-height:0;font-size:0;">&nbsp;</td></tr>
   <tr><td style="padding:14px 20px 0;">
-    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Metropolis</em> (1927)</div>
-    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#ffffff;letter-spacing:-.3px;">They built the future out of extras. Thousands of them, uncredited, unforgettable.</div>
-    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">Today's new casting calls</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#5c564a;letter-spacing:.4px;margin-bottom:9px;">Still: <em>The General</em> (1926)</div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#101014;letter-spacing:-.3px;">The most expensive shot of the silent era. Done once, in a single take.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#5c564a;margin-top:10px;">Today's new casting calls</div>
   </td></tr>
   <tr><td style="padding:12px 20px 0;">
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
-      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
     </table>
   </td></tr>
-  <tr><td style="padding:14px 20px 20px;text-align:center;">
-    <a href="#" style="display:inline-block;background:#BB4D4D;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#101014;color:#ffffff;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
   </td></tr>
-</table></div><div class="slot"><div class="slot-h"><b>Noon upsell</b><span>12:00</span><em>Sherlock Jr. &middot; latenight &middot; #D7D797</em></div>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #ddd6c8;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#5c564a;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:grayscale(1);opacity:.42;border:none;"/>
+  </td></tr>
+</table></div><div class="slot"><div class="slot-h"><b>Noon upsell</b><span>12:00</span><em>Metropolis &middot; latenight &middot; #BB4D4D</em></div>
 <table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
   <tr><td style="padding:16px 20px 10px;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
@@ -253,20 +343,125 @@
       <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Noon upsell</td>
     </tr></table>
   </td></tr>
-  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/tSipsYTp565LkopntX1lZNLPYHP.jpg" width="440" alt="Sherlock Jr." style="display:block;width:100%;height:150px;object-fit:cover;border:none;"/></td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/eeMoFKxjjiCi6iep2GEZtSAMYIr.jpg" width="440" alt="Metropolis" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#BB4D4D;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Metropolis</em> (1927)</div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#ffffff;letter-spacing:-.3px;">They built the future out of extras. Thousands of them, uncredited, unforgettable.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">You're missing roles that fit you</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#BB4D4D;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #26262f;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#a9a4b6;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:brightness(0) invert(1);opacity:.38;border:none;"/>
+  </td></tr>
+</table></div><div class="slot"><div class="slot-h"><b>Evening upsell</b><span>18:00</span><em>F1 &middot; marquee &middot; #4DA9BB</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#efece4;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#101014;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#5c564a;">Evening upsell</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/lkDYN0whyE82mcM20rwtwjbniKF.jpg" width="440" alt="F1" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#4DA9BB;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#5c564a;letter-spacing:.4px;margin-bottom:9px;">Still: <em>F1</em></div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#101014;letter-spacing:-.3px;">Ninety seconds of finished footage, six weeks of shooting. Screen time is earned.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#5c564a;margin-top:10px;">Tonight's roles close soon</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#4DA9BB;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#4DA9BB;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#4DA9BB;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#101014;color:#ffffff;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #ddd6c8;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#5c564a;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:grayscale(1);opacity:.42;border:none;"/>
+  </td></tr>
+</table></div></div></section><section><h2>Day 5</h2><div class="row"><div class="slot"><div class="slot-h"><b>Daily digest</b><span>07:00</span><em>Sherlock Jr. &middot; latenight &middot; #D7D797</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#ffffff;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Daily digest</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/tSipsYTp565LkopntX1lZNLPYHP.jpg" width="440" alt="Sherlock Jr." style="display:block;width:100%;height:auto;border:none;"/></td></tr>
   <tr><td style="height:3px;background:#D7D797;line-height:0;font-size:0;">&nbsp;</td></tr>
   <tr><td style="padding:14px 20px 0;">
     <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Sherlock Jr.</em> (1924)</div>
     <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#ffffff;letter-spacing:-.3px;">Keaton did his own stunts because nobody else would. Start where you can.</div>
-    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">You're missing roles that fit you</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">Today's new casting calls</div>
   </td></tr>
   <tr><td style="padding:12px 20px 0;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
       <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#D7D797;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#D7D797;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#D7D797;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
     </table>
   </td></tr>
-  <tr><td style="padding:14px 20px 20px;text-align:center;">
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
     <a href="#" style="display:inline-block;background:#D7D797;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #26262f;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#a9a4b6;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:brightness(0) invert(1);opacity:.38;border:none;"/>
+  </td></tr>
+</table></div><div class="slot"><div class="slot-h"><b>Noon upsell</b><span>12:00</span><em>Superman &middot; marquee &middot; #4278C6</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#efece4;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#101014;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#5c564a;">Noon upsell</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/eGX66zonvc4bXg3rM08RUxdYSDx.jpg" width="440" alt="Superman" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#4278C6;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#5c564a;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Superman</em> (2025)</div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#101014;letter-spacing:-.3px;">Someone has to play the person everyone has already pictured. Might as well be you.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#5c564a;margin-top:10px;">You're missing roles that fit you</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#4278C6;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#4278C6;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#4278C6;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#101014;color:#ffffff;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #ddd6c8;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#5c564a;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:grayscale(1);opacity:.42;border:none;"/>
   </td></tr>
 </table></div><div class="slot"><div class="slot-h"><b>Evening upsell</b><span>18:00</span><em>Night of the Living Dead &middot; latenight &middot; #BB4D75</em></div>
 <table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
@@ -276,7 +471,12 @@
       <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Evening upsell</td>
     </tr></table>
   </td></tr>
-  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/5KtmBSqFtHY3I9t8lgH27Mc0bqY.jpg" width="440" alt="Night of the Living Dead" style="display:block;width:100%;height:150px;object-fit:cover;border:none;"/></td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/5KtmBSqFtHY3I9t8lgH27Mc0bqY.jpg" width="440" alt="Night of the Living Dead" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
   <tr><td style="height:3px;background:#BB4D75;line-height:0;font-size:0;">&nbsp;</td></tr>
   <tr><td style="padding:14px 20px 0;">
     <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Night of the Living Dead</em> (1968)</div>
@@ -288,33 +488,46 @@
       <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D75;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D75;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D75;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
     </table>
   </td></tr>
-  <tr><td style="padding:14px 20px 20px;text-align:center;">
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
     <a href="#" style="display:inline-block;background:#BB4D75;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
   </td></tr>
-</table></div></div></section><section><h2>Day 5</h2><div class="row"><div class="slot"><div class="slot-h"><b>Daily digest</b><span>07:00</span><em>Carnival of Souls &middot; latenight &middot; #BB4D4D</em></div>
-<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #26262f;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#a9a4b6;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:brightness(0) invert(1);opacity:.38;border:none;"/>
+  </td></tr>
+</table></div></div></section><section><h2>Day 6</h2><div class="row"><div class="slot"><div class="slot-h"><b>Daily digest</b><span>07:00</span><em>Challengers &middot; marquee &middot; #71B3D0</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#efece4;width:440px;max-width:100%;">
   <tr><td style="padding:16px 20px 10px;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
-      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#ffffff;">CASTSLATE</td>
-      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Daily digest</td>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#101014;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#5c564a;">Daily digest</td>
     </tr></table>
   </td></tr>
-  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/esIoQw7VaykfHsw6fx2VltZ1R7U.jpg" width="440" alt="Carnival of Souls" style="display:block;width:100%;height:150px;object-fit:cover;border:none;"/></td></tr>
-  <tr><td style="height:3px;background:#BB4D4D;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/tq8COKsI99Bivjd4CZIYVGoKcIx.jpg" width="440" alt="Challengers" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#71B3D0;line-height:0;font-size:0;">&nbsp;</td></tr>
   <tr><td style="padding:14px 20px 0;">
-    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Carnival of Souls</em> (1962)</div>
-    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#ffffff;letter-spacing:-.3px;">One organ, one lake, one actress. You don't need a budget to be remembered.</div>
-    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">Today's new casting calls</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#5c564a;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Challengers</em></div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#101014;letter-spacing:-.3px;">Three people, one court, nowhere to hide. That is what a good audition feels like.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#5c564a;margin-top:10px;">Today's new casting calls</div>
   </td></tr>
   <tr><td style="padding:12px 20px 0;">
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
-      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#71B3D0;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#71B3D0;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#71B3D0;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
     </table>
   </td></tr>
-  <tr><td style="padding:14px 20px 20px;text-align:center;">
-    <a href="#" style="display:inline-block;background:#BB4D4D;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#101014;color:#ffffff;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
   </td></tr>
-</table></div><div class="slot"><div class="slot-h"><b>Noon upsell</b><span>12:00</span><em>His Girl Friday &middot; latenight &middot; #C36262</em></div>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #ddd6c8;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#5c564a;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:grayscale(1);opacity:.42;border:none;"/>
+  </td></tr>
+</table></div><div class="slot"><div class="slot-h"><b>Noon upsell</b><span>12:00</span><em>Carnival of Souls &middot; latenight &middot; #BB4D4D</em></div>
 <table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
   <tr><td style="padding:16px 20px 10px;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
@@ -322,22 +535,31 @@
       <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Noon upsell</td>
     </tr></table>
   </td></tr>
-  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/ihoQaiMFAz4YCTAaSIsQjRknsNH.jpg" width="440" alt="His Girl Friday" style="display:block;width:100%;height:150px;object-fit:cover;border:none;"/></td></tr>
-  <tr><td style="height:3px;background:#C36262;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/esIoQw7VaykfHsw6fx2VltZ1R7U.jpg" width="440" alt="Carnival of Souls" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#BB4D4D;line-height:0;font-size:0;">&nbsp;</td></tr>
   <tr><td style="padding:14px 20px 0;">
-    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>His Girl Friday</em> (1940)</div>
-    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#ffffff;letter-spacing:-.3px;">Nobody has talked that fast since. Ninety takes of pure nerve.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Carnival of Souls</em> (1962)</div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#ffffff;letter-spacing:-.3px;">One organ, one lake, one actress. You don't need a budget to be remembered.</div>
     <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">You're missing roles that fit you</div>
   </td></tr>
   <tr><td style="padding:12px 20px 0;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
-      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C36262;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C36262;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C36262;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
     </table>
   </td></tr>
-  <tr><td style="padding:14px 20px 20px;text-align:center;">
-    <a href="#" style="display:inline-block;background:#C36262;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#BB4D4D;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
   </td></tr>
-</table></div><div class="slot"><div class="slot-h"><b>Evening upsell</b><span>18:00</span><em>The General &middot; marquee &middot; #BB4D4D</em></div>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #26262f;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#a9a4b6;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:brightness(0) invert(1);opacity:.38;border:none;"/>
+  </td></tr>
+</table></div><div class="slot"><div class="slot-h"><b>Evening upsell</b><span>18:00</span><em>The Wild Robot &middot; marquee &middot; #66C4E8</em></div>
 <table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#efece4;width:440px;max-width:100%;">
   <tr><td style="padding:16px 20px 10px;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
@@ -345,11 +567,208 @@
       <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#5c564a;">Evening upsell</td>
     </tr></table>
   </td></tr>
-  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/mzox4HbcV9W42MH2dB1QsdDVGo3.jpg" width="440" alt="The General" style="display:block;width:100%;height:150px;object-fit:cover;border:none;"/></td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/mQZJoIhTEkNhCYAqcHrQqhENLdu.jpg" width="440" alt="The Wild Robot" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#66C4E8;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#5c564a;letter-spacing:.4px;margin-bottom:9px;">Still: <em>The Wild Robot</em></div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#101014;letter-spacing:-.3px;">Your voice is a credit too. Some of today's roles never face a camera.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#5c564a;margin-top:10px;">Tonight's roles close soon</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#66C4E8;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#66C4E8;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#66C4E8;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#101014;color:#ffffff;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #ddd6c8;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#5c564a;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:grayscale(1);opacity:.42;border:none;"/>
+  </td></tr>
+</table></div></div></section><section><h2>Day 7</h2><div class="row"><div class="slot"><div class="slot-h"><b>Daily digest</b><span>07:00</span><em>His Girl Friday &middot; latenight &middot; #C36262</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#ffffff;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Daily digest</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/ihoQaiMFAz4YCTAaSIsQjRknsNH.jpg" width="440" alt="His Girl Friday" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#C36262;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>His Girl Friday</em> (1940)</div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#ffffff;letter-spacing:-.3px;">Nobody has talked that fast since. Ninety takes of pure nerve.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">Today's new casting calls</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C36262;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C36262;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C36262;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#C36262;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #26262f;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#a9a4b6;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:brightness(0) invert(1);opacity:.38;border:none;"/>
+  </td></tr>
+</table></div><div class="slot"><div class="slot-h"><b>Noon upsell</b><span>12:00</span><em>Wicked For Good &middot; marquee &middot; #DEC690</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#efece4;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#101014;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#5c564a;">Noon upsell</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/cGbPBHKSFO7hSIjxkb3KOaGdOep.jpg" width="440" alt="Wicked For Good" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#DEC690;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#5c564a;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Wicked For Good</em></div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#101014;letter-spacing:-.3px;">Standing at the back of the number is how most leads started.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#5c564a;margin-top:10px;">You're missing roles that fit you</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#DEC690;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#DEC690;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#DEC690;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#101014;color:#ffffff;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #ddd6c8;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#5c564a;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:grayscale(1);opacity:.42;border:none;"/>
+  </td></tr>
+</table></div><div class="slot"><div class="slot-h"><b>Evening upsell</b><span>18:00</span><em>Detour &middot; latenight &middot; #BB4D4D</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#ffffff;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Evening upsell</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/uGOKN4VeCsf249zypWfaAzfTxAB.jpg" width="440" alt="Detour" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
   <tr><td style="height:3px;background:#BB4D4D;line-height:0;font-size:0;">&nbsp;</td></tr>
   <tr><td style="padding:14px 20px 0;">
-    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#5c564a;letter-spacing:.4px;margin-bottom:9px;">Still: <em>The General</em> (1926)</div>
-    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#101014;letter-spacing:-.3px;">The most expensive shot of the silent era. Done once, in a single take.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Detour</em> (1945)</div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#ffffff;letter-spacing:-.3px;">Six days, one road, no money. Noir was built by people improvising.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">Tonight's roles close soon</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#BB4D4D;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #26262f;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#a9a4b6;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:brightness(0) invert(1);opacity:.38;border:none;"/>
+  </td></tr>
+</table></div></div></section><section><h2>Day 8</h2><div class="row"><div class="slot"><div class="slot-h"><b>Daily digest</b><span>07:00</span><em>Jurassic World Rebirth &middot; marquee &middot; #C0885A</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#efece4;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#101014;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#5c564a;">Daily digest</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/zNriRTr0kWwyaXPzdg1EIxf0BWk.jpg" width="440" alt="Jurassic World Rebirth" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#C0885A;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#5c564a;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Jurassic World Rebirth</em></div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#101014;letter-spacing:-.3px;">Reacting convincingly to nothing at all is a real skill. It pays, too.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#5c564a;margin-top:10px;">Today's new casting calls</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C0885A;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C0885A;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C0885A;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#101014;color:#ffffff;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #ddd6c8;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#5c564a;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:grayscale(1);opacity:.42;border:none;"/>
+  </td></tr>
+</table></div><div class="slot"><div class="slot-h"><b>Noon upsell</b><span>12:00</span><em>Thunderbolts &middot; latenight &middot; #CCB079</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#ffffff;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Noon upsell</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/rthMuZfFv4fqEU4JVbgSW9wQ8rs.jpg" width="440" alt="Thunderbolts" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#CCB079;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Thunderbolts</em></div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#ffffff;letter-spacing:-.3px;">The ensemble is where careers start. Every one of them was an unknown once.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">You're missing roles that fit you</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#CCB079;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#CCB079;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#CCB079;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#CCB079;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #26262f;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#a9a4b6;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:brightness(0) invert(1);opacity:.38;border:none;"/>
+  </td></tr>
+</table></div><div class="slot"><div class="slot-h"><b>Evening upsell</b><span>18:00</span><em>The Cabinet of Dr. Caligari &middot; marquee &middot; #BB4D4D</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#efece4;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#101014;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#5c564a;">Evening upsell</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/sLq72hBx8Xs2IISVsZJqgjOd31b.jpg" width="440" alt="The Cabinet of Dr. Caligari" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#BB4D4D;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#5c564a;letter-spacing:.4px;margin-bottom:9px;">Still: <em>The Cabinet of Dr. Caligari</em> (1920)</div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#101014;letter-spacing:-.3px;">The set was painted crooked on purpose. People are still copying it.</div>
     <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#5c564a;margin-top:10px;">Tonight's roles close soon</div>
   </td></tr>
   <tr><td style="padding:12px 20px 0;">
@@ -357,8 +776,204 @@
       <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
     </table>
   </td></tr>
-  <tr><td style="padding:14px 20px 20px;text-align:center;">
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
     <a href="#" style="display:inline-block;background:#101014;color:#ffffff;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #ddd6c8;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#5c564a;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:grayscale(1);opacity:.42;border:none;"/>
+  </td></tr>
+</table></div></div></section><section><h2>Day 9</h2><div class="row"><div class="slot"><div class="slot-h"><b>Daily digest</b><span>07:00</span><em>A Complete Unknown &middot; latenight &middot; #D7CA97</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#ffffff;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Daily digest</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/otugS74HEHdca4aTCtt8HtXvPYV.jpg" width="440" alt="A Complete Unknown" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#D7CA97;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>A Complete Unknown</em></div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#ffffff;letter-spacing:-.3px;">Nobody knew his name in 1961 either.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">Today's new casting calls</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#D7CA97;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#D7CA97;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#D7CA97;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#D7CA97;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #26262f;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#a9a4b6;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:brightness(0) invert(1);opacity:.38;border:none;"/>
+  </td></tr>
+</table></div><div class="slot"><div class="slot-h"><b>Noon upsell</b><span>12:00</span><em>Safety Last! &middot; marquee &middot; #634DBB</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#efece4;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#101014;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#5c564a;">Noon upsell</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/3zo6ZONR4Mth2nWFbQK9dhCWbVz.jpg" width="440" alt="Safety Last!" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#634DBB;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#5c564a;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Safety Last!</em> (1923)</div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#101014;letter-spacing:-.3px;">He really did hang off the clock. Always ask what the role actually requires.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#5c564a;margin-top:10px;">You're missing roles that fit you</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#634DBB;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#634DBB;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#634DBB;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#101014;color:#ffffff;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #ddd6c8;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#5c564a;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:grayscale(1);opacity:.42;border:none;"/>
+  </td></tr>
+</table></div><div class="slot"><div class="slot-h"><b>Evening upsell</b><span>18:00</span><em>Gladiator II &middot; latenight &middot; #C27346</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#ffffff;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Evening upsell</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/tOqIwliWMovSIZ9DyvHcHI7p2im.jpg" width="440" alt="Gladiator II" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#C27346;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Gladiator II</em></div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#ffffff;letter-spacing:-.3px;">Thousands of extras. One of them is in every frame you remember.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">Tonight's roles close soon</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C27346;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C27346;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C27346;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#C27346;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #26262f;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#a9a4b6;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:brightness(0) invert(1);opacity:.38;border:none;"/>
+  </td></tr>
+</table></div></div></section><section><h2>Day 10</h2><div class="row"><div class="slot"><div class="slot-h"><b>Daily digest</b><span>07:00</span><em>The Kid &middot; marquee &middot; #D7B797</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#efece4;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#101014;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#5c564a;">Daily digest</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/mAhCW7QbpL5kwvCWGsfyY3ILoW6.jpg" width="440" alt="The Kid" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#D7B797;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#5c564a;letter-spacing:.4px;margin-bottom:9px;">Still: <em>The Kid</em> (1921)</div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#101014;letter-spacing:-.3px;">Chaplin auditioned hundreds of children. Jackie Coogan was four.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#5c564a;margin-top:10px;">Today's new casting calls</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#D7B797;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#D7B797;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #ddd6c8;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#101014;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#5c564a;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#D7B797;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#101014;color:#ffffff;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #ddd6c8;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#5c564a;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:grayscale(1);opacity:.42;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:grayscale(1);opacity:.42;border:none;"/>
+  </td></tr>
+</table></div><div class="slot"><div class="slot-h"><b>Noon upsell</b><span>12:00</span><em>Nickel Boys &middot; latenight &middot; #C19B5C</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#ffffff;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Noon upsell</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/kmLssINCNdXnIDjWkBsk6LUNSbe.jpg" width="440" alt="Nickel Boys" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#C19B5C;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>Nickel Boys</em></div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#ffffff;letter-spacing:-.3px;">Shot almost entirely in first person. The camera was somebody's eyes.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">You're missing roles that fit you</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C19B5C;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C19B5C;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#C19B5C;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#C19B5C;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #26262f;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#a9a4b6;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:brightness(0) invert(1);opacity:.38;border:none;"/>
+  </td></tr>
+</table></div><div class="slot"><div class="slot-h"><b>Evening upsell</b><span>18:00</span><em>The Phantom of the Opera &middot; latenight &middot; #BB4D4D</em></div>
+<table width="440" cellpadding="0" cellspacing="0" role="presentation" style="background:#0d0d10;width:440px;max-width:100%;">
+  <tr><td style="padding:16px 20px 10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:900;letter-spacing:-.7px;color:#ffffff;">CASTSLATE</td>
+      <td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a9a4b6;">Evening upsell</td>
+    </tr></table>
+  </td></tr>
+  <!-- Full frame, never cropped. A fixed height with object-fit:cover was
+       slicing the top and bottom off the stills and decapitating faces, which
+       is exactly what you notice first. TMDB backdrops are all 16:9, so letting
+       the image keep its own aspect ratio costs nothing and guarantees whatever
+       the cinematographer framed is what lands in the inbox. -->
+  <tr><td style="padding:0;line-height:0;"><img src="https://image.tmdb.org/t/p/w1280/6FSs7jMimg1PBYdhZtPNQhtKtEc.jpg" width="440" alt="The Phantom of the Opera" style="display:block;width:100%;height:auto;border:none;"/></td></tr>
+  <tr><td style="height:3px;background:#BB4D4D;line-height:0;font-size:0;">&nbsp;</td></tr>
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8.5px;color:#a9a4b6;letter-spacing:.4px;margin-bottom:9px;">Still: <em>The Phantom of the Opera</em> (1925)</div>
+    <div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;font-weight:700;color:#ffffff;letter-spacing:-.3px;">Chaney designed his own makeup and refused to show it before the premiere.</div>
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#a9a4b6;margin-top:10px;">Tonight's roles close soon</div>
+  </td></tr>
+  <tr><td style="padding:12px 20px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
+      <tr><td style="padding:4px 14px 8px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Seventh Landing</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Independent Film &bull; New York, NY</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">Lead $300/day &middot; Supporting $225/day</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">The Bed Was Not In the Script</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Off-Off-Broadway &bull; AEA</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">Paid stipend + industry night</div></td></tr><tr><td style="padding:9px 0;border-bottom:1px solid #26262f;"><div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#ffffff;">Hydrating Lip Balm Campaign</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#a9a4b6;margin-top:2px;">Commercial &bull; Non-Union</div><div style="font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#BB4D4D;margin-top:2px;font-weight:700;">$1,000 flat, 8&ndash;10 hours</div></td></tr></table></td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:14px 20px 4px;text-align:center;">
+    <a href="#" style="display:inline-block;background:#BB4D4D;color:#101014;text-decoration:none;padding:11px 26px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;">Browse All Castings</a>
+  </td></tr>
+  <tr><td style="padding:14px 20px 18px;text-align:center;border-top:1px solid #26262f;">
+    <div style="font-family:Helvetica,Arial,sans-serif;font-size:8px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#a9a4b6;margin-bottom:9px;">Casting for film, TV and stage</div>
+    <img src="https://www.castslate.com/logos/warner.svg" alt="Warner Bros. Pictures" height="22" style="display:inline-block;vertical-align:middle;margin:0 9px;height:22px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/universal.svg" alt="Universal Pictures" height="17" style="display:inline-block;vertical-align:middle;margin:0 9px;height:17px;filter:brightness(0) invert(1);opacity:.38;border:none;"/><img src="https://www.castslate.com/logos/disney.svg" alt="Walt Disney Studios" height="11" style="display:inline-block;vertical-align:middle;margin:0 9px;height:11px;filter:brightness(0) invert(1);opacity:.38;border:none;"/>
   </td></tr>
 </table></div></div></section>
 </div>
