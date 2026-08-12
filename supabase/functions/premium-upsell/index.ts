@@ -194,18 +194,18 @@ function card(c: any): string {
 </table>`;
 }
 
-// ── The email — teal header + logo, job cards, dark Premium spotlight (Version D). ──
-function buildEmail(firstName: string, castings: any[], userId: string, slot: string): string {
+// ── The email — film still on top, job cards, dark Premium spotlight (Version D). ──
+interface Hero { image_url: string; caption: string; subject_hook: string; style: string; accent: string; title: string; year: number | null; }
+
+function buildEmail(firstName: string, castings: any[], userId: string, slot: string, hero: Hero | null = null): string {
   const count      = castings.length;
   const cards      = castings.map(card).join("");
   const unsub      = `${UNSUB_BASE}?action=unsubscribe&uid=${userId}&slot=${slot}`;
   const browse     = `${APP_URL}/browse-castings`;
   const upgrade    = `${APP_URL}/membership`;
   const home       = APP_URL;
-  const logoImgUrl = `${APP_URL}/logo-email.png`;
   const greetLead  = slot === "evening" ? "Before the day's out" : "Fresh for you today";
-  // Sprocket-hole strip for the cinematic 35mm film-frame header (light holes on a teal bar).
-  const filmStrip  = Array.from({length:15}).map(()=>`<span style="display:inline-block;width:14px;height:8px;background:#eaf3f3;border-radius:2px;margin:3px 6px;"></span>`).join("");
+  const slotLabel  = slot === "evening" ? "Evening castings" : "Daily castings";
 
   const jobsSection = count ? `
 <tr>
@@ -264,25 +264,20 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
 
 <table width="600" cellpadding="0" cellspacing="0" role="presentation" class="shell" style="background:#ffffff;max-width:600px;width:100%;border-radius:18px;overflow:hidden;box-shadow:0 4px 30px rgba(47,95,96,0.15);">
 
-<!-- HEADER — W1 bright white banner: amber frame + film tape + logo -->
+<!-- HEADER — slim wordmark bar only (demo spec). The film still is the first
+     thing in the frame; the old white banner (logo tile, sprocket tape, star
+     rule) pushed it below the fold and buried the image. -->
 <tr>
-  <td style="padding:0;background:#ffffff;border-top:4px solid #e2b73c;">
-    <div style="height:14px;background:#2c5f60;line-height:0;font-size:0;text-align:center;white-space:nowrap;overflow:hidden;">${filmStrip}</div>
-    <a href="${home}" style="text-decoration:none;display:block;">
-      <div style="padding:12px 14px 14px;">
-        <div style="border:1.5px solid #f0dca8;border-radius:12px;padding:22px 20px 20px;text-align:center;">
-          <span style="display:inline-block;padding:5px;border-radius:15px;background:#fbf3dd;border:1px solid #eccf86;line-height:0;">
-            <img src="${logoImgUrl}" alt="CastSlate" width="46" height="46" style="display:block;border-radius:11px;box-shadow:0 3px 12px rgba(120,100,40,0.22);border:none;outline:none;"/>
-          </span>
-          <div style="margin-top:12px;font-size:26px;font-weight:800;color:#2f5f60;letter-spacing:-0.5px;">Cast<span style="color:#d9a92e;">Slate</span></div>
-          <div style="width:46px;height:2px;background:linear-gradient(90deg,transparent,#e2b73c,transparent);margin:10px auto 10px;font-size:0;line-height:0;">&nbsp;</div>
-          <div style="font-size:10.5px;font-weight:800;color:#c8901a;letter-spacing:5px;text-transform:uppercase;">&#9733; &nbsp;Daily Castings&nbsp; &#9733;</div>
-        </div>
-      </div>
-    </a>
-    <div style="height:14px;background:#2c5f60;line-height:0;font-size:0;text-align:center;white-space:nowrap;overflow:hidden;">${filmStrip}</div>
+  <td style="padding:15px 22px 12px;background:#ffffff;border-top:4px solid #e2b73c;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td><a href="${home}" style="text-decoration:none;font-size:17px;font-weight:900;letter-spacing:-0.7px;color:#2f5f60;">CAST<span style="color:#d9a92e;">SLATE</span></a></td>
+      <td style="text-align:right;font-size:8.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#8ba4a4;">${slotLabel}</td>
+    </tr></table>
   </td>
 </tr>
+${hero ? `<tr><td style="padding:0;line-height:0;"><img src="${hero.image_url}" width="600" alt="Still from ${hero.title}" style="display:block;width:100%;max-width:600px;height:auto;border:none;outline:none;" /></td></tr>
+<tr><td style="height:4px;background:${hero.accent};line-height:0;font-size:0;">&nbsp;</td></tr>
+<tr><td style="padding:16px 28px 4px;background:#ffffff;"><div style="font-family:Helvetica,Arial,sans-serif;font-size:10px;color:#8ba4a4;letter-spacing:.4px;margin-bottom:8px;">Still: <em>${hero.title}</em>${hero.year ? ` (${hero.year})` : ""}</div><div style="font-family:Georgia,'Times New Roman',serif;font-size:19px;line-height:1.35;font-weight:700;color:#1A1A2E;">${hero.caption}</div></td></tr>` : ""}
 
 <!-- STUDIO STRIP — A24 / Neon / Netflix (muted charcoal) on teal tint -->
 <tr>
@@ -315,7 +310,7 @@ ${jobsSection}
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
       <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Unlimited submissions <span style="color:#8ba4a4;font-weight:400;">&mdash; apply to every role, no weekly cap</span></td></tr></table></td></tr>
       <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Manager Mode <span style="color:#8ba4a4;font-weight:400;">&mdash; a weekly check-in in your corner</span></td></tr></table></td></tr>
-      <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Monthly NYC events <span style="color:#8ba4a4;font-weight:400;">&mdash; meet casting directors in person</span></td></tr></table></td></tr>
+      <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Agency &amp; Manager Directory <span style="color:#8ba4a4;font-weight:400;">&mdash; 550+ talent agencies and management companies</span></td></tr></table></td></tr>
       <tr><td style="padding:14px 4px;border-top:1px solid rgba(226,183,60,0.14);border-bottom:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Actor Card + QR <span style="color:#8ba4a4;font-weight:400;">&mdash; your whole profile in one scan</span></td></tr></table></td></tr>
     </table>
     <div style="text-align:center;margin-top:30px;">
@@ -345,7 +340,8 @@ ${jobsSection}
 </body></html>`;
 }
 
-function subjectFor(slot: string, count: number): string {
+function subjectFor(slot: string, count: number, hero: Hero | null = null): string {
+  if (hero) return `${hero.subject_hook} — ${count} ${count===1?"role":"roles"} open today`;
   // Append the NY date so every send has a unique subject — this stops Gmail's
   // conversation view from collapsing separate daily emails into one thread.
   const day = new Date().toLocaleDateString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric"});
@@ -416,11 +412,19 @@ serve(async (req) => {
     if(action==="test"){
       if(!to_email) return res({error:"to_email required"},400);
       const today=new Date().toISOString().slice(0,10);
+      let thero: Hero | null = null;
+      try{
+        const{data:hs}=await sb.from("site_settings").select("hero_rotation_enabled").eq("id",1).maybeSingle();
+        if(hs?.hero_rotation_enabled || body.force_hero){
+          const{data:h}=await sb.rpc("get_next_email_hero");
+          if(h) thero = (Array.isArray(h) ? h[0] : h) as Hero;
+        }
+      }catch(e){ console.error("[upsell] hero unavailable:", (e as Error).message); }
       const{data:cs}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).order("created_at",{ascending:false}).limit(3);
       const preview=(cs||[]).map((c:any)=>({...c,posted_at:c.created_at,roles:[]}));
       if(!preview.length) preview.push({id:"preview",title:'Indie Feature — "The Long Winter"',type:"Film",location:"New York, NY",union_status:"SAG-AFTRA",pay:"$2,500/week",synopsis:"A character-driven drama about a Brooklyn ceramicist navigating her first gallery show.",slug:"sample",posted_at:new Date().toISOString(),roles:[{name:"NADIA",age_range:"28–38",gender:"Female",pay:"$2,500/week"}]});
-      const html=buildEmail("there",preview,"test",slot);
-      const r=await sendEmail({from:FROM_EMAIL,to:[to_email],replyTo:CONTACT_EMAIL,subject:subjectFor(slot,preview.length),html});
+      const html=buildEmail("there",preview,"test",slot,thero);
+      const r=await sendEmail({from:FROM_EMAIL,to:[to_email],replyTo:CONTACT_EMAIL,subject:subjectFor(slot,preview.length,thero),html});
       if(!r.ok) return res({error:r.err},500);
       return res({ok:true,test:true,slot,to:to_email,provider_id:r.id});
     }
@@ -493,6 +497,15 @@ serve(async (req) => {
 
     // ── Active castings + roles (for the personalized job cards). ──
     const today=new Date().toISOString().slice(0,10);
+    // One still per run — every recipient in this slot gets the same frame.
+    let runHero: Hero | null = null;
+    try{
+      const{data:hs}=await sb.from("site_settings").select("hero_rotation_enabled").eq("id",1).maybeSingle();
+      if(hs?.hero_rotation_enabled){
+        const{data:h}=await sb.rpc("get_next_email_hero");
+        if(h) runHero = (Array.isArray(h) ? h[0] : h) as Hero;
+      }
+    }catch(e){ console.error("[upsell] hero unavailable:", (e as Error).message); }
     const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).order("created_at",{ascending:false}).limit(500);
     const cwr:any[]=[];
     if(castings?.length){
@@ -531,7 +544,7 @@ serve(async (req) => {
       const pool=cwr.filter((c:any)=>matches(pf,c) && castingAgeOk(c,p.age));
       const batch=shuffle(pool.slice()).slice(0,JOB_CAP);
       const first=(p.display_name??"").split(" ")[0].trim()||"there";
-      outbox.push({ userId:p.id, email, subject:subjectFor(slot,batch.length), html:buildEmail(first,batch,p.id,slot) });
+      outbox.push({ userId:p.id, email, subject:subjectFor(slot,batch.length,runHero), html:buildEmail(first,batch,p.id,slot,runHero) });
     }
 
     // ── Phase 2: send in batches of 100 via Resend, log each result. ──
