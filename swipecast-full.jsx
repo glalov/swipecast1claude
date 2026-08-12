@@ -3243,9 +3243,14 @@ html,body{overflow-x:hidden;overflow-x:clip;}
      ignores overflow-x on the root, so a wide track here would blow out the
      whole page instead of scrolling inside itself. */
   .rb-wrap{grid-template-columns:1fr;}
-  .rb-rail{border-right:none;border-bottom:1px solid #d9e9e9;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;contain:inline-size;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;}
+  /* NO scroll-snap and NO css scroll-behavior here, deliberately. Both fight a
+     programmatic scroll: snapping re-pins the rail to a snap point immediately
+     after the scroll is issued, which left the arrows advancing the selection
+     while the strip stayed put and the highlighted role sat off-screen. The
+     slide is done in JS instead, from a measured target offset, which is
+     deterministic and testable. */
+  .rb-rail{border-right:none;border-bottom:1px solid #d9e9e9;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;contain:inline-size;scrollbar-width:none;}
   .rb-rail::-webkit-scrollbar{display:none;}
-  .rb-item{scroll-snap-align:center;}
   .rb-item{flex:none;min-width:132px;margin-bottom:0;}
   .rb-pane{padding:18px 18px;}
   .rb-nav{display:flex;}
@@ -7423,7 +7428,7 @@ function PricingSocialProof({onViewCasting}){
     (async()=>{
       try{
         const {data}=await window.sb.from("castings")
-          .select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,submission_requirements,synopsis,tagline,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured,slug")
+          .select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,submission_requirements,synopsis,tagline,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured,slug,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope")
           .eq("published",true).in("status",["open","active","published"])
           .order("featured",{ascending:false}).order("created_at",{ascending:false}).limit(16);
         if(!alive)return;
@@ -10500,12 +10505,35 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   // arrows slides the strip to the matching role instead of leaving the
   // highlight somewhere off-screen. Skipped on first render — scrolling the
   // page on arrival would be its own bug.
-  const railSyncedRef=useRef(false);
-  useEffect(()=>{
-    if(!railSyncedRef.current){railSyncedRef.current=true;return;}
-    const el=railRef.current&&railRef.current.querySelector(".rb-item.on");
-    if(el&&el.scrollIntoView)el.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});
-  },[boardSel]);
+  // Slide the strip to a given role index. Driven from the click handlers rather
+  // than from an effect on boardSel: the effect fired before the rail had
+  // settled and the scroll was lost, leaving the selection updated and the strip
+  // frozen at 0. Targeting the child by INDEX also avoids depending on when the
+  // .on class lands in the DOM.
+  const selectRole=(i)=>{
+    setBoardSel(i);
+    const rail=railRef.current;
+    const el=rail&&rail.children&&rail.children[i];
+    if(!rail||!el)return;
+    // Centre the target in the strip. Measured from bounding rects rather than
+    // offsetLeft so it holds whatever the offsetParent turns out to be, and
+    // issued as scrollTo (not scrollIntoView) so it can never scroll the PAGE —
+    // only the rail. Computed synchronously: the strip's items never move, only
+    // the highlight does, so there is nothing to wait for.
+    const target=rail.scrollLeft
+      +(el.getBoundingClientRect().left-rail.getBoundingClientRect().left)
+      -(rail.clientWidth-el.clientWidth)/2;
+    const left=Math.max(0,Math.min(target,rail.scrollWidth-rail.clientWidth));
+    if(!rail.scrollTo){rail.scrollLeft=left;return;}
+    // Animate only when it can actually be seen. A smooth scroll queued on a
+    // hidden tab is not animated and can be dropped outright, which would leave
+    // the strip pointing at the wrong role when the user comes back; the same
+    // applies when the visitor has asked for reduced motion.
+    let reduced=false;
+    try{reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(_){}
+    const instant=reduced||(typeof document!=="undefined"&&document.hidden);
+    rail.scrollTo({left,behavior:instant?"auto":"smooth"});
+  };
   // Reveal "Read the full description" ONLY when the clamp is really hiding a
   // line. Character-count guessing is wrong at both ends: a 240-character line
   // fits in two lines on a wide column, and a short one can wrap on a phone.
@@ -11059,7 +11087,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             <div className="rb-rail" ref={railRef} role="tablist" aria-label="Roles">
               {sorted.map((rr,ii)=>(
                 <button key={ii} type="button" role="tab" aria-selected={ii===sel}
-                  className={"rb-item"+(ii===sel?" on":"")} onClick={()=>setBoardSel(ii)}>
+                  className={"rb-item"+(ii===sel?" on":"")} onClick={()=>selectRole(ii)}>
                   <div className="nm">{rr.name}</div>
                   <div className="mt">{[rr.type,roleAgeLabel(rr.ageRange)].filter(Boolean).join(" · ")}</div>
                   {roleTotalPay(rr)!=null&&<div className="amt">{fmtMoney(rr.rate_amount)}{unitSfx(rr.rate_unit)}</div>}
@@ -11089,12 +11117,12 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             {/* Phone pager — states how many roles there are and steps through them. */}
             <div className="rb-nav" style={{gridColumn:"1 / -1"}}>
               <button type="button" className="rb-navbtn" aria-label="Previous role"
-                disabled={sel===0} onClick={()=>setBoardSel(Math.max(0,sel-1))}>
+                disabled={sel===0} onClick={()=>selectRole(Math.max(0,sel-1))}>
                 <Ico n="chevron-left" s={20}/>
               </button>
               <span className="rb-count">Role {sel+1} of {sorted.length}</span>
               <button type="button" className="rb-navbtn" aria-label="Next role"
-                disabled={sel===sorted.length-1} onClick={()=>setBoardSel(Math.min(sorted.length-1,sel+1))}>
+                disabled={sel===sorted.length-1} onClick={()=>selectRole(Math.min(sorted.length-1,sel+1))}>
                 <Ico n="chevron-right" s={20}/>
               </button>
             </div>
@@ -34452,7 +34480,7 @@ function App(){
     if(!castingId)return;
     try{
       const{data,error}=await window.sb.from("castings")
-        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
         .eq("id",castingId).maybeSingle();
       if(error||!data)return;
       const c={
@@ -34467,10 +34495,18 @@ function App(){
         casting_image_path:data.casting_image_path||null,
         casting_images:Array.isArray(data.casting_images)?data.casting_images:[],
         casting_website_url:data.casting_website_url||null,
+        shoot_start:data.shoot_start||null,shoot_end:data.shoot_end||null,
+        shoot_location:data.shoot_location||null,schedule_note:data.schedule_note||null,
+        talent_scope:data.talent_scope||null,
         roles:(data.roles||[]).map(r=>({
           id:r.id||null,name:r.name||"",desc:r.description||"",type:r.role_type||"Supporting",
           ageRange:r.age_range||"",gender:r.gender||"Any",
           ethnicity:r.ethnicity||"Any",pay:r.pay||"",
+          rate_amount:r.rate_amount==null?null:Number(r.rate_amount),
+          rate_unit:r.rate_unit||null,
+          est_days:r.est_days==null?null:Number(r.est_days),
+          required_media:Array.isArray(r.required_media)?r.required_media:null,
+          prescreen:r.prescreen||null,
         })),
       };
       setPrevPage(page);setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");
@@ -34694,7 +34730,7 @@ function App(){
         const isUUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
         const field=isUUID?"id":"slug";
         const {data,error}=await window.sb.from("castings")
-          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,status,published,has_nudity,nudity_details,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,status,published,has_nudity,nudity_details,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq(field,slug).maybeSingle();
         if(cancelled||error||!data)return;
         // Guard: hide pending/unpublished AND not-yet-live (scheduled) castings from
@@ -34721,10 +34757,21 @@ function App(){
           casting_image_path:data.casting_image_path||null,
           casting_images:Array.isArray(data.casting_images)?data.casting_images:[],
           casting_website_url:data.casting_website_url||null,
+          // Direct /casting/<slug> links are how a logged-out visitor arrives from
+          // a shared post, so this mapper has to carry the same fields as the
+          // browse-list one or At a Glance / Where & When silently vanish there.
+          shoot_start:data.shoot_start||null,shoot_end:data.shoot_end||null,
+          shoot_location:data.shoot_location||null,schedule_note:data.schedule_note||null,
+          talent_scope:data.talent_scope||null,
           roles:(data.roles||[]).map(r=>({
             id:r.id||null,name:r.name||"",desc:r.description||"",type:r.role_type||"Supporting",
             ageRange:r.age_range||"",gender:r.gender||"Any",
             ethnicity:r.ethnicity||"Any",pay:r.pay||"",
+            rate_amount:r.rate_amount==null?null:Number(r.rate_amount),
+            rate_unit:r.rate_unit||null,
+            est_days:r.est_days==null?null:Number(r.est_days),
+            required_media:Array.isArray(r.required_media)?r.required_media:null,
+            prescreen:r.prescreen||null,
           })),
         };
         setViewingCasting(c);
