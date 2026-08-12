@@ -10404,6 +10404,10 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const t=useT();
   const {lang}=useLanguage();
   const [applyRole,setApplyRole]=useState(null);
+  // Role cards collapse to a header row and expand on click. The first role is
+  // open by default so the page never looks like a bare list of names.
+  const [openRoles,setOpenRoles]=useState(()=>({0:true}));
+  const toggleRoleOpen=(i)=>setOpenRoles(p=>({...p,[i]:!p[i]}));
   const autoOpenedRef=useRef(false);
   useEffect(()=>{
     if(autoApplyRole&&isLoggedIn&&!autoOpenedRef.current&&casting?.status!=="archived"&&!castingIsExpired(casting)){
@@ -10866,8 +10870,24 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           const roleId=realRoleIds[i];
           const instr=roleId?roleInstructions[roleId]:null;
           const hasInstructions=instr&&(instr.sides_pdf_url||instr.direction_notes||instr.slate_instructions||instr.wardrobe_notes);
+          const isOpen=!!openRoles[i];
           return(
           <div key={i} className="card role-card" style={{padding:"22px 26px"}}>
+            {/* Collapsed header — the whole strip toggles the card open. */}
+            <div onClick={()=>toggleRoleOpen(i)} role="button" tabIndex={0} aria-expanded={isOpen}
+              onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleRoleOpen(i);}}}
+              style={{display:"flex",alignItems:"center",gap:12,cursor:"pointer",marginBottom:isOpen?14:0}}>
+              <div style={{flex:1,minWidth:0}}>
+                <h3 style={{fontSize:18,fontWeight:800,letterSpacing:"-0.3px",color:"var(--t1)",margin:0}}>{r.name}</h3>
+                <div style={{fontSize:12.5,color:"var(--t3)",marginTop:4}}>
+                  {[r.type,roleGenderLabel(r.gender),roleAgeLabel(r.ageRange)].filter(Boolean).join(" · ")}
+                </div>
+              </div>
+              {(()=>{const tot=roleTotalPay(r);return tot==null?null:
+                <span className="badge" style={{background:"rgba(21,128,61,0.10)",color:"#15803d",border:"1px solid rgba(21,128,61,0.25)",flexShrink:0}}>{fmtMoney(r.rate_amount)}{r.rate_unit==="flat"?" flat":r.rate_unit==="week"?"/wk":r.rate_unit==="hour"?"/hr":"/day"}</span>;})()}
+              <span style={{color:"var(--t3)",display:"flex",flexShrink:0,transition:"transform .25s ease",transform:isOpen?"rotate(180deg)":"none"}}><Ico n="chevron-down" s={20}/></span>
+            </div>
+            {isOpen&&<>
             <div className="flex-between role-card-head" style={{marginBottom:10,alignItems:"flex-start",gap:16}}>
               <div style={{flex:1}}>
                 <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap"}}>
@@ -10877,7 +10897,6 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                   <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{roleEthnicityLabel(r.ethnicity)}</span>
                   {hasInstructions&&<span className="badge" style={{background:"rgba(99,60,180,0.1)",color:"var(--acc)",border:"1px solid rgba(99,60,180,0.25)"}}><Ico n="movie" s={22}/> Self-Tape Required</span>}
                 </div>
-                <h3 style={{fontSize:18,fontWeight:800,letterSpacing:"-0.3px",marginBottom:8,color:"var(--t1)"}}>{r.name}</h3>
                 <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65}}>{r.desc}</p>
                 {/* Submit-with chips + rate box. Absent on castings posted
                     before these fields existed, so nothing renders for them. */}
@@ -10932,6 +10951,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                 <span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Wardrobe / Framing: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.wardrobe_notes}</span>
               </div>}
             </div>}
+            </>}
           </div>);})}
       </div>
     </section>
@@ -24861,12 +24881,25 @@ function AdminCastingGenerator({session}){
       title:fresh.title,type:fresh.type,prod:fresh.prod,posted_by_label:fresh.posted_by_label,casting_director_name:fresh.casting_director_name||fresh.posted_by_label||fresh.prod,
       tagline:fresh.tagline||null,synopsis:fresh.synopsis,location:fresh.location,pay:fresh.pay,union_status:fresh.union_status,
       submission_requirements:fresh.submission_requirements,expires_at:fresh.expires_at,
+      // Regenerate rewrites the story AND the city, so the Where & When block has
+      // to move with it — otherwise the shoot location contradicts the new location.
+      shoot_start:fresh.shoot_start||null,shoot_end:fresh.shoot_end||null,
+      shoot_location:fresh.shoot_location||null,schedule_note:fresh.schedule_note||null,
+      talent_scope:fresh.talent_scope||null,
       status:"draft",published:false,updated_at:new Date().toISOString()
     }).eq("id",c.id);
     if(!error){
       await window.sb.from("roles").delete().eq("casting_id",c.id);
       if(freshRoles.length>0){
-        await window.sb.from("roles").insert(freshRoles.map(r=>({casting_id:c.id,name:r.name,description:r.description,gender:r.gender,role_type:r.role_type||inferRoleType(r.name,r.description),age_range:r.age_range,ethnicity:r.ethnicity,pay:r.pay||null})));
+        await window.sb.from("roles").insert(freshRoles.map(r=>{
+          const rt=parseRoleRate(r.pay);
+          const rtype=r.role_type||inferRoleType(r.name,r.description);
+          const lead=/lead|principal|series regular/i.test(rtype||"");
+          return {casting_id:c.id,name:r.name,description:r.description,gender:r.gender,role_type:rtype,age_range:r.age_range,ethnicity:r.ethnicity,pay:r.pay||null,
+            rate_amount:rt?rt.rate_amount:null,rate_unit:rt?rt.rate_unit:null,est_days:null,
+            required_media:lead?["headshot","reel"]:["headshot"],
+            prescreen:lead?"selftape":null};
+        }));
       }
     }
     setBusy(null);
@@ -24891,6 +24924,11 @@ function AdminCastingGenerator({session}){
       has_nudity:!!updated.has_nudity,
       nudity_details:updated.has_nudity?(updated.nudity_details||null):null,
       deadline:updated.deadline||(updated.expires_at?new Date(updated.expires_at).toISOString().slice(0,10):null),
+      shoot_start:updated.shoot_start||null,
+      shoot_end:updated.shoot_end||null,
+      shoot_location:(updated.shoot_location||"").trim()||null,
+      schedule_note:(updated.schedule_note||"").trim()||null,
+      talent_scope:updated.talent_scope||null,
       updated_at:new Date().toISOString()
     };
     // ── Admin "revive an expired listing" ────────────────────────────────
@@ -24924,7 +24962,19 @@ function AdminCastingGenerator({session}){
       await window.sb.from("roles").delete().eq("casting_id",updated.id);
       const toInsert=(updated.roles||[]).filter(r=>r.name&&r.name.trim());
       if(toInsert.length>0){
-        await window.sb.from("roles").insert(toInsert.map(r=>({casting_id:updated.id,name:r.name.trim(),description:r.description||"",gender:r.gender||"Any",role_type:r.role_type||inferRoleType(r.name,r.description),age_range:r.age_range||"",ethnicity:r.ethnicity||"Any ethnicity",pay:r.pay||null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"})));
+        await window.sb.from("roles").insert(toInsert.map(r=>{
+          // Roles are delete-and-reinserted on every admin save, so the rate and
+          // requirement fields MUST be carried through here or editing a generated
+          // draft would silently strip them.
+          const rateNum=parseFloat(r.rate_amount);
+          const daysNum=parseFloat(r.est_days);
+          return {casting_id:updated.id,name:r.name.trim(),description:r.description||"",gender:r.gender||"Any",role_type:r.role_type||inferRoleType(r.name,r.description),age_range:r.age_range||"",ethnicity:r.ethnicity||"Any ethnicity",pay:r.pay||null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take",
+            rate_amount:isFinite(rateNum)&&rateNum>0?rateNum:null,
+            rate_unit:isFinite(rateNum)&&rateNum>0?(r.rate_unit||"day"):null,
+            est_days:isFinite(daysNum)&&daysNum>0?daysNum:null,
+            required_media:(Array.isArray(r.required_media)&&r.required_media.length)?r.required_media:null,
+            prescreen:(r.prescreen&&r.prescreen!=="none")?r.prescreen:null};
+        }));
       }
     }
     showMsg(revived?"Saved — listing is live again in Browse Castings.":"Draft saved.");setEditDraft(null);loadAll();
@@ -25170,6 +25220,11 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     go_live_at:utcISOToNYLocal(listing.go_live_at),
     status:listing.status||"draft",
     admin_verified:adminBadgeState(listing.admin_verified),
+    shoot_start:listing.shoot_start||"",
+    shoot_end:listing.shoot_end||"",
+    shoot_location:listing.shoot_location||"",
+    schedule_note:listing.schedule_note||"",
+    talent_scope:listing.talent_scope||"",
   };return savedDraft&&savedDraft.form?{..._base,...savedDraft.form,id:listing.id}:_base;});
   const [castingImages,setCastingImages]=useState(savedDraft&&Array.isArray(savedDraft.castingImages)?savedDraft.castingImages:(Array.isArray(listing.casting_images)?listing.casting_images:(listing.casting_image_url?[{url:listing.casting_image_url,path:listing.casting_image_path||""}]:[])));
   const [uploadingImg,setUploadingImg]=useState(false);
@@ -25193,8 +25248,14 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     // don't let the DB fetch clobber them.
     if(savedDraft&&Array.isArray(savedDraft.roles))return;
     (async()=>{
-      const {data}=await window.sb.from("roles").select("id,name,description,gender,age_range,ethnicity,pay,role_type,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,official_takes_allowed,submission_mode").eq("casting_id",listing.id).order("id");
-      setRoles((data||[]).map(r=>({...r,_key:r.id,role_type:r.role_type||"Supporting",...ageToPreset(r.age_range),_showAudInstr:false,_uploadingPdf:false})));
+      const {data}=await window.sb.from("roles").select("id,name,description,gender,age_range,ethnicity,pay,role_type,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,official_takes_allowed,submission_mode,rate_amount,rate_unit,est_days,required_media,prescreen").eq("casting_id",listing.id).order("id");
+      setRoles((data||[]).map(r=>({...r,_key:r.id,role_type:r.role_type||"Supporting",...ageToPreset(r.age_range),
+        rate_amount:r.rate_amount==null?"":String(r.rate_amount),
+        rate_unit:r.rate_unit||"day",
+        est_days:r.est_days==null?"":String(r.est_days),
+        required_media:Array.isArray(r.required_media)?r.required_media:[],
+        prescreen:r.prescreen||"none",
+        _showAudInstr:false,_uploadingPdf:false})));
       setRolesLoading(false);
     })();
   },[listing.id]);
@@ -25208,7 +25269,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     try{localStorage.setItem(DRAFT_LS_KEY,JSON.stringify({form,castingImages,roles,_ts:Date.now()}));}catch(_){}
   },[form,castingImages,roles,rolesLoading,DRAFT_LS_KEY]);
 
-  const BLANK_ROLE=()=>({_key:Date.now()+Math.random(),id:null,name:"",description:"",gender:"Any",role_type:"Supporting",age_preset:"Any age",age_min:"",age_max:"",ethnicity:"Any ethnicity",pay:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false});
+  const BLANK_ROLE=()=>({_key:Date.now()+Math.random(),id:null,name:"",description:"",gender:"Any",role_type:"Supporting",age_preset:"Any age",age_min:"",age_max:"",ethnicity:"Any ethnicity",pay:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",rate_amount:"",rate_unit:"day",est_days:"",required_media:[],prescreen:"none",_showAudInstr:false,_uploadingPdf:false});
   const addRole=()=>setRoles(r=>[...r,BLANK_ROLE()]);
   const updateRole=(i,k,v)=>setRoles(r=>r.map((x,j)=>j===i?{...x,[k]:v}:x));
   const deleteRole=(i)=>setRoles(r=>r.filter((_,j)=>j!==i));
@@ -25358,6 +25419,32 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     <div className="form-group"><label className="label">Project Summary</label>
       <textarea className="textarea" rows={5} value={form.synopsis} onChange={e=>set("synopsis",e.target.value)} style={{resize:"vertical"}} placeholder="Describe the project — genre, tone, what the production is about..."/></div>
 
+    {/* ── Where & When + At a Glance (mirrors the CD posting form) ── */}
+    <div className="form-group">
+      <h3 style={{fontSize:15,fontWeight:700,marginBottom:8}}>Where &amp; When</h3>
+      <div className="form-row">
+        <div><label className="label">Shoot starts</label><input className="input" type="date" value={form.shoot_start||""} onChange={e=>set("shoot_start",e.target.value)}/></div>
+        <div><label className="label">Shoot ends</label><input className="input" type="date" value={form.shoot_end||""} onChange={e=>set("shoot_end",e.target.value)}/></div>
+      </div>
+      <div style={{marginTop:10}}><label className="label">Shoot location</label><input className="input" value={form.shoot_location||""} onChange={e=>set("shoot_location",e.target.value)} placeholder="City, State"/></div>
+      <div style={{marginTop:10}}><label className="label">Schedule note</label><input className="input" value={form.schedule_note||""} onChange={e=>set("schedule_note",e.target.value)} placeholder="e.g. Exact days confirmed at booking."/></div>
+      {whereWhenLine(form)&&<p style={{fontSize:11,color:"var(--t3)",marginTop:6}}>Talent sees: “{whereWhenLine(form)}”</p>}
+    </div>
+    <div className="form-group">
+      <h3 style={{fontSize:15,fontWeight:700,marginBottom:8}}>At a Glance</h3>
+      <label className="label">Open to talent from</label>
+      <select className="select" style={{width:"100%"}} value={form.talent_scope||""} onChange={e=>set("talent_scope",e.target.value)}>
+        <option value="">— Not specified —</option>
+        {TALENT_SCOPES.map(s=><option key={s} value={s}>{s}</option>)}
+      </select>
+      {(()=>{const roll=castingPayRollup(roles.map(r=>({rate_amount:r.rate_amount,rate_unit:r.rate_unit,est_days:r.est_days})));
+        if(roll.top==null)return null;
+        return <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:10}}>
+          <span className="badge" style={{background:"rgba(21,128,61,0.10)",color:"#15803d",border:"1px solid rgba(21,128,61,0.25)"}}>Top rate {fmtMoney(roll.top)}</span>
+          <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>Full cast budget {fmtMoney(roll.sum)}</span>
+        </div>;})()}
+    </div>
+
     <div className="form-group"><label className="label">Submission Requirements</label>
       <textarea className="textarea" rows={3} value={form.submission_requirements} onChange={e=>set("submission_requirements",e.target.value)} style={{resize:"vertical"}}/>
       <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Use honest language. Do not promise payment unless it is confirmed.</p></div>
@@ -25451,6 +25538,28 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
             <textarea className="textarea" rows={2} style={{fontSize:13,resize:"vertical"}} value={role.description} onChange={e=>updateRole(i,"description",e.target.value)} placeholder="Describe the role, personality, key scenes…"/></div>
           <div className="form-group" style={{margin:0}}><label className="label" style={{fontSize:11}}>Compensation (optional — leave blank to inherit listing pay)</label>
             <input className="input" style={{fontSize:13}} value={role.pay||""} onChange={e=>updateRole(i,"pay",e.target.value)} placeholder="e.g. $150/day, Copy/Credit, TBD"/></div>
+          {/* Structured rate — drives the "paid roles up to" line on the casting page */}
+          <div className="form-row" style={{marginTop:8,marginBottom:0}}>
+            <div><label className="label" style={{fontSize:11}}>Rate ($)</label><input className="input" style={{fontSize:13}} type="number" min="0" step="1" value={role.rate_amount||""} onChange={e=>updateRole(i,"rate_amount",e.target.value)} placeholder="e.g. 200"/></div>
+            <div><label className="label" style={{fontSize:11}}>Per</label><select className="select" style={{width:"100%",fontSize:13}} value={role.rate_unit||"day"} onChange={e=>updateRole(i,"rate_unit",e.target.value)}>{RATE_UNITS.map(u=><option key={u.v} value={u.v}>{u.l}</option>)}</select></div>
+          </div>
+          {role.rate_unit!=="flat"&&<div className="form-group" style={{marginTop:8,marginBottom:0}}><label className="label" style={{fontSize:11}}>Estimated days of work</label>
+            <input className="input" style={{fontSize:13}} type="number" min="1" step="1" value={role.est_days||""} onChange={e=>updateRole(i,"est_days",e.target.value)} placeholder="e.g. 2"/></div>}
+          {(()=>{const tot=roleTotalPay({rate_amount:role.rate_amount,rate_unit:role.rate_unit,est_days:role.est_days});
+            return tot==null?null:<div style={{marginTop:6,fontSize:11,fontWeight:700,color:"#15803d"}}>Estimated total: {fmtMoney(tot)}</div>;})()}
+          <div className="form-group" style={{marginTop:8,marginBottom:0}}><label className="label" style={{fontSize:11}}>Submit with</label>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {REQUIRED_MEDIA_OPTS.map(m=>{
+                const cur=Array.isArray(role.required_media)?role.required_media:[];
+                const sel=cur.includes(m.v);
+                return <button type="button" key={m.v} onClick={()=>updateRole(i,"required_media",sel?cur.filter(x=>x!==m.v):[...cur,m.v])}
+                  style={{fontSize:11,padding:"4px 10px",borderRadius:999,border:"1px solid var(--bdr)",background:sel?"var(--acc)":"var(--s1)",color:sel?"#fff":"var(--t2)",cursor:"pointer",fontWeight:600}}>{m.l}</button>;
+              })}
+            </div>
+          </div>
+          <div className="form-group" style={{marginTop:8,marginBottom:0}}><label className="label" style={{fontSize:11}}>First look</label>
+            <select className="select" style={{width:"100%",fontSize:13}} value={role.prescreen||"none"} onChange={e=>updateRole(i,"prescreen",e.target.value)}>{PRESCREEN_OPTS.map(p=><option key={p.v} value={p.v}>{p.l}</option>)}</select>
+          </div>
           {/* Audition Instructions (matches CD form) */}
           <div style={{marginTop:14,borderTop:"1px solid var(--bdr)",paddingTop:12}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",marginBottom:role._showAudInstr?12:0}} onClick={()=>updateRole(i,"_showAudInstr",!role._showAudInstr)}>
