@@ -24922,7 +24922,11 @@ function AdminCastingGenerator({session}){
     setLoading(true);
     const [{data:ss},{data:cs,error:ce},{data:rs,error:re}]=await Promise.all([
       window.sb.from("site_settings").select("casting_generator_enabled,casting_generator_last_run").eq("id",1).maybeSingle(),
-      window.sb.from("castings").select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,go_live_at,submission_requirements,synopsis,tagline,has_nudity,nudity_details,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured").order("created_at",{ascending:false}).limit(2000),
+      // NOTE: this list feeds the edit modal. Any column the editor writes MUST be
+      // selected here, or the form loads it as undefined, renders blank, and the
+      // next save writes NULL over good data. The editor also re-fetches its own
+      // full row on open as a backstop, but keep this list complete regardless.
+      window.sb.from("castings").select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,go_live_at,submission_requirements,synopsis,tagline,has_nudity,nudity_details,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope").order("created_at",{ascending:false}).limit(2000),
       window.sb.from("roles").select("casting_id,name,description,gender,role_type,age_range,ethnicity,pay").limit(5000)
     ]);
     if(ss){setGenEnabled(!!ss.casting_generator_enabled);setLastRun(ss.casting_generator_last_run);}
@@ -25151,6 +25155,11 @@ function AdminCastingGenerator({session}){
         }));
       }
     }
+    // The editor autosaves the in-progress form to localStorage so a remount
+    // doesn't lose typing. Once the save lands, that copy is stale — leaving it
+    // behind means the NEXT open restores the old form over the fresh DB row and
+    // the admin's saved edits appear to revert.
+    try{localStorage.removeItem("acg_edit_draft_v2:"+updated.id);}catch(_){}
     showMsg(revived?"Saved — listing is live again in Browse Castings.":"Draft saved.");setEditDraft(null);loadAll();
   };
 
@@ -25373,6 +25382,34 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     try{const r=localStorage.getItem(DRAFT_LS_KEY);return r?JSON.parse(r):null;}catch(_){return null;}
   });
   const clearSavedDraft=()=>{try{localStorage.removeItem(DRAFT_LS_KEY);}catch(_){}};
+  // Backstop against the whole class of "my edits vanished" bugs: the modal is
+  // handed a row from the admin LIST query, so any column that query forgot
+  // arrives as undefined, renders blank, and gets saved back as NULL. Re-fetch
+  // the complete row and fill in only the keys the passed-in row never had —
+  // never keys the admin may already be editing.
+  useEffect(()=>{
+    let alive=true;
+    (async()=>{
+      try{
+        const {data,error}=await window.sb.from("castings").select("*").eq("id",listing.id).maybeSingle();
+        if(!alive||error||!data)return;
+        const missing={};
+        Object.keys(data).forEach(k=>{ if(!(k in listing))missing[k]=data[k]; });
+        if(!Object.keys(missing).length)return;
+        console.warn("[AdminCastingEdit] list query omitted:",Object.keys(missing).join(", "));
+        setForm(f=>{
+          const patch={};
+          Object.keys(missing).forEach(k=>{
+            // Only fill fields the form is still showing as empty, so a value the
+            // admin has already typed in this session is never clobbered.
+            if(f[k]===undefined||f[k]===""||f[k]===null)patch[k]=missing[k]==null?"":missing[k];
+          });
+          return Object.keys(patch).length?{...f,...patch}:f;
+        });
+      }catch(_){ /* non-fatal — the form still works off the list row */ }
+    })();
+    return()=>{alive=false;};
+  },[listing.id]);
 
   const [form,setForm]=useState(()=>{const _base={
     id:listing.id,
