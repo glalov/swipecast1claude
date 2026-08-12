@@ -643,6 +643,107 @@ function isAnyRoleVal(v){const s=(""+(v==null?"":v)).trim().toLowerCase();return
 function roleGenderLabel(v){return isAnyRoleVal(v)?"Any gender":v;}
 function roleAgeLabel(v){return isAnyRoleVal(v)?"Any age range":("Age "+v);}
 function roleEthnicityLabel(v){return isAnyRoleVal(v)?"Any ethnicity":v;}
+
+// ── Where & When / At a Glance / role pay roll-up ──────────────────────────
+// All of this is additive and defensive: castings posted before these fields
+// existed have NULL everywhere, so every helper below returns null/empty and
+// the UI simply omits the section rather than rendering a blank shell.
+const TALENT_SCOPES=[
+  "Local — shoot city only",
+  "Local + self-report (within driving distance)",
+  "Statewide",
+  "United States — Nationwide",
+  "US + Canada",
+  "Worldwide — remote / self-tape friendly",
+];
+const RATE_UNITS=[{v:"day",l:"Day"},{v:"flat",l:"Flat"},{v:"week",l:"Week"},{v:"hour",l:"Hour"}];
+const REQUIRED_MEDIA_OPTS=[
+  {v:"headshot",l:"Headshot"},
+  {v:"reel",l:"Video reel"},
+  {v:"fullbody",l:"Full-body photo"},
+  {v:"resume",l:"Résumé"},
+];
+const PRESCREEN_OPTS=[
+  {v:"none",l:"None"},
+  {v:"selftape",l:"Short self-tape (video)"},
+  {v:"voice",l:"Voice memo"},
+  {v:"call",l:"Live video call"},
+];
+function requiredMediaLabel(v){const o=REQUIRED_MEDIA_OPTS.find(x=>x.v===v);return o?o.l:v;}
+function prescreenLabel(v){const o=PRESCREEN_OPTS.find(x=>x.v===v);return o&&o.v!=="none"?o.l:"";}
+function fmtMoney(n){
+  if(n==null||!isFinite(n))return "";
+  return "$"+Math.round(n).toLocaleString("en-US");
+}
+// Estimated total for one role. Returns null when the CD never entered a rate,
+// which is the case for every casting posted before this feature shipped.
+function roleTotalPay(r){
+  if(!r)return null;
+  const rate=parseFloat(r.rate_amount);
+  if(!isFinite(rate)||rate<=0)return null;
+  const unit=r.rate_unit||"day";
+  const days=Math.max(1,parseFloat(r.est_days)||1);
+  if(unit==="flat")return rate;
+  if(unit==="week")return rate*Math.max(1,Math.ceil(days/5));
+  if(unit==="hour")return rate*8*days;   // estimate at an 8-hour day
+  return rate*days;                       // per day
+}
+// Top rate + full-cast budget across a casting's roles. `top` is null when no
+// role carries a structured rate, so callers can fall back to the legacy
+// free-text `pay` string instead of showing "$0".
+function castingPayRollup(roles){
+  const list=Array.isArray(roles)?roles:[];
+  let top=null,sum=0,priced=0;
+  list.forEach(r=>{
+    const t=roleTotalPay(r);
+    if(t==null)return;
+    priced++;sum+=t;
+    if(top==null||t>top)top=t;
+  });
+  return {top,sum:priced?sum:null,priced,count:list.length};
+}
+// "Shoots two days, Aug 30 – Sept 6 in New York, NY." Built from whichever
+// pieces exist; returns "" when the CD filled in none of them.
+function fmtShootDay(d){
+  if(!d)return "";
+  const parts=String(d).slice(0,10).split("-");
+  if(parts.length!==3)return "";
+  const dt=new Date(Date.UTC(+parts[0],+parts[1]-1,+parts[2]));
+  if(isNaN(dt.getTime()))return "";
+  return dt.toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});
+}
+function whereWhenLine(c){
+  if(!c)return "";
+  const start=fmtShootDay(c.shoot_start),end=fmtShootDay(c.shoot_end);
+  const loc=(c.shoot_location||"").trim();
+  let when="";
+  if(start&&end&&start!==end)when=`${start} – ${end}`;
+  else if(start)when=start;
+  else if(end)when=end;
+  if(!when&&!loc)return "";
+  if(when&&loc)return `Shoots ${when} in ${loc}.`;
+  if(when)return `Shoots ${when}.`;
+  return `Shoots in ${loc}.`;
+}
+// True only when the CD supplied at least one Where & When field.
+function hasWhereWhen(c){return !!(c&&(c.shoot_start||c.shoot_end||(c.shoot_location||"").trim()||(c.schedule_note||"").trim()));}
+// Turn a free-text rate ("$500-$750/day", "$1,200 flat", "Copy/credit/meals")
+// into a structured rate. Used by the casting generator so generated roles get
+// the same treatment a CD would give them by hand. Takes the LOW end of a range
+// so the headline figure is never inflated. Returns null when there's no money.
+function parseRoleRate(s){
+  const str=(""+(s==null?"":s)).toLowerCase();
+  if(!str||/copy|credit|meals|deferred|unpaid|stipend only|tfp/.test(str)&&!/\$/.test(str))return null;
+  const nums=(str.match(/\$\s*[\d,]+(?:\.\d+)?/g)||[]).map(x=>parseFloat(x.replace(/[$,\s]/g,"")));
+  const amt=nums.filter(n=>isFinite(n)&&n>0)[0];
+  if(!amt)return null;
+  let unit="flat";
+  if(/\/\s*day|per day|a day|daily/.test(str))unit="day";
+  else if(/\/\s*week|per week|weekly/.test(str))unit="week";
+  else if(/\/\s*(hour|hr)|per hour|hourly/.test(str))unit="hour";
+  else if(/\/\s*ep|episode/.test(str))unit="flat";
+  return {rate_amount:amt,rate_unit:unit};
+}
 // Stable comparator (rank, then id) so the display list and the audition-role
 // index map (fetched separately) always order identically.
 function compareRolesByType(aType,aId,bType,bId){
@@ -10709,6 +10810,45 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}><strong style={{color:"#c0392b"}}>Contains nudity / intimate content.</strong>{c.nudity_details?<> {c.nudity_details}</>:<> This project involves nudity or intimate scenes. Please make sure you're comfortable with this before applying.</>}</div>
     </div>}
 
+    {/* At a Glance — only the facts the CD actually supplied. Legacy castings
+        have no talent_scope and no structured role rates, so this renders just
+        the union/deadline rows they always had, or nothing at all. */}
+    {(()=>{
+      const roll=castingPayRollup(c.roles);
+      const rows=[];
+      if(c.talent_scope)rows.push(["map-pin",<>Open to talent from <strong>{c.talent_scope}</strong></>]);
+      if(roll.top!=null)rows.push(["coin",<>Paid roles up to <strong>{fmtMoney(roll.top)}</strong></>]);
+      if(!rows.length)return null;
+      return(
+      <section style={{marginBottom:32}}>
+        <div className="section-label" style={{marginBottom:12}}>At a Glance</div>
+        <div style={{border:"1px solid var(--bdr)",borderRadius:12,overflow:"hidden",maxWidth:720}}>
+          {rows.map(([ico,body],i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",background:"var(--s1)",borderTop:i?"1px solid var(--bdr)":"none",fontSize:14,color:"var(--t1)"}}>
+              <span style={{color:"var(--teal,#4F8A8B)",display:"flex",flex:"none"}}><Ico n={ico} s={20}/></span>
+              <span>{body}</span>
+            </div>
+          ))}
+        </div>
+      </section>);
+    })()}
+
+    {/* Where & When — one sentence, plus the CD's optional schedule note. */}
+    {hasWhereWhen(c)&&(()=>{
+      const line=whereWhenLine(c);
+      const note=(c.schedule_note||"").trim();
+      if(!line&&!note)return null;
+      return(
+      <section style={{marginBottom:32}}>
+        <div className="section-label" style={{marginBottom:12}}>Where &amp; When</div>
+        <div style={{maxWidth:720,fontSize:15,lineHeight:1.75,color:"var(--t2)"}}>
+          {line&&<span style={{color:"var(--t1)",fontWeight:600}}>{line}</span>}
+          {line&&note?" ":""}
+          {note}
+        </div>
+      </section>);
+    })()}
+
     <section style={{marginBottom:40}}>
       <div className="section-label" style={{marginBottom:12}}>{t('casting.synopsis')}</div>
       <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,maxWidth:720}}>{c.synopsis?render(c.synopsis):c.desc}</p>
@@ -10739,6 +10879,31 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                 </div>
                 <h3 style={{fontSize:18,fontWeight:800,letterSpacing:"-0.3px",marginBottom:8,color:"var(--t1)"}}>{r.name}</h3>
                 <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65}}>{r.desc}</p>
+                {/* Submit-with chips + rate box. Absent on castings posted
+                    before these fields existed, so nothing renders for them. */}
+                {(()=>{
+                  const media=Array.isArray(r.required_media)?r.required_media.filter(Boolean):[];
+                  const pre=prescreenLabel(r.prescreen);
+                  const total=roleTotalPay(r);
+                  if(!media.length&&!pre&&total==null)return null;
+                  return(
+                  <div style={{marginTop:12}}>
+                    {(media.length>0||pre)&&<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:total!=null?10:0}}>
+                      {media.map(m=>(
+                        <span key={m} className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{requiredMediaLabel(m)}</span>
+                      ))}
+                      {pre&&<span className="badge" style={{background:"rgba(226,183,60,0.12)",color:"#8a6614",border:"1px solid rgba(226,183,60,0.35)"}}>First look: {pre}</span>}
+                    </div>}
+                    {total!=null&&<div style={{display:"inline-block",background:"rgba(21,128,61,0.08)",border:"1px solid rgba(21,128,61,0.22)",borderRadius:8,padding:"8px 12px"}}>
+                      <span style={{fontSize:13,fontWeight:700,color:"#15803d"}}>
+                        {fmtMoney(r.rate_amount)}{r.rate_unit==="flat"?" flat":r.rate_unit==="week"?" / week":r.rate_unit==="hour"?" / hour":" / day"}
+                      </span>
+                      {r.rate_unit!=="flat"&&r.est_days>1&&<span style={{fontSize:12,color:"var(--t2)",marginLeft:8}}>
+                        Est. total {fmtMoney(total)} · {r.est_days} days
+                      </span>}
+                    </div>}
+                  </div>);
+                })()}
               </div>
               <div style={{flexShrink:0}}>
                 {applicationsClosed?<span className="tag" style={{fontSize:12,fontWeight:700,padding:"8px 14px",background:"rgba(192,57,43,0.08)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>{castingArchived?"Filled":"Applications closed"}</span>:applied.has(i)?<span className="tag tag-grn" style={{fontSize:12,fontWeight:700,padding:"8px 14px"}}>{hasInstructions?"Audition Submitted":"Applied"}</span>:<button className="btn-teal btn-sm" onClick={()=>handleApply(r,i)}>{!isLoggedIn?"Create a free account to apply":(hasInstructions?"Audition for This Role":"Apply for This Role")}</button>}
@@ -12020,7 +12185,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       });
       const {data:cs,error}=await Promise.race([
         window.sb.from("castings")
-          .select("*,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(identity_verified,can_post_castings,verification_status)")
+          .select("*,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(identity_verified,can_post_castings,verification_status)")
           .in("status",["open","archived"]).eq("published",true)
           // Scheduled publishing: hide castings whose go-live time is still in the future.
           .or("go_live_at.is.null,go_live_at.lte."+new Date().toISOString())
@@ -12060,6 +12225,11 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           ? c.admin_verified===true
           : (c.profiles?.identity_verified===true&&c.profiles?.can_post_castings===true&&c.profiles?.verification_status==="verified"),
         profiles:c.profiles||null,
+        shoot_start:c.shoot_start||null,
+        shoot_end:c.shoot_end||null,
+        shoot_location:c.shoot_location||null,
+        schedule_note:c.schedule_note||null,
+        talent_scope:c.talent_scope||null,
         roles:(c.roles||[]).map(r=>({
           id:r.id||null,
           name:r.name,
@@ -12067,7 +12237,12 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           type:r.role_type||"Supporting",
           gender:r.gender||"Any",
           ageRange:r.age_range||"",
-          ethnicity:r.ethnicity||"Any"
+          ethnicity:r.ethnicity||"Any",
+          rate_amount:r.rate_amount==null?null:Number(r.rate_amount),
+          rate_unit:r.rate_unit||null,
+          est_days:r.est_days==null?null:Number(r.est_days),
+          required_media:Array.isArray(r.required_media)?r.required_media:null,
+          prescreen:r.prescreen||null
         }))
       }));
       setDbCastings(mapped);_castingsCache=mapped;
@@ -18201,8 +18376,8 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   const [err,setErr]=useState("");
   const [busy,setBusy]=useState(false);
   const DRAFT_KEY="sc_new_casting_draft";
-  const BLANK_F={title:"",prod:"",type:"Film & TV",location:"",pay:"",union:"SAG-AFTRA",deadline:"",tagline:"",synopsis:"",casting_website_url:"",go_live_at:""};
-  const BLANK_ROLE={name:"",description:"",gender:"Any",role_type:"Supporting",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",_showAudInstr:false,_uploadingPdf:false};
+  const BLANK_F={title:"",prod:"",type:"Film & TV",location:"",pay:"",union:"SAG-AFTRA",deadline:"",tagline:"",synopsis:"",casting_website_url:"",go_live_at:"",shoot_start:"",shoot_end:"",shoot_location:"",schedule_note:"",talent_scope:""};
+  const BLANK_ROLE={name:"",description:"",gender:"Any",role_type:"Supporting",age_range:"",ethnicity:"Any ethnicity",age_preset:"Any age",age_min:"",age_max:"",sides_pdf_url:"",direction_notes:"",slate_instructions:"",video_length_limit:60,audition_deadline:"",wardrobe_notes:"",official_takes_allowed:2,submission_mode:"best_take",rate_amount:"",rate_unit:"day",est_days:"",required_media:[],prescreen:"none",_showAudInstr:false,_uploadingPdf:false};
   // Initialize form from localStorage draft so a remount (e.g. background refresh) restores what the user typed.
   const [f,setF]=useState(()=>{let base=BLANK_F;try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(p?.f?.title!==undefined)base=p.f;}}catch(_){}if(!base.go_live_at)base={...base,go_live_at:defaultGoLiveNYLocal()};return base;});
   const [roles,setRoles]=useState(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(Array.isArray(p?.roles)&&p.roles.length)return p.roles;}}catch(_){}return[BLANK_ROLE];});
@@ -18378,7 +18553,8 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
     if(!goLiveISO){setErr("Go Live Date & Time is invalid.");return;}
     setBusy(true);
     try{
-      const payload={cd_id:uid,title:f.title.trim(),type:f.type,prod:f.prod||null,tagline:f.tagline||null,synopsis:f.synopsis||null,location:f.location||null,pay:f.pay||null,union_status:f.union,deadline:f.deadline||null,go_live_at:goLiveISO,has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,status:"pending_review",published:false,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages};
+      const payload={cd_id:uid,title:f.title.trim(),type:f.type,prod:f.prod||null,tagline:f.tagline||null,synopsis:f.synopsis||null,location:f.location||null,pay:f.pay||null,union_status:f.union,deadline:f.deadline||null,go_live_at:goLiveISO,has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,status:"pending_review",published:false,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages,
+        shoot_start:f.shoot_start||null,shoot_end:f.shoot_end||null,shoot_location:(f.shoot_location||"").trim()||null,schedule_note:(f.schedule_note||"").trim()||null,talent_scope:f.talent_scope||null};
       const {data:casting,error:cErr}=await window.sb.from("castings").insert(payload).select().single();
       if(cErr)throw cErr;
       const rolePayload=roles.filter(r=>r.name.trim()).map(r=>{
@@ -18388,7 +18564,14 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
         }else if(r.age_preset&&r.age_preset!=="Any age"){
           ageRange=r.age_preset;
         }
-        return {casting_id:casting.id,name:r.name.trim(),description:r.description||null,gender:r.gender||null,role_type:r.role_type||"Supporting",age_range:ageRange||null,ethnicity:(r.ethnicity&&r.ethnicity!=="Any ethnicity")?r.ethnicity:null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"};
+        const rateNum=parseFloat(r.rate_amount);
+        const daysNum=parseFloat(r.est_days);
+        return {casting_id:casting.id,name:r.name.trim(),description:r.description||null,gender:r.gender||null,role_type:r.role_type||"Supporting",age_range:ageRange||null,ethnicity:(r.ethnicity&&r.ethnicity!=="Any ethnicity")?r.ethnicity:null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take",
+          rate_amount:isFinite(rateNum)&&rateNum>0?rateNum:null,
+          rate_unit:isFinite(rateNum)&&rateNum>0?(r.rate_unit||"day"):null,
+          est_days:isFinite(daysNum)&&daysNum>0?daysNum:null,
+          required_media:(Array.isArray(r.required_media)&&r.required_media.length)?r.required_media:null,
+          prescreen:(r.prescreen&&r.prescreen!=="none")?r.prescreen:null};
       });
       let insertedRoles=[];
       if(rolePayload.length){
@@ -18429,6 +18612,39 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
         <div><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union} onChange={e=>setField("union",e.target.value)}><option>SAG-AFTRA</option><option>AEA</option><option>Non-Union</option><option>SAG-AFTRA / Non-Union</option></select></div>
         <div><label className="label">Deadline</label><input className="input" type="date" value={f.deadline} onChange={e=>setField("deadline",e.target.value)}/></div>
       </div>
+
+      {/* ── Where & When ── every field optional; leave blank to omit the section */}
+      <div className="form-group" style={{marginTop:4}}>
+        <h3 style={{fontSize:16,fontWeight:700,marginBottom:4}}>Where &amp; When</h3>
+        <p style={{fontSize:11,color:"var(--t3)",marginBottom:10,lineHeight:1.5}}>Optional. Talent sees this as one line — e.g. “Shoots Aug 30 – Sept 6 in New York, NY.”</p>
+        <div className="form-row">
+          <div><label className="label">Shoot starts</label><input className="input" type="date" value={f.shoot_start||""} onChange={e=>setField("shoot_start",e.target.value)}/></div>
+          <div><label className="label">Shoot ends</label><input className="input" type="date" value={f.shoot_end||""} onChange={e=>setField("shoot_end",e.target.value)}/></div>
+        </div>
+        <div style={{marginTop:12}}><label className="label">Shoot location</label><input className="input" value={f.shoot_location||""} onChange={e=>setField("shoot_location",e.target.value)} placeholder="City, State"/></div>
+        <div style={{marginTop:12}}><label className="label">Schedule note</label><input className="input" value={f.schedule_note||""} onChange={e=>setField("schedule_note",e.target.value)} placeholder="e.g. Two shoot days within this window; exact dates confirmed at booking."/></div>
+      </div>
+
+      {/* ── At a Glance ── the pay line is computed from role rates, never typed */}
+      <div className="form-group">
+        <h3 style={{fontSize:16,fontWeight:700,marginBottom:4}}>At a Glance</h3>
+        <label className="label">Open to talent from</label>
+        <select className="select" style={{width:"100%"}} value={f.talent_scope||""} onChange={e=>setField("talent_scope",e.target.value)}>
+          <option value="">— Not specified —</option>
+          {TALENT_SCOPES.map(s=><option key={s} value={s}>{s}</option>)}
+        </select>
+        {(()=>{
+          const roll=castingPayRollup(roles.map(r=>({rate_amount:r.rate_amount,rate_unit:r.rate_unit,est_days:r.est_days})));
+          if(roll.top==null)return <p style={{fontSize:11,color:"var(--t3)",marginTop:8,lineHeight:1.5}}>Add a rate to any role below and the “paid roles up to” line is calculated for you.</p>;
+          return(
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:10}}>
+            <span className="badge" style={{background:"rgba(21,128,61,0.10)",color:"#15803d",border:"1px solid rgba(21,128,61,0.25)"}}>Top rate {fmtMoney(roll.top)}</span>
+            <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>Full cast budget {fmtMoney(roll.sum)}</span>
+            <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{roll.priced} of {roll.count} roles priced</span>
+          </div>);
+        })()}
+      </div>
+
       <div className="form-group">
         <label className="label">Go Live Date &amp; Time <span style={{color:"#c0392b"}}>*</span> <span style={{display:"inline-block",marginLeft:6,fontSize:10,fontWeight:800,letterSpacing:0.4,color:"var(--acc)",background:"rgba(var(--acc-rgb,100,149,237),0.12)",borderRadius:99,padding:"2px 8px",textTransform:"uppercase"}}>New York Time</span></label>
         <input className="input" type="datetime-local" value={f.go_live_at||""} onChange={e=>setField("go_live_at",e.target.value)}/>
@@ -18492,6 +18708,37 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
             </select>
           </div>
           <div className="form-group" style={{marginTop:10,marginBottom:0}}><label className="label">Role Description</label><textarea className="textarea" value={r.description} onChange={e=>setRole(i,"description",e.target.value)} placeholder="Describe the role, personality, key scenes..."></textarea></div>
+
+          {/* ── Rate + submission requirements. Leave the rate blank to keep
+                using the casting-level Pay / Rate text instead. ── */}
+          <div className="form-row" style={{marginTop:10,marginBottom:0}}>
+            <div><label className="label">Rate ($)</label><input className="input" type="number" min="0" step="1" value={r.rate_amount} onChange={e=>setRole(i,"rate_amount",e.target.value)} placeholder="e.g. 200"/></div>
+            <div><label className="label">Per</label><select className="select" style={{width:"100%"}} value={r.rate_unit||"day"} onChange={e=>setRole(i,"rate_unit",e.target.value)}>{RATE_UNITS.map(u=><option key={u.v} value={u.v}>{u.l}</option>)}</select></div>
+          </div>
+          {r.rate_unit!=="flat"&&<div className="form-group" style={{marginTop:10,marginBottom:0}}>
+            <label className="label">Estimated days of work</label>
+            <input className="input" type="number" min="1" step="1" value={r.est_days} onChange={e=>setRole(i,"est_days",e.target.value)} placeholder="e.g. 2"/>
+          </div>}
+          {(()=>{const tot=roleTotalPay({rate_amount:r.rate_amount,rate_unit:r.rate_unit,est_days:r.est_days});
+            return tot==null?null:<div style={{marginTop:8,fontSize:12,fontWeight:700,color:"#15803d"}}>Estimated total for this role: {fmtMoney(tot)}</div>;})()}
+
+          <div className="form-group" style={{marginTop:10,marginBottom:0}}>
+            <label className="label">Submit with</label>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {REQUIRED_MEDIA_OPTS.map(m=>{
+                const sel=Array.isArray(r.required_media)&&r.required_media.includes(m.v);
+                return <button type="button" key={m.v}
+                  onClick={()=>{const cur=Array.isArray(r.required_media)?r.required_media:[];setRole(i,"required_media",sel?cur.filter(x=>x!==m.v):[...cur,m.v]);}}
+                  style={{fontSize:11,padding:"5px 12px",borderRadius:999,border:"1px solid var(--bdr)",background:sel?"var(--acc)":"var(--s1)",color:sel?"#fff":"var(--t2)",cursor:"pointer",fontWeight:600}}>{m.l}</button>;
+              })}
+            </div>
+          </div>
+          <div className="form-group" style={{marginTop:10,marginBottom:0}}>
+            <label className="label">First look <span style={{fontWeight:400,color:"var(--t3)"}}>(requested before shortlisting)</span></label>
+            <select className="select" style={{width:"100%"}} value={r.prescreen||"none"} onChange={e=>setRole(i,"prescreen",e.target.value)}>
+              {PRESCREEN_OPTS.map(p=><option key={p.v} value={p.v}>{p.l}</option>)}
+            </select>
+          </div>
           {/* Audition Instructions section */}
           <div style={{marginTop:14,borderTop:"1px solid var(--bdr)",paddingTop:12}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",marginBottom:r._showAudInstr?12:0}} onClick={()=>setRole(i,"_showAudInstr",!r._showAudInstr)}>
@@ -18590,7 +18837,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("FCS timed out after 10s")),10000);});
       const {data,error}=await Promise.race([
         window.sb.from("castings")
-          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,roles(id,name,description,gender,age_range,ethnicity,pay,role_type),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq("status","open").eq("published",true)
           // Scheduled publishing: exclude castings whose go-live time hasn't arrived yet.
           .or("go_live_at.is.null,go_live_at.lte."+new Date().toISOString())
@@ -18635,6 +18882,11 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         casting_image_path:c.casting_image_path||null,
         casting_images:Array.isArray(c.casting_images)?c.casting_images:[],
         casting_website_url:c.casting_website_url||null,
+        shoot_start:c.shoot_start||null,
+        shoot_end:c.shoot_end||null,
+        shoot_location:c.shoot_location||null,
+        schedule_note:c.schedule_note||null,
+        talent_scope:c.talent_scope||null,
         roles:(c.roles||[]).map(r=>({
           id:r.id||null,
           name:r.name,
@@ -18642,7 +18894,12 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
           type:r.role_type||"Supporting",
           gender:r.gender||"Any",
           ageRange:r.age_range||"",
-          ethnicity:r.ethnicity||"Any"
+          ethnicity:r.ethnicity||"Any",
+          rate_amount:r.rate_amount==null?null:Number(r.rate_amount),
+          rate_unit:r.rate_unit||null,
+          est_days:r.est_days==null?null:Number(r.est_days),
+          required_media:Array.isArray(r.required_media)?r.required_media:null,
+          prescreen:r.prescreen||null
         }))
       }));
       const liveCastings=mapped
@@ -24191,6 +24448,24 @@ const ACG = (()=>{
       submission_requirements:reqStr,
       expires_at:expiresAt(exMonths),
       deadline:new Date(expiresAt(exMonths)).toISOString().slice(0,10),
+      // Where & When — a shoot window that opens shortly AFTER submissions close,
+      // so the dates never contradict the deadline.
+      ...(()=>{
+        const dl=new Date(expiresAt(exMonths));
+        const s=new Date(dl.getTime()+(7+Math.floor(Math.random()*14))*86400000);
+        const e=new Date(s.getTime()+(2+Math.floor(Math.random()*12))*86400000);
+        return {
+          shoot_start:s.toISOString().slice(0,10),
+          shoot_end:e.toISOString().slice(0,10),
+          shoot_location:city.name,
+          schedule_note:"Exact days within this window are confirmed at booking.",
+          talent_scope:/theater|musical/i.test(tpl.type)
+            ? "Local — shoot city only"
+            : (/commercial|branded|voice|animation/i.test(tpl.type)
+                ? "United States — Nationwide"
+                : "Local + self-report (within driving distance)"),
+        };
+      })(),
       _baseKey:story.baseKey,
       _storyKey:story.storyKey,
       _storyTextKey:`${titleStr||""} ${tpl.type||""} ${story.synopsis||""}`.slice(0,1200),
@@ -24494,7 +24769,19 @@ function AdminCastingGenerator({session}){
           const item=Object.fromEntries(Object.entries(raw).filter(([k])=>k[0]!=="_"));
           const {data:cData,error:cErr}=await window.sb.from("castings").insert(item).select("id").single();
           if(cErr){fail++;errors.push(cErr.message);console.warn("[ACG] casting insert failed",cErr,item);continue;}
-          const roleRows=roles.map(r=>({casting_id:cData.id,name:r.name,description:r.description,gender:r.gender,role_type:r.role_type||inferRoleType(r.name,r.description),age_range:r.age_range,ethnicity:r.ethnicity,pay:r.pay||null}));
+          const roleRows=roles.map(r=>{
+            // Structured rate parsed from the generator's own pay string, so the
+            // "paid roles up to" line matches the text it already writes.
+            const rt=parseRoleRate(r.pay);
+            const rtype=r.role_type||inferRoleType(r.name,r.description);
+            const lead=/lead|principal|series regular/i.test(rtype||"");
+            return {casting_id:cData.id,name:r.name,description:r.description,gender:r.gender,role_type:rtype,age_range:r.age_range,ethnicity:r.ethnicity,pay:r.pay||null,
+              rate_amount:rt?rt.rate_amount:null,
+              rate_unit:rt?rt.rate_unit:null,
+              est_days:null,
+              required_media:lead?["headshot","reel"]:["headshot"],
+              prescreen:lead?"selftape":null};
+          });
           if(roleRows.length>0){
             const {error:rErr}=await window.sb.from("roles").insert(roleRows);
             if(rErr){
