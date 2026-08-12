@@ -3202,8 +3202,25 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;align-items:center;}
 /* CASTING BOARD (6+ roles): the list stays put and the panel beside it swaps,
    so an actor can compare every rate without losing their place. */
-.rb-wrap{display:grid;grid-template-columns:210px 1fr;min-height:310px;border:1px solid #d9e9e9;border-radius:14px;overflow:hidden;background:#fff;}
+.rb-wrap{display:grid;grid-template-columns:210px 1fr;min-height:260px;border:1px solid #d9e9e9;border-radius:14px;overflow:hidden;background:#fff;}
 .rb-rail{background:#f1f7f7;border-right:1px solid #d9e9e9;padding:9px;}
+/* A grid row is as tall as its tallest cell, so an 8-role rail was setting the
+   height of the whole board and leaving a screen of dead space beside a short
+   role. Taking the rail OUT of flow makes the PANE define the height and the
+   rail scroll inside whatever that turns out to be — the gap disappears rather
+   than being merely reduced. */
+@media (min-width:661px){
+  .rb-wrap{position:relative;display:block;}
+  .rb-rail{position:absolute;top:0;left:0;bottom:0;width:210px;overflow-y:auto;overscroll-behavior:contain;}
+  /* Floor chosen so ~6 roles stay visible in the rail — the whole point of this
+     layout is comparing rates without scrolling. Lower and it collapses to 4;
+     higher and short roles get their dead space back. */
+  .rb-pane{margin-left:210px;display:flex;flex-direction:column;min-height:340px;}
+  .rb-fade{display:flex;flex-direction:column;flex:1;}
+  /* Any leftover space lands under the actions, so a short role still reads as
+     a panel with a footer rather than as a void. */
+  .rb-actions{margin-top:auto;padding-top:18px;}
+}
 .rb-item{padding:11px 13px;border-radius:9px;cursor:pointer;margin-bottom:4px;transition:background .15s;border:none;background:none;width:100%;text-align:left;font-family:inherit;display:block;}
 .rb-item:hover{background:#e3efef;}
 .rb-item.on{background:#1A1A2E;}
@@ -3217,18 +3234,33 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rb-fade{animation:rbFade .3s ease;}
 @keyframes rbFade{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:none;}}
 @media (prefers-reduced-motion:reduce){.rb-fade{animation:none;}}
+/* Base state for the phone pager. MUST be declared before the media query that
+   turns it on — same specificity means source order decides, and a base rule
+   sitting after the query silently wins and the pager never appears. */
+.rb-nav{display:none;align-items:center;justify-content:center;gap:14px;padding:11px 14px;border-top:1px solid #d9e9e9;background:#f7fbfb;}
 @media (max-width:660px){
   /* The rail becomes a horizontal scroller. It must clip LOCALLY — iOS Safari
      ignores overflow-x on the root, so a wide track here would blow out the
      whole page instead of scrolling inside itself. */
   .rb-wrap{grid-template-columns:1fr;}
-  .rb-rail{border-right:none;border-bottom:1px solid #d9e9e9;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;contain:inline-size;}
+  .rb-rail{border-right:none;border-bottom:1px solid #d9e9e9;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;contain:inline-size;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;}
+  .rb-rail::-webkit-scrollbar{display:none;}
+  .rb-item{scroll-snap-align:center;}
   .rb-item{flex:none;min-width:132px;margin-bottom:0;}
   .rb-pane{padding:18px 18px;}
+  .rb-nav{display:flex;}
   .rl-top{flex-direction:column;gap:12px;}
   .rl-right{margin-left:0;width:100%;}
   .rl-right .btn-teal{flex:1;text-align:center;}
 }
+/* Mobile pager. Swiping the rail alone left it ambiguous whether more roles
+   existed; the counter states it outright and the arrows step through them,
+   scrolling the rail to match so the two never disagree. Phone-only — on
+   desktop the whole list is already visible. */
+.rb-navbtn{width:40px;height:40px;border-radius:50%;border:1px solid #cfe0e0;background:#fff;color:#37696A;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0;transition:background .15s,opacity .15s;}
+.rb-navbtn:hover:not(:disabled){background:#e3efef;}
+.rb-navbtn:disabled{opacity:.3;cursor:default;}
+.rb-count{font-size:12.5px;font-weight:700;color:#5f7373;min-width:78px;text-align:center;letter-spacing:.2px;}
 .cls-card-img{width:250px;min-width:250px;position:relative;overflow:hidden;background:#F4F1EA;flex-shrink:0;}
 .cls-card-action{padding:18px 20px;display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:8px;border-left:1px solid var(--bdr);min-width:140px;flex-shrink:0;}
 @media(max-width:768px){
@@ -10463,6 +10495,17 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const [descOpen,setDescOpen]=useState({});
   const toggleDesc=(i)=>setDescOpen(p=>({...p,[i]:!p[i]}));
   const rolesWrapRef=useRef(null);
+  const railRef=useRef(null);
+  // Keep the rail's scroll position tied to the selection, so stepping with the
+  // arrows slides the strip to the matching role instead of leaving the
+  // highlight somewhere off-screen. Skipped on first render — scrolling the
+  // page on arrival would be its own bug.
+  const railSyncedRef=useRef(false);
+  useEffect(()=>{
+    if(!railSyncedRef.current){railSyncedRef.current=true;return;}
+    const el=railRef.current&&railRef.current.querySelector(".rb-item.on");
+    if(el&&el.scrollIntoView)el.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});
+  },[boardSel]);
   // Reveal "Read the full description" ONLY when the clamp is really hiding a
   // line. Character-count guessing is wrong at both ends: a 240-character line
   // fits in two lines on a wide column, and a short one can wrap on a phone.
@@ -11013,7 +11056,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           const {instr,hasInstructions}=metaFor(sel);
           return(
           <div className="rb-wrap">
-            <div className="rb-rail" role="tablist" aria-label="Roles">
+            <div className="rb-rail" ref={railRef} role="tablist" aria-label="Roles">
               {sorted.map((rr,ii)=>(
                 <button key={ii} type="button" role="tab" aria-selected={ii===sel}
                   className={"rb-item"+(ii===sel?" on":"")} onClick={()=>setBoardSel(ii)}>
@@ -11036,12 +11079,24 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                 {(()=>{const chips=submitChips(r,hasInstructions);return chips?(<>
                   <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"#8ba4a4",marginBottom:7}}>Submit with</div>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:16}}>{chips}</div></>):null;})()}
-                <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap"}}>
+                <div className="rb-actions" style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap"}}>
                   {applyCtl(r,sel,hasInstructions)}
                   {rateBox(r)}
                 </div>
                 {auditionBlock(instr,hasInstructions)}
               </div>
+            </div>
+            {/* Phone pager — states how many roles there are and steps through them. */}
+            <div className="rb-nav" style={{gridColumn:"1 / -1"}}>
+              <button type="button" className="rb-navbtn" aria-label="Previous role"
+                disabled={sel===0} onClick={()=>setBoardSel(Math.max(0,sel-1))}>
+                <Ico n="chevron-left" s={20}/>
+              </button>
+              <span className="rb-count">Role {sel+1} of {sorted.length}</span>
+              <button type="button" className="rb-navbtn" aria-label="Next role"
+                disabled={sel===sorted.length-1} onClick={()=>setBoardSel(Math.min(sorted.length-1,sel+1))}>
+                <Ico n="chevron-right" s={20}/>
+              </button>
             </div>
           </div>);
         }
