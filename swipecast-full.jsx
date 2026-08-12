@@ -3179,6 +3179,56 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   .role-card-head>div:last-child{width:100%;}
   .role-card-head .btn-teal,.role-card-head .tag{display:block;width:100%;text-align:center;box-sizing:border-box;}
 }
+/* ─── Roles on a casting page ────────────────────────────────────────────────
+   Two layouts, chosen by role count. Colours are the approved demo's literals
+   rather than theme vars — the site has a single light theme, and these panels
+   are meant to read as one fixed object. Keep them in sync with
+   castslate-role-card-open-demos.html.
+
+   OPEN LEDGER (default, 5 roles or fewer): nothing collapses. Every role is
+   readable on arrival; only an over-long description clamps, and the reveal
+   link is shown ONLY when the clamp actually hides a line (measured in JS —
+   with -webkit-line-clamp, scrollHeight always equals clientHeight, so the
+   usual overflow test silently reports "not truncated" for everything). */
+.rl-row{border:1px solid #d9e9e9;border-radius:12px;background:#f1f7f7;padding:16px 18px;}
+.rl-top{display:flex;align-items:flex-start;gap:14px;}
+.rl-nm{font-size:16.5px;font-weight:800;letter-spacing:-.3px;color:#1A1A2E;}
+.rl-mt{font-size:12px;color:#8ba4a4;margin-top:3px;}
+.rl-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.rl-desc{font-size:13.5px;color:#41565b;line-height:1.72;margin-top:11px;}
+.rl-desc.rl-clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.rl-more{background:none;border:none;color:#37696A;font-size:12.5px;font-weight:700;cursor:pointer;padding:6px 0 0;font-family:inherit;text-decoration:underline;text-underline-offset:3px;}
+.rl-more:hover{color:#4F8A8B;}
+.rl-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;align-items:center;}
+/* CASTING BOARD (6+ roles): the list stays put and the panel beside it swaps,
+   so an actor can compare every rate without losing their place. */
+.rb-wrap{display:grid;grid-template-columns:210px 1fr;min-height:310px;border:1px solid #d9e9e9;border-radius:14px;overflow:hidden;background:#fff;}
+.rb-rail{background:#f1f7f7;border-right:1px solid #d9e9e9;padding:9px;}
+.rb-item{padding:11px 13px;border-radius:9px;cursor:pointer;margin-bottom:4px;transition:background .15s;border:none;background:none;width:100%;text-align:left;font-family:inherit;display:block;}
+.rb-item:hover{background:#e3efef;}
+.rb-item.on{background:#1A1A2E;}
+.rb-item .nm{font-size:13.5px;font-weight:800;color:#1A1A2E;}
+.rb-item .mt{font-size:11px;color:#8ba4a4;margin-top:2px;}
+.rb-item .amt{font-size:11px;font-weight:800;color:#15803d;margin-top:3px;}
+.rb-item.on .nm{color:#fff;}
+.rb-item.on .mt{color:#9fc2c2;}
+.rb-item.on .amt{color:#7fd6a0;}
+.rb-pane{padding:22px 24px;}
+.rb-fade{animation:rbFade .3s ease;}
+@keyframes rbFade{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:none;}}
+@media (prefers-reduced-motion:reduce){.rb-fade{animation:none;}}
+@media (max-width:660px){
+  /* The rail becomes a horizontal scroller. It must clip LOCALLY — iOS Safari
+     ignores overflow-x on the root, so a wide track here would blow out the
+     whole page instead of scrolling inside itself. */
+  .rb-wrap{grid-template-columns:1fr;}
+  .rb-rail{border-right:none;border-bottom:1px solid #d9e9e9;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;contain:inline-size;}
+  .rb-item{flex:none;min-width:132px;margin-bottom:0;}
+  .rb-pane{padding:18px 18px;}
+  .rl-top{flex-direction:column;gap:12px;}
+  .rl-right{margin-left:0;width:100%;}
+  .rl-right .btn-teal{flex:1;text-align:center;}
+}
 .cls-card-img{width:250px;min-width:250px;position:relative;overflow:hidden;background:#F4F1EA;flex-shrink:0;}
 .cls-card-action{padding:18px 20px;display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:8px;border-left:1px solid var(--bdr);min-width:140px;flex-shrink:0;}
 @media(max-width:768px){
@@ -10404,10 +10454,43 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const t=useT();
   const {lang}=useLanguage();
   const [applyRole,setApplyRole]=useState(null);
-  // Role cards collapse to a header row and expand on click. The first role is
-  // open by default so the page never looks like a bare list of names.
-  const [openRoles,setOpenRoles]=useState(()=>({0:true}));
-  const toggleRoleOpen=(i)=>setOpenRoles(p=>({...p,[i]:!p[i]}));
+  // Roles render as the Open Ledger (nothing collapses) up to ROLE_BOARD_MIN-1,
+  // and as the Casting Board (rail + swapping panel) at or above it. A third of
+  // live castings have exactly one role, so the default must never ask an actor
+  // to click before they can read the only role on the page.
+  const ROLE_BOARD_MIN=6;
+  const [boardSel,setBoardSel]=useState(0);
+  const [descOpen,setDescOpen]=useState({});
+  const toggleDesc=(i)=>setDescOpen(p=>({...p,[i]:!p[i]}));
+  const rolesWrapRef=useRef(null);
+  // Reveal "Read the full description" ONLY when the clamp is really hiding a
+  // line. Character-count guessing is wrong at both ends: a 240-character line
+  // fits in two lines on a wide column, and a short one can wrap on a phone.
+  //
+  // The catch: with -webkit-line-clamp the browser reports scrollHeight ===
+  // clientHeight, so the ordinary overflow test says "not truncated" for every
+  // element and the link would never appear. Unclamp, measure, re-clamp.
+  // No dependency array — descOpen changes and role swaps both need a re-measure.
+  useEffect(()=>{
+    const root=rolesWrapRef.current;
+    if(!root)return;
+    const sync=()=>{
+      root.querySelectorAll("[data-role-desc]").forEach(el=>{
+        const i=el.getAttribute("data-role-desc");
+        const btn=root.querySelector(`[data-role-more="${i}"]`);
+        if(!btn)return;
+        if(!el.classList.contains("rl-clamp")){btn.hidden=false;return;}
+        const clampedH=el.clientHeight;
+        el.classList.remove("rl-clamp");
+        const fullH=el.scrollHeight;
+        el.classList.add("rl-clamp");
+        btn.hidden=fullH<=clampedH+1;
+      });
+    };
+    sync();
+    window.addEventListener("resize",sync);
+    return ()=>window.removeEventListener("resize",sync);
+  });
   const autoOpenedRef=useRef(false);
   useEffect(()=>{
     if(autoApplyRole&&isLoggedIn&&!autoOpenedRef.current&&casting?.status!=="archived"&&!castingIsExpired(casting)){
@@ -10865,95 +10948,131 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginTop:4}}>{c.roles?.length||0} {(c.roles?.length||0)===1?t('search.role'):t('search.roles')} {applicationsClosed?"Listed":"Open"}</h2>
         </div>
       </div>
-      <div style={{display:"flex",flexDirection:"column",gap:14}}>
-        {(c.roles||[]).slice().sort((a,b)=>compareRolesByType(a.type,a.id,b.type,b.id)).map((r,i)=>{
+      {(()=>{
+        const sorted=(c.roles||[]).slice().sort((a,b)=>compareRolesByType(a.type,a.id,b.type,b.id));
+        if(!sorted.length)return null;
+        const metaFor=(i)=>{
           const roleId=realRoleIds[i];
           const instr=roleId?roleInstructions[roleId]:null;
-          const hasInstructions=instr&&(instr.sides_pdf_url||instr.direction_notes||instr.slate_instructions||instr.wardrobe_notes);
-          const isOpen=!!openRoles[i];
-          return(
-          <div key={i} className="card role-card" style={{padding:"22px 26px"}}>
-            {/* Collapsed header — the whole strip toggles the card open. */}
-            <div onClick={()=>toggleRoleOpen(i)} role="button" tabIndex={0} aria-expanded={isOpen}
-              onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleRoleOpen(i);}}}
-              style={{display:"flex",alignItems:"center",gap:12,cursor:"pointer",marginBottom:isOpen?14:0}}>
-              <div style={{flex:1,minWidth:0}}>
-                <h3 style={{fontSize:18,fontWeight:800,letterSpacing:"-0.3px",color:"var(--t1)",margin:0}}>{r.name}</h3>
-                <div style={{fontSize:12.5,color:"var(--t3)",marginTop:4}}>
-                  {[r.type,roleGenderLabel(r.gender),roleAgeLabel(r.ageRange)].filter(Boolean).join(" · ")}
-                </div>
-              </div>
-              {(()=>{const tot=roleTotalPay(r);return tot==null?null:
-                <span className="badge" style={{background:"rgba(21,128,61,0.10)",color:"#15803d",border:"1px solid rgba(21,128,61,0.25)",flexShrink:0}}>{fmtMoney(r.rate_amount)}{r.rate_unit==="flat"?" flat":r.rate_unit==="week"?"/wk":r.rate_unit==="hour"?"/hr":"/day"}</span>;})()}
-              <span style={{color:"var(--t3)",display:"flex",flexShrink:0,transition:"transform .25s ease",transform:isOpen?"rotate(180deg)":"none"}}><Ico n="chevron-down" s={20}/></span>
+          return {instr,hasInstructions:instr&&(instr.sides_pdf_url||instr.direction_notes||instr.slate_instructions||instr.wardrobe_notes)};
+        };
+        const unitSfx=(u,long)=>u==="flat"?" flat":u==="week"?(long?" / week":"/wk"):u==="hour"?(long?" / hour":"/hr"):(long?" / day":"/day");
+        const rateBadge=(r)=>roleTotalPay(r)==null?null:(
+          <span className="badge" style={{background:"rgba(21,128,61,0.10)",color:"#15803d",border:"1px solid rgba(21,128,61,0.25)",whiteSpace:"nowrap"}}>{fmtMoney(r.rate_amount)}{unitSfx(r.rate_unit)}</span>);
+        const applyCtl=(r,i,hasInstructions)=>applicationsClosed
+          ? <span className="tag" style={{fontSize:12,fontWeight:700,padding:"8px 14px",background:"rgba(192,57,43,0.08)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>{castingArchived?"Filled":"Applications closed"}</span>
+          : applied.has(i)
+            ? <span className="tag tag-grn" style={{fontSize:12,fontWeight:700,padding:"8px 14px"}}>{hasInstructions?"Audition Submitted":"Applied"}</span>
+            : <button className="btn-teal btn-sm" onClick={()=>handleApply(r,i)}>{!isLoggedIn?"Create a free account to apply":(hasInstructions?"Audition for This Role":"Apply for This Role")}</button>;
+        const submitChips=(r,hasInstructions)=>{
+          const media=Array.isArray(r.required_media)?r.required_media.filter(Boolean):[];
+          const pre=prescreenLabel(r.prescreen);
+          if(!media.length&&!pre&&!hasInstructions)return null;
+          return(<>
+            {media.map(m=><span key={m} className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{requiredMediaLabel(m)}</span>)}
+            {pre&&<span className="badge" style={{background:"rgba(226,183,60,0.12)",color:"#8a6614",border:"1px solid rgba(226,183,60,0.35)"}}>First look: {pre}</span>}
+            {hasInstructions&&<span className="badge" style={{background:"rgba(99,60,180,0.1)",color:"var(--acc)",border:"1px solid rgba(99,60,180,0.25)"}}><Ico n="movie" s={18}/> Self-Tape Required</span>}
+          </>);
+        };
+        const rateBox=(r)=>{
+          const total=roleTotalPay(r);
+          if(total==null)return null;
+          return(<div style={{display:"inline-block",background:"rgba(21,128,61,0.08)",border:"1px solid rgba(21,128,61,0.22)",borderRadius:8,padding:"8px 12px"}}>
+            <span style={{fontSize:13,fontWeight:700,color:"#15803d"}}>{fmtMoney(r.rate_amount)}{unitSfx(r.rate_unit,true)}</span>
+            {r.rate_unit!=="flat"&&r.est_days>1&&<span style={{fontSize:12,color:"var(--t2)",marginLeft:8}}>Est. total {fmtMoney(total)} &middot; {r.est_days} days</span>}
+          </div>);
+        };
+        const auditionBlock=(instr,hasInstructions)=>!hasInstructions?null:(
+          <div style={{marginTop:14,background:"rgba(99,60,180,0.05)",border:"1px solid rgba(99,60,180,0.18)",borderRadius:10,padding:"16px 18px"}}>
+            <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.2,color:"var(--acc)",marginBottom:12}}>Audition Instructions</div>
+            {instr.sides_pdf_url&&<div style={{marginBottom:12}}>
+              <div style={{fontSize:11,fontWeight:700,color:"var(--t2)",marginBottom:6,textTransform:"uppercase",letterSpacing:.8}}>Audition Sides</div>
+              <a href={instr.sides_pdf_url} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:8,border:"1px solid rgba(99,60,180,0.3)",background:"rgba(99,60,180,0.06)",color:"var(--acc)",fontWeight:700,fontSize:13,textDecoration:"none"}}>
+                <span style={{fontSize:18}}><Ico n="file-text" s={22}/></span> Open / Download Sides PDF
+              </a>
+            </div>}
+            {instr.direction_notes&&<div style={{marginBottom:10}}>
+              <div style={{fontSize:11,fontWeight:700,color:"var(--t2)",marginBottom:4,textTransform:"uppercase",letterSpacing:.8}}>Direction</div>
+              <p style={{fontSize:13,color:"var(--t1)",lineHeight:1.65,margin:0}}>{instr.direction_notes}</p>
+            </div>}
+            <div style={{display:"flex",gap:16,flexWrap:"wrap",marginTop:instr.direction_notes?8:0}}>
+              {instr.slate_instructions&&<div style={{minWidth:0}}><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Slate: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.slate_instructions}</span></div>}
+              {instr.video_length_limit&&<div><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Max Length: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.video_length_limit<60?`${instr.video_length_limit}s`:instr.video_length_limit%60===0?`${instr.video_length_limit/60} min`:`${Math.floor(instr.video_length_limit/60)}m ${instr.video_length_limit%60}s`}</span></div>}
+              {instr.official_takes_allowed&&<div><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Takes: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.official_takes_allowed===1?"1 take only":`Up to ${instr.official_takes_allowed} takes`}</span></div>}
+              {instr.submission_mode&&<div><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Submit: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.submission_mode==="all_takes"?"All takes":"Best take only"}</span></div>}
             </div>
-            {isOpen&&<>
-            <div className="flex-between role-card-head" style={{marginBottom:10,alignItems:"flex-start",gap:16}}>
-              <div style={{flex:1}}>
-                <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap"}}>
+            {instr.wardrobe_notes&&<div style={{marginTop:10,paddingTop:10,borderTop:"1px solid var(--bdr)"}}>
+              <span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Wardrobe / Framing: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.wardrobe_notes}</span>
+            </div>}
+          </div>);
+
+        // ── CASTING BOARD — 6 roles or more ──
+        if(sorted.length>=ROLE_BOARD_MIN){
+          const sel=Math.min(boardSel,sorted.length-1);
+          const r=sorted[sel];
+          const {instr,hasInstructions}=metaFor(sel);
+          return(
+          <div className="rb-wrap">
+            <div className="rb-rail" role="tablist" aria-label="Roles">
+              {sorted.map((rr,ii)=>(
+                <button key={ii} type="button" role="tab" aria-selected={ii===sel}
+                  className={"rb-item"+(ii===sel?" on":"")} onClick={()=>setBoardSel(ii)}>
+                  <div className="nm">{rr.name}</div>
+                  <div className="mt">{[rr.type,roleAgeLabel(rr.ageRange)].filter(Boolean).join(" · ")}</div>
+                  {roleTotalPay(rr)!=null&&<div className="amt">{fmtMoney(rr.rate_amount)}{unitSfx(rr.rate_unit)}</div>}
+                </button>
+              ))}
+            </div>
+            <div className="rb-pane">
+              <div className="rb-fade" key={sel}>
+                <h3 style={{fontSize:21,fontWeight:800,letterSpacing:"-0.4px",color:"var(--t1)",margin:0}}>{r.name}</h3>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap",margin:"9px 0 13px"}}>
                   <span className="badge tag-acc">{r.type}</span>
                   <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{roleGenderLabel(r.gender)}</span>
                   <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{roleAgeLabel(r.ageRange)}</span>
                   <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{roleEthnicityLabel(r.ethnicity)}</span>
-                  {hasInstructions&&<span className="badge" style={{background:"rgba(99,60,180,0.1)",color:"var(--acc)",border:"1px solid rgba(99,60,180,0.25)"}}><Ico n="movie" s={22}/> Self-Tape Required</span>}
                 </div>
-                <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65}}>{r.desc}</p>
-                {/* Submit-with chips + rate box. Absent on castings posted
-                    before these fields existed, so nothing renders for them. */}
-                {(()=>{
-                  const media=Array.isArray(r.required_media)?r.required_media.filter(Boolean):[];
-                  const pre=prescreenLabel(r.prescreen);
-                  const total=roleTotalPay(r);
-                  if(!media.length&&!pre&&total==null)return null;
-                  return(
-                  <div style={{marginTop:12}}>
-                    {(media.length>0||pre)&&<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:total!=null?10:0}}>
-                      {media.map(m=>(
-                        <span key={m} className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{requiredMediaLabel(m)}</span>
-                      ))}
-                      {pre&&<span className="badge" style={{background:"rgba(226,183,60,0.12)",color:"#8a6614",border:"1px solid rgba(226,183,60,0.35)"}}>First look: {pre}</span>}
-                    </div>}
-                    {total!=null&&<div style={{display:"inline-block",background:"rgba(21,128,61,0.08)",border:"1px solid rgba(21,128,61,0.22)",borderRadius:8,padding:"8px 12px"}}>
-                      <span style={{fontSize:13,fontWeight:700,color:"#15803d"}}>
-                        {fmtMoney(r.rate_amount)}{r.rate_unit==="flat"?" flat":r.rate_unit==="week"?" / week":r.rate_unit==="hour"?" / hour":" / day"}
-                      </span>
-                      {r.rate_unit!=="flat"&&r.est_days>1&&<span style={{fontSize:12,color:"var(--t2)",marginLeft:8}}>
-                        Est. total {fmtMoney(total)} · {r.est_days} days
-                      </span>}
-                    </div>}
-                  </div>);
-                })()}
-              </div>
-              <div style={{flexShrink:0}}>
-                {applicationsClosed?<span className="tag" style={{fontSize:12,fontWeight:700,padding:"8px 14px",background:"rgba(192,57,43,0.08)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>{castingArchived?"Filled":"Applications closed"}</span>:applied.has(i)?<span className="tag tag-grn" style={{fontSize:12,fontWeight:700,padding:"8px 14px"}}>{hasInstructions?"Audition Submitted":"Applied"}</span>:<button className="btn-teal btn-sm" onClick={()=>handleApply(r,i)}>{!isLoggedIn?"Create a free account to apply":(hasInstructions?"Audition for This Role":"Apply for This Role")}</button>}
+                {r.desc&&<p style={{fontSize:13.5,color:"#41565b",lineHeight:1.75,marginBottom:15}}>{r.desc}</p>}
+                {(()=>{const chips=submitChips(r,hasInstructions);return chips?(<>
+                  <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"#8ba4a4",marginBottom:7}}>Submit with</div>
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:16}}>{chips}</div></>):null;})()}
+                <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap"}}>
+                  {applyCtl(r,sel,hasInstructions)}
+                  {rateBox(r)}
+                </div>
+                {auditionBlock(instr,hasInstructions)}
               </div>
             </div>
-            {/* Audition Instructions block — shown when the CD has set them */}
-            {hasInstructions&&<div style={{marginTop:12,background:"rgba(99,60,180,0.05)",border:"1px solid rgba(99,60,180,0.18)",borderRadius:10,padding:"16px 18px"}}>
-              <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.2,color:"var(--acc)",marginBottom:12}}>Audition Instructions</div>
-              {instr.sides_pdf_url&&<div style={{marginBottom:12}}>
-                <div style={{fontSize:11,fontWeight:700,color:"var(--t2)",marginBottom:6,textTransform:"uppercase",letterSpacing:.8}}>Audition Sides</div>
-                <a href={instr.sides_pdf_url} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:8,border:"1px solid rgba(99,60,180,0.3)",background:"rgba(99,60,180,0.06)",color:"var(--acc)",fontWeight:700,fontSize:13,textDecoration:"none"}}>
-                  <span style={{fontSize:18}}><Ico n="file-text" s={22}/></span> Open / Download Sides PDF
-                </a>
-              </div>}
-              {instr.direction_notes&&<div style={{marginBottom:10}}>
-                <div style={{fontSize:11,fontWeight:700,color:"var(--t2)",marginBottom:4,textTransform:"uppercase",letterSpacing:.8}}>Direction</div>
-                <p style={{fontSize:13,color:"var(--t1)",lineHeight:1.65,margin:0}}>{instr.direction_notes}</p>
-              </div>}
-              <div style={{display:"flex",gap:16,flexWrap:"wrap",marginTop:instr.direction_notes?8:0}}>
-                {instr.slate_instructions&&<div style={{minWidth:0}}><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Slate: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.slate_instructions}</span></div>}
-                {instr.video_length_limit&&<div><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Max Length: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.video_length_limit<60?`${instr.video_length_limit}s`:instr.video_length_limit%60===0?`${instr.video_length_limit/60} min`:`${Math.floor(instr.video_length_limit/60)}m ${instr.video_length_limit%60}s`}</span></div>}
-                {instr.official_takes_allowed&&<div><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Takes: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.official_takes_allowed===1?"1 take only":`Up to ${instr.official_takes_allowed} takes`}</span></div>}
-                {instr.submission_mode&&<div><span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Submit: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.submission_mode==="all_takes"?"All takes":"Best take only"}</span></div>}
+          </div>);
+        }
+
+        // ── OPEN LEDGER — 5 roles or fewer (two thirds of live castings) ──
+        return(
+        <div ref={rolesWrapRef} style={{display:"flex",flexDirection:"column",gap:14}}>
+          {sorted.map((r,i)=>{
+            const {instr,hasInstructions}=metaFor(i);
+            const open=!!descOpen[i];
+            const chips=submitChips(r,hasInstructions);
+            return(
+            <div key={i} className="rl-row">
+              <div className="rl-top">
+                <div style={{minWidth:0}}>
+                  <div className="rl-nm">{r.name}</div>
+                  <div className="rl-mt">{[r.type,roleGenderLabel(r.gender),roleAgeLabel(r.ageRange),roleEthnicityLabel(r.ethnicity)].filter(Boolean).join(" · ")}</div>
+                </div>
+                <div className="rl-right">{rateBadge(r)}{applyCtl(r,i,hasInstructions)}</div>
               </div>
-              {instr.wardrobe_notes&&<div style={{marginTop:10,paddingTop:10,borderTop:"1px solid var(--bdr)"}}>
-                <span style={{fontSize:10,fontWeight:700,color:"var(--t3)",textTransform:"uppercase",letterSpacing:.8}}>Wardrobe / Framing: </span><span style={{fontSize:13,color:"var(--t2)"}}>{instr.wardrobe_notes}</span>
+              {r.desc&&<div className={"rl-desc"+(open?"":" rl-clamp")} data-role-desc={i}>{r.desc}</div>}
+              {r.desc&&<button type="button" className="rl-more" data-role-more={i} hidden onClick={()=>toggleDesc(i)}>{open?"Show less":"Read the full description"}</button>}
+              {(chips||roleTotalPay(r)!=null)&&<div className="rl-meta">
+                {chips}
+                {roleTotalPay(r)!=null&&r.rate_unit!=="flat"&&r.est_days>1&&<span style={{fontSize:11.5,color:"#8ba4a4",marginLeft:2}}>Est. {fmtMoney(roleTotalPay(r))} &middot; {r.est_days} days</span>}
               </div>}
-            </div>}
-            </>}
-          </div>);})}
-      </div>
+              {auditionBlock(instr,hasInstructions)}
+            </div>);
+          })}
+        </div>);
+      })()}
     </section>
 
     <section style={{padding:"28px 32px",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,marginBottom:32,textAlign:"center"}}>
