@@ -10492,10 +10492,10 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const {lang}=useLanguage();
   const [applyRole,setApplyRole]=useState(null);
   // Roles render as the Open Ledger (nothing collapses) up to ROLE_BOARD_MIN-1,
-  // and as the Casting Board (rail + swapping panel) at or above it. A third of
-  // live castings have exactly one role, so the default must never ask an actor
-  // to click before they can read the only role on the page.
-  const ROLE_BOARD_MIN=6;
+  // and as the Casting Board (rail + swapping panel) at or above it. One and two
+  // role castings stay on the Ledger so a visitor never has to click before they
+  // can read the only role(s) on the page; three or more get the board.
+  const ROLE_BOARD_MIN=3;
   const [boardSel,setBoardSel]=useState(0);
   const [descOpen,setDescOpen]=useState({});
   const toggleDesc=(i)=>setDescOpen(p=>({...p,[i]:!p[i]}));
