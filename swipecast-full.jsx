@@ -26508,7 +26508,13 @@ function AdminCastingGenerator({session}){
   const publishListing=async(c)=>{
     const key=c.id+":pub";setBusy(key);
     const deadlineVal=c.expires_at?new Date(c.expires_at).toISOString().slice(0,10):null;
-    const {error}=await window.sb.from("castings").update({status:"open",published:true,deadline:deadlineVal,updated_at:new Date().toISOString()}).eq("id",c.id);
+    // Stamp created_at at PUBLISH time, not generation time. Generated drafts can
+    // sit for weeks (190 of the current 222 are 20+ days old), and the emails draw
+    // from the most recently POSTED castings — so publishing an old draft without
+    // this would put it live on the site and silently outside the mail queue
+    // forever. "Posted" now means "went live", which is also what an actor reads
+    // it as.
+    const {error}=await window.sb.from("castings").update({status:"open",published:true,deadline:deadlineVal,created_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",c.id);
     setBusy(null);
     if(error){showMsg("Publish failed: "+error.message);return;}
     showMsg("Listing published and live.");loadAll();
@@ -29443,7 +29449,9 @@ function AdminCastings({onPendingCountChange}){
     const {error}=await window.sb.rpc("admin_set_casting_featured",{p_casting_id:c.id,p_featured:featuring});
     if(error){setBusy(null);showMsg("Failed: "+error.message,"error");return;}
     if(featuring&&(!c.published||c.status!=="open")){
-      const {error:e2}=await window.sb.from("castings").update({status:"open",published:true,updated_at:new Date().toISOString()}).eq("id",c.id);
+      // Featuring an unpublished casting also publishes it — stamp the posted date
+      // so it enters the email queue at the top, same as any other publish.
+      const {error:e2}=await window.sb.from("castings").update({status:"open",published:true,created_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",c.id);
       setBusy(null);
       if(e2){showMsg("Featured but failed to publish: "+e2.message,"error");reload();return;}
       showMsg("Casting featured and published — now live in Browse Castings.","success");
@@ -29458,8 +29466,10 @@ function AdminCastings({onPendingCountChange}){
   const publishCasting=async(c)=>{
     const key=c.id+":status";
     setBusy(key);
+    // created_at is stamped at publish time so the casting enters the email queue
+    // as newly posted — see publishListing for why generation time is wrong here.
     const {error}=await window.sb.from("castings")
-      .update({status:"open",published:true,updated_at:new Date().toISOString()})
+      .update({status:"open",published:true,created_at:new Date().toISOString(),updated_at:new Date().toISOString()})
       .eq("id",c.id);
     setBusy(null);
     if(error){showMsg("Publish failed: "+error.message,"error");return;}
