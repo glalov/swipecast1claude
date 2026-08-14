@@ -411,7 +411,8 @@ serve(async (req) => {
           if(h) thero = (Array.isArray(h) ? h[0] : h) as Hero;
         }
       }catch(e){ console.error("[upsell] hero unavailable:", (e as Error).message); }
-      const{data:cs}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).order("created_at",{ascending:false}).limit(3);
+      const nowTest=new Date().toISOString();
+      const{data:cs}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).or(`go_live_at.is.null,go_live_at.lte.${nowTest}`).order("created_at",{ascending:false}).limit(3);
       const preview=(cs||[]).map((c:any)=>({...c,posted_at:c.created_at,roles:[]}));
       if(!preview.length) preview.push({id:"preview",title:'Indie Feature — "The Long Winter"',type:"Film",location:"New York, NY",union_status:"SAG-AFTRA",pay:"$2,500/week",synopsis:"A character-driven drama about a Brooklyn ceramicist navigating her first gallery show.",slug:"sample",posted_at:new Date().toISOString(),roles:[{name:"NADIA",age_range:"28–38",gender:"Female",pay:"$2,500/week"}]});
       const html=buildEmail("there",preview,"test",slot,thero);
@@ -501,7 +502,11 @@ serve(async (req) => {
     // recently POSTED active castings, so this campaign can never resurface a
     // months-old listing just because it is still technically open.
     const RECENT_POOL=20;
-    const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).order("created_at",{ascending:false}).limit(RECENT_POOL);
+    // Same go-live guard as the digest: a casting scheduled for a future date is
+    // already published=true and merely hidden by the site, so without this it
+    // would be emailed before anyone could open it.
+    const goLiveGate=new Date().toISOString();
+    const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).or(`go_live_at.is.null,go_live_at.lte.${goLiveGate}`).order("created_at",{ascending:false}).limit(RECENT_POOL);
     const cwr:any[]=[];
     if(castings?.length){
       const cids=castings.map((c:any)=>c.id);
@@ -537,9 +542,14 @@ serve(async (req) => {
 
       // Personalized job cards (best-effort; email still sends with 0 matches).
       const pool=cwr.filter((c:any)=>matches(pf,c) && castingAgeOk(c,p.age));
-      // Shuffle picks WHICH castings; the sort fixes the ORDER, newest posted
-      // first, so the top card is always the most current work.
-      const batch=shuffle(pool.slice()).slice(0,JOB_CAP)
+      // NEWEST-FIRST GUARANTEE. A pure shuffle means a casting posted an hour ago
+      // can lose the coin toss and never appear. Hoist the newest matching casting
+      // to the front so anything just posted is ALWAYS included; the remaining
+      // slots stay shuffled so the rest of the mix still varies between sends.
+      const newest=pool.reduce((best:any,c:any)=>
+        (!best||String(c.created_at||c.posted_at||"")>String(best.created_at||best.posted_at||"")) ? c : best, null);
+      const rest=shuffle(pool.filter((c:any)=>!newest||c.id!==newest.id));
+      const batch=(newest?[newest,...rest]:rest).slice(0,JOB_CAP)
         .sort((a:any,b:any)=>String(b.created_at||b.posted_at||"").localeCompare(String(a.created_at||a.posted_at||"")));
       const first=(p.display_name??"").split(" ")[0].trim()||"there";
       outbox.push({ userId:p.id, email, subject:subjectFor(slot,batch.length,runHero), html:buildEmail(first,batch,p.id,slot,runHero) });

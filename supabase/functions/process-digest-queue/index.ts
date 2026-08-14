@@ -403,7 +403,9 @@ serve(async (req) => {
     if(action==="test"){
       if(!to_email) return res({error:"to_email required"},400);
       const today=new Date().toISOString().slice(0,10);
-      const{data:cs}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).order("created_at",{ascending:false}).limit(5);
+      // Capped at 4 to match the real run, which never sends more than 4 cards.
+      const nowTest=new Date().toISOString();
+      const{data:cs}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).or(`go_live_at.is.null,go_live_at.lte.${nowTest}`).order("created_at",{ascending:false}).limit(4);
       const preview=(cs||[]).map((c:any)=>({...c,posted_at:c.created_at,roles:[]}));
       if(!preview.length) preview.push({id:"preview",title:"Indie Feature — New York",type:"Film",location:"New York, NY",union_status:"SAG-AFTRA",pay:"$2,500/week",synopsis:"A quiet drama about a Brooklyn ceramicist navigating her first gallery show. Character-driven, single-location, real-world cast.",slug:"sample",posted_at:new Date().toISOString(),roles:[{name:"NADIA",age_range:"28–38",gender:"Female",pay:"$2,500/week"}]});
       if(!emailConfigured()) return res({error:"Email provider not configured"},500);
@@ -520,7 +522,12 @@ serve(async (req) => {
       // so the mail can only ever contain current work. Ordered newest-first here
       // and kept that way into the email.
       const RECENT_POOL=20;
-      const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).order("created_at",{ascending:false}).limit(RECENT_POOL);
+      // Scheduled castings are published=true the moment they are approved and
+      // only HIDDEN by the site until go_live_at passes — nothing flips a flag at
+      // go-live time. Without this guard a casting scheduled for tomorrow would be
+      // emailed today and the link would show "Casting not found" to the reader.
+      const goLiveGate=new Date().toISOString();
+      const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).or(`go_live_at.is.null,go_live_at.lte.${goLiveGate}`).order("created_at",{ascending:false}).limit(RECENT_POOL);
       if(!castings?.length) return res({ok:true,message:"No active castings",sent:0,skipped:0});
       const cids=castings.map((c:any)=>c.id);
       const rb:Record<string,any[]>={};
@@ -664,9 +671,17 @@ serve(async (req) => {
             if(candidates.length<1) candidates=shuffle(pool.slice());
           }
 
-          // Shuffling above decides WHICH castings a user gets (so the mix varies
-          // day to day); this decides the ORDER they appear in, newest posted at
-          // the top, so the freshest thing is the first thing read.
+          // NEWEST-FIRST GUARANTEE. Shuffling decides which castings a user gets,
+          // which means a casting posted an hour ago could lose the coin toss and
+          // sit unseen for days. Hoist the newest matching casting to the front of
+          // the candidate list so anything just posted is ALWAYS in today's batch;
+          // the remaining slots stay shuffled so the rest of the mix still varies.
+          const newest=pool.reduce((best:any,c:any)=>
+            (!best||String(c.created_at||c.posted_at||"")>String(best.created_at||best.posted_at||"")) ? c : best, null);
+          if(newest) candidates=[newest,...candidates.filter((c:any)=>c.id!==newest.id)];
+
+          // Then order the chosen cards newest-first, so the freshest work is the
+          // first thing read rather than buried at the bottom.
           const batch=candidates.slice(0,cap).sort((a:any,b:any)=>
             String(b.created_at||b.posted_at||"").localeCompare(String(a.created_at||a.posted_at||"")));
           const first=(p.display_name??"").split(" ")[0].trim()||"there";
