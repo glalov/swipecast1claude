@@ -95,14 +95,8 @@ async function sendBatch(items: SendEmailArgs[]): Promise<SendEmailResult[]> {
 }
 
 // ── Casting helpers (mirrors process-digest-queue) ──
-function ago(iso: string): string {
-  const h = Math.floor((Date.now()-new Date(iso).getTime())/3600000);
-  const d = Math.floor(h/24);
-  if(h<1) return "Just posted";
-  if(h<24) return `${h}h ago`;
-  if(d<7) return `${d}d ago`;
-  return new Date(iso).toLocaleDateString("en-US",{month:"short",day:"numeric"});
-}
+// (No "posted N days ago" stamp on the cards — removed by request. Recency is
+// enforced by the RECENT_POOL window below rather than shown as a date.)
 
 function matches(prefs: any, c: any): boolean {
   const loc=(c.location||"").toLowerCase();
@@ -180,9 +174,6 @@ function card(c: any): string {
       <td style="vertical-align:top;">
         <div style="font-size:16px;font-weight:800;color:#1A1A2E;line-height:1.3;margin-bottom:4px;">${c.title}</div>
         <div style="font-size:12px;color:#6b8a8a;">&#128205;&nbsp;${c.location||"Location TBD"}</div>
-      </td>
-      <td style="vertical-align:top;text-align:right;white-space:nowrap;padding-left:12px;">
-        <span style="font-size:11px;color:#6b8a8a;">${ago(c.posted_at)}</span>
       </td>
     </tr></table>
     <div style="margin:6px 0 10px;">${typePill}${unionPill}${paidPill}</div>
@@ -506,7 +497,11 @@ serve(async (req) => {
         if(h) runHero = (Array.isArray(h) ? h[0] : h) as Hero;
       }
     }catch(e){ console.error("[upsell] hero unavailable:", (e as Error).message); }
-    const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).order("created_at",{ascending:false}).limit(500);
+    // RECENCY WINDOW — same rule as the daily digest. Draw only from the N most
+    // recently POSTED active castings, so this campaign can never resurface a
+    // months-old listing just because it is still technically open.
+    const RECENT_POOL=20;
+    const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).order("created_at",{ascending:false}).limit(RECENT_POOL);
     const cwr:any[]=[];
     if(castings?.length){
       const cids=castings.map((c:any)=>c.id);
@@ -542,7 +537,10 @@ serve(async (req) => {
 
       // Personalized job cards (best-effort; email still sends with 0 matches).
       const pool=cwr.filter((c:any)=>matches(pf,c) && castingAgeOk(c,p.age));
-      const batch=shuffle(pool.slice()).slice(0,JOB_CAP);
+      // Shuffle picks WHICH castings; the sort fixes the ORDER, newest posted
+      // first, so the top card is always the most current work.
+      const batch=shuffle(pool.slice()).slice(0,JOB_CAP)
+        .sort((a:any,b:any)=>String(b.created_at||b.posted_at||"").localeCompare(String(a.created_at||a.posted_at||"")));
       const first=(p.display_name??"").split(" ")[0].trim()||"there";
       outbox.push({ userId:p.id, email, subject:subjectFor(slot,batch.length,runHero), html:buildEmail(first,batch,p.id,slot,runHero) });
     }

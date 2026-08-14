@@ -158,14 +158,9 @@ async function sendBatch(items: SendEmailArgs[]): Promise<SendEmailResult[]> {
   return out;
 }
 
-function ago(iso: string): string {
-  const h = Math.floor((Date.now()-new Date(iso).getTime())/3600000);
-  const d = Math.floor(h/24);
-  if(h<1) return "Just posted";
-  if(h<24) return `${h}h ago`;
-  if(d<7) return `${d}d ago`;
-  return new Date(iso).toLocaleDateString("en-US",{month:"short",day:"numeric"});
-}
+// (The "6d ago" / "Aug 1" stamp that used to sit in the corner of each casting
+// card is gone by request — a date on a card only ever makes work look stale.
+// Recency is handled by the pool window instead, not by advertising an age.)
 
 function pill(text: string, bg: string, color: string): string {
   return `<span style="display:inline-block;background:${bg};color:${color};padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.3px;margin:0 4px 4px 0;">${text}</span>`;
@@ -205,9 +200,6 @@ function card(c: any): string {
       <td style="vertical-align:top;">
         <div style="font-size:16px;font-weight:800;color:#0f172a;line-height:1.3;margin-bottom:4px;">${c.title}</div>
         <div style="font-size:12px;color:#94a3b8;">&#128205;&nbsp;${c.location||"Location TBD"}</div>
-      </td>
-      <td style="vertical-align:top;text-align:right;white-space:nowrap;padding-left:12px;">
-        <span style="font-size:11px;color:#94a3b8;">${ago(c.posted_at)}</span>
       </td>
     </tr></table>
     <div style="margin:6px 0 10px;">${typePill}${unionPill}${paidPill}</div>
@@ -442,14 +434,15 @@ serve(async (req) => {
       if(!cfg?.digest_emails_enabled||cfg.digest_paused) return res({ok:false,message:cfg?.digest_paused?"Paused":"Disabled",sent:0,skipped:0});
       if(!emailConfigured()) return res({ok:false,message:"Email provider not configured",sent:0,skipped:0},500);
 
-      // How many castings go in each email. Instead of a FIXED number every day
-      // (which felt repetitive), the count VARIES day-to-day for variety. It is
-      // deterministic per calendar day — the same value for the whole run, so every
-      // user gets the same-sized digest that morning — and walks a hand-picked cycle
-      // with good spread, no back-to-back repeats, all under 10.
+      // How many castings go in each email. The count VARIES day-to-day rather
+      // than being fixed, so the mail does not look identical every morning. It
+      // is deterministic per calendar day — the same value for the whole run, so
+      // every user gets the same-sized digest — and cycles 3 → 4 → 2 → 3.
+      // NEVER more than 4: a long list reads as a mailing list, a short one reads
+      // as a shortlist.
       //   This is still a CAP, not a send-gate: if a user has fewer matching active
       //   castings than today's number, they simply get however many they have.
-      const DAILY_COUNTS=[4,6,3,7,2,5,3,8,4,6,2,7,5,3];
+      const DAILY_COUNTS=[3,4,2,3];
       const epochDay=Math.floor(Date.now()/86400000);   // days since 1970 (UTC)
       const cap=DAILY_COUNTS[epochDay % DAILY_COUNTS.length];
 
@@ -521,7 +514,13 @@ serve(async (req) => {
       // to Browse Castings within the last 48h — never recycled/old ones. This
       // cutoff (created_at >= now-48h) is applied per-user below for premium only.
       const FRESH_CUTOFF=new Date(Date.now()-48*3600000).toISOString();
-      const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).order("created_at",{ascending:false}).limit(500);
+      // RECENCY WINDOW. The digest used to draw from every active casting, which
+      // is how a listing posted back in April ended up in a August email. The
+      // pool is now the N most recently POSTED active castings and nothing older,
+      // so the mail can only ever contain current work. Ordered newest-first here
+      // and kept that way into the email.
+      const RECENT_POOL=20;
+      const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).order("created_at",{ascending:false}).limit(RECENT_POOL);
       if(!castings?.length) return res({ok:true,message:"No active castings",sent:0,skipped:0});
       const cids=castings.map((c:any)=>c.id);
       const rb:Record<string,any[]>={};
@@ -665,7 +664,11 @@ serve(async (req) => {
             if(candidates.length<1) candidates=shuffle(pool.slice());
           }
 
-          const batch=candidates.slice(0,cap);
+          // Shuffling above decides WHICH castings a user gets (so the mix varies
+          // day to day); this decides the ORDER they appear in, newest posted at
+          // the top, so the freshest thing is the first thing read.
+          const batch=candidates.slice(0,cap).sort((a:any,b:any)=>
+            String(b.created_at||b.posted_at||"").localeCompare(String(a.created_at||a.posted_at||"")));
           const first=(p.display_name??"").split(" ")[0].trim()||"there";
           const count=batch.length;
           // Subject comes from the day's still, with the live role count
