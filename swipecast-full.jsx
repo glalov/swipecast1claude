@@ -644,53 +644,6 @@ function roleGenderLabel(v){return isAnyRoleVal(v)?"Any gender":v;}
 function roleAgeLabel(v){return isAnyRoleVal(v)?"Any age range":("Age "+v);}
 function roleEthnicityLabel(v){return isAnyRoleVal(v)?"Any ethnicity":v;}
 
-// ── Role fit ───────────────────────────────────────────────────────────────
-// Parse an age range: "28-42", "18–65" (en dash), "18+", "All ages 18+",
-// "any"/"all ages" → open. Returns [min,max] (max may be Infinity) or null.
-// Same parser the Premium daily role matcher uses — the two features must agree
-// on what counts as a match or an actor gets told two different things.
-function parseRoleAgeRange(s){
-  if(s==null)return null;
-  const str=String(s).toLowerCase().trim();
-  if(!str)return null;
-  if(/all ages|open|any/.test(str)){
-    const mp=str.match(/(\d+)\s*\+/);if(mp)return[parseInt(mp[1],10),Infinity];
-    const mo=str.match(/(\d+)/);return mo?[parseInt(mo[1],10),Infinity]:[0,Infinity];
-  }
-  const mr=str.match(/(\d+)\s*[-–—]\s*(\d+)/);if(mr)return[parseInt(mr[1],10),parseInt(mr[2],10)];
-  const mp=str.match(/(\d+)\s*\+/);if(mp)return[parseInt(mp[1],10),Infinity];
-  const m1=str.match(/(\d+)/);if(m1){const n=parseInt(m1[1],10);return[n,n];}
-  return null;
-}
-// Does this role specifically fit the signed-in actor?
-//   true  — the role NAMES a gender and/or an age range and the actor satisfies
-//           every requirement it names. An earned, checkable match.
-//   false — the role excludes them, OR names nothing at all. A role open to
-//           everyone is "also open to apply", not "right for you"; folding those
-//           into the match group is what turns a shortlist back into a list.
-//   null  — we don't know enough about the actor to judge. Never guess: the
-//           caller renders the plain ungrouped ledger rather than claim a match.
-function roleFitsTalent(role,profile){
-  if(!role||!profile)return null;
-  const tg=((profile.gender)||"").toLowerCase().trim();
-  const na=Number(profile.age);
-  const tAge=(Number.isFinite(na)&&na>0)?[na,na]:parseRoleAgeRange(profile.age_range);
-  if(!tg&&!tAge)return null;
-  let specific=false;
-  const rg=((role.gender)||"").toLowerCase().trim();
-  if(!isAnyRoleVal(rg)){
-    if(!tg)return null;
-    if(rg!==tg)return false;
-    specific=true;
-  }
-  const rr=isAnyRoleVal(role.ageRange)?null:parseRoleAgeRange(role.ageRange);
-  if(rr){
-    if(!tAge)return null;
-    if(!(tAge[1]>=rr[0]&&tAge[0]<=rr[1]))return false;
-    specific=true;
-  }
-  return specific;
-}
 
 // ── Where & When / At a Glance / role pay roll-up ──────────────────────────
 // All of this is additive and defensive: castings posted before these fields
@@ -718,6 +671,11 @@ const PRESCREEN_OPTS=[
   {v:"call",l:"Live video call"},
 ];
 function requiredMediaLabel(v){const o=REQUIRED_MEDIA_OPTS.find(x=>x.v===v);return o?o.l:v;}
+// Tabler glyph per media type. All four verified present in the pinned webfont
+// (@tabler/icons-webfont@3.31.0) — a missing name renders as a blank box, so
+// don't add one here without checking it exists in that build.
+const REQUIRED_MEDIA_ICON={headshot:"camera",reel:"video",resume:"file-text",fullbody:"user"};
+function requiredMediaIcon(v){return REQUIRED_MEDIA_ICON[v]||"photo";}
 function prescreenLabel(v){const o=PRESCREEN_OPTS.find(x=>x.v===v);return o&&o.v!=="none"?o.l:"";}
 function fmtMoney(n){
   if(n==null||!isFinite(n))return "";
@@ -1784,6 +1742,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .td-dash-outer div[style*="var(--bg)"][style*="var(--bdr)"],.cd-dash-outer div[style*="var(--bg)"][style*="var(--bdr)"]{background:var(--s1)!important;}
 .tag{background:var(--s2);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:500;color:var(--t2);display:inline-block;}
 .tag-acc{background:rgba(26,26,46,0.08);color:var(--acc);}
+/* Submit-with chips. Text darkened from var(--t2) so the label reads at AA on
+   the chip fill (8.22:1) rather than sitting as decoration. */
+.badge-media{background:#F0EDE5;color:#414455;}
+.badge-tape{background:rgba(226,183,60,0.18);color:#7A5A0F;border:1px solid rgba(226,183,60,0.45);font-weight:700;}
 .tag-grn{background:rgba(27,135,62,0.08);color:var(--grn);}
 .badge{font-size:11px;font-weight:600;letter-spacing:0;padding:4px 10px;border-radius:100px;display:inline-flex;align-items:center;}
 .tabs{display:inline-flex;background:var(--s1);border:1px solid var(--bdr);border-radius:10px;padding:4px;margin-bottom:32px;}
@@ -3238,32 +3200,34 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    link is shown ONLY when the clamp actually hides a line (measured in JS —
    with -webkit-line-clamp, scrollHeight always equals clientHeight, so the
    usual overflow test silently reports "not truncated" for everything). */
-.rl-row{border:1px solid #d9e9e9;border-radius:12px;background:#f1f7f7;padding:16px 18px;}
-.rl-top{display:flex;align-items:flex-start;gap:14px;}
-.rl-nm{font-size:16.5px;font-weight:800;letter-spacing:-.3px;color:#1A1A2E;}
-.rl-mt{font-size:12px;color:#8ba4a4;margin-top:3px;}
-.rl-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0;}
-.rl-desc{font-size:13.5px;color:#41565b;line-height:1.72;margin-top:11px;}
+/* Role rows. The old pale-teal-on-teal treatment measured 2.44:1 contrast —
+   under the 4.5:1 WCAG AA floor, so the meta and estimate lines were genuinely
+   unreadable rather than merely quiet. Every value below is at or above AA on
+   the white card. */
+.rl-row{border:1px solid #e2e0d8;border-radius:12px;background:#fff;padding:18px 20px;}
+.rl-top{display:flex;align-items:flex-start;gap:16px;}
+.rl-nm{font-size:18px;font-weight:800;letter-spacing:-.35px;color:#15162B;line-height:1.25;}
+.rl-mt{font-size:13.5px;font-weight:500;color:#4A4A63;margin-top:5px;line-height:1.5;}  /* 8.57:1 */
+.rl-mt .type{font-weight:800;color:#15162B;}
+.rl-mt .sep{color:#B9B7C4;margin:0 6px;}
+.rl-right{margin-left:auto;display:flex;align-items:center;gap:14px;flex-shrink:0;}
+.rl-desc{font-size:14.5px;color:#3C4A52;line-height:1.7;margin-top:13px;}
 .rl-desc.rl-clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.rl-more{background:none;border:none;color:#37696A;font-size:12.5px;font-weight:700;cursor:pointer;padding:6px 0 0;font-family:inherit;text-decoration:underline;text-underline-offset:3px;}
+.rl-more{background:none;border:none;color:#37696A;font-size:13px;font-weight:700;cursor:pointer;padding:7px 0 0;font-family:inherit;text-decoration:underline;text-underline-offset:3px;}
 .rl-more:hover{color:#4F8A8B;}
-.rl-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;align-items:center;}
-/* Ledger group headings. Only rendered when the actor's profile can actually
-   split the roles — see the ledger branch — so a logged-out visitor still sees
-   one plain list with no empty "Right for you" band. */
-.rl-band{display:flex;align-items:center;gap:10px;margin:2px 0 -2px;}
-.rl-band .t{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#37696A;}
-.rl-band .ln{flex:1;height:1px;background:#d9e9e9;}
-.rl-band .n{font-size:11px;font-weight:800;color:#8ba4a4;}
-.rl-fit{border-color:rgba(79,138,139,.55);box-shadow:0 0 0 1px rgba(79,138,139,.14);background:#eef6f6;}
-.rl-fitchip{display:inline-flex;align-items:center;gap:4px;margin-left:8px;vertical-align:2px;
-  font-size:11px;font-weight:800;letter-spacing:0;padding:3px 9px;border-radius:20px;
-  background:rgba(79,138,139,.14);color:#37696A;border:1px solid rgba(79,138,139,.35);}
+/* The label the pills were missing — chips alone never said what they were for. */
+.rl-sw{display:flex;align-items:center;gap:6px;margin-top:15px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#6E7180;}
+.rl-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;align-items:center;}
+/* Scoped to the row: the global .badge is used all over the site and must not
+   change size here. */
+.rl-meta .badge{font-size:12.5px;padding:6px 12px;gap:5px;}
 /* Pay is the reason they keep reading, so it gets the size the little green pill
-   never had. Sits with the Apply button as one commitment block. */
+   never had. Sits with the Apply button as one commitment block. The estimate
+   line was 11px #8ba4a4 — 2.44:1, under the AA floor — and is now 6.69:1. */
 .rl-pay{text-align:right;}
-.rl-pay .v{font-size:16px;font-weight:800;color:#15803d;letter-spacing:-.3px;white-space:nowrap;}
-.rl-pay .s{font-size:11px;color:#8ba4a4;margin-top:2px;white-space:nowrap;}
+.rl-pay .v{display:flex;align-items:center;justify-content:flex-end;gap:7px;font-size:17.5px;font-weight:800;color:#15803d;letter-spacing:-.3px;white-space:nowrap;}
+.rl-pay .s{display:flex;align-items:center;justify-content:flex-end;gap:5px;font-size:12.5px;font-weight:600;color:#5A5A72;margin-top:4px;white-space:nowrap;}
+.rl-coin{width:24px;height:24px;border-radius:8px;background:rgba(21,128,61,.11);display:inline-flex;align-items:center;justify-content:center;flex:none;color:#15803d;}
 /* CASTING BOARD (6+ roles): the list stays put and the panel beside it swaps,
    so an actor can compare every rate without losing their place. */
 .rb-wrap{display:grid;grid-template-columns:210px 1fr;min-height:260px;border:1px solid #d9e9e9;border-radius:14px;overflow:hidden;background:#fff;}
@@ -3288,16 +3252,6 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   .rb-actions{margin-top:auto;padding-top:18px;border-top:1px solid #e4efef;}
 }
 .rb-actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
-/* Rail group headings for the fit split. Hidden on phones, where the rail is a
-   horizontal strip and a heading has nowhere to sit — the order still puts the
-   matches first and each one keeps its dot. */
-.rb-gh{font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#8ba4a4;padding:8px 11px 5px;}
-.rb-gh.sp{padding-top:13px;}
-.rb-fitdot{width:5px;height:5px;border-radius:50%;background:#4F8A8B;flex:none;display:inline-block;margin-right:6px;vertical-align:middle;}
-.rb-item.on .rb-fitdot{background:#7fd6a0;}
-.rb-fitchip{display:inline-flex;align-items:center;gap:5px;margin-bottom:11px;font-size:11.5px;
-  font-weight:800;padding:4px 10px;border-radius:20px;background:rgba(79,138,139,.14);
-  color:#37696A;border:1px solid rgba(79,138,139,.35);}
 /* The one chip that ranks the part, so the only filled one. */
 .rb-type{background:#1A1A2E;color:#fff;font-weight:700;}
 .rb-item{padding:11px 13px;border-radius:9px;cursor:pointer;margin-bottom:4px;transition:background .15s;border:none;background:none;width:100%;text-align:left;font-family:inherit;display:block;}
@@ -3331,15 +3285,15 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   .rb-rail{border-right:none;border-bottom:1px solid #d9e9e9;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;contain:inline-size;scrollbar-width:none;}
   .rb-rail::-webkit-scrollbar{display:none;}
   .rb-item{flex:none;min-width:132px;margin-bottom:0;}
-  .rb-gh{display:none;}
   .rb-pane{padding:18px 18px;}
   .rb-nav{display:flex;}
-  .rl-top{flex-direction:column;gap:12px;}
+  .rl-top{flex-direction:column;gap:13px;}
   .rl-right{margin-left:0;width:100%;}
   .rl-right .btn-teal{flex:1;text-align:center;}
   /* Rate goes back to the left edge on a phone and the button takes the rest of
      the row, so pay and Apply still read as one block instead of stacking. */
   .rl-pay{text-align:left;}
+  .rl-pay .v,.rl-pay .s{justify-content:flex-start;}
 }
 /* Mobile pager. Swiping the rail alone left it ambiguous whether more roles
    existed; the counter states it outright and the arrows step through them,
@@ -10585,17 +10539,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   // The board is kept as a safety valve for a genuinely huge list, where the
   // scroll really would stop being reasonable — not retired, just out of the way.
   const ROLE_BOARD_MIN=12;
-  // null = the actor hasn't picked yet, so the board is free to open on the
-  // first role that fits them. Any click pins it and this never applies again.
-  const [boardSel,setBoardSel]=useState(null);
-  // Owner/QA preview of the role fit split. An admin is not user_type "talent"
-  // and carries no age or gender, so the one person who needs to check this
-  // feature is the one person structurally unable to see it. Same convention as
-  // cs_dash_v2_preview: localStorage cs_fit_preview='{"gender":"Female","age":26}'.
-  // Read once — this is a device-local debug switch, not app state.
-  const [fitPreview]=useState(()=>{
-    try{const raw=localStorage.getItem("cs_fit_preview");return raw?JSON.parse(raw):null;}catch(_){return null;}
-  });
+  const [boardSel,setBoardSel]=useState(0);
   const [descOpen,setDescOpen]=useState({});
   const toggleDesc=(i)=>setDescOpen(p=>({...p,[i]:!p[i]}));
   const rolesWrapRef=useRef(null);
@@ -11139,8 +11083,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           const pre=prescreenLabel(r.prescreen);
           if(!media.length&&!pre&&!hasInstructions)return null;
           return(<>
-            {media.map(m=><span key={m} className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{requiredMediaLabel(m)}</span>)}
-            {pre&&<span className="badge" style={{background:"rgba(226,183,60,0.12)",color:"#8a6614",border:"1px solid rgba(226,183,60,0.35)"}}>First look: {pre}</span>}
+            {media.map(m=><span key={m} className="badge badge-media"><Ico n={requiredMediaIcon(m)} s={14}/>{requiredMediaLabel(m)}</span>)}
+            {pre&&<span className="badge badge-tape"><Ico n="video" s={14}/>First look: {pre}</span>}
             {hasInstructions&&<span className="badge" style={{background:"rgba(99,60,180,0.1)",color:"var(--acc)",border:"1px solid rgba(99,60,180,0.25)"}}><Ico n="movie" s={18}/> Self-Tape Required</span>}
           </>);
         };
@@ -11168,53 +11112,30 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             </div>}
           </div>);
 
-        // Fit is computed once for BOTH layouts. Only talent see it, and only
-        // against a profile that can answer it — a CD reading their own casting,
-        // a logged-out visitor, or a closed casting all get the plain list.
-        const fitProfile=fitPreview||myProfile;
-        const showFit=(isTalent||!!fitPreview)&&!!fitProfile&&!applicationsClosed;
         const indexed=sorted.map((r,i)=>[r,i]);
-        const fitBy=indexed.map(([r])=>showFit?roleFitsTalent(r,fitProfile):null);
-        const fits=indexed.filter(([,i])=>fitBy[i]===true);
-        const rest=indexed.filter(([,i])=>fitBy[i]!==true);
-        // Both groups must be non-empty, or the headings are just noise over a
-        // list that was never split.
-        const grouped=fits.length>0&&rest.length>0;
 
         // ── CASTING BOARD — ROLE_BOARD_MIN roles or more ──
         if(sorted.length>=ROLE_BOARD_MIN){
-          const sel=boardSel!=null?Math.min(boardSel,sorted.length-1):(grouped?fits[0][1]:0);
+          const sel=Math.min(boardSel,sorted.length-1);
           const r=sorted[sel];
           const {instr,hasInstructions}=metaFor(sel);
-          // Rail order follows the fit split, so matching roles sit at the top.
-          // Selection still travels by the role's index in `sorted` — every
-          // handler keyed off it (metaFor, applyCtl, applied) must keep agreeing.
+          // Selection travels by the role's index in `sorted` — every handler
+          // keyed off it (metaFor, applyCtl, applied) must keep agreeing.
           const railItem=([rr,ii])=>(
             <button key={ii} type="button" role="tab" aria-selected={ii===sel} data-role-idx={ii}
               className={"rb-item"+(ii===sel?" on":"")} onClick={()=>selectRole(ii)}>
-              <div className="nm">{fitBy[ii]===true&&<span className="rb-fitdot" aria-hidden="true"/>}{rr.name}</div>
+              <div className="nm">{rr.name}</div>
               <div className="mt">{[rr.type,roleAgeLabel(rr.ageRange)].filter(Boolean).join(" · ")}</div>
               {roleTotalPay(rr)!=null&&<div className="amt">{fmtMoney(rr.rate_amount)}{unitSfx(rr.rate_unit)}</div>}
             </button>);
           const total=roleTotalPay(r);
-          // Display order for the phone pager. Stepping by raw index would walk
-          // the roles in a different order than the rail shows them once the fit
-          // split reorders it, so the arrows follow what's on screen instead.
-          const order=grouped?[...fits,...rest].map(([,ii])=>ii):indexed.map(([,ii])=>ii);
-          const pos=Math.max(0,order.indexOf(sel));
           return(
           <div className="rb-wrap">
             <div className="rb-rail" ref={railRef} role="tablist" aria-label="Roles">
-              {grouped?<>
-                <div className="rb-gh">Right for you · {fits.length}</div>
-                {fits.map(railItem)}
-                <div className="rb-gh sp">Also open · {rest.length}</div>
-                {rest.map(railItem)}
-              </>:indexed.map(railItem)}
+              {indexed.map(railItem)}
             </div>
             <div className="rb-pane">
               <div className="rb-fade" key={sel}>
-                {fitBy[sel]===true&&<div className="rb-fitchip"><Ico n="check" s={13}/>You fit this role</div>}
                 <h3 style={{fontSize:21,fontWeight:800,letterSpacing:"-0.4px",color:"var(--t1)",margin:0}}>{r.name}</h3>
                 {/* The role type is the one word that ranks the part, so it is the
                     only filled chip — at equal weight "Lead" read no louder than
@@ -11242,12 +11163,12 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             {/* Phone pager — states how many roles there are and steps through them. */}
             <div className="rb-nav" style={{gridColumn:"1 / -1"}}>
               <button type="button" className="rb-navbtn" aria-label="Previous role"
-                disabled={pos===0} onClick={()=>selectRole(order[Math.max(0,pos-1)])}>
+                disabled={sel===0} onClick={()=>selectRole(Math.max(0,sel-1))}>
                 <Ico n="chevron-left" s={20}/>
               </button>
-              <span className="rb-count">Role {pos+1} of {order.length}</span>
+              <span className="rb-count">Role {sel+1} of {sorted.length}</span>
               <button type="button" className="rb-navbtn" aria-label="Next role"
-                disabled={pos===order.length-1} onClick={()=>selectRole(order[Math.min(order.length-1,pos+1)])}>
+                disabled={sel===sorted.length-1} onClick={()=>selectRole(Math.min(sorted.length-1,sel+1))}>
                 <Ico n="chevron-right" s={20}/>
               </button>
             </div>
@@ -11265,37 +11186,43 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           const {instr,hasInstructions}=metaFor(i);
           const open=!!descOpen[i];
           const chips=submitChips(r,hasInstructions);
-          const fit=fitBy[i]===true;
           const total=roleTotalPay(r);
+          // Facets are spans rather than a joined string so the role type can
+          // carry the weight — the old single-colour line ran the rank in at the
+          // same pale tone as the ethnicity and none of it was legible.
+          const facets=[roleGenderLabel(r.gender),roleAgeLabel(r.ageRange),roleEthnicityLabel(r.ethnicity)].filter(Boolean);
           return(
-          <div key={i} className={"rl-row"+(fit?" rl-fit":"")}>
+          <div key={i} className="rl-row">
             <div className="rl-top">
               <div style={{minWidth:0}}>
-                <div className="rl-nm">{r.name}{fit&&<span className="rl-fitchip"><Ico n="check" s={13}/>You fit</span>}</div>
-                <div className="rl-mt">{[r.type,roleGenderLabel(r.gender),roleAgeLabel(r.ageRange),roleEthnicityLabel(r.ethnicity)].filter(Boolean).join(" · ")}</div>
+                <div className="rl-nm">{r.name}</div>
+                <div className="rl-mt">
+                  {r.type&&<span className="type">{r.type}</span>}
+                  {facets.map((f,fi)=>(<React.Fragment key={fi}>
+                    {(fi>0||r.type)&&<span className="sep">&middot;</span>}{f}
+                  </React.Fragment>))}
+                </div>
               </div>
               <div className="rl-right">
                 {total!=null&&<div className="rl-pay">
-                  <div className="v">{fmtMoney(r.rate_amount)}{unitSfx(r.rate_unit)}</div>
-                  {r.rate_unit!=="flat"&&r.est_days>1&&<div className="s">Est. {fmtMoney(total)} &middot; {r.est_days} days</div>}
+                  <div className="v"><span className="rl-coin"><Ico n="coin" s={15}/></span>{fmtMoney(r.rate_amount)}{unitSfx(r.rate_unit)}</div>
+                  {r.rate_unit!=="flat"&&r.est_days>1&&<div className="s"><Ico n="calendar" s={14}/>Est. {fmtMoney(total)} &middot; {r.est_days} days</div>}
                 </div>}
                 {applyCtl(r,i,hasInstructions)}
               </div>
             </div>
             {r.desc&&<div className={"rl-desc"+(open?"":" rl-clamp")} data-role-desc={i}>{r.desc}</div>}
             {r.desc&&<button type="button" className="rl-more" data-role-more={i} hidden onClick={()=>toggleDesc(i)}>{open?"Show less":"Read the full description"}</button>}
-            {chips&&<div className="rl-meta">{chips}</div>}
+            {chips&&<>
+              <div className="rl-sw"><Ico n="upload" s={13}/>Submit with</div>
+              <div className="rl-meta">{chips}</div>
+            </>}
             {auditionBlock(instr,hasInstructions)}
           </div>);
         };
         return(
         <div ref={rolesWrapRef} style={{display:"flex",flexDirection:"column",gap:14}}>
-          {grouped?<>
-            <div className="rl-band"><span className="t">Right for you</span><span className="ln"/><span className="n">{fits.length}</span></div>
-            {fits.map(ledgerRow)}
-            <div className="rl-band" style={{marginTop:8}}><span className="t">Also open to apply</span><span className="ln"/><span className="n">{rest.length}</span></div>
-            {rest.map(ledgerRow)}
-          </>:indexed.map(ledgerRow)}
+          {indexed.map(ledgerRow)}
         </div>);
       })()}
     </section>
