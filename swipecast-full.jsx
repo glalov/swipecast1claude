@@ -10577,11 +10577,14 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   // Roles render as the Open Ledger (nothing collapses) up to ROLE_BOARD_MIN-1,
   // and as the Casting Board (rail + swapping panel) at or above it.
   // The Ledger is the default on purpose: choosing a role is a COMPARISON task,
-  // and a rail answers it by hiding every option but one behind a click. Up to
-  // five roles there is no space pressure justifying that, so everything stays
-  // on the page and the actor scrolls once. The board earns its keep only when
-  // the list is long enough that a full ledger would run past the fold.
-  const ROLE_BOARD_MIN=6;
+  // and a rail answers it by hiding every option but one behind a click.
+  // Set to 12 deliberately, which no current casting reaches — measured rather
+  // than guessed: the longest casting posted has 8 roles, a ledger row is ~144px,
+  // so the worst case is ~1320px, roughly one extra screen of scrolling. That is
+  // a better trade than the 7 clicks the board charges to see the same thing.
+  // The board is kept as a safety valve for a genuinely huge list, where the
+  // scroll really would stop being reasonable — not retired, just out of the way.
+  const ROLE_BOARD_MIN=12;
   // null = the actor hasn't picked yet, so the board is free to open on the
   // first role that fits them. Any click pins it and this never applies again.
   const [boardSel,setBoardSel]=useState(null);
