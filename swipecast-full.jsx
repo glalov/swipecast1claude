@@ -3282,9 +3282,24 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   .rb-pane{margin-left:210px;display:flex;flex-direction:column;min-height:340px;}
   .rb-fade{display:flex;flex-direction:column;flex:1;}
   /* Any leftover space lands under the actions, so a short role still reads as
-     a panel with a footer rather than as a void. */
-  .rb-actions{margin-top:auto;padding-top:18px;}
+     a panel with a footer rather than as a void. The rule above only PUSHED the
+     row down; without a line above it the gap still read as unfinished, so the
+     footer is drawn as one — the space then belongs to the panel by design. */
+  .rb-actions{margin-top:auto;padding-top:18px;border-top:1px solid #e4efef;}
 }
+.rb-actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+/* Rail group headings for the fit split. Hidden on phones, where the rail is a
+   horizontal strip and a heading has nowhere to sit — the order still puts the
+   matches first and each one keeps its dot. */
+.rb-gh{font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#8ba4a4;padding:8px 11px 5px;}
+.rb-gh.sp{padding-top:13px;}
+.rb-fitdot{width:5px;height:5px;border-radius:50%;background:#4F8A8B;flex:none;display:inline-block;margin-right:6px;vertical-align:middle;}
+.rb-item.on .rb-fitdot{background:#7fd6a0;}
+.rb-fitchip{display:inline-flex;align-items:center;gap:5px;margin-bottom:11px;font-size:11.5px;
+  font-weight:800;padding:4px 10px;border-radius:20px;background:rgba(79,138,139,.14);
+  color:#37696A;border:1px solid rgba(79,138,139,.35);}
+/* The one chip that ranks the part, so the only filled one. */
+.rb-type{background:#1A1A2E;color:#fff;font-weight:700;}
 .rb-item{padding:11px 13px;border-radius:9px;cursor:pointer;margin-bottom:4px;transition:background .15s;border:none;background:none;width:100%;text-align:left;font-family:inherit;display:block;}
 .rb-item:hover{background:#e3efef;}
 .rb-item.on{background:#1A1A2E;}
@@ -3316,6 +3331,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   .rb-rail{border-right:none;border-bottom:1px solid #d9e9e9;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;contain:inline-size;scrollbar-width:none;}
   .rb-rail::-webkit-scrollbar{display:none;}
   .rb-item{flex:none;min-width:132px;margin-bottom:0;}
+  .rb-gh{display:none;}
   .rb-pane{padding:18px 18px;}
   .rb-nav{display:flex;}
   .rl-top{flex-direction:column;gap:12px;}
@@ -10566,7 +10582,9 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   // on the page and the actor scrolls once. The board earns its keep only when
   // the list is long enough that a full ledger would run past the fold.
   const ROLE_BOARD_MIN=6;
-  const [boardSel,setBoardSel]=useState(0);
+  // null = the actor hasn't picked yet, so the board is free to open on the
+  // first role that fits them. Any click pins it and this never applies again.
+  const [boardSel,setBoardSel]=useState(null);
   const [descOpen,setDescOpen]=useState({});
   const toggleDesc=(i)=>setDescOpen(p=>({...p,[i]:!p[i]}));
   const rolesWrapRef=useRef(null);
@@ -10583,7 +10601,9 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const selectRole=(i)=>{
     setBoardSel(i);
     const rail=railRef.current;
-    const el=rail&&rail.children&&rail.children[i];
+    // Looked up by role index, NOT by child position: the rail reorders around
+    // the fit split and carries group headings, so children[i] is not role i.
+    const el=rail&&rail.querySelector('[data-role-idx="'+i+'"]');
     if(!rail||!el)return;
     // Centre the target in the strip. Measured from bounding rects rather than
     // offsetLeft so it holds whatever the offsetParent turns out to be, and
@@ -11113,14 +11133,6 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             {hasInstructions&&<span className="badge" style={{background:"rgba(99,60,180,0.1)",color:"var(--acc)",border:"1px solid rgba(99,60,180,0.25)"}}><Ico n="movie" s={18}/> Self-Tape Required</span>}
           </>);
         };
-        const rateBox=(r)=>{
-          const total=roleTotalPay(r);
-          if(total==null)return null;
-          return(<div style={{display:"inline-block",background:"rgba(21,128,61,0.08)",border:"1px solid rgba(21,128,61,0.22)",borderRadius:8,padding:"8px 12px"}}>
-            <span style={{fontSize:13,fontWeight:700,color:"#15803d"}}>{fmtMoney(r.rate_amount)}{unitSfx(r.rate_unit,true)}</span>
-            {r.rate_unit!=="flat"&&r.est_days>1&&<span style={{fontSize:12,color:"var(--t2)",marginLeft:8}}>Est. total {fmtMoney(total)} &middot; {r.est_days} days</span>}
-          </div>);
-        };
         const auditionBlock=(instr,hasInstructions)=>!hasInstructions?null:(
           <div style={{marginTop:14,background:"rgba(99,60,180,0.05)",border:"1px solid rgba(99,60,180,0.18)",borderRadius:10,padding:"16px 18px"}}>
             <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.2,color:"var(--acc)",marginBottom:12}}>Audition Instructions</div>
@@ -11145,28 +11157,58 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             </div>}
           </div>);
 
-        // ── CASTING BOARD — 6 roles or more ──
+        // Fit is computed once for BOTH layouts. Only talent see it, and only
+        // against a profile that can answer it — a CD reading their own casting,
+        // a logged-out visitor, or a closed casting all get the plain list.
+        const showFit=isTalent&&!!myProfile&&!applicationsClosed;
+        const indexed=sorted.map((r,i)=>[r,i]);
+        const fitBy=indexed.map(([r])=>showFit?roleFitsTalent(r,myProfile):null);
+        const fits=indexed.filter(([,i])=>fitBy[i]===true);
+        const rest=indexed.filter(([,i])=>fitBy[i]!==true);
+        // Both groups must be non-empty, or the headings are just noise over a
+        // list that was never split.
+        const grouped=fits.length>0&&rest.length>0;
+
+        // ── CASTING BOARD — ROLE_BOARD_MIN roles or more ──
         if(sorted.length>=ROLE_BOARD_MIN){
-          const sel=Math.min(boardSel,sorted.length-1);
+          const sel=boardSel!=null?Math.min(boardSel,sorted.length-1):(grouped?fits[0][1]:0);
           const r=sorted[sel];
           const {instr,hasInstructions}=metaFor(sel);
+          // Rail order follows the fit split, so matching roles sit at the top.
+          // Selection still travels by the role's index in `sorted` — every
+          // handler keyed off it (metaFor, applyCtl, applied) must keep agreeing.
+          const railItem=([rr,ii])=>(
+            <button key={ii} type="button" role="tab" aria-selected={ii===sel} data-role-idx={ii}
+              className={"rb-item"+(ii===sel?" on":"")} onClick={()=>selectRole(ii)}>
+              <div className="nm">{fitBy[ii]===true&&<span className="rb-fitdot" aria-hidden="true"/>}{rr.name}</div>
+              <div className="mt">{[rr.type,roleAgeLabel(rr.ageRange)].filter(Boolean).join(" · ")}</div>
+              {roleTotalPay(rr)!=null&&<div className="amt">{fmtMoney(rr.rate_amount)}{unitSfx(rr.rate_unit)}</div>}
+            </button>);
+          const total=roleTotalPay(r);
+          // Display order for the phone pager. Stepping by raw index would walk
+          // the roles in a different order than the rail shows them once the fit
+          // split reorders it, so the arrows follow what's on screen instead.
+          const order=grouped?[...fits,...rest].map(([,ii])=>ii):indexed.map(([,ii])=>ii);
+          const pos=Math.max(0,order.indexOf(sel));
           return(
           <div className="rb-wrap">
             <div className="rb-rail" ref={railRef} role="tablist" aria-label="Roles">
-              {sorted.map((rr,ii)=>(
-                <button key={ii} type="button" role="tab" aria-selected={ii===sel}
-                  className={"rb-item"+(ii===sel?" on":"")} onClick={()=>selectRole(ii)}>
-                  <div className="nm">{rr.name}</div>
-                  <div className="mt">{[rr.type,roleAgeLabel(rr.ageRange)].filter(Boolean).join(" · ")}</div>
-                  {roleTotalPay(rr)!=null&&<div className="amt">{fmtMoney(rr.rate_amount)}{unitSfx(rr.rate_unit)}</div>}
-                </button>
-              ))}
+              {grouped?<>
+                <div className="rb-gh">Right for you · {fits.length}</div>
+                {fits.map(railItem)}
+                <div className="rb-gh sp">Also open · {rest.length}</div>
+                {rest.map(railItem)}
+              </>:indexed.map(railItem)}
             </div>
             <div className="rb-pane">
               <div className="rb-fade" key={sel}>
+                {fitBy[sel]===true&&<div className="rb-fitchip"><Ico n="check" s={13}/>You fit this role</div>}
                 <h3 style={{fontSize:21,fontWeight:800,letterSpacing:"-0.4px",color:"var(--t1)",margin:0}}>{r.name}</h3>
+                {/* The role type is the one word that ranks the part, so it is the
+                    only filled chip — at equal weight "Lead" read no louder than
+                    "open to all" and the hierarchy was lost. */}
                 <div style={{display:"flex",gap:6,flexWrap:"wrap",margin:"9px 0 13px"}}>
-                  <span className="badge tag-acc">{r.type}</span>
+                  <span className="badge rb-type">{r.type}</span>
                   <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{roleGenderLabel(r.gender)}</span>
                   <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{roleAgeLabel(r.ageRange)}</span>
                   <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{roleEthnicityLabel(r.ethnicity)}</span>
@@ -11175,9 +11217,12 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                 {(()=>{const chips=submitChips(r,hasInstructions);return chips?(<>
                   <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"#8ba4a4",marginBottom:7}}>Submit with</div>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:16}}>{chips}</div></>):null;})()}
-                <div className="rb-actions" style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap"}}>
+                <div className="rb-actions">
                   {applyCtl(r,sel,hasInstructions)}
-                  {rateBox(r)}
+                  {total!=null&&<div className="rl-pay" style={{textAlign:"left"}}>
+                    <div className="v">{fmtMoney(r.rate_amount)}{unitSfx(r.rate_unit,true)}</div>
+                    {r.rate_unit!=="flat"&&r.est_days>1&&<div className="s">Est. total {fmtMoney(total)} &middot; {r.est_days} days</div>}
+                  </div>}
                 </div>
                 {auditionBlock(instr,hasInstructions)}
               </div>
@@ -11185,12 +11230,12 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             {/* Phone pager — states how many roles there are and steps through them. */}
             <div className="rb-nav" style={{gridColumn:"1 / -1"}}>
               <button type="button" className="rb-navbtn" aria-label="Previous role"
-                disabled={sel===0} onClick={()=>selectRole(Math.max(0,sel-1))}>
+                disabled={pos===0} onClick={()=>selectRole(order[Math.max(0,pos-1)])}>
                 <Ico n="chevron-left" s={20}/>
               </button>
-              <span className="rb-count">Role {sel+1} of {sorted.length}</span>
+              <span className="rb-count">Role {pos+1} of {order.length}</span>
               <button type="button" className="rb-navbtn" aria-label="Next role"
-                disabled={sel===sorted.length-1} onClick={()=>selectRole(Math.min(sorted.length-1,sel+1))}>
+                disabled={pos===order.length-1} onClick={()=>selectRole(order[Math.min(order.length-1,pos+1)])}>
                 <Ico n="chevron-right" s={20}/>
               </button>
             </div>
@@ -11204,12 +11249,6 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
         // rows split into "Right for you" / "Also open to apply" — eight equal
         // options become a shortlist someone made for them, which is the whole
         // point of the layout.
-        const indexed=sorted.map((r,i)=>[r,i]);
-        // Only talent see fit, and only against a profile that can answer it —
-        // a CD reading their own casting, a logged-out visitor, or a closed
-        // casting all get the plain list.
-        const showFit=isTalent&&!!myProfile&&!applicationsClosed;
-        const fitBy=indexed.map(([r])=>showFit?roleFitsTalent(r,myProfile):null);
         const ledgerRow=([r,i])=>{
           const {instr,hasInstructions}=metaFor(i);
           const open=!!descOpen[i];
@@ -11237,11 +11276,6 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             {auditionBlock(instr,hasInstructions)}
           </div>);
         };
-        const fits=indexed.filter(([,i])=>fitBy[i]===true);
-        const rest=indexed.filter(([,i])=>fitBy[i]!==true);
-        // Both groups must be non-empty, or the headings are just noise over a
-        // list that was never split.
-        const grouped=fits.length>0&&rest.length>0;
         return(
         <div ref={rolesWrapRef} style={{display:"flex",flexDirection:"column",gap:14}}>
           {grouped?<>
