@@ -644,6 +644,54 @@ function roleGenderLabel(v){return isAnyRoleVal(v)?"Any gender":v;}
 function roleAgeLabel(v){return isAnyRoleVal(v)?"Any age range":("Age "+v);}
 function roleEthnicityLabel(v){return isAnyRoleVal(v)?"Any ethnicity":v;}
 
+// ── Role fit ───────────────────────────────────────────────────────────────
+// Parse an age range: "28-42", "18–65" (en dash), "18+", "All ages 18+",
+// "any"/"all ages" → open. Returns [min,max] (max may be Infinity) or null.
+// Same parser the Premium daily role matcher uses — the two features must agree
+// on what counts as a match or an actor gets told two different things.
+function parseRoleAgeRange(s){
+  if(s==null)return null;
+  const str=String(s).toLowerCase().trim();
+  if(!str)return null;
+  if(/all ages|open|any/.test(str)){
+    const mp=str.match(/(\d+)\s*\+/);if(mp)return[parseInt(mp[1],10),Infinity];
+    const mo=str.match(/(\d+)/);return mo?[parseInt(mo[1],10),Infinity]:[0,Infinity];
+  }
+  const mr=str.match(/(\d+)\s*[-–—]\s*(\d+)/);if(mr)return[parseInt(mr[1],10),parseInt(mr[2],10)];
+  const mp=str.match(/(\d+)\s*\+/);if(mp)return[parseInt(mp[1],10),Infinity];
+  const m1=str.match(/(\d+)/);if(m1){const n=parseInt(m1[1],10);return[n,n];}
+  return null;
+}
+// Does this role specifically fit the signed-in actor?
+//   true  — the role NAMES a gender and/or an age range and the actor satisfies
+//           every requirement it names. An earned, checkable match.
+//   false — the role excludes them, OR names nothing at all. A role open to
+//           everyone is "also open to apply", not "right for you"; folding those
+//           into the match group is what turns a shortlist back into a list.
+//   null  — we don't know enough about the actor to judge. Never guess: the
+//           caller renders the plain ungrouped ledger rather than claim a match.
+function roleFitsTalent(role,profile){
+  if(!role||!profile)return null;
+  const tg=((profile.gender)||"").toLowerCase().trim();
+  const na=Number(profile.age);
+  const tAge=(Number.isFinite(na)&&na>0)?[na,na]:parseRoleAgeRange(profile.age_range);
+  if(!tg&&!tAge)return null;
+  let specific=false;
+  const rg=((role.gender)||"").toLowerCase().trim();
+  if(!isAnyRoleVal(rg)){
+    if(!tg)return null;
+    if(rg!==tg)return false;
+    specific=true;
+  }
+  const rr=isAnyRoleVal(role.ageRange)?null:parseRoleAgeRange(role.ageRange);
+  if(rr){
+    if(!tAge)return null;
+    if(!(tAge[1]>=rr[0]&&tAge[0]<=rr[1]))return false;
+    specific=true;
+  }
+  return specific;
+}
+
 // ── Where & When / At a Glance / role pay roll-up ──────────────────────────
 // All of this is additive and defensive: castings posted before these fields
 // existed have NULL everywhere, so every helper below returns null/empty and
@@ -3200,6 +3248,22 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-more{background:none;border:none;color:#37696A;font-size:12.5px;font-weight:700;cursor:pointer;padding:6px 0 0;font-family:inherit;text-decoration:underline;text-underline-offset:3px;}
 .rl-more:hover{color:#4F8A8B;}
 .rl-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;align-items:center;}
+/* Ledger group headings. Only rendered when the actor's profile can actually
+   split the roles — see the ledger branch — so a logged-out visitor still sees
+   one plain list with no empty "Right for you" band. */
+.rl-band{display:flex;align-items:center;gap:10px;margin:2px 0 -2px;}
+.rl-band .t{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#37696A;}
+.rl-band .ln{flex:1;height:1px;background:#d9e9e9;}
+.rl-band .n{font-size:11px;font-weight:800;color:#8ba4a4;}
+.rl-fit{border-color:rgba(79,138,139,.55);box-shadow:0 0 0 1px rgba(79,138,139,.14);background:#eef6f6;}
+.rl-fitchip{display:inline-flex;align-items:center;gap:4px;margin-left:8px;vertical-align:2px;
+  font-size:11px;font-weight:800;letter-spacing:0;padding:3px 9px;border-radius:20px;
+  background:rgba(79,138,139,.14);color:#37696A;border:1px solid rgba(79,138,139,.35);}
+/* Pay is the reason they keep reading, so it gets the size the little green pill
+   never had. Sits with the Apply button as one commitment block. */
+.rl-pay{text-align:right;}
+.rl-pay .v{font-size:16px;font-weight:800;color:#15803d;letter-spacing:-.3px;white-space:nowrap;}
+.rl-pay .s{font-size:11px;color:#8ba4a4;margin-top:2px;white-space:nowrap;}
 /* CASTING BOARD (6+ roles): the list stays put and the panel beside it swaps,
    so an actor can compare every rate without losing their place. */
 .rb-wrap{display:grid;grid-template-columns:210px 1fr;min-height:260px;border:1px solid #d9e9e9;border-radius:14px;overflow:hidden;background:#fff;}
@@ -3257,6 +3321,9 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   .rl-top{flex-direction:column;gap:12px;}
   .rl-right{margin-left:0;width:100%;}
   .rl-right .btn-teal{flex:1;text-align:center;}
+  /* Rate goes back to the left edge on a phone and the button takes the rest of
+     the row, so pay and Apply still read as one block instead of stacking. */
+  .rl-pay{text-align:left;}
 }
 /* Mobile pager. Swiping the rail alone left it ambiguous whether more roles
    existed; the counter states it outright and the arrows step through them,
@@ -10492,10 +10559,13 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const {lang}=useLanguage();
   const [applyRole,setApplyRole]=useState(null);
   // Roles render as the Open Ledger (nothing collapses) up to ROLE_BOARD_MIN-1,
-  // and as the Casting Board (rail + swapping panel) at or above it. One and two
-  // role castings stay on the Ledger so a visitor never has to click before they
-  // can read the only role(s) on the page; three or more get the board.
-  const ROLE_BOARD_MIN=3;
+  // and as the Casting Board (rail + swapping panel) at or above it.
+  // The Ledger is the default on purpose: choosing a role is a COMPARISON task,
+  // and a rail answers it by hiding every option but one behind a click. Up to
+  // five roles there is no space pressure justifying that, so everything stays
+  // on the page and the actor scrolls once. The board earns its keep only when
+  // the list is long enough that a full ledger would run past the fold.
+  const ROLE_BOARD_MIN=6;
   const [boardSel,setBoardSel]=useState(0);
   const [descOpen,setDescOpen]=useState({});
   const toggleDesc=(i)=>setDescOpen(p=>({...p,[i]:!p[i]}));
@@ -11028,8 +11098,6 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           return {instr,hasInstructions:instr&&(instr.sides_pdf_url||instr.direction_notes||instr.slate_instructions||instr.wardrobe_notes)};
         };
         const unitSfx=(u,long)=>u==="flat"?" flat":u==="week"?(long?" / week":"/wk"):u==="hour"?(long?" / hour":"/hr"):(long?" / day":"/day");
-        const rateBadge=(r)=>roleTotalPay(r)==null?null:(
-          <span className="badge" style={{background:"rgba(21,128,61,0.10)",color:"#15803d",border:"1px solid rgba(21,128,61,0.25)",whiteSpace:"nowrap"}}>{fmtMoney(r.rate_amount)}{unitSfx(r.rate_unit)}</span>);
         const applyCtl=(r,i,hasInstructions)=>applicationsClosed
           ? <span className="tag" style={{fontSize:12,fontWeight:700,padding:"8px 14px",background:"rgba(192,57,43,0.08)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>{castingArchived?"Filled":"Applications closed"}</span>
           : applied.has(i)
@@ -11129,31 +11197,59 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           </div>);
         }
 
-        // ── OPEN LEDGER — 5 roles or fewer (two thirds of live castings) ──
+        // ── OPEN LEDGER — fewer than ROLE_BOARD_MIN roles ──
+        // Every role is a full-width row carrying enough to triage without
+        // clicking: name, type, age/gender, pay, and whether it fits. Only the
+        // description folds. Where the actor's own profile can judge fit, the
+        // rows split into "Right for you" / "Also open to apply" — eight equal
+        // options become a shortlist someone made for them, which is the whole
+        // point of the layout.
+        const indexed=sorted.map((r,i)=>[r,i]);
+        // Only talent see fit, and only against a profile that can answer it —
+        // a CD reading their own casting, a logged-out visitor, or a closed
+        // casting all get the plain list.
+        const showFit=isTalent&&!!myProfile&&!applicationsClosed;
+        const fitBy=indexed.map(([r])=>showFit?roleFitsTalent(r,myProfile):null);
+        const ledgerRow=([r,i])=>{
+          const {instr,hasInstructions}=metaFor(i);
+          const open=!!descOpen[i];
+          const chips=submitChips(r,hasInstructions);
+          const fit=fitBy[i]===true;
+          const total=roleTotalPay(r);
+          return(
+          <div key={i} className={"rl-row"+(fit?" rl-fit":"")}>
+            <div className="rl-top">
+              <div style={{minWidth:0}}>
+                <div className="rl-nm">{r.name}{fit&&<span className="rl-fitchip"><Ico n="check" s={13}/>You fit</span>}</div>
+                <div className="rl-mt">{[r.type,roleGenderLabel(r.gender),roleAgeLabel(r.ageRange),roleEthnicityLabel(r.ethnicity)].filter(Boolean).join(" · ")}</div>
+              </div>
+              <div className="rl-right">
+                {total!=null&&<div className="rl-pay">
+                  <div className="v">{fmtMoney(r.rate_amount)}{unitSfx(r.rate_unit)}</div>
+                  {r.rate_unit!=="flat"&&r.est_days>1&&<div className="s">Est. {fmtMoney(total)} &middot; {r.est_days} days</div>}
+                </div>}
+                {applyCtl(r,i,hasInstructions)}
+              </div>
+            </div>
+            {r.desc&&<div className={"rl-desc"+(open?"":" rl-clamp")} data-role-desc={i}>{r.desc}</div>}
+            {r.desc&&<button type="button" className="rl-more" data-role-more={i} hidden onClick={()=>toggleDesc(i)}>{open?"Show less":"Read the full description"}</button>}
+            {chips&&<div className="rl-meta">{chips}</div>}
+            {auditionBlock(instr,hasInstructions)}
+          </div>);
+        };
+        const fits=indexed.filter(([,i])=>fitBy[i]===true);
+        const rest=indexed.filter(([,i])=>fitBy[i]!==true);
+        // Both groups must be non-empty, or the headings are just noise over a
+        // list that was never split.
+        const grouped=fits.length>0&&rest.length>0;
         return(
         <div ref={rolesWrapRef} style={{display:"flex",flexDirection:"column",gap:14}}>
-          {sorted.map((r,i)=>{
-            const {instr,hasInstructions}=metaFor(i);
-            const open=!!descOpen[i];
-            const chips=submitChips(r,hasInstructions);
-            return(
-            <div key={i} className="rl-row">
-              <div className="rl-top">
-                <div style={{minWidth:0}}>
-                  <div className="rl-nm">{r.name}</div>
-                  <div className="rl-mt">{[r.type,roleGenderLabel(r.gender),roleAgeLabel(r.ageRange),roleEthnicityLabel(r.ethnicity)].filter(Boolean).join(" · ")}</div>
-                </div>
-                <div className="rl-right">{rateBadge(r)}{applyCtl(r,i,hasInstructions)}</div>
-              </div>
-              {r.desc&&<div className={"rl-desc"+(open?"":" rl-clamp")} data-role-desc={i}>{r.desc}</div>}
-              {r.desc&&<button type="button" className="rl-more" data-role-more={i} hidden onClick={()=>toggleDesc(i)}>{open?"Show less":"Read the full description"}</button>}
-              {(chips||roleTotalPay(r)!=null)&&<div className="rl-meta">
-                {chips}
-                {roleTotalPay(r)!=null&&r.rate_unit!=="flat"&&r.est_days>1&&<span style={{fontSize:11.5,color:"#8ba4a4",marginLeft:2}}>Est. {fmtMoney(roleTotalPay(r))} &middot; {r.est_days} days</span>}
-              </div>}
-              {auditionBlock(instr,hasInstructions)}
-            </div>);
-          })}
+          {grouped?<>
+            <div className="rl-band"><span className="t">Right for you</span><span className="ln"/><span className="n">{fits.length}</span></div>
+            {fits.map(ledgerRow)}
+            <div className="rl-band" style={{marginTop:8}}><span className="t">Also open to apply</span><span className="ln"/><span className="n">{rest.length}</span></div>
+            {rest.map(ledgerRow)}
+          </>:indexed.map(ledgerRow)}
         </div>);
       })()}
     </section>
