@@ -10585,6 +10585,14 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   // null = the actor hasn't picked yet, so the board is free to open on the
   // first role that fits them. Any click pins it and this never applies again.
   const [boardSel,setBoardSel]=useState(null);
+  // Owner/QA preview of the role fit split. An admin is not user_type "talent"
+  // and carries no age or gender, so the one person who needs to check this
+  // feature is the one person structurally unable to see it. Same convention as
+  // cs_dash_v2_preview: localStorage cs_fit_preview='{"gender":"Female","age":26}'.
+  // Read once — this is a device-local debug switch, not app state.
+  const [fitPreview]=useState(()=>{
+    try{const raw=localStorage.getItem("cs_fit_preview");return raw?JSON.parse(raw):null;}catch(_){return null;}
+  });
   const [descOpen,setDescOpen]=useState({});
   const toggleDesc=(i)=>setDescOpen(p=>({...p,[i]:!p[i]}));
   const rolesWrapRef=useRef(null);
@@ -11160,9 +11168,10 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
         // Fit is computed once for BOTH layouts. Only talent see it, and only
         // against a profile that can answer it — a CD reading their own casting,
         // a logged-out visitor, or a closed casting all get the plain list.
-        const showFit=isTalent&&!!myProfile&&!applicationsClosed;
+        const fitProfile=fitPreview||myProfile;
+        const showFit=(isTalent||!!fitPreview)&&!!fitProfile&&!applicationsClosed;
         const indexed=sorted.map((r,i)=>[r,i]);
-        const fitBy=indexed.map(([r])=>showFit?roleFitsTalent(r,myProfile):null);
+        const fitBy=indexed.map(([r])=>showFit?roleFitsTalent(r,fitProfile):null);
         const fits=indexed.filter(([,i])=>fitBy[i]===true);
         const rest=indexed.filter(([,i])=>fitBy[i]!==true);
         // Both groups must be non-empty, or the headings are just noise over a
