@@ -25468,6 +25468,356 @@ const ACG = (()=>{
   // Each seed carries TWO turns (h and h2), so one premise yields two genuinely
   // different stories rather than one story in different wording; combined with
   // 18 sentence architectures that is the originality budget for this field.
+  // ── Story turns ──────────────────────────────────────────────────────────
+  // A story here is a PREMISE crossed with a TURN. Writing turns into each seed
+  // by hand caps the board at (seeds × turns-per-seed) stories — with two each
+  // that was 216, which a busy board burns through.
+  //
+  // These banks are turns written to attach to ANY premise in their genre: they
+  // name a shape of escalation rather than a specific event, which is how real
+  // loglines work. A seed draws its own two hand-written turns FIRST (they are
+  // sharper), then falls back to its genre bank. That takes the ceiling to
+  // roughly 84 narrative seeds × 24 turns + 24 format seeds × 28 ≈ 2,700
+  // distinct stories, without a single one of them being a template.
+  const GENRE_TURNS={
+    drama:[
+      "the person everyone has been protecting turns out not to want protecting",
+      "an apology arrives from the wrong person, years late",
+      "the one thing nobody has said out loud gets said by whoever has least to lose",
+      "a decision made quietly years ago comes back with a name attached to it",
+      "someone offers help on terms that would cost more than the problem",
+      "the money runs out a week earlier than anyone planned for",
+      "a document turns up that makes the generous version of events impossible",
+      "the youngest person involved turns out to have been right all along",
+      "somebody leaves, and everyone finds out how much they were holding together",
+      "a small kindness is mistaken for an admission",
+      "the truth is told at exactly the moment it can no longer help",
+      "two people who need the same thing find out only one of them can have it",
+      "an outsider sees the situation clearly and is not thanked for it",
+      "a promise made to somebody who has died starts costing the living",
+      "the practical solution and the decent one turn out to be different",
+      "a call nobody wanted to make gets made by the wrong person",
+      "the person in charge steps back and nobody else wants the job",
+      "a long-avoided conversation happens in front of people it was never meant for",
+      "what looked like carelessness turns out to have been a choice",
+      "somebody arrives who remembers a version of events nobody else does",
+      "the deadline moves, and the reason it moved is the whole story",
+      "everyone gets what they asked for and nobody wanted it in that shape"
+    ],
+    crime:[
+      "the one person who could clear it is the one who set it up",
+      "the money turns up before anyone has admitted it was gone",
+      "a second crew is working the same job from the other side",
+      "the paperwork is clean, which is how everyone knows it is not",
+      "somebody talks, and the wrong person hears about it first",
+      "a favor called in years ago comes due in the worst possible week",
+      "the take is smaller than the risk and everyone works that out at once",
+      "an outsider is brought in to fix it and immediately makes it worse",
+      "the police already know, and have known far longer than anyone realizes",
+      "a name on a list belongs to somebody close enough to have been trusted",
+      "the plan needs one person to be somewhere they cannot prove they were",
+      "the person owed the money would rather be paid in something else",
+      "what was taken turns out to be worthless and what was left behind is not",
+      "an alibi holds up perfectly, which is the problem",
+      "the youngest one wants out and knows too much to be let out",
+      "somebody is protecting a person who does not deserve it, and knows it",
+      "the deadline is set by somebody who does not care whether it is possible",
+      "a witness changes their story for a reason nobody guesses",
+      "the safest option is also the one that ends a friendship",
+      "the money has to move before Monday and there is no clean way to do it",
+      "one of them has already made a private deal",
+      "the thing everyone agreed never to discuss gets discussed"
+    ],
+    thriller:[
+      "someone who was supposed to be a bystander turns out to have arranged it",
+      "the only proof of what happened is held by the person it incriminates",
+      "a second person appears telling the same story with one detail changed",
+      "the call comes from inside the arrangement",
+      "help arrives from a direction that makes no sense",
+      "a deadline is moved forward and nobody will say who moved it",
+      "the safest place turns out to be the one place they were meant to go",
+      "somebody is being told exactly what they want to hear, and starts to notice",
+      "the record of the last four hours does not match anyone's memory of them",
+      "a stranger knows a detail that was never made public",
+      "the only way out means trusting whoever has the most reason to lie",
+      "the thing they were warned about happens, but not to the person warned",
+      "an offer is made that is generous enough to be a threat",
+      "somebody stops answering, and it takes two days for that to mean something",
+      "the mistake was made weeks ago and is only now unavoidable",
+      "what looked like surveillance turns out to have been protection",
+      "a door that should have been locked was never locked",
+      "the person asking the questions has already decided the answer",
+      "two accounts of the same night cannot both be true and both check out",
+      "the way out closes quietly while everyone is looking elsewhere",
+      "somebody removes themselves from the situation and leaves everything behind",
+      "the last person anyone suspects is the only one who has not lied"
+    ],
+    horror:[
+      "what has been happening at night starts happening in daylight",
+      "the only person who believed it stops believing it",
+      "a photograph taken before any of this shows something that should not be there",
+      "the way out is exactly where they came in, and it is not the same",
+      "somebody who left comes back, and comes back wrong",
+      "the sound stops, which is worse",
+      "a rule everybody has been following turns out to have been keeping them safe",
+      "the count is off by one, and has been for some time",
+      "a second set of instructions is found, written in the same hand",
+      "the person nobody has met turns out to have been present all along",
+      "what was buried was buried for a reason nobody wrote down",
+      "the help that was called is already inside the building",
+      "an old recording contains a voice that is in the room",
+      "the child is the only one who is not frightened",
+      "somebody agrees out loud to something they do not understand",
+      "the doors are not locked and nobody can leave",
+      "a familiar face appears somewhere it cannot possibly be",
+      "the explanation everyone accepted turns out to be the version told to children",
+      "the last person awake stops being the last person awake",
+      "what was asked for is granted exactly and literally",
+      "the building's own records go back further than the building does",
+      "somebody has been keeping a list, and the list is nearly finished"
+    ],
+    mystery:[
+      "the answer has been in plain sight since day one and means something else entirely",
+      "a second person was there, and every account leaves them out",
+      "the timeline collapses the moment one clock is checked",
+      "somebody remembers a detail that could not have happened",
+      "the missing thing is returned, and returned wrong",
+      "whoever reported it has the most to lose from an answer",
+      "a letter arrives dated before the thing it describes",
+      "two witnesses describe the same person completely differently",
+      "the file is missing exactly one page",
+      "what everybody calls an accident turns out to have been rehearsed",
+      "the last person to see them is lying about something unrelated",
+      "a photograph exists of the one moment nobody can account for",
+      "an alibi is provided by somebody with no reason to help",
+      "the door was locked from the wrong side",
+      "a name keeps appearing in places it has no business being",
+      "the answer would embarrass somebody who cannot afford to be embarrassed",
+      "somebody starts destroying records that would have cleared them",
+      "the pattern only becomes visible when the dates are laid out",
+      "a debt is discovered that changes who benefits",
+      "the confession, when it comes, explains nothing",
+      "one person's account is perfect and nobody's account is perfect",
+      "the thing everyone has been looking for was never lost"
+    ],
+    comedy:[
+      "the lie gets one size bigger every time it is repeated",
+      "the only person who could sort it out is the person being deceived",
+      "a small favor becomes a full-time job by Thursday",
+      "everybody agrees to a plan nobody understands",
+      "the wrong person is thanked publicly, and accepts",
+      "two separate schemes collide in the same place at the same hour",
+      "the fix works, which is somehow the worst available outcome",
+      "somebody is promoted for the thing that went wrong",
+      "an expert is called in and is worse at it than everyone else",
+      "the deadline is real and everybody treats it as negotiable until it is not",
+      "a rehearsal is mistaken for the real thing",
+      "the person least equipped to handle it is left in charge",
+      "a rumor gets back to its source improved",
+      "everyone tells the truth at once, at the worst possible moment",
+      "the plan depends entirely on one person being on time",
+      "a gift is given that cannot be returned or explained",
+      "somebody's parents arrive",
+      "the thing that was meant to stay secret is announced over a microphone",
+      "an apology is delivered to the wrong person, who accepts it warmly",
+      "two people spend a whole day trying to tell each other the same news",
+      "the solution costs more than the problem and everyone commits to it anyway",
+      "somebody wins on a technicality nobody wanted to invoke"
+    ],
+    romance:[
+      "one of them says the true thing at the worst possible moment",
+      "a third person makes the situation simple, which is unbearable",
+      "they get exactly what they asked for, a year too late",
+      "what is keeping them apart turns out to be something one of them chose",
+      "an old letter surfaces and it was never sent",
+      "somebody makes a decision on the other's behalf, kindly",
+      "the timing is finally right and one of them is already leaving",
+      "a friend says the true thing neither of them wanted said out loud",
+      "they agree to stop, and neither of them does",
+      "an ordinary conversation turns into the one that decides it",
+      "the person they were told to avoid turns out to have been protecting them",
+      "they meet again in circumstances that make honesty impossible",
+      "one of them is offered exactly the life they said they wanted",
+      "a misunderstanding is cleared up and changes nothing",
+      "somebody asks the question they have both been avoiding for months",
+      "they are honest with everyone except each other",
+      "one of them stays for a reason they will not say",
+      "what first attracted them becomes the thing that will not work",
+      "a plan is made that only works if neither of them changes",
+      "the goodbye is easy, and that is what breaks it",
+      "one of them tells a small lie to protect the other, and it holds",
+      "they are given one afternoon and use it badly"
+    ],
+    action:[
+      "the exit closes and the only other way through is up",
+      "help is twenty minutes away and the situation has four",
+      "the person they came to protect turns out not to want protecting",
+      "the equipment fails at the moment it is needed most",
+      "somebody makes a call that saves one person and costs another",
+      "the pursuit turns, and now they are the ones chasing",
+      "an injury changes what is physically possible for everybody",
+      "a shortcut everybody knows about turns out to be the trap",
+      "the weather closes the only route out",
+      "somebody who should not be there refuses to leave",
+      "the plan requires splitting up, and everyone knows how that ends",
+      "a bystander gets involved and cannot be got out",
+      "the clock everyone was working to turns out to be wrong",
+      "the strongest person in the group is the first one down",
+      "what they came for is already gone",
+      "the way they got in has been sealed behind them",
+      "somebody trades themselves for the rest without discussing it",
+      "the last obstacle is a person rather than a thing",
+      "an old injury picks the worst possible moment to matter",
+      "the only working option is the one they ruled out first",
+      "somebody has to go back alone for something they left",
+      "the fight ends and the real problem is still standing there"
+    ],
+    adventure:[
+      "the route on the map does not exist on the ground",
+      "supplies run out a day earlier than the plan allowed",
+      "somebody in the group has been here before and did not say so",
+      "what they were looking for is found by the person who did not want it found",
+      "the way back is cut off by weather nobody forecast",
+      "a decision has to be made about who goes on and who turns around",
+      "an old marker turns up somewhere that makes no sense",
+      "the local guide leaves, politely, and will not explain",
+      "the discovery is real and belongs to somebody else",
+      "two of the group want opposite things and both are right",
+      "the light goes hours earlier than anyone expected",
+      "somebody is hurt far enough in that turning back is its own risk",
+      "what they came to find has already been found and covered up",
+      "a rescue becomes possible and would end the expedition",
+      "the youngest member turns out to be the most capable",
+      "what was supposed to be a formality takes three days",
+      "the equipment they trusted was checked by somebody who cut corners",
+      "a discovery changes who the credit belongs to",
+      "they find evidence that somebody else did not make it out",
+      "the group splits and both halves are now smaller than the problem",
+      "somebody's real reason for coming finally surfaces",
+      "going forward means abandoning what they carried in for"
+    ],
+    musical:[
+      "the number everybody has been rehearsing is cut two days out",
+      "the one who cannot sing turns out to be the one the show needs",
+      "the room is double-booked and neither party will move",
+      "an understudy goes on with no rehearsal and is better",
+      "a song written about somebody in the room is performed in front of them",
+      "the money for the run disappears the week before opening",
+      "the group splits over one arrangement and both halves book the same night",
+      "somebody's voice goes on the day it matters most",
+      "the audience turns out to be one person who can change everything",
+      "a rival act arrives with the same material",
+      "the venue is being sold and the last night is announced from the stage",
+      "the writer withdraws permission four days before opening",
+      "somebody sings the truth in a number that was supposed to be light",
+      "a promise made to the company cannot be kept",
+      "the leader is offered a way out that only works alone",
+      "the show that was meant to save the place makes things worse",
+      "an old member comes back and expects their place",
+      "the piano is gone and the room fills anyway",
+      "somebody has to choose between the run and their family",
+      "the best performance of the show happens with nobody watching",
+      "the group discovers what it sounds like without its loudest voice",
+      "the last number is sung by the person who never got one"
+    ],
+    documentary:[
+      "the subject asks for the camera to be turned off, and then keeps talking",
+      "the story changes halfway through filming and the crew has to follow it",
+      "somebody agrees to be filmed and then withdraws consent",
+      "the funding runs out and the shoot becomes a race",
+      "an archive turns up that contradicts everyone's memory",
+      "the family disagrees, on camera, about what actually happened",
+      "the thing the film was made to prove turns out not to be provable",
+      "a second subject emerges who is more interesting than the first",
+      "the place being filmed closes during production",
+      "the crew becomes part of the story they came to record",
+      "somebody says the unguarded thing and asks for it back",
+      "the film would help one person and damage another",
+      "an interview subject dies before the film is finished",
+      "the official version and the neighborhood version cannot be reconciled",
+      "access is withdrawn at the point it becomes essential",
+      "the most honest footage is the material nobody agreed to",
+      "the subject watches a cut and asks for one thing removed",
+      "a document is produced that nobody expected to exist",
+      "the story turns out to be about the person holding the camera",
+      "two years of filming come down to one afternoon",
+      "the ending happens off camera and has to be told rather than shown",
+      "the subject asks what the film is for, and nobody has an answer"
+    ],
+    animation:[
+      "the newest arrival changes the rules everybody has lived by",
+      "something is lost that cannot be replaced and everybody has a theory",
+      "a rival moves in next door and is unexpectedly delightful",
+      "the leader is wrong about something small and refuses to say so",
+      "a secret is kept for one whole episode and gets out anyway",
+      "the group has to work with the one they have been avoiding",
+      "somebody's plan works perfectly and ruins everything",
+      "an outsider asks a simple question nobody can answer",
+      "the place they all rely on is closing",
+      "a favor is owed to somebody frightening and entirely reasonable",
+      "two of them swap jobs for a day and neither copes",
+      "the youngest one turns out to be the only one telling the truth",
+      "a visitor from far away brings news nobody wants",
+      "the routine everybody depends on is interrupted",
+      "somebody is left in charge and takes it far too seriously",
+      "a competition starts that nobody meant to enter",
+      "the thing they have been protecting does not need protecting",
+      "a misunderstanding grows across a whole season",
+      "somebody grows up slightly and everyone notices",
+      "the rules are rewritten by somebody who does not live there",
+      "an old story turns out to be true",
+      "the group finds out what the place was before they arrived"
+    ]
+  };
+  // Format briefs escalate by APPROACH, not by plot, so they get their own bank.
+  const FORMAT_TURNS=[
+    "the whole thing is shot in a single unbroken take",
+    "there is no dialogue anywhere in the hero cut",
+    "everyone on camera is cast from non-actors and real practitioners",
+    "it is cut so the last two seconds reframe everything before them",
+    "the product does not appear until the final frame",
+    "the same scene is played twice by two different casts and intercut",
+    "every setup is lit as available light, with nothing added",
+    "the piece is built to work with the sound off",
+    "it runs in reverse, ending where a normal spot would begin",
+    "it is shot across one continuous day so every frame carries its own hour",
+    "the performances are improvised inside a tightly defined situation",
+    "the whole campaign is cast in pairs and read for chemistry",
+    "it is timed on screen in real minutes and never cheats a cut",
+    "every frame is a portrait and nobody looks at the camera",
+    "it is shot entirely in the hour before sunrise",
+    "each cutdown ends on a different person and the hero film ends on all of them",
+    "the piece never leaves one room",
+    "the same performer plays the character at three ages",
+    "it is captured documentary-style with two cameras and no marks",
+    "the copy is the only scripted element; everything on camera is behavior",
+    "the whole campaign is one location and six very different hours",
+    "it is shot on long lenses from across the street",
+    "the final cut is assembled from first takes only",
+    "the piece is built around a single sustained close-up",
+    "the cast are photographed at their own workplaces on their own shifts",
+    "it is designed to be recut four ways from one day's material"
+  ];
+  // Seed genres are written for humans ("regional noir", "kitchen ensemble"), so
+  // they are mapped to a bank rather than matched exactly.
+  const ALL_TURNS=Object.keys(GENRE_TURNS).reduce((a,k)=>a.concat(GENRE_TURNS[k]),[]).concat(FORMAT_TURNS);
+  function turnBank(seed,track){
+    if(track==="spot"||track==="print"||(track==="other"&&!/animation|animated/i.test(seed.genre||"")))return FORMAT_TURNS;
+    const g=String(seed.genre||"").toLowerCase();
+    if(/animation|animated/.test(g))return GENRE_TURNS.animation;
+    if(/documentary|docu/.test(g))return GENRE_TURNS.documentary;
+    if(/musical/.test(g))return GENRE_TURNS.musical;
+    if(/horror/.test(g))return GENRE_TURNS.horror;
+    if(/thriller|suspense|paranoid|pressure-cooker|procedural/.test(g))return GENRE_TURNS.thriller;
+    if(/mystery/.test(g))return GENRE_TURNS.mystery;
+    if(/crime|noir|heist/.test(g))return GENRE_TURNS.crime;
+    if(/action/.test(g))return GENRE_TURNS.action;
+    if(/adventure/.test(g))return GENRE_TURNS.adventure;
+    if(/romance/.test(g))return GENRE_TURNS.romance;
+    if(/comedy|comic|deadpan/.test(g))return GENRE_TURNS.comedy;
+    return GENRE_TURNS.drama;
+  }
+
   const STORY_LINES=[
     x=>`${x.capPremise}. ${x.capTurn}.`,
     x=>`${x.capPremise} — until ${x.turn}.`,
@@ -25918,7 +26268,13 @@ const ACG = (()=>{
     x=>`${pick(["Chemistry read likely at callback","Will be paired at callback","Read against the other lead at callback"])}, ${pick(["so come prepared to adjust.","and we may mix the pairings more than once.","so flexibility helps more than a fixed plan."])}`,
     x=>`${pick(["The part is written specifically","This one is written close to the bone","There is real specificity in the writing"])}, ${pick(["so resist the urge to play the type.","and generalising it will flatten it.","so play the person rather than the category."])}`,
     x=>`${pick(["Sustains tension across the piece","Holds pressure for long stretches","Lives under pressure the whole way through"])} ${pick(["without ever getting loud.","and the volume never solves it.","— nothing is released until it has to be."])}`,
-    x=>`${pick(["Expect rehearsal","There is rehearsal time on this","We rehearse before we roll"])}, ${pick(["and the part will move around you.","so the role will change once we know who has it.","and the writing follows whoever we cast."])}`
+    x=>`${pick(["Expect rehearsal","There is rehearsal time on this","We rehearse before we roll"])}, ${pick(["and the part will move around you.","so the role will change once we know who has it.","and the writing follows whoever we cast."])}`,
+    x=>`${pick(["The whole part turns on one scene","There is one scene this is really cast on","One sequence decides this part"])} — ${pick(["we will send it with the callback invitation.","you will get it before you come in.","it is the only thing we will ask you to prepare."])}`,
+    x=>`${pick(["Accent is not required","Play it in your own voice","No accent work needed"])}; ${pick(["we would rather have the truth than the map.","specificity beats geography here.","where the character is from matters less than who they are."])}`,
+    x=>`${pick(["Written for somebody with real weight","Needs presence more than range","Casting for authority here"])} — ${pick(["the room should change when they walk into it.","other characters behave differently around them.","nobody has to say they matter."])}`,
+    x=>`${pick(["This one is mostly listening","The part is built out of reactions","Most of it happens while somebody else talks"])}, ${pick(["so we will be watching your face on the tape.","which is harder than it sounds.","and that is the whole read."])}`,
+    x=>`${pick(["Age is a guide, not a gate","Read the band loosely","We are flexible on the range"])} — ${pick(["play the life, not the birthday.","if you are close and it fits, come.","we have cast either side of it before."])}`,
+    x=>`${pick(["Expect notes and expect to use them","We work fast and adjust often","Direction comes in small pieces here"])}; ${pick(["actors who can turn on a note do well.","the second version is usually the one we keep.","flexibility is worth more than a fixed idea."])}`
   ];
   // Supporting parts and the padded background categories were the last place
   // text repeated: a seed's supporting sketch is fixed, and the extras bank is
@@ -25930,7 +26286,13 @@ const ACG = (()=>{
     x=>`${pick(["Keep it grounded","No need to push","Play it straight"])}; ${pick(["the writing carries the size.","the situation does the work.","anything bigger fights the scene."])}`,
     x=>`${pick(["Comfortable with overlapping dialogue","Good with interruptions","Able to talk over and be talked over"])} ${pick(["and quick resets.","without losing the thread.","and to hold a beat when the room goes quiet."])}`,
     x=>`${pick(["Local hire preferred for this one","Ideally a local hire","Local casting for this part"])}; ${pick(["a single travel day at most.","one or two calls, close together.","the days are grouped."])}`,
-    x=>`${pick(["Room for improvisation","Some improvisation likely","We will play with this in rehearsal"])} ${pick(["inside a tight structure.","once the scene is standing.","but the scene keeps its shape."])}`
+    x=>`${pick(["Room for improvisation","Some improvisation likely","We will play with this in rehearsal"])} ${pick(["inside a tight structure.","once the scene is standing.","but the scene keeps its shape."])}`,
+    x=>`${pick(["Anchors one sequence","Owns a single sequence","Runs one whole scene"])} ${pick(["and then steps back out of it.","before disappearing from the story.","and is not seen again."])}`,
+    x=>`${pick(["Should feel like they existed before the scene started","Needs a life outside this","Has somewhere to be afterwards"])} — ${pick(["that is most of the work.","play the day around it.","the scene is an interruption, not the whole life."])}`,
+    x=>`${pick(["Works closely with the crew in frame","Handles props through most of it","Business-heavy scene"])}; ${pick(["comfort with practical action helps.","we will rehearse the mechanics.","the hands are doing as much as the lines."])}`,
+    x=>`${pick(["One difficult beat","There is one hard moment","A single sharp turn"])} ${pick(["and the rest is easy.","that we will take our time on.","which we will cover from two sizes."])}`,
+    x=>`${pick(["Could be cast any gender","Open on gender for this one","Written without a fixed gender"])}; ${pick(["the breakdown reflects where we started, not where we will end.","tell us if you see it differently.","we are reading it widely."])}`,
+    x=>`${pick(["Available for a fitting beforehand","Needs one wardrobe call","A fitting is scheduled separately"])} ${pick(["and it is paid.","in the week before.","— we work around your schedule."])}`
   ];
   const ATMOS_NOTES=[
     x=>`${pick(["Wardrobe is everyday contemporary","Own clothes in most frames","Wardrobe supplied for featured passes"])}; ${pick(["nothing branded.","no logos or slogans.","plain colors preferred."])}`,
@@ -25938,7 +26300,13 @@ const ACG = (()=>{
     x=>`${pick(["Several featured passes","A few close passes to camera","One or two featured moments"])} ${pick(["for the right people on the day.","chosen on set.","depending on the setup."])}`,
     x=>`${pick(["Repeat business is likely","We book atmosphere again","Regulars get called back"])} ${pick(["if the day goes well.","across the rest of the schedule.","for later blocks."])}`,
     x=>`${pick(["Punctuality matters more than anything else here","Being on time is the whole job","Call times are held"])}. ${pick(["Please only submit if the date is genuinely clear.","Do not submit against a maybe.","Check the date before you apply."])}`,
-    x=>`${pick(["No experience necessary","Set experience helpful but not required","First-timers welcome"])} — ${pick(["you will be shown what to do.","the AD team will walk you through it.","we brief everyone at the start of the day."])}`
+    x=>`${pick(["No experience necessary","Set experience helpful but not required","First-timers welcome"])} — ${pick(["you will be shown what to do.","the AD team will walk you through it.","we brief everyone at the start of the day."])}`,
+    x=>`${pick(["Bring a book","Bring something to read","Expect waiting"])}; ${pick(["there is more of it than filming.","the holding area is warm and quiet.","we will feed you properly in exchange."])}`,
+    x=>`${pick(["Small group","Kept deliberately small","A handful of people, not a crowd"])} ${pick(["so everyone is genuinely in frame.","and everybody gets used.","— nobody is booked to stand around."])}`,
+    x=>`${pick(["Some walking involved","On your feet most of the day","Light physical work"])}, ${pick(["nothing strenuous.","with breaks between setups.","and comfortable shoes matter more than anything else."])}`,
+    x=>`${pick(["Under-18s welcome with a guardian","Family bookings possible","We can book people together"])} ${pick(["— tell us when you submit.","if that is easier for you.","and will schedule around school hours."])}`,
+    x=>`${pick(["We book from photos only for this","No tape needed here","Photo submission is enough"])}; ${pick(["a clear recent picture is all we need.","phone photos are completely fine.","nothing posed."])}`,
+    x=>`${pick(["Paid on the day","Paid within a week of the shoot","Payment issued on wrap"])} ${pick(["by transfer.","with the paperwork done in advance.","— no chasing required."])}`
   ];
   const RANK_ORDER=["Lead","Supporting","Day Player","Background"];
   function rankRates(tier){
@@ -26048,12 +26416,18 @@ const ACG = (()=>{
       const unusedTones=tones.filter(v=>!res.traits.has(clean("tone "+v.key)));
       const tone=pick(unusedTones.length?unusedTones:tones);
 
-      // A seed is two stories, not one: pick whichever turn is still unused so
-      // the same premise can return later as a genuinely different film.
-      const turnOpts=[seed.h,seed.h2].filter(Boolean);
-      const freeTurns=turnOpts.filter(t=>!h.traits.has(clean("turn "+t))&&!res.traits.has(clean("turn "+t)));
-      const turn=pick(freeTurns.length?freeTurns:turnOpts.filter(t=>!res.traits.has(clean("turn "+t))).length?turnOpts.filter(t=>!res.traits.has(clean("turn "+t))):turnOpts);
-      const seedKey=clean("seed "+seed.k+" "+turn);
+      // A seed is not one story. It is its premise crossed with any turn its
+      // genre supports — its own two hand-written ones first, then the genre
+      // bank. Preference: a turn nobody has used at all, then a turn this seed
+      // has not been paired with, then anything.
+      const own=[seed.h,seed.h2].filter(Boolean);
+      const turnOpts=own.concat(turnBank(seed,track).filter(t=>own.indexOf(t)===-1));
+      const pairFree=t=>!h.traits.has(clean("story "+seed.k+" "+t))&&!res.traits.has(clean("story "+seed.k+" "+t));
+      const turnFree=t=>!h.traits.has(clean("turn "+t))&&!res.traits.has(clean("turn "+t));
+      const tierA=turnOpts.filter(t=>turnFree(t)&&pairFree(t));
+      const tierB=tierA.length?tierA:turnOpts.filter(pairFree);
+      const turn=pick(tierB.length?tierB:turnOpts);
+      const seedKey=clean("story "+seed.k+" "+turn);
       const turnKey=clean("turn "+turn);
       const toneKey=clean("tone "+tone.key);
       const rootKey=fp([seed.k,turn,type,tone.key,city.short].join("|"));
@@ -26168,8 +26542,10 @@ const ACG = (()=>{
       // that was written on another device or in an earlier session. Finding it
       // here is what stops the same source story being generated twice.
       FILM_SEEDS.forEach(s=>{
-        [s.h,s.h2].filter(Boolean).forEach(t=>{
-          if(storyBlob.includes(clean(t))){addUsed(h.traits,"turn "+t);addUsed(h.traits,"seed "+s.k+" "+t);}
+        if(!storyBlob.includes(clean(s.p)))return;
+        const own=[s.h,s.h2].filter(Boolean);
+        own.concat(ALL_TURNS).forEach(t=>{
+          if(storyBlob.includes(clean(t))){addUsed(h.traits,"turn "+t);addUsed(h.traits,"story "+s.k+" "+t);}
         });
       });
       // Crew credits live inside the synopsis, so mine the names back out and
