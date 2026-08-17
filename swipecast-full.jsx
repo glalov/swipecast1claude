@@ -802,7 +802,7 @@ function DirectorChairAvatar({size=52}){
 }
 
 // Project / production types offered in the CD post form and the admin generator.
-const PROJECT_TYPE_OPTIONS=["Feature Film","Short Film","Student Film","Independent Film","Documentary","TV Series","TV Pilot","Web Series","Streaming Series","Commercial","Social Media Ad","Branded Content","Corporate Video","Industrial / Training Video","Promo Video","Product Demo","Music Video","Voiceover","Podcast / Audio Drama","Animation","Video Game","Theater","Off-Broadway Theater","Off-Off-Broadway Theater","Musical Theater","Workshop / Staged Reading","Live Event","Hosting / Presenter","Reality / Docu-Series","Lifestyle / Unscripted","Modeling","Print Campaign","Photo Shoot","Influencer / UGC Content","Educational Video","Public Service Announcement","Spec Commercial","Proof of Concept","Sizzle Reel","Pitch Trailer","Table Read","Experimental Film","Dance Project","Performance Art","Background / Extras","Stand-In","Body Double","Stunts","Motion Capture","Other"];
+const PROJECT_TYPE_OPTIONS=["Feature Film","Short Film","Student Film","Independent Film","Documentary","TV Series","TV Pilot","Web Series","Streaming Series","Commercial","Social Media Ad","Branded Content","Corporate Video","Industrial / Training Video","Promo Video","Product Demo","Music Video","Voiceover","Podcast / Audio Drama","Animation","Video Game","Theater","Off-Broadway Theater","Off-Off-Broadway Theater","Musical Theater","Workshop / Staged Reading","Live Event","Hosting / Presenter","Reality / Docu-Series","Lifestyle / Unscripted","Modeling","Print Campaign","Photo Shoot","Influencer / UGC Content","Educational Video","Public Service Announcement","Spec Commercial","Proof of Concept","Sizzle Reel","Pitch Trailer","Table Read","Experimental Film","Dance Project","Performance Art","Background / Extras","Stand-In","Body Double","Stunts","Motion Capture","Limited Series","Miniseries","Vertical Series","Pilot Presentation","Ad Campaign","Other"];
 
 // ─── Spanish Casting Translations ────────────────────────────────────────────
 // Seeded/demo castings fully translated. User-generated castings from the DB
@@ -23864,11 +23864,21 @@ const ACG = (()=>{
     addUsed(res.ages,age);
     return age;
   }
-  function projectUnion(type){
-    if(/feature|film|series|pilot/i.test(type))return pick(["SAG-AFTRA Micro-Budget / Non-Union welcome","Non-Union","Union and non-union welcome"]);
-    if(/theater|musical|stage|table read/i.test(type))return pick(["AEA showcase/workshop terms where applicable; non-union welcome","Non-Union","Union and non-union welcome"]);
-    if(/commercial|ad|brand|print|model|e-commerce/i.test(type))return pick(["Non-Union","Union and non-union welcome","Commercial terms disclosed before booking"]);
-    return UNION;
+  // Real agreement names, and weighted the way a board actually looks: the
+  // overwhelming majority of low-budget screen work is non-union or on one of
+  // SAG-AFTRA's low-budget agreements, stage work is AEA or nothing, and
+  // commercial work is mostly non-union.
+  function projectUnion(type,track,tier){
+    if(track==="stage")return pick(["AEA","AEA","AEA","AEA Showcase Code","AEA (EMC)","Non-Union","Non-Union","Not Applicable"]);
+    if(track==="print")return pick(["Non-Union","Non-Union","Non-Union","Not Applicable"]);
+    if(track==="spot")return pick(["Non-Union","Non-Union","Non-Union","Non-Union","SAG-AFTRA Commercial"]);
+    if(/voiceover|podcast|animation/i.test(type||""))return pick(["Non-Union","Non-Union","SAG-AFTRA","SAG-AFTRA New Media"]);
+    // The Student Film agreement only exists for student films.
+    if(tier==="micro")return /student/i.test(type||"")
+      ? pick(["Non-Union","Non-Union","SAG-AFTRA Student Film","SAG-AFTRA Student Film"])
+      : pick(["Non-Union","Non-Union","Non-Union","SAG-AFTRA Short Project Agreement"]);
+    if(tier==="low")return pick(["Non-Union","Non-Union","SAG-AFTRA Short Project Agreement","SAG-AFTRA Ultra Low Budget","SAG-AFTRA New Media"]);
+    return pick(["SAG-AFTRA","SAG-AFTRA","SAG-AFTRA Ultra Low Budget","SAG-AFTRA Modified Low Budget","Non-Union"]);
   }
   // Candidate order matters: candidateUnique() picks the FIRST unused one. When the
   // bare stem is already taken we want a genuinely different title next (a distinct
@@ -25825,9 +25835,9 @@ const ACG = (()=>{
   // listings carry a type the Browse badge and the admin edit modal both know.
   const TRACK_TYPES={
     film:["Feature Film","Short Film","Independent Film","Student Film","Experimental Film","Proof of Concept"],
-    tv:["TV Series","TV Pilot","Streaming Series","Web Series","Sizzle Reel","Pitch Trailer"],
+    tv:["TV Series","TV Pilot","Streaming Series","Web Series","Sizzle Reel","Pitch Trailer","Limited Series","Miniseries","Pilot Presentation","Vertical Series"],
     stage:["Theater","Off-Broadway Theater","Off-Off-Broadway Theater","Workshop / Staged Reading","Table Read"],
-    spot:["Commercial","Branded Content","Spec Commercial","Social Media Ad","Promo Video","Product Demo","Public Service Announcement"],
+    spot:["Commercial","Branded Content","Spec Commercial","Social Media Ad","Promo Video","Product Demo","Public Service Announcement","Ad Campaign"],
     print:["Print Campaign","Photo Shoot","Modeling","Influencer / UGC Content"],
     other:["Music Video","Voiceover","Podcast / Audio Drama","Animation","Live Event","Educational Video","Dance Project"]
   };
@@ -26827,12 +26837,19 @@ const ACG = (()=>{
   }
   function seedTitles(seed,city,type){
     const t=cgShuffle(seed.ttl||["Untitled"]);
+    const genre=titleCase(String(seed.genre||"project").split(" ").slice(-1)[0]);
+    const roll=Math.random();
+    if(roll<0.10)return [`Untitled ${genre} Project`,`${t[0]} (Working Title)`,t[0],t[1]||t[0]];
+    if(roll<0.22)return [`${t[0]} (Working Title)`,t[0],t[1]||t[0],`Untitled ${genre} Project`];
     return [
       t[0],
       t[1]||t[0],
-      `${pick(["The","A"])} ${pick(TITLE_A)} ${pick(TITLE_B)}`,
+      `${t[0]} (Working Title)`,
       t[2]||t[0],
+      `Untitled ${genre} Project`,
+      `${pick(["The","A"])} ${pick(TITLE_A)} ${pick(TITLE_B)}`,
       `${t[0]} — ${city.short}`,
+      `${t[1]||t[0]} (${city.short} Release)`,
       `${type}: ${t[1]||t[0]}`,
       `${t[0]} (${pick(TITLE_SUFFIXES)})`
     ];
@@ -26938,7 +26955,7 @@ const ACG = (()=>{
         roleCount:roles.length,
         dayLine:`${plan.line} between ${fmtShootDay(start.toISOString())} and ${fmtShootDay(end.toISOString())}`,
         dayCap:plan.cap,window,
-        union:projectUnion(type),
+        union:projectUnion(type,track,tier),
         Company:"",
         mediaSentence:mediaSentence(roles)
       };
@@ -28767,7 +28784,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
   ];
   const FILM_GENRES=["Action","Adventure","Comedy","Drama","Horror","Thriller","Romance","Science Fiction","Fantasy","Crime","Mystery","Western","War","Historical","Biographical","Musical","Animation","Documentary","Family","Sports"];
   const PAY_PRESETS=["$100/day","$150/day","$200/day","$20/hour","$50/hour","Unpaid","Deferred","Negotiable","SAG Scale"];
-  const UNION_OPTS=["SAG-AFTRA","AEA","Non-Union","SAG-AFTRA / Non-Union","Union and non-union welcome"];
+  const UNION_OPTS=["SAG-AFTRA","SAG-AFTRA Ultra Low Budget","SAG-AFTRA Modified Low Budget","SAG-AFTRA Short Project Agreement","SAG-AFTRA Student Film","SAG-AFTRA New Media","SAG-AFTRA Commercial","AEA","AEA Showcase Code","AEA (EMC)","Non-Union","SAG-AFTRA / Non-Union","Union and non-union welcome","Not Applicable"];
   const GENDER_OPTS=["Any","Male","Female","Non-Binary"];
   const ETHNICITY_OPTS=["Any ethnicity","Black / African descent","White / European descent","Hispanic / Latino","Asian","South Asian","Middle Eastern / North African","Native American / Indigenous","Pacific Islander","Mixed ethnicity","Other / open to all"];
   const AGE_PRESETS=["Any age","0–5","6–12","13–17","18–25","20–30","25–35","30–40","35–50","40–60","50–70","60+","Custom range"];
