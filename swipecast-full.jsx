@@ -85,7 +85,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Sign in','nav.accountSettings':'Account Settings',
     'nav.resources':'Resources','nav.successStories':'Success Stories',
     'nav.about':'About','nav.contact':'Contact','nav.joinAsTalent':'Join as Talent',
-    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.tapelink':'TapeLink','nav.agencyDirectory':'Talent Agencies',
+    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencies Directory',
     // Footer
     'footer.backToTop':'Back to top',
     'footer.blurb':'The casting platform built for working actors. Every submission gets seen — guaranteed. Free accounts included — upgrade to Premium (from $8.25/mo) for unlimited submissions, Slate Video, Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA & NYC), and more.',
@@ -333,7 +333,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Iniciar sesión','nav.accountSettings':'Configuración de cuenta',
     'nav.resources':'Recursos','nav.successStories':'Historias de éxito',
     'nav.about':'Acerca de','nav.contact':'Contacto','nav.joinAsTalent':'Unirse como Talento',
-    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencias de Talento',
+    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.tapelink':'TapeLink','nav.agencyDirectory':'Directorio de Agencias',
     // Footer
     'footer.backToTop':'Volver arriba',
     'footer.blurb':'La plataforma de casting diseñada para actores que trabajan. Cada postulación es vista — garantizado. Cuentas gratuitas incluidas — mejora a Premium (desde $8.25/mes) para postulaciones ilimitadas y más.',
@@ -3445,41 +3445,69 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    panel, logo + name + slug + QR. IMPORTANT: every row carries flex-shrink:0.
    The body is a fixed-height flex column (locked aspect ratio), so any row left
    shrinkable is squeezed to zero height — that silently ate the actor's name. */
-.agdc{width:var(--agdcw,392px);background:#fff;border:1.5px solid #E0E0E8;border-radius:10px;overflow:hidden;box-shadow:0 8px 40px rgba(26,26,46,.15);display:flex;aspect-ratio:1050/600;position:relative;flex-shrink:0;}
+.agdc{width:var(--agdcw,450px);background:#fff;border:1.5px solid #E0E0E8;border-radius:11px;overflow:hidden;box-shadow:0 10px 46px rgba(26,26,46,.17);display:flex;aspect-ratio:1050/600;position:relative;flex-shrink:0;}
 .agdc .bar{position:absolute;top:0;left:0;right:0;height:4px;background:#1A1A2E;z-index:2;}
 .agdc .ph{width:34%;flex-shrink:0;position:relative;margin-top:4px;overflow:hidden;background:#E8E8F2;}
 .agdc .ph img{width:100%;height:100%;object-fit:cover;display:block;}
-.agdc .bd{flex:1;padding:12px 11px 9px;display:flex;flex-direction:column;min-width:0;margin-top:4px;overflow:hidden;}
+.agdc .bd{flex:1;padding:14px 13px 10px;display:flex;flex-direction:column;min-width:0;margin-top:4px;overflow:hidden;}
 .agdc .lg,.agdc .nm,.agdc .hl,.agdc .lo,.agdc .tg,.agdc .ft{flex-shrink:0;}
-.agdc .lg{display:flex;align-items:center;gap:5px;margin-bottom:6px;}
-.agdc .lg .m{width:15px;height:15px;background:#1A1A2E;border-radius:3px;display:grid;place-items:center;color:#fff;flex-shrink:0;}
-.agdc .lg span{font-size:7px;font-weight:800;color:#1A1A2E;letter-spacing:1.4px;}
-.agdc .nm{font-weight:800;font-size:14px;color:#1A1A2E;letter-spacing:-.4px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.agdc .hl{font-size:9px;color:#6B6B80;font-weight:600;margin-top:2px;}
-.agdc .lo{font-size:8px;color:#8E8EA0;margin-top:1px;}
-.agdc .tg{display:flex;gap:3px;margin-top:4px;overflow:hidden;}
-.agdc .tg span{font-size:6.5px;font-weight:600;padding:2px 5px;border-radius:3px;background:#F0F0F8;color:#1A1A2E;border:1px solid #E0E0F0;white-space:nowrap;}
+.agdc .lg{display:flex;align-items:center;gap:6px;margin-bottom:7px;}
+.agdc .lg .m{width:17px;height:17px;background:#1A1A2E;border-radius:3px;display:grid;place-items:center;color:#fff;flex-shrink:0;}
+.agdc .lg span{font-size:8px;font-weight:800;color:#1A1A2E;letter-spacing:1.6px;}
+.agdc .nm{font-weight:800;font-size:16px;color:#1A1A2E;letter-spacing:-.45px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.agdc .hl{font-size:10.5px;color:#6B6B80;font-weight:600;margin-top:2px;}
+.agdc .lo{font-size:9px;color:#8E8EA0;margin-top:2px;}
+.agdc .tg{display:flex;gap:4px;margin-top:5px;overflow:hidden;}
+.agdc .tg span{font-size:7.5px;font-weight:600;padding:2.5px 6px;border-radius:3px;background:#F0F0F8;color:#1A1A2E;border:1px solid #E0E0F0;white-space:nowrap;}
 .agdc .fill{flex:1 1 auto;min-height:0;}
-.agdc .ft{border-top:1px solid #EDEDF0;padding-top:5px;display:flex;align-items:flex-end;justify-content:space-between;gap:7px;}
+.agdc .ft{border-top:1px solid #EDEDF0;padding-top:6px;display:flex;align-items:flex-end;justify-content:space-between;gap:8px;}
 .agdc .ft .u{min-width:0;flex:1;}
-.agdc .ft .u b{display:block;font-size:6.5px;color:#9090A0;font-weight:400;line-height:1.35;}
-.agdc .ft .u i{display:block;font-style:normal;font-size:8.5px;font-weight:700;color:#1A1A2E;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.agdc .ft .u b{display:block;font-size:7.5px;color:#9090A0;font-weight:400;line-height:1.35;}
+.agdc .ft .u i{display:block;font-style:normal;font-size:10px;font-weight:700;color:#1A1A2E;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .agdc .ft .q{flex-shrink:0;text-align:center;}
-.agdc .ft .q img{width:38px;height:38px;display:block;border-radius:2px;}
-.agdc .ft .q em{display:block;font-style:normal;font-size:5px;color:#9090A0;letter-spacing:.3px;margin-top:1px;white-space:nowrap;}
-/* Desktop: a fan, each card breathing on its own phase. */
-.agd-fan{position:relative;height:var(--agdfh,512px);}
+.agdc .ft .q img{width:44px;height:44px;display:block;border-radius:2px;}
+.agdc .ft .q em{display:block;font-style:normal;font-size:5.5px;color:#9090A0;letter-spacing:.3px;margin-top:2px;white-space:nowrap;}
+/* Desktop: a fan, each card breathing on its own phase.
+   The cards are DEALT IN on first paint (see .agd-fan.playing below) and only
+   then start floating. Resting poses live here with no animation attached, so
+   the entrance keyframes and the float keyframes can both end on exactly the
+   same transform. */
+.agd-fan{position:relative;height:var(--agdfh,588px);}
 .agd-fan .agdc{position:absolute;left:50%;top:50%;transform-origin:50% 90%;}
-.agd-fan .k1{margin-left:var(--k1x,-224px);margin-top:var(--k1y,-228px);z-index:1;transform:rotate(-7deg);animation:agdfan1 7s ease-in-out infinite;}
-.agd-fan .k2{margin-left:var(--k2x,-128px);margin-top:var(--k2y,-112px);z-index:2;transform:rotate(-1.5deg);animation:agdfan2 7s ease-in-out -2.3s infinite;}
-.agd-fan .k3{margin-left:var(--k3x,-32px);margin-top:var(--k3y,4px);z-index:3;transform:rotate(5deg);animation:agdfan3 7s ease-in-out -4.6s infinite;}
+.agd-fan .k1{margin-left:var(--k1x,-257px);margin-top:var(--k1y,-262px);z-index:1;transform:rotate(-7deg);}
+.agd-fan .k2{margin-left:var(--k2x,-147px);margin-top:var(--k2y,-129px);z-index:2;transform:rotate(-1.5deg);}
+.agd-fan .k3{margin-left:var(--k3x,-37px);margin-top:var(--k3y,5px);z-index:3;transform:rotate(5deg);}
+/* Until the deal runs the cards are held invisible, so none of them flashes
+   into place at its rest pose before the animation gets a frame. */
+.agd-fan:not(.playing):not(.settled) .agdc{opacity:0;}
+/* The deal: each card travels from off the right edge to its rest pose on ONE
+   monotonic curve — no overshoot, no intermediate transform stop. Both would
+   read as a snap at the end. The curve is a pure decelerate arriving at zero
+   velocity, so the float picks up from a standstill. */
+.agd-fan.playing .k1{animation:agddeal1 1.25s cubic-bezier(.28,.62,.2,1) .06s both;}
+.agd-fan.playing .k2{animation:agddeal2 1.25s cubic-bezier(.28,.62,.2,1) .24s both;}
+.agd-fan.playing .k3{animation:agddeal3 1.25s cubic-bezier(.28,.62,.2,1) .42s both;}
+@keyframes agddeal1{0%{opacity:0;transform:translate(560px,-70px) rotate(24deg) scale(.9)}26%{opacity:1}100%{opacity:1;transform:rotate(-7deg) scale(1)}}
+@keyframes agddeal2{0%{opacity:0;transform:translate(560px,-40px) rotate(20deg) scale(.9)}26%{opacity:1}100%{opacity:1;transform:rotate(-1.5deg) scale(1)}}
+@keyframes agddeal3{0%{opacity:0;transform:translate(560px,-10px) rotate(17deg) scale(.9)}26%{opacity:1}100%{opacity:1;transform:rotate(5deg) scale(1)}}
+/* The float used to be desynced with NEGATIVE delays (-2.3s / -4.6s), which is
+   fine when it is the only animation — but it means the float starts already
+   mid-cycle, at a translated pose. Handing off to that from a just-landed card
+   teleported it ~10px. Different DURATIONS drift the cards out of phase the
+   same way while every one still begins at its exact rest pose. */
+.agd-fan.settled .k1{animation:agdfan1 7s ease-in-out infinite;}
+.agd-fan.settled .k2{animation:agdfan2 8.3s ease-in-out infinite;}
+.agd-fan.settled .k3{animation:agdfan3 6.4s ease-in-out infinite;}
 /* The 392px fan is ~584px wide — wider than the hero's right column, which is
    deliberate (the cards bleed toward the edge). Below ~1200px that bleed would
    run off the viewport and get clipped by overflow-x:clip, so the whole
    composition steps down one size rather than losing a card's edge. */
-@media(max-width:1339px){
-  .agd-fan{--agdcw:340px;--agdfh:472px;--k1x:-240px;--k1y:-212px;--k2x:-170px;--k2y:-96px;--k3x:-101px;--k3y:20px;}
+@media(max-width:1599px){
+  .agd-fan{--agdcw:420px;--agdfh:552px;--k1x:-240px;--k1y:-244px;--k2x:-137px;--k2y:-120px;--k3x:-34px;--k3y:4px;}
   .agd-fan .agdc{width:var(--agdcw);}
+}
+@media(max-width:1339px){
+  .agd-fan{--agdcw:372px;--agdfh:516px;--k1x:-263px;--k1y:-232px;--k2x:-186px;--k2y:-105px;--k3x:-110px;--k3y:22px;}
 }
 @keyframes agdfan1{0%,100%{transform:rotate(-7deg) translateY(0)}50%{transform:rotate(-8.5deg) translateY(-11px)}}
 @keyframes agdfan2{0%,100%{transform:rotate(-1.5deg) translateY(0)}50%{transform:rotate(-.5deg) translateY(-13px)}}
@@ -3489,16 +3517,26 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    whole, the two behind it peek out, and the whole thing is ~330px. */
 @media(max-width:960px){
   .agd-fan{height:auto;display:flex;flex-direction:column;align-items:center;padding-top:8px;}
-  .agd-fan .agdc{position:static;margin:0;width:min(320px,86vw);}
+  .agd-fan .agdc{position:static;margin:0;width:min(340px,88vw);}
   /* The deck floats on phones too. Each keyframe re-states its card's rotation
      and scale — a transform animation REPLACES the static transform outright,
      so leaving them out would flatten the deck the moment it starts. */
   /* -58px, not -88px: the photo panel runs the full height of each card, so a
      deep overlap buries the face of the card behind. This leaves ~125px of
      every card showing, which is the whole photo panel down to the chin. */
-  .agd-fan .k1{z-index:1;transform:rotate(-2.5deg) scale(.94);animation:agdfanm1 6.4s ease-in-out infinite;}
-  .agd-fan .k2{margin-top:-58px;z-index:2;transform:rotate(1.5deg) scale(.97);animation:agdfanm2 7.2s ease-in-out -1.9s infinite;}
-  .agd-fan .k3{margin-top:-58px;z-index:3;transform:rotate(-.5deg);animation:agdfanm3 6.8s ease-in-out -3.7s infinite;}
+  .agd-fan .k1{z-index:1;transform:rotate(-2.5deg) scale(.94);}
+  .agd-fan .k2{margin-top:-62px;z-index:2;transform:rotate(1.5deg) scale(.97);}
+  .agd-fan .k3{margin-top:-62px;z-index:3;transform:rotate(-.5deg);}
+  /* Shorter deal on phones — the cards only come in from the screen edge. */
+  .agd-fan.playing .k1{animation:agddealm1 1.05s cubic-bezier(.28,.62,.2,1) .06s both;}
+  .agd-fan.playing .k2{animation:agddealm2 1.05s cubic-bezier(.28,.62,.2,1) .21s both;}
+  .agd-fan.playing .k3{animation:agddealm3 1.05s cubic-bezier(.28,.62,.2,1) .36s both;}
+  @keyframes agddealm1{0%{opacity:0;transform:translate(300px,-30px) rotate(18deg) scale(.86)}26%{opacity:1}100%{opacity:1;transform:rotate(-2.5deg) scale(.94)}}
+  @keyframes agddealm2{0%{opacity:0;transform:translate(300px,-16px) rotate(16deg) scale(.9)}26%{opacity:1}100%{opacity:1;transform:rotate(1.5deg) scale(.97)}}
+  @keyframes agddealm3{0%{opacity:0;transform:translate(300px,0) rotate(14deg) scale(.92)}26%{opacity:1}100%{opacity:1;transform:rotate(-.5deg) scale(1)}}
+  .agd-fan.settled .k1{animation:agdfanm1 6.4s ease-in-out infinite;}
+  .agd-fan.settled .k2{animation:agdfanm2 7.7s ease-in-out infinite;}
+  .agd-fan.settled .k3{animation:agdfanm3 5.6s ease-in-out infinite;}
   @keyframes agdfanm1{0%,100%{transform:rotate(-2.5deg) scale(.94) translateY(0)}50%{transform:rotate(-3.4deg) scale(.94) translateY(-7px)}}
   @keyframes agdfanm2{0%,100%{transform:rotate(1.5deg) scale(.97) translateY(0)}50%{transform:rotate(2.3deg) scale(.97) translateY(-9px)}}
   @keyframes agdfanm3{0%,100%{transform:rotate(-.5deg) translateY(0)}50%{transform:rotate(.4deg) translateY(-6px)}}
@@ -3576,6 +3614,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 }
 @media(prefers-reduced-motion:reduce){
   .agd-plane,.agd-route,.agd-halo,.agd-key,.agd-ring,.agd-marq-in,.agd-redact,.agd-eyebrow .d,.agd-fan .agdc{animation:none !important;}
+  .agd-fan .agdc{opacity:1 !important;}
 }
 .adx-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:100px;border:1.5px solid currentColor;margin-bottom:20px;opacity:.92;font-family:'DM Sans',sans-serif;}
 .adx-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;animation:adxpulse 2s ease-in-out infinite;}
@@ -5232,7 +5271,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             <L to="search">{t('footer.browse')}</L>
             <L to="actor-toolkit">{t('footer.actorToolkit')}</L>
             <L to="manager-mode">{t('footer.managerMode')}</L>
-            <L to="agency-directory">Talent Agency Directory</L>
+            <L to="agency-directory">Agencies Directory</L>
             {(typeof window==="undefined"||window.__SC_CLASSES_ON!==false)&&<L to="classes">{t('footer.classes')}</L>}
             <L to="resources">{t('footer.resources')}</L>
           </div>
@@ -8511,7 +8550,36 @@ function AgdCard({c,k}){
     </div>
   </div>);
 }
+function useAgdDeal(){
+  const ref=React.useRef(null);
+  React.useEffect(()=>{
+    const fan=ref.current; if(!fan) return;
+    let done=false,cards=[],t=0,poll=0;
+    const settle=()=>{ if(done) return; done=true;
+      fan.classList.remove("playing"); fan.classList.add("settled"); };
+    const onEnd=(()=>{ let n=0; return ()=>{ if(++n>=cards.length) settle(); }; })();
+    const start=()=>{
+      fan.classList.add("playing");
+      cards=[...fan.querySelectorAll(".agdc")];
+      cards.forEach(c=>c.addEventListener("animationend",onEnd));
+      t=setTimeout(settle,2600);   // safety net: animationend may never fire
+    };
+    // A direct landing on /agency-directory plays the entry curtain over the
+    // whole page for ~2s. Dealing the cards underneath it means nobody ever
+    // sees the deal, so we wait for #cs-intro to be torn down first. Arriving
+    // by in-app nav there is no curtain and this starts on the next tick.
+    const waitForCurtain=(t0=>function w(){
+      if(!document.getElementById("cs-intro")||Date.now()-t0>6000){ start(); return; }
+      poll=setTimeout(w,80);
+    })(Date.now());
+    poll=setTimeout(waitForCurtain,60);
+    return ()=>{ clearTimeout(t); clearTimeout(poll);
+      cards.forEach(c=>c.removeEventListener("animationend",onEnd)); };
+  },[]);
+  return ref;
+}
 function AgencyDirectoryPage({onNavigate,isPremium=false}){
+  const fanRef=useAgdDeal();
   // Phone heights are a separate set, not a CSS scale: shrinking all six by the
   // same factor puts Disney's script under 20px, where it stops reading.
   const isNarrow=useViewportWidth()<560;
@@ -8535,7 +8603,7 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
             <button className="agd-btn line" onClick={()=>{const el=document.getElementById("agd-inside");if(el)el.scrollIntoView({behavior:"smooth",block:"start"});}}>See what's inside ↓</button>
           </div>
         </div>
-        <div className="agd-fan">
+        <div className="agd-fan" ref={fanRef}>
           {AGD_CARDS.map((c,i)=><AgdCard key={c.slug} c={c} k={"k"+(i+1)}/>)}
         </div>
       </div>
