@@ -88,7 +88,7 @@ const TRANSLATIONS = {
     'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.tapelink':'TapeLink','nav.agencyDirectory':'Talent Agencies',
     // Footer
     'footer.backToTop':'Back to top',
-    'footer.blurb':'The casting platform built for working actors. Every submission gets seen — guaranteed. Free accounts included — upgrade to Premium (from $8.25/mo) for unlimited submissions, Slate Video, Business Card, Manager Mode, the Talent Agency & Manager Directory (550+ agencies and managers in LA & NYC), and more.',
+    'footer.blurb':'The casting platform built for working actors. Every submission gets seen — guaranteed. Free accounts included — upgrade to Premium (from $8.25/mo) for unlimited submissions, Slate Video, Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA & NYC), and more.',
     'footer.talent':'Talent','footer.industry':'Industry','footer.company':'Company','footer.support':'Support',
     'footer.createProfile':'Create Profile','footer.browse':'Browse Castings','footer.classes':'Classes',
     'footer.resources':'Resources','footer.successStories':'Success Stories',
@@ -2078,7 +2078,7 @@ body.sheet-push .b2t-cube{display:none;}
 .tad-gsub{font-size:12.6px;color:var(--t2);line-height:1.55;margin:0 0 11px;max-width:780px;}
 .tad-rows{display:grid;gap:10px;}
 /* content-visibility lets the browser skip layout and paint for rows scrolled out of
-   view. With ~570 agencies the first frame of the slide-in was competing with laying
+   view. With ~660 agencies the first frame of the slide-in was competing with laying
    out the entire list, which showed up as a hitch right at the start of the animation.
    contain-intrinsic-size keeps the scrollbar honest for the skipped rows. */
 .tad-row{content-visibility:auto;contain-intrinsic-size:auto 132px;background:var(--s1);border:1px solid var(--bdr);border-radius:13px;padding:15px 17px;display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start;}
@@ -3924,7 +3924,7 @@ const PREMIUM_SHARED_FEATURES=[
   ["Actor Slate Video","— 7-sec intro"],
   ["Actor cards with QR","business, postcard & agent promo"],
   ["Manager Mode","weekly check-ins"],
-  ["Talent Agency & Manager Directory","550+ in LA & NYC"],
+  ["Talent Agency & Manager Directory","650+ in LA & NYC"],
   ["Cancel anytime","from your account"]
 ];
 
@@ -3951,7 +3951,7 @@ const PLAN_EXCLUSIVES={
 const FREE_PLAN={headshotsTotal:1,additionalPhotos:0,videos:0,submissionsPerWeek:1,castingTypes:2,castingMoodClips:0,castingSupportingPhotos:0};
 const PREMIUM_PLAN={headshotsTotal:Infinity,additionalPhotos:Infinity,videos:Infinity,submissionsPerWeek:Infinity,castingTypes:Infinity,castingMoodClips:1,castingSupportingPhotos:3};
 const PREMIUM_PRICE="from $8.25/month";
-const UPGRADE_MSG=`You've used your ${FREE_PLAN.submissionsPerWeek===1?"free submission":`${FREE_PLAN.submissionsPerWeek} free submissions`} for this week. Upgrade to Premium for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (550+ agencies and managers in LA & NYC), and more.`;
+const UPGRADE_MSG=`You've used your ${FREE_PLAN.submissionsPerWeek===1?"free submission":`${FREE_PLAN.submissionsPerWeek} free submissions`} for this week. Upgrade to Premium for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA & NYC), and more.`;
 // Most recent Monday 6:00 AM America/New_York as a Date — the point free submissions reset each week.
 function weeklyResetStart(){
   const now=new Date();
@@ -4435,7 +4435,7 @@ function ActivateMembershipBanner({myProfile,session,page,onNavigate}){
     <span className="mb-sheen" aria-hidden="true"></span>
     <span className="mb-msg">
       <span className="mb-star" aria-hidden="true"><Ico n="star" s={17}/></span>
-      <span className="mb-text-full">Get seen more — unlock unlimited submissions, Slate Video, Business Card, Manager Mode &amp; the 550+ agency directory</span>
+      <span className="mb-text-full">Get seen more — unlock unlimited submissions, Slate Video, Business Card, Manager Mode &amp; the 650+ agency directory</span>
       <span className="mb-text-short">Unlock unlimited submissions</span>
     </span>
   </div>);
@@ -4535,7 +4535,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
     <div className="section-label">Membership</div>
     <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1.2,marginBottom:8}}>Pick your plan.</h1>
     <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>
-      Free actors can submit to {FREE_PLAN.submissionsPerWeek} {FREE_PLAN.submissionsPerWeek===1?"casting":"castings"} per week and upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card with QR code, Manager Mode weekly career check-ins, and the Talent Agency &amp; Manager Directory — 550+ talent agencies and management companies in LA &amp; New York.
+      Free actors can submit to {FREE_PLAN.submissionsPerWeek} {FREE_PLAN.submissionsPerWeek===1?"casting":"castings"} per week and upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card with QR code, Manager Mode weekly career check-ins, and the Talent Agency &amp; Manager Directory — 650+ talent agencies and management companies in LA &amp; New York.
 </p>
     {/* Shared value band. Every plan carries the same features, so they are
         stated once here instead of three times inside the cards. */}
@@ -6059,15 +6059,15 @@ const FAQ_CATEGORIES=[
   {id:"getting-started",label:"Getting Started",icon:"movie",blurb:"Creating your account, first steps, and how CastSlate works.",items:[
     {q:"What is CastSlate?",a:"CastSlate is a casting platform built for working actors. Free profiles, an active membership only when you're ready to submit, and a swipe-based review system that guarantees every submission gets seen one at a time — not buried in a grid of 200 headshots."},
     {q:"Is CastSlate actually live?",a:"Yes. The platform is live and active. Casting directors are posting roles, talent are submitting, and conversations are happening in the inbox right now."},
-    {q:"Do I need a membership to create a profile?",a:"No. Profiles are free for everyone. Free actors can submit to 1 casting per week. Premium is $99 a year ($8.25/month) and stays $99 every year, or $14.95/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 550+ talent agencies and management companies in Los Angeles and New York."},
+    {q:"Do I need a membership to create a profile?",a:"No. Profiles are free for everyone. Free actors can submit to 1 casting per week. Premium is $99 a year ($8.25/month) and stays $99 every year, or $14.95/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York."},
     {q:"Where is CastSlate available?",a:"Anywhere with a browser. Castings are organised by city, so you'll see roles in your market — but creating a profile and browsing castings works from anywhere."},
-    {q:"How do I get started as an actor?",a:"Create a free account, upload a headshot, fill out your stats, and add a short bio. Then browse Open Castings and apply. Free accounts can submit to 1 casting per week. Premium is $99 a year ($8.25/month) and stays $99 every year, or $14.95/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 550+ talent agencies and management companies in Los Angeles and New York."},
+    {q:"How do I get started as an actor?",a:"Create a free account, upload a headshot, fill out your stats, and add a short bio. Then browse Open Castings and apply. Free accounts can submit to 1 casting per week. Premium is $99 a year ($8.25/month) and stays $99 every year, or $14.95/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York."},
     {q:"How do I get started as a casting director or producer?",a:"Create a free industry account, then click 'Post a Casting' from your dashboard. Submit your casting for free — it goes live after admin approval."}
   ]},
   {id:"talent-profiles",label:"Talent Profiles",icon:"user",blurb:"Headshots, stats, bio, reel — building a profile that gets callbacks.",items:[
     {q:"What should I put in my talent profile?",a:"A current headshot (within the last 18 months), accurate stats, a 2-3 sentence bio with your training and strongest types, your three most recent credits with years, and one current piece of footage. Special skills only if you can perform them on demand."},
     {q:"What size should my headshot be?",a:"At least 800×1000 pixels, JPG or PNG, with your face filling about 60% of the frame. Natural or soft studio lighting and a simple background read best."},
-    {q:"Can I have multiple headshots?",a:"Free accounts include 1 headshot. Premium accounts (from $8.25/month on the yearly plan) include a main headshot plus unlimited gallery photos, unlimited video uploads, Actor Slate Video, Actor Business Card with QR code, Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 550+ talent agencies and management companies in Los Angeles and New York. Your main headshot is separate from the gallery. You choose which photo to attach to each submission."},
+    {q:"Can I have multiple headshots?",a:"Free accounts include 1 headshot. Premium accounts (from $8.25/month on the yearly plan) include a main headshot plus unlimited gallery photos, unlimited video uploads, Actor Slate Video, Actor Business Card with QR code, Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York. Your main headshot is separate from the gallery. You choose which photo to attach to each submission."},
     {q:"What goes in the bio?",a:"Two to three sentences. Lead with your training, then your strongest types, then any genuine differentiator. Avoid generic 'I love acting' lines — CDs skip past them."},
     {q:"How do I add my reel?",a:"Edit your profile and paste a YouTube or Vimeo URL into the Reel field. We embed it automatically. Keep reels under two minutes and lead with your strongest, most recent work."},
     {q:"How do I update my profile later?",a:"My Profile → Edit Profile. Changes save instantly. Casting directors see your latest version on every submission, including ones you've already sent."}
@@ -6089,7 +6089,7 @@ const FAQ_CATEGORIES=[
     {q:"What if I need to edit a casting after it's posted?",a:"You can edit the breakdown, role specs, and deadline at any time from the dashboard. Already-submitted talent are notified of any changes that affect their submission."}
   ]},
   {id:"payments",label:"Payments & Membership",icon:"credit-card",blurb:"Talent membership, casting fees, and billing.",items:[
-    {q:"How much does the talent membership cost?",a:"Actor accounts are free — you can create a profile and submit to 1 casting per week at no cost. Premium is $99 a year ($8.25/month), and it stays $99 every year — we do not discount your first year and raise it later. Prefer monthly? $14.95/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 550+ talent agencies and management companies in Los Angeles and New York."},
+    {q:"How much does the talent membership cost?",a:"Actor accounts are free — you can create a profile and submit to 1 casting per week at no cost. Premium is $99 a year ($8.25/month), and it stays $99 every year — we do not discount your first year and raise it later. Prefer monthly? $14.95/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York."},
     {q:"How much does it cost to post a casting?",a:"Casting posts are free. Create a free industry account and submit your casting breakdown. It goes live after admin review and approval."},
     {q:"Are payments refundable?",a:"Membership fees are non-refundable except where required by law, but cancelled memberships continue until the end of the period you've already paid for. Casting post fees are non-refundable once the casting is published."},
     {q:"What payment methods do you accept?",a:"All major credit and debit cards. Payments are processed securely by our payment provider — CastSlate never stores your card details."},
@@ -7647,7 +7647,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
               <div style={{fontSize:11.5,color:"var(--t3)",marginTop:7}}>Prefer monthly? ${MEMBERSHIP_PLANS.monthly.monthly.toFixed(2)}/month, flat — no introductory rate that goes up.</div>
             </div>
             <div style={{flex:1}}>
-              {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Actor Slate Video — 7-sec intro','Actor Business Card with QR code','Mailing postcard & agent promo card','Manager Mode weekly career check-ins','Talent Agency & Manager Directory — 550+ in LA & NYC'].map(f=>feat(f,"var(--acc)"))}
+              {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Actor Slate Video — 7-sec intro','Actor Business Card with QR code','Mailing postcard & agent promo card','Manager Mode weekly career check-ins','Talent Agency & Manager Directory — 650+ in LA & NYC'].map(f=>feat(f,"var(--acc)"))}
             </div>
             {isPremium
               ?<button className="btn-teal" style={{width:"100%",height:44,borderRadius:10,marginTop:24}} onClick={()=>onNavigate("membership")}>Manage Plan →</button>
@@ -7697,7 +7697,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
           {featureRow("Actor Business Card (with QR code)","no","yes")}
           {featureRow("Mailing postcard & agent promo card","no","yes")}
           {featureRow("Manager Mode","no","yes")}
-          {featureRow("Talent Agency & Manager Directory (550+, LA & NYC)","no","yes")}
+          {featureRow("Talent Agency & Manager Directory (650+, LA & NYC)","no","yes")}
           {featureRow("Price",t('pricing.freeLabel'),PREMIUM_PRICE)}
         </div>
       </div>
@@ -8522,7 +8522,7 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
       <section className="agd-hero"><div className="agd-hero-grid">
         <div>
           <div className="agd-eyebrow"><span className="d"/>Included with Premium</div>
-          <h1 className="agd-h1">550+ talent agencies and management companies, and how to reach each one.</h1>
+          <h1 className="agd-h1">650+ talent agencies and management companies, and how to reach each one.</h1>
           <div className="agd-cities">
             <span className="agd-city la">Los Angeles</span>
             <span className="agd-city bh">Beverly Hills</span>
@@ -8568,8 +8568,8 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
     </div>
 
     <div className="agd-wrap"><div className="agd-stats">
-      <div className="agd-stat"><div className="v">292</div><div className="l">Talent agencies</div></div>
-      <div className="agd-stat"><div className="v">258</div><div className="l">Management companies</div></div>
+      <div className="agd-stat"><div className="v">354</div><div className="l">Talent agencies</div></div>
+      <div className="agd-stat"><div className="v">309</div><div className="l">Management companies</div></div>
       <div className="agd-stat"><div className="v">8</div><div className="l">Fields on each</div></div>
       <div className="agd-stat"><div className="v">LA + NY</div><div className="l">Both coasts</div></div>
     </div></div>
@@ -8578,7 +8578,7 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
       <div>
         <div className="section-label">What's behind the lock</div>
         <h2 className="agd-h2">Every company, and how to actually approach it.</h2>
-        <p className="agd-sub">A list of names is worthless — you already know the big agencies. What you don't know is which of them will open an envelope from an actor they've never heard of. These are the fields held on all 550.</p>
+        <p className="agd-sub">A list of names is worthless — you already know the big agencies. What you don't know is which of them will open an envelope from an actor they've never heard of. These are the fields held on all 663.</p>
         <button className="agd-btn gold" onClick={go}>{cta}</button>
       </div>
       <div className="agd-marq"><div className="agd-marq-in">
@@ -8601,7 +8601,7 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
         ))}
         <div className="agd-lock">
           <div className="agd-lockwrap"><span className="agd-ring"/><span className="agd-ring r2"/><span className="agd-key">🔒</span></div>
-          <h4>550+ companies unlock with Premium</h4>
+          <h4>650+ companies unlock with Premium</h4>
           <p>Names, office addresses, websites and submission routes.</p>
           <button className="agd-btn gold" onClick={go} style={{padding:"13px 25px",fontSize:14}}>{isPremium?"Open the directory":"Unlock the directory"}</button>
         </div>
@@ -8649,7 +8649,7 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
       </section>
       <section className="agd-blk" style={{paddingTop:0}}><div className="agd-final">
         <h2 className="agd-h2">The list opens the moment you upgrade.</h2>
-        <p>550+ talent agencies and management companies across Los Angeles, Beverly Hills and New York — plus your Actor Business Card, unlimited submissions, Manager Mode and your Slate video.</p>
+        <p>650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York — plus your Actor Business Card, unlimited submissions, Manager Mode and your Slate video.</p>
         <button className="agd-btn gold" onClick={go}>{isPremium?"Open the directory":"Go Premium — $14.95/mo"}</button>
         <div className="agd-guarantee">Cancel any time · $99/year if you'd rather pay once</div>
       </div></section>
@@ -12884,6 +12884,7 @@ const TALENT_AGENCIES=[
   //    location or a presence on both coasts are classified here. ──
   {n:"A3 Artists Agency",t:"medium",c:["LA","NY"],v:0,s:"form",note:"Formerly Abrams Artists, founded 1977. Broad roster across film, TV, theatre, voice-over and hosting. Two different addresses are in circulation for both offices — we are not publishing one until we know which is live. A3 and APA now operate as IAG / Independent Artist Group, and neither appears on SAG-AFTRA's current franchised list. The old a3artistsagency.com domain has lapsed and now resolves to an unrelated website, so no link is shown — see the IAG entry.",a:[]},
   {n:"About Artists Agency",sag:1,t:"medium",c:["NY"],v:1,s:"check",w:"aboutartistsagency.com",note:"SAG-AFTRA franchised NY agency covering actors, comedians, commercials, daytime, dance, hosting and theatre. The ZIP matches SAG-AFTRA's New York 10019 listing · (212) 581-1857.",a:[["New York","1650 Broadway, Room 1406, New York, NY 10019"]]},
+  {n:"Acquire Entertainment Group",t:"medium",c:["LA","NY"],v:1,s:"check",w:"acquireentertainmentgroup.com",note:"Talent agency with Los Angeles and New York offices. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["Los Angeles","110 East 9th Street, #B12, Los Angeles, CA 90079"],["New York","535 Fifth Avenue, 4th Floor, New York, NY 10017"]]},
   {n:"AEFH (Amsel, Eisenstadt, Frazier & Hinojosa)",sag:1,t:"medium",c:["LA"],v:1,s:"mail",w:"aefhtalent.com",pc:1,note:"Long-established LA agency with adult theatrical, commercial and youth desks. Accepts mail AND postcards and invitations — appointment only, no drop-offs.",a:[["Los Angeles","5055 Wilshire Blvd #865, Los Angeles, CA 90036"]]},
   {n:"Affinity Artists Agency",sag:1,t:"medium",c:["LA","NY"],v:1,s:"check",w:"affinityartists.com",note:"Represents actors, theatrical, TV, commercials and children. The agency publishes Los Angeles and New York office details.",a:[["Los Angeles","5455 Wilshire Blvd, Suite 1010, Los Angeles, CA 90036"],["New York","67 West St, 4th Floor, Suite 32, Brooklyn, NY 11222"]]},
   {n:"Ann Steele Agency",sag:1,t:"medium",c:["NY"],v:0,s:"no",note:"Union performers only, legit and commercial. They work from referral. SAG-AFTRA's record lists the 10032 zip rather than 10036 — address withheld pending re-confirmation.",a:[]},
@@ -12912,16 +12913,21 @@ const TALENT_AGENCIES=[
   {n:"Ellis Talent Group",sag:1,t:"medium",c:["LA"],v:1,s:"no",w:"ellistalentgroup.com",note:"Well-regarded LA theatrical agency. They work from industry referral.",a:[["Los Angeles","4705 Laurel Canyon Blvd, Suite 300, Los Angeles, CA 91607"]]},
   {n:"Eris Talent Agency",sag:1,t:"medium",c:["LA"],v:1,s:"form",w:"eristalentagency.com",note:"Woman-owned full-service boutique founded 2017, with New York, Atlanta and Mexico City offices behind the Sherman Oaks base. Actors, writers, directors, VO and comedians. No unsolicited literary material.",a:[["Sherman Oaks","15303 Ventura Blvd, Suite 900, Sherman Oaks, CA 91403"]]},
   {n:"Firestarter Entertainment (Los Angeles)",sag:1,t:"medium",c:["LA","NY"],v:1,s:"check",w:"firestarterentertainment.com",note:"Represents actors across theatrical, television, commercial and youth work. Its official site publishes Los Angeles and New York offices.",a:[["Los Angeles","21550 Oxnard St, Suite 300, Woodland Hills, CA 91367"],["New York","521 5th Ave, 17th Floor, New York, NY 10175"]]},
+  {n:"Ford Models",t:"medium",c:["LA","NY"],v:1,s:"check",w:"fordmodels.com",note:"Talent agency with West Hollywood and New York offices. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["West Hollywood","9200 Sunset Blvd, Ste 805, West Hollywood, CA 90069"],["New York","11 East 26th Street, 14th Floor, New York, NY 10010"]]},
   {n:"Gray Talent Group, Inc. (Los Angeles)",sag:1,t:"medium",c:["LA","NY"],v:1,s:"check",w:"graytalentgroup.com",note:"Represents actors across theatrical, television, commercial and youth work. Its official contact page publishes Los Angeles and New York offices.",a:[["Los Angeles","8721 Sunset Blvd, Suite 103, West Hollywood, CA 90069"],["New York","106 W 32nd St, 2nd Floor, New York, NY 10001"]]},
   {n:"Greene & Associates",t:"medium",c:["LA"],v:1,s:"no",note:"Century City theatrical agency. They work from industry referral. NOTE: this agency does not appear on SAG-AFTRA's current franchised list.",a:[["Los Angeles","1901 Avenue of the Stars, Suite 130, Los Angeles, CA 90067"]]},
   {n:"HCKR (Harden Curtis Kirsten Riley)",sag:1,t:"medium",c:["NY"],v:1,s:"mail",w:"hckragency.com",note:"Serious Broadway and theatrical agency. Headshot and resume by mail only — no unsolicited reels, interviews by appointment, no calls and no drop-offs. You can email HCKR@hckragency.com to ask first.",a:[["New York","214 W 29th St, Suite 1203, New York, NY 10001"]]},
   {n:"Headline Talent Agency",sag:1,t:"medium",c:["NY"],v:0,s:"check",w:"headline.agency",note:"NY agency covering actors, animation, children, daytime, dance, musical artists, new media, Spanish language, seniors, theatre and TV. Listed at NY 10152, (212) 257-6110.",a:[]},
   {n:"Henderson/Hogan Agency",sag:1,t:"medium",c:["NY"],v:0,s:"check",w:"hendersonhogan.com",note:"Established NY theatrical agency — actors, animation, daytime, industrials, theatre and TV. Listed at NY 10018, (212) 765-5190.",a:[]},
+  {n:"IMG Models",t:"medium",c:["LA","NY"],v:1,s:"check",w:"imgmodels.com",note:"Talent agency with New York and Los Angeles offices. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["New York","304 Park Ave South, Penthouse North, New York, NY 10010"],["Los Angeles","8201 Beverly Blvd., Suite 600, Los Angeles, CA 90048"]]},
   {n:"Innovative Artists",sag:1,t:"medium",c:["LA","NY"],v:1,s:"form",w:"innovativeartists.com",note:"Bicoastal, founded 1982. Strong theatrical and youth divisions. Wants a reel and real credits.",a:[["Santa Monica","1505 10th St, Santa Monica, CA 90401"],["New York","235 Park Ave South, 10th Floor, New York, NY 10003"]]},
   {n:"Integral Artists",t:"medium",c:["LA"],v:1,s:"check",w:"integralartists.com",note:"Talent agency representing film and television actors, with offices in Los Angeles, Toronto and Vancouver.",a:[["Los Angeles","15760 Ventura Blvd, Suite 820, Los Angeles, CA 91436-3000"]]},
   {n:"International Artists Management",t:"medium",c:["LA"],v:1,s:"check",w:"internationalartistsmanagement.co.uk",note:"International talent agency representing actors, creatives and voice performers, with a Los Angeles office.",a:[["Los Angeles","137 N Larchmont Blvd, Suite 154, Los Angeles, CA 90004"]]},
+  {n:"IP Agency",t:"medium",c:["LA","NY"],v:1,s:"check",w:"ipagency.com",note:"Talent agency with Los Angeles and New York offices. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["Los Angeles","1999 Avenue Of The Stars, Los Angeles, CA 90067"],["New York","1500 Broadway, New York, NY 10036"]]},
+  {n:"The Kohner Agency",sag:1,t:"medium",c:["LA"],v:1,s:"check",w:"kohneragency.com",note:"Founded in the late 1930s — the second-oldest talent agency in Los Angeles. A small, selective boutique. They don't publish a submission policy, so check with them before sending anything.",a:[["Beverly Hills","9300 Wilshire Blvd, Suite 555, Beverly Hills, CA 90212"]]},
   {n:"Mavrick Artists Agency",sag:1,t:"medium",c:["LA"],v:1,s:"form",w:"mavrickagency.com",note:"Film, TV, commercial, commercial print and voice-over, plus a fashion division. Actor submissions come through subscriber services rather than the inbox — the public email is for fashion only.",a:[["Beverly Hills","8383 Wilshire Blvd, Suite 330, Beverly Hills, CA 90211"]]},
   {n:"McDonald/Selznick Associates, Inc. (Los Angeles)",sag:1,t:"medium",c:["LA","NY"],v:1,s:"check",w:"msaagency.com",note:"Represents actors, dancers, choreographers and directors. Its official site publishes Los Angeles and New York offices.",a:[["Los Angeles","4111 W Alameda Ave, Suite 505, Burbank, CA 91505"],["New York","8 W 38th St, #1201, New York, NY 10018"]]},
+  {n:"Next Management",t:"medium",c:["LA","NY"],v:1,s:"check",w:"nextmanagement.com",note:"Talent agency with New York and Beverly Hills offices. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["New York","40 Fulton St, 6th Fl, New York, NY 10038"],["Beverly Hills","8447 Wilshire Blvd, Penthouse, Beverly Hills, CA 90211"]]},
   {n:"Nicolosi & Co.",sag:1,t:"medium",c:["NY"],v:1,s:"email",w:"nicolosi-co.com",note:"Est. 2002. Well-respected NY film, TV and theatre boutique. Email first to ask about the submission process.",a:[["New York","150 W 25th St, Suite 1200, New York, NY 10001"]]},
   {n:"NTA Talent Agency",t:"medium",c:["LA","NY"],v:1,s:"check",w:"ntatalent.com",note:"Bi-coastal talent agency representing film and television actors and other performers.",a:[["Beverly Hills","8383 Wilshire Blvd, Suite 800, Beverly Hills, CA 90211"],["New York","1441 Broadway, Suite 5004, New York, NY 10018"]]},
   {n:"Osbrink Talent Agency",sag:1,t:"medium",c:["LA"],v:1,s:"mail",w:"osbrinkagency.com",note:"Strong youth and commercial divisions. Mail a current headshot and resume. Recently relocated — address re-confirmed June 2026.",a:[["Burbank","2222 W Olive Ave, Burbank, CA 91506"]]},
@@ -12935,15 +12941,16 @@ const TALENT_AGENCIES=[
   {n:"Take 3 Talent",sag:1,t:"medium",c:["NY"],v:1,s:"form",w:"take3talent.com",note:"Leading NYC agency for children, teens and adults across TV, film, theatre and voice-over. Web form only — but they do read them.",a:[["New York","1411 Broadway, 16th Floor, New York, NY 10018"]]},
   {n:"Talent House Agency",sag:1,t:"medium",c:["NY"],v:1,s:"no",note:"Adults 18+, legit theatre focus. Union members, and referral is the usual route in.",a:[["New York","311 W 43rd St, Suite 602, New York, NY 10036"]]},
   {n:"TalentWorks",sag:1,t:"medium",c:["LA"],v:1,s:"mail",w:"talentworksla.com",pc:1,note:"Over 30 years in business, strong theatre and musical-theatre reputation. Mail only — and they accept postcards and showcase invitations.",a:[["Burbank","3500 W Olive Ave, Suite 1400, Burbank, CA 91505"]]},
-  {n:"The Kohner Agency",sag:1,t:"medium",c:["LA"],v:1,s:"check",w:"kohneragency.com",note:"Founded in the late 1930s — the second-oldest talent agency in Los Angeles. A small, selective boutique. They don't publish a submission policy, so check with them before sending anything.",a:[["Beverly Hills","9300 Wilshire Blvd, Suite 555, Beverly Hills, CA 90212"]]},
   {n:"Universal Attractions Agency, INC. (Los Angeles)",sag:1,t:"medium",c:["LA","NY"],v:1,s:"check",w:"uaagency.com",note:"A full-service talent agency with a long operating history. Its official contact page publishes Los Angeles and New York offices.",a:[["Los Angeles","21650 W Oxnard St, Suite 1460, Woodland Hills, CA 91367"],["New York","15 W 36th St, 8th Floor, New York, NY 10018"]]},
   {n:"Wolf Talent Group",sag:1,t:"medium",c:["NY"],v:0,s:"check",w:"wolftalentgroup.net",note:"NY agency for actors, animation, daytime, dance, musical artists, radio, seniors, theatre and TV. Listed at NY 10036, (212) 840-6787.",a:[]},
   // ── SMALL & BOUTIQUE — open to beginners. Includes the SAG-AFTRA franchised
   //    offices that carry no published size; single-office houses land here. ──
+  {n:"33 and West",t:"small",c:["LA"],v:1,s:"check",w:"33andwest.com",note:"Los Angeles talent agency. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["Los Angeles","714 West Olympic Blvd, Suite 1000, Los Angeles, CA 90015"]]},
   {n:"90210 Talent Group",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"90210talent.com",note:"Represents actors, theatrical, TV, commercials and children. IMDbPro lists its Woodland Hills office.",a:[["Los Angeles","6250 Canoga Ave, Suite 539, Woodland Hills, CA 91367"]]},
   {n:"ABA Talent Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"abatalent.com",note:"Represents actors, theatrical, TV, commercials and children. Its website publishes this Beverly Hills mailing address.",a:[["Los Angeles","9701 Wilshire Blvd, 10th Floor, Beverly Hills, CA 90212"]]},
   {n:"Abstract Talent, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Van Nuys 91406 · (818) 997-2875.",a:[["Van Nuys","7111 Hayvenhurst Ave, Van Nuys, CA 91406"]]},
   {n:"AC Talent Agency LLC (SAG Only)",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"actalentagency.com",note:"Represents theatrical talent. IMDbPro lists its Beverly Hills office and general contact email.",a:[["Los Angeles","8447 Wilshire Blvd, Penthouse, Beverly Hills, CA 90211"]]},
+  {n:"Act One Talent",t:"small",c:["LA"],v:1,s:"check",w:"actonetalent.com",note:"Los Angeles talent agency. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Los Angeles","23890 Copper Hill Rd, #236, Los Angeles, CA 91354"]]},
   {n:"Activity",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents actors, theatrical, TV, commercials and children. California business records list this Sherman Oaks office.",a:[["Los Angeles","14859 Moorpark St, Suite 305, Sherman Oaks, CA 91403"]]},
   {n:"Adunni Rose Talent Agency, LLC",sag:1,t:"small",c:["NY"],v:1,s:"check",w:"adunnirosetalent.com",note:"Represents actors, theatrical, TV, commercials and children. This address is published on the agency's own contact page and matches SAG-AFTRA's New York 10036 listing. New York only — no Los Angeles office, though they represent performers nationally.",a:[["New York","120 West 45th St, 21st Floor, New York, NY 10036"]]},
   {n:"AE Talent Agency (Los Angeles)",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"aetalentagency.com",note:"Represents actors, theatrical, TV, commercials and children. The agency publishes direct agent emails but no street address.",a:[]},
@@ -12954,6 +12961,7 @@ const TALENT_AGENCIES=[
   {n:"Alkeme Artists Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"alkeme.com",note:"Represents actors, TV, commercials and musical artists. The agency identifies itself as Los Angeles-based but does not publish a street address.",a:[["Malibu","23465 Civic Center Way, #9, Malibu, CA 90265"]]},
   {n:"Allegory Creative Talent, LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"allegorytalent.com",note:"Represents actors, theatrical, TV, commercials and children. Its website publishes this Sherman Oaks office.",a:[["Los Angeles","13261 Moorpark St, Suite 103, Sherman Oaks, CA 91423"]]},
   {n:"Almond Talent Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"almondtalent.com",note:"Represents actors, theatrical, TV, commercials and children. Its website publishes this Beverly Hills mailing address.",a:[["Los Angeles","PO Box 17077, Beverly Hills, CA 90210"]]},
+  {n:"Alvarado Rey Agency",t:"small",c:["LA"],v:1,s:"check",w:"alvaradorey.com",note:"Los Angeles talent agency. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Los Angeles","7080 Hollywood Blvd #700, Los Angeles, CA 90028"]]},
   {n:"American Artists Agency LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"americanartistagency.com",note:"Represents actors, theatrical, TV, commercials and children. California business records list this Los Angeles mailing address.",a:[["Los Angeles","5665 W Wilshire Blvd, #1276, Los Angeles, CA 90036"]]},
   {n:"AMK Hollywood Talent Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"amkhollywood.com",note:"Represents theatrical talent. Its website publishes its Los Angeles office and a separate Glendale post-office box.",a:[["Los Angeles","2223 W Colorado Blvd, Los Angeles, CA 90041"]]},
   {n:"Amsel, Eisenstadt, Frazier, & Hinojosa, Inc. / Pinnacle Talent",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"aefhtalent.com",note:"Represents actors, theatrical, TV, commercials and children. This roster record shares the verified AEFH office already listed in the directory.",a:[["Los Angeles","5055 Wilshire Blvd, Suite 865, Los Angeles, CA 90036"]]},
@@ -12962,13 +12970,16 @@ const TALENT_AGENCIES=[
   {n:"Aqua, LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"aquatalent.com",note:"Represents actors, theatrical, TV, commercials and children. Its website publishes this West Hollywood office.",a:[["Los Angeles","9000 Sunset Blvd, Suite 700, West Hollywood, CA 90069"]]},
   {n:"Arcieri & Associates, Inc",sag:1,t:"small",c:["NY"],v:1,s:"check",w:"arcieritalent.com",note:"Represents actors, theatrical, commercials, voice-over and animation. Address from the agency's own home page; the phone matches SAG-AFTRA's listing digit-for-digit. An older page on the same site still shows 305 Madison Ave — this Ninth Ave office is the current one · (212) 286-1700.",a:[["New York","630 Ninth Ave, Suite 415, New York, NY 10036"]]},
   {n:"Arrowheart Talent Agency LLC, The",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents actors, theatrical, TV, commercials and children. The agency publishes this Santa Monica office.",a:[["Los Angeles","401 Wilshire Blvd, 12th Floor, Santa Monica, CA 90401"]]},
+  {n:"Artist & Brand Management",t:"small",c:["LA"],v:1,s:"check",w:"artistandbrand.com",note:"Los Angeles talent agency. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["Los Angeles","100 North Irving Boulevard, Los Angeles, CA 90004"]]},
   {n:"Artistic Talent",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"artistictalentla.com",note:"Represents actors, theatrical, TV, commercials and daytime drama. The agency website does not publish a complete street address.",a:[["Lake Balboa","17216 Saticoy St, #312, Lake Balboa, CA 91406"]]},
+  {n:"Artistry",t:"small",c:["LA"],v:1,s:"check",w:"artistry.net",note:"Los Angeles talent agency. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Los Angeles","328 South La Brea Avenue, Suite 3 & 4, Los Angeles, CA 90036"]]},
   {n:"Artists Among Us",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"artistsamongus.co",note:"Represents actors, theatrical, TV, commercials and children. Its website publishes this Long Beach mailing address.",a:[["Los Angeles","4508 Atlantic Ave, #761, Long Beach, CA 90807"]]},
   {n:"Artium Talent, LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents theatrical, TV, commercials and voice-over. California business records list this Santa Monica office.",a:[["Los Angeles","1327 Ocean Ave, Suite B, Santa Monica, CA 90401"]]},
   {n:"ASAP Talent Agency (Los Angeles)",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"asaptalentagency.com",note:"Represents actors, theatrical, TV, commercials and children. Its website invites mail or email submissions to the Valencia office.",a:[["Los Angeles","27955 Smyth Dr, Suite 103, Valencia, CA 91355"]]},
   {n:"Aston Models and Talent",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"astonmodels.com",note:"Represents actors, commercials, voice-over, models and industrials. The agency publishes this Beverly Hills office.",a:[["Los Angeles","328 S Beverly Dr, Suite A, Beverly Hills, CA 90212"]]},
   {n:"Avail Talent LA",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"availtalent.com",note:"Represents actors, theatrical, TV, commercials and children. Its website publishes this Whittier office.",a:[["Los Angeles","12501 Philadelphia St, #109, Whittier, CA 90601"]]},
   {n:"Avant Artists LLC (AFTRA Only)",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"avantartists.com",note:"Represents actors, TV, commercials, children and daytime drama. Its website publishes this Woodland Hills office.",a:[["Los Angeles","21255 Burbank Blvd, Suite 120, Woodland Hills, CA 91367"]]},
+  {n:"Avenue Actor Agency",t:"small",c:["LA"],v:1,s:"check",w:"avenueactoragency.com",note:"North Hollywood talent agency. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["North Hollywood","12435 Oxnard Street, North Hollywood, CA 91606"]]},
   {n:"AVO Talent, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"avotalent.com",note:"Represents commercials and voice-over. Its current California filing and website identify this Wilshire Boulevard office.",a:[["Los Angeles","5482 Wilshire Blvd, Suite 1905, Los Angeles, CA 90036"]]},
   {n:"Axis Artists LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"axisartistsagency.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Marina Del Rey 90292 · (310) 272-4009.",a:[["Marina Del Rey","13909 Old Harbor Ln, 103, Marina Del Rey, CA 90292"]]},
   {n:"Backlot Talent Agency, LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"backlottalentagency.com",note:"Represents actors, theatrical, commercials, daytime drama and musical artists. Its website publishes its office on the Fox Studio Lot.",a:[["Los Angeles","10201 W Pico Blvd, Fox Lot, Building 86, Suite M, Los Angeles, CA 90064"]]},
@@ -12979,18 +12990,22 @@ const TALENT_AGENCIES=[
   {n:"Berman/Sacks Talent Agency LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"bermansacks.wixsite.com/bsta",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at North Hollywood 91601 · (323) 600-3641.",a:[["North Hollywood","5308 Strohm Avenue, North Hollywood, CA 91601"]]},
   {n:"BH Talent",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"bhtalent.com",note:"Represents actors, theatrical, TV, commercials and children. Its website publishes this Encino office.",a:[["Los Angeles","16200 Ventura Blvd, Suite 208, Encino, CA 91436"]]},
   {n:"Bicoastal Talent",sag:1,t:"small",c:["LA"],v:1,s:"mail",w:"bicoastaltalent.com",note:"The commercial division takes union AND non-union talent of all ages, year-round — one of the friendliest doors in LA for a true beginner. Mail or email, not both.",a:[["Burbank","2600 W Olive Ave, Burbank, CA 91505"]]},
+  {n:"Black Apple Talent",t:"small",c:["LA"],v:1,s:"check",w:"blackappletalent.com",note:"Santa Monica talent agency. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Santa Monica","1112 Montana Ave #609, Santa Monica, CA 90403"]]},
   {n:"Bloc Agency",sag:1,t:"medium",c:["NY","LA"],v:1,s:"form",w:"blocagency.com",note:"Dancers, choreographers, singers, actors and specialty talent, both coasts. Online submission form ONLY — emailing an agent directly gets your message binned. They also hold open general auditions for dancers a few times a year, announced on their Instagram. Both offices are published on the agency's own per-city contact pages.",a:[["New York","630 Ninth Ave, Suite 702, New York, NY 10036"],["Los Angeles","1680 Vine St, Suite 600, Los Angeles, CA 90028"]]},
   {n:"Boals,Winnett and Associates",sag:1,t:"small",c:["NY"],v:1,s:"no",w:"boalswinnett.com",note:"Represents actors across theatrical, television, daytime-drama and dance work. Its official contact page publishes this New York office and states that submissions are currently closed.",a:[["New York","211 E 43rd St, Suite 614, New York, NY 10017"]]},
+  {n:"Bohn Management",t:"small",c:["LA"],v:1,s:"check",w:"bethbohn.com",note:"Los Angeles talent agency. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["Los Angeles","2658 Griffith Park Blvd, Ste 508, Los Angeles, CA 90039"]]},
   {n:"Bonafide & Emerging Artists, LLC",sag:1,t:"small",c:["NY"],v:1,s:"check",w:"beartists.com",note:"Represents diverse performers across theatrical, television and commercial work. Its official site identifies New York but does not publish a street address.",a:[["New York","500 7th Ave, 8th Floor, New York, NY 10018"]]},
   {n:"Bounty LA",t:"small",c:["LA"],v:1,s:"email",w:"bountyla.com",note:"Licensed full-service agency founded 2017, built around developing new talent — actors, athletes, models, dancers, singers and comedians. Submissions to contact@bountyla.com.",a:[["West Hollywood","750 N San Vicente Blvd, West Hollywood, CA 90069"]]},
   {n:"Brady, Brannon & Rich",sag:1,t:"small",c:["LA"],v:0,s:"mail",w:"bbrtalentagency.com",note:"On-camera commercial, industrial, hosting and print. Commercial-first agencies like this are the easiest first credit to get. SAG-AFTRA's record puts this office in the 90064 zip, not 90036 — address withheld pending re-confirmation.",a:[]},
   {n:"Bramante Artists LLC",sag:1,t:"small",c:["NY"],v:1,s:"check",w:"bramanteartists.com",note:"Represents performers for theatrical, television and commercial work. Its official site does not publish a street address.",a:[["New York","205 W 37th St, 7th Floor, New York, NY 10018"]]},
   {n:"Brand Model & Talent Agency, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"brandmodelandtalent.com",note:"Represents actors, theatrical, commercials, children and comedians. Its website publishes this Santa Ana office.",a:[["Los Angeles","601 N Baker St, Santa Ana, CA 92703"]]},
+  {n:"Brant Rose Agency",t:"small",c:["LA"],v:1,s:"check",w:"brantroseagency.com",note:"Los Angeles talent agency. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Los Angeles","6671 Sunset Blvd, Ste 1584B, Los Angeles, CA 90028"]]},
   {n:"BritMo Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"britmo.com",note:"Represents actors, theatrical, TV, commercials and children. Its website publishes this Manhattan Beach office.",a:[["Los Angeles","1230 Rosecrans Ave, Suite 300, Manhattan Beach, CA 90266"]]},
   {n:"Cali Kids Talent",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"calikidstalent.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Encino 91436 · (818) 251-3539.",a:[]},
   {n:"Career Artists International",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents theatrical, TV, commercials. Listed at Studio City 91604 · (818) 980-1315.",a:[["Studio City","11030 Ventura Blvd, Ste BI, Studio City, CA 91604"]]},
   {n:"Carlton, Goddard and Freer Talent Inc.",sag:1,t:"small",c:["NY"],v:1,s:"check",w:"cgftalent.com",note:"Represents actors, theatrical, TV, daytime drama and dancers. Street address matches SAG-AFTRA's New York 10001 listing · (212) 379-6822.",a:[["New York","352 Seventh Ave, Suite 1501, New York, NY 10001"]]},
   {n:"Carrie Macy Talent Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"carriemacytalentagency.com",note:"Represents actors, theatrical, commercials, children and comedians. Its website publishes this Beverly Hills office.",a:[["Los Angeles","9465 Wilshire Blvd, Suite 300, Beverly Hills, CA 90212"]]},
+  {n:"The Carson Kolker Organization",sag:1,t:"small",c:["NY"],v:1,s:"mail",w:"carsonkolker.com",note:"Founded 1992, represents performers of ALL ages for theatre, film and TV. Submit online or mail your materials — both work here.",a:[["New York","18 E 41st St, Room 801, New York, NY 10017"]]},
   {n:"Carson-Adler Agency",sag:1,t:"small",c:["NY"],v:1,s:"check",w:"carsonadler.com",note:"One of New York's best-known children's and young-performer agencies — actors, kids, commercials, daytime, dance, theatre, TV and voice-over. Listed at NY 10107, (212) 307-1882.",a:[["New York","250 W 57th St, Suite 2128, New York, NY 10107"]]},
   {n:"Castle Hill Enterprises",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"castlehillagency.com",note:"Represents theatrical, TV, commercials, voice-over. Listed at Los Angeles 90035 · (323) 653-3535.",a:[["Los Angeles","1101 S Orlando Ave, Los Angeles, CA 90035"]]},
   {n:"Central Artists, Inc",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"centralartists.com",note:"Represents actors, theatrical, TV, commercials and children. Its website publishes this Burbank office and accepts online or mailed submissions.",a:[["Los Angeles","1023 N Hollywood Way, Suite 102, Burbank, CA 91505"]]},
@@ -12998,8 +13013,10 @@ const TALENT_AGENCIES=[
   {n:"Cindy Romano Modeling & Talent Agency (SAG Only)",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"cindyromanotalent.com",note:"Represents theatrical. Listed at Palm Desert 92260 · (760) 323-3333.",a:[["Palm Desert","73101 Highway 111, Ste 7, Palm Desert, CA 92260"]]},
   {n:"Circle of 10 Talent",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"circleof10talent.com",note:"Represents theatrical. Listed at Tustin 92780 · (949) 701-6215.",a:[["Tustin","333 El Camino Real, Suite 200, Tustin, CA 92780"]]},
   {n:"Circle Talent Associates Talent Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"circletalent.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Santa Monica 90401 · (310) 496-4501.",a:[["Santa Monica","401 Wilshire Blvd, Suite 1200, Santa Monica, CA 90401"]]},
+  {n:"Claire Best & Associates",t:"small",c:["LA"],v:1,s:"check",w:"clairebest.net",note:"Los Angeles talent agency. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Los Angeles","736 Seward St., Los Angeles, CA 90038"]]},
   {n:"Closeup LA",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"closeupmodelsagency.com",note:"Represents theatrical, commercials, models and industrials. Its website publishes this Wilshire Boulevard office.",a:[["Los Angeles","5455 Wilshire Blvd, Suite 1608, Los Angeles, CA 90036"]]},
   {n:"Coast to Coast Talent Group",sag:1,t:"small",c:["LA"],v:1,s:"mail",w:"ctctalent.com",pc:1,note:"Mail only — and they explicitly accept postcards and invitations, which makes them the single best target for your CastSlate card. SAG submissions to Hugh Leon; non-union to the adult commercial desk.",a:[["Los Angeles","3350 Barham Blvd, Los Angeles, CA 90068"]]},
+  {n:"The Collective Talent Agency",sag:1,t:"small",c:["NY"],v:1,s:"email",w:"thecollectivetalent.com",note:"NYC boutique representing performers for film, television and theatre. Reach the agents directly by email.",a:[["New York","307 W 38th St, 16th Floor, New York, NY 10018"]]},
   {n:"Colleen Cler Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"colleencler.com",note:"Burbank agency with a broad roster including children, commercials, dance, seniors and performers with disabilities — a long-standing door for young and new talent. Listed at Burbank 91502, (818) 841-7943.",a:[["Burbank","178 S Victory Blvd, Suite 108, Burbank, CA 91502"]]},
   {n:"Commercial Talent Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"commercialtalentagency.com",note:"Represents actors, TV, commercials, children and daytime drama. The agency publishes this Sherman Oaks office.",a:[["Los Angeles","15233 Ventura Blvd, Suite 500, Sherman Oaks, CA 91403"]]},
   {n:"Cornerstone Talent Agency",sag:1,t:"small",c:["NY"],v:1,s:"check",note:"Represents actors, TV and senior talent. The ZIP matches SAG-AFTRA's New York 10011 listing · (212) 807-8344.",a:[["New York","37 W 20th St, Suite 1007, New York, NY 10011"]]},
@@ -13007,6 +13024,7 @@ const TALENT_AGENCIES=[
   {n:"Crystal Ship Artists",sag:1,t:"small",c:["NY"],v:1,s:"check",w:"crystalshipartists.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at New York 10019 · (212) 810-7501.",a:[["New York","1350 Avenue of the Americas, New York, NY 10019"]]},
   {n:"Culbertson Group LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"theculbertsongroup.com",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Los Angeles 90046 · (323) 650-9454.",a:[["Beverly Hills","9100 Wilshire Blvd, Ste 725E, Beverly Hills, CA 90212"]]},
   {n:"Dangerfield Talent & Literary (Los Angeles)",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"dangerfieldtalent.com",note:"Represents theatrical. Listed at Sherman Oaks 91423 · (818) 400-3348.",a:[["Sherman Oaks","13500 Ventura Blvd, Sherman Oaks, CA 91423"]]},
+  {n:"David Black Agency",t:"small",c:["NY"],v:1,s:"check",w:"davidblackagency.com",note:"Brooklyn talent agency. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["Brooklyn","335 Adams St, Ste 2707, Brooklyn, NY 11201"]]},
   {n:"David Shapira & Associates, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"dsa-agency.com",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Beverly Hills 90212 · (310) 967-0480.",a:[["Beverly Hills","280 S Beverly Drive, Suite 416, Beverly Hills, CA 90212"]]},
   {n:"Day7 Talent Agency",sag:1,t:"small",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Sun Valley 91352 · (818) 270-1903.",a:[]},
   {n:"Dean Panaro Talent, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"www.deanpanarotalent.com",note:"Represents theatrical talent. Its official contact page publishes this Studio City office.",a:[["Los Angeles","4370 Tujunga Ave, Suite 120, Studio City, CA 91604"]]},
@@ -13017,6 +13035,9 @@ const TALENT_AGENCIES=[
   {n:"DPM Talent Agency, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"dpmtalent.com",note:"Represents actors, commercials, voice-over and models. Its website publishes this Sherman Oaks office and a new-talent email route.",a:[["Los Angeles","14520 Magnolia Blvd, Suite 202, Sherman Oaks, CA 91403"]]},
   {n:"Dragonfly Agency, The",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"thedragonflyagency.com",note:"Represents actors, theatrical, television, commercial and youth talent. Its official Los Angeles contact page publishes this office.",a:[["Los Angeles","1855 E Industrial St, #111, Los Angeles, CA 90021"]]},
   {n:"Dramatic Artists Agency LA, LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"dramaticartists.com",note:"Represents actors across theatrical, television, commercial and youth work. Its official contact page publishes this Burbank office.",a:[["Los Angeles","103 W Alameda Ave, Suite 139, Burbank, CA 91502"]]},
+  {n:"The Dravis Agency",t:"small",c:["LA"],v:1,s:"check",w:"thedravisagency.com",note:"Studio City talent agency. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["Studio City","4370 Tujunga Ave, Ste 145, Studio City, CA 91604"]]},
+  {n:"Dream Team Talent",t:"small",c:["NY"],v:1,s:"check",w:"dreamteamtalent.com",note:"Brooklyn talent agency. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Brooklyn","67 West St, B73, Brooklyn, NY 11222"]]},
+  {n:"Eastern Talent Agency",t:"small",c:["LA"],v:1,s:"check",w:"easterntalent.net",note:"Los Angeles talent agency. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Los Angeles","1645 Vine St, Ste 402, Los Angeles, CA 90028"]]},
   {n:"Elev8, LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"elev8agency.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Beverly Hills 90211 · (310) 734-8688.",a:[["Beverly Hills","489 S. Robertson Blvd Suite 206, Beverly Hills, CA 90211"]]},
   {n:"Elite Los Angeles",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"elitemodels.com",note:"Represents commercial and modeling talent. Elite's official contact page publishes this West Hollywood office.",a:[["Los Angeles","518 N La Cienega Blvd, West Hollywood, CA 90048"]]},
   {n:"EM Artists, LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"emartists.com",note:"Represents actors across theatrical, television, commercial and youth work. Its official contact page publishes this Hollywood office.",a:[["Los Angeles","7080 Hollywood Blvd, #700, Hollywood, CA 90028"]]},
@@ -13036,16 +13057,21 @@ const TALENT_AGENCIES=[
   {n:"Fred R. Price Talent Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Sherman Oaks 91423 · (818) 284-2752.",a:[["Sherman Oaks","14044 Ventura Blvd, #201, Sherman Oaks, CA 91423"]]},
   {n:"Frontier Booking International",sag:1,t:"small",c:["NY"],v:1,s:"mail",w:"frontierbooking.com",note:"One of New York's long-running agencies — actors, models, singers and voice-over artists. Over 30 years in business.",a:[["New York","1560 Broadway, Suite 1110, New York, NY 10036"]]},
   {n:"Garber Agency, The",sag:1,t:"small",c:["NY"],v:0,s:"check",note:"Represents theatrical, TV, commercials, industrials. Listed at New York 10175 · (212) 292-4910.",a:[]},
+  {n:"Generation TV",t:"small",c:["NY"],v:1,s:"check",w:"generationmm.com",note:"New York talent agency. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["New York","20 W. 20th St., Suite 1008, New York, NY 10011"]]},
   {n:"Genesis Artists Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents actors across theatrical, television, commercial and youth work. SAG-AFTRA's franchised list now shows this Beverly Hills office (it replaces an older Glendale filing address) · (323) 592-3935.",a:[["Beverly Hills","8383 Wilshire Blvd, Suite 345, Beverly Hills, CA 90211"]]},
   {n:"GFTA Gwyn Foxx Talent Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"gftalentagency.com",note:"Represents actors across theatrical, television, commercial and youth work. The agency's official contact page publishes this Burbank address.",a:[["Los Angeles","2600 W Olive Ave, Burbank, CA 91505"]]},
   {n:"Glitter Talent Agency",sag:1,t:"small",c:["NY"],v:0,s:"check",w:"glittertalentagency.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at West New York 07093 · (201) 758-7272.",a:[]},
   {n:"Global Artists Agency, LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"globalartistsagency.net",note:"Represents theatrical and TV talent. Matches SAG-AFTRA's Los Angeles 90028 listing · (323) 836-0320.",a:[["Hollywood","6253 Hollywood Blvd, Suite 508, Hollywood, CA 90028"]]},
   {n:"Gotham Talent Agency LLC",sag:1,t:"small",c:["NY"],v:1,s:"check",note:"Represents actors, TV, daytime drama and seniors. SAG-AFTRA's own record shows the 10036 ZIP rather than 10018 · (212) 944-8898.",a:[["New York","1441 Broadway, New York, NY 10018"]]},
+  {n:"Grace Talent Organization",t:"small",c:["LA"],v:1,s:"check",w:"gracetalent.org",note:"Beverly Hills talent agency. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["Beverly Hills","8370 Wilshire Blvd, Suite 340, Beverly Hills, CA 90211"]]},
   {n:"Grant, Savic, Kopaloff and Associates, LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"gsktalent.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90010 · (323) 782-1854.",a:[["Los Angeles","4929 Wilshire Blvd, Ste 259, Los Angeles, CA 90010"]]},
+  {n:"Greenspan Artist Management",t:"small",c:["LA"],v:1,s:"check",w:"greenspankohan.com",note:"West Hollywood talent agency. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["West Hollywood","8760 Sunset Blvd., West Hollywood, CA 90069"]]},
   {n:"Griffin Talent",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents actors, TV, children, daytime drama, dancers. Listed at Pasadena 91104 · (310) 614-9741.",a:[["Pasadena","1074 Wesley Ave, Pasadena, CA 91104"]]},
   {n:"GVA Talent Agency, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"www.gvatalent.com",note:"Represents actors across theatrical, television and daytime-drama work. Its official contact page publishes this Beverly Hills office.",a:[["Los Angeles","9301 Wilshire Blvd, Suite 504, Beverly Hills, CA 90210"]]},
+  {n:"Gwyn Foxx Talent Agency",t:"small",c:["LA"],v:1,s:"check",w:"gwynfoxxtalentagency.com",note:"Burbank talent agency. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Burbank","2600 West Olive Avenue, 5th Floor, Burbank, CA 91505"]]},
   {n:"Happen Agency LLC, The",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"thehappenagency.com",note:"Represents actors across theatrical, television, commercial and youth work. Its official site identifies the agency in Burbank but does not publish a street address.",a:[["Burbank","124 E Olive Ave, Burbank, CA 91502"]]},
   {n:"Hayes Talent Agency (Los Angeles)",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"hayestalent.com",note:"Represents theatrical talent. Its official site publishes this Los Angeles office.",a:[["Los Angeles","12100 Wilshire Blvd, Suite 800, Los Angeles, CA 90025"]]},
+  {n:"The Hell's Kitchen Agency",sag:1,t:"small",c:["NY"],v:0,s:"check",note:"NY agency that self-identifies across every single SAG-AFTRA representation category — the widest net on the New York roster, which usually signals genuine openness to new talent. Listed at NY 10036, (212) 380-3775.",a:[]},
   {n:"Henderson Represents, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"hritalent.com",note:"Represents actors across theatrical, television, commercial and youth work. Its official contact page publishes this Studio City office.",a:[["Los Angeles","11846 Ventura Blvd, #302, Studio City, CA 91604"]]},
   {n:"House of Representatives, A Talent Agency Inc., The",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents actors, theatrical, TV, commercials and children. Santa Monica office, matching SAG-AFTRA's listing · (310) 451-2345.",a:[["Santa Monica","2665 30th St, Suite 106, Santa Monica, CA 90405"]]},
   {n:"Hudson Artists Agency",t:"small",c:["NY"],v:1,s:"email",w:"hudsonartistsagency.com",note:"NYC boutique across television, theatre and film. Submissions to info@haanyc.com. NOTE: this agency does not appear on SAG-AFTRA's current franchised list.",a:[["New York","225 W 34th St, Floor 9, New York, NY 10122"]]},
@@ -13060,6 +13086,7 @@ const TALENT_AGENCIES=[
   {n:"Irv Schechter Company, The",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"iscagency.com",note:"Represents theatrical and television talent. A current California business filing lists this Beverly Hills principal and mailing address.",a:[["Los Angeles","9460 Wilshire Blvd, Suite 300, Beverly Hills, CA 90212"]]},
   {n:"It Model and Talent Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"itmodelmanagement.com",note:"Represents actors, theatrical and commercial talent, hosts and seniors. Its official contact page publishes this Irvine office.",a:[["Los Angeles","5151 California Ave, Suite 100, Irvine, CA 92617"]]},
   {n:"J.K.A. Talent & Literary Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents actors, theatrical. Listed at West Hollywood 90046 · (818) 980-2093.",a:[["Los Angeles","8033 Sunset Blvd, Suite 115, Los Angeles, CA 90046"]]},
+  {n:"Jackson Agency",t:"small",c:["LA"],v:1,s:"check",w:"tja.agency",note:"Los Angeles talent agency. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Los Angeles","1901 Avenue Of The Stars, 2FL, Los Angeles, CA 90067"]]},
   {n:"Jager Campbell Talent Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"jagercampbelltalentagency.com",note:"Represents actors, models, speakers, comedians, voice-over artists and creators. Its official site identifies the Los Angeles and Glendale area but does not publish a street address.",a:[["Glendale","201 N Brand Blvd, Suite 207, Glendale, CA 91203"]]},
   {n:"Jana Luker Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents theatrical, TV, commercials, daytime drama and industrials. Street address from SAG-AFTRA's franchised agents list · (310) 441-2822.",a:[["Woodland Hills","20501 Ventura Blvd, Suite 115, Woodland Hills, CA 91364"]]},
   {n:"Janet Tscha Talent",sag:1,t:"small",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Sherman Oaks 91401 · (323) 683-9228.",a:[]},
@@ -13073,13 +13100,17 @@ const TALENT_AGENCIES=[
   {n:"Joseph Le Talent Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Irvine 92612 · (818) 973-2705.",a:[["Irvine","3333 Michelson Dr, Office 300, Irvine, CA 92612"]]},
   {n:"JS Represents",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents theatrical talent. Street address from SAG-AFTRA's franchised agents list · (323) 462-3246.",a:[["Los Angeles","6815 Willoughby Ave, Suite 102, Los Angeles, CA 90038"]]},
   {n:"JVC Talent Agency (SAG Only)",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents theatrical talent. Street address from SAG-AFTRA's franchised agents list · (323) 420-3800.",a:[["Studio City","11030 Ventura Blvd, Suite 2, Studio City, CA 91604"]]},
+  {n:"Kaplan-Stahler Agency",t:"small",c:["LA"],v:1,s:"check",w:"kaplanstahler.com",note:"Beverly Hills talent agency. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["Beverly Hills","8383 Wilshire Blvd, Ste 923, Beverly Hills, CA 90211"]]},
   {n:"Kathleen Schultz Associates (Los Angeles)",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"kathleenschultzassociates.com",note:"Represents theatrical, TV, commercials, daytime drama, industrials. Listed at Valencia 91355 · (818) 760-3100.",a:[]},
   {n:"Ken Lindner and Associates, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"kenlindner.com",note:"Represents theatrical. Listed at Century City 90067 · (310) 277-9223.",a:[["Los Angeles","1901 Avenue of the Stars, Ste 1010, Los Angeles, CA 90067"]]},
   {n:"Kia Todd Talent Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"kiatoddtalent.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Woodland Hills 91367 · (818) 463-3161.",a:[["Woodland Hills","5850 Canoga Ave, Suite 400, Woodland Hills, CA 91367"]]},
+  {n:"Kismet Talent Agency",t:"small",c:["LA"],v:1,s:"check",w:"kismettalentagency.com",note:"Santa Monica talent agency. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Santa Monica","3435 Ocean Park Blvd., Suite 107, Santa Monica, CA 90405"]]},
   {n:"Kit International Talent LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"kitinternationaltalent.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Long Beach 90802 · (800) 473-8063.",a:[["Long Beach","100 W Broadway, Suite 3000, Long Beach, CA 90802"]]},
   {n:"L.A. Talent, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"latalent.com",note:"Represents adult and youth talent for commercial, film, television and theatre work. Its official site publishes this Los Angeles office.",a:[["Los Angeles","7700 Sunset Blvd, Los Angeles, CA 90046"]]},
   {n:"LA Talent Agency",t:"small",c:["LA"],v:1,s:"form",w:"latalentagency.com",note:"States plainly that they are always looking for new talent. Online submission form. SAG-AFTRA franchises 'L.A. Talent, Inc.' in the 90046 zip, which may be a different firm from this one — address withheld until we establish which is which.",a:[["Beverly Hills","9350 Wilshire Blvd, Suite 203, Beverly Hills, CA 90212"]]},
   {n:"Lavonne's The Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"lavonnestheagency.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Burbank 91505 · (916) 262-5208.",a:[["Burbank","4450 Lakeside Dr. #250, Burbank, CA 91505"]]},
+  {n:"Lemon Lime Agency",t:"small",c:["LA"],v:1,s:"check",w:"lemonlimeagency.com",note:"Los Angeles talent agency. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["Los Angeles","3245 Casitas Ave, Suite 107, Los Angeles, CA 90039"]]},
+  {n:"Lenhoff & Lenhoff",t:"small",c:["LA"],v:1,s:"check",w:"lenhoff.com",note:"Beverly Hills talent agency. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["Beverly Hills","324 S. Beverly Drive, #572, Beverly Hills, CA 90212"]]},
   {n:"Library Agency LLC, The",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"thelibraryagency.com",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Van Nuys 91405 · (818) 913-1155.",a:[["Van Nuys","14713 Archwood St, Van Nuys, CA 91405"]]},
   {n:"Linda McAlister Talent LLC (Los Angeles)",sag:1,t:"small",c:["LA"],v:1,s:"email",w:"lmtalent.com",note:"Represents professional film and television talent in Los Angeles. Its official site publishes a California submissions email but no Los Angeles street address.",a:[["Sherman Oaks","4838 Sunnyslope Ave, Unit C, Sherman Oaks, CA 91423"]]},
   {n:"Lisa Lax Agency (New York)",sag:1,t:"small",c:["NY"],v:0,s:"check",w:"lisalaxagency.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at New York 10065 · (646) 648-0138.",a:[]},
@@ -13104,29 +13135,37 @@ const TALENT_AGENCIES=[
   {n:"MMV, LLC",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"mmvagency.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Porter Ranch 91326 · (323) 206-5050.",a:[]},
   {n:"Modern Artists",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"modernartists.net",note:"A West Hollywood talent agency representing performers. Its official site publishes the city but not a street address.",a:[]},
   {n:"Momentum Talent & Literary Agency, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"momentumtalent.com",note:"Represents adult and youth talent for film, television, commercial and print work. Its official site publishes this Burbank office.",a:[["Los Angeles","3500 W Olive Ave, Suite 300, Burbank, CA 91505"]]},
+  {n:"Montana Artists Agency",t:"small",c:["LA"],v:1,s:"check",w:"montanartists.com",note:"Beverly Hills talent agency. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["Beverly Hills","9150 Wilshire Blvd., Suite 100, Beverly Hills, CA 90212"]]},
   {n:"More Meaningful Voices",sag:1,t:"small",c:["NY"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at New York 10027 · (212) 655-7628.",a:[]},
   {n:"Movement Talent Agency, The",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"movement-agency.com",note:"Represents dancers, choreographers and other performing talent. SAG-AFTRA's franchised list shows this North Hollywood office · (323) 462-5300.",a:[["North Hollywood","4605 Lankershim Blvd, Suite 340, North Hollywood, CA 91602"]]},
   {n:"MPM Models and Talent",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"mpmmodels.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90014 · (213) 955-7777.",a:[["Los Angeles","860 S Los Angeles Street, Suite 704, Los Angeles, CA 90014"]]},
+  {n:"Murtha Skouras Agency",t:"small",c:["LA"],v:1,s:"check",w:"murthaskouras.com",note:"Santa Monica talent agency. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["Santa Monica","1025 Colorado Ave, Santa Monica, CA 90401"]]},
   {n:"MZA, \"THE MICHAEL ZANUCK AGENCY\"",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"mza.agency",note:"Represents actors, theatrical, TV, commercials, children. Listed at Huntington Beach 92649 · (818) 707-9747.",a:[["Los Angeles","4929 Wilshire Blvd, Ste 808, Los Angeles, CA 90010"]]},
   {n:"Nancy Chaidez Agency & Associates, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"nancychaidez.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at North Hollywood 91606 · (323) 467-8954.",a:[["North Hollywood","6340 Coldwater Canyon Ave, #214, North Hollywood, CA 91606"]]},
   {n:"Natalie Lynn Talent (Los Angeles)",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"natalielynntalent.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at North Hollywood 91605 · (818) 903-4324.",a:[]},
   {n:"Nava Artists, Inc.",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"navaartists.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Encino 91436 · (310) 600-6315.",a:[]},
   {n:"Now Talent Group, LLC",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"nowtalentgroup.com",note:"Represents actors, theatrical, commercials, comedians, musical artists. Listed at Burbank 91502 · (818) 469-1876.",a:[]},
   {n:"O'Neill Talent Group, LLC",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"oneilltalent.com",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Glendale 91208 · (818) 566-7717.",a:[]},
+  {n:"Pacific Bay Entertainment",t:"small",c:["LA"],v:1,s:"check",w:"pacificbayentertainment.com",note:"Santa Monica talent agency. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["Santa Monica","3000 West Olympic Bl, Santa Monica, CA 90404"]]},
   {n:"Pakula King & Associates",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents actors, theatrical, TV, daytime drama. Listed at Los Angeles 90069 · (310) 281-4868.",a:[["Los Angeles","9229 Sunset Blvd, Suite 400, Los Angeles, CA 90069"]]},
   {n:"Paloma Model & Talent, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"palomamodelandtalent.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Manhattan Beach 90266 · (323) 800-7500.",a:[["Manhattan Beach","1600 Rosecrans Ave, Media Center, 4th Floor, Manhattan Beach, CA 90266"]]},
   {n:"Palomera Group (Los Angeles)",sag:1,t:"small",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Glendale 91203 · (305) 499-4185.",a:[]},
   {n:"Pantera/Murphy, The Agency",sag:1,t:"small",c:["NY"],v:0,s:"check",w:"panteramurphytheagency.com",note:"Represents actors, TV, daytime drama, dancers, comedians. Listed at New York 10018 · (212) 219-9330.",a:[]},
   {n:"Pantheon Talent Group, LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"pantheontalent.com",note:"Represents actors, theatrical, TV, commercials and children. Century City office · (310) 201-0120.",a:[["Los Angeles","1880 Century Park East, Suite 711, Los Angeles, CA 90067"]]},
+  {n:"The Paradise Group",t:"small",c:["LA"],v:1,s:"check",w:"theparadisegroup.com",note:"West Hollywood talent agency. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["West Hollywood","7211 Santa Monica Blvd #500, West Hollywood, CA 90046"]]},
   {n:"Park Agency, Inc., The",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"theparkagency.com",note:"Represents actors, theatrical, TV, commercials and children. This address is published on the agency's own contact page and matches SAG-AFTRA's 90068 listing · (310) 430-4083.",a:[["Los Angeles","3800 Barham Blvd, Suite 420, Los Angeles, CA 90068"]]},
   {n:"Park Noack Agency LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"parknoack.com",note:"Represents theatrical, TV, commercials, children, seniors. Listed at Santa Monica 90404 · (310) 228-3180.",a:[["Santa Monica","2450 Colorado Avenue, Suite 100E, Santa Monica, CA 90404"]]},
+  {n:"The Partos Company",t:"small",c:["LA"],v:1,s:"check",w:"partos.com",note:"Santa Monica talent agency. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Santa Monica","227 Broadway, Ste 204, Santa Monica, CA 90401"]]},
   {n:"Peak Models and Talent",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"peakmodels.com",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Westlake Village 91361 · (818) 889-8800.",a:[["Westlake Village","280 N Westlake Blvd, Ste 110, Westlake Village, CA 91362"]]},
   {n:"Peter Kallinteris Talent Agency, Inc.",sag:1,t:"small",c:["LA"],v:0,s:"check",note:"Represents theatrical. Listed at Los Angeles 90020 · (310) 849-2771.",a:[]},
   {n:"Phillip L Hawkins DBA Pittmobile Talent Agency",sag:1,t:"small",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Hollywood 90028 · (888) 525-6774.",a:[]},
+  {n:"Photogenics Media",t:"small",c:["LA"],v:1,s:"check",w:"photogenicsmedia.com",note:"Beverly Hills talent agency. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["Beverly Hills","468 North Camden Drive, Suite #948P, Beverly Hills, CA 90210"]]},
   {n:"Pinstars Talent Agency",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"pinstarstalentagency.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90066 · (786) 543-0377.",a:[]},
+  {n:"Pittmobile Talent Agency",t:"small",c:["LA"],v:1,s:"check",w:"pittmobiletalentagency.com",note:"Hollywood talent agency. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["Hollywood","1800 Vine St, Hollywood, CA 90028"]]},
   {n:"Players Talent Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents theatrical talent. Street address from SAG-AFTRA's franchised agents list · (818) 990-9577.",a:[["Encino","16130 Ventura Blvd, Suite 235, Encino, CA 91436"]]},
   {n:"Polygon Group, Inc., The",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"thepolygongroup.com",note:"Represents actors, theatrical, TV, commercials and children. This Burbank office is published on the agency's own contact page and matches SAG-AFTRA's franchised list · (747) 248-7012.",a:[["Burbank","303 N Glenoaks Blvd, Suite 200, Burbank, CA 91502"]]},
   {n:"Posche Models & Talent LLC (New York)",sag:1,t:"small",c:["NY"],v:1,s:"check",w:"poschemodels.com",note:"Represents actors, theatrical, TV, commercials and daytime drama. This address is published on the agency's own site; its second office is in Fort Lauderdale, not Los Angeles · (646) 205-3023.",a:[["New York","353 Lexington Ave, 4th Floor, Suite 418, New York, NY 10016"]]},
+  {n:"The Price Group (TPG)",sag:1,t:"small",c:["NY"],v:1,s:"email",w:"thepricegrouptalentagency.com",note:"NYC boutique across Broadway, TV, film and new media — openly represents tomorrow's finest talent. Email preferred over hard copy. SAG-AFTRA's record lists the 10004 zip rather than 10011 — address withheld pending re-confirmation.",a:[["New York","90 Broad St, 2nd Floor, New York, NY 10004"]]},
   {n:"Progressive Artists Agency Corp.",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents theatrical, TV. Listed at West Hollywood 90046 · (323) 850-2992.",a:[["West Hollywood","1041 N Formosa Ave, Room 4, West Hollywood, CA 90046"]]},
   {n:"Prototype Talent Agency",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"prototypetalentagency.com",note:"Represents actors, theatrical, TV, children, daytime drama. Listed at Beverly Hills 90211 · (310) 793-2383.",a:[]},
   {n:"Rage Models and Talent",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"ragemodels.com",note:"Represents models and talent. Its official site and current roster materials publish this Calabasas office.",a:[["Los Angeles","22287 Mulholland Hwy, #401, Calabasas, CA 91302"]]},
@@ -13134,8 +13173,10 @@ const TALENT_AGENCIES=[
   {n:"Rebel Entertainment Partners, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"reptalent.com",note:"Represents actors, theatrical, TV, children, daytime drama. Listed at Malibu 90265 · (323) 935-1700.",a:[["Malibu","19264 Pacific Coast Highway, Malibu, CA 90265"]]},
   {n:"Reign Agency, LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"reignagency.com",note:"Represents theatrical, television, commercial, youth and senior talent. Matches SAG-AFTRA's Beverly Hills 90212 listing · (310) 396-6462.",a:[["Beverly Hills","400 S Beverly Dr, Suite 250, Beverly Hills, CA 90212"]]},
   {n:"Resolute Artists Agency, LLC (New York)",sag:1,t:"small",c:["NY"],v:0,s:"check",w:"resoluteartistsagency.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at New York 10170 · (212) 739-7856.",a:[]},
+  {n:"Reveur",t:"small",c:["LA"],v:1,s:"check",w:"reveur.com",note:"Los Angeles talent agency. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Los Angeles","3450 Cahuenga Blvd, W #404, Los Angeles, CA 90068"]]},
   {n:"Rise Agency Group LLC",sag:1,t:"small",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Santa Monica 90404 · (916) 730-7867.",a:[]},
   {n:"Robertson/Taylor Agency LLC",sag:1,t:"small",c:["LA"],v:0,s:"check",note:"Represents actors, TV, commercials, children, daytime drama. Listed at Los Angeles 90064 · (310) 321-8484.",a:[]},
+  {n:"The Roster Agency",sag:1,t:"small",c:["NY"],v:1,s:"mail",w:"therosteragency.com",pc:1,note:"Openly accepting submissions right now, all types, for theatre, TV, film and commercials — photos and resumes by mail only. They also try to attend every showcase they're invited to, so an invitation is genuinely worth sending.",a:[["New York","247 W 38th St, 6th Floor, New York, NY 10018"]]},
   {n:"RPM Talent",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"rpmtalent.net",note:"Represents theatrical, television, commercial, print, voice-over and literary talent. Its official site publishes this Burbank office.",a:[["Los Angeles","2600 W Olive Ave, 5th Floor, Burbank, CA 91505"]]},
   {n:"Ruth Gravity Artists",sag:1,t:"small",c:["NY"],v:0,s:"check",w:"ruthgravity.com",note:"Represents actors, theatrical, TV, commercials, daytime drama. Listed at Brooklyn 11205 · (212) 299-9186.",a:[]},
   {n:"Sabel Group LLC, The",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"thesabelgroup.com",note:"Los Angeles-based full-service agency. This address is published on the agency's own site — there is no New York office · (213) 772-2423.",a:[["Los Angeles","3580 Wilshire Blvd, Suite 1260, Los Angeles, CA 90010"]]},
@@ -13150,6 +13191,7 @@ const TALENT_AGENCIES=[
   {n:"So Cal Talent",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"socaltalent.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Marina Del Rey 90292 · (714) 880-4968.",a:[]},
   {n:"Sovereign Talent Group",sag:1,t:"small",c:["LA"],v:1,s:"mail",w:"sovereigntg.com",note:"Founded 2008. Commercials, pilots, music videos and features. Accepts either email or hard-copy submissions from talent seeking representation — one of the few that will take a physical package without a referral.",a:[["Los Angeles","1642 Westwood Blvd, Suite 202, Los Angeles, CA 90024"]]},
   {n:"Special Artists Agency, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"specialartists.com",note:"Represents actors, theatrical, commercials, musical artists and voice-over. Matches SAG-AFTRA's West Hollywood 90069 listing · (310) 859-9688.",a:[["West Hollywood","9200 Sunset Blvd, Suite 410, West Hollywood, CA 90069"]]},
+  {n:"Spectrum Global Agency",t:"small",c:["LA"],v:1,s:"check",w:"spectrumglobalagency.com",note:"Beverly Hills talent agency. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["Beverly Hills","9100 Wilshire Blvd. #333-356 East, Beverly Hills, CA 90212"]]},
   {n:"Stander Group, Inc., The",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"standergroup.com",note:"Represents theatrical, TV, commercial and voice-over talent. This address appears on the agency's own site and on SAG-AFTRA's franchised list · (818) 905-7000.",a:[["Sherman Oaks","4533 Van Nuys Blvd, Suite 401, Sherman Oaks, CA 91403"]]},
   {n:"Starburst Talent LLC",sag:1,t:"small",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials and children. SAG-AFTRA's franchised list shows Copperopolis, CA 95228 rather than a Los Angeles office · (408) 429-3082.",a:[]},
   {n:"Starwil Talent Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents theatrical talent. SAG-AFTRA's franchised list shows this Beverly Hills office · (661) 272-4722.",a:[["Beverly Hills","433 N Camden Dr, 4th Floor, Beverly Hills, CA 90210"]]},
@@ -13159,22 +13201,21 @@ const TALENT_AGENCIES=[
   {n:"Suite A Management Talent & Literary Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents theatrical and TV talent. Street address from SAG-AFTRA's franchised agents list · (310) 278-0801.",a:[["Beverly Hills","136 El Camino Dr, Suite 410, Beverly Hills, CA 90212"]]},
   {n:"Sutton, Barth & Vennari",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"sbvtalentagency.com",note:"Represents actors, TV, commercials, comedians and hosting. Matches SAG-AFTRA's Los Angeles 90036 listing · (323) 938-6000.",a:[["Los Angeles","5900 Wilshire Blvd, Suite 700, Los Angeles, CA 90036"]]},
   {n:"Svea Talent LLC",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"sveatalent.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Los Angeles 90028 · (310) 400-0158.",a:[]},
+  {n:"SW Artists",t:"small",c:["NY"],v:1,s:"check",w:"sw-artists.com",note:"New York talent agency. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["New York","888C Eighth Ave. #247, New York, NY 10019"]]},
   {n:"Sweetheart Elite Talent Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"sweetheartelite.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Torrance 90503 · (310) 702-4257.",a:[["Torrance","21515 Hawthorne Blvd Suite 200, Torrance, CA 90503"]]},
   {n:"Synergy Talent Group",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"synergytalent.net",note:"Represents actors, theatrical, TV, commercials, children. Listed at Studio City 91604 · (818) 995-6500.",a:[]},
   {n:"Talent Mine, Inc., The",sag:1,t:"small",c:["NY"],v:1,s:"check",w:"the-mine.com",note:"Represents theatrical talent. Graybar Building office · (212) 612-3200.",a:[["New York","420 Lexington Ave, Room 628, New York, NY 10170"]]},
+  {n:"Talento LA",t:"small",c:["LA"],v:1,s:"check",w:"talentola.com",note:"Los Angeles talent agency. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["Los Angeles","527 W 7th St, Ste 601, Los Angeles, CA 90014"]]},
   {n:"Tangerine Talent, LLC",sag:1,t:"small",c:["LA"],v:1,s:"email",w:"tangerinetalent.com",note:"Represents commercial and theatrical talent of all ages. Its official site publishes this Sherman Oaks office and an email submission route.",a:[["Los Angeles","15130 Ventura Blvd, Suite 308, Sherman Oaks, CA 91403"]]},
   {n:"Tanzanite Artists Group LLC",sag:1,t:"small",c:["LA"],v:1,s:"email",w:"tanzaniteagency.com",note:"Represents actors across theatrical, television, commercial and youth work. Its official representation page publishes this Los Angeles office and an email submission route.",a:[["Los Angeles","811 W 7th St, Suite 1200, Los Angeles, CA 90017"]]},
+  {n:"Tarantula",t:"small",c:["LA"],v:1,s:"check",w:"trnt.la",note:"Los Angeles talent agency. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Los Angeles","1809 Apex Ave, Los Angeles, CA 90026"]]},
+  {n:"TCA Mgmt",t:"small",c:["LA"],v:1,s:"check",w:"tcamgmt.com",note:"Beverly Hills talent agency. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["Beverly Hills","8447 Wilshire Boulevard, Suite 100, Beverly Hills, CA 90211"]]},
   {n:"TGMD Talent Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"tgmdtalent.com",note:"Represents commercial and voice-over talent. Street address from SAG-AFTRA's franchised agents list · (323) 850-6767.",a:[["Los Angeles","6767 Forest Lawn Dr, Suite 206, Los Angeles, CA 90068"]]},
-  {n:"The Carson Kolker Organization",sag:1,t:"small",c:["NY"],v:1,s:"mail",w:"carsonkolker.com",note:"Founded 1992, represents performers of ALL ages for theatre, film and TV. Submit online or mail your materials — both work here.",a:[["New York","18 E 41st St, Room 801, New York, NY 10017"]]},
-  {n:"The Collective Talent Agency",sag:1,t:"small",c:["NY"],v:1,s:"email",w:"thecollectivetalent.com",note:"NYC boutique representing performers for film, television and theatre. Reach the agents directly by email.",a:[["New York","307 W 38th St, 16th Floor, New York, NY 10018"]]},
-  {n:"The Hell's Kitchen Agency",sag:1,t:"small",c:["NY"],v:0,s:"check",note:"NY agency that self-identifies across every single SAG-AFTRA representation category — the widest net on the New York roster, which usually signals genuine openness to new talent. Listed at NY 10036, (212) 380-3775.",a:[]},
-  {n:"The Price Group (TPG)",sag:1,t:"small",c:["NY"],v:1,s:"email",w:"thepricegrouptalentagency.com",note:"NYC boutique across Broadway, TV, film and new media — openly represents tomorrow's finest talent. Email preferred over hard copy. SAG-AFTRA's record lists the 10004 zip rather than 10011 — address withheld pending re-confirmation.",a:[["New York","90 Broad St, 2nd Floor, New York, NY 10004"]]},
-  {n:"The Roster Agency",sag:1,t:"small",c:["NY"],v:1,s:"mail",w:"therosteragency.com",pc:1,note:"Openly accepting submissions right now, all types, for theatre, TV, film and commercials — photos and resumes by mail only. They also try to attend every showcase they're invited to, so an invitation is genuinely worth sending.",a:[["New York","247 W 38th St, 6th Floor, New York, NY 10018"]]},
-  {n:"The Wayne Agency",sag:1,t:"small",c:["LA"],v:0,s:"mail",w:"thewayneagency.com",note:"SAG-AFTRA franchised and WGA signatory, and openly seeking new AEA talent right now. Hard-copy submissions accepted by post. SAG-AFTRA's franchise record lists this agency in Indio, CA (92203), not Los Angeles — we have pulled the street address until we can confirm which office is current.",a:[]},
   {n:"Tiffin Creative Talent",sag:1,t:"small",c:["LA"],v:0,s:"check",note:"Represents actors, theatrical, TV, commercials, children. Listed at Trabuco Cyn 92679 · (714) 501-2706.",a:[]},
   {n:"Tilmar Talent Agency (SAG Only)",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"tilmartalent.com",note:"Represents commercial and theatrical talent. Its official site publishes this Los Angeles office.",a:[["Los Angeles","6404 Wilshire Blvd, Suite 735, Los Angeles, CA 90048"]]},
   {n:"Torde Sillas",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"tordesillastalent.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Valley Village 91607 · (818) 468-0943.",a:[]},
   {n:"True Artists Agency, LLC",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"trueartistsagency.com",note:"Represents actors, commercials, children, comedians and seniors. This North Hollywood office is published on the agency's own site · (818) 646-9644.",a:[["North Hollywood","5161 Lankershim Blvd, Suite 250, North Hollywood, CA 91601"]]},
+  {n:"UGA Talent",t:"small",c:["NY"],v:1,s:"check",w:"ugatalent.com",note:"New York talent agency. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["New York","447 Broadway 2nd Floor, Suite 251, New York, NY 10013"]]},
   {n:"UIA Talent Agency, Inc.",sag:1,t:"small",c:["NY"],v:1,s:"check",w:"uiatalent.com",note:"Represents theatrical talent. This address is published on the agency's own site and matches SAG-AFTRA's 10019 listing · (212) 969-1797.",a:[["New York","850 Seventh Ave, Suite 1003, New York, NY 10019"]]},
   {n:"United Crafted Artists Agency LLC",sag:1,t:"small",c:["NY"],v:0,s:"check",w:"ucaagency.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at New York 10005 · (914) 222-3503.",a:[]},
   {n:"Vie Model & Talent Agency",sag:1,t:"small",c:["NY"],v:0,s:"check",w:"vieagency.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at Mount Laurel 08054 · (609) 902-1360.",a:[]},
@@ -13182,6 +13223,8 @@ const TALENT_AGENCIES=[
   {n:"Visionary Talent Agency",sag:1,t:"small",c:["LA"],v:0,s:"check",w:"visionarytalentagency.com",note:"Represents actors, theatrical, TV, commercials, children. Listed at West Hollywood 90046 · (323) 890-6160.",a:[]},
   {n:"Vox, Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"voxusa.net",note:"Represents actors, commercials, hosting and voice-over. Matches SAG-AFTRA's Los Angeles 90048 listing · (323) 655-8699.",a:[["Los Angeles","6420 Wilshire Blvd, Suite 1080, Los Angeles, CA 90048"]]},
   {n:"Ward Agency (SAG Only)",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents theatrical talent. Street address from SAG-AFTRA's franchised agents list · (323) 466-7566.",a:[["Los Angeles","1617 N El Centro Ave, Suite 15, Los Angeles, CA 90028"]]},
+  {n:"The Wayne Agency",sag:1,t:"small",c:["LA"],v:0,s:"mail",w:"thewayneagency.com",note:"SAG-AFTRA franchised and WGA signatory, and openly seeking new AEA talent right now. Hard-copy submissions accepted by post. SAG-AFTRA's franchise record lists this agency in Indio, CA (92203), not Los Angeles — we have pulled the street address until we can confirm which office is current.",a:[]},
+  {n:"Who Management",t:"small",c:["LA"],v:1,s:"check",w:"whomanagement.com",note:"Los Angeles talent agency. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["Los Angeles","1201 S Grand Ave, Los Angeles, CA 90015"]]},
   {n:"Wildflowers Agency",sag:1,t:"small",c:["LA"],v:1,s:"check",w:"wildflowersagency.com",note:"Boutique modelling and talent agency representing actors, commercials, children and dancers. Los Angeles-based — there is no New York office · (323) 908-0999.",a:[["Los Angeles","1751 Colorado Blvd, Suite 401, Los Angeles, CA 90041"]]},
   {n:"World Class Sports (SAG Only)",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents theatrical and commercial talent. SAG-AFTRA's franchised list shows this Century Blvd office · (310) 665-9400.",a:[["Los Angeles","5777 W Century Blvd, Suite 1070, Los Angeles, CA 90045"]]},
   {n:"Xpose Entertainment Inc.",sag:1,t:"small",c:["LA"],v:1,s:"check",note:"Represents theatrical talent. Street address from SAG-AFTRA's franchised agents list · (626) 240-4674.",a:[["Pasadena","1055 E Colorado Blvd, Suite 5, Pasadena, CA 91106"]]},
@@ -13195,9 +13238,12 @@ const TALENT_AGENCIES=[
   {n:"3G Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"3gmtalent.com",note:"San Fernando Valley management company also covering Albuquerque and Atlanta production.",a:[["Sherman Oaks","4905 Van Noord Avenue, Sherman Oaks, CA 91423"]]},
   {n:"42",t:"mgmt",c:["LA"],v:1,s:"check",w:"42mp.com",note:"Integrated management and production company representing actors, writers and directors.",a:[["Beverly Hills","9171 Wilshire Blvd, Suite 430, Beverly Hills, CA 90210"]]},
   {n:"44",t:"mgmt",c:["LA"],v:1,s:"no",w:"44mp.com",note:"Century City management and production company, also operating out of Sydney. They sign mostly through referral.",a:[["Los Angeles","10250 Constellation Blvd, Ste 100, Los Angeles, CA 90067"]]},
+  {n:"7 Sails Talent Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"7sails.com",note:"Studio City management company. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Studio City","11333 Moorpark Street, #239, Studio City, CA 91602"]]},
   {n:"A.D.S. Management",t:"mgmt",c:["LA"],v:0,s:"check",note:"Talent management with desks in Los Angeles, Albuquerque and North Carolina. Street address unconfirmed.",a:[]},
   {n:"AAG Management",t:"mgmt",c:["NY"],v:1,s:"check",w:"aagtalent.com",note:"Garment District management company.",a:[["New York","500 7th Avenue, 8th Floor, New York, NY 10018"]]},
   {n:"ACM Talent",t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"acmtalent.com",note:"Management company with a strong digital-creator and voice practice alongside its actor roster.",a:[["Beverly Hills","9465 Wilshire Blvd., Third Floor, Beverly Hills, CA 90212"],["New York","57 West 57th Street, Third Floor, New York, NY"]]},
+  {n:"Active Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"active-mgmt.com",note:"Los Angeles management company. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["Los Angeles","509 N. Fairfax, Suite 204, Los Angeles, CA 90036"]]},
+  {n:"Activist Artists Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"activist.co",note:"West Hollywood management company. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["West Hollywood","8500 Melrose Ave, Ste 200, West Hollywood, CA 90069"]]},
   {n:"Advanced Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"advancedmanagement.tv",note:"Sunset Strip talent management.",a:[["Los Angeles","8033 W. Sunset Blvd., #1069, Los Angeles, CA 90046"]]},
   {n:"Alan Siegel Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management company representing actors.",a:[["Beverly Hills","369 S Doheny Drive, Suite 1419, Beverly Hills, CA 90211"]]},
   {n:"Alchemy Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"alchemyco.com",note:"Long-running Westwood management and production company.",a:[["Los Angeles","10866 Wilshire Blvd., Suite 1140, Los Angeles, CA 90024"]]},
@@ -13209,6 +13255,7 @@ const TALENT_AGENCIES=[
   {n:"Apex Talent Group",t:"mgmt",c:["LA"],v:1,s:"check",w:"apextalentgroup.com",note:"Beverly Hills talent management company representing actors and digital creators.",a:[["Beverly Hills","8383 Wilshire Blvd, Suite 800, Beverly Hills, CA 90211"]]},
   {n:"Apollo Talent",t:"mgmt",c:["NY"],v:1,s:"check",w:"apollotalentmanagement.com",note:"Midtown management company.",a:[["New York","12 W. 37th Street, New York, NY 10018"]]},
   {n:"Apostle Management",t:"mgmt",c:["LA","NY"],v:1,s:"check",note:"Bi-coastal management and production company.",a:[["Culver City","9696 Culver Blvd, Ste 108, Culver City, CA 90232"],["New York","568 Broadway, Ste. 601, New York, NY 10012"]]},
+  {n:"The Arlook Group",t:"mgmt",c:["LA"],v:1,s:"no",w:"arlookgroup.com",note:"Comedy-forward management company with a New York desk. They sign mostly through referral.",a:[["Beverly Hills","205 S Beverly Dr, Ste 209, Beverly Hills, CA 90212"]]},
   {n:"Armada Partners",t:"mgmt",c:["LA"],v:1,s:"check",w:"armadapartners.com",note:"Bi-coastal management firm. Los Angeles contact is a PO box — no street office is published.",a:[["Los Angeles","PO Box 64546, Los Angeles, CA 90064"]]},
   {n:"Artist International",t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"artistint.com",note:"Bi-coastal management company. Not to be confused with Artist International Group.",a:[["Los Angeles","1720 N. Fuller Ave., Suite #345, Los Angeles, CA 90036"],["New York","333 E. 43rd St., Suite #115, New York, NY 10017"]]},
   {n:"Artist International Group",t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"artistinternationalgroup.com",note:"Bi-coastal management firm representing actors and recording artists.",a:[["Beverly Hills","9800 Wilshire Blvd, Beverly Hills, CA 90212"],["New York","6 St Johns Ln, New York, NY 10013"]]},
@@ -13218,6 +13265,7 @@ const TALENT_AGENCIES=[
   {n:"Ascend Literary Management",t:"mgmt",c:["LA"],v:0,s:"check",note:"Literary management — writers rather than actors. Listed for completeness; street address unconfirmed.",a:[]},
   {n:"ASManagement",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management company representing actors.",a:[["Beverly Hills","9440 Santa Monica Blvd, Suite 700, Beverly Hills, CA 90210"]]},
   {n:"Atlas Artists",t:"mgmt",c:["LA"],v:1,s:"no",note:"Sunset Strip management firm with a strong young-actor roster. They sign mostly through referral.",a:[["Los Angeles","9200 W. Sunset Blvd., Suite 1000, Los Angeles, CA 90069"]]},
+  {n:"Attentive Entertainment Group",t:"mgmt",c:["LA"],v:1,s:"check",w:"theattentivegroup.com",note:"Hollywood management company. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["Hollywood","5551 Hollywood Blvd, #1026, Hollywood, CA 90028"]]},
   {n:"Authentic Talent and Literary Management",t:"mgmt",c:["NY"],v:1,s:"no",w:"authenticm.com",note:"Management and literary firm with a substantial actor and writer roster. Second office in Culver City. They sign mostly through referral.",a:[["New York","330 Seventh Avenue, Suite 1701, New York, NY 10001"]]},
   {n:"Avanti Talent Management",t:"mgmt",c:["NY"],v:1,s:"check",w:"avantitalent.com",note:"Garment District management company.",a:[["New York","330 West 38th Street, Suite 604, New York, NY 10018"]]},
   {n:"Avatar Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"avatarent.com",note:"Hollywood management company with a London office.",a:[["Los Angeles","1717 Vine Street, Los Angeles, CA 90028"]]},
@@ -13228,6 +13276,8 @@ const TALENT_AGENCIES=[
   {n:"Blue Ridge Entertainment",t:"mgmt",c:["NY"],v:1,s:"check",note:"Columbus Circle management company.",a:[["New York","3 Columbus Circle, 15th Floor, New York, NY 10019"]]},
   {n:"Bohemia Group",t:"mgmt",c:["LA"],v:1,s:"check",w:"bohemiaent.com",note:"Management company with international reach — also keeps London and Auckland desks.",a:[["Los Angeles","7471 Melrose Ave, Ste 1, Los Angeles, CA 90046"]]},
   {n:"Bold Management & Production",t:"mgmt",c:["LA"],v:1,s:"check",w:"boldmp.com",note:"Silver Lake management and production company.",a:[["Los Angeles","2898 Rowena Ave, Suite 105F, Los Angeles, CA 90039"]]},
+  {n:"The Boothe Group",t:"mgmt",c:["LA","NY"],v:0,s:"check",w:"theboothegroup.com",note:"Bi-coastal talent management. Street addresses unconfirmed.",a:[]},
+  {n:"Brave Artists Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"braveartists.com",note:"Studio City management company. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["Studio City","11331 Ventura Blvd, Suite 2A, Studio City, CA 91604"]]},
   {n:"Brilliant Talent Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"brilliant-talent.com",note:"Management company covering Los Angeles, Atlanta and New York.",a:[["Calabasas","23679 Calabasas Road, Ste. 1078, Calabasas, CA 91302"]]},
   {n:"Brillstein Entertainment Partners",t:"mgmt",c:["LA"],v:1,s:"check",note:"Long-established management and production company representing actors and comedians.",a:[["Beverly Hills","9150 Wilshire Blvd, Suite 350, Beverly Hills, CA 90212"]]},
   {n:"Brio Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",note:"Culver City-area talent management.",a:[["Los Angeles","6430 Green Valley Circle, #335, Los Angeles, CA 90230"]]},
@@ -13241,6 +13291,7 @@ const TALENT_AGENCIES=[
   {n:"Center Stage Management",t:"mgmt",c:["NY"],v:1,s:"check",w:"csmanagementnyc.com",note:"Theatre-district management company.",a:[["New York","350 West 50th Street, New York, NY 10019"]]},
   {n:"CGEM Talent",t:"mgmt",c:["LA"],v:1,s:"check",w:"cgemtalent.com",note:"Century City talent management.",a:[["Los Angeles","1925 Century Park E, Suite 1700, Los Angeles, CA 90067"]]},
   {n:"Charles Rapp Enterprises",t:"mgmt",c:["NY"],v:1,s:"check",note:"Long-established Lower Manhattan management company.",a:[["New York","55 Broad St, Floor 26, New York, NY 10004"]]},
+  {n:"Chris Roe Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"chrisroemanagement.com",note:"Burbank management company. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["Burbank","PO Box 761, Burbank, CA 91503"]]},
   {n:"Cinetic Media",t:"mgmt",c:["NY"],v:1,s:"no",w:"cineticmedia.com",note:"Management and sales company with a strong independent-film and documentary practice. Also a Beverly Hills office on Wilshire.",a:[["New York","26 Broadway, 14th Floor, New York, NY 10004"]]},
   {n:"Circle Management + Production",t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"circlemp.com",note:"Bi-coastal management and production. Publishes a general queries address.",a:[["Los Angeles","8931 Ellis Avenue, Los Angeles, CA 90034"],["New York","200 Varick St, Suite 506, New York, NY"]]},
   {n:"Citizen Skull Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"www.citizenskull.com",note:"Actor management with a genre and independent-film lean. Check the site for how they prefer to be approached.",a:[["Los Angeles","4150 Santa Monica Blvd., Suite E, Los Angeles, CA 90029"]]},
@@ -13249,22 +13300,29 @@ const TALENT_AGENCIES=[
   {n:"Click Model Management",t:"mgmt",c:["NY"],v:1,s:"check",w:"clickmodel.com",note:"Long-running New York model and talent management.",a:[["New York","129 West 27th Street, Penthouse, New York, NY 10001"]]},
   {n:"CMA Entertainment",t:"mgmt",c:["LA","NY"],v:0,s:"check",w:"cmaentertainment.com",note:"Bi-coastal management company. Street addresses unconfirmed.",a:[]},
   {n:"Cobalt Sky Entertainment",t:"mgmt",c:["NY"],v:1,s:"check",note:"New York management company. Contact address is a PO box.",a:[["New York","PO Box 458, New York, NY 10113"]]},
+  {n:"Code Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"codeentertainment.com",note:"Beverly Hills management company. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["Beverly Hills","280 S. Beverly Drive, Suite 513, Beverly Hills, CA 90212"]]},
   {n:"Cohesive Entertainment Group (CEG)",t:"mgmt",c:["LA"],v:1,s:"check",w:"cohesiveentertainmentgroup.com",note:"Management company on the Miracle Mile with a New York desk.",a:[["Los Angeles","4751 Wilshire Boulevard, 3rd Floor, Los Angeles, CA 90010"]]},
   {n:"ColorCreative",t:"mgmt",c:["LA"],v:0,s:"form",w:"colorcreative.co",note:"Management company founded to open doors for under-represented writers and creators. Submissions run through their own site.",a:[]},
   {n:"Complete Management Group",t:"mgmt",c:["LA"],v:1,s:"check",w:"completemgmnt.com",note:"Management company north-west of Los Angeles with a New York desk.",a:[["Agoura Hills","5737 Kanan Road, Suite 711, Agoura Hills, CA 91301"]]},
   {n:"Conquest Talent Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"conquestmgnt.com",note:"Burbank management company with a New York desk.",a:[["Burbank","601 S Glenoaks Blvd, Burbank, CA 91502"]]},
+  {n:"Creamy White",t:"mgmt",c:["LA"],v:1,s:"check",w:"creamyw.com",note:"Beverly Hills management company. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Beverly Hills","433 N. Camden Drive, Suite 600, Beverly Hills, CA 90210"]]},
   {n:"Cultured Artists",t:"mgmt",c:["LA"],v:1,s:"check",note:"Bi-coastal management company representing film and television actors.",a:[["Beverly Hills","8306 Wilshire Blvd, Suite 1920, Beverly Hills, CA 90211"]]},
   {n:"Cylence Media Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"cylencemedia.com",note:"Management company also covering Atlanta production. Publishes a talent enquiries address.",a:[["Beverly Hills","9465 Wilshire Blvd, Suite 300, Beverly Hills, CA 90212"]]},
   {n:"Daniel Sladek Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management and production company representing actors and writers.",a:[["Beverly Hills","8306 Wilshire Blvd, Suite 510, Beverly Hills, CA 90211"]]},
   {n:"David Williams Management",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management company representing actors.",a:[["Beverly Hills","269 S Beverly Drive, #1408, Beverly Hills, CA 90212"]]},
   {n:"Deck of Cards Entertainment",t:"mgmt",c:["NY"],v:0,s:"check",w:"deckofcardsent.com",note:"Management and production company headquartered in New Jersey with a New York desk. New York street address unconfirmed.",a:[]},
+  {n:"The Digital Dept.",t:"mgmt",c:["LA"],v:1,s:"check",w:"thedigitaldept.com",note:"Management company for digital creators and on-camera talent, with a New York office.",a:[["Los Angeles","1840 Century Park E, #200, Los Angeles, CA 90067"]]},
+  {n:"Dissident",t:"mgmt",c:["LA"],v:1,s:"check",w:"dissident.la",note:"West Hollywood management company. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["West Hollywood","9229 Sunset Blvd., Suite 601, West Hollywood, CA 90069"]]},
   {n:"Dixon Talent",t:"mgmt",c:["NY"],v:1,s:"no",note:"Management company known for late-night and comedy clients. They sign mostly through referral.",a:[["New York","11 Madison Ave., 17th Floor, New York, NY 10010"]]},
   {n:"DNA Entertainment",t:"mgmt",c:["LA"],v:0,s:"check",note:"Beverly Hills management company representing actors. Street address unconfirmed.",a:[]},
   {n:"DreamScope Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management and production company representing actors.",a:[["Beverly Hills","324 S Beverly Drive, Suite 900, Beverly Hills, CA 90212"]]},
+  {n:"Durable Goods",t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"durablegoods.tv",note:"Management company with New York and Venice offices. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["New York","1205-224 West 30th St., New York, NY 10001"],["Venice","1301 Main St, Venice, CA 90291"]]},
   {n:"E.M.A Worldwide",t:"mgmt",c:["LA"],v:1,s:"email",w:"entertainmentmanagementalliance.com",note:"Beverly Hills management and entertainment-services company representing actors. Publishes a submissions email address.",a:[["Beverly Hills","9350 Wilshire Blvd, Suite 203, Beverly Hills, CA 90212"]]},
   {n:"EB Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"madeineb.com",note:"International management company with a Beverly Hills office representing actors and other talent.",a:[["Beverly Hills","8820 Wilshire Blvd, #340, Beverly Hills, CA 90211"]]},
+  {n:"Echelon Artists Agency",t:"mgmt",c:["LA"],v:1,s:"check",w:"echelonartists.com",note:"Studio City management company. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["Studio City","11271 Ventura Blvd., Suite 707, Studio City, CA 91604"]]},
   {n:"Echo Lake Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"echolakeentertainment.com",note:"Management, production and financing company representing actors and other creatives.",a:[["Beverly Hills","9696 Wilshire Blvd, 3rd Floor, Beverly Hills, CA 90212"]]},
   {n:"El Centro Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"elcentroent.com",note:"Beverly Hills talent and literary management company with a comedy roster.",a:[["Beverly Hills","9171 Wilshire Blvd, Beverly Hills, CA 90210"]]},
+  {n:"Electra Star Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"electrastarmgmt.com",note:"West Hollywood management company. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["West Hollywood","9229 Sunset Blvd, Ste 415, West Hollywood, CA 90069"]]},
   {n:"Elevate Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"elevate-ent.com",note:"Talent and literary management firm with a production arm.",a:[["Beverly Hills","324 S Beverly Drive, Suite 1087, Beverly Hills, CA 90212"]]},
   {n:"Elkins Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management and production company representing actors.",a:[["Beverly Hills","8306 Wilshire Blvd, #3643, Beverly Hills, CA 90211"]]},
   {n:"Emagine Content",t:"mgmt",c:["LA"],v:1,s:"check",w:"emaginecontent.com",note:"Beverly Hills management and content company, also with a London desk. Street address unconfirmed.",a:[["Beverly Hills","9461 Charleville Blvd, Suite 394, Beverly Hills, CA 90212"]]},
@@ -13280,12 +13338,14 @@ const TALENT_AGENCIES=[
   {n:"Felicia Douglas Management",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management company representing actors.",a:[["Beverly Hills","8306 Wilshire Blvd, #1699, Beverly Hills, CA 90211"]]},
   {n:"Fictious",t:"mgmt",c:["LA"],v:0,s:"check",w:"fictious.com",note:"Management company split between Los Angeles and Sydney. Street address unconfirmed.",a:[]},
   {n:"FilmEngine",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills production, financing and management company with an actor roster.",a:[["Beverly Hills","345 N Maple Drive, Suite 294, Beverly Hills, CA 90210"]]},
+  {n:"Fire House Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"firehousemanagement.com",note:"Los Angeles management company. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Los Angeles","P.O. Box 91385, Los Angeles, CA 90009"]]},
   {n:"Flavor Unit Entertainment",t:"mgmt",c:["LA"],v:1,s:"no",note:"Management and production company founded by Queen Latifah and Shakim Compere. They sign mostly through referral.",a:[["Beverly Hills","8484 Wilshire Blvd, Beverly Hills, CA 90211"]]},
   {n:"FORM.B entertainment",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management and production company representing actors.",a:[["Beverly Hills","8383 Wilshire Blvd, Suite 230, Beverly Hills, CA 90211"]]},
   {n:"Forte Artist Management",t:"mgmt",c:["NY"],v:1,s:"check",note:"New York management company. Contact address is a PO box.",a:[["New York","PO Box 20846, New York, NY 10025"]]},
   {n:"Forward Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management company representing established film and television actors.",a:[["Beverly Hills","8549 Wilshire Blvd, #2064, Beverly Hills, CA 90211"]]},
   {n:"Fourward",t:"mgmt",c:["LA"],v:0,s:"check",w:"fourward.com",note:"Talent management company representing actors and other film, television and music creatives. Street address unconfirmed.",a:[]},
   {n:"Framework Entertainment",t:"mgmt",c:["NY"],v:1,s:"no",w:"frameworkent.com",note:"Long-running bi-coastal management firm. Second office in West Hollywood. They sign mostly through referral.",a:[["New York","129 W 27th St., 12th Floor Penthouse, New York, NY 10001"]]},
+  {n:"The FTL Company",t:"mgmt",c:["LA"],v:1,s:"check",w:"theftl.com",note:"Los Angeles management company. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Los Angeles","1910 Bel Air Rd., Los Angeles, CA 90077"]]},
   {n:"G&G Talent",t:"mgmt",c:["NY"],v:0,s:"email",w:"gandgtalent.com",note:"New York management company. Publishes a submissions email address rather than a street office.",a:[]},
   {n:"Gallant Management",t:"mgmt",c:["LA"],v:0,s:"check",note:"Los Angeles talent management. Street address unconfirmed.",a:[]},
   {n:"Gel Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management and production company representing actors.",a:[["Beverly Hills","9663 Santa Monica Blvd, Beverly Hills, CA 90210-4303"]]},
@@ -13296,14 +13356,17 @@ const TALENT_AGENCIES=[
   {n:"Goldstar Talent Management",t:"mgmt",c:["NY"],v:1,s:"check",note:"New York management company representing actors.",a:[["New York","240 Central Park South, Suite 8R, New York, NY 10019"]]},
   {n:"Gorgeous Media Group",t:"mgmt",c:["LA"],v:1,s:"check",w:"gorgeousmediagroup.com",note:"Beverly Hills talent management company representing actors.",a:[["Beverly Hills","9663 Santa Monica Blvd, #913, Beverly Hills, CA 90210"]]},
   {n:"Grandview",t:"mgmt",c:["LA"],v:1,s:"no",note:"Management and production company representing writers, directors and actors. They sign mostly through referral.",a:[["Los Angeles","7122 Beverly Blvd., Ste. F, Los Angeles, CA 90036"]]},
+  {n:"The Green Room",t:"mgmt",c:["LA"],v:1,s:"check",w:"thegreenroommgmt.com",note:"Actor management in the heart of Hollywood.",a:[["Los Angeles","7080 Hollywood Blvd, 7th Floor, Los Angeles, CA 90028"]]},
   {n:"Gregg Baker Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"gb-management.com",note:"Bi-coastal boutique management company.",a:[["Los Angeles","8023 Beverly Blvd., Suite 206, Los Angeles, CA 90048"]]},
   {n:"Gregg Edwards Management",t:"mgmt",c:["LA"],v:1,s:"check",note:"Boutique Hollywood management company.",a:[["Los Angeles","6072 Franklin Ave, Ste 304, Los Angeles, CA 90028"]]},
   {n:"GSA Entertainment",t:"mgmt",c:["NY"],v:1,s:"check",note:"Midtown management company.",a:[["New York","295 Madison Avenue, 12th Floor, New York, NY 10017"]]},
   {n:"Hartman Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management company representing film and television actors.",a:[["Beverly Hills","8950 Olympic Blvd, #416, Beverly Hills, CA 90211"]]},
   {n:"Harvest Talent Management",t:"mgmt",c:["NY"],v:1,s:"check",w:"harvesttalent.com",note:"Upper West Side management company.",a:[["New York","127 West 83rd Street #887, New York, NY 10024"]]},
   {n:"Haven Entertainment",t:"mgmt",c:["LA"],v:1,s:"no",w:"haven.la",note:"Management and production company representing actors, writers and directors. They sign mostly through referral.",a:[["Los Angeles","6310 San Vicente Blvd, Los Angeles, CA 90048"]]},
+  {n:"Hazard Talent Management Company",t:"mgmt",c:["LA"],v:1,s:"check",w:"haztal.com",note:"Los Angeles management company. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["Los Angeles","453 S. Spring St., Ste 400, Los Angeles, CA 90013"]]},
   {n:"Heroes and Villains Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"hvemgmt.com",note:"Management and production firm with a genre focus — writers, directors and actors.",a:[["Los Angeles","110 South Fairfax Avenue, Suite 250, Los Angeles, CA 90036"]]},
   {n:"Hierarchy Talent Management",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills talent management company representing actors and other creatives.",a:[["Beverly Hills","9663 Santa Monica Blvd, Suite 441, Beverly Hills, CA 90210"]]},
+  {n:"Hines and Hunt Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"hinesandhunt.com",note:"Burbank management company. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Burbank","441 N Shelton Street, Burbank, CA 91506"]]},
   {n:"Hipnoggin Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management and production company representing actors.",a:[["Beverly Hills","9663 Santa Monica Blvd, Suite 1166, Beverly Hills, CA 90210"]]},
   {n:"Iconoblast",t:"mgmt",c:["LA"],v:1,s:"check",note:"San Fernando Valley management company, also covering Atlanta.",a:[["Studio City","3940 Laurel Canyon Blvd, #463, Studio City, CA 91604"]]},
   {n:"Iconoclast",t:"mgmt",c:["LA"],v:1,s:"no",w:"iconoclast.tv",note:"International management and production house for directors and artists. They sign mostly through referral.",a:[["Los Angeles","207 N. Vermont Avenue, Los Angeles, CA 90004"]]},
@@ -13320,16 +13383,23 @@ const TALENT_AGENCIES=[
   {n:"Invictus Entertainment",t:"mgmt",c:["NY"],v:0,s:"check",note:"New York talent management. Street address unconfirmed.",a:[]},
   {n:"Ivy Rock Management",t:"mgmt",c:["NY"],v:1,s:"check",note:"Theatre-district management company.",a:[["New York","245 W 51st Street, Suite #411, New York, NY 10019"]]},
   {n:"J.F Entertainment Management",t:"mgmt",c:["LA"],v:1,s:"email",note:"Beverly Hills management company representing actors. Publishes a submissions email address.",a:[["Beverly Hills","468 N Camden Drive, Suite 200, Beverly Hills, CA 90210"]]},
+  {n:"Jeffrey Loseff Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"jloseff.com",note:"North Hollywood management company. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["North Hollywood","4521 Colfax Avenue, Ste 205, North Hollywood, CA 91602"]]},
+  {n:"The Jeffries",t:"mgmt",c:["NY"],v:1,s:"check",w:"jeffriesagency.com",note:"Bi-coastal management company. Beverly Hills office address not published.",a:[["New York","276 5th Avenue, Suite 704-641, New York, NY 10001"]]},
+  {n:"Joel Stevens Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"joelstevensentertainment.com",note:"Studio City management company. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Studio City","12400 Ventura Blvd., # 1128, Studio City, CA 91604"]]},
   {n:"John DeHority Management",t:"mgmt",c:["NY"],v:1,s:"check",note:"West Village management company.",a:[["New York","125 Christopher St, 6C, New York, NY 10014"]]},
   {n:"Josselyne Herman & Associates",t:"mgmt",c:["NY"],v:1,s:"check",w:"jhamanagement.com",note:"Long-established New York management company.",a:[["New York","429 East 52nd Street, Suite #35B, New York, NY 10022"]]},
   {n:"Juliet Green Management",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management company representing actors and voice performers.",a:[["Beverly Hills","8306 Wilshire Blvd, Suite 279, Beverly Hills, CA 90211"]]},
   {n:"Justice & Ponder",t:"mgmt",c:["LA"],v:1,s:"check",note:"Los Angeles talent management. Contact address is a PO box.",a:[["Los Angeles","PO Box 480033, Los Angeles, CA 90048"]]},
   {n:"Kanner Entertainment",t:"mgmt",c:["NY"],v:1,s:"check",note:"Upper West Side management company.",a:[["New York","101 W 80th Street, Suite 6A, New York, NY 10024"]]},
+  {n:"Kaplan / Perrone Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"kaplanperrone.com",note:"Beverly Hills management company. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["Beverly Hills","9171 Wilshire Blvd., #400, Beverly Hills, CA 90210"]]},
+  {n:"The Katz Company",t:"mgmt",c:["NY"],v:1,s:"check",w:"thekatzcompany.com",note:"Broadway management company.",a:[["New York","1560 Broadway, 12th Floor, New York, NY 10036"]]},
   {n:"Ken Park Management",t:"mgmt",c:["NY"],v:1,s:"check",note:"Lower Manhattan management company.",a:[["New York","100 Church Street, 8th Floor, New York, NY 10007"]]},
   {n:"Kerry Jones Management",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management company representing actors.",a:[["Beverly Hills","8306 Wilshire Blvd, #7016, Beverly Hills, CA 90211"]]},
   {n:"KEY Talent Management",t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"key-mgmt.com",note:"Bi-coastal actor management with a published general enquiries address.",a:[["Los Angeles","8304 W 3rd St, Los Angeles, CA 90048"],["New York","590 5th Ave, 8th Floor, New York, NY 10036"]]},
   {n:"KPA Management",t:"mgmt",c:["NY"],v:1,s:"check",w:"kpatalent.com",note:"Chelsea management company.",a:[["New York","355 8th Ave, 7C, New York, NY 10001"]]},
   {n:"Kreativ Media Partners",t:"mgmt",c:["LA"],v:1,s:"check",w:"kreativartists.com",note:"Century City management and publicity firm working bi-coastally.",a:[["Los Angeles","1901 Avenue of the Stars, Suite 200, Los Angeles, CA 90067"]]},
+  {n:"LAfirstep",t:"mgmt",c:["LA"],v:1,s:"check",w:"lafirstep.com",note:"Burbank management company. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["Burbank","531 N. Hollywood Way, Burbank, CA 91505"]]},
+  {n:"Larger Than Life Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"largerthanlifemgmt.com",note:"Los Angeles management company. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Los Angeles","6941 Deveron Ridge Rd., Los Angeles, CA 91307"]]},
   {n:"Larry Thompson Organization",t:"mgmt",c:["LA"],v:1,s:"check",w:"larrythompsonorg.com",note:"Beverly Hills management and production company representing actors.",a:[["Beverly Hills","9663 Santa Monica Blvd, Suite 801, Beverly Hills, CA 90210"]]},
   {n:"Laugh Factory Management Company",t:"mgmt",c:["LA"],v:1,s:"check",w:"laughfactory.com",note:"Comedy management company associated with the Laugh Factory and representing performers.",a:[["West Hollywood","8001 Sunset Blvd, West Hollywood, CA 90046"]]},
   {n:"Leslie Allan-Rice Management",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management company representing actors.",a:[["Beverly Hills","9663 Santa Monica Blvd, Suite 1414, Beverly Hills, CA 90210"]]},
@@ -13347,29 +13417,39 @@ const TALENT_AGENCIES=[
   {n:"Mainstay Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"mainstayentertainment.com",note:"Talent management in the Seward Street production corridor.",a:[["Los Angeles","959 Seward St, Ste. 307, Los Angeles, CA 90038"]]},
   {n:"Manage-ment",t:"mgmt",c:["LA"],v:1,s:"check",w:"manage-ment.com",note:"Boutique Westwood management company.",a:[["Los Angeles","1103 1/2 Glendon Ave., Los Angeles, CA 90024"]]},
   {n:"Management Production Entertainment (MPE)",t:"mgmt",c:["LA"],v:1,s:"check",note:"Management and production company in the Hollywood Hills.",a:[["Los Angeles","1130 Sunset Vale Ave., Los Angeles, CA 90069"]]},
+  {n:"Managing Artistic Concepts",t:"mgmt",c:["LA"],v:1,s:"check",w:"managingartisticconcepts.com",note:"Los Angeles management company. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Los Angeles","645 W 9th St, 191, Los Angeles, CA 90015"]]},
   {n:"Marta Michaud Management",t:"mgmt",c:["NY"],v:1,s:"check",w:"martamichaud.com",note:"East Village management company.",a:[["New York","249 1/2 East 13th Street, New York, NY 10003"]]},
+  {n:"Matter Media Group",t:"mgmt",c:["LA"],v:1,s:"check",w:"mattermediagroup.com",note:"Los Angeles management company. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["Los Angeles","724 S. Spring St., Suite 1403-1404, Los Angeles, CA 90014"]]},
+  {n:"Mattie Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"mattiemanagement.com",note:"Santa Monica management company. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Santa Monica","2633 Lincoln Boulevard, 208, Santa Monica, CA 90405"]]},
   {n:"Maude Kaplan Management",t:"mgmt",c:["NY"],v:1,s:"check",w:"mkmtalent.com",note:"Upper West Side management company, also with a Playa Del Rey desk.",a:[["New York","2424 Broadway, #114, New York, NY 10025"]]},
   {n:"Maxx Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"maxxmgmt.com",note:"Hollywood management company, also operating out of Salt Lake City.",a:[["Los Angeles","1800 Vine Street, Los Angeles, CA 90028"]]},
   {n:"Mejia Global",t:"mgmt",c:["NY"],v:1,s:"check",note:"Midtown management company.",a:[["New York","134 W 29th Street, Suite 902, New York, NY 10001"]]},
   {n:"MGD Management",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management company representing actors and other creatives. Contact address is a PO box.",a:[["Beverly Hills","PO Box 11241, Beverly Hills, CA 90213"]]},
   {n:"MGMT Artists",t:"mgmt",c:["LA"],v:1,s:"check",w:"mgmtartists.com",note:"Talent management working across film and television.",a:[["Los Angeles","451 S. Beaudry Ave., Ste F 180, Los Angeles, CA 90017"]]},
+  {n:"The Michael Abrams Group",t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"michaelabramsgroup.com",note:"Bi-coastal talent management.",a:[["New York","2 Park Avenue, 20th Floor, New York, NY 10016"],["Los Angeles","9229 Sunset Boulevard, Los Angeles, CA 90069"]]},
   {n:"Michael Forman Management",t:"mgmt",c:["LA"],v:0,s:"check",note:"Beverly Hills management company representing actors and stunt performers. Street address unconfirmed.",a:[]},
   {n:"Midnight Artists",t:"mgmt",c:["NY"],v:1,s:"check",w:"midnightam.com",note:"Bi-coastal management company. Los Angeles desk is phone-only.",a:[["New York","10 E 29th St, Ste 15D, New York, NY 10016"]]},
   {n:"Monami Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"monamient.com",note:"Beverly Hills management and production company representing actors and music artists.",a:[["Beverly Hills","8447 Wilshire Blvd, Suite 101, Beverly Hills, CA 90211"]]},
   {n:"Monster Talent Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"monstertalentinc.com",note:"Actor management based at the Farmers Market offices.",a:[["Los Angeles","6333 W 3rd St, Ste 912, Los Angeles, CA 90036"]]},
+  {n:"Morra, Brezner, Steinberg and Tenenbaum Entertainment (MBST)",t:"mgmt",c:["LA"],v:1,s:"check",w:"mbst.com",note:"Beverly Hills management company. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["Beverly Hills","345 N Maple Dr, Ste 200, Beverly Hills, CA 90210"]]},
   {n:"Mosaic",t:"mgmt",c:["LA"],v:1,s:"check",note:"Management and production company representing actors, writers and comedians.",a:[["Beverly Hills","407 N Maple Drive, Suite 100, Beverly Hills, CA 90210"]]},
   {n:"MRK MGMT",t:"mgmt",c:["LA"],v:1,s:"check",w:"mrkmgmt.co",note:"Boutique Los Angeles talent management.",a:[["Los Angeles","5850 W. 3rd St, Ste E #383, Los Angeles, CA 90036"]]},
   {n:"MTM Talent Management",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management company representing actors. Contact address is a box address.",a:[["Beverly Hills","Box K, Beverly Hills, CA 90213-3208"]]},
+  {n:"MultiEthnic Talent",t:"mgmt",c:["NY"],v:1,s:"check",w:"met-mgmt.com",note:"New York management company. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["New York","470 Lenox Ave, Apt 14T, New York, NY 10037"]]},
+  {n:"Mutiny",t:"mgmt",c:["LA"],v:1,s:"check",w:"mutinymgmt.com",note:"Los Angeles management company. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Los Angeles","2458 Hunter Street, Los Angeles, CA 90021"]]},
   {n:"Navigation Media Group",t:"mgmt",c:["LA"],v:0,s:"check",w:"navigationmg.com",note:"Los Angeles management and media company. Street address unconfirmed.",a:[]},
   {n:"NB Management",t:"mgmt",c:["LA"],v:1,s:"check",note:"Boutique management company above the Sunset Strip.",a:[["Los Angeles","9209 Cordell Drive, Los Angeles, CA 90069"]]},
   {n:"Neal Public Relations (NPR) & Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"nealpublicrelations.com",note:"Publicity and management firm with a New York desk.",a:[["Los Angeles","3117 Hollycrest Dr, Los Angeles, CA 90068"]]},
   {n:"New Wave Entertainment",t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"nwe.com",note:"Management, production and marketing company with a large Burbank campus.",a:[["Burbank","2660 W Olive Ave, Burbank, CA 91505"],["New York","35 W 36th St, 10th Floor, New York, NY 10018"]]},
+  {n:"New York Office",t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"nyoffice.net",note:"Management company with New York and Los Angeles offices. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["New York","68 Jay Street, Ste 503, New York, NY 11201"],["Los Angeles","7095 Hollywood Blvd, Ste 814, Los Angeles, CA 90028"]]},
   {n:"Next Level Entertainment",t:"mgmt",c:["LA"],v:0,s:"email",w:"nextlevelentertainmentglobal.com",note:"Los Angeles management company. Publishes a submissions email address rather than a street office.",a:[]},
   {n:"Noble Media",t:"mgmt",c:["NY"],v:1,s:"check",note:"Management company with New York and Los Angeles desks.",a:[["New York","2070 5th Avenue, Suite 1, New York, NY 10035"]]},
   {n:"Odenkirk Provissiero Entertainment (OPE)",t:"mgmt",c:["LA"],v:0,s:"no",w:"odenkirk-provissiero.com",note:"Comedy-forward management and production company. Listed twice on IMDbPro (also as OPE Partners) — same firm. They sign mostly through referral.",a:[]},
   {n:"Omni Artists",t:"mgmt",c:["LA"],v:1,s:"check",w:"omniartistsltd.com",note:"Beverly Hills talent management.",a:[["Beverly Hills","9800 Wilshire Blvd, Beverly Hills, CA 90212"]]},
+  {n:"Omnium Entertainment Group",t:"mgmt",c:["LA"],v:1,s:"check",w:"omniumentertainment.com",note:"Los Angeles management company. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Los Angeles","1201 W. 5th Street, Suite F180, Los Angeles, CA 90017"]]},
   {n:"One Collective Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"onecollectiveent.com",note:"Beverly Hills management company representing actors and stunt performers.",a:[["Beverly Hills","325 N Maple Drive, #10222, Beverly Hills, CA 90210"]]},
   {n:"One Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"onemanagement.com",note:"International model and talent management — headquartered in Barcelona with New York, Los Angeles and Chicago offices. Coastal street addresses unconfirmed.",a:[["West Hollywood","529-531 Westmount Drive, West Hollywood, CA 90048"]]},
+  {n:"Paragon Management Group",t:"mgmt",c:["LA"],v:1,s:"check",w:"paragonmanagementgroupinc.com",note:"Santa Monica management company. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Santa Monica","3233-B Donald Douglass Loop South, Santa Monica, CA 90405"]]},
   {n:"PCM International",t:"mgmt",c:["LA"],v:1,s:"check",note:"Sunset Strip management firm, also operating out of Sydney.",a:[["Los Angeles","9200 Sunset Blvd, Suite 600, Los Angeles, CA 90069"]]},
   {n:"Pink Hammer Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"pinkhammerent.com",note:"San Fernando Valley management company with a New York desk. Los Angeles contact is a box address.",a:[["Granada Hills","18039 Chatsworth Street, Box 33306, Granada Hills, CA 91394"]]},
   {n:"Pipeline Entertainment",t:"mgmt",c:["NY"],v:1,s:"check",w:"pipeline-talent.com",note:"Hell's Kitchen management company.",a:[["New York","330 West 42nd Street, 23rd Floor, New York, NY 10036"]]},
@@ -13377,14 +13457,23 @@ const TALENT_AGENCIES=[
   {n:"Prestige Management Group",t:"mgmt",c:["LA","NY"],v:0,s:"check",note:"Bi-coastal management company representing actors. Street address unconfirmed.",a:[]},
   {n:"Priluck Company",t:"mgmt",c:["LA"],v:0,s:"check",w:"priluckcompany.com",note:"Los Angeles talent management. Street address unconfirmed.",a:[]},
   {n:"Principal Entertainment LA",t:"mgmt",c:["LA"],v:1,s:"no",w:"principalentla.com",note:"Long-established management company. They sign mostly through referral.",a:[["Los Angeles","9255 Sunset Blvd, Ste 500, Los Angeles, CA 90069"]]},
+  {n:"Producer Entertainment Group",t:"mgmt",c:["LA"],v:1,s:"check",w:"producerentertainment.com",note:"Burbank management company. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Burbank","2201 N Hollywood Way, Burbank, CA 91505"]]},
+  {n:"Protea Group International",t:"mgmt",c:["LA"],v:1,s:"check",w:"protea-group.com",note:"North Hollywood management company. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["North Hollywood","11304 Chandler Blvd. Apt. 998, North Hollywood, CA 91601"]]},
+  {n:"Q4 Entertainment Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"q4entertainment.com",note:"Studio City management company. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Studio City","12400 Ventura Blvd, #901, Studio City, CA 91604"]]},
+  {n:"The Radmin Company",t:"mgmt",c:["LA"],v:1,s:"check",w:"radmincompany.com",note:"Beverly Hills management company. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["Beverly Hills","9201 Wilshire Blvd, Ste 102, Beverly Hills, CA 90210"]]},
   {n:"Rain",t:"mgmt",c:["LA"],v:1,s:"check",w:"rainla.com",note:"West Los Angeles management company.",a:[["Los Angeles","11162 La Grange Ave, Los Angeles, CA 90025"]]},
+  {n:"Range Media Partners",t:"mgmt",c:["LA"],v:1,s:"check",w:"rangemp.com",note:"Santa Monica management company. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["Santa Monica","2425 Michigan Ave., Santa Monica, CA 90404"]]},
   {n:"Rebel Creative Group",t:"mgmt",c:["LA"],v:1,s:"check",note:"Bi-coastal management and creative agency.",a:[["West Hollywood","9255 Sunset Blvd., Suite 1100, West Hollywood, CA 90069"]]},
   {n:"Red Letter Entertainment",t:"mgmt",c:["NY"],v:1,s:"check",w:"redletterent.com",note:"Hell's Kitchen management company.",a:[["New York","550 W. 45th Street, Suite 501, New York, NY 10036"]]},
+  {n:"Redrock Entertainment Development",t:"mgmt",c:["LA"],v:1,s:"check",w:"redrockentertainment.com",note:"Burbank management company. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["Burbank","435 S San Fernando Blvd, Burbank, CA 91502"]]},
   {n:"Renaissance Literary & Talent",t:"mgmt",c:["LA"],v:1,s:"check",w:"renaissancemgmt.net",note:"Beverly Hills literary and talent representation company with actor clients.",a:[["Beverly Hills","PO Box 17379, Beverly Hills, CA 90209"]]},
   {n:"Richard Rosenwald Associates",t:"mgmt",c:["NY"],v:1,s:"check",note:"Midtown West management company.",a:[["New York","300 West 55th Street, 5Y, New York, NY 10019"]]},
   {n:"Rob D'Avola & Associates",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management company representing actors.",a:[["Beverly Hills","9100 Wilshire Blvd, Suite 725E, Beverly Hills, CA 90212"]]},
   {n:"Rob Weisbach Creative Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"robweisbach.com",note:"Century City management firm with a New York desk.",a:[["Los Angeles","2029 Century Park East, Suite 400, Los Angeles, CA 90067"]]},
+  {n:"The Robb Company",t:"mgmt",c:["LA"],v:1,s:"check",w:"therobbcompany.com",note:"Los Angeles management company. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["Los Angeles","2306 Fox Hills Dr, Suite 303, Los Angeles, CA 90064"]]},
   {n:"Robyn Ziegler Management",t:"mgmt",c:["NY"],v:1,s:"check",note:"Gramercy management company.",a:[["New York","30 Irving Place, 6th Floor, New York, NY 10003"]]},
+  {n:"Ronald Jordan Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"rjmanage.com",note:"Los Angeles management company. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["Los Angeles","326 N. Western Avenue, #333, Los Angeles, CA 90004"]]},
+  {n:"Ross Stephens Artists & Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"ross-stephens.com",note:"Beverly Hills management company. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Beverly Hills","8383 Wilshire Blvd, Suite 800, Beverly Hills, CA 90211"]]},
   {n:"Roth & Associates East",t:"mgmt",c:["NY"],v:1,s:"check",note:"Upper West Side management company.",a:[["New York","250 West 85th Street, Suite 15E, New York, NY 10024"]]},
   {n:"Rothman / Andres Entertainment",t:"mgmt",c:["LA","NY"],v:1,s:"check",note:"Bi-coastal management company with a long-standing actor roster.",a:[["Studio City","4400 Coldwater Canyon Ave., Ste 235, Studio City, CA 91604"],["New York","1740 Broadway, 15th Floor, New York, NY 10019"]]},
   {n:"Rugolo Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management and production company representing actors.",a:[["Beverly Hills","269 S Beverly Drive, Suite 1140, Beverly Hills, CA 90212"]]},
@@ -13393,59 +13482,64 @@ const TALENT_AGENCIES=[
   {n:"Schuller Talent",t:"mgmt",c:["LA"],v:1,s:"check",w:"schullertalent1953.com",note:"Management company trading since 1953, with a New York desk on Fifth Avenue.",a:[["West Hollywood","8335 Sunset Blvd., 2nd Floor, West Hollywood, CA 90069"]]},
   {n:"Seen Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"seenentertainment.com",note:"Beverly Hills management and production company representing actors.",a:[["Beverly Hills","9440 Santa Monica Blvd, Suite 301, Beverly Hills, CA 90210"]]},
   {n:"Select Management Group",t:"mgmt",c:["LA"],v:1,s:"check",w:"select.co",note:"Talent management company representing digital creators and on-camera performers.",a:[["Beverly Hills","345 N Maple Drive, Suite 230, Beverly Hills, CA 90210"]]},
+  {n:"SESLER",t:"mgmt",c:["LA"],v:1,s:"check",w:"sesler.com",note:"Beverly Hills management company. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["Beverly Hills","113 N San Vicente Blvd, 2nd Floor, Beverly Hills, CA 90211"]]},
   {n:"Seven Bridges Group",t:"mgmt",c:["LA"],v:1,s:"check",note:"Bi-coastal management and law firm representing actors and other creative clients.",a:[["Los Angeles","10940 Wilshire Blvd, Suite 1600, Los Angeles, CA 90024"]]},
   {n:"Seven Summits Pictures & Management",t:"mgmt",c:["LA"],v:1,s:"check",note:"Bi-coastal management and production company representing film and television actors.",a:[["Beverly Hills","9250 Wilshire Blvd, Suite 210, Beverly Hills, CA 90212"]]},
   {n:"Shelter Entertainment Group",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management and production company representing actors.",a:[["Beverly Hills","269 S Beverly Drive, Suite 386, Beverly Hills, CA 90212"]]},
+  {n:"Silberhorn Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"silberhornmanagement.com",note:"Los Angeles management company. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["Los Angeles","325 W Adams Blvd, 5134, Los Angeles, CA 90007"]]},
+  {n:"SILLAR Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"sillarmanagement.com",note:"Los Angeles management company. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Los Angeles","8033 W. Sunset Blvd, Suite 965, Los Angeles, CA 90046"]]},
   {n:"Sinclair Management",t:"mgmt",c:["NY"],v:1,s:"check",note:"West Village management company.",a:[["New York","95 Christopher St, #6F, New York, NY 10014"]]},
   {n:"Smith Talent Group",t:"mgmt",c:["NY"],v:1,s:"check",w:"smithtalentgroup.com",note:"Brooklyn management company, with a Manhattan number as well.",a:[["Brooklyn","91 Hudson Avenue, 2, Brooklyn, NY 11201"]]},
   {n:"So What Management",t:"mgmt",c:["NY"],v:1,s:"check",note:"Upper West Side management company.",a:[["New York","890 West End Ave, 1A, New York, NY 10025"]]},
   {n:"Soffer Entertainment",t:"mgmt",c:["LA","NY"],v:0,s:"check",w:"sofferent.com",note:"Bi-coastal management company. Street addresses unconfirmed.",a:[]},
   {n:"Spellman Entertainment Partners",t:"mgmt",c:["NY"],v:1,s:"check",note:"Bi-coastal management company.",a:[["New York","302A West 12th St, Ste 272, New York, NY 10014"]]},
+  {n:"The SquarePeg Group",t:"mgmt",c:["NY"],v:1,s:"check",w:"squarepeggroupinc.com",note:"Midtown management company.",a:[["New York","369 Lexington Avenue, 3rd Floor, New York, NY 10017"]]},
   {n:"Stagecoach Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"stagecoachent.net",note:"West Los Angeles talent management.",a:[["Los Angeles","11835 W. Olympic Blvd., Suite 1235E, Los Angeles, CA 90064"]]},
   {n:"Stalwart Talent Management",t:"mgmt",c:["NY"],v:0,s:"check",w:"stalwarttalent.com",note:"New York management company. Publishes a general enquiries address; street office unconfirmed.",a:[]},
   {n:"Stanulis & Associates",t:"mgmt",c:["NY"],v:1,s:"check",note:"Midtown management company.",a:[["New York","1745 Broadway, 17th Floor, New York, NY 10019"]]},
   {n:"Stein Entertainment Group",t:"mgmt",c:["NY"],v:1,s:"check",w:"steinentertainment.com",note:"Upper East Side management company.",a:[["New York","215 E 68th Street #12A, New York, NY 10065"]]},
   {n:"Steinberg Talent Management Group",t:"mgmt",c:["NY"],v:1,s:"check",w:"steinbergtalent.com",note:"Midtown management company.",a:[["New York","57 West 58th Street, Suite 6D, New York, NY 10019"]]},
   {n:"Strand Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",note:"Talent management working in film and television.",a:[["Los Angeles","3330 Cahuenga Blvd., Suite 500, Los Angeles, CA 90068"]]},
+  {n:"Studio Talent Group",t:"mgmt",c:["LA"],v:1,s:"check",w:"studiotalentgroup.com",note:"Santa Monica management company. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Santa Monica","1328 12th St, Santa Monica, CA 90401"]]},
   {n:"Studio XIV",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management company representing on-camera talent.",a:[["Beverly Hills","9107 Wilshire Blvd, Suite 450, Beverly Hills, CA 90210"]]},
   {n:"Studio71",t:"mgmt",c:["LA"],v:1,s:"check",w:"studio71.com",note:"Large management company for digital creators and on-camera talent, with a New York desk.",a:[["Beverly Hills","8383 Wilshire Blvd, Ste 1050, Beverly Hills, CA 90211"]]},
+  {n:"Sugar23",t:"mgmt",c:["LA"],v:1,s:"check",w:"sugar23.com",note:"Beverly Hills management company. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["Beverly Hills","100 N. Crescent Drive, Suite 150, Beverly Hills, CA 90210"]]},
   {n:"Sullivan Talent Group",t:"mgmt",c:["NY"],v:1,s:"check",w:"sullivantalentgroup.com",note:"Upper West Side management company.",a:[["New York","305 W 105th Street, Ste 3B, New York, NY 10025"]]},
   {n:"Suskin/Karshan Management",t:"mgmt",c:["NY"],v:1,s:"check",w:"sk-mgmt.com",note:"West Village management company. Publishes a general enquiries address.",a:[["New York","3 Sheridan Sq, Unit 7H, New York, NY 10014"]]},
   {n:"Suzelle Enterprises",t:"mgmt",c:["NY"],v:1,s:"check",note:"Midtown East management company.",a:[["New York","226 E 54th St, 607B, New York, NY 10022"]]},
   {n:"Sweet Revenge Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management and production company representing actors.",a:[["Beverly Hills","9107 Wilshire Blvd, Suite 450, Beverly Hills, CA 90210"]]},
   {n:"Sweet180",t:"mgmt",c:["NY"],v:1,s:"check",w:"sweet180.com",note:"New York management company representing actors and writers.",a:[["New York","141 West 28th Street, Suite 300, New York, NY 10001"]]},
   {n:"Talent 8 Management",t:"mgmt",c:["NY"],v:0,s:"check",w:"talent8mgmt.com",note:"New York talent management. Street address unconfirmed.",a:[]},
+  {n:"TalentInk LA-Chicago-NY",t:"mgmt",c:["LA"],v:1,s:"check",w:"talentink.net",note:"Burbank management company. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Burbank","3500 West Olive Avenue, Suite 300, Burbank, CA 91505"]]},
   {n:"Tash Moseley Management",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management company representing actors.",a:[["Beverly Hills","8306 Wilshire Blvd, Suite 717, Beverly Hills, CA 90211"]]},
   {n:"Tassell Talent Group",t:"mgmt",c:["LA","NY"],v:0,s:"check",note:"Management company headquartered in Atlanta with Los Angeles and New York desks. Street addresses for the coastal offices unconfirmed.",a:[]},
   {n:"Tendency Talent",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management company representing actors.",a:[["Beverly Hills","8549 Wilshire Blvd, Suite 3186, Beverly Hills, CA 90211"]]},
-  {n:"The Arlook Group",t:"mgmt",c:["LA"],v:1,s:"no",w:"arlookgroup.com",note:"Comedy-forward management company with a New York desk. They sign mostly through referral.",a:[["Beverly Hills","205 S Beverly Dr, Ste 209, Beverly Hills, CA 90212"]]},
-  {n:"The Boothe Group",t:"mgmt",c:["LA","NY"],v:0,s:"check",w:"theboothegroup.com",note:"Bi-coastal talent management. Street addresses unconfirmed.",a:[]},
-  {n:"The Digital Dept.",t:"mgmt",c:["LA"],v:1,s:"check",w:"thedigitaldept.com",note:"Management company for digital creators and on-camera talent, with a New York office.",a:[["Los Angeles","1840 Century Park E, #200, Los Angeles, CA 90067"]]},
-  {n:"The Green Room",t:"mgmt",c:["LA"],v:1,s:"check",w:"thegreenroommgmt.com",note:"Actor management in the heart of Hollywood.",a:[["Los Angeles","7080 Hollywood Blvd, 7th Floor, Los Angeles, CA 90028"]]},
-  {n:"The Jeffries",t:"mgmt",c:["NY"],v:1,s:"check",w:"jeffriesagency.com",note:"Bi-coastal management company. Beverly Hills office address not published.",a:[["New York","276 5th Avenue, Suite 704-641, New York, NY 10001"]]},
-  {n:"The Katz Company",t:"mgmt",c:["NY"],v:1,s:"check",w:"thekatzcompany.com",note:"Broadway management company.",a:[["New York","1560 Broadway, 12th Floor, New York, NY 10036"]]},
-  {n:"The Michael Abrams Group",t:"mgmt",c:["LA","NY"],v:1,s:"check",w:"michaelabramsgroup.com",note:"Bi-coastal talent management.",a:[["New York","2 Park Avenue, 20th Floor, New York, NY 10016"],["Los Angeles","9229 Sunset Boulevard, Los Angeles, CA 90069"]]},
-  {n:"The SquarePeg Group",t:"mgmt",c:["NY"],v:1,s:"check",w:"squarepeggroupinc.com",note:"Midtown management company.",a:[["New York","369 Lexington Avenue, 3rd Floor, New York, NY 10017"]]},
-  {n:"The Zachary Co.",t:"mgmt",c:["LA"],v:0,s:"check",note:"Los Angeles talent management. Street address unconfirmed.",a:[]},
   {n:"Three Six Zero Group",t:"mgmt",c:["LA"],v:1,s:"check",w:"threesixzero.com",note:"International management company representing film, television and music talent.",a:[["Beverly Hills","139 S Beverly Drive, Beverly Hills, CA 90212"]]},
   {n:"Thruline Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"thruline.com",note:"Beverly Hills talent management and production company representing actors.",a:[["Beverly Hills","345 N Maple Drive, Suite 285, Beverly Hills, CA 90210"]]},
+  {n:"Torque Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"torque-entertainment.com",note:"Santa Monica management company. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["Santa Monica","2118 Wilshire Blvd. #160, Santa Monica, CA 90403"]]},
   {n:"Trademark Talent",t:"mgmt",c:["LA"],v:1,s:"check",w:"trademarktalent.com",note:"Beverly Hills management company representing film and television actors.",a:[["Beverly Hills","269 S Beverly Drive, Suite 450, Beverly Hills, CA 90212"]]},
   {n:"Trillion Management",t:"mgmt",c:["NY"],v:1,s:"check",note:"Management company with New York, Los Angeles and Toronto desks.",a:[["New York","One World Trade Center, Floor 85, New York, NY 10007"]]},
   {n:"Tropf Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"tropfmanagement.com",note:"Beverly Hills talent management company representing actors and digital creators.",a:[["Beverly Hills","9663 Santa Monica Blvd, #1060, Beverly Hills, CA 90210"]]},
   {n:"Tsu Tsu Unlimited",t:"mgmt",c:["NY"],v:1,s:"check",w:"tsutsuunlimited.com",note:"West Village management company.",a:[["New York","145 West 12th Street, #1-4, New York, NY 10011"]]},
+  {n:"Twenty One Management",t:"mgmt",c:["NY"],v:1,s:"check",w:"twentyonemgmt.com",note:"Brooklyn management company. Confirmed against a current listing and a working site in August 2026. Their own page is the last word on whether they are open.",a:[["Brooklyn","345 Berry St, Brooklyn, NY 11249"]]},
   {n:"Underground",t:"mgmt",c:["LA"],v:1,s:"no",note:"Management and production company with a substantial comedy roster. They sign mostly through referral.",a:[["Los Angeles","1180 S Beverly Dr, Los Angeles, CA 90035"]]},
   {n:"Untamed Artists LA",t:"mgmt",c:["LA"],v:1,s:"check",w:"untamedartistsla.com",note:"Sunset Boulevard management firm representing actors.",a:[["Los Angeles","9229 Sunset Boulevard, 8th Floor, Los Angeles, CA 90069"]]},
   {n:"Untitled Entertainment",t:"mgmt",c:["LA","NY"],v:1,s:"no",w:"untitledent.com",note:"Major bi-coastal management firm, also with a London office. They sign mostly through referral.",a:[["Los Angeles","7122 Beverly Boulevard, Los Angeles, CA 90036"],["New York","215 Park Avenue South, 8th Floor, New York, NY 10003"]]},
   {n:"Van Johnson Company",t:"mgmt",c:["LA"],v:0,s:"check",w:"vanjoco.com",note:"Beverly Hills management and production company representing actors. Street address unconfirmed.",a:[]},
   {n:"Vanguard Management Group",t:"mgmt",c:["LA"],v:1,s:"check",w:"vanguard-management.com",note:"Melrose-based management firm with a New York desk.",a:[["Los Angeles","8060 Melrose Ave, Ste 400, Los Angeles, CA 90046"]]},
   {n:"Vault Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"vault-ent.com",note:"Los Angeles management company representing film and television actors.",a:[["Los Angeles","10720 McCune Avenue, Los Angeles, CA 90034"]]},
+  {n:"Veteran Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"veteran.management",note:"Burbank management company. Verified in August 2026 — the address resolves and the site is up. Follow whatever their site says about unsolicited material.",a:[["Burbank","1812 Burbank Blvd, Ste 670, Burbank, CA 91506"]]},
   {n:"Vital Management Group (VMG)",t:"mgmt",c:["NY"],v:0,s:"check",note:"New York management and production company. Street address unconfirmed.",a:[]},
+  {n:"We Are Free",t:"mgmt",c:["NY"],v:1,s:"check",w:"wearefree.com",note:"Brooklyn management company. Address and site were both live when we checked in August 2026. Read their submission page before you send anything.",a:[["Brooklyn","61 Greenpoint Ave, #508, Brooklyn, NY 11222"]]},
   {n:"Weiner Management",t:"mgmt",c:["LA"],v:0,s:"check",note:"Beverly Hills management company representing actors. Street address unconfirmed.",a:[]},
+  {n:"Wetzel Entertainment Group",t:"mgmt",c:["NY"],v:1,s:"check",w:"wegtalent.com",note:"New York management company. Both the street address and the website checked out in August 2026 — look at how they ask to be approached before you write.",a:[["New York","32 W. 39th Street, Penthouse, New York, NY 10018"]]},
   {n:"Who's That Kid",t:"mgmt",c:["NY"],v:0,s:"check",w:"whosthatkid.com",note:"New York management company working with young performers. Street address unconfirmed.",a:[]},
   {n:"Wicked Curve",t:"mgmt",c:["LA"],v:1,s:"check",note:"Beverly Hills management and production company representing actors and writers.",a:[["Beverly Hills","339 N Oakhurst Drive, Suite 303, Beverly Hills, CA 90210"]]},
+  {n:"William-Michael International Artist Relations",t:"mgmt",c:["LA"],v:1,s:"check",w:"wmiar.com",note:"Studio City management company. Address and website verified in August 2026. Nothing here says they are taking submissions, so check the site first.",a:[["Studio City","3940 Laurel Canyon Blvd, Box 785, Studio City, CA 91604"]]},
   {n:"Wonder Street",t:"mgmt",c:["LA"],v:1,s:"check",note:"Management and production company based on the Paramount lot.",a:[["Los Angeles","5555 Melrose Ave, Swanson Building 110, Los Angeles, CA 90038"]]},
   {n:"World Builder Entertainment",t:"mgmt",c:["LA"],v:1,s:"check",w:"worldbuilderent.com",note:"West Los Angeles management company.",a:[["Los Angeles","814 S. Westgate Avenue, Suite 130, Los Angeles, CA 90049"]]},
   {n:"Writ Large",t:"mgmt",c:["LA"],v:1,s:"no",w:"writ-large.com",note:"Literary management — writers and directors rather than actors. Listed for completeness.",a:[["Los Angeles","959 Seward St., Suite 301, Los Angeles, CA 90038"]]},
+  {n:"The Zachary Co.",t:"mgmt",c:["LA"],v:0,s:"check",note:"Los Angeles talent management. Street address unconfirmed.",a:[]},
   {n:"Zero Gravity Management",t:"mgmt",c:["LA"],v:1,s:"check",w:"zerogravitymanagement.com",note:"Management and production across film and television. Query address is published on their own site — read it before writing.",a:[["Los Angeles","11110 Ohio Avenue, Suite 100, Los Angeles, CA 90025"]]},
 ];
 
@@ -14556,7 +14650,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             <div style={{minWidth:0}}>
               <div style={{fontWeight:800,fontSize:15.5,color:"#fff",marginBottom:2}}>Unlock your full casting potential</div>
               <div style={{fontSize:13,color:"rgba(255,255,255,0.9)",lineHeight:1.4}}>
-                Go Premium for unlimited submissions, Manager Mode, the 550+ Talent Agency &amp; Manager Directory, video reels &amp; your QR business card — {PREMIUM_PRICE}.
+                Go Premium for unlimited submissions, Manager Mode, the 650+ Talent Agency &amp; Manager Directory, video reels &amp; your QR business card — {PREMIUM_PRICE}.
               </div>
             </div>
           </div>
@@ -15195,7 +15289,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <>
                 <p style={{fontSize:13,color:"var(--t2)",margin:"0 0 12px",fontWeight:500}}>Actor Premium</p>
                 <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:4}}>
-                  {["Unlimited submissions","Unlimited photos, videos & Cast Me As","Actor Slate Video","Actor Business Card","Manager Mode","Talent Agency & Manager Directory (550+)"].map((f,i)=>(
+                  {["Unlimited submissions","Unlimited photos, videos & Cast Me As","Actor Slate Video","Actor Business Card","Manager Mode","Talent Agency & Manager Directory (650+)"].map((f,i)=>(
                     <div key={i} style={{display:"flex",alignItems:"center",gap:7,fontSize:12,color:"var(--t2)"}}>
                       <span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>{f}
                     </div>
@@ -20079,10 +20173,10 @@ function LandingStats(){
 // ═══════════════════════════════════════════
 // AGENCY & MANAGEMENT DIRECTORY STRIPE (landing)
 // ═══════════════════════════════════════════
-// The counts are the real ones: TAD_AGENCIES splits 292 agencies / 258 management
-// companies = 550. If that array grows, update ADX_TOTAL and the two meta lines
+// The counts are the real ones: TAD_AGENCIES splits 354 agencies / 309 management
+// companies = 663. If that array grows, update ADX_TOTAL and the two meta lines
 // rather than letting the headline drift away from the product.
-const ADX_TOTAL=550;
+const ADX_TOTAL=650;
 // Every chip is a FIELD the directory stores, never a company. That is the whole
 // point of this fill: it argues the depth of the data without publishing the data.
 const ADX_FIELDS=[
@@ -20163,7 +20257,7 @@ function AgencyDirectoryStripe({onNavigate,isPremium=false}){
     io.observe(el);
     return()=>{io.disconnect();stop();};
   },[]);
-  // Count up to 550 once, when the number scrolls into view.
+  // Count up to ADX_TOTAL once, when the number scrolls into view.
   React.useEffect(()=>{
     const el=numRef.current;
     if(!el)return;
@@ -20216,7 +20310,7 @@ function AgencyDirectoryStripe({onNavigate,isPremium=false}){
           <button className="adx-cta" onClick={()=>onNavigate(isPremium?"dashboard":"membership")}>
             <span>{isPremium?"Open the Directory →":"See What's Inside →"}</span>
           </button>
-          <div className="adx-meta"><div>292 agencies</div><div>258 management companies</div><div>Re-checked every few months</div></div>
+          <div className="adx-meta"><div>354 agencies</div><div>309 management companies</div><div>Re-checked every few months</div></div>
         </div>
         <div>
           <div className="adx-wall" aria-hidden="true">
@@ -20488,11 +20582,11 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div className="section-title" style={{textAlign:"center",marginBottom:32}}>Everything you want to know.</div>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         {[
-          {q:"How much does CastSlate cost for actors?",a:"Free accounts get 1 headshot and 1 casting submission per week. Premium is $99 a year ($8.25/month), and it stays $99 every year — we do not discount your first year and raise it later. Prefer monthly? $14.95/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 550+ talent agencies and management companies in Los Angeles and New York. No hidden tiers, no per-submission fees."},
+          {q:"How much does CastSlate cost for actors?",a:"Free accounts get 1 headshot and 1 casting submission per week. Premium is $99 a year ($8.25/month), and it stays $99 every year — we do not discount your first year and raise it later. Prefer monthly? $14.95/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York. No hidden tiers, no per-submission fees."},
           {q:"How is CastSlate different from legacy casting websites?",a:"On older platforms, your submission lands in a grid where a CD can scan 80 faces in 20 seconds. On CastSlate, every submission is full-screen, one at a time, swipe-style. CDs decide on you individually. No one gets skipped."},
           {q:"Can minors (under 18) sign up?",a:"Only with a parent or legal guardian managing the account. We require guardian verification and comply with COPPA and state child-performer laws."},
           {q:"Is this SAG-AFTRA friendly?",a:"Yes. SAG-AFTRA, AEA, and non-union castings are all supported. Union status is displayed on every casting post and can be filtered."},
-          {q:"How does CastSlate work?",a:"Create a free profile, browse open castings, and apply. Free accounts can submit to 1 casting per week. Premium is $99 a year ($8.25/month) and stays $99 every year; the 6-month plan is $71.70 per term ($11.95/month), and month-to-month is $14.95/month. No plan uses an introductory rate that increases later. Every Premium plan includes unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card, Manager Mode, and the Talent Agency & Manager Directory — 550+ talent agencies and management companies in Los Angeles and New York, with addresses and how each one wants to be approached. Casting directors review every submission individually."}
+          {q:"How does CastSlate work?",a:"Create a free profile, browse open castings, and apply. Free accounts can submit to 1 casting per week. Premium is $99 a year ($8.25/month) and stays $99 every year; the 6-month plan is $71.70 per term ($11.95/month), and month-to-month is $14.95/month. No plan uses an introductory rate that increases later. Every Premium plan includes unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card, Manager Mode, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York, with addresses and how each one wants to be approached. Casting directors review every submission individually."}
         ].map((f,i)=>
           <div key={i} className="card" style={{padding:0,cursor:"pointer"}} onClick={()=>setOpenFaq(openFaq===i?-1:i)}>
             <div style={{padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:16}}>
@@ -23574,6 +23668,31 @@ const ACG = (()=>{
   // used. Builders make internal random choices, so re-calling the same builder
   // usually produces a different sentence; 60 attempts is far more than the
   // combinatorial space needs.
+  // Builds "<sketch> <note>" and keeps re-drawing the note until the WHOLE line
+  // is one that has never appeared. This is what makes the guarantee hold for
+  // padded background roles, whose sketch is shared across listings — the note
+  // is what has to carry the difference.
+  function uniqueDescription(base,bank,h,res){
+    const plain=String(base||"").trim();
+    if(!h||!res||!bank||!bank.length){
+      if(plain){res&&res.lines.add(clean(plain));}
+      return plain;
+    }
+    if(plain&&!h.lines.has(clean(plain))&&!res.lines.has(clean(plain))){
+      // Sketch is unique on its own, but still add a note for texture.
+      const note=freshLine(bank,{},h,res);
+      const full=note?`${plain} ${note}`:plain;
+      res.lines.add(clean(full));
+      return full;
+    }
+    for(let i=0;i<40;i++){
+      const note=freshLine(bank,{},h,res);
+      const full=note?`${plain} ${note}`:plain;
+      const k=clean(full);
+      if(!h.lines.has(k)&&!res.lines.has(k)){res.lines.add(k);return full;}
+    }
+    return plain;
+  }
   function freshLine(pool,x,h,res){
     if(!pool||!pool.length)return "";
     let fallback="";
@@ -25400,6 +25519,298 @@ const ACG = (()=>{
         {s:"the teacher",r:"Supporting",a:"senior",g:"F",x:"Sees everything from the first class and says nothing until the last. Formidable and warm."},
         {s:"the fiancé",r:"Supporting",a:"midCareer",x:"Comes to one class. Entirely decent, which is the problem."},
         {s:"the class",r:"Background",a:"adult",x:"Eight to ten adult beginners. No dance experience required — genuine beginners strongly preferred."}
+      ]},
+    // ── More premises ───────────────────────────────────────────────────
+    // Seeds are single-use now, so the number of premises IS the number of
+    // castings the board can carry before a story would have to come round
+    // again. These raise that number. Same rules as the rest: plain words, a
+    // clear situation, one clear complication, and character sketches that are
+    // unique to this seed.
+    {k:"hardware-store-sons",era:"1990s",genre:"family drama",tracks:["film","tv","stage"],
+      ttl:["Aisle Three","The Store on Ninth","Everything Must Go"],
+      p:"two brothers take over their father's hardware store the month he goes into hospital",
+      h:"one of them has already signed papers to sell the building and has not told the other",
+      h2:"a customer comes in with a fifty-year-old receipt and asks them to honor it",
+      w:["a narrow hardware store with stock going back forty years","a paint and tool shop on a street full of empty units","a family hardware store with a workshop out back"],
+      c:[
+        {s:"the brother who stayed",r:"Lead",a:"midCareer",g:"M",fam:"a",x:"Knows where every screw in the building is and cannot read a balance sheet. Proud, tired, and running the place exactly the way his father did."},
+        {s:"the brother who came back",r:"Lead",a:"midCareer",g:"M",fam:"a",x:"Left at nineteen and has an answer for everything. Charming, right about the money, and wrong about almost everything else."},
+        {s:"the woman who has worked there twenty years",r:"Supporting",a:"senior",g:"F",x:"Not family, and knows more about the business than either brother. Says very little until she says the thing that ends the argument."},
+        {s:"the buyer",r:"Supporting",a:"mature",x:"Polite, fair, and not in any hurry. He does not need to push, and he knows it."},
+        {s:"the regular customer",r:"Day Player",a:"senior",x:"Comes in most days and buys almost nothing. One short scene that says what the store is for."}
+      ]},
+    {k:"night-bus-depot",era:"2000s",genre:"workplace drama",tracks:["film","tv","stage"],
+      ttl:["Last Bus In","The Depot","Nobody Drives the 4:10"],
+      p:"a bus depot runs its last overnight shift before the routes are handed to another company",
+      h:"one driver refuses to bring her bus in, and by four in the morning the whole yard is waiting on her",
+      h2:"the new company's manager turns up at midnight to count the buses, and nobody will unlock the gate",
+      w:["a city bus depot and the yard behind it","a garage with eleven buses and one working lift","a transit yard at the end of a line"],
+      c:[
+        {s:"the driver who will not come in",r:"Lead",a:"mature",g:"F",x:"Twenty-six years on the same route and no plan for tomorrow. Most of her performance happens alone in a driver's seat."},
+        {s:"the yard supervisor",r:"Lead",a:"midCareer",x:"Has to get the buses in and does not want to. Caught between people he likes and a job he needs."},
+        {s:"the young driver",r:"Supporting",a:"youngAdult",x:"Six months in and already being offered work by the new company. Guilty about it and not sorry."},
+        {s:"the mechanic",r:"Supporting",a:"senior",x:"Fixed every one of these buses at least twice. Speaks in tools and takes it harder than anyone."},
+        {s:"the dispatcher",r:"Day Player",a:"midCareer",g:"F",x:"On the radio all night trying to keep it calm. Heard more than seen."}
+      ]},
+    {k:"dry-cleaner-pockets",era:"1990s",genre:"mystery",tracks:["film","tv"],
+      ttl:["Left in the Pocket","Ticket 4402","One Week to Collect"],
+      p:"a dry cleaner finds something sewn into the lining of a coat nobody has come back for",
+      h:"the ticket was written eleven weeks ago, and the address on it is a building that was knocked down",
+      h2:"a man comes in with the matching ticket, and he is not the man who left the coat",
+      w:["a dry cleaner with a back room full of uncollected coats","a corner laundry and press shop with a counter bell","a small cleaners under an apartment building"],
+      c:[
+        {s:"the owner",r:"Lead",a:"mature",g:"F",x:"Careful, private, and has run this shop alone for years. She would rather return the coat than know what is in it."},
+        {s:"her son",r:"Supporting",a:"youngAdult",fam:"a",x:"Works weekends and wants to open it immediately. The audience will agree with him and should not."},
+        {s:"the man with the ticket",r:"Lead",a:"mature",x:"Friendly, patient, and answers every question with another question."},
+        {s:"the neighbor two doors down",r:"Supporting",a:"senior",g:"F",x:"Remembers the building that used to be at that address, and remembers who lived there."},
+        {s:"the officer who takes the report",r:"Day Player",a:"midCareer",x:"Writes it all down properly and does absolutely nothing with it."}
+      ]},
+    {k:"tow-truck-night",era:"1980s",genre:"crime",tracks:["film","tv"],
+      ttl:["First Truck There","The Hook and the Radio","Nights on the Scanner"],
+      p:"two tow truck drivers listen to a police scanner and race each other to crashes",
+      h:"they get to one before the police do, and there is money on the front seat and nobody in the car",
+      h2:"the crash they reach first turns out to have been called in before it happened",
+      w:["a tow yard and the highway on-ramps around it","a truck stop and the roads between three exits","a garage with two trucks and a scanner on the wall"],
+      c:[
+        {s:"the older driver",r:"Lead",a:"mature",x:"Been doing this for fifteen years and has rules about it. The rules go first."},
+        {s:"the younger driver",r:"Lead",a:"youngAdult",x:"Faster, hungrier, and the first one to pick up the money. Not a bad person, which is the point."},
+        {s:"the yard owner",r:"Supporting",a:"senior",g:"F",x:"Owns both trucks and asks no questions until she has to ask all of them."},
+        {s:"the officer who keeps turning up",r:"Supporting",a:"midCareer",x:"Friendly at every crash, and slowly less friendly. Never raises his voice."},
+        {s:"the driver of the empty car",r:"Day Player",a:"midCareer",x:"Appears late, explains nothing, and is the scariest thing in the film."}
+      ]},
+    {k:"hotel-housekeeping",era:"2010s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["Room 812","Do Not Disturb","The Sixth Floor"],
+      p:"a hotel housekeeper finds the same guest asleep in a different room every morning",
+      h:"the guest checked out nine days ago, and the front desk has no record of him at all",
+      h2:"she is told to stop cleaning one floor, and nobody will say who gave the order",
+      w:["a mid-range city hotel with a service corridor on every floor","an airport hotel with two hundred identical rooms","an old downtown hotel being slowly refurbished"],
+      c:[
+        {s:"the housekeeper",r:"Lead",a:"midCareer",g:"F",x:"Fast, invisible, and notices everything. Carries the film with almost no dialogue."},
+        {s:"her supervisor",r:"Supporting",a:"mature",g:"F",x:"Protects her staff by telling them to see less. Warm and completely immovable."},
+        {s:"the guest",r:"Lead",a:"mature",x:"Polite, apologetic, and always in a room he should not be in. Never threatening, which is worse."},
+        {s:"the night desk clerk",r:"Supporting",a:"youngAdult",x:"Bored, kind, and the only one who checks the records for her."},
+        {s:"the hotel manager",r:"Day Player",a:"midCareer",x:"Two scenes, both of them about liability rather than people."}
+      ]},
+    {k:"animal-shelter-closing",era:"2010s",genre:"drama",tracks:["film","tv"],
+      ttl:["Nine Days","The Last Kennel","Everyone Gets a Name"],
+      p:"the staff of a small animal shelter are given nine days to empty the building",
+      h:"the volunteer who has been there longest starts taking animals home and lying about it",
+      h2:"a bigger shelter offers to take everything, on the condition that nobody says where the animals went",
+      w:["a small shelter behind a strip of shops","a converted garage with sixteen kennels","a council-run shelter with a yard and a mobile clinic"],
+      c:[
+        {s:"the manager",r:"Lead",a:"midCareer",g:"F",x:"Keeps the paperwork perfect because it is the only thing she can control. Falls apart quietly and late."},
+        {s:"the longest-serving volunteer",r:"Lead",a:"senior",x:"Has been here since it opened. Gentle, stubborn, and about to do something that will end his welcome."},
+        {s:"the new volunteer",r:"Supporting",a:"teen",x:"Guardian required. Signed up for two weeks and stays for all nine days. The audience's way in."},
+        {s:"the vet",r:"Supporting",a:"mature",g:"F",x:"Comes in twice a week and has to say the things nobody else will."},
+        {s:"the council officer",r:"Day Player",a:"midCareer",x:"Delivers the deadline in one short scene and is not a villain about it."}
+      ]},
+    {k:"parking-garage-nights",era:"2000s",genre:"thriller",tracks:["film","tv"],
+      ttl:["Level Six","The Booth","After the Last Car"],
+      p:"a parking garage attendant works alone from ten at night until six in the morning",
+      h:"one car has been on level six for three weeks, and last night it moved",
+      h2:"the cameras cover every level except the one where the car is parked",
+      w:["an eight-level parking garage under an office block","a hospital parking structure with a booth at the exit","an airport long-stay garage with one attendant at night"],
+      c:[
+        {s:"the attendant",r:"Lead",a:"youngAdult",x:"Studying between cars and far too curious. Alone on screen for long stretches; has to be watchable doing nothing."},
+        {s:"the day attendant",r:"Supporting",a:"mature",x:"Hands over the booth every night and has clearly decided not to think about level six."},
+        {s:"the woman who parks late",r:"Lead",a:"midCareer",g:"F",x:"Comes in at two most mornings and is always friendly. Everything about her is slightly wrong."},
+        {s:"the security supervisor",r:"Supporting",a:"mature",x:"Turns up when called and is no help at all. Two scenes, both of them polite and useless."},
+        {s:"the cleaner",r:"Day Player",a:"senior",g:"F",x:"Has seen it before, will not discuss it, and warns him anyway."}
+      ]},
+    {k:"community-garden",era:"2010s",genre:"comedy",tracks:["film","tv","stage"],
+      ttl:["Plot Fourteen","The Waiting List","Nothing Grows in the Shade"],
+      p:"a community garden with forty plots and a waiting list nine years long",
+      h:"one member dies and leaves her plot to somebody who is not on the list at all",
+      h2:"the committee discovers that half the plots are held by people who moved away years ago",
+      w:["a fenced community garden between two apartment blocks","a rooftop garden with raised beds and a shed","a strip of allotments beside a rail line"],
+      c:[
+        {s:"the committee chair",r:"Lead",a:"mature",g:"F",x:"Runs the garden by the rules and loves the rules more than the garden. Comic precision, real heart underneath."},
+        {s:"the person who inherits the plot",r:"Lead",a:"youngAdult",x:"Has never grown anything and has no idea what he has walked into."},
+        {s:"the oldest member",r:"Supporting",a:"senior",x:"Been here since it was a car park. Knows every rule and has broken most of them."},
+        {s:"the neighbor on the waiting list",r:"Supporting",a:"midCareer",g:"F",x:"Nine years of waiting, entirely calm about it, right up until she is not."},
+        {s:"the council inspector",r:"Day Player",a:"midCareer",x:"One visit with a clipboard that turns the whole garden against each other."}
+      ]},
+    {k:"tailor-alterations",era:"1990s",genre:"drama",tracks:["film","stage"],
+      ttl:["Take It In an Inch","The Fitting Room","Ready Thursday"],
+      p:"a tailor who has altered the same family's clothes for thirty years is asked to fix a wedding suit",
+      h:"the suit belonged to the groom's father, and the father is the reason the tailor stopped speaking to the family",
+      h2:"the bride asks him to let out a dress that was already let out once, twenty years ago, by him",
+      w:["a one-room tailor shop with a curtain and a mirror","an alterations counter at the back of a dry cleaners","a tailor's workroom above a shop"],
+      c:[
+        {s:"the tailor",r:"Lead",a:"senior",x:"Precise, private, and says almost nothing. The whole part is in the hands and what he refuses to be drawn on."},
+        {s:"the groom",r:"Lead",a:"youngAdult",x:"Wants a nice suit and gets a family history he never asked for. Open, warm, out of his depth."},
+        {s:"the groom's mother",r:"Supporting",a:"senior",g:"F",x:"Knows exactly why the tailor stopped speaking to them and came anyway."},
+        {s:"the apprentice",r:"Supporting",a:"youngAdult",g:"F",x:"Learning the trade and watching all of this with no idea what it is about."},
+        {s:"the bride",r:"Day Player",a:"youngAdult",g:"F",x:"One fitting scene that has to be funny and then quietly sad."}
+      ]},
+    {k:"window-cleaners",era:"2000s",genre:"drama",tracks:["film","tv"],
+      ttl:["Forty Floors of Glass","The Cradle","Nobody Looks Out"],
+      p:"two window cleaners work their way down the outside of an office tower",
+      h:"on the twenty-second floor one of them sees something inside that he cannot unsee, and they have thirty more floors to go",
+      h2:"the cradle jams between floors and the only person who notices is on the other side of the glass",
+      w:["a glass office tower and the cradle rig on its side","a hospital tower with sealed windows","a hotel tower overlooking a river"],
+      c:[
+        {s:"the older cleaner",r:"Lead",a:"mature",x:"Twenty years on the ropes and completely calm about the height. Not calm about anything else."},
+        {s:"the younger cleaner",r:"Lead",a:"youngAdult",x:"Six weeks in, still frightened, and the one who sees it. Physically demanding role; comfortable at height after rehearsal."},
+        {s:"the office worker behind the glass",r:"Supporting",a:"midCareer",g:"F",x:"Seen only through windows for most of the film. Everything has to read without a word."},
+        {s:"the site manager",r:"Supporting",a:"midCareer",x:"Wants the job finished and the incident book empty."},
+        {s:"the wife on the phone",r:"Day Player",a:"mature",g:"F",x:"Two calls, both in the middle of the working day. Voice-heavy."}
+      ]},
+    {k:"sober-house",era:"2010s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["House Rules","Ninety Days","Everyone Signs In"],
+      p:"six people share a sober living house with one bathroom and a list of rules on the fridge",
+      h:"someone breaks a rule that would put them all out, and the house has to decide whether to report it",
+      h2:"the house manager relapses, and he is the only one with a key to the front door",
+      w:["a shared house on a quiet street with a rota on the fridge","a converted two-family house with six bedrooms","a sober house beside a bus route and a diner"],
+      c:[
+        {s:"the house manager",r:"Lead",a:"mature",x:"Two years clean and holding the house together with routines. Warm, funny, and terrified of his own week."},
+        {s:"the newest resident",r:"Lead",a:"youngAdult",g:"F",x:"Eleven days in and furious about all of it. The audience's way into the house."},
+        {s:"the resident who has been here longest",r:"Supporting",a:"midCareer",x:"Knows every rule and enforces them harder than the manager does."},
+        {s:"the resident nobody can read",r:"Supporting",a:"senior",g:"F",x:"Says almost nothing for the first hour and then says the whole film."},
+        {s:"the counselor",r:"Day Player",a:"midCareer",g:"F",x:"Comes twice a week, cares, and cannot stay past five."}
+      ]},
+    {k:"election-night-precinct",era:"2000s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["Precinct 12","Doors Close at Nine","One More Ballot"],
+      p:"four poll workers run a small polling station from six in the morning until the count",
+      h:"a box of ballots is one short of the sign-in sheet, and nobody can leave until they work out why",
+      h2:"a voter is turned away at four o'clock, and by nine that decision is the only thing anyone can talk about",
+      w:["a school gym set up with booths and a folding table","a church hall used as a polling place","a community center with one entrance and one exit"],
+      c:[
+        {s:"the precinct chief",r:"Lead",a:"senior",g:"F",x:"Has run this station for eleven years and will not be hurried. Quiet authority; the film's spine."},
+        {s:"the first-time poll worker",r:"Lead",a:"youngAdult",x:"Signed up online and did the training video. Everything he does right makes it worse."},
+        {s:"the party observer",r:"Supporting",a:"mature",x:"Allowed to watch and not to speak. Says a great deal without speaking."},
+        {s:"the poll worker who wants to go home",r:"Supporting",a:"midCareer",g:"F",x:"Practical, funny, and the first to suggest the shortcut."},
+        {s:"the voter who was turned away",r:"Day Player",a:"mature",x:"One scene at the door and one at the end. Both should be unbearable."}
+      ]},
+    {k:"call-center-overnight",era:"2010s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["The Overnight Queue","Call Nineteen","Please Hold"],
+      p:"a small overnight call center takes emergency claims from people having their worst night",
+      h:"one caller stays on the line for four hours, and the operator is not allowed to keep talking to him",
+      h2:"the calls are being recorded for a review nobody told the staff about",
+      w:["a floor of twelve desks lit by monitors","a converted office above a shopping street","a call center with one supervisor and a coffee machine"],
+      c:[
+        {s:"the operator",r:"Lead",a:"youngAdult",g:"F",x:"Good at this in a way that costs her something. Most of the performance is listening to a voice."},
+        {s:"the caller",r:"Lead",a:"mature",x:"Heard for most of the film and seen once. Must build a whole life out of a phone line."},
+        {s:"the supervisor",r:"Supporting",a:"midCareer",x:"Has targets, and also a conscience. Watching him choose is the film."},
+        {s:"the operator at the next desk",r:"Supporting",a:"mature",g:"F",x:"Fifteen years of this and a joke for everything. The joke stops in the last act."},
+        {s:"the cleaner",r:"Day Player",a:"senior",x:"Comes through at four in the morning and says the one kind thing anyone says all night."}
+      ]},
+    {k:"storage-unit-auction",era:"2010s",genre:"comedy",tracks:["film","tv"],
+      ttl:["Unit 214","Cash Only, No Refunds","Whatever Is Inside"],
+      p:"two strangers end up sharing the winning bid on an abandoned storage unit",
+      h:"the unit is full of somebody's entire life, and one of them wants to find the owner",
+      h2:"there is a second unit under the same name, and the bidding for that one starts in an hour",
+      w:["a storage facility with three hundred orange doors","a self-storage yard behind a supermarket","an old warehouse split into units"],
+      c:[
+        {s:"the buyer who does this every week",r:"Lead",a:"mature",x:"Treats it as a business and knows exactly what a box of photographs is worth. Nothing."},
+        {s:"the accidental buyer",r:"Lead",a:"midCareer",g:"F",x:"Came for a bookcase and now owns half a stranger's life. Funny, decent, and the moral engine."},
+        {s:"the auctioneer",r:"Supporting",a:"senior",x:"Talks for a living and enjoys it enormously. Big personality, small part."},
+        {s:"the facility manager",r:"Supporting",a:"youngAdult",x:"Has the paperwork and is absolutely not allowed to show it to them."},
+        {s:"the owner of the unit",r:"Day Player",a:"senior",g:"F",x:"Arrives in the last ten minutes. The comedy stops the moment she speaks."}
+      ]},
+    {k:"lost-property-office",era:"1990s",genre:"comedy",tracks:["film","tv","stage"],
+      ttl:["Lost Property","Nothing Is Ever Claimed","Shelf Nine"],
+      p:"a lost property office under a train station holds thirty years of things nobody came back for",
+      h:"a man arrives to claim something that was handed in before he was born",
+      h2:"the office is being closed and everything unclaimed has to be thrown out by Friday",
+      w:["a basement office under a station concourse","a lost property counter at a bus terminal","a storeroom behind a ticket hall"],
+      c:[
+        {s:"the clerk",r:"Lead",a:"mature",x:"Has catalogued every item and can find anything in four minutes. Dry, kind, and lonelier than he admits."},
+        {s:"the man with the old claim",r:"Lead",a:"youngAdult",x:"Polite, certain, and completely unable to explain how he knows it is there."},
+        {s:"the new assistant",r:"Supporting",a:"youngAdult",g:"F",x:"Two weeks in and already asking why they keep any of it."},
+        {s:"the station manager",r:"Supporting",a:"midCareer",g:"F",x:"Delivers the closure notice and is embarrassed about it."},
+        {s:"the regular claimant",r:"Day Player",a:"senior",g:"F",x:"Comes in monthly to ask about the same missing thing. Two scenes, both heartbreaking."}
+      ]},
+    {k:"nail-salon-back-room",era:"2010s",genre:"drama",tracks:["film","tv"],
+      ttl:["Back Room","Cash and Card","The Chair by the Window"],
+      p:"the women who work in a nail salon spend more hours together than with their own families",
+      h:"an inspector visits and one of them is asked to say she does not work there",
+      h2:"the owner starts keeping two sets of books, and the newest employee is the one asked to write them",
+      w:["a nail salon with six chairs and a curtained back room","a salon in a strip mall between a phone shop and a bakery","a two-room salon with a kettle and a rota"],
+      c:[
+        {s:"the owner",r:"Lead",a:"mature",g:"F",x:"Built this from nothing and protects it in ways that hurt people. Never plays it as a villain."},
+        {s:"the newest employee",r:"Lead",a:"youngAdult",g:"F",x:"Fast learner, quiet, and the one asked to lie. Second-language fluency a real asset."},
+        {s:"the employee who has been there longest",r:"Supporting",a:"midCareer",g:"F",x:"Runs the room's mood. Funny all day and hard as nails at closing."},
+        {s:"the regular customer",r:"Supporting",a:"senior",g:"F",x:"Comes weekly and talks the whole time. Knows more about them than she should."},
+        {s:"the inspector",r:"Day Player",a:"midCareer",x:"One scene, entirely procedural, and it lands like a door closing."}
+      ]},
+    {k:"pet-store-night",era:"1980s",genre:"horror",tracks:["film","tv"],
+      ttl:["After Closing","The Back Tanks","Feeding Time"],
+      p:"a teenager takes a night job feeding the animals in a pet store after it closes",
+      h:"one tank at the back is not on the feeding list, and the owner will not say what is in it",
+      h2:"the animals stop making any noise at all after midnight, every night, at exactly the same time",
+      w:["a pet store with a dark back room and rows of tanks","an aquarium shop with a storeroom behind it","a pet supply store with a warehouse at the rear"],
+      c:[
+        {s:"the teenager",r:"Lead",a:"teen",x:"Guardian required. Sensible, broke, and far too willing to look. Carries most of the film alone."},
+        {s:"the owner",r:"Lead",a:"senior",x:"Kind, chatty, and gives one instruction he will not explain. The warmth is what makes it frightening."},
+        {s:"the friend",r:"Supporting",a:"teen",x:"Guardian required. Comes along to keep her company and regrets it immediately."},
+        {s:"the previous night worker",r:"Supporting",a:"youngAdult",x:"Two scenes. Will not go back inside and will not say why."},
+        {s:"the delivery driver",r:"Day Player",a:"mature",x:"Drops off a crate at eleven and refuses to carry it in."}
+      ]},
+    {k:"driving-test-day",era:"2000s",genre:"comedy",tracks:["film","tv"],
+      ttl:["Three Point Turn","Test Number Six","Mirror, Signal, Panic"],
+      p:"a driving examiner takes his last six tests before he retires",
+      h:"the final candidate of the day is the son of the man who failed him three times in 1979",
+      h2:"his own license expires that afternoon and nobody at the office has noticed",
+      w:["a test center car park and the streets around it","a small town test route with one roundabout","a suburban driving test center and a dual carriageway"],
+      c:[
+        {s:"the examiner",r:"Lead",a:"senior",x:"Fair, exact, and completely humorless in a way that is very funny. Never plays for the laugh."},
+        {s:"the last candidate",r:"Lead",a:"youngAdult",x:"Fourth attempt, genuinely a good driver, and falling apart. Physical comedy inside a stationary car."},
+        {s:"the driving instructor",r:"Supporting",a:"mature",g:"F",x:"Waiting in the car park with the other instructors. Chorus and comic engine."},
+        {s:"the test center manager",r:"Supporting",a:"midCareer",x:"Wants the paperwork done by four and has planned a small speech."},
+        {s:"the earlier candidate",r:"Day Player",a:"mature",g:"F",x:"One test, entirely silent, and the funniest thing in the film."}
+      ]},
+    {k:"rooftop-bees",era:"2010s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["Six Hives","The Roof","Nothing Flies in the Rain"],
+      p:"a caretaker keeps six beehives on the roof of the building he looks after",
+      h:"the building is sold, and the new owners want the roof clear in three weeks",
+      h2:"a neighbor is stung, and the letter that follows is written by a lawyer",
+      w:["a flat roof above a six-floor apartment building","a rooftop above a school with a fenced-off corner","a warehouse roof with hives and a view of the river"],
+      c:[
+        {s:"the caretaker",r:"Lead",a:"senior",x:"Talks to the bees more than to people. Gentle, stubborn, and about to lose the only thing he built."},
+        {s:"the new building manager",r:"Lead",a:"midCareer",g:"F",x:"Doing her job correctly and hating every part of this one."},
+        {s:"the kid from the fourth floor",r:"Supporting",a:"child",x:"Guardian required. Learns the hives with him. All scenes safe, supervised and away from live bees."},
+        {s:"the neighbor who complains",r:"Supporting",a:"mature",x:"Reasonable, allergic, and completely within his rights."},
+        {s:"the beekeeper who offers to take them",r:"Day Player",a:"mature",g:"F",x:"One scene that solves the problem and breaks his heart."}
+      ]},
+    {k:"skate-park-permit",era:"2010s",genre:"comedy",tracks:["film","tv"],
+      ttl:["Concrete Sunday","The Permit","Nobody Owns a Ramp"],
+      p:"a group of skaters build a ramp under a bridge and get one meeting to keep it",
+      h:"the meeting is in eight days and none of them can stand up in front of a room",
+      h2:"the council offers them a proper park two miles away, and half of them want to take it",
+      w:["a strip of concrete under a highway bridge","a car park behind a closed leisure center","an old loading yard turned into a skate spot"],
+      c:[
+        {s:"the one who built it",r:"Lead",a:"youngAdult",x:"Did the work and cannot explain why it matters. Physically confident, verbally hopeless."},
+        {s:"the one who can talk",r:"Lead",a:"teen",g:"F",x:"Guardian required. Sharp, funny, and the only one who reads the paperwork."},
+        {s:"the council officer",r:"Supporting",a:"mature",x:"Not against them, and buried in process. Deadpan."},
+        {s:"the neighbor who complained",r:"Supporting",a:"senior",g:"F",x:"Two scenes. Turns out to have a much better reason than anyone assumed."},
+        {s:"the youngest skater",r:"Supporting",a:"child",x:"Guardian required. Says four words in the whole film and wins the meeting."}
+      ]},
+    {k:"funeral-home-brothers",era:"1990s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["The Family Business","Two Chapels","Nobody Chooses This"],
+      p:"a small funeral home is run by a father and the daughter who never meant to stay",
+      h:"a chain offers to buy them out, and the father accepts before telling her",
+      h2:"they are asked to bury a man the family fell out with thirty years ago",
+      w:["a funeral home with two chapels and a garage","a family funeral parlor on a residential street","a converted house with a chapel and an office"],
+      c:[
+        {s:"the daughter",r:"Lead",a:"midCareer",g:"F",fam:"a",x:"Came back for six months eleven years ago. Excellent at the job and furious about being good at it."},
+        {s:"the father",r:"Lead",a:"senior",g:"M",fam:"a",x:"Buried half the neighborhood and cannot say a word about any of it. Warm in public, silent at home."},
+        {s:"the driver",r:"Supporting",a:"mature",x:"Works every service and knows both of them better than they know each other."},
+        {s:"the widow",r:"Supporting",a:"senior",g:"F",x:"Two scenes about arrangements that are really about something else."},
+        {s:"the man from the chain",r:"Day Player",a:"midCareer",x:"Pleasant, thorough, and offers exactly the right amount of money."}
+      ]},
+    {k:"night-market-stall",era:"2010s",genre:"drama",tracks:["film","tv"],
+      ttl:["Stall Nine","One Good Saturday","The Night Market"],
+      p:"a mother and son run a food stall at a night market that is being redeveloped",
+      h:"they are offered the last unit in the new building, and only one of them wants it",
+      h2:"a food critic writes about the stall, and the queue that follows breaks everything they had",
+      w:["a covered night market with forty stalls","a market street closed to traffic three nights a week","a food hall in a building with a demolition notice"],
+      c:[
+        {s:"the mother",r:"Lead",a:"mature",g:"F",fam:"a",x:"Twenty-two years at the same stall. Fast, funny, and does not want to be modernized."},
+        {s:"the son",r:"Lead",a:"youngAdult",g:"M",fam:"a",x:"Sees the new building as a way out. Loves her and is running out of patience."},
+        {s:"the stall holder opposite",r:"Supporting",a:"senior",x:"Been there longer than they have and has already signed."},
+        {s:"the market manager",r:"Supporting",a:"midCareer",g:"F",x:"Handing out units and bad news in the same conversation."},
+        {s:"the critic",r:"Day Player",a:"midCareer",x:"One visit, entirely polite, and it changes everything."}
       ]}
   ];
   // ── Which project types each seed track can be produced as ──────────────
@@ -25801,8 +26212,19 @@ const ACG = (()=>{
   // Seed genres are written for humans ("regional noir", "kitchen ensemble"), so
   // they are mapped to a bank rather than matched exactly.
   const ALL_TURNS=Object.keys(GENRE_TURNS).reduce((a,k)=>a.concat(GENRE_TURNS[k]),[]).concat(FORMAT_TURNS);
+  // Whether a seed describes a PROJECT (a plot that escalates) or a BRIEF (an
+  // approach). This has to be a property of the seed, not of the track it is
+  // produced on: a courier thriller produced as an audio drama is still a plot,
+  // and reading it as a brief ("How we are making it: three other couriers were
+  // given the same job") is nonsense.
+  const FORMAT_GENRE=/spot|campaign|brand|commercial|editorial|portraiture|catalog|industrial|music video|dance film|audio drama|animated series|scripted-doc/i;
+  function isFormatSeed(seed){
+    if(FORMAT_GENRE.test(seed.genre||""))return true;
+    const tr=seed.tracks||[];
+    return tr.length>0&&tr.every(t=>t==="spot"||t==="print");
+  }
   function turnBank(seed,track){
-    if(track==="spot"||track==="print"||(track==="other"&&!/animation|animated/i.test(seed.genre||"")))return FORMAT_TURNS;
+    if(isFormatSeed(seed))return FORMAT_TURNS;
     const g=String(seed.genre||"").toLowerCase();
     if(/animation|animated/.test(g))return GENRE_TURNS.animation;
     if(/documentary|docu/.test(g))return GENRE_TURNS.documentary;
@@ -26241,11 +26663,18 @@ const ACG = (()=>{
     {s:"additional voices",r:"Supporting",a:"adult",tracks:["other"],x:"Multiple smaller characters across the sessions — range and versatility are the entire job, not one impressive voice."},
     {s:"the movement ensemble",r:"Background",a:"adult",tracks:["other"],x:"Group sequences; must pick up choreography quickly and hold formation across takes."}
   ];
-  function padCast(slots,track,target){
+  function padCast(slots,track,target,h,res){
     const out=slots.slice(0,target);
     if(out.length>=target)return out;
-    const pool=cgShuffle(EXTRA_SLOTS.filter(e=>(e.tracks||[]).indexOf(track)>-1));
-    for(let i=0;out.length<target&&i<pool.length;i++)out.push(pool[i]);
+    const fits=EXTRA_SLOTS.filter(e=>(e.tracks||[]).indexOf(track)>-1);
+    const used=e=>(h&&h.traits.has(clean("extra "+e.s)))||(res&&res.traits.has(clean("extra "+e.s)));
+    // Prefer a padded category nobody has used yet, so two listings do not both
+    // carry the same background line.
+    const pool=cgShuffle(fits.filter(e=>!used(e))).concat(cgShuffle(fits.filter(used)));
+    for(let i=0;out.length<target&&i<pool.length;i++){
+      out.push(pool[i]);
+      if(res)addUsed(res.traits,"extra "+pool[i].s);
+    }
     while(out.length<target)out.push(slots[out.length%slots.length]);
     return out;
   }
@@ -26314,7 +26743,7 @@ const ACG = (()=>{
     return out;
   }
   function seedRoles(seed,track,type,plan,tier,castSize,h,res){
-    const slots=padCast(seed.c||[],track,castSize||(seed.c||[]).length);
+    const slots=padCast(seed.c||[],track,castSize||(seed.c||[]).length,h,res);
     const genders=seedGenders(slots);
     const eths=seedEthnicities(slots);
     const usedAges=new Set();
@@ -26338,10 +26767,8 @@ const ACG = (()=>{
         // talent reads "Enzo Sandoval" with no idea he is the repo driver.
         description:mediumSwap(
           rank==="Background"
-            ? `${s.x}${(h&&res)?" "+freshLine(ATMOS_NOTES,{},h,res):""}`.trim()
-            : rank==="Lead"
-              ? `${capFirst(s.s)} — ${s.x}${(h&&res)?" "+freshLine(DIRECTION_NOTES,{},h,res):""}`.trim()
-              : `${capFirst(s.s)} — ${s.x}${(h&&res)?" "+freshLine(SUPPORT_NOTES,{},h,res):""}`.trim(),
+            ? uniqueDescription(s.x,ATMOS_NOTES,h,res)
+            : uniqueDescription(`${capFirst(s.s)} — ${s.x}`,rank==="Lead"?DIRECTION_NOTES:SUPPORT_NOTES,h,res),
           track,type),
         gender:genders[i],
         age_range:seedAge(s.a||"adult",usedAges),
@@ -26396,6 +26823,14 @@ const ACG = (()=>{
       const seedPool=FILM_SEEDS.filter(s=>(s.tracks||[]).indexOf(track)>-1);
       if(!seedPool.length)continue;
       const unusedSeeds=seedPool.filter(s=>!h.traits.has(clean("seed "+s.k))&&!res.traits.has(clean("seed "+s.k)));
+      // While ANY premise anywhere is still unused, never reuse one — try a
+      // different track instead. Only once the entire bank is spent does the
+      // relaxed phase allow a premise to come round again.
+      if(!unusedSeeds.length){
+        if(strict)continue;
+        const anyFree=FILM_SEEDS.filter(s=>!h.traits.has(clean("seed "+s.k))&&!res.traits.has(clean("seed "+s.k)));
+        if(anyFree.length)continue;
+      }
       const seed=pick(unusedSeeds.length?unusedSeeds:seedPool.filter(s=>!res.traits.has(clean("seed "+s.k))).length?seedPool.filter(s=>!res.traits.has(clean("seed "+s.k))):seedPool);
       // A seed's `only` list wins over the track's default menu — otherwise a
       // workplace-training premise gets produced as a music video and a
@@ -26474,7 +26909,7 @@ const ACG = (()=>{
       const company=posted.label;
       x.Company=company;
 
-      const storyBank=(track==="spot"||track==="print"||track==="other")?FORMAT_LINES:STORY_LINES;
+      const storyBank=isFormatSeed(seed)?FORMAT_LINES:STORY_LINES;
       const synopsis=mediumSwap(freshLine(storyBank,x,h,res),track,type);
       const tagline=mediumSwap(freshLine(tone.tag,x,h,res),track,type);
       const reqLine=mediumSwap(freshLine(tone.req,x,h,res),track,type);
@@ -26482,6 +26917,7 @@ const ACG = (()=>{
       addUsed(res.traits,"type "+type);
       addUsed(res.traits,rootKey);
       addUsed(res.traits,seedKey);
+      addUsed(res.traits,"seed "+seed.k);
       addUsed(res.traits,turnKey);
       addUsed(res.traits,toneKey);
       addUsed(res.roleCounts,String(roles.length));
@@ -26491,6 +26927,7 @@ const ACG = (()=>{
         creatorKind:track==="stage"?"Theater Company":track==="print"?"Photography Studio":track==="spot"?"Commercial Production Company":"Production Company",
         rootKey,
         settingKey:seedKey,
+        seedOnlyKey:"seed "+seed.k,
         catalystKey:toneKey,
         storyDetail:turn,
         freshStory:true,
@@ -26532,7 +26969,7 @@ const ACG = (()=>{
   function buildHistory(existing=[]){
     const h={titles:localSet(LS_KEYS.titles),prods:localSet(LS_KEYS.prods),roles:localSet(LS_KEYS.roles),stories:localSet(LS_KEYS.stories),pays:localSet(LS_KEYS.pays),firsts:localSet(LS_KEYS.firsts),lasts:localSet(LS_KEYS.lasts),storyTexts:localSet(LS_KEYS.storyTexts),traits:localSet(LS_KEYS.traits),ages:localSet(LS_KEYS.ages),roleCounts:localSet(LS_KEYS.roleCounts),creatorKinds:localSet(LS_KEYS.creatorKinds),tags:localSet(LS_KEYS.tags),lines:localSet(LS_KEYS.lines)};
     (existing||[]).forEach(c=>{
-      addUsed(h.titles,c.title);addUsed(h.prods,c.prod);addUsed(h.prods,c.posted_by_label);addUsed(h.pays,c.pay);addUsed(h.tags,c.tagline);splitLines(c.synopsis).forEach(s=>addUsed(h.lines,s));
+      addUsed(h.titles,c.title);addUsed(h.prods,c.prod);addUsed(h.prods,c.posted_by_label);addUsed(h.pays,c.pay);addUsed(h.tags,c.tagline);splitLines(c.synopsis).forEach(s=>addUsed(h.lines,s));(c.roles||[]).forEach(r=>{if(r&&r.description)addUsed(h.lines,r.description);});
       addUsed(h.storyTexts,`${c.title||""} ${c.tagline||""} ${c.synopsis||""}`.slice(0,1200));
       addUsed(h.traits,"type "+c.type);
       addUsed(h.traits,`${c.type||""} ${c.location||""} ${(c.synopsis||"").slice(0,120)}`);
@@ -26543,6 +26980,7 @@ const ACG = (()=>{
       // here is what stops the same source story being generated twice.
       FILM_SEEDS.forEach(s=>{
         if(!storyBlob.includes(clean(s.p)))return;
+        addUsed(h.traits,"seed "+s.k);
         const own=[s.h,s.h2].filter(Boolean);
         own.concat(ALL_TURNS).forEach(t=>{
           if(storyBlob.includes(clean(t))){addUsed(h.traits,"turn "+t);addUsed(h.traits,"story "+s.k+" "+t);}
@@ -26578,7 +27016,7 @@ const ACG = (()=>{
       addUsed(titles,item.title);addUsed(prods,item.prod);addUsed(prods,item.posted_by_label);addUsed(pays,item.pay);addUsed(tags,item.tagline);(item._lines||[]).forEach(s=>addUsed(lines,s));
       addUsed(stories,item._baseKey);addUsed(stories,item._storyKey);addUsed(stories,item.title+" "+(item.synopsis||"").slice(0,180));
       addUsed(storyTexts,`${item.title||""} ${item.tagline||""} ${item.synopsis||""}`.slice(0,1200));
-      addUsed(traits,item._traitKey);addUsed(traits,item._settingKey);addUsed(traits,item._catalystKey);addUsed(traits,"type "+item.type);addUsed(creatorKinds,item._creatorKind);
+      addUsed(traits,item._traitKey);addUsed(traits,item._settingKey);addUsed(traits,item._seedOnlyKey);addUsed(traits,item._catalystKey);addUsed(traits,"type "+item.type);addUsed(creatorKinds,item._creatorKind);
       addUsed(roleCounts,item._roleCountKey);
       (item._roles||[]).forEach(r=>{addUsed(roles,r.name);addUsed(ages,r.age_range);const p=nameParts(r.name);if(p){addUsed(firsts,p.first);addUsed(lasts,p.last);}});
       // Crew credits are retired alongside character names so a director or
@@ -27498,6 +27936,7 @@ const ACG = (()=>{
       _roleCountKey:roleCountKey,
       _creatorKind:tpl.creatorKind||null,
       _settingKey:tpl.settingKey||null,
+      _seedOnlyKey:tpl.seedOnlyKey||null,
       _catalystKey:tpl.catalystKey||null,
       _crewNames:tpl.crewNames||[],
       _lines:tpl.lines||[],
@@ -27511,6 +27950,14 @@ const ACG = (()=>{
   function itemFreshEnough(item,h,res,strict){
     const storyText=item._storyTextKey||`${item.title||""} ${item.synopsis||""}`;
     if(h.stories.has(clean(item._storyKey))||h.traits.has(clean(item._traitKey)))return false;
+    // No character description may repeat anything already on the board.
+    const seen=new Set();
+    for(const r of(item._roles||[])){
+      const k=clean(r.description);
+      if(!k)continue;
+      if(seen.has(k)||h.lines.has(k))return false;
+      seen.add(k);
+    }
     if(strict&&(tooSimilarStory(storyText,h.storyTexts)||tooSimilarStory(storyText,res.storyTexts)))return false;
     return true;
   }
@@ -27529,6 +27976,7 @@ const ACG = (()=>{
         addUsed(res.storyTexts,item._storyTextKey);
         addUsed(res.traits,item._traitKey);
         addUsed(res.traits,item._settingKey);
+        addUsed(res.traits,item._seedOnlyKey);
         addUsed(res.traits,item._catalystKey);
         addUsed(res.roleCounts,item._roleCountKey);
         addUsed(res.creatorKinds,item._creatorKind);
@@ -35007,7 +35455,7 @@ const PAGE_PATH={
 const PAGE_SEO={
   "home":{title:"CastSlate: Casting Calls, Auditions & Acting Jobs — Film, TV & Theater",desc:"CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."},
   "search":{title:"Browse Castings",desc:"Browse open casting calls for film, TV, theater, and commercials. Submit your actor profile to roles that match your look and skills."},
-  "pricing":{title:"Pricing",desc:"CastSlate is free forever for actors. Upgrade to Premium from $8.25/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (550+ agencies and managers in LA & NYC), and more. See all plans and what's included."},
+  "pricing":{title:"Pricing",desc:"CastSlate is free forever for actors. Upgrade to Premium from $8.25/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA & NYC), and more. See all plans and what's included."},
   "classes":{title:"Acting Classes",desc:"Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."},
   "actor-toolkit":{title:"Actor Toolkit",desc:"Free tools, guides, and resources for working actors — headshot advice, self-tape setup, audition prep, and more."},
   "resources":{title:"Resources",desc:"Guides and resources for actors and casting directors on the CastSlate platform."},
@@ -35023,7 +35471,7 @@ const PAGE_SEO={
   "studios":{title:"For Studios",desc:"CastSlate for studios and production companies. Post castings, review talent, and hire fast."},
   "manager-mode":{title:"Manager Mode",desc:"Cast Slate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."},
   "tapelink":{title:"TapeLink: Self-Tape Auditions Built Into Casting",desc:"TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."},
-  "agency-directory":{title:"Talent Agency & Management Directory — 550+ Agencies in LA & NYC",desc:"CastSlate's Premium directory of 550+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."},
+  "agency-directory":{title:"Talent Agency & Management Directory — 650+ Agencies in LA & NYC",desc:"CastSlate's Premium directory of 650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."},
   "actor-business-card":{title:"Actor Business Card",desc:"Create your personalized actor business card with your headshot, casting details, and a unique QR code linking directly to your Cast Slate profile. Download an A4 print-ready sheet."},
   "login":{title:"Sign In",desc:"Sign in to your CastSlate account to browse castings, manage your profile, and submit to roles."},
   "register-talent":{title:"Create Actor Profile",desc:"Create your free CastSlate actor profile. Get seen by casting directors for film, TV, theater, and commercial roles."},
