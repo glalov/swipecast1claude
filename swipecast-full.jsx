@@ -3393,11 +3393,21 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .agd-eyebrow .d{width:7px;height:7px;border-radius:50%;background:var(--amber-dk);animation:agdbeat 2.4s ease-in-out infinite;}
 @keyframes agdbeat{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.55);opacity:.4}}
 .agd-h1{font-size:clamp(28px,4.3vw,52px);line-height:1.05;letter-spacing:-2px;font-weight:800;margin:0;}
-.agd-cities{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0 0;}
-.agd-city{font-size:13.5px;font-weight:700;padding:9px 18px;border-radius:100px;border:1.5px solid var(--bdr);background:var(--s1);}
-.agd-city.la{background:#A65A6E;border-color:#A65A6E;color:#fff;}
-.agd-city.bh{background:#E8902A;border-color:#E8902A;color:#2A1802;}
-.agd-city.ny{background:#2563EB;border-color:#2563EB;color:#fff;}
+/* The three cities as a masthead line: heavy caps between two rules, divided
+   by hairlines. Sized in cqi off .agd-cities rather than vw, because the copy
+   column's width does NOT track the viewport — the hero is two columns until
+   960px and one column below it, so a vw-based size wraps the line in the
+   middle of that range. The plain px font-size before the clamp is the
+   fallback for anywhere cqi is not understood. */
+.agd-cities{display:flex;flex-wrap:nowrap;align-items:center;margin:26px 0 0;padding:14px 0;
+  border-top:1.5px solid var(--t1);border-bottom:1.5px solid var(--t1);container-type:inline-size;}
+.agd-city{font-family:'Poppins',sans-serif;font-weight:800;text-transform:uppercase;white-space:nowrap;
+  color:var(--t1);line-height:1.25;letter-spacing:.14em;
+  font-size:15px;font-size:clamp(11.5px,3.44cqi,27px);
+  padding:0 17px;padding:0 clamp(9px,2.4cqi,17px);position:relative;}
+.agd-city:first-child{padding-left:0;}
+.agd-city+.agd-city::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:1.5px;height:.8em;background:rgba(26,26,46,.3);}
 .agd-lede{font-size:16px;line-height:1.75;color:var(--t2);max-width:520px;margin:18px 0 24px;}
 .agd-ctas{display:flex;gap:11px;flex-wrap:wrap;}
 .agd-btn{border:none;border-radius:9px;padding:15px 28px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14.5px;cursor:pointer;transition:transform .2s,box-shadow .2s;}
@@ -3605,13 +3615,13 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .agd-final{border-radius:20px;padding:clamp(30px,4vw,48px) clamp(20px,4vw,40px);text-align:center;background:radial-gradient(700px 300px at 50% 0,rgba(232,144,42,.14),transparent),var(--s1);border:1px solid rgba(232,144,42,.4);}
 .agd-final p{font-size:15px;line-height:1.7;color:var(--t2);max-width:580px;margin:0 auto 22px;}
 .agd-guarantee{font-size:12px;color:var(--t3);margin-top:14px;}
-.agd-coasts{font-size:13.5px;line-height:1.7;color:var(--t2);max-width:520px;margin:14px 0 0;padding-left:13px;border-left:2px solid rgba(232,144,42,.45);}
+.agd-coasts{font-size:13.5px;line-height:1.7;color:var(--t2);max-width:520px;margin:20px 0 0;padding-left:13px;border-left:2px solid rgba(232,144,42,.45);}
 @media(max-width:960px){.agd-hero-grid,.agd-flow{grid-template-columns:1fr;}}
-/* Three city pills on one line at phone widths — they wrapped to two before,
-   which left "New York" stranded on a line of its own. */
 @media(max-width:560px){
-  .agd-cities{flex-wrap:nowrap;gap:6px;}
-  .agd-city{font-size:clamp(10px,3vw,12.5px);padding:7px 11px;white-space:nowrap;}
+  .agd-cities{flex-direction:column;align-items:stretch;padding:0;}
+  .agd-city{font-size:17px;letter-spacing:.09em;padding:11px 0;border-bottom:1px solid rgba(26,26,46,.16);}
+  .agd-city:last-child{border-bottom:none;}
+  .agd-city+.agd-city::before{display:none;}
 }
 @media(prefers-reduced-motion:reduce){
   .agd-plane,.agd-route,.agd-halo,.agd-key,.agd-ring,.agd-marq-in,.agd-redact,.agd-eyebrow .d,.agd-fan .agdc{animation:none !important;}
@@ -8593,9 +8603,9 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
           <div className="agd-eyebrow"><span className="d"/>Included with Premium</div>
           <h1 className="agd-h1">650+ talent agencies and management companies, and how to reach each one.</h1>
           <div className="agd-cities">
-            <span className="agd-city la">Los Angeles</span>
-            <span className="agd-city bh">Beverly Hills</span>
-            <span className="agd-city ny">New York</span>
+            <span className="agd-city">Los Angeles</span>
+            <span className="agd-city">Beverly Hills</span>
+            <span className="agd-city">New York</span>
           </div>
           <p className="agd-coasts">Write to either coast — where you live doesn't decide who you can approach. An actor in New York can mail a Beverly Hills office and an actor in LA can mail a New York one. If a company is interested enough, they arrange it: a paid trip to their office, or a video meeting first.</p>
           <p className="agd-lede">Talent agencies are the companies that represent actors — the ones who put their clients in front of casting for studio and network productions. For every one: the mailing address of each office, the website, whether they're SAG-AFTRA franchised, how big they are, and how they actually take submissions, whether that's post, email, a web form, or only through a referral.</p>
