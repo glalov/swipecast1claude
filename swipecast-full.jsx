@@ -1675,12 +1675,13 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .nav-links span{color:#0A0A0A;font-size:13px;font-weight:500;cursor:pointer;padding:8px 12px;border-radius:9px;transition:background-color .18s ease,color .18s ease;}
 .nav-links span:hover{background:#F7F7F8;}
 .nav-links span.act{background:#F3F4F6;color:#0A0A0A;font-weight:600;}
-/* Manager Mode attention sweep — runs on site entry, settles to a faint amber highlight */
-.nav-links span.mm-attn{position:relative;color:var(--amber-dk);font-weight:600;background:rgba(232,144,42,.10);animation:mm-breathe 2.6s ease-in-out infinite;}
-.nav-links span.mm-attn:hover{background:rgba(232,144,42,.16);animation:none;}
-.nav-links span.mm-attn.act{background:rgba(232,144,42,.16);color:var(--amber-dk);}
+/* Nav attention sweep — a faint amber highlight that breathes. Sits on ONE nav
+   link at a time; currently Agencies Directory (it was Manager Mode). */
+.nav-links span.nav-attn{position:relative;color:var(--amber-dk);font-weight:600;background:rgba(232,144,42,.10);animation:mm-breathe 2.6s ease-in-out infinite;}
+.nav-links span.nav-attn:hover{background:rgba(232,144,42,.16);animation:none;}
+.nav-links span.nav-attn.act{background:rgba(232,144,42,.16);color:var(--amber-dk);}
 @keyframes mm-breathe{0%,100%{box-shadow:0 0 0 0 rgba(232,144,42,0);background:rgba(232,144,42,.08);}50%{box-shadow:0 0 16px 1px rgba(232,144,42,.50);background:rgba(232,144,42,.16);}}
-@media(prefers-reduced-motion:reduce){.nav-links span.mm-attn{animation:none;}.mm-live-hero *,.mm-live-hero *::before,.mm-live-hero *::after{animation:none!important;}.mm-live-preview{width:auto;}.mm-live-message{clip-path:none;}.mm-live-card,.mm-live-task{opacity:1;transform:none;}.mm-live-cursor,.mm-restart-cursor,.mm-click-ring,.mm-logo-click-ring,.mm-spark{display:none!important;}}
+@media(prefers-reduced-motion:reduce){.nav-links span.nav-attn{animation:none;}.mm-live-hero *,.mm-live-hero *::before,.mm-live-hero *::after{animation:none!important;}.mm-live-preview{width:auto;}.mm-live-message{clip-path:none;}.mm-live-card,.mm-live-task{opacity:1;transform:none;}.mm-live-cursor,.mm-restart-cursor,.mm-click-ring,.mm-logo-click-ring,.mm-spark{display:none!important;}}
 
 .mm-event-card{isolation:isolate;animation:mm-event-card-float 10.5s cubic-bezier(.45,0,.2,1) infinite;}
 .mm-event-card:nth-child(2){animation-delay:-5.25s;}
@@ -3395,7 +3396,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .agd-cities{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0 0;}
 .agd-city{font-size:13.5px;font-weight:700;padding:9px 18px;border-radius:100px;border:1.5px solid var(--bdr);background:var(--s1);}
 .agd-city.la{background:#A65A6E;border-color:#A65A6E;color:#fff;}
-.agd-city.bh{background:#A9640F;border-color:#A9640F;color:#fff;}
+.agd-city.bh{background:#E8902A;border-color:#E8902A;color:#2A1802;}
 .agd-city.ny{background:#2563EB;border-color:#2563EB;color:#fff;}
 .agd-lede{font-size:16px;line-height:1.75;color:var(--t2);max-width:520px;margin:18px 0 24px;}
 .agd-ctas{display:flex;gap:11px;flex-wrap:wrap;}
@@ -36936,8 +36937,8 @@ function App(){
           <span className={page==="home"?"act":""} onClick={()=>navigate("home")}>{navT('nav.home')}</span>
           <span className={page==="search"?"act":""} onClick={()=>navigate("search")}>{navT('nav.browse')}</span>
           {classesOn&&<span className={page==="classes"?"act":""} onClick={()=>navigate("classes")}>{navT('nav.classes')}</span>}
-          <span className={page==="agency-directory"?"act":""} onClick={()=>navigate("agency-directory")}>{navT('nav.agencyDirectory')}</span>
-          <span className={"mm-attn"+(page==="manager-mode"?" act":"")} onClick={()=>navigate("manager-mode")}>{navT('nav.managerMode')}</span>
+          <span className={"nav-attn"+(page==="agency-directory"?" act":"")} onClick={()=>navigate("agency-directory")}>{navT('nav.agencyDirectory')}</span>
+          <span className={page==="manager-mode"?"act":""} onClick={()=>navigate("manager-mode")}>{navT('nav.managerMode')}</span>
           <span className={page==="blog"?"act":""} onClick={()=>navigate("blog")}>{navT('nav.blog')}</span>
         </div>
         <div className="nav-actions" style={{display:"flex",gap:10,alignItems:"center"}}>
