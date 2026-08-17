@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny-ps" viewBox="0 0 1024 1024">
+  <title>CastSlate</title>
+  <rect width="1024" height="1024" fill="#0A0A0A"/>
+  <path fill="#FFFFFF" d="M128,512 L384,288 L384,384 L640,384 L640,288 L896,512 L640,736 L640,640 L384,640 L384,736 Z"/>
+</svg>
