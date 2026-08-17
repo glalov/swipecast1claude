@@ -26241,33 +26241,42 @@ const ACG = (()=>{
   }
 
   const STORY_LINES=[
+    x=>`Casting a ${x.genre} ${x.label}: ${x.premise}. ${x.capTurn}.`,
+    x=>`Now casting a ${x.label} — ${x.premise}. ${x.capTurn}.`,
+    x=>`Seeking actors for a ${x.genre} ${x.label}: ${x.premise}. ${x.capTurn}.`,
+    x=>`Casting a ${x.label} about ${x.subject}. ${x.capPremise}. ${x.capTurn}.`,
     x=>`${x.capPremise}. Then ${x.turn}.`,
     x=>`${x.capPremise}. But ${x.turn}.`,
     x=>`${x.capPremise}. ${x.capTurn}.`,
     x=>`${x.capPremise} — until ${x.turn}.`,
     x=>`${x.capPremise}, and then ${x.turn}.`,
-    x=>`Here is the story: ${x.premise}. Then ${x.turn}.`,
+    x=>`Casting a ${x.genre} ${x.label}. ${x.capPremise}, and ${x.turn}.`,
     x=>`${x.capPremise}. The problem: ${x.turn}.`,
     x=>`${x.capPremise}. Everything changes when ${x.turn}.`,
     x=>`${x.capPremise}. Then one day ${x.turn}.`,
     x=>`${x.capPremise}. Trouble starts when ${x.turn}.`,
-    x=>`It starts simple. ${x.capPremise}. Then ${x.turn}.`,
+    x=>`Casting a ${x.label}: ${x.premise}. Trouble starts when ${x.turn}.`,
     x=>`${x.capPremise}. Things go wrong when ${x.turn}.`,
     x=>`${x.capPremise}. What they do not expect: ${x.turn}.`,
-    x=>`${x.capPremise}. Then ${x.turn}, and nothing goes back to normal.`,
     x=>`${x.capPremise}. The real story starts when ${x.turn}.`,
+    x=>`Seeking actors for a ${x.label}. ${x.capPremise}. ${x.capTurn}.`,
     x=>`${x.capPremise}. And then ${x.turn}.`
   ];
-  // Ads, photo shoots and music videos describe how the thing is made, not what
-  // happens next, so they get their own plain set.
+
   const FORMAT_LINES=[
+    x=>`Casting a ${x.label}: ${x.premise}. ${x.capTurn}.`,
+    x=>`Seeking talent for a ${x.label} — ${x.premise}. ${x.capTurn}.`,
+    x=>`Now casting ${x.premise}. ${x.capTurn}.`,
     x=>`${x.capPremise}. ${x.capTurn}.`,
     x=>`${x.capPremise} — ${x.turn}.`,
+    x=>`Casting ${x.premise}. The idea: ${x.turn}.`,
     x=>`${x.capPremise}. The idea: ${x.turn}.`,
     x=>`${x.capPremise}. How we are making it: ${x.turn}.`,
+    x=>`Seeking talent for ${x.premise}. One rule: ${x.turn}.`,
     x=>`${x.capPremise}. One rule: ${x.turn}.`,
     x=>`${x.capPremise}. The plan: ${x.turn}.`,
     x=>`${x.capPremise}. What makes it different: ${x.turn}.`,
+    x=>`Casting a ${x.label}. ${x.capPremise}, and ${x.turn}.`,
     x=>`${x.capPremise}. We are shooting it so that ${x.turn}.`
   ];
 
@@ -26759,9 +26768,17 @@ const ACG = (()=>{
       const nth=(seenRank[rank]=(seenRank[rank]||0)+1)-1;
       const step=band[1]-band[0]>400?50:25;
       const amount=Math.max(band[0],base[rank]-step*Math.min(nth,3));
+      // Stills and model work label the parts ("Female Talent", "Models"); a
+      // character-driven spot still gets names. Key off the TYPE as well as the
+      // track — a print seed can be produced as a Photo Shoot from the spot
+      // track, and then the track alone does not tell you it is stills work.
+      const stills=track==="print"||/photo shoot|print campaign|modeling|ugc/i.test(type);
+      const labelled=isFormatSeed(seed)&&(stills||rank==="Background"||/model|talent|crowd|atmosphere|group|ensemble|creator|face|runner|passer|shopper|guest/i.test(s.s));
       return{
         name:titleCase(s.s),
         role_type:roleTypeFor(track,rank,type),
+        _group:labelled||rank==="Background",
+        _groupName:titleCase(s.s),
         // The character name that replaces this slot is invented, so the
         // description has to open with what the character IS — otherwise a
         // talent reads "Enzo Sandoval" with no idea he is the repo driver.
@@ -26778,9 +26795,7 @@ const ACG = (()=>{
         required_media:media,
         prescreen:rolePrescreen(rank,type,track),
         _keepDescription:true,
-        _full:true,
-        _group:rank==="Background",
-        _groupName:titleCase(s.s)
+        _full:true
       };
     });
   }
@@ -26798,17 +26813,19 @@ const ACG = (()=>{
   }
   function seedPayLine(roles,plan,track,type){
     const rates=roles.map(r=>parseRoleRate(r.pay)).filter(Boolean).map(x=>x.rate_amount);
-    if(!rates.length)return`Paid. Rate for each role is listed with its breakdown below and confirmed in writing before booking.`;
+    if(!rates.length)return`Paid. The rate for each role is listed with its breakdown below and confirmed in writing before booking.`;
     const lo=Math.min(...rates),hi=Math.max(...rates);
     const unit=track==="stage"?"week":/voiceover|podcast|animation/i.test(type)?"session":"day";
     const per=unit==="week"?"per week":unit==="session"?"per session":"per day";
     const schedule=track==="stage"?plan.line:`${plan.line} in total`;
+    // The headline figure first — that is the number a talent scans for.
     return pick([
-      `Paid — ${money(lo)} to ${money(hi)} ${per} depending on the role, across ${schedule}. Every role's exact rate and its scheduled days are listed in the breakdown below. Meals provided on every working day; no deferred payment on this production.`,
-      `All roles paid. Rates run ${money(lo)}–${money(hi)} ${per} by role size over ${schedule}. Each breakdown carries its own figure and day count so you can work out the total before you submit. Meals and local travel support on shooting days.`,
-      `Compensation: ${money(lo)}–${money(hi)} ${per}, set per role and listed on each breakdown, over ${schedule}. Deal memos are issued before the first call. Meals provided; copy and credit for everyone cast.`
+      `Roles paying up to ${money(hi)} ${per}. Rates run ${money(lo)}–${money(hi)} ${per} by role size, across ${schedule}. Each role's own figure and day count are on its breakdown. Meals provided on every working day; nothing is deferred.`,
+      `Roles paying up to ${money(hi)} ${per}. All parts are paid — ${money(lo)} to ${money(hi)} ${per} depending on the part, over ${schedule}. Deal memos go out before the first call.`,
+      `Roles paying up to ${money(hi)} ${per}. Every breakdown carries its own rate and its scheduled days, so you can work out the total before you submit. ${money(lo)}–${money(hi)} ${per} across ${schedule}; meals and local travel covered.`
     ]);
   }
+
   // Everything an actor reads is assembled here: one seed, one city, one voice.
   // The seed supplies only the shape of the story — the sentences, the schedule,
   // the money, the crew credits and the cast are built fresh, and every one of
@@ -26886,6 +26903,7 @@ const ACG = (()=>{
 
       const x={
         city:city.name,short:city.short,area:areaName,
+        subject:String(seed.p||"").replace(/^(a|an|the)\s+/i,""),
         Type:type,capType:type,label:seedLabel(type),artType:`${articleFor(seedLabel(type)).toLowerCase()} ${seedLabel(type)}`,
         genre:seed.genre,era:seed.era,
         premise:seed.p,capPremise:capFirst(seed.p),
@@ -26950,11 +26968,15 @@ const ACG = (()=>{
           shoot_start:start.toISOString().slice(0,10),
           shoot_end:end.toISOString().slice(0,10),
           shoot_location:areaName===city.name?city.name:`${areaName} (${city.name})`,
+          // One short line, the way a casting board prints it: what it does,
+          // when, where. Anything longer belongs on the role.
           schedule_note:track==="stage"
             ? (plan.weeks>0
-                ? `${plan.cap}. Rehearsals are evenings and weekends; the performance schedule is confirmed at offer.`
-                : `${plan.cap}. Sides go out 48 hours beforehand; there is no rehearsal commitment beyond the day itself.`)
-            : `${plan.cap} inside this window. Exact days are confirmed at booking, and each role's scheduled days are listed on its breakdown.`,
+                ? `Rehearses and runs ${fmtShootDay(start.toISOString())}–${fmtShootDay(end.toISOString())} in ${areaName}. ${plan.cap}; evenings and weekends.`
+                : `Reads ${fmtShootDay(start.toISOString())} in ${areaName}. Sides go out 48 hours beforehand.`)
+            : (/voiceover|podcast|animation/i.test(type)
+                ? `Records ${fmtShootDay(start.toISOString())}–${fmtShootDay(end.toISOString())}. ${plan.cap}; remote or at a studio near you.`
+                : `Shoots ${fmtShootDay(start.toISOString())}–${fmtShootDay(end.toISOString())} in ${areaName}. ${plan.cap}; exact days confirmed at booking.`),
           talent_scope:track==="stage"
             ? "Local — shoot city only"
             : (track==="print"||track==="spot"||/voiceover|podcast|animation/i.test(type))
