@@ -23222,7 +23222,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
 const ACG = (()=>{
   // Weighted so the board stays overwhelmingly New York (which is where the
   // talent base is) while still carrying real work in the other markets actors
-  // actually travel for. `areas` gives the shoot location a neighbourhood, so a
+  // actually travel for. `areas` gives the shoot location a neighborhood, so a
   // listing says "Greenpoint, Brooklyn (New York, NY)" instead of repeating the
   // city name in two fields.
   const CITIES=[
@@ -23588,12 +23588,6 @@ const ACG = (()=>{
     res.lines.add(clean(fallback));
     return fallback;
   }
-  // A voice's `order` decides which slots appear and in what sequence; that is
-  // what varies paragraph count and shape between voices, not just wording.
-  function buildSynopsis(tone,x,h,res){
-    const order=tone.order||["open","story","sched","pay","sig","close"];
-    return order.map(slot=>freshLine(tone[slot]||SHARED_LINES[slot],x,h,res)).filter(Boolean).join("\n\n");
-  }
   function localSet(k){
     try{return new Set(JSON.parse(localStorage.getItem(k)||"[]").map(clean).filter(Boolean));}
     catch(_){return new Set();}
@@ -23633,16 +23627,29 @@ const ACG = (()=>{
     const stop=new Set("about actor actors after again against also around because before being between booking casting choice credit current dates days each every exact final follows from honest into local location looking main most need needs only other performers please problem process project projects roles scene scenes shoot shooting should story submit talent team their there these they this through under with without work works would".split(" "));
     return clean(v).split(/\s+/).filter(w=>w.length>3&&!stop.has(w));
   }
+  // Term sets are memoised because this is called once per generation ATTEMPT
+  // against every story already on the board. Recomputing them each time made
+  // the check quadratic — with a couple of hundred live listings a single batch
+  // took over a minute, almost all of it re-tokenising the same strings.
+  const _termCache=new Map();
+  function meaningTermSet(v){
+    let s=_termCache.get(v);
+    if(!s){
+      if(_termCache.size>4000)_termCache.clear();
+      s=new Set(meaningTerms(v));
+      _termCache.set(v,s);
+    }
+    return s;
+  }
   function tooSimilarStory(text,set){
-    const a=[...new Set(meaningTerms(text))];
+    const a=[...meaningTermSet(text)];
     if(a.length<12)return false;
     for(const old of set||[]){
-      const b=[...new Set(meaningTerms(old))];
-      if(b.length<12)continue;
+      const bs=meaningTermSet(old);
+      if(bs.size<12)continue;
       let shared=0;
-      const bs=new Set(b);
       a.forEach(w=>{if(bs.has(w))shared++;});
-      if(shared>=11&&shared/Math.min(a.length,b.length)>0.48)return true;
+      if(shared>=11&&shared/Math.min(a.length,bs.size)>0.48)return true;
     }
     return false;
   }
@@ -23985,6 +23992,7 @@ const ACG = (()=>{
       ttl:["Nine Minutes of Air","The Register Stays Open","Everybody Outside"],
       p:"a badly planned robbery of a neighborhood check-cashing counter stalls before it starts",
       h:"the crowd that gathers on the sidewalk turns a small crime into a public performance nobody knows how to end",
+      h2:"the manager recognizes one of the voices under the mask, and says nothing for the first two hours",
       w:["a check-cashing storefront on a commercial strip","a credit-union branch on the hottest afternoon of the year","a corner currency exchange with the gate half down"],
       c:[
         {s:"the one who planned it",r:"Lead",a:"youngAdult",x:"Improvising a plan they thought through for six weeks and understood for about nine minutes. Funny when cornered, tender toward the people they are frightening, and increasingly aware the whole block is watching."},
@@ -23997,6 +24005,7 @@ const ACG = (()=>{
       ttl:["Reasonable Doubt","Room Without Windows","The Vote at Four"],
       p:"a jury is sent to decide a case the courthouse already treats as settled",
       h:"one juror will not vote with the room, and the certainty everyone walked in with starts coming apart hour by hour",
+      h2:"a note passed to the foreperson makes it clear somebody in the room already knows the defendant",
       w:["a courthouse deliberation room during a heat wave","a converted upstairs jury room with one broken fan","a county annex room with a table too small for twelve"],
       c:[
         {s:"the holdout",r:"Lead",a:"midCareer",x:"Quiet, stubborn, and unwilling to be hurried. Makes doubt feel like a moral position rather than a debating trick, and never raises the volume to win."},
@@ -24009,6 +24018,7 @@ const ACG = (()=>{
       ttl:["Prisoner in the Passenger Seat","Four States by Friday","The Long Way Back"],
       p:"a burnt-out skip tracer has to bring a soft-spoken accountant back across four states by Friday",
       h:"the man in handcuffs turns out to be better company than anyone in the tracer's actual life, and both of them are being followed",
+      h2:"the accountant offers to split what he took, and the offer is small enough to be true",
       w:["a two-lane highway motel strip","a Greyhound station at three in the morning","a borrowed sedan and the diners between two cities"],
       c:[
         {s:"the tracer",r:"Lead",a:"mature",x:"Bad-tempered, broke, and allergic to sentiment. The comedy lives in how hard they work at not enjoying the company."},
@@ -24019,8 +24029,9 @@ const ACG = (()=>{
       ]},
     {k:"night-shift-driver",era:"1970s",genre:"urban character study",tracks:["film","tv"],
       ttl:["Between Fares","The City at Four A.M.","Nobody Rides This Late"],
-      p:"a night-shift driver moving through a city he no longer feels part of",
+      p:"a night-shift driver moves through a city he no longer feels part of",
       h:"a fixed idea about rescuing one stranger hardens into something the audience can see coming before he can",
+      h2:"a passenger leaves something in the back seat that he decides, over three nights, not to hand in",
       w:["a night dispatch garage and the streets around it","a 24-hour diner used as a break room by every driver on the route","a fare route that keeps circling the same six blocks"],
       c:[
         {s:"the driver",r:"Lead",a:"youngAdult",x:"Sleepless, courteous, and slowly untethering. The role is built from small talk and silence, not speeches; must be watchable doing almost nothing."},
@@ -24031,8 +24042,9 @@ const ACG = (()=>{
       ]},
     {k:"diner-two-hander",era:"1990s",genre:"crime comedy",tracks:["film","stage"],
       ttl:["Split the Check","The Tuesday Special","Two Coffees, One Plan"],
-      p:"a couple at a roadside diner talk themselves into robbing the room they are sitting in",
+      p:"two people at a roadside diner talk themselves into robbing the room they are sitting in",
       h:"the conversation is the crime, and by the time the plan is good enough to work neither of them can back out of it",
+      h2:"the plan works, and the forty minutes afterwards are the part neither of them rehearsed",
       w:["a highway diner between the breakfast and lunch rush","an all-night counter attached to a gas station","a corner luncheonette with four booths and one exit"],
       c:[
         {s:"the talker",r:"Lead",a:"youngAdult",x:"Charming, restless, and wrong about almost everything with total confidence. The comedy has to stay affectionate."},
@@ -24045,6 +24057,7 @@ const ACG = (()=>{
       ttl:["One More Card","The Undercard","Weight Class"],
       p:"a club fighter well past his window takes one more bout because the money covers a debt he will not explain",
       h:"the fight is not the problem; the week before it is, and every person around him wants a piece of the payout",
+      h2:"the promoter quietly offers more money to lose than to win, and only the trainer is told",
       w:["a second-floor gym above a hardware store","a union hall converted for one night of boxing","a rec-center ring with folding chairs on three sides"],
       c:[
         {s:"the fighter",r:"Lead",a:"mature",g:"M",x:"Gentle, slow-spoken, and running out of ways to say no. Physicality matters; so does the refusal to ask for sympathy."},
@@ -24055,8 +24068,9 @@ const ACG = (()=>{
       ]},
     {k:"phone-room-sales",era:"2000s",genre:"workplace drama",tracks:["film","tv","stage"],
       ttl:["The Board","Closers","Nothing to Sell"],
-      p:"a room of young salesmen work phones for a company whose product may not exist",
+      p:"young salesmen in a phone room sell shares in a company whose product may not exist",
       h:"a new hire good enough to top the board starts asking what he is actually selling, and the room turns on him for it",
+      h2:"the room is told to shred everything on a Friday, and the new hire takes one box home",
       w:["a leased office floor with no furniture but desks and phones","a converted warehouse mezzanine with a whiteboard sales ladder","a suburban office park suite rented month to month"],
       c:[
         {s:"the new hire",r:"Lead",a:"youngAdult",x:"Hungry, quick, and just moral enough to be a problem. Must be likeable while doing indefensible things."},
@@ -24069,6 +24083,7 @@ const ACG = (()=>{
       ttl:["Frame Eleven","The Proof Sheet","Nothing in the Background"],
       p:"a wedding photographer developing a routine job notices something in the background of one frame",
       h:"the more she enlarges it, the less she can prove — and the family in the photographs starts calling",
+      h2:"a second client asks for the same date's negatives, and neither of them was at that wedding",
       w:["a rented darkroom in the back of a camera shop","a converted apartment bedroom with blackout foil on the window","a photo lab at a suburban strip mall after closing"],
       c:[
         {s:"the photographer",r:"Lead",a:"midCareer",g:"F",x:"Methodical, solitary, and better at looking than talking. Carries long wordless stretches; the tension is in her attention."},
@@ -24081,6 +24096,7 @@ const ACG = (()=>{
       ttl:["The Home Study","Seven Days, One Kitchen","Best Interests"],
       p:"two divorced parents are required to share the family apartment for one week while a court-appointed evaluator observes",
       h:"performing a functional household in front of a stranger forces them to notice which parts were never a performance",
+      h2:"the evaluator's report is due Friday and one of them finds a draft of it in the recycling",
       w:["a two-bedroom apartment neither of them can afford alone","a rowhouse mid-renovation with one working bathroom","a rented duplex with the evaluator's folding chair in the hall"],
       c:[
         {s:"the parent who stayed",r:"Lead",a:"midCareer",g:"F",fam:"a",x:"Organized to the point of brittleness. Every kindness this week has a lawyer standing behind it, and she hates that she is good at it."},
@@ -24093,6 +24109,7 @@ const ACG = (()=>{
       ttl:["High Water","The County Road Is Closed","What the River Took"],
       p:"the only officer in a small river town works the week the water comes up",
       h:"what surfaces in a flooded field belongs to a neighbor he has covered for since they were boys",
+      h2:"the county asks him to sign off the search early so the road can reopen for the harvest",
       w:["a river town with two roads and a sandbagged main street","a county seat where the evidence locker is a hall closet","a farming valley cut in half by a swollen creek"],
       c:[
         {s:"the officer",r:"Lead",a:"mature",x:"Decent, tired, and about to make one choice that undoes thirty years of being the reliable one. Interior, minimal dialogue."},
@@ -24103,8 +24120,9 @@ const ACG = (()=>{
       ]},
     {k:"pawn-shop-week",era:"1970s",genre:"character study",tracks:["film","stage"],
       ttl:["Collateral","Thirty Days to Redeem","The Back Room"],
-      p:"a week behind the counter of a pawn shop where every transaction is somebody's worst day",
+      p:"a pawnbroker works a week in which every transaction across his counter is somebody's worst day",
       h:"one item comes across the counter that the owner recognizes, and the routine he has built to survive stops working",
+      h2:"a customer comes in to redeem something that was sold eleven years ago, with the original ticket",
       w:["a pawn shop under an elevated train line","a two-window loan shop between a bail bondsman and a laundromat","a family pawnbroker's on a street that is gentrifying around it"],
       c:[
         {s:"the broker",r:"Lead",a:"senior",x:"Courteous, armored, and running on habit. The entire performance is what they refuse to react to."},
@@ -24117,6 +24135,7 @@ const ACG = (()=>{
       ttl:["Ashes in the Trunk","Four Hundred Miles","The Urn Rides Shotgun"],
       p:"three adult siblings drive a parent's ashes to a town none of them have visited since childhood",
       h:"the trip is nine hours and the argument they have been avoiding is about six hours long",
+      h2:"the town they are driving to has no record of the plot their mother paid for",
       w:["a borrowed station wagon and the rest stops between two states","a rental car with a broken radio on a holiday weekend","a pickup with a jump seat and a cooler nobody packed properly"],
       c:[
         {s:"the oldest",r:"Lead",a:"mature",g:"F",fam:"a",x:"Booked the motel, printed the directions, and resents every mile. Control as a love language."},
@@ -24127,8 +24146,9 @@ const ACG = (()=>{
       ]},
     {k:"supermarket-local",era:"1980s",genre:"labor ensemble",tracks:["film","tv","stage"],
       ttl:["Aisle Six","The Vote at the Loading Dock","Local 1140"],
-      p:"the staff of a neighborhood grocery decide whether to walk out three days before a holiday",
+      p:"the workers at a neighborhood grocery decide whether to walk out three days before a holiday",
       h:"the manager taking the company's side grew up bagging groceries beside the people he is now counting against",
+      h2:"the walkout is called off by a phone vote nobody in the store remembers being asked to join",
       w:["a family-owned grocery being sold to a regional chain","a supermarket with a loading dock used as a meeting room","a co-op market with a union notice taped to the time clock"],
       c:[
         {s:"the shop steward",r:"Lead",a:"midCareer",g:"F",x:"Competent, funny, and carrying a room that does not want to be carried. Public courage, private terror."},
@@ -24139,8 +24159,9 @@ const ACG = (()=>{
       ]},
     {k:"bowling-league",era:"1990s",genre:"deadpan comedy",tracks:["film","tv"],
       ttl:["Frame Nine","The Wednesday League","Handicap"],
-      p:"a Wednesday-night bowling league in a house that is closing at the end of the season",
+      p:"a Wednesday-night bowling league plays out its last season in a house that is closing",
       h:"the last tournament matters far more than it should to five people who have nothing else scheduled",
+      h2:"the alley's owner offers the lease to whoever wins the last tournament, and means it",
       w:["a sixteen-lane bowling alley with a bar at one end","a candlepin house in a strip mall","a union-sponsored alley in a basement with a hand-written scoreboard"],
       c:[
         {s:"the captain",r:"Lead",a:"mature",x:"Takes it seriously in a way that is funny for twenty minutes and moving after that. Deadpan, no winking."},
@@ -24153,6 +24174,7 @@ const ACG = (()=>{
       ttl:["Third Floor, Nights","The Quiet Wing","Charge Nurse"],
       p:"an overnight orderly on an understaffed ward becomes the only continuity a few patients have",
       h:"covering for a colleague's mistake puts him between the patients he protects and the job he needs",
+      h2:"a patient asks him to do something small and entirely against the rules, and he does it",
       w:["a step-down unit on a hospital's oldest floor","a county hospital wing scheduled for closure","a rehabilitation ward with two nurses for thirty beds"],
       c:[
         {s:"the orderly",r:"Lead",a:"youngAdult",x:"Kind in a completely unsentimental way. Carries the film through small, repeated acts of care."},
@@ -24165,6 +24187,7 @@ const ACG = (()=>{
       ttl:["No Vacancy After Ten","Room Nineteen","The Ledger"],
       p:"the manager of a highway motel keeps a private ledger of who really stays there",
       h:"a guest checks in under a name already in the book, and the manager has to decide what the record is for",
+      h2:"a police request arrives for eleven years of the register, and the manager has kept two sets",
       w:["a twelve-room motel on a bypassed state highway","a courtyard motor lodge behind a truck stop","a roadside inn with a shared ice machine and a payphone"],
       c:[
         {s:"the manager",r:"Lead",a:"mature",x:"Observant, incurious out loud, and lonelier than the job explains. Almost no exposition; everything is behavior."},
@@ -24177,6 +24200,7 @@ const ACG = (()=>{
       ttl:["Health Grade","Family Meal","The Night Before Inspection"],
       p:"a family restaurant has one night to fix everything before a re-inspection that decides whether it opens again",
       h:"the fastest way to pass involves a lie the two owners have never agreed on",
+      h2:"the inspector turns out to be someone the family fired nine years ago",
       w:["a twenty-seat neighborhood restaurant with a basement prep kitchen","a takeout counter with three generations working the line","a diner that has been in the same family since the sixties"],
       c:[
         {s:"the owner",r:"Lead",a:"mature",fam:"a",x:"Built the place and will not be told about it. Pride, exhaustion, and one late admission."},
@@ -24189,6 +24213,7 @@ const ACG = (()=>{
       ttl:["Rebuttal","The Affirmative","Two Minutes, No Notes"],
       p:"an underfunded high-school debate team gets one season with a coach who is on his last professional chance",
       h:"the argument that wins the regional round is one the team does not believe, and the coach knew that when he assigned it",
+      h2:"the team is offered a place at nationals on the condition one member is dropped",
       w:["a public high school with a debate room that doubles as storage","a magnet school gym set up for a regional tournament","a community-college lecture hall borrowed for finals"],
       c:[
         {s:"the coach",r:"Lead",a:"mature",x:"Brilliant, difficult, and burning through their last institutional goodwill. No inspirational-teacher gloss."},
@@ -24201,6 +24226,7 @@ const ACG = (()=>{
       ttl:["Side B","The Room Tone","Everything on the Tape"],
       p:"a freelance audio technician is hired to clean up a recording made in a public place",
       h:"the clearer he makes it, the more certain he becomes that he is the only person who has heard what is on it",
+      h2:"the client stops answering, and a second copy of the recording arrives by post",
       w:["a one-room audio workshop in a converted loft","a basement studio behind a music store","a rented edit suite in a building that empties at six"],
       c:[
         {s:"the technician",r:"Lead",a:"midCareer",x:"Private to the point of secrecy, proud of a craft nobody notices. Long solo passages; the performance is listening."},
@@ -24213,6 +24239,7 @@ const ACG = (()=>{
       ttl:["Fourth Floor Rear","The Courtyard","What I Can See From Here"],
       p:"a housebound tenant watching the building across the courtyard becomes convinced of something about a neighbor",
       h:"being right and being believed turn out to be entirely separate problems",
+      h2:"the neighbour knocks, introduces himself, and asks her — pleasantly — to stop",
       w:["a pre-war building with a shared courtyard and no elevator","a garden apartment complex with facing balconies","a rowhouse block where every kitchen window looks at another"],
       c:[
         {s:"the tenant",r:"Lead",a:"mature",g:"F",x:"Sharp, funny, and dependent in ways that humiliate her. Physically restricted for most of the film — the whole performance is above the waist."},
@@ -24225,6 +24252,7 @@ const ACG = (()=>{
       ttl:["Voluntary Surrender","The Hook","Nineteen Cars"],
       p:"a repossession crew works the last week of a month they are short on",
       h:"one car on the list belongs to somebody the newest driver knows, and the crew's rules do not cover it",
+      h2:"the crew is told to take a car that has already been paid off, and the paperwork agrees with them",
       w:["an impound yard behind a chain-link fence","a tow office attached to a body shop","a lot beside a highway on-ramp with a trailer for an office"],
       c:[
         {s:"the new driver",r:"Lead",a:"youngAdult",x:"Needs the job, hates the job, good at the job. Comedy first, conscience second."},
@@ -24237,6 +24265,7 @@ const ACG = (()=>{
       ttl:["Floor Forty","After the Lights","The Crew That Comes at Nine"],
       p:"a night cleaning crew works an office tower whose daytime occupants they never meet",
       h:"something left on a desk on thirty-eight makes one of them a witness to a crime nobody has reported yet",
+      h2:"a floor is added to the contract that is not on the building's own directory",
       w:["a downtown office tower between nine at night and five in the morning","a corporate campus building with a badge-only elevator","a bank headquarters with an empty trading floor"],
       c:[
         {s:"the crew lead",r:"Lead",a:"mature",g:"F",x:"Protects her crew before anything else, including the truth. Authority built entirely from calm."},
@@ -24247,8 +24276,9 @@ const ACG = (()=>{
       ]},
     {k:"small-claims",era:"1990s",genre:"comic drama",tracks:["stage","film","tv"],
       ttl:["Docket Twelve","Four Hundred and Ten Dollars","The People's Part"],
-      p:"a small-claims docket where four unrelated disputes are heard in one morning",
+      p:"four unrelated disputes are heard on the same small-claims docket in one morning",
       h:"the smallest case on the list turns out to be about something neither party can name in a courtroom",
+      h2:"both parties turn up with the same photograph, cropped differently",
       w:["a small-claims courtroom with fluorescent light and folding chairs","a municipal hearing room shared with the parking authority","a county courthouse annex with a broken microphone"],
       c:[
         {s:"the claimant",r:"Lead",a:"mature",g:"F",x:"Prepared a binder. The binder is not about the money. Comic precision that turns painful."},
@@ -24259,8 +24289,9 @@ const ACG = (()=>{
       ]},
     {k:"record-store-closing",era:"1990s",genre:"comedy",tracks:["film","tv","stage"],
       ttl:["Last Day of Inventory","Cutout Bin","The Sign Goes in the Window"],
-      p:"the staff of a record store spend the final week before it closes doing everything except packing",
+      p:"the clerks at a record store spend the final week before it closes doing everything except packing",
       h:"the owner has known for a month and told nobody, and the week becomes the argument he has been avoiding",
+      h2:"a buyer offers to keep the store open with everyone's job intact, if the owner stays out of it",
       w:["a two-level used record store with a listening booth","a music shop wedged between a barber and a bodega","a store whose back room has been a rehearsal space for a decade"],
       c:[
         {s:"the owner",r:"Lead",a:"mature",x:"Evasive, funny, and grieving something they refuse to call grief."},
@@ -24273,6 +24304,7 @@ const ACG = (()=>{
       ttl:["Say It Exactly","The Interpreter's Chair","Word for Word"],
       p:"a court interpreter is assigned to a hearing where the words themselves decide the outcome",
       h:"an exact translation and an honest one turn out to be different sentences, and only one person in the room can tell",
+      h2:"the applicant asks her, in the language nobody else speaks, to leave one sentence out",
       w:["an immigration hearing room with three chairs and a recorder","a legal-aid office conference room","a hospital consultation room used for a deposition"],
       c:[
         {s:"the interpreter",r:"Lead",a:"midCareer",x:"Professionally invisible and about to stop being. Fluency in a second language a real asset for this role; precision under pressure is the whole part."},
@@ -24285,6 +24317,7 @@ const ACG = (()=>{
       ttl:["Whoever Locks Up","Last Call, First Claim","The Back Bar"],
       p:"a neighborhood bar is left to two people who each assumed it was going to them alone",
       h:"they have to work one more shift together before the lawyer's meeting, and the regulars are keeping score",
+      h2:"the will turns out to leave the building to neither of them, and both to the same third person",
       w:["a corner bar with a back room used for wakes","a tavern under an apartment building with the same six regulars","a shot-and-beer bar that has never changed its sign"],
       c:[
         {s:"the one who worked there",r:"Lead",a:"midCareer",g:"F",fam:"a",x:"Twelve years behind the bar and no paperwork to show for it. Physical competence; anger held at a simmer."},
@@ -24297,6 +24330,7 @@ const ACG = (()=>{
       ttl:["No Power Till Tuesday","The Ice Road","One Generator"],
       p:"an ice storm strands a family in a farmhouse with one generator and a decision that cannot wait for the roads",
       h:"the property is being sold and the person who arranged it is in the house pretending they are not",
+      h2:"a buyer arrives on foot through the storm, a day early, and has to be put up",
       w:["a farmhouse at the end of a county road","a lake house closed for the season and opened in an emergency","a farmstead with a heated barn and an unheated second floor"],
       c:[
         {s:"the sibling who stayed",r:"Lead",a:"midCareer",fam:"a",x:"Did the caretaking and expects that to count. Competence as an accusation."},
@@ -24309,6 +24343,7 @@ const ACG = (()=>{
       ttl:["Unit Twelve","The Long Tour","Two Blocks Out"],
       p:"a paramedic near the end of a run of night shifts starts recognizing the addresses",
       h:"a call he handled badly six weeks ago comes back on the board with the same apartment number",
+      h2:"his partner files a report that leaves his name off it, and he cannot work out why",
       w:["an ambulance bay behind a hospital and the streets on its route","a volunteer squad house in a small city","a two-unit station covering a district that has lost its clinic"],
       c:[
         {s:"the medic",r:"Lead",a:"midCareer",x:"Extremely good at the work and increasingly unable to leave it in the truck. Technical fluency helps; the part is exhaustion, not heroics."},
@@ -24319,8 +24354,9 @@ const ACG = (()=>{
       ]},
     {k:"minor-league-clubhouse",era:"1980s",genre:"sports ensemble",tracks:["film","tv"],
       ttl:["Double-A","The Bus League","Called Up"],
-      p:"a minor-league clubhouse in the last month of a season nobody will remember",
+      p:"a minor-league clubhouse empties out through the last month of a season nobody will remember",
       h:"one call-up spot is open and the two men closest to it have been road roommates for three years",
+      h2:"the call-up is offered to the veteran instead, as a favor, and he has to decide in an hour",
       w:["a minor-league clubhouse with plywood lockers","a team bus and the motels between four cities","a ballpark with a grain elevator behind the outfield"],
       c:[
         {s:"the veteran catcher",r:"Lead",a:"mature",g:"M",x:"Knows he is teaching the man taking his job. No self-pity, enormous grace."},
@@ -24333,6 +24369,7 @@ const ACG = (()=>{
       ttl:["Master Key","Nobody Changes the Locks","Twenty-One Doors"],
       p:"a neighborhood locksmith knows the inside of every apartment on four blocks",
       h:"a customer's offer to buy that knowledge arrives the same week his shop's lease is not renewed",
+      h2:"a break-in happens on his route using a key only three people could have cut",
       w:["a locksmith's shop the width of a hallway","a hardware store with a key counter at the back","a van and a route through a neighborhood the owner grew up in"],
       c:[
         {s:"the locksmith",r:"Lead",a:"mature",x:"Trusted by everyone and about to test that. Interior, careful, almost no dialogue in the second half."},
@@ -24345,6 +24382,7 @@ const ACG = (()=>{
       ttl:["Session Three","The Boathouse Rule","Nine Weeks"],
       p:"the counselors at a low-budget summer camp run a season for children while barely being adults themselves",
       h:"an accident nobody reports on the first weekend shapes every choice for the rest of the summer",
+      h2:"a parent arrives mid-session asking questions about a summer nine years ago",
       w:["a lakeside camp with cabins that need paint","a day camp run out of a county park","a church camp with a waterfront and one van"],
       c:[
         {s:"the head counselor",r:"Lead",a:"youngAdult",g:"F",x:"Nineteen, in charge of forty children, and holding it together with a clipboard."},
@@ -24357,6 +24395,7 @@ const ACG = (()=>{
       ttl:["Forty Minutes Each Way","The Carpool","Seat Four"],
       p:"four coworkers who share a long commute learn one of them is about to be laid off",
       h:"the person who knows is in the car, and there are eight more mornings before the announcement",
+      h2:"the layoff list changes on Wednesday, and now it is a different person in the car",
       w:["a sedan on a highway commute between a suburb and a plant","a company van running a shift route","a car pool crossing a bridge at the same hour every day"],
       c:[
         {s:"the one who knows",r:"Lead",a:"midCareer",x:"Middle management, decent, and made to carry a secret that is not theirs. Everything happens on their face."},
@@ -24369,6 +24408,7 @@ const ACG = (()=>{
       ttl:["Withheld","The Building Meeting","Six Floors, No Heat"],
       p:"the tenants of a walk-up organize the winter their heat stops working",
       h:"the landlord's offer is good enough to split the building in half by the second meeting",
+      h2:"the heat comes back on for one apartment only, and everyone can hear the radiators",
       w:["a six-floor walk-up with a lobby used for meetings","a rent-stabilized building being emptied one unit at a time","a tenement block where the boiler has failed three winters running"],
       c:[
         {s:"the organizer",r:"Lead",a:"midCareer",g:"F",x:"Reluctant leader who is better at this than she wants to be. Public competence, private cost."},
@@ -24381,6 +24421,7 @@ const ACG = (()=>{
       ttl:["The Territory","Sample Case","Four Accounts Left"],
       p:"a salesman works a shrinking territory in the last year before the company drops the route",
       h:"the customer he has called on for nineteen years does not recognize him",
+      h2:"the company offers him the route back on half commission if he trains his replacement",
       w:["a two-lane route between four small towns","a chain of hardware and feed stores off a state highway","a motel circuit and the diners between accounts"],
       c:[
         {s:"the salesman",r:"Lead",a:"senior",x:"Courteous, practiced, and running out of road. Every scene is the same pitch delivered with less of them behind it."},
@@ -24391,8 +24432,9 @@ const ACG = (()=>{
       ]},
     {k:"group-home-workers",era:"2000s",genre:"care-work drama",tracks:["tv","film","stage"],
       ttl:["The House on Fell Street","Overnight Awake","Three Residents, Two Staff"],
-      p:"the staff of a small residential home cover a weekend two people short",
+      p:"two workers at a small residential home cover a weekend they are meant to staff with four",
       h:"an incident report written honestly will close the house; written carefully it will not",
+      h2:"a resident asks to make a phone call the house is not allowed to let them make",
       w:["a converted two-family house licensed for four residents","a supported-living house on a suburban street","a group home with a staff office in the former dining room"],
       c:[
         {s:"the weekend lead",r:"Lead",a:"midCareer",g:"F",x:"Two years in, still calling residents by their preferences and not their files. The report is hers to write."},
@@ -24405,6 +24447,7 @@ const ACG = (()=>{
       ttl:["Correction, Page Two","The Second Source","Kill the Story"],
       p:"a small-city newsroom publishes a story that turns out to rest on one source",
       h:"the reporter is right and cannot prove it, and the paper has nine hours to decide what to print",
+      h2:"the source recants on the record, then asks for the retraction to be delayed one week",
       w:["a metro daily newsroom with half the desks empty","a weekly paper operating out of a storefront","a regional newsroom sharing a floor with a radio station"],
       c:[
         {s:"the reporter",r:"Lead",a:"youngAdult",g:"F",x:"Right, unbearable about it, and twenty-six. Speed and certainty, then the crack."},
@@ -24417,6 +24460,7 @@ const ACG = (()=>{
       ttl:["Fourteen Files","Continuance","The Hallway Deal"],
       p:"a public defender with an impossible caseload works one arraignment day",
       h:"the client with the weakest case is the only one telling the truth, and there is no time to prove it",
+      h2:"a plea deal arrives that is good for the client and depends on him saying something untrue",
       w:["a criminal courthouse hallway used as an office","a legal-aid office with files on the windowsills","an arraignment part running four hours behind"],
       c:[
         {s:"the defender",r:"Lead",a:"midCareer",x:"Fast, funny, running on triage. Idealism visible only in what they refuse to do."},
@@ -24429,6 +24473,7 @@ const ACG = (()=>{
       ttl:["Permit Pending","The Lunch Rush","Two Names on the Lease"],
       p:"two friends run a food truck that is finally doing well enough to fight about",
       h:"an offer for a permanent stall only has room for one name on the paperwork",
+      h2:"a chain offers to buy the recipe outright, and only one of them was in the meeting",
       w:["a food truck working an office-park lunch route","a lot with six trucks and one shared power drop","a night market stall with a two-year waiting list"],
       c:[
         {s:"the cook",r:"Lead",a:"youngAdult",x:"Talent without paperwork. Charming, chaotic, quietly hurt."},
@@ -24441,6 +24486,7 @@ const ACG = (()=>{
       ttl:["Adjunct","Section 104","The Faculty Lounge"],
       p:"the adjunct faculty of a community college department share one office and no security",
       h:"a single full-time line opens and everyone in the room is qualified for it",
+      h2:"the line is filled from outside, and the department is asked to train the new hire",
       w:["a shared adjunct office with four desks and six people","a community college annex above a shopping plaza","a department suite where the copier is the social center"],
       c:[
         {s:"the long-serving adjunct",r:"Lead",a:"mature",g:"F",x:"Eleven years, best teacher in the building, no health insurance. Dry, tough, never pitiable."},
@@ -24453,6 +24499,7 @@ const ACG = (()=>{
       ttl:["Route Nineteen","Dispatch","The Board"],
       p:"a trucking dispatch office runs a company balanced on two contracts",
       h:"losing one route means choosing which drivers keep working, and the dispatcher grew up with most of them",
+      h2:"a driver is caught running an unlogged load, and the dispatcher approved it herself",
       w:["a dispatch office over a truck yard","a freight terminal with a driver's lounge and a whiteboard","a family haulage business with eleven trucks"],
       c:[
         {s:"the dispatcher",r:"Lead",a:"midCareer",g:"F",x:"Runs the board and the loyalties. Fast talk, slow decisions."},
@@ -24465,6 +24512,7 @@ const ACG = (()=>{
       ttl:["House Sitting","The Typewriter and the Toaster","Brothers, Kitchen, Night"],
       p:"two estranged brothers share a house they are minding for a parent",
       h:"over four nights each begins to live the life he has spent years despising in the other",
+      h2:"a producer calls the house and mistakes one brother for the other, twice",
       w:["a suburban kitchen with the blinds shut for four days","a bungalow being emptied for a sale","a family house where nothing has been moved in a decade"],
       c:[
         {s:"the one with the career",r:"Lead",a:"midCareer",g:"M",fam:"a",x:"Orderly, superior, coming apart in slow, funny increments. Enormous physical and vocal stamina required."},
@@ -24477,6 +24525,7 @@ const ACG = (()=>{
       ttl:["The Wake on Third","Who Gets the Chair","Cold Cuts and Coffee"],
       p:"a family and their neighbors gather in an apartment the night after a funeral",
       h:"a will nobody expected turns condolence into negotiation before the coffee is finished",
+      h2:"the lease on the apartment was never in the parent's name, and the neighbours know whose it is",
       w:["a railroad apartment with folding chairs down the hall","a parish hall borrowed for a family gathering","a rowhouse front room with the good furniture uncovered"],
       c:[
         {s:"the eldest child",r:"Lead",a:"mature",g:"F",fam:"a",x:"Hosting, grieving, and counting. Warmth that keeps snapping into administration."},
@@ -24489,6 +24538,7 @@ const ACG = (()=>{
       ttl:["Eight for Dinner","The Second Bottle","Something in the Salad"],
       p:"a dinner party assembled to celebrate one couple's good news",
       h:"the news arrives forty minutes late and is not what any of the guests were told to expect",
+      h2:"one guest arrives with somebody nobody invited, and the evening reorganizes around them",
       w:["a small apartment with a table borrowed from a neighbor","a brownstone dining room with too many chairs","a rented loft set for a dinner the hosts cannot afford"],
       c:[
         {s:"the host",r:"Lead",a:"midCareer",g:"F",x:"Performing composure through five courses. Comic precision, then a genuine break."},
@@ -24501,6 +24551,7 @@ const ACG = (()=>{
       ttl:["Room 1114","The Layover","One Night, Two Chairs"],
       p:"two people who were once everything to each other meet in a hotel room between flights",
       h:"they have four hours, an old argument, and one piece of news that makes the argument obsolete",
+      h2:"the meeting was arranged by a third person who is waiting in the lobby",
       w:["an airport hotel room with a view of a parking structure","a downtown business hotel on a Sunday","an extended-stay suite with a kitchenette nobody uses"],
       c:[
         {s:"the one who asked",r:"Lead",a:"mature",g:"F",x:"Arrived early, rehearsed everything, and abandons the script in minute six."},
@@ -24511,8 +24562,9 @@ const ACG = (()=>{
       ]},
     {k:"porch-summer",era:"1980s",genre:"memory play",tracks:["stage","film"],
       ttl:["The Porch","August, Both Years","What the Screen Door Heard"],
-      p:"a family's summer told across a single porch in two years ten years apart",
+      p:"a family's summer plays out on one porch across two years, ten years apart",
       h:"the same conversation happens twice with different people carrying it, and the second time everyone knows how it ends",
+      h2:"the house is being sold in the second year, and the buyer is somebody from the first",
       w:["a wraparound porch on a house with peeling paint","a stoop and a fire escape on a block where everyone is outside","a screened porch attached to a rented lake cottage"],
       c:[
         {s:"the young one",r:"Lead",a:"teen",fam:"a",x:"Sixteen in the first act, present as a memory in the second. Guardian required if under 18."},
@@ -24525,6 +24577,7 @@ const ACG = (()=>{
       ttl:["Places, Please","The Understudy Goes On","Act Two, Scene One"],
       p:"a company rehearses a play whose subject is uncomfortably close to the company",
       h:"the understudy's reading is better than the lead's and everyone in the room knows it before the director says so",
+      h2:"the writer withdraws the play four days before opening and will not say why",
       w:["a rehearsal room with tape on the floor and one window","a black-box theatre two weeks from an opening","a church basement rented by the hour for tech"],
       c:[
         {s:"the lead",r:"Lead",a:"midCareer",g:"F",x:"Being replaced in slow motion and behaving beautifully about it, which is worse."},
@@ -24537,6 +24590,7 @@ const ACG = (()=>{
       ttl:["The Offer on the Table","Three Hours, One Room","Terms"],
       p:"two sides sit down in a borrowed room to settle something before morning",
       h:"the deal was agreed in the hallway and comes apart the moment it has to be said out loud",
+      h2:"one side's authority to sign is withdrawn by phone at two in the morning",
       w:["a union hall meeting room with bad coffee","a hospital conference room after visiting hours","a school library used for a late-night negotiation"],
       c:[
         {s:"the negotiator",r:"Lead",a:"mature",g:"F",x:"Patient, exact, and playing a longer game than the room. Enormous stillness."},
@@ -24549,6 +24603,7 @@ const ACG = (()=>{
       ttl:["The Kitchen Table Play","Home by Nine","Two Sons, One House"],
       p:"a family gathers for a dinner arranged to fix everything",
       h:"the father's version of the past and the son's version cannot both be true, and the evening makes them choose",
+      h2:"a letter arrives during dinner that only one person at the table already knew about",
       w:["a modest family kitchen and the yard outside it","a two-story house where the upstairs is heard and not seen","a dining room set for six with four people at the table"],
       c:[
         {s:"the father",r:"Lead",a:"senior",g:"M",fam:"a",x:"Proud, unravelling, and impossible to simply condemn. Large emotional range with no room for indulgence."},
@@ -24561,6 +24616,7 @@ const ACG = (()=>{
       ttl:["Office Hours","The Complaint","Two Versions of Thursday"],
       p:"a student and an instructor meet three times about a single piece of work",
       h:"each meeting is remembered differently, and by the third one there is a formal process involved",
+      h2:"a recording of the second meeting exists, and neither of them made it",
       w:["a faculty office with a door that is supposed to stay open","a seminar room after a class has emptied","a department conference room with a recorder on the table"],
       c:[
         {s:"the instructor",r:"Lead",a:"mature",x:"Articulate, self-satisfied, and slower than the audience to hear themselves. No caricature."},
@@ -24573,6 +24629,7 @@ const ACG = (()=>{
       ttl:["What If Tuesday","The Small Print Spot","Everything Was Fine Until"],
       p:"a campaign built on the ordinary moment right before something goes slightly wrong",
       h:"the scenes are played entirely straight so the comedy comes from behavior, not from mugging",
+      h2:"each spot is shot twice — once as it went, once as it could have gone — and cut together",
       w:["a driveway, a kitchen and a hardware aisle","a suburban street, a garage and a supermarket car park","an apartment hallway, a stairwell and a corner shop"],
       c:[
         {s:"the homeowner",r:"Lead",a:"midCareer",x:"Direct-address and scene work in the same spot. Warm, dry, believable in one take."},
@@ -24585,6 +24642,7 @@ const ACG = (()=>{
       ttl:["Borrowed and Returned","Aisle Fourteen","The Ladder Spot"],
       p:"a series of short spots about neighbors borrowing, lending and never quite returning tools",
       h:"one running joke carried across four fifteen-second cutdowns and one sixty-second hero film",
+      h2:"the campaign runs backwards across the cutdowns, ending with the tool being borrowed",
       w:["a hardware store and the two houses either side of a driveway","a garden centre and a shared back alley","a home-improvement floor and a suburban garage"],
       c:[
         {s:"the borrower",r:"Lead",a:"mature",x:"Cheerfully shameless. Comic timing on the button at the end of each cutdown."},
@@ -24597,6 +24655,7 @@ const ACG = (()=>{
       ttl:["The Counter","Two Minutes at the Window","Pick-Up After Six"],
       p:"a brand film shot almost entirely at a pharmacy pick-up counter across one day",
       h:"no dialogue in the hero cut — the whole piece is faces, hands and the small kindnesses of a service job",
+      h2:"the film is built around a single unbroken take at the window across four minutes",
       w:["a neighborhood pharmacy counter and its waiting chairs","a hospital outpatient dispensary window","a supermarket pharmacy at closing time"],
       c:[
         {s:"the pharmacist",r:"Lead",a:"midCareer",x:"Carries the film without lines. Stillness, eye contact, and enormous warmth held in reserve."},
@@ -24609,6 +24668,7 @@ const ACG = (()=>{
       ttl:["Last Ride of the Night","Four Stars","The Long Way Home"],
       p:"a branded short following one driver's final three fares of a night",
       h:"each passenger is a complete character in ninety seconds and the driver never explains herself",
+      h2:"the three fares are cut so they appear to be the same passenger at three ages",
       w:["a car interior and three pick-up points across a city at night","a night route between a stadium, a hospital and an airport","a rideshare shift covering a bar district and a suburb"],
       c:[
         {s:"the driver",r:"Lead",a:"midCareer",g:"F",x:"On camera for the entire film, mostly in profile. Warmth without commentary."},
@@ -24621,6 +24681,7 @@ const ACG = (()=>{
       ttl:["In and Out by Four","The Waiting Room Spot","Same Day"],
       p:"a healthcare campaign built around how long an ordinary afternoon actually takes",
       h:"documentary-adjacent staging, overlapping dialogue, and no glossy spokesperson delivery anywhere",
+      h2:"the whole campaign is timed on screen, in real minutes, and never cheats a cut",
       w:["a walk-in clinic waiting room and two exam rooms","an urgent-care storefront in a shopping plaza","a community health center front desk"],
       c:[
         {s:"the patient",r:"Lead",a:"midCareer",x:"Direct address plus scene work. Must sound like a person, not a testimonial."},
@@ -24633,6 +24694,7 @@ const ACG = (()=>{
       ttl:["Week One","The Free Trial","Everybody's Here in January"],
       p:"a comic campaign about the first three weeks of a gym membership",
       h:"the joke is affectionate — nobody in the campaign is the butt of it",
+      h2:"the campaign follows the same member across three Januaries, played by three actors",
       w:["a neighborhood gym floor and locker room","a community rec center with a January sign-up desk","a strip-mall fitness club at six in the morning"],
       c:[
         {s:"the new member",r:"Lead",a:"midCareer",x:"Physical comedy played completely straight. Comfortable with light exercise on camera."},
@@ -24643,12 +24705,13 @@ const ACG = (()=>{
       ]},
     {k:"print-workwear-trades",only:["Print Campaign","Photo Shoot","Modeling"],era:"n/a",genre:"catalog campaign",tracks:["print"],
       ttl:["Built to Last: Spring Catalog","The Trades Campaign","Workwear Lookbook"],
-      p:"a workwear catalogue and campaign shot on location with people who look like they do the work",
+      p:"a workwear catalog and campaign shot on location with people who look like they do the work",
       h:"no studio seamless — everything is shot in real workshops, sites and yards over two days",
+      h2:"every person cast is photographed with a tool they actually own and use",
       w:["a working cabinetry shop and a construction yard","a welding shop, a bakery kitchen and a bike workshop","a garage, a greenhouse and a loading dock"],
       c:[
         {s:"the lead model",r:"Lead",a:"midCareer",x:"Comfortable in workwear and with real tools. Strong stills presence; movement between setups."},
-        {s:"the second lead",r:"Lead",a:"youngAdult",g:"F",x:"Featured across the catalogue's core range. Confident, unposed, expressive hands."},
+        {s:"the second lead",r:"Lead",a:"youngAdult",g:"F",x:"Featured across the catalog's core range. Confident, unposed, expressive hands."},
         {s:"the senior tradesperson",r:"Supporting",a:"senior",x:"Character portrait work. Real trade experience a genuine plus."},
         {s:"the apprentice",r:"Supporting",a:"youngAdult",x:"Featured in paired shots. Natural, unpolished energy."},
         {s:"the workshop atmosphere",r:"Background",a:"adult",x:"On-site presence in wide frames; comfortable working around equipment."}
@@ -24657,6 +24720,7 @@ const ACG = (()=>{
       ttl:["Bare Minimum","The No-Retouch Campaign","Skin, Spring"],
       p:"a skincare campaign cast entirely from non-agency faces and shot with minimal retouching",
       h:"the brief is texture and character — freckles, scars, lines and laugh marks are the point",
+      h2:"the campaign pairs each face with the same face twenty years apart, cast in pairs",
       w:["a daylight studio and a rooftop at golden hour","a converted apartment with north-facing windows","a beach house shot across one long morning"],
       c:[
         {s:"the campaign face",r:"Lead",a:"midCareer",g:"F",x:"Carries the hero print and film cutdown. Expressive in stills; comfortable with close, unretouched work."},
@@ -24669,6 +24733,7 @@ const ACG = (()=>{
       ttl:["Check-In, Spring","The Lobby Series","Two Nights"],
       p:"a hospitality brand shoot following invented guests through a property across one day",
       h:"the images have to feel like documentary stills from somebody's actual trip, not a brochure",
+      h2:"the property is shot as one continuous day, so every image has to hold its own time of day",
       w:["a boutique hotel lobby, rooms and rooftop","a restored downtown property with a bar and a courtyard","a coastal inn shot across a morning and an evening"],
       c:[
         {s:"the traveling guest",r:"Lead",a:"midCareer",x:"Hero images and the film cutdown. Relaxed, unposed, strong in movement."},
@@ -24681,6 +24746,7 @@ const ACG = (()=>{
       ttl:["Six Miles Before Work","The City Route","Pace"],
       p:"a running-brand campaign shot over two early mornings along one city route",
       h:"every athlete cast actually runs — form and endurance read instantly in stills and slow motion",
+      h2:"the route is shot in a single unbroken sequence, so the whole group runs it together",
       w:["a bridge, a park loop and a waterfront path at sunrise","a river path and a set of stadium steps","a city loop crossing three neighborhoods before seven"],
       c:[
         {s:"the lead runner",r:"Lead",a:"youngAdult",g:"F",x:"Hero campaign imagery and film. Genuine running form essential; long shooting mornings."},
@@ -24691,8 +24757,9 @@ const ACG = (()=>{
       ]},
     {k:"print-eyewear-editorial",only:["Print Campaign","Photo Shoot","Modeling"],era:"n/a",genre:"editorial fashion",tracks:["print"],
       ttl:["Frames, Issue One","The Optical Story","Close Read"],
-      p:"an eyewear editorial shot as a set of character portraits rather than a product catalogue",
+      p:"an eyewear editorial shot as a set of character portraits rather than a product catalog",
       h:"each frame is styled as a different invented person with a different job and decade",
+      h2:"each frame is styled to a different decade and cast to match it exactly",
       w:["a daylight studio with painted backdrops","a bookshop, a diner counter and a stairwell","a rented apartment dressed as four different rooms"],
       c:[
         {s:"the first character",r:"Lead",a:"midCareer",x:"Four looks across the shoot. Strong, specific stills acting; face and posture do all the work."},
@@ -24705,6 +24772,7 @@ const ACG = (()=>{
       ttl:["The Annual Report Portraits","People, Not Product","Front of House"],
       p:"a corporate portrait and video series introducing the people behind an unglamorous business",
       h:"warm, honest, and specifically not corporate-stock — everyone is lit and shot like a subject, not an asset",
+      h2:"every portrait is made at the subject's own workstation, on their own shift",
       w:["an office floor, a warehouse and a customer service room","a manufacturing floor and a front counter","a depot, a call center and a training room"],
       c:[
         {s:"the featured employee",r:"Lead",a:"midCareer",x:"Portrait plus a short direct-to-camera piece. Must sound unrehearsed on the fifth take."},
@@ -24717,6 +24785,7 @@ const ACG = (()=>{
       ttl:["Closing Shift","The Video for the Slow One","Six to Two"],
       p:"a narrative music video following one closing shift and the walk home after it",
       h:"performance-free storytelling — the artist never appears, the whole video is the character",
+      h2:"the video runs in reverse, opening at the front door and ending at the first order of the night",
       w:["a chain restaurant, a bus stop and a stairwell","a bar, an empty parking lot and an apartment door","a hotel kitchen and the streets between it and home"],
       c:[
         {s:"the worker",r:"Lead",a:"youngAdult",x:"On camera for the whole video with no dialogue. Everything is carried physically."},
@@ -24729,6 +24798,7 @@ const ACG = (()=>{
       ttl:["Block Party","One Street, One Day","Turn It Up on Ninth"],
       p:"a performance-led music video built around a summer street party on one closed block",
       h:"the crowd is the co-star — the video only works if the energy is real, not directed",
+      h2:"the whole video is one take that travels the length of the street and back",
       w:["a residential block closed for an afternoon","a schoolyard and the street outside it","a housing development courtyard with an open hydrant"],
       c:[
         {s:"the featured dancer",r:"Lead",a:"youngAdult",x:"Choreographed and freestyle sections. Strong movement background required."},
@@ -24741,6 +24811,7 @@ const ACG = (()=>{
       ttl:["The Tape Recorder Was On","Case File Audio","Nobody Reported It"],
       p:"a scripted audio drama built as a series of recordings from an unresolved case",
       h:"the format is intimate and close-mic'd — the whole performance has to live in breath and pause",
+      h2:"the final episode is built entirely from voicemail, with no narration at all",
       w:["a recording studio and a home booth setup","a professional VO studio with remote direction","a treated room with a good microphone and a quiet street"],
       c:[
         {s:"the investigator",r:"Lead",a:"midCareer",g:"F",x:"Carries eight episodes of narration and interview. Warm, dry, unhurried; excellent mic control."},
@@ -24753,6 +24824,7 @@ const ACG = (()=>{
       ttl:["The Block","Second Floor Neighbors","Everybody Upstairs"],
       p:"an animated comedy series about the residents of one small apartment building",
       h:"the humor is character-first and the voices carry it — no catchphrase performances",
+      h2:"the season is told from a different resident's point of view each episode",
       w:["a recording studio with remote direction","a VO booth with a producer patched in","a professional studio in the shoot city"],
       c:[
         {s:"the building's newest tenant",r:"Lead",a:"youngAdult",x:"Series lead across all episodes. Naturalistic, fast, no cartoon push."},
@@ -24765,6 +24837,7 @@ const ACG = (()=>{
       ttl:["Module Four: Reporting","The Right Way and the Fast Way","Shift Handover"],
       p:"a workplace training series dramatizing the moment somebody decides whether to report something",
       h:"scenario-based and non-patronizing — the wrong choice has to be understandable, not stupid",
+      h2:"every module is filmed twice from the two people's opposing memories of it",
       w:["a warehouse floor and a break room","a hospital ward and a supply room","a construction site office and a scaffold deck"],
       c:[
         {s:"the worker facing the choice",r:"Lead",a:"midCareer",x:"Appears in every module. Ordinary, sympathetic, believable making a bad call."},
@@ -24777,6 +24850,7 @@ const ACG = (()=>{
       ttl:["Four Doors Down","The Corner","Everybody Knows Everybody"],
       p:"a hybrid docu-style series about one commercial block and the people who work it",
       h:"performers work unscripted within tightly defined situations; nothing is memorized",
+      h2:"one business closes during filming and the series has to follow where everyone goes",
       w:["a commercial block with a barber, a bakery and a laundromat","a market street with six family businesses","a strip with a repair shop, a takeout counter and a florist"],
       c:[
         {s:"the shop owner",r:"Lead",a:"mature",x:"Improvises within a defined situation across every episode. Real trade or service experience genuinely useful."},
@@ -24789,6 +24863,7 @@ const ACG = (()=>{
       ttl:["Stand 214","The Activation","Three Days on the Floor"],
       p:"a live brand activation staffed by performers running a repeatable interactive piece",
       h:"the same eight-minute piece is performed forty times a day and has to feel like the first time every time",
+      h2:"the piece changes slightly every hour, so the crowd that stays sees a different ending",
       w:["a convention floor stand across three show days","a shopping center atrium installation","a festival activation tent over one weekend"],
       c:[
         {s:"the host performer",r:"Lead",a:"youngAdult",x:"Runs the piece all day. Enormous energy, improv training strongly preferred, vocal stamina essential."},
@@ -24801,6 +24876,7 @@ const ACG = (()=>{
       ttl:["Twelve Bodies, One Floor","The Warehouse Piece","Counts"],
       p:"a dance film built for camera in a single industrial space",
       h:"one continuous take is the goal, so every performer has to hold the whole piece in their body",
+      h2:"the piece is performed twice — once at speed, once at a third of it — and intercut",
       w:["a former textile warehouse with a poured concrete floor","an empty parking structure level","a disused gymnasium with clerestory windows"],
       c:[
         {s:"the principal dancer",r:"Lead",a:"youngAdult",g:"F",x:"Carries the piece. Contemporary technique required; long shooting days on hard floor."},
@@ -24818,6 +24894,7 @@ const ACG = (()=>{
       ttl:["The Listening Floor","Something Under the Stairs","House Sitting for Strangers"],
       p:"a house sitter with three weeks alone in a big empty house starts hearing someone else's routine through the floor",
       h:"the sounds keep perfect time with her own — and when she finally breaks the padlock on the cellar door, the room below is furnished",
+      h2:"the owners come home three weeks early and behave as though the cellar has always been empty",
       w:["a large empty house on a street with no through traffic","a lake house closed for the winter","a restored brownstone between tenants"],
       c:[
         {s:"the house sitter",r:"Lead",a:"youngAdult",g:"F",x:"Alone on screen for most of the film. Practical, unspooky, and slowly stops trusting her own hearing — the terror is all in what she chooses not to check."},
@@ -24830,6 +24907,7 @@ const ACG = (()=>{
       ttl:["Cold Storage","The Overnight Attendant","Nobody Signs Out at Four"],
       p:"a new overnight attendant at a county morgue is told never to open the doors before six",
       h:"a body arrives with no paperwork, no name and a hospital bracelet dated eleven days from now",
+      h2:"a body is signed out at 4 a.m. by a doctor who has not worked there in six years",
       w:["a county morgue in a hospital sub-basement","a funeral home preparation room","a small-town medical examiner's office"],
       c:[
         {s:"the new attendant",r:"Lead",a:"youngAdult",x:"Took the job for the quiet. Rational to a fault, which is what makes the unravelling land — never screams when a look will do."},
@@ -24842,9 +24920,10 @@ const ACG = (()=>{
       ttl:["Three Days of Silence","The Better Version of You","Retreat"],
       p:"six strangers pay for a silent wellness weekend at a converted farmhouse two hours from anywhere",
       h:"on the second morning one bed is empty and the facilitators behave as though that person was never booked",
-      w:["a converted farmhouse retreat with no cell signal","a lodge at the end of a private road","a former seminary running weekend programmes"],
+      h2:"the phones are handed back on the last morning and every one of them is wiped",
+      w:["a converted farmhouse retreat with no cell signal","a lodge at the end of a private road","a former seminary running weekend programs"],
       c:[
-        {s:"the sceptic",r:"Lead",a:"midCareer",g:"F",x:"Came because her sister paid. Funny, armoured, and the first to count the beds. Carries the audience's suspicion for them."},
+        {s:"the sceptic",r:"Lead",a:"midCareer",g:"F",x:"Came because her sister paid. Funny, armored, and the first to count the beds. Carries the audience's suspicion for them."},
         {s:"the facilitator",r:"Lead",a:"mature",x:"Warm, unhurried, entirely reasonable — which is what makes him terrifying. Never raises his voice, not once."},
         {s:"the true believer",r:"Supporting",a:"youngAdult",x:"Third retreat this year and desperate for it to work. Sympathetic, not stupid; the saddest person in the film."},
         {s:"the one who vanishes",r:"Supporting",a:"adult",x:"On screen for eleven minutes and has to be memorable enough that the audience notices the absence before the cast does."},
@@ -24854,6 +24933,7 @@ const ACG = (()=>{
       ttl:["Forty Seconds of Footage","The Dashcam","Nobody Saw It But the Car"],
       p:"a rideshare driver discovers his dashcam caught something on a road he barely remembers driving",
       h:"the man in the footage finds him first, and offers a sum of money that tells him exactly how bad it is",
+      h2:"the footage turns out to clear somebody already serving time for it",
       w:["a night route between a stadium, a hospital and an airport","a suburban arterial road and the strip malls along it","a river crossing with three toll cameras"],
       c:[
         {s:"the driver",r:"Lead",a:"midCareer",x:"Ordinary, careful, in debt. Everything happens on his face while he keeps driving; the part needs stillness at speed."},
@@ -24866,6 +24946,7 @@ const ACG = (()=>{
       ttl:["Nineteen Days","The Safe House","Nobody Comes Until Monday"],
       p:"a witness and the officer assigned to guard her wait out nineteen days in a rented house",
       h:"on day fourteen the deliveries stop, and neither of them can prove the other has not made a call",
+      h2:"the trial date is moved forward by a week and nobody tells the house",
       w:["a rented suburban house with the curtains permanently shut","a farmhouse at the end of a gravel road","a serviced apartment above a closed shop"],
       c:[
         {s:"the witness",r:"Lead",a:"midCareer",g:"F",x:"Testifying against people she used to eat dinner with. Funny, exhausted, and much harder than she looks."},
@@ -24876,9 +24957,10 @@ const ACG = (()=>{
       ]},
     {k:"elevator-hostage",era:"2000s",genre:"thriller",tracks:["film","stage","tv"],
       ttl:["Between Nine and Ten","Stuck","The Long Hour"],
-      p:"four people are trapped in a lift between floors during a building-wide power failure",
+      p:"four people are trapped in an elevator between floors during a building-wide power failure",
       h:"one of them is carrying something that must not be found, and the rescue is forty minutes away",
-      w:["a service lift in an office tower during a blackout","a hospital lift between wards","a residential lift in a building being renovated"],
+      h2:"the elevator starts moving again, downward, and nobody in it pressed anything",
+      w:["a service elevator in an office tower during a blackout","a hospital elevator between wards","a residential elevator in a building being renovated"],
       c:[
         {s:"the one carrying it",r:"Lead",a:"youngAdult",x:"Sweating through a job interview answer for forty minutes. The audience should work out what's in the bag before the others do."},
         {s:"the calm one",r:"Lead",a:"mature",g:"F",x:"Takes charge because nobody else will. Competence that starts to look like something else."},
@@ -24888,9 +24970,10 @@ const ACG = (()=>{
       ]},
     {k:"armored-car",era:"1970s",genre:"crime",tracks:["film","tv"],
       ttl:["Second Run","The Money Comes Back Tuesday","Inside Man on Route 9"],
-      p:"a driver on an armoured-car crew is asked by an old friend to be somewhere three minutes late",
+      p:"a driver on an armored-car crew is asked by an old friend to be somewhere three minutes late",
       h:"he says no, the robbery happens anyway, and now the only person who believes he refused is the one who asked",
-      w:["an armoured-car depot and the route between four banks","a cash-processing yard behind a chain fence","a courier depot in an industrial park"],
+      h2:"the money is returned anonymously eleven days later, in the same bags, minus one",
+      w:["an armored-car depot and the route between four banks","a cash-processing yard behind a chain fence","a courier depot in an industrial park"],
       c:[
         {s:"the driver",r:"Lead",a:"mature",x:"Twenty-two years clean and now unprovably guilty. The performance is a decent man watching his life become circumstantial evidence."},
         {s:"the old friend",r:"Lead",a:"mature",x:"Loves him and used him. Charming in a way that should make the audience angry at themselves."},
@@ -24902,18 +24985,20 @@ const ACG = (()=>{
       ttl:["Property Room","Signed Out, Never Returned","The Swap"],
       p:"a civilian clerk in a police evidence room notices a bag has been resealed",
       h:"proving it means accusing the only person in the building who has ever been kind to her",
+      h2:"the case the bag belongs to goes to trial in nine days and nobody has noticed",
       w:["a police property room in a basement with one door","a county evidence warehouse","a court exhibits store shared by three departments"],
       c:[
         {s:"the clerk",r:"Lead",a:"youngAdult",g:"F",x:"Meticulous, invisible, and about to become extremely visible. Quiet competence turning into quiet courage."},
         {s:"the sergeant",r:"Lead",a:"mature",x:"Warm, funny, genuinely good to her — and doing it. Must never once play the villain."},
         {s:"the internal investigator",r:"Supporting",a:"midCareer",g:"F",x:"Arrives with no interest in anyone's feelings. Efficiency as a moral position."},
-        {s:"the defence attorney",r:"Supporting",a:"mature",x:"Two scenes; the second one detonates the case."},
+        {s:"the defense attorney",r:"Supporting",a:"mature",x:"Two scenes; the second one detonates the case."},
         {s:"the night janitor",r:"Day Player",a:"senior",x:"Saw the whole thing and has excellent reasons for saying nothing."}
       ]},
     {k:"chop-shop-brothers",era:"1980s",genre:"crime",tracks:["film","tv","stage"],
       ttl:["Parts","Two Brothers, One Lift","The Garage on Trenton"],
       p:"two brothers run a body shop that has quietly become something else",
-      h:"a car comes in that neither of them stole, with the keys still in it and a name they both recognise on the registration",
+      h:"a car comes in that neither of them stole, with the keys still in it and a name they both recognize on the registration",
+      h2:"the car's owner comes looking for it in person, alone, and asks for a job",
       w:["a body shop under a rail bridge","a two-bay garage behind a used-car lot","an auto shop on a block being bought up"],
       c:[
         {s:"the older brother",r:"Lead",a:"midCareer",g:"M",fam:"a",x:"Runs it, justifies it, and has a line he genuinely will not cross. Watching him find the line is the film."},
@@ -24924,9 +25009,10 @@ const ACG = (()=>{
       ]},
     {k:"missing-tenant",era:"1990s",genre:"mystery",tracks:["film","tv","stage"],
       ttl:["Unit 5C","The Tenant Who Wasn't There","Six Weeks of Mail"],
-      p:"a building superintendent realises the tenant in 5C has not collected mail in six weeks",
+      p:"a building superintendent realizes the tenant in 5C has not collected mail in six weeks",
       h:"the lease, the deposit and the emergency contact all lead to people who insist no such person exists",
-      w:["a six-storey walk-up with a basement office","a co-op building with a doorman and a long memory","a converted hotel let out as studios"],
+      h2:"the tenant's rent is still being paid, on time, by standing order",
+      w:["a six-story walk-up with a basement office","a co-op building with a doorman and a long memory","a converted hotel let out as studios"],
       c:[
         {s:"the superintendent",r:"Lead",a:"mature",x:"Fixes things for a living and cannot stop fixing this. Dogged, unglamorous, and completely out of his depth."},
         {s:"the neighbour across the hall",r:"Lead",a:"senior",g:"F",x:"Remembers everything and is wrong about half of it. Charming, unreliable, indispensable."},
@@ -24938,6 +25024,7 @@ const ACG = (()=>{
       ttl:["The Logbook","Two Keepers","Nothing to Report"],
       p:"a relief keeper arrives at an island light to find the station spotless, the lamp lit and nobody aboard",
       h:"the logbook is filled in for three days past today, in two different hands",
+      h2:"the supply boat arrives early and the boatman insists he dropped two men off last week",
       w:["an island lighthouse reachable only at low tide","a rock light with a supply boat every nine days","a coastal station with a keeper's cottage"],
       c:[
         {s:"the relief keeper",r:"Lead",a:"midCareer",x:"Alone for most of the running time. Methodical, sceptical, and gradually undone by good record-keeping."},
@@ -24950,6 +25037,7 @@ const ACG = (()=>{
       ttl:["Episode Eleven","The Podcast Made It Worse","Somebody Else's Grief"],
       p:"two friends make a true-crime podcast about a disappearance in their own town",
       h:"episode eleven names the wrong person, and the town believes them anyway",
+      h2:"the missing woman's brother offers them an interview on one condition they cannot meet",
       w:["a spare bedroom studio and the town outside it","a converted garage with foam on the walls","a community radio booth borrowed after hours"],
       c:[
         {s:"the host",r:"Lead",a:"youngAdult",g:"F",x:"Talented, ambitious, and increasingly unable to hear herself. The film's charm and its damage come from the same place."},
@@ -24962,6 +25050,7 @@ const ACG = (()=>{
       ttl:["Forty Blocks","No Brakes on Delancey","The Package Goes Uptown"],
       p:"a bike courier takes a job that pays six times the usual rate to move one envelope across the city",
       h:"three other couriers were given the same job, and only one delivery is getting paid",
+      h2:"the envelope is opened by mistake in traffic and what is inside is worth nothing at all",
       w:["a bike messenger dispatch and forty blocks of traffic","a downtown grid at rush hour","a bridge crossing and the streets either side of it"],
       c:[
         {s:"the courier",r:"Lead",a:"youngAdult",g:"F",x:"Fast, broke, and better on a bike than anyone in the film. Genuine cycling ability essential; long days of practical riding."},
@@ -24972,12 +25061,13 @@ const ACG = (()=>{
       ]},
     {k:"blackout-highrise",era:"2010s",genre:"action",tracks:["film","tv"],
       ttl:["Forty-One Floors Down","Blackout","Nobody Is Coming Up"],
-      p:"a maintenance engineer is the only person left in a tower when the power and the lifts fail",
+      p:"a maintenance engineer is the only person left in a tower when the power and the elevators fail",
       h:"the outage is not an accident, and the people who caused it are working their way up floor by floor",
+      h2:"the building's own systems start working against her, floor by floor, on a schedule",
       w:["a half-let office tower after hours","a residential high-rise mid-renovation","a hotel tower closed for refurbishment"],
       c:[
         {s:"the engineer",r:"Lead",a:"midCareer",g:"F",x:"Knows the building better than its architects. Physical role with stairwell and crawlspace work; problem-solving, not heroics."},
-        {s:"the man in charge",r:"Lead",a:"mature",x:"Polite, patient, and organised. Explains himself once, and it is worse than a threat."},
+        {s:"the man in charge",r:"Lead",a:"mature",x:"Polite, patient, and organized. Explains himself once, and it is worse than a threat."},
         {s:"the trapped executive",r:"Supporting",a:"mature",g:"F",x:"On a late call when it starts. Panic played as decisiveness."},
         {s:"the youngest of the crew",r:"Supporting",a:"youngAdult",x:"In over his head and not enjoying it. The audience's way to understand the other side."},
         {s:"the security guard",r:"Supporting",a:"senior",x:"Ground floor, one radio, and a very bad night. Warmth in a cold film."}
@@ -24986,6 +25076,7 @@ const ACG = (()=>{
       ttl:["The Double","Second Unit","Nobody Films the Fall"],
       p:"a veteran stunt double is asked to repeat the gag that ended her partner's career",
       h:"the rig failed the first time because somebody signed off on it, and that person is now the producer",
+      h2:"the studio quietly settles with her injured partner on the condition the gag is repeated",
       w:["a backlot and the stunt yard behind it","a warehouse rigged for a fall sequence","a working set with a second-unit crew"],
       c:[
         {s:"the double",r:"Lead",a:"midCareer",g:"F",x:"Physically formidable and emotionally locked shut. Stunt or movement background a genuine asset; the acting is in what she refuses to say."},
@@ -24998,6 +25089,7 @@ const ACG = (()=>{
       ttl:["The Second Chamber","Sixty Metres Down","Nobody Mapped This Part"],
       p:"a four-person survey team maps a cave system nobody has been into in thirty years",
       h:"the passage they came through is not where the old survey says it is, and the old survey was drawn by one of their fathers",
+      h2:"a second entrance is found that was deliberately sealed, from the inside, decades ago",
       w:["a limestone cave system under farmland","a flooded mine reopened for survey","a coastal cave network with a tidal entrance"],
       c:[
         {s:"the lead surveyor",r:"Lead",a:"midCareer",g:"F",fam:"a",x:"Her father drew the map. Precise, unsentimental, and slowly forced to admit he lied about something. Comfort in confined spaces essential."},
@@ -25010,6 +25102,7 @@ const ACG = (()=>{
       ttl:["Salvage Rights","What the Tide Gave Back","Forty Fathoms"],
       p:"a father and daughter running a failing salvage boat find a wreck that is not on any chart",
       h:"claiming it legally takes ninety days; three other boats found out about it yesterday",
+      h2:"the wreck turns out to be logged as lost with all hands, and one name on the list is theirs",
       w:["a working harbour and the water past the headland","a fishing port with a boatyard and a bar","an island jetty and the channel beyond it"],
       c:[
         {s:"the daughter",r:"Lead",a:"youngAdult",g:"F",fam:"a",x:"Better on the water than her father and never says so. Practical, salty, and the film's engine. Comfortable on boats a real advantage."},
@@ -25022,6 +25115,7 @@ const ACG = (()=>{
       ttl:["The Substitute Bass Player","Four Hours, No Rehearsal","Do You Know Anything Slow?"],
       p:"a session musician agrees to fill in with a wedding band she has never met, four hours before the reception",
       h:"the band is in the middle of a breakup nobody told her about, and she is the only person both sides will talk to",
+      h2:"the couple's first dance song turns out to be one only she can play",
       w:["a hotel function room and the service corridor behind it","a banquet hall with a car park and a fire escape","a country club ballroom on a Saturday"],
       c:[
         {s:"the substitute",r:"Lead",a:"midCareer",g:"F",x:"Wants to be paid and leave. Dry, unbothered, and hopelessly good at fixing other people. Musical ability a plus but not required."},
@@ -25035,6 +25129,7 @@ const ACG = (()=>{
       ttl:["Amateur Hamlet","The Ghost Is Late Again","Two Weeks to Elsinore"],
       p:"a community theatre group with more ambition than talent stages a full-length Hamlet",
       h:"the lead quits in week three and the only person who knows the part is the woman who has done props for eleven years",
+      h2:"the hall is double-booked with a wedding on opening night and neither party will move",
       w:["a community centre hall with a raked stage","a church hall rented three nights a week","a converted scout hut with a lighting rig from 1978"],
       c:[
         {s:"the props volunteer",r:"Lead",a:"mature",g:"F",x:"Has quietly known the entire play for a decade. The comedy is her total lack of surprise at being brilliant."},
@@ -25047,18 +25142,20 @@ const ACG = (()=>{
       ttl:["Fourteen Leads","The Dog Walker","Who Has Baxter?"],
       p:"a dog walker builds a small empire on a few blocks and loses control of it in one afternoon",
       h:"one dog is missing, one client is a lawyer, and the rival walker across the park has been waiting years for this",
-      w:["a park and the blocks of apartments around it","a dog run and three lobbies","a neighbourhood with two competing walkers and one park"],
+      h2:"a rival buys the building where half his clients live and changes the entry code",
+      w:["a park and the blocks of apartments around it","a dog run and three lobbies","a neighborhood with two competing walkers and one park"],
       c:[
-        {s:"the walker",r:"Lead",a:"youngAdult",x:"Charming, disorganised, and absolutely the best in the neighbourhood. Physical comedy with real animals; must genuinely be comfortable around dogs."},
+        {s:"the walker",r:"Lead",a:"youngAdult",x:"Charming, disorganized, and absolutely the best in the neighborhood. Physical comedy with real animals; must genuinely be comfortable around dogs."},
         {s:"the rival",r:"Lead",a:"midCareer",g:"F",x:"Professional, insured, and enjoying every second of this. Never plays it broad."},
         {s:"the lawyer client",r:"Supporting",a:"mature",x:"Calm, expensive, and getting calmer as things get worse."},
-        {s:"the doorman",r:"Supporting",a:"senior",x:"Sees everything on the block and negotiates in favours."},
+        {s:"the doorman",r:"Supporting",a:"senior",x:"Sees everything on the block and negotiates in favors."},
         {s:"the kid in the park",r:"Day Player",a:"child",x:"Guardian required. Knows exactly where the dog is and takes ages to say."}
       ]},
     {k:"apartment-swap",era:"2000s",genre:"comedy",tracks:["film","tv","stage"],
       ttl:["Two Sets of Keys","The Swap","Someone Is Living in My Kitchen"],
       p:"two strangers agree to swap apartments for a month, sight unseen",
       h:"neither of them mentioned that someone else was already living there",
+      h2:"the two of them are already, unknowingly, in the middle of the same family argument",
       w:["a small flat above a bakery and a house share across town","two apartments in different boroughs","a studio and a shared house on opposite sides of a city"],
       c:[
         {s:"the tidy one",r:"Lead",a:"midCareer",g:"F",x:"Systems for everything, and none of them survive contact. Comic precision that unravels beautifully."},
@@ -25071,6 +25168,7 @@ const ACG = (()=>{
       ttl:["Notes in the Machine","Wash, Dry, Repeat","Same Time, Same Dryer"],
       p:"two people who use the same laundromat at the same hour start leaving each other notes without ever overlapping",
       h:"they arrange to meet, and both of them arrive early enough to watch the other lose their nerve",
+      h2:"one of them stops coming, and the notes keep arriving anyway",
       w:["a laundromat open until midnight on a busy street","a basement laundry room in a big building","a wash-and-fold shop with four chairs and a television"],
       c:[
         {s:"the one who writes first",r:"Lead",a:"youngAdult",g:"F",x:"Bold on paper, hopeless in person. The gap between the two is the entire film."},
@@ -25083,6 +25181,7 @@ const ACG = (()=>{
       ttl:["The Six A.M. Booth","Twenty Years, Same Coffee","Second Sitting"],
       p:"two people who were together twenty years ago end up working opposite shifts at the same diner",
       h:"they have nine minutes of overlap every morning, and both of them start arriving early",
+      h2:"the diner is sold and the new owner keeps exactly one of the two shifts",
       w:["a 24-hour diner with a shift change at six","a truck-stop restaurant on a state road","a corner coffee shop with two staff and one till"],
       c:[
         {s:"the morning shift",r:"Lead",a:"mature",g:"F",x:"Rebuilt her life carefully and does not intend to risk it. Warmth held at arm's length for two acts."},
@@ -25095,6 +25194,7 @@ const ACG = (()=>{
       ttl:["The Overnight","Two Stops Past Yours","Sleeper Car"],
       p:"two strangers share a sleeper compartment on an overnight train after every other seat is taken",
       h:"both of them are travelling to end something, and neither says which until the last hour",
+      h2:"the train is held overnight at a rural station and the compartment stops being temporary",
       w:["a sleeper train between two cities","an overnight coach on a rerouted line","a long-distance train delayed by weather"],
       c:[
         {s:"the one going home",r:"Lead",a:"midCareer",g:"F",x:"Talks to fill space and reveals more than she means to. Fast, funny, frightened."},
@@ -25104,9 +25204,10 @@ const ACG = (()=>{
         {s:"the voice on the phone",r:"Day Player",a:"adult",x:"Heard once. Must make the audience reassess everything before it."}
       ]},
     {k:"subway-busker",only:["Musical Theater","Theater","Workshop / Staged Reading"],era:"2010s",genre:"musical",tracks:["stage"],
-      ttl:["Platform Nine Minutes","The Busker's Licence","Everybody Hears It Downstairs"],
+      ttl:["Platform Nine Minutes","The Busker's License","Everybody Hears It Downstairs"],
       p:"buskers competing for the best pitch on a subway platform form a reluctant company",
-      h:"the transit authority is cutting licensed spots from twelve to three, and the audition is in a fortnight",
+      h:"the transit authority cuts licensed spots from twelve to three, and the audition is in two weeks",
+      h2:"the license is awarded to a busker none of them have ever seen before",
       w:["a subway platform and the mezzanine above it","an underground station concourse","a transit hub with three licensed pitches"],
       c:[
         {s:"the singer",r:"Lead",a:"youngAdult",g:"F",x:"Owns the best pitch and has never had to share it. Strong contemporary voice; the acting is in the sharing."},
@@ -25119,6 +25220,7 @@ const ACG = (()=>{
       ttl:["Two Choirs","The Sunday After","Nobody Sings the Second Verse"],
       p:"a church choir splits in two over who gets to sing the Christmas solo",
       h:"the two halves book the same hall on the same night and the whole town has to choose a side",
+      h2:"the hall burns out its wiring on the afternoon of both concerts and they get one piano between them",
       w:["a church hall and the annex across the car park","two chapels on the same street","a community hall shared by both congregations"],
       c:[
         {s:"the choir director",r:"Lead",a:"mature",g:"F",x:"Held it together for nineteen years and breaks it in one afternoon. Strong voice, sharper comic timing."},
@@ -25132,18 +25234,20 @@ const ACG = (()=>{
       ttl:["Last Copy on VHS","The Video Store","Be Kind, Rewind"],
       p:"a documentary about the last video rental store in a mid-sized city and the people who still walk in",
       h:"the landlord sells the building halfway through filming and the film becomes a countdown",
+      h2:"a national chain offers to buy the collection, and the owner has three days to answer",
       w:["a rental store with hand-written staff picks","a family-run video shop on a high street","a rental counter inside a corner store"],
       c:[
         {s:"the owner",r:"Lead",a:"senior",x:"Reenactment and interview segments. Warm, stubborn, encyclopaedic. Must feel completely unperformed on camera."},
         {s:"the last employee",r:"Lead",a:"youngAdult",x:"Reenactments of the final weeks. Dry, loyal, funnier than the situation deserves."},
         {s:"the regular customer",r:"Supporting",a:"mature",g:"F",x:"Reenactment scenes at the counter. Rents the same three films on rotation and explains why beautifully."},
         {s:"the owner's daughter",r:"Supporting",a:"midCareer",g:"F",fam:"a",x:"Wants him to close and cannot say it. Interview-style delivery, no theatricality."},
-        {s:"archive faces",r:"Background",a:"adult",x:"Reenactment of the store across three decades. Period-appropriate looks; natural, unhurried behaviour."}
+        {s:"archive faces",r:"Background",a:"adult",x:"Reenactment of the store across three decades. Period-appropriate looks; natural, unhurried behavior."}
       ]},
     {k:"doc-boxing-gym",only:["Documentary","Reality / Docu-Series"],era:"2010s",genre:"documentary",tracks:["film","tv"],
       ttl:["The Gym on Reed Street","Six Rounds","Nobody Comes Here to Win"],
-      p:"a documentary following a neighbourhood boxing gym that keeps teenagers off a difficult block",
+      p:"a documentary following a neighborhood boxing gym that keeps teenagers off a difficult block",
       h:"the coach's funding is cut two months before the city tournament, and he does not tell the kids",
+      h2:"the building is sold mid-season and the gym has eight weeks to find a room",
       w:["a basement boxing gym under a laundromat","a community gym in a converted garage","a youth centre with a ring in the main hall"],
       c:[
         {s:"the coach",r:"Lead",a:"mature",x:"Reenactment and interview. Ex-fighter, terrible at asking for help, extraordinary with the kids. Presence over polish."},
@@ -25156,18 +25260,20 @@ const ACG = (()=>{
       ttl:["Between Two and Six","The Night Bakery","First Bread"],
       p:"a documentary shot entirely between 2 a.m. and 6 a.m. inside a family bakery",
       h:"the founder is retiring and neither of his children wants to say out loud that they will not take it on",
-      w:["a bakery back room with three ovens","a family bakehouse behind a shop front","a wholesale bakery supplying a neighbourhood"],
+      h2:"the ovens fail in week three of filming and the family has to decide whether to replace them",
+      w:["a bakery back room with three ovens","a family bakehouse behind a shop front","a wholesale bakery supplying a neighborhood"],
       c:[
         {s:"the founder",r:"Lead",a:"senior",g:"M",fam:"a",x:"Reenactment and interview. Forty years of the same shift. Hands do most of the acting; almost no dialogue needed."},
         {s:"the elder child",r:"Lead",a:"midCareer",fam:"a",x:"Works the night shift and resents every loaf. Interview-style honesty, no performance."},
         {s:"the younger child",r:"Supporting",a:"youngAdult",fam:"a",x:"Left, came back, leaving again. Warm and evasive in equal measure."},
         {s:"the longtime baker",r:"Supporting",a:"mature",x:"Not family and more loyal than family. One scene that lands the whole film."},
-        {s:"the early customers",r:"Background",a:"adult",x:"First-light queue at the side door. Natural behaviour, no camera awareness."}
+        {s:"the early customers",r:"Background",a:"adult",x:"First-light queue at the side door. Natural behavior, no camera awareness."}
       ]},
     {k:"anim-city-pigeons",era:"n/a",genre:"animation",tracks:["other"],only:["Animation","Voiceover"],
       ttl:["Crumb Season","The Ledge Crew","Pigeons of the Ninth Ward"],
       p:"an animated comedy series about a crew of city pigeons running the airspace above one block",
       h:"a hawk moves into the clock tower and the crew has to negotiate with the one bird nobody talks to",
+      h2:"the block is scaffolded for a year and the crew has to relocate to a rival ledge",
       w:["a recording studio with remote direction","a VO booth with the director patched in","a professional studio in the shoot city"],
       c:[
         {s:"the crew leader",r:"Lead",a:"adult",x:"Fast-talking, deeply insecure, absolutely certain. Series lead across every episode — comic timing, no cartoon push."},
@@ -25180,6 +25286,7 @@ const ACG = (()=>{
       ttl:["The Department of Lost Things","One Sock, Two Worlds","Where It All Goes"],
       p:"an animated family series set in the vast warehouse where everything anyone has ever lost ends up",
       h:"a child arrives in the warehouse by accident, which has never happened, and the staff have no procedure for sending anything back",
+      h2:"something is returned to the warehouse that was never lost, and nobody can file it",
       w:["a recording studio with remote direction","a VO booth with a producer patched in","a professional studio in the shoot city"],
       c:[
         {s:"the child",r:"Lead",a:"child",x:"Guardian required; short sessions with plenty of breaks. Curious rather than frightened — the show's whole tone rests on this."},
@@ -25192,30 +25299,33 @@ const ACG = (()=>{
       ttl:["The First One","Payday","What You Do With It"],
       p:"a bank campaign about what people do with the very first money they earn themselves",
       h:"four short films, no voiceover, and the product never appears until the last two seconds",
+      h2:"each film ends on what they did not buy, and why",
       w:["a diner, a music shop and a bus stop","a barber shop, a hardware store and a kitchen","a corner store, a laundrette and a stairwell"],
       c:[
         {s:"the first earner",r:"Lead",a:"teen",x:"Guardian required. Carries the hero film almost without dialogue. Wants something specific and is embarrassed about it."},
         {s:"the parent",r:"Lead",a:"midCareer",x:"Watches from across the room and says one line at the end. Reaction acting is the whole part."},
         {s:"the shopkeeper",r:"Supporting",a:"senior",x:"Takes the money seriously because the kid does. Warm, unfussy, two setups."},
         {s:"the friend",r:"Supporting",a:"teen",x:"Guardian required. Along for the whole thing, unimpressed throughout."},
-        {s:"the street",r:"Background",a:"adult",x:"Natural exterior behaviour across four locations; comfortable with repeated passes."}
+        {s:"the street",r:"Background",a:"adult",x:"Natural exterior behavior across four locations; comfortable with repeated passes."}
       ]},
     {k:"spot-airline-delay",era:"n/a",genre:"commercial",tracks:["spot"],only:["Commercial","Branded Content","Promo Video","Spec Commercial"],
       ttl:["Gate 42","Delayed","The Long Layover"],
       p:"an airline campaign built entirely inside one departure gate during a four-hour delay",
       h:"strangers slowly turn a bad afternoon into something people would actually remember, and nobody mentions the airline once",
+      h2:"the flight is finally called and the campaign follows who chooses not to board",
       w:["a departure gate and the concourse outside it","an airport lounge and a boarding area","a regional terminal with one gate and one cafe"],
       c:[
         {s:"the business traveller",r:"Lead",a:"midCareer",g:"F",x:"Starts furious and ends somewhere else entirely. The turn has to be earned in ninety seconds."},
         {s:"the gate agent",r:"Lead",a:"youngAdult",x:"Absorbs everything and stays human. Genuine warmth under pressure; no service-industry gloss."},
         {s:"the grandparent flying alone",r:"Supporting",a:"senior",g:"F",x:"Nervous, dignified, and the reason everyone else behaves better."},
         {s:"the family with a toddler",r:"Supporting",a:"midCareer",x:"Chaos played completely straight. Real ease with small children required."},
-        {s:"the waiting passengers",r:"Background",a:"adult",x:"Full gate of believable waiting behaviour; several featured reactions."}
+        {s:"the waiting passengers",r:"Background",a:"adult",x:"Full gate of believable waiting behavior; several featured reactions."}
       ]},
     {k:"spot-morning-ritual",era:"n/a",genre:"commercial",tracks:["spot"],only:["Commercial","Branded Content","Social Media Ad"],
       ttl:["Before Anyone Else Is Up","The First Cup","Six Fifteen"],
       p:"a coffee campaign following five different people through the same fifteen minutes of their morning",
       h:"the five stories are cut together so they look like one person's life, and only the last shot reveals they are not",
+      h2:"the five mornings are revealed to be the same building, five floors apart",
       w:["five kitchens, a stairwell and a bus stop","a fire station, a hospital locker room and two apartments","a market stall, a night bus and three kitchens"],
       c:[
         {s:"the nurse coming off shift",r:"Lead",a:"midCareer",g:"F",x:"Exhaustion played without self-pity. Hero film; almost no dialogue."},
@@ -25223,12 +25333,13 @@ const ACG = (()=>{
         {s:"the student",r:"Supporting",a:"youngAdult",x:"Late, chaotic, funny. Physical comedy in a small kitchen."},
         {s:"the retired early riser",r:"Supporting",a:"senior",x:"Same routine for thirty years, filmed with total seriousness."},
         {s:"the commuter",r:"Supporting",a:"midCareer",x:"Reads the same page four times. Stillness on a moving bus."},
-        {s:"the morning street",r:"Background",a:"adult",x:"Pre-dawn exteriors and interiors; early call times, natural behaviour."}
+        {s:"the morning street",r:"Background",a:"adult",x:"Pre-dawn exteriors and interiors; early call times, natural behavior."}
       ]},
     {k:"temp-agency",era:"1990s",genre:"comedy",tracks:["film","tv","stage"],
       ttl:["Temp","Nobody Checked","The Consultant"],
       p:"a temp sent to cover reception for a week is mistaken for a management consultant on day one",
       h:"her advice is better than the actual consultants', and by Thursday three departments answer to her",
+      h2:"the week ends and nobody in the building can work out who actually hired her",
       w:["an office floor with a reception desk and glass meeting rooms","a regional head office in a business park","a company mid-merger with two of everything"],
       c:[
         {s:"the temp",r:"Lead",a:"youngAdult",g:"F",x:"Never lies once — everyone else does the assuming. Deadpan, decent, and quietly the smartest person in the building."},
@@ -25236,12 +25347,13 @@ const ACG = (()=>{
         {s:"the real consultant",r:"Supporting",a:"midCareer",x:"Arrives on Wednesday and cannot get anyone to take a meeting."},
         {s:"the receptionist she replaced",r:"Supporting",a:"senior",g:"F",x:"Back from leave and watching all of it with enormous enjoyment."},
         {s:"the intern",r:"Supporting",a:"youngAdult",x:"Believes everything, repeats everything, causes everything."},
-        {s:"the office floor",r:"Background",a:"adult",x:"Desks, meetings and corridor traffic. Believable working behaviour, no mugging."}
+        {s:"the office floor",r:"Background",a:"adult",x:"Desks, meetings and corridor traffic. Believable working behavior, no mugging."}
       ]},
     {k:"open-mic",era:"2010s",genre:"comedy",tracks:["film","stage","tv"],
       ttl:["Five Minutes and a Light","The Worst Open Mic in the City","Nobody Laughs at Nine"],
-      p:"the regulars at a hopeless Tuesday-night open mic in the back of a bar",
+      p:"the regulars at a hopeless Tuesday-night open mic keep turning up in the back of a bar",
       h:"a booker from a real club comes in by mistake, and everyone tries to be somebody else for five minutes",
+      h2:"the bar is closing and the last night is booked out by people who have never performed",
       w:["the back room of a bar with a stool and a light","a basement club with twelve chairs","a pub function room with a broken microphone"],
       c:[
         {s:"the host",r:"Lead",a:"midCareer",x:"Runs it for free, dies every week, and would not stop for anything. Tragedy played as light comedy."},
@@ -25254,6 +25366,7 @@ const ACG = (()=>{
       ttl:["Fast Water","The Crossing at Mill Bend","Twenty Minutes of Light"],
       p:"a volunteer river rescue crew is called out to a flooded crossing at dusk",
       h:"the person in the water is the one member of the crew who did not answer the callout",
+      h2:"the callout turns out to be a false alarm phoned in by one of their own",
       w:["a river crossing and the volunteer station above it","a flooded valley road and a boathouse","a canal lock and the towpath either side"],
       c:[
         {s:"the crew chief",r:"Lead",a:"mature",g:"F",x:"Makes three decisions and has to live with all of them. Physical role in and around water; command played quietly."},
@@ -25266,6 +25379,7 @@ const ACG = (()=>{
       ttl:["Nine Miles of Open Water","The Borrowed Boat","Before the Weather Turns"],
       p:"three teenagers take a borrowed boat across open water on a dare",
       h:"the engine dies halfway, the weather turns, and the only adult who knows where they went has every reason not to report it",
+      h2:"they make it across and find the island is not empty",
       w:["a harbour town and nine miles of open water","a lake with two shores and one island","a river estuary with fast tides"],
       c:[
         {s:"the one who took the boat",r:"Lead",a:"teen",x:"Guardian required. Reckless, magnetic, and the first to be genuinely frightened. Water-confident performer needed."},
@@ -25276,8 +25390,9 @@ const ACG = (()=>{
       ]},
     {k:"dance-class-partners",era:"2000s",genre:"romance",tracks:["stage","film","other"],
       ttl:["Beginners, Tuesdays","Count of Eight","The Partner You Get"],
-      p:"an adult beginners' dance class where everyone has been assigned a partner they did not choose",
+      p:"everyone in an adult beginners' dance class is assigned a partner they did not choose",
       h:"two of them are booked to dance at the same wedding — hers — and neither knew until week four",
+      h2:"the wedding is called off in week six and everyone keeps coming to class",
       w:["a community hall with a sprung floor","a dance studio above a shop","a church hall rented on Tuesday nights"],
       c:[
         {s:"the bride-to-be",r:"Lead",a:"midCareer",g:"F",x:"Learning to dance for a wedding she is increasingly quiet about. Movement ability helpful; the acting is in the hesitation."},
@@ -25343,250 +25458,136 @@ const ACG = (()=>{
   // what makes two listings read as though different people wrote them, rather
   // than the same letter with the nouns swapped.
 
-  const SHARED_LINES={
-    story:[
-      x=>`${x.capPremise}. ${x.capTurn}.`,
-      x=>`The story: ${x.premise}. ${x.capTurn}.`,
-      x=>`Here is the film in two sentences. ${x.capPremise}. ${x.capTurn}.`,
-      x=>`${x.capPremise} — and then ${x.turn}.`,
-      x=>`Premise: ${x.premise}. The turn: ${x.turn}.`,
-      x=>`What happens: ${x.premise}. What it costs: ${x.turn}.`,
-      x=>`${x.capTurn}. That is the back half. The front half is simpler: ${x.premise}.`,
-      x=>`It starts small — ${x.premise} — and it does not stay small, because ${x.turn}.`,
-      x=>`${x.capPremise}. By the second act ${x.turn}.`,
-      x=>`Logline: ${x.premise}. Complication: ${x.turn}.`
-    ],
-    sched:[
-      x=>`${pick(["We shoot","Shooting is","We're on the floor","Cameras roll"])} ${x.dayLine}, ${pick(["based in","out of","working out of","centred on"])} ${x.area}.`,
-      x=>`${pick(["Schedule","Dates","The schedule","When"])}: ${x.dayLine}, ${x.area}.`,
-      x=>`${x.dayCap}, ${x.area}. ${pick(["Exact days are set at booking.","Days are locked when we book.","We confirm the specific days with each offer.","You'll get your days in writing before you accept."])}`,
-      x=>`Everything happens in ${x.area} — ${x.dayLine}.`,
-      x=>`${pick(["The whole thing is","It's","We have"])} ${x.dayLine}, all of it in ${x.area}.`,
-      x=>`${pick(["Production runs","The schedule is","We're booked for","The block is"])} ${x.dayLine} in ${x.area}.`,
-      x=>`${x.dayCap} in ${x.area}, ${pick(["and we do not run over.","with a wrap time we actually hold to.","and the call sheet goes out the night before.","and nobody is asked to hold a week they aren't working."])}`
-    ],
-    pay: [
-      x=>`${pick(["Rates run","Money runs","Pay is","Rates are"])} ${x.payLo} to ${x.payHi} ${x.perUnit} ${pick(["by role size","depending on the part","according to the role","by role"])}, ${pick(["listed against every breakdown below.","printed on each role so you can do the maths before you submit.","with the figure on each role, not hidden behind a conversation.","and each breakdown carries its own number and day count."])}`,
-      x=>`${pick(["Every role is paid.","Nobody works for free on this.","All parts are paid.","There is a fee for every role listed."])} ${x.payLo}–${x.payHi} ${x.perUnit}, ${pick(["set per role.","with the exact figure on each breakdown.","broken out role by role below.","stated on the role, not negotiated after."])}`,
-      x=>`${pick(["Compensation:","Fees:","Rate card:","The money:"])} ${x.payLo}–${x.payHi} ${x.perUnit}. ${pick(["Deal memos go out before the first call.","Terms are in writing before anyone travels.","We pay on a two-week cycle after wrap.","Nothing is deferred and nothing is contingent."])}`,
-      x=>`${pick(["Paid work","This is paid","Every part here is a paid booking"])} — ${x.payLo} up to ${x.payHi} ${x.perUnit}, ${pick(["plus meals on every working day.","meals included on all shooting days.","with meals and local travel covered.","and copy and credit for everyone cast."])}`,
-      x=>`Each role carries its own rate (${x.payLo}–${x.payHi} ${x.perUnit}) and its own scheduled days, ${pick(["so the total is not a mystery.","both printed in the breakdown.","so you can price the job yourself.","which we would rather you check before applying."])}`
-    ],
-    // The closing paragraph carries no numbers of its own, so with fixed
-    // wording it was the first slot to run out of fresh combinations. Weaving
-    // the city, the role count and the closing date through it makes every
-    // close inherently specific to its listing.
-    close:[
-      x=>`${pick(["We are reading broadly on all","We're seeing a wide range across all","The bands are guidance across all"])} ${x.roleCount} ${x.roleCount===1?"role":"roles"} — ${pick(["if it's close and it speaks to you, submit.","near enough is near enough; send it.","we would rather see you than not."])}`,
-      x=>`${pick(["First-time and self-taught actors are welcome on this one.","No credits required for anything listed here.","You do not need an agent to submit to this."])} ${pick(["We care what you do on camera, not where you trained.","We are watching the tape, not the résumé.","The read is the filter; nothing else is."])}`,
-      x=>`${pick(["Submissions close","We stop reading","The list closes"])} ${x.closeDate}. ${pick(["Everything complete that arrives before then gets watched.","We go through all of them, in order.","Late material does not reach the production, so please don't."])}`,
-      x=>`${pick(["Callbacks are in","Second reads happen in","We'll call back in"])} ${x.city}, ${pick(["with sides at least 48 hours ahead.","and you'll have the sides before you travel.","and we cover travel inside the city for anyone we call."])}`,
-      x=>`${pick(["Please read the breakdown for the part you want","Read the role before you send","Check the role details first"])} — ${pick(["the rate, the days and the materials are printed on every one of the","every figure you need is on all","the numbers are up front on all"])} ${x.roleCount} ${x.roleCount===1?"role":"roles"}.`,
-      x=>`${pick(["We are casting the relationships as much as the individual parts","These parts only work against each other","Chemistry decides this one"])}, ${pick(["so expect a paired read.","so callbacks will be in twos.","and we will mix and match on the day."])} ${pick(["Bring nothing memorised.","Come off book if you like; we won't hold you to it.","We'll read you with more than one partner."])}`,
-      x=>`${pick(["If you have played something like this and hated how it was written","If this part is close to your own life","If you've been up for this type before and never booked it"])}, ${pick(["say so in the note — it is a useful conversation.","tell us. It genuinely helps.","we want to hear about it before the callback."])}`,
-      x=>`${pick(["Local to","Being local to","A local hire in"])} ${x.city} ${pick(["makes everyone's life easier","is easier on the schedule","saves the production a great deal"])}, ${pick(["but a great tape from further out still gets a callback.","though we will still watch anything that lands.","and we will fly a read that is right."])}`,
-      x=>`${pick(["We answer everyone","You will hear from us either way","Nobody gets left waiting on this"])} — ${pick(["yes or no, before the shoot dates.","including the nos, which we send first.","and if it's a no we say so rather than going quiet."])}`,
-      x=>`${x.roleCount===1?"This is one role and we are reading widely for it.":`All ${x.roleCount} roles are open now.`} ${pick(["Nothing here is pre-cast.","No part below is already offered.","Every one of these is genuinely open — we have not quietly cast any of them."])}`
-    ]
-  };
+  // ── The project summary ──────────────────────────────────────────────────
+  // One or two sentences, and nothing but the story. No shoot dates, no
+  // location, no crew credits, no rates, no submission process — every one of
+  // those has its own field on the listing and repeating them here made the
+  // summary long, samey and beside the point. What an actor wants from this box
+  // is: what is this about?
+  //
+  // Each seed carries TWO turns (h and h2), so one premise yields two genuinely
+  // different stories rather than one story in different wording; combined with
+  // 18 sentence architectures that is the originality budget for this field.
+  const STORY_LINES=[
+    x=>`${x.capPremise}. ${x.capTurn}.`,
+    x=>`${x.capPremise} — until ${x.turn}.`,
+    x=>`${x.capPremise}, and then ${x.turn}.`,
+    x=>`${x.capTurn}. Before that: ${x.premise}.`,
+    x=>`It begins when ${x.premise}. It turns when ${x.turn}.`,
+    x=>`${x.capPremise}. What breaks it open: ${x.turn}.`,
+    x=>`${x.capPremise} — and what happens when ${x.turn}.`,
+    x=>`${x.capPremise}. The complication is that ${x.turn}.`,
+    x=>`${x.capPremise}, right up until ${x.turn}.`,
+    x=>`${x.capPremise}. Then ${x.turn}, and there is no version of the day that ends quietly.`,
+    x=>`${x.capPremise}. Everything changes once ${x.turn}.`,
+    x=>`This one is simple: ${x.premise}. It stops being simple when ${x.turn}.`,
+    x=>`${x.capPremise} — and ${x.turn}.`,
+    x=>`${x.capPremise}. By the end of the first act ${x.turn}.`,
+    x=>`${x.capPremise}. The story is what happens after ${x.turn}.`,
+    x=>`${x.capPremise}. Nobody planned for the part where ${x.turn}.`,
+    x=>`${x.capPremise}. The turn: ${x.turn}.`,
+    x=>`${x.capPremise}. Then ${x.turn}.`
+  ];
+  // Commercial, print and music-video briefs describe an approach, not a plot
+  // beat, so they are stated rather than caused.
+  const FORMAT_LINES=[
+    x=>`${x.capPremise}. ${x.capTurn}.`,
+    x=>`${x.capPremise} — ${x.turn}.`,
+    x=>`${x.capPremise}. The approach: ${x.turn}.`,
+    x=>`${x.capPremise}. Treatment: ${x.turn}.`,
+    x=>`${x.capPremise}. How it is built: ${x.turn}.`,
+    x=>`${x.capPremise}. The idea is that ${x.turn}.`,
+    x=>`${x.capPremise}. Made so that ${x.turn}.`,
+    x=>`${x.capPremise}. The one rule: ${x.turn}.`,
+    x=>`${x.capPremise}. What makes it work: ${x.turn}.`,
+    x=>`The brief: ${x.premise}. The execution: ${x.turn}.`,
+    x=>`${x.capPremise}. Cut so that ${x.turn}.`,
+    x=>`${x.capPremise}. Shot on the principle that ${x.turn}.`
+  ];
 
   const TONES=[
     {key:"line-producer",tracks:["film","tv","stage","spot","print","other"],
       note:"Line-producer plain speech.",
       role:"Prepared, on time, and able to repeat a take exactly. That is the whole ask.",
-      order:["open","story","sched","pay","close"],
       tag:[x=>`${x.Type} shooting ${x.window} in ${x.area}.`,x=>`${x.roleCount} ${x.roleCount===1?"role":"roles"} — ${x.Type}, ${x.area}.`,x=>`${x.capTurn}.`],
-      open:[
-        x=>`${x.Company} is casting ${x.roleCount} ${x.roleCount===1?"role":"roles"} for ${x.artType}.`,
-        x=>`${x.roleCount} ${x.roleCount===1?"role":"roles"} open on ${x.artType} — ${x.Company}, ${x.city}.`,
-        x=>`${x.Company}, ${x.city}. ${x.capType} casting now.`
-      ],
-      sig:[
-        x=>`${pick(["Small unit, tight schedule, and we run on time.","We are a small crew and we do not waste your day.","Lean unit. Real call times."])} ${x.crewLine}`,
-        x=>`${x.crewLine} ${pick(["No “TBD” on this one — the numbers are the numbers.","Everything you need is in writing before you accept.","We do not ask anyone to work on a handshake."])}`
-      ],
       req:[x=>`${x.mediaSentence} Note your availability against the shoot window and whether you are local to ${x.city}.`,
            x=>`${x.mediaSentence} Flag any conflicts inside the shoot dates when you submit — it saves both of us a round.`]},
 
     {key:"director-letter",tracks:["film","tv","other"],
       note:"Director writing in first person.",
       role:"I would rather see a real thought than a finished performance.",
-      order:["open","story","sched","sig","close"],
       tag:[x=>`${x.capPremise}.`,x=>`${x.capTurn}.`,x=>`A ${x.genre} ${x.label} — ${x.city}.`],
-      open:[
-        x=>`I'm ${x.dir}. This is ${x.artType} I've been writing for a couple of years and I'd rather tell you about it plainly than sell it.`,
-        x=>`${x.dir} here — director. ${x.capType}, ${x.city}, and I'm casting it myself.`,
-        x=>`My name is ${x.dir} and this is the ${x.label} I have been trying to make since I could afford to.`
-      ],
-      sig:[
-        x=>`${pick(["I'm looking for people who can be still and specific.","What I need is stillness and one specific idea.","I want actors who can do less and mean more."])} ${pick(["If you push, I'll ask you to do less.","I will keep asking you to take it down until it's true.","The big version is never the one I use."])} ${x.crewLine}`,
-        x=>`${pick(["It's not a big production and I won't pretend otherwise.","This is small and I am not going to oversell it.","We are not a big shop."])} ${pick(["But everyone is paid, the days are real, and I know the difference is who is in the room.","What I can promise: a rehearsal, sides in advance, and a director who talks to you.","The budget is honest and so am I."])} ${x.crewLine}`,
-        x=>`${x.crewLine} ${pick(["I have cast enough of these to know the writing only gets you halfway.","I care more about who you are on take four than take one.","I would rather find the part with you than hand it to you finished."])}`
-      ],
       req:[x=>`${x.mediaSentence} Don't over-produce the tape — a quiet room and a window is fine.`,
            x=>`${x.mediaSentence} Tell me one true thing about why the part interested you. That's the part I read first.`,
            x=>`${x.mediaSentence} I'm not scoring your lighting. Read it the way you'd say it.`]},
 
     {key:"casting-office",tracks:["film","tv","stage","spot","print","other"],
       note:"Casting office breakdown, formal.",
-      role:"Casting is prioritising clarity, availability, and a strong first read.",
-      order:["open","story","sched","pay","close"],
+      role:"Casting is prioritizing clarity, availability, and a strong first read.",
       tag:[x=>`${x.Type}, ${x.city} — ${x.capPremise}.`,x=>`${x.capType} breakdown — ${x.roleCount} ${x.roleCount===1?"role":"roles"}.`],
-      open:[
-        x=>`BREAKDOWN — ${x.Type}\nProduction: ${x.Company}\nLocation: ${x.area}\nUnion: ${x.union}`,
-        x=>`${x.Company} — ${x.Type}\n${x.roleCount} ${x.roleCount===1?"role":"roles"} · ${x.area} · ${x.union}`,
-        x=>`CASTING · ${x.Type} · ${x.city}\nProduction: ${x.Company}. Status: ${x.union}.`
-      ],
-      sig:[x=>`${x.crewLine}`],
       req:[x=>`${x.mediaSentence} Submissions without a current headshot will not be reviewed. Include union and local-hire status.`,
            x=>`${x.mediaSentence} Incomplete submissions are not forwarded to the production. Union status required.`]},
 
     {key:"downtown-dry",tracks:["film","tv","stage"],
       note:"Dry, funny, downtown register.",
       role:"Dry timing helps. So does comfort with silence and scenes that turn sideways.",
-      order:["story","sig","sched","close"],
       tag:[x=>`${x.capTurn}.`,x=>`${x.capPremise}.`],
-      open:[x=>`${x.Company} — ${x.Type}, ${x.city}.`],
-      sig:[
-        x=>`${pick(["That's it. That's the whole thing.","That is the entire pitch.","There is no second thing."])} ${x.roleCount} ${x.roleCount===1?"part":"parts"}, ${pick(["everybody gets paid,","all of them paid,","real money on every one,"])} ${pick(["and nobody is going to call it a passion project and then ask you for a favour.","and nobody here will use the word “exposure”.","and no one is going to ask you to work for the reel."])} ${x.crewLine}`,
-        x=>`${pick(["The writing is funny until it isn't.","It plays light and then it doesn't.","It's a comedy right up until it stops being one."])} ${pick(["If your instinct on a hard line is to land it, this probably isn't for you.","If you want to sell the joke, we'll fight.","We throw the good lines away on purpose."])} ${x.crewLine}`
-      ],
       req:[x=>`${x.mediaSentence} No slate necessary. Read it flat the first time and see what happens.`,
            x=>`${x.mediaSentence} One take. Don't fix it. We can tell.`]},
 
     {key:"grant-funded",tracks:["film","tv","stage","other"],
       note:"Careful, institutional, transparent.",
       role:"A collaborative actor will do well here. Scenes may shift in rehearsal.",
-      order:["open","story","sched","pay","sig","close"],
       tag:[x=>`A ${x.genre} ${x.label} shooting in ${x.city}.`,x=>`${x.capPremise}.`],
-      open:[
-        x=>`${x.Company} is casting ${x.artType} in ${x.city}, supported in part by a production grant.`,
-        x=>`${x.Company} — ${x.artType}, ${x.city}. Casting is open to all submissions.`,
-        x=>`An open call from ${x.Company} for ${x.artType} in ${x.city}.`
-      ],
-      sig:[
-        x=>`${pick(["This is an open call in the real sense.","We mean open call literally.","The call is genuinely open."])} ${pick(["Age ranges are guidance rather than gates,","The bands below are a starting point,","Take the age ranges as approximate,"])} ${pick(["and we are actively interested in performers who don't get seen for this kind of material.","and we want to read people who are usually read for something else.","and we would rather be surprised than confirmed."])} ${x.crewLine}`,
-        x=>`${x.crewLine} ${pick(["Access needs are budgeted for, not accommodated after the fact.","If any part of the process is a barrier, tell us and we will find another way.","We will arrange an alternative route to submit if this one doesn't work for you."])}`
-      ],
       req:[x=>`${x.mediaSentence} If any part of this process is a barrier for you, write to us and we'll find another way to see your work.`,
            x=>`${x.mediaSentence} We will accept material in any format that plays. Don't let the spec stop you submitting.`]},
 
     {key:"ad-agency",tracks:["spot","print","other"],
       note:"Agency brief. Clipped, client-safe.",
       role:"Needs to look like a person, not a demographic. One-take believable.",
-      order:["open","story","sched","pay","sig"],
       tag:[x=>`${x.capPremise} — ${x.area}.`,x=>`${x.Type}, ${x.area} — ${x.roleCount} ${x.roleCount===1?"role":"roles"}.`],
-      open:[
-        x=>`Brief — ${x.Company}. ${x.capType}, ${x.area}.`,
-        x=>`${x.Company} is casting ${x.artType}. ${x.roleCount} ${x.roleCount===1?"role":"roles"}, usage confirmed in writing before booking.`,
-        x=>`Client campaign via ${x.Company}. ${x.capType}, shooting ${x.window}.`
-      ],
-      sig:[
-        x=>`${pick(["Tone is grounded and unglossy.","The look is documentary-adjacent.","We are going for real, not polished."])} ${pick(["No spokesperson delivery, no product-holding smiles.","Nobody presents to camera unless the board says so.","No announcer energy anywhere in this."])} ${pick(["We want overlapping dialogue and behaviour that survives forty takes.","Real hesitation. Real overlaps. It has to hold up on the fortieth pass.","Small, repeatable, human."])} ${x.crewLine}`,
-        x=>`${x.crewLine} ${pick(["Wardrobe is everyday contemporary; you may be asked to bring options.","Hair and make-up on site. Bring nothing but yourself.","Sizes are collected at booking, not at submission."])}`
-      ],
       req:[x=>`${x.mediaSentence} Include sizes for wardrobe and flag any conflicting brand bookings in the last twelve months.`,
            x=>`${x.mediaSentence} Note any category conflicts — we have to clear them with the client before callback.`]},
 
     {key:"stage-room",tracks:["stage"],
       note:"Theatre room, text-first.",
       role:"Text-first room. Bring an idea, expect it to change by Thursday.",
-      order:["open","story","sig","sched","close"],
       tag:[x=>`${x.capPremise}.`,x=>`${x.capTurn}.`],
-      open:[
-        x=>`${x.Company} is casting ${x.artType}.`,
-        x=>`${x.Company} — new work, ${x.city}. Casting ${x.roleCount} ${x.roleCount===1?"role":"roles"}.`,
-        x=>`${x.capType} at ${x.Company}. The writer is in the room.`
-      ],
-      sig:[
-        x=>`${pick(["This is a working room.","We work slowly and out loud.","It's a table-first process."])} ${pick(["We do table work before anyone is on their feet.","Nothing gets blocked until the text is standing on its own.","Two weeks of sitting down before we stage anything."])} ${pick(["Pages will change — that is the process, not a warning.","The script moves. That's why you're in the room.","Expect rewrites; expect to have caused some of them."])} ${x.crewLine}`,
-        x=>`${pick(["We want actors who are good in a room with other actors:","Looking for people who are generous on stage:","The room needs company players:"])} ${pick(["who listen, who don't decorate, who can hold a long scene without needing to win it.","who can be quiet for four pages and still be the thing you watch.","who make the other person better and don't count lines."])} ${x.crewLine}`
-      ],
       req:[x=>`${x.mediaSentence} A contemporary piece is more useful to us than classical. Two minutes maximum.`,
            x=>`${x.mediaSentence} Bring something you'd actually do, not something you think we want.`]},
 
     {key:"first-feature",tracks:["film","tv"],
       note:"First-timer, sincere, specific.",
       role:"The part will grow around whoever we cast. Bring yourself to it.",
-      order:["open","story","sched","pay","sig"],
       tag:[x=>`A first ${x.label}, shooting ${x.window}.`,x=>`${x.capPremise}.`],
-      open:[
-        x=>`This is our first ${x.label} and we would rather be honest about that than oversell it.`,
-        x=>`First ${x.label} for everyone involved except the crew, who have done plenty.`,
-        x=>`${x.Company} — our first ${x.label}. We have been saving for it for two years.`
-      ],
-      sig:[
-        x=>`${pick(["What we can offer beyond the fee:","On top of the money:","Things that are not money but matter:"])} ${pick(["a rehearsal week, sides in advance, food that isn't an insult, and a director who will actually talk to you about the part.","real rehearsal, honest hours, and a copy of the film that isn't a watermark.","a crew of a dozen who have all done this before, and a set where nobody shouts."])} ${x.crewLine}`,
-        x=>`${x.crewLine} ${pick(["The rates below are the real numbers, not an opening position.","We costed this before we posted it. Nothing here moves.","If we could pay more we would; what's listed is what exists."])}`
-      ],
       req:[x=>`${x.mediaSentence} If you don't have a reel yet, a phone self-tape is completely fine — we are not scoring production value.`,
            x=>`${x.mediaSentence} No reel, no problem. We started with nothing too.`]},
 
     {key:"episodic-team",tracks:["tv"],
       note:"Series team, forward-looking.",
       role:"Series-minded: the character has somewhere to go after the pilot.",
-      order:["open","story","sched","pay","sig","close"],
       tag:[x=>`${x.capPremise} ${x.roleCount} ${x.roleCount===1?"role":"roles"} open in ${x.city}.`,x=>`${x.capTurn}.`],
-      open:[
-        x=>`${x.Company} is casting ${x.artType} in ${x.city}.`,
-        x=>`${x.capType} — ${x.Company}. Casting recurring characters, ${x.city}.`,
-        x=>`${x.Company} is building the regular cast for ${x.artType}.`
-      ],
-      sig:[
-        x=>`${pick(["These are written as recurring characters,","Everything below recurs,","We are casting for the season, not the episode,"])} ${pick(["so we are casting for range across a season rather than a single strong scene.","which means we want to see what you do when the character is tired of itself.","so bring something that can survive eight hours of screen time."])} ${x.crewLine}`,
-        x=>`${x.crewLine} ${pick(["Options for further episodes are standard and are in the deal memo.","If the show continues, we come back to this cast first.","Second-season options are disclosed at offer, not sprung on you."])}`
-      ],
       req:[x=>`${x.mediaSentence} If you have episodic material, lead with it. Note any holding deals or series conflicts.`,
            x=>`${x.mediaSentence} Tell us about any series regular commitments now rather than at callback.`]},
 
     {key:"photo-studio",tracks:["print","spot"],
       note:"Stills producer, technical and warm.",
       role:"Stills work: the whole performance is posture, hands and the eyes.",
-      order:["open","story","sched","pay","sig"],
       tag:[x=>`${x.dayCap} in ${x.area} — ${x.capPremise}.`,x=>`${x.capType}, ${x.area}.`],
-      open:[
-        x=>`${x.Company} is casting ${x.artType}.`,
-        x=>`${x.capType} — ${x.Company}, ${x.area}.`,
-        x=>`${x.Company} is booking talent for ${x.artType}, ${x.window}.`
-      ],
-      sig:[
-        x=>`${pick(["Call times are long but the days are properly run","The days are long and well organised","We run a calm set"])} — ${pick(["hair and make-up on site, a real lunch, and a wrap time we hold to.","catering, a warm room to change in, and an hour you can actually eat in.","two make-up chairs, a proper break, and no overtime surprises."])} ${x.crewLine}`,
-        x=>`${pick(["This is character work, not catalogue posing.","We are casting faces, not measurements.","Nobody here is being asked to model at the camera."])} ${pick(["We want faces that carry a story and people who can take direction on a millimetre.","Bring a person. We'll light them.","Stillness is the skill; the styling is our problem."])} ${x.crewLine}`
-      ],
       req:[x=>`${x.mediaSentence} Recent digitals are more useful than polished tests — natural light, no make-up, front and profile.`,
            x=>`${x.mediaSentence} Please send unretouched digitals. We are casting the face you actually have.`]},
 
     {key:"union-careful",tracks:["film","tv","stage","spot","print","other"],
       note:"Producer being careful and complete.",
       role:"Reliable, contract-literate, and good with a call sheet.",
-      order:["open","story","sched","pay","sig"],
       tag:[x=>`${x.capPremise} ${x.Type}, ${x.city}.`,x=>`${x.Type} — ${x.union}.`],
-      open:[
-        x=>`${x.Company} is casting ${x.roleCount} ${x.roleCount===1?"role":"roles"} for ${x.artType} in ${x.city}. ${x.union}.`,
-        x=>`${x.capType}, ${x.city}. ${x.union}. Produced by ${x.Company}.`,
-        x=>`${x.Company} — ${x.artType}. Status: ${x.union}.`
-      ],
-      sig:[
-        x=>`${pick(["Deal memos go out before the first day","Contracts are issued before anyone travels","Paperwork is done in advance"])} ${pick(["and we do not ask anyone to work on a handshake.","— including the rate, the days, and the usage.","so nothing is being agreed on set."])} ${x.crewLine}`,
-        x=>`${x.crewLine} ${pick(["Overtime is paid at the stated rate, not absorbed.","Turnaround is respected; we do not schedule against it.","Anyone under 18 works to the applicable child performer rules, without exception."])}`
-      ],
       req:[x=>`${x.mediaSentence} Include union status, local-hire status, and any date conflicts inside the shoot window.`,
            x=>`${x.mediaSentence} Please confirm your work eligibility and union standing in the submission note.`]},
 
     {key:"workshop-honest",tracks:["stage","film","tv"],
       note:"Development voice, no promises.",
       role:"Development room. The role may not survive in this shape — come anyway.",
-      order:["open","story","sched","pay","sig","close"],
       tag:[x=>`Development — ${x.premise}.`,x=>`${x.capTurn}.`],
-      open:[
-        x=>`Development casting from ${x.Company}.`,
-        x=>`${x.Company} — development. ${x.capType}, ${x.city}.`,
-        x=>`This is a development call, not a production offer. ${x.Company}, ${x.city}.`
-      ],
-      sig:[
-        x=>`${pick(["Being straight about what this is:","To be clear about what you'd be joining:","No overselling:"])} ${pick(["there is no distributor, no network, and no promise of a next stage.","nothing is attached and nobody is pretending otherwise.","this may never go further than the room it is made in."])} ${pick(["What there is: a finished script, a room, and people who have done this before.","What exists: the pages, the money for the days listed, and a director worth the time.","What we do have is a script we believe in and the budget to pay you for the days."])} ${x.crewLine}`,
-        x=>`${x.crewLine} ${pick(["If it moves forward we come back to this cast first, in writing.","Any future stage would re-offer to the people in this room.","No options are being taken over your work at this stage."])}`
-      ],
       req:[x=>`${x.mediaSentence} We read everything that arrives. If you don't hear back within three weeks, we went another way.`,
            x=>`${x.mediaSentence} A rough tape is fine. We are looking at the thinking, not the finish.`]}
   ];
@@ -25775,36 +25776,6 @@ const ACG = (()=>{
   function seedPerson(h,res,gender){
     return roleName({name:"Crew",gender:gender||pick(["Female","Male","All genders"]),role_type:"Crew",ethnicity:"Any ethnicity",_keepDescription:true},h,res);
   }
-  // The crew credit line. Every name here is unique for life, and the job
-  // titles rotate by track so a photo campaign isn't "directed by". Returns the
-  // names as well as the line so the caller can persist them to history — a
-  // crew member must never turn up on a second listing either.
-  function crewLine(track,type,h,res){
-    const a=seedPerson(h,res),b=seedPerson(h,res);
-    const line=track==="stage"?pick([
-      `Directed by ${a}. Casting by ${b}.`,
-      `${a} directs; ${b} is stage manager on the production.`,
-      `Direction: ${a}. Casting and company management: ${b}.`
-    ]):track==="print"?pick([
-      `Photographed by ${a}. Casting by ${b}.`,
-      `${a} shoots; ${b} is producing and casting.`,
-      `Photography: ${a}. Casting director: ${b}.`
-    ]):track==="spot"?pick([
-      `Directed by ${a}, produced by ${b}.`,
-      `${a} directs. ${b} is the producer on the campaign.`,
-      `Direction: ${a}. Production: ${b}.`
-    ]):/voiceover|podcast|animation/i.test(type)?pick([
-      `${a} is directing the sessions; ${b} is casting.`,
-      `Session direction by ${a}. Casting by ${b}.`,
-      `Directed by ${a}, engineered and produced by ${b}.`
-    ]):pick([
-      `Written and directed by ${a}. Casting by ${b}.`,
-      `${a} directs; ${b} is casting.`,
-      `Directed by ${a}, produced by ${b}.`,
-      `Direction: ${a}. Casting: ${b}. Sides go out with callback invitations.`
-    ]);
-    return{line,names:[a,b]};
-  }
   function titleCase(s){
     return String(s||"").replace(/^(a|an|the)\s+/i,"").split(/\s+/).map(w=>w?w.charAt(0).toUpperCase()+w.slice(1):w).join(" ");
   }
@@ -25909,7 +25880,7 @@ const ACG = (()=>{
     return w[0][0];
   }
   const EXTRA_SLOTS=[
-    {s:"featured background — street",r:"Background",a:"adult",tracks:["film","tv","spot","other"],x:"Pedestrians, commuters and sidewalk traffic in exterior scenes. Real behaviour, no waving at camera, and patience with resets."},
+    {s:"featured background — street",r:"Background",a:"adult",tracks:["film","tv","spot","other"],x:"Pedestrians, commuters and sidewalk traffic in exterior scenes. Real behavior, no waving at camera, and patience with resets."},
     {s:"featured background — interior",r:"Background",a:"adult",tracks:["film","tv","spot"],x:"Bar, cafe and lobby atmosphere in the main locations. Several featured close passes; must be able to hold a silent conversation."},
     {s:"stand-in",r:"Background",a:"adult",tracks:["film","tv","spot"],x:"Stand-in for camera and lighting setups. Similar height and build to a principal; prior set experience preferred and a full day on your feet."},
     {s:"photo double",r:"Background",a:"adult",tracks:["film","tv"],x:"Over-the-shoulder framing, hands, and simple movement matched to a principal. General look confirmed after booking."},
@@ -25934,6 +25905,41 @@ const ACG = (()=>{
     while(out.length<target)out.push(slots[out.length%slots.length]);
     return out;
   }
+  // Direction notes for lead roles. The project summary is two sentences of
+  // story now, so anything about how to play it lives here, where it is
+  // actually useful. Combinatorial and no-repeat like every other sentence.
+  const DIRECTION_NOTES=[
+    x=>`${pick(["Plays best underplayed","Wants to be underplayed","Should be played small"])} — ${pick(["the audience needs to lean in, not be told.","we would rather believe it than be impressed by it.","the size comes from the situation, not the performance."])}`,
+    x=>`${pick(["Carries long stretches without dialogue","Holds several scenes on listening alone","Spends a lot of the piece reacting"])}, ${pick(["so stillness has to be interesting.","so the thinking needs to read.","so doing nothing has to be a choice we can see."])}`,
+    x=>`${pick(["Comic timing matters here","The humor has to be dry","Funny is welcome"])}, ${pick(["but nothing can be played for the laugh.","as long as the character never knows they are funny.","provided it stays inside the situation."])}`,
+    x=>`${pick(["Needs someone who can shift gear mid-scene","Turns twice in the same scene","Changes on a single line"])} ${pick(["without signposting it.","and the change should surprise the audience, not announce itself.","— we should notice it a beat after it happens."])}`,
+    x=>`${pick(["Physical work in this one","There is real physicality here","The body does a lot of the work"])}: ${pick(["comfort and stamina matter more than technique.","we will rehearse it, but you should be comfortable on your feet all day.","nothing dangerous, but plenty of it."])}`,
+    x=>`${pick(["Bring a point of view to the tape","Come in with an idea","We want to see a choice"])} — ${pick(["we will happily throw it out together.","being wrong in an interesting way is fine.","it does not have to be the right one."])}`,
+    x=>`${pick(["Chemistry read likely at callback","Will be paired at callback","Read against the other lead at callback"])}, ${pick(["so come prepared to adjust.","and we may mix the pairings more than once.","so flexibility helps more than a fixed plan."])}`,
+    x=>`${pick(["The part is written specifically","This one is written close to the bone","There is real specificity in the writing"])}, ${pick(["so resist the urge to play the type.","and generalising it will flatten it.","so play the person rather than the category."])}`,
+    x=>`${pick(["Sustains tension across the piece","Holds pressure for long stretches","Lives under pressure the whole way through"])} ${pick(["without ever getting loud.","and the volume never solves it.","— nothing is released until it has to be."])}`,
+    x=>`${pick(["Expect rehearsal","There is rehearsal time on this","We rehearse before we roll"])}, ${pick(["and the part will move around you.","so the role will change once we know who has it.","and the writing follows whoever we cast."])}`
+  ];
+  // Supporting parts and the padded background categories were the last place
+  // text repeated: a seed's supporting sketch is fixed, and the extras bank is
+  // shared by every listing that pads its cast. Both now carry a varied,
+  // no-repeat tail so two breakdowns never read the same.
+  const SUPPORT_NOTES=[
+    x=>`${pick(["Few scenes","Not a large part","Limited screen time","Two or three scenes"])}, ${pick(["but the film does not work without it.","and every one of them has to count.","so there is nowhere to hide.","and it is the one people remember."])}`,
+    x=>`${pick(["Plays opposite the lead","Shares most of its scenes with the lead","Works directly against the lead"])} — ${pick(["so we will read you together.","chemistry read at callback.","expect to be paired at the callback."])}`,
+    x=>`${pick(["Keep it grounded","No need to push","Play it straight"])}; ${pick(["the writing carries the size.","the situation does the work.","anything bigger fights the scene."])}`,
+    x=>`${pick(["Comfortable with overlapping dialogue","Good with interruptions","Able to talk over and be talked over"])} ${pick(["and quick resets.","without losing the thread.","and to hold a beat when the room goes quiet."])}`,
+    x=>`${pick(["Local hire preferred for this one","Ideally a local hire","Local casting for this part"])}; ${pick(["a single travel day at most.","one or two calls, close together.","the days are grouped."])}`,
+    x=>`${pick(["Room for improvisation","Some improvisation likely","We will play with this in rehearsal"])} ${pick(["inside a tight structure.","once the scene is standing.","but the scene keeps its shape."])}`
+  ];
+  const ATMOS_NOTES=[
+    x=>`${pick(["Wardrobe is everyday contemporary","Own clothes in most frames","Wardrobe supplied for featured passes"])}; ${pick(["nothing branded.","no logos or slogans.","plain colors preferred."])}`,
+    x=>`${pick(["Long day","Full day on location","Extended call"])} ${pick(["with breaks and a proper meal.","— food provided, and a warm holding area.","and a hold area you can actually sit in."])}`,
+    x=>`${pick(["Several featured passes","A few close passes to camera","One or two featured moments"])} ${pick(["for the right people on the day.","chosen on set.","depending on the setup."])}`,
+    x=>`${pick(["Repeat business is likely","We book atmosphere again","Regulars get called back"])} ${pick(["if the day goes well.","across the rest of the schedule.","for later blocks."])}`,
+    x=>`${pick(["Punctuality matters more than anything else here","Being on time is the whole job","Call times are held"])}. ${pick(["Please only submit if the date is genuinely clear.","Do not submit against a maybe.","Check the date before you apply."])}`,
+    x=>`${pick(["No experience necessary","Set experience helpful but not required","First-timers welcome"])} — ${pick(["you will be shown what to do.","the AD team will walk you through it.","we brief everyone at the start of the day."])}`
+  ];
   const RANK_ORDER=["Lead","Supporting","Day Player","Background"];
   function rankRates(tier){
     const out={};let cap=Infinity;
@@ -25945,7 +25951,7 @@ const ACG = (()=>{
     });
     return out;
   }
-  function seedRoles(seed,track,type,plan,tier,castSize){
+  function seedRoles(seed,track,type,plan,tier,castSize,h,res){
     const slots=padCast(seed.c||[],track,castSize||(seed.c||[]).length);
     const genders=seedGenders(slots);
     const eths=seedEthnicities(slots);
@@ -25968,7 +25974,13 @@ const ACG = (()=>{
         // The character name that replaces this slot is invented, so the
         // description has to open with what the character IS — otherwise a
         // talent reads "Enzo Sandoval" with no idea he is the repo driver.
-        description:mediumSwap(rank==="Background"?s.x:`${capFirst(s.s)} — ${s.x}`,track,type),
+        description:mediumSwap(
+          rank==="Background"
+            ? `${s.x}${(h&&res)?" "+freshLine(ATMOS_NOTES,{},h,res):""}`.trim()
+            : rank==="Lead"
+              ? `${capFirst(s.s)} — ${s.x}${(h&&res)?" "+freshLine(DIRECTION_NOTES,{},h,res):""}`.trim()
+              : `${capFirst(s.s)} — ${s.x}${(h&&res)?" "+freshLine(SUPPORT_NOTES,{},h,res):""}`.trim(),
+          track,type),
         gender:genders[i],
         age_range:seedAge(s.a||"adult",usedAges),
         ethnicity:eths[i],
@@ -26013,7 +26025,11 @@ const ACG = (()=>{
   // the money, the crew credits and the cast are built fresh, and every one of
   // them is checked against the history sets before the listing is accepted.
   function buildFreshConcept(city,h,res){
-    for(let attempt=0;attempt<400;attempt++){
+    for(let attempt=0;attempt<160;attempt++){
+      // The last quarter of the attempts drop the freshness guards so this
+      // never falls through to the legacy CONCEPTS templates, whose summaries
+      // are multi-paragraph and full of logistics.
+      const strict=attempt<60;
       const track=pickTrack();
       const seedPool=FILM_SEEDS.filter(s=>(s.tracks||[]).indexOf(track)>-1);
       if(!seedPool.length)continue;
@@ -26032,20 +26048,23 @@ const ACG = (()=>{
       const unusedTones=tones.filter(v=>!res.traits.has(clean("tone "+v.key)));
       const tone=pick(unusedTones.length?unusedTones:tones);
 
-      const seedKey=clean("seed "+seed.k);
+      // A seed is two stories, not one: pick whichever turn is still unused so
+      // the same premise can return later as a genuinely different film.
+      const turnOpts=[seed.h,seed.h2].filter(Boolean);
+      const freeTurns=turnOpts.filter(t=>!h.traits.has(clean("turn "+t))&&!res.traits.has(clean("turn "+t)));
+      const turn=pick(freeTurns.length?freeTurns:turnOpts.filter(t=>!res.traits.has(clean("turn "+t))).length?turnOpts.filter(t=>!res.traits.has(clean("turn "+t))):turnOpts);
+      const seedKey=clean("seed "+seed.k+" "+turn);
+      const turnKey=clean("turn "+turn);
       const toneKey=clean("tone "+tone.key);
-      const rootKey=fp([seed.k,type,tone.key,city.short].join("|"));
-      if(h.traits.has(clean(rootKey))||res.traits.has(clean(rootKey))||res.traits.has(seedKey))continue;
+      const rootKey=fp([seed.k,turn,type,tone.key,city.short].join("|"));
+      if(strict&&(h.traits.has(clean(rootKey))||res.traits.has(clean(rootKey))||res.traits.has(seedKey)))continue;
+      if(!strict&&res.traits.has(clean(rootKey)))continue;
 
       const plan=shootPlan(type,track);
       const tier=budgetTier(type,track);
       const areaName=(city.areas&&city.areas.length)?pick(city.areas):city.name;
       const castSize=chooseCastSize(track);
-      const roles=seedRoles(seed,track,type,plan,tier,castSize);
-      const rateVals=roles.map(r=>parseRoleRate(r.pay)).filter(Boolean).map(v=>v.rate_amount);
-      const payLo=rateVals.length?Math.min.apply(null,rateVals):0;
-      const payHi=rateVals.length?Math.max.apply(null,rateVals):0;
-      const perUnit=track==="stage"?"per week":/voiceover|podcast|animation/i.test(type)?"per session":"per day";
+      const roles=seedRoles(seed,track,type,plan,tier,castSize,h,res);
 
       // Dates: submissions close first, the shoot opens a week or three later,
       // and the window is exactly long enough to hold the scheduled days.
@@ -26059,34 +26078,37 @@ const ACG = (()=>{
       const x={
         city:city.name,short:city.short,area:areaName,
         Type:type,capType:type,label:seedLabel(type),artType:`${articleFor(seedLabel(type)).toLowerCase()} ${seedLabel(type)}`,
-        payLo:money(payLo),payHi:money(payHi),perUnit,closeDate:fmtShootDay(expires),
         genre:seed.genre,era:seed.era,
         premise:seed.p,capPremise:capFirst(seed.p),
-        turn:seed.h,capTurn:capFirst(seed.h),
+        turn,capTurn:capFirst(turn),
         place:pick(seed.w||[areaName]),
         roleCount:roles.length,
         dayLine:`${plan.line} between ${fmtShootDay(start.toISOString())} and ${fmtShootDay(end.toISOString())}`,
         dayCap:plan.cap,window,
         union:projectUnion(type),
-        Company:"",dir:"",crewLine:"",
+        Company:"",
         mediaSentence:mediaSentence(roles)
       };
+      // Similarity is judged on the STORY — premise plus turn — and judged
+      // before anything expensive is minted. Doing it after the company name and
+      // the copy were generated meant every rejected attempt burned a unique
+      // name off the pools, and once the pools were thin the retry loop crawled.
+      const text=`${type} ${seed.p} ${turn}`;
+      if(strict&&(tooSimilarStory(text,h.storyTexts)||tooSimilarStory(text,res.storyTexts)))continue;
+
       const posted=seedCompany(city,track,h,res);
       const company=posted.label;
-      const crew=crewLine(track,type,h,res);
       x.Company=company;
-      x.crewLine=crew.line;
-      x.dir=crew.names[0];
 
-      const synopsis=mediumSwap(buildSynopsis(tone,x,h,res),track,type);
+      const storyBank=(track==="spot"||track==="print"||track==="other")?FORMAT_LINES:STORY_LINES;
+      const synopsis=mediumSwap(freshLine(storyBank,x,h,res),track,type);
       const tagline=mediumSwap(freshLine(tone.tag,x,h,res),track,type);
       const reqLine=mediumSwap(freshLine(tone.req,x,h,res),track,type);
-      const text=`${type} ${seed.p} ${seed.h} ${synopsis}`;
-      if(tooSimilarStory(text,h.storyTexts)||tooSimilarStory(text,res.storyTexts))continue;
 
       addUsed(res.traits,"type "+type);
       addUsed(res.traits,rootKey);
       addUsed(res.traits,seedKey);
+      addUsed(res.traits,turnKey);
       addUsed(res.traits,toneKey);
       addUsed(res.roleCounts,String(roles.length));
       return{
@@ -26096,10 +26118,10 @@ const ACG = (()=>{
         rootKey,
         settingKey:seedKey,
         catalystKey:toneKey,
-        storyDetail:seed.h,
+        storyDetail:turn,
         freshStory:true,
         seedKey:seed.k,
-        crewNames:crew.names.concat(posted.person?[posted.person]:[]),
+        crewNames:posted.person?[posted.person]:[],
         voice:tone,
         synopsis:()=>synopsis,
         titles:seedTitles(seed,city,type),
@@ -26108,7 +26130,7 @@ const ACG = (()=>{
         pay:seedPayLine(roles,plan,track,type),
         union:x.union,
         req:reqLine,
-        lines:splitLines(synopsis).concat([tagline,reqLine]).filter(Boolean),
+        lines:splitLines(synopsis).concat([tagline,reqLine],roles.map(r=>r.description)).filter(Boolean),
         months:()=>months,
         roles:()=>roles,
         logistics:{
@@ -26145,8 +26167,11 @@ const ACG = (()=>{
       // the synopsis, which is what makes a seed recoverable from a listing
       // that was written on another device or in an earlier session. Finding it
       // here is what stops the same source story being generated twice.
-      FILM_SEEDS.forEach(s=>{if(storyBlob.includes(clean(s.p)))addUsed(h.traits,"seed "+s.k);});
-      TONES.forEach(v=>{if(storyBlob.includes(clean(v.role)))addUsed(h.traits,"tone "+v.key);});
+      FILM_SEEDS.forEach(s=>{
+        [s.h,s.h2].filter(Boolean).forEach(t=>{
+          if(storyBlob.includes(clean(t))){addUsed(h.traits,"turn "+t);addUsed(h.traits,"seed "+s.k+" "+t);}
+        });
+      });
       // Crew credits live inside the synopsis, so mine the names back out and
       // retire them — a director or casting director must never be reused.
       (String(c.synopsis||"").match(/\b[A-Z][a-z'’-]+ [A-Z][a-z'’-]+\b/g)||[]).forEach(n=>{
@@ -26375,35 +26400,43 @@ const ACG = (()=>{
       const cands=[`${pick(["Lobby","Market","Transit","Campus","Workshop","Street","Office","Neighborhood","Theater","Location"])} ${pick(["Ensemble","Regulars","Patrons","Background","Guests","Crew","Neighbors","Riders"])}`];
       return candidateUnique(cands,h.roles,res.roles,()=>`${pick(["Late-Night","Opening-Night","Field-Trip","Corner-Store","Workshop","Holding-Area","Bus-Stop","Storefront"])} ${pick(["Ensemble","Background","Patrons","Crew","Regulars","Audience"])}`);
     }
-    // Name selection degrades in stages instead of falling off a cliff. Strict
-    // first pass: the full name, the given name AND the surname must all be
-    // unused for life. That is the ideal, but it can only be satisfied a few
-    // hundred times before the pools are spent — and the old behaviour then
-    // synthesised syllable names ("Naroa Valeton", "Avena Miroton") that read
-    // as obviously machine-made. So it now relaxes one constraint at a time,
-    // always keeping the FULL name unique, which is the promise that matters.
+    // Name selection degrades in stages instead of falling off a cliff. The
+    // ideal is a full name whose given name AND surname have both never been
+    // used; that can only be satisfied a few hundred times before the banks are
+    // spent, and the original version then synthesised syllable names that read
+    // as obviously machine-made. It now relaxes one constraint at a time,
+    // always keeping the FULL name unique — that is the promise that matters.
+    //
+    // Each tier FILTERS the pool rather than sampling it at random. Random
+    // retries are fine while names are plentiful and pathological once they are
+    // not: with the banks nearly exhausted the old version burned thousands of
+    // misses per name and generation slowed to seconds per listing.
     const take=(first,last)=>{
       const full=`${first} ${last}`;
       res.roles.add(clean(full));res.firsts.add(clean(first));res.lasts.add(clean(last));
       return full;
     };
     const freeFull=(first,last)=>{const f=clean(`${first} ${last}`);return !h.roles.has(f)&&!res.roles.has(f);};
-    for(let i=0;i<1200;i++){
-      const first=pick(pool),last=pick(surnames);
-      if(freeFull(first,last)&&!h.firsts.has(clean(first))&&!res.firsts.has(clean(first))&&!h.lasts.has(clean(last))&&!res.lasts.has(clean(last)))return take(first,last);
+    const unusedFirst=pool.filter(n=>!h.firsts.has(clean(n))&&!res.firsts.has(clean(n)));
+    const unusedLast=surnames.filter(n=>!h.lasts.has(clean(n))&&!res.lasts.has(clean(n)));
+    if(unusedFirst.length&&unusedLast.length){
+      const first=pick(unusedFirst),last=pick(unusedLast);
+      if(freeFull(first,last))return take(first,last);
     }
-    // Surnames repeat across a long-running board the way they do in real life;
-    // only require that no two characters in the SAME batch share one.
-    for(let i=0;i<800;i++){
-      const first=pick(pool),last=pick(surnames);
-      if(freeFull(first,last)&&!res.firsts.has(clean(first))&&!res.lasts.has(clean(last)))return take(first,last);
+    // Surnames repeat across a long-running board the way they do in life; only
+    // require that no two characters in the SAME batch share one.
+    const batchFirst=pool.filter(n=>!res.firsts.has(clean(n)));
+    const batchLast=surnames.filter(n=>!res.lasts.has(clean(n)));
+    for(let i=0;i<40&&batchFirst.length&&batchLast.length;i++){
+      const first=pick(batchFirst),last=pick(batchLast);
+      if(freeFull(first,last))return take(first,last);
     }
-    for(let i=0;i<800;i++){
+    for(let i=0;i<200;i++){
       const first=pick(pool),last=pick(surnames);
       if(freeFull(first,last))return take(first,last);
     }
     // Still nothing free: add a middle initial rather than invent a language.
-    for(let i=0;i<600;i++){
+    for(let i=0;i<200;i++){
       const first=pick(pool),last=pick(surnames);
       const mid=String.fromCharCode(65+Math.floor(Math.random()*26));
       const full=`${first} ${mid}. ${last}`;
@@ -27058,7 +27091,7 @@ const ACG = (()=>{
       is_admin_created:true,
       submission_requirements:reqStr,
       // Where & When. A seed concept has already sized its shoot window to the
-      // number of days it advertises and named the neighbourhood, and its
+      // number of days it advertises and named the neighborhood, and its
       // synopsis quotes those exact dates — so its logistics are used verbatim
       // rather than re-rolled here, which would make the copy contradict the
       // fields. Legacy templates fall back to the original window logic: a
@@ -27095,10 +27128,14 @@ const ACG = (()=>{
       _roles:rolesArr
     };
   }
-  function itemFreshEnough(item,h,res){
+  // `strict` is dropped once the batch has tried hard enough. The exact-key
+  // checks always apply; only the fuzzy similarity pass is relaxed, so a board
+  // that has already used every story still returns five drafts promptly
+  // instead of spinning through every remaining attempt.
+  function itemFreshEnough(item,h,res,strict){
     const storyText=item._storyTextKey||`${item.title||""} ${item.synopsis||""}`;
     if(h.stories.has(clean(item._storyKey))||h.traits.has(clean(item._traitKey)))return false;
-    if(tooSimilarStory(storyText,h.storyTexts)||tooSimilarStory(storyText,res.storyTexts))return false;
+    if(strict&&(tooSimilarStory(storyText,h.storyTexts)||tooSimilarStory(storyText,res.storyTexts)))return false;
     return true;
   }
   function generateBatch(adminUserId,existing=[],targetCount=5){
@@ -27111,7 +27148,7 @@ const ACG = (()=>{
       attempts++;
       const item=generateOne(adminUserId,h,res);
       const key=clean(item.type+"|"+item.location+"|"+item.title);
-      if(itemFreshEnough(item,h,res)&&!res.stories.has(key)){
+      if(itemFreshEnough(item,h,res,attempts<60)&&!res.stories.has(key)){
         res.stories.add(key);
         addUsed(res.storyTexts,item._storyTextKey);
         addUsed(res.traits,item._traitKey);
