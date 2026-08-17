@@ -26526,7 +26526,17 @@ const ACG = (()=>{
   // individual working under their own name — so the poster line varies the
   // same way. Any person named here goes through the same name machinery as the
   // cast, so a producer or casting director never appears on two listings.
-  function seedCompany(city,track,h,res){
+  // The production company line carries its crew credits — the way a breakdown
+  // header does. Crew names live HERE and nowhere else: never in the project
+  // summary, which stays two sentences of story.
+  function crewJobs(track,type){
+    if(track==="print")return["Photographer","Casting","Producer"];
+    if(track==="stage")return["Director","Casting","Producer","Stage Manager"];
+    if(track==="spot")return["Director","Producer","Casting","Creative Director"];
+    if(/voiceover|podcast|animation/i.test(type||""))return["Session Director","Casting","Producer"];
+    return["Dir.","Casting","Prod.","Writer"];
+  }
+  function seedCompany(city,track,h,res,type){
     const a=pick(COMPANY_A);
     const tail=track==="stage"?pick(["Theatre Company","Stage Company","New Works","Theatre Lab","Playhouse","Theatre Project"])
       :track==="spot"?pick(["Creative Studio","Content Lab","Commercial Unit","Advertising Works","Brand Studio"])
@@ -26539,21 +26549,29 @@ const ACG = (()=>{
       `${a} ${pick(COMPANY_A)} ${tail}`,
       `${pick(["North","South","East","West","Lower","Upper"])} ${a} ${tail}`
     ],h.prods,res.prods,()=>`${pick(COMPANY_A)} ${pick(COMPANY_A)} ${tail}`);
-    // Roughly a third of listings are posted under a person's name, either
-    // beside the company or instead of it.
+    const jobs=cgShuffle(crewJobs(track,type));
+    // A writing credit is fine as the second name on the line, but a casting
+    // notice posted by nothing but its writer reads wrong — lead with casting,
+    // direction or production.
+    const lead=jobs.filter(j=>!/writer/i.test(j));
+    const leadJob=lead.length?pick(lead):jobs[0];
+    const people=[];
+    const person=()=>{const n=seedPerson(h,res);people.push(n);return n;};
     const roll=Math.random();
-    if(roll<0.20){
-      const who=seedPerson(h,res);
-      const job=track==="print"?pick(["Casting","Photography","Casting Director"])
-        :track==="stage"?pick(["Casting","Casting Director","Producer"])
-        :pick(["Casting","Casting Director","Producer","Casting Associate"]);
-      return{label:`${co} — ${job}: ${who}`,person:who};
-    }
+    let label;
     if(roll<0.30){
-      const who=seedPerson(h,res);
-      return{label:pick([`${who} Casting`,`${who} — ${pick(["Producer","Director","Casting Director","Independent Producer"])}`,`${who} / ${co}`]),person:who};
+      // Two credits, the way a header lists them.
+      const j2=jobs.filter(j=>j!==leadJob)[0]||"Casting";
+      label=`${co} — ${leadJob} ${person()} · ${j2} ${person()}`;
+    }else if(roll<0.80){
+      label=`${co} — ${leadJob} ${person()}`;
+    }else if(roll<0.90){
+      // Posted by the individual, with the company after.
+      label=pick([`${person()} Casting for ${co}`,`${person()} — ${pick(["Producer","Director","Casting Director"])}, ${co}`]);
+    }else{
+      label=pick([`${person()} Casting`,`${person()} — ${pick(["Producer","Director","Independent Producer","Casting Director"])}`]);
     }
-    return{label:co,person:null};
+    return{label,person:people[0]||null,people};
   }
   function seedPerson(h,res,gender){
     return roleName({name:"Crew",gender:gender||pick(["Female","Male","All genders"]),role_type:"Crew",ethnicity:"Any ethnicity",_keepDescription:true},h,res);
@@ -26931,7 +26949,7 @@ const ACG = (()=>{
       const text=`${type} ${seed.p} ${turn}`;
       if(strict&&(tooSimilarStory(text,h.storyTexts)||tooSimilarStory(text,res.storyTexts)))continue;
 
-      const posted=seedCompany(city,track,h,res);
+      const posted=seedCompany(city,track,h,res,type);
       const company=posted.label;
       x.Company=company;
 
@@ -26958,7 +26976,7 @@ const ACG = (()=>{
         storyDetail:turn,
         freshStory:true,
         seedKey:seed.k,
-        crewNames:posted.person?[posted.person]:[],
+        crewNames:(posted.people||[]).filter(Boolean),
         voice:tone,
         synopsis:()=>synopsis,
         titles:seedTitles(seed,city,type),
