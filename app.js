@@ -1362,18 +1362,27 @@ body.sheet-push .b2t-cube{display:none;}
        horizontally so the active card lands in the stage centre, producing a
        smooth slide between cards instead of an instant content swap. Side cards
        fade + slightly scale down so the centre card reads as dominant. ─── */
-/* width:100% is load-bearing, do not drop it. Without an explicit width this
+/* The transform transition animates the caa.com-style page push when a slide-in
+   sheet opens (see body.sheet-push main). It sits on the element itself so the
+   page travels both ways off a single rule, and transform keeps the whole thing
+   on the compositor. overflow-x:clip — never hidden, which kills smooth scroll —
+   is what stops a wide coverflow track from widening the page. */
+main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
+/* width:100% below is load-bearing, do not drop it. Without an explicit width the
    section is sized by the coverflow track's max-content (~9000px) clamped to
    max-width, so between 1025px and 1479px it stayed a rigid 1480px instead of
    shrinking to the viewport: its right edge sat up to 300px off-screen, taking
-   the "next" arrow and the "Browse all" button with it (clipped by
-   /* The transform transition animates the caa.com-style page push when a slide-in sheet
-   opens (see body.sheet-push main). It sits on the element itself so the page travels
-   both ways off a single rule, and transform keeps the whole thing on the compositor. */
-main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}, so they read as missing rather than as overflow).
-   That band is every medium/large iPad in landscape — 1080/1112/1133/1180/1194/1366.
+   the "next" arrow and the "Browse all" button with it — clipped by the
+   overflow-x:clip on main above, so they read as missing rather than as overflow.
+   That band is every medium/large iPad in landscape: 1080/1112/1133/1180/1194/1366.
    Explicit width also makes the layout independent of intrinsic sizing, which is
-   what made this fragile in the first place (see the contain:inline-size note below). */
+   what made this fragile in the first place (see the contain:inline-size note below).
+
+   DO NOT write a CSS rule inside this comment. CSS comments do not nest, so an
+   inner block comment closes this one early and every word after it becomes part
+   of an invalid selector that swallows the rule below. That is exactly how
+   .fcs-section silently lost its max-width, centring and padding — the header and
+   the "Browse all" button sat flush against both screen edges on desktop. */
 .fcs-section{position:relative;width:100%;max-width:1480px;margin:0 auto;padding:48px 24px 16px;}
 /* NOTE: contain:inline-size is applied to .fcs-stage ONLY at <=1024px (the iPad
    fix), NOT here. At desktop widths the stage MUST stay uncontained: containing
