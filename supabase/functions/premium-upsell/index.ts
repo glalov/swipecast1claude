@@ -535,15 +535,18 @@ serve(async (req) => {
         if(h) runHero = (Array.isArray(h) ? h[0] : h) as Hero;
       }
     }catch(e){ console.error("[upsell] hero unavailable:", (e as Error).message); }
-    // RECENCY WINDOW — same rule as the daily digest. Draw only from the N most
-    // recently POSTED active castings, so this campaign can never resurface a
-    // months-old listing just because it is still technically open.
+    // RECENCY WINDOW — two guards, because "still open" is not the same as
+    // "fresh". The pool is the N most recently POSTED active castings AND
+    // nothing posted more than RECENT_DAYS ago, so this campaign can never
+    // resurface a months-old listing just because it is technically still open.
     const RECENT_POOL=20;
+    const RECENT_DAYS=14;
+    const freshSince=new Date(Date.now()-RECENT_DAYS*86400000).toISOString();
     // Same go-live guard as the digest: a casting scheduled for a future date is
     // already published=true and merely hidden by the site, so without this it
     // would be emailed before anyone could open it.
     const goLiveGate=new Date().toISOString();
-    const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).or(`go_live_at.is.null,go_live_at.lte.${goLiveGate}`).order("created_at",{ascending:false}).limit(RECENT_POOL);
+    const{data:castings}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${today}`).or(`expires_at.is.null,expires_at.gte.${today}`).or(`go_live_at.is.null,go_live_at.lte.${goLiveGate}`).gte("created_at",freshSince).order("created_at",{ascending:false}).limit(RECENT_POOL);
     const cwr:any[]=[];
     if(castings?.length){
       const cids=castings.map((c:any)=>c.id);
