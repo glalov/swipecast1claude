@@ -3929,17 +3929,21 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .mm-live-line>span{overflow:hidden;}
 .mm-live-line.mm-line-visible{grid-template-rows:1fr;opacity:1;}
 /* Cards overshoot and settle instead of fading up. A fade reads as
-   "loading"; an overshoot reads as something arriving. */
-.mm-live-card{position:relative;overflow:hidden;opacity:.001;transform:translateY(16px) scale(.94);will-change:opacity,transform;}
-.mm-live-card.mm-card-visible{animation:mmCardPop .42s cubic-bezier(.34,1.7,.5,1) forwards;}
-.mm-live-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--mm-rail,#1A1A2E);transform:scaleY(0);transform-origin:top;}
-.mm-live-card.mm-card-visible::before{animation:mmCardRail .3s ease .12s forwards;}
+   "loading"; an overshoot reads as something arriving.
+   TRANSITIONS, not keyframe animations. A class-toggled CSS animation with
+   fill-mode:forwards proved unreliable here: the page re-renders on every
+   typed character, and the animation would sit idle at its start frame for
+   over a second after the class landed before finally snapping to the end —
+   which is what read as blinking. A transition is driven purely by the
+   property change, so it cannot desync from the class. The overshoot comes
+   from the >1 control point in the transform bezier. */
+.mm-live-card{position:relative;overflow:hidden;opacity:.001;transform:translateY(16px) scale(.94);transition:opacity .3s ease,transform .42s cubic-bezier(.34,1.7,.5,1);will-change:opacity,transform;}
+.mm-live-card.mm-card-visible{opacity:1;transform:translateY(0) scale(1);}
+.mm-live-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--mm-rail,#1A1A2E);transform:scaleY(0);transform-origin:top;transition:transform .3s ease .12s;}
+.mm-live-card.mm-card-visible::before{transform:scaleY(1);}
 .mm-live-card::after{display:none;}
-.mm-live-task{opacity:.001;transform:scale(.7);will-change:opacity,transform;}
-.mm-live-task.mm-task-visible{animation:mmTaskPop .46s cubic-bezier(.34,1.8,.5,1) forwards;}
-@keyframes mmCardPop{to{opacity:1;transform:translateY(0) scale(1);}}
-@keyframes mmCardRail{to{transform:scaleY(1);}}
-@keyframes mmTaskPop{to{opacity:1;transform:scale(1);}}
+.mm-live-task{opacity:.001;transform:scale(.7);transition:opacity .3s ease,transform .46s cubic-bezier(.34,1.8,.5,1);will-change:opacity,transform;}
+.mm-live-task.mm-task-visible{opacity:1;transform:scale(1);}
 .mm-spark{position:absolute;width:16px;height:16px;border-radius:5px;background:#E8902A;box-shadow:0 0 24px rgba(232,144,42,.92);opacity:0;z-index:3;pointer-events:none;animation:mmSparkFloat 5.8s ease-in-out infinite;}
 .mm-spark-1{right:26px;top:134px;animation-delay:4.6s;}
 .mm-spark-2{right:104px;top:56px;width:14px;height:14px;background:#6EE7B7;box-shadow:0 0 24px rgba(110,231,183,.82);animation-delay:7.8s;}
@@ -7905,6 +7909,71 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
 // ═══════════════════════════════════════════
 // PAGE: MANAGER MODE  (responsive-fixed)
 // ═══════════════════════════════════════════
+
+// ─── Manager Mode hero mock-up.
+//     Defined at module scope ON PURPOSE. While this lived inside
+//     ManagerModePage a new component identity was created on every render,
+//     so React unmounted and remounted the whole inbox subtree each time —
+//     and the preview types a character every 22ms, which meant ~55 remounts
+//     in 1.2s. Every CSS animation restarted on each one, which read as the
+//     whole card blinking. Keep this out here.
+const MM_BODY_LINES=[
+  "Hi Riley, your profile is moving in the right direction.",
+  "Your headshot gives a strong first impression.",
+  "Adding a slate video will make you significantly more competitive."
+];
+
+const InboxMockup=({mobile,mmPreview,mmLines,mmCards,mmTask,mmCycle})=>{
+    const fs=(d,m)=>mobile?m:d;
+    const pd=(d,m)=>mobile?m:d;
+    return(
+      <div className={mobile?"mm-live-inbox mm-live-inbox-mobile":"mm-live-inbox"} style={{background:"#fff",border:"1px solid #E2E2E7",borderRadius:mobile?16:20,overflow:"hidden",boxShadow:mobile?"0 12px 34px rgba(26,26,46,0.16)":"0 20px 56px rgba(26,26,46,0.15)",width:"100%",maxWidth:mobile?340:460,minWidth:0,flexShrink:1}}>
+        <div style={{background:"#1A1A2E",padding:pd("13px 18px","9px 13px"),display:"flex",alignItems:"center",gap:8}}>
+          <div style={{display:"flex",gap:5,flexShrink:0}}>
+            {["rgba(255,90,80,0.7)","rgba(255,190,0,0.7)","rgba(40,200,100,0.7)"].map((c,i)=><div key={i} style={{width:mobile?7:8,height:mobile?7:8,borderRadius:"50%",background:c}}/>)}
+          </div>
+          <div style={{flex:1,textAlign:"center",fontSize:fs(11,9),color:"rgba(255,255,255,0.45)",letterSpacing:0.5,fontWeight:500}}>Inbox — Cast Slate</div>
+        </div>
+        <div style={{background:"#F7F7F8",padding:pd("3px 0","2px 0"),borderBottom:"1px solid #E2E2E7"}}>
+          {["Career Team","This week","Profile Tips"].map((lbl,i)=>(
+            <span key={lbl} className={!mobile&&i===0?"mm-live-tab":""} style={{display:"inline-block",padding:pd("8px 16px","6px 11px"),fontSize:fs(11,9),fontWeight:i===0?700:500,color:i===0?"#1A1A2E":"#8E8EA0",borderBottom:i===0?"2px solid #1A1A2E":"2px solid transparent",cursor:"pointer"}}>{lbl}</span>
+          ))}
+          </div>
+          <div style={{padding:pd("14px 18px","10px 13px"),borderBottom:"1px solid #EDEDF0",background:"rgba(26,26,46,0.025)",display:"flex",alignItems:"flex-start",gap:mobile?8:10}}>
+            <div style={{width:mobile?28:34,height:mobile?28:34,borderRadius:"50%",background:"#1A1A2E",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 2px 8px rgba(26,26,46,0.25)"}}>
+            <span style={{display:"block",width:mobile?22:27,height:mobile?22:27,color:"#fff"}}><LogoMark/></span>
+          </div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
+              <span style={{fontSize:fs(12,10),fontWeight:700,color:"#1A1A2E"}}>Cast Slate Career Team</span>
+              <span style={{background:"rgba(27,135,62,0.1)",border:"1px solid rgba(27,135,62,0.25)",color:"#1B873E",fontSize:fs(8,7),fontWeight:700,padding:"1px 5px",borderRadius:4,letterSpacing:0.3,textTransform:"uppercase"}}>Private</span>
+            </div>
+            <div style={{fontSize:fs(11,9),color:"#5A5A72",fontWeight:600,marginBottom:1}}>Your Weekly Actor Check-In</div>
+            <div className="mm-live-preview" style={{fontSize:fs(10,8),color:"#8E8EA0"}}>{mmPreview}</div>
+          </div>
+          <div style={{fontSize:fs(9,7.5),color:"#8E8EA0",flexShrink:0,whiteSpace:"nowrap"}}>Today</div>
+        </div>
+        <div style={{padding:pd("16px 18px","11px 13px")}}>
+          <div className="mm-live-message" style={{fontSize:fs(12,9.5),color:"#1A1A2E",lineHeight:1.65,marginBottom:pd(12,8),fontWeight:400,minHeight:mobile?80:70}}>
+            {MM_BODY_LINES.map((line,i)=>(
+              <span key={`${mmCycle}-l${i}`} className={`mm-live-line ${i<mmLines?"mm-line-visible":""}`}><span>{line}</span></span>
+            ))}
+          </div>
+          {[["What you're doing well","Your headshot is clear and professional — strong first impression.","#1B873E","rgba(27,135,62,0.06)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.06)"],["Casting lane to focus on","Young professional / commercial friend","#2563EB","rgba(37,99,235,0.06)"],["Your task this week","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.04)"]].map(([label,val,col,bg],idx)=>(
+            <div key={`${mmCycle}-${label}`} className={`mm-live-card ${idx<mmCards?"mm-card-visible":""}`} style={{"--mm-rail":col,background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4)}}>
+              <div style={{fontSize:fs(9,7),fontWeight:700,color:col,letterSpacing:0.6,textTransform:"uppercase",marginBottom:2}}>{label}</div>
+              <div style={{fontSize:fs(11,8.5),color:"#1A1A2E",fontWeight:500,lineHeight:1.45}}>{val}</div>
+            </div>
+          ))}
+          <div style={{marginTop:pd(12,8),display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+            <div key={`task-${mmCycle}`} className={`mm-live-task ${mmTask?"mm-task-visible":""}`} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:"0 2px 8px rgba(26,26,46,0.2)"}}>Complete This Week's Task</div>
+          </div>
+          <div style={{marginTop:pd(8,6),fontSize:fs(9,7.5),color:"#8E8EA0",fontStyle:"italic"}}>Replies are not available for this message.</div>
+        </div>
+      </div>
+    );
+};
+
 function ManagerModePage({onNavigate,session,myProfile}){
   const isPremium=myProfile?.membership_status==="active";
   const isLoggedIn=!!session;
@@ -7915,11 +7984,6 @@ function ManagerModePage({onNavigate,session,myProfile}){
   // character by character. Typing 178 characters was the single slowest thing
   // on the page (6.8s at 38ms each) and it alone was most of why the loop had
   // to be 20s. Wiping three lines says the same thing in 0.9s.
-  const MM_BODY_LINES=[
-    "Hi Riley, your profile is moving in the right direction.",
-    "Your headshot gives a strong first impression.",
-    "Adding a slate video will make you significantly more competitive."
-  ];
   const [mmPreview,setMmPreview]=useState("");
   const [mmLines,setMmLines]=useState(0);
   const [mmCards,setMmCards]=useState(0);
@@ -7985,56 +8049,6 @@ function ManagerModePage({onNavigate,session,myProfile}){
   const ACTOR_PHOTO="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=400&h=480&q=80";
   const CARD_PHOTO="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=220&h=280&q=80";
 
-  const InboxMockup=({mobile})=>{
-    const fs=(d,m)=>mobile?m:d;
-    const pd=(d,m)=>mobile?m:d;
-    return(
-      <div className={mobile?"mm-live-inbox mm-live-inbox-mobile":"mm-live-inbox"} style={{background:"#fff",border:"1px solid #E2E2E7",borderRadius:mobile?16:20,overflow:"hidden",boxShadow:mobile?"0 12px 34px rgba(26,26,46,0.16)":"0 20px 56px rgba(26,26,46,0.15)",width:"100%",maxWidth:mobile?340:460,minWidth:0,flexShrink:1}}>
-        <div style={{background:"#1A1A2E",padding:pd("13px 18px","9px 13px"),display:"flex",alignItems:"center",gap:8}}>
-          <div style={{display:"flex",gap:5,flexShrink:0}}>
-            {["rgba(255,90,80,0.7)","rgba(255,190,0,0.7)","rgba(40,200,100,0.7)"].map((c,i)=><div key={i} style={{width:mobile?7:8,height:mobile?7:8,borderRadius:"50%",background:c}}/>)}
-          </div>
-          <div style={{flex:1,textAlign:"center",fontSize:fs(11,9),color:"rgba(255,255,255,0.45)",letterSpacing:0.5,fontWeight:500}}>Inbox — Cast Slate</div>
-        </div>
-        <div style={{background:"#F7F7F8",padding:pd("3px 0","2px 0"),borderBottom:"1px solid #E2E2E7"}}>
-          {["Career Team","This week","Profile Tips"].map((lbl,i)=>(
-            <span key={lbl} className={!mobile&&i===0?"mm-live-tab":""} style={{display:"inline-block",padding:pd("8px 16px","6px 11px"),fontSize:fs(11,9),fontWeight:i===0?700:500,color:i===0?"#1A1A2E":"#8E8EA0",borderBottom:i===0?"2px solid #1A1A2E":"2px solid transparent",cursor:"pointer"}}>{lbl}</span>
-          ))}
-          </div>
-          <div style={{padding:pd("14px 18px","10px 13px"),borderBottom:"1px solid #EDEDF0",background:"rgba(26,26,46,0.025)",display:"flex",alignItems:"flex-start",gap:mobile?8:10}}>
-            <div style={{width:mobile?28:34,height:mobile?28:34,borderRadius:"50%",background:"#1A1A2E",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 2px 8px rgba(26,26,46,0.25)"}}>
-            <span style={{display:"block",width:mobile?22:27,height:mobile?22:27,color:"#fff"}}><LogoMark/></span>
-          </div>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
-              <span style={{fontSize:fs(12,10),fontWeight:700,color:"#1A1A2E"}}>Cast Slate Career Team</span>
-              <span style={{background:"rgba(27,135,62,0.1)",border:"1px solid rgba(27,135,62,0.25)",color:"#1B873E",fontSize:fs(8,7),fontWeight:700,padding:"1px 5px",borderRadius:4,letterSpacing:0.3,textTransform:"uppercase"}}>Private</span>
-            </div>
-            <div style={{fontSize:fs(11,9),color:"#5A5A72",fontWeight:600,marginBottom:1}}>Your Weekly Actor Check-In</div>
-            <div className="mm-live-preview" style={{fontSize:fs(10,8),color:"#8E8EA0"}}>{mmPreview}</div>
-          </div>
-          <div style={{fontSize:fs(9,7.5),color:"#8E8EA0",flexShrink:0,whiteSpace:"nowrap"}}>Today</div>
-        </div>
-        <div style={{padding:pd("16px 18px","11px 13px")}}>
-          <div className="mm-live-message" style={{fontSize:fs(12,9.5),color:"#1A1A2E",lineHeight:1.65,marginBottom:pd(12,8),fontWeight:400,minHeight:mobile?80:70}}>
-            {MM_BODY_LINES.map((line,i)=>(
-              <span key={`${mmCycle}-l${i}`} className={`mm-live-line ${i<mmLines?"mm-line-visible":""}`}><span>{line}</span></span>
-            ))}
-          </div>
-          {[["What you're doing well","Your headshot is clear and professional — strong first impression.","#1B873E","rgba(27,135,62,0.06)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.06)"],["Casting lane to focus on","Young professional / commercial friend","#2563EB","rgba(37,99,235,0.06)"],["Your task this week","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.04)"]].map(([label,val,col,bg],idx)=>(
-            <div key={`${mmCycle}-${label}`} className={`mm-live-card ${idx<mmCards?"mm-card-visible":""}`} style={{"--mm-rail":col,background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4)}}>
-              <div style={{fontSize:fs(9,7),fontWeight:700,color:col,letterSpacing:0.6,textTransform:"uppercase",marginBottom:2}}>{label}</div>
-              <div style={{fontSize:fs(11,8.5),color:"#1A1A2E",fontWeight:500,lineHeight:1.45}}>{val}</div>
-            </div>
-          ))}
-          <div style={{marginTop:pd(12,8),display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-            <div key={`task-${mmCycle}`} className={`mm-live-task ${mmTask?"mm-task-visible":""}`} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:"0 2px 8px rgba(26,26,46,0.2)"}}>Complete This Week's Task</div>
-          </div>
-          <div style={{marginTop:pd(8,6),fontSize:fs(9,7.5),color:"#8E8EA0",fontStyle:"italic"}}>Replies are not available for this message.</div>
-        </div>
-      </div>
-    );
-  };
 
   return(<div className="page">
 
@@ -8080,7 +8094,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
             <span className="mm-click-ring mm-ring-2"/>
             <span className="mm-click-ring mm-ring-3"/>
             <div style={{position:"absolute",inset:-1,background:"linear-gradient(135deg,rgba(110,231,183,0.3),rgba(99,102,241,0.2),transparent 60%)",borderRadius:22,filter:"blur(1px)"}}/>
-            <InboxMockup mobile={false}/>
+            <InboxMockup mobile={false} mmPreview={mmPreview} mmLines={mmLines} mmCards={mmCards} mmTask={mmTask} mmCycle={mmCycle}/>
           </div>
         </div>
         <div className="mm-hide-desktop mm-inbox-wrap mm-mobile-inbox-wrap" style={{justifyContent:"center",flex:"1 1 auto",minWidth:0}}>
@@ -8090,7 +8104,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
             <span className="mm-spark mm-spark-3"/>
             <span className="mm-spark mm-spark-4"/>
             <div style={{position:"absolute",inset:-1,background:"linear-gradient(135deg,rgba(110,231,183,0.24),rgba(99,102,241,0.18),transparent 62%)",borderRadius:18,filter:"blur(1px)"}}/>
-            <InboxMockup mobile={true}/>
+            <InboxMockup mobile={true} mmPreview={mmPreview} mmLines={mmLines} mmCards={mmCards} mmTask={mmTask} mmCycle={mmCycle}/>
           </div>
         </div>
       </div>
