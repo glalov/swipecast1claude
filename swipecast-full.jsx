@@ -2835,6 +2835,32 @@ body.sheet-push .b2t-cube{display:none;}
 .fcs-compact-label{font-size:9.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:#FFD79A;line-height:1.2;white-space:nowrap;}
 .fcs-compact-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:16px;line-height:1.15;color:#fff;text-shadow:0 1px 7px rgba(0,0,0,0.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .fcs-compact-btn{flex-shrink:0;background:#F0B860;color:#231706;border:none;border-radius:8px;padding:9px 18px;font-size:12px;font-weight:800;line-height:1;letter-spacing:.2px;cursor:pointer;white-space:nowrap;}
+/* ─── Featured-class banner intro, "Stage Curtain" ───────────────────────
+   Plays ONCE per session, and only after the entry curtain has cleared, so
+   the words are never hidden behind it. Both lines land and hold together
+   for ~0.9s: the line is a single idea and the reader takes it in one look
+   rather than assembling it from two. Then the black splits down the middle
+   and parts like stage curtains. 2.32s end to end, after which the veil is
+   unmounted entirely — it never sits over the View Classes button.
+   Anton is the self-hosted base64 face above, so this needs no network.
+   Do NOT write a rule inside this comment: CSS comments do not nest and the
+   next rule gets swallowed (see the .fcs-section note further down). */
+.fci-veil{position:absolute;inset:0;z-index:6;overflow:hidden;line-height:normal;pointer-events:none;}
+.fci-half{position:absolute;top:0;bottom:0;width:50.5%;background:#000;}
+.fci-half.l{left:0;animation:fciPartL .52s cubic-bezier(.7,0,.25,1) 1.62s both;}
+.fci-half.r{right:0;animation:fciPartR .52s cubic-bezier(.7,0,.25,1) 1.62s both;}
+.fci-row{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(2px,.7vw,10px);animation:fciFade .26s ease 1.58s both;}
+.fci-word{font-family:'Anton',Impact,sans-serif;font-weight:400;color:#fff;text-transform:uppercase;letter-spacing:.012em;line-height:.92;white-space:nowrap;font-size:clamp(17px,3.3vw,50px);will-change:transform,opacity;}
+.fci-w1{animation:fciWipeL .38s cubic-bezier(.16,1,.3,1) .08s both;}
+.fci-w2{animation:fciWipeR .38s cubic-bezier(.16,1,.3,1) .30s both;}
+.fci-on .fcs-full{animation:fciZoom .70s cubic-bezier(.2,.8,.25,1) 1.62s both;}
+@keyframes fciWipeL{from{opacity:0;transform:translate3d(-26%,0,0);}to{opacity:1;transform:none;}}
+@keyframes fciWipeR{from{opacity:0;transform:translate3d(26%,0,0);}to{opacity:1;transform:none;}}
+@keyframes fciFade{from{opacity:1;}to{opacity:0;}}
+@keyframes fciPartL{from{transform:none;}to{transform:translate3d(-101%,0,0);}}
+@keyframes fciPartR{from{transform:none;}to{transform:translate3d(101%,0,0);}}
+@keyframes fciZoom{from{transform:scale(1.06);}to{transform:none;}}
+@media(prefers-reduced-motion:reduce){.fci-veil{display:none;}.fci-on .fcs-full{animation:none;}}
 /* ── Banner code intro (homepage, once per session). Matrix-style code rain
    fills the featured-class banner; the site statement decodes out of the rain
    character-by-character in fixed-width cells (zero layout jitter), holds
@@ -4394,6 +4420,37 @@ function FeaturedClassBanner({onNavigate}){
   //     return true;
   //   }catch(e){return false;}
   const [introOn,setIntroOn]=useState(false);
+  // "Stage Curtain" banner intro. Deliberately gated three ways: once per
+  // session, never under reduced motion, and never before the entry curtain
+  // has actually gone — starting at the curtain's cs-go would play the words
+  // underneath it and waste the entrance.
+  const [inspireOn,setInspireOn]=useState(false);
+  useEffect(()=>{
+    if(typeof window==="undefined")return;
+    let dead=false,timer=null,poll=null;
+    try{
+      if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+      if(sessionStorage.getItem("cs_banner_inspire_done"))return;
+    }catch(e){ /* private mode - just play it */ }
+    // Pre-decode Anton so the first frame is never the Impact fallback.
+    try{ if(document.fonts&&document.fonts.load)document.fonts.load("400 1em Anton"); }catch(e){}
+    const start=()=>{
+      if(dead)return;
+      try{ sessionStorage.setItem("cs_banner_inspire_done","1"); }catch(e){}
+      setInspireOn(true);
+      timer=window.setTimeout(()=>{ if(!dead)setInspireOn(false); },2450);
+    };
+    if(!document.getElementById("cs-intro")){ start(); }
+    else{
+      let waited=0;
+      poll=window.setInterval(()=>{
+        if(dead)return;
+        waited+=60;
+        if(!document.getElementById("cs-intro")||waited>6000){ window.clearInterval(poll); poll=null; start(); }
+      },60);
+    }
+    return()=>{ dead=true; if(timer)window.clearTimeout(timer); if(poll)window.clearInterval(poll); };
+  },[]);
   // Desktop: measure the banner's natural (full) height from the image's
   // intrinsic aspect ratio so we can animate height -> 60px on scroll and
   // back. Mobile keeps its existing fixed 148px/54px CSS heights instead.
@@ -4417,7 +4474,7 @@ function FeaturedClassBanner({onNavigate}){
     return()=>window.removeEventListener("scroll",onScroll);
   },[]);
   const style=fullH?{height:collapsed?60:fullH}:undefined;
-  return(<aside ref={ref} className={`featured-class-stripe${collapsed?" is-collapsed":""}`} role="region" aria-label="Featured class: Scene Study Workshop" style={style}>
+  return(<aside ref={ref} className={`featured-class-stripe${collapsed?" is-collapsed":""}${inspireOn?" fci-on":""}`} role="region" aria-label="Featured class: Scene Study Workshop" style={style}>
     {/* Full state — original artwork, untouched. */}
     <div className="fcs-full">
       <img className="fcs-img" src="/assets/banner/scene-study.jpg" alt="Featured Class — Scene Study Workshop" width="3360" height="430" fetchpriority="high" decoding="async"/>
@@ -4444,6 +4501,19 @@ function FeaturedClassBanner({onNavigate}){
       </div>
       <button type="button" className="fcs-compact-btn" onClick={go} tabIndex={collapsed?0:-1}>View Classes →</button>
     </div>
+    {/* Intro veil — last child so it paints over both banner states, and
+        aria-hidden + pointer-events:none so it is invisible to screen readers
+        and never intercepts a click on the way out. */}
+    {inspireOn&&(
+      <div className="fci-veil" aria-hidden="true">
+        <span className="fci-half l"/>
+        <span className="fci-half r"/>
+        <div className="fci-row">
+          <span className="fci-word fci-w1">Be Inspired.</span>
+          <span className="fci-word fci-w2">Be Inspiring.</span>
+        </div>
+      </div>
+    )}
   </aside>);
 }
 
