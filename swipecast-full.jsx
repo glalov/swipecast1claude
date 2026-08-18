@@ -8328,10 +8328,11 @@ function ManagerModePage({onNavigate,session,myProfile}){
       </div>
     </section>
 
-    {/* ══════ TRUST / LEGAL ══════ */}
-    <section style={{padding:"0 clamp(16px,5vw,40px) clamp(48px,7vw,72px)",maxWidth:720,margin:"0 auto",textAlign:"center"}}>
-      <p style={{fontSize:12.5,color:"var(--t3)",lineHeight:1.75}}>Manager Mode is designed to help improve your profile and may help you present yourself more clearly to casting directors. It helps actors become more castable and is designed to help you focus your weekly profile improvement. Cast Slate does not guarantee bookings, callbacks, representation, auditions, or career outcomes. The Actor Business Card is a downloadable digital asset for personal use. Event suggestions are informational and not guaranteed to be available in all locations.</p>
-    </section>
+    {/* The Manager Mode / Business Card / event-suggestion disclaimer that used
+        to sit here now lives in the Terms instead — Section 10.9. It was the
+        same no-guarantee language the Terms already carry for every other
+        feature, so keeping a second copy on the marketing page meant two
+        wordings of one promise that could drift apart. */}
 
     <Footer onNavigate={onNavigate} backToTop/>
   </div>);
@@ -9588,6 +9589,8 @@ function TermsPage({onNavigate}){
     </S>
 
     <S n="8B" t="Platform-Generated Talent Pool Listings">Platform-generated talent pool listings are used by CastSlate to organize performer interest, evaluate role-type availability, and build searchable rosters for future presentation to casting professionals, filmmakers, producers, and creative teams. These listings may be illustrative, developmental, or platform-created unless expressly identified as a verified third-party production. Submission to a platform-generated listing does not guarantee that a specific production, employer, filmmaker, compensation arrangement, audition, booking, or employment opportunity currently exists.</S>
+
+    <S n="8C" t="Manager Mode, Actor Business Card, and Event Suggestions">Manager Mode is a profile-improvement tool. It is designed to help you improve your profile, to help you present yourself more clearly to casting directors, and to help you focus your weekly profile improvement. CastSlate does not guarantee bookings, callbacks, representation, auditions, or any other career outcome, and nothing produced by Manager Mode &mdash; including its weekly check-ins, prompts, scores, or suggestions &mdash; constitutes a promise, prediction, or assurance of any such outcome. The Actor Business Card is a downloadable digital asset provided for your personal use. Event suggestions are provided for informational purposes only, are not offers, and are not guaranteed to be available in all locations or at all times.</S>
 
     <S n="9" t="Intellectual Property">The Service, including all software, design, text, graphics, logos, the "CastSlate" name and mark, and all other content (excluding User Content), is the property of CastSlate or its licensors and is protected by U.S. and international copyright, trademark, and other intellectual property laws. Except for the limited license to use the Service as expressly permitted in these Terms, no rights are granted to you.</S>
 
