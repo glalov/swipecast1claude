@@ -2582,52 +2582,88 @@ body.sheet-push .b2t-cube{display:none;}
       from the bottom edge on a dark espresso ground with a giant Anton headline.
       Committed single (dark) look on purpose — reads the same in light + dark. */
 @font-face{font-family:'Anton';font-style:normal;font-weight:400;font-display:swap;src:url(data:font/woff2;base64,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) format('woff2');}
-.cc6-ov{position:fixed;inset:0;z-index:200;display:flex;align-items:flex-end;justify-content:center;}
-.cc6-scrim{position:absolute;inset:0;background:rgba(15,18,20,.52);will-change:opacity;animation:cc6fade .5s ease both;}
-.cc6-ov.cc6-closing .cc6-scrim{animation:cc6fadeout .5s ease both;}
-.cc6-panel{position:relative;z-index:1;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateZ(0);width:100%;background:linear-gradient(180deg,#f7f6f2,#ecebe4);color:#1f2327;border-top:2px solid #37696a;border-radius:18px 18px 0 0;padding:30px clamp(24px,6vw,66px) 30px;max-height:88vh;overflow-y:auto;box-shadow:0 -30px 90px -22px rgba(31,35,39,.3);display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1.15fr) auto;gap:40px;align-items:center;animation:cc6rise .62s cubic-bezier(.16,.84,.24,1) both;}
-.cc6-panel::before{content:"";position:absolute;top:12px;left:50%;transform:translateX(-50%);width:46px;height:4px;border-radius:999px;background:rgba(31,35,39,.2);}
-.cc6-panel .logo{color:#1f2327;font-size:17px;}
-.cc6-panel .logo-i{background:#1A1A2E;color:#fff;width:34px;height:34px;border-radius:9px;}
-.cc6-sub{font-family:'Poppins',sans-serif;font-weight:700;letter-spacing:.2em;text-transform:uppercase;font-size:11px;color:#6b7176;margin-top:10px;}
-.cc6-mega{font-family:'Anton',Impact,sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(52px,7vw,90px);line-height:.82;letter-spacing:.01em;margin:14px 0 0;color:#1f2327;}
-.cc6-mega .amb{color:#37696a;}
-.cc6-body{font-size:14px;line-height:1.6;margin:14px 0 0;color:#6b7176;max-width:42ch;}
-.cc6-body a{color:#37696a;text-decoration:none;border-bottom:1px solid rgba(55,105,106,.4);}
-.cc6-prefs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-.cc6-pref{border:1px solid rgba(31,35,39,.14);border-radius:14px;padding:15px 14px;display:flex;flex-direction:column;gap:12px;background:rgba(55,105,106,.06);}
-.cc6-pref .top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.cc6-pref h4{font-family:'Poppins',sans-serif;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin:0;font-size:15px;color:#1f2327;}
-.cc6-pref p{font-size:12px;color:#6b7176;line-height:1.4;margin:0;}
-.cc6-on{font-family:'Poppins',sans-serif;font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#37696a;}
-.cc6-tgl{position:relative;width:48px;height:27px;flex:none;border:none;background:transparent;padding:0;cursor:pointer;}
-.cc6-track{position:absolute;inset:0;border-radius:999px;background:rgba(31,35,39,.22);transition:background .3s;}
-.cc6-track::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.35);transition:transform .3s cubic-bezier(.34,1.56,.5,1);}
-.cc6-tgl[aria-pressed="true"] .cc6-track{background:#37696a;}
-.cc6-tgl[aria-pressed="true"] .cc6-track::after{transform:translateX(21px);}
-.cc6-actions{display:flex;flex-direction:column;gap:10px;min-width:210px;}
-.cc6-btn{width:100%;border-radius:12px;padding:14px 18px;font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:700;cursor:pointer;border:1px solid transparent;transition:transform .16s,background .2s,border-color .2s;}
-.cc6-btn:hover{transform:translateY(-1px);}
-.cc6-btn-primary{background:#37696a;color:#fff;}
-.cc6-btn-primary:hover{background:#2c5758;}
-.cc6-btn-ghost{background:transparent;color:#1f2327;border-color:rgba(31,35,39,.22);}
-.cc6-btn-ghost:hover{border-color:#37696a;color:#37696a;}
-.cc6-saved{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:#37696a;}
-@keyframes cc6fade{from{opacity:0;}to{opacity:1;}}
-@keyframes cc6rise{from{transform:translateY(110%);}to{transform:translateY(0);}}
-@keyframes cc6fadeout{from{opacity:1;}to{opacity:0;}}
-@keyframes cc6drop{from{transform:translateY(0);}to{transform:translateY(110%);}}
-.cc6-panel.cc6-closing{animation:cc6drop .62s cubic-bezier(.16,.84,.24,1) both;}
-/* The 3-col panel needs ~1207px to fit (66px padding x2 + 40px gap x2 + 210px
-   actions + the prefs' 538px min-content + the headline's 247px min-content).
-   Below that the actions column was pushed clean off the right edge and clipped,
-   so Accept all / Confirm choices / Reject all were unreachable — every iPad
-   from 961px up, portrait and landscape. Stack at 1240px for margin; 1280px+
-   desktops keep the 3-col layout unchanged. */
-@media(max-width:1240px){.cc6-panel{grid-template-columns:1fr;gap:22px;}.cc6-actions{min-width:0;}}
-/* Phones/small tablets additionally stack the three preference cards. */
-@media(max-width:960px){.cc6-prefs{grid-template-columns:1fr;}}
-@media(prefers-reduced-motion:reduce){.cc6-scrim,.cc6-panel{animation:none!important;}}
+/* ═══ COOKIE SIDE PANEL — "Gallery White" ═══════════════════════════
+   Replaced the bottom-rise "Amber Block" drawer 2026-08-18. Enters from the
+   RIGHT edge as a full-height sheet (the Dropbox pattern), because the old
+   3-column bottom drawer had to stack below 1240px and buried the buttons.
+   Palette is deliberately hueless — white sheet, black ink, grey rules — so
+   nothing on a consent dialog competes with the copy. Storage is unchanged:
+   sc_cookie_prefs_v1, necessary always true, nothing leaves the device. */
+.csp-ov{position:fixed;inset:0;z-index:200;}
+.csp-scrim{position:absolute;inset:0;background:rgba(10,12,14,.5);will-change:opacity;animation:cspFade .45s ease both;}
+.csp-ov.csp-closing .csp-scrim{animation:cspFadeOut .42s ease both;}
+.csp-panel{position:absolute;top:0;right:0;height:100%;width:min(462px,100vw);display:flex;flex-direction:column;
+  will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateZ(0);
+  background:linear-gradient(180deg,#ffffff,#fbfbfb);color:#101114;border-left:2px solid #101114;
+  animation:cspSlideIn .58s cubic-bezier(.16,.84,.24,1) both;
+  /* On white the scrim is all that separates sheet from page, so this edge is
+     tighter and darker than a dark panel would need. */
+  box-shadow:-24px 0 60px -26px rgba(16,17,20,.34);}
+.csp-ov.csp-closing .csp-panel{animation:cspSlideOut .42s cubic-bezier(.5,0,.75,0) both;}
+@keyframes cspSlideIn{from{transform:translateX(100%);}to{transform:translateX(0);}}
+@keyframes cspSlideOut{from{transform:translateX(0);}to{transform:translateX(100%);}}
+@keyframes cspFade{from{opacity:0;}to{opacity:1;}}
+@keyframes cspFadeOut{from{opacity:1;}to{opacity:0;}}
+.csp-head{padding:24px 26px 18px;border-bottom:1px solid rgba(16,17,20,.13);flex:none;position:relative;}
+.csp-x{position:absolute;top:18px;right:20px;width:34px;height:34px;border-radius:9px;border:1px solid rgba(16,17,20,.13);background:transparent;color:#6c7075;font-size:19px;line-height:1;cursor:pointer;transition:color .2s,border-color .2s;}
+.csp-x:hover{color:#101114;border-color:#101114;}
+/* Site logo, unchanged — same .logo/.logo-i/<LogoMark/> as the header. Only
+   the tile colour is overridden, because --acc teal on a hueless panel was
+   the one spot of colour left. */
+.csp-head .logo{color:#101114;font-size:17px;cursor:default;}
+.csp-head .logo-i{background:#101114;color:#fff;width:32px;height:32px;border-radius:9px;}
+.csp-kicker{font-family:'Poppins',sans-serif;font-weight:700;letter-spacing:.2em;text-transform:uppercase;font-size:10.5px;color:#6c7075;margin:15px 0 8px;}
+.csp-title{font-family:'Anton',Impact,sans-serif;font-weight:400;text-transform:uppercase;font-size:34px;line-height:.9;letter-spacing:.01em;margin:0;color:#101114;}
+.csp-intro{font-size:13.5px;line-height:1.65;color:#6c7075;margin:12px 0 0;}
+.csp-intro a{color:#101114;text-decoration:none;border-bottom:1px solid rgba(16,17,20,.32);font-weight:600;}
+.csp-scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:20px 26px 8px;}
+.csp-scroll::-webkit-scrollbar{width:9px;}
+.csp-scroll::-webkit-scrollbar-thumb{background:rgba(16,17,20,.16);border-radius:9px;}
+.csp-dns{border:1px solid rgba(16,17,20,.26);background:rgba(16,17,20,.045);border-radius:13px;padding:15px 15px 14px;margin-bottom:22px;}
+.csp-dns .row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.csp-dns h3{font-family:'Poppins',sans-serif;font-weight:800;font-size:13.5px;letter-spacing:.02em;margin:0;color:#101114;line-height:1.35;}
+.csp-dns p{font-size:12.5px;line-height:1.6;color:#6c7075;margin:9px 0 0;}
+.csp-lawtag{display:inline-block;margin-top:10px;font-family:'Poppins',sans-serif;font-weight:700;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#101114;border:1px solid rgba(16,17,20,.26);border-radius:999px;padding:3px 9px;}
+.csp-sec{font-family:'Poppins',sans-serif;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:10.5px;color:#6c7075;margin:0 0 11px;}
+.csp-cat{border:1px solid rgba(16,17,20,.13);border-radius:12px;margin-bottom:10px;background:#fafafa;overflow:hidden;transition:border-color .2s;}
+.csp-cat[data-open="1"]{border-color:rgba(16,17,20,.26);}
+.csp-cat .bar{display:flex;align-items:center;gap:11px;padding:13px 14px;}
+.csp-chev{width:22px;height:22px;flex:none;border:none;background:transparent;color:#6c7075;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;transition:transform .28s cubic-bezier(.16,.84,.24,1),color .2s;}
+.csp-cat[data-open="1"] .csp-chev{transform:rotate(180deg);color:#101114;}
+.csp-cat .bar>.csp-lbl{flex:1;min-width:0;font-family:'Poppins',sans-serif;font-weight:700;font-size:13.5px;color:#101114;cursor:pointer;line-height:1.3;text-align:left;background:none;border:none;padding:0;}
+.csp-always{font-family:'Poppins',sans-serif;font-weight:800;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#101114;flex:none;}
+/* grid-template-rows 0fr->1fr animates a height the content decides, so the
+   description can be any length without a hardcoded max-height. */
+.csp-drop{display:grid;grid-template-rows:0fr;transition:grid-template-rows .34s cubic-bezier(.16,.84,.24,1);}
+.csp-cat[data-open="1"] .csp-drop{grid-template-rows:1fr;}
+.csp-drop>div{overflow:hidden;}
+.csp-drop p{font-size:12.5px;line-height:1.66;color:#6c7075;margin:0 14px 12px 47px;}
+.csp-drop ul{margin:0 14px 13px 47px;padding:0;list-style:none;}
+.csp-drop li{font-size:11.5px;line-height:1.5;color:#6c7075;padding-left:13px;position:relative;margin-bottom:4px;}
+.csp-drop li::before{content:"";position:absolute;left:0;top:7px;width:4px;height:4px;border-radius:50%;background:#101114;}
+.csp-drop li b{color:#101114;font-weight:700;}
+.csp-tgl{position:relative;width:44px;height:25px;flex:none;border:none;background:transparent;padding:0;cursor:pointer;}
+.csp-track{position:absolute;inset:0;border-radius:999px;background:rgba(16,17,20,.2);transition:background .3s;}
+.csp-track::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:transform .3s cubic-bezier(.34,1.56,.5,1);}
+.csp-tgl[aria-pressed="true"] .csp-track{background:#101114;}
+.csp-tgl[aria-pressed="true"] .csp-track::after{transform:translateX(19px);}
+.csp-tgl[disabled]{cursor:not-allowed;opacity:.5;}
+.csp-foot{flex:none;padding:16px 26px 20px;border-top:1px solid rgba(16,17,20,.13);background:rgba(255,255,255,.97);display:grid;gap:9px;}
+.csp-btn{width:100%;border-radius:11px;padding:13px 16px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;border:1px solid transparent;transition:transform .16s,background .2s,border-color .2s,color .2s;}
+.csp-btn:hover{transform:translateY(-1px);}
+.csp-primary{background:#101114;color:#fff;}
+.csp-primary:hover{background:#2b2e33;}
+.csp-ghost{background:transparent;color:#101114;border-color:rgba(16,17,20,.13);}
+.csp-ghost:hover{border-color:#101114;}
+.csp-pair{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.csp-saved{display:flex;align-items:center;justify-content:center;gap:7px;font-size:12.5px;font-weight:700;color:#101114;padding-top:3px;}
+@media(max-width:520px){
+  .csp-panel{width:100vw;border-left:none;}
+  .csp-title{font-size:29px;}
+  .csp-head,.csp-scroll,.csp-foot{padding-left:18px;padding-right:18px;}
+  .csp-drop p,.csp-drop ul{margin-left:39px;}
+}
+@media(prefers-reduced-motion:reduce){.csp-scrim,.csp-panel{animation:cspFade .2s ease both!important;}}
 /* Actor Business Card (dashboard shortcut) — "Holo Sheen" premium motion: metallic light sweep, breathing glow, dot pulse, button shimmer */
 .abc-prem{box-shadow:0 18px 40px -22px rgba(26,26,46,.45);transition:box-shadow .5s cubic-bezier(.2,.7,.2,1),filter .5s ease;animation:abc-float 6s ease-in-out infinite;will-change:transform;}
 .abc-prem::after{content:"";position:absolute;inset:-40%;pointer-events:none;z-index:2;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.28) 46%,rgba(255,255,255,.55) 50%,rgba(255,255,255,.28) 54%,transparent 70%);transform:translateX(-120%);animation:abc-sheen 4.8s ease-in-out infinite;mix-blend-mode:screen;}
@@ -4968,67 +5004,156 @@ function ReportModal({open,onClose,session,target}){
   </div>);
 }
 
+// ─── Cookie categories. `key` is exactly what lands in sc_cookie_prefs_v1.
+//     `necessary`, `analytics` and `marketing` keep the names the old
+//     three-toggle panel wrote, so a visitor who saved prefs before this
+//     redesign keeps the choices they already made; the three new keys
+//     simply read as false (off) until they say otherwise, which is the
+//     right default for consent anyway.
+const COOKIE_CATEGORIES=[
+  {key:"necessary",locked:true,name:"Strictly necessary",
+   desc:"Required for CastSlate to work at all. These cannot be switched off, and they never carry advertising data.",
+   items:[["Session & sign-in","keeps you logged in between pages"],
+          ["Security","abuse and bot protection on submissions"],
+          ["Stripe","payment and membership checkout"],
+          ["Consent record","remembers the choices on this panel"]]},
+  {key:"functional",name:"Performance & functionality",
+   desc:"Remembers how you like the site set up so you are not redoing it on every visit. Nothing here identifies you to anyone else.",
+   items:[["Saved filters","your casting board location, union and pay filters"],
+          ["Playback","reel and Slate Video quality settings"],
+          ["Layout","swipe deck vs grid on the review screen"]]},
+  {key:"analytics",name:"Analytics & product insight",
+   desc:"Anonymous, aggregated usage so we can see which parts of the platform actually help actors get seen — and which are getting in the way.",
+   items:[["Page views","our own first-party counter, no third party"],
+          ["Class interest","which workshops get opened"],
+          ["Drop-off","where signup or a submission gets abandoned"]]},
+  {key:"marketing",name:"Marketing & advertising",
+   desc:"Measures whether our own campaigns are working. Off unless you turn it on.",
+   items:[["Campaign attribution","which email or ad brought you here"],
+          ["Promotion frequency","stops us showing you the same offer twice"]]},
+  {key:"social",name:"Social media advertising",
+   desc:"Lets social platforms recognise a visit so our ads reach performers rather than everyone. This is the only category that shares data off-site.",
+   items:[["Meta pixel","Facebook and Instagram audiences"],
+          ["Conversion events","reports a signup back to the ad platform"]]},
+  {key:"personalization",name:"Personalised recommendations",
+   desc:"Uses your profile and what you have opened before to order the casting board and pick your daily role match. Turning it off gives everyone the same newest-first list.",
+   items:[["Role matcher","your one strict-matched role a day"],
+          ["Recommended castings","ordered by fit instead of only by date"],
+          ["Digest contents","which castings land in your daily email"]]}
+];
+const COOKIE_OPTIONAL=COOKIE_CATEGORIES.filter(c=>!c.locked).map(c=>c.key);
+
 function CookieConsentModal({open,onClose,onNavigate}){
-  // Necessary always true. Analytics + marketing default off and rehydrate from saved prefs.
-  // "Amber Block" cinematic drawer — rises from the bottom edge. Logic unchanged:
-  // preferences persist to localStorage via writeCookiePrefs; necessary is always on.
-  const [analytics,setAnalytics]=useState(false);
-  const [marketing,setMarketing]=useState(false);
+  // "Gallery White" side sheet — enters from the right edge, full height.
+  // Logic is the same contract as the old drawer: preferences persist to
+  // localStorage via writeCookiePrefs and necessary is always on.
+  const [prefs,setPrefs]=useState({});
+  const [dns,setDns]=useState(false);       // CPRA "do not sell or share"
+  const [openRows,setOpenRows]=useState({});
   const [saved,setSaved]=useState(false);
-  // `closing` plays the slide-down exit before the parent unmounts us. The
-  // exit keyframe runs .62s, so we defer the real onClose by 680ms.
+  // `closing` plays the slide-out before the parent unmounts us. The exit
+  // keyframe runs .42s, so the real onClose is deferred past it.
   const [closing,setClosing]=useState(false);
-  // Pre-decode the embedded Anton face once at app load so the first open of
-  // the panel doesn't repaint the big headline mid-slide (a source of stutter).
-  useEffect(()=>{try{if(document.fonts&&document.fonts.load)document.fonts.load('400 1em Anton');}catch(_){}},[]);
-  // Reset BEFORE paint (useLayoutEffect) so a reopen never flashes a stale
-  // `closing` frame — otherwise the panel briefly renders the drop state on
-  // the second open before this effect runs, which reads as a blink/glitch.
+  // Reset BEFORE paint so a reopen never flashes a stale `closing` frame.
   useLayoutEffect(()=>{
     if(!open)return;
-    const p=readCookiePrefs();
-    setAnalytics(!!(p&&p.analytics));
-    setMarketing(!!(p&&p.marketing));
+    const p=readCookiePrefs()||{};
+    const next={};
+    COOKIE_OPTIONAL.forEach(k=>{next[k]=!!p[k];});
+    setPrefs(next);
+    setDns(!!p.doNotSell);
+    setOpenRows({});
     setSaved(false);
     setClosing(false);
   },[open]);
   if(!open)return null;
+
   const beginClose=()=>{
-    setClosing(prev=>{ if(prev)return prev; setTimeout(onClose,680); return true; });
+    setClosing(prev=>{ if(prev)return prev; setTimeout(onClose,460); return true; });
   };
-  const persist=(a,m)=>{
-    writeCookiePrefs({necessary:true,analytics:a,marketing:m});
+  const persist=(next,optOut)=>{
+    writeCookiePrefs({necessary:true,doNotSell:!!optOut,...next});
     setSaved(true);
     setTimeout(beginClose,650);
   };
-  const handleSave=()=>persist(analytics,marketing);
-  const handleAcceptAll=()=>{setAnalytics(true);setMarketing(true);persist(true,true);};
-  const handleRejectAll=()=>{setAnalytics(false);setMarketing(false);persist(false,false);};
-  const Tgl=({on,onChange})=>(
-    <button type="button" className="cc6-tgl" aria-pressed={on} aria-label="Toggle" onClick={()=>onChange(!on)}>
-      <span className="cc6-track"/>
+  const setAll=(on)=>{
+    const next={}; COOKIE_OPTIONAL.forEach(k=>{next[k]=on;});
+    setPrefs(next); setDns(false); persist(next,false);
+  };
+  const handleSave=()=>persist(prefs,dns);
+  // CPRA: opting out has to actually force the categories off, not merely
+  // grey them out — otherwise a saved "on" would survive the opt-out.
+  const toggleDns=()=>{
+    const nextDns=!dns;
+    setDns(nextDns);
+    if(nextDns){ const off={}; COOKIE_OPTIONAL.forEach(k=>{off[k]=false;}); setPrefs(off); }
+  };
+  const toggleRow=(k)=>setOpenRows(r=>({...r,[k]:!r[k]}));
+  const toggleCat=(k)=>{ if(dns)return; setPrefs(p=>({...p,[k]:!p[k]})); };
+
+  const Tgl=({on,onChange,disabled,label})=>(
+    <button type="button" className="csp-tgl" aria-pressed={!!on} disabled={!!disabled}
+            aria-label={label} onClick={()=>{if(!disabled)onChange();}}>
+      <span className="csp-track"/>
     </button>
   );
-  return(<div className={"cc6-ov"+(closing?" cc6-closing":"")} onClick={beginClose} role="dialog" aria-modal="true" aria-label="Cookie preferences">
-    <div className="cc6-scrim" aria-hidden="true"/>
-    <div className={"cc6-panel"+(closing?" cc6-closing":"")} onClick={e=>e.stopPropagation()}>
-      <div>
+
+  return(<div className={"csp-ov"+(closing?" csp-closing":"")} role="dialog" aria-modal="true" aria-label="Cookie preferences">
+    <div className="csp-scrim" onClick={beginClose} aria-hidden="true"/>
+    <div className="csp-panel">
+
+      <div className="csp-head">
+        <button className="csp-x" onClick={beginClose} aria-label="Close cookie preferences">&times;</button>
         <div className="logo"><div className="logo-i"><LogoMark/></div>CastSlate</div>
-        <div className="cc6-sub">Cookie Settings</div>
-        <h2 className="cc6-mega">Mind the<br/><span className="amb">cookies.</span></h2>
-        <p className="cc6-body">Essentials keep the lights on. Everything else is your call — flip what you want and get back to it. <a href="/privacy" onClick={e=>{e.preventDefault();if(typeof onNavigate==="function")onNavigate("privacy");beginClose();}}>Privacy Policy</a></p>
+        <div className="csp-kicker">Cookie settings</div>
+        <h2 className="csp-title">Mind the<br/>cookies.</h2>
+        <p className="csp-intro">Essentials keep the lights on &mdash; sign-in, security and payments. Everything
+        else is your call. Your choice is stored on this device only. <a href="/privacy" onClick={e=>{e.preventDefault();if(typeof onNavigate==="function")onNavigate("privacy");beginClose();}}>Privacy Policy</a></p>
       </div>
-      <div className="cc6-prefs">
-        <div className="cc6-pref"><div className="top"><h4>Necessary</h4><span className="cc6-on">On</span></div><p>Sign-in, security &amp; payments. Always active.</p></div>
-        <div className="cc6-pref"><div className="top"><h4>Analytics</h4><Tgl on={analytics} onChange={setAnalytics}/></div><p>Anonymous usage stats so we can improve the platform.</p></div>
-        <div className="cc6-pref"><div className="top"><h4>Marketing</h4><Tgl on={marketing} onChange={setMarketing}/></div><p>Measure our outreach &amp; campaigns. Off by default.</p></div>
+
+      <div className="csp-scroll">
+        <div className="csp-dns">
+          <div className="row">
+            <h3>Do not sell or share my personal information</h3>
+            <Tgl on={dns} onChange={toggleDns} label="Do not sell or share my personal information"/>
+          </div>
+          <p>Turn this on and we will not share your personal data with any third party while you use
+          CastSlate. It switches off every category below except strictly necessary, and keeps them off.</p>
+          <span className="csp-lawtag">California &middot; CPRA</span>
+        </div>
+
+        <div className="csp-sec">Cookie preferences</div>
+        {COOKIE_CATEGORIES.map(c=>(
+          <div className="csp-cat" data-open={openRows[c.key]?"1":"0"} key={c.key}>
+            <div className="bar">
+              <button type="button" className="csp-chev" onClick={()=>toggleRow(c.key)}
+                      aria-expanded={!!openRows[c.key]} aria-label={"Details for "+c.name}>
+                <svg width="13" height="8" viewBox="0 0 13 8" fill="none" aria-hidden="true">
+                  <path d="M1 1l5.5 5.5L12 1" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              <button type="button" className="csp-lbl" onClick={()=>toggleRow(c.key)}>{c.name}</button>
+              {c.locked
+                ? <span className="csp-always">Always on</span>
+                : <Tgl on={prefs[c.key]} onChange={()=>toggleCat(c.key)} disabled={dns} label={"Toggle "+c.name}/>}
+            </div>
+            <div className="csp-drop"><div>
+              <p>{c.desc}</p>
+              <ul>{c.items.map(([label,tail],i)=>(<li key={i}><b>{label}</b> &mdash; {tail}</li>))}</ul>
+            </div></div>
+          </div>
+        ))}
       </div>
-      <div className="cc6-actions">
-        <button className="cc6-btn cc6-btn-primary" onClick={handleAcceptAll}>Accept all</button>
-        <button className="cc6-btn cc6-btn-ghost" onClick={handleSave}>Confirm choices</button>
-        <button className="cc6-btn cc6-btn-ghost" onClick={handleRejectAll}>Reject all</button>
-        {saved&&<div className="cc6-saved"><Ico n="check" s={16}/> Saved on this device.</div>}
+
+      <div className="csp-foot">
+        <button className="csp-btn csp-primary" onClick={()=>setAll(true)}>Accept all</button>
+        <div className="csp-pair">
+          <button className="csp-btn csp-ghost" onClick={()=>setAll(false)}>Necessary only</button>
+          <button className="csp-btn csp-ghost" onClick={handleSave}>Save preferences</button>
+        </div>
+        {saved&&<div className="csp-saved"><Ico n="check" s={16}/> Saved on this device.</div>}
       </div>
+
     </div>
   </div>);
 }
