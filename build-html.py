@@ -237,7 +237,23 @@ def render_page(title, desc, canonical, extra_preload=""):
   <meta name="google-site-verification" content="yMDmFzYmFlDLSIqxjBMRSD-Lzmsk57k9rr2UZUdjBbM"/>
   <meta name="msvalidate.01" content="A52953180F28A4CBCD8D5EB0B1928C68"/>
   <!-- Meta Pixel Code (Facebook / Instagram ads — pixel ID 771635836224410) -->
+  <!-- Gated on the cookie panel's advertising choice. Consent here is OPT-OUT
+       (CPRA), not opt-in like GDPR: with no saved record the visitor has made no
+       choice, so the pixel loads exactly as it always has. It is suppressed only
+       on an explicit opt-out — "do not sell or share", or advertising switched
+       off and saved. When suppressed we simply never define fbq, so the in-app
+       fbq('track',...) calls elsewhere become no-ops on their own rather than
+       needing a guard at every call site. Must stay inline and synchronous in
+       the head: a deferred check would race the pixel it is meant to stop. -->
   <script>
+  (function(){{
+    try{{
+      var raw=localStorage.getItem('sc_cookie_prefs_v1');
+      if(raw){{
+        var p=JSON.parse(raw)||{{}};
+        if(p.doNotSell===true||p.social===false||p.marketing===false)return;
+      }}
+    }}catch(e){{}}
   !function(f,b,e,v,n,t,s)
   {{if(f.fbq)return;n=f.fbq=function(){{n.callMethod?
   n.callMethod.apply(n,arguments):n.queue.push(arguments)}};
@@ -248,6 +264,7 @@ def render_page(title, desc, canonical, extra_preload=""):
   'https://connect.facebook.net/en_US/fbevents.js');
   fbq('init', '771635836224410');
   fbq('track', 'PageView');
+  }})();
   </script>
   <noscript><img height="1" width="1" style="display:none"
   src="https://www.facebook.com/tr?id=771635836224410&amp;ev=PageView&amp;noscript=1"/></noscript>

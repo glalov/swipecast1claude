@@ -4937,6 +4937,20 @@ function readCookiePrefs(){
     return JSON.parse(raw);
   }catch(_){return null;}
 }
+// Consent here is OPT-OUT (CPRA), not opt-in like GDPR. No saved record means
+// the visitor never made a choice, so default behaviour stands; we suppress
+// ONLY on an explicit opt-out — "do not sell or share" on, or that category
+// saved false. A record written by the old three-toggle panel has no `social`
+// key at all, so it reads undefined and is left alone rather than silently
+// opting someone out of something they were never asked about.
+function cookieOptedOut(cat){
+  try{
+    const p=readCookiePrefs();
+    if(!p)return false;
+    if(p.doNotSell===true)return true;
+    return p[cat]===false;
+  }catch(_){return false;}
+}
 function writeCookiePrefs(p){
   try{localStorage.setItem(COOKIE_PREF_KEY,JSON.stringify({...p,savedAt:new Date().toISOString()}));}catch(_){}
 }
@@ -5017,11 +5031,6 @@ const COOKIE_CATEGORIES=[
           ["Security","abuse and bot protection on submissions"],
           ["Stripe","payment and membership checkout"],
           ["Consent record","remembers the choices on this panel"]]},
-  {key:"functional",name:"Performance & functionality",
-   desc:"Remembers how you like the site set up so you are not redoing it on every visit. Nothing here identifies you to anyone else.",
-   items:[["Saved filters","your casting board location, union and pay filters"],
-          ["Playback","reel and Slate Video quality settings"],
-          ["Layout","swipe deck vs grid on the review screen"]]},
   {key:"analytics",name:"Analytics & product insight",
    desc:"Anonymous, aggregated usage so we can see which parts of the platform actually help actors get seen — and which are getting in the way.",
    items:[["Page views","our own first-party counter, no third party"],
@@ -5035,11 +5044,6 @@ const COOKIE_CATEGORIES=[
    desc:"Lets social platforms recognise a visit so our ads reach performers rather than everyone. This is the only category that shares data off-site.",
    items:[["Meta pixel","Facebook and Instagram audiences"],
           ["Conversion events","reports a signup back to the ad platform"]]},
-  {key:"personalization",name:"Personalised recommendations",
-   desc:"Uses your profile and what you have opened before to order the casting board and pick your daily role match. Turning it off gives everyone the same newest-first list.",
-   items:[["Role matcher","your one strict-matched role a day"],
-          ["Recommended castings","ordered by fit instead of only by date"],
-          ["Digest contents","which castings land in your daily email"]]}
 ];
 const COOKIE_OPTIONAL=COOKIE_CATEGORIES.filter(c=>!c.locked).map(c=>c.key);
 
@@ -6663,6 +6667,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
   useEffect(()=>{
     if(!viewing?.id)return;
     try{
+      if(cookieOptedOut("analytics"))return;
       if(myProfile&&["admin","super_admin"].includes(myProfile.user_type))return;
       let sid=localStorage.getItem("sc_sid");
       if(!sid){sid=Date.now().toString(36)+Math.random().toString(36).slice(2,10);localStorage.setItem("sc_sid",sid);}
@@ -36783,6 +36788,8 @@ function App(){
       // (Previously the beacon fired on first load before myProfile loaded, so staff —
       //  and /admin pages — slipped into the totals.)
       if(!authReady)return;
+      // Honour an explicit analytics opt-out before anything is recorded.
+      if(cookieOptedOut("analytics"))return;
       // Never count staff/owner browsing, and never count admin pages.
       if(myProfile&&["admin","super_admin"].includes(myProfile.user_type))return;
       if(typeof window!=="undefined"&&(window.location.pathname||"").startsWith("/admin"))return;
