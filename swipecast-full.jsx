@@ -3909,7 +3909,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .mm-show-desktop{display:flex;}
 .mm-hide-desktop{display:none;}
 .mm-inbox-wrap{width:100%;max-width:460px;flex-shrink:1;min-width:0;}
-.mm-live-hero{--mm-loop:20s;}
+.mm-live-hero{--mm-loop:8.5s;}
 .mm-hero-logo{animation:mmHeroLogoPulse var(--mm-loop) ease-in-out infinite;}
 .mm-premium-pill{animation:mmPremiumPillBreathe 3.2s ease-in-out infinite;}
 .mm-premium-pill-dot{animation:mmPremiumDotGlow 3.2s ease-in-out infinite;}
@@ -3920,11 +3920,26 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .mm-live-tab::after{content:"";position:absolute;left:16px;right:16px;bottom:-1px;height:2px;background:#1A1A2E;transform:scaleX(0);transform-origin:left;animation:mmUnderline var(--mm-loop) ease-in-out infinite;}
 .mm-live-preview{display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;}
 .mm-live-message{overflow:hidden;}
-.mm-live-card{position:relative;overflow:hidden;opacity:.001;transform:translateY(14px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1);will-change:opacity,transform;}
-.mm-live-card.mm-card-visible{opacity:1;transform:translateY(0);}
+/* Each line wipes open on its own row height rather than fading in place,
+   so the block grows the way a message being written would. */
+/* grid-template-rows 0fr -> 1fr animates to whatever height the content
+   actually needs. A fixed 1.65em clipped the third line, which wraps to
+   two visual rows at desktop width and to three on a phone. */
+.mm-live-line{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .26s cubic-bezier(.22,1,.36,1),opacity .26s ease;}
+.mm-live-line>span{overflow:hidden;}
+.mm-live-line.mm-line-visible{grid-template-rows:1fr;opacity:1;}
+/* Cards overshoot and settle instead of fading up. A fade reads as
+   "loading"; an overshoot reads as something arriving. */
+.mm-live-card{position:relative;overflow:hidden;opacity:.001;transform:translateY(16px) scale(.94);will-change:opacity,transform;}
+.mm-live-card.mm-card-visible{animation:mmCardPop .42s cubic-bezier(.34,1.7,.5,1) forwards;}
+.mm-live-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--mm-rail,#1A1A2E);transform:scaleY(0);transform-origin:top;}
+.mm-live-card.mm-card-visible::before{animation:mmCardRail .3s ease .12s forwards;}
 .mm-live-card::after{display:none;}
-.mm-live-task{opacity:.001;transform:translateY(10px) scale(1);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1);will-change:opacity,transform;}
-.mm-live-task.mm-task-visible{opacity:1;transform:translateY(0) scale(1);}
+.mm-live-task{opacity:.001;transform:scale(.7);will-change:opacity,transform;}
+.mm-live-task.mm-task-visible{animation:mmTaskPop .46s cubic-bezier(.34,1.8,.5,1) forwards;}
+@keyframes mmCardPop{to{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes mmCardRail{to{transform:scaleY(1);}}
+@keyframes mmTaskPop{to{opacity:1;transform:scale(1);}}
 .mm-spark{position:absolute;width:16px;height:16px;border-radius:5px;background:#E8902A;box-shadow:0 0 24px rgba(232,144,42,.92);opacity:0;z-index:3;pointer-events:none;animation:mmSparkFloat 5.8s ease-in-out infinite;}
 .mm-spark-1{right:26px;top:134px;animation-delay:4.6s;}
 .mm-spark-2{right:104px;top:56px;width:14px;height:14px;background:#6EE7B7;box-shadow:0 0 24px rgba(110,231,183,.82);animation-delay:7.8s;}
@@ -3934,7 +3949,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .mm-live-cursor{left:calc(50% + 430px);top:calc(50% + 210px);animation:mmCursorPath var(--mm-loop) cubic-bezier(.22,1,.36,1) infinite;}
 .mm-restart-cursor{left:0;top:0;z-index:9;animation:mmRestartCursor var(--mm-loop) cubic-bezier(.22,1,.36,1) infinite;}
 .mm-click-ring{position:absolute;width:42px;height:42px;border:2px solid rgba(110,231,183,.8);border-radius:50%;opacity:0;pointer-events:none;z-index:4;}
-.mm-ring-1{left:66px;top:64px;animation:mmClickRing var(--mm-loop) ease infinite;}
+.mm-ring-1{left:66px;top:64px;border-color:rgba(232,144,42,.85);animation:mmClickRing var(--mm-loop) ease infinite;}
 .mm-ring-2{left:376px;top:279px;border-color:rgba(37,99,235,.72);animation:mmClickRing2 var(--mm-loop) ease infinite;}
 .mm-ring-3{left:27px;bottom:25px;border-color:rgba(232,144,42,.78);animation:mmClickRing3 var(--mm-loop) ease infinite;}
 .mm-logo-click-ring{position:absolute;left:0;top:0;width:54px;height:54px;border:2px solid rgba(110,231,183,.86);border-radius:16px;opacity:0;transform:translate(-8px,-8px);pointer-events:none;z-index:8;animation:mmLogoClickRing var(--mm-loop) ease infinite;}
@@ -3944,11 +3959,11 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 @keyframes mmHaloShift{0%,100%{transform:translate3d(0,0,0) scale(1);opacity:.62;}50%{transform:translate3d(-16px,10px,0) scale(1.04);opacity:.82;}}
 @keyframes mmUnderline{0%,9%{transform:scaleX(0);}13%,96%{transform:scaleX(1);}100%{transform:scaleX(0);}}
 @keyframes mmSparkFloat{0%{opacity:0;transform:translateY(14px) scale(.45) rotate(0deg);}28%{opacity:1;}70%{opacity:.75;}100%{opacity:0;transform:translateY(-28px) scale(1.1) rotate(90deg);}}
-@keyframes mmCursorPath{0%,3%{opacity:0;transform:translate3d(-230px,-80px,0) rotate(-14deg);}8%{opacity:1;}16%{opacity:1;transform:translate3d(-304px,-338px,0) rotate(-10deg);}18%{transform:translate3d(-304px,-338px,0) rotate(-10deg) scale(.88);}22%{transform:translate3d(-282px,-322px,0) rotate(-9deg) scale(1);}42%{transform:translate3d(-100px,-202px,0) rotate(-12deg);}45%{transform:translate3d(-100px,-202px,0) rotate(-12deg) scale(.88);}50%{transform:translate3d(-82px,-190px,0) rotate(-12deg) scale(1);}72%{opacity:1;transform:translate3d(-276px,-50px,0) rotate(-13deg);}75%{opacity:1;transform:translate3d(-276px,-50px,0) rotate(-13deg) scale(.88);}79%{opacity:1;transform:translate3d(-242px,-38px,0) rotate(-12deg) scale(1);}82%,100%{opacity:0;transform:translate3d(-220px,-28px,0) rotate(-12deg) scale(1);}}
-@keyframes mmRestartCursor{0%,78%{opacity:0;transform:translate3d(1120px,560px,0) rotate(-14deg) scale(1);}82%{opacity:1;transform:translate3d(1030px,520px,0) rotate(-14deg) scale(1);}92.5%{opacity:1;transform:translate3d(11px,15px,0) rotate(-13deg) scale(1);}94%{opacity:1;transform:translate3d(11px,15px,0) rotate(-13deg) scale(.86);}96%{opacity:1;transform:translate3d(15px,18px,0) rotate(-13deg) scale(1);}100%{opacity:0;transform:translate3d(18px,20px,0) rotate(-13deg) scale(1);}}
-@keyframes mmClickRing{0%,13.8%{opacity:0;transform:scale(.28);}14.2%{opacity:.9;transform:scale(.28);}19%{opacity:0;transform:scale(1.5);}100%{opacity:0;}}
-@keyframes mmClickRing2{0%,46.5%{opacity:0;transform:scale(.28);}47%{opacity:.9;transform:scale(.28);}52%{opacity:0;transform:scale(1.5);}100%{opacity:0;}}
-@keyframes mmClickRing3{0%,72.5%{opacity:0;transform:scale(.28);}73%{opacity:.9;transform:scale(.28);}78%{opacity:0;transform:scale(1.5);}100%{opacity:0;}}
+@keyframes mmCursorPath{0%,3%{opacity:0;transform:translate3d(-230px,-80px,0) rotate(-14deg);}8%{opacity:1;}14%{opacity:1;transform:translate3d(-304px,-338px,0) rotate(-10deg);}17%{transform:translate3d(-304px,-338px,0) rotate(-10deg) scale(.88);}20%{transform:translate3d(-282px,-322px,0) rotate(-9deg) scale(1);}40%{transform:translate3d(-100px,-202px,0) rotate(-12deg);}43%{transform:translate3d(-100px,-202px,0) rotate(-12deg) scale(.88);}46%{transform:translate3d(-82px,-190px,0) rotate(-12deg) scale(1);}52%{opacity:1;transform:translate3d(-276px,-50px,0) rotate(-13deg);}55%{opacity:1;transform:translate3d(-276px,-50px,0) rotate(-13deg) scale(.88);}58%{opacity:1;transform:translate3d(-242px,-38px,0) rotate(-12deg) scale(1);}64%,100%{opacity:0;transform:translate3d(-220px,-28px,0) rotate(-12deg) scale(1);}}
+@keyframes mmRestartCursor{0%,70%{opacity:0;transform:translate3d(1120px,560px,0) rotate(-14deg) scale(1);}75%{opacity:1;transform:translate3d(1030px,520px,0) rotate(-14deg) scale(1);}92.5%{opacity:1;transform:translate3d(11px,15px,0) rotate(-13deg) scale(1);}94%{opacity:1;transform:translate3d(11px,15px,0) rotate(-13deg) scale(.86);}96%{opacity:1;transform:translate3d(15px,18px,0) rotate(-13deg) scale(1);}100%{opacity:0;transform:translate3d(18px,20px,0) rotate(-13deg) scale(1);}}
+@keyframes mmClickRing{0%,16.6%{opacity:0;transform:scale(.28);}17.2%{opacity:.9;transform:scale(.28);}23%{opacity:0;transform:scale(1.5);}100%{opacity:0;}}
+@keyframes mmClickRing2{0%,42.6%{opacity:0;transform:scale(.28);}43.2%{opacity:.9;transform:scale(.28);}49%{opacity:0;transform:scale(1.5);}100%{opacity:0;}}
+@keyframes mmClickRing3{0%,54.6%{opacity:0;transform:scale(.28);}55.2%{opacity:.9;transform:scale(.28);}61%{opacity:0;transform:scale(1.5);}100%{opacity:0;}}
 @keyframes mmLogoClickRing{0%,92.8%{opacity:0;transform:translate(-8px,-8px) scale(.45);}93.2%{opacity:.95;transform:translate(-8px,-8px) scale(.45);}98%{opacity:0;transform:translate(-8px,-8px) scale(1.45);}100%{opacity:0;}}
 @keyframes mmHeroLogoPulse{0%,92%{transform:scale(1);box-shadow:inset 0 0 14px rgba(255,255,255,.06);}94%{transform:scale(.92);box-shadow:inset 0 0 14px rgba(255,255,255,.06),0 0 0 7px rgba(110,231,183,.13),0 0 28px rgba(110,231,183,.35);}98%,100%{transform:scale(1);box-shadow:inset 0 0 14px rgba(255,255,255,.06);}}
 .mm-card-outer{width:100%;overflow:hidden;}
@@ -7896,48 +7911,50 @@ function ManagerModePage({onNavigate,session,myProfile}){
   const cardCTA=()=>{if(isPremium)onNavigate("my-profile");else if(isLoggedIn)onNavigate("membership");else onNavigate("pricing");};
   const cardCTALabel=isPremium?"Create My Actor Card":isLoggedIn?"Upgrade to Create Your Card":"Create My Actor Card";
   const MM_PREVIEW_TEXT="Riley, your profile is moving in the right direction...";
-  const MM_BODY_TEXT="Hi Riley, your profile is moving in the right direction. Your headshot gives a strong first impression. Adding a slate video will make your profile significantly more competitive.";
+  // "Snap Stack" — the body arrives as three line wipes rather than typed
+  // character by character. Typing 178 characters was the single slowest thing
+  // on the page (6.8s at 38ms each) and it alone was most of why the loop had
+  // to be 20s. Wiping three lines says the same thing in 0.9s.
+  const MM_BODY_LINES=[
+    "Hi Riley, your profile is moving in the right direction.",
+    "Your headshot gives a strong first impression.",
+    "Adding a slate video will make you significantly more competitive."
+  ];
   const [mmPreview,setMmPreview]=useState("");
-  const [mmBody,setMmBody]=useState("");
+  const [mmLines,setMmLines]=useState(0);
+  const [mmCards,setMmCards]=useState(0);
+  const [mmTask,setMmTask]=useState(false);
   const [mmCycle,setMmCycle]=useState(0);
-  const [mmPhaseMs,setMmPhaseMs]=useState(0);
-  const mmVisibleCards=mmPhaseMs>=13850?4:mmPhaseMs>=13150?3:mmPhaseMs>=12450?2:mmPhaseMs>=11750?1:0;
-  const mmTaskVisible=mmPhaseMs>=14650;
 
   useEffect(()=>{
     if(typeof window==="undefined")return;
+    // Every beat is an explicit timeout now. The old version polled a phase
+    // clock at 10Hz and compared elapsed ms, which could not resolve the 200ms
+    // card stagger accurately and left a setInterval running for the life of
+    // the page. Keep these in step with --mm-loop in the stylesheet.
+    const LOOP=8500;
     let timers=[];
-    let interval;
-    let phaseInterval;
-    let cycleStart=Date.now();
-    const add=(fn,delay)=>{const t=window.setTimeout(fn,delay);timers.push(t);return t;};
-    const typeText=(setter,text,startDelay,speed,done)=>{
+    const add=(fn,delay)=>{timers.push(window.setTimeout(fn,delay));};
+    const clear=()=>{timers.forEach(t=>window.clearTimeout(t));timers=[];};
+    const typeText=(setter,text,startDelay,speed)=>{
       add(()=>{
         let i=0;
-        const step=()=>{
-          setter(text.slice(0,i));
-          i+=1;
-          if(i<=text.length)add(step,speed);
-          else if(done)done();
-        };
+        const step=()=>{ setter(text.slice(0,i)); i+=1; if(i<=text.length) add(step,speed); };
         step();
       },startDelay);
     };
-    const clear=()=>{timers.forEach(t=>window.clearTimeout(t));timers=[];};
     const run=()=>{
       clear();
-      cycleStart=Date.now();
-      setMmPreview("");
-      setMmBody("");
-      setMmPhaseMs(0);
+      setMmPreview(""); setMmLines(0); setMmCards(0); setMmTask(false);
       setMmCycle(c=>c+1);
-      typeText(setMmPreview,MM_PREVIEW_TEXT,2700,62);
-      typeText(setMmBody,MM_BODY_TEXT,5200,38);
+      typeText(setMmPreview,MM_PREVIEW_TEXT,600,22);      // 0.6s  → 1.8s
+      MM_BODY_LINES.forEach((_,i)=>add(()=>setMmLines(i+1),1900+i*300));   // 1.9s → 2.5s
+      [0,1,2,3].forEach(i=>add(()=>setMmCards(i+1),3400+i*200));           // 3.4s → 4.0s
+      add(()=>setMmTask(true),4400);                                        // 4.4s
     };
     run();
-    phaseInterval=window.setInterval(()=>setMmPhaseMs((Date.now()-cycleStart)%20000),100);
-    interval=window.setInterval(run,20000);
-    return()=>{clear();window.clearInterval(interval);window.clearInterval(phaseInterval);};
+    const loop=window.setInterval(run,LOOP);
+    return()=>{clear();window.clearInterval(loop);};
   },[]);
 
   const CSLogo=({size=36,className=""})=>(
@@ -7999,15 +8016,19 @@ function ManagerModePage({onNavigate,session,myProfile}){
           <div style={{fontSize:fs(9,7.5),color:"#8E8EA0",flexShrink:0,whiteSpace:"nowrap"}}>Today</div>
         </div>
         <div style={{padding:pd("16px 18px","11px 13px")}}>
-          <div className="mm-live-message" style={{fontSize:fs(12,9.5),color:"#1A1A2E",lineHeight:1.65,marginBottom:pd(12,8),fontWeight:400,minHeight:mobile?80:70}}>{mmBody}</div>
+          <div className="mm-live-message" style={{fontSize:fs(12,9.5),color:"#1A1A2E",lineHeight:1.65,marginBottom:pd(12,8),fontWeight:400,minHeight:mobile?80:70}}>
+            {MM_BODY_LINES.map((line,i)=>(
+              <span key={`${mmCycle}-l${i}`} className={`mm-live-line ${i<mmLines?"mm-line-visible":""}`}><span>{line}</span></span>
+            ))}
+          </div>
           {[["What you're doing well","Your headshot is clear and professional — strong first impression.","#1B873E","rgba(27,135,62,0.06)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.06)"],["Casting lane to focus on","Young professional / commercial friend","#2563EB","rgba(37,99,235,0.06)"],["Your task this week","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.04)"]].map(([label,val,col,bg],idx)=>(
-            <div key={`${mmCycle}-${label}`} className={`mm-live-card ${idx<mmVisibleCards?"mm-card-visible":""}`} style={{background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4)}}>
+            <div key={`${mmCycle}-${label}`} className={`mm-live-card ${idx<mmCards?"mm-card-visible":""}`} style={{"--mm-rail":col,background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4)}}>
               <div style={{fontSize:fs(9,7),fontWeight:700,color:col,letterSpacing:0.6,textTransform:"uppercase",marginBottom:2}}>{label}</div>
               <div style={{fontSize:fs(11,8.5),color:"#1A1A2E",fontWeight:500,lineHeight:1.45}}>{val}</div>
             </div>
           ))}
           <div style={{marginTop:pd(12,8),display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-            <div key={`task-${mmCycle}`} className={`mm-live-task ${mmTaskVisible?"mm-task-visible":""}`} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:"0 2px 8px rgba(26,26,46,0.2)"}}>Complete This Week's Task</div>
+            <div key={`task-${mmCycle}`} className={`mm-live-task ${mmTask?"mm-task-visible":""}`} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:"0 2px 8px rgba(26,26,46,0.2)"}}>Complete This Week's Task</div>
           </div>
           <div style={{marginTop:pd(8,6),fontSize:fs(9,7.5),color:"#8E8EA0",fontStyle:"italic"}}>Replies are not available for this message.</div>
         </div>
@@ -8018,9 +8039,9 @@ function ManagerModePage({onNavigate,session,myProfile}){
   return(<div className="page">
 
     {/* ══════ HERO ══════ */}
-    <section className="mm-live-hero" style={{background:"linear-gradient(155deg,#0D0D1A 0%,#1A1A2E 40%,#0f2347 100%)",color:"#fff",padding:"clamp(56px,8vw,96px) clamp(16px,5vw,60px) clamp(48px,7vw,80px)",position:"relative",overflow:"hidden"}}>
+    <section className="mm-live-hero" style={{background:"linear-gradient(155deg,#150F1E 0%,#241633 42%,#3A1E2E 100%)",color:"#fff",padding:"clamp(56px,8vw,96px) clamp(16px,5vw,60px) clamp(48px,7vw,80px)",position:"relative",overflow:"hidden"}}>
       <svg className="mm-live-cursor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 4 31 24 20 26 15 37 8 4Z" fill="white"/><path d="M8 4 31 24 20 26 15 37 8 4Z" fill="none" stroke="#1A1A2E" strokeWidth="2" strokeLinejoin="round"/></svg>
-      <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 15% 60%,rgba(99,102,241,0.18) 0%,transparent 55%),radial-gradient(ellipse at 85% 15%,rgba(37,99,235,0.14) 0%,transparent 50%),radial-gradient(ellipse at 50% 100%,rgba(110,231,183,0.06) 0%,transparent 50%)",pointerEvents:"none"}}/>
+      <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 18% 60%,rgba(232,144,42,0.20) 0%,transparent 55%),radial-gradient(ellipse at 84% 16%,rgba(214,59,123,0.16) 0%,transparent 50%),radial-gradient(ellipse at 50% 100%,rgba(240,184,96,0.07) 0%,transparent 50%)",pointerEvents:"none"}}/>
       <div className="mm-hero-row" style={{maxWidth:1160,margin:"0 auto",position:"relative",display:"flex",alignItems:"center",gap:"clamp(32px,5vw,72px)",flexWrap:"wrap"}}>
         <div style={{flex:"1 1 300px",minWidth:0,width:"100%"}}>
           <div className="mm-hero-brand" style={{display:"flex",alignItems:"center",gap:10,marginBottom:24,position:"relative"}}>
