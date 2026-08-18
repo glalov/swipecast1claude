@@ -88,7 +88,7 @@ const TRANSLATIONS = {
     'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencies Directory',
     // Footer
     'footer.backToTop':'Back to top',
-    'footer.blurb':'The casting platform built for working actors. Every submission gets seen — guaranteed. Free accounts included — upgrade to Premium (from $8.25/mo) for unlimited submissions, Slate Video, Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA & NYC), and more.',
+    'footer.blurb':'The casting platform built for working actors. Every submission gets seen — guaranteed. Free accounts included — upgrade to Premium (from $8.25/mo) for unlimited submissions, Slate Video, Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA, Beverly Hills & NYC), and more.',
     'footer.talent':'Talent','footer.industry':'Industry','footer.company':'Company','footer.support':'Support',
     'footer.createProfile':'Create Profile','footer.browse':'Browse Castings','footer.classes':'Classes',
     'footer.resources':'Resources','footer.successStories':'Success Stories',
@@ -3974,7 +3974,7 @@ const PREMIUM_SHARED_FEATURES=[
   ["Actor Slate Video","— 7-sec intro"],
   ["Actor cards with QR","business, postcard & agent promo"],
   ["Manager Mode","weekly check-ins"],
-  ["Talent Agency & Manager Directory","650+ in LA & NYC"],
+  ["Talent Agency & Manager Directory","650+ in LA, Beverly Hills & NYC"],
   ["Cancel anytime","from your account"]
 ];
 
@@ -4001,7 +4001,7 @@ const PLAN_EXCLUSIVES={
 const FREE_PLAN={headshotsTotal:1,additionalPhotos:0,videos:0,submissionsPerWeek:1,castingTypes:2,castingMoodClips:0,castingSupportingPhotos:0};
 const PREMIUM_PLAN={headshotsTotal:Infinity,additionalPhotos:Infinity,videos:Infinity,submissionsPerWeek:Infinity,castingTypes:Infinity,castingMoodClips:1,castingSupportingPhotos:3};
 const PREMIUM_PRICE="from $8.25/month";
-const UPGRADE_MSG=`You've used your ${FREE_PLAN.submissionsPerWeek===1?"free submission":`${FREE_PLAN.submissionsPerWeek} free submissions`} for this week. Upgrade to Premium for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA & NYC), and more.`;
+const UPGRADE_MSG=`You've used your ${FREE_PLAN.submissionsPerWeek===1?"free submission":`${FREE_PLAN.submissionsPerWeek} free submissions`} for this week. Upgrade to Premium for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA, Beverly Hills & NYC), and more.`;
 // Most recent Monday 6:00 AM America/New_York as a Date — the point free submissions reset each week.
 function weeklyResetStart(){
   const now=new Date();
@@ -7697,7 +7697,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
               <div style={{fontSize:11.5,color:"var(--t3)",marginTop:7}}>Prefer monthly? ${MEMBERSHIP_PLANS.monthly.monthly.toFixed(2)}/month, flat — no introductory rate that goes up.</div>
             </div>
             <div style={{flex:1}}>
-              {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Actor Slate Video — 7-sec intro','Actor Business Card with QR code','Mailing postcard & agent promo card','Manager Mode weekly career check-ins','Talent Agency & Manager Directory — 650+ in LA & NYC'].map(f=>feat(f,"var(--acc)"))}
+              {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Actor Slate Video — 7-sec intro','Actor Business Card with QR code','Mailing postcard & agent promo card','Manager Mode weekly career check-ins','Talent Agency & Manager Directory — 650+ in LA, Beverly Hills & NYC'].map(f=>feat(f,"var(--acc)"))}
             </div>
             {isPremium
               ?<button className="btn-teal" style={{width:"100%",height:44,borderRadius:10,marginTop:24}} onClick={()=>onNavigate("membership")}>Manage Plan →</button>
@@ -7747,7 +7747,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
           {featureRow("Actor Business Card (with QR code)","no","yes")}
           {featureRow("Mailing postcard & agent promo card","no","yes")}
           {featureRow("Manager Mode","no","yes")}
-          {featureRow("Talent Agency & Manager Directory (650+, LA & NYC)","no","yes")}
+          {featureRow("Talent Agency & Manager Directory (650+, LA, Beverly Hills & NYC)","no","yes")}
           {featureRow("Price",t('pricing.freeLabel'),PREMIUM_PRICE)}
         </div>
       </div>
@@ -35659,7 +35659,7 @@ const PAGE_PATH={
 const PAGE_SEO={
   "home":{title:"CastSlate: Casting Calls, Auditions & Acting Jobs — Film, TV & Theater",desc:"CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."},
   "search":{title:"Browse Castings",desc:"Browse open casting calls for film, TV, theater, and commercials. Submit your actor profile to roles that match your look and skills."},
-  "pricing":{title:"Pricing",desc:"CastSlate is free forever for actors. Upgrade to Premium from $8.25/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA & NYC), and more. See all plans and what's included."},
+  "pricing":{title:"Pricing",desc:"CastSlate is free forever for actors. Upgrade to Premium from $8.25/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA, Beverly Hills & NYC), and more. See all plans and what's included."},
   "classes":{title:"Acting Classes",desc:"Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."},
   "actor-toolkit":{title:"Actor Toolkit",desc:"Free tools, guides, and resources for working actors — headshot advice, self-tape setup, audition prep, and more."},
   "resources":{title:"Resources",desc:"Guides and resources for actors and casting directors on the CastSlate platform."},
