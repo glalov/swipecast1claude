@@ -4448,16 +4448,28 @@ function FeaturedClassBanner({onNavigate}){
       setInspireGo(true);
       timer=window.setTimeout(()=>{ if(!dead){setInspireGo(false);setInspireOn(false);} },2450);
     };
+    // Fire as the curtain STARTS its fall (cs-go), not when it is finally
+    // removed from the DOM. Removal happens 700ms after the drop begins and
+    // 150ms after it has visually cleared, which is where the dead beat came
+    // from. The banner sits at the very top of the page, so it is uncovered
+    // roughly 150ms into the 550ms fall — a 200ms lead means the words are
+    // already in motion by the time the curtain gets out of the way.
+    let leadT=null;
     if(!document.getElementById("cs-intro")){ play(); }
     else{
       let waited=0;
       poll=window.setInterval(()=>{
         if(dead)return;
-        waited+=60;
-        if(!document.getElementById("cs-intro")||waited>6000){ window.clearInterval(poll); poll=null; play(); }
-      },60);
+        waited+=40;
+        const el=document.getElementById("cs-intro");
+        const dropping=!!(el&&el.classList&&el.classList.contains("cs-go"));
+        if(!el||dropping||waited>6000){
+          window.clearInterval(poll); poll=null;
+          leadT=window.setTimeout(play,dropping?200:0);
+        }
+      },40);
     }
-    return()=>{ dead=true; if(timer)window.clearTimeout(timer); if(poll)window.clearInterval(poll); };
+    return()=>{ dead=true; if(timer)window.clearTimeout(timer); if(leadT)window.clearTimeout(leadT); if(poll)window.clearInterval(poll); };
   },[]);
   // Desktop: measure the banner's natural (full) height from the image's
   // intrinsic aspect ratio so we can animate height -> 60px on scroll and
