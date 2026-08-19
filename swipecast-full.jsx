@@ -2847,13 +2847,16 @@ body.sheet-push .b2t-cube{display:none;}
    next rule gets swallowed (see the .fcs-section note further down). */
 .fci-veil{position:absolute;inset:0;z-index:6;overflow:hidden;line-height:normal;pointer-events:none;}
 .fci-half{position:absolute;top:0;bottom:0;width:50.5%;background:#000;}
-.fci-half.l{left:0;animation:fciPartL .52s cubic-bezier(.7,0,.25,1) 1.62s both;}
-.fci-half.r{right:0;animation:fciPartR .52s cubic-bezier(.7,0,.25,1) 1.62s both;}
-.fci-row{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(2px,.7vw,10px);animation:fciFade .26s ease 1.58s both;}
-.fci-word{font-family:'Anton',Impact,sans-serif;font-weight:400;color:#fff;text-transform:uppercase;letter-spacing:.012em;line-height:.92;white-space:nowrap;font-size:clamp(17px,3.3vw,50px);will-change:transform,opacity;}
-.fci-w1{animation:fciWipeL .38s cubic-bezier(.16,1,.3,1) .08s both;}
-.fci-w2{animation:fciWipeR .38s cubic-bezier(.16,1,.3,1) .30s both;}
-.fci-on .fcs-full{animation:fciZoom .70s cubic-bezier(.2,.8,.25,1) 1.62s both;}
+.fci-half.l{left:0;}
+.fci-half.r{right:0;}
+.fci-row{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(2px,.7vw,10px);}
+.fci-word{font-family:'Anton',Impact,sans-serif;font-weight:400;color:#fff;text-transform:uppercase;letter-spacing:.012em;line-height:.92;white-space:nowrap;font-size:clamp(17px,3.3vw,50px);opacity:0;will-change:transform,opacity;}
+.fci-go .fci-w1{animation:fciWipeL .38s cubic-bezier(.16,1,.3,1) .08s both;}
+.fci-go .fci-w2{animation:fciWipeR .38s cubic-bezier(.16,1,.3,1) .30s both;}
+.fci-go .fci-row{animation:fciFade .26s ease 1.58s both;}
+.fci-go .fci-half.l{animation:fciPartL .52s cubic-bezier(.7,0,.25,1) 1.62s both;}
+.fci-go .fci-half.r{animation:fciPartR .52s cubic-bezier(.7,0,.25,1) 1.62s both;}
+.fci-go .fcs-full{animation:fciZoom .70s cubic-bezier(.2,.8,.25,1) 1.62s both;}
 @keyframes fciWipeL{from{opacity:0;transform:translate3d(-26%,0,0);}to{opacity:1;transform:none;}}
 @keyframes fciWipeR{from{opacity:0;transform:translate3d(26%,0,0);}to{opacity:1;transform:none;}}
 @keyframes fciFade{from{opacity:1;}to{opacity:0;}}
@@ -4420,33 +4423,38 @@ function FeaturedClassBanner({onNavigate}){
   //     return true;
   //   }catch(e){return false;}
   const [introOn,setIntroOn]=useState(false);
-  // "Stage Curtain" banner intro. Deliberately gated three ways: once per
-  // session, never under reduced motion, and never before the entry curtain
-  // has actually gone — starting at the curtain's cs-go would play the words
-  // underneath it and waste the entrance.
-  const [inspireOn,setInspireOn]=useState(false);
-  useEffect(()=>{
-    if(typeof window==="undefined")return;
-    let dead=false,timer=null,poll=null;
+  // "Stage Curtain" banner intro. Plays on EVERY load and refresh by design —
+  // there is no session gate. Two flags, not one: inspireOn mounts the veil on
+  // the very first render so the banner artwork is never on screen before the
+  // intro, and inspireGo starts the animation only once the entry curtain has
+  // actually been removed from the DOM. Collapsing these into one flag is what
+  // let the artwork flash for ~150ms between the curtain clearing and the veil
+  // appearing.
+  const [inspireOn,setInspireOn]=useState(()=>{
     try{
-      if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
-      if(sessionStorage.getItem("cs_banner_inspire_done"))return;
-    }catch(e){ /* private mode - just play it */ }
+      if(typeof window==="undefined")return false;
+      if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return false;
+    }catch(e){}
+    return true;
+  });
+  const [inspireGo,setInspireGo]=useState(false);
+  useEffect(()=>{
+    if(typeof window==="undefined"||!inspireOn)return;
+    let dead=false,timer=null,poll=null;
     // Pre-decode Anton so the first frame is never the Impact fallback.
     try{ if(document.fonts&&document.fonts.load)document.fonts.load("400 1em Anton"); }catch(e){}
-    const start=()=>{
+    const play=()=>{
       if(dead)return;
-      try{ sessionStorage.setItem("cs_banner_inspire_done","1"); }catch(e){}
-      setInspireOn(true);
-      timer=window.setTimeout(()=>{ if(!dead)setInspireOn(false); },2450);
+      setInspireGo(true);
+      timer=window.setTimeout(()=>{ if(!dead){setInspireGo(false);setInspireOn(false);} },2450);
     };
-    if(!document.getElementById("cs-intro")){ start(); }
+    if(!document.getElementById("cs-intro")){ play(); }
     else{
       let waited=0;
       poll=window.setInterval(()=>{
         if(dead)return;
         waited+=60;
-        if(!document.getElementById("cs-intro")||waited>6000){ window.clearInterval(poll); poll=null; start(); }
+        if(!document.getElementById("cs-intro")||waited>6000){ window.clearInterval(poll); poll=null; play(); }
       },60);
     }
     return()=>{ dead=true; if(timer)window.clearTimeout(timer); if(poll)window.clearInterval(poll); };
@@ -4474,7 +4482,7 @@ function FeaturedClassBanner({onNavigate}){
     return()=>window.removeEventListener("scroll",onScroll);
   },[]);
   const style=fullH?{height:collapsed?60:fullH}:undefined;
-  return(<aside ref={ref} className={`featured-class-stripe${collapsed?" is-collapsed":""}${inspireOn?" fci-on":""}`} role="region" aria-label="Featured class: Scene Study Workshop" style={style}>
+  return(<aside ref={ref} className={`featured-class-stripe${collapsed?" is-collapsed":""}${inspireOn?" fci-on":""}${inspireGo?" fci-go":""}`} role="region" aria-label="Featured class: Scene Study Workshop" style={style}>
     {/* Full state — original artwork, untouched. */}
     <div className="fcs-full">
       <img className="fcs-img" src="/assets/banner/scene-study.jpg" alt="Featured Class — Scene Study Workshop" width="3360" height="430" fetchpriority="high" decoding="async"/>
