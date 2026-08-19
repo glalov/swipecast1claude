@@ -2857,6 +2857,14 @@ body.sheet-push .b2t-cube{display:none;}
 .fci-go .fci-half.l{animation:fciPartL .52s cubic-bezier(.7,0,.25,1) 1.62s both;}
 .fci-go .fci-half.r{animation:fciPartR .52s cubic-bezier(.7,0,.25,1) 1.62s both;}
 .fci-go .fcs-full{animation:fciZoom .70s cubic-bezier(.2,.8,.25,1) 1.62s both;}
+/* Mobile only. The desktop size is 3.3vw, which collapses to the 17px floor on
+   a phone — far too small for the whole point of this. Below 768px the banner
+   becomes a fixed 148px band, so size the type off the viewport instead: 15.5vw
+   is ~58px on a 375px screen, about 3.4x the old floor, and the 60px ceiling
+   keeps two lines (2 x 55px leading) inside 148px on the widest phones.
+   Anton runs ~5.09px of width per 1px of size for "Be Inspiring.", so 15.5vw
+   is ~295px on a 375px screen — comfortably inside the band with nowrap. */
+@media(max-width:768px){.fci-word{font-size:clamp(30px,15.5vw,60px);}}
 @keyframes fciWipeL{from{opacity:0;transform:translate3d(-26%,0,0);}to{opacity:1;transform:none;}}
 @keyframes fciWipeR{from{opacity:0;transform:translate3d(26%,0,0);}to{opacity:1;transform:none;}}
 @keyframes fciFade{from{opacity:1;}to{opacity:0;}}
@@ -2929,7 +2937,11 @@ body.sheet-push .b2t-cube{display:none;}
 .mq-item{display:inline-flex;align-items:center;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:11px;letter-spacing:2.2px;text-transform:uppercase;color:#FFD79A;}
 .mq-item::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:#FFD79A;opacity:.8;margin:0 26px;flex-shrink:0;}
 @keyframes mq-scroll{from{transform:translateX(-50%);}to{transform:translateX(0);}}
-.mq-stripe:hover .mq-track{animation-play-state:paused;}
+/* Pause-on-hover is for MICE ONLY. iOS leaves a synthetic :hover on the last
+   element a finger touched, which latched animation-play-state:paused here and
+   stopped the marquee for the rest of the session — the "marquee freezes on
+   some loads" bug. A touch device never matches hover:hover + pointer:fine. */
+@media (hover:hover) and (pointer:fine){.mq-stripe:hover .mq-track{animation-play-state:paused;}}
 .mq-stripe.is-collapsed{height:0;}
 @media (prefers-reduced-motion:reduce){.mq-track{animation:none;}}
 @media (max-width:768px){
@@ -4543,11 +4555,28 @@ function FeaturedClassBanner({onNavigate}){
 // groups; the -50%→0 keyframe gives a seamless left→right loop with no jump.
 function MarqueeStripe(){
   const [collapsed,setCollapsed]=useState(false);
+  const trackRef=useRef(null);
   useEffect(()=>{
     const onScroll=()=>setCollapsed(window.scrollY>40);
     onScroll();
     window.addEventListener("scroll",onScroll,{passive:true});
     return()=>window.removeEventListener("scroll",onScroll);
+  },[]);
+  // The CSS hover-pause is desktop-only now, so nothing in our own styles can
+  // stop the scroll on a phone. This covers the other half: a browser that
+  // suspends the animation itself — restoring from bfcache, or coming back from
+  // a backgrounded tab — can hand it back paused. Resume anything we find
+  // paused at those two moments. No polling: both are real events, and we only
+  // touch animations that are actually stuck.
+  useEffect(()=>{
+    const el=trackRef.current;
+    if(!el||typeof el.getAnimations!=="function")return;
+    const resume=()=>{
+      try{ el.getAnimations().forEach(a=>{ if(a.playState==="paused")a.play(); }); }catch(_){}
+    };
+    window.addEventListener("pageshow",resume);
+    document.addEventListener("visibilitychange",resume);
+    return()=>{ window.removeEventListener("pageshow",resume); document.removeEventListener("visibilitychange",resume); };
   },[]);
   const PHRASES=["Every Submission Gets Seen","Find Roles","Trusted by Working Actors & Casting Directors","New Classes Open Weekly","Build Your Actor Profile","Get Seen by Casting Professionals"];
   // Repeat the sequence enough times per group that one group is wider than any
@@ -4558,7 +4587,7 @@ function MarqueeStripe(){
     return items;
   };
   return(<div className={`mq-stripe${collapsed?" is-collapsed":""}`} role="region" aria-label="CastSlate highlights">
-    <div className="mq-track">
+    <div className="mq-track" ref={trackRef}>
       <div className="mq-group">{renderGroup("a")}</div>
       <div className="mq-group" aria-hidden="true">{renderGroup("b")}</div>
     </div>
@@ -12689,6 +12718,18 @@ function castingSortBucket(casting){
   return 0;
 }
 
+// Project-type match for the Browse filter. The stored type is free-form and
+// specific — "Independent Film", "Off-Broadway Theater", "Spec Commercial" —
+// while the dropdown offers broad families, so an exact compare matched almost
+// nothing that was still live: picking "Film" returned only the 12 legacy rows
+// literally typed "Film", every one of which had already expired. Match on
+// containment instead, so "Film" also catches Feature / Short / Student /
+// Independent / Experimental Film.
+function castingTypeMatches(type,term){
+  if(!term)return true;
+  return String(type||"").toLowerCase().includes(String(term).toLowerCase());
+}
+
 // Whole-word location match. Naive substring matching is wrong for short
 // tokens — e.g. "la" lives inside "white pLAins" and "is​LAnd", so a bare
 // loc.includes("la") made the Los Angeles filter return New York results.
@@ -12981,7 +13022,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const allCastings=dbCastings.length>0?dbCastings:[];
   const allTalent=dbTalent.length>0?dbTalent:[];
   const ft=allTalent.filter(t=>{if(q&&!t.name.toLowerCase().includes(q.toLowerCase())&&!t.skills.join(" ").toLowerCase().includes(q.toLowerCase()))return false;if(f.gender&&t.gender!==f.gender)return false;if(f.ethnicity&&!t.ethnicity.toLowerCase().includes(f.ethnicity.toLowerCase()))return false;if(f.location&&!t.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&t.union!==f.union)return false;if(castingTypeIds!==null&&!castingTypeIds.has(t.id))return false;return true;});
-  const fc=allCastings.filter(c=>{if(castingIsScheduled(c))return false;if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&c.type!==f.type)return false;if(f.location&&!matchesLocationFilter(c.location,f.location))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;})
+  const fc=allCastings.filter(c=>{if(castingIsScheduled(c))return false;if(castingIsExpired(c))return false;if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&!castingTypeMatches(c.type,f.type))return false;if(f.location&&!matchesLocationFilter(c.location,f.location))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;})
     // Closed castings sink to the bottom so live, applicable roles lead.
     // Bucket order: live/open first, expired next, archived/filled last.
     .sort((a,b)=>castingSortBucket(a)-castingSortBucket(b));
