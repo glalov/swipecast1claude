@@ -12712,6 +12712,25 @@ function castingIsScheduled(casting){
 // publishes as soon as the casting is approved / published.
 function defaultGoLiveNYLocal(){return utcISOToNYLocal(new Date().toISOString());}
 
+// The posted date a casting displays is created_at. Stamping it "now" at publish
+// is correct for something going live immediately, but wrong for a scheduled
+// one: publish on Aug 19 with a go-live of Aug 20 6am and the casting appears on
+// the 20th stamped Aug 19 — a day old before anyone has seen it. Use the go-live
+// instant whenever it is still in the future, so the posted date is the day the
+// casting actually reaches people.
+// This also keeps the mail queue honest: the digest and the upsell both order by
+// created_at and draw from the most recently posted, so a scheduled casting now
+// reads as newly posted on its own morning instead of arriving already stale.
+// Nothing surfaces it early — Browse hides it via castingIsScheduled and the
+// email queries gate on go_live_at <= now().
+function publishPostedAt(casting){
+  try{
+    const gl=casting&&casting.go_live_at?new Date(casting.go_live_at):null;
+    if(gl&&!isNaN(gl)&&gl.getTime()>Date.now())return gl.toISOString();
+  }catch(_){}
+  return new Date().toISOString();
+}
+
 function castingSortBucket(casting){
   if(casting?.status==="archived")return 2;
   if(castingIsExpired(casting))return 1;
@@ -28810,7 +28829,7 @@ function AdminCastingGenerator({session}){
     // this would put it live on the site and silently outside the mail queue
     // forever. "Posted" now means "went live", which is also what an actor reads
     // it as.
-    const {error}=await window.sb.from("castings").update({status:"open",published:true,deadline:deadlineVal,created_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",c.id);
+    const {error}=await window.sb.from("castings").update({status:"open",published:true,deadline:deadlineVal,created_at:publishPostedAt(c),updated_at:new Date().toISOString()}).eq("id",c.id);
     setBusy(null);
     if(error){showMsg("Publish failed: "+error.message);return;}
     showMsg("Listing published and live.");loadAll();
@@ -31747,7 +31766,7 @@ function AdminCastings({onPendingCountChange}){
     if(featuring&&(!c.published||c.status!=="open")){
       // Featuring an unpublished casting also publishes it — stamp the posted date
       // so it enters the email queue at the top, same as any other publish.
-      const {error:e2}=await window.sb.from("castings").update({status:"open",published:true,created_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",c.id);
+      const {error:e2}=await window.sb.from("castings").update({status:"open",published:true,created_at:publishPostedAt(c),updated_at:new Date().toISOString()}).eq("id",c.id);
       setBusy(null);
       if(e2){showMsg("Featured but failed to publish: "+e2.message,"error");reload();return;}
       showMsg("Casting featured and published — now live in Browse Castings.","success");
@@ -31765,7 +31784,7 @@ function AdminCastings({onPendingCountChange}){
     // created_at is stamped at publish time so the casting enters the email queue
     // as newly posted — see publishListing for why generation time is wrong here.
     const {error}=await window.sb.from("castings")
-      .update({status:"open",published:true,created_at:new Date().toISOString(),updated_at:new Date().toISOString()})
+      .update({status:"open",published:true,created_at:publishPostedAt(c),updated_at:new Date().toISOString()})
       .eq("id",c.id);
     setBusy(null);
     if(error){showMsg("Publish failed: "+error.message,"error");return;}
