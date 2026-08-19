@@ -27584,6 +27584,52 @@ const ACG = (()=>{
   // Direction notes for lead roles. The project summary is two sentences of
   // story now, so anything about how to play it lives here, where it is
   // actually useful. Combinatorial and no-repeat like every other sentence.
+  // How a role's description introduces the part. Every breakdown has to open
+  // with what the character IS — the character NAME is invented, so "Enzo
+  // Sandoval" alone tells a talent nothing — but always saying it the same way
+  // ("The usher — …", "The manager — …", listing after listing) makes the whole
+  // board read as one voice. One frame is picked per LISTING: consistent within
+  // a post, different from the post before it.
+  // `sing` marks the frames that only read correctly for a singular noun phrase
+  // ("This is the usher." works; "This is additional voices." does not). A slot
+  // label that is plural or article-less falls back to a frame that fits
+  // anything, so the rotation can never produce a broken sentence.
+  const ROLE_FRAMES=[
+    {sing:false,f:(l,x)=>`${capFirst(l)} — ${x}`},
+    {sing:false,f:(l,x)=>`Plays ${l}. ${x}`},
+    {sing:true, f:(l,x)=>`This is ${l}. ${x}`},
+    {sing:false,f:(l,x)=>`Cast as ${l}: ${x}`},
+    {sing:true, f:(l,x)=>`The part is ${l}. ${x}`},
+    {sing:false,f:(l,x)=>`${capFirst(l)}: ${x}`},
+    {sing:false,f:(l,x)=>`Written as ${l}. ${x}`},
+    {sing:true, f:(l,x)=>`${x} That is ${l}.`},
+    {sing:false,f:(l,x)=>`${capFirst(l)}. ${x}`}
+  ];
+  const ROLE_FRAMES_ANY=ROLE_FRAMES.filter(z=>!z.sing);
+  function singularLabel(l){
+    const t=String(l||"").trim();
+    if(!/^(the|a|an|her|his|their|one)\s/i.test(t))return false;
+    const last=t.split(/\s+/).pop()||"";
+    return !/s$/i.test(last);
+  }
+  function applyRoleFrame(idx,label,sketch){
+    const fr=ROLE_FRAMES[((idx%ROLE_FRAMES.length)+ROLE_FRAMES.length)%ROLE_FRAMES.length];
+    if(fr.sing&&!singularLabel(label))return ROLE_FRAMES_ANY[idx%ROLE_FRAMES_ANY.length].f(label,sketch);
+    return fr.f(label,sketch);
+  }
+  // A rotating pointer rather than a random draw: random repeats itself far more
+  // often than it feels like it should, and the complaint here is exactly that.
+  // Rotating guarantees the next listing gets the next shape, cycling the bank.
+  const LS_ROLE_FRAME="cs_acg_role_frame_v1";
+  function nextRoleFrameIndex(){
+    let n;
+    try{
+      const raw=localStorage.getItem(LS_ROLE_FRAME);
+      n=raw===null?Math.floor(Math.random()*ROLE_FRAMES.length):(parseInt(raw,10)||0)+1;
+      localStorage.setItem(LS_ROLE_FRAME,String(((n%ROLE_FRAMES.length)+ROLE_FRAMES.length)%ROLE_FRAMES.length));
+    }catch(_){n=Math.floor(Math.random()*ROLE_FRAMES.length);}
+    return ((n%ROLE_FRAMES.length)+ROLE_FRAMES.length)%ROLE_FRAMES.length;
+  }
   const DIRECTION_NOTES=[
     x=>`${pick(["Plays best underplayed","Wants to be underplayed","Should be played small"])} — ${pick(["the audience needs to lean in, not be told.","we would rather believe it than be impressed by it.","the size comes from the situation, not the performance."])}`,
     x=>`${pick(["Carries long stretches without dialogue","Holds several scenes on listening alone","Spends a lot of the piece reacting"])}, ${pick(["so stillness has to be interesting.","so the thinking needs to read.","so doing nothing has to be a choice we can see."])}`,
@@ -27647,6 +27693,7 @@ const ACG = (()=>{
   }
   function seedRoles(seed,track,type,plan,tier,castSize,h,res){
     const slots=padCast(seed.c||[],track,castSize||(seed.c||[]).length,h,res);
+    const frameIdx=nextRoleFrameIndex();
     const genders=seedGenders(slots);
     const eths=seedEthnicities(slots);
     const usedAges=new Set();
@@ -27680,7 +27727,7 @@ const ACG = (()=>{
         description:mediumSwap(
           rank==="Background"
             ? uniqueDescription(s.x,ATMOS_NOTES,h,res,usedNotes)
-            : uniqueDescription(`${capFirst(s.s)} — ${s.x}`,rank==="Lead"?DIRECTION_NOTES:SUPPORT_NOTES,h,res,usedNotes),
+            : uniqueDescription(applyRoleFrame(frameIdx,s.s,s.x),rank==="Lead"?DIRECTION_NOTES:SUPPORT_NOTES,h,res,usedNotes),
           track,type),
         gender:genders[i],
         age_range:seedAge(s.a||"adult",usedAges),
