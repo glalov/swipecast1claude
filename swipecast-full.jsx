@@ -23723,13 +23723,13 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
 
 // ── Generation data: city weights, listing types, copy templates ──
 const ACG = (()=>{
-  // Weighted so roughly 70% of listings are New York (190 of a 272 total),
-  // which is where the talent base is, while the other markets still carry
-  // real work actors travel for. `areas` gives the shoot location a neighborhood, so a
+  // Weighted so roughly 85% of listings are New York (460 of a 542 total),
+  // which is where the talent base is. The other markets stay in the mix so the
+  // board is not literally one city, but they are a garnish, not a second home. `areas` gives the shoot location a neighborhood, so a
   // listing says "Greenpoint, Brooklyn (New York, NY)" instead of repeating the
   // city name in two fields.
   const CITIES=[
-    {name:"New York, NY",short:"NYC",w:190,areas:["Greenpoint, Brooklyn","Bushwick, Brooklyn","Red Hook, Brooklyn","Sunset Park, Brooklyn","Gowanus, Brooklyn","Bay Ridge, Brooklyn","Flatbush, Brooklyn","Astoria, Queens","Long Island City, Queens","Jackson Heights, Queens","Ridgewood, Queens","Washington Heights, Manhattan","Inwood, Manhattan","Harlem, Manhattan","the Lower East Side, Manhattan","Hell's Kitchen, Manhattan","Mott Haven, the Bronx","Stapleton, Staten Island"]},
+    {name:"New York, NY",short:"NYC",w:460,areas:["Greenpoint, Brooklyn","Bushwick, Brooklyn","Red Hook, Brooklyn","Sunset Park, Brooklyn","Gowanus, Brooklyn","Bay Ridge, Brooklyn","Flatbush, Brooklyn","Astoria, Queens","Long Island City, Queens","Jackson Heights, Queens","Ridgewood, Queens","Washington Heights, Manhattan","Inwood, Manhattan","Harlem, Manhattan","the Lower East Side, Manhattan","Hell's Kitchen, Manhattan","Mott Haven, the Bronx","Stapleton, Staten Island"]},
     {name:"Los Angeles, CA",short:"LA",w:22,areas:["Highland Park","Echo Park","Boyle Heights","Culver City","North Hollywood","Inglewood","San Pedro","Van Nuys","Glendale","Koreatown"]},
     {name:"Chicago, IL",short:"Chicago",w:14,areas:["Pilsen","Logan Square","Bronzeville","Rogers Park","Humboldt Park","Bridgeport","Albany Park","Uptown"]},
     {name:"Boston, MA",short:"Boston",w:10,areas:["Somerville","Dorchester","East Boston","Jamaica Plain","Allston","Quincy","Cambridge"]},
@@ -23744,6 +23744,24 @@ const ACG = (()=>{
   ];
   function pickCity(){const total=CITIES.reduce((s,c)=>s+(c.w||1),0);let r=Math.random()*total;for(const c of CITIES){r-=c.w||1;if(r<=0)return c;}return CITIES[0];}
   function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+  // Plain language wins. A talent reads a listing once, on a phone, between
+  // other things — so between turns that are equally fresh, take the one that
+  // needs the least unpicking: fewer words, fewer sub-clauses, fewer negatives.
+  // Candidates are sampled first so this sharpens the writing without collapsing
+  // the bank onto the same handful of shortest lines.
+  function plainScore(t){
+    const x=String(t||"");
+    const words=x.split(/\s+/).filter(Boolean).length;
+    const clauses=(x.match(/,|\bthat\b|\bwhich\b|\bwho\b|\bwhose\b/g)||[]).length;
+    const negatives=(x.match(/\bnobody\b|\bno one\b|\bnothing\b|\bnever\b|\bcannot\b|\bnot\b/g)||[]).length;
+    return words+clauses*4+negatives*3;
+  }
+  function pickPlain(arr){
+    if(!arr||!arr.length)return null;
+    if(arr.length===1)return arr[0];
+    const sample=cgShuffle(arr).slice(0,4).sort((a,b)=>plainScore(a)-plainScore(b));
+    return sample[0];
+  }
   function expiresAt(months){const d=new Date();d.setMonth(d.getMonth()+months);return d.toISOString();}
 
   const UNION="Union and non-union welcome";
@@ -26237,6 +26255,400 @@ const ACG = (()=>{
         {s:"the stall holder opposite",r:"Supporting",a:"senior",x:"Been there longer than they have and has already signed."},
         {s:"the market manager",r:"Supporting",a:"midCareer",g:"F",x:"Handing out units and bad news in the same conversation."},
         {s:"the critic",r:"Day Player",a:"midCareer",x:"One visit, entirely polite, and it changes everything."}
+      ]},
+    // ── Added Aug 2026. Plain, ordinary situations a talent understands from
+    // the first line, set in the kind of places the New York board actually
+    // shoots in. Keep new premises in this register: one sentence, one clear
+    // situation, no puzzle to solve before you know what the project is.
+    {k:"co-op-board-interview",era:"2000s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["The Board Meets Thursday","Two References","Apartment 6B"],
+      p:"a young couple sit for the board interview that decides whether they get the apartment",
+      h:"the questions turn to money, and the couple have rehearsed the wrong answers",
+      h2:"one of the board members knows one of them from an old job",
+      w:["a board room in a pre-war building","a lobby table set up for interviews","a resident's own living room, used for the meeting"],
+      c:[
+        {s:"the buyer",r:"Lead",a:"youngAdult",fam:"a",x:"Polite, prepared, and quietly furious at having to audition for a home. Most of the part is holding a smile."},
+        {s:"the partner",r:"Lead",a:"youngAdult",fam:"a",x:"Answers honestly when the honest answer is the wrong one. Warm and slightly reckless."},
+        {s:"the board president",r:"Lead",a:"mature",g:"F",x:"Runs the meeting like a court and believes she is being fair. Never raises her voice."},
+        {s:"the board member who says little",r:"Supporting",a:"senior",x:"Speaks twice. Both times the room changes."},
+        {s:"the broker",r:"Day Player",a:"midCareer",x:"Waiting in the hallway, coaching through the door. Comic, then desperate."}
+      ]},
+    {k:"open-house-regulars",era:"2010s",genre:"comedy",tracks:["film","tv"],
+      ttl:["Sunday Showings","Open House","The Same Twelve People"],
+      p:"the same twelve people turn up at every apartment viewing in one neighborhood",
+      h:"two of them agree to stop bidding against each other",
+      h2:"the broker is showing an apartment she has never been inside",
+      w:["a walk-up apartment staged with rented furniture","a listing shown four times in one Sunday","a lobby full of people waiting for the same viewing"],
+      c:[
+        {s:"the broker",r:"Lead",a:"midCareer",g:"F",x:"Cheerful under real pressure, selling a room she does not believe in. Comic timing carries the film."},
+        {s:"the buyer who has lost nine times",r:"Lead",a:"youngAdult",x:"Knows every listing by heart and is starting to unravel. Funny and genuinely sad."},
+        {s:"the rival buyer",r:"Supporting",a:"midCareer",x:"Friendly on the stairs and ruthless on the phone."},
+        {s:"the owner who will not leave during viewings",r:"Supporting",a:"senior",g:"F",x:"Sits in her own kitchen while strangers open her cupboards."},
+        {s:"the neighbor",r:"Day Player",a:"mature",x:"Appears at the door with one piece of information that sinks the sale."}
+      ]},
+    {k:"museum-guard-nights",era:"2010s",genre:"mystery",tracks:["film","tv"],
+      ttl:["Room Nine","After Closing","The Guard on Three"],
+      p:"a museum guard walks the same three rooms every night after closing",
+      h:"a painting is hanging an inch off, and he is the only one who notices",
+      h2:"a school group leaves a child behind and nobody knows until eight",
+      w:["three quiet galleries and a service stair","a small city museum with one night guard","a wing closed for rehanging"],
+      c:[
+        {s:"the guard",r:"Lead",a:"mature",x:"Twelve years of the same route. Watchful, unhurried, and treated as furniture by everyone above him."},
+        {s:"the curator",r:"Lead",a:"midCareer",g:"F",x:"Listens to him properly for the first time, far too late. Precise and not unkind."},
+        {s:"the new guard",r:"Supporting",a:"youngAdult",x:"Asks the questions the audience is asking. Easy to like."},
+        {s:"the head of security",r:"Supporting",a:"mature",x:"Wants a simple answer and a closed file."},
+        {s:"the cleaner",r:"Day Player",a:"senior",g:"F",x:"Sees more than anyone and is never asked."}
+      ]},
+    {k:"theater-ushers",era:"2010s",genre:"comedy",tracks:["film","tv","stage"],
+      ttl:["House to Half","Eight Shows a Week","The Aisle Team"],
+      p:"the ushers at an old theater run a full house eight times a week",
+      h:"the show stops in the second act and nobody tells the front of house why",
+      h2:"one seat has been sold twice, and both people are already in it",
+      w:["a Broadway house with two balconies","a theater lobby twenty minutes before curtain","a mezzanine with a broken door"],
+      c:[
+        {s:"the head usher",r:"Lead",a:"mature",g:"F",x:"Twenty years of this house. Runs a room of nine hundred people with a torch and a whisper."},
+        {s:"the new usher",r:"Lead",a:"youngAdult",x:"First week, wants to be an actor, apologizes to everybody. Sweet and quick."},
+        {s:"the bar manager",r:"Supporting",a:"midCareer",x:"Runs the interval like a service industry general. Very funny, very tired."},
+        {s:"the house manager",r:"Supporting",a:"mature",x:"Takes the blame for everything upstairs and downstairs."},
+        {s:"the patron in row C",r:"Day Player",a:"senior",x:"Charming, immovable, and in the wrong seat."}
+      ]},
+    {k:"print-shop-same-day",era:"2000s",genre:"drama",tracks:["film","stage","tv"],
+      ttl:["Five Hundred Copies","Same Day Printing","Proofs by Four"],
+      p:"a small print shop finishes a funeral program and a wedding invitation on the same afternoon",
+      h:"both families arrive at the counter at once",
+      h2:"a name is spelled wrong on five hundred copies",
+      w:["a print shop with two machines and one counter","a copy shop on a busy avenue","a family printing business behind a storefront"],
+      c:[
+        {s:"the printer",r:"Lead",a:"mature",x:"Careful, proud, and quietly holding the shop together. The whole part is in the hands and the pauses."},
+        {s:"the printer's daughter",r:"Lead",a:"youngAdult",g:"F",fam:"a",x:"Works the counter and manages every feeling in the room. Warm, fast, close to done with the job."},
+        {s:"the bride's mother",r:"Supporting",a:"mature",g:"F",x:"Wants perfection today because she cannot control anything else."},
+        {s:"the son arranging the funeral",r:"Supporting",a:"midCareer",x:"Doing paperwork instead of grieving. Very still, very contained."},
+        {s:"the delivery driver",r:"Day Player",a:"youngAdult",x:"In and out twice, and the second time it matters."}
+      ]},
+    {k:"doorman-overnight",era:"2010s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["The Night Desk","Thirty Years at the Door","Who Came In"],
+      p:"a doorman works the overnight shift in a building he has stood in for thirty years",
+      h:"he is asked who came in after midnight, and he remembers all of it",
+      h2:"the building is sold and the new owners want the desk gone",
+      w:["a lobby desk with a wall of mailboxes","a pre-war building with one elevator","a doorman's booth by a side entrance"],
+      c:[
+        {s:"the doorman",r:"Lead",a:"senior",x:"Knows every family in the building and says almost none of what he knows. Enormous stillness."},
+        {s:"the tenant on eleven",r:"Lead",a:"midCareer",g:"F",x:"Asks him for a favor that costs him his job if it goes wrong."},
+        {s:"the relief man",r:"Supporting",a:"youngAdult",x:"Young, decent, learning the rules that are not written down."},
+        {s:"the building manager",r:"Supporting",a:"mature",x:"Delivering a decision he did not make and cannot defend."},
+        {s:"the tenant nobody likes",r:"Day Player",a:"mature",x:"One scene, entirely polite, deeply unpleasant."}
+      ]},
+    {k:"last-ferry-crew",era:"2000s",genre:"drama",tracks:["film","tv"],
+      ttl:["The Last Boat","Eleven Passengers","Crossing at One"],
+      p:"the crew of the last ferry of the night sail a boat with eleven passengers",
+      h:"one passenger has no plan to get off at the other side",
+      h2:"the boat is held at the dock for twenty minutes and nobody explains why",
+      w:["a commuter ferry on its final run","an open passenger deck in cold weather","a terminal with the lights going off behind them"],
+      c:[
+        {s:"the deckhand",r:"Lead",a:"youngAdult",x:"Notices the passenger before anyone else and does not know what to do about it. Quiet, decent, out of their depth."},
+        {s:"the passenger",r:"Lead",a:"mature",x:"Says very little and needs to hold the film every time they are on screen."},
+        {s:"the captain",r:"Supporting",a:"senior",x:"Has a schedule and thirty years of judgment. Uses both."},
+        {s:"the ticket agent",r:"Supporting",a:"midCareer",g:"F",x:"Last person on land, first person to be asked what she saw."},
+        {s:"the commuter",r:"Day Player",a:"midCareer",x:"Wants to be home. Becomes useful without meaning to."}
+      ]},
+    {k:"crossing-guard",era:"2010s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["The Corner","Mornings at the Crossing","Half Past Eight"],
+      p:"a school crossing guard knows every family on the corner she works",
+      h:"one child arrives at the corner alone three mornings in a row",
+      h2:"the crossing is being moved a block away in September",
+      w:["a school corner at eight in the morning","a crossing outside an elementary school","a wide avenue with one traffic light"],
+      c:[
+        {s:"the guard",r:"Lead",a:"mature",g:"F",x:"Fifteen years on the same corner. Sees everything and reports almost nothing. Deeply warm without being soft."},
+        {s:"the child's mother",r:"Lead",a:"youngAdult",g:"F",fam:"a",x:"Working two jobs and terrified of being judged. Defensive, then honest."},
+        {s:"the child",r:"Supporting",a:"child",fam:"a",x:"Bright, careful, covering for a parent. Needs a young actor who can be still."},
+        {s:"the school secretary",r:"Supporting",a:"mature",g:"F",x:"Knows the rules and knows what happens when you follow them."},
+        {s:"the crossing guard on the next corner",r:"Day Player",a:"senior",x:"One scene of good advice, half of it wrong."}
+      ]},
+    {k:"block-party-permit",era:"2010s",genre:"comedy",tracks:["film","tv","stage"],
+      ttl:["Forty Signatures","One Saturday in June","The Street Is Closed"],
+      p:"two neighbors plan a block party that needs one permit and forty signatures",
+      h:"the last signature belongs to the one man on the block who hates the idea",
+      h2:"the street is closed on the wrong day",
+      w:["a residential block of stoops and fire escapes","a street with a hardware store on the corner","a block that has not had a party in eleven years"],
+      c:[
+        {s:"the organizer",r:"Lead",a:"midCareer",g:"F",x:"Optimistic, organized, and absolutely will not be told no. Comedy comes from her persistence."},
+        {s:"the reluctant partner",r:"Lead",a:"mature",x:"Signed up for one hour and lost a month. Dry, funny, secretly delighted."},
+        {s:"the holdout",r:"Supporting",a:"senior",x:"Has a reason nobody has bothered to ask about. Must land the last scene."},
+        {s:"the teenager with the sound system",r:"Supporting",a:"teen",x:"Takes the job far more seriously than anyone expected."},
+        {s:"the officer with the permit",r:"Day Player",a:"midCareer",x:"Two scenes of immovable paperwork."}
+      ]},
+    {k:"community-board-night",era:"2010s",genre:"comedy",tracks:["film","tv","stage"],
+      ttl:["Item Four","The Meeting","Three Minutes Each"],
+      p:"a neighborhood meeting is called to decide whether a bike lane goes in",
+      h:"the loudest person in the room turns out to be right",
+      h2:"the vote is a tie and the chair has to break it",
+      w:["a school gym with folding chairs","a library basement with a microphone that cuts out","a church hall used for public meetings"],
+      c:[
+        {s:"the chair",r:"Lead",a:"mature",x:"Running a room that does not want to be run. Fair, exhausted, and eventually decisive."},
+        {s:"the loudest speaker",r:"Lead",a:"midCareer",g:"F",x:"Rude, funny, and correct. Has to be hard to like and impossible to dismiss."},
+        {s:"the shop owner",r:"Supporting",a:"senior",x:"Worried about deliveries and says so with real feeling."},
+        {s:"the young planner",r:"Supporting",a:"youngAdult",x:"Presenting a slideshow to a room that hates the slideshow."},
+        {s:"the man who speaks about something else entirely",r:"Day Player",a:"senior",x:"One glorious minute at the microphone."}
+      ]},
+    {k:"moving-crew-august",era:"2000s",genre:"comedy",tracks:["film","tv"],
+      ttl:["Five Flights","The First of the Month","Everything Down"],
+      p:"a moving crew carry a whole apartment down five flights in August",
+      h:"the tenant will not come out of the bedroom",
+      h2:"one piece of furniture does not fit through the door and never did",
+      w:["a fifth-floor walk-up on the hottest day of the year","a narrow stairwell with two landings","a truck double-parked with the meter running"],
+      c:[
+        {s:"the crew boss",r:"Lead",a:"midCareer",x:"Solves everything with rope and patience. Handles people better than furniture."},
+        {s:"the new mover",r:"Lead",a:"youngAdult",x:"First week, no idea, quietly strong. Physical comedy plus one real scene."},
+        {s:"the tenant",r:"Supporting",a:"mature",g:"F",x:"Not being difficult. Leaving a place she never planned to leave."},
+        {s:"the neighbor on three",r:"Supporting",a:"senior",x:"Opens the door every time they pass. Says one thing that lands."},
+        {s:"the driver",r:"Day Player",a:"mature",x:"Never leaves the truck and narrates the whole day from the window."}
+      ]},
+    {k:"fish-market-dawn",era:"1990s",genre:"drama",tracks:["film","tv"],
+      ttl:["Four in the Morning","The Buy","Ice and Salt"],
+      p:"a father and daughter buy for their restaurant at the fish market before dawn",
+      h:"the price has doubled and the menu is already printed",
+      h2:"he offers her the restaurant, and she has not said yes",
+      w:["a wholesale fish market under floodlights","a market floor washed down at five in the morning","a loading bay stacked with crates and ice"],
+      c:[
+        {s:"the father",r:"Lead",a:"senior",fam:"a",x:"Thirty years of buying at this hour. Charming with sellers, hard to talk to as a parent."},
+        {s:"the daughter",r:"Lead",a:"youngAdult",g:"F",fam:"a",x:"Better at the business than he is and cannot say it. Watchful, funny, tired."},
+        {s:"the seller",r:"Supporting",a:"mature",x:"Likes them both and will still take the money."},
+        {s:"the rival buyer",r:"Supporting",a:"midCareer",g:"F",x:"Younger, faster, and not the villain."},
+        {s:"the porter",r:"Day Player",a:"mature",x:"Moves crates and delivers the one piece of news that changes the morning."}
+      ]},
+    {k:"flower-shop-week",era:"2010s",genre:"romance",tracks:["film","tv","stage"],
+      ttl:["Two Hundred Orders","The Week Before","Cash and Carry"],
+      p:"a flower shop takes more orders than it can fill in the week before a holiday",
+      h:"the biggest order comes from someone the owner used to be married to",
+      h2:"the delivery van is towed with half the orders inside",
+      w:["a flower shop with buckets out on the sidewalk","a wholesale flower district block at six in the morning","a back room of a shop packed to the ceiling"],
+      c:[
+        {s:"the owner",r:"Lead",a:"midCareer",g:"F",x:"Running on four hours of sleep and doing it beautifully. Comic under pressure, quiet when alone."},
+        {s:"the ex",r:"Lead",a:"midCareer",x:"Polite, careful, still standing in the doorway. Very little dialogue does the work."},
+        {s:"the assistant",r:"Supporting",a:"youngAdult",x:"Says exactly what everyone is thinking. Fast and funny."},
+        {s:"the driver",r:"Supporting",a:"mature",x:"Loses the van and finds a solution nobody asked for."},
+        {s:"the customer who comes in last",r:"Day Player",a:"senior",x:"Buys one stem and gets the best scene in the film."}
+      ]},
+    {k:"public-pool-heatwave",era:"2000s",genre:"drama",tracks:["film","tv"],
+      ttl:["Deep End","The Hottest Week","Lifeguards"],
+      p:"the lifeguards at a public pool work the hottest week of the summer",
+      h:"the pool is closed for a day and the neighborhood has nowhere else to go",
+      h2:"one guard leaves the chair for two minutes and has to say so out loud",
+      w:["an outdoor city pool with a chain-link fence","a public pool with a line down the block","a pool deck at closing time"],
+      c:[
+        {s:"the head guard",r:"Lead",a:"youngAdult",g:"F",x:"Nineteen, in charge of a crowd of four hundred, and doing it well until she is not."},
+        {s:"the guard in his last summer",r:"Lead",a:"youngAdult",x:"Leaving in September and pretending he does not care. Very likable."},
+        {s:"the parks supervisor",r:"Supporting",a:"mature",x:"Has rules, a budget, and no help coming."},
+        {s:"the regular swimmer",r:"Supporting",a:"senior",g:"F",x:"Here every morning for thirty years. The soul of the place."},
+        {s:"the kid who cannot swim",r:"Day Player",a:"teen",x:"Comes every day anyway. Two scenes, no self-pity."}
+      ]},
+    {k:"library-branch-three-oclock",era:"2010s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["Three to Six","The Branch","Reading Room"],
+      p:"a library branch fills with children every afternoon at three and empties at six",
+      h:"the branch is told to cut its hours, and three o'clock is the hour that goes",
+      h2:"one child is still there at closing, every night, on purpose",
+      w:["a small neighborhood library branch","a reading room with six computers and a sign-up sheet","a library basement used for homework help"],
+      c:[
+        {s:"the librarian",r:"Lead",a:"midCareer",g:"F",x:"Runs a room of thirty kids with a look. Not sentimental about any of it."},
+        {s:"the after-school aide",r:"Supporting",a:"youngAdult",x:"Twenty-two, good at this, and paid almost nothing."},
+        {s:"the child who stays",r:"Supporting",a:"child",x:"Bright, funny, and careful about what he says. Needs a young actor who can hold silence."},
+        {s:"the branch manager",r:"Supporting",a:"mature",x:"Delivering the cuts and hating it. Not a villain."},
+        {s:"the regular who reads the newspapers",r:"Day Player",a:"senior",x:"Here at opening every day. One scene that changes the meeting."}
+      ]},
+    {k:"newsstand-scaffolding",era:"2010s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["Nine Years of Scaffolding","The Stand","Papers and Gum"],
+      p:"a newsstand keeps trading under scaffolding that has been up for nine years",
+      h:"the scaffolding is finally coming down, and so is the stand",
+      h2:"a regular customer stops coming, and the owner is the only one who notices",
+      w:["a corner newsstand under a sidewalk shed","a stand outside a subway entrance","a kiosk wedged between two storefronts"],
+      c:[
+        {s:"the owner",r:"Lead",a:"mature",x:"Knows four hundred people by their order and none of them by name. Dry, watchful, very funny."},
+        {s:"the owner's nephew",r:"Supporting",a:"youngAdult",fam:"a",x:"Works weekends and wants him to take the buyout."},
+        {s:"the regular",r:"Supporting",a:"senior",g:"F",x:"Same paper, same time, eleven years. Two scenes that carry the ending."},
+        {s:"the building manager",r:"Supporting",a:"midCareer",x:"Polite about something that is not negotiable."},
+        {s:"the delivery driver",r:"Day Player",a:"midCareer",x:"Four in the morning, one conversation, all the exposition and none of it dull."}
+      ]},
+    {k:"car-service-base",era:"2000s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["Base Three","Waiting on a Call","Car Twelve"],
+      p:"the drivers at a car service base wait all night for calls that keep getting rarer",
+      h:"one driver takes a fare that belongs to somebody else",
+      h2:"the base is closing, and the dispatcher knows a week before they do",
+      w:["a storefront base with eight plastic chairs","a dispatch office behind a garage","a waiting room with a television nobody watches"],
+      c:[
+        {s:"the dispatcher",r:"Lead",a:"mature",g:"F",x:"Holds the room with a microphone and a clipboard. Knows every driver's situation and uses it carefully."},
+        {s:"the veteran driver",r:"Lead",a:"senior",x:"Twenty-six years, and this is the year it stopped working. No self-pity."},
+        {s:"the new driver",r:"Supporting",a:"youngAdult",x:"Fast, hungry, and about to make an enemy."},
+        {s:"the owner",r:"Supporting",a:"midCareer",x:"Selling the base and telling nobody. Reasonable, which makes it worse."},
+        {s:"the driver who never drives",r:"Day Player",a:"mature",x:"Sits in the chair by the door with a story for every call."}
+      ]},
+    {k:"barbershop-block",era:"2010s",genre:"comedy",tracks:["film","tv","stage"],
+      ttl:["Chair Two","Everybody Knows Already","The Shop"],
+      p:"a barbershop is where everyone on the block finds out what happened",
+      h:"a piece of news goes around the shop before the family involved hears it",
+      h2:"the shop is offered a lease it cannot afford and a year to think about it",
+      w:["a barbershop with three chairs and a television","a shop with a bench of men waiting all afternoon","a corner shop with the door propped open in summer"],
+      c:[
+        {s:"the owner",r:"Lead",a:"mature",x:"Runs the room, referees the arguments, and hears everything. Big warmth, sharp timing."},
+        {s:"the young barber",r:"Lead",a:"youngAdult",x:"Building a following on his phone and outgrowing the chair he was given."},
+        {s:"the customer who is always there",r:"Supporting",a:"senior",x:"Has not had a haircut in years and misses nothing."},
+        {s:"the woman who comes in for her son",r:"Supporting",a:"midCareer",g:"F",x:"Arrives once and stops the room. Handles it perfectly."},
+        {s:"the landlord's son",r:"Day Player",a:"youngAdult",x:"Delivers the lease and cannot look anyone in the eye."}
+      ]},
+    {k:"food-pantry-line",era:"2010s",genre:"drama",tracks:["film","tv"],
+      ttl:["Around the Corner","Two Bags Each","The Week Before"],
+      p:"a food pantry runs the week before a holiday with a line around the corner",
+      h:"they run out two hours early and have to tell the people still waiting",
+      h2:"a volunteer recognizes someone in the line and pretends not to",
+      w:["a church basement with folding tables","a pantry run out of a school gym","a storefront with a line down the block"],
+      c:[
+        {s:"the coordinator",r:"Lead",a:"mature",g:"F",x:"Solves eleven problems an hour and never sounds hurried. Enormous competence, no sentiment."},
+        {s:"the new volunteer",r:"Lead",a:"youngAdult",x:"Came for one shift and cannot cope with what he sees. Honest, not weak."},
+        {s:"the man in the line",r:"Supporting",a:"mature",x:"Would rather not be here and refuses to be pitied. One scene, no big speech."},
+        {s:"the driver",r:"Supporting",a:"midCareer",x:"Brings what the warehouse gave him, which is not enough."},
+        {s:"the volunteer who has been here for years",r:"Day Player",a:"senior",g:"F",x:"Kind, blunt, and right about everything."}
+      ]},
+    {k:"wedding-hall-double-booked",era:"2000s",genre:"comedy",tracks:["film","tv","stage"],
+      ttl:["Two at Four","The Grand Room","Both Parties"],
+      p:"a wedding hall books two weddings for the same afternoon",
+      h:"neither family will move, so the manager tries to run both at once",
+      h2:"the two brides know each other",
+      w:["a catering hall with one grand room and one small one","a banquet hall above a restaurant","a wedding venue with a shared lobby"],
+      c:[
+        {s:"the manager",r:"Lead",a:"midCareer",x:"Lying beautifully to two hundred people at the same time. Farce played completely straight."},
+        {s:"the first bride",r:"Lead",a:"youngAdult",g:"F",x:"Reasonable right up until she is not. Must stay likable at full volume."},
+        {s:"the second bride",r:"Lead",a:"youngAdult",g:"F",x:"Calm, deadly, and enjoying this more than she should."},
+        {s:"the head waiter",r:"Supporting",a:"senior",x:"Has seen worse and says so. Deadpan."},
+        {s:"the band leader",r:"Day Player",a:"mature",x:"Will play for whoever is left standing."}
+      ]},
+    {k:"station-booth-overnight",era:"2000s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["Every Twenty Minutes","The Booth","Nights on the Platform"],
+      p:"a station agent works an overnight booth on a line where trains run every twenty minutes",
+      h:"a passenger comes to the glass and asks for something the agent is not allowed to give",
+      h2:"the booth is being closed and replaced with a machine in March",
+      w:["a token booth on a quiet platform","a station mezzanine at two in the morning","a booth with a jammed speaker and a fogged window"],
+      c:[
+        {s:"the agent",r:"Lead",a:"mature",g:"F",x:"Behind glass for most of the film. Everything has to read through a window and a microphone."},
+        {s:"the passenger",r:"Lead",a:"youngAdult",x:"Comes back three times across one night. Never explains himself."},
+        {s:"the cleaner",r:"Supporting",a:"senior",x:"The only other person on the platform. Talks to her like a friend."},
+        {s:"the supervisor",r:"Supporting",a:"midCareer",x:"Arrives with a clipboard and a decision already made."},
+        {s:"the transit officer",r:"Day Player",a:"midCareer",x:"One scene, correct about the rules, wrong about the situation."}
+      ]},
+    {k:"rink-after-hours",era:"1990s",genre:"romance",tracks:["film","tv"],
+      ttl:["Late Skate","Two Hours After Closing","The Ice at Midnight"],
+      p:"a rink stays open two hours after closing for the people who only skate late",
+      h:"the owner has to end the late session to keep the rink open at all",
+      h2:"two of the regulars have never spoken and skate the same hour every night",
+      w:["a city rink with a broken clock","an indoor rink with half the lights off","a rink under an elevated road"],
+      c:[
+        {s:"the ice technician",r:"Lead",a:"midCareer",x:"Runs the machine, the music, and the whole late session on his own. Gentle, guarded."},
+        {s:"the regular",r:"Lead",a:"mature",g:"F",x:"Comes every night for a reason she does not share until late in the film."},
+        {s:"the owner",r:"Supporting",a:"senior",x:"Doing arithmetic that only goes one way."},
+        {s:"the teenager who is very good",r:"Supporting",a:"teen",x:"Skates instead of going home. Almost no dialogue."},
+        {s:"the skate hire attendant",r:"Day Player",a:"youngAdult",x:"Bored, funny, and the audience's way into the room."}
+      ]},
+    {k:"takeout-counter-friday",era:"2010s",genre:"comedy",tracks:["film","tv"],
+      ttl:["No Bike","Order Up","Forty Minutes"],
+      p:"a takeout counter loses its only delivery bike on the busiest night of the week",
+      h:"the whole family starts delivering on foot",
+      h2:"a regular customer turns up with the bike and an explanation nobody believes",
+      w:["a takeout counter with four stools and a phone that never stops","a corner restaurant with a delivery window","a kitchen with three people and no room"],
+      c:[
+        {s:"the owner",r:"Lead",a:"mature",g:"F",fam:"a",x:"Runs the counter, the kitchen and the family. Comic authority, no shouting."},
+        {s:"the son",r:"Lead",a:"teen",fam:"a",x:"Doing homework between orders and now running the deliveries. Fast, funny, put-upon."},
+        {s:"the cook",r:"Supporting",a:"mature",x:"Never leaves the wok and comments on everything."},
+        {s:"the regular customer",r:"Supporting",a:"midCareer",x:"Here every Friday. Has a version of events."},
+        {s:"the neighbor with a van",r:"Day Player",a:"senior",x:"Arrives late and saves the night in the least helpful way possible."}
+      ]},
+    {k:"hospital-gift-shop",era:"2010s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["The Gift Shop","Balloons and Magazines","Lobby Level"],
+      p:"the volunteers who run a hospital gift shop meet everyone on their worst day",
+      h:"a customer comes in every day for a week and buys nothing",
+      h2:"the shop is being replaced by a coffee franchise in the spring",
+      w:["a small shop off a hospital lobby","a gift counter beside the elevators","a volunteer-run shop with a locked register"],
+      c:[
+        {s:"the volunteer in charge",r:"Lead",a:"senior",g:"F",x:"Eleven years of this. Knows exactly what to say and exactly when to say nothing."},
+        {s:"the new volunteer",r:"Lead",a:"youngAdult",x:"Here for college credit and completely unprepared. The audience's eyes."},
+        {s:"the customer",r:"Supporting",a:"mature",x:"Comes in daily and talks about anything except why. Very quiet work."},
+        {s:"the nurse on break",r:"Supporting",a:"midCareer",g:"F",x:"Buys the same candy every shift and says one true thing."},
+        {s:"the administrator",r:"Day Player",a:"midCareer",x:"Delivers the news about the lease in two efficient minutes."}
+      ]},
+    {k:"school-custodian-june",era:"2000s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["Last Day","Keys to the Building","June"],
+      p:"a school custodian opens the building for graduation and closes it for the summer",
+      h:"a student comes back that evening to get something out of a locked classroom",
+      h2:"he is told the school is being merged, and he finds out before the teachers do",
+      w:["an empty school on the last day of term","a gym set up for a graduation","a corridor of stripped lockers"],
+      c:[
+        {s:"the custodian",r:"Lead",a:"senior",x:"Twenty-nine years in one building. Knows every teacher, every leak, every kid worth watching."},
+        {s:"the student",r:"Lead",a:"teen",g:"F",x:"Comes back for something small that is not small. Guarded, funny, close to breaking."},
+        {s:"the principal",r:"Supporting",a:"mature",g:"F",x:"Carrying a decision she cannot announce yet."},
+        {s:"the young teacher",r:"Supporting",a:"youngAdult",x:"First year done, and not sure there is a second."},
+        {s:"the security guard",r:"Day Player",a:"midCareer",x:"One scene at a locked door, played entirely straight."}
+      ]},
+    {k:"stoop-sale",era:"2010s",genre:"comedy",tracks:["film","tv","stage"],
+      ttl:["Everything Must Go","Stoop Sale","Two Dollars Each"],
+      p:"a family sell their things on the stoop and accidentally sell something they meant to keep",
+      h:"the buyer will not give it back, and they have to decide how far to go",
+      h2:"the whole block is watching, and half of them have opinions",
+      w:["a brownstone stoop covered in boxes","a block-wide yard sale on a Saturday morning","a sidewalk table under an awning"],
+      c:[
+        {s:"the mother",r:"Lead",a:"midCareer",g:"F",fam:"a",x:"Organized the sale, priced everything, and made the mistake. Funny until it stops being funny."},
+        {s:"the grandmother",r:"Lead",a:"senior",g:"F",fam:"a",x:"The thing was hers. Handles it with far more grace than anyone deserves."},
+        {s:"the buyer",r:"Supporting",a:"mature",x:"Not unkind, and not giving it back. The whole part is reasonableness."},
+        {s:"the teenage son",r:"Supporting",a:"teen",fam:"a",x:"Negotiating with strangers all morning and enjoying it too much."},
+        {s:"the neighbor across the street",r:"Day Player",a:"senior",x:"Watching from a folding chair and narrating for free."}
+      ]},
+    {k:"box-office-cancelled",era:"2010s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["No Show Tonight","The Window","Full House"],
+      p:"a box office has to tell a full house that tonight's show is cancelled",
+      h:"the crowd is told an hour late, and the staff knew for most of it",
+      h2:"one person in the line has traveled a very long way to be there",
+      w:["a box office window with a line outside","a theater lobby before curtain","a small booth with two phones and one printer"],
+      c:[
+        {s:"the box office manager",r:"Lead",a:"midCareer",g:"F",x:"Delivering bad news three hundred times without ever sounding rehearsed."},
+        {s:"the assistant",r:"Lead",a:"youngAdult",x:"First real crisis. Wants to tell the truth and is told not to."},
+        {s:"the patron who traveled",r:"Supporting",a:"senior",x:"Polite, disappointed, and impossible to forget."},
+        {s:"the company manager",r:"Supporting",a:"mature",x:"Has a reason and cannot give it. Firm, decent, cornered."},
+        {s:"the usher",r:"Day Player",a:"youngAdult",x:"Holding a door against a lobby of people."}
+      ]},
+    {k:"sign-painter-last-awning",era:"1990s",genre:"drama",tracks:["film","stage","tv"],
+      ttl:["Hand Lettered","The Last Awning","Gold Leaf"],
+      p:"a sign painter letters one last awning for a shop that is closing",
+      h:"the owner cannot decide what the sign should say",
+      h2:"the painter has taken no other work for a month and told nobody",
+      w:["a storefront with a ladder up against it","a shop being repainted the week before it closes","a workshop full of brushes and old sign boards"],
+      c:[
+        {s:"the painter",r:"Lead",a:"senior",x:"Forty years of hand lettering in a city that stopped ordering it. Precise, funny, proud."},
+        {s:"the shop owner",r:"Lead",a:"mature",g:"F",x:"Closing a business her father opened. Practical about everything except the sign."},
+        {s:"the painter's apprentice",r:"Supporting",a:"youngAdult",x:"Learning a trade with no future and staying anyway."},
+        {s:"the owner's son",r:"Supporting",a:"midCareer",x:"Wants it done cheaply and quickly. Not wrong, just early."},
+        {s:"the customer who stops to watch",r:"Day Player",a:"mature",x:"One scene on the sidewalk, entirely about looking up."}
+      ]},
+    {k:"home-aide-five-stops",era:"2010s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["Five Apartments","The Route","Forty Minutes Each"],
+      p:"a home aide visits five apartments a day and is the only visitor most of them get",
+      h:"one client is not answering the door, and the agency wants her to move on to the next stop",
+      h2:"her hours are cut, and she keeps doing the visits anyway",
+      w:["five apartments across one neighborhood","a walk-up with a client on the top floor","a housing block with a long inside corridor"],
+      c:[
+        {s:"the aide",r:"Lead",a:"midCareer",g:"F",x:"Carries the film through five very different rooms. Warm, exact, and running out of time in every one."},
+        {s:"the client who talks",r:"Supporting",a:"senior",x:"Funny, sharp, and terrified of the day she stops coming."},
+        {s:"the client who does not",r:"Supporting",a:"senior",g:"F",x:"Almost no dialogue. Everything is in what she allows."},
+        {s:"the scheduler",r:"Supporting",a:"youngAdult",x:"On the phone only. Reasonable, powerless, and the voice of the whole system."},
+        {s:"the client's son",r:"Day Player",a:"mature",x:"Visits once and asks her to do something she should not."}
+      ]},
+    {k:"boardwalk-arcade",era:"1990s",genre:"drama",tracks:["film","tv"],
+      ttl:["Last Week of Summer","Tokens Only","The Boardwalk"],
+      p:"a boardwalk arcade works the last week of the summer season",
+      h:"the owner will not say whether the place is opening again next year",
+      h2:"the takings do not add up, and everyone who works there knows why",
+      w:["an arcade at the end of a boardwalk","a seafront arcade with half the machines dark","a games hall behind a hot dog counter"],
+      c:[
+        {s:"the manager",r:"Lead",a:"midCareer",x:"Ran this place every summer since he was fifteen. Charming, evasive, cornered."},
+        {s:"the summer worker",r:"Lead",a:"youngAdult",g:"F",x:"Leaving for school in a week and grieving it already. Bright and very funny."},
+        {s:"the owner",r:"Supporting",a:"senior",x:"Comes in twice and says almost nothing worth quoting, which is the point."},
+        {s:"the repair man",r:"Supporting",a:"mature",x:"Keeps forty-year-old machines alive with parts he makes himself."},
+        {s:"the kid who is there every day",r:"Day Player",a:"teen",x:"Plays one machine all summer. Two scenes, no explanation needed."}
       ]}
   ];
   // ── Which project types each seed track can be produced as ──────────────
@@ -27284,23 +27696,29 @@ const ACG = (()=>{
   // them is checked against the history sets before the listing is accepted.
   function buildFreshConcept(city,h,res){
     for(let attempt=0;attempt<160;attempt++){
-      // The last quarter of the attempts drop the freshness guards so this
-      // never falls through to the legacy CONCEPTS templates, whose summaries
-      // are multi-paragraph and full of logistics.
+      // Later attempts relax the FUZZY similarity pass only, so this never
+      // falls through to the legacy CONCEPTS templates, whose summaries are
+      // multi-paragraph and full of logistics. The exact story guards below
+      // (premise, turn, premise+turn pair) are never relaxed.
       const strict=attempt<60;
       const track=pickTrack();
       const seedPool=FILM_SEEDS.filter(s=>(s.tracks||[]).indexOf(track)>-1);
       if(!seedPool.length)continue;
-      const unusedSeeds=seedPool.filter(s=>!h.traits.has(clean("seed "+s.k))&&!res.traits.has(clean("seed "+s.k)));
-      // While ANY premise anywhere is still unused, never reuse one — try a
-      // different track instead. Only once the entire bank is spent does the
-      // relaxed phase allow a premise to come round again.
-      if(!unusedSeeds.length){
-        if(strict)continue;
-        const anyFree=FILM_SEEDS.filter(s=>!h.traits.has(clean("seed "+s.k))&&!res.traits.has(clean("seed "+s.k)));
-        if(anyFree.length)continue;
-      }
-      const seed=pick(unusedSeeds.length?unusedSeeds:seedPool.filter(s=>!res.traits.has(clean("seed "+s.k))).length?seedPool.filter(s=>!res.traits.has(clean("seed "+s.k))):seedPool);
+      // A STORY is a premise crossed with a turn, and a story is written once —
+      // ever. History here includes the durable log, so deleting a draft does
+      // not put its story back in circulation, and neither does switching
+      // browser. A premise may only come round again carrying a turn that has
+      // never run with it; a premise whose every turn is spent is retired.
+      const turnsFor=s=>{const own=[s.h,s.h2].filter(Boolean);return own.concat(turnBank(s,track).filter(t=>own.indexOf(t)===-1));};
+      const pairUsed=(s,t)=>h.traits.has(clean("story "+s.k+" "+t))||res.traits.has(clean("story "+s.k+" "+t));
+      const seedUnused=s=>!h.traits.has(clean("seed "+s.k))&&!res.traits.has(clean("seed "+s.k));
+      const unusedSeeds=seedPool.filter(seedUnused);
+      // Premises nobody has read at all come first. Only when the whole bank is
+      // spent do premises with a free turn left come back into play.
+      const revivable=unusedSeeds.length?[]:seedPool.filter(s=>turnsFor(s).some(t=>!pairUsed(s,t)));
+      const seedChoices=unusedSeeds.length?unusedSeeds:revivable;
+      if(!seedChoices.length)continue;
+      const seed=pick(seedChoices);
       // A seed's `only` list wins over the track's default menu — otherwise a
       // workplace-training premise gets produced as a music video and a
       // sportswear editorial as user-generated content.
@@ -27319,24 +27737,27 @@ const ACG = (()=>{
       // bank. Preference: a turn nobody has used at all, then a turn this seed
       // has not been paired with, then anything.
       const own=[seed.h,seed.h2].filter(Boolean);
-      const turnOpts=own.concat(turnBank(seed,track).filter(t=>own.indexOf(t)===-1));
-      const pairFree=t=>!h.traits.has(clean("story "+seed.k+" "+t))&&!res.traits.has(clean("story "+seed.k+" "+t));
+      const turnOpts=turnsFor(seed);
       const turnFree=t=>!h.traits.has(clean("turn "+t))&&!res.traits.has(clean("turn "+t));
-      const tierA=turnOpts.filter(t=>turnFree(t)&&pairFree(t));
-      const tierB=tierA.length?tierA:turnOpts.filter(pairFree);
-      const turnTier=tierB.length?tierB:turnOpts;
+      // Never a pair that has run before — no relaxed phase, no exceptions. If
+      // this premise has nothing left, drop it and take another premise.
+      const freshPairs=turnOpts.filter(t=>!pairUsed(seed,t));
+      if(!freshPairs.length)continue;
+      const tierA=freshPairs.filter(turnFree);
+      const turnTier=tierA.length?tierA:freshPairs;
       // Inside whichever tier we land in, always take one of the seed's OWN
       // turns if one is still available. They were written for that exact
       // premise, so they always fit; the genre bank is the fallback that keeps
       // the story count high, not the first choice.
       const ownAvailable=turnTier.filter(t=>own.indexOf(t)>-1);
-      const turn=pick(ownAvailable.length?ownAvailable:turnTier);
+      const turn=pickPlain(ownAvailable.length?ownAvailable:turnTier);
       const seedKey=clean("story "+seed.k+" "+turn);
       const turnKey=clean("turn "+turn);
       const toneKey=clean("tone "+tone.key);
       const rootKey=fp([seed.k,turn,type,tone.key,city.short].join("|"));
-      if(strict&&(h.traits.has(clean(rootKey))||res.traits.has(clean(rootKey))||res.traits.has(seedKey)))continue;
-      if(!strict&&res.traits.has(clean(rootKey)))continue;
+      // The exact-story guards are unconditional; only the fuzzy similarity
+      // pass below is ever relaxed.
+      if(h.traits.has(clean(rootKey))||res.traits.has(clean(rootKey))||h.traits.has(seedKey)||res.traits.has(seedKey))continue;
 
       const plan=shootPlan(type,track);
       const tier=budgetTier(type,track);
@@ -27398,6 +27819,7 @@ const ACG = (()=>{
         rootKey,
         settingKey:seedKey,
         seedOnlyKey:"seed "+seed.k,
+        turnOnlyKey:turnKey,
         catalystKey:toneKey,
         storyDetail:turn,
         freshStory:true,
@@ -27439,27 +27861,60 @@ const ACG = (()=>{
     }
     return null;
   }
+  // A listing prints its premise sentence in the synopsis, which is what makes
+  // the story recoverable from a listing generated on another device or in an
+  // earlier session. Exact text is not enough on its own: rewording a premise
+  // in the bank used to make every listing built from the old wording invisible
+  // here, and the story came straight back round. So a strong word overlap
+  // counts as a match too.
+  function phraseMatch(blob,phrase){
+    const target=clean(phrase);
+    if(!target)return false;
+    if(blob.includes(target))return true;
+    const words=target.split(" ").filter(w=>w.length>3);
+    if(words.length<4)return false;
+    let hits=0;
+    words.forEach(w=>{if(blob.indexOf(w)>-1)hits++;});
+    return hits/words.length>=0.75;
+  }
+  // Every history key a saved listing implies: its premise, the turn it used,
+  // and the pair of the two — the pair being the thing that must never repeat.
+  function mineStoryKeys(storyBlob){
+    const keys=[];
+    FILM_SEEDS.forEach(s=>{
+      if(!phraseMatch(storyBlob,s.p))return;
+      keys.push(clean("seed "+s.k));
+      const own=[s.h,s.h2].filter(Boolean);
+      own.concat(ALL_TURNS).forEach(t=>{
+        if(phraseMatch(storyBlob,t)){keys.push(clean("turn "+t));keys.push(clean("story "+s.k+" "+t));}
+      });
+    });
+    return keys;
+  }
+  // Used to backfill the durable log from listings that are already on the
+  // board, so history that predates the log is not lost.
+  function historyKeysFor(existing){
+    const out=new Set();
+    (existing||[]).forEach(c=>{
+      mineStoryKeys(clean(`${c.title||""} ${c.tagline||""} ${c.synopsis||""}`)).forEach(k=>out.add(k));
+    });
+    return [...out];
+  }
   function storyBaseKey(tpl){return fp(tpl.rootKey||tpl.titles&&tpl.titles[0]||tpl.type);}
-  function buildHistory(existing=[]){
+  // `seenKeys` is the durable story log read from the database — every seed,
+  // turn and premise+turn pair this generator has ever produced, including the
+  // ones whose drafts were deleted. Local storage only remembers this browser;
+  // that log remembers the site.
+  function buildHistory(existing=[],seenKeys=[]){
     const h={titles:localSet(LS_KEYS.titles),prods:localSet(LS_KEYS.prods),roles:localSet(LS_KEYS.roles),stories:localSet(LS_KEYS.stories),pays:localSet(LS_KEYS.pays),firsts:localSet(LS_KEYS.firsts),lasts:localSet(LS_KEYS.lasts),storyTexts:localSet(LS_KEYS.storyTexts),traits:localSet(LS_KEYS.traits),ages:localSet(LS_KEYS.ages),roleCounts:localSet(LS_KEYS.roleCounts),creatorKinds:localSet(LS_KEYS.creatorKinds),tags:localSet(LS_KEYS.tags),lines:localSet(LS_KEYS.lines)};
+    (seenKeys||[]).forEach(k=>addUsed(h.traits,k));
     (existing||[]).forEach(c=>{
       addUsed(h.titles,c.title);addUsed(h.prods,c.prod);addUsed(h.prods,c.posted_by_label);addUsed(h.pays,c.pay);addUsed(h.tags,c.tagline);splitLines(c.synopsis).forEach(s=>addUsed(h.lines,s));(c.roles||[]).forEach(r=>{if(r&&r.description)addUsed(h.lines,r.description);});
       addUsed(h.storyTexts,`${c.title||""} ${c.tagline||""} ${c.synopsis||""}`.slice(0,1200));
       addUsed(h.traits,"type "+c.type);
       addUsed(h.traits,`${c.type||""} ${c.location||""} ${(c.synopsis||"").slice(0,120)}`);
       const storyBlob=clean(`${c.title||""} ${c.tagline||""} ${c.synopsis||""}`);
-      // Every voice prints the seed's premise sentence verbatim somewhere in
-      // the synopsis, which is what makes a seed recoverable from a listing
-      // that was written on another device or in an earlier session. Finding it
-      // here is what stops the same source story being generated twice.
-      FILM_SEEDS.forEach(s=>{
-        if(!storyBlob.includes(clean(s.p)))return;
-        addUsed(h.traits,"seed "+s.k);
-        const own=[s.h,s.h2].filter(Boolean);
-        own.concat(ALL_TURNS).forEach(t=>{
-          if(storyBlob.includes(clean(t))){addUsed(h.traits,"turn "+t);addUsed(h.traits,"story "+s.k+" "+t);}
-        });
-      });
+      mineStoryKeys(storyBlob).forEach(k=>addUsed(h.traits,k));
       // Crew credits live inside the synopsis, so mine the names back out and
       // retire them — a director or casting director must never be reused.
       (String(c.synopsis||"").match(/\b[A-Z][a-z'’-]+ [A-Z][a-z'’-]+\b/g)||[]).forEach(n=>{
@@ -27490,7 +27945,7 @@ const ACG = (()=>{
       addUsed(titles,item.title);addUsed(prods,item.prod);addUsed(prods,item.posted_by_label);addUsed(pays,item.pay);addUsed(tags,item.tagline);(item._lines||[]).forEach(s=>addUsed(lines,s));
       addUsed(stories,item._baseKey);addUsed(stories,item._storyKey);addUsed(stories,item.title+" "+(item.synopsis||"").slice(0,180));
       addUsed(storyTexts,`${item.title||""} ${item.tagline||""} ${item.synopsis||""}`.slice(0,1200));
-      addUsed(traits,item._traitKey);addUsed(traits,item._settingKey);addUsed(traits,item._seedOnlyKey);addUsed(traits,item._catalystKey);addUsed(traits,"type "+item.type);addUsed(creatorKinds,item._creatorKind);
+      addUsed(traits,item._traitKey);addUsed(traits,item._settingKey);addUsed(traits,item._seedOnlyKey);addUsed(traits,item._turnKey);addUsed(traits,item._catalystKey);addUsed(traits,"type "+item.type);addUsed(creatorKinds,item._creatorKind);
       addUsed(roleCounts,item._roleCountKey);
       (item._roles||[]).forEach(r=>{addUsed(roles,r.name);addUsed(ages,r.age_range);const p=nameParts(r.name);if(p){addUsed(firsts,p.first);addUsed(lasts,p.last);}});
       // Crew credits are retired alongside character names so a director or
@@ -28471,6 +28926,7 @@ const ACG = (()=>{
       _creatorKind:tpl.creatorKind||null,
       _settingKey:tpl.settingKey||null,
       _seedOnlyKey:tpl.seedOnlyKey||null,
+      _turnKey:tpl.turnOnlyKey||null,
       _catalystKey:tpl.catalystKey||null,
       _crewNames:tpl.crewNames||[],
       _lines:tpl.lines||[],
@@ -28495,9 +28951,9 @@ const ACG = (()=>{
     if(strict&&(tooSimilarStory(storyText,h.storyTexts)||tooSimilarStory(storyText,res.storyTexts)))return false;
     return true;
   }
-  function generateBatch(adminUserId,existing=[],targetCount=5){
+  function generateBatch(adminUserId,existing=[],targetCount=5,seenKeys=[]){
     const count=Math.max(1,Math.floor(Number(targetCount)||5));
-    const h=buildHistory(existing);
+    const h=buildHistory(existing,seenKeys);
     const res={titles:new Set(),prods:new Set(),roles:new Set(),stories:new Set(),pays:new Set(),firsts:new Set(),lasts:new Set(),storyTexts:new Set(),traits:new Set(),ages:new Set(),roleCounts:new Set(),creatorKinds:new Set(),tags:new Set(),lines:new Set()};
     const out=[];
     let attempts=0;
@@ -28511,6 +28967,7 @@ const ACG = (()=>{
         addUsed(res.traits,item._traitKey);
         addUsed(res.traits,item._settingKey);
         addUsed(res.traits,item._seedOnlyKey);
+        addUsed(res.traits,item._turnKey);
         addUsed(res.traits,item._catalystKey);
         addUsed(res.roleCounts,item._roleCountKey);
         addUsed(res.creatorKinds,item._creatorKind);
@@ -28521,7 +28978,12 @@ const ACG = (()=>{
     rememberGenerated(out);
     return out;
   }
-  return{generateBatch};
+  // The keys a saved listing retires for good. Written to the database so the
+  // story stays spent no matter what happens to the draft afterwards.
+  function seenKeysFor(item){
+    return [item._seedOnlyKey,item._settingKey,item._turnKey].filter(Boolean).map(k=>clean(k)).filter(Boolean);
+  }
+  return{generateBatch,seenKeysFor,historyKeysFor};
 })();
 
 // ─── News Controls: show/hide the landing section, refresh the feed, manage
@@ -28733,23 +29195,41 @@ function AdminCastingGenerator({session}){
   const [sourceFilter,setSourceFilter]=useState("all");
   const [editDraft,setEditDraft]=useState(null);
   const [busy,setBusy]=useState(null);
+  // Every story key this generator has ever produced, read straight from the
+  // database. Deleting a draft must not hand its story back to the generator,
+  // and neither must generating from a different browser — so the log, not the
+  // casting list, is what a premise is checked against.
+  const [seenKeys,setSeenKeys]=useState([]);
 
   const showMsg=(m,dur=4000)=>{setMsg(m);if(dur)setTimeout(()=>setMsg(m2=>m2===m?"":m2),dur);};
 
   const loadAll=useCallback(async()=>{
     setLoading(true);
-    const [{data:ss},{data:cs,error:ce},{data:rs,error:re}]=await Promise.all([
+    const [{data:ss},{data:cs,error:ce},{data:rs,error:re},{data:sk,error:se}]=await Promise.all([
       window.sb.from("site_settings").select("casting_generator_enabled,casting_generator_last_run").eq("id",1).maybeSingle(),
       // NOTE: this list feeds the edit modal. Any column the editor writes MUST be
       // selected here, or the form loads it as undefined, renders blank, and the
       // next save writes NULL over good data. The editor also re-fetches its own
       // full row on open as a backstop, but keep this list complete regardless.
       window.sb.from("castings").select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,go_live_at,submission_requirements,synopsis,tagline,has_nudity,nudity_details,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope").order("created_at",{ascending:false}).limit(2000),
-      window.sb.from("roles").select("casting_id,name,description,gender,role_type,age_range,ethnicity,pay").limit(5000)
+      window.sb.from("roles").select("casting_id,name,description,gender,role_type,age_range,ethnicity,pay").limit(5000),
+      window.sb.from("casting_generator_seen").select("key").limit(50000)
     ]);
     if(ss){setGenEnabled(!!ss.casting_generator_enabled);setLastRun(ss.casting_generator_last_run);}
     if(ce)showMsg("Failed to load castings: "+ce.message);
     if(re)console.warn("[ACG] role history unavailable",re);
+    if(se)console.warn("[ACG] story log unavailable",se);
+    const logged=(sk||[]).map(r=>r.key).filter(Boolean);
+    // Listings that pre-date the log still count as told stories, so mine them
+    // and write anything missing back. Runs once in practice — after the first
+    // visit the log already holds them.
+    const mined=ACG.historyKeysFor(cs||[]);
+    const missing=mined.filter(k=>logged.indexOf(k)===-1);
+    setSeenKeys([...logged,...missing]);
+    if(missing.length){
+      window.sb.from("casting_generator_seen").upsert(missing.map(k=>({key:k,kind:"backfill"})),{onConflict:"key",ignoreDuplicates:true})
+        .then(({error})=>{if(error)console.warn("[ACG] story log backfill failed",error);});
+    }
     const byCasting={};
     (rs||[]).forEach(r=>{(byCasting[r.casting_id]||(byCasting[r.casting_id]=[])).push(r);});
     setListings((cs||[]).map(c=>({...c,roles:byCasting[c.id]||[]})));
@@ -28775,9 +29255,12 @@ function AdminCastingGenerator({session}){
       let ok=0;let fail=0;let rounds=0;
       const errors=[];
       const seenThisRun=[...(listings||[])];
+      // Grows as the run saves listings, so a second round of the same run
+      // cannot re-pick a story the first round just used.
+      const keysThisRun=[...(seenKeys||[])];
       while(ok<target&&rounds<5){
         rounds++;
-        const batch=ACG.generateBatch(adminId,seenThisRun,target-ok);
+        const batch=ACG.generateBatch(adminId,seenThisRun,target-ok,keysThisRun);
         if(!batch.length)break;
         for(const raw of batch){
           if(ok>=target)break;
@@ -28813,6 +29296,14 @@ function AdminCastingGenerator({session}){
           }
           ok++;
           seenThisRun.push({...raw,id:cData.id,roles});
+          // Retire this story permanently. A failure here is logged, not fatal —
+          // the listing itself saved fine and local history still covers it.
+          const usedKeys=ACG.seenKeysFor(raw);
+          keysThisRun.push(...usedKeys);
+          if(usedKeys.length){
+            const {error:kErr}=await window.sb.from("casting_generator_seen").upsert(usedKeys.map(k=>({key:k,kind:"story"})),{onConflict:"key",ignoreDuplicates:true});
+            if(kErr)console.warn("[ACG] story log write failed",kErr);
+          }
         }
       }
       if(ok>0)await window.sb.rpc("admin_record_casting_generator_run");
@@ -28880,9 +29371,15 @@ function AdminCastingGenerator({session}){
     if(!confirm(`Regenerate "${c.title}"?\n\nThis will replace the title, description, roles, location, and compensation with a freshly generated draft. Your manual edits will be lost.`))return;
     if(!adminId)return;
     const key=c.id+":regen";setBusy(key);
-    const batch=ACG.generateBatch(adminId,listings.filter(x=>x.id!==c.id),1);
+    const batch=ACG.generateBatch(adminId,listings.filter(x=>x.id!==c.id),1,seenKeys);
     const fresh=batch[0];
     const freshRoles=fresh._roles||[];
+    const regenKeys=ACG.seenKeysFor(fresh);
+    if(regenKeys.length){
+      setSeenKeys(prev=>[...prev,...regenKeys]);
+      const {error:kErr}=await window.sb.from("casting_generator_seen").upsert(regenKeys.map(k=>({key:k,kind:"story"})),{onConflict:"key",ignoreDuplicates:true});
+      if(kErr)console.warn("[ACG] story log write failed",kErr);
+    }
     Object.keys(fresh).forEach(k=>{if(k[0]==="_")delete fresh[k];});
     const {error}=await window.sb.from("castings").update({
       title:fresh.title,type:fresh.type,prod:fresh.prod,posted_by_label:fresh.posted_by_label,casting_director_name:fresh.casting_director_name||fresh.posted_by_label||fresh.prod,
