@@ -12712,6 +12712,47 @@ function castingIsScheduled(casting){
 // publishes as soon as the casting is approved / published.
 function defaultGoLiveNYLocal(){return utcISOToNYLocal(new Date().toISOString());}
 
+// Go-live picker. A single <input type="datetime-local"> looks different in every
+// browser: Chrome's popup carries a time list, Firefox's popup is a calendar only
+// and the time has to be typed into the greyed "--:-- --" half of the same field,
+// which reads as "the clock disappeared". So the two halves are separate controls
+// here — a date input and a time input, both always visible and identical in every
+// browser — plus one-tap presets for the times a casting actually goes live at.
+// The value handed back is unchanged: "YYYY-MM-DDTHH:mm" New York wall time, which
+// is what nyLocalToUTCISO expects.
+const GO_LIVE_PRESETS=[["6:00 AM","06:00"],["9:00 AM","09:00"],["Noon","12:00"],["6:00 PM","18:00"]];
+function GoLiveField({value,onChange,allowClear}){
+  const v=String(value||"");
+  const datePart=v.slice(0,10);
+  const timePart=v.length>=16?v.slice(11,16):"";
+  const set=(d,t)=>{
+    if(!d&&!t){onChange("");return;}
+    // Half an answer is not a time: fill the other half with a sensible default
+    // rather than handing back a string nyLocalToUTCISO will reject.
+    const day=d||defaultGoLiveNYLocal().slice(0,10);
+    const time=t||"09:00";
+    onChange(`${day}T${time}`);
+  };
+  return (
+    <div>
+      <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+        <input className="input" type="date" value={datePart} onChange={e=>set(e.target.value,timePart)} style={{flex:"1 1 170px",minWidth:150}}/>
+        <input className="input" type="time" step="60" value={timePart} onChange={e=>set(datePart,e.target.value)} style={{flex:"0 1 140px",minWidth:120}} aria-label="Go live time (New York)"/>
+        {allowClear&&v&&<button type="button" className="btn-s btn-sm" onClick={()=>onChange("")}>Clear</button>}
+      </div>
+      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
+        {GO_LIVE_PRESETS.map(([lbl,t])=>(
+          <button type="button" key={t} onClick={()=>set(datePart,t)}
+            style={{fontSize:11,padding:"4px 10px",borderRadius:999,border:"1px solid var(--bdr)",cursor:"pointer",fontWeight:600,
+                    background:timePart===t?"var(--acc)":"var(--s2)",color:timePart===t?"#fff":"var(--t2)"}}>{lbl}</button>
+        ))}
+        <button type="button" onClick={()=>onChange(defaultGoLiveNYLocal())}
+          style={{fontSize:11,padding:"4px 10px",borderRadius:999,border:"1px solid var(--bdr)",cursor:"pointer",fontWeight:600,background:"var(--s2)",color:"var(--t2)"}}>Right now</button>
+      </div>
+    </div>
+  );
+}
+
 // The posted date a casting displays is created_at. Stamping it "now" at publish
 // is correct for something going live immediately, but wrong for a scheduled
 // one: publish on Aug 19 with a go-live of Aug 20 6am and the casting appears on
@@ -19039,10 +19080,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     </div>
     <div className="form-group">
       <label className="label">Go Live Date &amp; Time <span style={{fontWeight:500,color:"var(--t3)"}}>(optional)</span> <span style={{display:"inline-block",marginLeft:6,fontSize:10,fontWeight:800,letterSpacing:0.4,color:"var(--acc)",background:"rgba(var(--acc-rgb,100,149,237),0.12)",borderRadius:99,padding:"2px 8px",textTransform:"uppercase"}}>New York Time</span></label>
-      <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-        <input className="input" type="datetime-local" value={f.go_live_at||""} onChange={e=>setField("go_live_at",e.target.value)} style={{flex:1,minWidth:200}}/>
-        {f.go_live_at&&<button type="button" className="btn-s btn-sm" onClick={()=>setField("go_live_at","")}>Clear</button>}
-      </div>
+      <GoLiveField value={f.go_live_at||""} onChange={v=>setField("go_live_at",v)} allowClear={true}/>
       <p style={{fontSize:11,color:"var(--t3)",marginTop:4,lineHeight:1.5}}>Optional. Set a future <strong>New York time (ET)</strong> to schedule when this casting goes public — it stays hidden until then, then goes live automatically. Leave blank to keep it live now.</p>
     </div>
     <div className="form-group">
@@ -19441,7 +19479,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
 
       <div className="form-group">
         <label className="label">Go Live Date &amp; Time <span style={{color:"#c0392b"}}>*</span> <span style={{display:"inline-block",marginLeft:6,fontSize:10,fontWeight:800,letterSpacing:0.4,color:"var(--acc)",background:"rgba(var(--acc-rgb,100,149,237),0.12)",borderRadius:99,padding:"2px 8px",textTransform:"uppercase"}}>New York Time</span></label>
-        <input className="input" type="datetime-local" value={f.go_live_at||""} onChange={e=>setField("go_live_at",e.target.value)}/>
+        <GoLiveField value={f.go_live_at||""} onChange={v=>setField("go_live_at",v)} allowClear={false}/>
         <p style={{fontSize:11,color:"var(--t3)",marginTop:4,lineHeight:1.5}}>Choose exactly when this casting becomes visible to the public. It stays hidden until this moment, then goes live automatically. All times are <strong>New York time (ET)</strong>. Leave as now to publish as soon as it's approved.</p>
       </div>
       <div className="form-group">
@@ -30021,7 +30059,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
 
       <div className="form-group" style={{gridColumn:"1 / -1"}}>
         <label className="label">Go Live Date &amp; Time <span style={{display:"inline-block",marginLeft:6,fontSize:10,fontWeight:800,letterSpacing:0.4,color:"var(--acc)",background:"rgba(var(--acc-rgb,100,149,237),0.12)",borderRadius:99,padding:"2px 8px",textTransform:"uppercase"}}>New York Time</span></label>
-        <input className="input" type="datetime-local" value={form.go_live_at||""} onChange={e=>set("go_live_at",e.target.value)}/>
+        <GoLiveField value={form.go_live_at||""} onChange={v=>set("go_live_at",v)} allowClear={true}/>
         <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Schedule when this listing becomes public. It stays hidden until this moment (even after you publish), then goes live automatically. All times are <strong>New York time (ET)</strong>. Leave blank to go live immediately when published.</p></div>
 
       <div className="form-group"><label className="label">Status</label>
@@ -35443,7 +35481,7 @@ function EditCastingModal({casting,onClose,onSaved}){
     </div>
     <div className="form-group">
       <label className="label">Go Live Date &amp; Time <span style={{display:"inline-block",marginLeft:6,fontSize:10,fontWeight:800,letterSpacing:0.4,color:"var(--acc)",background:"rgba(var(--acc-rgb,100,149,237),0.12)",borderRadius:99,padding:"2px 8px",textTransform:"uppercase"}}>New York Time</span></label>
-      <input className="input" type="datetime-local" value={f.go_live_at||""} onChange={e=>setField("go_live_at",e.target.value)}/>
+      <GoLiveField value={f.go_live_at||""} onChange={v=>setField("go_live_at",v)} allowClear={true}/>
       <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>When this casting becomes public. It stays hidden until this moment, then goes live automatically. All times are <strong>New York time (ET)</strong>. Leave blank to keep it live immediately.</p>
     </div>
     <div className="form-group" style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 14px"}}>
