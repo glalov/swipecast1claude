@@ -374,49 +374,56 @@ function newActorWelcomeHtml(firstName: string): string {
 </body></html>`;
 }
 
-function applicationSelectedHtml(firstName: string, projectName?: string, roleName?: string, cdName?: string): string {
-  const forRole = roleName ? ` for <strong>${esc(roleName)}</strong>` : "";
-  const reviewer = cdName ? `<strong>${esc(cdName)}</strong>` : "A casting director";
-  const title = projectName ? `${esc(projectName)}${roleName ? ` &middot; ${esc(roleName)}` : ""}` : "";
-  return emailShell({
-    tone: "green", foil: true, tag: "Shortlisted", heading: "You've been shortlisted",
-    body: `${reviewer} shortlisted you${forRole}. Your submission stood out — you're on the short list to move forward.`,
-    mid: projectName ? csBlock("green", "Shortlisted", title) : undefined,
-    cta: "View my applications", href: "/talent-dashboard",
-    foot: "You're receiving this because a casting director took action on one of your submissions.",
-  });
-}
-
-// Hold / "under consideration". This one deliberately does NOT use emailShell:
-// the approved design is a solid emerald stripe, a two-line serif headline with a
-// badge beside it and a dark footer band, which the shared cream shell cannot
-// express without changing the other seven emails. Everything else about it —
-// cream paper, Georgia headline, the tone-keyed card — still matches the family.
+// ── Casting-decision emails (shortlist + hold) ─────────────────────────────
+// These two deliberately do NOT use emailShell: the approved design is a solid
+// colour stripe, a two-line serif headline with a badge beside it and a dark
+// footer band, which the shared cream shell cannot express without changing the
+// other six emails. Everything else still matches the family — cream paper,
+// Georgia headline, a tinted detail card.
+//
+// The two must stay visually distinct: shortlisted (the win) is sapphire with a
+// star, hold (still deciding) is emerald with a check. Same colour for both would
+// make the best news and the "no decision yet" news look identical in the inbox.
+//
+// Stripe colours are always LIGHTER and more saturated than the navy cube in the
+// masthead — on a midnight-navy stripe the mark stops separating from it.
 //
 // Mobile: the only two rows that can run out of room are the two-column ones
 // (mark | "Casting update", headline | badge). Both collapse under 480px via the
 // <style> block, and nothing anywhere is a fixed pixel width, so a client that
 // strips <style> merely wraps instead of overflowing. Outlook gets a conditional
 // 560px wrapper (it ignores max-width) and the solid colour behind every gradient.
-const HOLD = {
-  band: "#0F5A3C", band2: "#17805A", foot: "#0B4A31",
-  onDark: "#7FE3B0",          // accent that sits on the emerald stripe / footer
-  onCream: "#17805A",         // darker sibling for the headline word on cream (contrast)
-  kicker: "#1E7A54", card: "#EAF7F0", cardBd: "#CFEADD", cta: "#116549",
+interface DecisionTone {
+  band: string; band2: string; foot: string;
+  onDark: string;   // accent that sits ON the stripe / footer band
+  onCream: string;  // darker sibling for the headline word (contrast on cream)
+  rule: string; rule0: string;   // rule mid-tone, and the same hue at zero alpha to fade into
+  kicker: string; card: string; cardBd: string; cta: string;
+  badge: string;    // filename of the hexagon badge PNG
+  bell: string;     // filename of the footer bell PNG, tinted to match
+}
+const SHORTLIST_TONE: DecisionTone = {
+  band: "#1C46A8", band2: "#2A62D8", foot: "#153784",
+  onDark: "#A6C6FF", onCream: "#1F4FBB", rule: "#3E75DD", rule0: "rgba(28,70,168,0)",
+  kicker: "#1F4FBB", card: "#EDF3FE", cardBd: "#D6E3FA", cta: "#1C46A8",
+  badge: "email-shortlist-badge.png", bell: "email-bell-sapphire.png",
 };
-function applicationHoldHtml(firstName: string, projectName?: string, roleName?: string, cdName?: string): string {
-  const H = HOLD;
-  const forRole  = roleName ? ` for <strong>${esc(roleName)}</strong>` : "";
-  const reviewer = cdName ? `<strong>${esc(cdName)}</strong>` : "A casting director";
-  const title    = projectName ? `${esc(projectName)}${roleName ? ` &middot; ${esc(roleName)}` : ""}` : "";
-  const body = `${reviewer} opened your submission${forRole} and moved you to under consideration ` +
-               `&mdash; you're still in for the role while they finalize casting. Nothing is needed from you right now.`;
-  const card = projectName ? `
+const HOLD_TONE: DecisionTone = {
+  band: "#0F5A3C", band2: "#17805A", foot: "#0B4A31",
+  onDark: "#7FE3B0", onCream: "#17805A", rule: "#2E9B6C", rule0: "rgba(15,90,60,0)",
+  kicker: "#1E7A54", card: "#EAF7F0", cardBd: "#CFEADD", cta: "#116549",
+  badge: "email-hold-badge.png", bell: "email-bell.png",
+};
+
+interface DecisionArgs { tone: DecisionTone; headTop: string; headAccent: string; body: string; title: string; }
+function decisionEmail(a: DecisionArgs): string {
+  const t = a.tone;
+  const card = a.title ? `
         <tr><td class="cs-pad" style="padding:24px 30px 0">
           <table width="100%" cellpadding="0" cellspacing="0"><tr>
-            <td style="background:${H.card};border:1px solid ${H.cardBd};border-radius:12px;padding:18px 20px">
-              <div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${H.kicker};margin:0 0 8px">Your submission</div>
-              <div style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:700;color:#1A1A2E;line-height:1.3">${title}</div>
+            <td style="background:${t.card};border:1px solid ${t.cardBd};border-radius:12px;padding:18px 20px">
+              <div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${t.kicker};margin:0 0 8px">Your submission</div>
+              <div style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:700;color:#1A1A2E;line-height:1.3">${a.title}</div>
             </td></tr></table>
         </td></tr>` : "";
 
@@ -442,41 +449,41 @@ function applicationHoldHtml(firstName: string, projectName?: string, roleName?:
   <!--[if mso]><table width="560" cellpadding="0" cellspacing="0"><tr><td><![endif]-->
     <table width="100%" cellpadding="0" cellspacing="0" style="width:100%;max-width:560px;background:#FCFAF7;border-radius:16px;overflow:hidden;box-shadow:0 1px 0 #EAE2D1">
 
-      <tr><td class="cs-pad" style="background:${H.band};background:linear-gradient(115deg,${H.band2} 0%,${H.band} 62%,${H.band2} 100%);padding:22px 30px">
+      <tr><td class="cs-pad" style="background:${t.band};background:linear-gradient(115deg,${t.band2} 0%,${t.band} 62%,${t.band2} 100%);padding:22px 30px">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
           <td style="vertical-align:middle"><table cellpadding="0" cellspacing="0"><tr>
             <td style="vertical-align:middle;padding-right:14px"><img class="cs-mark" src="${APP_URL}/logo-email-tile.png" width="46" height="46" alt="CastSlate" style="display:block;border-radius:11px"/></td>
             <td style="vertical-align:middle"><span class="cs-word" style="font-size:24px;font-weight:800;letter-spacing:1.7px;color:#FFFFFF;white-space:nowrap">CASTSLATE</span></td>
           </tr></table></td>
-          <td class="cs-kicker" align="right" style="vertical-align:middle;padding-left:18px"><span style="font-size:10px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:${H.onDark}">Casting update</span></td>
+          <td class="cs-kicker" align="right" style="vertical-align:middle;padding-left:18px"><span style="font-size:10px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:${t.onDark}">Casting update</span></td>
         </tr></table>
       </td></tr>
 
-      <tr><td style="height:4px;line-height:4px;font-size:0;background:#2E9B6C;background:linear-gradient(90deg,${H.onDark},#2E9B6C 52%,rgba(15,90,60,0))">&nbsp;</td></tr>
+      <tr><td style="height:4px;line-height:4px;font-size:0;background:${t.rule};background:linear-gradient(90deg,${t.onDark},${t.rule} 52%,${t.rule0})">&nbsp;</td></tr>
 
       <tr><td class="cs-pad" style="padding:34px 30px 0">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
           <td style="vertical-align:top">
-            <h1 class="cs-h1" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:31px;font-weight:700;color:#1A1A2E;letter-spacing:-0.5px;line-height:1.22">Your profile was<br/><span style="color:${H.onCream}">reviewed</span></h1>
+            <h1 class="cs-h1" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:31px;font-weight:700;color:#1A1A2E;letter-spacing:-0.5px;line-height:1.22">${a.headTop}<br/><span style="color:${t.onCream}">${a.headAccent}</span></h1>
           </td>
           <td class="cs-badge-cell" align="right" style="vertical-align:top;width:112px">
-            <img class="cs-badge" src="${APP_URL}/email-hold-badge.png" width="104" height="80" alt="" style="display:block;border:0"/>
+            <img class="cs-badge" src="${APP_URL}/${t.badge}" width="104" height="80" alt="" style="display:block;border:0"/>
           </td>
         </tr></table>
       </td></tr>
 
-      <tr><td class="cs-pad" style="padding:20px 30px 0"><p style="margin:0;font-size:15px;line-height:1.78;color:#5A5A72">${body}</p></td></tr>
+      <tr><td class="cs-pad" style="padding:20px 30px 0"><p style="margin:0;font-size:15px;line-height:1.78;color:#5A5A72">${a.body}</p></td></tr>
 ${card}
       <tr><td class="cs-pad cs-cta" style="padding:26px 30px 34px">
-        <table cellpadding="0" cellspacing="0"><tr><td style="background:${H.cta};border-radius:11px">
+        <table cellpadding="0" cellspacing="0"><tr><td style="background:${t.cta};border-radius:11px">
           <a href="${APP_URL}/talent-dashboard" style="display:inline-block;padding:16px 34px;font-size:14.5px;font-weight:800;letter-spacing:0.2px;color:#FFFFFF;text-decoration:none">View my applications &nbsp;&rarr;</a>
         </td></tr></table>
       </td></tr>
 
-      <tr><td class="cs-pad" style="background:${H.foot};padding:22px 30px">
+      <tr><td class="cs-pad" style="background:${t.foot};padding:22px 30px">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
-          <td style="vertical-align:top;width:38px;padding-top:2px"><img src="${APP_URL}/email-bell.png" width="26" height="26" alt="" style="display:block;border:0"/></td>
-          <td style="vertical-align:top"><p style="margin:0;font-size:12px;line-height:1.75;color:rgba(255,255,255,0.70)">You're receiving this because a casting director took action on one of your submissions.<br/>Manage notifications in <a href="${APP_URL}/account-settings" style="color:${H.onDark};text-decoration:none;font-weight:700">Account Settings</a>.</p></td>
+          <td style="vertical-align:top;width:38px;padding-top:2px"><img src="${APP_URL}/${t.bell}" width="26" height="26" alt="" style="display:block;border:0"/></td>
+          <td style="vertical-align:top"><p style="margin:0;font-size:12px;line-height:1.75;color:rgba(255,255,255,0.70)">You're receiving this because a casting director took action on one of your submissions.<br/>Manage notifications in <a href="${APP_URL}/account-settings" style="color:${t.onDark};text-decoration:none;font-weight:700">Account Settings</a>.</p></td>
         </tr></table>
       </td></tr>
 
@@ -484,6 +491,31 @@ ${card}
   <!--[if mso]></td></tr></table><![endif]-->
   </td></tr></table>
 </body></html>`;
+}
+
+function applicationSelectedHtml(firstName: string, projectName?: string, roleName?: string, cdName?: string): string {
+  const forRole  = roleName ? ` for <strong>${esc(roleName)}</strong>` : "";
+  const reviewer = cdName ? `<strong>${esc(cdName)}</strong>` : "A casting director";
+  const title    = projectName ? `${esc(projectName)}${roleName ? ` &middot; ${esc(roleName)}` : ""}` : "";
+  return decisionEmail({
+    tone: SHORTLIST_TONE,
+    headTop: "You&rsquo;ve been", headAccent: "shortlisted",
+    body: `${reviewer} shortlisted you${forRole}. Your submission stood out &mdash; you're on the short list to move forward.`,
+    title,
+  });
+}
+
+function applicationHoldHtml(firstName: string, projectName?: string, roleName?: string, cdName?: string): string {
+  const forRole  = roleName ? ` for <strong>${esc(roleName)}</strong>` : "";
+  const reviewer = cdName ? `<strong>${esc(cdName)}</strong>` : "A casting director";
+  const title    = projectName ? `${esc(projectName)}${roleName ? ` &middot; ${esc(roleName)}` : ""}` : "";
+  return decisionEmail({
+    tone: HOLD_TONE,
+    headTop: "Your profile was", headAccent: "reviewed",
+    body: `${reviewer} opened your submission${forRole} and moved you to under consideration ` +
+          `&mdash; you're still in for the role while they finalize casting. Nothing is needed from you right now.`,
+    title,
+  });
 }
 
 function activityDigestHtml(firstName: string, profileViews: number, tapeViews: number, shortlists: number): string {
