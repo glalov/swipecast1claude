@@ -12696,20 +12696,22 @@ function castingTopRate(casting){
     roles.forEach(r=>{if(r&&r.rate_unit&&Number(r.rate_amount)>0)units[r.rate_unit]=(units[r.rate_unit]||0)+1;});
     const unit=Object.keys(units).sort((a,b)=>units[b]-units[a])[0]||"day";
     const money=n=>"$"+Number(n).toLocaleString();
-    return hi===lo?`${money(hi)}/${unit}`:`Up to ${money(hi)}/${unit}`;
+    return{text:hi===lo?`${money(hi)}/${unit}`:`Up to ${money(hi)}/${unit}`,money:true};
   }
-  // No structured rates — fall back to the written pay line, shortened.
+  // No structured rates — fall back to the written pay line. Only a real figure
+  // earns the solid green chip; a truncated sentence in it reads as a bug, so
+  // prose comes back flagged and renders in a neutral chip instead.
   const raw=String((casting&&casting.pay)||"").trim();
   if(!raw)return null;
-  if(/^\s*(unpaid|copy|credit|deferred)/i.test(raw))return "Copy & credit";
+  if(/^\s*(unpaid|copy|credit|deferred)/i.test(raw))return{text:"Copy & credit",money:false};
   const nums=raw.match(/\$\s?[\d,]+(?:\.\d+)?/g);
   if(nums&&nums.length){
     const val=n=>Number(String(n).replace(/[^\d.]/g,""));
     const hi=Math.max(...nums.map(val));
     const per=/per week|\/week/i.test(raw)?"/week":/per session|\/session/i.test(raw)?"/session":/per day|\/day/i.test(raw)?"/day":"";
-    return (nums.length>1?"Up to ":"")+"$"+hi.toLocaleString()+per;
+    return{text:(nums.length>1?"Up to ":"")+"$"+hi.toLocaleString()+per,money:true};
   }
-  return raw.length>26?raw.slice(0,26).trim()+"…":raw;
+  return{text:raw.length>30?raw.slice(0,30).trim()+"…":raw,money:false};
 }
 // Lead first, then Supporting, then the rest. Background is counted in the
 // total but kept out of the pills — nobody scans a board for atmosphere work.
@@ -13256,7 +13258,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                     return(
                       <div className="cc-strip">
                         {roleCount>0&&<span className="cc-chip roles">{roleCount===1?`1 ${t('search.role')}`:`${roleCount} ${t('search.roles')}`}</span>}
-                        {rateLine&&<span className="cc-chip pay">{rateLine}</span>}
+                        {rateLine&&<span className={"cc-chip"+(rateLine.money?" pay":"")}>{rateLine.text}</span>}
                         {isArchived
                           ?<span className="cc-chip soon">Role filled — no longer accepting</span>
                           :cdn&&!cdn.expired
