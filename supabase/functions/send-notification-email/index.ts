@@ -1,6 +1,11 @@
 // send-notification-email — Supabase Edge Function
 // Sends transactional notifications via email (Resend or Amazon SES) and Twilio (SMS).
 //
+// ⚠ BEFORE DEPLOYING: diff this file against the DEPLOYED function first. Edits have been
+// made directly to the live function without coming back here, and a blind deploy from the
+// repo has already been one keystroke away from removing the authorization gate below and
+// reverting the standardized #f0f4f4 surrounds. Fetch the live source, diff, reconcile.
+//
 // AUTHORIZATION: this endpoint used to accept anonymous POSTs, so anyone who knew the URL
 // could send mail to any user id. Callers must now present one of: the shared
 // notify_fn_secret (the database functions, via public.notify_fn_secret()), the service
@@ -247,7 +252,7 @@ function weeklyCheckinHtml(firstName: string, task?: string): string {
     body: "Your personalized Manager Mode check-in is waiting in your inbox — one focused step to keep you castable this week.",
     mid: task ? csBlock("amber", "This week's task", esc(task)) : undefined,
     cta: "Open my note", href: "/inbox",
-    foot: "You're receiving this because you're a CastSlate Premium member with Manager Mode.",
+    foot: "You're receiving this because Manager Mode is on for your account.",
   });
 }
 
@@ -261,8 +266,8 @@ function premiumWelcomeHtml(firstName: string): string {
         <td valign="top" style="padding-left:14px"><div style="font-size:15px;font-weight:800;color:#2d1052;margin:0 0 3px">${title}</div><div style="font-size:14px;line-height:1.6;color:#555">${body}</div></td>
       </tr></table>
     </td></tr>`;
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="margin:0;padding:0;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f7;padding:40px 20px"><tr><td align="center">
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="margin:0;padding:0;background:#f0f4f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f4;padding:40px 20px"><tr><td align="center">
     <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;width:100%">
       <tr><td style="background:#dfd6f2;background:linear-gradient(110deg,#bcd0f0 0%,#c7bdea 26%,#d9bce6 46%,#f2c0cf 66%,#f8ccb6 85%,#f6d6ac 100%);padding:34px 36px 32px">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
@@ -284,7 +289,7 @@ function premiumWelcomeHtml(firstName: string): string {
       </td></tr>
       <tr><td style="padding:0 36px 8px">
         <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0 10px">
-          ${card("📅", "Manager Mode — your weekly check-in", "Every week (usually Monday–Wednesday) you'll get one focused task to improve your profile and stay castable. Keep an eye out for it at the start of the week — small steps each week add up fast.")}
+          ${card("📅", "Manager Mode — your weekly check-in", "Every week (usually Monday–Wednesday) you'll get one focused task to improve your profile and stay castable, waiting for you in your CastSlate inbox. Sign in to read it — small steps each week add up fast.")}
           ${card("📸", "Upload everything you can", "Add as many photos and headshots as possible, fill out <strong>all</strong> your stats, and record your <strong>'Cast Me As'</strong> videos and your <strong>7-second Actor's Slate</strong>. A full profile is what makes casting directors stop and look.")}
           ${card("🎞️", "Unlimited storage", "Upload demo reels, video clips, and photos with no limits — build the most complete picture of your range.")}
           ${card("💬", "Message casting directors", "Send video messages directly to CDs, right from the platform.")}
@@ -314,8 +319,8 @@ function newActorWelcomeHtml(firstName: string): string {
       </tr></table>
     </td></tr>`;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head>
-<body style="margin:0;padding:0;background:#f5f6f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f6f6;padding:40px 20px"><tr><td align="center">
+<body style="margin:0;padding:0;background:#f0f4f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f4;padding:40px 20px"><tr><td align="center">
     <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;width:100%">
 
       <tr><td style="background:#4F8A8B;background:linear-gradient(135deg,#2f5f60 0%,#4F8A8B 55%,#5fa0a1 100%);border-top:3px solid #6fb0b1;padding:34px 36px 32px">
