@@ -1,5 +1,20 @@
 // send-notification-email — Supabase Edge Function
 // Sends transactional notifications via email (Resend or Amazon SES) and Twilio (SMS).
+//
+// AUTHORIZATION: this endpoint used to accept anonymous POSTs, so anyone who knew the URL
+// could send mail to any user id. Callers must now present one of: the shared
+// notify_fn_secret (the database functions, via public.notify_fn_secret()), the service
+// role key (weekly-checkin-run), or a signed-in user's JWT (the app itself). verify_jwt
+// stays false because the DB callers are not JWT-bearing — the check below is the gate.
+//
+// PREMIUM MEMBERS RECEIVE EMAIL NORMALLY — inbox messages, shortlists, holds, class and
+// event invitations, booking updates, activity recaps, and the premium welcome all send
+// exactly as they do for free accounts. Exactly ONE type is withheld:
+//   • 'weekly_checkin' — the Manager Mode weekly note lives in the member's inbox on the
+//     site and is read there. Emailing it was what turned a quiet week into a
+//     cancellation, so the note is delivered in-app and never mailed.
+// The daily CASTING digest is also premium-free, but that is enforced elsewhere — in the
+// get_digest_emails() RPC, which omits active members — not here.
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -20,6 +35,10 @@ const EMAIL_PROVIDER        = (Deno.env.get("EMAIL_PROVIDER") ?? "resend").toLow
 const AWS_ACCESS_KEY_ID     = Deno.env.get("AWS_ACCESS_KEY_ID");
 const AWS_SECRET_ACCESS_KEY = Deno.env.get("AWS_SECRET_ACCESS_KEY");
 const AWS_SES_REGION        = Deno.env.get("AWS_SES_REGION") ?? Deno.env.get("AWS_REGION") ?? "us-east-1";
+
+// The only notification types withheld from a paying member. Everything not listed here
+// reaches them exactly as it reaches a free account.
+const PREMIUM_EMAIL_BLOCKED = new Set(["weekly_checkin"]);
 
 function emailConfigured(): boolean {
   return EMAIL_PROVIDER === "ses"
@@ -146,15 +165,15 @@ function emailShell(a: ShellArgs): string {
     : `<table cellpadding="0" cellspacing="0"><tr><td style="background:${t.solid};border-radius:10px"><a href="${APP_URL}${a.href}" style="display:inline-block;padding:15px 36px;font-size:14px;font-weight:800;letter-spacing:.2px;color:#FBF8F1;text-decoration:none">${a.cta} &rarr;</a></td></tr></table>`;
   const greet = a.greeting ? `<p style="margin:0 0 12px;font-size:15px;line-height:1.7;color:#5A5A72">${a.greeting}</p>` : "";
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head>
-<body style="margin:0;padding:0;background:#EFE9DD;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#EFE9DD;padding:36px 22px"><tr><td align="center">
+<body style="margin:0;padding:0;background:#f0f4f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f4;padding:36px 22px"><tr><td align="center">
     <table width="560" cellpadding="0" cellspacing="0" style="width:100%;max-width:560px;background:#FBF8F1;border-radius:16px;overflow:hidden;box-shadow:0 1px 0 #EAE2D1">
-      <tr><td style="background:${t.solid};background:${t.grad};padding:26px 36px 24px">
-        <table width="100%" cellpadding="0" cellspacing="0"><tr>
-          <td style="vertical-align:middle">${csLogo()}<span style="display:inline-block;vertical-align:middle;margin-left:12px;font-size:20px;font-weight:800;letter-spacing:-0.3px;color:#FBF8F1">CastSlate</span></td>
-          <td align="right">${pill}</td>
+      <tr><td style="background:${t.solid};background:${t.grad};padding:24px 36px 22px">
+        <table cellpadding="0" cellspacing="0"><tr>
+          <td style="vertical-align:middle;white-space:nowrap">${csLogo()}<span style="display:inline-block;vertical-align:middle;margin-left:12px;font-size:20px;font-weight:800;letter-spacing:-0.3px;color:#FBF8F1">CastSlate</span></td>
         </tr></table>
-        <div style="height:2px;background:${rule};margin-top:22px"></div>
+        <div style="margin-top:16px">${pill}</div>
+        <div style="height:2px;background:${rule};margin-top:18px"></div>
       </td></tr>
       <tr><td style="padding:34px 36px 10px">
         <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:700;color:#1A1A2E;letter-spacing:-0.4px;line-height:1.18">${a.heading}</h1>
@@ -337,7 +356,7 @@ function newActorWelcomeHtml(firstName: string): string {
       <tr><td style="padding:0 36px 30px">
         <div style="background:#f4f9f9;border:1px dashed #bfdcdc;border-radius:12px;padding:16px 18px">
           <div style="font-size:13px;font-weight:800;color:#1A1A2E;margin:0 0 4px">Want to move faster?</div>
-          <div style="font-size:13.5px;line-height:1.6;color:#555">Premium plans start at $8.25/month and unlock <strong>unlimited submissions</strong>, unlimited photos &amp; videos, your Actor's Slate, and an Actor Business Card with a QR code. Start free — upgrade whenever you're ready.</div>
+          <div style="font-size:13.5px;line-height:1.6;color:#555">Premium ($9.99/mo) unlocks <strong>unlimited submissions</strong>, unlimited photos &amp; videos, your Actor's Slate, and an Actor Business Card with a QR code. Start free — upgrade whenever you're ready.</div>
         </div>
       </td></tr>
 
@@ -363,20 +382,103 @@ function applicationSelectedHtml(firstName: string, projectName?: string, roleNa
   });
 }
 
-// Hold / "under consideration" — softer sibling of the shortlist email. Fired
-// when a casting director moves an actor to Hold. Encouraging but deliberately
-// does NOT promise a callback (that's what the shortlist email is for).
+// Hold / "under consideration". This one deliberately does NOT use emailShell:
+// the approved design is a solid emerald stripe, a two-line serif headline with a
+// badge beside it and a dark footer band, which the shared cream shell cannot
+// express without changing the other seven emails. Everything else about it —
+// cream paper, Georgia headline, the tone-keyed card — still matches the family.
+//
+// Mobile: the only two rows that can run out of room are the two-column ones
+// (mark | "Casting update", headline | badge). Both collapse under 480px via the
+// <style> block, and nothing anywhere is a fixed pixel width, so a client that
+// strips <style> merely wraps instead of overflowing. Outlook gets a conditional
+// 560px wrapper (it ignores max-width) and the solid colour behind every gradient.
+const HOLD = {
+  band: "#0F5A3C", band2: "#17805A", foot: "#0B4A31",
+  onDark: "#7FE3B0",          // accent that sits on the emerald stripe / footer
+  onCream: "#17805A",         // darker sibling for the headline word on cream (contrast)
+  kicker: "#1E7A54", card: "#EAF7F0", cardBd: "#CFEADD", cta: "#116549",
+};
 function applicationHoldHtml(firstName: string, projectName?: string, roleName?: string, cdName?: string): string {
-  const forRole = roleName ? ` for <strong>${esc(roleName)}</strong>` : "";
+  const H = HOLD;
+  const forRole  = roleName ? ` for <strong>${esc(roleName)}</strong>` : "";
   const reviewer = cdName ? `<strong>${esc(cdName)}</strong>` : "A casting director";
-  const title = projectName ? `${esc(projectName)}${roleName ? ` &middot; ${esc(roleName)}` : ""}` : "";
-  return emailShell({
-    tone: "amber", tag: "Under consideration", heading: "You're under consideration",
-    body: `${reviewer} is keeping you on their radar${forRole} while they finalize casting. Nothing is needed from you right now.`,
-    mid: projectName ? csBlock("amber", "Under consideration", title) : undefined,
-    cta: "View my applications", href: "/talent-dashboard",
-    foot: "You're receiving this because a casting director took action on one of your submissions.",
-  });
+  const title    = projectName ? `${esc(projectName)}${roleName ? ` &middot; ${esc(roleName)}` : ""}` : "";
+  const body = `${reviewer} opened your submission${forRole} and moved you to under consideration ` +
+               `&mdash; you're still in for the role while they finalize casting. Nothing is needed from you right now.`;
+  const card = projectName ? `
+        <tr><td class="cs-pad" style="padding:24px 30px 0">
+          <table width="100%" cellpadding="0" cellspacing="0"><tr>
+            <td style="background:${H.card};border:1px solid ${H.cardBd};border-radius:12px;padding:18px 20px">
+              <div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${H.kicker};margin:0 0 8px">Your submission</div>
+              <div style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:700;color:#1A1A2E;line-height:1.3">${title}</div>
+            </td></tr></table>
+        </td></tr>` : "";
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="color-scheme" content="light"/>
+<meta name="supported-color-schemes" content="light"/>
+<style>
+:root{color-scheme:light;supported-color-schemes:light}
+@media only screen and (max-width:480px){
+  .cs-pad{padding-left:20px!important;padding-right:20px!important}
+  .cs-word{font-size:20px!important;letter-spacing:1.2px!important}
+  .cs-mark{width:38px!important;height:38px!important}
+  .cs-kicker{display:none!important}
+  .cs-h1{font-size:25px!important}
+  .cs-badge-cell{width:80px!important}
+  .cs-badge{width:78px!important;height:60px!important}
+  .cs-cta a{padding:15px 24px!important}
+}
+</style></head>
+<body style="margin:0;padding:0;background:#f0f4f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f4"><tr><td align="center" style="padding:32px 14px">
+  <!--[if mso]><table width="560" cellpadding="0" cellspacing="0"><tr><td><![endif]-->
+    <table width="100%" cellpadding="0" cellspacing="0" style="width:100%;max-width:560px;background:#FCFAF7;border-radius:16px;overflow:hidden;box-shadow:0 1px 0 #EAE2D1">
+
+      <tr><td class="cs-pad" style="background:${H.band};background:linear-gradient(115deg,${H.band2} 0%,${H.band} 62%,${H.band2} 100%);padding:22px 30px">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td style="vertical-align:middle"><table cellpadding="0" cellspacing="0"><tr>
+            <td style="vertical-align:middle;padding-right:14px"><img class="cs-mark" src="${APP_URL}/logo-email-tile.png" width="46" height="46" alt="CastSlate" style="display:block;border-radius:11px"/></td>
+            <td style="vertical-align:middle"><span class="cs-word" style="font-size:24px;font-weight:800;letter-spacing:1.7px;color:#FFFFFF;white-space:nowrap">CASTSLATE</span></td>
+          </tr></table></td>
+          <td class="cs-kicker" align="right" style="vertical-align:middle;padding-left:18px"><span style="font-size:10px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:${H.onDark}">Casting update</span></td>
+        </tr></table>
+      </td></tr>
+
+      <tr><td style="height:4px;line-height:4px;font-size:0;background:#2E9B6C;background:linear-gradient(90deg,${H.onDark},#2E9B6C 52%,rgba(15,90,60,0))">&nbsp;</td></tr>
+
+      <tr><td class="cs-pad" style="padding:34px 30px 0">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td style="vertical-align:top">
+            <h1 class="cs-h1" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:31px;font-weight:700;color:#1A1A2E;letter-spacing:-0.5px;line-height:1.22">Your profile was<br/><span style="color:${H.onCream}">reviewed</span></h1>
+          </td>
+          <td class="cs-badge-cell" align="right" style="vertical-align:top;width:112px">
+            <img class="cs-badge" src="${APP_URL}/email-hold-badge.png" width="104" height="80" alt="" style="display:block;border:0"/>
+          </td>
+        </tr></table>
+      </td></tr>
+
+      <tr><td class="cs-pad" style="padding:20px 30px 0"><p style="margin:0;font-size:15px;line-height:1.78;color:#5A5A72">${body}</p></td></tr>
+${card}
+      <tr><td class="cs-pad cs-cta" style="padding:26px 30px 34px">
+        <table cellpadding="0" cellspacing="0"><tr><td style="background:${H.cta};border-radius:11px">
+          <a href="${APP_URL}/talent-dashboard" style="display:inline-block;padding:16px 34px;font-size:14.5px;font-weight:800;letter-spacing:0.2px;color:#FFFFFF;text-decoration:none">View my applications &nbsp;&rarr;</a>
+        </td></tr></table>
+      </td></tr>
+
+      <tr><td class="cs-pad" style="background:${H.foot};padding:22px 30px">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td style="vertical-align:top;width:38px;padding-top:2px"><img src="${APP_URL}/email-bell.png" width="26" height="26" alt="" style="display:block;border:0"/></td>
+          <td style="vertical-align:top"><p style="margin:0;font-size:12px;line-height:1.75;color:rgba(255,255,255,0.70)">You're receiving this because a casting director took action on one of your submissions.<br/>Manage notifications in <a href="${APP_URL}/account-settings" style="color:${H.onDark};text-decoration:none;font-weight:700">Account Settings</a>.</p></td>
+        </tr></table>
+      </td></tr>
+
+    </table>
+  <!--[if mso]></td></tr></table><![endif]-->
+  </td></tr></table>
+</body></html>`;
 }
 
 function activityDigestHtml(firstName: string, profileViews: number, tapeViews: number, shortlists: number): string {
@@ -438,14 +540,42 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
+    // Gate: shared secret (database callers), service role (weekly-checkin-run), or a
+    // signed-in user's JWT (the app). An anon key alone resolves to no user and fails.
+    const bearer = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim();
+    let authorized = false;
+    if (bearer) {
+      if (SUPABASE_SERVICE_KEY && bearer === SUPABASE_SERVICE_KEY) authorized = true;
+      if (!authorized) {
+        const { data: secretRow } = await supabase.from("app_secrets").select("value").eq("key", "notify_fn_secret").maybeSingle();
+        if (secretRow?.value && bearer === secretRow.value) authorized = true;
+      }
+      if (!authorized) {
+        try {
+          const { data: u } = await supabase.auth.getUser(bearer);
+          if (u?.user?.id) authorized = true;
+        } catch (_) { /* not a user token */ }
+      }
+    }
+    if (!authorized) {
+      console.warn("[send-notification-email] unauthorized call, type=", type);
+      return json({ error: "Unauthorized" }, 401);
+    }
+
     const { data: profile, error: profileErr } = await supabase
       .from("profiles")
-      .select("display_name, notification_email, notification_messages, notification_applications, notification_marketing, notification_sms, phone")
+      .select("display_name, membership_status, notification_email, notification_messages, notification_applications, notification_marketing, notification_sms, phone")
       .eq("id", to_user_id)
       .maybeSingle();
 
     if (profileErr || !profile) {
       return json({ error: "User profile not found" }, 404);
+    }
+
+    // Premium members get their email as normal. The single exception is the Manager Mode
+    // weekly note, which is delivered in-app and read on the site.
+    if (profile.membership_status === "active" && PREMIUM_EMAIL_BLOCKED.has(type)) {
+      return json({ ok: true, results: { email: "skipped:premium_in_app_only" } });
     }
 
     // ── Global do-not-email hub: if this user's address has bounced,
@@ -548,7 +678,7 @@ serve(async (req) => {
       }
       const sent = await sendEmail({
         from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
-        subject: `${firstName}, you're under consideration on CastSlate`,
+        subject: `${firstName}, your profile was reviewed on CastSlate`,
         html: applicationHoldHtml(firstName, project_name?.trim() || undefined, role_name?.trim() || undefined, cd_name?.trim() || undefined),
       });
       if (!sent.ok) {
