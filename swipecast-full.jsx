@@ -10599,7 +10599,16 @@ function VideoRecorder({session,roleId,onVideoReady,onClose,maxSec,primaryLabel,
 // Official takes: 1–3 takes, each saved to audition_takes immediately after recording.
 // Reload-safe: recovers in-progress draft submission on mount.
 // Submit: selected best take (best_take mode) or all takes (all_takes mode).
-function AuditionModal({casting,role,roleId,instr,session,myPhotos,isDbCasting,onClose,onSubmitted}){
+/* Every .modal-overlay opened from a casting page must be portalled to <body>.
+   The casting sheet (.cs-sheet) is position:fixed WITH will-change:transform, and a
+   transformed/will-change ancestor becomes the containing block for its position:fixed
+   descendants — so an overlay rendered inside the sheet anchors to the top of the
+   sheet's SCROLLED CONTENT, not the viewport. That is what made the apply card open
+   far above the fold, invisible until you scrolled all the way up. */
+const BodyPortal=({children})=>ReactDOM.createPortal(children,document.body);
+
+function AuditionModal(props){return <BodyPortal><AuditionModalInner {...props}/></BodyPortal>;}
+function AuditionModalInner({casting,role,roleId,instr,session,myPhotos,isDbCasting,onClose,onSubmitted}){
   const {useState:S,useEffect:E,useRef:R}=React;
   const maxTakes=instr?.official_takes_allowed||2;
   const submissionMode=instr?.submission_mode||'best_take';
@@ -11269,7 +11278,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     </div>}
 
     {/* ── Free-actor weekly-cap upgrade modal — premium treatment, fires at 3/3 ── */}
-    {showUpgradePrompt&&<div className="modal-overlay" onClick={()=>setShowUpgradePrompt(false)}><div className="capm" onClick={e=>e.stopPropagation()}>
+    {showUpgradePrompt&&<BodyPortal><div className="modal-overlay" onClick={()=>setShowUpgradePrompt(false)}><div className="capm" onClick={e=>e.stopPropagation()}>
       <button aria-label="Close" onClick={()=>setShowUpgradePrompt(false)} style={{position:"absolute",top:16,right:16,background:"none",border:"none",color:"var(--t3)",cursor:"pointer",padding:4,lineHeight:0}}><Ico n="x" s={20}/></button>
       <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(229,83,60,.1)",border:"1px solid rgba(229,83,60,.32)",color:"#C0392B",fontSize:11.5,fontWeight:800,letterSpacing:.4,padding:"6px 12px",borderRadius:999,marginBottom:16}}>
         <span style={{display:"flex",gap:3}}><span style={{width:16,height:6,borderRadius:3,background:"#E5533C"}}/><span style={{width:16,height:6,borderRadius:3,background:"#E5533C"}}/><span style={{width:16,height:6,borderRadius:3,background:"#E5533C"}}/></span>
@@ -11293,7 +11302,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <button className="capm-cta" onClick={()=>{setShowUpgradePrompt(false);onNavigate&&onNavigate("membership");}} style={{width:"100%",border:"none",cursor:"pointer",fontWeight:800,fontSize:13.5,color:"#1A1A2E",background:"linear-gradient(180deg,#F8B65E 0%,#EC942A 100%)",padding:"14px 16px",borderRadius:11,marginBottom:9,boxShadow:"0 10px 24px -10px rgba(240,160,60,.85),inset 0 1px 0 rgba(255,255,255,.4)"}}>{(()=>{const tt=(casting?.title||"").trim();if(!tt)return`Go unlimited — ${PREMIUM_PRICE} →`;const short=tt.length>26?tt.slice(0,24).trimEnd()+"…":tt;return`Unlock & submit to “${short}” →`;})()}</button>
       <button onClick={()=>setShowUpgradePrompt(false)} style={{width:"100%",background:"transparent",border:"1px solid var(--bdr)",color:"var(--t2)",cursor:"pointer",fontWeight:700,fontSize:12.5,padding:"12px 14px",borderRadius:11}}>No thanks, I'll wait until Monday</button>
       <div style={{textAlign:"center",color:"var(--t3)",fontSize:10.5,marginTop:12}}>Premium · {PREMIUM_PRICE} · unlimited submissions · cancel anytime</div>
-    </div></div>}
+    </div></div></BodyPortal>}
 
     {/* ── Free-actor submissions remaining badge ── */}
     {isTalent&&!isPremium&&isLoggedIn&&<div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
@@ -11652,7 +11661,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       const allowRecord=isPremium&&(!instr||instr.submission_type==="both"||instr.submission_type==="record");
       const allowUpload=isPremium&&(!instr||instr.submission_type==="both"||instr.submission_type==="upload");
       return(
-      <div className="modal-overlay" onClick={()=>!submitting&&setApplyRole(null)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:600,maxHeight:"92vh",overflowY:"auto"}}>
+      <BodyPortal><div className="modal-overlay" onClick={()=>!submitting&&setApplyRole(null)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:600,maxHeight:"92vh",overflowY:"auto"}}>
         {applyOk?
           <div style={{textAlign:"center",padding:"32px 8px"}}>
             <div style={{width:72,height:72,borderRadius:"50%",background:"rgba(80,200,120,0.15)",color:"#27ae60",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,fontWeight:800,margin:"0 auto 20px"}}><Ico n="check" s={24}/></div>
@@ -11772,7 +11781,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             </div>
           </>
         }
-      </div></div>);
+      </div></div></BodyPortal>);
     })()}
 
     {/* AuditionModal — for roles with PDF sides (official takes system) */}
