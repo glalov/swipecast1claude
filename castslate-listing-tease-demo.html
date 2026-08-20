@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hold something back — card vs opened casting</title>
+<style>
+  /* No JavaScript — radio inputs + CSS sibling selectors.
+     Real rows: "The Seventh Landing" (CD-posted, featured) and "The Back Tanks"
+     (casting generator), so you can see the rule applied to both sources. */
+  :root{
+    --cream:#F7F4EC; --s1:#fff; --s2:#F1EDE3; --bdr:#e3ded2;
+    --t1:#1B1C20; --t2:#5b5f68; --t3:#8a8f98; --teal:#0f766e;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--cream);color:var(--t1);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;padding:26px 18px 70px;}
+  .wrap{max-width:1080px;margin:0 auto;}
+  h1{font-size:23px;margin:0 0 6px;letter-spacing:-.02em;}
+  .lede{font-size:13.5px;color:var(--t2);line-height:1.65;margin:0;max-width:820px;}
+  .lede b{color:var(--t1);}
+  .modes{display:none;}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid var(--bdr);margin-bottom:18px;}
+  .tabs label{font-size:12.5px;font-weight:700;padding:9px 15px;border-radius:999px;border:1px solid var(--bdr);
+              background:var(--s1);color:var(--t2);cursor:pointer;user-select:none;}
+  #w1:checked~.tabs label[for=w1],#w2:checked~.tabs label[for=w2],
+  #w3:checked~.tabs label[for=w3],#w4:checked~.tabs label[for=w4]{background:var(--t1);color:#fff;border-color:var(--t1);}
+  .note{display:none;font-size:12.5px;color:var(--t2);background:var(--s2);border:1px solid var(--bdr);
+        border-radius:10px;padding:12px 14px;margin-bottom:20px;line-height:1.7;}
+  .note b{color:var(--t1);} .note code{background:#e6dfd0;padding:1px 6px;border-radius:5px;font-size:11.5px;}
+  #w1:checked~.n1,#w2:checked~.n2,#w3:checked~.n3,#w4:checked~.n4{display:block;}
+  .cap{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin:26px 0 8px;}
+  .cap:first-of-type{margin-top:0;}
+
+  /* ── the browse card (treatment 3 sizing, which you approved) ── */
+  .card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;
+        box-shadow:0 1px 4px rgba(26,26,46,.05);margin-bottom:16px;}
+  .card.feat{border-top:3px solid var(--teal);}
+  .row{display:grid;grid-template-columns:1fr auto;gap:24px;padding:24px 28px;align-items:start;}
+  .badges{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+  .badge{background:#eef1f5;color:#3a4150;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:100px;}
+  .badge.live{background:#e7f6ef;color:#0b6b47;}
+  .pick{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:100px;background:#EDE9FE;
+        color:#4C1D95;border:1px solid #C4B5FD;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
+  .card h3{font-size:27px;font-weight:800;letter-spacing:-.5px;margin:0 0 6px;line-height:1.15;}
+  .tagline{color:#4a4f58;font-size:16px;margin:0 0 6px;line-height:1.45;}
+  .prod{color:var(--t3);font-size:14px;margin:0 0 14px;}
+  .strip{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;align-items:center;}
+  .chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;border-radius:8px;
+        background:var(--s2);color:var(--t1);border:1px solid var(--bdr);}
+  .chip.pay{background:#0b6b47;border-color:#0b6b47;color:#fff;}
+  .chip.soon{background:#fdeeea;border-color:#e8b5a6;color:#a8341c;}
+  .chip.roles{background:#E8EEFB;border-color:#bcd0f2;color:#1f4a92;}
+  .chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;}
+  .syn{color:#33373f;font-size:16px;line-height:1.62;margin:0 0 10px;max-width:660px;position:relative;}
+  .more{display:none;font-size:13.5px;font-weight:700;color:var(--teal);margin:0 0 4px;}
+  .side{display:flex;flex-direction:column;gap:10px;align-items:flex-end;min-width:150px;}
+  .btn{background:var(--teal);color:#fff;border:0;border-radius:10px;padding:13px 22px;font:inherit;
+       font-size:15px;font-weight:700;cursor:pointer;white-space:nowrap;}
+
+  /* long tagline: what the generator writes today, and the capped version */
+  .tag-long{display:block;} .tag-short{display:none;}
+  #w2:checked~.demo .tag-long,#w3:checked~.demo .tag-long,#w4:checked~.demo .tag-long{display:none;}
+  #w2:checked~.demo .tag-short,#w3:checked~.demo .tag-short,#w4:checked~.demo .tag-short{display:block;}
+
+  /* ── 2 · one line, faded ── */
+  #w2:checked~.demo .syn{-webkit-line-clamp:1;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;
+      mask-image:linear-gradient(90deg,#000 62%,transparent 98%);}
+  #w2:checked~.demo .more{display:block;}
+  /* ── 3 · no synopsis on the card at all ── */
+  #w3:checked~.demo .syn{display:none;}
+  #w3:checked~.demo .more{display:block;}
+  /* ── 4 · two lines + what is left ── */
+  #w4:checked~.demo .syn{-webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;
+      mask-image:linear-gradient(180deg,#000 55%,rgba(0,0,0,.25));}
+  #w4:checked~.demo .more{display:block;}
+  #w1:checked~.demo .more{display:none;}
+
+  /* ── the opened casting (unchanged in every tab — this is the payoff) ── */
+  .detail{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:28px;}
+  .detail h2{font-size:30px;margin:0 0 8px;letter-spacing:-.5px;}
+  .detail .dtag{font-size:18px;color:#3d424a;margin:0 0 18px;font-style:italic;}
+  .detail p{font-size:16px;line-height:1.68;color:#33373f;margin:0 0 14px;max-width:720px;}
+  .rolebox{border:1px solid var(--bdr);border-radius:10px;padding:14px 16px;margin-top:8px;background:#fcfbf8;}
+  .rolebox b{font-size:15px;} .rolebox span{color:var(--t2);font-size:14px;}
+  .foot{margin-top:26px;font-size:12.5px;color:var(--t2);line-height:1.8;}
+  .foot b{color:var(--t1);}
+  @media(max-width:820px){ .row{grid-template-columns:1fr;} .side{align-items:stretch;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Hold something back for the click</h1>
+  <p class="lede">Right now the card gives away the tagline <i>and</i> 200 characters of synopsis, so opening a casting
+  shows an actor what they already read. Below: the same two real listings with the card <b>teasing</b> and the opened
+  casting doing the <b>revealing</b>. The opened view at the bottom never changes — only what the card shows.</p>
+
+  <input class="modes" type="radio" name="w" id="w1">
+  <input class="modes" type="radio" name="w" id="w2" checked>
+  <input class="modes" type="radio" name="w" id="w3">
+  <input class="modes" type="radio" name="w" id="w4">
+
+  <div class="tabs">
+    <label for="w1">1 · Today (tells everything)</label>
+    <label for="w2">2 · One line, faded</label>
+    <label for="w3">3 · Tagline only</label>
+    <label for="w4">4 · Two lines + counter</label>
+  </div>
+
+  <div class="note n1"><b>1 · Today.</b> Full tagline plus roughly 200 characters of synopsis. On “The Back Tanks” the
+  generator's tagline is 96 characters and repeats the synopsis almost word for word, so the card says the same thing
+  twice and the detail page says it a third time.</div>
+
+  <div class="note n2"><b>2 · One line, faded — my pick.</b> Tagline capped at <code>8 words</code>, synopsis clamped to a
+  single line that fades out mid-sentence, then “Open to read the full breakdown”. The fade is the important part: a hard
+  ellipsis reads like a bug, a fade reads like there is more behind it. An actor gets the hook, the money and the deadline
+  on the card — enough to decide to click, not enough to decide not to.</div>
+
+  <div class="note n3"><b>3 · Tagline only.</b> No synopsis on the card at all; the tagline carries the whole hook. The
+  purest version and the fastest to scan — a page of these reads like a headline list. The risk is real: if a tagline is
+  weak or generic, the listing has nothing left to sell with, and you have 444 taglines of varying quality.</div>
+
+  <div class="note n4"><b>4 · Two lines + counter.</b> A middle setting: two clamped lines plus an explicit
+  “+ 2 more paragraphs, 8 roles inside”. Naming what is behind the click is the strongest pull of the four, but it also
+  makes short listings look thin — a casting with one paragraph advertises that it has one paragraph.</div>
+
+  <div class="demo">
+    <p class="cap">On Browse — the card</p>
+
+    <div class="card feat"><div class="row">
+      <div>
+        <div class="badges"><span class="pick">★ Cast Slate Pick</span><span class="badge">Independent Film</span><span class="badge">Non-Union</span><span class="badge live">● Live</span></div>
+        <h3>The Seventh Landing</h3>
+        <p class="tagline tag-long">Every coincidence has a witness.</p>
+        <p class="tagline tag-short">Every coincidence has a witness.</p>
+        <p class="prod">North Bridge Pictures</p>
+        <div class="strip">
+          <span class="chip roles">8 roles open</span><span class="chip pay">Up to $300/day</span>
+          <span class="chip soon">Closes in 24 days · Sep 12</span><span class="chip">New York, NY</span>
+          <span class="chip quiet">Posted Aug 1</span>
+        </div>
+        <p class="syn">After discovering a forgotten photograph that shouldn’t exist, a young photographer becomes obsessed with uncovering its origin. As hidden connections emerge, he realizes someone has been quietly shaping his life from the shadows.</p>
+        <p class="more">Open to read the full breakdown →</p>
+      </div>
+      <div class="side"><button class="btn">View Roles</button></div>
+    </div></div>
+
+    <div class="card"><div class="row">
+      <div>
+        <div class="badges"><span class="badge">Feature Film</span><span class="badge">Non-Union</span><span class="badge live">● Live</span></div>
+        <h3>The Back Tanks</h3>
+        <p class="tagline tag-long">Development — a teenager takes a night job feeding the animals in a pet store after it closes.</p>
+        <p class="tagline tag-short">A night job nobody else wanted.</p>
+        <p class="prod">Casting: Sharon Sombrero</p>
+        <div class="strip">
+          <span class="chip roles">6 roles open</span><span class="chip pay">$175–$700/day</span>
+          <span class="chip soon">Closes Sep 17</span><span class="chip">New York, NY</span>
+          <span class="chip quiet">Posted Aug 17</span>
+        </div>
+        <p class="syn">Seeking actors for a horror feature film: a teenager takes a night job feeding the animals in a pet store after it closes. One tank at the back is not on the feeding list, and the owner will not say what is in it.</p>
+        <p class="more">Open to read the full breakdown →</p>
+      </div>
+      <div class="side"><button class="btn">View Roles</button></div>
+    </div></div>
+
+    <p class="cap">After the click — the opened casting (identical in every tab)</p>
+    <div class="detail">
+      <h2>The Seventh Landing</h2>
+      <p class="dtag">Every coincidence has a witness.</p>
+      <p>After discovering a forgotten photograph that shouldn’t exist, a young photographer becomes obsessed with
+      uncovering its origin. As hidden connections emerge, he realizes someone has been quietly shaping his life from the
+      shadows.</p>
+      <p>Independent Film · North Bridge Pictures · New York, NY · Non-Union · closes September 12.
+      Lead: $300/day · Supporting: $225/day · Day Players: $175/day. Meals, credit, and copy provided.</p>
+      <div class="rolebox"><b>8 roles open</b> <span>— each with its own age range, rate, shoot days and submission
+      requirements, revealed here rather than on the card.</span></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>To make this hold, the limit has to be enforced where the text is written, not only where it is displayed:</b><br>
+    · <b>CD post form</b> — tagline field capped at 8 words / 60 characters with a live counter, and helper text that says
+    what it is for: “One line that makes someone want to open this. Not a summary.”<br>
+    · <b>Casting generator</b> — its taglines currently run up to 96 characters and often restate the synopsis verbatim
+    (see “The Back Tanks” on tab 1). It should write a short hook line instead, drawn from the premise but never equal to
+    it.<br>
+    · <b>Admin edit modal</b> — same counter, so an admin editing a listing sees the same rule.<br>
+    · <b>Card display</b> — clamp by lines, not characters, so the cut always lands on a clean edge whatever the length.<br>
+    <b>One caution:</b> search and SEO read the synopsis. Clamping it visually with CSS keeps the full text in the page for
+    crawlers — truncating the string in the database would not. Clamp, do not cut.
+  </div>
+</div>
+</body>
+</html>

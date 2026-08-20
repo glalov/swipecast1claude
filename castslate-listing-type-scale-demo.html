@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Listing type scale — bigger, clearer</title>
+<style>
+  /* No JavaScript — radio inputs + CSS sibling selectors (the preview sandbox
+     blocks inline scripts). Four type/colour treatments over the SAME four real
+     listings and the same layout, so you are only judging size and colour. */
+  :root{
+    --cream:#F7F4EC; --s1:#fff; --s2:#F1EDE3; --bdr:#e3ded2;
+    --t1:#1B1C20; --t2:#5b5f68; --t3:#8a8f98; --teal:#0f766e;
+
+    /* the scale — every tab just re-declares these */
+    --f-title:22px; --f-tagline:14px; --f-prod:12px; --f-syn:13px;
+    --f-chip:11px;  --f-badge:11px;   --f-btn:13px;  --lh-syn:1.6;
+    --c-syn:var(--t2); --c-tagline:var(--t2);
+    --chip-pad:5px 11px; --badge-pad:4px 10px; --btn-pad:10px 18px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--cream);color:var(--t1);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;padding:26px 18px 70px;}
+  .wrap{max-width:1180px;margin:0 auto;}
+  h1{font-size:23px;margin:0 0 6px;letter-spacing:-.02em;}
+  .lede{font-size:13.5px;color:var(--t2);line-height:1.65;margin:0;max-width:820px;}
+  .lede b{color:var(--t1);}
+
+  .modes{display:none;}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid var(--bdr);margin-bottom:18px;}
+  .tabs label{font-size:12.5px;font-weight:700;padding:9px 15px;border-radius:999px;
+              border:1px solid var(--bdr);background:var(--s1);color:var(--t2);cursor:pointer;user-select:none;}
+  .tabs label:hover{border-color:var(--t3);}
+  #t1:checked~.tabs label[for=t1],#t2:checked~.tabs label[for=t2],
+  #t3:checked~.tabs label[for=t3],#t4:checked~.tabs label[for=t4]{background:var(--t1);color:#fff;border-color:var(--t1);}
+
+  .note{display:none;font-size:12.5px;color:var(--t2);background:var(--s2);border:1px solid var(--bdr);
+        border-radius:10px;padding:12px 14px;margin-bottom:18px;line-height:1.7;}
+  .note b{color:var(--t1);} .note code{background:#e6dfd0;padding:1px 6px;border-radius:5px;font-size:11.5px;}
+  #t1:checked~.n1,#t2:checked~.n2,#t3:checked~.n3,#t4:checked~.n4{display:block;}
+
+  /* ══ 2 · Backstage scale ══ */
+  #t2:checked~.list{--f-title:27px;--f-tagline:16px;--f-prod:14px;--f-syn:16px;--lh-syn:1.62;
+                    --f-chip:14px;--f-badge:12.5px;--f-btn:15px;--c-syn:#33373f;--c-tagline:#4a4f58;
+                    --chip-pad:7px 13px;--badge-pad:5px 12px;--btn-pad:13px 22px;}
+  /* ══ 3 · Backstage scale + colour weighting ══ */
+  #t3:checked~.list{--f-title:27px;--f-tagline:16px;--f-prod:14px;--f-syn:16px;--lh-syn:1.62;
+                    --f-chip:14px;--f-badge:12.5px;--f-btn:15px;--c-syn:#33373f;--c-tagline:#4a4f58;
+                    --chip-pad:7px 13px;--badge-pad:5px 12px;--btn-pad:13px 22px;}
+  /* ══ 4 · Editorial — largest headline, quietest furniture ══ */
+  #t4:checked~.list{--f-title:31px;--f-tagline:17px;--f-prod:14px;--f-syn:17px;--lh-syn:1.66;
+                    --f-chip:14px;--f-badge:12.5px;--f-btn:15px;--c-syn:#2b2f36;--c-tagline:#3d424a;
+                    --chip-pad:7px 13px;--badge-pad:5px 12px;--btn-pad:13px 22px;}
+
+  /* ── card ── */
+  .list{display:flex;flex-direction:column;gap:16px;}
+  .card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;
+        box-shadow:0 1px 4px rgba(26,26,46,.05);transition:box-shadow .2s,transform .15s;}
+  .card:hover{box-shadow:0 4px 16px rgba(26,26,46,.09);transform:translateY(-1px);}
+  .row{display:grid;grid-template-columns:1fr auto;gap:24px;padding:24px 28px;align-items:start;}
+  #t4:checked~.list .row{padding:30px 32px;}
+
+  .badges{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+  .badge{background:#E8EEFB;color:#2D5BA8;font-size:var(--f-badge);font-weight:700;
+         padding:var(--badge-pad);border-radius:100px;}
+  .badge.live{background:#e7f6ef;color:#0f7a52;}
+  .card h3{font-size:var(--f-title);font-weight:800;letter-spacing:-.5px;margin:0 0 6px;line-height:1.15;}
+  .tagline{color:var(--c-tagline);font-size:var(--f-tagline);margin:0 0 6px;line-height:1.45;}
+  .prod{color:var(--t3);font-size:var(--f-prod);margin:0 0 14px;}
+  .syn{color:var(--c-syn);font-size:var(--f-syn);line-height:var(--lh-syn);margin:0 0 16px;max-width:660px;}
+  .side{display:flex;flex-direction:column;gap:10px;align-items:flex-end;min-width:150px;}
+  .btn-teal{background:var(--teal);color:#fff;border:0;border-radius:10px;padding:var(--btn-pad);
+            font:inherit;font-size:var(--f-btn);font-weight:700;cursor:pointer;white-space:nowrap;}
+
+  .strip{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;align-items:center;}
+  .chip{display:inline-flex;align-items:center;font-size:var(--f-chip);font-weight:700;
+        padding:var(--chip-pad);border-radius:8px;background:var(--s2);color:var(--t1);border:1px solid var(--bdr);}
+  .chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;}
+
+  /* colour weighting lives only in tab 3 — everywhere else the chips are neutral */
+  #t3:checked~.list .chip.pay{background:#0b6b47;border-color:#0b6b47;color:#fff;}
+  #t3:checked~.list .chip.soon{background:#fdeeea;border-color:#e8b5a6;color:#a8341c;}
+  #t3:checked~.list .chip.new{background:#efeaff;border-color:#cbbcff;color:#4021a0;}
+  #t3:checked~.list .chip.roles{background:#E8EEFB;border-color:#bcd0f2;color:#1f4a92;}
+  #t3:checked~.list .badge{background:#eef1f5;color:#3a4150;}
+  #t3:checked~.list .badge.live{background:#e7f6ef;color:#0b6b47;}
+
+  .foot-note{margin-top:26px;font-size:12.5px;color:var(--t2);line-height:1.8;}
+  .foot-note b{color:var(--t1);}
+  table.sz{border-collapse:collapse;margin-top:10px;font-size:12.5px;}
+  table.sz td,table.sz th{border:1px solid var(--bdr);padding:6px 12px;text-align:left;}
+  table.sz th{background:var(--s2);font-weight:700;color:var(--t1);}
+  @media(max-width:820px){ .row{grid-template-columns:1fr;} .side{align-items:stretch;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Type scale and colour — four treatments</h1>
+  <p class="lede">Your four real listings, same layout, no covers. Only <b>size, weight and colour</b> change between tabs.
+  Backstage runs roughly a 27px title, 16px body and 14–15px meta; yours currently runs 22 / 13 / 12 / 11, which is the
+  gap you noticed.</p>
+
+  <input class="modes" type="radio" name="t" id="t1">
+  <input class="modes" type="radio" name="t" id="t2">
+  <input class="modes" type="radio" name="t" id="t3" checked>
+  <input class="modes" type="radio" name="t" id="t4">
+
+  <div class="tabs">
+    <label for="t1">1 · Current size</label>
+    <label for="t2">2 · Backstage scale</label>
+    <label for="t3">3 · Scale + colour weighting</label>
+    <label for="t4">4 · Editorial</label>
+  </div>
+
+  <div class="note n1"><b>1 · What you have now.</b> Title <code>22px</code>, synopsis <code>13px</code>, facts
+  <code>12px</code>, badges <code>11px</code>. Everything is legible up close, but the facts an actor decides on are the
+  smallest and palest text on the card — the hierarchy is upside down.</div>
+
+  <div class="note n2"><b>2 · Backstage scale, your palette.</b> Title <code>27px</code>, synopsis <code>16px</code>, chips
+  <code>14px</code>, button <code>15px</code>, and the body text darkened from <code>#5b5f68</code> to
+  <code>#33373f</code>. Nothing else changed. This alone is most of the difference you were reacting to — it reads at arm's
+  length instead of leaning in.</div>
+
+  <div class="note n3"><b>3 · Scale plus colour weighting — my pick.</b> Same sizes as 2, but the facts stop being
+  decorative grey: <b>pay is a solid green block</b> (the single most-scanned number on a casting), <b>closing date is
+  warm red</b>, <b>freshness is violet</b>, roles is your blue. The type/union badges are dialled down to neutral grey so
+  they stop competing with the things that actually decide a submission. Backstage does exactly this — one loud accent for
+  the action, muted furniture around it.</div>
+
+  <div class="note n4"><b>4 · Editorial.</b> Title up to <code>31px</code>, synopsis <code>17px</code>, more padding, and
+  the chips kept quiet. The most premium and the most magazine-like of the four; the trade is that fewer listings fit on a
+  screen, which matters when someone is scanning 108 of them.</div>
+
+  <div class="list">
+
+    <div class="card"><div class="row">
+      <div>
+        <div class="badges"><span class="badge">Student Film</span><span class="badge">Non-Union</span><span class="badge live">● Live</span></div>
+        <h3>Untitled Horror Project</h3>
+        <p class="tagline">A new night attendant at a county morgue is told never to open the doors before six.</p>
+        <p class="prod">Prod. Lamar McKinney</p>
+        <div class="strip">
+          <span class="chip roles">5 roles open</span><span class="chip pay">Up to $175/day</span>
+          <span class="chip">New York, NY</span><span class="chip new">Posted today</span>
+        </div>
+        <p class="syn">A new night attendant at a county morgue is told never to open the doors before six. Everything changes when a body arrives with no paperwork and a hospital band dated eleven days from now.</p>
+      </div>
+      <div class="side"><button class="btn-teal">View Roles</button></div>
+    </div></div>
+
+    <div class="card"><div class="row">
+      <div>
+        <div class="badges"><span class="badge">Off-Broadway Theater</span><span class="badge">AEA</span><span class="badge live">● Live</span></div>
+        <h3>No Show Tonight</h3>
+        <p class="tagline">A sold out crowd has to be told the show is off.</p>
+        <p class="prod">Sana Verma</p>
+        <div class="strip">
+          <span class="chip roles">5 roles open</span><span class="chip pay">Up to $900/week</span>
+          <span class="chip soon">Closes Sep 19</span><span class="chip">New York, NY</span><span class="chip new">Posted today</span>
+        </div>
+        <p class="syn">A box office has to tell a full house that tonight's show is cancelled. One person in the line has traveled a very long way to be there.</p>
+      </div>
+      <div class="side"><button class="btn-teal">View Roles</button></div>
+    </div></div>
+
+    <div class="card"><div class="row">
+      <div>
+        <div class="badges"><span class="badge">Independent Film</span><span class="badge">SAG-AFTRA Ultra Low Budget</span><span class="badge live">● Live</span></div>
+        <h3>Two Chapels</h3>
+        <p class="tagline">Independent Film breakdown — 7 roles.</p>
+        <p class="prod">Confidential.</p>
+        <div class="strip">
+          <span class="chip roles">6 roles open</span><span class="chip pay">Negotiable</span>
+          <span class="chip soon">Closes Sep 19</span><span class="chip">New York, NY</span><span class="chip new">Posted today</span>
+        </div>
+        <p class="syn">A small funeral home is run by a father and his daughter, who never planned to stay there. One day, they are asked to bury a man whose family stopped speaking to him 30 years ago.</p>
+      </div>
+      <div class="side"><button class="btn-teal">View Roles</button></div>
+    </div></div>
+
+    <div class="card"><div class="row">
+      <div>
+        <div class="badges"><span class="badge">Feature Film</span><span class="badge">Non-Union</span><span class="badge live">● Live</span></div>
+        <h3>The Back Tanks</h3>
+        <p class="tagline">Development — a teenager takes a night job feeding the animals in a pet store after it closes.</p>
+        <p class="prod">Casting: Sharon Sombrero</p>
+        <div class="strip">
+          <span class="chip roles">6 roles open</span><span class="chip pay">$175–$700/day</span>
+          <span class="chip soon">Closes Sep 2</span><span class="chip">New York, NY</span><span class="chip quiet">Posted 2 days ago</span>
+        </div>
+        <p class="syn">Seeking actors for a horror feature film: a teenager takes a night job feeding the animals in a pet store after it closes. One tank at the back is not on the feeding list, and the owner will not say why.</p>
+      </div>
+      <div class="side"><button class="btn-teal">View Roles</button></div>
+    </div></div>
+
+  </div>
+
+  <p class="foot-note"><b>The exact numbers, if you want to hand them straight to the code:</b></p>
+  <table class="sz">
+    <tr><th>Element</th><th>Now</th><th>Backstage scale (2 & 3)</th><th>Editorial (4)</th></tr>
+    <tr><td>Title</td><td>22px / 800</td><td><b>27px / 800</b></td><td>31px / 800</td></tr>
+    <tr><td>Tagline</td><td>14px #5b5f68</td><td><b>16px #4a4f58</b></td><td>17px #3d424a</td></tr>
+    <tr><td>Synopsis</td><td>13px #5b5f68</td><td><b>16px #33373f</b></td><td>17px #2b2f36</td></tr>
+    <tr><td>Fact chips</td><td>12px grey text</td><td><b>14px, boxed</b></td><td>14px, boxed</td></tr>
+    <tr><td>Badges</td><td>11px</td><td><b>12.5px</b></td><td>12.5px</td></tr>
+    <tr><td>Button</td><td>13px</td><td><b>15px</b></td><td>15px</td></tr>
+  </table>
+  <p class="foot-note">
+    <b>The colour idea in tab 3, in one line:</b> pay solid green, closing warm red, freshness violet, roles blue —
+    and the type/union badges pushed down to neutral grey so they stop shouting alongside them. Right now every badge on
+    your card is the same blue at the same weight, which tells an actor that "Non-Union" and "$900/week" are equally
+    important. They are not.
+  </p>
+</div>
+</body>
+</html>

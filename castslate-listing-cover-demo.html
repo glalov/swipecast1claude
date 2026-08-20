@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Listing covers — five treatments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<style>
+  /* No JavaScript on this page. Tabs are radio inputs + CSS sibling selectors,
+     because the preview sandbox blocks inline scripts.
+     Every cover is ONE element per card. The card supplies its own values
+     (--ang, --ttl, --c1/--c2, --ink1/--ink2, --cat1/--cat2) and each mode
+     decides which of them to use — the same "one recipe, different values"
+     idea the real generator would use, driven off a hash of the casting id. */
+  :root{
+    --cream:#F7F4EC; --s1:#fff; --s2:#F1EDE3; --bdr:#e3ded2;
+    --t1:#1B1C20; --t2:#5b5f68; --t3:#8a8f98; --teal:#0f766e;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--cream);color:var(--t1);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;padding:26px 18px 70px;}
+  .wrap{max-width:1220px;margin:0 auto;}
+  h1{font-size:23px;margin:0 0 6px;letter-spacing:-.02em;}
+  .lede{font-size:13.5px;color:var(--t2);line-height:1.65;margin:0 0 4px;max-width:800px;}
+  .lede b{color:var(--t1);}
+
+  .modes{display:none;}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid var(--bdr);margin-bottom:18px;}
+  .tabs label{font-size:12.5px;font-weight:700;padding:9px 15px;border-radius:999px;
+              border:1px solid var(--bdr);background:var(--s1);color:var(--t2);cursor:pointer;user-select:none;}
+  .tabs label:hover{border-color:var(--t3);}
+  #m1:checked~.tabs label[for=m1],#m2:checked~.tabs label[for=m2],#m3:checked~.tabs label[for=m3],
+  #m4:checked~.tabs label[for=m4],#m5:checked~.tabs label[for=m5],#m6:checked~.tabs label[for=m6]
+  {background:var(--t1);color:#fff;border-color:var(--t1);}
+
+  .note{display:none;font-size:12.5px;color:var(--t2);background:var(--s2);border:1px solid var(--bdr);
+        border-radius:10px;padding:12px 14px;margin-bottom:18px;line-height:1.65;}
+  .note b{color:var(--t1);}
+  #m1:checked~.n1,#m2:checked~.n2,#m3:checked~.n3,#m4:checked~.n4,#m5:checked~.n5,#m6:checked~.n6{display:block;}
+
+  /* ── the live card, reproduced ── */
+  .list{display:flex;flex-direction:column;gap:16px;}
+  .card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;
+        box-shadow:0 1px 4px rgba(26,26,46,.05);transition:box-shadow .2s,transform .15s;}
+  .card:hover{box-shadow:0 4px 16px rgba(26,26,46,.09);transform:translateY(-1px);}
+  .row{display:grid;grid-template-columns:1fr auto;gap:24px;padding:24px 28px;align-items:start;}
+  .badges{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+  .badge{background:#E8EEFB;color:#2D5BA8;font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;}
+  .badge.live{background:#e7f6ef;color:#0f7a52;}
+  .card h3{font-size:22px;font-weight:800;letter-spacing:-.5px;margin:0 0 4px;}
+  .tagline{color:var(--t2);font-size:14px;margin:0 0 4px;}
+  .prod{color:var(--t3);font-size:12px;margin:0 0 14px;}
+  .syn{color:var(--t2);font-size:13px;line-height:1.6;margin:0 0 16px;max-width:620px;}
+  .side{display:flex;flex-direction:column;gap:10px;align-items:flex-end;min-width:140px;}
+  .btn-teal{background:var(--teal);color:#fff;border:0;border-radius:9px;padding:10px 18px;
+            font:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+
+  /* the scan strip is on in every mode — that part is settled */
+  .strip{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 14px;}
+  .chip{display:inline-flex;align-items:center;font-size:12px;font-weight:700;padding:5px 11px;
+        border-radius:8px;background:var(--s2);color:var(--t1);border:1px solid var(--bdr);}
+  .chip.pay{background:#e7f6ef;border-color:#bfe6d4;color:#0b5c3f;}
+  .chip.soon{background:#fdeeea;border-color:#f6cfc4;color:#a8402a;}
+  .chip.new{background:#efeaff;border-color:#d7ccff;color:#4C1D95;}
+  .chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;}
+
+  /* ── the cover ── */
+  .cover{display:none;}
+  #m2:checked~.list .cover,#m3:checked~.list .cover,
+  #m4:checked~.list .cover,#m5:checked~.list .cover,#m6:checked~.list .cover{display:block;}
+  #m2:checked~.list .row,#m3:checked~.list .row,
+  #m4:checked~.list .row,#m5:checked~.list .row,#m6:checked~.list .row{grid-template-columns:186px 1fr auto;}
+
+  .cv{position:relative;width:186px;height:186px;border-radius:11px;overflow:hidden;color:#fff;
+      display:flex;flex-direction:column;justify-content:space-between;padding:14px;
+      background:linear-gradient(var(--ang),var(--ink1),var(--ink2));border:1px solid transparent;}
+  .cv .kind{font-size:9.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.85;position:relative;z-index:3;}
+  .cv .ttl{font-family:'Anton',Impact,sans-serif;font-weight:400;text-transform:uppercase;
+           line-height:.95;letter-spacing:.01em;position:relative;z-index:3;font-size:var(--ttl);}
+  .cv .foot{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.78;position:relative;z-index:3;}
+  .cv .veil{position:absolute;inset:0;z-index:1;
+            background:radial-gradient(120% 90% at var(--lx,12%) 8%,rgba(255,255,255,.16),transparent 62%);}
+  .cv .rail{position:absolute;top:0;bottom:0;right:0;width:17px;z-index:2;opacity:.26;
+            background:repeating-linear-gradient(180deg,#fff 0 9px,transparent 9px 20px);}
+  .cv .slate{display:none;position:absolute;top:0;left:0;right:0;height:34px;z-index:2;
+             background:repeating-linear-gradient(115deg,#fff 0 17px,#111318 17px 34px);opacity:.92;}
+
+  /* 2 · colour (the version that was too much) */
+  #m2:checked~.list .cv{background:linear-gradient(var(--ang),var(--c1),var(--c2));}
+  /* 3 · ink — tonal, no hue */
+  /* (uses the .cv default: --ink1/--ink2) */
+  /* 4 · paper — light cover, ink type */
+  #m4:checked~.list .cv{background:linear-gradient(var(--ang),var(--p1),var(--p2));color:var(--t1);border-color:rgba(27,28,32,.14);}
+  #m4:checked~.list .cv .veil{background:radial-gradient(120% 90% at var(--lx,12%) 8%,rgba(255,255,255,.5),transparent 62%);}
+  #m4:checked~.list .cv .rail{background:repeating-linear-gradient(180deg,#1B1C20 0 9px,transparent 9px 20px);opacity:.18;}
+  /* 5 · category tint — one muted hue per project type, colour as information */
+  #m5:checked~.list .cv{background:linear-gradient(var(--ang),var(--cat1),var(--cat2));}
+  /* 6 · slate — the clapper device, one material for the whole board */
+  #m6:checked~.list .cv{background:#111318;}
+  #m6:checked~.list .cv .slate{display:block;}
+  #m6:checked~.list .cv .rail{display:none;}
+  #m6:checked~.list .cv .kind{padding-top:26px;}
+
+  .foot-note{margin-top:26px;font-size:12.5px;color:var(--t2);line-height:1.75;}
+  .foot-note b{color:var(--t1);}
+  @media(max-width:820px){
+    .row,#m2:checked~.list .row,#m3:checked~.list .row,#m4:checked~.list .row,
+    #m5:checked~.list .row,#m6:checked~.list .row{grid-template-columns:1fr;}
+    .cv{width:100%;height:150px;}
+    .side{align-items:stretch;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Listing covers — five treatments</h1>
+  <p class="lede">Same four <b>real listings from your live board</b>, same card, same scan strip in every tab. Only the
+  cover treatment changes, so you are comparing one variable. Nothing here is a photograph.</p>
+
+  <input class="modes" type="radio" name="mode" id="m1">
+  <input class="modes" type="radio" name="mode" id="m2">
+  <input class="modes" type="radio" name="mode" id="m3" checked>
+  <input class="modes" type="radio" name="mode" id="m4">
+  <input class="modes" type="radio" name="mode" id="m5">
+  <input class="modes" type="radio" name="mode" id="m6">
+
+  <div class="tabs">
+    <label for="m1">1 · No cover</label>
+    <label for="m2">2 · Colour (too much)</label>
+    <label for="m3">3 · Ink</label>
+    <label for="m4">4 · Paper</label>
+    <label for="m5">5 · Category tint</label>
+    <label for="m6">6 · Slate</label>
+  </div>
+
+  <div class="note n1"><b>1 · No cover, strip only.</b> The cheapest option and still a real improvement over today: the
+  deciding facts sit above the synopsis instead of below it. If you ship nothing else, ship this.</div>
+  <div class="note n2"><b>2 · Colour — the version you flagged.</b> Six saturated duotones down a ten-listing page reads as
+  a rainbow ladder, and the hues collide with colours that already carry meaning in your UI: teal is live, purple is Cast
+  Slate Pick, red is closing. Decorative colour borrowing those signals is the real problem, not just the loudness.</div>
+  <div class="note n3"><b>3 · Ink — my revised pick.</b> One material, no hue. Variation comes from tone, light direction,
+  angle and type size, so no two covers match while the board stays quiet. This is the treatment that sits inside your
+  cream-and-ink palette instead of arguing with it, and it never competes with a badge for attention.</div>
+  <div class="note n4"><b>4 · Paper.</b> The inverse: a warm paper card with ink type, like a printed call sheet. Softest
+  and most editorial of the set. Risk to weigh — it is close in value to the white card it sits on, so it needs its
+  hairline border to stay a distinct object, and on a long page it can read as slightly flat.</div>
+  <div class="note n5"><b>5 · Category tint.</b> Colour returns, but only as information: one deeply muted hue per project
+  type — film slate-blue, theatre plum, student moss, commercial umber. An actor learns the code in a day and can filter
+  the page with their eyes. More useful than 3, slightly louder; the honest tradeoff is that it only pays off if you keep
+  the type list short and stable.</div>
+  <div class="note n6"><b>6 · Slate.</b> One device for the entire board — the clapper stripe, which is literally your
+  name. Strongest brand read of the five and the most "poster wall" of them. Weakness: every cover shares one silhouette,
+  so distinctiveness rests entirely on the title type.</div>
+
+  <div class="list">
+
+    <!-- 1 · Untitled Horror Project -->
+    <div class="card" style="--ang:152deg;--ttl:25px;--lx:12%;
+         --c1:#1B1C20;--c2:#3b3f52; --ink1:#14161a;--ink2:#2b3039; --p1:#EDE7D9;--p2:#E2D9C6;
+         --cat1:#2b3327;--cat2:#171d15;">
+      <div class="row">
+        <div class="cover"><div class="cv">
+          <span class="veil"></span><span class="rail"></span><span class="slate"></span>
+          <span class="kind">Student Film</span>
+          <span class="ttl">Untitled Horror Project</span>
+          <span class="foot">5 roles · New York</span>
+        </div></div>
+        <div>
+          <div class="badges"><span class="badge">Student Film</span><span class="badge">Non-Union</span><span class="badge">5 roles</span><span class="badge live">● Live</span></div>
+          <h3>Untitled Horror Project</h3>
+          <p class="tagline">A new night attendant at a county morgue is told never to open the doors before six.</p>
+          <p class="prod">Prod. Lamar McKinney</p>
+          <div class="strip"><span class="chip">5 roles open</span><span class="chip pay">Up to $175/day</span><span class="chip">New York, NY</span><span class="chip new">Posted today</span></div>
+          <p class="syn">A new night attendant at a county morgue is told never to open the doors before six. Everything changes when a body arrives with no paperwork and a hospital band dated eleven days from now.</p>
+        </div>
+        <div class="side"><button class="btn-teal">View Roles</button></div>
+      </div>
+    </div>
+
+    <!-- 2 · No Show Tonight -->
+    <div class="card" style="--ang:118deg;--ttl:33px;--lx:78%;
+         --c1:#4C1D95;--c2:#2f1268; --ink1:#1d2027;--ink2:#343b46; --p1:#EFE9DC;--p2:#E6DECD;
+         --cat1:#3a2230;--cat2:#22131d;">
+      <div class="row">
+        <div class="cover"><div class="cv">
+          <span class="veil"></span><span class="rail"></span><span class="slate"></span>
+          <span class="kind">Off-Broadway Theater</span>
+          <span class="ttl">No Show Tonight</span>
+          <span class="foot">5 roles · New York</span>
+        </div></div>
+        <div>
+          <div class="badges"><span class="badge">Off-Broadway Theater</span><span class="badge">AEA</span><span class="badge">5 roles</span><span class="badge live">● Live</span></div>
+          <h3>No Show Tonight</h3>
+          <p class="tagline">A sold out crowd has to be told the show is off.</p>
+          <p class="prod">Sana Verma</p>
+          <div class="strip"><span class="chip">5 roles open</span><span class="chip pay">Up to $900/week</span><span class="chip soon">Closes Sep 19</span><span class="chip">New York, NY</span><span class="chip new">Posted today</span></div>
+          <p class="syn">A box office has to tell a full house that tonight's show is cancelled. One person in the line has traveled a very long way to be there.</p>
+        </div>
+        <div class="side"><button class="btn-teal">View Roles</button></div>
+      </div>
+    </div>
+
+    <!-- 3 · Two Chapels -->
+    <div class="card" style="--ang:205deg;--ttl:35px;--lx:20%;
+         --c1:#0f766e;--c2:#12554f; --ink1:#101216;--ink2:#262b33; --p1:#EAE3D3;--p2:#DED4BF;
+         --cat1:#23303d;--cat2:#141d26;">
+      <div class="row">
+        <div class="cover"><div class="cv">
+          <span class="veil"></span><span class="rail"></span><span class="slate"></span>
+          <span class="kind">Independent Film</span>
+          <span class="ttl">Two Chapels</span>
+          <span class="foot">6 roles · New York</span>
+        </div></div>
+        <div>
+          <div class="badges"><span class="badge">Independent Film</span><span class="badge">SAG-AFTRA Ultra Low Budget</span><span class="badge">6 roles</span><span class="badge live">● Live</span></div>
+          <h3>Two Chapels</h3>
+          <p class="tagline">Independent Film breakdown — 7 roles.</p>
+          <p class="prod">Confidential.</p>
+          <div class="strip"><span class="chip">6 roles open</span><span class="chip pay">Negotiable</span><span class="chip soon">Closes Sep 19</span><span class="chip">New York, NY</span><span class="chip new">Posted today</span></div>
+          <p class="syn">A small funeral home is run by a father and his daughter, who never planned to stay there. One day, they are asked to bury a man whose family stopped speaking to him 30 years ago.</p>
+        </div>
+        <div class="side"><button class="btn-teal">View Roles</button></div>
+      </div>
+    </div>
+
+    <!-- 4 · The Back Tanks -->
+    <div class="card" style="--ang:236deg;--ttl:33px;--lx:60%;
+         --c1:#8a3b12;--c2:#5c2609; --ink1:#17191e;--ink2:#2f353f; --p1:#ECE5D6;--p2:#E0D7C3;
+         --cat1:#23303d;--cat2:#141d26;">
+      <div class="row">
+        <div class="cover"><div class="cv">
+          <span class="veil"></span><span class="rail"></span><span class="slate"></span>
+          <span class="kind">Feature Film</span>
+          <span class="ttl">The Back Tanks</span>
+          <span class="foot">6 roles · New York</span>
+        </div></div>
+        <div>
+          <div class="badges"><span class="badge">Feature Film</span><span class="badge">Non-Union</span><span class="badge">6 roles</span><span class="badge live">● Live</span></div>
+          <h3>The Back Tanks</h3>
+          <p class="tagline">Development — a teenager takes a night job feeding the animals in a pet store after it closes.</p>
+          <p class="prod">Casting: Sharon Sombrero</p>
+          <div class="strip"><span class="chip">6 roles open</span><span class="chip pay">$175–$700/day</span><span class="chip soon">Closes Sep 2</span><span class="chip">New York, NY</span><span class="chip quiet">Posted 2 days ago</span></div>
+          <p class="syn">Seeking actors for a horror feature film: a teenager takes a night job feeding the animals in a pet store after it closes. One tank at the back is not on the feeding list, and the owner will not say why.</p>
+        </div>
+        <div class="side"><button class="btn-teal">View Roles</button></div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="foot-note">
+    <b>Where I landed:</b> 3 · Ink, with 5 · Category tint as the one worth arguing for — because there the colour is
+    information rather than decoration. 2 is in the set only so you can see what you correctly objected to.<br>
+    <b>In production</b> every value here (tone, angle, light position, title size) comes from a hash of the casting's own
+    id: no two listings match, and a listing never changes its own look. A casting director's uploaded photo replaces the
+    cover entirely, which is what keeps real production images valuable.
+  </p>
+</div>
+</body>
+</html>

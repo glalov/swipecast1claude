@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fuller card, less story — three ways</title>
+<style>
+  /* No JavaScript, no fades, no "read more" prompts. Radio inputs + CSS
+     sibling selectors. Every value is the live database row, roles included. */
+  :root{
+    --cream:#F7F4EC; --s1:#fff; --s2:#F1EDE3; --bdr:#e3ded2;
+    --t1:#1B1C20; --t2:#5b5f68; --t3:#8a8f98; --teal:#0f766e;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--cream);color:var(--t1);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;padding:26px 18px 70px;}
+  .wrap{max-width:1080px;margin:0 auto;}
+  h1{font-size:23px;margin:0 0 6px;letter-spacing:-.02em;}
+  .lede{font-size:13.5px;color:var(--t2);line-height:1.65;margin:0;max-width:820px;}
+  .lede b{color:var(--t1);}
+  .modes{display:none;}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid var(--bdr);margin-bottom:18px;}
+  .tabs label{font-size:12.5px;font-weight:700;padding:9px 15px;border-radius:999px;border:1px solid var(--bdr);
+              background:var(--s1);color:var(--t2);cursor:pointer;user-select:none;}
+  #f1:checked~.tabs label[for=f1],#f2:checked~.tabs label[for=f2],
+  #f3:checked~.tabs label[for=f3],#f4:checked~.tabs label[for=f4]{background:var(--t1);color:#fff;border-color:var(--t1);}
+  .note{display:none;font-size:12.5px;color:var(--t2);background:var(--s2);border:1px solid var(--bdr);
+        border-radius:10px;padding:12px 14px;margin-bottom:20px;line-height:1.7;}
+  .note b{color:var(--t1);}
+  #f1:checked~.demo .n1,#f2:checked~.demo .n2,#f3:checked~.demo .n3,#f4:checked~.demo .n4{display:block;}
+  .cap{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin:26px 0 8px;}
+
+  /* ── card ── */
+  .card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;
+        box-shadow:0 1px 4px rgba(26,26,46,.05);margin-bottom:16px;}
+  .card.feat{border-top:3px solid var(--teal);}
+  .row{display:grid;grid-template-columns:1fr auto;gap:24px;padding:24px 28px;align-items:start;}
+  .badges{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+  .badge{background:#eef1f5;color:#3a4150;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:100px;}
+  .badge.live{background:#e7f6ef;color:#0b6b47;}
+  .pick{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:100px;background:#EDE9FE;
+        color:#4C1D95;border:1px solid #C4B5FD;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
+  .card h3{font-size:27px;font-weight:800;letter-spacing:-.5px;margin:0 0 6px;line-height:1.15;}
+  .hook{color:#4a4f58;font-size:16px;margin:0 0 6px;line-height:1.45;}
+  .prod{color:var(--t3);font-size:14px;margin:0 0 14px;}
+  .strip{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;align-items:center;}
+  .chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;border-radius:8px;
+        background:var(--s2);color:var(--t1);border:1px solid var(--bdr);}
+  .chip.pay{background:#0b6b47;border-color:#0b6b47;color:#fff;}
+  .chip.soon{background:#fdeeea;border-color:#e8b5a6;color:#a8341c;}
+  .chip.roles{background:#E8EEFB;border-color:#bcd0f2;color:#1f4a92;}
+  .chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;}
+  .side{display:flex;flex-direction:column;gap:10px;align-items:flex-end;min-width:150px;}
+  .btn{background:var(--teal);color:#fff;border:0;border-radius:10px;padding:13px 22px;font:inherit;
+       font-size:15px;font-weight:700;cursor:pointer;white-space:nowrap;}
+  .btn.ghost{background:#fff;color:var(--teal);border:1.5px solid var(--teal);padding:9px 16px;font-size:13.5px;}
+
+  /* the story sentence — only tab 1 keeps it */
+  .syn{color:#33373f;font-size:16px;line-height:1.62;margin:0 0 14px;max-width:660px;display:none;}
+  #f1:checked~.demo .syn{display:block;}
+
+  /* ── roles preview (tabs 2 and 4) ── */
+  .roles{display:none;border-top:1px solid var(--bdr);margin-top:2px;}
+  #f2:checked~.demo .roles,#f4:checked~.demo .roles{display:block;}
+  .rrow{display:grid;grid-template-columns:1fr auto auto;gap:16px;align-items:center;
+        padding:11px 0;border-bottom:1px solid #f0ece2;}
+  .rrow:last-child{border-bottom:0;}
+  .rname{font-size:15px;font-weight:700;}
+  .rspec{font-size:13.5px;color:var(--t2);margin-top:1px;}
+  .rrate{font-size:14px;font-weight:800;color:#0b6b47;white-space:nowrap;}
+  .rmore{font-size:13.5px;color:var(--t2);padding-top:11px;font-weight:600;}
+
+  /* ── spec grid (tabs 3 and 4) ── */
+  .spec{display:none;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--bdr);
+        border-radius:10px;overflow:hidden;margin:0 0 14px;background:#fcfbf8;}
+  #f3:checked~.demo .spec,#f4:checked~.demo .spec{display:grid;}
+  .spec div{padding:10px 14px;border-right:1px solid var(--bdr);}
+  .spec div:last-child{border-right:0;}
+  .spec .k{font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);margin-bottom:3px;}
+  .spec .v{font-size:14.5px;font-weight:700;color:var(--t1);}
+
+  .foot{margin-top:26px;font-size:12.5px;color:var(--t2);line-height:1.8;}
+  .foot b{color:var(--t1);}
+  @media(max-width:900px){
+    .row{grid-template-columns:1fr;} .side{align-items:stretch;}
+    .spec{grid-template-columns:repeat(2,1fr);} .spec div{border-bottom:1px solid var(--bdr);}
+    .rrow{grid-template-columns:1fr auto;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Fuller card, less story</h1>
+  <p class="lede">No fades, no “read more” line. The card gets <b>fuller by carrying different information</b> — the roles
+  and the specs — instead of more of the plot. Real rows, real roles, real rates from your database.</p>
+
+  <input class="modes" type="radio" name="f" id="f1">
+  <input class="modes" type="radio" name="f" id="f2" checked>
+  <input class="modes" type="radio" name="f" id="f3">
+  <input class="modes" type="radio" name="f" id="f4">
+
+  <div class="tabs">
+    <label for="f1">1 · Today</label>
+    <label for="f2">2 · Roles preview</label>
+    <label for="f3">3 · Spec bar</label>
+    <label for="f4">4 · Both</label>
+  </div>
+
+  <div class="demo">
+    <div class="note n1"><b>1 · Today.</b> Hook line plus the story sentence. The card is mostly prose, and every word of
+    it reappears when the casting opens.</div>
+    <div class="note n2"><b>2 · Roles preview — my pick.</b> The story sentence comes out; the first three roles go in,
+    with age range, gender and rate. The card is <i>fuller than today</i> and reveals <i>less</i> of the film, because
+    roles are information the synopsis never carried. An actor can now find themselves on the card — “Female, 22–32,
+    $300/day” — which is the actual decision. The remaining roles, every description, shoot days, media and audition
+    requirements sit behind the click.</div>
+    <div class="note n3"><b>3 · Spec bar.</b> No roles; a four-cell production block instead — shoot length, dates,
+    audition method, submission requirements. Reads like a call sheet and fills the card with facts a producer would give
+    you. Weaker than 2 for one reason: it tells an actor about the job, not about <i>their</i> part in it.</div>
+    <div class="note n4"><b>4 · Both.</b> Spec bar and roles together. The most substantial card of the set — and honestly
+    close to the ceiling before it starts to feel like the detail page. Worth trying if you want the board to look dense
+    and professional; watch that only three or four listings now fit a screen.</div>
+
+    <p class="cap">On Browse</p>
+
+    <!-- The Seventh Landing -->
+    <div class="card feat"><div class="row">
+      <div>
+        <div class="badges"><span class="pick">★ Cast Slate Pick</span><span class="badge">Independent Film</span><span class="badge">Non-Union</span><span class="badge live">● Live</span></div>
+        <h3>The Seventh Landing</h3>
+        <p class="hook">Every coincidence has a witness.</p>
+        <p class="prod">North Bridge Pictures</p>
+        <div class="strip">
+          <span class="chip roles">8 roles open</span><span class="chip pay">Up to $300/day</span>
+          <span class="chip soon">Closes in 24 days · Sep 12</span><span class="chip">New York, NY</span>
+          <span class="chip quiet">Posted Aug 1</span>
+        </div>
+        <div class="spec">
+          <div><div class="k">Shoot</div><div class="v">25 days</div></div>
+          <div><div class="k">Audition</div><div class="v">Self-tape</div></div>
+          <div><div class="k">Submit with</div><div class="v">Headshot · reel</div></div>
+          <div><div class="k">Union</div><div class="v">Non-Union</div></div>
+        </div>
+        <p class="syn">After discovering a forgotten photograph that shouldn’t exist, a young photographer becomes obsessed with uncovering its origin. As hidden connections emerge, he realizes someone has been quietly shaping his life from the shadows.</p>
+        <div class="roles">
+          <div class="rrow">
+            <div><div class="rname">Rowan Vale</div><div class="rspec">Lead · Male · 24–35</div></div>
+            <div class="rrate">$300/day</div>
+            <div><button class="btn ghost">Apply</button></div>
+          </div>
+          <div class="rrow">
+            <div><div class="rname">Seraphine Ashcroft</div><div class="rspec">Lead · Female · 22–32</div></div>
+            <div class="rrate">$300/day</div>
+            <div><button class="btn ghost">Apply</button></div>
+          </div>
+          <div class="rrow">
+            <div><div class="rname">Detective Nora Bennett</div><div class="rspec">Supporting · Female · 30–45</div></div>
+            <div class="rrate">$225/day</div>
+            <div><button class="btn ghost">Apply</button></div>
+          </div>
+          <div class="rmore">+ 5 more roles, from $80 to $225 a day</div>
+        </div>
+      </div>
+      <div class="side"><button class="btn">View Roles</button></div>
+    </div></div>
+
+    <!-- The Back Tanks -->
+    <div class="card"><div class="row">
+      <div>
+        <div class="badges"><span class="badge">Feature Film</span><span class="badge">Non-Union</span><span class="badge live">● Live</span></div>
+        <h3>The Back Tanks</h3>
+        <p class="hook">A night job nobody else wanted.</p>
+        <p class="prod">Casting: Sharon Sombrero</p>
+        <div class="strip">
+          <span class="chip roles">6 roles open</span><span class="chip pay">Up to $700/day</span>
+          <span class="chip soon">Closes Sep 17</span><span class="chip">New York, NY</span>
+          <span class="chip quiet">Posted Aug 17</span>
+        </div>
+        <div class="spec">
+          <div><div class="k">Shoot</div><div class="v">17 days</div></div>
+          <div><div class="k">Audition</div><div class="v">Self-tape</div></div>
+          <div><div class="k">Submit with</div><div class="v">Headshot · résumé</div></div>
+          <div><div class="k">Union</div><div class="v">Non-Union</div></div>
+        </div>
+        <p class="syn">Seeking actors for a horror feature film: a teenager takes a night job feeding the animals in a pet store after it closes. One tank at the back is not on the feeding list, and the owner will not say what is in it.</p>
+        <div class="roles">
+          <div class="rrow">
+            <div><div class="rname">Janice Huang</div><div class="rspec">Lead · Female · 16–19</div></div>
+            <div class="rrate">$700/day</div>
+            <div><button class="btn ghost">Apply</button></div>
+          </div>
+          <div class="rrow">
+            <div><div class="rname">Tuan Ong</div><div class="rspec">Lead · Male · 58–75 · Asian</div></div>
+            <div class="rrate">$650/day</div>
+            <div><button class="btn ghost">Apply</button></div>
+          </div>
+          <div class="rrow">
+            <div><div class="rname">Ana Tamanaha</div><div class="rspec">Supporting · Female · 15–18 · Pacific Islander</div></div>
+            <div class="rrate">$425/day</div>
+            <div><button class="btn ghost">Apply</button></div>
+          </div>
+          <div class="rmore">+ 3 more roles, from $175 to $400 a day</div>
+        </div>
+      </div>
+      <div class="side"><button class="btn">View Roles</button></div>
+    </div></div>
+  </div>
+
+  <div class="foot">
+    <b>What stays behind the click in tabs 2–4:</b> the full synopsis, every role's written description, per-role shoot
+    days, the audition and prescreen requirements per role, the schedule, the shoot location, and the remaining roles.
+    That is a genuinely different payload from the card — nobody has to be teased into opening it.<br><br>
+    <b>Note on the role names.</b> “Rowan Vale”, “Janice Huang” — these are character names, so on their own they tell an
+    actor nothing. On the card the line under the name is doing all the work (<i>Lead · Female · 22–32 · $300/day</i>).
+    If you prefer, the card can lead with the part instead of the character name — “Lead, female, 22–32” with the character
+    name shown only after opening.
+  </div>
+</div>
+</body>
+</html>

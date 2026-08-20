@@ -2405,6 +2405,43 @@ body.sheet-push .b2t-cube{display:none;}
 .cs-live-dot{position:relative;width:10px;height:10px;border-radius:50%;flex:none;display:inline-block;}
 .cs-live-dot::after{content:"";position:absolute;inset:0;border-radius:50%;background:#15a87f;animation:scLiveRing 1.8s ease-out infinite;}
 .cs-live-dot .core{position:absolute;inset:0;border-radius:50%;background:#15a87f;animation:scLiveDot 1.5s ease-in-out infinite;}
+/* ── Browse casting card, Aug 2026 ────────────────────────────────────────
+   The old card printed the deciding facts (pay, deadline, roles) at 11–12px in
+   the same grey as everything else, while decorative badges shared their
+   weight. This scale lifts the type to a readable size and gives the facts
+   their own colour: money green, deadline warm red, roles blue, and the
+   type/union badges pushed down to neutral so they stop competing.
+   Do NOT write a rule inside this comment — CSS comments do not nest and the
+   next rule gets swallowed (see the .fcs-section note elsewhere in this file). */
+.cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin-bottom:6px;color:var(--t1);}
+.cc-tagline{color:#4a4f58;font-size:16px;line-height:1.45;margin-bottom:6px;}
+.cc-prod{color:var(--t3);font-size:14px;margin-bottom:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.cc-badge{background:#eef1f5;color:#3a4150;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:100px;}
+.cc-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+.cc-chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;border-radius:8px;
+         background:var(--s2);color:var(--t1);border:1px solid var(--bdr);}
+.cc-chip.pay{background:#0b6b47;border-color:#0b6b47;color:#fff;}
+.cc-chip.soon{background:#fdeeea;border-color:#e8b5a6;color:#a8341c;}
+.cc-chip.urgent{background:#a8341c;border-color:#a8341c;color:#fff;}
+.cc-chip.roles{background:#E8EEFB;border-color:#bcd0f2;color:#1f4a92;}
+.cc-chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;padding-left:2px;}
+.cc-pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.cc-pill{display:inline-flex;align-items:baseline;gap:8px;border:1px solid var(--bdr);border-radius:999px;
+         background:var(--s1);padding:7px 6px 7px 13px;cursor:pointer;font:inherit;color:var(--t1);
+         transition:border-color .15s,box-shadow .15s;}
+.cc-pill:hover{border-color:var(--teal);box-shadow:0 1px 5px rgba(26,26,46,.08);}
+.cc-pill .p1{font-size:13.5px;font-weight:800;}
+.cc-pill .p2{font-size:13px;color:var(--t2);}
+.cc-pill .p3{font-size:13px;font-weight:800;color:#fff;background:#0b6b47;border-radius:999px;padding:3px 10px;}
+.cc-pill .p3.tbd{background:var(--s3);color:var(--t2);}
+.cc-pill-rest{font-size:13.5px;color:var(--t2);font-weight:600;}
+.btn-teal.cc-cta{font-size:15px;padding:13px 22px;border-radius:10px;}
+@media(max-width:768px){
+  .cc-title{font-size:23px;}
+  .cc-tagline{font-size:15px;}
+  .cc-chip{font-size:13px;padding:6px 11px;}
+  .cc-pill .p2{font-size:12.5px;}
+}
 .cs-archived-stamp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-13deg);z-index:6;pointer-events:none;border:4px solid #c0392b;color:#c0392b;font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(22px,4.6vw,38px);letter-spacing:.16em;text-transform:uppercase;padding:6px 22px 8px;border-radius:8px;opacity:.8;background:rgba(255,255,255,0.05);box-shadow:inset 0 0 0 2px rgba(192,57,43,.16);white-space:nowrap;}
 .cs-archived-dim{filter:grayscale(.5);opacity:.6;}
 @media (prefers-reduced-motion: reduce){.cs-live-dot::after{display:none}.cs-live-dot .core{animation:none;background:#15a87f}}
@@ -12644,6 +12681,66 @@ function castingCountdown(deadline){
   }catch{return null;}
 }
 
+// ── Browse card (Aug 2026 redesign) ────────────────────────────────────────
+// The card used to print every fact at 11–12px grey, so "Non-Union" and
+// "$900/week" carried identical weight, and the pay string — which can run 96
+// characters on a generated listing — sat inline in the middle of the card.
+// These three helpers feed the new facts strip: one short money figure, the
+// three roles most worth scanning, and a compact spec for each.
+function castingTopRate(casting){
+  const roles=(casting&&casting.roles)||[];
+  const rates=roles.map(r=>Number(r&&r.rate_amount)).filter(n=>isFinite(n)&&n>0);
+  if(rates.length){
+    const hi=Math.max(...rates),lo=Math.min(...rates);
+    const units={};
+    roles.forEach(r=>{if(r&&r.rate_unit&&Number(r.rate_amount)>0)units[r.rate_unit]=(units[r.rate_unit]||0)+1;});
+    const unit=Object.keys(units).sort((a,b)=>units[b]-units[a])[0]||"day";
+    const money=n=>"$"+Number(n).toLocaleString();
+    return hi===lo?`${money(hi)}/${unit}`:`Up to ${money(hi)}/${unit}`;
+  }
+  // No structured rates — fall back to the written pay line, shortened.
+  const raw=String((casting&&casting.pay)||"").trim();
+  if(!raw)return null;
+  if(/^\s*(unpaid|copy|credit|deferred)/i.test(raw))return "Copy & credit";
+  const nums=raw.match(/\$\s?[\d,]+(?:\.\d+)?/g);
+  if(nums&&nums.length){
+    const val=n=>Number(String(n).replace(/[^\d.]/g,""));
+    const hi=Math.max(...nums.map(val));
+    const per=/per week|\/week/i.test(raw)?"/week":/per session|\/session/i.test(raw)?"/session":/per day|\/day/i.test(raw)?"/day":"";
+    return (nums.length>1?"Up to ":"")+"$"+hi.toLocaleString()+per;
+  }
+  return raw.length>26?raw.slice(0,26).trim()+"…":raw;
+}
+// Lead first, then Supporting, then the rest. Background is counted in the
+// total but kept out of the pills — nobody scans a board for atmosphere work.
+const CARD_ROLE_RANK={lead:0,"series regular":0,principal:0,supporting:1,featured:2,"day player":3};
+function castingCardRoles(casting,limit=3){
+  const all=((casting&&casting.roles)||[]).filter(Boolean);
+  const scan=all.filter(r=>!/background|atmosphere|stand-?in|photo double|extra/i.test(String(r.type||r.role_type||"")));
+  const ranked=(scan.length?scan:all).slice().sort((a,b)=>{
+    const ra=CARD_ROLE_RANK[String(a.type||a.role_type||"").toLowerCase()];
+    const rb=CARD_ROLE_RANK[String(b.type||b.role_type||"").toLowerCase()];
+    return (ra===undefined?4:ra)-(rb===undefined?4:rb);
+  });
+  return{shown:ranked.slice(0,limit),total:all.length,rest:Math.max(0,all.length-Math.min(limit,ranked.length))};
+}
+// "Female · 22–32" — the part, not the character name. An invented name tells a
+// talent nothing mid-scroll; the age and gender tell them whether to stop.
+function roleCardSpec(role){
+  if(!role)return "";
+  const g=String(role.gender||"").trim();
+  const a=String(role.ageRange||role.age_range||"").trim();
+  const bits=[];
+  if(g&&!/^any$/i.test(g))bits.push(/^all genders$/i.test(g)?"All genders":g);
+  if(a)bits.push(a.replace(/-/g,"–"));
+  return bits.join(" · ");
+}
+function roleCardRate(role){
+  const n=Number(role&&role.rate_amount);
+  if(!isFinite(n)||n<=0)return null;
+  return "$"+n.toLocaleString();
+}
+
 function castingIsExpired(casting){
   if(!casting)return false;
   try{
@@ -12857,8 +12954,14 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
     else b.classList.remove("sheet-push");
     return()=>b.classList.remove("sheet-push");
   },[sheetCasting,sheetClosing]);
-  const openSheet=useCallback((c)=>{
+  // `role` is set when the talent tapped a role pill on the card: the sheet then
+  // opens that role's application directly instead of the casting's front page.
+  // CastingDetailPage already owns this via autoApplyRole (login + expiry gated),
+  // so nothing about the apply rules or the submission cap changes here.
+  const [sheetRole,setSheetRole]=useState(null);
+  const openSheet=useCallback((c,role)=>{
     sheetScrollY.current=window.scrollY;
+    setSheetRole(role||null);
     setSheetClosing(false);
     // Give the slide-in sheet its own shareable URL (/casting/<slug-or-id>) so a
     // link posted to Facebook etc. opens this specific casting. Without this the
@@ -13132,32 +13235,65 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
                 <div>
                   <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
-                    {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 11px",borderRadius:100,background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",fontSize:10,fontWeight:800,letterSpacing:"0.06em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
-                    <span className="badge" style={{background:"#E8EEFB",color:"#2D5BA8"}}>{translateCastingType(c.type,lang)}</span>
-                    <span className="badge" style={{background:"#E8EEFB",color:"#2D5BA8"}}>{c.union}</span>
-                    <span className="badge" style={{background:"#E8EEFB",color:"#2D5BA8"}}>{(c.roles?.length||1)===1?`1 ${t('search.role')}`:`${c.roles?.length||1} ${t('search.roles')}`}</span>
-                    {isExpiredCasting&&!isArchived&&<span className="badge" style={{background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>Expired</span>}
+                    {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"5px 12px",borderRadius:100,background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",fontSize:11,fontWeight:800,letterSpacing:"0.06em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
+                    <span className="cc-badge">{translateCastingType(c.type,lang)}</span>
+                    <span className="cc-badge">{c.union}</span>
+                    {isExpiredCasting&&!isArchived&&<span className="cc-badge" style={{background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>Expired</span>}
                     {isLive&&<LiveCastingBadge/>}
                   </div>
-                  <h3 style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:4,color:"var(--t1)"}}>{c.title}</h3>
+                  <h3 className="cc-title">{c.title}</h3>
                   {(c.tagline&&c.tagline!==c.prod)
-                    ?<p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{c.tagline}</p>
-                    :c.type?<p style={{color:"var(--t2)",fontSize:14,marginBottom:4}}>{translateCastingType(c.type,lang)}</p>:null}
-                  {c.prod&&<p style={{color:"var(--t3)",fontSize:12,marginBottom:14,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>{c.prod}{c.is_admin_created?(adminBadgeState(c.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(c.admin_verified)===false?<UnverifiedBadge size="xs"/>:null):(c.creator_verified&&<IDVerifiedBadge size="xs"/>)}</p>}
-                  <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6,marginBottom:16,maxWidth:620}}>{c.synopsis?c.synopsis.replace(/\*/g,"").slice(0,200)+(c.synopsis.length>200?"…":""):c.desc}</p>
-                  <div style={{display:"flex",gap:20,flexWrap:"wrap",fontSize:12,color:"var(--t2)"}}>
-                    <span><strong style={{color:"var(--t1)"}}>{t('search.filterLocation')}</strong> · {c.location}</span>
-                    <span><strong style={{color:"var(--t1)"}}>{t('search.pay')}</strong> · {c.pay}</span>
-                    {isArchived
-                      ?<span style={{color:"#c0392b",fontWeight:600}}>Role filled — no longer accepting</span>
-                      :<CastingCountdown deadline={c.deadline}/>}
-                    {c.created_at&&<span style={{color:"var(--t3)"}}><strong style={{color:"var(--t3)",fontWeight:600}}>Posted</strong> · {fmtCastingDate(c.created_at)}</span>}
-                  </div>
+                    ?<p className="cc-tagline">{c.tagline}</p>
+                    :c.type?<p className="cc-tagline">{translateCastingType(c.type,lang)}</p>:null}
+                  {c.prod&&<p className="cc-prod">{c.prod}{c.is_admin_created?(adminBadgeState(c.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(c.admin_verified)===false?<UnverifiedBadge size="xs"/>:null):(c.creator_verified&&<IDVerifiedBadge size="xs"/>)}</p>}
+                  {/* The facts an actor decides on, in the order they decide in:
+                      how many parts, what it pays, how long it is open, where,
+                      how fresh. Colour marks importance — money and deadline are
+                      never the same weight as the type badge again. */}
+                  {(()=>{
+                    const rateLine=castingTopRate(c);
+                    const roleCount=c.roles?.length||0;
+                    return(
+                      <div className="cc-strip">
+                        {roleCount>0&&<span className="cc-chip roles">{roleCount===1?`1 ${t('search.role')}`:`${roleCount} ${t('search.roles')}`}</span>}
+                        {rateLine&&<span className="cc-chip pay">{rateLine}</span>}
+                        {isArchived
+                          ?<span className="cc-chip soon">Role filled — no longer accepting</span>
+                          :cdn&&!cdn.expired
+                            ?<span className={"cc-chip "+(cdn.urgent?"urgent":"soon")}>{cdn.label}</span>
+                            :isExpiredCasting?<span className="cc-chip soon">Applications closed</span>:null}
+                        {c.location&&<span className="cc-chip">{c.location}</span>}
+                        {c.created_at&&<span className="cc-chip quiet">Posted {fmtCastingDate(c.created_at)}</span>}
+                      </div>
+                    );
+                  })()}
+                  {/* Role pills. Each one opens THIS casting on THAT role, so a
+                      talent goes from recognising themselves to the application
+                      in one tap. Closed listings show them flat (no click), so a
+                      filled casting can never start an application. */}
+                  {(()=>{
+                    const pick=castingCardRoles(c,3);
+                    if(!pick.shown.length)return null;
+                    return(
+                      <div className="cc-pills">
+                        {pick.shown.map((r,i)=>{
+                          const spec=roleCardSpec(r);
+                          const rate=roleCardRate(r);
+                          const label=r.type||r.role_type||"Role";
+                          const inner=<><span className="p1">{label}</span>{spec&&<span className="p2">{spec}</span>}<span className={"p3"+(rate?"":" tbd")}>{rate||"Rate on request"}</span></>;
+                          return isClosedCard
+                            ?<span key={r.id||i} className="cc-pill" style={{cursor:"default",opacity:.65}}>{inner}</span>
+                            :<button key={r.id||i} type="button" className="cc-pill" onClick={e=>{e.stopPropagation();openSheet(rawC,r);}}>{inner}</button>;
+                        })}
+                        {pick.rest>0&&<span className="cc-pill-rest">+ {pick.rest} more {pick.rest===1?"role":"roles"}</span>}
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div className="casting-card-row-side" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",minWidth:140}}>
                   {isArchived||isExpiredCasting
                     ?<span className="badge" style={{background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>{isArchived?"Position filled":"Applications closed"}</span>
-                    :<button className="btn-teal" onClick={e=>{e.stopPropagation();openSheet(rawC);}}>{t('search.viewRoles')}</button>}
+                    :<button className="btn-teal cc-cta" onClick={e=>{e.stopPropagation();openSheet(rawC);}}>{t('search.viewRoles')}</button>}
                   {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>{t('search.applied')}</span>:null}
                 </div>
               </div>
@@ -13185,7 +13321,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           <button className="cs-sheet-x" onClick={closeSheet} aria-label="Close">×</button>
         </div>
         {(isLoggedIn||sheetCasting.featured===true)
-          ? <CastingDetailPage casting={sheetCasting} onBack={closeSheet} onNavigate={(p)=>{setSheetCasting(null);onNavigate(p);}} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} myProfile={myProfile} session={session} inSheet={true}/>
+          ? <CastingDetailPage casting={sheetCasting} onBack={closeSheet} onNavigate={(p)=>{setSheetCasting(null);onNavigate(p);}} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} myProfile={myProfile} session={session} inSheet={true} autoApplyRole={sheetRole} onAutoApplyConsumed={()=>setSheetRole(null)}/>
           : <CastingGatePage casting={sheetCasting} onCreateProfile={()=>{setSheetCasting(null);onNavigate("auth-gate");}} onLogin={()=>{setSheetCasting(null);onNavigate("login");}} onBack={closeSheet}/>}
       </div>
     </>,document.body)}

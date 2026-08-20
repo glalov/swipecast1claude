@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Be Inspired — white veil demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<style>
+  :root{ --cream:#F7F4EC; --ink:#1B1C20; --t2:#5b5f68; --t3:#8a8f98; --bdr:#e3ded2; }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--cream);color:var(--ink);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+       padding:28px 20px 60px;}
+  .wrap{max-width:1180px;margin:0 auto;}
+  h1{font-size:22px;margin:0 0 4px;letter-spacing:-0.01em;}
+  .sub{font-size:13px;color:var(--t2);margin:0 0 22px;line-height:1.6;}
+  .bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px;}
+  button{font:inherit;font-size:13px;font-weight:600;padding:9px 16px;border-radius:999px;
+         border:1px solid var(--bdr);background:#fff;color:var(--ink);cursor:pointer;}
+  button.primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .grid{display:grid;grid-template-columns:1fr;gap:26px;}
+  @media(min-width:900px){.grid{grid-template-columns:1fr 1fr;}}
+  .panel{min-width:0;}
+  .cap{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;}
+  .cap b{font-size:13px;}
+  .cap span{font-size:11px;color:var(--t3);}
+
+  /* ── The banner underneath, standing in for the real featured-class artwork
+       so the parting halves have something to reveal. ── */
+  .banner{position:relative;overflow:hidden;border-radius:14px;border:1px solid var(--bdr);
+          height:320px;background:linear-gradient(120deg,#2a2f3a,#454c5c 55%,#2a2f3a);}
+  @media(max-width:768px){.banner{height:148px;}}
+  .fcs-full{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+            color:rgba(255,255,255,.62);font-size:12px;letter-spacing:.14em;text-transform:uppercase;}
+
+  /* ══ EXACT COPY of the live .fci-* intro CSS — same keyframes, same easings,
+       same delays, same font sizes. The ONLY change in the white panel is the
+       two colour values, called out below. ══ */
+  .fci-veil{position:absolute;inset:0;z-index:6;overflow:hidden;line-height:normal;pointer-events:none;}
+  .fci-half{position:absolute;top:0;bottom:0;width:50.5%;background:#000;}
+  .fci-half.l{left:0;}
+  .fci-half.r{right:0;}
+  .fci-row{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(2px,.7vw,10px);}
+  .fci-word{font-family:'Anton',Impact,sans-serif;font-weight:400;color:#fff;text-transform:uppercase;
+            letter-spacing:.012em;line-height:.92;white-space:nowrap;font-size:clamp(17px,3.3vw,50px);
+            opacity:0;will-change:transform,opacity;}
+  @media(max-width:768px){.fci-word{font-size:clamp(30px,15.5vw,60px);}}
+
+  .fci-go .fci-w1{animation:fciWipeL .38s cubic-bezier(.16,1,.3,1) .08s both;}
+  .fci-go .fci-w2{animation:fciWipeR .38s cubic-bezier(.16,1,.3,1) .30s both;}
+  .fci-go .fci-row{animation:fciFade .26s ease 1.58s both;}
+  .fci-go .fci-half.l{animation:fciPartL .52s cubic-bezier(.7,0,.25,1) 1.62s both;}
+  .fci-go .fci-half.r{animation:fciPartR .52s cubic-bezier(.7,0,.25,1) 1.62s both;}
+  .fci-go .fcs-full{animation:fciZoom .70s cubic-bezier(.2,.8,.25,1) 1.62s both;}
+  @keyframes fciWipeL{from{opacity:0;transform:translate3d(-26%,0,0);}to{opacity:1;transform:none;}}
+  @keyframes fciWipeR{from{opacity:0;transform:translate3d(26%,0,0);}to{opacity:1;transform:none;}}
+  @keyframes fciFade{from{opacity:1;}to{opacity:0;}}
+  @keyframes fciPartL{from{transform:none;}to{transform:translate3d(-101%,0,0);}}
+  @keyframes fciPartR{from{transform:none;}to{transform:translate3d(101%,0,0);}}
+  @keyframes fciZoom{from{transform:scale(1.06);}to{transform:none;}}
+
+  /* ── THE INVERSION. Two declarations, nothing else. ── */
+  .invert .fci-half{background:#fff;}
+  .invert .fci-word{color:#000;}
+  /* A hairline seam so the white halves read as two panels against a light page
+     at the moment they part. Delete it if you want them perfectly seamless. */
+  .invert .fci-half.l{box-shadow:inset -1px 0 0 rgba(0,0,0,.08);}
+  .invert .fci-half.r{box-shadow:inset 1px 0 0 rgba(0,0,0,.08);}
+
+  .note{font-size:12px;color:var(--t2);line-height:1.7;margin-top:10px;}
+  code{background:#efeade;padding:1px 6px;border-radius:5px;font-size:11.5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>“Be Inspired. Be Inspiring.” — white veil</h1>
+  <p class="sub">Same animation, same easings, same delays, same type size, same 2.32s total. The only change is
+  the veil colour (<code>#000 → #fff</code>) and the word colour (<code>#fff → #000</code>). Both panels replay together so you can compare them beat for beat.</p>
+
+  <div class="bar">
+    <button class="primary" onclick="play()">▶ Replay both</button>
+    <button onclick="play(0.35)">▶ Replay at 35% speed</button>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="cap"><b>Current</b> <span>black veil, white type</span></div>
+      <div class="banner" id="b1">
+        <div class="fcs-full">featured class banner</div>
+        <div class="fci-veil" aria-hidden="true">
+          <span class="fci-half l"></span><span class="fci-half r"></span>
+          <div class="fci-row">
+            <span class="fci-word fci-w1">Be Inspired.</span>
+            <span class="fci-word fci-w2">Be Inspiring.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="cap"><b>Proposed</b> <span>white veil, black type</span></div>
+      <div class="banner invert" id="b2">
+        <div class="fcs-full">featured class banner</div>
+        <div class="fci-veil" aria-hidden="true">
+          <span class="fci-half l"></span><span class="fci-half r"></span>
+          <div class="fci-row">
+            <span class="fci-word fci-w1">Be Inspired.</span>
+            <span class="fci-word fci-w2">Be Inspiring.</span>
+          </div>
+        </div>
+      </div>
+      <p class="note">Nothing else moved: words still wipe in from left and right 0.08s / 0.30s apart, hold together,
+      fade at 1.58s, and the halves part at 1.62s over 0.52s.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const panels=[document.getElementById('b1'),document.getElementById('b2')];
+  function play(rate){
+    panels.forEach(p=>{
+      p.classList.remove('fci-go');
+      p.style.setProperty('animation-duration','');
+      void p.offsetWidth;                       // force reflow so the run restarts
+      p.querySelectorAll('*').forEach(el=>{ el.style.animationDuration=''; el.style.animationDelay=''; });
+      p.classList.add('fci-go');
+      if(rate){                                  // slow-motion: scale every timing equally
+        p.querySelectorAll('.fci-word,.fci-row,.fci-half,.fcs-full').forEach(el=>{
+          const cs=getComputedStyle(el);
+          const dur=parseFloat(cs.animationDuration)||0, del=parseFloat(cs.animationDelay)||0;
+          if(dur){ el.style.animationDuration=(dur/rate)+'s'; el.style.animationDelay=(del/rate)+'s'; }
+        });
+      }
+    });
+  }
+  play();
+  setInterval(()=>play(), 4200);                 // loop so it is easy to watch
+</script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Seventh Landing — before / after</title>
+<style>
+  /* No JavaScript — tabs are radio inputs + CSS sibling selectors.
+     Every value below (title, tagline, prod, pay string, deadline, role count,
+     featured flag) is the live database row for "The Seventh Landing". */
+  :root{
+    --cream:#F7F4EC; --s1:#fff; --s2:#F1EDE3; --bdr:#e3ded2;
+    --t1:#1B1C20; --t2:#5b5f68; --t3:#8a8f98; --teal:#0f766e;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--cream);color:var(--t1);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;padding:26px 18px 70px;}
+  .wrap{max-width:1060px;margin:0 auto;}
+  h1{font-size:23px;margin:0 0 6px;letter-spacing:-.02em;}
+  .lede{font-size:13.5px;color:var(--t2);line-height:1.65;margin:0;max-width:800px;}
+  .lede b{color:var(--t1);}
+  .modes{display:none;}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid var(--bdr);margin-bottom:20px;}
+  .tabs label{font-size:12.5px;font-weight:700;padding:9px 15px;border-radius:999px;border:1px solid var(--bdr);
+              background:var(--s1);color:var(--t2);cursor:pointer;user-select:none;}
+  #v1:checked~.tabs label[for=v1],#v2:checked~.tabs label[for=v2],#v3:checked~.tabs label[for=v3]
+  {background:var(--t1);color:#fff;border-color:var(--t1);}
+
+  .stack{display:none;}
+  #v1:checked~.s1,#v2:checked~.s2,#v3:checked~.s3{display:block;}
+  #v3:checked~.s3{display:grid;gap:22px;}
+  .cap{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin:0 0 8px;}
+
+  /* ── card shell (identical in both states) ── */
+  .card{background:var(--s1);border:1px solid var(--bdr);border-top:3px solid var(--teal);
+        border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(26,26,46,.05);}
+  .row{display:grid;grid-template-columns:1fr auto;gap:24px;padding:24px 28px;align-items:start;}
+  .badges{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+  .pick{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:100px;background:#EDE9FE;
+        color:#4C1D95;border:1px solid #C4B5FD;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
+  .side{display:flex;flex-direction:column;gap:10px;align-items:flex-end;min-width:150px;}
+
+  /* ══ BEFORE — today's exact values ══ */
+  .before .badge{background:#E8EEFB;color:#2D5BA8;font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;}
+  .before .badge.live{background:#e7f6ef;color:#0f7a52;}
+  .before h3{font-size:22px;font-weight:800;letter-spacing:-.5px;margin:0 0 4px;}
+  .before .tagline{color:#5b5f68;font-size:14px;margin:0 0 4px;}
+  .before .prod{color:#8a8f98;font-size:12px;margin:0 0 14px;}
+  .before .syn{color:#5b5f68;font-size:13px;line-height:1.6;margin:0 0 16px;max-width:620px;}
+  .before .meta{display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:#5b5f68;}
+  .before .meta strong{color:var(--t1);}
+  .before .btn{background:var(--teal);color:#fff;border:0;border-radius:9px;padding:10px 18px;
+               font:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+
+  /* ══ AFTER — treatment 3: Backstage scale + colour weighting ══ */
+  .after .badge{background:#eef1f5;color:#3a4150;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:100px;}
+  .after .badge.live{background:#e7f6ef;color:#0b6b47;}
+  .after h3{font-size:27px;font-weight:800;letter-spacing:-.5px;margin:0 0 6px;line-height:1.15;}
+  .after .tagline{color:#4a4f58;font-size:16px;margin:0 0 6px;line-height:1.45;}
+  .after .prod{color:#8a8f98;font-size:14px;margin:0 0 14px;}
+  .after .syn{color:#33373f;font-size:16px;line-height:1.62;margin:0 0 16px;max-width:660px;}
+  .after .btn{background:var(--teal);color:#fff;border:0;border-radius:10px;padding:13px 22px;
+              font:inherit;font-size:15px;font-weight:700;cursor:pointer;white-space:nowrap;}
+  .after .strip{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;align-items:center;}
+  .after .chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;
+               border-radius:8px;background:var(--s2);color:var(--t1);border:1px solid var(--bdr);}
+  .after .chip.pay{background:#0b6b47;border-color:#0b6b47;color:#fff;}
+  .after .chip.soon{background:#fdeeea;border-color:#e8b5a6;color:#a8341c;}
+  .after .chip.roles{background:#E8EEFB;border-color:#bcd0f2;color:#1f4a92;}
+  .after .chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;}
+
+  .diff{margin-top:24px;font-size:12.5px;color:var(--t2);line-height:1.8;}
+  .diff b{color:var(--t1);}
+  table.sz{border-collapse:collapse;margin-top:10px;font-size:12.5px;width:100%;}
+  table.sz td,table.sz th{border:1px solid var(--bdr);padding:7px 12px;text-align:left;}
+  table.sz th{background:var(--s2);font-weight:700;color:var(--t1);}
+  @media(max-width:820px){ .row{grid-template-columns:1fr;} .side{align-items:stretch;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>“The Seventh Landing” — exactly how this card changes</h1>
+  <p class="lede">The real row from your database: Independent Film · Non-Union · North Bridge Pictures · New York, NY ·
+  8 roles · featured (so it keeps the teal top edge and the Cast Slate Pick badge) · closes Sep 12 · posted Aug 1.
+  <b>Nothing is invented and no words are cut</b> — only size, weight and colour move.</p>
+
+  <input class="modes" type="radio" name="v" id="v1">
+  <input class="modes" type="radio" name="v" id="v2" checked>
+  <input class="modes" type="radio" name="v" id="v3">
+  <div class="tabs">
+    <label for="v1">Before (today)</label>
+    <label for="v2">After (treatment 3)</label>
+    <label for="v3">Both, stacked</label>
+  </div>
+
+  <!-- BEFORE -->
+  <div class="stack s1">
+    <p class="cap">Before — live site today</p>
+    <div class="card before"><div class="row">
+      <div>
+        <div class="badges">
+          <span class="pick">★ Cast Slate Pick</span>
+          <span class="badge">Independent Film</span><span class="badge">Non-Union</span>
+          <span class="badge">8 roles</span><span class="badge live">● Live</span>
+        </div>
+        <h3>The Seventh Landing</h3>
+        <p class="tagline">Every coincidence has a witness.</p>
+        <p class="prod">North Bridge Pictures</p>
+        <p class="syn">After discovering a forgotten photograph that shouldn’t exist, a young photographer becomes obsessed with uncovering its origin. As hidden connections emerge, he realizes someone has been quietly shaping his life from the shadows.</p>
+        <div class="meta">
+          <span><strong>Location</strong> · New York, NY</span>
+          <span><strong>Pay</strong> · Lead: $300/day | Supporting: $225/day | Day Players: $175/day (Meals, credit, and copy provided.)</span>
+          <span>Closes in 24 days</span>
+          <span style="color:#8a8f98"><strong style="color:#8a8f98;font-weight:600">Posted</strong> · Aug 1, 2026</span>
+        </div>
+      </div>
+      <div class="side"><button class="btn">View Roles</button></div>
+    </div></div>
+  </div>
+
+  <!-- AFTER -->
+  <div class="stack s2">
+    <p class="cap">After — treatment 3</p>
+    <div class="card after"><div class="row">
+      <div>
+        <div class="badges">
+          <span class="pick">★ Cast Slate Pick</span>
+          <span class="badge">Independent Film</span><span class="badge">Non-Union</span><span class="badge live">● Live</span>
+        </div>
+        <h3>The Seventh Landing</h3>
+        <p class="tagline">Every coincidence has a witness.</p>
+        <p class="prod">North Bridge Pictures</p>
+        <div class="strip">
+          <span class="chip roles">8 roles open</span>
+          <span class="chip pay">Up to $300/day</span>
+          <span class="chip soon">Closes in 24 days · Sep 12</span>
+          <span class="chip">New York, NY</span>
+          <span class="chip quiet">Posted Aug 1</span>
+        </div>
+        <p class="syn">After discovering a forgotten photograph that shouldn’t exist, a young photographer becomes obsessed with uncovering its origin. As hidden connections emerge, he realizes someone has been quietly shaping his life from the shadows.</p>
+      </div>
+      <div class="side"><button class="btn">View Roles</button></div>
+    </div></div>
+  </div>
+
+  <!-- BOTH -->
+  <div class="stack s3">
+    <div>
+      <p class="cap">Before — live site today</p>
+      <div class="card before"><div class="row">
+        <div>
+          <div class="badges">
+            <span class="pick">★ Cast Slate Pick</span>
+            <span class="badge">Independent Film</span><span class="badge">Non-Union</span>
+            <span class="badge">8 roles</span><span class="badge live">● Live</span>
+          </div>
+          <h3>The Seventh Landing</h3>
+          <p class="tagline">Every coincidence has a witness.</p>
+          <p class="prod">North Bridge Pictures</p>
+          <p class="syn">After discovering a forgotten photograph that shouldn’t exist, a young photographer becomes obsessed with uncovering its origin. As hidden connections emerge, he realizes someone has been quietly shaping his life from the shadows.</p>
+          <div class="meta">
+            <span><strong>Location</strong> · New York, NY</span>
+            <span><strong>Pay</strong> · Lead: $300/day | Supporting: $225/day | Day Players: $175/day (Meals, credit, and copy provided.)</span>
+            <span>Closes in 24 days</span>
+            <span style="color:#8a8f98"><strong style="color:#8a8f98;font-weight:600">Posted</strong> · Aug 1, 2026</span>
+          </div>
+        </div>
+        <div class="side"><button class="btn">View Roles</button></div>
+      </div></div>
+    </div>
+    <div>
+      <p class="cap">After — treatment 3</p>
+      <div class="card after"><div class="row">
+        <div>
+          <div class="badges">
+            <span class="pick">★ Cast Slate Pick</span>
+            <span class="badge">Independent Film</span><span class="badge">Non-Union</span><span class="badge live">● Live</span>
+          </div>
+          <h3>The Seventh Landing</h3>
+          <p class="tagline">Every coincidence has a witness.</p>
+          <p class="prod">North Bridge Pictures</p>
+          <div class="strip">
+            <span class="chip roles">8 roles open</span>
+            <span class="chip pay">Up to $300/day</span>
+            <span class="chip soon">Closes in 24 days · Sep 12</span>
+            <span class="chip">New York, NY</span>
+            <span class="chip quiet">Posted Aug 1</span>
+          </div>
+          <p class="syn">After discovering a forgotten photograph that shouldn’t exist, a young photographer becomes obsessed with uncovering its origin. As hidden connections emerge, he realizes someone has been quietly shaping his life from the shadows.</p>
+        </div>
+        <div class="side"><button class="btn">View Roles</button></div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="diff">
+    <b>What actually changed on this card</b>
+    <table class="sz">
+      <tr><th>Element</th><th>Before</th><th>After</th></tr>
+      <tr><td>Title</td><td>22px</td><td><b>27px</b></td></tr>
+      <tr><td>Tagline “Every coincidence has a witness.”</td><td>14px #5b5f68</td><td><b>16px #4a4f58</b></td></tr>
+      <tr><td>Production company</td><td>12px</td><td><b>14px</b></td></tr>
+      <tr><td>Synopsis</td><td>13px #5b5f68</td><td><b>16px #33373f</b></td></tr>
+      <tr><td>Pay</td><td>12px grey, full 96-character string inline</td><td><b>14px white on green — “Up to $300/day”</b></td></tr>
+      <tr><td>Deadline</td><td>12px grey “Closes in 24 days”</td><td><b>14px warm red, with the date</b></td></tr>
+      <tr><td>Roles</td><td>11px blue badge among four identical badges</td><td><b>14px blue chip, in the facts row</b></td></tr>
+      <tr><td>Type / union badges</td><td>11px blue — same weight as pay</td><td><b>12.5px neutral grey — deliberately quieter</b></td></tr>
+      <tr><td>Button</td><td>13px</td><td><b>15px, taller hit area</b></td></tr>
+    </table>
+    <p><b>Two judgement calls worth your approval.</b> First, the pay line: the stored string is
+    “Lead: $300/day | Supporting: $225/day | Day Players: $175/day (Meals, credit, and copy provided.)”. The chip shows the
+    top figure — <i>Up to $300/day</i> — and the full breakdown stays on the detail page, where per-role rates already
+    live. Second, the role count moves out of the badge row and into the facts row, so the badge row is only
+    <i>what kind of project</i> and the facts row is only <i>what you need to decide</i>.</p>
+    <p>Card height is within a few pixels of today's: the synopsis got bigger, but the long pay string collapsing into one
+    chip gave the space back.</p>
+  </div>
+</div>
+</body>
+</html>

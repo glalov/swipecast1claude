@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Roles on the card — three compact layouts</title>
+<style>
+  /* No JavaScript, no fades. Radio inputs + CSS sibling selectors.
+     Roles, rates, ages and genders are the live database rows. */
+  :root{
+    --cream:#F7F4EC; --s1:#fff; --s2:#F1EDE3; --bdr:#e3ded2;
+    --t1:#1B1C20; --t2:#5b5f68; --t3:#8a8f98; --teal:#0f766e; --green:#0b6b47;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--cream);color:var(--t1);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;padding:26px 18px 70px;}
+  .wrap{max-width:1080px;margin:0 auto;}
+  h1{font-size:23px;margin:0 0 6px;letter-spacing:-.02em;}
+  .lede{font-size:13.5px;color:var(--t2);line-height:1.65;margin:0;max-width:830px;}
+  .lede b{color:var(--t1);}
+  .modes{display:none;}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid var(--bdr);margin-bottom:18px;}
+  .tabs label{font-size:12.5px;font-weight:700;padding:9px 15px;border-radius:999px;border:1px solid var(--bdr);
+              background:var(--s1);color:var(--t2);cursor:pointer;user-select:none;}
+  #r1:checked~.tabs label[for=r1],#r2:checked~.tabs label[for=r2],
+  #r3:checked~.tabs label[for=r3],#r4:checked~.tabs label[for=r4]{background:var(--t1);color:#fff;border-color:var(--t1);}
+  .note{display:none;font-size:12.5px;color:var(--t2);background:var(--s2);border:1px solid var(--bdr);
+        border-radius:10px;padding:12px 14px;margin-bottom:20px;line-height:1.7;}
+  .note b{color:var(--t1);}
+  #r1:checked~.demo .n1,#r2:checked~.demo .n2,#r3:checked~.demo .n3,#r4:checked~.demo .n4{display:block;}
+  .cap{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin:22px 0 8px;}
+
+  /* ── card ── */
+  .card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;
+        box-shadow:0 1px 4px rgba(26,26,46,.05);margin-bottom:16px;}
+  .card.feat{border-top:3px solid var(--teal);}
+  .row{display:grid;grid-template-columns:1fr auto;gap:24px;padding:24px 28px;align-items:start;}
+  .badges{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+  .badge{background:#eef1f5;color:#3a4150;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:100px;}
+  .badge.live{background:#e7f6ef;color:var(--green);}
+  .pick{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:100px;background:#EDE9FE;
+        color:#4C1D95;border:1px solid #C4B5FD;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
+  .card h3{font-size:27px;font-weight:800;letter-spacing:-.5px;margin:0 0 6px;line-height:1.15;}
+  .hook{color:#4a4f58;font-size:16px;margin:0 0 6px;line-height:1.45;}
+  .prod{color:var(--t3);font-size:14px;margin:0 0 14px;}
+  .strip{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;align-items:center;}
+  .chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;border-radius:8px;
+        background:var(--s2);color:var(--t1);border:1px solid var(--bdr);}
+  .chip.pay{background:var(--green);border-color:var(--green);color:#fff;}
+  .chip.soon{background:#fdeeea;border-color:#e8b5a6;color:#a8341c;}
+  .chip.roles{background:#E8EEFB;border-color:#bcd0f2;color:#1f4a92;}
+  .chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;}
+  .side{display:flex;flex-direction:column;gap:10px;align-items:flex-end;min-width:150px;}
+  .btn{background:var(--teal);color:#fff;border:0;border-radius:10px;padding:13px 22px;font:inherit;
+       font-size:15px;font-weight:700;cursor:pointer;white-space:nowrap;}
+
+  /* every layout hidden by default */
+  .lay{display:none;}
+  #r1:checked~.demo .l1,#r2:checked~.demo .l2,#r3:checked~.demo .l3,#r4:checked~.demo .l4{display:block;}
+
+  /* ══ 1 · stacked rows (the version you saw) ══ */
+  .l1 .rrow{display:grid;grid-template-columns:1fr auto auto;gap:16px;align-items:center;
+            padding:11px 0;border-bottom:1px solid #f0ece2;}
+  .l1{border-top:1px solid var(--bdr);}
+  .l1 .rname{font-size:15px;font-weight:700;} .l1 .rspec{font-size:13.5px;color:var(--t2);margin-top:1px;}
+  .l1 .rrate{font-size:14px;font-weight:800;color:var(--green);}
+  .l1 .ghost{background:#fff;color:var(--teal);border:1.5px solid var(--teal);border-radius:9px;
+             padding:8px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+  .l1 .rmore{font-size:13.5px;color:var(--t2);padding-top:10px;font-weight:600;}
+
+  /* ══ 2 · role pills — one wrapping row ══ */
+  .l2{display:none;flex-wrap:wrap;gap:8px;align-items:center;padding-top:2px;}
+  #r2:checked~.demo .l2{display:flex;}
+  .pill{display:inline-flex;align-items:baseline;gap:8px;border:1px solid var(--bdr);border-radius:999px;
+        background:#fcfbf8;padding:7px 6px 7px 13px;cursor:pointer;}
+  .pill:hover{border-color:var(--teal);}
+  .pill .p1{font-size:13.5px;font-weight:800;letter-spacing:.01em;}
+  .pill .p2{font-size:13px;color:var(--t2);}
+  .pill .p3{font-size:13px;font-weight:800;color:#fff;background:var(--green);border-radius:999px;padding:3px 10px;}
+  .l2 .rest{font-size:13.5px;color:var(--t2);font-weight:600;padding-left:2px;}
+
+  /* ══ 3 · three tiles across ══ */
+  .l3{display:none;grid-template-columns:repeat(3,1fr);gap:10px;padding-top:4px;}
+  #r3:checked~.demo .l3{display:grid;}
+  .tile{border:1px solid var(--bdr);border-radius:10px;background:#fcfbf8;padding:11px 13px;cursor:pointer;}
+  .tile:hover{border-color:var(--teal);}
+  .tile .t1{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#1f4a92;}
+  .tile .t2{font-size:14.5px;font-weight:700;margin-top:3px;}
+  .tile .t3{font-size:14px;font-weight:800;color:var(--green);margin-top:4px;}
+  .l3 .tile.rest{display:flex;align-items:center;justify-content:center;font-size:13.5px;color:var(--t2);
+                 font-weight:700;background:transparent;border-style:dashed;}
+
+  /* ══ 4 · one-line roster ══ */
+  .l4{font-size:14.5px;line-height:1.7;color:var(--t1);padding-top:2px;}
+  .l4 .lbl{font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);
+           display:block;margin-bottom:3px;}
+  .l4 b{font-weight:800;}
+  .l4 .sep{color:var(--t3);padding:0 6px;}
+  .l4 .money{color:var(--green);font-weight:800;}
+  .l4 .rest{color:var(--t2);}
+
+  .foot{margin-top:26px;font-size:12.5px;color:var(--t2);line-height:1.8;}
+  .foot b{color:var(--t1);}
+  table.h{border-collapse:collapse;margin-top:10px;font-size:12.5px;}
+  table.h td,table.h th{border:1px solid var(--bdr);padding:6px 12px;text-align:left;}
+  table.h th{background:var(--s2);font-weight:700;color:var(--t1);}
+  @media(max-width:900px){
+    .row{grid-template-columns:1fr;} .side{align-items:stretch;}
+    #r3:checked~.demo .l3{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Roles on the card — three compact layouts</h1>
+  <p class="lede">Same information as the version you liked, but <b>not a right-hand rail</b> and <b>much shorter</b>. Each
+  layout still shows three roles with age, gender and rate, and still says how many are left. Real roles and real rates
+  from your database.</p>
+
+  <input class="modes" type="radio" name="r" id="r1">
+  <input class="modes" type="radio" name="r" id="r2" checked>
+  <input class="modes" type="radio" name="r" id="r3">
+  <input class="modes" type="radio" name="r" id="r4">
+
+  <div class="tabs">
+    <label for="r1">1 · Stacked rows (what you saw)</label>
+    <label for="r2">2 · Role pills</label>
+    <label for="r3">3 · Three tiles</label>
+    <label for="r4">4 · One-line roster</label>
+  </div>
+
+  <div class="demo">
+    <div class="note n1"><b>1 · Stacked rows.</b> The version from the last demo, here only as the height benchmark. Three
+    roles, each on its own line with its own button — roughly <b>168px</b> of card. Clear, but it is what makes the card
+    too tall.</div>
+    <div class="note n2"><b>2 · Role pills — my pick.</b> Each role becomes one pill: part, then age and gender, then the
+    rate in a green capsule. They wrap like tags, so three roles cost <b>about 40px</b> instead of 168. Nothing is on a
+    rail, nothing is stacked, and the whole row still reads left to right in one pass. Tapping a pill opens the casting on
+    that role.</div>
+    <div class="note n3"><b>3 · Three tiles.</b> A three-column strip: part on top, specs under it, rate below, with a
+    dashed fourth tile for the remainder. About <b>78px</b>. More structured and more "spec sheet" than the pills; it also
+    holds its shape better when one role has a long label.</div>
+    <div class="note n4"><b>4 · One-line roster.</b> The roles written as a single sentence of specs —
+    <i>Lead F 22–32 · Lead M 24–35 · Supporting F 30–45 · +5 more</i>. About <b>24px</b>, the smallest possible way to say
+    it. Densest and the most scannable at speed; the trade is that no individual role is clickable, so every actor lands
+    on the same detail page.</div>
+
+    <p class="cap">On Browse</p>
+
+    <!-- ══ The Seventh Landing ══ -->
+    <div class="card feat"><div class="row">
+      <div>
+        <div class="badges"><span class="pick">★ Cast Slate Pick</span><span class="badge">Independent Film</span><span class="badge">Non-Union</span><span class="badge live">● Live</span></div>
+        <h3>The Seventh Landing</h3>
+        <p class="hook">Every coincidence has a witness.</p>
+        <p class="prod">North Bridge Pictures</p>
+        <div class="strip">
+          <span class="chip roles">8 roles open</span><span class="chip pay">Up to $300/day</span>
+          <span class="chip soon">Closes in 24 days · Sep 12</span><span class="chip">New York, NY</span>
+          <span class="chip quiet">Posted Aug 1</span>
+        </div>
+
+        <div class="lay l1">
+          <div class="rrow"><div><div class="rname">Rowan Vale</div><div class="rspec">Lead · Male · 24–35</div></div><div class="rrate">$300/day</div><div><button class="ghost">Apply</button></div></div>
+          <div class="rrow"><div><div class="rname">Seraphine Ashcroft</div><div class="rspec">Lead · Female · 22–32</div></div><div class="rrate">$300/day</div><div><button class="ghost">Apply</button></div></div>
+          <div class="rrow"><div><div class="rname">Detective Nora Bennett</div><div class="rspec">Supporting · Female · 30–45</div></div><div class="rrate">$225/day</div><div><button class="ghost">Apply</button></div></div>
+          <div class="rmore">+ 5 more roles, from $80 to $225 a day</div>
+        </div>
+
+        <div class="lay l2">
+          <span class="pill"><span class="p1">Lead</span><span class="p2">Male · 24–35</span><span class="p3">$300</span></span>
+          <span class="pill"><span class="p1">Lead</span><span class="p2">Female · 22–32</span><span class="p3">$300</span></span>
+          <span class="pill"><span class="p1">Supporting</span><span class="p2">Female · 30–45</span><span class="p3">$225</span></span>
+          <span class="rest">+ 5 more roles</span>
+        </div>
+
+        <div class="lay l3">
+          <div class="tile"><div class="t1">Lead</div><div class="t2">Male · 24–35</div><div class="t3">$300/day</div></div>
+          <div class="tile"><div class="t1">Lead</div><div class="t2">Female · 22–32</div><div class="t3">$300/day</div></div>
+          <div class="tile rest">+ 6 more roles, from $80</div>
+        </div>
+
+        <div class="lay l4">
+          <span class="lbl">Casting</span>
+          <b>Lead</b> M 24–35 <span class="money">$300</span><span class="sep">·</span>
+          <b>Lead</b> F 22–32 <span class="money">$300</span><span class="sep">·</span>
+          <b>Supporting</b> F 30–45 <span class="money">$225</span><span class="sep">·</span>
+          <span class="rest">+5 more, from $80</span>
+        </div>
+      </div>
+      <div class="side"><button class="btn">View Roles</button></div>
+    </div></div>
+
+    <!-- ══ The Back Tanks ══ -->
+    <div class="card"><div class="row">
+      <div>
+        <div class="badges"><span class="badge">Feature Film</span><span class="badge">Non-Union</span><span class="badge live">● Live</span></div>
+        <h3>The Back Tanks</h3>
+        <p class="hook">A night job nobody else wanted.</p>
+        <p class="prod">Casting: Sharon Sombrero</p>
+        <div class="strip">
+          <span class="chip roles">6 roles open</span><span class="chip pay">Up to $700/day</span>
+          <span class="chip soon">Closes Sep 17</span><span class="chip">New York, NY</span>
+          <span class="chip quiet">Posted Aug 17</span>
+        </div>
+
+        <div class="lay l1">
+          <div class="rrow"><div><div class="rname">Janice Huang</div><div class="rspec">Lead · Female · 16–19</div></div><div class="rrate">$700/day</div><div><button class="ghost">Apply</button></div></div>
+          <div class="rrow"><div><div class="rname">Tuan Ong</div><div class="rspec">Lead · Male · 58–75 · Asian</div></div><div class="rrate">$650/day</div><div><button class="ghost">Apply</button></div></div>
+          <div class="rrow"><div><div class="rname">Ana Tamanaha</div><div class="rspec">Supporting · Female · 15–18</div></div><div class="rrate">$425/day</div><div><button class="ghost">Apply</button></div></div>
+          <div class="rmore">+ 3 more roles, from $175 to $400 a day</div>
+        </div>
+
+        <div class="lay l2">
+          <span class="pill"><span class="p1">Lead</span><span class="p2">Female · 16–19</span><span class="p3">$700</span></span>
+          <span class="pill"><span class="p1">Lead</span><span class="p2">Male · 58–75 · Asian</span><span class="p3">$650</span></span>
+          <span class="pill"><span class="p1">Supporting</span><span class="p2">Female · 15–18</span><span class="p3">$425</span></span>
+          <span class="rest">+ 3 more roles</span>
+        </div>
+
+        <div class="lay l3">
+          <div class="tile"><div class="t1">Lead</div><div class="t2">Female · 16–19</div><div class="t3">$700/day</div></div>
+          <div class="tile"><div class="t1">Lead</div><div class="t2">Male · 58–75</div><div class="t3">$650/day</div></div>
+          <div class="tile rest">+ 4 more roles, from $175</div>
+        </div>
+
+        <div class="lay l4">
+          <span class="lbl">Casting</span>
+          <b>Lead</b> F 16–19 <span class="money">$700</span><span class="sep">·</span>
+          <b>Lead</b> M 58–75 <span class="money">$650</span><span class="sep">·</span>
+          <b>Supporting</b> F 15–18 <span class="money">$425</span><span class="sep">·</span>
+          <span class="rest">+3 more, from $175</span>
+        </div>
+      </div>
+      <div class="side"><button class="btn">View Roles</button></div>
+    </div></div>
+  </div>
+
+  <div class="foot">
+    <b>Height cost of the roles block, per card:</b>
+    <table class="h">
+      <tr><th>Layout</th><th>Adds</th><th>Roles shown</th><th>Per-role click</th></tr>
+      <tr><td>1 · Stacked rows</td><td>~168px</td><td>3 + count</td><td>Yes, own button</td></tr>
+      <tr><td><b>2 · Role pills</b></td><td><b>~40px</b></td><td>3 + count</td><td>Yes, whole pill</td></tr>
+      <tr><td>3 · Three tiles</td><td>~78px</td><td>2 + remainder tile</td><td>Yes, whole tile</td></tr>
+      <tr><td>4 · One-line roster</td><td>~24px</td><td>3 + count</td><td>No</td></tr>
+    </table>
+    <p><b>Note on what leads each role.</b> These all lead with the PART — “Lead · Female · 22–32” — not the character
+    name. “Seraphine Ashcroft” tells an actor nothing on a scroll; “Female, 22–32, $300/day” tells them whether to stop.
+    Character names appear once the casting is open, where they belong.</p>
+  </div>
+</div>
+</body>
+</html>

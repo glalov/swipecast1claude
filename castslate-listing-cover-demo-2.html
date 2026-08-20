@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Listing covers — light, low-redundancy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<style>
+  /* No JavaScript — radio inputs + CSS sibling selectors, so it works in a
+     sandboxed preview. Round two: nothing on a cover repeats what the row
+     already says, and nothing is dark enough to build a black rail down a
+     ten-listing page. */
+  :root{
+    --cream:#F7F4EC; --s1:#fff; --s2:#F1EDE3; --bdr:#e3ded2;
+    --t1:#1B1C20; --t2:#5b5f68; --t3:#8a8f98; --teal:#0f766e;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--cream);color:var(--t1);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;padding:26px 18px 70px;}
+  .wrap{max-width:1220px;margin:0 auto;}
+  h1{font-size:23px;margin:0 0 6px;letter-spacing:-.02em;}
+  .lede{font-size:13.5px;color:var(--t2);line-height:1.65;margin:0;max-width:820px;}
+  .lede b{color:var(--t1);}
+
+  .modes{display:none;}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid var(--bdr);margin-bottom:18px;}
+  .tabs label{font-size:12.5px;font-weight:700;padding:9px 15px;border-radius:999px;
+              border:1px solid var(--bdr);background:var(--s1);color:var(--t2);cursor:pointer;user-select:none;}
+  .tabs label:hover{border-color:var(--t3);}
+  #k1:checked~.tabs label[for=k1],#k2:checked~.tabs label[for=k2],#k3:checked~.tabs label[for=k3],
+  #k4:checked~.tabs label[for=k4],#k5:checked~.tabs label[for=k5]{background:var(--t1);color:#fff;border-color:var(--t1);}
+
+  .note{display:none;font-size:12.5px;color:var(--t2);background:var(--s2);border:1px solid var(--bdr);
+        border-radius:10px;padding:12px 14px;margin-bottom:18px;line-height:1.65;}
+  .note b{color:var(--t1);}
+  #k1:checked~.n1,#k2:checked~.n2,#k3:checked~.n3,#k4:checked~.n4,#k5:checked~.n5{display:block;}
+
+  /* ── card ── */
+  .list{display:flex;flex-direction:column;gap:16px;}
+  .card{position:relative;background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;
+        box-shadow:0 1px 4px rgba(26,26,46,.05);transition:box-shadow .2s,transform .15s;}
+  .card:hover{box-shadow:0 4px 16px rgba(26,26,46,.09);transform:translateY(-1px);}
+  .row{display:grid;grid-template-columns:1fr auto;gap:24px;padding:24px 28px;align-items:start;}
+  .badges{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+  .badge{background:#E8EEFB;color:#2D5BA8;font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;}
+  .badge.live{background:#e7f6ef;color:#0f7a52;}
+  .card h3{font-size:22px;font-weight:800;letter-spacing:-.5px;margin:0 0 4px;}
+  .tagline{color:var(--t2);font-size:14px;margin:0 0 4px;}
+  .prod{color:var(--t3);font-size:12px;margin:0 0 14px;}
+  .syn{color:var(--t2);font-size:13px;line-height:1.6;margin:0 0 16px;max-width:620px;}
+  .side{display:flex;flex-direction:column;gap:10px;align-items:flex-end;min-width:140px;}
+  .btn-teal{background:var(--teal);color:#fff;border:0;border-radius:9px;padding:10px 18px;
+            font:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+  .strip{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 14px;}
+  .chip{display:inline-flex;align-items:center;font-size:12px;font-weight:700;padding:5px 11px;
+        border-radius:8px;background:var(--s2);color:var(--t1);border:1px solid var(--bdr);}
+  .chip.pay{background:#e7f6ef;border-color:#bfe6d4;color:#0b5c3f;}
+  .chip.soon{background:#fdeeea;border-color:#f6cfc4;color:#a8402a;}
+  .chip.new{background:#efeaff;border-color:#d7ccff;color:#4C1D95;}
+  .chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;}
+
+  /* ── covers ── */
+  .cover{display:none;}
+  #k2:checked~.list .cover,#k3:checked~.list .cover,#k4:checked~.list .cover{display:block;}
+  #k2:checked~.list .row,#k3:checked~.list .row,#k4:checked~.list .row{grid-template-columns:150px 1fr auto;}
+
+  .cv{position:relative;width:150px;height:150px;border-radius:11px;overflow:hidden;
+      background:linear-gradient(160deg,var(--pl1),var(--pl2));
+      border:1px solid rgba(27,28,32,.16);display:flex;align-items:center;justify-content:center;}
+  /* the mark — nothing the row already says */
+  .mono{font-family:'Anton',Impact,sans-serif;font-size:62px;line-height:.8;color:var(--t1);
+        letter-spacing:-.02em;position:relative;z-index:2;}
+  .arcs,.rules,.dots{position:absolute;inset:0;z-index:1;}
+  .rules{background:repeating-linear-gradient(var(--ang),rgba(27,28,32,.5) 0 1.5px,transparent 1.5px 11px);
+         opacity:.30;mask-image:radial-gradient(80% 80% at 50% 50%,#000 30%,transparent 78%);}
+  .arcs{background:
+      radial-gradient(circle at 50% 118%,transparent 0 46%,rgba(27,28,32,.42) 46% 47.4%,transparent 47.4%),
+      radial-gradient(circle at 50% 118%,transparent 0 62%,rgba(27,28,32,.42) 62% 63.4%,transparent 63.4%),
+      radial-gradient(circle at 50% 118%,transparent 0 78%,rgba(27,28,32,.42) 78% 79.4%,transparent 79.4%);}
+  .dots{background:radial-gradient(rgba(27,28,32,.5) 1.1px,transparent 1.2px);background-size:9px 9px;opacity:.5;
+        mask-image:linear-gradient(var(--ang),#000,transparent 82%);}
+  /* which mark shows in which mode */
+  .mono,.arcs,.rules,.dots{display:none;}
+  #k2:checked~.list .mono{display:block;}
+  #k3:checked~.list .arcs{display:block;}
+  #k3:checked~.list .rules{display:block;}
+  #k3:checked~.list .dots{display:block;}
+  /* 4 · light tile, tiny tonal square only — the quietest possible mark */
+  #k4:checked~.list .cv::after{content:"";position:absolute;left:18px;bottom:18px;width:34px;height:34px;
+       border-radius:5px;background:var(--t1);opacity:var(--sq,.9);z-index:2;}
+  #k4:checked~.list .cv::before{content:"";position:absolute;right:-28px;top:-28px;width:104px;height:104px;
+       border-radius:50%;border:1.5px solid rgba(27,28,32,.30);z-index:1;}
+
+  /* 5 · no tile at all — a tonal edge on the card itself */
+  #k5:checked~.list .card{border-left:5px solid var(--edge);}
+
+  .foot-note{margin-top:26px;font-size:12.5px;color:var(--t2);line-height:1.75;}
+  .foot-note b{color:var(--t1);}
+  @media(max-width:820px){
+    .row,#k2:checked~.list .row,#k3:checked~.list .row,#k4:checked~.list .row{grid-template-columns:1fr;}
+    .cv{width:100%;height:120px;}
+    .side{align-items:stretch;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Round two — light, and nothing repeated</h1>
+  <p class="lede">You were right twice. The old cover printed the title, type, role count and city — all four already sit
+  in the row beside it. And a column of dark squares builds a black rail down a cream page. So: <b>every cover here is
+  light, and none of them repeats a word the row already says.</b> Scan strip on in all tabs.</p>
+
+  <input class="modes" type="radio" name="k" id="k1">
+  <input class="modes" type="radio" name="k" id="k2" checked>
+  <input class="modes" type="radio" name="k" id="k3">
+  <input class="modes" type="radio" name="k" id="k4">
+  <input class="modes" type="radio" name="k" id="k5">
+
+  <div class="tabs">
+    <label for="k1">1 · No cover</label>
+    <label for="k2">2 · Monogram</label>
+    <label for="k3">3 · Drawn mark</label>
+    <label for="k4">4 · Quiet mark</label>
+    <label for="k5">5 · Edge only</label>
+  </div>
+
+  <div class="note n1"><b>1 · No cover.</b> Strip only, for reference. Zero redundancy by definition, zero weight, and no
+  visual anchor — listings still blur together on a fast scroll.</div>
+  <div class="note n2"><b>2 · Monogram.</b> A light sand tile carrying the title's initials in Anton and nothing else. It
+  gives the eye a landmark and a listing an identity, without restating one word of the row. Warm, editorial, and it never
+  darkens the page. My pick of this set.</div>
+  <div class="note n3"><b>3 · Drawn mark.</b> No letters at all — generated geometry: arcs, rule lines, a halftone field,
+  each seeded from the casting id. The most "designed" of the set and completely non-repetitive with the text. Weigh it
+  honestly: abstract marks carry no meaning, so they decorate rather than inform.</div>
+  <div class="note n4"><b>4 · Quiet mark.</b> The minimum that still reads as intentional — one ink square, one thin
+  circle, sand ground. Nearly weightless on a long page. If 2 feels like too much personality, this is the same idea with
+  the volume down.</div>
+  <div class="note n5"><b>5 · Edge only.</b> No tile at all: a 5px tonal edge on the card, varying per listing. Costs
+  nothing, adds rhythm, adds zero redundancy and zero weight — and it is the one option that changes nothing about your
+  layout. If you want the smallest possible move that still makes the board feel considered, this is it.</div>
+
+  <div class="list">
+
+    <div class="card" style="--pl1:#F3ECDC;--pl2:#E9E0CB;--ang:118deg;--sq:.88;--edge:#2b3039;">
+      <div class="row">
+        <div class="cover"><div class="cv">
+          <span class="rules"></span><span class="arcs"></span><span class="dots"></span>
+          <span class="mono">UH</span>
+        </div></div>
+        <div>
+          <div class="badges"><span class="badge">Student Film</span><span class="badge">Non-Union</span><span class="badge">5 roles</span><span class="badge live">● Live</span></div>
+          <h3>Untitled Horror Project</h3>
+          <p class="tagline">A new night attendant at a county morgue is told never to open the doors before six.</p>
+          <p class="prod">Prod. Lamar McKinney</p>
+          <div class="strip"><span class="chip">5 roles open</span><span class="chip pay">Up to $175/day</span><span class="chip">New York, NY</span><span class="chip new">Posted today</span></div>
+          <p class="syn">A new night attendant at a county morgue is told never to open the doors before six. Everything changes when a body arrives with no paperwork and a hospital band dated eleven days from now.</p>
+        </div>
+        <div class="side"><button class="btn-teal">View Roles</button></div>
+      </div>
+    </div>
+
+    <div class="card" style="--pl1:#F0EAD9;--pl2:#E6DCC6;--ang:64deg;--sq:.8;--edge:#4a4038;">
+      <div class="row">
+        <div class="cover"><div class="cv">
+          <span class="rules"></span><span class="arcs"></span><span class="dots"></span>
+          <span class="mono">NS</span>
+        </div></div>
+        <div>
+          <div class="badges"><span class="badge">Off-Broadway Theater</span><span class="badge">AEA</span><span class="badge">5 roles</span><span class="badge live">● Live</span></div>
+          <h3>No Show Tonight</h3>
+          <p class="tagline">A sold out crowd has to be told the show is off.</p>
+          <p class="prod">Sana Verma</p>
+          <div class="strip"><span class="chip">5 roles open</span><span class="chip pay">Up to $900/week</span><span class="chip soon">Closes Sep 19</span><span class="chip">New York, NY</span><span class="chip new">Posted today</span></div>
+          <p class="syn">A box office has to tell a full house that tonight's show is cancelled. One person in the line has traveled a very long way to be there.</p>
+        </div>
+        <div class="side"><button class="btn-teal">View Roles</button></div>
+      </div>
+    </div>
+
+    <div class="card" style="--pl1:#EFE8D6;--pl2:#E3D9C2;--ang:152deg;--sq:.92;--edge:#1f2a2b;">
+      <div class="row">
+        <div class="cover"><div class="cv">
+          <span class="rules"></span><span class="arcs"></span><span class="dots"></span>
+          <span class="mono">TC</span>
+        </div></div>
+        <div>
+          <div class="badges"><span class="badge">Independent Film</span><span class="badge">SAG-AFTRA Ultra Low Budget</span><span class="badge">6 roles</span><span class="badge live">● Live</span></div>
+          <h3>Two Chapels</h3>
+          <p class="tagline">Independent Film breakdown — 7 roles.</p>
+          <p class="prod">Confidential.</p>
+          <div class="strip"><span class="chip">6 roles open</span><span class="chip pay">Negotiable</span><span class="chip soon">Closes Sep 19</span><span class="chip">New York, NY</span><span class="chip new">Posted today</span></div>
+          <p class="syn">A small funeral home is run by a father and his daughter, who never planned to stay there. One day, they are asked to bury a man whose family stopped speaking to him 30 years ago.</p>
+        </div>
+        <div class="side"><button class="btn-teal">View Roles</button></div>
+      </div>
+    </div>
+
+    <div class="card" style="--pl1:#F2EBDA;--pl2:#E8DEC8;--ang:205deg;--sq:.84;--edge:#3a2f26;">
+      <div class="row">
+        <div class="cover"><div class="cv">
+          <span class="rules"></span><span class="arcs"></span><span class="dots"></span>
+          <span class="mono">TB</span>
+        </div></div>
+        <div>
+          <div class="badges"><span class="badge">Feature Film</span><span class="badge">Non-Union</span><span class="badge">6 roles</span><span class="badge live">● Live</span></div>
+          <h3>The Back Tanks</h3>
+          <p class="tagline">Development — a teenager takes a night job feeding the animals in a pet store after it closes.</p>
+          <p class="prod">Casting: Sharon Sombrero</p>
+          <div class="strip"><span class="chip">6 roles open</span><span class="chip pay">$175–$700/day</span><span class="chip soon">Closes Sep 2</span><span class="chip">New York, NY</span><span class="chip quiet">Posted 2 days ago</span></div>
+          <p class="syn">Seeking actors for a horror feature film: a teenager takes a night job feeding the animals in a pet store after it closes. One tank at the back is not on the feeding list, and the owner will not say why.</p>
+        </div>
+        <div class="side"><button class="btn-teal">View Roles</button></div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="foot-note">
+    <b>Also changed:</b> the tile is 150px, not 186px. The old one was competing with the headline for first look; at this
+    size it supports the row instead of fighting it.<br>
+    <b>Still true in production:</b> tone, angle and mark all derive from a hash of the casting id, so no two listings match
+    and a listing never changes its own look — and a casting director's real photo replaces the tile entirely.
+  </p>
+</div>
+</body>
+</html>
