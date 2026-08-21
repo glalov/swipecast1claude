@@ -24046,7 +24046,7 @@ const ACG = (()=>{
     {
       key:"casting-office",
       line:d=>`Seeking grounded, camera-ready performers for a practical shoot with limited time to find the moment. Please read the breakdown carefully; ${d} is central to the story engine.`,
-      role:"Casting is prioritizing clarity, availability, and a strong first read."
+      role:"We want a clear read, honest dates, and a strong first take."
     },
     {
       key:"student-director",
@@ -24743,7 +24743,7 @@ const ACG = (()=>{
       h2:"the manager recognizes one of the robbers by his voice, and says nothing for two hours",
       w:["a check-cashing storefront on a commercial strip","a credit-union branch on the hottest afternoon of the year","a corner currency exchange with the gate half down"],
       c:[
-        {s:"the one who planned it",r:"Lead",a:"youngAdult",x:"Improvising a plan they thought through for six weeks and understood for about nine minutes. Funny when cornered, tender toward the people they are frightening, and increasingly aware the whole block is watching."},
+        {s:"the one who planned it",r:"Lead",a:"youngAdult",x:"Making up a plan as they go. They thought about it for six weeks and understood it for about nine minutes. Funny when cornered, tender toward the people they are frightening, and increasingly aware the whole block is watching."},
         {s:"the partner",r:"Supporting",a:"youngAdult",x:"Along for reasons they cannot explain out loud. Says almost nothing, which is exactly why the room keeps looking at them."},
         {s:"the counter manager",r:"Lead",a:"midCareer",x:"Runs the branch and has run harder days than this. Negotiates by staying deliberately boring, and reads the room faster than either of the people holding it."},
         {s:"the negotiator on the phone",r:"Supporting",a:"mature",x:"A patient voice with a script and a deadline. Heard more than seen; needs to sound like someone who has done this and lost before."},
@@ -24759,7 +24759,7 @@ const ACG = (()=>{
         {s:"the holdout",r:"Lead",a:"midCareer",x:"Quiet, stubborn, and unwilling to be hurried. Makes doubt feel like a moral position rather than a debating trick, and never raises the volume to win."},
         {s:"the foreperson",r:"Supporting",a:"mature",x:"Keeping order with procedures nobody agreed to. Decent, out of their depth, and secretly relieved someone else is doing the arguing."},
         {s:"the angriest juror",r:"Lead",a:"mature",x:"Certain, loud, and carrying something personal into a room where it does not belong. The performance has to earn the moment the anger finally cracks."},
-        {s:"the juror who wants to leave",r:"Supporting",a:"youngAdult",x:"Has tickets, a shift, a life. Comic impatience that curdles into shame."},
+        {s:"the juror who wants to leave",r:"Supporting",a:"youngAdult",x:"Has tickets, a shift, a life. Funny impatience that turns into shame."},
         {s:"the quiet observer",r:"Supporting",a:"senior",x:"Speaks twice in ninety minutes and both times it moves the room. Stillness is the whole instrument."}
       ]},
     {k:"escort-cross-country",era:"1980s",genre:"comic thriller",tracks:["film","tv"],
@@ -24770,9 +24770,9 @@ const ACG = (()=>{
       w:["a two-lane highway motel strip","a Greyhound station at three in the morning","a borrowed sedan and the diners between two cities"],
       c:[
         {s:"the tracer",r:"Lead",a:"mature",x:"Bad-tempered, broke, and allergic to sentiment. The comedy lives in how hard they work at not enjoying the company."},
-        {s:"the man in cuffs",r:"Lead",a:"midCareer",g:"M",x:"Polite, relentlessly conversational, and smarter than the situation. Never plays the victim; wins the audience by being genuinely good at listening."},
-        {s:"the bail agent",r:"Supporting",a:"mature",g:"F",x:"Calling every four hours from a desk in an office that smells like carpet glue. Profane, funny, entirely transactional."},
-        {s:"the rival",r:"Supporting",a:"midCareer",x:"A competitor with a better car and no sense of humor. Dangerous because they are competent, not because they are loud."},
+        {s:"the man in cuffs",r:"Lead",a:"midCareer",g:"M",x:"Polite, never stops talking, and smarter than the situation. Never plays the victim; wins the audience by being genuinely good at listening."},
+        {s:"the bail agent",r:"Supporting",a:"mature",g:"F",x:"Calling every four hours from a desk in an office that smells like carpet glue. Foul-mouthed, funny, and only ever after the sale."},
+        {s:"the rival",r:"Supporting",a:"midCareer",x:"A competitor with a better car and no sense of humor. Dangerous because they are good at it, not because they are loud."},
         {s:"the roadside clerk",r:"Day Player",a:"youngAdult",x:"One scene at a check-in desk that has to land a laugh and a small human beat."}
       ]},
     {k:"night-shift-driver",era:"1970s",genre:"urban character study",tracks:["film","tv"],
@@ -24782,9 +24782,9 @@ const ACG = (()=>{
       h2:"a passenger leaves something in the back seat, and over three nights he decides not to hand it in",
       w:["a night dispatch garage and the streets around it","a 24-hour diner used as a break room by every driver on the route","a fare route that keeps circling the same six blocks"],
       c:[
-        {s:"the driver",r:"Lead",a:"youngAdult",x:"Sleepless, courteous, and slowly untethering. The role is built from small talk and silence, not speeches; must be watchable doing almost nothing."},
+        {s:"the driver",r:"Lead",a:"youngAdult",x:"Not sleeping, polite, and slowly coming apart. The role is built from small talk and silence, not speeches; must be watchable doing almost nothing."},
         {s:"the dispatcher",r:"Supporting",a:"mature",x:"The only person who speaks to the driver every day and the last to notice anything is wrong. Warm, distracted, guilty later."},
-        {s:"the campaign volunteer",r:"Lead",a:"youngAdult",g:"F",x:"Bright, guarded, and used to being looked at. Has to make politeness read as self-protection."},
+        {s:"the campaign volunteer",r:"Lead",a:"youngAdult",g:"F",x:"Bright, guarded, and used to being looked at. Has to make being polite look like a way of staying safe."},
         {s:"the teenager on the corner",r:"Supporting",a:"teen",x:"Street-smart in a way that is mostly performance. Guardian required; scenes staged, contained, and non-explicit."},
         {s:"the other driver",r:"Day Player",a:"senior",x:"Gives advice nobody asked for over bad coffee. One scene, entirely behavior."}
       ]},
@@ -24795,7 +24795,7 @@ const ACG = (()=>{
       h2:"the robbery works, and the forty minutes after it are the part they never planned for",
       w:["a highway diner between the breakfast and lunch rush","an all-night counter attached to a gas station","a corner luncheonette with four booths and one exit"],
       c:[
-        {s:"the talker",r:"Lead",a:"youngAdult",x:"Charming, restless, and wrong about almost everything with total confidence. The comedy has to stay affectionate."},
+        {s:"the talker",r:"Lead",a:"youngAdult",x:"Charming, restless, and wrong about almost everything with total confidence. The comedy has to stay loving."},
         {s:"the one who agrees too fast",r:"Lead",a:"youngAdult",x:"Reads as the follower and is running the whole conversation. Sweetness with a blade underneath."},
         {s:"the waitress",r:"Supporting",a:"mature",g:"F",x:"Twenty years of hearing worse plans than this one. Deadpan, unhurried, never a punchline."},
         {s:"the cook",r:"Supporting",a:"midCareer",x:"Watches from the pass and decides, once, to intervene. Physical stillness, no speeches."},
@@ -24808,10 +24808,10 @@ const ACG = (()=>{
       h2:"the promoter quietly offers him more money to lose than to win, and only his trainer knows",
       w:["a second-floor gym above a hardware store","a union hall converted for one night of boxing","a rec-center ring with folding chairs on three sides"],
       c:[
-        {s:"the fighter",r:"Lead",a:"mature",g:"M",x:"Gentle, slow-spoken, and running out of ways to say no. Physicality matters; so does the refusal to ask for sympathy."},
-        {s:"the trainer",r:"Lead",a:"senior",x:"Loves him and is still going to let him take the fight. The role is guilt worn as competence."},
-        {s:"the partner at home",r:"Supporting",a:"midCareer",g:"F",x:"Has had this argument nine times and starts the tenth already exhausted. Not a nag — the only realist in the film."},
-        {s:"the promoter",r:"Supporting",a:"mature",x:"Friendly, generous, and structurally the antagonist. Never once raises the volume."},
+        {s:"the fighter",r:"Lead",a:"mature",g:"M",x:"Gentle, slow-spoken, and running out of ways to say no. Physicality matters; so does the refusal to ask for kindness."},
+        {s:"the trainer",r:"Lead",a:"senior",x:"Loves him and is still going to let him take the fight. The role is guilt hidden behind being good at the job."},
+        {s:"the partner at home",r:"Supporting",a:"midCareer",g:"F",x:"Has had this argument nine times and starts the tenth already exhausted. Not a nag — the only one seeing it straight."},
+        {s:"the promoter",r:"Supporting",a:"mature",x:"Friendly, generous, and still the one standing in the way. Never once raises the volume."},
         {s:"the young fighter",r:"Day Player",a:"youngAdult",x:"On the other side of the ring and terrified of what they are looking at."}
       ]},
     {k:"phone-room-sales",era:"2000s",genre:"workplace drama",tracks:["film","tv","stage"],
@@ -24821,7 +24821,7 @@ const ACG = (()=>{
       h2:"the room is told to shred everything on a Friday, and the new guy takes one box home",
       w:["a leased office floor with no furniture but desks and phones","a converted warehouse mezzanine with a whiteboard sales ladder","a suburban office park suite rented month to month"],
       c:[
-        {s:"the new hire",r:"Lead",a:"youngAdult",x:"Hungry, quick, and just moral enough to be a problem. Must be likeable while doing indefensible things."},
+        {s:"the new hire",r:"Lead",a:"youngAdult",x:"Hungry, quick, and just moral enough to be a problem. Must stay likeable while doing things nobody could defend."},
         {s:"the closer",r:"Lead",a:"midCareer",x:"The best in the room and the loneliest. Delivers long stretches of fast, rhythmic dialogue without pushing."},
         {s:"the manager",r:"Supporting",a:"mature",x:"Motivational language covering genuine fear. Comic on the surface, frightening underneath."},
         {s:"the burnout",r:"Supporting",a:"midCareer",x:"Two years in, still on the bottom of the board, still arriving early. Quiet dignity."},
@@ -24834,11 +24834,11 @@ const ACG = (()=>{
       h2:"another client asks for photos from the same date, and neither of them was at that wedding",
       w:["a rented darkroom in the back of a camera shop","a converted apartment bedroom with blackout foil on the window","a photo lab at a suburban strip mall after closing"],
       c:[
-        {s:"the photographer",r:"Lead",a:"midCareer",g:"F",x:"Methodical, solitary, and better at looking than talking. Carries long wordless stretches; the tension is in her attention."},
-        {s:"the client",r:"Supporting",a:"mature",x:"Charming on the phone, immovable in person. Needs menace with no volume."},
+        {s:"the photographer",r:"Lead",a:"midCareer",g:"F",x:"Orderly, alone, and better at looking than talking. Carries long wordless stretches; the tension is in her attention."},
+        {s:"the client",r:"Supporting",a:"mature",x:"Charming on the phone, will not budge in person. Needs to feel dangerous without ever raising his voice."},
         {s:"the assistant",r:"Supporting",a:"youngAdult",x:"Sharp, underpaid, and the only person who believes the photographer at first. Comic relief that stops being funny."},
         {s:"the bride",r:"Supporting",a:"youngAdult",g:"F",fam:"a",x:"Wants the prints and wants the question to stop. Politeness as a locked door."},
-        {s:"the officer at the desk",r:"Day Player",a:"midCareer",x:"Takes the report correctly and does nothing with it. One scene, entirely procedural."}
+        {s:"the officer at the desk",r:"Day Player",a:"midCareer",x:"Takes the report correctly and does nothing with it. One scene, all by the book."}
       ]},
     {k:"custody-week",era:"2000s",genre:"domestic drama",tracks:["film","stage","tv"],
       ttl:["The Home Study","Seven Days, One Kitchen","Best Interests"],
@@ -24847,9 +24847,9 @@ const ACG = (()=>{
       h2:"the court worker's report is due Friday, and one of them finds a draft of it in the recycling",
       w:["a two-bedroom apartment neither of them can afford alone","a rowhouse mid-renovation with one working bathroom","a rented duplex with the evaluator's folding chair in the hall"],
       c:[
-        {s:"the parent who stayed",r:"Lead",a:"midCareer",g:"F",fam:"a",x:"Organized to the point of brittleness. Every kindness this week has a lawyer standing behind it, and she hates that she is good at it."},
-        {s:"the parent who left",r:"Lead",a:"midCareer",g:"M",fam:"a",x:"Warm, unreliable, genuinely trying. Must be sympathetic without being let off."},
-        {s:"the child",r:"Supporting",a:"child",fam:"a",x:"Nine or ten and managing both adults with terrifying competence. Guardian required; all scenes conversational and non-distressing."},
+        {s:"the parent who stayed",r:"Lead",a:"midCareer",g:"F",fam:"a",x:"Organized to the point of edginess. Every kindness this week has a lawyer standing behind it, and she hates that she is good at it."},
+        {s:"the parent who left",r:"Lead",a:"midCareer",g:"M",fam:"a",x:"Warm, unreliable, genuinely trying. Must be kind without being let off."},
+        {s:"the child",r:"Supporting",a:"child",fam:"a",x:"Nine or ten, and handling both adults scarily well. Guardian required; all scenes conversational and non-distressing."},
         {s:"the evaluator",r:"Supporting",a:"mature",x:"Writes constantly, reveals nothing, and is neither villain nor saint. Stillness with enormous weight."},
         {s:"the neighbor",r:"Day Player",a:"senior",x:"Knocks at the worst moment with a casserole and a full report on the hallway."}
       ]},
@@ -24861,7 +24861,7 @@ const ACG = (()=>{
       w:["a river town with two roads and a sandbagged main street","a county seat where the evidence locker is a hall closet","a farming valley cut in half by a swollen creek"],
       c:[
         {s:"the officer",r:"Lead",a:"mature",x:"Decent, tired, and about to make one choice that undoes thirty years of being the reliable one. Interior, minimal dialogue."},
-        {s:"the neighbor",r:"Lead",a:"mature",x:"Friendly, useful, and quietly monstrous. The audience should keep liking them well past the point they want to."},
+        {s:"the neighbor",r:"Lead",a:"mature",x:"Friendly, useful, and quietly awful. The audience should keep liking them well past the point they want to."},
         {s:"the deputy",r:"Supporting",a:"youngAdult",g:"F",x:"New, thorough, and unaware she is being managed. The moral engine of the second half."},
         {s:"the officer's wife",r:"Supporting",a:"mature",g:"F",fam:"a",x:"Knows before he tells her. Plays thirty years of marriage in the way she sets down a plate."},
         {s:"the county clerk",r:"Day Player",a:"senior",x:"Holds the only paperwork that matters and no idea of it."}
@@ -24873,10 +24873,10 @@ const ACG = (()=>{
       h2:"a customer comes to buy back something that was sold eleven years ago, and still has the ticket",
       w:["a pawn shop under an elevated train line","a two-window loan shop between a bail bondsman and a laundromat","a family pawnbroker's on a street that is gentrifying around it"],
       c:[
-        {s:"the broker",r:"Lead",a:"senior",x:"Courteous, armored, and running on habit. The entire performance is what they refuse to react to."},
+        {s:"the broker",r:"Lead",a:"senior",x:"Polite, armored, and running on habit. The entire performance is what they refuse to react to."},
         {s:"the assistant",r:"Lead",a:"youngAdult",x:"Wants to be taught something and keeps being handed a broom. Impatience with real affection under it."},
         {s:"the woman with the ring",r:"Supporting",a:"midCareer",g:"F",x:"Negotiating for forty dollars as though it were a hostage exchange. One scene, devastating."},
-        {s:"the collector",r:"Supporting",a:"mature",x:"Comes for the rent and stays to be liked. Sociable menace."},
+        {s:"the collector",r:"Supporting",a:"mature",x:"Comes for the rent and stays to be liked. Friendly, and dangerous with it."},
         {s:"the regular",r:"Day Player",a:"mature",x:"In and out three times across the film; the same twenty dollars each way."}
       ]},
     {k:"funeral-drive",era:"1990s",genre:"road comedy",tracks:["film","stage","tv"],
@@ -24899,11 +24899,11 @@ const ACG = (()=>{
       h2:"the walkout is called off by a phone vote nobody in the store remembers being asked about",
       w:["a family-owned grocery being sold to a regional chain","a supermarket with a loading dock used as a meeting room","a co-op market with a union notice taped to the time clock"],
       c:[
-        {s:"the shop steward",r:"Lead",a:"midCareer",g:"F",x:"Competent, funny, and carrying a room that does not want to be carried. Public courage, private terror."},
-        {s:"the manager",r:"Lead",a:"mature",x:"Not a villain; someone with a mortgage and a script from corporate. Must be genuinely torn on camera."},
+        {s:"the shop steward",r:"Lead",a:"midCareer",g:"F",x:"Capable, funny, and holding up a room that does not want holding up. Public courage, private terror."},
+        {s:"the manager",r:"Lead",a:"mature",x:"Not a villain; someone with a mortgage and a script handed down from head office. Must be genuinely torn on camera."},
         {s:"the young cashier",r:"Supporting",a:"youngAdult",x:"Needs the hours more than the principle and says so out loud. The most honest person in the film."},
         {s:"the butcher",r:"Supporting",a:"senior",x:"Thirty-one years in, one speech, no sentiment."},
-        {s:"the regional rep",r:"Day Player",a:"midCareer",x:"Arrives in a good coat and makes the room smaller. Two scenes, immaculate manners."}
+        {s:"the regional rep",r:"Day Player",a:"midCareer",x:"Arrives in a good coat and makes the room smaller. Two scenes, spotless manners."}
       ]},
     {k:"bowling-league",era:"1990s",genre:"deadpan comedy",tracks:["film","tv"],
       ttl:["Frame Nine","The Wednesday League","Handicap"],
@@ -24913,7 +24913,7 @@ const ACG = (()=>{
       w:["a sixteen-lane bowling alley with a bar at one end","a candlepin house in a strip mall","a union-sponsored alley in a basement with a hand-written scoreboard"],
       c:[
         {s:"the captain",r:"Lead",a:"mature",x:"Takes it seriously in a way that is funny for twenty minutes and moving after that. Deadpan, no winking."},
-        {s:"the ringer",r:"Lead",a:"youngAdult",g:"F",x:"Better than everyone and bored by it until she is not. Dry, watchful, comic timing on the beat before the line."},
+        {s:"the ringer",r:"Lead",a:"youngAdult",g:"F",x:"Better than everyone and bored by it until she is not. Dry, alert, comic timing on the beat before the line."},
         {s:"the owner",r:"Supporting",a:"senior",x:"Selling the building and pretending it is a business decision."},
         {s:"the loud one",r:"Supporting",a:"midCareer",x:"Never stops talking; the one time they go quiet is the whole third act."},
         {s:"the bar back",r:"Day Player",a:"youngAdult",x:"Hears everything, comments on nothing, gets the last laugh."}
@@ -24925,9 +24925,9 @@ const ACG = (()=>{
       h2:"a patient asks him to do something small that is completely against the rules, and he does it",
       w:["a step-down unit on a hospital's oldest floor","a county hospital wing scheduled for closure","a rehabilitation ward with two nurses for thirty beds"],
       c:[
-        {s:"the orderly",r:"Lead",a:"youngAdult",x:"Kind in a completely unsentimental way. Carries the film through small, repeated acts of care."},
-        {s:"the charge nurse",r:"Lead",a:"mature",g:"F",x:"Runs the floor by triage, including emotionally. Warm, brisk, unwilling to be thanked."},
-        {s:"the patient",r:"Supporting",a:"senior",x:"Lucid, funny, and entirely uninterested in being brave. Two long scenes."},
+        {s:"the orderly",r:"Lead",a:"youngAdult",x:"Kind without ever being soft about it. Carries the film through small, repeated acts of care."},
+        {s:"the charge nurse",r:"Lead",a:"mature",g:"F",x:"Deals with whatever is worst first, feelings included. Warm, brisk, unwilling to be thanked."},
+        {s:"the patient",r:"Supporting",a:"senior",x:"Clear, funny, and entirely uninterested in being brave. Two long scenes."},
         {s:"the colleague",r:"Supporting",a:"midCareer",x:"Made the mistake and cannot say it out loud. Fear playing as irritation."},
         {s:"the daughter",r:"Day Player",a:"midCareer",g:"F",x:"Arrives at 2 a.m. with a folder of questions nobody can answer."}
       ]},
@@ -24938,10 +24938,10 @@ const ACG = (()=>{
       h2:"the police ask for eleven years of the register, and he has been keeping two of them",
       w:["a twelve-room motel on a bypassed state highway","a courtyard motor lodge behind a truck stop","a roadside inn with a shared ice machine and a payphone"],
       c:[
-        {s:"the manager",r:"Lead",a:"mature",x:"Observant, incurious out loud, and lonelier than the job explains. Almost no exposition; everything is behavior."},
-        {s:"the guest",r:"Lead",a:"midCareer",g:"F",x:"Arrives with one bag and a good story. Charm as camouflage; must never tip her hand early."},
+        {s:"the manager",r:"Lead",a:"mature",x:"Observant, incurious out loud, and lonelier than the job explains. Almost no explaining; it is all behavior."},
+        {s:"the guest",r:"Lead",a:"midCareer",g:"F",x:"Arrives with one bag and a good story. Charm used as cover; must never show her hand early."},
         {s:"the night clerk",r:"Supporting",a:"youngAdult",x:"Studying at the desk and noticing more than the manager does."},
-        {s:"the man asking questions",r:"Supporting",a:"mature",x:"Polite, patient, unbudgeable. Two scenes of pure pressure."},
+        {s:"the man asking questions",r:"Supporting",a:"mature",x:"Polite, patient, and will not move. Two scenes of pure pressure."},
         {s:"the housekeeper",r:"Day Player",a:"senior",g:"F",x:"Finds the thing that changes the film and says nothing about it for a reel."}
       ]},
     {k:"restaurant-inspection",era:"2000s",genre:"kitchen ensemble",tracks:["film","tv","stage"],
@@ -24951,10 +24951,10 @@ const ACG = (()=>{
       h2:"the inspector turns out to be someone the family fired nine years ago",
       w:["a twenty-seat neighborhood restaurant with a basement prep kitchen","a takeout counter with three generations working the line","a diner that has been in the same family since the sixties"],
       c:[
-        {s:"the owner",r:"Lead",a:"mature",fam:"a",x:"Built the place and will not be told about it. Pride, exhaustion, and one late admission."},
-        {s:"the adult child",r:"Lead",a:"midCareer",fam:"a",x:"Came back to help for six months four years ago. Competent, resentful, loving."},
-        {s:"the line cook",r:"Supporting",a:"youngAdult",x:"Fast, funny, undocumented in the paperwork sense and central in every other. Handle with dignity, never as a plot device."},
-        {s:"the server",r:"Supporting",a:"midCareer",g:"F",x:"Runs the floor and the family. The one who says the unsayable at 2 a.m."},
+        {s:"the owner",r:"Lead",a:"mature",fam:"a",x:"Built the place and will not be told about it. Pride, tiredness, and one late confession."},
+        {s:"the adult child",r:"Lead",a:"midCareer",fam:"a",x:"Came back to help for six months four years ago. Capable, bitter, loving."},
+        {s:"the line cook",r:"Supporting",a:"youngAdult",x:"Fast, funny, has no papers, and is at the center of everything anyway. Handle with dignity, never as a plot device."},
+        {s:"the server",r:"Supporting",a:"midCareer",g:"F",x:"Runs the floor and the family. The one who says the thing nobody will say at 2 a.m."},
         {s:"the inspector",r:"Day Player",a:"mature",x:"Fair, unhurried, immune to charm. One scene that plays like a verdict."}
       ]},
     {k:"debate-coach",era:"1990s",genre:"school drama",tracks:["film","tv","stage"],
@@ -24964,7 +24964,7 @@ const ACG = (()=>{
       h2:"the team is offered a place at nationals if they drop one member",
       w:["a public high school with a debate room that doubles as storage","a magnet school gym set up for a regional tournament","a community-college lecture hall borrowed for finals"],
       c:[
-        {s:"the coach",r:"Lead",a:"mature",x:"Brilliant, difficult, and burning through their last institutional goodwill. No inspirational-teacher gloss."},
+        {s:"the coach",r:"Lead",a:"mature",x:"Brilliant, difficult, and burning through the last of the goodwill they have left at work. No inspirational-teacher gloss."},
         {s:"the first speaker",r:"Lead",a:"teen",g:"F",x:"Fast, furious, and better than the room deserves. Guardian required; long dialogue passages."},
         {s:"the partner",r:"Supporting",a:"teen",x:"Steadier, slower, and the moral brake on the team. Guardian required."},
         {s:"the principal",r:"Supporting",a:"mature",g:"F",x:"Supportive right up to the point it costs something."},
@@ -24978,8 +24978,8 @@ const ACG = (()=>{
       w:["a one-room audio workshop in a converted loft","a basement studio behind a music store","a rented edit suite in a building that empties at six"],
       c:[
         {s:"the technician",r:"Lead",a:"midCareer",x:"Private to the point of secrecy, proud of a craft nobody notices. Long solo passages; the performance is listening."},
-        {s:"the client's assistant",r:"Supporting",a:"youngAdult",g:"F",x:"Pleasant, evasive, and better at this than she appears."},
-        {s:"the colleague",r:"Supporting",a:"mature",x:"Wants the work and will not ask what it is for. Comic pragmatism."},
+        {s:"the client's assistant",r:"Supporting",a:"youngAdult",g:"F",x:"Pleasant, slippery, and better at this than she appears."},
+        {s:"the colleague",r:"Supporting",a:"mature",x:"Wants the work and will not ask what it is for. Funny and practical."},
         {s:"the voice on the tape",r:"Supporting",a:"midCareer",x:"Heard throughout, seen once. Must be instantly recognizable by voice alone."},
         {s:"the landlord",r:"Day Player",a:"senior",x:"Wants access to the room for entirely ordinary reasons."}
       ]},
@@ -25003,9 +25003,9 @@ const ACG = (()=>{
       h2:"they are told to take a car that has already been paid off, and the paperwork agrees with them",
       w:["an impound yard behind a chain-link fence","a tow office attached to a body shop","a lot beside a highway on-ramp with a trailer for an office"],
       c:[
-        {s:"the new driver",r:"Lead",a:"youngAdult",x:"Needs the job, hates the job, good at the job. Comedy first, conscience second."},
-        {s:"the veteran",r:"Lead",a:"mature",x:"Philosophical about other people's disasters. Delivers the film's rules like scripture."},
-        {s:"the dispatcher",r:"Supporting",a:"midCareer",g:"F",x:"Runs the board, the money, and both men. Fast, funny, unsentimental."},
+        {s:"the new driver",r:"Lead",a:"youngAdult",x:"Needs the job, hates the job, good at the job. Comedy first, doing the right thing second."},
+        {s:"the veteran",r:"Lead",a:"mature",x:"Thoughtful about other people's disasters. Delivers the film's rules like scripture."},
+        {s:"the dispatcher",r:"Supporting",a:"midCareer",g:"F",x:"Runs the board, the money, and both men. Fast, funny, and never soft."},
         {s:"the car's owner",r:"Supporting",a:"midCareer",x:"One long scene in a driveway that turns the comedy off."},
         {s:"the yard kid",r:"Day Player",a:"teen",x:"Guardian required; two short scenes of pure atmosphere."}
       ]},
@@ -25014,11 +25014,11 @@ const ACG = (()=>{
       p:"a night cleaning crew works an office tower and never meets the people who work there by day",
       h:"something left on a desk on the thirty-eighth floor makes one of them a witness to a crime nobody has reported",
       h2:"a floor is added to their contract that is not listed anywhere in the building",
-      w:["a downtown office tower between nine at night and five in the morning","a corporate campus building with a badge-only elevator","a bank headquarters with an empty trading floor"],
+      w:["a downtown office tower between nine at night and five in the morning","an office campus with a badge-only elevator","a bank headquarters with an empty trading floor"],
       c:[
         {s:"the crew lead",r:"Lead",a:"mature",g:"F",x:"Protects her crew before anything else, including the truth. Authority built entirely from calm."},
         {s:"the new hire",r:"Lead",a:"youngAdult",x:"Curious in the way that gets people fired. Warm, funny, dangerously observant."},
-        {s:"the night guard",r:"Supporting",a:"senior",x:"Knows the building's real hierarchy and enjoys explaining it."},
+        {s:"the night guard",r:"Supporting",a:"senior",x:"Knows who really outranks who in the building, and loves explaining it."},
         {s:"the executive working late",r:"Supporting",a:"midCareer",x:"Polite, distracted, and completely unable to see the people in the room."},
         {s:"the day supervisor",r:"Day Player",a:"midCareer",x:"One morning scene that reframes everything the night crew believes."}
       ]},
@@ -25029,8 +25029,8 @@ const ACG = (()=>{
       h2:"both sides turn up with the same photograph, cut differently",
       w:["a small-claims courtroom with fluorescent light and folding chairs","a municipal hearing room shared with the parking authority","a county courthouse annex with a broken microphone"],
       c:[
-        {s:"the claimant",r:"Lead",a:"mature",g:"F",x:"Prepared a binder. The binder is not about the money. Comic precision that turns painful."},
-        {s:"the respondent",r:"Lead",a:"mature",x:"Came with nothing and is not wrong. Charm that curdles under questioning."},
+        {s:"the claimant",r:"Lead",a:"mature",g:"F",x:"Prepared a binder. The binder is not about the money. Funny and exact, until it turns painful."},
+        {s:"the respondent",r:"Lead",a:"mature",x:"Came with nothing and is not wrong. Charm that goes sour once the questions start."},
         {s:"the magistrate",r:"Supporting",a:"senior",x:"Has heard nine hundred of these and is still, somehow, listening."},
         {s:"the clerk",r:"Supporting",a:"youngAdult",x:"Runs the room from a desk nobody looks at."},
         {s:"the witness",r:"Day Player",a:"midCareer",x:"Testifies for ninety seconds and derails the morning."}
@@ -25042,23 +25042,23 @@ const ACG = (()=>{
       h2:"a buyer offers to keep the store open with everyone's job safe, if the owner stays out of it",
       w:["a two-level used record store with a listening booth","a music shop wedged between a barber and a bodega","a store whose back room has been a rehearsal space for a decade"],
       c:[
-        {s:"the owner",r:"Lead",a:"mature",x:"Evasive, funny, and grieving something they refuse to call grief."},
-        {s:"the clerk who stayed",r:"Lead",a:"youngAdult",g:"F",x:"Encyclopedic, prickly, secretly the most sentimental person in the building."},
+        {s:"the owner",r:"Lead",a:"mature",x:"Slippery, funny, and grieving something they refuse to call grief."},
+        {s:"the clerk who stayed",r:"Lead",a:"youngAdult",g:"F",x:"Knows everything, touchy, and secretly the softest person in the building."},
         {s:"the clerk who is leaving",r:"Supporting",a:"youngAdult",x:"Already has the next job and cannot stop apologizing for it."},
         {s:"the regular",r:"Supporting",a:"senior",x:"Comes in daily and buys nothing. Earns the film's last scene."},
         {s:"the buyer from the chain",r:"Day Player",a:"midCareer",x:"Pleasant, efficient, and the closest thing to a villain here."}
       ]},
-    {k:"translator-in-the-room",era:"2000s",genre:"procedural drama",tracks:["film","tv","stage"],
+    {k:"translator-in-the-room",era:"2000s",genre:"police-station drama",tracks:["film","tv","stage"],
       ttl:["Say It Exactly","The Interpreter's Chair","Word for Word"],
       p:"a court translator is put in a hearing where the exact words decide everything",
       h:"the exact translation and the honest one turn out to be different sentences, and only she can tell",
       h2:"the man asks her, in the language nobody else in the room speaks, to leave one sentence out",
       w:["an immigration hearing room with three chairs and a recorder","a legal-aid office conference room","a hospital consultation room used for a deposition"],
       c:[
-        {s:"the interpreter",r:"Lead",a:"midCareer",x:"Professionally invisible and about to stop being. Fluency in a second language a real asset for this role; precision under pressure is the whole part."},
+        {s:"the interpreter",r:"Lead",a:"midCareer",x:"Professionally invisible and about to stop being. Fluency in a second language a real asset for this role; staying exact under pressure is the whole part."},
         {s:"the applicant",r:"Lead",a:"youngAdult",x:"Telling the truth in a form nobody has taught them. Written with dignity, never as a victim."},
-        {s:"the attorney",r:"Supporting",a:"midCareer",g:"F",x:"Underslept, overloaded, decent. Speed as compassion."},
-        {s:"the officer conducting the hearing",r:"Supporting",a:"mature",x:"Neither cruel nor curious. Bureaucratic weather."},
+        {s:"the attorney",r:"Supporting",a:"midCareer",g:"F",x:"Underslept, overloaded, decent. Speed as kindness."},
+        {s:"the officer conducting the hearing",r:"Supporting",a:"mature",x:"Neither cruel nor curious. Rules and paperwork, coming down like weather."},
         {s:"the relative in the hallway",r:"Day Player",a:"senior",x:"One scene outside the room that carries the ending."}
       ]},
     {k:"last-call-inheritance",era:"1980s",genre:"barroom drama",tracks:["stage","film"],
@@ -25068,7 +25068,7 @@ const ACG = (()=>{
       h2:"the will leaves the bar to neither of them, and both to the same third person",
       w:["a corner bar with a back room used for wakes","a tavern under an apartment building with the same six regulars","a shot-and-beer bar that has never changed its sign"],
       c:[
-        {s:"the one who worked there",r:"Lead",a:"midCareer",g:"F",fam:"a",x:"Twelve years behind the bar and no paperwork to show for it. Physical competence; anger held at a simmer."},
+        {s:"the one who worked there",r:"Lead",a:"midCareer",g:"F",fam:"a",x:"Twelve years behind the bar and no paperwork to show for it. Physically capable; anger kept just under the boil."},
         {s:"the one who left",r:"Lead",a:"midCareer",fam:"a",x:"Comes back with a lawyer and a genuine claim. Has to be right often enough to be uncomfortable."},
         {s:"the old regular",r:"Supporting",a:"senior",x:"Referee, chorus, and the only person both of them still listen to."},
         {s:"the cook",r:"Supporting",a:"mature",g:"F",x:"Keeps the kitchen open and the peace, barely."},
@@ -25081,22 +25081,22 @@ const ACG = (()=>{
       h2:"the buyer walks in through the storm a day early and has to be put up for the night",
       w:["a farmhouse at the end of a county road","a lake house closed for the season and opened in an emergency","a farmstead with a heated barn and an unheated second floor"],
       c:[
-        {s:"the sibling who stayed",r:"Lead",a:"midCareer",fam:"a",x:"Did the caretaking and expects that to count. Competence as an accusation."},
+        {s:"the sibling who stayed",r:"Lead",a:"midCareer",fam:"a",x:"Did the looking-after and expects that to count. So capable it lands like an accusation."},
         {s:"the sibling who arranged the sale",r:"Lead",a:"mature",fam:"a",x:"Practical, careful, entirely correct and completely unforgivable."},
         {s:"the parent",r:"Supporting",a:"senior",fam:"a",x:"Sharper than either child believes. Two scenes that reset the whole argument."},
         {s:"the partner",r:"Supporting",a:"midCareer",x:"Married in and refusing to take a side, until."},
         {s:"the neighbor with the plow",r:"Day Player",a:"mature",x:"Arrives twice; both times the family has to behave."}
       ]},
-    {k:"paramedic-ride",era:"2000s",genre:"night procedural",tracks:["film","tv"],
+    {k:"paramedic-ride",era:"2000s",genre:"night-shift drama",tracks:["film","tv"],
       ttl:["Unit Twelve","The Long Tour","Two Blocks Out"],
       p:"a paramedic near the end of a long run of night shifts starts recognizing the addresses",
       h:"a call he handled badly six weeks ago comes back with the same apartment number on it",
       h2:"his partner writes a report that leaves his name out of it, and he cannot work out why",
       w:["an ambulance bay behind a hospital and the streets on its route","a volunteer squad house in a small city","a two-unit station covering a district that has lost its clinic"],
       c:[
-        {s:"the medic",r:"Lead",a:"midCareer",x:"Extremely good at the work and increasingly unable to leave it in the truck. Technical fluency helps; the part is exhaustion, not heroics."},
+        {s:"the medic",r:"Lead",a:"midCareer",x:"Extremely good at the work and increasingly unable to leave it in the truck. Being comfortable with the gear helps; the part is being worn out, not being a hero."},
         {s:"the partner",r:"Lead",a:"youngAdult",g:"F",x:"Newer, funnier, and better at boundaries. The audience's way into the job."},
-        {s:"the supervisor",r:"Supporting",a:"mature",x:"Cares, and has forms to file. Institutional kindness with a ceiling."},
+        {s:"the supervisor",r:"Supporting",a:"mature",x:"Cares, and has forms to file. Kindness that stops where the rules stop."},
         {s:"the patient's mother",r:"Supporting",a:"mature",g:"F",x:"One doorway scene that the whole film is built toward."},
         {s:"the dispatcher",r:"Day Player",a:"midCareer",x:"Voice-heavy; must convey a whole night in radio calls."}
       ]},
@@ -25107,7 +25107,7 @@ const ACG = (()=>{
       h2:"the spot is offered to the older man as a favor, and he has an hour to answer",
       w:["a minor-league clubhouse with plywood lockers","a team bus and the motels between four cities","a ballpark with a grain elevator behind the outfield"],
       c:[
-        {s:"the veteran catcher",r:"Lead",a:"mature",g:"M",x:"Knows he is teaching the man taking his job. No self-pity, enormous grace."},
+        {s:"the veteran catcher",r:"Lead",a:"mature",g:"M",x:"Knows he is teaching the man taking his job. Never feels sorry for themselves, and huge grace."},
         {s:"the prospect",r:"Lead",a:"youngAdult",g:"M",x:"Gifted, frightened, and not the villain. Physical credibility as an athlete strongly preferred."},
         {s:"the manager",r:"Supporting",a:"senior",x:"Delivers the news and takes the hit. One quiet scene worth the whole film."},
         {s:"the trainer",r:"Supporting",a:"midCareer",g:"F",x:"Sees every injury nobody reports. Dry, warm, unimpressed by all of them."},
@@ -25150,7 +25150,7 @@ const ACG = (()=>{
         {s:"the one being let go",r:"Lead",a:"mature",g:"F",x:"Twenty-two years in and talking about a kitchen renovation. Devastating precisely because she is cheerful."},
         {s:"the young one",r:"Supporting",a:"youngAdult",x:"Says the wrong thing constantly and is the only one being honest."},
         {s:"the driver",r:"Supporting",a:"mature",x:"Owns the car, sets the rules, controls the radio and the mood."},
-        {s:"the plant supervisor",r:"Day Player",a:"midCareer",x:"One parking-lot scene, entirely procedural, entirely brutal."}
+        {s:"the plant supervisor",r:"Day Player",a:"midCareer",x:"One parking-lot scene, all by the book, and brutal."}
       ]},
     {k:"rent-strike-building",era:"1970s",genre:"tenement ensemble",tracks:["film","stage","tv"],
       ttl:["Withheld","The Building Meeting","Six Floors, No Heat"],
@@ -25159,11 +25159,11 @@ const ACG = (()=>{
       h2:"the heat comes back on for one apartment only, and everyone can hear the radiators",
       w:["a six-floor walk-up with a lobby used for meetings","a rent-stabilized building being emptied one unit at a time","a tenement block where the boiler has failed three winters running"],
       c:[
-        {s:"the organizer",r:"Lead",a:"midCareer",g:"F",x:"Reluctant leader who is better at this than she wants to be. Public competence, private cost."},
-        {s:"the tenant who takes the deal",r:"Lead",a:"senior",x:"Has an entirely defensible reason and knows exactly what it makes them. No apology."},
+        {s:"the organizer",r:"Lead",a:"midCareer",g:"F",x:"Unwilling leader who is better at this than she wants to be. Capable in public, paying for it in private."},
+        {s:"the tenant who takes the deal",r:"Lead",a:"senior",x:"Has a reason anyone would accept, and knows exactly what it makes them. No apology."},
         {s:"the super",r:"Supporting",a:"mature",x:"Lives in the basement, works for the landlord, and is one of them. Impossible position played honestly."},
         {s:"the young tenant",r:"Supporting",a:"youngAdult",x:"New to the building, loud about everything, useful in the end."},
-        {s:"the landlord's representative",r:"Day Player",a:"midCareer",g:"F",x:"Two scenes, immaculate, never raises her voice."}
+        {s:"the landlord's representative",r:"Day Player",a:"midCareer",g:"F",x:"Two scenes, spotless, never raises her voice."}
       ]},
     {k:"traveling-salesman-territory",era:"1980s",genre:"road character study",tracks:["film","stage"],
       ttl:["The Territory","Sample Case","Four Accounts Left"],
@@ -25172,10 +25172,10 @@ const ACG = (()=>{
       h2:"the company offers him the route back at half pay if he trains his replacement",
       w:["a two-lane route between four small towns","a chain of hardware and feed stores off a state highway","a motel circuit and the diners between accounts"],
       c:[
-        {s:"the salesman",r:"Lead",a:"senior",x:"Courteous, practiced, and running out of road. Every scene is the same pitch delivered with less of them behind it."},
-        {s:"the regional manager",r:"Supporting",a:"midCareer",g:"F",x:"Kind on the phone, immovable on the numbers."},
+        {s:"the salesman",r:"Lead",a:"senior",x:"Polite, practiced, and running out of road. Every scene is the same pitch delivered with less of them behind it."},
+        {s:"the regional manager",r:"Supporting",a:"midCareer",g:"F",x:"Kind on the phone, will not move on the numbers."},
         {s:"the long-time customer",r:"Supporting",a:"senior",x:"Two scenes. The second one is the film."},
-        {s:"the new salesman",r:"Supporting",a:"youngAdult",x:"Shadowing for a week and better at it already. Wholly likeable, which is the cruelty."},
+        {s:"the new salesman",r:"Supporting",a:"youngAdult",x:"Shadowing for a week and better at it already. Completely likeable, which is the meanness."},
         {s:"the motel manager",r:"Day Player",a:"mature",g:"F",x:"Knows him by name and room preference."}
       ]},
     {k:"group-home-workers",era:"2000s",genre:"care-work drama",tracks:["tv","film","stage"],
@@ -25201,19 +25201,19 @@ const ACG = (()=>{
         {s:"the reporter",r:"Lead",a:"youngAdult",g:"F",x:"Right, unbearable about it, and twenty-six. Speed and certainty, then the crack."},
         {s:"the editor",r:"Lead",a:"mature",x:"Ran the story and will take the fall. Deliberate, dry, protective in a way they will not name."},
         {s:"the publisher",r:"Supporting",a:"mature",g:"F",x:"Business, law, and one late act of nerve."},
-        {s:"the source",r:"Supporting",a:"midCareer",x:"Two scenes. Frightened, evasive, and not lying."},
+        {s:"the source",r:"Supporting",a:"midCareer",x:"Two scenes. Frightened, slippery, and not lying."},
         {s:"the copy desk chief",r:"Day Player",a:"senior",x:"Catches the thing everyone missed at 11 p.m."}
       ]},
-    {k:"public-defender-caseload",era:"2000s",genre:"legal procedural",tracks:["tv","film","stage"],
+    {k:"public-defender-caseload",era:"2000s",genre:"courtroom drama",tracks:["tv","film","stage"],
       ttl:["Fourteen Files","Continuance","The Hallway Deal"],
       p:"a public defender with far too many cases works one long day in court",
       h:"the client with the weakest case is the only one telling the truth, and there is no time to prove it",
       h2:"a deal arrives that is good for the client and only works if he says something untrue",
       w:["a criminal courthouse hallway used as an office","a legal-aid office with files on the windowsills","an arraignment part running four hours behind"],
       c:[
-        {s:"the defender",r:"Lead",a:"midCareer",x:"Fast, funny, running on triage. Idealism visible only in what they refuse to do."},
+        {s:"the defender",r:"Lead",a:"midCareer",x:"Fast, funny, and always working on whatever is most urgent. You only see what they believe in by what they refuse to do."},
         {s:"the client",r:"Lead",a:"youngAdult",x:"Nineteen, uncooperative, and correct. Written without pity."},
-        {s:"the prosecutor",r:"Supporting",a:"midCareer",x:"Reasonable, overworked, and the antagonist by structure only."},
+        {s:"the prosecutor",r:"Supporting",a:"midCareer",x:"Reasonable, overworked, and only an opponent because of the job."},
         {s:"the supervisor",r:"Supporting",a:"mature",g:"F",x:"Protects the office, which sometimes means the clients and sometimes does not."},
         {s:"the client's grandmother",r:"Day Player",a:"senior",g:"F",fam:"a",x:"One bench scene in a hallway that outweighs the courtroom."}
       ]},
@@ -25225,21 +25225,21 @@ const ACG = (()=>{
       w:["a food truck working an office-park lunch route","a lot with six trucks and one shared power drop","a night market stall with a two-year waiting list"],
       c:[
         {s:"the cook",r:"Lead",a:"youngAdult",x:"Talent without paperwork. Charming, chaotic, quietly hurt."},
-        {s:"the one who does the books",r:"Lead",a:"midCareer",g:"F",x:"Built the business and gets called the assistant. Comic exasperation with a real edge."},
-        {s:"the market manager",r:"Supporting",a:"mature",x:"Holds the stall and enjoys it. Bureaucratic charisma."},
+        {s:"the one who does the books",r:"Lead",a:"midCareer",g:"F",x:"Built the business and gets called the assistant. Comic frustration with a real edge."},
+        {s:"the market manager",r:"Supporting",a:"mature",x:"Holds the stall and enjoys it. Charm made out of paperwork."},
         {s:"the rival vendor",r:"Supporting",a:"midCareer",x:"Friendly competitor with better margins and worse food."},
         {s:"the regular customer",r:"Day Player",a:"senior",x:"Same order daily; the film's small chorus."}
       ]},
-    {k:"community-college-faculty",era:"2000s",genre:"institutional comedy",tracks:["tv","stage","film"],
+    {k:"community-college-faculty",era:"2000s",genre:"workplace comedy",tracks:["tv","stage","film"],
       ttl:["Adjunct","Section 104","The Faculty Lounge"],
       p:"the part-time teachers at a community college share one office and no job security",
       h:"one full-time job opens up and everyone in the room is qualified for it",
       h2:"the job goes to someone from outside, and the department is asked to train her",
       w:["a shared adjunct office with four desks and six people","a community college annex above a shopping plaza","a department suite where the copier is the social center"],
       c:[
-        {s:"the long-serving adjunct",r:"Lead",a:"mature",g:"F",x:"Eleven years, best teacher in the building, no health insurance. Dry, tough, never pitiable."},
-        {s:"the newcomer",r:"Lead",a:"youngAdult",x:"Better credentialed, worse in a classroom, entirely aware of it."},
-        {s:"the department chair",r:"Supporting",a:"mature",x:"Announces the line and then hides. Comic cowardice."},
+        {s:"the long-serving adjunct",r:"Lead",a:"mature",g:"F",x:"Eleven years, best teacher in the building, no health insurance. Dry, tough, never sad."},
+        {s:"the newcomer",r:"Lead",a:"youngAdult",x:"Better qualified, worse in a classroom, and fully aware of it."},
+        {s:"the department chair",r:"Supporting",a:"mature",x:"Announces the line and then hides. Comic fear."},
         {s:"the office manager",r:"Supporting",a:"midCareer",g:"F",x:"Knows everything, decides more than anyone realizes."},
         {s:"the student",r:"Day Player",a:"youngAdult",x:"One office-hours scene that reminds everyone what the job is."}
       ]},
@@ -25263,7 +25263,7 @@ const ACG = (()=>{
       h2:"a producer calls the house and mistakes one brother for the other, twice",
       w:["a suburban kitchen with the blinds shut for four days","a bungalow being emptied for a sale","a family house where nothing has been moved in a decade"],
       c:[
-        {s:"the one with the career",r:"Lead",a:"midCareer",g:"M",fam:"a",x:"Orderly, superior, coming apart in slow, funny increments. Enormous physical and vocal stamina required."},
+        {s:"the one with the career",r:"Lead",a:"midCareer",g:"M",fam:"a",x:"Orderly, superior, coming apart in slow, funny increments. Enormous physical and vocal energy required."},
         {s:"the one who drifted in",r:"Lead",a:"mature",g:"M",fam:"a",x:"Dangerous, magnetic, and entirely serious about a plan nobody should agree to."},
         {s:"the visitor from work",r:"Supporting",a:"mature",x:"Arrives for one scene and mistakes chaos for genius."},
         {s:"the neighbor",r:"Supporting",a:"senior",g:"F",x:"Sees the state of the house and says the one useful sentence."},
@@ -25289,7 +25289,7 @@ const ACG = (()=>{
       h2:"one guest brings somebody nobody invited, and the whole evening rearranges around them",
       w:["a small apartment with a table borrowed from a neighbor","a brownstone dining room with too many chairs","a rented loft set for a dinner the hosts cannot afford"],
       c:[
-        {s:"the host",r:"Lead",a:"midCareer",g:"F",x:"Performing composure through five courses. Comic precision, then a genuine break."},
+        {s:"the host",r:"Lead",a:"midCareer",g:"F",x:"Performing calm through five courses. Funny and exact, then a real break."},
         {s:"the co-host",r:"Lead",a:"midCareer",x:"Knows what the news actually is. Playing pleasant for two acts is the assignment."},
         {s:"the old friend",r:"Supporting",a:"mature",x:"Says the thing everyone is thinking, twice, and is wrong both times."},
         {s:"the new partner",r:"Supporting",a:"youngAdult",x:"Meeting all of them at once and reading the room correctly first."},
@@ -25303,7 +25303,7 @@ const ACG = (()=>{
       w:["an airport hotel room with a view of a parking structure","a downtown business hotel on a Sunday","an extended-stay suite with a kitchenette nobody uses"],
       c:[
         {s:"the one who asked",r:"Lead",a:"mature",g:"F",x:"Arrived early, rehearsed everything, and abandons the script in minute six."},
-        {s:"the one who came",r:"Lead",a:"mature",x:"Came for reasons they cannot state out loud. Restraint, humor, and one devastating disclosure."},
+        {s:"the one who came",r:"Lead",a:"mature",x:"Came for reasons they cannot state out loud. Holds back, is funny, and then says one thing that lands hard."},
         {s:"the voice on the phone",r:"Supporting",a:"midCareer",x:"Heard twice; changes the temperature of the room both times."},
         {s:"the front desk clerk",r:"Day Player",a:"youngAdult",x:"Two short interruptions, played completely straight."},
         {s:"the friend in the lobby",r:"Day Player",a:"mature",g:"F",x:"Waits downstairs and gets the last scene."}
@@ -25367,11 +25367,11 @@ const ACG = (()=>{
       h2:"a recording of the second meeting exists, and neither of them made it",
       w:["a faculty office with a door that is supposed to stay open","a seminar room after a class has emptied","a department conference room with a recorder on the table"],
       c:[
-        {s:"the instructor",r:"Lead",a:"mature",x:"Articulate, self-satisfied, and slower than the audience to hear themselves. No caricature."},
+        {s:"the instructor",r:"Lead",a:"mature",x:"Well-spoken, smug, and slower than the audience to hear themselves. No cartoon."},
         {s:"the student",r:"Lead",a:"youngAdult",g:"F",x:"Precise, unfooled, and changing shape between scenes. Neither of them is written as simply right."},
-        {s:"the department head",r:"Supporting",a:"mature",g:"F",x:"Two scenes of process, entirely without malice."},
+        {s:"the department head",r:"Supporting",a:"mature",g:"F",x:"Two scenes of process, entirely without spite."},
         {s:"the colleague",r:"Supporting",a:"midCareer",x:"Advice that makes everything worse, delivered warmly."},
-        {s:"the union representative",r:"Day Player",a:"senior",x:"One scene, procedural, quietly damning."}
+        {s:"the union representative",r:"Day Player",a:"senior",x:"One scene, all by the book, and it quietly sinks someone."}
       ]},
     {k:"spot-insurance-whatif",only:["Commercial","Branded Content","Spec Commercial","Social Media Ad"],era:"n/a",genre:"scenario spot",tracks:["spot"],
       ttl:["What If Tuesday","The Small Print Spot","Everything Was Fine Until"],
@@ -25434,7 +25434,7 @@ const ACG = (()=>{
       c:[
         {s:"the patient",r:"Lead",a:"midCareer",x:"Direct address plus scene work. Must sound like a person, not a testimonial."},
         {s:"the nurse practitioner",r:"Lead",a:"mature",g:"F",x:"Clinical fluency and real warmth. Medical background a plus for prop handling."},
-        {s:"the front desk staffer",r:"Supporting",a:"youngAdult",x:"Fast, friendly, entirely unbothered."},
+        {s:"the front desk staffer",r:"Supporting",a:"youngAdult",x:"Fast, friendly, and nothing gets to them."},
         {s:"the accompanying parent",r:"Supporting",a:"senior",x:"Along for the visit and running the conversation."},
         {s:"the waiting room",r:"Background",a:"adult",x:"Believable waiting behavior; some featured reactions."}
       ]},
@@ -25477,7 +25477,7 @@ const ACG = (()=>{
         {s:"the fourth face",r:"Supporting",a:"teen",x:"Guardian required. Featured in the gentle-formula range; fully clothed, beauty-lighting only."},
         {s:"the group frames",r:"Background",a:"adult",x:"Group portraiture; a wide mix of skin tones, textures and ages specifically wanted."}
       ]},
-    {k:"print-hotel-lifestyle",only:["Print Campaign","Photo Shoot","Influencer / UGC Content"],era:"n/a",genre:"hospitality campaign",tracks:["print"],
+    {k:"print-hotel-lifestyle",only:["Print Campaign","Photo Shoot","Influencer / UGC Content"],era:"n/a",genre:"hotel campaign",tracks:["print"],
       ttl:["Check-In, Spring","The Lobby Series","Two Nights"],
       p:"a hotel campaign following made-up guests through the building across one day",
       h:"the pictures have to look like snapshots from a real trip, not a brochure",
@@ -25486,7 +25486,7 @@ const ACG = (()=>{
       c:[
         {s:"the traveling guest",r:"Lead",a:"midCareer",x:"Hero images and the film cutdown. Relaxed, unposed, strong in movement."},
         {s:"the second guest",r:"Lead",a:"youngAdult",g:"F",x:"Paired frames with the lead; genuine chemistry needed at callback."},
-        {s:"the front-of-house staff",r:"Supporting",a:"youngAdult",x:"Featured service moments. Real hospitality experience helpful."},
+        {s:"the front-of-house staff",r:"Supporting",a:"youngAdult",x:"Featured service moments. Real hotel or restaurant experience helps."},
         {s:"the bartender",r:"Supporting",a:"midCareer",x:"Hands-and-craft detail shots plus two featured portraits."},
         {s:"the lobby atmosphere",r:"Background",a:"adult",x:"Believable guest behavior across the property; several featured frames."}
       ]},
@@ -25516,7 +25516,7 @@ const ACG = (()=>{
         {s:"the fourth character",r:"Supporting",a:"midCareer",x:"Two looks in the technical/sports range."},
         {s:"the scene atmosphere",r:"Background",a:"adult",x:"Environmental frames in the location setups."}
       ]},
-    {k:"print-annual-report",only:["Print Campaign","Photo Shoot","Corporate Video","Branded Content","Promo Video"],era:"n/a",genre:"corporate portraiture",tracks:["print","spot"],
+    {k:"print-annual-report",only:["Print Campaign","Photo Shoot","Corporate Video","Branded Content","Promo Video"],era:"n/a",genre:"office portraits",tracks:["print","spot"],
       ttl:["The Annual Report Portraits","People, Not Product","Front of House"],
       p:"a portrait and video series about the people behind a very unglamorous business",
       h:"everyone is lit and shot like a real subject, not like stock photography",
@@ -25552,7 +25552,7 @@ const ACG = (()=>{
         {s:"the featured dancer",r:"Lead",a:"youngAdult",x:"Choreographed and freestyle sections. Strong movement background required."},
         {s:"the neighborhood elder",r:"Supporting",a:"senior",x:"Featured throughout; presence, humor, and one held close-up."},
         {s:"the kids on the block",r:"Supporting",a:"child",x:"Guardian required. Play, water, and dancing — nothing staged as performance."},
-        {s:"the crew of friends",r:"Supporting",a:"youngAdult",x:"Featured group energy; comfortable improvising within frame."},
+        {s:"the crew of friends",r:"Supporting",a:"youngAdult",x:"Featured group energy; happy to make things up inside the frame."},
         {s:"the block party crowd",r:"Background",a:"adult",x:"All ages and looks. Real party behavior across a long shooting day."}
       ]},
     {k:"audio-missing-persons",only:["Podcast / Audio Drama","Voiceover"],era:"n/a",genre:"audio drama",tracks:["other"],
@@ -25564,8 +25564,8 @@ const ACG = (()=>{
       c:[
         {s:"the investigator",r:"Lead",a:"midCareer",g:"F",x:"Carries eight episodes of narration and interview. Warm, dry, unhurried; excellent mic control."},
         {s:"the witness",r:"Lead",a:"mature",x:"Three long interview episodes. Must sound like someone who is not performing."},
-        {s:"the family member",r:"Supporting",a:"senior",x:"Two episodes; grief without theatricality."},
-        {s:"the archive voices",r:"Supporting",a:"adult",x:"Multiple small character voices across the series; range and versatility wanted."},
+        {s:"the family member",r:"Supporting",a:"senior",x:"Two episodes; grief with nothing showy about it."},
+        {s:"the archive voices",r:"Supporting",a:"adult",x:"Multiple small character voices across the series; range and range wanted."},
         {s:"the narrator",r:"Supporting",a:"mature",x:"Framing narration only. Measured, clear, no announcer delivery."}
       ]},
     {k:"animation-neighborhood",only:["Animation","Voiceover"],era:"n/a",genre:"animated series",tracks:["other"],
@@ -25581,15 +25581,15 @@ const ACG = (()=>{
         {s:"the child downstairs",r:"Supporting",a:"child",x:"Recurring. Guardian required; short sessions, plenty of breaks."},
         {s:"the utility voices",r:"Supporting",a:"adult",x:"Multiple recurring smaller characters per episode. Range is the whole job."}
       ]},
-    {k:"training-safety-scenario",only:["Educational Video","Corporate Video"],era:"n/a",genre:"industrial scenario",tracks:["other","spot"],
+    {k:"training-safety-scenario",only:["Educational Video","Corporate Video"],era:"n/a",genre:"workplace training",tracks:["other","spot"],
       ttl:["Module Four: Reporting","The Right Way and the Fast Way","Shift Handover"],
       p:"a workplace training series about the moment someone decides whether to report a problem",
       h:"the wrong choice has to feel understandable, not stupid",
       h2:"every scene is filmed twice, from the two people's opposite memories of it",
       w:["a warehouse floor and a break room","a hospital ward and a supply room","a construction site office and a scaffold deck"],
       c:[
-        {s:"the worker facing the choice",r:"Lead",a:"midCareer",x:"Appears in every module. Ordinary, sympathetic, believable making a bad call."},
-        {s:"the supervisor",r:"Lead",a:"mature",g:"F",x:"Two versions of the same scene: one handled well, one badly. Precision required."},
+        {s:"the worker facing the choice",r:"Lead",a:"midCareer",x:"Appears in every module. Ordinary, kind, believable making a bad call."},
+        {s:"the supervisor",r:"Lead",a:"mature",g:"F",x:"Two versions of the same scene: one handled well, one badly. Has to be exact."},
         {s:"the coworker",r:"Supporting",a:"youngAdult",x:"Sees it happen and says nothing in the first version."},
         {s:"the safety officer",r:"Supporting",a:"mature",x:"Direct-address segments between scenarios. Clear, warm, no lecturing."},
         {s:"the floor atmosphere",r:"Background",a:"adult",x:"Real working behavior; comfortable in PPE and around equipment."}
@@ -25601,7 +25601,7 @@ const ACG = (()=>{
       h2:"one business closes during filming and the series follows where everyone goes",
       w:["a commercial block with a barber, a bakery and a laundromat","a market street with six family businesses","a strip with a repair shop, a takeout counter and a florist"],
       c:[
-        {s:"the shop owner",r:"Lead",a:"mature",x:"Improvises within a defined situation across every episode. Real trade or service experience genuinely useful."},
+        {s:"the shop owner",r:"Lead",a:"mature",x:"Makes it up inside a set situation in every episode. Real trade or service experience genuinely useful."},
         {s:"the employee",r:"Lead",a:"youngAdult",g:"F",x:"Series regular. Quick, funny, entirely comfortable without a script."},
         {s:"the neighbor from two doors down",r:"Supporting",a:"senior",x:"Recurring; the block's memory."},
         {s:"the delivery driver",r:"Supporting",a:"midCareer",x:"Recurring across episodes; in and out of every business."},
@@ -25614,7 +25614,7 @@ const ACG = (()=>{
       h2:"the show changes a little every hour, so anyone who stays sees a different ending",
       w:["a convention floor stand across three show days","a shopping center atrium installation","a festival activation tent over one weekend"],
       c:[
-        {s:"the host performer",r:"Lead",a:"youngAdult",x:"Runs the piece all day. Enormous energy, improv training strongly preferred, vocal stamina essential."},
+        {s:"the host performer",r:"Lead",a:"youngAdult",x:"Runs the piece all day. Enormous energy, improv training strongly preferred, vocal energy essential."},
         {s:"the second host",r:"Lead",a:"midCareer",x:"Alternates with the lead; the two must be genuinely different in style."},
         {s:"the character performer",r:"Supporting",a:"adult",x:"Physical/costumed role within the piece. Movement background helpful."},
         {s:"the floor support",r:"Supporting",a:"youngAdult",x:"Guides the public through the experience; warm crowd handling."},
@@ -25646,7 +25646,7 @@ const ACG = (()=>{
       w:["a large empty house on a street with no through traffic","a lake house closed for the winter","a restored brownstone between tenants"],
       c:[
         {s:"the house sitter",r:"Lead",a:"youngAdult",g:"F",x:"Alone on screen for most of the film. Practical, unspooky, and slowly stops trusting her own hearing — the terror is all in what she chooses not to check."},
-        {s:"the owner on video call",r:"Supporting",a:"mature",x:"Charming, evasive, and always calling from somewhere with bad signal. Every answer creates a new question."},
+        {s:"the owner on video call",r:"Supporting",a:"mature",x:"Charming, slippery, and always calling from somewhere with bad signal. Every answer creates a new question."},
         {s:"the neighbor",r:"Supporting",a:"senior",g:"F",x:"Has watched this house for forty years and will not come past the gate. Two scenes, both of which should make the audience colder than any jump."},
         {s:"the locksmith",r:"Day Player",a:"midCareer",x:"Called out to open one door and refuses on sight of which one. No dialogue about why."},
         {s:"the figure below",r:"Supporting",a:"adult",x:"Physically expressive, barely seen, no dialogue. Movement or dance background genuinely useful; must be able to be still for a very long time."}
@@ -25660,7 +25660,7 @@ const ACG = (()=>{
       c:[
         {s:"the new attendant",r:"Lead",a:"youngAdult",x:"Took the job for the quiet. Rational to a fault, which is what makes the unravelling land — never screams when a look will do."},
         {s:"the attendant leaving",r:"Supporting",a:"senior",x:"Hands over the keys, the rules and one warning, then will not answer the phone again. One scene that sets the whole film."},
-        {s:"the doctor",r:"Lead",a:"mature",g:"F",x:"Wants the body released and will not explain why. Immaculate, unhurried, and clearly frightened underneath."},
+        {s:"the doctor",r:"Lead",a:"mature",g:"F",x:"Wants the body released and will not explain why. Spotless, unhurried, and clearly frightened underneath."},
         {s:"the security guard",r:"Supporting",a:"midCareer",x:"Does the rounds, makes the same jokes nightly, and is the only warmth in the building. The audience has to like them immediately."},
         {s:"the body",r:"Day Player",a:"adult",x:"Extended stillness on a table under lights, then one sequence of controlled movement. Physical performer; no dialogue."}
       ]},
@@ -25673,7 +25673,7 @@ const ACG = (()=>{
       c:[
         {s:"the sceptic",r:"Lead",a:"midCareer",g:"F",x:"Came because her sister paid. Funny, armored, and the first to count the beds. Carries the audience's suspicion for them."},
         {s:"the facilitator",r:"Lead",a:"mature",x:"Warm, unhurried, entirely reasonable — which is exactly what makes the part terrifying. Never raises the volume, not once."},
-        {s:"the true believer",r:"Supporting",a:"youngAdult",x:"Third retreat this year and desperate for it to work. Sympathetic, not stupid; the saddest person in the film."},
+        {s:"the true believer",r:"Supporting",a:"youngAdult",x:"Third retreat this year and desperate for it to work. Kind, not stupid; the saddest person in the film."},
         {s:"the one who vanishes",r:"Supporting",a:"adult",x:"On screen for eleven minutes and has to be memorable enough that the audience notices the absence before the cast does."},
         {s:"the cook",r:"Day Player",a:"senior",g:"F",x:"Says nothing for the whole film and one sentence at the end. Enormous presence, no lines to hide behind."}
       ]},
@@ -25700,7 +25700,7 @@ const ACG = (()=>{
         {s:"the witness",r:"Lead",a:"midCareer",g:"F",x:"Testifying against people she used to eat dinner with. Funny, exhausted, and much harder than she looks."},
         {s:"the officer",r:"Lead",a:"mature",x:"Professional distance dissolving one day at a time. The tension is what neither of them says over nineteen dinners."},
         {s:"the relief officer",r:"Supporting",a:"youngAdult",x:"Arrives twice. The second visit is the hinge of the film; must be entirely likeable both times."},
-        {s:"the handler on the phone",r:"Supporting",a:"mature",g:"F",x:"Voice-heavy. Calm, procedural, and increasingly hard to reach."},
+        {s:"the handler on the phone",r:"Supporting",a:"mature",g:"F",x:"Voice-heavy. Calm, by the book, and harder and harder to reach."},
         {s:"the neighbor's kid",r:"Day Player",a:"child",x:"Guardian required. Two short scenes on a driveway that make the house feel real."}
       ]},
     {k:"elevator-hostage",era:"2000s",genre:"thriller",tracks:["film","stage","tv"],
@@ -25711,7 +25711,7 @@ const ACG = (()=>{
       w:["a service elevator in an office tower during a blackout","a hospital elevator between wards","a residential elevator in a building being renovated"],
       c:[
         {s:"the one carrying it",r:"Lead",a:"youngAdult",x:"Sweating through a job interview answer for forty minutes. The audience should work out what's in the bag before the others do."},
-        {s:"the calm one",r:"Lead",a:"mature",g:"F",x:"Takes charge because nobody else will. Competence that starts to look like something else."},
+        {s:"the calm one",r:"Lead",a:"mature",g:"F",x:"Takes charge because nobody else will. So capable it starts to look like something else."},
         {s:"the talker",r:"Supporting",a:"midCareer",x:"Fills every silence, mostly out of fear. Comic engine that turns into the moral one."},
         {s:"the silent one",r:"Supporting",a:"senior",x:"Speaks four times in the whole piece, and every line changes the room's temperature."},
         {s:"the voice on the intercom",r:"Day Player",a:"adult",x:"Heard, never seen. Has to convey an entire building's worth of chaos through a speaker."}
@@ -25723,7 +25723,7 @@ const ACG = (()=>{
       h2:"the money comes back eleven days later in the same bags, minus one",
       w:["an armored-car depot and the route between four banks","a cash-processing yard behind a chain fence","a courier depot in an industrial park"],
       c:[
-        {s:"the driver",r:"Lead",a:"mature",x:"Twenty-two years clean and now unprovably guilty. The performance is a decent person watching their own life turn into circumstantial evidence."},
+        {s:"the driver",r:"Lead",a:"mature",x:"Twenty-two years clean, and now guilty with no way to prove otherwise. The performance is a decent person watching their own life turn into evidence against them."},
         {s:"the old friend",r:"Lead",a:"mature",x:"Loves the driver and used the driver anyway. Charming in a way that should make the audience angry at themselves."},
         {s:"the partner on the crew",r:"Supporting",a:"youngAdult",g:"F",x:"New, sharp, and the only one asking the right questions. Never plays it as suspicion."},
         {s:"the investigator",r:"Supporting",a:"midCareer",x:"Polite, thorough, and building a case out of nothing but coincidence."},
@@ -25736,7 +25736,7 @@ const ACG = (()=>{
       h2:"the case that bag belongs to goes to trial in nine days and nobody has noticed",
       w:["a police property room in a basement with one door","a county evidence warehouse","a court exhibits store shared by three departments"],
       c:[
-        {s:"the clerk",r:"Lead",a:"youngAdult",g:"F",x:"Meticulous, invisible, and about to become extremely visible. Quiet competence turning into quiet courage."},
+        {s:"the clerk",r:"Lead",a:"youngAdult",g:"F",x:"Careful, invisible, and about to become extremely visible. Quietly capable, turning into quietly brave."},
         {s:"the sergeant",r:"Lead",a:"mature",x:"Warm, funny, genuinely good to her — and doing it. Must never once play the villain."},
         {s:"the internal investigator",r:"Supporting",a:"midCareer",g:"F",x:"Arrives with no interest in anyone's feelings. Efficiency as a moral position."},
         {s:"the defense attorney",r:"Supporting",a:"mature",x:"Two scenes; the second one detonates the case."},
@@ -25762,9 +25762,9 @@ const ACG = (()=>{
       h2:"the rent is still being paid, on time, every month",
       w:["a six-story walk-up with a basement office","a co-op building with a doorman and a long memory","a converted hotel let out as studios"],
       c:[
-        {s:"the superintendent",r:"Lead",a:"mature",x:"Fixes things for a living and cannot stop fixing this. Dogged, unglamorous, and completely out of their depth."},
-        {s:"the neighbor across the hall",r:"Lead",a:"senior",g:"F",x:"Remembers everything and is wrong about half of it. Charming, unreliable, indispensable."},
-        {s:"the building manager",r:"Supporting",a:"midCareer",g:"F",x:"Wants this closed and the unit re-let. Corporate pleasantness with a locked door behind it."},
+        {s:"the superintendent",r:"Lead",a:"mature",x:"Fixes things for a living and cannot stop fixing this. Stubborn, unglamorous, and completely out of their depth."},
+        {s:"the neighbor across the hall",r:"Lead",a:"senior",g:"F",x:"Remembers everything and is wrong about half of it. Charming, unreliable, impossible to replace."},
+        {s:"the building manager",r:"Supporting",a:"midCareer",g:"F",x:"Wants this closed and the unit re-let. Company-issued friendliness with a locked door behind it."},
         {s:"the detective",r:"Supporting",a:"midCareer",x:"Takes the report seriously about eight scenes later than the audience wants."},
         {s:"the person in the photographs",r:"Day Player",a:"adult",x:"Seen only in stills and one flashback. Must be instantly memorable with no dialogue at all."}
       ]},
@@ -25775,7 +25775,7 @@ const ACG = (()=>{
       h2:"the supply boat comes early and the boatman swears he dropped two men off last week",
       w:["an island lighthouse reachable only at low tide","a rock light with a supply boat every nine days","a coastal station with a keeper's cottage"],
       c:[
-        {s:"the relief keeper",r:"Lead",a:"midCareer",x:"Alone for most of the running time. Methodical, sceptical, and gradually undone by good record-keeping."},
+        {s:"the relief keeper",r:"Lead",a:"midCareer",x:"Alone for most of the running time. Orderly, sceptical, and gradually undone by good record-keeping."},
         {s:"the missing keeper",r:"Lead",a:"mature",x:"Seen in the second half. Warm, plausible, and telling a story that cannot possibly be true."},
         {s:"the boatman",r:"Supporting",a:"senior",x:"Brings the supplies and refuses to stay for tea. Two visits, both loaded."},
         {s:"the inspector",r:"Supporting",a:"mature",g:"F",x:"Arrives at the end with a clipboard and an explanation nobody accepts."},
@@ -25789,7 +25789,7 @@ const ACG = (()=>{
       w:["a spare bedroom studio and the town outside it","a converted garage with foam on the walls","a community radio booth borrowed after hours"],
       c:[
         {s:"the host",r:"Lead",a:"youngAdult",g:"F",x:"Talented, ambitious, and increasingly unable to hear herself. The film's charm and its damage come from the same place."},
-        {s:"the producer",r:"Lead",a:"youngAdult",x:"The brakes nobody uses. Loyal past the point of sense; the conscience of the piece."},
+        {s:"the producer",r:"Lead",a:"youngAdult",x:"The brakes nobody uses. Loyal past the point of sense; the one who knows right from wrong."},
         {s:"the accused",r:"Supporting",a:"mature",x:"Ordinary, awkward on tape, and innocent. Two interviews that should be unbearable to watch."},
         {s:"the mother of the missing girl",r:"Supporting",a:"mature",g:"F",x:"Gave them access and regrets it. One scene that stops the film dead."},
         {s:"the retired detective",r:"Supporting",a:"senior",x:"Enjoys the attention and says a good deal more than they should."}
@@ -25804,7 +25804,7 @@ const ACG = (()=>{
         {s:"the courier",r:"Lead",a:"youngAdult",g:"F",x:"Fast, broke, and better on a bike than anyone in the film. Genuine cycling ability essential; long days of practical riding."},
         {s:"the rival",r:"Lead",a:"youngAdult",x:"Knows her, likes her, and needs the money more. The chase is a friendship in bad faith."},
         {s:"the dispatcher",r:"Supporting",a:"mature",g:"F",x:"Runs the board and knows exactly what she has set up. Voice-heavy, guilt underneath."},
-        {s:"the client",r:"Supporting",a:"mature",x:"Two scenes, both in the back of a car. Utterly calm about what they have caused."},
+        {s:"the client",r:"Supporting",a:"mature",x:"Two scenes, both in the back of a car. Completely calm about what they have caused."},
         {s:"the traffic officer",r:"Day Player",a:"midCareer",x:"One scene of comic obstruction that turns dangerous."}
       ]},
     {k:"blackout-highrise",era:"2010s",genre:"action",tracks:["film","tv"],
@@ -25814,7 +25814,7 @@ const ACG = (()=>{
       h2:"the building's own systems start turning against her, floor by floor, on a timer",
       w:["a half-let office tower after hours","a residential high-rise mid-renovation","a hotel tower closed for refurbishment"],
       c:[
-        {s:"the engineer",r:"Lead",a:"midCareer",g:"F",x:"Knows the building better than its architects. Physical role with stairwell and crawlspace work; problem-solving, not heroics."},
+        {s:"the engineer",r:"Lead",a:"midCareer",g:"F",x:"Knows the building better than its architects. Physical role with stairwell and crawlspace work; solving problems, not being a hero."},
         {s:"the man in charge",r:"Lead",a:"mature",g:"M",x:"Polite, patient, and organized. Explains himself once, and it is worse than a threat."},
         {s:"the trapped executive",r:"Supporting",a:"mature",g:"F",x:"On a late call when it starts. Panic played as decisiveness."},
         {s:"the youngest of the crew",r:"Supporting",a:"youngAdult",x:"In over their head and not enjoying it. The audience's way to understand the other side."},
@@ -25827,9 +25827,9 @@ const ACG = (()=>{
       h2:"the studio quietly pays off her injured partner on the condition the stunt gets done again",
       w:["a backlot and the stunt yard behind it","a warehouse rigged for a fall sequence","a working set with a second-unit crew"],
       c:[
-        {s:"the double",r:"Lead",a:"midCareer",g:"F",x:"Physically formidable and emotionally locked shut. Stunt or movement background a genuine asset; the acting is in what she refuses to say."},
+        {s:"the double",r:"Lead",a:"midCareer",g:"F",x:"Physically impressive and emotionally locked shut. Stunt or movement background a genuine asset; the acting is in what she refuses to say."},
         {s:"the stunt coordinator",r:"Lead",a:"mature",x:"Loves her, needs the job, and signs the sheet anyway. The film's real tragedy."},
-        {s:"the producer",r:"Supporting",a:"mature",g:"F",x:"Charming, apologetic, immovable. Two scenes of pure corporate warmth."},
+        {s:"the producer",r:"Supporting",a:"mature",g:"F",x:"Charming, sorry, and will not move. Two scenes of pure company-issued warmth."},
         {s:"the injured partner",r:"Supporting",a:"mature",x:"Three scenes, seated. Funny about it, which makes it worse."},
         {s:"the new double",r:"Supporting",a:"youngAdult",g:"F",x:"Fearless because nobody has shown her the footage yet."}
       ]},
@@ -25840,7 +25840,7 @@ const ACG = (()=>{
       h2:"they find a second entrance that was sealed shut from the inside, decades ago",
       w:["a limestone cave system under farmland","a flooded mine reopened for survey","a coastal cave network with a tidal entrance"],
       c:[
-        {s:"the lead surveyor",r:"Lead",a:"midCareer",g:"F",fam:"a",x:"Her father drew the map. Precise, unsentimental, and slowly forced to admit he lied about something. Comfort in confined spaces essential."},
+        {s:"the lead surveyor",r:"Lead",a:"midCareer",g:"F",fam:"a",x:"Her father drew the map. Exact, never soft, and slowly forced to admit he lied about something. Must be comfortable in tight spaces."},
         {s:"the sponsor's rep",r:"Supporting",a:"mature",x:"Along to protect an investment and turns out to be the most capable person underground."},
         {s:"the young caver",r:"Supporting",a:"youngAdult",x:"Brilliant, reckless, and the reason the second half happens. Physically demanding role."},
         {s:"the veteran",r:"Lead",a:"senior",x:"Was on the original survey. Knows what is down there and has spent thirty years not saying."},
@@ -25854,10 +25854,10 @@ const ACG = (()=>{
       w:["a working harbour and the water past the headland","a fishing port with a boatyard and a bar","an island jetty and the channel beyond it"],
       c:[
         {s:"the daughter",r:"Lead",a:"youngAdult",g:"F",fam:"a",x:"Better on the water than her father and never says so. Practical, salty, and the film's engine. Comfortable on boats a real advantage."},
-        {s:"the father",r:"Lead",a:"senior",g:"M",fam:"a",x:"Proud, indebted, and making one last bad decision beautifully."},
+        {s:"the father",r:"Lead",a:"senior",g:"M",fam:"a",x:"Proud, in debt, and making one last bad decision beautifully."},
         {s:"the rival skipper",r:"Supporting",a:"mature",g:"F",x:"Not a villain — a better businesswoman with the same idea. Two scenes on a dock that crackle."},
         {s:"the diver",r:"Supporting",a:"midCareer",x:"Hired for the job, stays for the argument. Comic, capable, loyal to nobody."},
-        {s:"the harbour master",r:"Day Player",a:"senior",x:"Holds the paperwork and enjoys it enormously."}
+        {s:"the harbour master",r:"Day Player",a:"senior",x:"Holds the paperwork and enjoys it hugely."}
       ]},
     {k:"wedding-band-sub",era:"1990s",genre:"comedy",tracks:["film","tv","stage"],
       ttl:["The Substitute Bass Player","Four Hours, No Rehearsal","Do You Know Anything Slow?"],
@@ -25866,10 +25866,10 @@ const ACG = (()=>{
       h2:"the couple's first dance song turns out to be one only she can play",
       w:["a hotel function room and the service corridor behind it","a banquet hall with a car park and a fire escape","a country club ballroom on a Saturday"],
       c:[
-        {s:"the substitute",r:"Lead",a:"midCareer",g:"F",x:"Wants to be paid and leave. Dry, unbothered, and hopelessly good at fixing other people. Musical ability a plus but not required."},
+        {s:"the substitute",r:"Lead",a:"midCareer",g:"F",x:"Wants to be paid and leave. Dry, unruffled, and hopelessly good at fixing other people. Musical ability a plus but not required."},
         {s:"the bandleader",r:"Lead",a:"mature",x:"Holding a group together with a set list and sheer denial. Comic desperation with real dignity."},
         {s:"the singer",r:"Supporting",a:"midCareer",g:"F",x:"Leaving the band, leaving him, and doing four more sets first."},
-        {s:"the drummer",r:"Supporting",a:"youngAdult",x:"Nineteen, oblivious, and accidentally the wisest person in the room."},
+        {s:"the drummer",r:"Supporting",a:"youngAdult",x:"Nineteen, clueless, and accidentally the wisest person in the room."},
         {s:"the mother of the bride",r:"Supporting",a:"senior",g:"F",x:"Requests. So many requests. Should be terrifying and then unexpectedly moving."},
         {s:"the venue manager",r:"Day Player",a:"midCareer",x:"Cares about the fire doors and nothing else."}
       ]},
@@ -25906,7 +25906,7 @@ const ACG = (()=>{
       h2:"the two of them turn out to be on opposite sides of the same family argument",
       w:["a small flat above a bakery and a house share across town","two apartments in different boroughs","a studio and a shared house on opposite sides of a city"],
       c:[
-        {s:"the tidy one",r:"Lead",a:"midCareer",g:"F",x:"Systems for everything, and none of them survive contact. Comic precision that unravels beautifully."},
+        {s:"the tidy one",r:"Lead",a:"midCareer",g:"F",x:"Systems for everything, and none of them survive contact. Funny and exact, then falls apart beautifully."},
         {s:"the chaotic one",r:"Lead",a:"youngAdult",x:"Genuinely happier and genuinely worse at life. Warm, not stupid."},
         {s:"the person already living there",r:"Supporting",a:"adult",x:"Been in the spare room for eight months and sees no problem. The film's best running joke."},
         {s:"the landlord",r:"Supporting",a:"senior",g:"F",x:"Two scenes of enormous, unhurried menace about a fridge."},
@@ -25946,8 +25946,8 @@ const ACG = (()=>{
       w:["a sleeper train between two cities","an overnight coach on a rerouted line","a long-distance train delayed by weather"],
       c:[
         {s:"the one going home",r:"Lead",a:"midCareer",g:"F",x:"Talks to fill space and reveals more than she means to. Fast, funny, frightened."},
-        {s:"the one going away",r:"Lead",a:"midCareer",x:"Says almost nothing for the first act and lands the second entirely. Restraint is the whole job."},
-        {s:"the attendant",r:"Supporting",a:"senior",x:"Three visits, each one perfectly timed to interrupt. Warm, unhurried, faintly amused."},
+        {s:"the one going away",r:"Lead",a:"midCareer",x:"Says almost nothing for the first act and lands the second entirely. Holding back is the whole job."},
+        {s:"the attendant",r:"Supporting",a:"senior",x:"Three visits, each one perfectly timed to interrupt. Warm, unhurried, slightly amused."},
         {s:"the passenger in the corridor",r:"Day Player",a:"youngAdult",x:"One conversation at 4 a.m. that changes the direction of the film."},
         {s:"the voice on the phone",r:"Day Player",a:"adult",x:"Heard once. Must make the audience reassess everything before it."}
       ]},
@@ -25972,10 +25972,10 @@ const ACG = (()=>{
       w:["a church hall and the annex across the car park","two chapels on the same street","a community hall shared by both congregations"],
       c:[
         {s:"the choir director",r:"Lead",a:"mature",g:"F",x:"Held it together for nineteen years and breaks it in one afternoon. Strong voice, sharper comic timing."},
-        {s:"the soloist who has always had it",r:"Lead",a:"senior",g:"F",x:"Gracious in public, ruthless in the car park. Big voice, bigger silences."},
+        {s:"the soloist who has always had it",r:"Lead",a:"senior",g:"F",x:"Kind in public, ruthless in the car park. Big voice, bigger silences."},
         {s:"the newcomer",r:"Lead",a:"youngAdult",g:"F",x:"Better and knows it, which is the problem. Needs a genuinely thrilling instrument."},
         {s:"the organist",r:"Supporting",a:"mature",x:"Refuses to take sides and takes both. Comic engine; plays and sings."},
-        {s:"the minister",r:"Supporting",a:"senior",x:"Peacemaking with no talent for it. One quiet number that resets the whole show."},
+        {s:"the minister",r:"Supporting",a:"senior",x:"Keeping the peace with no talent for it. One quiet number that resets the whole show."},
         {s:"the congregation ensemble",r:"Supporting",a:"adult",x:"Chorus for both choirs, doubling as neighbors and family. All voice parts; harmony singing required."}
       ]},
     {k:"doc-video-store",only:["Documentary","Reality / Docu-Series"],era:"2000s",genre:"documentary",tracks:["film","tv"],
@@ -25985,10 +25985,10 @@ const ACG = (()=>{
       h2:"a national chain offers to buy the whole collection, and the owner has three days to answer",
       w:["a rental store with hand-written staff picks","a family-run video shop on a high street","a rental counter inside a corner store"],
       c:[
-        {s:"the owner",r:"Lead",a:"senior",x:"Reenactment and interview segments. Warm, stubborn, encyclopaedic. Must feel completely unperformed on camera."},
+        {s:"the owner",r:"Lead",a:"senior",x:"Reenactment and interview segments. Warm, stubborn, and knows everything. Must not look acted at all on camera."},
         {s:"the last employee",r:"Lead",a:"youngAdult",x:"Reenactments of the final weeks. Dry, loyal, funnier than the situation deserves."},
         {s:"the regular customer",r:"Supporting",a:"mature",g:"F",x:"Reenactment scenes at the counter. Rents the same three films on rotation and explains why beautifully."},
-        {s:"the owner's daughter",r:"Supporting",a:"midCareer",g:"F",fam:"a",x:"Wants him to close and cannot say it. Interview-style delivery, no theatricality."},
+        {s:"the owner's daughter",r:"Supporting",a:"midCareer",g:"F",fam:"a",x:"Wants him to close and cannot say it. Interview-style delivery, nothing showy."},
         {s:"archive faces",r:"Background",a:"adult",x:"Reenactment of the store across three decades. Period-appropriate looks; natural, unhurried behavior."}
       ]},
     {k:"doc-boxing-gym",only:["Documentary","Reality / Docu-Series"],era:"2010s",genre:"documentary",tracks:["film","tv"],
@@ -26013,7 +26013,7 @@ const ACG = (()=>{
       c:[
         {s:"the founder",r:"Lead",a:"senior",g:"M",fam:"a",x:"Reenactment and interview. Forty years of the same shift. Hands do most of the acting; almost no dialogue needed."},
         {s:"the elder child",r:"Lead",a:"midCareer",fam:"a",x:"Works the night shift and resents every loaf. Interview-style honesty, no performance."},
-        {s:"the younger child",r:"Supporting",a:"youngAdult",fam:"a",x:"Left, came back, leaving again. Warm and evasive in equal measure."},
+        {s:"the younger child",r:"Supporting",a:"youngAdult",fam:"a",x:"Left, came back, leaving again. Warm and slippery in equal measure."},
         {s:"the longtime baker",r:"Supporting",a:"mature",x:"Not family and more loyal than family. One scene that lands the whole film."},
         {s:"the early customers",r:"Background",a:"adult",x:"First-light queue at the side door. Natural behavior, no camera awareness."}
       ]},
@@ -26038,9 +26038,9 @@ const ACG = (()=>{
       w:["a recording studio with remote direction","a VO booth with a producer patched in","a professional studio in the shoot city"],
       c:[
         {s:"the child",r:"Lead",a:"child",x:"Guardian required; short sessions with plenty of breaks. Curious rather than frightened — the show's whole tone rests on this."},
-        {s:"the head of the department",r:"Lead",a:"mature",g:"F",x:"Bureaucratic, kind, and completely out of her depth. Warmth inside officialdom."},
+        {s:"the head of the department",r:"Lead",a:"mature",g:"F",x:"Buried in rules, kind, and completely out of her depth. Warmth inside all the red tape."},
         {s:"the sorter",r:"Supporting",a:"youngAdult",x:"Has never been outside and desperately wants to be. The audience's heart."},
-        {s:"the very old umbrella",r:"Supporting",a:"senior",x:"Recurring. Pompous, melancholy, and hilarious. A distinctive vocal quality is the entire casting."},
+        {s:"the very old umbrella",r:"Supporting",a:"senior",x:"Recurring. Pompous, sad, and hilarious. A distinctive vocal quality is the entire casting."},
         {s:"additional voices",r:"Supporting",a:"adult",x:"Keys, gloves, one extremely sarcastic bicycle. Multiple characters per episode."}
       ]},
     {k:"spot-first-paycheck",era:"n/a",genre:"commercial",tracks:["spot"],only:["Commercial","Branded Content","Social Media Ad","Spec Commercial"],
@@ -26065,7 +26065,7 @@ const ACG = (()=>{
       c:[
         {s:"the business traveller",r:"Lead",a:"midCareer",g:"F",x:"Starts furious and ends somewhere else entirely. The turn has to be earned in ninety seconds."},
         {s:"the gate agent",r:"Lead",a:"youngAdult",x:"Absorbs everything and stays human. Genuine warmth under pressure; no service-industry gloss."},
-        {s:"the grandparent flying alone",r:"Supporting",a:"senior",g:"F",x:"Nervous, dignified, and the reason everyone else behaves better."},
+        {s:"the grandparent flying alone",r:"Supporting",a:"senior",g:"F",x:"Nervous, proud, and the reason everyone else behaves better."},
         {s:"the family with a toddler",r:"Supporting",a:"midCareer",x:"Chaos played completely straight. Real ease with small children required."},
         {s:"the waiting passengers",r:"Background",a:"adult",x:"Full gate of believable waiting behavior; several featured reactions."}
       ]},
@@ -26076,7 +26076,7 @@ const ACG = (()=>{
       h2:"the five mornings turn out to be the same building, five floors apart",
       w:["five kitchens, a stairwell and a bus stop","a fire station, a hospital locker room and two apartments","a market stall, a night bus and three kitchens"],
       c:[
-        {s:"the nurse coming off shift",r:"Lead",a:"midCareer",g:"F",x:"Exhaustion played without self-pity. Hero film; almost no dialogue."},
+        {s:"the nurse coming off shift",r:"Lead",a:"midCareer",g:"F",x:"Worn out, and never feeling sorry for herself. Hero film; almost no dialogue."},
         {s:"the market trader",r:"Lead",a:"mature",x:"Up before everyone, cheerful about it, and the campaign's warmest face."},
         {s:"the student",r:"Supporting",a:"youngAdult",x:"Late, chaotic, funny. Physical comedy in a small kitchen."},
         {s:"the retired early riser",r:"Supporting",a:"senior",x:"Same routine for thirty years, filmed with total seriousness."},
@@ -26108,7 +26108,7 @@ const ACG = (()=>{
         {s:"the good one",r:"Lead",a:"youngAdult",g:"F",x:"Genuinely funny and about to be discovered, which everyone else can feel. Needs real stand-up timing."},
         {s:"the one who does the same set",r:"Supporting",a:"senior",x:"Eleven years, one set, word for word. Should be hilarious and then devastating."},
         {s:"the booker",r:"Supporting",a:"mature",g:"F",x:"Bored, professional, and only there because of a wrong address."},
-        {s:"the bar staff",r:"Day Player",a:"youngAdult",x:"Serves through every act with total indifference. Best reaction in the film."}
+        {s:"the bar staff",r:"Day Player",a:"youngAdult",x:"Serves through every act without caring at all. Best reaction in the film."}
       ]},
     {k:"river-rescue",era:"1990s",genre:"action",tracks:["film","tv"],
       ttl:["Fast Water","The Crossing at Mill Bend","Twenty Minutes of Light"],
@@ -26118,7 +26118,7 @@ const ACG = (()=>{
       w:["a river crossing and the volunteer station above it","a flooded valley road and a boathouse","a canal lock and the towpath either side"],
       c:[
         {s:"the crew chief",r:"Lead",a:"mature",g:"F",x:"Makes three decisions and has to live with all of them. Physical role in and around water; command played quietly."},
-        {s:"the newest volunteer",r:"Lead",a:"youngAdult",x:"First real callout. Fear and competence at the same time; strong swimmer preferred."},
+        {s:"the newest volunteer",r:"Lead",a:"youngAdult",x:"First real callout. Scared and capable at the same time; strong swimmer preferred."},
         {s:"the one in the water",r:"Supporting",a:"midCareer",x:"Mostly non-verbal, entirely physical, and must be genuinely comfortable in water with safety cover."},
         {s:"the dispatcher",r:"Supporting",a:"senior",g:"F",x:"Radio only for most of the film. Holds the whole rescue in her voice."},
         {s:"the family on the bank",r:"Supporting",a:"adult",x:"Watching and not allowed to help. Two of them featured; the rest atmosphere."}
@@ -26145,7 +26145,7 @@ const ACG = (()=>{
       c:[
         {s:"the bride-to-be",r:"Lead",a:"midCareer",g:"F",x:"Learning to dance for a wedding she is increasingly quiet about. Movement ability helpful; the acting is in the hesitation."},
         {s:"her assigned partner",r:"Lead",a:"midCareer",x:"Kind, funny, and slowly aware of what is happening. Never plays it as pursuit."},
-        {s:"the teacher",r:"Supporting",a:"senior",g:"F",x:"Sees everything from the first class and says nothing until the last. Formidable and warm."},
+        {s:"the teacher",r:"Supporting",a:"senior",g:"F",x:"Sees everything from the first class and says nothing until the last. Impressive and warm."},
         {s:"the fiancé",r:"Supporting",a:"midCareer",x:"Comes to one class. Entirely decent, which is the problem."},
         {s:"the class",r:"Background",a:"adult",x:"Eight to ten adult beginners. No dance experience required — genuine beginners strongly preferred."}
       ]},
@@ -26215,7 +26215,7 @@ const ACG = (()=>{
       w:["a mid-range city hotel with a service corridor on every floor","an airport hotel with two hundred identical rooms","an old downtown hotel being slowly refurbished"],
       c:[
         {s:"the housekeeper",r:"Lead",a:"midCareer",g:"F",x:"Fast, invisible, and notices everything. Carries the film with almost no dialogue."},
-        {s:"her supervisor",r:"Supporting",a:"mature",g:"F",x:"Protects her staff by telling them to see less. Warm and completely immovable."},
+        {s:"her supervisor",r:"Supporting",a:"mature",g:"F",x:"Protects her staff by telling them to see less. Warm, and will not budge."},
         {s:"the guest",r:"Lead",a:"mature",x:"Polite, apologetic, and always in a room they should not be in. Never threatening, which is worse."},
         {s:"the night desk clerk",r:"Supporting",a:"youngAdult",x:"Bored, kind, and the only one who checks the records for her."},
         {s:"the hotel manager",r:"Day Player",a:"midCareer",x:"Two scenes, both of them about liability rather than people."}
@@ -26253,7 +26253,7 @@ const ACG = (()=>{
       h2:"the committee discovers that half the plots are held by people who moved away years ago",
       w:["a fenced community garden between two apartment blocks","a rooftop garden with raised beds and a shed","a strip of allotments beside a rail line"],
       c:[
-        {s:"the committee chair",r:"Lead",a:"mature",g:"F",x:"Runs the garden by the rules and loves the rules more than the garden. Comic precision, real heart underneath."},
+        {s:"the committee chair",r:"Lead",a:"mature",g:"F",x:"Runs the garden by the rules and loves the rules more than the garden. Funny and exact, with real heart underneath."},
         {s:"the person who inherits the plot",r:"Lead",a:"youngAdult",x:"Has never grown anything and no idea at all what they have walked into."},
         {s:"the oldest member",r:"Supporting",a:"senior",x:"Been here since it was a car park. Knows every rule and has broken most of them."},
         {s:"the neighbor on the waiting list",r:"Supporting",a:"midCareer",g:"F",x:"Nine years of waiting, entirely calm about it, right up until she is not."},
@@ -26320,7 +26320,7 @@ const ACG = (()=>{
       c:[
         {s:"the operator",r:"Lead",a:"youngAdult",g:"F",x:"Good at this in a way that costs her something. Most of the performance is listening to a voice."},
         {s:"the caller",r:"Lead",a:"mature",x:"Heard for most of the film and seen once. Must build a whole life out of a phone line."},
-        {s:"the supervisor",r:"Supporting",a:"midCareer",x:"Has targets, and also a conscience. Watching them choose is the film."},
+        {s:"the supervisor",r:"Supporting",a:"midCareer",x:"Has targets to hit, and also knows right from wrong. Watching them choose is the film."},
         {s:"the operator at the next desk",r:"Supporting",a:"mature",g:"F",x:"Fifteen years of this and a joke for everything. The joke stops in the last act."},
         {s:"the cleaner",r:"Day Player",a:"senior",x:"Comes through at four in the morning and says the one kind thing anyone says all night."}
       ]},
@@ -26333,7 +26333,7 @@ const ACG = (()=>{
       c:[
         {s:"the buyer who does this every week",r:"Lead",a:"mature",x:"Treats it as a business and knows exactly what a box of photographs is worth. Nothing."},
         {s:"the accidental buyer",r:"Lead",a:"midCareer",g:"F",x:"Came for a bookcase and now owns half a stranger's life. Funny, decent, and the moral engine."},
-        {s:"the auctioneer",r:"Supporting",a:"senior",x:"Talks for a living and enjoys it enormously. Big personality, small part."},
+        {s:"the auctioneer",r:"Supporting",a:"senior",x:"Talks for a living and enjoys it hugely. Big personality, small part."},
         {s:"the facility manager",r:"Supporting",a:"youngAdult",x:"Has the paperwork and is absolutely not allowed to show it to them."},
         {s:"the owner of the unit",r:"Day Player",a:"senior",g:"F",x:"Arrives in the last ten minutes. The comedy stops the moment she speaks."}
       ]},
@@ -26361,7 +26361,7 @@ const ACG = (()=>{
         {s:"the newest employee",r:"Lead",a:"youngAdult",g:"F",x:"Fast learner, quiet, and the one asked to lie. Second-language fluency a real asset."},
         {s:"the employee who has been there longest",r:"Supporting",a:"midCareer",g:"F",x:"Runs the room's mood. Funny all day and hard as nails at closing."},
         {s:"the regular customer",r:"Supporting",a:"senior",g:"F",x:"Comes weekly and talks the whole time. Knows more about them than she should."},
-        {s:"the inspector",r:"Day Player",a:"midCareer",x:"One scene, entirely procedural, and it lands like a door closing."}
+        {s:"the inspector",r:"Day Player",a:"midCareer",x:"One scene, all by the book, and it lands like a door closing."}
       ]},
     {k:"pet-store-night",era:"1980s",genre:"horror",tracks:["film","tv"],
       ttl:["After Closing","The Back Tanks","Feeding Time"],
@@ -26383,7 +26383,7 @@ const ACG = (()=>{
       h2:"his own license expires that afternoon and nobody at the office has noticed",
       w:["a test center car park and the streets around it","a small town test route with one roundabout","a suburban driving test center and a dual carriageway"],
       c:[
-        {s:"the examiner",r:"Lead",a:"senior",x:"Fair, exact, and completely humorless in a way that is very funny. Never plays for the laugh."},
+        {s:"the examiner",r:"Lead",a:"senior",x:"Fair, exact, and with no sense of humor at all, which is very funny. Never plays for the laugh."},
         {s:"the last candidate",r:"Lead",a:"youngAdult",x:"Fourth attempt, genuinely a good driver, and falling apart. Physical comedy inside a stationary car."},
         {s:"the driving instructor",r:"Supporting",a:"mature",g:"F",x:"Waiting in the car park with the other instructors. Chorus and comic engine."},
         {s:"the test center manager",r:"Supporting",a:"midCareer",x:"Wants the paperwork done by four and has planned a small speech."},
@@ -26478,7 +26478,7 @@ const ACG = (()=>{
       h2:"a school group leaves a child behind and nobody knows until eight",
       w:["three quiet galleries and a service stair","a small city museum with one night guard","a wing closed for rehanging"],
       c:[
-        {s:"the guard",r:"Lead",a:"mature",x:"Twelve years of the same route. Watchful, unhurried, and treated as furniture by everyone above him."},
+        {s:"the guard",r:"Lead",a:"mature",x:"Twelve years of the same route. Alert, unhurried, and treated as furniture by everyone above him."},
         {s:"the curator",r:"Lead",a:"midCareer",g:"F",x:"Listens to him properly for the first time, far too late. Precise and not unkind."},
         {s:"the new guard",r:"Supporting",a:"youngAdult",x:"Asks the questions the audience is asking. Easy to like."},
         {s:"the head of security",r:"Supporting",a:"mature",x:"Wants a simple answer and a closed file."},
@@ -26495,7 +26495,7 @@ const ACG = (()=>{
         {s:"the new usher",r:"Lead",a:"youngAdult",x:"First week, wants to be an actor, apologizes to everybody. Sweet and quick."},
         {s:"the bar manager",r:"Supporting",a:"midCareer",x:"Runs the interval like a service industry general. Very funny, very tired."},
         {s:"the house manager",r:"Supporting",a:"mature",x:"Takes the blame for everything upstairs and downstairs."},
-        {s:"the patron in row C",r:"Day Player",a:"senior",x:"Charming, immovable, and in the wrong seat."}
+        {s:"the patron in row C",r:"Day Player",a:"senior",x:"Charming, refuses to move, and in the wrong seat."}
       ]},
     {k:"print-shop-same-day",era:"2000s",genre:"drama",tracks:["film","stage","tv"],
       ttl:["Five Hundred Copies","Same Day Printing","Proofs by Four"],
@@ -26556,11 +26556,11 @@ const ACG = (()=>{
       h2:"the street is closed on the wrong day",
       w:["a residential block of stoops and fire escapes","a street with a hardware store on the corner","a block that has not had a party in eleven years"],
       c:[
-        {s:"the organizer",r:"Lead",a:"midCareer",g:"F",x:"Optimistic, organized, and absolutely will not be told no. Comedy comes from her persistence."},
+        {s:"the organizer",r:"Lead",a:"midCareer",g:"F",x:"Optimistic, organized, and absolutely will not be told no. The comedy comes from how she never gives up."},
         {s:"the reluctant partner",r:"Lead",a:"mature",x:"Signed up for one hour and lost a month. Dry, funny, secretly delighted."},
         {s:"the holdout",r:"Supporting",a:"senior",x:"Has a reason nobody has bothered to ask about. Must land the last scene."},
         {s:"the teenager with the sound system",r:"Supporting",a:"teen",x:"Takes the job far more seriously than anyone expected."},
-        {s:"the officer with the permit",r:"Day Player",a:"midCareer",x:"Two scenes of immovable paperwork."}
+        {s:"the officer with the permit",r:"Day Player",a:"midCareer",x:"Two scenes of paperwork that will not budge."}
       ]},
     {k:"community-board-night",era:"2010s",genre:"comedy",tracks:["film","tv","stage"],
       ttl:["Item Four","The Meeting","Three Minutes Each"],
@@ -26596,7 +26596,7 @@ const ACG = (()=>{
       w:["a wholesale fish market under floodlights","a market floor washed down at five in the morning","a loading bay stacked with crates and ice"],
       c:[
         {s:"the father",r:"Lead",a:"senior",fam:"a",x:"Thirty years of buying at this hour. Charming with sellers, hard to talk to as a parent."},
-        {s:"the daughter",r:"Lead",a:"youngAdult",g:"F",fam:"a",x:"Better at the business than he is and cannot say it. Watchful, funny, tired."},
+        {s:"the daughter",r:"Lead",a:"youngAdult",g:"F",fam:"a",x:"Better at the business than he is and cannot say it. Alert, funny, tired."},
         {s:"the seller",r:"Supporting",a:"mature",x:"Likes them both and will still take the money."},
         {s:"the rival buyer",r:"Supporting",a:"midCareer",g:"F",x:"Younger, faster, and not the villain."},
         {s:"the porter",r:"Day Player",a:"mature",x:"Moves crates and delivers the one piece of news that changes the morning."}
@@ -26625,7 +26625,7 @@ const ACG = (()=>{
         {s:"the guard in his last summer",r:"Lead",a:"youngAdult",x:"Leaving in September and pretending he does not care. Very likable."},
         {s:"the parks supervisor",r:"Supporting",a:"mature",x:"Has rules, a budget, and no help coming."},
         {s:"the regular swimmer",r:"Supporting",a:"senior",g:"F",x:"Here every morning for thirty years. The soul of the place."},
-        {s:"the kid who cannot swim",r:"Day Player",a:"teen",x:"Comes every day anyway. Two scenes, no self-pity."}
+        {s:"the kid who cannot swim",r:"Day Player",a:"teen",x:"Comes every day anyway. Two scenes, and never feeling sorry for themselves."}
       ]},
     {k:"library-branch-three-oclock",era:"2010s",genre:"drama",tracks:["film","tv","stage"],
       ttl:["Three to Six","The Branch","Reading Room"],
@@ -26634,7 +26634,7 @@ const ACG = (()=>{
       h2:"one child is still there at closing, every night, on purpose",
       w:["a small neighborhood library branch","a reading room with six computers and a sign-up sheet","a library basement used for homework help"],
       c:[
-        {s:"the librarian",r:"Lead",a:"midCareer",g:"F",x:"Runs a room of thirty kids with a look. Not sentimental about any of it."},
+        {s:"the librarian",r:"Lead",a:"midCareer",g:"F",x:"Runs a room of thirty kids with a look. Not soft about any of it."},
         {s:"the after-school aide",r:"Supporting",a:"youngAdult",x:"Twenty-two, good at this, and paid almost nothing."},
         {s:"the child who stays",r:"Supporting",a:"child",x:"Bright, funny, and careful about what he says. Needs a young actor who can hold silence."},
         {s:"the branch manager",r:"Supporting",a:"mature",x:"Delivering the cuts and hating it. Not a villain."},
@@ -26647,11 +26647,11 @@ const ACG = (()=>{
       h2:"a regular customer stops coming, and the owner is the only one who notices",
       w:["a corner newsstand under a sidewalk shed","a stand outside a subway entrance","a kiosk wedged between two storefronts"],
       c:[
-        {s:"the owner",r:"Lead",a:"mature",x:"Knows four hundred people by their order and none of them by name. Dry, watchful, very funny."},
+        {s:"the owner",r:"Lead",a:"mature",x:"Knows four hundred people by their order and none of them by name. Dry, alert, very funny."},
         {s:"the owner's nephew",r:"Supporting",a:"youngAdult",fam:"a",x:"Works weekends and wants him to take the buyout."},
         {s:"the regular",r:"Supporting",a:"senior",g:"F",x:"Same paper, same time, eleven years. Two scenes that carry the ending."},
         {s:"the building manager",r:"Supporting",a:"midCareer",x:"Polite about something that is not negotiable."},
-        {s:"the delivery driver",r:"Day Player",a:"midCareer",x:"Four in the morning, one conversation, all the exposition and none of it dull."}
+        {s:"the delivery driver",r:"Day Player",a:"midCareer",x:"Four in the morning, one conversation, all the backstory and none of it dull."}
       ]},
     {k:"car-service-base",era:"2000s",genre:"drama",tracks:["film","tv","stage"],
       ttl:["Base Three","Waiting on a Call","Car Twelve"],
@@ -26661,7 +26661,7 @@ const ACG = (()=>{
       w:["a storefront base with eight plastic chairs","a dispatch office behind a garage","a waiting room with a television nobody watches"],
       c:[
         {s:"the dispatcher",r:"Lead",a:"mature",g:"F",x:"Holds the room with a microphone and a clipboard. Knows every driver's situation and uses it carefully."},
-        {s:"the veteran driver",r:"Lead",a:"senior",x:"Twenty-six years, and this is the year it stopped working. No self-pity."},
+        {s:"the veteran driver",r:"Lead",a:"senior",x:"Twenty-six years, and this is the year it stopped working. Never feels sorry for themselves."},
         {s:"the new driver",r:"Supporting",a:"youngAdult",x:"Fast, hungry, and about to make an enemy."},
         {s:"the owner",r:"Supporting",a:"midCareer",x:"Selling the base and telling nobody. Reasonable, which makes it worse."},
         {s:"the driver who never drives",r:"Day Player",a:"mature",x:"Sits in the chair by the door with a story for every call."}
@@ -26686,7 +26686,7 @@ const ACG = (()=>{
       h2:"a volunteer recognizes someone in the line and pretends not to",
       w:["a church basement with folding tables","a pantry run out of a school gym","a storefront with a line down the block"],
       c:[
-        {s:"the coordinator",r:"Lead",a:"mature",g:"F",x:"Solves eleven problems an hour and never sounds hurried. Enormous competence, no sentiment."},
+        {s:"the coordinator",r:"Lead",a:"mature",g:"F",x:"Solves eleven problems an hour and never sounds hurried. Hugely capable, and never soft."},
         {s:"the new volunteer",r:"Lead",a:"youngAdult",x:"Came for one shift and cannot cope with what he sees. Honest, not weak."},
         {s:"the man in the line",r:"Supporting",a:"mature",x:"Would rather not be here and refuses to be pitied. One scene, no big speech."},
         {s:"the driver",r:"Supporting",a:"midCareer",x:"Brings what the warehouse gave him, which is not enough."},
@@ -26739,7 +26739,7 @@ const ACG = (()=>{
       w:["a takeout counter with four stools and a phone that never stops","a corner restaurant with a delivery window","a kitchen with three people and no room"],
       c:[
         {s:"the owner",r:"Lead",a:"mature",g:"F",fam:"a",x:"Runs the counter, the kitchen and the family. Comic authority, no shouting."},
-        {s:"the son",r:"Lead",a:"teen",fam:"a",x:"Doing homework between orders and now running the deliveries. Fast, funny, put-upon."},
+        {s:"the son",r:"Lead",a:"teen",fam:"a",x:"Doing homework between orders and now running the deliveries. Fast, funny, and fed up."},
         {s:"the cook",r:"Supporting",a:"mature",x:"Never leaves the wok and comments on everything."},
         {s:"the regular customer",r:"Supporting",a:"midCareer",x:"Here every Friday. Has a version of events."},
         {s:"the neighbor with a van",r:"Day Player",a:"senior",x:"Arrives late and saves the night in the least helpful way possible."}
@@ -26779,7 +26779,7 @@ const ACG = (()=>{
       c:[
         {s:"the mother",r:"Lead",a:"midCareer",g:"F",fam:"a",x:"Organized the sale, priced everything, and made the mistake. Funny until it stops being funny."},
         {s:"the grandmother",r:"Lead",a:"senior",g:"F",fam:"a",x:"The thing was hers. Handles it with far more grace than anyone deserves."},
-        {s:"the buyer",r:"Supporting",a:"mature",x:"Not unkind, and not giving it back. The whole part is reasonableness."},
+        {s:"the buyer",r:"Supporting",a:"mature",x:"Not unkind, and not giving it back. The whole part is staying reasonable."},
         {s:"the teenage son",r:"Supporting",a:"teen",fam:"a",x:"Negotiating with strangers all morning and enjoying it too much."},
         {s:"the neighbor across the street",r:"Day Player",a:"senior",x:"Watching from a folding chair and narrating for free."}
       ]},
@@ -26829,11 +26829,385 @@ const ACG = (()=>{
       h2:"the takings do not add up, and everyone who works there knows why",
       w:["an arcade at the end of a boardwalk","a seafront arcade with half the machines dark","a games hall behind a hot dog counter"],
       c:[
-        {s:"the manager",r:"Lead",a:"midCareer",x:"Ran this place every summer since he was fifteen. Charming, evasive, cornered."},
+        {s:"the manager",r:"Lead",a:"midCareer",x:"Ran this place every summer since he was fifteen. Charming, slippery, cornered."},
         {s:"the summer worker",r:"Lead",a:"youngAdult",g:"F",x:"Leaving for school in a week and grieving it already. Bright and very funny."},
         {s:"the owner",r:"Supporting",a:"senior",x:"Comes in twice and says almost nothing worth quoting, which is the point."},
         {s:"the repair man",r:"Supporting",a:"mature",x:"Keeps forty-year-old machines alive with parts he makes himself."},
         {s:"the kid who is there every day",r:"Day Player",a:"teen",x:"Plays one machine all summer. Two scenes, no explanation needed."}
+      ]}
+  ,
+    // ── WIDER DIRECTIONS ────────────────────────────────────────────────
+    // The bank had drifted: a long run of small-business and neighborhood
+    // pieces, and a lot of stories that turn on a family. Those are good
+    // stories, but a board made only of them reads as one imagination. The
+    // seeds below deliberately go elsewhere — space, ice, sport, sea, war,
+    // sky, prison, contest, machine, weather — and none of them is about
+    // relatives. Sketches here are written in plain words on purpose: an
+    // actor should never have to decode a sentence to know if a part is
+    // theirs.
+    {k:"relay-station-nine",era:"n/a",genre:"science fiction thriller",tracks:["film","tv","other"],
+      ttl:["Relay Nine","The Long Delay","Eighteen Minutes"],
+      p:"four people run a relay station far from Earth, where every message home takes eighteen minutes each way",
+      h:"a message arrives in their own station's voice, and nobody on board sent it",
+      h2:"the supply ship stops answering, and the crew has to decide whether to keep believing the schedule",
+      w:["a cramped relay station with one window and a lot of humming","a supply outpost built into rock, all corridors and no sky","a station module where the lights run on a timer nobody can change"],
+      c:[
+        {s:"the station lead",r:"Lead",a:"midCareer",x:"Keeps everyone calm by keeping everyone busy. Has read the manual so many times she has stopped believing it, and she cannot say that out loud."},
+        {s:"the engineer",r:"Lead",a:"youngAdult",x:"Talks to the machines more than the people. Funny, quick, and the first to notice a sound that should not be there."},
+        {s:"the doctor on rotation",r:"Supporting",a:"mature",x:"Signed on for the quiet and got something else. Plays most of it listening; the part is a person deciding what to tell the others."},
+        {s:"the one counting days",r:"Supporting",a:"youngAdult",x:"Has a wall of marks and a plan for the day they get home. Warm, homesick, and slowly getting harder to reach."},
+        {s:"the voice on the relay",r:"Day Player",a:"adult",x:"Heard, never seen. Has to sound completely ordinary, which is the whole trick."}
+      ]},
+    {k:"ice-survey-camp",era:"1990s",genre:"survival thriller",tracks:["film","tv"],
+      ttl:["Deep Field","The Melt Season","Camp Two"],
+      p:"a small ice survey team is stuck at camp with a plane that cannot land for another eleven days",
+      h:"one of them finds something in the ice that the others want reported and one of them does not",
+      h2:"the radio dies, and the team has to choose between walking out and waiting it out",
+      w:["a survey camp of three tents and a generator","a field hut where the door has to be dug out every morning","a research camp on flat white ground with nothing on the horizon"],
+      c:[
+        {s:"the camp leader",r:"Lead",a:"mature",g:"F",x:"Fair, tired, and running out of ways to keep four people polite. Never raises her voice, which is why people listen."},
+        {s:"the field scientist",r:"Lead",a:"midCareer",x:"Wants the find written up correctly more than she wants to be liked. The role only works if the audience keeps changing its mind about her."},
+        {s:"the mechanic",r:"Supporting",a:"youngAdult",x:"Fixes everything, says almost nothing, and is the only one sleeping. Comfortable being watched doing a job."},
+        {s:"the student on their first season",r:"Supporting",a:"youngAdult",x:"Nineteen, out of their depth, and trying hard to look useful. Funny by accident."},
+        {s:"the pilot on the radio",r:"Day Player",a:"mature",x:"Two short scenes, both bad news, both delivered kindly."}
+      ]},
+    {k:"last-station-on-air",era:"2010s",genre:"drama",tracks:["film","tv","stage","other"],
+      ttl:["Still Broadcasting","The Overnight Signal","Ninety-One Point Three"],
+      p:"a tiny radio station keeps broadcasting through a week when most of the town has lost power",
+      h:"people start calling in with messages for each other, and the show turns into the only working phone line in the county",
+      h2:"the owner sells the licence mid-week, and the staff have to decide whether to keep the transmitter on anyway",
+      w:["a small-town radio booth with one working microphone","a station office above a hardware store","a broadcast room with a taped-up window and a full ashtray"],
+      c:[
+        {s:"the overnight host",r:"Lead",a:"midCareer",x:"Talks to nobody and everybody at once. Warm on air, awkward off it, and much braver behind a microphone than in a room."},
+        {s:"the news reader",r:"Lead",a:"youngAdult",g:"F",x:"Reads the same three sentences forty times without ever sounding bored. Wants a bigger job and hates that she wants it."},
+        {s:"the engineer keeping it alive",r:"Supporting",a:"senior",x:"Knows what every wire does. Comes in on a day off, twice, and never mentions it."},
+        {s:"the caller who will not hang up",r:"Day Player",a:"senior",x:"One long phone scene. Should be funny for a while and then not funny at all."},
+        {s:"the person from head office",r:"Day Player",a:"mature",x:"Polite, sorry, and holding a decision nobody in the room can change."}
+      ]},
+    {k:"dry-river-crossing",era:"1880s",genre:"frontier drama",tracks:["film","tv","stage"],
+      ttl:["Dry River","The Long Way Round","Water by Friday"],
+      p:"a handful of travellers share a wagon crossing where the river everyone counted on has dried up",
+      h:"a stranger offers to guide them by a shorter road, and half the group believes him",
+      h2:"one of the party is carrying something the others would leave behind if they knew",
+      w:["a river crossing with cracked mud where the water should be","a way station with one well and a padlock on it","a stretch of flat country with a single stand of trees"],
+      c:[
+        {s:"the one driving the wagon",r:"Lead",a:"midCareer",x:"Practical, blunt, and better in trouble than out of it. Carries long stretches with no lines."},
+        {s:"the stranger with the shortcut",r:"Lead",a:"mature",x:"Easy to like and impossible to check. Should never once look like a liar."},
+        {s:"the traveller with money",r:"Supporting",a:"mature",g:"F",x:"Paid to be here and expects that to count. Funny when she is losing."},
+        {s:"the young hand",r:"Supporting",a:"youngAdult",x:"Seventeen, useful, and desperate to be treated as a grown-up. Riding experience helps."},
+        {s:"the station keeper",r:"Day Player",a:"senior",x:"One scene at the well. Says no in six different ways."}
+      ]},
+    {k:"lane-four",era:"2000s",genre:"sports drama",tracks:["film","tv","stage"],
+      ttl:["Lane Four","Two Tenths","The Qualifying Round"],
+      p:"a running club prepares four athletes for a qualifying meet that only one of them can win",
+      h:"the fastest runner is offered a place at another club two days before the race",
+      h2:"a failed test result lands on the coach's desk and he sits on it for a week",
+      w:["an outdoor track with a broken clock","a school track shared with three other clubs","an indoor training hall that smells of rubber and floor polish"],
+      c:[
+        {s:"the coach",r:"Lead",a:"mature",x:"Good at building people and bad at telling them the truth. The part is a man choosing, slowly, which one matters more."},
+        {s:"the fastest one",r:"Lead",a:"youngAdult",g:"F",x:"Nineteen and already tired of being the reason everyone else trains. Says very little; we should always know what she is thinking."},
+        {s:"the one who works nights",r:"Supporting",a:"youngAdult",x:"Trains after a full shift and never mentions it. Funny, generous, and the heart of the group."},
+        {s:"the club treasurer",r:"Supporting",a:"senior",x:"Runs the club on cake sales and stubbornness. Two scenes, both funny, one of them sad afterwards."},
+        {s:"the scout",r:"Day Player",a:"midCareer",x:"One scene in a car park. Pleasant, and entirely there to take something away."}
+      ]},
+    {k:"support-act",era:"2010s",genre:"comedy",tracks:["film","tv","stage","other"],
+      ttl:["Support Act","Doors at Seven","Four Songs"],
+      p:"a band opens for someone much more famous on a short tour and gets thirty minutes a night to matter",
+      h:"the headliner asks one of them to join their band, and the offer is only for one",
+      h2:"the van breaks down and the tour turns into a week of trying to reach the next town",
+      w:["a small venue with a stage the size of a rug","a back room that doubles as a dressing room and a store cupboard","a tour van with one working window"],
+      c:[
+        {s:"the singer",r:"Lead",a:"youngAdult",x:"Certain on stage and hopeless off it. Comedy comes from how badly they want to seem relaxed."},
+        {s:"the one who writes the songs",r:"Lead",a:"youngAdult",g:"F",x:"Quiet, watchful, and the only one reading the contract. Plays most of it listening."},
+        {s:"the drummer",r:"Supporting",a:"midCareer",x:"Older than the rest, has done this before, and finds all of it very funny. Real drumming a plus, not required."},
+        {s:"the tour manager",r:"Supporting",a:"mature",g:"F",x:"Holds the whole thing together with a phone and a folder. Never panics where anyone can see."},
+        {s:"the sound engineer",r:"Day Player",a:"midCareer",x:"One scene, entirely deadpan, and the audience should be on their side by the end of it."}
+      ]},
+    {k:"the-attributed-painting",era:"2000s",genre:"mystery",tracks:["film","tv","stage"],
+      ttl:["Attributed To","The Provenance Room","Lot Forty-One"],
+      p:"a small auction house puts up a painting that would change everything if it is real",
+      h:"the expert who signed off on it quietly asks to see the paperwork again",
+      h2:"a second painting turns up in another country, identical to the first",
+      w:["an auction house with a viewing room and bad lighting","a back office stacked with catalogues and coffee cups","a saleroom set up the night before a sale"],
+      c:[
+        {s:"the auction house director",r:"Lead",a:"mature",g:"F",x:"Charming with buyers and hard with staff. The whole part is a woman deciding how much she wants to know."},
+        {s:"the expert",r:"Lead",a:"senior",x:"Has been right about paintings for forty years and cannot afford to be wrong now. Plays it very quiet."},
+        {s:"the junior cataloguer",r:"Supporting",a:"youngAdult",x:"Notices the thing nobody wants noticed and says it in the worst possible room. Funny, nervous, honest."},
+        {s:"the buyer",r:"Supporting",a:"mature",x:"Wants it real and will pay for the version of the story that keeps it real."},
+        {s:"the framer",r:"Day Player",a:"senior",x:"One scene in a workshop. Knows exactly what he is looking at and takes his time saying so."}
+      ]},
+    {k:"the-fire-line",era:"2010s",genre:"action",tracks:["film","tv"],
+      ttl:["The Fire Line","Hand Crew","Wind Change at Four"],
+      p:"a hand crew cuts a fire line above a town through a long hot week",
+      h:"the wind turns, and the crew has to choose between the line they cut and the road out",
+      h2:"a new crew boss arrives mid-week with orders nobody on the ground agrees with",
+      w:["a ridge above a small town, smoke on three sides","a fire camp of tents, hoses and folding tables","a cut line through dry brush at first light"],
+      c:[
+        {s:"the crew boss",r:"Lead",a:"midCareer",x:"Calm, exact, and carrying every decision. Never explains twice."},
+        {s:"the rookie",r:"Lead",a:"youngAdult",g:"F",x:"First season, strong, and out to prove something to people who are not watching. Physical role; comfort on your feet all day matters more than technique."},
+        {s:"the sawyer",r:"Supporting",a:"mature",x:"Twenty years on the line and a bad knee. Funny in the way people are funny at four in the morning."},
+        {s:"the crew boss from the other unit",r:"Supporting",a:"mature",g:"F",x:"Right about the wind and wrong about the room. Should never read as a villain."},
+        {s:"the town councillor",r:"Day Player",a:"senior",x:"One scene at the camp gate. Asking a fair question at the worst moment."}
+      ]},
+    {k:"cargo-hold-eleven",era:"1990s",genre:"thriller",tracks:["film","tv","other"],
+      ttl:["Hold Eleven","Six Days from Port","The Manifest"],
+      p:"a container ship crew of five works a long crossing with a cargo list that does not match the ship",
+      h:"one container is opened, and after that nobody trusts the same person twice",
+      h2:"the ship is ordered to change course, and the new port is not on any of their papers",
+      w:["a container ship at night, all steel and orange light","a mess room with one television and a broken kettle","a bridge where the coast has not been visible for four days"],
+      c:[
+        {s:"the second officer",r:"Lead",a:"youngAdult",g:"F",x:"Young for the rank and knows it. The part is built from what she chooses not to report."},
+        {s:"the captain",r:"Lead",a:"senior",x:"Steady, decent, and running out of good options. Should feel like a man who has already made this decision once before."},
+        {s:"the cook",r:"Supporting",a:"midCareer",x:"Feeds everyone, hears everything, and takes no side out loud. Warm, watchful, funny."},
+        {s:"the deckhand on their first crossing",r:"Supporting",a:"youngAdult",x:"Seasick, homesick, and braver than anyone expects by the end."},
+        {s:"the agent on the radio",r:"Day Player",a:"mature",x:"Heard, not seen. Pleasant and completely immovable."}
+      ]},
+    {k:"queen-sacrifice",era:"2000s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["Queen Sacrifice","The Junior Open","Board Three"],
+      p:"a junior chess squad travels to a weekend tournament that decides who gets funded next year",
+      h:"one player is accused of cheating in round four and nobody can prove it either way",
+      h2:"the coach is offered the money on the condition that one of the four is dropped",
+      w:["a hotel function room with forty boards and no windows","a school hall set up overnight for a tournament","a hotel corridor where the players wait between rounds"],
+      c:[
+        {s:"the accused player",r:"Lead",a:"teen",x:"Fifteen, brilliant, and terrible at defending himself. Guardian required; all scenes are ordinary and non-distressing."},
+        {s:"the squad coach",r:"Lead",a:"midCareer",g:"F",x:"Wants to protect the kid and wants the funding. Plays it very quiet; we should see her choosing."},
+        {s:"the arbiter",r:"Supporting",a:"senior",x:"Fair, exact, and completely uninterested in being liked. Comedy comes from how seriously he takes the rules."},
+        {s:"the rival coach",r:"Supporting",a:"mature",x:"Raised the complaint and believes it. Should never look like he enjoys it."},
+        {s:"the player on board four",r:"Day Player",a:"teen",g:"F",x:"Losing all weekend and cheerful about it. One scene that lifts the whole film."}
+      ]},
+    {k:"check-ride",era:"2010s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["Check Ride","Circuits and Bumps","Left Seat"],
+      p:"a flight school runs a week of check rides that decide which students carry on",
+      h:"an instructor lands with a student and does not report what happened in the air",
+      h2:"the school is sold mid-week and the new owner wants the pass rate raised",
+      w:["a small airfield with two hangars and a windsock","a flight school briefing room with charts on every wall","a grass strip on a morning with low cloud"],
+      c:[
+        {s:"the instructor",r:"Lead",a:"midCareer",x:"Patient in the air and short on the ground. The part is a person deciding what honesty costs."},
+        {s:"the student on their last attempt",r:"Lead",a:"youngAdult",g:"F",x:"Has spent everything getting here. Should be likeable and clearly not ready."},
+        {s:"the chief pilot",r:"Supporting",a:"senior",x:"Signs the papers and knows what every signature means. Two scenes, both quiet, both heavy."},
+        {s:"the ground engineer",r:"Supporting",a:"mature",g:"F",x:"Keeps four old aircraft flying on parts and swearing. Funny, blunt, never wrong."},
+        {s:"the new owner",r:"Day Player",a:"mature",x:"One scene in an office. Friendly, reasonable, and asking for something nobody can give."}
+      ]},
+    {k:"dig-season",era:"1990s",genre:"adventure",tracks:["film","tv","stage"],
+      ttl:["Dig Season","Trench Two","The Last Fortnight"],
+      p:"a dig runs its final fortnight on a site the money is about to run out on",
+      h:"something is found on the last Friday that will either save the dig or end it",
+      h2:"the landowner gives notice, and the team has three days to record everything",
+      w:["a field dig with tents, string lines and a coffee urn","a trench under plastic sheeting in steady rain","a farm field with the topsoil stripped in long strips"],
+      c:[
+        {s:"the site director",r:"Lead",a:"mature",g:"F",x:"Brilliant, difficult, and running out of money and patience at the same rate. Never asks for sympathy."},
+        {s:"the finds supervisor",r:"Lead",a:"midCareer",x:"Careful, dry, and the only one writing anything down properly. Comedy comes from how exact he is."},
+        {s:"the volunteer on their first dig",r:"Supporting",a:"youngAdult",x:"Turned up for a holiday and stayed for the work. Open, warm, and slowly getting good at it."},
+        {s:"the landowner",r:"Supporting",a:"senior",x:"Not a villain. Has a farm to run and has been very patient already."},
+        {s:"the person from the funding body",r:"Day Player",a:"mature",x:"One scene, entirely pleasant, with a decision already made."}
+      ]},
+    {k:"cellblock-choir",era:"2000s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["The Wing Choir","Twelve Voices","Visiting Wednesday"],
+      p:"a volunteer starts a choir on a prison wing that nobody expects to last a month",
+      h:"the choir is offered one performance outside the walls, and only some of them can go",
+      h2:"the prison changes governor, and the new one cancels every programme on the wing",
+      w:["a prison chapel used for everything except services","a wing association room with plastic chairs","a rehearsal room with a piano missing three keys"],
+      c:[
+        {s:"the volunteer running it",r:"Lead",a:"mature",g:"F",x:"Out of her depth and refusing to say so. Warm, stubborn, and much tougher than she looks."},
+        {s:"the one who can really sing",r:"Lead",a:"youngAdult",x:"Has a voice and no plan for it. The part is a person letting himself want something. Singing ability genuinely useful."},
+        {s:"the officer on the wing",r:"Supporting",a:"midCareer",x:"Has seen a hundred of these come and go. Plays it straight; the kindness has to sneak up on us."},
+        {s:"the one who joins to get out of work",r:"Supporting",a:"midCareer",g:"F",x:"Funny, sharp, and the last to admit she cares. Two scenes carry the film."},
+        {s:"the new governor",r:"Day Player",a:"mature",x:"One scene. Polite, correct, and entirely closed."}
+      ]},
+    {k:"night-clinic-lottery",era:"2010s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["Twenty Beds","The Night List","First Come"],
+      p:"a free clinic opens twenty places a night and turns away everyone else",
+      h:"a doctor gives away her own place on the list and the whole night runs differently after it",
+      h2:"a local paper turns up to film the queue, and the clinic has to decide whether to let them",
+      w:["a clinic in a church hall with a queue around the block","a converted shopfront with two rooms and a curtain","a waiting room with folding chairs and a numbered ticket machine"],
+      c:[
+        {s:"the doctor on shift",r:"Lead",a:"midCareer",g:"F",x:"Fast, kind, and running on very little. Never once feels sorry for herself."},
+        {s:"the person keeping the list",r:"Lead",a:"senior",x:"Holds the only piece of paper that matters and is very calm about it. Funny, fair, unmovable."},
+        {s:"the student volunteer",r:"Supporting",a:"youngAdult",x:"Twenty-one and finding out what the job is actually like. Plays a lot of it just watching."},
+        {s:"the patient who has come three nights running",r:"Supporting",a:"mature",x:"Polite each time, and a little further from polite each time. Should break your heart without asking to."},
+        {s:"the reporter",r:"Day Player",a:"youngAdult",g:"F",x:"One scene. Doing her job, and slowly realising what it looks like from inside."}
+      ]},
+    {k:"two-ovens",era:"2010s",genre:"comedy",tracks:["film","tv","stage"],
+      ttl:["Two Ovens","The Bake-Off Week","Second Prize"],
+      p:"two bakeries on the same street enter the same regional competition",
+      h:"the two owners are drawn as partners in the final round and have to cook together",
+      h2:"one of them wins on a technicality and neither can enjoy it",
+      w:["two shopfronts facing each other across a narrow street","a competition hall with eight benches and a clock","a bakery kitchen at four in the morning"],
+      c:[
+        {s:"the older baker",r:"Lead",a:"senior",g:"F",x:"Has been on this street for thirty years and does not intend to lose to a shop with a neon sign. Comedy comes from how seriously she takes it."},
+        {s:"the newer baker",r:"Lead",a:"youngAdult",x:"Good, fast, and much less confident than the shop front suggests. Should be impossible to dislike."},
+        {s:"the competition judge",r:"Supporting",a:"mature",x:"Fair, exact, and with no sense of humor at all, which is very funny."},
+        {s:"the assistant caught between them",r:"Supporting",a:"youngAdult",g:"F",x:"Works shifts at both and has told neither. The best scenes are the ones where she says nothing."},
+        {s:"the customer who tries both",r:"Day Player",a:"senior",x:"One scene, entirely deadpan, and it settles the whole argument."}
+      ]},
+    {k:"shelter-nights",era:"2010s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["Shelter Nights","Kennel Four","The Quiet Hours"],
+      p:"an overnight team looks after an animal shelter through a week it may not stay open past",
+      h:"a dog nobody could place is claimed by someone the team does not trust",
+      h2:"the shelter takes in more animals in one night than it has room for",
+      w:["an animal shelter after hours, all echo and strip lights","a converted garage with runs down one side","a back room with a kettle, a rota and a wall of photographs"],
+      c:[
+        {s:"the night keeper",r:"Lead",a:"midCareer",x:"Better with animals than people and completely aware of it. Carries long stretches with no lines."},
+        {s:"the shelter manager",r:"Lead",a:"mature",g:"F",x:"Running the place on grants and goodwill. Sharp, funny, and very tired."},
+        {s:"the volunteer who never leaves",r:"Supporting",a:"senior",x:"Comes in every night and would be lost without it. Nobody says that out loud."},
+        {s:"the person claiming the dog",r:"Supporting",a:"midCareer",x:"Plausible, pleasant, and the reason the film has an ending. Must never look like a liar."},
+        {s:"the inspector",r:"Day Player",a:"mature",g:"F",x:"One scene with a clipboard. Doing the job properly and hating it."}
+      ]},
+    {k:"eclipse-field",era:"2010s",genre:"comedy",tracks:["film","tv","stage"],
+      ttl:["Two Minutes of Dark","Eclipse Field","Totality"],
+      p:"strangers share a field for two days waiting for a total eclipse that lasts two minutes",
+      h:"the forecast turns, and the whole field has to decide whether to drive four hours for clear sky",
+      h2:"one of them has come for something other than the eclipse and everyone works it out at once",
+      w:["a hired field with tents, telescopes and one portable toilet","a campsite full of people who have booked eighteen months ahead","a hillside where the cars are parked in rows facing the same way"],
+      c:[
+        {s:"the one who organised it",r:"Lead",a:"midCareer",g:"F",x:"Has a spreadsheet, a schedule and no control over the sky. Funny, and slowly unravelling in a way that stays likeable."},
+        {s:"the astronomer",r:"Lead",a:"senior",x:"Has seen eleven of these and still cannot talk about it without going quiet. The part is joy without any showing off."},
+        {s:"the one who came for the weekend",r:"Supporting",a:"youngAdult",x:"Did not know what an eclipse was on Thursday. Open, funny, and the audience's way in."},
+        {s:"the neighbour with the field",r:"Supporting",a:"mature",x:"Rented it out and now has two hundred people on his land. Deadpan, patient, and paid by the hour."},
+        {s:"the forecaster on the radio",r:"Day Player",a:"adult",x:"Heard, not seen. Cheerful about ruining everyone's weekend."}
+      ]},
+    {k:"the-second-cabinet",era:"1970s",genre:"mystery",tracks:["film","tv","stage"],
+      ttl:["The Second Cabinet","Sawn in Half","The Late Show"],
+      p:"a stage magician's small touring show has a trick going wrong in the same way every night",
+      h:"the assistant works out that the trick is not going wrong at all",
+      h2:"the show is booked into a theatre where the magician swore he would never work again",
+      w:["a faded variety theatre with a rake so steep the props roll","a rehearsal room with a full-size illusion cabinet in it","a dressing room shared by four acts"],
+      c:[
+        {s:"the magician",r:"Lead",a:"mature",x:"Charming from the stage and very quiet off it. Should be likeable long past the point the audience wants to stop liking him."},
+        {s:"the assistant",r:"Lead",a:"youngAdult",g:"F",x:"Does the hard half of every trick and gets none of the credit. Watchful, funny, and the one asking the questions."},
+        {s:"the stage manager",r:"Supporting",a:"midCareer",x:"Knows how every illusion works and has never once said so. Dry, loyal, and slowly changing his mind."},
+        {s:"the theatre owner",r:"Supporting",a:"senior",g:"F",x:"Remembers what happened here the first time and has decided not to mention it."},
+        {s:"the front-of-house usher",r:"Day Player",a:"youngAdult",x:"One scene in the dark at the back of the stalls. Sees the thing nobody else sees."}
+      ]},
+    {k:"model-town",era:"2010s",genre:"science fiction drama",tracks:["film","tv","stage"],
+      ttl:["Model Town","The Test Street","Version Nine"],
+      p:"a company builds a small test town and pays people to live in it for six months",
+      h:"the residents are told the study has ended, and half of them ask to stay",
+      h2:"one household works out that the street has been rebuilt around them twice",
+      w:["a purpose-built test street with identical front doors","a company town of forty houses and one shop","a street where the cameras are not hidden and nobody minds"],
+      c:[
+        {s:"the study lead",r:"Lead",a:"midCareer",g:"F",x:"Believes in the work and is watching it turn into something else. Plays most of it listening."},
+        {s:"the resident who signed up first",r:"Lead",a:"mature",x:"Has made a home here on purpose and is not giving it back. Warm, stubborn, and completely reasonable, which is the problem."},
+        {s:"the observer on shift",r:"Supporting",a:"youngAdult",x:"Paid to watch and getting too involved. Funny, awkward, honest."},
+        {s:"the resident who wants out",r:"Supporting",a:"youngAdult",g:"F",x:"The only person asking the obvious question, and nobody thanks her for it."},
+        {s:"the company lawyer",r:"Day Player",a:"mature",x:"One scene. Pleasant, exact, and holding all of it."}
+      ]},
+    {k:"the-tunnel-shift",era:"1940s",genre:"period drama",tracks:["film","tv","stage"],
+      ttl:["The Tunnel Shift","Below the Line","Shift Change at Six"],
+      p:"a crew digs a tunnel through a hillside on a schedule set by people who have never been underground",
+      h:"a section comes down, and the crew is told to keep working the next face while it is cleared",
+      h2:"an inspector arrives to sign the works off and the foreman has two hours to decide what to show him",
+      w:["a tunnel face lit by strung bulbs","a site hut with a stove and a wet floor","a hillside cutting with spoil heaps either side"],
+      c:[
+        {s:"the foreman",r:"Lead",a:"mature",x:"Responsible for everyone and answerable to people he never meets. The part is a man running out of ways to say no."},
+        {s:"the new hand",r:"Lead",a:"youngAdult",x:"Nineteen, quick, and learning that the job is mostly fear. Physical role; comfortable being on your feet all day."},
+        {s:"the timberman",r:"Supporting",a:"senior",x:"Has been underground longer than anyone and says least. When he speaks the whole scene stops."},
+        {s:"the site clerk",r:"Supporting",a:"youngAdult",g:"F",x:"Keeps the books and knows exactly what the numbers mean. Two scenes decide the film."},
+        {s:"the inspector",r:"Day Player",a:"mature",x:"One scene. Fair, thorough, and asking the right questions in the wrong week."}
+      ]},
+    {k:"storm-window",era:"2000s",genre:"adventure",tracks:["film","tv"],
+      ttl:["Storm Window","Chase Season","Ninety Miles Out"],
+      p:"three people share a car through a storm-chasing season that has not produced anything worth filming",
+      h:"they finally get in front of a storm and have to choose between the shot and the road out",
+      h2:"a town in their path has no warning and they are the only ones who know",
+      w:["a car full of gear on a flat road with a sky doing something wrong","a motel car park in the middle of nowhere","a diner where everyone is watching the same television"],
+      c:[
+        {s:"the driver",r:"Lead",a:"midCareer",g:"F",x:"Calm at ninety miles an hour and hopeless in a supermarket. Never explains herself."},
+        {s:"the one with the camera",r:"Lead",a:"youngAdult",x:"Here for the footage and slowly finding out what that costs. Should be likeable throughout."},
+        {s:"the forecaster in the back seat",r:"Supporting",a:"mature",x:"Reads the sky like a page and is wrong just often enough. Dry, funny, deeply serious underneath."},
+        {s:"the motel owner",r:"Supporting",a:"senior",g:"F",x:"Has watched people do this for twenty years. Two scenes, both warm, both a warning."},
+        {s:"the deputy on the road",r:"Day Player",a:"midCareer",x:"One scene at a roadblock. Doing it by the book and clearly frightened."}
+      ]},
+    {k:"marathon-nineteen-thirty-two",era:"1930s",genre:"period drama",tracks:["film","tv","stage"],
+      ttl:["Fourteen Hundred Hours","The Marathon","Last Couple Standing"],
+      p:"couples enter a dance marathon for prize money and stay on the floor for weeks",
+      h:"the promoter changes the rules on day nineteen to keep the crowd coming",
+      h2:"one dancer collapses and the show carries on around them",
+      w:["a ballroom with a scoreboard and a brass band on rotation","a hall with cots at the edge of the floor","a stage set up in a converted skating rink"],
+      c:[
+        {s:"the dancer in it for the money",r:"Lead",a:"youngAdult",g:"F",x:"Sharp, funny, and doing arithmetic in her head at all times. Never asks the audience to feel sorry for her."},
+        {s:"the partner",r:"Lead",a:"youngAdult",x:"In it for reasons he will not say out loud. Movement ability helps; the part is mostly endurance and listening."},
+        {s:"the promoter",r:"Supporting",a:"mature",x:"Runs it like a show and knows exactly what he is selling. Should be charming enough that we understand the crowd."},
+        {s:"the floor judge",r:"Supporting",a:"senior",g:"F",x:"Counts, calls and keeps the rules. Has done this too long to enjoy it."},
+        {s:"the nurse at the side of the floor",r:"Day Player",a:"midCareer",x:"Two scenes. Practical, kind, and completely out of supplies."}
+      ]},
+    {k:"the-relay-swim",era:"1990s",genre:"sports drama",tracks:["film","tv","stage"],
+      ttl:["The Relay","Cold Water","Six Hours In"],
+      p:"four swimmers train to cross a long stretch of open water as a relay team",
+      h:"the strongest swimmer pulls out two weeks before, and the team has to decide whether to go anyway",
+      h2:"the weather closes the window to a single morning and nobody is ready",
+      w:["a cold open-water beach at six in the morning","a leisure centre pool booked at unsociable hours","a support boat with four people and too much equipment"],
+      c:[
+        {s:"the one who organised it",r:"Lead",a:"mature",g:"F",x:"Set this up for reasons she has never explained to the others. Warm, driven, hard to argue with."},
+        {s:"the strongest swimmer",r:"Lead",a:"youngAdult",x:"Fast, young, and finally saying what he actually wants. Strong swimmer required; comfortable in cold open water."},
+        {s:"the slowest one",r:"Supporting",a:"senior",x:"Trains hardest, complains least, and holds the group together. The part is quiet courage."},
+        {s:"the boat pilot",r:"Supporting",a:"midCareer",x:"Blunt, funny, and the only one saying the sensible thing. Real boat experience genuinely useful."},
+        {s:"the coach on the phone",r:"Day Player",a:"mature",g:"F",x:"Heard more than seen. Kind, exact, and honest about the odds."}
+      ]},
+    {k:"the-border-clinic",era:"2010s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["The Waiting Room","Two Languages","Papers Later"],
+      p:"a small clinic near a border treats people who cannot always say where they have come from",
+      h:"a patient arrives who the clinic can treat but cannot legally keep",
+      h2:"the clinic's funding is tied to a form that half the patients cannot fill in",
+      w:["a clinic in a converted shop with two treatment rooms","a waiting room where four languages are spoken at once","a portable building in a car park with a generator outside"],
+      c:[
+        {s:"the nurse who runs it",r:"Lead",a:"midCareer",g:"F",x:"Practical, warm, and out of both time and money. Says no all day and hates every one of them."},
+        {s:"the interpreter",r:"Lead",a:"youngAdult",x:"Second-language fluency a real asset for this role. Carries every scene twice and is never asked how that feels."},
+        {s:"the visiting doctor",r:"Supporting",a:"senior",x:"Comes one day a week and would come more if anyone asked. Dry, kind, unshowy."},
+        {s:"the patient nobody can place",r:"Supporting",a:"youngAdult",g:"F",x:"Says very little and is understood completely. The role only works if she is never pitiful."},
+        {s:"the funder's representative",r:"Day Player",a:"mature",x:"One scene with a form. Sympathetic, and holding a rule he did not write."}
+      ]},
+    {k:"the-off-season-fair",era:"1980s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["Off Season","The Wintering Ground","Rides Down by Friday"],
+      p:"a travelling fair winters in a field and the crew has to hold together for four months with no crowd",
+      h:"an offer arrives to buy the whole fair, and the crew finds out from a stranger rather than the owner",
+      h2:"one of the rides fails an inspection and the fair cannot legally open in spring",
+      w:["a muddy field with rides under tarpaulins","a row of caravans and a shared standpipe","a workshop tent with an oil heater and a radio"],
+      c:[
+        {s:"the fair owner",r:"Lead",a:"senior",x:"Third generation, out of money, and better at this than at telling the truth. Should never be a villain."},
+        {s:"the ride mechanic",r:"Lead",a:"midCareer",g:"F",x:"Keeps everything running and has kept it running for years. Blunt, funny, and the person everyone actually goes to."},
+        {s:"the one who joined last season",r:"Supporting",a:"youngAdult",x:"Turned up for a summer and never left. Open, hopeful, and the audience's way in."},
+        {s:"the buyer's agent",r:"Supporting",a:"mature",x:"Polite, patient, and never once raises the offer. Plays it completely straight."},
+        {s:"the council inspector",r:"Day Player",a:"midCareer",g:"F",x:"One scene. Doing the job exactly right and taking no pleasure in it."}
+      ]},
+    {k:"the-last-lighthouse-relief",era:"1970s",genre:"thriller",tracks:["film","tv","stage"],
+      ttl:["Relief Day","The Long Watch","Three Weeks On"],
+      p:"two keepers hand over a remote light to two replacements who arrive a week late",
+      h:"the log for the missing week has been written in a hand neither of the outgoing keepers recognises",
+      h2:"the relief boat cannot get back out, and four people share a light built for two",
+      w:["a lighthouse on a rock with one door and a lot of stairs","a keepers' room with two bunks, a stove and a barometer","a landing stage that is only usable four hours a day"],
+      c:[
+        {s:"the senior keeper going off",r:"Lead",a:"senior",x:"Wants to leave and cannot make himself say why. Carries long stretches with no lines."},
+        {s:"the keeper coming on",r:"Lead",a:"midCareer",g:"F",x:"First posting at this light and reading everything twice. Watchful, exact, and hard to unsettle."},
+        {s:"the junior going off",r:"Supporting",a:"youngAdult",x:"Talks too much because the alternative is quiet. Funny until he is not."},
+        {s:"the junior coming on",r:"Supporting",a:"youngAdult",x:"Cheerful, capable, and the last to notice anything wrong."},
+        {s:"the boatman",r:"Day Player",a:"mature",x:"Two short scenes at the landing. Says what the weather is doing and nothing else."}
+      ]},
+    {k:"the-vote-at-the-plant",era:"1980s",genre:"drama",tracks:["film","tv","stage"],
+      ttl:["The Vote","Show of Hands","Gate Three"],
+      p:"a workforce has three days to vote on an offer that saves half the jobs",
+      h:"the count comes back tied, and the second vote is scheduled for the next morning",
+      h2:"a list of which jobs go is left in a photocopier and is round the plant by lunchtime",
+      w:["a factory canteen set up for a meeting","a gatehouse with a noticeboard and a queue","a shop floor with half the machines already stopped"],
+      c:[
+        {s:"the shop steward",r:"Lead",a:"midCareer",g:"F",x:"Speaks for eight hundred people and agrees with about half of them. Never plays the hero."},
+        {s:"the plant manager",r:"Lead",a:"mature",x:"Has a mortgage and a script handed down from head office. Must be really torn on camera."},
+        {s:"the worker who wants the deal",r:"Supporting",a:"senior",x:"Has a reason anyone would accept and knows exactly what it makes him."},
+        {s:"the worker who will not take it",r:"Supporting",a:"youngAdult",g:"F",x:"Angry, articulate and twenty-four. Should be right and difficult at the same time."},
+        {s:"the vote teller",r:"Day Player",a:"senior",x:"One scene, all by the book, and it lands like a door closing."}
+      ]},
+    {k:"the-repair-shop-signal",era:"2010s",genre:"comedy",tracks:["film","tv","stage","other"],
+      ttl:["Bench Two","The Repair Shop Signal","Bring It In"],
+      p:"a repair shop fixes things people should have thrown away years ago",
+      h:"a radio comes in that picks up a station nobody can find on any list",
+      h2:"the shop is offered a contract that means never fixing anything properly again",
+      w:["a repair shop with a bell on the door and a queue of dead appliances","a workbench under a window with forty screwdrivers","a back room stacked to the ceiling with parts"],
+      c:[
+        {s:"the owner",r:"Lead",a:"senior",x:"Can fix anything and cannot run a business. Warm, stubborn, and very funny about it."},
+        {s:"the apprentice",r:"Lead",a:"youngAdult",g:"F",x:"Faster than the owner and knows it. The comedy is in how carefully she does not say so."},
+        {s:"the customer with the radio",r:"Supporting",a:"mature",x:"Brought it in for one reason and stays for another. Should feel like someone with a whole life outside the shop."},
+        {s:"the rep with the contract",r:"Supporting",a:"midCareer",x:"Friendly, reasonable, and quietly the one standing in the way."},
+        {s:"the neighbour who never buys anything",r:"Day Player",a:"senior",g:"F",x:"In most days, buys nothing, and is the reason the shop exists."}
       ]}
   ];
   // ── Which project types each seed track can be produced as ──────────────
@@ -27321,35 +27695,35 @@ const ACG = (()=>{
 
     {key:"casting-office",tracks:["film","tv","stage","spot","print","other"],
       note:"Casting office breakdown, formal.",
-      role:"Casting is prioritizing clarity, availability, and a strong first read.",
+      role:"We want a clear read, honest dates, and a strong first take.",
       tag:[x=>`${x.Type}, ${x.city} — ${x.capPremise}.`,x=>`${x.capType} breakdown — ${x.roleCount} ${x.roleCount===1?"role":"roles"}.`],
       req:[x=>`${x.mediaSentence} Submissions without a current headshot will not be reviewed. Include union and local-hire status.`,
            x=>`${x.mediaSentence} Incomplete submissions are not forwarded to the production. Union status required.`]},
 
     {key:"downtown-dry",tracks:["film","tv","stage"],
       note:"Dry, funny, downtown register.",
-      role:"Dry timing helps. So does comfort with silence and scenes that turn sideways.",
+      role:"Dry timing helps. So does being comfortable with silence and scenes that go sideways.",
       tag:[x=>`${x.capTurn}.`,x=>`${x.capPremise}.`],
       req:[x=>`${x.mediaSentence} No slate necessary. Read it flat the first time and see what happens.`,
            x=>`${x.mediaSentence} One take. Don't fix it. We can tell.`]},
 
     {key:"grant-funded",tracks:["film","tv","stage","other"],
       note:"Careful, institutional, transparent.",
-      role:"A collaborative actor will do well here. Scenes may shift in rehearsal.",
+      role:"Actors who like working together do well here. Scenes may change in rehearsal.",
       tag:[x=>`A ${x.genre} ${x.label} shooting in ${x.city}.`,x=>`${x.capPremise}.`],
       req:[x=>`${x.mediaSentence} If any part of this process is a barrier for you, write to us and we'll find another way to see your work.`,
            x=>`${x.mediaSentence} We will accept material in any format that plays. Don't let the spec stop you submitting.`]},
 
     {key:"ad-agency",tracks:["spot","print","other"],
       note:"Agency brief. Clipped, client-safe.",
-      role:"Needs to look like a person, not a demographic. One-take believable.",
+      role:"Needs to look like a real person, not a type. Believable in one take.",
       tag:[x=>`${x.capPremise} — ${x.area}.`,x=>`${x.Type}, ${x.area} — ${x.roleCount} ${x.roleCount===1?"role":"roles"}.`],
       req:[x=>`${x.mediaSentence} Include sizes for wardrobe and flag any conflicting brand bookings in the last twelve months.`,
            x=>`${x.mediaSentence} Note any category conflicts — we have to clear them with the client before callback.`]},
 
     {key:"stage-room",tracks:["stage"],
       note:"Theatre room, text-first.",
-      role:"Text-first room. Bring an idea, expect it to change by Thursday.",
+      role:"The words come first here. Bring an idea, and expect it to change by Thursday.",
       tag:[x=>`${x.capPremise}.`,x=>`${x.capTurn}.`],
       req:[x=>`${x.mediaSentence} A contemporary piece is more useful to us than classical. Two minutes maximum.`,
            x=>`${x.mediaSentence} Bring something you'd actually do, not something you think we want.`]},
@@ -27363,7 +27737,7 @@ const ACG = (()=>{
 
     {key:"episodic-team",tracks:["tv"],
       note:"Series team, forward-looking.",
-      role:"Series-minded: the character has somewhere to go after the pilot.",
+      role:"Think series: the character has somewhere to go after the first episode.",
       tag:[x=>`${x.capPremise} ${x.roleCount} ${x.roleCount===1?"role":"roles"} open in ${x.city}.`,x=>`${x.capTurn}.`],
       req:[x=>`${x.mediaSentence} If you have episodic material, lead with it. Note any holding deals or series conflicts.`,
            x=>`${x.mediaSentence} Tell us about any series regular commitments now rather than at callback.`]},
@@ -27377,14 +27751,14 @@ const ACG = (()=>{
 
     {key:"union-careful",tracks:["film","tv","stage","spot","print","other"],
       note:"Producer being careful and complete.",
-      role:"Reliable, contract-literate, and good with a call sheet.",
+      role:"Reliable, reads the contract, and good with a call sheet.",
       tag:[x=>`${x.capPremise} ${x.Type}, ${x.city}.`,x=>`${x.Type} — ${x.union}.`],
       req:[x=>`${x.mediaSentence} Include union status, local-hire status, and any date conflicts inside the shoot window.`,
            x=>`${x.mediaSentence} Please confirm your work eligibility and union standing in the submission note.`]},
 
     {key:"workshop-honest",tracks:["stage","film","tv"],
       note:"Development voice, no promises.",
-      role:"Development room. The role may not survive in this shape — come anyway.",
+      role:"This one is still being written. The role may not stay in this shape — come anyway.",
       tag:[x=>`Development — ${x.premise}.`,x=>`${x.capTurn}.`],
       req:[x=>`${x.mediaSentence} We read everything that arrives. If you don't hear back within three weeks, we went another way.`,
            x=>`${x.mediaSentence} A rough tape is fine. We are looking at the thinking, not the finish.`]}
@@ -27643,8 +28017,23 @@ const ACG = (()=>{
   // Genders: slots the story fixes stay fixed, everything else is varied — with
   // a guarantee that a cast of named roles is never all one gender, and an
   // occasional non-binary role so the option is actually represented.
+  // A label that names a gender ("the daughter", "the owner's son") has to be
+  // cast that way. The seeds pin most of these with `g`, but not all of them,
+  // and the description now prints the character's NAME right next to the
+  // label — so a miss reads as an outright mistake rather than a quirk.
+  const LABEL_F=/\b(daughter|mother|wife|sister|aunt|niece|grandmother|granddaughter|widow|girl|woman|actress|waitress|bride|mom|hostess|queen|businesswoman|saleswoman)\b/i;
+  const LABEL_M=/\b(son|father|husband|brother|uncle|nephew|grandfather|grandson|widower|boy|man|dad|groom|king|businessman|salesman|gentleman)\b/i;
+  function labelGender(label){
+    const t=String(label||"");
+    if(/\bor\b/i.test(t))return null;
+    const f=t.search(LABEL_F),m=t.search(LABEL_M);
+    if(f<0&&m<0)return null;
+    if(f<0)return "Male";
+    if(m<0)return "Female";
+    return f<m?"Female":"Male";
+  }
   function seedGenders(slots){
-    const out=slots.map(s=>s.r==="Background"?"All genders":s.g==="F"?"Female":s.g==="M"?"Male":null);
+    const out=slots.map(s=>s.r==="Background"?"All genders":s.g==="F"?"Female":s.g==="M"?"Male":labelGender(s.s));
     // Slots the seed pinned are pinned because the sketch refers to them with a
     // pronoun or the story fixes the relationship. The balance pass below must
     // therefore only ever rewrite the FREE slots — overwriting a pinned one
@@ -27688,6 +28077,18 @@ const ACG = (()=>{
     print:[[1,12],[2,20],[3,24],[4,20],[5,14],[6,10]],
     other:[[1,18],[2,22],[3,22],[4,16],[5,12],[6,10]]
   };
+  // A board that keeps telling family stories reads as one imagination even
+  // when every listing is technically a different story — which is exactly how
+  // it was landing. Family pieces are good; they are just not the only shape a
+  // story has. This flags the seeds whose story actually turns on relatives
+  // (not merely the ones that use a `fam` group to share an ethnicity between
+  // two characters) so a batch can space them out.
+  const FAMILY_WORDS=/\b(mother|father|mom|dad|son|sons|daughter|daughters|brother|brothers|sister|sisters|wife|husband|widow|widower|grandmother|grandfather|grandson|granddaughter|aunt|uncle|cousin|niece|nephew|family|sibling|siblings|parent|parents)\b/i;
+  function familySeed(seed){
+    if(seed._famStory!==undefined)return seed._famStory;
+    const blob=[seed.p,seed.h,seed.h2,seed.genre].concat((seed.c||[]).map(z=>z.s)).filter(Boolean).join(" ");
+    return (seed._famStory=FAMILY_WORDS.test(blob));
+  }
   function chooseCastSize(track){
     const w=COUNT_WEIGHTS[track]||COUNT_WEIGHTS.film;
     const total=w.reduce((s,e)=>s+e[1],0);
@@ -27722,7 +28123,9 @@ const ACG = (()=>{
     // carry the same background line.
     const pool=cgShuffle(fits.filter(e=>!used(e))).concat(cgShuffle(fits.filter(used)));
     for(let i=0;out.length<target&&i<pool.length;i++){
-      out.push(pool[i]);
+      // Copied, not referenced: EXTRA_SLOTS entries are shared between every
+      // listing that pads its cast, so a flag written onto one would leak.
+      out.push({...pool[i],_pad:true});
       if(res)addUsed(res.traits,"extra "+pool[i].s);
     }
     while(out.length<target)out.push(slots[out.length%slots.length]);
@@ -27731,26 +28134,46 @@ const ACG = (()=>{
   // Direction notes for lead roles. The project summary is two sentences of
   // story now, so anything about how to play it lives here, where it is
   // actually useful. Combinatorial and no-repeat like every other sentence.
-  // How a role's description introduces the part. Every breakdown has to open
-  // with what the character IS — the character NAME is invented, so "Enzo
-  // Sandoval" alone tells a talent nothing — but always saying it the same way
-  // ("The usher — …", "The manager — …", listing after listing) makes the whole
-  // board read as one voice. One frame is picked per LISTING: consistent within
-  // a post, different from the post before it.
-  // `sing` marks the frames that only read correctly for a singular noun phrase
-  // ("This is the usher." works; "This is additional voices." does not). A slot
-  // label that is plural or article-less falls back to a frame that fits
+  // How a role's description introduces the part.
+  //
+  // Every breakdown on the real boards has to say what the character IS — the
+  // character NAME is invented, so "Enzo Sandoval" alone tells a talent
+  // nothing. But there are many ways to say it, and the industry boards use
+  // all of them: some lines lead with the character's name ("Sade is on a
+  // three-day furlough"), some with a bare run of adjectives ("Warm and
+  // confident, kind but stubborn"), some with the job and no article
+  // ("Courthouse clerk who is committed to his job"), some name the part only
+  // at the end. Opening EVERY line with the slot label — "The owner — …",
+  // "The bar patron — …", listing after listing — is what made this whole
+  // board read as one writer. So label-first is now a minority of the bank,
+  // and the shape changes from role to role INSIDE a listing, which is what a
+  // real breakdown does.
+  //
+  // Frame arguments: n = the character's first name (the role header already
+  // carries the full name), l = the slot label as the seed wrote it
+  // ("the counter manager"), b = the same label with its article stripped
+  // ("counter manager"), s = the character sketch.
+  //
+  // `sing` marks the frames that only read correctly for a singular noun
+  // phrase — "Cal is the counter manager." works, "Cal is additional voices."
+  // does not. A plural or article-less label falls back to a frame that fits
   // anything, so the rotation can never produce a broken sentence.
   const ROLE_FRAMES=[
-    {sing:false,f:(l,x)=>`${capFirst(l)} — ${x}`},
-    {sing:false,f:(l,x)=>`Plays ${l}. ${x}`},
-    {sing:true, f:(l,x)=>`This is ${l}. ${x}`},
-    {sing:false,f:(l,x)=>`Cast as ${l}: ${x}`},
-    {sing:true, f:(l,x)=>`The part is ${l}. ${x}`},
-    {sing:false,f:(l,x)=>`${capFirst(l)}: ${x}`},
-    {sing:false,f:(l,x)=>`Written as ${l}. ${x}`},
-    {sing:true, f:(l,x)=>`${x} That is ${l}.`},
-    {sing:false,f:(l,x)=>`${capFirst(l)}. ${x}`}
+    // Label first — the classic breakdown shapes. Kept, but no longer the
+    // whole bank.
+    {sing:false,f:(n,l,b,s)=>`${capFirst(l)} — ${s}`},
+    {sing:false,f:(n,l,b,s)=>`${capFirst(b)}. ${s}`},
+    {sing:false,f:(n,l,b,s)=>`Plays ${l}. ${s}`},
+    {sing:true, f:(n,l,b,s)=>`This is ${l}. ${s}`},
+    // Name first — how most character breakdowns actually read.
+    {sing:true, f:(n,l,b,s)=>`${n} is ${l}. ${s}`},
+    {sing:true, f:(n,l,b,s)=>`${n}, ${l}. ${s}`},
+    {sing:true, f:(n,l,b,s)=>`${n} — ${b}. ${s}`},
+    // Sketch first — the person before the job title.
+    {sing:true, f:(n,l,b,s)=>`${s} ${n} is ${l}.`},
+    {sing:true, f:(n,l,b,s)=>`${s} That is ${l}.`},
+    // Casting-side, the way a breakdown asks for someone.
+    {sing:false,f:(n,l,b,s)=>`Looking for someone to play ${l}. ${s}`}
   ];
   const ROLE_FRAMES_ANY=ROLE_FRAMES.filter(z=>!z.sing);
   function singularLabel(l){
@@ -27759,15 +28182,32 @@ const ACG = (()=>{
     const last=t.split(/\s+/).pop()||"";
     return !/s$/i.test(last);
   }
-  function applyRoleFrame(idx,label,sketch){
-    const fr=ROLE_FRAMES[((idx%ROLE_FRAMES.length)+ROLE_FRAMES.length)%ROLE_FRAMES.length];
-    if(fr.sing&&!singularLabel(label))return ROLE_FRAMES_ANY[idx%ROLE_FRAMES_ANY.length].f(label,sketch);
-    return fr.f(label,sketch);
+  function stripArticle(l){return String(l||"").trim().replace(/^(the|a|an)\s+/i,"");}
+  function firstNameOf(full){return String(full||"").trim().split(/\s+/)[0]||"";}
+  function applyRoleFrame(idx,name,label,sketch){
+    const l=String(label||"").trim();
+    // "the counter manager" reads fine without its article; "the one who
+    // planned it" does not ("Cal — one who planned it."). Only a short, plain
+    // job title gives up its article.
+    const plainTitle=/^(the|a|an)\s/i.test(l)&&l.split(/\s+/).length<=3&&!/\b(who|whose|that|with|on|in|for|at|from|of)\b/i.test(l);
+    const b=plainTitle?stripArticle(l):l;
+    const n=firstNameOf(name);
+    const size=ROLE_FRAMES.length;
+    const i=((idx%size)+size)%size;
+    const fr=ROLE_FRAMES[i];
+    // Only named (non-group) roles are framed, so `n` is always present here;
+    // the one thing that can break a frame is a plural or article-less label.
+    if(fr.sing&&!singularLabel(l))return ROLE_FRAMES_ANY[i%ROLE_FRAMES_ANY.length].f(n,l,b,sketch);
+    return fr.f(n,l,b,sketch);
   }
   // A rotating pointer rather than a random draw: random repeats itself far more
   // often than it feels like it should, and the complaint here is exactly that.
   // Rotating guarantees the next listing gets the next shape, cycling the bank.
+  // This is only the listing's STARTING shape now — inside the listing each
+  // role steps on by ROLE_FRAME_STEP, which is coprime with the bank size, so a
+  // five-hander walks five different shapes and never repeats one.
   const LS_ROLE_FRAME="cs_acg_role_frame_v1";
+  const ROLE_FRAME_STEP=3;
   function nextRoleFrameIndex(){
     let n;
     try{
@@ -27777,55 +28217,83 @@ const ACG = (()=>{
     }catch(_){n=Math.floor(Math.random()*ROLE_FRAMES.length);}
     return ((n%ROLE_FRAMES.length)+ROLE_FRAMES.length)%ROLE_FRAMES.length;
   }
+  // The frame is applied once the character's real NAME exists (see
+  // varyRoleDescription) — that is the whole reason the name-first and
+  // sketch-first shapes are possible at all. seedRoles only stores the raw
+  // material: the slot label, the sketch, and where in the rotation to start.
+  function frameSeedDescription(r,charName){
+    const s=String(r.description||"").trim();
+    const label=String(r._slot||"").trim();
+    if(!s||!label||r._group)return s;
+    // Real boards mix a one-line part ("Carson's right hand woman.") with a
+    // full paragraph. Every part here used to be exactly sketch + craft note,
+    // which is its own kind of sameness — so a minority of the smaller parts
+    // print short. Padded categories are excluded: their sketch text is shared
+    // between listings and the craft note is what keeps them distinct.
+    let body=s;
+    if(!r._pad&&!/lead|principal/i.test(r.role_type||"")&&Math.random()<0.3){
+      const one=sent(s,1);
+      if(one&&one.length>28)body=one;
+    }
+    return applyRoleFrame((r._frameBase||0)+(r._frameSlot||0)*ROLE_FRAME_STEP,charName,label,body);
+  }
+  // Direction notes for lead roles. The project summary is two sentences of
+  // story now, so anything about how to play it lives here, where it is
+  // actually useful. Combinatorial and no-repeat like every other sentence.
+  //
+  // PLAIN WORDS ONLY. An actor reading this board should never have to work
+  // out what a sentence means — the earlier wording ("resist the urge to play
+  // the type", "signposting it", "specificity beats geography") was writing
+  // for other writers. Every line here should land for a ten-year-old.
   const DIRECTION_NOTES=[
-    x=>`${pick(["Plays best underplayed","Wants to be underplayed","Should be played small"])} — ${pick(["the audience needs to lean in, not be told.","we would rather believe it than be impressed by it.","the size comes from the situation, not the performance."])}`,
-    x=>`${pick(["Carries long stretches without dialogue","Holds several scenes on listening alone","Spends a lot of the piece reacting"])}, ${pick(["so stillness has to be interesting.","so the thinking needs to read.","so doing nothing has to be a choice we can see."])}`,
-    x=>`${pick(["Comic timing matters here","The humor has to be dry","Funny is welcome"])}, ${pick(["but nothing can be played for the laugh.","as long as the character never knows they are funny.","provided it stays inside the situation."])}`,
-    x=>`${pick(["Needs someone who can shift gear mid-scene","Turns twice in the same scene","Changes on a single line"])} ${pick(["without signposting it.","and the change should surprise the audience, not announce itself.","— we should notice it a beat after it happens."])}`,
-    x=>`${pick(["Physical work in this one","There is real physicality here","The body does a lot of the work"])}: ${pick(["comfort and stamina matter more than technique.","we will rehearse it, but you should be comfortable on your feet all day.","nothing dangerous, but plenty of it."])}`,
-    x=>`${pick(["Bring a point of view to the tape","Come in with an idea","We want to see a choice"])} — ${pick(["we will happily throw it out together.","being wrong in an interesting way is fine.","it does not have to be the right one."])}`,
-    x=>`${pick(["Chemistry read likely at callback","Will be paired at callback","Read against the other lead at callback"])}, ${pick(["so come prepared to adjust.","and we may mix the pairings more than once.","so flexibility helps more than a fixed plan."])}`,
-    x=>`${pick(["The part is written specifically","This one is written close to the bone","There is real specificity in the writing"])}, ${pick(["so resist the urge to play the type.","and generalising it will flatten it.","so play the person rather than the category."])}`,
-    x=>`${pick(["Sustains tension across the piece","Holds pressure for long stretches","Lives under pressure the whole way through"])} ${pick(["without ever getting loud.","and the volume never solves it.","— nothing is released until it has to be."])}`,
-    x=>`${pick(["Expect rehearsal","There is rehearsal time on this","We rehearse before we roll"])}, ${pick(["and the part will move around you.","so the role will change once we know who has it.","and the writing follows whoever we cast."])}`,
-    x=>`${pick(["The whole part turns on one scene","There is one scene this is really cast on","One sequence decides this part"])} — ${pick(["we will send it with the callback invitation.","you will get it before you come in.","it is the only thing we will ask you to prepare."])}`,
-    x=>`${pick(["Accent is not required","Play it in your own voice","No accent work needed"])}; ${pick(["we would rather have the truth than the map.","specificity beats geography here.","where the character is from matters less than who they are."])}`,
-    x=>`${pick(["Written for somebody with real weight","Needs presence more than range","Casting for authority here"])} — ${pick(["the room should change when they walk into it.","other characters behave differently around them.","nobody has to say they matter."])}`,
-    x=>`${pick(["This one is mostly listening","The part is built out of reactions","Most of it happens while somebody else talks"])}, ${pick(["so we will be watching your face on the tape.","which is harder than it sounds.","and that is the whole read."])}`,
-    x=>`${pick(["Age is a guide, not a gate","Read the band loosely","We are flexible on the range"])} — ${pick(["play the life, not the birthday.","if you are close and it fits, come.","we have cast either side of it before."])}`,
-    x=>`${pick(["Expect notes and expect to use them","We work fast and adjust often","Direction comes in small pieces here"])}; ${pick(["actors who can turn on a note do well.","the second version is usually the one we keep.","flexibility is worth more than a fixed idea."])}`
+    x=>`${pick(["Play it small","Keep it quiet","Do not push it"])} — ${pick(["we want people leaning in, not shouted at.","we would rather believe it than be impressed by it.","the size comes from the story, not from you."])}`,
+    x=>`${pick(["Long stretches with no lines","Whole scenes on listening alone","Much of this part is reacting"])}, ${pick(["so being still has to be interesting.","so we need to see the thinking.","so doing nothing has to be a choice we can see."])}`,
+    x=>`${pick(["Funny helps here","The humor is dry","Comic timing matters"])}, ${pick(["but never play for the laugh.","as long as the character never knows they are funny.","as long as it stays real."])}`,
+    x=>`${pick(["Turns on a dime mid-scene","Changes twice in one scene","Changes on a single line"])} ${pick(["without telling us it is coming.","and the change should surprise us.","— we should catch it a beat late."])}`,
+    x=>`${pick(["There is real physical work here","The body does a lot of the work","Plenty of moving around"])}: ${pick(["being comfortable matters more than training.","we will rehearse it, but you are on your feet all day.","nothing dangerous, just a lot of it."])}`,
+    x=>`${pick(["Bring an idea to the tape","Come in with a choice","We want to see you decide something"])} — ${pick(["we are happy to throw it out together.","being wrong in an interesting way is fine.","it does not have to be the right one."])}`,
+    x=>`${pick(["Chemistry read likely at callback","You will be paired at callback","Read with the other lead at callback"])}, ${pick(["so come ready to change things.","and we may swap the pairs more than once.","so being flexible helps."])}`,
+    x=>`${pick(["This one is written very specific","The writing is close to the bone here","There is a real person in this writing"])}, ${pick(["so play the person, not the type.","and playing the type will flatten it.","so skip the shorthand."])}`,
+    x=>`${pick(["Holds pressure the whole way through","Under strain for a long time","Never really gets to relax"])} ${pick(["without ever getting loud.","and getting loud never fixes it.","— nothing lets go until it has to."])}`,
+    x=>`${pick(["There is rehearsal on this","We rehearse before we shoot","Expect rehearsal time"])}, ${pick(["and the part will change around you.","so the role grows once we know who has it.","and the writing follows whoever we cast."])}`,
+    x=>`${pick(["The whole part turns on one scene","One scene decides this role","We are casting this on a single scene"])} — ${pick(["we send it with the callback.","you get it before you come in.","it is the only thing to prepare."])}`,
+    x=>`${pick(["No accent needed","Play it in your own voice","Use your own accent"])}; ${pick(["we would rather have the truth.","where they are from matters less than who they are.","the real thing beats a good copy."])}`,
+    x=>`${pick(["Needs real weight","Presence matters more than range","We are casting for authority here"])} — ${pick(["the room should change when they walk in.","everyone else behaves differently around them.","nobody should have to say they matter."])}`,
+    x=>`${pick(["This one is mostly listening","The part is built out of reactions","Most of it happens while someone else talks"])}, ${pick(["so we will be watching your face.","which is harder than it sounds.","and that is the whole read."])}`,
+    x=>`${pick(["Age is a guide, not a rule","Read the age range loosely","We are flexible on the age"])} — ${pick(["play the life, not the birthday.","if you are close and it fits, come in.","we have cast either side of it before."])}`,
+    x=>`${pick(["Expect notes, and expect to use them","We work fast and change things often","Direction comes in small pieces here"])}; ${pick(["actors who can turn on a note do well.","the second version is usually the keeper.","being flexible beats having a fixed plan."])}`
   ];
   // Supporting parts and the padded background categories were the last place
   // text repeated: a seed's supporting sketch is fixed, and the extras bank is
   // shared by every listing that pads its cast. Both now carry a varied,
   // no-repeat tail so two breakdowns never read the same.
   const SUPPORT_NOTES=[
-    x=>`${pick(["Few scenes","Not a large part","Limited screen time","Two or three scenes"])}, ${pick(["but the film does not work without it.","and every one of them has to count.","so there is nowhere to hide.","and it is the one people remember."])}`,
-    x=>`${pick(["Plays opposite the lead","Shares most of its scenes with the lead","Works directly against the lead"])} — ${pick(["so we will read you together.","chemistry read at callback.","expect to be paired at the callback."])}`,
-    x=>`${pick(["Keep it grounded","No need to push","Play it straight"])}; ${pick(["the writing carries the size.","the situation does the work.","anything bigger fights the scene."])}`,
-    x=>`${pick(["Comfortable with overlapping dialogue","Good with interruptions","Able to talk over and be talked over"])} ${pick(["and quick resets.","without losing the thread.","and to hold a beat when the room goes quiet."])}`,
-    x=>`${pick(["Local hire preferred for this one","Ideally a local hire","Local casting for this part"])}; ${pick(["a single travel day at most.","one or two calls, close together.","the days are grouped."])}`,
-    x=>`${pick(["Room for improvisation","Some improvisation likely","We will play with this in rehearsal"])} ${pick(["inside a tight structure.","once the scene is standing.","but the scene keeps its shape."])}`,
-    x=>`${pick(["Anchors one sequence","Owns a single sequence","Runs one whole scene"])} ${pick(["and then steps back out of it.","before disappearing from the story.","and is not seen again."])}`,
-    x=>`${pick(["Should feel like they existed before the scene started","Needs a life outside this","Has somewhere to be afterwards"])} — ${pick(["that is most of the work.","play the day around it.","the scene is an interruption, not the whole life."])}`,
-    x=>`${pick(["Works closely with the crew in frame","Handles props through most of it","Business-heavy scene"])}; ${pick(["comfort with practical action helps.","we will rehearse the mechanics.","the hands are doing as much as the lines."])}`,
-    x=>`${pick(["One difficult beat","There is one hard moment","A single sharp turn"])} ${pick(["and the rest is easy.","that we will take our time on.","which we will cover from two sizes."])}`,
-    x=>`${pick(["Could be cast any gender","Open on gender for this one","Written without a fixed gender"])}; ${pick(["the breakdown reflects where we started, not where we will end.","tell us if you see it differently.","we are reading it widely."])}`,
-    x=>`${pick(["Available for a fitting beforehand","Needs one wardrobe call","A fitting is scheduled separately"])} ${pick(["and it is paid.","in the week before.","— we work around your schedule."])}`
+    x=>`${pick(["Few scenes","Not a big part","A handful of scenes","Two or three scenes"])}, ${pick(["but the story does not work without it.","and every one has to count.","so there is nowhere to hide.","and it is the one people remember."])}`,
+    x=>`${pick(["Plays opposite the lead","Shares most scenes with the lead","Works straight against the lead"])} — ${pick(["so we will read you together.","chemistry read at callback.","expect to be paired at the callback."])}`,
+    x=>`${pick(["Keep it real","No need to push","Play it straight"])}; ${pick(["the writing carries the size.","the situation does the work.","anything bigger fights the scene."])}`,
+    x=>`${pick(["Comfortable talking over people","Good with interruptions","Able to talk over and be talked over"])} ${pick(["and quick resets.","without losing the thread.","and to hold a beat when the room goes quiet."])}`,
+    x=>`${pick(["Local hire preferred for this one","Ideally a local hire","Local casting for this part"])}; ${pick(["one travel day at most.","one or two calls, close together.","the days are grouped."])}`,
+    x=>`${pick(["Room to make things up","Some improvising likely","We will play with this in rehearsal"])} ${pick(["inside a tight scene.","once the scene is standing.","but the scene keeps its shape."])}`,
+    x=>`${pick(["Anchors one sequence","Owns a single scene","Runs one whole scene"])} ${pick(["and then steps back out.","before leaving the story.","and is not seen again."])}`,
+    x=>`${pick(["Should feel like they had a life before the scene","Needs a life outside this","Has somewhere to be afterwards"])} — ${pick(["that is most of the work.","play the day around it.","the scene is an interruption, not the whole life."])}`,
+    x=>`${pick(["Handles props through most of it","Lots of business with the hands","Works close to the crew in frame"])}; ${pick(["being comfortable with real tasks helps.","we will rehearse the moves.","the hands do as much as the lines."])}`,
+    x=>`${pick(["One hard beat","There is one difficult moment","A single sharp turn"])} ${pick(["and the rest is easy.","that we will take our time on.","which we will shoot from two sizes."])}`,
+    x=>`${pick(["Could be any gender","Open on gender for this one","Written without a fixed gender"])}; ${pick(["the breakdown shows where we started, not where we will end.","tell us if you see it differently.","we are reading it widely."])}`,
+    x=>`${pick(["A fitting beforehand","Needs one wardrobe call","There is a separate fitting"])} ${pick(["and it is paid.","in the week before.","— we work around your schedule."])}`
   ];
   const ATMOS_NOTES=[
-    x=>`${pick(["Wardrobe is everyday contemporary","Own clothes in most frames","Wardrobe supplied for featured passes"])}; ${pick(["nothing branded.","no logos or slogans.","plain colors preferred."])}`,
-    x=>`${pick(["Long day","Full day on location","Extended call"])} ${pick(["with breaks and a proper meal.","— food provided, and a warm holding area.","and a hold area you can actually sit in."])}`,
+    x=>`${pick(["Wardrobe is everyday clothes","Your own clothes in most frames","Wardrobe supplied for featured passes"])}; ${pick(["nothing branded.","no logos or slogans.","plain colors preferred."])}`,
+    x=>`${pick(["Long day","Full day on location","Long call"])} ${pick(["with breaks and a proper meal.","— food provided, and a warm place to sit.","and a holding area you can actually sit in."])}`,
     x=>`${pick(["Several featured passes","A few close passes to camera","One or two featured moments"])} ${pick(["for the right people on the day.","chosen on set.","depending on the setup."])}`,
-    x=>`${pick(["Repeat business is likely","We book atmosphere again","Regulars get called back"])} ${pick(["if the day goes well.","across the rest of the schedule.","for later blocks."])}`,
-    x=>`${pick(["Punctuality matters more than anything else here","Being on time is the whole job","Call times are held"])}. ${pick(["Please only submit if the date is genuinely clear.","Do not submit against a maybe.","Check the date before you apply."])}`,
-    x=>`${pick(["No experience necessary","Set experience helpful but not required","First-timers welcome"])} — ${pick(["you will be shown what to do.","the AD team will walk you through it.","we brief everyone at the start of the day."])}`,
+    x=>`${pick(["We book people again","We call atmosphere back","Regulars get called back"])} ${pick(["if the day goes well.","across the rest of the schedule.","for later blocks."])}`,
+    x=>`${pick(["Being on time matters more than anything else here","Being on time is the whole job","Call times are held"])}. ${pick(["Please only apply if the date is genuinely clear.","Do not apply against a maybe.","Check the date before you apply."])}`,
+    x=>`${pick(["No experience needed","Set experience helps but is not required","First-timers welcome"])} — ${pick(["you will be shown what to do.","the crew will walk you through it.","we brief everyone at the start of the day."])}`,
     x=>`${pick(["Bring a book","Bring something to read","Expect waiting"])}; ${pick(["there is more of it than filming.","the holding area is warm and quiet.","we will feed you properly in exchange."])}`,
     x=>`${pick(["Small group","Kept deliberately small","A handful of people, not a crowd"])} ${pick(["so everyone is genuinely in frame.","and everybody gets used.","— nobody is booked to stand around."])}`,
-    x=>`${pick(["Some walking involved","On your feet most of the day","Light physical work"])}, ${pick(["nothing strenuous.","with breaks between setups.","and comfortable shoes matter more than anything else."])}`,
-    x=>`${pick(["Under-18s welcome with a guardian","Family bookings possible","We can book people together"])} ${pick(["— tell us when you submit.","if that is easier for you.","and will schedule around school hours."])}`,
-    x=>`${pick(["We book from photos only for this","No tape needed here","Photo submission is enough"])}; ${pick(["a clear recent picture is all we need.","phone photos are completely fine.","nothing posed."])}`,
-    x=>`${pick(["Paid on the day","Paid within a week of the shoot","Payment issued on wrap"])} ${pick(["by transfer.","with the paperwork done in advance.","— no chasing required."])}`
+    x=>`${pick(["Some walking involved","On your feet most of the day","Light physical work"])}, ${pick(["nothing hard.","with breaks between setups.","and comfortable shoes matter more than anything else."])}`,
+    x=>`${pick(["Under-18s welcome with a guardian","Family bookings possible","We can book people together"])} ${pick(["— tell us when you apply.","if that is easier for you.","and will schedule around school hours."])}`,
+    x=>`${pick(["We book from photos only for this","No tape needed here","A photo is enough"])}; ${pick(["a clear recent picture is all we need.","phone photos are completely fine.","nothing posed."])}`,
+    x=>`${pick(["Paid on the day","Paid within a week of the shoot","Paid on wrap"])} ${pick(["by transfer.","with the paperwork done in advance.","— no chasing required."])}`
   ];
   const RANK_ORDER=["Lead","Supporting","Day Player","Background"];
   function rankRates(tier){
@@ -27868,14 +28336,21 @@ const ACG = (()=>{
         role_type:roleTypeFor(track,rank,type),
         _group:labelled||rank==="Background",
         _groupName:titleCase(s.s),
-        // The character name that replaces this slot is invented, so the
-        // description has to open with what the character IS — otherwise a
-        // talent reads "Enzo Sandoval" with no idea he is the repo driver.
+        // The description is stored UNFRAMED here. The character name that
+        // replaces this slot is invented a stage later (uniqueRoles), and the
+        // opening of a breakdown line is worth much more when it can use that
+        // name — "Sade is on a three-day furlough" is how the real boards read.
+        // frameSeedDescription does the framing once the name exists; _slot
+        // carries what the character IS so the line can still say it.
         description:mediumSwap(
           rank==="Background"
             ? uniqueDescription(s.x,ATMOS_NOTES,h,res,usedNotes)
-            : uniqueDescription(applyRoleFrame(frameIdx,s.s,s.x),rank==="Lead"?DIRECTION_NOTES:SUPPORT_NOTES,h,res,usedNotes),
+            : uniqueDescription(s.x,rank==="Lead"?DIRECTION_NOTES:SUPPORT_NOTES,h,res,usedNotes),
           track,type),
+        _slot:s.s,
+        _pad:!!s._pad,
+        _frameBase:frameIdx,
+        _frameSlot:i,
         gender:genders[i],
         age_range:seedAge(s.a||"adult",usedAges),
         ethnicity:eths[i],
@@ -27950,7 +28425,12 @@ const ACG = (()=>{
       const revivable=unusedSeeds.length?[]:seedPool.filter(s=>turnsFor(s).some(t=>!pairUsed(s,t)));
       const seedChoices=unusedSeeds.length?unusedSeeds:revivable;
       if(!seedChoices.length)continue;
-      const seed=pick(seedChoices);
+      // Never two family stories back to back, and never more than one in
+      // four. If that leaves nothing to draw from, the spacing rule yields
+      // rather than blocking generation.
+      const famOk=!res.lastFamily&&((res.famCount||0)*4)<=(res.storyCount||0);
+      const spaced=famOk?seedChoices:seedChoices.filter(z=>!familySeed(z));
+      const seed=pick(spaced.length?spaced:seedChoices);
       // A seed's `only` list wins over the track's default menu — otherwise a
       // workplace-training premise gets produced as a music video and a
       // sportswear editorial as user-generated content.
@@ -28044,6 +28524,9 @@ const ACG = (()=>{
       addUsed(res.traits,turnKey);
       addUsed(res.traits,toneKey);
       addUsed(res.roleCounts,String(roles.length));
+      res.storyCount=(res.storyCount||0)+1;
+      res.lastFamily=familySeed(seed);
+      if(res.lastFamily)res.famCount=(res.famCount||0)+1;
       return{
         type,
         postedBy:company,
@@ -28422,11 +28905,13 @@ const ACG = (()=>{
     }
     return candidateUnique([`${pick(pool)} ${pick(surnames)}`],h.roles,res.roles,i=>`${pick(pool)} ${pick(surnames)}-${pick(surnames)}`);
   }
-  function varyRoleDescription(r,original,voice){
+  function varyRoleDescription(r,original,voice,charName){
     const base=String(r.description||"").trim();
-    // Seed slots arrive as finished two-sentence character sketches — passing
-    // them through sent(base,1) would lop off the half that says how to play it.
-    if(r._full)return base;
+    // Seed slots arrive as finished character sketches — passing them through
+    // sent(base,1) would lop off the half that says how to play it. They are
+    // framed here instead, because this is the first point at which the
+    // character's real name exists.
+    if(r._full)return frameSeedDescription({...r,description:base},charName);
     if(r._keepDescription)return sent(base,1)||base;
     const len=pick(ROLE_LENGTHS);
     const first=sent(base,1);
@@ -28543,7 +29028,7 @@ const ACG = (()=>{
       const original=r.name;
       const name=roleName(r,h,res);
       const roleType=r.role_type||inferRoleType(original,r.description);
-      return{...r,name,description:varyRoleDescription(r,original,voice),role_type:roleType,pay:r.pay||rolePay(type,roleType)};
+      return{...r,name,description:varyRoleDescription(r,original,voice,name),role_type:roleType,pay:r.pay||rolePay(type,roleType)};
     });
     return boardPolish(built,h,res);
   }
