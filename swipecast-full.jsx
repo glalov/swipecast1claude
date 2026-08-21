@@ -23083,6 +23083,39 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     setTimeout(()=>{setMsg("");setErr("");},5000);
   };
 
+  // ── Stripe Customer Portal ────────────────────────────────────
+  // One door for everything billing: update the card, download invoices, and
+  // cancel (at period end — that is set on the portal configuration in the
+  // Stripe Dashboard, not here). Stripe stays the source of truth; the
+  // stripe-webhook writes the outcome back to the profile, so nothing about
+  // the subscription is mirrored or guessed on this screen.
+  const [portalBusy,setPortalBusy]=useState(false);
+  const openBillingPortal=async()=>{
+    if(portalBusy)return;
+    setPortalBusy(true);
+    try{
+      const{data:{session:portalSess}}=await window.sb.auth.getSession();
+      if(!portalSess)throw new Error("Please sign in again to manage your billing.");
+      const supabaseUrl=window.SC_CONFIG?.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co";
+      const res=await fetch(`${supabaseUrl}/functions/v1/stripe-portal`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":`Bearer ${portalSess.access_token}`},
+        body:JSON.stringify({return_path:"/account-settings"}),
+      });
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok||!data.url)throw new Error(data.error||"Could not open the billing portal. Please try again.");
+      window.location.href=data.url;
+    }catch(e){
+      showMsg(e.message||"Could not open the billing portal. Please try again.",true);
+      setPortalBusy(false);
+    }
+  };
+  const ManageBillingBtn=({label="Manage subscription",className="btn-p btn-sm"})=>(
+    <button className={className} disabled={portalBusy} onClick={openBillingPortal}>
+      {portalBusy?"Opening Stripe…":label}
+    </button>
+  );
+
   const SECTIONS=[
     {key:"account",label:"Account Settings",icon:"settings"},
     {key:"subscription",label:"Subscription Info",icon:"credit-card"},
@@ -23344,16 +23377,20 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
           isCancelling?(
             <div style={{color:"var(--t2)",fontSize:13}}>
               Your membership is cancelled and will not renew.{endLabel?<> You keep full Premium access until <strong style={{color:"var(--t1)"}}>{endLabel}</strong>, then your account returns to the free plan automatically.</>:<> You keep full Premium access until the end of your current billing period, then your account returns to the free plan automatically.</>} Nothing is deleted — your profile, media and application history stay.
-              <div style={{marginTop:10}}>
-                Changed your mind? <span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("contact",{subject:"Billing or payment question"})}>Ask us to resume it →</span>
+              <div style={{marginTop:12,display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+                <ManageBillingBtn label="Manage subscription"/>
+                <span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600,fontSize:13}} onClick={()=>onNavigate("contact",{subject:"Billing or payment question"})}>Ask us for help →</span>
               </div>
+              <div style={{marginTop:8,fontSize:12,color:"var(--t3)"}}>Opens your secure Stripe billing page — restart your membership, update your card, or download invoices.</div>
             </div>
           ):(
             <div style={{color:"var(--t2)",fontSize:13}}>
               Your subscription is managed through Stripe.{endLabel?<> It renews automatically on <strong style={{color:"var(--t1)"}}>{endLabel}</strong>.</>:null}
-              <div style={{marginTop:10}}>
-                Need to make a change to your membership? <span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("contact",{subject:CANCEL_SUBJECT})}>Cancel my subscription →</span>
+              <div style={{marginTop:12,display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+                <ManageBillingBtn label="Manage subscription"/>
+                <span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600,fontSize:13}} onClick={()=>onNavigate("contact",{subject:CANCEL_SUBJECT})}>Prefer we do it? Contact us →</span>
               </div>
+              <div style={{marginTop:8,fontSize:12,color:"var(--t3)"}}>Opens your secure Stripe billing page — update your card, download invoices, or cancel. Cancelling keeps your Premium access until the end of the period you already paid for.</div>
             </div>
           )
         ):(
@@ -23396,7 +23433,11 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
             {renewDate&&<div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Renews:</span> <strong>{new Date(renewDate).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}</strong></div>}
             <div style={{fontSize:13}}><span style={{color:"var(--t3)"}}>Status:</span> <strong style={{color:"var(--grn)"}}>Active</strong></div>
           </div>
-          <p style={{color:"var(--t2)",fontSize:13,marginBottom:0}}>To update your payment method, view invoices, or cancel, contact support. Self-service billing portal coming soon.</p>
+          <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+            <ManageBillingBtn label="Manage billing in Stripe"/>
+            <span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600,fontSize:13}} onClick={()=>onNavigate("contact",{subject:"Billing or payment question"})}>Billing question? Contact us →</span>
+          </div>
+          <p style={{color:"var(--t2)",fontSize:13,margin:"10px 0 0"}}>Update your payment method, download past invoices, or cancel — all on Stripe's secure billing page. You'll come straight back here when you're done.</p>
         </div>
       )}
 
