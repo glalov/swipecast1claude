@@ -416,7 +416,23 @@ const HOLD_TONE: DecisionTone = {
   badge: "email-hold-badge.png", bell: "email-bell.png",
 };
 
-interface DecisionArgs { tone: DecisionTone; headTop: string; headAccent: string; body: string; title: string; }
+// Rose Ember — the daily "you're getting noticed" recap. Deliberately clear of
+// both the sapphire shortlist and the emerald hold: this is interest, not a
+// decision, so the tone is warm and personal rather than a win or a verdict.
+const NOTICED_TONE: DecisionTone = {
+  band: "#7C2438", band2: "#B5455F", foot: "#4A121F",
+  onDark: "#F7B9C6", onCream: "#A93A55", rule: "#D2607A", rule0: "rgba(124,36,56,0)",
+  kicker: "#8E2A42", card: "#FCEFF2", cardBd: "#F2D3DB", cta: "#8E2A42",
+  badge: "email-noticed-badge.png", bell: "email-bell-rose.png",
+};
+
+interface DecisionArgs {
+  tone: DecisionTone; headTop: string; headAccent: string; body: string; title: string;
+  // Optional overrides so the same shell can carry a non-decision email (the
+  // daily recap). Left unset, every one of these keeps the shortlist/hold
+  // wording byte-for-byte identical to what shipped.
+  kicker?: string; mid?: string; cta?: string; href?: string; foot?: string;
+}
 function decisionEmail(a: DecisionArgs): string {
   const t = a.tone;
   const card = a.title ? `
@@ -456,7 +472,7 @@ function decisionEmail(a: DecisionArgs): string {
             <td style="vertical-align:middle;padding-right:14px"><img class="cs-mark" src="${APP_URL}/logo-email-tile.png" width="46" height="46" alt="CastSlate" style="display:block;border-radius:11px"/></td>
             <td style="vertical-align:middle"><span class="cs-word" style="font-size:24px;font-weight:800;letter-spacing:1.7px;color:#FFFFFF;white-space:nowrap">CASTSLATE</span></td>
           </tr></table></td>
-          <td class="cs-kicker" align="right" style="vertical-align:middle;padding-left:18px"><span style="font-size:10px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:${t.onDark}">Casting update</span></td>
+          <td class="cs-kicker" align="right" style="vertical-align:middle;padding-left:18px"><span style="font-size:10px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:${t.onDark}">${a.kicker ?? "Casting update"}</span></td>
         </tr></table>
       </td></tr>
 
@@ -474,17 +490,17 @@ function decisionEmail(a: DecisionArgs): string {
       </td></tr>
 
       <tr><td class="cs-pad" style="padding:20px 30px 0"><p style="margin:0;font-size:15px;line-height:1.78;color:#5A5A72">${a.body}</p></td></tr>
-${card}
+${a.mid ?? card}
       <tr><td class="cs-pad cs-cta" style="padding:26px 30px 34px">
         <table cellpadding="0" cellspacing="0"><tr><td style="background:${t.cta};border-radius:11px">
-          <a href="${APP_URL}/talent-dashboard" style="display:inline-block;padding:16px 34px;font-size:14.5px;font-weight:800;letter-spacing:0.2px;color:#FFFFFF;text-decoration:none">View my applications &nbsp;&rarr;</a>
+          <a href="${APP_URL}${a.href ?? "/talent-dashboard"}" style="display:inline-block;padding:16px 34px;font-size:14.5px;font-weight:800;letter-spacing:0.2px;color:#FFFFFF;text-decoration:none">${a.cta ?? "View my applications"} &nbsp;&rarr;</a>
         </td></tr></table>
       </td></tr>
 
       <tr><td class="cs-pad" style="background:${t.foot};padding:22px 30px">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
           <td style="vertical-align:top;width:38px;padding-top:2px"><img src="${APP_URL}/${t.bell}" width="26" height="26" alt="" style="display:block;border:0"/></td>
-          <td style="vertical-align:top"><p style="margin:0;font-size:12px;line-height:1.75;color:rgba(255,255,255,0.70)">You're receiving this because a casting director took action on one of your submissions.<br/>Manage notifications in <a href="${APP_URL}/account-settings" style="color:${t.onDark};text-decoration:none;font-weight:700">Account Settings</a>.</p></td>
+          <td style="vertical-align:top"><p style="margin:0;font-size:12px;line-height:1.75;color:rgba(255,255,255,0.70)">${a.foot ?? "You're receiving this because a casting director took action on one of your submissions."}<br/>Manage notifications in <a href="${APP_URL}/account-settings" style="color:${t.onDark};text-decoration:none;font-weight:700">Account Settings</a>.</p></td>
         </tr></table>
       </td></tr>
 
@@ -520,19 +536,38 @@ function applicationHoldHtml(firstName: string, projectName?: string, roleName?:
 }
 
 function activityDigestHtml(firstName: string, profileViews: number, tapeViews: number, shortlists: number): string {
-  const t = TONES.teal;
-  const row = (icon: string, text: string) =>
-    `<tr><td style="padding:13px 16px;background:${t.soft};border:1px solid ${t.solid}22;border-radius:10px"><span style="display:inline-block;width:28px;color:${t.solid};font-size:17px;vertical-align:middle">${icon}</span><span style="font-size:15.5px;color:#1A1A2E;vertical-align:middle">${text}</span></td></tr><tr><td style="height:8px"></td></tr>`;
+  const t = NOTICED_TONE;
+  const row = (glyph: string, label: string, text: string) => `
+        <tr><td style="background:${t.card};border:1px solid ${t.cardBd};border-radius:12px;padding:16px 18px">
+          <table width="100%" cellpadding="0" cellspacing="0"><tr>
+            <td style="width:44px;vertical-align:middle;padding-right:14px">
+              <table cellpadding="0" cellspacing="0"><tr><td width="40" height="40" align="center" style="width:40px;height:40px;background:${t.band2};border-radius:20px;text-align:center;vertical-align:middle;font-size:19px;line-height:40px;color:#FFFFFF;font-weight:700">${glyph}</td></tr></table>
+            </td>
+            <td style="vertical-align:middle">
+              <div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${t.kicker};margin:0 0 4px">${label}</div>
+              <div style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:700;color:#1A1A2E;line-height:1.3">${text}</div>
+            </td>
+          </tr></table>
+        </td></tr>
+        <tr><td style="height:12px;line-height:12px;font-size:0">&nbsp;</td></tr>`;
+
   const rows = [
-    shortlists > 0 ? row("&#9733;", `<strong>${shortlists}</strong> casting ${shortlists === 1 ? "director" : "directors"} shortlisted you`) : "",
-    profileViews > 0 ? row("&#9673;", `<strong>${profileViews}</strong> casting ${profileViews === 1 ? "director" : "directors"} viewed your profile`) : "",
-    tapeViews > 0 ? row("&#9658;", `<strong>${tapeViews}</strong> watched your audition ${tapeViews === 1 ? "reel" : "reels"}`) : "",
+    shortlists   > 0 ? row("&#9733;", "Shortlisted",   `${shortlists} casting ${shortlists === 1 ? "director" : "directors"} shortlisted you`) : "",
+    profileViews > 0 ? row("&#9673;", "Profile views", `${profileViews} casting ${profileViews === 1 ? "director" : "directors"} viewed your profile`) : "",
+    tapeViews    > 0 ? row("&#9658;", "Reel plays",    `${tapeViews} watched your audition ${tapeViews === 1 ? "reel" : "reels"}`) : "",
   ].join("");
-  const mid = `<table width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 22px">${rows}</table>`;
-  return emailShell({
-    tone: "teal", tag: "Daily recap", heading: `You're getting noticed, ${firstName}`,
-    body: "Here's the attention your work drew on CastSlate in the last day:",
-    mid, cta: "View my dashboard", href: "/talent-dashboard",
+  const mid = `
+        <tr><td class="cs-pad" style="padding:22px 30px 0">
+          <table width="100%" cellpadding="0" cellspacing="0">${rows}</table>
+        </td></tr>`;
+
+  return decisionEmail({
+    tone: t,
+    kicker: "Daily recap",
+    headTop: "You&rsquo;re getting", headAccent: `noticed, ${esc(firstName)}`,
+    body: "Here's the attention your work drew on CastSlate in the last day.",
+    title: "", mid,
+    cta: "View my dashboard", href: "/talent-dashboard",
     foot: "You're receiving this because casting directors engaged with your submissions.",
   });
 }
