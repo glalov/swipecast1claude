@@ -65,6 +65,29 @@ function resolvePlanPrice(sub: Stripe.Subscription): number | null {
   return typeof cents === "number" ? cents / 100 : null;
 }
 
+// Which plan the member is on RIGHT NOW.
+//
+// Read it off the live price, not off subscription metadata. Metadata is
+// stamped once at checkout and never changes again, so a member who switches
+// term in the Stripe customer portal (monthly -> yearly, say) would otherwise
+// keep showing their original plan and price on the settings page forever.
+// The billing interval is the thing that actually changed, so that is what we
+// trust; metadata is only the fallback for the rare event that carries no
+// price. Yearly covers both shapes we sell it in: interval "year", and the
+// legacy Early Plan billed as 12 x month.
+function resolvePlanKey(sub: Stripe.Subscription): string | null {
+  const rec = (sub as any).items?.data?.[0]?.price?.recurring;
+  const interval = rec?.interval;
+  const count = rec?.interval_count ?? 1;
+  if (interval === "year") return count === 1 ? "yearly" : null;
+  if (interval === "month") {
+    if (count === 1) return "monthly";
+    if (count === 6) return "six_month";
+    if (count === 12) return "yearly";
+  }
+  return sub.metadata?.plan_key || null;
+}
+
 // ── Non-payment grace period ────────────────────────────────────────────────
 // A failed charge does NOT revoke premium on its own — Stripe retries for days
 // and an out-of-order event must never knock a paying member down to free. What
@@ -235,7 +258,7 @@ Deno.serve(async (req: Request) => {
         // NO "monthly" fallback here. This runs on every subscription event, so
         // a default would silently rewrite a yearly member to monthly the first
         // time an event arrived without plan_key metadata.
-        const planKey = sub.metadata?.plan_key || null;
+        const planKey = resolvePlanKey(sub);
 
         // A customer can own more than one subscription (an abandoned or
         // declined attempt sitting alongside the live one), and Stripe does not

@@ -23110,6 +23110,16 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
       setPortalBusy(false);
     }
   };
+  // Browser Back from Stripe restores this page from the bfcache with React
+  // state intact, so the button would still read "Opening Stripe…" and refuse
+  // to fire again until a manual refresh. pageshow(persisted) is the only
+  // signal for that restore — a plain unmount/remount never happens.
+  useEffect(()=>{
+    const reset=e=>{ if(e.persisted||document.visibilityState==="visible")setPortalBusy(false); };
+    window.addEventListener("pageshow",reset);
+    window.addEventListener("focus",reset);
+    return()=>{ window.removeEventListener("pageshow",reset); window.removeEventListener("focus",reset); };
+  },[]);
   const ManageBillingBtn=({label="Manage subscription",className="btn-p btn-sm"})=>(
     <button className={className} disabled={portalBusy} onClick={openBillingPortal}>
       {portalBusy?"Opening Stripe…":label}
