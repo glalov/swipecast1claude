@@ -22,15 +22,30 @@
 //   • Every send logged to weekly_upsell_logs.
 //   • Sends go via Resend's batch endpoint (100/call).
 //
-// Personalization (the point of this campaign):
-//   • The "✓ You applied" card shows the user's MOST RECENT real application (any
-//     casting, even if now closed). If the user has never applied, that card is
-//     omitted and we show three LOCKED castings instead.
-//   • LOCKED cards = recent castings (posted this week, preference- & age-matched)
-//     the user has NOT applied to — the roles their weekly submission cap kept them
-//     from. We never show a locked card for a casting they already applied to.
-//   • If a user has nothing to show (no application AND no unseen castings), they are
-//     skipped rather than sent an empty email.
+// ── ACCURACY RULES (every number in this email is a real, per-user fact) ─────────
+// Fixed 2026-08-22 after three claims were found that could be false:
+//   1. The headline count. It used to be `fresh.length || pool.length` — so a user
+//      with NOTHING new this week was told "<all active castings> dropped this week".
+//      There is no fallback any more. Two honest modes instead:
+//        mode "week" — at least one casting matching this user (preferences + age)
+//                      was created in the last 7 days. Count = exactly those.
+//        mode "open" — nothing matching dropped this week. The email never claims a
+//                      week; it counts open matching roles they have not applied to.
+//   2. The "✓ You applied" card. It used to show the user's most recent application
+//      EVER, so a card saying "You applied" could sit under "You applied to none this
+//      week". It now comes from weekly_upsell_user_apps.latest_casting_id_7d and is
+//      omitted entirely unless that application happened inside the same 7 days.
+//   3. "+N more roles you couldn't submit to this week" is counted from the same pool
+//      the mode is built on, and drops the "this week" wording in mode "open".
+// Project titles, locations, union status, pay and deadlines are read from the
+// castings row itself — nothing about a casting is ever synthesized.
+//
+// Personalization:
+//   • LOCKED cards = castings the user has NOT applied to, preference- and age-matched
+//     (this week's in mode "week", any open matching role in mode "open") — the roles
+//     their one-a-week submission cap kept them from.
+//   • If a user has nothing true to show, they are skipped rather than sent an email
+//     with a filler number in it.
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -43,8 +58,14 @@ const CONTACT_EMAIL        = Deno.env.get("CONTACT_EMAIL") ?? "team@castslate.co
 const UNSUB_BASE           = `${SUPABASE_URL}/functions/v1/weekly-upsell`;
 const ADMIN_SECRET         = Deno.env.get("ADMIN_CAMPAIGN_SECRET") ?? "cmpn_9e872b254fab6297129ac7ee95c021831a2163dd1f7a9906";
 const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY");
-const LOGO_URL             = `${APP_URL}/email/castslate-logo.png`;
-const QR_URL               = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=0&qzone=1&color=1a1b2e&bgcolor=ffffff&data=" + encodeURIComponent(`${APP_URL}/membership`);
+
+// Assets, all self-hosted at the site root. The QR used to be fetched live from
+// api.qrserver.com; it is now baked into email-actor-cards.jpg (the two real Actor
+// Business Cards), so this email has no third-party image dependency at open time.
+const LOGO_TILE   = `${APP_URL}/logo-email-tile.png`;
+const CARDS_IMG   = `${APP_URL}/email-actor-cards.jpg`;
+const WEEK_BADGE  = `${APP_URL}/email-week-badge.png`;
+const BELL_IMG    = `${APP_URL}/email-bell-coral.png`;
 
 const cors = {
   "Access-Control-Allow-Origin":"*",
@@ -83,7 +104,7 @@ async function sendBatch(items: SendEmailArgs[]): Promise<SendEmailResult[]> {
   } catch (e) { return items.map(() => ({ ok:false, id:null, err:String(e), status:500 })); }
 }
 
-function esc(s: any): string { return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function esc(s: any): string { return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;"); }
 
 // ── Preference + age matching (shared with premium-upsell / digest) ──
 function matches(prefs: any, c: any): boolean {
@@ -123,189 +144,190 @@ function closesLabel(deadline: string|null): string {
   return "";
 }
 
+// ── Coral Sunset tone — same shell as the shortlist / hold / recap emails ──
+const T = {
+  band:   "#C43B22", band2: "#FF6B4A", foot: "#7A2413",
+  onDark: "#FFC9B8", onCream: "#BE3A20",
+  rule:   "#FF8A6B", rule0: "rgba(196,59,34,0)",
+  kicker: "#BE3A20", card: "#FFEFEA", cardBd: "#FBD8CC", cta: "#C43B22",
+};
+
+function chip(bg: string, color: string, glyph: string, border?: string, size = 30): string {
+  const bd = border ? `;border:1.5px solid ${border}` : "";
+  return `<td style="width:${size+12}px;vertical-align:middle;padding-right:12px"><table cellpadding="0" cellspacing="0"><tr><td width="${size}" height="${size}" align="center" style="width:${size}px;height:${size}px;background:${bg};border-radius:${Math.round(size/2)}px${bd};text-align:center;vertical-align:middle;font-size:14px;line-height:${size}px;color:${color};font-weight:700">${glyph}</td></tr></table></td>`;
+}
+
 // ── Cards ──
 function appliedCard(c: any): string {
   const meta=[c.location||"Location TBD", c.union_status, c.pay].filter(Boolean).map(esc).join(" &nbsp;&middot;&nbsp; ");
-  return `
-    <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;margin-bottom:12px;border-radius:12px;overflow:hidden;border:1px solid #e4ddcf;background:#ffffff;">
-    <tr>
-      <td style="width:4px;background:#37696A;" width="4"></td>
-      <td style="padding:16px 18px;">
-        <div style="font-size:16px;font-weight:800;color:#1a1b2e;">${esc(c.title)}</div>
-        <div style="font-size:12px;color:#9a9384;margin-top:3px;">&#128205; ${meta}</div>
-        <div style="margin-top:10px;"><span style="display:inline-block;background:#eaf1f0;color:#37696A;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700;">&#10003; You applied</span></div>
-      </td>
-    </tr>
-    </table>`;
+  return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:10px"><tr>
+      <td style="background:#FFFFFF;border:1px solid ${T.cardBd};border-left:4px solid ${T.band2};border-radius:12px;padding:15px 18px">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+          ${chip(T.band2,"#FFFFFF","&#10003;")}
+          <td style="vertical-align:middle">
+            <div style="font-size:16px;font-weight:800;color:#1A1A2E">${esc(c.title)}</div>
+            <div style="font-size:12px;color:#9A9384;margin-top:3px">${meta}</div>
+          </td>
+          <td align="right" style="vertical-align:middle;white-space:nowrap"><span style="display:inline-block;background:${T.card};color:${T.kicker};padding:4px 11px;border-radius:20px;font-size:11px;font-weight:800">You applied</span></td>
+        </tr></table>
+      </td></tr></table>`;
 }
 function lockedCard(c: any): string {
   const bits=[c.location||"Location", c.pay?"Paid":null, closesLabel(c.deadline||null)].filter(Boolean).map(esc).join(" &nbsp;&middot;&nbsp; ");
-  return `
-    <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;margin-bottom:10px;border-radius:12px;overflow:hidden;border:1px solid #e4ddcf;background:#fbfaf6;">
-    <tr>
-      <td style="width:4px;background:#c9c0ad;" width="4"></td>
-      <td style="padding:15px 18px;">
+  return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:8px"><tr>
+      <td style="background:#FBFAF6;border:1px solid #E8E3D6;border-left:4px solid #CFC8B7;border-radius:12px;padding:14px 18px">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
-          <td style="vertical-align:middle;">
-            <div style="font-size:15px;font-weight:800;color:#b8b09d;letter-spacing:0.4px;">${esc(c.title)} &nbsp;&bull;&bull;&bull;&bull;</div>
-            <div style="font-size:12px;color:#c4bca9;margin-top:3px;">&#128274; ${bits}</div>
+          ${chip("#FFFFFF","#B0A894","&#128274;","#E2DCCC")}
+          <td style="vertical-align:middle">
+            <div style="font-size:15px;font-weight:800;color:#B8B09D;letter-spacing:0.4px">${esc(c.title)} &nbsp;&bull;&bull;&bull;&bull;</div>
+            <div style="font-size:12px;color:#C4BCA9;margin-top:3px">&#128274; ${bits}</div>
           </td>
-          <td style="text-align:right;vertical-align:middle;white-space:nowrap;"><span style="font-size:20px;">&#128274;</span></td>
         </tr></table>
-      </td>
-    </tr>
-    </table>`;
+      </td></tr></table>`;
 }
 
-interface BuildInput { firstName:string; userId:string; freshCount:number; appliedThisWeek:number; applied:any|null; locked:any[]; moreCount:number; }
+interface BuildInput { firstName:string; userId:string; mode:"week"|"open"; count:number; appliedThisWeek:number; applied:any|null; locked:any[]; moreCount:number; }
 function buildEmail(b: BuildInput): string {
   const unsub  = `${UNSUB_BASE}?action=unsubscribe&uid=${b.userId}`;
   const cardsHtml = (b.applied ? appliedCard(b.applied) : "") + b.locked.map(lockedCard).join("");
-  const N = b.freshCount;
-  const headTop = N>0 ? `${N} casting${N!==1?"s":""} dropped this week.` : `New castings dropped this week.`;
-  const headBot = N>0 ? (b.appliedThisWeek>0 ? `You applied to ${b.appliedThisWeek}.` : `You applied to none.`) : ``;
+  const N = b.count;
+  const plural = N !== 1;
+  const headTop    = b.mode === "week" ? `${N} casting${plural?"s":""} that fit you` : `${N} open role${plural?"s":""} that fit you`;
+  const headAccent = b.mode === "week" ? `dropped this week.` : `you haven&rsquo;t applied to.`;
+  const appliedLine = b.appliedThisWeek > 0
+    ? `You applied to ${b.appliedThisWeek} this week.`
+    : `You haven&rsquo;t applied to any this week.`;
   const moreLine = b.moreCount>0
-    ? `<div style="text-align:center;padding:6px 0 4px;"><span style="font-size:13px;color:#9a9384;font-weight:600;">+ ${b.moreCount} more role${b.moreCount!==1?"s":""} you couldn't submit to this week</span></div>`
+    ? `<div style="text-align:center;padding:4px 0 0"><span style="font-size:13px;color:#9A9384;font-weight:600">+ ${b.moreCount} more role${b.moreCount!==1?"s":""} ${b.mode==="week"?"you couldn&rsquo;t submit to this week":"you haven&rsquo;t submitted to"}</span></div>`
     : "";
+  const preheader = b.mode === "week"
+    ? `${N} casting${plural?"s":""} that fit you dropped this week. Premium members already applied.`
+    : `${N} open role${plural?"s":""} that fit you, still waiting on a submission.`;
 
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8"/>
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="color-scheme" content="light"/>
+<meta name="supported-color-schemes" content="light"/>
 <title>${esc(headTop)} &mdash; CastSlate</title>
 <style>
-@media only screen and (max-width:620px){
-  .wrap{padding:20px 10px !important;}
-  .shell{border-radius:0 !important;}
-  .pad{padding:22px 20px !important;}
-  .hl{font-size:26px !important;}
-  .sub{font-size:15px !important;}
-  .qr-stack{display:block !important;width:100% !important;}
-  .qr-stack td{display:block !important;width:100% !important;box-sizing:border-box !important;}
-  .qrc-qr{text-align:center !important;padding:22px 0 14px !important;}
-  .qrc-list{text-align:left !important;padding:2px 24px 20px !important;}
-  .two-col{display:block !important;width:100% !important;}
+:root{color-scheme:light;supported-color-schemes:light}
+@media only screen and (max-width:480px){
+  .cs-pad{padding-left:20px!important;padding-right:20px!important}
+  .cs-word{font-size:20px!important;letter-spacing:1.2px!important}
+  .cs-mark{width:38px!important;height:38px!important}
+  .cs-kicker{display:none!important}
+  .cs-h1{font-size:25px!important}
+  .cs-badge-cell{width:80px!important}
+  .cs-badge{width:78px!important;height:60px!important}
+  .cs-cta a{padding:15px 24px!important}
 }
-</style>
-</head>
-<body style="margin:0;padding:0;background:#e9efee;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;">The castings you missed this week — Premium members already applied. Paper headshots are over. This is the digital slate.</div>
+</style></head>
+<body style="margin:0;padding:0;background:#f0f4f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;-webkit-text-size-adjust:100%">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0">${esc(preheader)}</div>
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#f0f4f4"><tr><td align="center" style="padding:32px 14px">
+  <!--[if mso]><table width="560" cellpadding="0" cellspacing="0"><tr><td><![endif]-->
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;max-width:560px;background:#FCFAF7;border-radius:16px;overflow:hidden;box-shadow:0 1px 0 #EAE2D1">
 
-<table width="100%" cellpadding="0" cellspacing="0" role="presentation" class="wrap" style="background:#e9efee;padding:32px 16px;">
-<tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" role="presentation" class="shell" style="background:#f7f5f0;max-width:600px;width:100%;border-radius:18px;overflow:hidden;box-shadow:0 4px 34px rgba(26,27,46,0.14);">
-
-<tr>
-  <td style="background:#1a1b2e;padding:16px 26px;">
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
-      <td style="vertical-align:middle;">
-        <table cellpadding="0" cellspacing="0" role="presentation"><tr>
-          <td style="vertical-align:middle;padding-right:11px;">
-            <img src="${LOGO_URL}" width="30" height="30" alt="CastSlate" style="display:block;border-radius:7px;border:none;outline:none;text-decoration:none;" />
-          </td>
-          <td style="vertical-align:middle;"><span style="font-size:19px;font-weight:800;color:#ffffff;letter-spacing:-0.4px;">CastSlate</span></td>
+      <tr><td class="cs-pad" style="background:${T.band};background:linear-gradient(115deg,${T.band2} 0%,${T.band} 62%,${T.band2} 100%);padding:22px 30px">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+          <td style="vertical-align:middle"><table cellpadding="0" cellspacing="0" role="presentation"><tr>
+            <td style="vertical-align:middle;padding-right:14px"><img class="cs-mark" src="${LOGO_TILE}" width="46" height="46" alt="CastSlate" style="display:block;border-radius:11px;border:0"/></td>
+            <td style="vertical-align:middle"><span class="cs-word" style="font-size:24px;font-weight:800;letter-spacing:1.7px;color:#FFFFFF;white-space:nowrap">CASTSLATE</span></td>
+          </tr></table></td>
+          <td class="cs-kicker" align="right" style="vertical-align:middle;padding-left:18px"><span style="font-size:10px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:${T.onDark};white-space:nowrap">Weekly digest</span></td>
         </tr></table>
-      </td>
-      <td style="text-align:right;vertical-align:middle;"><span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.42);letter-spacing:1.6px;text-transform:uppercase;">Weekly Digest</span></td>
-    </tr></table>
-  </td>
-</tr>
+      </td></tr>
 
-<tr>
-  <td class="pad" style="background:#1a1b2e;padding:8px 34px 40px;text-align:center;">
-    <div style="display:inline-block;background:rgba(212,163,74,0.16);color:#e0b866;padding:5px 15px;border-radius:30px;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:20px;border:1px solid rgba(212,163,74,0.32);">&#9733;&nbsp; Premium members already applied</div>
-    <h1 class="hl" style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;line-height:1.2;">${esc(headTop)}${headBot?`<br/>${esc(headBot)}`:""}</h1>
-    <p class="sub" style="margin:0 auto;font-size:16px;line-height:1.7;color:rgba(255,255,255,0.72);max-width:430px;">Free members get one submission a week. Premium members applied to every one of these the moment it posted &mdash; first in line.</p>
-  </td>
-</tr>
+      <tr><td style="height:4px;line-height:4px;font-size:0;background:${T.rule};background:linear-gradient(90deg,${T.onDark},${T.rule} 52%,${T.rule0})">&nbsp;</td></tr>
 
-<tr>
-  <td style="background:#f7f5f0;padding:26px 24px 6px;">
-    ${cardsHtml}
-    ${moreLine}
-  </td>
-</tr>
+      <tr><td class="cs-pad" style="padding:34px 30px 0">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+          <td style="vertical-align:top">
+            <h1 class="cs-h1" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:31px;font-weight:700;color:#1A1A2E;letter-spacing:-0.5px;line-height:1.22">${esc(headTop)}<br/><span style="color:${T.onCream}">${headAccent}</span></h1>
+          </td>
+          <td class="cs-badge-cell" align="right" style="vertical-align:top;width:112px">
+            <img class="cs-badge" src="${WEEK_BADGE}" width="104" height="80" alt="" style="display:block;border:0"/>
+          </td>
+        </tr></table>
+      </td></tr>
 
-<tr>
-  <td style="background:#f7f5f0;padding:18px 24px 30px;text-align:center;">
-    <a href="${APP_URL}/membership" style="display:inline-block;background:#37696A;color:#ffffff;text-decoration:none;padding:15px 40px;border-radius:11px;font-size:15px;font-weight:800;letter-spacing:0.2px;box-shadow:0 6px 18px rgba(55,105,106,0.32);">Unlock every casting &rarr;</a>
-    <div style="margin-top:12px;font-size:12px;color:#a49c8a;">Submit as often as you want &middot; See roles first &middot; Cancel anytime</div>
-  </td>
-</tr>
+      <tr><td class="cs-pad" style="padding:20px 30px 0"><p style="margin:0;font-size:15px;line-height:1.78;color:#5A5A72"><strong style="color:#1A1A2E">${appliedLine}</strong> Free members get one submission a week &mdash; Premium members applied to every one of these the moment it posted, first in line.</p></td></tr>
 
-<tr><td style="background:#f7f5f0;padding:0 34px;"><div style="height:1px;background:#e4ddcf;"></div></td></tr>
+      <tr><td class="cs-pad" style="padding:22px 30px 0">
+        ${cardsHtml}
+        ${moreLine}
+      </td></tr>
 
-<tr>
-  <td class="pad" style="background:#f7f5f0;padding:34px 34px 28px;">
-    <div style="display:inline-block;background:#eaf1f0;color:#37696A;padding:4px 13px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;margin-bottom:16px;">The industry went digital</div>
-    <h2 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:25px;font-weight:700;color:#1a1b2e;line-height:1.25;letter-spacing:-0.3px;">Your whole career on one QR code.</h2>
-    <p style="margin:0 0 22px;font-size:15px;line-height:1.72;color:#5f5a4e;">Nobody hands out paper headshots anymore. A photo stapled to a resume can't show your reel, your range, or your latest look. Your CastSlate business card can &mdash; one scan and an agent or casting director sees <strong style="color:#1a1b2e;">everything.</strong></p>
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" class="qr-stack" style="background:#1a1b2e;border-radius:16px;overflow:hidden;">
-    <tr>
-      <td class="qrc-qr" style="padding:24px;vertical-align:middle;width:150px;" width="150" align="center">
-        <div style="background:#ffffff;border-radius:12px;padding:12px;display:inline-block;line-height:0;">
-          <img src="${QR_URL}" width="108" height="108" alt="Scan to view a CastSlate profile" style="display:block;border:none;outline:none;text-decoration:none;" />
-        </div>
-      </td>
-      <td class="qrc-list" style="padding:24px 26px 24px 6px;vertical-align:middle;">
-        <div style="font-size:11px;font-weight:800;color:#e0b866;letter-spacing:1.4px;text-transform:uppercase;margin-bottom:8px;">One scan reveals</div>
-        <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-          <tr><td style="padding:4px 0;font-size:14px;color:#ffffff;">&#127909;&nbsp; Multiple showreels &amp; self-tapes</td></tr>
-          <tr><td style="padding:4px 0;font-size:14px;color:#ffffff;">&#128247;&nbsp; A full gallery of looks &mdash; not one still</td></tr>
-          <tr><td style="padding:4px 0;font-size:14px;color:#ffffff;">&#128220;&nbsp; Live resume, credits &amp; stats</td></tr>
-          <tr><td style="padding:4px 0;font-size:14px;color:#ffffff;">&#128241;&nbsp; Always current &mdash; update once, it's live</td></tr>
+      <tr><td class="cs-pad" style="padding:26px 30px 0">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${T.kicker};margin:0 0 8px">The industry went digital</div>
+        <div style="font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:22px;color:#1A1A2E;margin:0 0 8px">Your whole career on one QR code.</div>
+        <p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:#5A5A72">Nobody hands out paper headshots anymore. A photo stapled to a r&eacute;sum&eacute; can&rsquo;t show your reel, your range, or your latest look. Your CastSlate business card can &mdash; one scan and an agent or casting director sees <strong style="color:#1A1A2E">everything.</strong></p>
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#FFFFFF;border:1px solid ${T.cardBd};border-radius:14px;overflow:hidden">
+          <tr><td style="padding:0"><img src="${CARDS_IMG}" width="500" alt="Two CastSlate actor business cards, each with a QR code" style="display:block;width:100%;max-width:500px;height:auto;border:0"/></td></tr>
+          <tr><td style="padding:4px 20px 18px">
+            <div style="font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:${T.kicker};margin:0 0 4px">Real cards, real actors</div>
+            <p style="margin:0;font-size:13px;line-height:1.6;color:#5A5A72">This is your card. Your headshot, your billing, your city &mdash; and a QR that opens your live profile the second someone scans it.</p>
+          </td></tr>
         </table>
-      </td>
-    </tr>
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:12px;background:${T.band};border-radius:14px"><tr><td style="padding:20px 24px">
+          <div style="font-size:10.5px;font-weight:800;color:${T.onDark};letter-spacing:1.4px;text-transform:uppercase;margin:0 0 10px">One scan reveals</div>
+          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+            <tr><td width="26" style="vertical-align:middle;padding:5px 10px 5px 0;color:${T.onDark};font-size:14px">&#9654;</td><td style="vertical-align:middle;padding:5px 0;font-size:14px;color:#FFFFFF">Multiple showreels &amp; self-tapes</td></tr>
+            <tr><td width="26" style="vertical-align:middle;padding:5px 10px 5px 0;color:${T.onDark};font-size:14px">&#9673;</td><td style="vertical-align:middle;padding:5px 0;font-size:14px;color:#FFFFFF">A full gallery of looks &mdash; not one still</td></tr>
+            <tr><td width="26" style="vertical-align:middle;padding:5px 10px 5px 0;color:${T.onDark};font-size:14px">&#9776;</td><td style="vertical-align:middle;padding:5px 0;font-size:14px;color:#FFFFFF">Live r&eacute;sum&eacute;, credits &amp; stats</td></tr>
+            <tr><td width="26" style="vertical-align:middle;padding:5px 10px 5px 0;color:${T.onDark};font-size:14px">&#10227;</td><td style="vertical-align:middle;padding:5px 0;font-size:14px;color:#FFFFFF">Always current &mdash; update once, it&rsquo;s live</td></tr>
+          </table>
+        </td></tr></table>
+        <p style="margin:16px 0 0;font-size:13px;line-height:1.65;color:#8A8474;text-align:center;font-style:italic">Hand someone a headshot and it&rsquo;s outdated by your next haircut. Hand them your card and they see the real, current you &mdash; in motion.</p>
+      </td></tr>
+
+      <tr><td class="cs-pad" style="padding:28px 30px 34px">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+          <td style="background:${T.card};border:1px solid ${T.cardBd};border-radius:12px;padding:20px 20px 18px">
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+              <td width="60" style="width:60px;vertical-align:top;padding-right:14px">
+                <table cellpadding="0" cellspacing="0" role="presentation"><tr><td width="46" height="46" align="center" style="width:46px;height:46px;background:${T.band2};border-radius:13px;text-align:center;vertical-align:middle;font-size:22px;line-height:46px">&#127963;&#65039;</td></tr></table>
+              </td>
+              <td style="vertical-align:top">
+                <div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${T.kicker};margin:0 0 6px">Premium &middot; Talent Agency &amp; Management Directory</div>
+                <div style="font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:21px;color:#1A1A2E;line-height:1.25;margin:0 0 8px">Every agency in LA and New York.<br/>In one place.</div>
+              </td>
+            </tr></table>
+            <p style="margin:12px 0 0;font-size:14px;line-height:1.72;color:#5A5A72">Actors spend <strong style="color:#1A1A2E">years</strong> piecing this together &mdash; which agencies are real, which ones moved, who still reads mail from an actor they&rsquo;ve never met, and what to send them. We did the years. You get the list.</p>
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:14px 0 4px;background:#FFFFFF;border:1px solid ${T.cardBd};border-radius:10px"><tr>
+              <td width="33%" align="center" style="padding:10px 6px;vertical-align:top"><div style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:700;color:${T.onCream};line-height:1">663</div><div style="font-size:10.5px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#8A8474;margin-top:5px">Agencies &amp; managers</div></td>
+              <td width="33%" align="center" style="padding:10px 6px;vertical-align:top"><div style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:700;color:${T.onCream};line-height:1">2</div><div style="font-size:10.5px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#8A8474;margin-top:5px">Cities &mdash; LA &amp; NYC</div></td>
+              <td width="33%" align="center" style="padding:10px 6px;vertical-align:top"><div style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:700;color:${T.onCream};line-height:1">44</div><div style="font-size:10.5px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#8A8474;margin-top:5px">Open to new actors</div></td>
+            </tr></table>
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:10px">
+              <tr>${chip("#FFFFFF",T.kicker,"&#9873;",T.cardBd,26)}<td style="vertical-align:middle;padding:5px 0;font-size:14px;line-height:1.5;color:#45506A">Office address, website and phone for all 663 &mdash; hand-verified, dead and parked ones removed</td></tr>
+              <tr>${chip("#FFFFFF",T.kicker,"&#9993;",T.cardBd,26)}<td style="vertical-align:middle;padding:5px 0;font-size:14px;line-height:1.5;color:#45506A">The exact submission route each one accepts &mdash; mail, email or form. No more guessing.</td></tr>
+              <tr>${chip("#FFFFFF",T.kicker,"&#9733;",T.cardBd,26)}<td style="vertical-align:middle;padding:5px 0;font-size:14px;line-height:1.5;color:#45506A">Sorted by size, so you know who&rsquo;s a boutique and who&rsquo;s the room everyone wants</td></tr>
+              <tr>${chip("#FFFFFF",T.kicker,"&#10022;",T.cardBd,26)}<td style="vertical-align:middle;padding:5px 0;font-size:14px;line-height:1.5;color:#45506A">7 submission tips from people who read these envelopes for a living</td></tr>
+            </table>
+            <p style="margin:14px 0 0;font-size:13.5px;line-height:1.65;color:${T.onCream};font-weight:700">It&rsquo;s the kind of knowledge the industry keeps to itself. Premium hands you all of it on day one.</p>
+          </td></tr></table>
+      </td></tr>
+
+      <tr><td class="cs-pad" style="background:${T.band};padding:32px 30px 34px;text-align:center">
+        <h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:23px;font-weight:700;color:#FFFFFF;letter-spacing:-0.3px">The old world used paper.<br/>You&rsquo;re in the new one.</h2>
+        <p style="margin:0 auto 20px;font-size:14px;line-height:1.65;color:rgba(255,255,255,0.72);max-width:400px">Unlimited submissions, every casting the moment it drops, your digital card, and all 663 agencies.</p>
+        <table cellpadding="0" cellspacing="0" role="presentation" align="center"><tr><td style="background:${T.onDark};border-radius:11px">
+          <a href="${APP_URL}/membership" style="display:inline-block;padding:15px 40px;font-size:15px;font-weight:800;letter-spacing:0.2px;color:${T.band};text-decoration:none">Go Premium &nbsp;&rarr;</a>
+        </td></tr></table>
+        <div style="margin-top:14px;font-size:12px;color:rgba(255,255,255,0.45)">Cancel anytime &middot; Keep your digital card forever</div>
+      </td></tr>
+
+      <tr><td class="cs-pad" style="background:${T.foot};padding:22px 30px">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+          <td style="vertical-align:top;width:38px;padding-top:2px"><img src="${BELL_IMG}" width="26" height="26" alt="" style="display:block;border:0"/></td>
+          <td style="vertical-align:top"><p style="margin:0;font-size:12px;line-height:1.75;color:rgba(255,255,255,0.70)">You&rsquo;re receiving this weekly digest because you signed up for CastSlate casting recommendations.<br/><a href="${APP_URL}/account-settings" style="color:${T.onDark};text-decoration:none;font-weight:700">Manage preferences</a> &middot; <a href="${unsub}" style="color:${T.onDark};text-decoration:none;font-weight:700">Unsubscribe</a> &middot; <a href="mailto:${CONTACT_EMAIL}" style="color:${T.onDark};text-decoration:none;font-weight:700">${CONTACT_EMAIL}</a></p></td>
+        </tr></table>
+      </td></tr>
+
     </table>
-    <p style="margin:20px 0 0;font-size:13px;line-height:1.65;color:#8a8474;text-align:center;font-style:italic;">Hand someone a headshot and it's outdated by your next haircut. Hand them your card and they see the real, current you &mdash; in motion.</p>
-  </td>
-</tr>
-
-<tr><td style="background:#f7f5f0;padding:0 34px;"><div style="height:1px;background:#e4ddcf;"></div></td></tr>
-
-<tr>
-  <td class="pad" style="background:#f7f5f0;padding:32px 34px 30px;">
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" class="two-col"><tr>
-      <td style="vertical-align:top;padding-right:16px;width:56px;" width="56">
-        <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#37696A,#2b5152);text-align:center;line-height:52px;font-size:26px;">&#127891;</div>
-      </td>
-      <td style="vertical-align:top;">
-        <div style="display:inline-block;background:#f3ecdd;color:#a67c1e;padding:3px 11px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:9px;">Premium &middot; Manager Mode</div>
-        <h2 style="margin:0 0 10px;font-family:Georgia,'Times New Roman',serif;font-size:23px;font-weight:700;color:#1a1b2e;line-height:1.28;letter-spacing:-0.3px;">A teacher in your pocket.</h2>
-        <p style="margin:0;font-size:15px;line-height:1.7;color:#5f5a4e;">Every week, Manager Mode checks in on where you stand &mdash; which roles to chase, what to sharpen on your profile, and your next move to book more work. It's the kind of guidance actors usually pay a manager for &mdash; right in your corner, every single week.</p>
-      </td>
-    </tr></table>
-  </td>
-</tr>
-
-<tr>
-  <td style="background:#1a1b2e;padding:34px 34px 36px;text-align:center;">
-    <h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">The old world used paper. You're in the new one.</h2>
-    <p style="margin:0 auto 22px;font-size:14px;line-height:1.65;color:rgba(255,255,255,0.68);max-width:400px;">Unlimited submissions, every casting the moment it drops, your digital card, and a manager in your corner.</p>
-    <a href="${APP_URL}/membership" style="display:inline-block;background:#e0b866;color:#1a1b2e;text-decoration:none;padding:15px 42px;border-radius:11px;font-size:15px;font-weight:800;letter-spacing:0.2px;">Go Premium</a>
-    <div style="margin-top:14px;font-size:12px;color:rgba(255,255,255,0.4);">Cancel anytime &middot; Keep your digital card forever</div>
-  </td>
-</tr>
-
-<tr>
-  <td style="background:#f7f5f0;padding:22px 30px 26px;">
-    <p style="margin:0 0 10px;font-size:12px;color:#a49c8a;line-height:1.8;">You're receiving this weekly digest because you signed up for CastSlate casting recommendations.</p>
-    <p style="margin:0 0 14px;font-size:12px;line-height:1.6;">
-      <a href="${APP_URL}/account-settings" style="color:#37696A;text-decoration:none;font-weight:600;">Manage preferences</a>
-      <span style="color:#d8d0bf;margin:0 8px;">&bull;</span>
-      <a href="${unsub}" style="color:#37696A;text-decoration:none;font-weight:600;">Unsubscribe</a>
-      <span style="color:#d8d0bf;margin:0 8px;">&bull;</span>
-      <a href="mailto:${CONTACT_EMAIL}" style="color:#37696A;text-decoration:none;font-weight:600;">${CONTACT_EMAIL}</a>
-    </p>
-    <p style="margin:0;font-size:11px;color:#c4bca9;"><span style="color:#8a8474;font-weight:700;">CastSlate</span> &mdash; The casting platform built for working actors.</p>
-  </td>
-</tr>
-
-</table>
-</td></tr></table>
+  <!--[if mso]></td></tr></table><![endif]-->
+  </td></tr></table>
 </body></html>`;
 }
 
@@ -370,19 +392,23 @@ serve(async (req) => {
     }
     const shuffle=(arr:any[])=>{ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; };
 
-    // Build one user's personalized email inputs. Returns null when there's nothing to show.
+    // Build one user's personalized email inputs. Returns null when there is nothing
+    // TRUE to show — we never pad the count to keep a user in the send.
     function decide(p:any, pf:any, appliedCasting:any|null, appliedThisWeek:number, appliedIds:Set<string>, cwr:any[]): BuildInput|null {
-      const pool=cwr.filter((c:any)=>matches(pf,c) && castingAgeOk(c,p.age) && !appliedIds.has(c.id));
-      const fresh=pool.filter((c:any)=>(c.created_at||c.posted_at)>=weekAgoIso);
-      const lockedPoolFull = fresh.length ? fresh : pool;   // prefer this week; fall back to any active unseen
-      const lockedPool = shuffle(lockedPoolFull.slice());
-      const lockCap = appliedCasting ? 2 : 3;
-      const locked = lockedPool.slice(0,lockCap);
-      if(!appliedCasting && locked.length===0) return null;  // nothing to show → skip
-      const freshCount = fresh.length || pool.length;
-      const moreCount = Math.max(0, lockedPool.length - locked.length);
+      const matched     = cwr.filter((c:any)=>matches(pf,c) && castingAgeOk(c,p.age));
+      const isFresh     = (c:any)=>(c.created_at||c.posted_at)>=weekAgoIso;
+      const newThisWeek = matched.filter(isFresh);                       // real "dropped this week" count
+      const unseen      = matched.filter((c:any)=>!appliedIds.has(c.id));
+      const mode: "week"|"open" = newThisWeek.length>0 ? "week" : "open";
+      const count       = mode==="week" ? newThisWeek.length : unseen.length;
+      if(count===0) return null;
+      const lockedPool  = shuffle((mode==="week" ? unseen.filter(isFresh) : unseen).slice());
+      const lockCap     = appliedCasting ? 2 : 3;
+      const locked      = lockedPool.slice(0,lockCap);
+      if(!appliedCasting && locked.length===0) return null;              // nothing to show → skip
+      const moreCount   = Math.max(0, lockedPool.length - locked.length);
       const first=(p.display_name??"").split(" ")[0].trim()||"there";
-      return { firstName:first, userId:p.id, freshCount, appliedThisWeek, applied:appliedCasting, locked, moreCount };
+      return { firstName:first, userId:p.id, mode, count, appliedThisWeek, applied:appliedCasting, locked, moreCount };
     }
 
     // ── TEST: single preview send. ──
@@ -394,20 +420,23 @@ serve(async (req) => {
         const{data:p}=await sb.from("profiles").select("id,display_name,age,membership_status").eq("id",asId).maybeSingle();
         const{data:pf}=await sb.from("email_preferences").select("*").eq("user_id",asId).maybeSingle();
         const{data:apps}=await sb.from("applications").select("casting_id,created_at").eq("talent_id",asId).order("created_at",{ascending:false});
-        const appliedThisWeek=(apps||[]).filter((a:any)=>a.created_at>=weekAgoIso).length;
+        const appsThisWeek=(apps||[]).filter((a:any)=>a.created_at>=weekAgoIso);
+        const appliedThisWeek=appsThisWeek.length;
         const appliedIds=new Set<string>((apps||[]).map((a:any)=>a.casting_id));
+        // Only a THIS-WEEK application may appear on the "You applied" card.
         let appliedCasting:any=null;
-        if(apps&&apps.length){ const{data:cc}=await sb.from("castings").select("id,title,location,union_status,pay").eq("id",apps[0].casting_id).maybeSingle(); appliedCasting=cc||null; }
+        if(appsThisWeek.length){ const{data:cc}=await sb.from("castings").select("id,title,location,union_status,pay").eq("id",appsThisWeek[0].casting_id).maybeSingle(); appliedCasting=cc||null; }
         const inp=decide(p||{id:asId,display_name:"there"}, pf||{}, appliedCasting, appliedThisWeek, appliedIds, cwr);
-        if(!inp) return res({ok:false,message:"That user has nothing to show (no application + no unseen castings)."});
+        if(!inp) return res({ok:false,message:"That user has nothing true to show (no matching castings this week and no unseen open roles)."});
         const r=await sendEmail({from:FROM_EMAIL,to:[to_email],replyTo:CONTACT_EMAIL,subject:subjectFor(),html:buildEmail(inp)});
-        return r.ok ? res({ok:true,test:true,rendered_for:asId,to:to_email,provider_id:r.id}) : res({error:r.err},500);
+        return r.ok ? res({ok:true,test:true,rendered_for:asId,mode:inp.mode,count:inp.count,applied_this_week:inp.appliedThisWeek,applied_card:inp.applied?inp.applied.title:null,locked:inp.locked.map((c:any)=>c.title),more:inp.moreCount,to:to_email,provider_id:r.id}) : res({error:r.err},500);
       }
-      // Generic sample (no specific user): 1 applied + 2 locked from recent castings.
+      // Generic sample (no specific user) — real casting titles off the top of the pool.
       const sample=cwr.slice(0,3);
-      const applied=sample[0] ? {id:sample[0].id,title:sample[0].title,location:sample[0].location,union_status:sample[0].union_status,pay:sample[0].pay} : {id:"s",title:'Indie Feature — Brooklyn',location:"New York, NY",union_status:"SAG-AFTRA",pay:"$2,500/wk"};
-      const locked=sample.slice(1,3).length?sample.slice(1,3):[{id:"l1",title:"National Commercial — Lead",location:"Los Angeles",pay:"Paid",deadline:null},{id:"l2",title:"Netflix Series — Recurring",location:"Atlanta, GA",pay:null,deadline:null}];
-      const inp:BuildInput={firstName:"there",userId:"test",freshCount:6,appliedThisWeek:1,applied,locked,moreCount:3};
+      if(!sample.length) return res({ok:false,message:"No active castings to sample."});
+      const applied={id:sample[0].id,title:sample[0].title,location:sample[0].location,union_status:sample[0].union_status,pay:sample[0].pay};
+      const locked=sample.slice(1,3);
+      const inp:BuildInput={firstName:"there",userId:"test",mode:"week",count:sample.length,appliedThisWeek:1,applied,locked,moreCount:0};
       const r=await sendEmail({from:FROM_EMAIL,to:[to_email],replyTo:CONTACT_EMAIL,subject:subjectFor(),html:buildEmail(inp)});
       return r.ok ? res({ok:true,test:true,sample:true,to:to_email,provider_id:r.id}) : res({error:r.err},500);
     }
@@ -454,14 +483,16 @@ serve(async (req) => {
     const cwr=await loadActiveCastings();
     const activeCids=cwr.map((c:any)=>c.id);
 
-    // Per-user application aggregates: latest casting + 7-day count.
-    const latestCastingId:Record<string,string>={};
+    // Per-user application aggregates. latest_casting_id_7d is the ONLY source for the
+    // "You applied" card — an older application must never appear under a headline
+    // that is talking about this week.
+    const latestCastingId7d:Record<string,string>={};
     const appliedThisWeek:Record<string,number>={};
-    { const CH=300; for(let i=0;i<uids.length;i+=CH){ const{data,error}=await sb.rpc("weekly_upsell_user_apps",{uids:uids.slice(i,i+CH)}); if(error){ console.error("[weekly-upsell] user_apps rpc error",error); continue; } (data||[]).forEach((r:any)=>{ if(r?.talent_id){ if(r.latest_casting_id) latestCastingId[r.talent_id]=r.latest_casting_id; appliedThisWeek[r.talent_id]=Number(r.apps_7d)||0; } }); } }
+    { const CH=300; for(let i=0;i<uids.length;i+=CH){ const{data,error}=await sb.rpc("weekly_upsell_user_apps",{uids:uids.slice(i,i+CH)}); if(error){ console.error("[weekly-upsell] user_apps rpc error",error); continue; } (data||[]).forEach((r:any)=>{ if(r?.talent_id){ if(r.latest_casting_id_7d) latestCastingId7d[r.talent_id]=r.latest_casting_id_7d; appliedThisWeek[r.talent_id]=Number(r.apps_7d)||0; } }); } }
 
     // Applied casting details (may be closed / not in the active pool).
     const appliedCastingMap:Record<string,any>={};
-    { const ids=[...new Set(Object.values(latestCastingId))]; for(let i=0;i<ids.length;i+=200){ const{data}=await sb.from("castings").select("id,title,location,union_status,pay").in("id",ids.slice(i,i+200)); (data||[]).forEach((c:any)=>{appliedCastingMap[c.id]=c;}); } }
+    { const ids=[...new Set(Object.values(latestCastingId7d))]; for(let i=0;i<ids.length;i+=200){ const{data}=await sb.from("castings").select("id,title,location,union_status,pay").in("id",ids.slice(i,i+200)); (data||[]).forEach((c:any)=>{appliedCastingMap[c.id]=c;}); } }
 
     // Which ACTIVE castings each user has already applied to (to exclude from locked).
     const appliedInPool:Record<string,Set<string>>={};
@@ -494,7 +525,7 @@ serve(async (req) => {
       else if(!overrideEmail && suppressed.has(String(email).trim().toLowerCase())) skipReason="suppressed";
       if(skipReason){ skipped++; bump(skipReason); if(!isDryTest) logs.push({user_id:p.id,email,status:"skipped",reason:skipReason}); continue; }
 
-      const lcid=latestCastingId[p.id];
+      const lcid=latestCastingId7d[p.id];
       const appliedCasting = lcid ? (appliedCastingMap[lcid]||null) : null;
       const inp=decide(p, pf, appliedCasting, appliedThisWeek[p.id]||0, appliedInPool[p.id]??new Set<string>(), cwr);
       if(!inp){ skipped++; bump("nothing_to_show"); if(!isDryTest) logs.push({user_id:p.id,email,status:"skipped",reason:"nothing_to_show"}); continue; }
