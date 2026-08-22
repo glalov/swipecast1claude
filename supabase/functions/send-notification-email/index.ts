@@ -293,6 +293,7 @@ function premiumWelcomeHtml(firstName: string): string {
           ${card("📸", "Upload everything you can", "Add as many photos and headshots as possible, fill out <strong>all</strong> your stats, and record your <strong>'Cast Me As'</strong> videos and your <strong>7-second Actor's Slate</strong>. A full profile is what makes casting directors stop and look.")}
           ${card("🎞️", "Unlimited storage", "Upload demo reels, video clips, and photos with no limits — build the most complete picture of your range.")}
           ${card("💬", "Message casting directors", "Send video messages directly to CDs, right from the platform.")}
+          ${card("🏛️", "The Talent Agency &amp; Manager Directory — 650+ companies", "Now unlocked: every talent agency and management company we track across LA, Beverly Hills and New York — with office addresses, websites and the submission route each one actually accepts. It also flags who reads mail from actors they haven't met yet, so you're not sending into a void.")}
           ${card("🪪", "Your Actor Business Card + QR code", "Everything above becomes viewable anywhere, by any industry professional, in seconds — your card's QR code opens your full profile, reels, slate, and stats right in front of them.")}
         </table>
       </td></tr>
@@ -696,7 +697,7 @@ serve(async (req) => {
       return json({ ok: true, results: { email: "sent" } });
     }
 
-    // ── Application on hold ("you're under consideration") ──
+    // ── Application on hold ("your profile was reviewed") ──
     // Softer sibling of the shortlist email, fired when a CD moves an actor to
     // Hold. Same opt-out gating as the shortlist email.
     if (type === "application_hold") {
