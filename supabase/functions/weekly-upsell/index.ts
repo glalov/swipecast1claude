@@ -161,6 +161,21 @@ function chip(bg: string, color: string, glyph: string, border?: string, size = 
   return `<td style="width:${size+12}px;vertical-align:middle;padding-right:12px"><table cellpadding="0" cellspacing="0"><tr><td width="${size}" height="${size}" align="center" style="width:${size}px;height:${size}px;background:${bg};border-radius:${Math.round(size/2)}px${bd};text-align:center;vertical-align:middle;font-size:14px;line-height:${size}px;color:${color};font-weight:700">${glyph}</td></tr></table></td>`;
 }
 
+// One list row of the agency-directory card: an identical numbered box + a bold
+// claim over a quieter qualifier. Numerals are used instead of symbol glyphs
+// precisely because they cannot vary in weight or size between clients.
+function numRow(n: string, head: string, sub: string): string {
+  return `<tr>
+          <td width="34" style="width:34px;vertical-align:top;padding:9px 12px 9px 0">
+            <table cellpadding="0" cellspacing="0" role="presentation"><tr><td width="24" height="24" align="center" style="width:24px;height:24px;background:${T.band2};border-radius:6px;text-align:center;vertical-align:middle;font-family:Georgia,'Times New Roman',serif;font-size:11px;font-weight:700;line-height:24px;color:#FFFFFF">${n}</td></tr></table>
+          </td>
+          <td style="vertical-align:top;padding:9px 0">
+            <div style="font-size:14.5px;font-weight:700;color:#1A1A2E;line-height:1.4">${head}</div>
+            <div style="font-size:13px;color:#8A8474;line-height:1.5;margin-top:2px">${sub}</div>
+          </td>
+        </tr>`;
+}
+
 // ── Cards ──
 function appliedCard(c: any): string {
   const meta=[c.location||"Location TBD", c.union_status, c.pay].filter(Boolean).map(esc).join(" &nbsp;&middot;&nbsp; ");
@@ -289,31 +304,29 @@ function buildEmail(b: BuildInput): string {
       </td></tr>
 
       <tr><td class="cs-pad" style="padding:28px 30px 34px">
-        <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
-          <td style="background:${T.card};border:1px solid ${T.cardBd};border-radius:12px;padding:20px 20px 18px">
-            <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
-              <td width="60" style="width:60px;vertical-align:top;padding-right:14px">
-                <table cellpadding="0" cellspacing="0" role="presentation"><tr><td width="46" height="46" align="center" style="width:46px;height:46px;background:${T.band2};border-radius:13px;text-align:center;vertical-align:middle;font-size:22px;line-height:46px">&#127963;&#65039;</td></tr></table>
-              </td>
-              <td style="vertical-align:top">
-                <div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${T.kicker};margin:0 0 6px">Premium &middot; Talent Agency &amp; Management Directory</div>
-                <div style="font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:21px;color:#1A1A2E;line-height:1.25;margin:0 0 8px">Every agency in LA and New York.<br/>In one place.</div>
-              </td>
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#FFFFFF;border:1px solid ${T.cardBd};border-radius:14px;overflow:hidden">
+          <tr><td style="background:${T.card};border-bottom:1px solid ${T.cardBd};padding:18px 22px 16px">
+            <div style="font-size:10px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:${T.kicker};margin:0 0 7px">Premium &middot; Talent Agency &amp; Management Directory</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:23px;color:#1A1A2E;line-height:1.22">Every agency in LA and New York.<br/>In one place.</div>
+          </td></tr>
+          <tr><td style="padding:18px 22px 0"><p style="margin:0;font-size:14px;line-height:1.72;color:#5A5A72">Actors spend <strong style="color:#1A1A2E">years</strong> piecing this together &mdash; which agencies are real, which ones moved, who still reads mail from an actor they&rsquo;ve never met, and what to send them. We did the years. You get the list.</p></td></tr>
+          <tr><td style="padding:16px 22px 0">
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-top:1px solid ${T.cardBd};border-bottom:1px solid ${T.cardBd}"><tr>
+              <td width="33%" align="center" style="padding:14px 6px;vertical-align:top"><div style="font-family:Georgia,'Times New Roman',serif;font-size:27px;font-weight:700;color:${T.band};line-height:1">663</div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#A09689;margin-top:6px">Agencies &amp; managers</div></td>
+              <td width="33%" align="center" style="padding:14px 6px;vertical-align:top;border-left:1px solid ${T.cardBd}"><div style="font-family:Georgia,'Times New Roman',serif;font-size:27px;font-weight:700;color:${T.band};line-height:1">2</div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#A09689;margin-top:6px">Cities &mdash; LA &amp; NYC</div></td>
+              <td width="33%" align="center" style="padding:14px 6px;vertical-align:top;border-left:1px solid ${T.cardBd}"><div style="font-family:Georgia,'Times New Roman',serif;font-size:27px;font-weight:700;color:${T.band};line-height:1">44</div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#A09689;margin-top:6px">Open to new actors</div></td>
             </tr></table>
-            <p style="margin:12px 0 0;font-size:14px;line-height:1.72;color:#5A5A72">Actors spend <strong style="color:#1A1A2E">years</strong> piecing this together &mdash; which agencies are real, which ones moved, who still reads mail from an actor they&rsquo;ve never met, and what to send them. We did the years. You get the list.</p>
-            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:14px 0 4px;background:#FFFFFF;border:1px solid ${T.cardBd};border-radius:10px"><tr>
-              <td width="33%" align="center" style="padding:10px 6px;vertical-align:top"><div style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:700;color:${T.onCream};line-height:1">663</div><div style="font-size:10.5px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#8A8474;margin-top:5px">Agencies &amp; managers</div></td>
-              <td width="33%" align="center" style="padding:10px 6px;vertical-align:top"><div style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:700;color:${T.onCream};line-height:1">2</div><div style="font-size:10.5px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#8A8474;margin-top:5px">Cities &mdash; LA &amp; NYC</div></td>
-              <td width="33%" align="center" style="padding:10px 6px;vertical-align:top"><div style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:700;color:${T.onCream};line-height:1">44</div><div style="font-size:10.5px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#8A8474;margin-top:5px">Open to new actors</div></td>
-            </tr></table>
-            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:10px">
-              <tr>${chip("#FFFFFF",T.kicker,"&#9873;",T.cardBd,26)}<td style="vertical-align:middle;padding:5px 0;font-size:14px;line-height:1.5;color:#45506A">Office address, website and phone for all 663 &mdash; hand-verified, dead and parked ones removed</td></tr>
-              <tr>${chip("#FFFFFF",T.kicker,"&#9993;",T.cardBd,26)}<td style="vertical-align:middle;padding:5px 0;font-size:14px;line-height:1.5;color:#45506A">The exact submission route each one accepts &mdash; mail, email or form. No more guessing.</td></tr>
-              <tr>${chip("#FFFFFF",T.kicker,"&#9733;",T.cardBd,26)}<td style="vertical-align:middle;padding:5px 0;font-size:14px;line-height:1.5;color:#45506A">Sorted by size, so you know who&rsquo;s a boutique and who&rsquo;s the room everyone wants</td></tr>
-              <tr>${chip("#FFFFFF",T.kicker,"&#10022;",T.cardBd,26)}<td style="vertical-align:middle;padding:5px 0;font-size:14px;line-height:1.5;color:#45506A">7 submission tips from people who read these envelopes for a living</td></tr>
+          </td></tr>
+          <tr><td style="padding:8px 22px 4px">
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+              ${numRow("01","Office address, website and phone for all 663","hand-verified; dead and parked ones removed")}
+              ${numRow("02","The exact submission route each one accepts","mail, email or form &mdash; no more guessing")}
+              ${numRow("03","Sorted by size","who&rsquo;s a boutique, who&rsquo;s the room everyone wants")}
+              ${numRow("04","7 submission tips","from people who read these envelopes for a living")}
             </table>
-            <p style="margin:14px 0 0;font-size:13.5px;line-height:1.65;color:${T.onCream};font-weight:700">It&rsquo;s the kind of knowledge the industry keeps to itself. Premium hands you all of it on day one.</p>
-          </td></tr></table>
+          </td></tr>
+          <tr><td style="padding:10px 22px 20px"><p style="margin:0;font-size:13.5px;line-height:1.6;color:${T.onCream};font-weight:700;text-align:center">It&rsquo;s the kind of knowledge the industry keeps to itself. Premium hands you all of it on day one.</p></td></tr>
+        </table>
       </td></tr>
 
       <tr><td class="cs-pad" style="background:${T.band};padding:32px 30px 34px;text-align:center">
