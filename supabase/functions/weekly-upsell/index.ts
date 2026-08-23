@@ -266,7 +266,7 @@ function buildEmail(b: BuildInput): string {
       </td></tr>
 
       <tr><td class="cs-pad" style="padding:26px 30px 0">
-        <div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${T.kicker};margin:0 0 8px">The industry went digital</div>
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${T.kicker};margin:0 0 8px">One card, everything behind it</div>
         <div style="font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:22px;color:#1A1A2E;margin:0 0 8px">Your whole career on one QR code.</div>
         <p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:#5A5A72">Nobody hands out paper headshots anymore. A photo stapled to a r&eacute;sum&eacute; can&rsquo;t show your reel, your range, or your latest look. Your CastSlate business card can &mdash; one scan and an agent or casting director sees <strong style="color:#1A1A2E">everything.</strong></p>
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#FFFFFF;border:1px solid ${T.cardBd};border-radius:14px;overflow:hidden">
@@ -317,8 +317,8 @@ function buildEmail(b: BuildInput): string {
       </td></tr>
 
       <tr><td class="cs-pad" style="background:${T.band};padding:32px 30px 34px;text-align:center">
-        <h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:23px;font-weight:700;color:#FFFFFF;letter-spacing:-0.3px">The old world used paper.<br/>You&rsquo;re in the new one.</h2>
-        <p style="margin:0 auto 20px;font-size:14px;line-height:1.65;color:rgba(255,255,255,0.72);max-width:400px">Unlimited submissions, every casting the moment it drops, your digital card, and all 663 agencies.</p>
+        <h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:23px;font-weight:700;color:#FFFFFF;letter-spacing:-0.3px">One a week is the cap.<br/>Premium doesn&rsquo;t have one.</h2>
+        <p style="margin:0 auto 20px;font-size:14px;line-height:1.65;color:rgba(255,255,255,0.72);max-width:400px">Submit to every role you&rsquo;re right for, the moment it drops &mdash; plus your digital card and all 663 agencies.</p>
         <table cellpadding="0" cellspacing="0" role="presentation" align="center"><tr><td style="background:${T.onDark};border-radius:11px">
           <a href="${APP_URL}/membership" style="display:inline-block;padding:15px 40px;font-size:15px;font-weight:800;letter-spacing:0.2px;color:${T.band};text-decoration:none">Go Premium &nbsp;&rarr;</a>
         </td></tr></table>
