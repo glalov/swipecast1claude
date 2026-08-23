@@ -70,6 +70,11 @@ const LOGO_TILE   = `${APP_URL}/logo-email-tile.png`;
 const CARDS_IMG   = `${APP_URL}/email-actor-cards.jpg`;
 const WEEK_BADGE  = `${APP_URL}/email-week-badge.png`;
 const BELL_IMG    = `${APP_URL}/email-bell-coral.png`;
+// The site's "From indie films to A24 · Neon · Netflix" line, baked to a raster.
+// On the site those are styled text (.st-a24/.st-neon/.st-netflix), not logo files —
+// rendered here from the same markup, fonts and glow so the email cannot lose the
+// webfonts or the text-shadow in Outlook.
+const STUDIOS_IMG = `${APP_URL}/email-studio-stripe.png`;
 
 const cors = {
   "Access-Control-Allow-Origin":"*",
@@ -327,6 +332,12 @@ function buildEmail(b: BuildInput): string {
           </td></tr>
           <tr><td style="padding:10px 22px 20px"><p style="margin:0;font-size:13.5px;line-height:1.6;color:${T.onCream};font-weight:700;text-align:center">It&rsquo;s the kind of knowledge the industry keeps to itself. Premium hands you all of it on day one.</p></td></tr>
         </table>
+      </td></tr>
+
+      <tr><td class="cs-pad" style="padding:6px 30px 26px">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-top:1px solid #EFE7D6"><tr><td style="padding:10px 0 0" align="center">
+          <img src="${STUDIOS_IMG}" width="500" alt="From indie films to A24, Neon and Netflix level projects" style="display:block;width:100%;max-width:500px;height:auto;border:0"/>
+        </td></tr></table>
       </td></tr>
 
       <tr><td class="cs-pad" style="background:${T.band};padding:32px 30px 34px;text-align:center">
