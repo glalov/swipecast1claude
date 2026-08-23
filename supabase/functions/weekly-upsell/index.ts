@@ -27,9 +27,13 @@
 //   1. The headline count. It used to be `fresh.length || pool.length` — so a user
 //      with NOTHING new this week was told "<all active castings> dropped this week".
 //      There is no fallback any more. Two honest modes instead:
-//        mode "week" — at least one casting matching this user (preferences + age)
-//                      was created in the last 7 days. Count = exactly those.
-//        mode "open" — nothing matching dropped this week. The email never claims a
+//        mode "week" — castings DID go live in the last 7 days. The headline counts
+//                      every one of them, site-wide ("9 castings dropped this week"),
+//                      because that is what the sentence claims; it is deliberately
+//                      NOT narrowed to the user's own matches. What is personal —
+//                      whether they applied, and which roles they missed — is stated
+//                      separately underneath, where it belongs.
+//        mode "open" — nothing at all went live this week. The email never claims a
 //                      week; it counts open matching roles they have not applied to.
 //   2. The "✓ You applied" card. It used to show the user's most recent application
 //      EVER, so a card saying "You applied" could sit under "You applied to none this
@@ -186,22 +190,25 @@ function lockedCard(c: any): string {
       </td></tr></table>`;
 }
 
-interface BuildInput { firstName:string; userId:string; mode:"week"|"open"; count:number; appliedThisWeek:number; applied:any|null; locked:any[]; moreCount:number; }
+interface BuildInput { firstName:string; userId:string; mode:"week"|"open"; count:number; appliedThisWeek:number; applied:any|null; locked:any[]; moreCount:number; moreFresh:boolean; }
 function buildEmail(b: BuildInput): string {
   const unsub  = `${UNSUB_BASE}?action=unsubscribe&uid=${b.userId}`;
   const cardsHtml = (b.applied ? appliedCard(b.applied) : "") + b.locked.map(lockedCard).join("");
   const N = b.count;
   const plural = N !== 1;
-  const headTop    = b.mode === "week" ? `${N} casting${plural?"s":""} that fit you` : `${N} open role${plural?"s":""} that fit you`;
-  const headAccent = b.mode === "week" ? `dropped this week.` : `you haven&rsquo;t applied to.`;
+  // The headline counts EVERY casting that went live this week, site-wide — not a
+  // per-user filtered subset. The personal facts live in the line under it ("you
+  // applied to N this week") and in the cards.
+  const headTop    = b.mode === "week" ? `${N} casting${plural?"s":""} dropped` : `${N} open role${plural?"s":""} that fit you`;
+  const headAccent = b.mode === "week" ? `this week.` : `you haven&rsquo;t applied to.`;
   const appliedLine = b.appliedThisWeek > 0
     ? `You applied to ${b.appliedThisWeek} this week.`
     : `You haven&rsquo;t applied to any this week.`;
   const moreLine = b.moreCount>0
-    ? `<div style="text-align:center;padding:4px 0 0"><span style="font-size:13px;color:#9A9384;font-weight:600">+ ${b.moreCount} more role${b.moreCount!==1?"s":""} ${b.mode==="week"?"you couldn&rsquo;t submit to this week":"you haven&rsquo;t submitted to"}</span></div>`
+    ? `<div style="text-align:center;padding:4px 0 0"><span style="font-size:13px;color:#9A9384;font-weight:600">+ ${b.moreCount} more role${b.moreCount!==1?"s":""} ${b.moreFresh?"you couldn&rsquo;t submit to this week":"you haven&rsquo;t submitted to"}</span></div>`
     : "";
   const preheader = b.mode === "week"
-    ? `${N} casting${plural?"s":""} that fit you dropped this week. Premium members already applied.`
+    ? `${N} casting${plural?"s":""} dropped this week. Premium members already applied.`
     : `${N} open role${plural?"s":""} that fit you, still waiting on a submission.`;
 
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
@@ -391,24 +398,29 @@ serve(async (req) => {
       return cwr;
     }
     const shuffle=(arr:any[])=>{ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; };
+    const isFresh=(c:any)=>(c.created_at||c.posted_at)>=weekAgoIso;
+    const countFresh=(cwr:any[])=>cwr.filter(isFresh).length;
 
     // Build one user's personalized email inputs. Returns null when there is nothing
     // TRUE to show — we never pad the count to keep a user in the send.
-    function decide(p:any, pf:any, appliedCasting:any|null, appliedThisWeek:number, appliedIds:Set<string>, cwr:any[]): BuildInput|null {
+    function decide(p:any, pf:any, appliedCasting:any|null, appliedThisWeek:number, appliedIds:Set<string>, cwr:any[], siteFresh:number): BuildInput|null {
       const matched     = cwr.filter((c:any)=>matches(pf,c) && castingAgeOk(c,p.age));
-      const isFresh     = (c:any)=>(c.created_at||c.posted_at)>=weekAgoIso;
-      const newThisWeek = matched.filter(isFresh);                       // real "dropped this week" count
       const unseen      = matched.filter((c:any)=>!appliedIds.has(c.id));
-      const mode: "week"|"open" = newThisWeek.length>0 ? "week" : "open";
-      const count       = mode==="week" ? newThisWeek.length : unseen.length;
+      const freshUnseen = unseen.filter(isFresh);
+      // siteFresh is the real number of castings that went live in the last 7 days —
+      // the same figure for everyone, because that is what the headline claims. Only
+      // when NOTHING went live this week does the email stop talking about a week.
+      const mode: "week"|"open" = siteFresh>0 ? "week" : "open";
+      const count       = mode==="week" ? siteFresh : unseen.length;
       if(count===0) return null;
-      const lockedPool  = shuffle((mode==="week" ? unseen.filter(isFresh) : unseen).slice());
+      const moreFresh   = freshUnseen.length>0;                          // are the cards this week's roles?
+      const lockedPool  = shuffle((moreFresh ? freshUnseen : unseen).slice());
       const lockCap     = appliedCasting ? 2 : 3;
       const locked      = lockedPool.slice(0,lockCap);
       if(!appliedCasting && locked.length===0) return null;              // nothing to show → skip
       const moreCount   = Math.max(0, lockedPool.length - locked.length);
       const first=(p.display_name??"").split(" ")[0].trim()||"there";
-      return { firstName:first, userId:p.id, mode, count, appliedThisWeek, applied:appliedCasting, locked, moreCount };
+      return { firstName:first, userId:p.id, mode, count, appliedThisWeek, applied:appliedCasting, locked, moreCount, moreFresh };
     }
 
     // ── TEST: single preview send. ──
@@ -426,7 +438,7 @@ serve(async (req) => {
         // Only a THIS-WEEK application may appear on the "You applied" card.
         let appliedCasting:any=null;
         if(appsThisWeek.length){ const{data:cc}=await sb.from("castings").select("id,title,location,union_status,pay").eq("id",appsThisWeek[0].casting_id).maybeSingle(); appliedCasting=cc||null; }
-        const inp=decide(p||{id:asId,display_name:"there"}, pf||{}, appliedCasting, appliedThisWeek, appliedIds, cwr);
+        const inp=decide(p||{id:asId,display_name:"there"}, pf||{}, appliedCasting, appliedThisWeek, appliedIds, cwr, countFresh(cwr));
         if(!inp) return res({ok:false,message:"That user has nothing true to show (no matching castings this week and no unseen open roles)."});
         const r=await sendEmail({from:FROM_EMAIL,to:[to_email],replyTo:CONTACT_EMAIL,subject:subjectFor(),html:buildEmail(inp)});
         return r.ok ? res({ok:true,test:true,rendered_for:asId,mode:inp.mode,count:inp.count,applied_this_week:inp.appliedThisWeek,applied_card:inp.applied?inp.applied.title:null,locked:inp.locked.map((c:any)=>c.title),more:inp.moreCount,to:to_email,provider_id:r.id}) : res({error:r.err},500);
@@ -436,7 +448,7 @@ serve(async (req) => {
       if(!sample.length) return res({ok:false,message:"No active castings to sample."});
       const applied={id:sample[0].id,title:sample[0].title,location:sample[0].location,union_status:sample[0].union_status,pay:sample[0].pay};
       const locked=sample.slice(1,3);
-      const inp:BuildInput={firstName:"there",userId:"test",mode:"week",count:sample.length,appliedThisWeek:1,applied,locked,moreCount:0};
+      const inp:BuildInput={firstName:"there",userId:"test",mode:"week",count:countFresh(cwr),appliedThisWeek:1,applied,locked,moreCount:0,moreFresh:true};
       const r=await sendEmail({from:FROM_EMAIL,to:[to_email],replyTo:CONTACT_EMAIL,subject:subjectFor(),html:buildEmail(inp)});
       return r.ok ? res({ok:true,test:true,sample:true,to:to_email,provider_id:r.id}) : res({error:r.err},500);
     }
@@ -482,6 +494,7 @@ serve(async (req) => {
 
     const cwr=await loadActiveCastings();
     const activeCids=cwr.map((c:any)=>c.id);
+    const siteFresh=countFresh(cwr);   // castings that went live in the last 7 days
 
     // Per-user application aggregates. latest_casting_id_7d is the ONLY source for the
     // "You applied" card — an older application must never appear under a headline
@@ -527,7 +540,7 @@ serve(async (req) => {
 
       const lcid=latestCastingId7d[p.id];
       const appliedCasting = lcid ? (appliedCastingMap[lcid]||null) : null;
-      const inp=decide(p, pf, appliedCasting, appliedThisWeek[p.id]||0, appliedInPool[p.id]??new Set<string>(), cwr);
+      const inp=decide(p, pf, appliedCasting, appliedThisWeek[p.id]||0, appliedInPool[p.id]??new Set<string>(), cwr, siteFresh);
       if(!inp){ skipped++; bump("nothing_to_show"); if(!isDryTest) logs.push({user_id:p.id,email,status:"skipped",reason:"nothing_to_show"}); continue; }
       outbox.push({ userId:p.id, email, subject:subjectFor(), html:buildEmail(inp) });
     }
