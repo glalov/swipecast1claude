@@ -15238,12 +15238,13 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       {!isPremium&&(
         <div style={{
           // Material 3 error-container palette (the one the Gmail app uses on its
-          // storage warning): #F9DEDC card, #B3261E error red, #8C1D18 body. Swapped
-          // in from the purple gradient 2026-08-23 — colours only, geometry unchanged.
-          background:"#F9DEDC",
+          // storage warning): #B3261E error red, #8C1D18 body. The card sits one
+          // step darker than the M3 error90 token (#F9DEDC → #F6CBC9), and carries
+          // NO shadow — flat, like the Gmail card it is modelled on.
+          background:"#F6CBC9",
           borderRadius:14,padding:"16px 20px",marginBottom:28,
           display:"flex",alignItems:"center",justifyContent:"space-between",gap:14,flexWrap:"wrap",
-          boxShadow:"0 6px 20px rgba(179,38,30,0.10)"
+          boxShadow:"none"
         }}>
           <div style={{display:"flex",alignItems:"center",gap:14,minWidth:0}}>
             <span style={{flexShrink:0,color:"#B3261E"}}><Ico n="bolt" s={24}/></span>
