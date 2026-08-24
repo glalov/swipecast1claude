@@ -11,7 +11,7 @@ host.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:214748300
 document.body.appendChild(host);
 var ROOT=host.attachShadow({mode:'open'});
 var sEl=document.createElement('style');
-sEl.textContent="\n:host{\n  --ink:#000000;--ink2:#3C3C43;--mute:#8E8E93;--mute2:#AEAEB2;\n  --page:#FFFFFF;--bar:#F7F7F7;--hair:#D8D8DC;\n  --in:#E9E9EB;--out:#2FC24D;--out2:#28B245;\n  --blue:#007AFF;--field:#FFFFFF;--fieldln:#D1D1D6;\n  --brand:#1A1A2E;--brand-2:#E8902A;\n  --sys:-apple-system,BlinkMacSystemFont,\"SF Pro Text\",\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,sans-serif;\n}\n*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}\n\n\n/* \u2500\u2500 launcher \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.launch{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background:var(--brand);border:0;cursor:pointer;box-shadow:0 8px 26px rgba(0,0,0,.24);display:grid;place-items:center;z-index:60;transition:transform .18s cubic-bezier(.34,1.5,.64,1);}\n.launch:hover{transform:scale(1.06);}\n.launch svg{width:27px;height:27px;fill:#fff;}\n.launch .x{display:none;color:#fff;font-size:25px;font-weight:300;line-height:1;}\n.launch.open svg{display:none;}\n.launch.open .x{display:block;}\n\n/* \u2500\u2500 thread panel \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.panel{position:fixed;overscroll-behavior:contain;right:22px;bottom:92px;width:394px;max-width:calc(100vw - 28px);height:min(672px,calc(100vh - 126px));height:min(672px,calc(100dvh - 126px));background:var(--page);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.26),0 2px 10px rgba(0,0,0,.10);z-index:59;display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:translateY(12px) scale(.985);pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1);}\n.panel.open{opacity:1;transform:none;pointer-events:auto;}\n\n.bar{flex:none;background:var(--bar);border-bottom:.5px solid var(--hair);padding:9px 14px 11px;text-align:center;position:relative;}\n.bar .back{position:absolute;left:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--blue);font-size:15px;font-weight:400;cursor:pointer;padding:6px;display:none;}\n.bar .xclose{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:50%;background:rgba(120,120,128,.14);color:var(--ink2);font-size:16px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;}\n.bar .xclose:hover{background:rgba(120,120,128,.24);}\n.bar .xclose:active{transform:translateY(-50%) scale(.92);}\n.bar.sub .back{display:block;}\n.ava{width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#2D2D44,#1A1A2E);display:grid;place-items:center;margin:0 auto 4px;color:#fff;font-size:17px;font-weight:600;letter-spacing:-.3px;}\n.bar b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.1px;}\n.bar i{display:block;font-style:normal;font-size:11px;color:var(--mute);margin-top:1px;}\n\n.thread{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px 12px 4px;background:var(--page);display:flex;flex-direction:column;}\n.stamp{text-align:center;font-size:11px;color:var(--mute);margin:10px 0 12px;font-weight:500;}\n.stamp b{color:var(--ink2);font-weight:600;}\n\n.msg{display:flex;margin-bottom:2px;padding:0 4px;}\n.msg.gap{margin-top:9px;}\n.msg.out{justify-content:flex-end;}\n.b{position:relative;max-width:83%;padding:8px 13px 9px;border-radius:19px;font-size:15.5px;line-height:1.32;letter-spacing:-.2px;word-wrap:break-word;}\n.msg.in .b{background:var(--in);color:var(--ink);}\n.msg.out .b{background:var(--out);color:#fff;}\n.b.tail::before{content:\"\";position:absolute;bottom:0;width:18px;height:19px;}\n.b.tail::after{content:\"\";position:absolute;bottom:0;width:14px;height:19px;background:var(--page);}\n.msg.in .b.tail::before{left:-6px;background:var(--in);border-bottom-right-radius:15px;}\n.msg.in .b.tail::after{left:-14px;border-bottom-right-radius:9px;}\n.msg.out .b.tail::before{right:-6px;background:var(--out);border-bottom-left-radius:15px;}\n.msg.out .b.tail::after{right:-14px;border-bottom-left-radius:9px;}\n.b p{margin-bottom:9px;}\n.b p:last-child{margin-bottom:0;}\n.b .hd{font-weight:600;margin:12px 0 4px;}\n.b .hd:first-child{margin-top:0;}\n.b ul{list-style:none;margin:2px 0 9px;}\n.b li{position:relative;padding-left:14px;margin-bottom:3px;}\n.b li::before{content:\"\u2022\";position:absolute;left:2px;top:-1px;}\n.b b{font-weight:600;}\n.b .inl{font:inherit;font-weight:600;color:var(--ink);background:none;border:0;border-bottom:1.5px solid var(--blue);padding:0;margin:0;cursor:pointer;text-align:left;}\n.b .inl:hover{color:var(--blue);}\n.b em{font-style:normal;font-weight:600;}\n.receipt{text-align:right;font-size:10.5px;color:var(--mute);padding:1px 10px 0 0;margin-bottom:2px;letter-spacing:-.1px;}\n.receipt b{font-weight:600;color:var(--mute);}\n\n/* link-preview style upgrade card */\n.card{max-width:83%;margin:3px 4px 2px 4px;border-radius:17px;overflow:hidden;background:#1C1C1E;color:#fff;align-self:flex-start;}\n.card .top{padding:13px 15px 14px;}\n.card .eyebrow{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--brand-2);margin-bottom:6px;}\n.card .h{font-size:15px;font-weight:600;line-height:1.3;margin-bottom:5px;letter-spacing:-.2px;}\n.card .b2{font-size:13.5px;line-height:1.45;color:rgba(255,255,255,.66);}\n.card .b2 em{color:#fff;font-weight:600;font-style:normal;}\n.card .go{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:.5px solid rgba(255,255,255,.14);padding:11px 15px;cursor:pointer;background:rgba(255,255,255,.05);}\n.card .go:hover{background:rgba(255,255,255,.11);}\n.card .go span{font-size:14px;font-weight:600;color:var(--brand-2);}\n.card .go i{font-style:normal;color:rgba(255,255,255,.4);font-size:16px;}\n.card .fine{font-size:10.5px;color:rgba(255,255,255,.38);padding:0 15px 12px;line-height:1.45;}\n\n.srcs{display:flex;flex-wrap:wrap;gap:6px;padding:5px 8px 2px 8px;max-width:100%;}\n.srcs button{font-family:inherit;font-size:12px;font-weight:500;color:var(--blue);background:var(--page);border:1px solid var(--hair);border-radius:100px;padding:5px 11px;cursor:pointer;}\n.srcs button:hover{background:#F2F2F7;}\n\n.typing{display:flex;gap:4px;align-items:center;background:var(--in);border-radius:19px;padding:12px 15px;}\n.typing i{width:8px;height:8px;border-radius:50%;background:#9E9EA4;animation:d 1.3s ease-in-out infinite;}\n.typing i:nth-child(2){animation-delay:.17s}.typing i:nth-child(3){animation-delay:.34s}\n@keyframes d{0%,62%,100%{opacity:.32;transform:translateY(0)}31%{opacity:.95;transform:translateY(-3px)}}\n@media(prefers-reduced-motion:reduce){.typing i{animation:none;opacity:.6}}\n\n.sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:8px 12px 4px;max-height:104px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;}\n.sugg::-webkit-scrollbar{display:none}\n.sugg:empty{display:none}\n.sugg button{flex:0 1 auto;max-width:100%;font-family:inherit;font-size:13.5px;font-weight:500;line-height:1.3;color:var(--ink);background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:8.5px 14px;cursor:pointer;text-align:left;transition:border-color .14s,background .14s;}\n.sugg button:hover{background:#F2F2F7;border-color:var(--brand);}\n.sugg button:active{background:#E8E8ED;}\n\n.composer{flex:none;padding:8px 11px 11px;background:var(--page);border-top:.5px solid var(--hair);position:relative;}\n.cbox{background:var(--field);border:1.5px solid var(--fieldln);border-radius:20px;padding:9px 10px 7px 14px;transition:border-color .14s;}\n.cbox:focus-within{border-color:var(--brand);}\n.cbox textarea{width:100%;border:0;background:transparent;resize:none;font-family:inherit;font-size:15.5px;line-height:1.35;letter-spacing:-.2px;color:var(--ink);outline:none;max-height:86px;min-height:21px;padding:0;display:block;}\n.ctools{display:flex;align-items:center;gap:2px;margin-top:6px;}\n.ctools .sp{flex:1;}\n.tool{width:30px;height:30px;border:0;border-radius:9px;background:transparent;color:var(--mute);cursor:pointer;display:grid;place-items:center;padding:0;transition:background .14s,color .14s;}\n.tool:hover{background:rgba(120,120,128,.12);color:var(--ink2);}\n.tool[aria-pressed=\"true\"]{background:rgba(47,194,77,.16);color:var(--out2);}\n.tool svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}\n.tool.on svg{stroke:var(--out2);}\n.emoji{position:absolute;left:11px;right:11px;bottom:100%;margin-bottom:6px;background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:9px;box-shadow:0 12px 30px rgba(0,0,0,.13);display:none;grid-template-columns:repeat(8,1fr);gap:3px;z-index:4;}\n.emoji.on{display:grid;}\n.emoji button{border:0;background:transparent;font-size:19px;line-height:1;padding:6px 0;border-radius:8px;cursor:pointer;}\n.emoji button:hover{background:rgba(120,120,128,.14);}\n.field textarea::placeholder{color:var(--mute2);}\n.snd{flex:none;width:30px;height:30px;border-radius:50%;border:0;background:var(--out);color:#fff;cursor:pointer;display:grid;place-items:center;padding:0;}\n.snd:disabled{background:#D6D6DA;cursor:default;}\n.snd svg{width:15px;height:15px;fill:#fff;}\n.foot{text-align:center;font-size:10.5px;color:var(--mute2);margin-top:7px;}\n\n/* article sheet */\n.sheet{position:absolute;inset:0;background:var(--page);display:none;flex-direction:column;z-index:5;}\n.sheet.on{display:flex;}\n.sheetbody{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:16px 22px 34px;}\n.sheetbody h2{font-size:24px;font-weight:700;letter-spacing:-.7px;line-height:1.15;margin-bottom:5px;}\n.sheetbody .meta{font-size:12px;color:var(--mute);margin-bottom:18px;}\n.sheetbody h5{font-size:14.5px;font-weight:600;margin:18px 0 6px;}\n.sheetbody p{font-size:15px;line-height:1.55;color:var(--ink2);margin-bottom:11px;}\n.sheetbody ul{margin:0 0 12px 18px;font-size:15px;line-height:1.55;color:var(--ink2);}\n.sheetbody li{margin-bottom:4px;}\n.sheetbody b{color:var(--ink);font-weight:600;}\n@media(max-width:560px){\n  /* Full-height sheet. The docked-card layout left a dead 84px strip for the\n     launcher and squeezed the thread; on a short phone that cropped the reply\n     chips. dvh (not vh) so a collapsing URL bar cannot push the composer off. */\n  /* No entry transform on mobile. A translate here has to be undone by\n     .panel.open, and when that override loses the panel sits below the fold\n     with the composer off-screen \u2014 which is exactly the bug this replaced.\n     A full-height sheet fading in needs no slide anyway. */\n  .panel{left:0;right:0;top:0;bottom:0;width:auto;max-width:none;height:100vh;height:100dvh;border-radius:0;transform:none;}\n  .launch{right:14px;bottom:14px;}\n  .launch.open{display:none;}          /* the header carries Close */\n  .bar{padding-top:calc(9px + env(safe-area-inset-top));}\n  .composer{padding-bottom:calc(11px + env(safe-area-inset-bottom));}\n  .b{max-width:88%;}\n  .card{max-width:92%;}\n  .sugg{max-height:120px;}\n  .sheetbody{padding-bottom:calc(34px + env(safe-area-inset-bottom));}\n}\n";
+sEl.textContent="\n:host{\n  --ink:#000000;--ink2:#3C3C43;--mute:#8E8E93;--mute2:#AEAEB2;\n  --page:#FFFFFF;--bar:#F7F7F7;--hair:#D8D8DC;\n  --in:#E9E9EB;--out:#2FC24D;--out2:#28B245;\n  --blue:#007AFF;--field:#FFFFFF;--fieldln:#D1D1D6;\n  --brand:#1A1A2E;--brand-2:#E8902A;\n  --sys:-apple-system,BlinkMacSystemFont,\"SF Pro Text\",\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,sans-serif;\n}\n*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}\n\n\n/* \u2500\u2500 launcher \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.launch{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background:var(--brand);border:0;cursor:pointer;box-shadow:0 8px 26px rgba(0,0,0,.24);display:grid;place-items:center;z-index:60;transition:transform .18s cubic-bezier(.34,1.5,.64,1);}\n.launch:hover{transform:scale(1.06);}\n.launch svg{width:27px;height:27px;fill:#fff;}\n.launch .x{display:none;color:#fff;font-size:25px;font-weight:300;line-height:1;}\n.launch.open svg{display:none;}\n.launch.open .x{display:block;}\n\n/* \u2500\u2500 thread panel \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.panel{position:fixed;overscroll-behavior:contain;right:22px;bottom:92px;width:394px;max-width:calc(100vw - 28px);height:min(672px,calc(100vh - 126px));height:min(672px,calc(100dvh - 126px));background:var(--page);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.26),0 2px 10px rgba(0,0,0,.10);z-index:59;display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:translateY(12px) scale(.985);pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1);}\n.panel.open{opacity:1;transform:none;pointer-events:auto;}\n\n.bar{flex:none;background:var(--bar);border-bottom:.5px solid var(--hair);padding:9px 14px 11px;text-align:center;position:relative;}\n.bar .back{position:absolute;left:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--blue);font-size:15px;font-weight:400;cursor:pointer;padding:6px;display:none;}\n.bar .xclose{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:50%;background:rgba(120,120,128,.14);color:var(--ink2);font-size:16px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;}\n.bar .xclose:hover{background:rgba(120,120,128,.24);}\n.bar .xclose:active{transform:translateY(-50%) scale(.92);}\n.bar.sub .back{display:block;}\n.ava{width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#2D2D44,#1A1A2E);display:grid;place-items:center;margin:0 auto 4px;color:#fff;font-size:17px;font-weight:600;letter-spacing:-.3px;}\n.bar b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.1px;}\n.bar i{display:block;font-style:normal;font-size:11px;color:var(--mute);margin-top:1px;}\n\n.thread{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px 12px 4px;background:var(--page);display:flex;flex-direction:column;}\n.stamp{text-align:center;font-size:11px;color:var(--mute);margin:10px 0 12px;font-weight:500;}\n.stamp b{color:var(--ink2);font-weight:600;}\n\n.msg{display:flex;margin-bottom:2px;padding:0 4px;}\n.msg.gap{margin-top:9px;}\n.msg.out{justify-content:flex-end;}\n.b{position:relative;max-width:83%;padding:8px 13px 9px;border-radius:19px;font-size:15.5px;line-height:1.32;letter-spacing:-.2px;word-wrap:break-word;}\n.msg.in .b{background:var(--in);color:var(--ink);}\n.msg.out .b{background:var(--out);color:#fff;}\n.b.tail::before{content:\"\";position:absolute;bottom:0;width:18px;height:19px;}\n.b.tail::after{content:\"\";position:absolute;bottom:0;width:14px;height:19px;background:var(--page);}\n.msg.in .b.tail::before{left:-6px;background:var(--in);border-bottom-right-radius:15px;}\n.msg.in .b.tail::after{left:-14px;border-bottom-right-radius:9px;}\n.msg.out .b.tail::before{right:-6px;background:var(--out);border-bottom-left-radius:15px;}\n.msg.out .b.tail::after{right:-14px;border-bottom-left-radius:9px;}\n.b p{margin-bottom:9px;}\n.b p:last-child{margin-bottom:0;}\n.b .hd{font-weight:600;margin:12px 0 4px;}\n.b .hd:first-child{margin-top:0;}\n.b ul,.b ol{list-style:none;margin:2px 0 9px;padding:0;}\n.b li{position:relative;padding-left:14px;margin-bottom:3px;}\n.b ul>li::before{content:\"\u2022\";position:absolute;left:2px;top:-1px;}\n.b ol{counter-reset:csol;}\n.b ol>li{counter-increment:csol;padding-left:21px;}\n.b ol>li::before{content:counter(csol) \".\";position:absolute;left:0;top:0;font-weight:600;font-variant-numeric:tabular-nums;}\n.b b{font-weight:600;}\n.b .inl{font:inherit;font-weight:600;color:var(--ink);background:none;border:0;border-bottom:1.5px solid var(--blue);padding:0;margin:0;cursor:pointer;text-align:left;}\n.b .inl:hover{color:var(--blue);}\n.b em{font-style:normal;font-weight:600;}\n.receipt{text-align:right;font-size:10.5px;color:var(--mute);padding:1px 10px 0 0;margin-bottom:2px;letter-spacing:-.1px;}\n.receipt b{font-weight:600;color:var(--mute);}\n\n/* link-preview style upgrade card */\n.card{max-width:83%;margin:3px 4px 2px 4px;border-radius:17px;overflow:hidden;background:#1C1C1E;color:#fff;align-self:flex-start;}\n.card .top{padding:13px 15px 14px;}\n.card .eyebrow{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--brand-2);margin-bottom:6px;}\n.card .h{font-size:15px;font-weight:600;line-height:1.3;margin-bottom:5px;letter-spacing:-.2px;}\n.card .b2{font-size:13.5px;line-height:1.45;color:rgba(255,255,255,.66);}\n.card .b2 em{color:#fff;font-weight:600;font-style:normal;}\n.card .go{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:.5px solid rgba(255,255,255,.14);padding:11px 15px;cursor:pointer;background:rgba(255,255,255,.05);}\n.card .go:hover{background:rgba(255,255,255,.11);}\n.card .go span{font-size:14px;font-weight:600;color:var(--brand-2);}\n.card .go i{font-style:normal;color:rgba(255,255,255,.4);font-size:16px;}\n.card .fine{font-size:10.5px;color:rgba(255,255,255,.38);padding:0 15px 12px;line-height:1.45;}\n\n.srcs{display:flex;flex-wrap:wrap;gap:6px;padding:5px 8px 2px 8px;max-width:100%;}\n.srcs button{font-family:inherit;font-size:12px;font-weight:500;color:var(--blue);background:var(--page);border:1px solid var(--hair);border-radius:100px;padding:5px 11px;cursor:pointer;}\n.srcs button:hover{background:#F2F2F7;}\n\n.typing{display:flex;gap:4px;align-items:center;background:var(--in);border-radius:19px;padding:12px 15px;}\n.typing i{width:8px;height:8px;border-radius:50%;background:#9E9EA4;animation:d 1.3s ease-in-out infinite;}\n.typing i:nth-child(2){animation-delay:.17s}.typing i:nth-child(3){animation-delay:.34s}\n@keyframes d{0%,62%,100%{opacity:.32;transform:translateY(0)}31%{opacity:.95;transform:translateY(-3px)}}\n@media(prefers-reduced-motion:reduce){.typing i{animation:none;opacity:.6}}\n\n.sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:8px 12px 4px;max-height:104px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;}\n.sugg::-webkit-scrollbar{display:none}\n.sugg:empty{display:none}\n.sugg button{flex:0 1 auto;max-width:100%;font-family:inherit;font-size:13.5px;font-weight:500;line-height:1.3;color:var(--ink);background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:8.5px 14px;cursor:pointer;text-align:left;transition:border-color .14s,background .14s;}\n.sugg button:hover{background:#F2F2F7;border-color:var(--brand);}\n.sugg button:active{background:#E8E8ED;}\n\n.composer{flex:none;padding:8px 11px 11px;background:var(--page);border-top:.5px solid var(--hair);position:relative;}\n.cbox{background:var(--field);border:1.5px solid var(--fieldln);border-radius:20px;padding:9px 10px 7px 14px;transition:border-color .14s;}\n.cbox:focus-within{border-color:var(--brand);}\n.cbox textarea{width:100%;border:0;background:transparent;resize:none;font-family:inherit;font-size:15.5px;line-height:1.35;letter-spacing:-.2px;color:var(--ink);outline:none;max-height:86px;min-height:21px;padding:0;display:block;}\n.ctools{display:flex;align-items:center;gap:2px;margin-top:6px;}\n.ctools .sp{flex:1;}\n.tool{width:30px;height:30px;border:0;border-radius:9px;background:transparent;color:var(--mute);cursor:pointer;display:grid;place-items:center;padding:0;transition:background .14s,color .14s;}\n.tool:hover{background:rgba(120,120,128,.12);color:var(--ink2);}\n.tool[aria-pressed=\"true\"]{background:rgba(47,194,77,.16);color:var(--out2);}\n.tool svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}\n.tool.on svg{stroke:var(--out2);}\n.emoji{position:absolute;left:11px;right:11px;bottom:100%;margin-bottom:6px;background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:9px;box-shadow:0 12px 30px rgba(0,0,0,.13);display:none;grid-template-columns:repeat(8,1fr);gap:3px;z-index:4;}\n.emoji.on{display:grid;}\n.emoji button{border:0;background:transparent;font-size:19px;line-height:1;padding:6px 0;border-radius:8px;cursor:pointer;}\n.emoji button:hover{background:rgba(120,120,128,.14);}\n.field textarea::placeholder{color:var(--mute2);}\n.snd{flex:none;width:30px;height:30px;border-radius:50%;border:0;background:var(--out);color:#fff;cursor:pointer;display:grid;place-items:center;padding:0;}\n.snd:disabled{background:#D6D6DA;cursor:default;}\n.snd svg{width:15px;height:15px;fill:#fff;}\n.foot{text-align:center;font-size:10.5px;color:var(--mute2);margin-top:7px;}\n\n/* article sheet */\n.sheet{position:absolute;inset:0;background:var(--page);display:none;flex-direction:column;z-index:5;}\n.sheet.on{display:flex;}\n.sheetbody{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:16px 22px 34px;}\n.sheetbody h2{font-size:24px;font-weight:700;letter-spacing:-.7px;line-height:1.15;margin-bottom:5px;}\n.sheetbody .meta{font-size:12px;color:var(--mute);margin-bottom:18px;}\n.sheetbody h5{font-size:14.5px;font-weight:600;margin:18px 0 6px;}\n.sheetbody p{font-size:15px;line-height:1.55;color:var(--ink2);margin-bottom:11px;}\n.sheetbody ul{margin:0 0 12px 18px;font-size:15px;line-height:1.55;color:var(--ink2);}\n.sheetbody li{margin-bottom:4px;}\n.sheetbody b{color:var(--ink);font-weight:600;}\n@media(max-width:560px){\n  /* Full-height sheet. The docked-card layout left a dead 84px strip for the\n     launcher and squeezed the thread; on a short phone that cropped the reply\n     chips. dvh (not vh) so a collapsing URL bar cannot push the composer off. */\n  /* No entry transform on mobile. A translate here has to be undone by\n     .panel.open, and when that override loses the panel sits below the fold\n     with the composer off-screen \u2014 which is exactly the bug this replaced.\n     A full-height sheet fading in needs no slide anyway. */\n  .panel{left:0;right:0;top:0;bottom:0;width:auto;max-width:none;height:100vh;height:100dvh;border-radius:0;transform:none;}\n  .launch{right:14px;bottom:14px;}\n  .launch.open{display:none;}          /* the header carries Close */\n  .bar{padding-top:calc(9px + env(safe-area-inset-top));}\n  .composer{padding-bottom:calc(11px + env(safe-area-inset-bottom));}\n  .b{max-width:88%;}\n  .card{max-width:92%;}\n  .sugg{max-height:120px;}\n  .sheetbody{padding-bottom:calc(34px + env(safe-area-inset-bottom));}\n}\n";
 ROOT.appendChild(sEl);
 var wrap=document.createElement('div');
 wrap.style.cssText='pointer-events:auto;';
@@ -285,7 +285,7 @@ const SMALL=[
   a:c=>`I'm the <b>Super Assistant</b> — the virtual assistant and acting coach here on CastSlate. Not a person, and I won't pretend otherwise.`,
   b:c=>`Two things I do: answer anything about the platform and the acting business, and actually <b>teach</b> you. I can take you through the fundamentals of acting for film, stage, commercials and voice, right here, for free. Grab a notepad and a pen — the stuff I teach is worth writing down.`,
   s:['Teach me the fundamentals','What can I ask you?','Talk to a human']},
- {id:'canask',re:/what can i (ask|say|talk about|do here)|what do you (do|know)|how can you help|what can you help|what are you for|what do you help with|^help$/i,
+ {id:'canask',re:/what (else )?can i (ask|say|talk about|do here)|what else (can|do) you|anything else i can ask|what do you (do|know|teach)|what can you (teach|help|do)|how can you help|what are you for|what do you help with|^help$/i,
   a:c=>`${c.name?c.name+', t':'T'}wo halves. I answer things, and I <b>teach</b>.`+
   `<div class="hd">I can teach you the fundamentals — free</div><p>All of the fundamentals of acting for <b>film, stage, commercial and voice</b>, right here in this thread. You don't need to spend money on acting classes to start. Just get a <b>notepad and a pen</b> and write down what I teach you — every lesson ends with the one line worth keeping.</p>`+
   `<ul><li><b>Craft</b> — objective, stakes, subtext, listening, presence, playing a state truthfully</li><li><b>Film &amp; TV</b> — the close-up, shot size, eyelines, hitting marks, continuity, what the lens catches</li><li><b>Stage</b> — projection, cheating out, sightlines, stage geography, tech week</li><li><b>Commercial</b> — a genuinely different job, and why most film actors are bad at it first time</li><li><b>Audition</b> — self-tapes, slating, cold reading, taking direction, recovering from a mistake</li><li><b>On set</b> — the technical detail nobody teaches you before your first day</li></ul>`+
@@ -756,10 +756,10 @@ const KB=[
  a:c=>`<p><b>I can teach you all the fundamentals of acting for film or stage right here — free.</b> You don't need to spend money on acting classes to start. Just get a <b>notepad and a pen</b> and write down what I teach you; every lesson ends with one line worth keeping.</p>`+
  `<p>These are real exercises you do on the spot, not definitions. Two or three minutes each.</p>`+
  `<div class="hd">Start here</div><ul><li><button class="inl" data-ask="Teach me the fundamentals">The fundamentals, in order</button> — objective, stakes, listening, scale. The whole spine in one go</li></ul>`+
- `<div class="hd">Film &amp; camera</div><ul><li><button class="inl" data-ask="The camera sees everything">The camera sees everything</button> — the show-it vs want-it experiment</li><li><button class="inl" data-ask="Working in a close-up">Working in a close-up</button> — what the lens catches, and the mute-playback exercise</li><li><button class="inl" data-ask="How to stop overacting">How to stop overacting</button> — the flat pass</li></ul>`+
- `<div class="hd">Technique</div><ul><li><button class="inl" data-ask="Objective">Objective</button> — what your character actually wants</li><li><button class="inl" data-ask="Stanislavsky's Magic If">Stanislavsky's Magic If</button> </li><li><button class="inl" data-ask="Listening">Listening</button> </li><li><button class="inl" data-ask="Being present">Being present</button> </li><li><button class="inl" data-ask="Subtext">Subtext</button> — one line, four meanings</li><li><button class="inl" data-ask="Stakes">Stakes</button> — why your scene feels flat</li></ul>`+
- `<div class="hd">Audition</div><ul><li><button class="inl" data-ask="Self-tape exercise">Self-tape exercise</button> — a better take in fifteen minutes</li><li><button class="inl" data-ask="How to slate">How to slate</button> </li><li><button class="inl" data-ask="Cold reading">Cold reading</button> without panicking</li><li><button class="inl" data-ask="The room">The room</button> — first impressions, taking direction, recovering from a mistake</li></ul>`+
- `<div class="hd">By medium</div><ul><li><button class="inl" data-ask="Stage acting">Stage acting</button> — filling the room without inflating</li><li><button class="inl" data-ask="Commercial acting">Commercial acting</button> — a genuinely different job</li><li><button class="inl" data-ask="Voice acting">Voice acting</button> </li></ul>`+
+ `<div class="hd">Film &amp; camera</div><ul><li><button class="inl" data-ask="The camera sees everything">The camera sees everything</button> — the show-it vs want-it experiment</li><li><button class="inl" data-ask="Teach me the close-up">Working in a close-up</button> — what the lens catches, and the mute-playback exercise</li><li><button class="inl" data-ask="How to stop overacting">How to stop overacting</button> — the flat pass</li></ul>`+
+ `<div class="hd">Technique</div><ul><li><button class="inl" data-ask="Teach me about objectives">Objective</button> — what your character actually wants</li><li><button class="inl" data-ask="Stanislavsky's Magic If">Stanislavsky's Magic If</button> </li><li><button class="inl" data-ask="Teach me how to listen">Listening</button> </li><li><button class="inl" data-ask="Teach me to be present">Being present</button> </li><li><button class="inl" data-ask="Teach me subtext">Subtext</button> — one line, four meanings</li><li><button class="inl" data-ask="Teach me stakes">Stakes</button> — why your scene feels flat</li></ul>`+
+ `<div class="hd">Audition</div><ul><li><button class="inl" data-ask="Self-tape exercise">Self-tape exercise</button> — a better take in fifteen minutes</li><li><button class="inl" data-ask="Teach me how to slate">How to slate</button> </li><li><button class="inl" data-ask="Teach me cold reading">Cold reading</button> without panicking</li><li><button class="inl" data-ask="Give me the audition room lesson">The room</button> — first impressions, taking direction, recovering from a mistake</li></ul>`+
+ `<div class="hd">By medium</div><ul><li><button class="inl" data-ask="Teach me stage acting">Stage acting</button> — filling the room without inflating</li><li><button class="inl" data-ask="Give me a commercial acting lesson">Commercial acting</button> — a genuinely different job</li><li><button class="inl" data-ask="Teach me voice acting">Voice acting</button> </li></ul>`+
  `<div class="hd">The technical side nobody teaches</div><ul><li><button class="inl" data-ask="Teach me the on-set technicals">On set</button> — marks, blocking, coverage, matching your action, the vocabulary of the day</li><li><button class="inl" data-ask="Teach me the theatre technicals">Theatre technicals</button> — cheating out, upstaging, sightlines, spike marks, tech week, the half</li></ul>`+
  `<div class="hd">Materials and career</div><ul><li><button class="inl" data-ask="Teach me the first six seconds">The first six seconds</button> — why casting skips a reel, and cutting the opening titles</li><li><button class="inl" data-ask="Teach me profile building">Building a profile casting reads</button> — including the 60-second phone reel</li><li><button class="inl" data-ask="Which headshot should I lead with?">Choosing your headshot</button> — and the character shot that boxes you in</li><li><button class="inl" data-ask="Teach me what to submit to">What to submit to</button> — and what to skip, so you don't look desperate</li></ul>`+
  `<p>Tap any of those, or just tell me what is going wrong and I will pick. If it isn't on the list I'll build the lesson anyway — the list is a menu, not a limit.</p>`,
@@ -2082,7 +2082,8 @@ const LESSONS=[
  {b:`<b>Right — the fundamentals, and they are free.</b>`+
    `<p>I can teach you all the fundamentals of acting for film or stage right here. You do not need to spend money on acting classes to start. <b>Get a notepad and a pen</b> — every lesson ends with one line worth writing down, and by the end of a few of these you will have a page that is worth more than most beginner workshops.</p>`+
    `<p>Here is the spine of it, in the order it actually builds:</p>`+
-   `<ol><li><b>Objective</b> — what you want from the other person</li><li><b>Obstacle and stakes</b> — what is in the way, and what it costs you to fail</li><li><b>Tactics</b> — the different ways you go after it when the last one failed</li><li><b>Given circumstances</b> — where, when, what happened ten minutes ago</li><li><b>Listening</b> — letting them actually affect you</li><li><b>Subtext</b> — what is being done under what is being said</li><li><b>Truthful behaviour</b> — playing the effort to stay normal, not the emotion</li><li><b>Scale</b> — the same truth, sized for a lens or for row twenty</li></ol>`+
+   `<ol><li><button class="inl" data-ask="Teach me about objectives">Objective</button> — what you want from the other person</li><li><button class="inl" data-ask="Teach me stakes">Obstacle and stakes</button> — what is in the way, and what it costs you to fail</li><li><button class="inl" data-ask="Teach me about tactics">Tactics</button> — the different ways you go after it when the last one failed</li><li><button class="inl" data-ask="Teach me about given circumstances">Given circumstances</button> — where, when, what happened ten minutes ago</li><li><button class="inl" data-ask="Teach me how to listen">Listening</button> — letting them actually affect you</li><li><button class="inl" data-ask="Teach me subtext">Subtext</button> — what is being done under what is being said</li><li><button class="inl" data-ask="Teach me to be more natural">Truthful behaviour</button> — playing the effort to stay normal, not the emotion</li><li><button class="inl" data-ask="Film vs stage — what changes?">Scale</button> — the same truth, sized for a lens or for row twenty</li></ol>`+
+   `<p style="opacity:.72">Tap any of those to jump straight into it, or say "start me on the first one" and I will take them in order.</p>`+
    `<p>That is the whole craft. Everything else — camera technique, stage technique, commercial, voice — is those eight things wearing different clothes.</p>`,
   pro:`<p>If you already work: this order matters because most performance problems are misdiagnosed one layer up. A "flat" scene is almost never a tempo problem, it is a stakes problem. A "false" moment is almost never a truth problem, it is an objective that drifted into a mood.</p>`,
   cta:`Start me on the first one`},
@@ -2108,7 +2109,8 @@ const LESSONS=[
    `<p><b>Stage acting is not overacting, and film acting is not underfeeling.</b> A stage performance is exactly as truthful — it simply has to carry.</p>`+
    `<p><b>Do this.</b> Say one line — <em>"I told you I was going to be late"</em> — twice. Once to a person six inches away. Once to someone forty feet away. Do not change how much you mean it. Change only how much of it has to travel.</p>`+
    `<div class="hd">Your page so far</div><p><b>1.</b> I want ___ to ___. <b>2.</b> What does it cost me to fail? <b>3.</b> Let them change me. <b>4.</b> Same truth, sized to the distance.</p>`+
-   `<p>That is the foundation, and it cost you nothing. Ask me for any of the deeper lessons — the close-up, subtext, self-tapes, stage technicals, commercial, the first six seconds of a reel — and we go further.</p>`,
+   `<p>That is the foundation, and it cost you nothing. Go further whenever you like:</p>`+
+   `<ul><li><button class="inl" data-ask="Teach me the close-up">The close-up</button></li><li><button class="inl" data-ask="Give me a self-tape exercise">Self-tapes</button></li><li><button class="inl" data-ask="Teach me the theatre technicals">Stage technicals</button></li><li><button class="inl" data-ask="Teach me the on-set technicals">On-set technicals</button></li><li><button class="inl" data-ask="Give me a commercial acting lesson">Commercial acting</button></li><li><button class="inl" data-ask="Teach me the first six seconds">The first six seconds of a reel</button></li></ul>`,
   end:true}]},
 
 {id:'sixsec',title:'The first six seconds of your reel',mins:2,lane:'Materials',
@@ -2199,7 +2201,7 @@ const LESSONS=[
    `<p>Do it ten times. An actor glancing down for their mark is visible in the take, and it is the single most common give-away on a first job.</p>`,
   cta:`Got it — what else`},
  {b:`<b>Matching, and the thing that gets you hired again.</b>`+
-   `<ul><li><b>Match your action.</b> If you picked the glass up on "I told you", pick it up on "I told you" every take. The script supervisor is tracking it, and mismatched action costs the editor your best take</li><li><b>Give a full performance off camera.</b> Your coverage is done; theirs is not. Your eyeline and your timing is what their close-up is built on. Actors remember who did this, and they are the ones who recommend you</li><li><b>Hold the frame.</b> Do not sigh, do not break, do not talk over the end of the take until "cut"</li><li><b>The vocabulary:</b> "back to one" means return to your first position; a <b>hot set</b> must not be touched; <b>video village</b> is not for you; <b>room tone</b> means nobody moves; <b>martini</b> is the last shot of the day</li></ul>`,
+   `<ul><li><b>Match your action.</b> If you picked the glass up on "I told you", pick it up on "I told you" every take. The script supervisor is tracking it, and mismatched action costs the editor your best take</li><li><b>Give a full performance off camera.</b> Your coverage is done; theirs is not. Your eyeline and your timing is what their close-up is built on. Actors remember who did this, and they are the ones who recommend you</li><li><b>Hold the frame.</b> Do not sigh, do not break, do not talk over the end of the take until "cut"</li><li><b>The vocabulary:</b> "back to one" means return to your first position; a <b>hot set</b> must not be touched; <b>video village</b> is not for you; <b>room tone</b> means nobody moves; <b>martini</b> is the last shot of the day. <button class="inl" data-ask="What are the on-set technicals?">See the full set glossary</button></li></ul>`,
   cta:`Challenge`},
  {b:`<b>Challenge.</b>`+
    `<p>Film yourself doing a thirty-second scene with one prop — a mug, a phone, a jacket. Do it three times. Then watch all three back and check whether the prop moved on the <b>same word</b> every time.</p>`+
@@ -2608,8 +2610,8 @@ const LESSONS=[
 const LESSON_BY_ID=Object.fromEntries(LESSONS.map(l=>[l.id,l]));
 const LESSON_INTENT=[
  [/\b(film|screen|camera|on.?camera) (acting )?(lesson|exercise|class)\b|\bteach me (film|screen|camera)|\bhow (do i|to) act (on|for) camera\b|\bcamera sees\b|\bhitchcock\b|\bart of no acting\b/i,'film'],
- [/\bmagic if\b|\bstanislavsk\w* (exercise|lesson)\b|\bgiven circumstances (exercise|lesson)\b/i,'magicif'],
- [/\b(teach|lesson|exercise).{0,20}\bobjective\b|\bobjective (exercise|lesson)\b|\bwhat does my character want\b/i,'objective'],
+ [/\bmagic if\b|\bstanislavsk\w* (exercise|lesson)\b|\bgiven circumstances\b/i,'magicif'],
+ [/\b(teach|lesson|exercise).{0,20}\bobjectives?\b|\bobjectives? (exercise|lesson)\b|\bwhat does my character want\b|\b(teach|lesson|exercise).{0,20}\btactics?\b/i,'objective'],
  [/\b(teach|lesson|exercise).{0,18}\blisten|\blistening (exercise|lesson)\b|\bhow (do i|to) listen\b/i,'listen'],
  [/\b(present|presence) (exercise|lesson)\b|\bteach me (to be )?present\b|\bstop (anticipating|waiting for my cue)\b|\bin the moment\b/i,'present'],
  [/\bclose.?up (lesson|exercise|acting)\b|\bteach me.{0,20}close.?up\b|\bhow to act in a close.?up\b|\bblink/i,'closeup'],
@@ -2914,9 +2916,33 @@ function principlesLesson(shape,q){
 /* ── UI ──────────────────────────────────────────────────────── */
 
 
-const st={plan:'visitor',level:'beginner',open:false,misses:0,lastOut:null,lesson:null,step:0,offer:null,profile:{weak:[],declared:null,taught:[]},lastConcept:null};
+const st={plan:'visitor',level:'beginner',open:false,misses:0,lastOut:null,lesson:null,step:0,offer:null,paused:null,identity:null,profile:{weak:[],declared:null,taught:[]},lastConcept:null};
 const ctx=()=>{const c=(window.__CS_CASTORIA_CTX||{});return{plan:c.plan||'visitor',name:c.name||''};};
 const CHECKS=['Is that what you were looking for?','Did that answer your question?','Was that helpful?','Does that cover it?'];
+
+const idKey=c=>(c.plan||'visitor')+'|'+(c.name||'');
+function syncIdentity(){
+  const c=ctx(), k=idKey(c);
+  if(k===st.identity)return false;
+  const first=st.identity===null;
+  st.identity=k; st.plan=c.plan;
+  if(first)return false;
+  /* Somebody else is here now. Wipe the thread — carrying it over would greet
+     the new user by the old user's name and show them a stranger's questions. */
+  st.misses=0;st.lastOut=null;st.lesson=null;st.step=0;st.offer=null;st.paused=null;
+  st.lastConcept=null;st.profile={weak:[],declared:null,taught:[]};
+  const sh=$('sheet'); if(sh)sh.classList.remove('on');
+  const had=$('thread').children.length;
+  $('thread').innerHTML='';sugg([]);
+  if(st.open&&had)hello();
+  return true;
+}
+/* The app republishes window.__CS_CASTORIA_CTX and fires this event on every
+   sign-in, sign-out and profile change. The poll is the other half: this
+   widget can be created before the app has published anything at all, and a
+   missed event would leave the next user being greeted by the last one's name. */
+try{window.addEventListener('cs:assistant-identity',function(){syncIdentity();});}catch(_){}
+setInterval(syncIdentity,1500);
 let checkIdx=0;
 
 function stamp(){
@@ -2984,7 +3010,7 @@ function closePanel(){
   lockPage(false);
 }
 function openPanel(){
-  st.plan=ctx().plan;
+  syncIdentity();
   st.open=true;$('panel').classList.add('open');$('launch').classList.add('open');
   if(window.innerWidth<=560)lockPage(true);
   if(!$('thread').children.length)hello();
@@ -3021,6 +3047,16 @@ const YES=/^(yes|yeah|yep|yup|sure|ok|okay|go on|please|go ahead|do it|teach me|
 const DEEPER=/^(go deeper|deeper|more detail|tell me more|full lesson|teach me (that|it|about that)|yes teach me .+)$/i;
 const NO=/^(no|nah|not now|later|no thanks|maybe later|i'm good|im good)[\s!.,]*$/i;
 const QUIT=/\b(stop|quit|exit|cancel|end) (the )?(lesson|exercise|class)\b|^(stop|quit|exit|nevermind|never mind)[\s!.,]*$/i;
+/* Everything that means "keep going". The step's own button label is checked
+   separately and first, because some of those labels are questions
+   ("What is cheating out?") and would otherwise be answered instead of
+   advancing the lesson. */
+const CONTWORDS=new Set(('next continue carry on go going gone keep ok okay k kk cool sure right done both finished finish complete completed got it understood understand makes make sense see tried try trying tried it ready proceed more yep yup yeah yes ya alright allright fine good great perfect nice thanks thank you cheers please now then what whats next again and the challenge give me first second last one start me on lesson exercise all set another that this these did have has was were i im am').split(' '));
+const isContinue=t=>{
+  const w=t.toLowerCase().replace(/[^a-z0-9\s']/g,' ').split(/\s+/).filter(Boolean);
+  return w.length>0 && w.length<=6 && w.every(x=>CONTWORDS.has(x));
+};
+const RESUME=/^(carry on|carry on with the lesson|resume|resume the lesson|back to the lesson|continue the lesson|pick it back up|where were we|yes,? carry on|finish the lesson)[\s!.,]*$/i;
 
 function lessonStep(){
   const L=LESSON_BY_ID[st.lesson]; if(!L) return endLesson();
@@ -3056,7 +3092,7 @@ function startLesson(id){
   const L=(typeof id==='object')?id:LESSON_BY_ID[id];
   if(!L) return false;
   if(typeof id==='object'){LESSON_BY_ID['__dyn']=L;st.lesson='__dyn';} else st.lesson=id;
-  st.step=0;st.offer=null;
+  st.step=0;st.offer=null;st.paused=null;
   if(L.concept)st.lastConcept=L.concept;
   if(L.id&&!st.profile.taught.includes(L.id))st.profile.taught.push(L.id);
   msg('in',`<b>${L.title}</b><br><span style="opacity:.62">${L.lane} &middot; about ${L.mins} minutes &middot; you can stop any time</span>`);
@@ -3068,12 +3104,12 @@ function dynamicLesson(c,depth,shape){
   return {id:'dyn-'+c.id,concept:c.id,title:c.name,lane:c.cat,mins,steps:compose(c,depth,st.level,shape)};
 }
 function endLesson(quiet){
-  st.lesson=null;st.step=0;
+  st.lesson=null;st.step=0;st.paused=null;
   if(!quiet){msg('in',`No problem — we can pick that up whenever. What else is on your mind?`);sugg(['Give me a different lesson','How do I improve my profile?']);}
 }
 
 function send(text){
-  st.plan=ctx().plan;
+  syncIdentity();
   const c=ctx();
   sugg([]);
   outMsg(text.replace(/[<>]/g,''));
@@ -3100,6 +3136,30 @@ function send(text){
     const t0=typing();
     setTimeout(()=>{t0.remove();markRead();startLesson(dynamicLesson(CONCEPT_BY_ID[st.lastConcept],'deep','craft'));},560);
     return;
+  }
+
+  /* a lesson was paused so a question could be answered properly */
+  if(!st.lesson&&st.paused){
+    const p=text.trim();
+    if(RESUME.test(p)||YES.test(p)){
+      const saved=st.paused;st.paused=null;st.lesson=saved.id;st.step=saved.step;
+      const t0=typing();
+      setTimeout(()=>{t0.remove();markRead();lessonStep();},520);
+      return;
+    }
+    if(QUIT.test(p)||NO.test(p)){
+      st.paused=null;
+      const t0=typing();
+      setTimeout(()=>{t0.remove();markRead();msg('in',`Dropped it. What would you like to look at instead?`);sugg(['Teach me something else','How do I improve my profile?','What can I ask you?']);},480);
+      return;
+    }
+    if(/^(ask something else|something else)[\s!.,]*$/i.test(p)){
+      st.paused=null;
+      const t0=typing();
+      setTimeout(()=>{t0.remove();markRead();msg('in',`Sure — what's on your mind?`);sugg(['What can I ask you?','How do I improve my profile?','Teach me something else']);},480);
+      return;
+    }
+    /* anything else: leave it parked and answer the question normally */
   }
 
   /* mid-lesson: coach through a problem, advance, or bail out */
@@ -3129,6 +3189,32 @@ function send(text){
       },660);
       return;
     }
+    /* Not a continue signal and not a coaching cue — so it is a real question.
+       Answer it like any other question and keep the lesson on the shelf. */
+    const L=LESSON_BY_ID[st.lesson];
+    const stepCta=(L&&L.steps[st.step-1]&&L.steps[st.step-1].cta)||'';
+    const isCta=!!stepCta&&text.trim().toLowerCase()===String(stepCta).trim().toLowerCase();
+    if(!isCta&&!isContinue(text)){
+      const rq=think(text,c);
+      /* Asking for a different lesson replaces this one; anything else — an
+         answer, a definition, even a miss — parks it and gets answered. */
+      const switching=!!(rq&&(rq.lesson||rq.teach));
+      const parked=switching?null:{id:st.lesson,step:st.step,title:(L&&L.title)||'the lesson'};
+      st.lesson=null;st.step=0;
+      const tq=typing();
+      setTimeout(()=>{
+        tq.remove();markRead();
+        respond(rq,c);
+        if(parked){
+          st.paused=parked;
+          setTimeout(()=>{
+            msg('in',`That was a detour — we were part-way through <b>${parked.title}</b>. Pick it back up, or carry on here?`);
+            sugg(['Carry on with the lesson','Ask something else','Stop the lesson']);
+          },1600);
+        }
+      },650+Math.random()*400);
+      return;
+    }
     const t0=typing();
     setTimeout(()=>{t0.remove();markRead();lessonStep();},560+Math.random()*320);
     return;
@@ -3136,11 +3222,12 @@ function send(text){
 
   const t=typing();
   const r=think(text,c);
-  const wait=650+Math.random()*450;
+  setTimeout(()=>{ t.remove();markRead(); respond(r,c); },650+Math.random()*450);
+}
 
-  setTimeout(()=>{
-    t.remove();markRead();
-
+/* Rendering a thought is separate from deciding to have one, because the same
+   renderer has to run for a question asked in the middle of a lesson. */
+function respond(r,c){
     if(r.lesson){
       st.misses=0;
       st.lastConcept=null;
@@ -3214,7 +3301,6 @@ function send(text){
     if(!e.nocheck){
       setTimeout(()=>{msg('in',CHECKS[checkIdx++%CHECKS.length]);sugg(e.s);},900);
     } else sugg(e.s);
-  },wait);
 }
 
 function sheet(id){

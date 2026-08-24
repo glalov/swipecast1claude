@@ -37529,6 +37529,10 @@ function App(){
       : (myProfile?.membership_status==="active" ? "premium" : "free");
     const full = (myProfile?.display_name||"").trim();
     window.__CS_CASTORIA_CTX = { plan, name: full ? full.split(/\s+/)[0] : "" };
+    // Tell the widget immediately. It polls as a fallback, but without this a
+    // sign-out or an account switch leaves the next person being greeted by
+    // the previous person's first name until the next poll tick.
+    try{ window.dispatchEvent(new CustomEvent("cs:assistant-identity")); }catch(_){}
   },[isLoggedIn,myProfile?.membership_status,myProfile?.display_name]);
   // Kill switch. site_settings.castoria_enabled=false turns the assistant off
   // site-wide with no deploy. The column does not have to exist: a missing one

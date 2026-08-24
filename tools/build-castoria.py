@@ -97,8 +97,8 @@ def main():
         "return{plan:c.plan||'visitor',name:c.name||''};};",
     )
     core = core.replace("const st={plan:'free',level:'beginner',", "const st={plan:'visitor',level:'beginner',")
-    core = core.replace("function send(text){\n  const c=ctx();", "function send(text){\n  st.plan=ctx().plan;\n  const c=ctx();")
-    core = core.replace("function openPanel(){\n  st.open=true;", "function openPanel(){\n  st.plan=ctx().plan;\n  st.open=true;")
+    # st.plan used to be refreshed here; syncIdentity() owns it now — it also
+    # wipes the thread when the signed-in person changes, which this could not.
 
     for marker in ("NAMES[", "$('persona", "#persona", "#level", "#tries", "sysprompt", "kbstat"):
         if marker in core:
