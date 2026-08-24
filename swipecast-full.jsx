@@ -12673,11 +12673,12 @@ function fmtCastingDate(val){
   }catch{return String(val);}
 }
 
-// Above this many days out, a browse card shows the closing DATE instead of a
-// countdown. A long countdown ("38 days left to apply") is not urgency — it is
-// an explicit licence to come back later, and later is usually never. Inside
-// the window the countdown stays, and the <=5 day red state and the final-48h
-// ticking clock on the casting page are untouched.
+// Above this many days out, a browse card says NOTHING about the deadline.
+// A long countdown ("38 days left to apply") is not urgency — it is an explicit
+// licence to come back later, and later is usually never. The closing date is
+// on the casting page itself, where someone is actually deciding, so the card
+// does not need to carry it. Inside the window the countdown stays, and the
+// <=5 day red state and the final-48h ticking clock are untouched.
 const CARD_COUNTDOWN_MAX_DAYS=14;
 
 // Live "days left to apply" countdown derived from a deadline date (YYYY-MM-DD or
@@ -13305,7 +13306,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                           ?<span className="cc-chip soon">Role filled — no longer accepting</span>
                           :cdn&&!cdn.expired
                             ?(cdn.days>CARD_COUNTDOWN_MAX_DAYS
-                              ?<span className="cc-chip quiet">Closes {fmtCastingDate(c.deadline)}</span>
+                              ?null
                               :<span className={"cc-chip "+(cdn.urgent?"urgent":"soon")}>{cdn.label}</span>)
                             :isExpiredCasting?<span className="cc-chip soon">Applications closed</span>:null}
                         {c.location&&<span className="cc-chip">{c.location}</span>}
