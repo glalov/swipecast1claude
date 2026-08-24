@@ -657,7 +657,7 @@ def render_page(title, desc, canonical, extra_preload=""):
     }}catch(e){{}}
     var fired=false;
     function load(){{
-      if(fired)return; fired=true;
+      if(fired||window.__CS_CASTORIA_OFF)return; fired=true;
       var s=document.createElement('script');
       s.src='/castoria.js?v={BUILD_VERSION}';
       s.async=true;

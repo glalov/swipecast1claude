@@ -37498,6 +37498,23 @@ function App(){
     const full = (myProfile?.display_name||"").trim();
     window.__CS_CASTORIA_CTX = { plan, name: full ? full.split(/\s+/)[0] : "" };
   },[isLoggedIn,myProfile?.membership_status,myProfile?.display_name]);
+  // Kill switch. site_settings.castoria_enabled=false turns the assistant off
+  // site-wide with no deploy. The column does not have to exist: a missing one
+  // throws, we swallow it, and the assistant stays on — so this can only ever
+  // switch Castoria OFF deliberately, never off by accident.
+  useEffect(()=>{
+    let alive=true;
+    (async()=>{
+      try{
+        const{data}=await window.sb.from("site_settings").select("castoria_enabled").eq("id",1).maybeSingle();
+        if(!alive||data?.castoria_enabled!==false)return;
+        window.__CS_CASTORIA_OFF=true;
+        const host=document.getElementById("castoria-root");
+        if(host&&host.parentNode)host.parentNode.removeChild(host);
+      }catch(_){/* column absent or offline — leave it running */}
+    })();
+    return()=>{alive=false;};
+  },[]);
   // Admin derived from the PROFILE row (authoritative, server-enforced via RLS + RPCs).
   // SC_CONFIG.ADMIN_EMAIL is kept only as a *fallback* so the owner can still reach
   // the panel even if the profile row hasn't loaded yet. DB will reject any write
